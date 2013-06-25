@@ -1,202 +1,208 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH RESEND V7 16/30] thermal: exynos: Make the zone handling
- use trip information
-Date: Tue, 25 Jun 2013 09:36:15 -0400
-Message-ID: <51C99CCF.2050500@ti.com>
-References: <1372071051-3167-17-git-send-email-amit.daniel@samsung.com> <1372160359-14504-1-git-send-email-amit.daniel@samsung.com>
+Subject: Re: [PATCH RESEND V7 25/30] thermal: exynos: Add hardware mode thermal
+ calibration support
+Date: Tue, 25 Jun 2013 09:38:45 -0400
+Message-ID: <51C99D65.8090308@ti.com>
+References: <1372071051-3167-26-git-send-email-amit.daniel@samsung.com> <1372160818-14607-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="----enig2EEMIWCCBMKNCSECQPCFB"
+	boundary="----enig2OXKPOXKSWQMFLFMIBEJK"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:37037 "EHLO arroyo.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:37173 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751177Ab3FYNga (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 25 Jun 2013 09:36:30 -0400
-In-Reply-To: <1372160359-14504-1-git-send-email-amit.daniel@samsung.com>
+	id S1751314Ab3FYNjA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 25 Jun 2013 09:39:00 -0400
+In-Reply-To: <1372160818-14607-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Amit Daniel Kachhap <amit.daniel@samsung.com>
 Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
 
-------enig2EEMIWCCBMKNCSECQPCFB
+------enig2OXKPOXKSWQMFLFMIBEJK
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 25-06-2013 07:39, Amit Daniel Kachhap wrote:
-> This code simplifies the zone handling to use the trip information pass=
-ed
-> by the TMU driver and not the hardcoded macros. This also helps in addi=
-ng
-> more zone support.
+On 25-06-2013 07:46, Amit Daniel Kachhap wrote:
+> This patch adds support for h/w mode calibration in the TMU controller.=
+
+> Soc's like 5440 support this features. The h/w supports two point calib=
+ration
+> and one point calibration at 85C and 25C.
 >=20
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 > Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
 Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
 > ---
->  drivers/thermal/samsung/exynos_thermal_common.c |   67 ++++++++++++++-=
---------
->  drivers/thermal/samsung/exynos_thermal_common.h |    3 +-
->  drivers/thermal/samsung/exynos_tmu.c            |    5 ++-
->  3 files changed, 47 insertions(+), 28 deletions(-)
+> Changes in this patch fixes a setting up of wrong calibration mode by d=
+efining
+> trim type for 25 and 85C. This will be only used in H/W based calibrati=
+on.
 >=20
-> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/=
-thermal/samsung/exynos_thermal_common.c
-> index 99318e5..ecf95da 100644
-> --- a/drivers/thermal/samsung/exynos_thermal_common.c
-> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
-> @@ -79,17 +79,24 @@ static int exynos_set_mode(struct thermal_zone_devi=
-ce *thermal,
->  static int exynos_get_trip_type(struct thermal_zone_device *thermal, i=
-nt trip,
->  				 enum thermal_trip_type *type)
->  {
-> -	switch (GET_ZONE(trip)) {
-> -	case MONITOR_ZONE:
-> -	case WARN_ZONE:
-> -		*type =3D THERMAL_TRIP_ACTIVE;
-> -		break;
-> -	case PANIC_ZONE:
-> +	struct exynos_thermal_zone *th_zone =3D thermal->devdata;
-> +	int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
-> +	int trip_type;
-> +
-> +	if (trip < 0 || trip >=3D max_trip)
-> +		return -EINVAL;
-> +
-> +	trip_type =3D th_zone->sensor_conf->trip_data.trip_type[trip];
-> +
-> +	if (trip_type =3D=3D SW_TRIP)
->  		*type =3D THERMAL_TRIP_CRITICAL;
-> -		break;
-> -	default:
-> +	else if (trip_type =3D=3D THROTTLE_ACTIVE)
-> +		*type =3D THERMAL_TRIP_ACTIVE;
-> +	else if (trip_type =3D=3D THROTTLE_PASSIVE)
-> +		*type =3D THERMAL_TRIP_PASSIVE;
-> +	else
->  		return -EINVAL;
-> -	}
-> +
->  	return 0;
->  }
-> =20
-> @@ -98,8 +105,9 @@ static int exynos_get_trip_temp(struct thermal_zone_=
-device *thermal, int trip,
->  				unsigned long *temp)
->  {
->  	struct exynos_thermal_zone *th_zone =3D thermal->devdata;
-> +	int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
-> =20
-> -	if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE))
-> +	if (trip < 0 || trip >=3D max_trip)
->  		return -EINVAL;
-> =20
->  	*temp =3D th_zone->sensor_conf->trip_data.trip_val[trip];
-> @@ -113,10 +121,10 @@ static int exynos_get_trip_temp(struct thermal_zo=
-ne_device *thermal, int trip,
->  static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
->  				unsigned long *temp)
->  {
-> -	int ret;
-> -	/* Panic zone */
-> -	ret =3D exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), temp);
-> -	return ret;
-> +	struct exynos_thermal_zone *th_zone =3D thermal->devdata;
-> +	int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
-> +	/* Get the temp of highest trip*/
-> +	return exynos_get_trip_temp(thermal, max_trip - 1, temp);
->  }
-> =20
->  /* Bind callback functions for thermal zone */
-> @@ -348,19 +356,28 @@ int exynos_register_thermal(struct thermal_sensor=
-_conf *sensor_conf)
->  		return -ENOMEM;
-> =20
->  	th_zone->sensor_conf =3D sensor_conf;
-> -	cpumask_set_cpu(0, &mask_val);
-> -	th_zone->cool_dev[0] =3D cpufreq_cooling_register(&mask_val);
-> -	if (IS_ERR(th_zone->cool_dev[0])) {
-> -		pr_err("Failed to register cpufreq cooling device\n");
-> -		ret =3D -EINVAL;
-> -		goto err_unregister;
-> +	/*
-> +	 * TODO: 1) Handle multiple cooling devices in a thermal zone
-> +	 *	 2) Add a flag/name in cooling info to map to specific
-> +	 *	 sensor
-> +	 */
-> +	if (sensor_conf->cooling_data.freq_clip_count > 0) {
-> +		cpumask_set_cpu(0, &mask_val);
-> +		th_zone->cool_dev[th_zone->cool_dev_size] =3D
-> +					cpufreq_cooling_register(&mask_val);
-> +		if (IS_ERR(th_zone->cool_dev[th_zone->cool_dev_size])) {
-> +			pr_err("Failed to register cpufreq cooling device\n");
-> +			ret =3D -EINVAL;
-> +			goto err_unregister;
-> +		}
-> +		th_zone->cool_dev_size++;
->  	}
-> -	th_zone->cool_dev_size++;
-> =20
-> -	th_zone->therm_dev =3D thermal_zone_device_register(sensor_conf->name=
-,
-> -			EXYNOS_ZONE_COUNT, 0, th_zone, &exynos_dev_ops, NULL, 0,
-> -			sensor_conf->trip_data.trigger_falling ?
-> -			0 : IDLE_INTERVAL);
-> +	th_zone->therm_dev =3D thermal_zone_device_register(
-> +			sensor_conf->name, sensor_conf->trip_data.trip_count,
-> +			0, th_zone, &exynos_dev_ops, NULL, 0,
-> +			sensor_conf->trip_data.trigger_falling ? 0 :
-> +			IDLE_INTERVAL);
-> =20
->  	if (IS_ERR(th_zone->therm_dev)) {
->  		pr_err("Failed to register thermal zone device\n");
-> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/=
-thermal/samsung/exynos_thermal_common.h
-> index 6ca3096..bfcf69e 100644
-> --- a/drivers/thermal/samsung/exynos_thermal_common.h
-> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
-> @@ -42,8 +42,6 @@
->  #define GET_ZONE(trip) (trip + 2)
->  #define GET_TRIP(zone) (zone - 2)
-> =20
-> -#define EXYNOS_ZONE_COUNT	3
-> -
->  enum trigger_type {
->  	THROTTLE_ACTIVE =3D 1,
->  	THROTTLE_PASSIVE,
-> @@ -69,6 +67,7 @@ struct freq_clip_table {
-> =20
->  struct	thermal_trip_point_conf {
->  	int trip_val[MAX_TRIP_COUNT];
-> +	int trip_type[MAX_TRIP_COUNT];
->  	int trip_count;
->  	unsigned char trigger_falling;
->  };
+>  drivers/thermal/samsung/exynos_tmu.c      |   33 +++++++++++++++++++++=
++++++++-
+>  drivers/thermal/samsung/exynos_tmu.h      |    8 +++++++
+>  drivers/thermal/samsung/exynos_tmu_data.c |    2 +
+>  drivers/thermal/samsung/exynos_tmu_data.h |    2 +
+>  4 files changed, 44 insertions(+), 1 deletions(-)
+>=20
 > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
 sung/exynos_tmu.c
-> index 40e0cfd..acbd295 100644
+> index 3fac0f9..a6fc379 100644
 > --- a/drivers/thermal/samsung/exynos_tmu.c
 > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -509,9 +509,12 @@ static int exynos_tmu_probe(struct platform_device=
- *pdev)
->  			pdata->trigger_enable[1] + pdata->trigger_enable[2]+
->  			pdata->trigger_enable[3];
+> @@ -73,6 +73,9 @@ static int temp_to_code(struct exynos_tmu_data *data,=
+ u8 temp)
+>  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
+>  	int temp_code;
 > =20
-> -	for (i =3D 0; i < exynos_sensor_conf.trip_data.trip_count; i++)
-> +	for (i =3D 0; i < exynos_sensor_conf.trip_data.trip_count; i++) {
->  		exynos_sensor_conf.trip_data.trip_val[i] =3D
->  			pdata->threshold + pdata->trigger_levels[i];
-> +		exynos_sensor_conf.trip_data.trip_type[i] =3D
-> +					pdata->trigger_type[i];
+> +	if (pdata->cal_mode =3D=3D HW_MODE)
+> +		return temp;
+> +
+>  	if (data->soc =3D=3D SOC_ARCH_EXYNOS4210)
+>  		/* temp should range between 25 and 125 */
+>  		if (temp < 25 || temp > 125) {
+> @@ -107,6 +110,9 @@ static int code_to_temp(struct exynos_tmu_data *dat=
+a, u8 temp_code)
+>  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
+>  	int temp;
+> =20
+> +	if (pdata->cal_mode =3D=3D HW_MODE)
+> +		return temp_code;
+> +
+>  	if (data->soc =3D=3D SOC_ARCH_EXYNOS4210)
+>  		/* temp_code should range between 75 and 175 */
+>  		if (temp_code < 75 || temp_code > 175) {
+> @@ -155,6 +161,9 @@ static int exynos_tmu_initialize(struct platform_de=
+vice *pdev)
+>  	if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
+>  		__raw_writel(1, data->base + reg->triminfo_ctrl);
+> =20
+> +	if (pdata->cal_mode =3D=3D HW_MODE)
+> +		goto skip_calib_data;
+> +
+>  	/* Save trimming info in order to perform calibration */
+>  	if (data->soc =3D=3D SOC_ARCH_EXYNOS5440) {
+>  		/*
+> @@ -190,6 +199,7 @@ static int exynos_tmu_initialize(struct platform_de=
+vice *pdev)
+>  			(pdata->efuse_value >> reg->triminfo_85_shift) &
+>  			EXYNOS_TMU_TEMP_MASK;
+> =20
+> +skip_calib_data:
+>  	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
+>  		dev_err(&pdev->dev, "Invalid max trigger level\n");
+>  		goto out;
+> @@ -297,7 +307,7 @@ static void exynos_tmu_control(struct platform_devi=
+ce *pdev, bool on)
+>  	struct exynos_tmu_data *data =3D platform_get_drvdata(pdev);
+>  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
+>  	const struct exynos_tmu_registers *reg =3D pdata->registers;
+> -	unsigned int con, interrupt_en;
+> +	unsigned int con, interrupt_en, cal_val;
+> =20
+>  	mutex_lock(&data->lock);
+>  	clk_enable(data->clk);
+> @@ -320,6 +330,27 @@ static void exynos_tmu_control(struct platform_dev=
+ice *pdev, bool on)
+>  		con |=3D (pdata->noise_cancel_mode << reg->therm_trip_mode_shift);
+>  	}
+> =20
+> +	if (pdata->cal_mode =3D=3D HW_MODE) {
+> +		con &=3D ~(reg->calib_mode_mask << reg->calib_mode_shift);
+> +		cal_val =3D 0;
+> +		switch (pdata->cal_type) {
+> +		case TYPE_TWO_POINT_TRIMMING:
+> +			cal_val =3D 3;
+> +			break;
+> +		case TYPE_ONE_POINT_TRIMMING_85:
+> +			cal_val =3D 2;
+> +			break;
+> +		case TYPE_ONE_POINT_TRIMMING_25:
+> +			cal_val =3D 1;
+> +			break;
+> +		case TYPE_NONE:
+> +			break;
+> +		default:
+> +			dev_err(&pdev->dev, "Invalid calibration type, using none\n");
+> +		}
+> +		con |=3D cal_val << reg->calib_mode_shift;
 > +	}
+> +
+>  	if (on) {
+>  		con |=3D (1 << reg->core_en_shift);
+>  		interrupt_en =3D
+> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sam=
+sung/exynos_tmu.h
+> index 25c48d4..b364c9e 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.h
+> +++ b/drivers/thermal/samsung/exynos_tmu.h
+> @@ -28,6 +28,8 @@
 > =20
->  	exynos_sensor_conf.trip_data.trigger_falling =3D pdata->threshold_fal=
-ling;
+>  enum calibration_type {
+>  	TYPE_ONE_POINT_TRIMMING,
+> +	TYPE_ONE_POINT_TRIMMING_25,
+> +	TYPE_ONE_POINT_TRIMMING_85,
+>  	TYPE_TWO_POINT_TRIMMING,
+>  	TYPE_NONE,
+>  };
+> @@ -90,6 +92,10 @@ enum soc_type {
+>   * @buf_slope_sel_shift: shift bits of amplifier gain value in tmu_ctr=
+l
+>  	register.
+>   * @buf_slope_sel_mask: mask bits of amplifier gain value in tmu_ctrl =
+register.
+> + * @calib_mode_shift: shift bits of calibration mode value in tmu_ctrl=
+
+> +	register.
+> + * @calib_mode_mask: mask bits of calibration mode value in tmu_ctrl
+> +	register.
+>   * @therm_trip_tq_en_shift: shift bits of thermal trip enable by TQ pi=
+n in
+>  	tmu_ctrl register.
+>   * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl regis=
+ter.
+> @@ -151,6 +157,8 @@ struct exynos_tmu_registers {
+>  	u32	therm_trip_en_shift;
+>  	u32	buf_slope_sel_shift;
+>  	u32	buf_slope_sel_mask;
+> +	u32	calib_mode_shift;
+> +	u32	calib_mode_mask;
+>  	u32	therm_trip_tq_en_shift;
+>  	u32	core_en_shift;
 > =20
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
+l/samsung/exynos_tmu_data.c
+> index 5952915..9002499 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -189,6 +189,8 @@ static const struct exynos_tmu_registers exynos5440=
+_tmu_registers =3D {
+>  	.therm_trip_en_shift =3D EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+>  	.buf_slope_sel_shift =3D EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+>  	.buf_slope_sel_mask =3D EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+> +	.calib_mode_shift =3D EXYNOS_TMU_CALIB_MODE_SHIFT,
+> +	.calib_mode_mask =3D EXYNOS_TMU_CALIB_MODE_MASK,
+>  	.core_en_shift =3D EXYNOS_TMU_CORE_EN_SHIFT,
+>  	.tmu_status =3D EXYNOS5440_TMU_S0_7_STATUS,
+>  	.tmu_cur_temp =3D EXYNOS5440_TMU_S0_7_TEMP,
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/therma=
+l/samsung/exynos_tmu_data.h
+> index 43ce5fb..dc7feb5 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+> @@ -75,6 +75,8 @@
+>  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
+>  #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
+>  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
+> +#define EXYNOS_TMU_CALIB_MODE_SHIFT	4
+> +#define EXYNOS_TMU_CALIB_MODE_MASK	0x3
+> =20
+>  #define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
+>  #define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
 >=20
 
 
@@ -206,7 +212,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
-------enig2EEMIWCCBMKNCSECQPCFB
+------enig2OXKPOXKSWQMFLFMIBEJK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -215,9 +221,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlHJnM8ACgkQCXcVR3XQvP0DHAEA7bckyoeh8LYs9I+pcEnxAAp5
-m+Or2KXNhl8H7iHUXG8A/j1AFuxfE47ao6F4C5Hw1ybGW2dxSU9H/gZyZT2cS3P1
-=xtcx
+iF4EAREIAAYFAlHJnWUACgkQCXcVR3XQvP2eEwEAuqpvkYC6fKXgHCtMuPhCNyeG
+7cNPfN+YGh66sXVCtZgBAOz3hTmbBxCdsWhj8y4EicDjiXXo36+zwYZJ5/wxD9w5
+=z8SL
 -----END PGP SIGNATURE-----
 
-------enig2EEMIWCCBMKNCSECQPCFB--
+------enig2OXKPOXKSWQMFLFMIBEJK--
