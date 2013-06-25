@@ -1,121 +1,38 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Wed, 26 Jun 2013 00:39:38 +0200
-Message-ID: <1516594.2Op2Cie0Tj@vostro.rjw.lan>
-References: <51C87ADC.4070409@canonical.com> <20130625161935.GA10208@jshin-Toonie> <51C9E443.8070100@canonical.com>
+Subject: Re: [PATCH 1/2] ACPI/Processor: Clear unuseful variable count in the acpi_processor_preregister_performance()
+Date: Wed, 26 Jun 2013 00:58:50 +0200
+Message-ID: <18573179.2IsDSHVV58@vostro.rjw.lan>
+References: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com> <CAKohpo=jdP-WF4D+XO=Z9cYVvJpbM9EG6hKSCgURNMVBTGut5g@mail.gmail.com> <51C957E1.7080808@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51C9E443.8070100@canonical.com>
+In-Reply-To: <51C957E1.7080808@intel.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Tim Gardner <tim.gardner@canonical.com>
-Cc: Jacob Shin <jacob.shin@amd.com>, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 25, 2013 12:41:07 PM Tim Gardner wrote:
-> On 06/25/2013 10:19 AM, Jacob Shin wrote:
-> > On Tue, Jun 25, 2013 at 12:26:14PM +0530, Viresh Kumar wrote:
-> >> On 24 June 2013 22:29, Tim Gardner <tim.gardner@canonical.com> wrote:
-> >>> This is from Ubuntu Saucy based on 3.10-rc7:
-> >>>
-> >>> [   12.911676] BUG: unable to handle kernel NULL pointer dereference at
-> >>> 0000000000000070
-> >>> [   12.911691] IP: [<ffffffff8156e572>] od_set_powersave_bias+0x92/0xc0
-> >>>
+On Tuesday, June 25, 2013 04:42:09 PM Lan Tianyu wrote:
+> On 2013=E5=B9=B406=E6=9C=8825=E6=97=A5 15:45, Viresh Kumar wrote:
+> > On 25 June 2013 07:36, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> >> The variable count in the acpi_processor_preregister_performance()=
+ is only initalized
+> >> as one for one cpu and increased by one when find another cpu that=
+ share same dependency
+> >> domain. Otherwise, it isn't referenced somewhere else.
 > >>
-> >> Can you please look into this bug? It occurred after your
-> >> patch... This is the boot log crash we have:
-> > 
-> > Hi,
-> > 
-> > Yes, so sorry about that, it looks like I failed to test with:
-> > 
-> > CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-> > CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-> > CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-> > CONFIG_X86_AMD_FREQ_SENSITIVITY=m
-> > 
-> > The following patch fixes this, Tim, could you please test ? :
-> > 
-> > ---8<---
-> > 
-> > From 3c727b1f775448599e67c5fb2121d79448e80c90 Mon Sep 17 00:00:00 2001
-> > From: Jacob Shin <jacob.shin@amd.com>
-> > Date: Tue, 25 Jun 2013 10:40:54 -0500
-> > Subject: [PATCH 1/1] cpufreq: fix NULL pointer deference at
-> >  od_set_powersave_bias()
-> > 
-> > When initializing the default powersave_bias value, we need to first
-> > make sure that this policy is running the ondemand governor.
-> > 
-> > Reported-by: Tim Gardner <tim.gardner@canonical.com>
-> > Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-> > ---
-> >  drivers/cpufreq/cpufreq_ondemand.c |   17 +++++++++++++----
-> >  1 file changed, 13 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> > index 4b9bb5d..93eb5cb 100644
-> > --- a/drivers/cpufreq/cpufreq_ondemand.c
-> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> > @@ -47,6 +47,8 @@ static struct od_ops od_ops;
-> >  static struct cpufreq_governor cpufreq_gov_ondemand;
-> >  #endif
-> >  
-> > +static unsigned int default_powersave_bias;
-> > +
-> >  static void ondemand_powersave_bias_init_cpu(int cpu)
-> >  {
-> >  	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-> > @@ -543,7 +545,7 @@ static int od_init(struct dbs_data *dbs_data)
-> >  
-> >  	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
-> >  	tuners->ignore_nice = 0;
-> > -	tuners->powersave_bias = 0;
-> > +	tuners->powersave_bias = default_powersave_bias;
-> >  	tuners->io_is_busy = should_io_be_busy();
-> >  
-> >  	dbs_data->tuners = tuners;
-> > @@ -585,6 +587,7 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
-> >  	unsigned int cpu;
-> >  	cpumask_t done;
-> >  
-> > +	default_powersave_bias = powersave_bias;
-> >  	cpumask_clear(&done);
-> >  
-> >  	get_online_cpus();
-> > @@ -593,11 +596,17 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
-> >  			continue;
-> >  
-> >  		policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.cur_policy;
-> > -		dbs_data = policy->governor_data;
-> > -		od_tuners = dbs_data->tuners;
-> > -		od_tuners->powersave_bias = powersave_bias;
-> > +		if (!policy)
-> > +			continue;
-> >  
-> >  		cpumask_or(&done, &done, policy->cpus);
-> > +
-> > +		if (policy->governor != &cpufreq_gov_ondemand)
-> > +			continue;
-> > +
-> > +		dbs_data = policy->governor_data;
-> > +		od_tuners = dbs_data->tuners;
-> > +		od_tuners->powersave_bias = default_powersave_bias;
-> >  	}
-> >  	put_online_cpus();
-> >  }
-> > 
-> 
-> That appears to have done the trick. You can add my Tested-by.
+> >> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> >> ---
+> >>  drivers/acpi/processor_perflib.c |    4 +---
+> >>  1 file changed, 1 insertion(+), 3 deletions(-)
+> >=20
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >=20
+> Thanks.
 
-Queued up as an urgent fix.
+Queued up for 3.11.
 
 Thanks,
 Rafael
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
