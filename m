@@ -1,46 +1,40 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 3/3] cpufreq:exynos:Extend Exynos cpufreq driver to
- support boost framework
-Date: Wed, 26 Jun 2013 15:58:23 +0200
-Message-ID: <20130626155823.47eb36fb@amdc308.digital.local>
+Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+Date: Wed, 26 Jun 2013 16:02:37 +0200
+Message-ID: <20130626160237.659f9b1d@amdc308.digital.local>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1370941408-29304-1-git-send-email-l.majewski@samsung.com>
- <1370941408-29304-4-git-send-email-l.majewski@samsung.com>
- <CAKohponJ5FyuKywCGz5j8GYomwqEJ0B-CvJybp+_eLjrsRkXDA@mail.gmail.com>
+ <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-3-git-send-email-l.majewski@samsung.com>
+ <CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
+ <20130626145412.1e9bfa63@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:62855 "EHLO
+Received: from mailout2.samsung.com ([203.254.224.25]:63185 "EHLO
 	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355Ab3FZN6b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 09:58:31 -0400
-In-reply-to: <CAKohponJ5FyuKywCGz5j8GYomwqEJ0B-CvJybp+_eLjrsRkXDA@mail.gmail.com>
+	with ESMTP id S1751498Ab3FZOCr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 10:02:47 -0400
+In-reply-to: <20130626145412.1e9bfa63@amdc308.digital.local>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, t.figa@samsung.com
 
-On Wed, 26 Jun 2013 16:35:32 +0530, Viresh Kumar wrote:
-> On 11 June 2013 14:33, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > The struct cpufreq_driver has been extended to embrace the
-> > information related to boost support.
-> >
-> > When "boost_mode" device tree attribute is defined for a platform,
-> > the low_level_boost pointer is filled with proper address. The
-> > .low_level_boost field filled to NULL, indicates that boost is not
-> > supported.
+On Wed, 26 Jun 2013 14:54:12 +0200, Lukasz Majewski wrote:
+> > >
+> > > +int cpufreq_boost_trigger_state(int state);  
+> > 
+> > Why is this present here?  
 > 
-> This patch is still few generations back :)
+> We had agreed to talk only about cpufreq :-).
+> 
+> This declaration will be removed.
 
-But this is v2 version of boost patches.
+Correction:
 
-Please also review:
-[PATCH v4 4/7]
-[PATCH v4 5/7]
-[PATCH v4 6/7]
-[PATCH v4 7/7] - disable boost at thermal framework
-
+This declaration is needed for allowing disabling cpufreq boost at
+thermal subsystem (please refer to [PATCH v4 7/7]).
 
 
 -- 
