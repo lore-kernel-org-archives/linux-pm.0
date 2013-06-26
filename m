@@ -1,40 +1,72 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-Date: Wed, 26 Jun 2013 14:34:58 -0700
-Message-ID: <20130626213458.GC4536@htj.dyndns.org>
-References: <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
- <20130625220026.GG3828@linux.vnet.ibm.com>
- <51CAF624.6060004@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
- <20130626143424.GN3828@linux.vnet.ibm.com>
- <1372258271.18733.256.camel@gandalf.local.home>
- <20130626152148.GA4405@mtj.dyndns.org>
- <1372260823.18733.263.camel@gandalf.local.home>
- <20130626172948.GD4405@mtj.dyndns.org>
- <51CB32E0.3040106@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
+Date: Wed, 26 Jun 2013 23:57:51 +0200
+Message-ID: <2081161.dnl1xTqcUT@vostro.rjw.lan>
+References: <cover.1371630975.git.viresh.kumar@linaro.org> <2165396.dF1lQyPRVT@vostro.rjw.lan> <CAKohponyMG-uA93ZpH-KD+EOQPmk5tT_QoaQ7+NCEf48vYj5-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <51CB32E0.3040106@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sbw@mit.edu, David Laight <David.Laight@ACULAB.COM>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponyMG-uA93ZpH-KD+EOQPmk5tT_QoaQ7+NCEf48vYj5-w@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hey,
+On Monday, June 24, 2013 07:01:59 PM Viresh Kumar wrote:
+> On 24 June 2013 19:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Looks OK, but since transition_ongoing is either 0 or 1 now, as far as I can
+> > say, it would be better to make it a bool and use = true/false instead of
+> > ++/-- I suppose.
+> 
+> Another fixup:
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 6ca7eac..49d942a 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -108,7 +108,7 @@ static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
+>  static struct srcu_notifier_head cpufreq_transition_notifier_list;
+> 
+>  /* Tracks status of transition */
+> -static int transition_ongoing;
+> +static bool transition_ongoing;
+> 
+>  static bool init_cpufreq_transition_notifier_list_called;
+>  static int __init init_cpufreq_transition_notifier_list(void)
+> @@ -271,7 +271,7 @@ void __cpufreq_notify_transition(struct
+> cpufreq_policy *policy,
+>                                 "In middle of another frequency transition\n"))
+>                         return;
+> 
+> -               transition_ongoing++;
+> +               transition_ongoing = true;
+> 
+>                 /* detect if the driver reported a value as "old frequency"
+>                  * which is not equal to what the cpufreq core thinks is
+> @@ -296,7 +296,7 @@ void __cpufreq_notify_transition(struct
+> cpufreq_policy *policy,
+>                                 "No frequency transition in progress\n"))
+>                         return;
+> 
+> -               transition_ongoing--;
+> +               transition_ongoing = false;
+> 
+>                 adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+>                 pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
 
-On Wed, Jun 26, 2013 at 11:58:48PM +0530, Srivatsa S. Bhat wrote:
-> Yes, we were discussing hot-unplug latency for use-cases such as
-> suspend/resume. We didn't want to make those operations slower in the
-> process of removing stop_machine() from hotplug.
+Well, now, seeing that the locking around this seems to be kind of haphazard,
+I'm wondering what prevents two different threads from doing CPUFREQ_PRECHANGE
+concurrently in such a way that thread A will check transition_ongoing
+and thread B will check transition_ongoing and then both will set it if it
+was 'false' before.  And then one of them will trigger the WARN() in
+CPUFREQ_POSTCHANGE.
 
-Can you please explain why tho?  How much would it help in terms of
-power-saving?  Or are there other issues in taking longer to shut down
-cpus?
+Is there any protection in place and if so then how does it work?
 
-Thanks.
+Rafael
+
 
 -- 
-tejun
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
