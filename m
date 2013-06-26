@@ -1,86 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] power: Add warning message about incorrect system date and time after resume when pm_trace is enabled
-Date: Wed, 26 Jun 2013 23:34:44 +0200
-Message-ID: <1663571.CBNvhg7ZvS@vostro.rjw.lan>
-References: <1372116318-10824-1-git-send-email-shuah.kh@samsung.com> <2689226.oQ0T3XLPmT@vostro.rjw.lan> <B8EFE96D1287C24090BAD9D858E15E61731812@sisaex02sj>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 8/8] ARM: ux500: move cpuidle drivers to drivers/cpuidle/
+Date: Wed, 26 Jun 2013 23:28:27 +0200
+Message-ID: <201306262328.28009.arnd@arndb.de>
+References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com> <1372241747-21083-9-git-send-email-b.zolnierkie@samsung.com> <CACRpkda4NqFaniYP=bXZar+_0nM0c4b7OuKy4D_vYdfSORGQTg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:52452 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753147Ab3FZVZQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 26 Jun 2013 17:25:16 -0400
-In-Reply-To: <B8EFE96D1287C24090BAD9D858E15E61731812@sisaex02sj>
+Received: from moutng.kundenserver.de ([212.227.17.9]:61607 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585Ab3FZV2t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 17:28:49 -0400
+In-Reply-To: <CACRpkda4NqFaniYP=bXZar+_0nM0c4b7OuKy4D_vYdfSORGQTg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rickard ANDERSSON <rickard.andersson@stericsson.com>, Olof Johansson <olof@lixom.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, "Nori, Sekhar" <nsekhar@ti.com>, ext Kevin Hilman <khilman@deeprootsystems.com>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, ext Tony Lindgren <tony@atomide.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Srinidhi KASAGAR <srinidhi.kasagar@stericsson.com>, Daniel Lezcano <daniel.lezcano@linaro.o>
 
-On Wednesday, June 26, 2013 09:12:51 PM Shuah Khan wrote:
-> On 06/25/2013 05:01 PM, Rafael J. Wysocki wrote:
-> > On Monday, June 24, 2013 05:25:18 PM Shuah Khan wrote:
-> >> pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
-> >> Reason for this is that the RTC is the only reliably available piece of
-> >> hardware during resume operations where a value can be set that will
-> >> survive a reboot.
-> >>
-> >> Consequence is that after a resume (even if it is successful) your system
-> >> clock will have a value corresponding to the magic number instead of the
-> >> correct date/time! It is therefore advisable to use a program like ntp-date
-> >> or rdate to reset the correct date/time from an external time source when
-> >> using this trace option.
-> >>
-> >> There is no run-time message to warn users of the consequences of enabling
-> >> pm_trace. Adding a warning message to pm_trace_store() will serve as a
-> >> reminder to users to set the system date and time after resume.
-> >>
-> >> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> >> ---
-> >>   kernel/power/main.c |    2 ++
-> >>   1 file changed, 2 insertions(+)
-> >>
-> >> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> >> index d77663b..fd744d1 100644
-> >> --- a/kernel/power/main.c
-> >> +++ b/kernel/power/main.c
-> >> @@ -528,6 +528,8 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
-> >>
-> >>   	if (sscanf(buf, "%d", &val) == 1) {
-> >>   		pm_trace_enabled = !!val;
-> >> +		pr_warn("PM: Enabling pm_trace changes system date and time after resume.\n");
-> >> +		pr_cont("PM: Remember to set correct time after resume\n");
-> >
-> > You can do it like this:
-> >
-> > +	pr_warn("PM: Enabling pm_trace changes system date and time after resume.\n"
-> > +		  "PM: Remember to set correct time after resume\n");
-> >
-> > No need to use pr_cont(). :-)
+On Wednesday 26 June 2013, Linus Walleij wrote:
+> On Wed, Jun 26, 2013 at 12:15 PM, Bartlomiej Zolnierkiewicz
+> <b.zolnierkie@samsung.com> wrote:
 > 
-> :) Yeah.
+> --- a/arch/arm/mach-ux500/cpuidle
+> -#include "db8500-regs.h"
+> -#include "id.h"
+> > +++ b/drivers/cpuidle/cpuidle-ux500.c
+> (...)
+> > +#include "../../arch/arm/mach-ux500/db8500-regs.h"
+> > +#include "../../arch/arm/mach-ux500/id.h"
 > 
-> >
-> > And I'd say "during" instead of "after" in the first sentence.
-> >
-> > I'd also say something like "Correct system time has to be restored manually after resume."
-> > instead of the second one.
-> >
+> Well that was creative. NACK.
 > 
-> Will do. I think I should add a check and print this warning when 
-> pm_trace is enabled and not when it is disabled. The way this patch is 
-> done, it prints this warning for enable and disable. For both:
-> 
-> echo 1 > pm_trace and echo 0 > pm_trace.
-> 
-> Any thoughts?
+> If you want to move the driver you need to come up with
+> proper interfaces making the move clean, not just move the files
+> and make them compile somewhere else I think.
 
-Yeah, please only make it be printed when pm_trace is being enabled.
+Seconded. Moving the code into drivers/cpuidle/ doesn't actually
+turn it into a proper driver. If we cannot find a way to make these
+look like drivers, we shouldn't move them.
 
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+	Arnd
