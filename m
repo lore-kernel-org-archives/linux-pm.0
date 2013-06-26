@@ -1,43 +1,49 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-Date: Wed, 26 Jun 2013 10:29:48 -0700
-Message-ID: <20130626172948.GD4405@mtj.dyndns.org>
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
- <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com>
- <20130625220026.GG3828@linux.vnet.ibm.com>
- <51CAF624.6060004@linux.vnet.ibm.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
- <20130626143424.GN3828@linux.vnet.ibm.com>
- <1372258271.18733.256.camel@gandalf.local.home>
- <20130626152148.GA4405@mtj.dyndns.org>
- <1372260823.18733.263.camel@gandalf.local.home>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: od_set_powersave_bias: NULL pointer dereference
+Date: Wed, 26 Jun 2013 12:57:22 -0500
+Message-ID: <20130626175722.GA20226@jshin-Toonie>
+References: <51C87ADC.4070409@canonical.com>
+ <CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
+ <20130625161935.GA10208@jshin-Toonie>
+ <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
+ <20130626142852.GA2326@jshin-Toonie>
+ <CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arch-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1372260823.18733.263.camel@gandalf.local.home>
-Sender: linux-arch-owner@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: paulmck@linux.vnet.ibm.com, David Laight <David.Laight@ACULAB.COM>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-
-On Wed, Jun 26, 2013 at 11:33:43AM -0400, Steven Rostedt wrote:
-> I thought the whole deal with this patchset was to remove stop_machine
-> from CPU hotplug. Why halt all CPUs just to remove one? stomp_machine()
-> is extremely intrusive for the entire system, where as one CPU making
-> sure all CPUs schedule isn't very intrusive at all.
+On Wed, Jun 26, 2013 at 08:02:29PM +0530, Viresh Kumar wrote:
+> On 26 June 2013 19:58, Jacob Shin <jacob.shin@amd.com> wrote:
+> > On Wed, Jun 26, 2013 at 12:18:27PM +0530, Viresh Kumar wrote:
 > 
-> I didn't think the idea of this patch set was to make CPU hotplug
-> faster, just less intrusive to the system.
+> >> I am not sure if this is enough. What if we had ondemand as the
+> >> governor initially, then we changed it to something else. Now also
+> >> cur_policy contains a address and isn't zero.
 
-Yeap, removal of stop_machine is a great improvement in itself.  ISTR
-mentions of hot-unplug latency but I could be mistaken.  Srivatsa, can
-you please chime in on that?
+I just tested this case with this patch applied, and did not have any
+problems.
 
-Thanks.
+> >>
+> >> >                 cpumask_or(&done, &done, policy->cpus);
+> >> > +
+> >> > +               if (policy->governor != &cpufreq_gov_ondemand)
+> >> > +                       continue;
+> >
+> > This should catch that case no ?
+> 
+> Policy might be freed and reallocated by then. And so doing
+> policy->governor is dangerous.
 
--- 
-tejun
+Are you worried that after we have passed the above if check, and
+before we access ->tuner governor change might occur?
+
+Is there something synonymous to get/put_online_cpus() for cpufreq to
+prevent governor change while we update ->tuner values?
+
+Otherwise, should just spinlock?
