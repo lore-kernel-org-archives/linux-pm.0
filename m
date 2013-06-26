@@ -1,48 +1,40 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-Date: Wed, 26 Jun 2013 23:48:38 +0530
-Message-ID: <51CB307E.9050508@linux.vnet.ibm.com>
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com> <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com> <20130625220026.GG3828@linux.vnet.ibm.com> <51CAF624.6060004@linux.vnet.ibm.com> <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 7/8] ARM: tegra: move cpuidle drivers to drivers/cpuidle/
+Date: Wed, 26 Jun 2013 12:24:09 -0600
+Message-ID: <51CB31C9.7050505@wwwdotorg.org>
+References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com> <1372241747-21083-8-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
-Sender: linux-arch-owner@vger.kernel.org
-To: David Laight <David.Laight@aculab.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:34659 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751383Ab3FZSYN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 14:24:13 -0400
+In-Reply-To: <1372241747-21083-8-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, nsekhar@ti.com, khilman@deeprootsystems.com, kernel@pengutronix.de, shawn.guo@linaro.org, tony@atomide.com, ben-linux@fluff.org, kgene.kim@samsung.com, horms@verge.net.au, magnus.damm@gmail.com, srinidhi.kasagar@stericsson.com, linus.walleij@linaro.org, daniel.lezcano@linaro.org, rjw@sisk.pl, kyungmin.park@samsung.com
 
-On 06/26/2013 07:59 PM, David Laight wrote:
->> Once stop_machine() is gone from the CPU offline path, we won't be able
->> to depend on disabling preemption to prevent CPUs from going offline
->> from under us.
-> 
-> Could you use an rcu-like sequence so that disabling pre-emption
-> would be enough?
-> 
-> Something like rebuilding the cpu list, then forcing yourself
-> to run on all the cpu.
-> 
+On 06/26/2013 04:15 AM, Bartlomiej Zolnierkiewicz wrote:
+> Compile tested only.
 
-Certainly, and we had debated schemes similar to that (including
-schemes invoking synchronize_sched() itself) in earlier discussions.
-(But IIRC even those schemes required converting call-sites from
-preempt_disable() to get/put_online_cpus_atomic(), to properly
-synchronize).
+That's not a good patch description; it's more something that should be
+below the --- line.
 
-> That would be far less intrusive.
-> 
+This would be a lot easier to review if "-M" had been passed to "git
+format-patch" so that the move was actually represented as a move in the
+patch.
 
-But that would increase the latency of hotplug operations like Paul
-pointed out, and that in turn is not good for use-cases such as
-suspend/resume, where we take all non-boot CPUs offline in a loop.
-(That would mean executing the above logic num_online_cpus() times!).
+This patch would need to move at least part of
+arch/arm/mach-tegra/cpuidle.h to some common location, since core code
+that's left in arch/arm/mach-tegra ends up calling functions in the
+moved files to initialize the cpuidle driver.
 
-So we started hunting for ideas that can make the hotplug writer
-side not only less intrusive, but also remain fast. That's how
-the later designs evolved.
- 
-Regards,
-Srivatsa S. Bhat
+You should probably move arch/arm/mach-tegra/cpuidle.c too.
+
+Does it make sense to introduce a new Kconfig option into
+drivers/cpuidle/Kconfig, so that cpuidle-tegra*.c isn't compiled if
+ARCH_TEGRA is enabled, but rather if something more like CPU_IDLE_TEGRA
+is enabled?
