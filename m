@@ -1,52 +1,65 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-Date: Wed, 26 Jun 2013 23:58:48 +0530
-Message-ID: <51CB32E0.3040106@linux.vnet.ibm.com>
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com> <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com> <20130625220026.GG3828@linux.vnet.ibm.com> <51CAF624.6060004@linux.vnet.ibm.com> <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com> <20130626143424.GN3828@linux.vnet.ibm.com> <1372258271.18733.256.camel@gandalf.local.home> <20130626152148.GA4405@mtj.dyndns.org> <1372260823.18733.263.camel@gandalf.local.home> <20130626172948.GD4405@mtj.dyndns.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Wed, 26 Jun 2013 21:12:41 +0200
+Message-ID: <1475885.FjB577tJj8@vostro.rjw.lan>
+References: <51C08370.4050906@gmx.de> <1778593.ufLkNuJuaY@vostro.rjw.lan> <51CB34A2.7090404@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:35548 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882Ab3FZScL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 14:32:11 -0400
-Received: from /spool/local
-	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 26 Jun 2013 23:55:08 +0530
-In-Reply-To: <20130626172948.GD4405@mtj.dyndns.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:52334 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751633Ab3FZTDM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 15:03:12 -0400
+In-Reply-To: <51CB34A2.7090404@gmx.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sbw@mit.edu, David Laight <David.Laight@ACULAB.COM>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 06/26/2013 10:59 PM, Tejun Heo wrote:
-> Hello,
-> 
-> On Wed, Jun 26, 2013 at 11:33:43AM -0400, Steven Rostedt wrote:
->> I thought the whole deal with this patchset was to remove stop_machine
->> from CPU hotplug. Why halt all CPUs just to remove one? stomp_machine()
->> is extremely intrusive for the entire system, where as one CPU making
->> sure all CPUs schedule isn't very intrusive at all.
->>
->> I didn't think the idea of this patch set was to make CPU hotplug
->> faster, just less intrusive to the system.
-> 
-> Yeap, removal of stop_machine is a great improvement in itself.
+On Wednesday, June 26, 2013 08:36:18 PM Toralf F=C3=B6rster wrote:
+> On 06/19/2013 12:05 AM, Rafael J. Wysocki wrote:
+> > Hmm.  This looks like something unrelated to the previous reports.
+>=20
+> yes
+>=20
+> > How do you check the frequencies?
+>=20
+> much more significant is the temperature :
+>=20
+> $> cat /sys/devices/system/cpu/cpu\?/thermal_throttle/package_power_l=
+imit_count /proc/acpi/ibm/fan /sys/class/hwmon/hwmon\?/device/temp\?_in=
+put'
+>=20
+> - it is around 49=C2=B0 if just 4 BOINC childs are running at nice le=
+vel -19, but it is above 65=C2=B0C if the issue exists. And in hat case=
+ I just do run=20
+>=20
+> $> for g in performance ondemand; do for i in 0 1 2 3; do echo $g > /=
+sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor; done; done; echo=
+ 1 > /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice
+>=20
+> and the system is back to normal.
+>=20
+> > Does that happen every time?  If so, any chance to bisect driver/cp=
+ufreq
+> > changes between 3.9 and now?
+>=20
+> first bisect attempts failed. I realized that the issue only occurs i=
+f the power is plugged in. If the system is running on battery the issu=
+e doesn't occurred (I checked it more than once)
+>=20
+> > Does it work without ignore_nice?
+> Seems not to be related to that.
 
-Absolutely. To make hotplug less intrusive on the system.
+Well, I'm not aware of any recent changes in cpufreq that would make th=
+ings
+work differently depending on whether or not AC power is used.
 
->  ISTR
-> mentions of hot-unplug latency but I could be mistaken.  Srivatsa, can
-> you please chime in on that?
-> 
+Thanks,
+Rafael
 
-Yes, we were discussing hot-unplug latency for use-cases such as
-suspend/resume. We didn't want to make those operations slower in the
-process of removing stop_machine() from hotplug.
 
-Regards,
-Srivatsa S. Bhat
-
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
