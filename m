@@ -1,108 +1,61 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Wed, 26 Jun 2013 12:18:27 +0530
-Message-ID: <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
-References: <51C87ADC.4070409@canonical.com>
-	<CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
-	<20130625161935.GA10208@jshin-Toonie>
+Subject: Re: [PATCH 2/2] CPUFreq: Add new sysfs attribute freqdomain_cpus for
+ acpi-freq driver
+Date: Wed, 26 Jun 2013 12:24:37 +0530
+Message-ID: <CAKohponndCHUuZusx5VEStyQNpja9WR_Ok-H8YeAL-Cf1RLZgA@mail.gmail.com>
+References: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com>
+	<51C95282.3040305@intel.com>
+	<CAKohpokU8MEFk8RsAmdraeX-SJPTFYwjkVSFFMMSGbUNmOm=Vg@mail.gmail.com>
+	<4163057.9R6dzfOLVQ@vostro.rjw.lan>
+	<51CA54E8.6070805@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130625161935.GA10208@jshin-Toonie>
+In-Reply-To: <51CA54E8.6070805@intel.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, lenb@kernel.org, jean-philippe.halimi@exascale-computing.eu, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25 June 2013 21:49, Jacob Shin <jacob.shin@amd.com> wrote:
-> Yes, so sorry about that, it looks like I failed to test with:
+On 26 June 2013 08:11, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> On 2013=E5=B9=B406=E6=9C=8826=E6=97=A5 07:03, Rafael J. Wysocki wrote=
+:
+>> On Tuesday, June 25, 2013 09:01:03 PM Viresh Kumar wrote:
+>>> On 25 June 2013 13:49, Lan Tianyu <tianyu.lan@intel.com> wrote:
+>>>> Ok. From my opinion, the new attribute is an ABI and it's better t=
+o add
+>>>> descriptor under Document directory. The user can be easy to find =
+how to
+>>>> use it.
+>>>
+>>> Hmm.. So maybe acpi-cpufreq file would be a good starting point. Th=
+en
+>>> it can have more details about the driver in future.
+>>>
+>>>> Please see the commit which add the code. Maybe, we should overwri=
+te
+>>>> shared_cpu_map by sibling_cpus for this case?
+>>>
+>>> Not sure if changing shared_cpu_map has any other implications or n=
+ot.
+>>
+>> Well, I wouldn't change it, then.
 
-No problem, it happens :)
+Please add a blank line before and after your reply. It makes it more
+readable.
 
-> CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-> CONFIG_X86_AMD_FREQ_SENSITIVITY=m
->
-> The following patch fixes this, Tim, could you please test ? :
->
-> ---8<---
->
-> From 3c727b1f775448599e67c5fb2121d79448e80c90 Mon Sep 17 00:00:00 2001
-> From: Jacob Shin <jacob.shin@amd.com>
-> Date: Tue, 25 Jun 2013 10:40:54 -0500
-> Subject: [PATCH 1/1] cpufreq: fix NULL pointer deference at
->  od_set_powersave_bias()
->
-> When initializing the default powersave_bias value, we need to first
-> make sure that this policy is running the ondemand governor.
->
-> Reported-by: Tim Gardner <tim.gardner@canonical.com>
-> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-> ---
->  drivers/cpufreq/cpufreq_ondemand.c |   17 +++++++++++++----
->  1 file changed, 13 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 4b9bb5d..93eb5cb 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -47,6 +47,8 @@ static struct od_ops od_ops;
->  static struct cpufreq_governor cpufreq_gov_ondemand;
->  #endif
->
-> +static unsigned int default_powersave_bias;
-> +
->  static void ondemand_powersave_bias_init_cpu(int cpu)
->  {
->         struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-> @@ -543,7 +545,7 @@ static int od_init(struct dbs_data *dbs_data)
->
->         tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
->         tuners->ignore_nice = 0;
-> -       tuners->powersave_bias = 0;
-> +       tuners->powersave_bias = default_powersave_bias;
->         tuners->io_is_busy = should_io_be_busy();
->
->         dbs_data->tuners = tuners;
-> @@ -585,6 +587,7 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
->         unsigned int cpu;
->         cpumask_t done;
->
-> +       default_powersave_bias = powersave_bias;
+> Ok. How about add new field "cpufreqdomain_cpus" in the  struct
+> acpi_cpufreq_data and expose its value for new attribute. For normal
+> case, copy the shared_cpu_map to it for normal case. For AMD case, co=
+py
+> sibling_cpus to it.
 
-Why are the above three changes required? And in case they are, then
-they must have been commited separately.
+This should work I guess.
 
->         cpumask_clear(&done);
->
->         get_online_cpus();
-> @@ -593,11 +596,17 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
->                         continue;
->
->                 policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.cur_policy;
-> -               dbs_data = policy->governor_data;
-> -               od_tuners = dbs_data->tuners;
-> -               od_tuners->powersave_bias = powersave_bias;
-> +               if (!policy)
-> +                       continue;
+>    Another choice, just keeping what my patch has done. Wait for the =
+new
+> request since current patch can satisfy reporter and it's not clear
+> whether the patch is enough for AMD platform.(At last from my view).
 
-I am not sure if this is enough. What if we had ondemand as the
-governor initially, then we changed it to something else. Now also
-cur_policy contains a address and isn't zero.
-
->                 cpumask_or(&done, &done, policy->cpus);
-> +
-> +               if (policy->governor != &cpufreq_gov_ondemand)
-> +                       continue;
-> +
-> +               dbs_data = policy->governor_data;
-> +               od_tuners = dbs_data->tuners;
-> +               od_tuners->powersave_bias = default_powersave_bias;
->         }
->         put_online_cpus();
->  }
-> --
-> 1.7.9.5
->
->
+NAK. We must keep it as it was before my patch.
