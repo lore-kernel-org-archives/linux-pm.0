@@ -1,127 +1,41 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Wed, 26 Jun 2013 09:28:52 -0500
-Message-ID: <20130626142852.GA2326@jshin-Toonie>
-References: <51C87ADC.4070409@canonical.com>
- <CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
- <20130625161935.GA10208@jshin-Toonie>
- <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+Subject: RE: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent CPU offline
+Date: Wed, 26 Jun 2013 15:29:40 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com>
+References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com> <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com> <20130625220026.GG3828@linux.vnet.ibm.com> <51CAF624.6060004@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:57959 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751359Ab3FZO26 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 10:28:58 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
+Received: from mx0.aculab.com ([213.249.233.131]:43557 "HELO mx0.aculab.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751633Ab3FZOal convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 10:30:41 -0400
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 07668-03 for <linux-pm@vger.kernel.org>;
+ Wed, 26 Jun 2013 15:30:37 +0100 (BST)
+Content-class: urn:content-classes:message
+In-Reply-To: <51CAF624.6060004@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com
+Cc: peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 
-On Wed, Jun 26, 2013 at 12:18:27PM +0530, Viresh Kumar wrote:
-> On 25 June 2013 21:49, Jacob Shin <jacob.shin@amd.com> wrote:
-> > Yes, so sorry about that, it looks like I failed to test with:
-> 
-> No problem, it happens :)
-> 
-> > CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-> > CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-> > CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-> > CONFIG_X86_AMD_FREQ_SENSITIVITY=m
-> >
-> > The following patch fixes this, Tim, could you please test ? :
-> >
-> > ---8<---
-> >
-> > From 3c727b1f775448599e67c5fb2121d79448e80c90 Mon Sep 17 00:00:00 2001
-> > From: Jacob Shin <jacob.shin@amd.com>
-> > Date: Tue, 25 Jun 2013 10:40:54 -0500
-> > Subject: [PATCH 1/1] cpufreq: fix NULL pointer deference at
-> >  od_set_powersave_bias()
-> >
-> > When initializing the default powersave_bias value, we need to first
-> > make sure that this policy is running the ondemand governor.
-> >
-> > Reported-by: Tim Gardner <tim.gardner@canonical.com>
-> > Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-> > ---
-> >  drivers/cpufreq/cpufreq_ondemand.c |   17 +++++++++++++----
-> >  1 file changed, 13 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> > index 4b9bb5d..93eb5cb 100644
-> > --- a/drivers/cpufreq/cpufreq_ondemand.c
-> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> > @@ -47,6 +47,8 @@ static struct od_ops od_ops;
-> >  static struct cpufreq_governor cpufreq_gov_ondemand;
-> >  #endif
-> >
-> > +static unsigned int default_powersave_bias;
-> > +
-> >  static void ondemand_powersave_bias_init_cpu(int cpu)
-> >  {
-> >         struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-> > @@ -543,7 +545,7 @@ static int od_init(struct dbs_data *dbs_data)
-> >
-> >         tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
-> >         tuners->ignore_nice = 0;
-> > -       tuners->powersave_bias = 0;
-> > +       tuners->powersave_bias = default_powersave_bias;
-> >         tuners->io_is_busy = should_io_be_busy();
-> >
-> >         dbs_data->tuners = tuners;
-> > @@ -585,6 +587,7 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
-> >         unsigned int cpu;
-> >         cpumask_t done;
-> >
-> > +       default_powersave_bias = powersave_bias;
-> 
-> Why are the above three changes required? And in case they are, then
-> they must have been commited separately.
-> 
-> >         cpumask_clear(&done);
-> >
-> >         get_online_cpus();
-> > @@ -593,11 +596,17 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
-> >                         continue;
-> >
-> >                 policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.cur_policy;
-> > -               dbs_data = policy->governor_data;
-> > -               od_tuners = dbs_data->tuners;
-> > -               od_tuners->powersave_bias = powersave_bias;
-> > +               if (!policy)
-> > +                       continue;
-> 
-> I am not sure if this is enough. What if we had ondemand as the
-> governor initially, then we changed it to something else. Now also
-> cur_policy contains a address and isn't zero.
+> Once stop_machine() is gone from the CPU offline path, we won't be able
+> to depend on disabling preemption to prevent CPUs from going offline
+> from under us.
 
-Right, so we check below ..
+Could you use an rcu-like sequence so that disabling pre-emption
+would be enough?
 
-> 
-> >                 cpumask_or(&done, &done, policy->cpus);
-> > +
-> > +               if (policy->governor != &cpufreq_gov_ondemand)
-> > +                       continue;
+Something like rebuilding the cpu list, then forcing yourself
+to run on all the cpu.
 
-This should catch that case no ?
+That would be far less intrusive.
 
-> > +
-> > +               dbs_data = policy->governor_data;
-> > +               od_tuners = dbs_data->tuners;
-> > +               od_tuners->powersave_bias = default_powersave_bias;
-> >         }
-> >         put_online_cpus();
-> >  }
-> > --
-> > 1.7.9.5
-> >
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+	David
+
+
 
