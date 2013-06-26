@@ -1,333 +1,154 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 8/8] ARM: ux500: move cpuidle drivers to drivers/cpuidle/
-Date: Wed, 26 Jun 2013 12:15:47 +0200
-Message-ID: <1372241747-21083-9-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 6/8] ARM: shmobile: move cpuidle driver to drivers/cpuidle/
+Date: Wed, 26 Jun 2013 12:15:45 +0200
+Message-ID: <1372241747-21083-7-git-send-email-b.zolnierkie@samsung.com>
 References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:26806 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285Ab3FZKRL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 06:17:11 -0400
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout1.samsung.com
+Received: from mailout4.samsung.com ([203.254.224.34]:15485 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893Ab3FZKQ4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 06:16:56 -0400
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout4.samsung.com
  (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MOZ001GYWKMRPX0@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 26 Jun 2013 19:17:10 +0900 (KST)
+ 17 2011)) with ESMTP id <0MOZ00KSZWK7BDW0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 26 Jun 2013 19:16:55 +0900 (KST)
 In-reply-to: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: linux-pm@vger.kernel.org, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, nsekhar@ti.com, khilman@deeprootsystems.com, kernel@pengutronix.de, shawn.guo@linaro.org, tony@atomide.com, ben-linux@fluff.org, kgene.kim@samsung.com, horms@verge.net.au, magnus.damm@gmail.com, swarren@wwwdotorg.org, srinidhi.kasagar@stericsson.com, linus.walleij@linaro.org, daniel.lezcano@linaro.org, rjw@sisk.pl, kyungmin.park@samsung.com, b.zolnierkie@samsung.com
 
+While at it:
+- replace <asm/io.h> by <linux/io.h> one
+
 Compile tested only.
 
-Cc: Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Simon Horman <horms@verge.net.au>
+Cc: Magnus Damm <magnus.damm@gmail.com>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/arm/mach-ux500/Makefile    |   1 -
- arch/arm/mach-ux500/cpuidle.c   | 128 ----------------------------------------
- drivers/cpuidle/Makefile        |   3 +
- drivers/cpuidle/cpuidle-ux500.c | 128 ++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 131 insertions(+), 129 deletions(-)
- delete mode 100644 arch/arm/mach-ux500/cpuidle.c
- create mode 100644 drivers/cpuidle/cpuidle-ux500.c
+ arch/arm/mach-shmobile/Makefile    |  1 -
+ arch/arm/mach-shmobile/cpuidle.c   | 37 -------------------------------------
+ drivers/cpuidle/Makefile           |  3 +++
+ drivers/cpuidle/cpuidle-shmobile.c | 37 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 40 insertions(+), 38 deletions(-)
+ delete mode 100644 arch/arm/mach-shmobile/cpuidle.c
+ create mode 100644 drivers/cpuidle/cpuidle-shmobile.c
 
-diff --git a/arch/arm/mach-ux500/Makefile b/arch/arm/mach-ux500/Makefile
-index bf9b6be..fe1f3e2 100644
---- a/arch/arm/mach-ux500/Makefile
-+++ b/arch/arm/mach-ux500/Makefile
-@@ -4,7 +4,6 @@
+diff --git a/arch/arm/mach-shmobile/Makefile b/arch/arm/mach-shmobile/Makefile
+index 6165a51..cc84ef2 100644
+--- a/arch/arm/mach-shmobile/Makefile
++++ b/arch/arm/mach-shmobile/Makefile
+@@ -27,7 +27,6 @@ obj-$(CONFIG_ARCH_R8A7740)	+= entry-intc.o
  
- obj-y				:= cpu.o devices.o devices-common.o \
- 				   id.o usb.o timer.o pm.o
--obj-$(CONFIG_CPU_IDLE)          += cpuidle.o
- obj-$(CONFIG_CACHE_L2X0)	+= cache-l2x0.o
- obj-$(CONFIG_UX500_SOC_DB8500)	+= cpu-db8500.o devices-db8500.o
- obj-$(CONFIG_MACH_MOP500)	+= board-mop500.o board-mop500-sdi.o \
-diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
+ # PM objects
+ obj-$(CONFIG_SUSPEND)		+= suspend.o
+-obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
+ obj-$(CONFIG_ARCH_SHMOBILE)	+= pm-rmobile.o
+ obj-$(CONFIG_ARCH_SH7372)	+= pm-sh7372.o sleep-sh7372.o
+ obj-$(CONFIG_ARCH_R8A7740)	+= pm-r8a7740.o
+diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
 deleted file mode 100644
-index a45dd09..0000000
---- a/arch/arm/mach-ux500/cpuidle.c
+index 0afeb5c..0000000
+--- a/arch/arm/mach-shmobile/cpuidle.c
 +++ /dev/null
-@@ -1,128 +0,0 @@
+@@ -1,37 +0,0 @@
 -/*
-- * Copyright (c) 2012 Linaro : Daniel Lezcano <daniel.lezcano@linaro.org> (IBM)
+- * CPUIdle support code for SH-Mobile ARM
 - *
-- * Based on the work of Rickard Andersson <rickard.andersson@stericsson.com>
-- * and Jonas Aaberg <jonas.aberg@stericsson.com>.
+- *  Copyright (C) 2011 Magnus Damm
 - *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License.  See the file "COPYING" in the main directory of this archive
+- * for more details.
 - */
 -
--#include <linux/module.h>
+-#include <linux/pm.h>
 -#include <linux/cpuidle.h>
--#include <linux/spinlock.h>
--#include <linux/atomic.h>
--#include <linux/smp.h>
--#include <linux/mfd/dbx500-prcmu.h>
--#include <linux/platform_data/arm-ux500-pm.h>
--
+-#include <linux/suspend.h>
+-#include <linux/module.h>
+-#include <linux/err.h>
 -#include <asm/cpuidle.h>
--#include <asm/proc-fns.h>
+-#include <asm/io.h>
 -
--#include "db8500-regs.h"
--#include "id.h"
--
--static atomic_t master = ATOMIC_INIT(0);
--static DEFINE_SPINLOCK(master_lock);
--
--static inline int ux500_enter_idle(struct cpuidle_device *dev,
--				   struct cpuidle_driver *drv, int index)
--{
--	int this_cpu = smp_processor_id();
--	bool recouple = false;
--
--	if (atomic_inc_return(&master) == num_online_cpus()) {
--
--		/* With this lock, we prevent the other cpu to exit and enter
--		 * this function again and become the master */
--		if (!spin_trylock(&master_lock))
--			goto wfi;
--
--		/* decouple the gic from the A9 cores */
--		if (prcmu_gic_decouple()) {
--			spin_unlock(&master_lock);
--			goto out;
--		}
--
--		/* If an error occur, we will have to recouple the gic
--		 * manually */
--		recouple = true;
--
--		/* At this state, as the gic is decoupled, if the other
--		 * cpu is in WFI, we have the guarantee it won't be wake
--		 * up, so we can safely go to retention */
--		if (!prcmu_is_cpu_in_wfi(this_cpu ? 0 : 1))
--			goto out;
--
--		/* The prcmu will be in charge of watching the interrupts
--		 * and wake up the cpus */
--		if (prcmu_copy_gic_settings())
--			goto out;
--
--		/* Check in the meantime an interrupt did
--		 * not occur on the gic ... */
--		if (prcmu_gic_pending_irq())
--			goto out;
--
--		/* ... and the prcmu */
--		if (prcmu_pending_irq())
--			goto out;
--
--		/* Go to the retention state, the prcmu will wait for the
--		 * cpu to go WFI and this is what happens after exiting this
--		 * 'master' critical section */
--		if (prcmu_set_power_state(PRCMU_AP_IDLE, true, true))
--			goto out;
--
--		/* When we switch to retention, the prcmu is in charge
--		 * of recoupling the gic automatically */
--		recouple = false;
--
--		spin_unlock(&master_lock);
--	}
--wfi:
--	cpu_do_idle();
--out:
--	atomic_dec(&master);
--
--	if (recouple) {
--		prcmu_gic_recouple();
--		spin_unlock(&master_lock);
--	}
--
--	return index;
--}
--
--static struct cpuidle_driver ux500_idle_driver = {
--	.name = "ux500_idle",
--	.owner = THIS_MODULE,
--	.states = {
--		ARM_CPUIDLE_WFI_STATE,
--		{
--			.enter		  = ux500_enter_idle,
--			.exit_latency	  = 70,
--			.target_residency = 260,
--			.flags		  = CPUIDLE_FLAG_TIME_VALID |
--			                    CPUIDLE_FLAG_TIMER_STOP,
--			.name		  = "ApIdle",
--			.desc		  = "ARM Retention",
--		},
--	},
--	.safe_state_index = 0,
--	.state_count = 2,
+-static struct cpuidle_driver shmobile_cpuidle_default_driver = {
+-	.name			= "shmobile_cpuidle",
+-	.owner			= THIS_MODULE,
+-	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+-	.safe_state_index	= 0, /* C1 */
+-	.state_count		= 1,
 -};
 -
--int __init ux500_idle_init(void)
+-static struct cpuidle_driver *cpuidle_drv = &shmobile_cpuidle_default_driver;
+-
+-void __init shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
 -{
--	if (!(cpu_is_u8500_family() || cpu_is_ux540_family()))
--		return -ENODEV;
--
--	/* Configure wake up reasons */
--	prcmu_enable_wakeups(PRCMU_WAKEUP(ARM) | PRCMU_WAKEUP(RTC) |
--			     PRCMU_WAKEUP(ABB));
--
--	return cpuidle_register(&ux500_idle_driver, NULL);
+-	cpuidle_drv = drv;
 -}
 -
--device_initcall(ux500_idle_init);
+-int __init shmobile_cpuidle_init(void)
+-{
+-	return cpuidle_register(cpuidle_drv, NULL);
+-}
 diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index 953771f..941ed0b 100644
+index eed221e..758d0d9 100644
 --- a/drivers/cpuidle/Makefile
 +++ b/drivers/cpuidle/Makefile
-@@ -46,4 +46,7 @@ endif
- ifeq ($(CONFIG_ARCH_TEGRA_114_SOC),y)
- 	obj-y += cpuidle-tegra114.o
+@@ -34,4 +34,7 @@ endif
+ ifeq ($(CONFIG_ARCH_S3C64XX),y)
+ 	obj-y += cpuidle-s3c64xx.o
  endif
-+ifeq ($(CONFIG_ARCH_U8500),y)
-+	obj-y += cpuidle-ux500.o
++ifeq ($(CONFIG_ARCH_SHMOBILE),y)
++	obj-y += cpuidle-shmobile.o
 +endif
  obj-$(CONFIG_CPU_IDLE_ZYNQ) += cpuidle-zynq.o
-diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuidle-ux500.c
+diff --git a/drivers/cpuidle/cpuidle-shmobile.c b/drivers/cpuidle/cpuidle-shmobile.c
 new file mode 100644
-index 0000000..078ad70
+index 0000000..5cea47e
 --- /dev/null
-+++ b/drivers/cpuidle/cpuidle-ux500.c
-@@ -0,0 +1,128 @@
++++ b/drivers/cpuidle/cpuidle-shmobile.c
+@@ -0,0 +1,37 @@
 +/*
-+ * Copyright (c) 2012 Linaro : Daniel Lezcano <daniel.lezcano@linaro.org> (IBM)
++ * CPUIdle support code for SH-Mobile ARM
 + *
-+ * Based on the work of Rickard Andersson <rickard.andersson@stericsson.com>
-+ * and Jonas Aaberg <jonas.aberg@stericsson.com>.
++ *  Copyright (C) 2011 Magnus Damm
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#include <linux/module.h>
++#include <linux/pm.h>
 +#include <linux/cpuidle.h>
-+#include <linux/spinlock.h>
-+#include <linux/atomic.h>
-+#include <linux/smp.h>
-+#include <linux/mfd/dbx500-prcmu.h>
-+#include <linux/platform_data/arm-ux500-pm.h>
-+
++#include <linux/suspend.h>
++#include <linux/module.h>
++#include <linux/err.h>
++#include <linux/io.h>
 +#include <asm/cpuidle.h>
-+#include <asm/proc-fns.h>
 +
-+#include "../../arch/arm/mach-ux500/db8500-regs.h"
-+#include "../../arch/arm/mach-ux500/id.h"
-+
-+static atomic_t master = ATOMIC_INIT(0);
-+static DEFINE_SPINLOCK(master_lock);
-+
-+static inline int ux500_enter_idle(struct cpuidle_device *dev,
-+				   struct cpuidle_driver *drv, int index)
-+{
-+	int this_cpu = smp_processor_id();
-+	bool recouple = false;
-+
-+	if (atomic_inc_return(&master) == num_online_cpus()) {
-+
-+		/* With this lock, we prevent the other cpu to exit and enter
-+		 * this function again and become the master */
-+		if (!spin_trylock(&master_lock))
-+			goto wfi;
-+
-+		/* decouple the gic from the A9 cores */
-+		if (prcmu_gic_decouple()) {
-+			spin_unlock(&master_lock);
-+			goto out;
-+		}
-+
-+		/* If an error occur, we will have to recouple the gic
-+		 * manually */
-+		recouple = true;
-+
-+		/* At this state, as the gic is decoupled, if the other
-+		 * cpu is in WFI, we have the guarantee it won't be wake
-+		 * up, so we can safely go to retention */
-+		if (!prcmu_is_cpu_in_wfi(this_cpu ? 0 : 1))
-+			goto out;
-+
-+		/* The prcmu will be in charge of watching the interrupts
-+		 * and wake up the cpus */
-+		if (prcmu_copy_gic_settings())
-+			goto out;
-+
-+		/* Check in the meantime an interrupt did
-+		 * not occur on the gic ... */
-+		if (prcmu_gic_pending_irq())
-+			goto out;
-+
-+		/* ... and the prcmu */
-+		if (prcmu_pending_irq())
-+			goto out;
-+
-+		/* Go to the retention state, the prcmu will wait for the
-+		 * cpu to go WFI and this is what happens after exiting this
-+		 * 'master' critical section */
-+		if (prcmu_set_power_state(PRCMU_AP_IDLE, true, true))
-+			goto out;
-+
-+		/* When we switch to retention, the prcmu is in charge
-+		 * of recoupling the gic automatically */
-+		recouple = false;
-+
-+		spin_unlock(&master_lock);
-+	}
-+wfi:
-+	cpu_do_idle();
-+out:
-+	atomic_dec(&master);
-+
-+	if (recouple) {
-+		prcmu_gic_recouple();
-+		spin_unlock(&master_lock);
-+	}
-+
-+	return index;
-+}
-+
-+static struct cpuidle_driver ux500_idle_driver = {
-+	.name = "ux500_idle",
-+	.owner = THIS_MODULE,
-+	.states = {
-+		ARM_CPUIDLE_WFI_STATE,
-+		{
-+			.enter		  = ux500_enter_idle,
-+			.exit_latency	  = 70,
-+			.target_residency = 260,
-+			.flags		  = CPUIDLE_FLAG_TIME_VALID |
-+			                    CPUIDLE_FLAG_TIMER_STOP,
-+			.name		  = "ApIdle",
-+			.desc		  = "ARM Retention",
-+		},
-+	},
-+	.safe_state_index = 0,
-+	.state_count = 2,
++static struct cpuidle_driver shmobile_cpuidle_default_driver = {
++	.name			= "shmobile_cpuidle",
++	.owner			= THIS_MODULE,
++	.states[0]		= ARM_CPUIDLE_WFI_STATE,
++	.safe_state_index	= 0, /* C1 */
++	.state_count		= 1,
 +};
 +
-+int __init ux500_idle_init(void)
++static struct cpuidle_driver *cpuidle_drv = &shmobile_cpuidle_default_driver;
++
++void __init shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
 +{
-+	if (!(cpu_is_u8500_family() || cpu_is_ux540_family()))
-+		return -ENODEV;
-+
-+	/* Configure wake up reasons */
-+	prcmu_enable_wakeups(PRCMU_WAKEUP(ARM) | PRCMU_WAKEUP(RTC) |
-+			     PRCMU_WAKEUP(ABB));
-+
-+	return cpuidle_register(&ux500_idle_driver, NULL);
++	cpuidle_drv = drv;
 +}
 +
-+device_initcall(ux500_idle_init);
++int __init shmobile_cpuidle_init(void)
++{
++	return cpuidle_register(cpuidle_drv, NULL);
++}
 -- 
 1.8.2.3
 
