@@ -1,72 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
-Date: Wed, 26 Jun 2013 23:57:51 +0200
-Message-ID: <2081161.dnl1xTqcUT@vostro.rjw.lan>
-References: <cover.1371630975.git.viresh.kumar@linaro.org> <2165396.dF1lQyPRVT@vostro.rjw.lan> <CAKohponyMG-uA93ZpH-KD+EOQPmk5tT_QoaQ7+NCEf48vYj5-w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponyMG-uA93ZpH-KD+EOQPmk5tT_QoaQ7+NCEf48vYj5-w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH v3] power: Add warning message about incorrect system date and time after resume when pm_trace is enabled
+Date: Wed, 26 Jun 2013 16:27:35 -0600
+Message-ID: <1372285655-2450-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta05.emeryville.ca.mail.comcast.net ([76.96.30.48]:54418 "EHLO
+	qmta05.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753234Ab3FZW1k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 18:27:40 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Monday, June 24, 2013 07:01:59 PM Viresh Kumar wrote:
-> On 24 June 2013 19:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Looks OK, but since transition_ongoing is either 0 or 1 now, as far as I can
-> > say, it would be better to make it a bool and use = true/false instead of
-> > ++/-- I suppose.
-> 
-> Another fixup:
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 6ca7eac..49d942a 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -108,7 +108,7 @@ static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
->  static struct srcu_notifier_head cpufreq_transition_notifier_list;
-> 
->  /* Tracks status of transition */
-> -static int transition_ongoing;
-> +static bool transition_ongoing;
-> 
->  static bool init_cpufreq_transition_notifier_list_called;
->  static int __init init_cpufreq_transition_notifier_list(void)
-> @@ -271,7 +271,7 @@ void __cpufreq_notify_transition(struct
-> cpufreq_policy *policy,
->                                 "In middle of another frequency transition\n"))
->                         return;
-> 
-> -               transition_ongoing++;
-> +               transition_ongoing = true;
-> 
->                 /* detect if the driver reported a value as "old frequency"
->                  * which is not equal to what the cpufreq core thinks is
-> @@ -296,7 +296,7 @@ void __cpufreq_notify_transition(struct
-> cpufreq_policy *policy,
->                                 "No frequency transition in progress\n"))
->                         return;
-> 
-> -               transition_ongoing--;
-> +               transition_ongoing = false;
-> 
->                 adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
->                 pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
+Reason for this is that the RTC is the only reliably available piece of
+hardware during resume operations where a value can be set that will
+survive a reboot.
 
-Well, now, seeing that the locking around this seems to be kind of haphazard,
-I'm wondering what prevents two different threads from doing CPUFREQ_PRECHANGE
-concurrently in such a way that thread A will check transition_ongoing
-and thread B will check transition_ongoing and then both will set it if it
-was 'false' before.  And then one of them will trigger the WARN() in
-CPUFREQ_POSTCHANGE.
+Consequence is that after a resume (even if it is successful) your system
+clock will have a value corresponding to the magic number instead of the
+correct date/time! It is therefore advisable to use a program like ntp-date
+or rdate to reset the correct date/time from an external time source when
+using this trace option.
 
-Is there any protection in place and if so then how does it work?
+There is no run-time message to warn users of the consequences of enabling
+pm_trace. Adding a warning message to pm_trace_store() will serve as a
+reminder to users to set the system date and time after resume.
 
-Rafael
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ kernel/power/main.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index d77663b..480fe06 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -528,6 +528,10 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 
+ 	if (sscanf(buf, "%d", &val) == 1) {
+ 		pm_trace_enabled = !!val;
++		if (pm_trace_enabled) {
++			pr_warn("PM: Enabling pm_trace changes system date and time during resume.\n"
++				"PM: Correct system time has to be restored manually after resume.\n");
++		}
+ 		return n;
+ 	}
+ 	return -EINVAL;
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.10.4
+
