@@ -1,36 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 3/7] cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code
- to work with common boost solution
-Date: Wed, 26 Jun 2013 16:33:30 +0530
-Message-ID: <CAKohpom2h3R4=B9e8ZvqEUmudB19-cnv3Lgp0=BkxgYdGA6CUA@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v4 1/7] cpufreq: Store cpufreq policies in a list
+Date: Wed, 26 Jun 2013 13:04:07 +0200
+Message-ID: <20130626130407.021c05cb@amdc308.digital.local>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-4-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-2-git-send-email-l.majewski@samsung.com>
+ <CAKohpomStuSGyQHnk9jNLpije=SAkb4zHg40zHDgLRCUQeZC1A@mail.gmail.com>
+ <20130626125411.5dc935bf@amdc308.digital.local>
+ <CAKohpom1yJOAVZ1XE+Q+dtrZM1N6Zqd7DjURSA_f2fhQ1OiCJA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:46988 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751566Ab3FZLDa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 07:03:30 -0400
-Received: by mail-ob0-f182.google.com with SMTP id va7so13334906obc.13
-        for <linux-pm@vger.kernel.org>; Wed, 26 Jun 2013 04:03:30 -0700 (PDT)
-In-Reply-To: <1371661969-7660-4-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <CAKohpom1yJOAVZ1XE+Q+dtrZM1N6Zqd7DjURSA_f2fhQ1OiCJA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, t.figa@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+On Wed, 26 Jun 2013 16:26:30 +0530, Viresh Kumar wrote:
+> On 26 June 2013 16:24, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> >> > ---
+> >
+> > So here <---> I will put change log for v5.
+> 
+> correct.
 
->  static unsigned int acpi_pstate_strict;
-> -static bool boost_enabled, boost_supported;
-> +static bool boost_enabled;
+OK.
 
-Instead of this variable use cpufreq_boost_enabled() directly.
+> 
+> >> >         ret = cpufreq_add_dev_interface(cpu, policy, dev);
+> >> >         if (ret)
+> >
+> > I will add list_del(&cpufreq_policy_list);
+> > here.
+> 
+> May not be sufficient. You must do it once at the end of this routine.
 
-And then this patch may change as well..
+Then I will add this code below:
 
-I couldn't find any more issues with this patch but some Intel guy must
-review it.
+err_out_kobj_put:
+	list_del(&cpufreq_policy_list);
+	[rest of error path]
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
