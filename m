@@ -1,40 +1,44 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 7/8] ARM: tegra: move cpuidle drivers to drivers/cpuidle/
-Date: Wed, 26 Jun 2013 12:24:09 -0600
-Message-ID: <51CB31C9.7050505@wwwdotorg.org>
-References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com> <1372241747-21083-8-git-send-email-b.zolnierkie@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
+Date: Wed, 26 Jun 2013 23:52:17 +0530
+Message-ID: <51CB3159.8000509@linux.vnet.ibm.com>
+References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com> <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com> <20130625220026.GG3828@linux.vnet.ibm.com> <51CAF624.6060004@linux.vnet.ibm.com> <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com> <20130626143424.GN3828@linux.vnet.ibm.com> <1372258271.18733.256.camel@gandalf.local.home> <20130626152148.GA4405@mtj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:34659 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383Ab3FZSYN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 14:24:13 -0400
-In-Reply-To: <1372241747-21083-8-git-send-email-b.zolnierkie@samsung.com>
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:41375 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588Ab3FZSZl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 14:25:41 -0400
+Received: from /spool/local
+	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 26 Jun 2013 23:50:58 +0530
+In-Reply-To: <20130626152148.GA4405@mtj.dyndns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, nsekhar@ti.com, khilman@deeprootsystems.com, kernel@pengutronix.de, shawn.guo@linaro.org, tony@atomide.com, ben-linux@fluff.org, kgene.kim@samsung.com, horms@verge.net.au, magnus.damm@gmail.com, srinidhi.kasagar@stericsson.com, linus.walleij@linaro.org, daniel.lezcano@linaro.org, rjw@sisk.pl, kyungmin.park@samsung.com
+To: Tejun Heo <tj@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com, David Laight <David.Laight@ACULAB.COM>, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 
-On 06/26/2013 04:15 AM, Bartlomiej Zolnierkiewicz wrote:
-> Compile tested only.
+On 06/26/2013 08:51 PM, Tejun Heo wrote:
+> On Wed, Jun 26, 2013 at 10:51:11AM -0400, Steven Rostedt wrote:
+>>> It would also increase the latency of CPU-hotunplug operations.
+>>
+>> Is that a big deal?
+> 
+> I thought that was the whole deal with this patchset - making cpu
+> hotunplugs lighter and faster mostly for powersaving.  That said, just
+> removing stop_machine call would be a pretty good deal and I don't
+> know how meaningful reducing CPU hotunplug latency is.  Srivatsa?
+> 
 
-That's not a good patch description; it's more something that should be
-below the --- line.
+Keeping the hotunplug latency is important for suspend/resume, where
+we take all non-boot CPUs in a loop. That's an interesting use-case
+where intrusiveness doesn't matter much, but latency does. So yes,
+making CPU hotplug faster is also one of the goals of this patchset.
 
-This would be a lot easier to review if "-M" had been passed to "git
-format-patch" so that the move was actually represented as a move in the
-patch.
+Regards,
+Srivatsa S. Bhat
 
-This patch would need to move at least part of
-arch/arm/mach-tegra/cpuidle.h to some common location, since core code
-that's left in arch/arm/mach-tegra ends up calling functions in the
-moved files to initialize the cpuidle driver.
-
-You should probably move arch/arm/mach-tegra/cpuidle.c too.
-
-Does it make sense to introduce a new Kconfig option into
-drivers/cpuidle/Kconfig, so that cpuidle-tegra*.c isn't compiled if
-ARCH_TEGRA is enabled, but rather if something more like CPU_IDLE_TEGRA
-is enabled?
