@@ -1,40 +1,82 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 8/8] ARM: ux500: move cpuidle drivers to drivers/cpuidle/
-Date: Wed, 26 Jun 2013 22:42:54 +0200
-Message-ID: <CACRpkda4NqFaniYP=bXZar+_0nM0c4b7OuKy4D_vYdfSORGQTg@mail.gmail.com>
-References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com>
-	<1372241747-21083-9-git-send-email-b.zolnierkie@samsung.com>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: Re: [PATCH v2] power: Add warning message about incorrect system date
+ and time after resume when pm_trace is enabled
+Date: Wed, 26 Jun 2013 21:12:51 +0000
+Message-ID: <B8EFE96D1287C24090BAD9D858E15E61731812@sisaex02sj>
+References: <1372116318-10824-1-git-send-email-shuah.kh@samsung.com>
+ <2689226.oQ0T3XLPmT@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f43.google.com ([209.85.219.43]:57427 "EHLO
-	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843Ab3FZUmy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 16:42:54 -0400
-Received: by mail-oa0-f43.google.com with SMTP id i7so15501301oag.16
-        for <linux-pm@vger.kernel.org>; Wed, 26 Jun 2013 13:42:54 -0700 (PDT)
-In-Reply-To: <1372241747-21083-9-git-send-email-b.zolnierkie@samsung.com>
+Received: from mailout1.w2.samsung.com ([211.189.100.11]:50693 "EHLO
+	usmailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752671Ab3FZVMx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 17:12:53 -0400
+Content-language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rickard ANDERSSON <rickard.andersson@stericsson.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, "Nori, Sekhar" <nsekhar@ti.com>, ext Kevin Hilman <khilman@deeprootsystems.com>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, ext Tony Lindgren <tony@atomide.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Srinidhi KASAGAR <srinidhi.kasagar@stericsson.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kyungmin Park <kyungmin.park@samsung.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
 
-On Wed, Jun 26, 2013 at 12:15 PM, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
+On 06/25/2013 05:01 PM, Rafael J. Wysocki wrote:
+> On Monday, June 24, 2013 05:25:18 PM Shuah Khan wrote:
+>> pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
+>> Reason for this is that the RTC is the only reliably available piece of
+>> hardware during resume operations where a value can be set that will
+>> survive a reboot.
+>>
+>> Consequence is that after a resume (even if it is successful) your system
+>> clock will have a value corresponding to the magic number instead of the
+>> correct date/time! It is therefore advisable to use a program like ntp-date
+>> or rdate to reset the correct date/time from an external time source when
+>> using this trace option.
+>>
+>> There is no run-time message to warn users of the consequences of enabling
+>> pm_trace. Adding a warning message to pm_trace_store() will serve as a
+>> reminder to users to set the system date and time after resume.
+>>
+>> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+>> ---
+>>   kernel/power/main.c |    2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/kernel/power/main.c b/kernel/power/main.c
+>> index d77663b..fd744d1 100644
+>> --- a/kernel/power/main.c
+>> +++ b/kernel/power/main.c
+>> @@ -528,6 +528,8 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
+>>
+>>   	if (sscanf(buf, "%d", &val) == 1) {
+>>   		pm_trace_enabled = !!val;
+>> +		pr_warn("PM: Enabling pm_trace changes system date and time after resume.\n");
+>> +		pr_cont("PM: Remember to set correct time after resume\n");
+>
+> You can do it like this:
+>
+> +	pr_warn("PM: Enabling pm_trace changes system date and time after resume.\n"
+> +		  "PM: Remember to set correct time after resume\n");
+>
+> No need to use pr_cont(). :-)
 
---- a/arch/arm/mach-ux500/cpuidle
--#include "db8500-regs.h"
--#include "id.h"
-> +++ b/drivers/cpuidle/cpuidle-ux500.c
-(...)
-> +#include "../../arch/arm/mach-ux500/db8500-regs.h"
-> +#include "../../arch/arm/mach-ux500/id.h"
+:) Yeah.
 
-Well that was creative. NACK.
+>
+> And I'd say "during" instead of "after" in the first sentence.
+>
+> I'd also say something like "Correct system time has to be restored manually after resume."
+> instead of the second one.
+>
 
-If you want to move the driver you need to come up with
-proper interfaces making the move clean, not just move the files
-and make them compile somewhere else I think.
+Will do. I think I should add a check and print this warning when 
+pm_trace is enabled and not when it is disabled. The way this patch is 
+done, it prints this warning for enable and disable. For both:
 
-Yours,
-Linus Walleij
+echo 1 > pm_trace and echo 0 > pm_trace.
+
+Any thoughts?
+
+-- Shuah
+
+Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
+America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
