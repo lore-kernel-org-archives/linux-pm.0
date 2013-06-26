@@ -1,156 +1,81 @@
-From: Jungseok Lee <jays.lee@samsung.com>
-Subject: RE: [PATCH V7 23/30] thermal: exynos: Add thermal configuration data
- for exynos5440 TMU sensor
-Date: Wed, 26 Jun 2013 10:24:42 +0900
-Message-ID: <007b01ce720b$ef1cc590$cd5650b0$%lee@samsung.com>
-References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
- <1372071051-3167-24-git-send-email-amit.daniel@samsung.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [PATCH 2/2] CPUFreq: Add new sysfs attribute freqdomain_cpus
+ for acpi-freq driver
+Date: Wed, 26 Jun 2013 10:17:53 +0800
+Message-ID: <51CA4F51.7090508@intel.com>
+References: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com> <CAKohpo=K8fN=AhSKRRNRq-UXNhJ3YFVe6YKG+mAbq079TD4Yyg@mail.gmail.com> <51C95282.3040305@intel.com> <1453366.xvWmsCZd02@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1372071051-3167-24-git-send-email-amit.daniel@samsung.com>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, 'Zhang Rui' <rui.zhang@intel.com>, 'Eduardo Valentin' <eduardo.valentin@ti.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, 'Kukjin Kim' <kgene.kim@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1453366.xvWmsCZd02@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: lenb@kernel.org, jean-philippe.halimi@exascale-computing.eu, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 24, 2013 7:51 PM, Amit Daniel Kachhap wrote:
->This patch adds configuration data for exynos5440 soc. Also register
->definations for the controller are added.
->
->Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
->Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->---
-> drivers/thermal/samsung/exynos_tmu.c      |    4 ++
-> drivers/thermal/samsung/exynos_tmu_data.c |   71 +++++++++++++++++++++++++++++
-> drivers/thermal/samsung/exynos_tmu_data.h |    7 +++
-> 3 files changed, 82 insertions(+), 0 deletions(-)
->
->diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->index 6bc86f6..651f460 100644
->--- a/drivers/thermal/samsung/exynos_tmu.c
->+++ b/drivers/thermal/samsung/exynos_tmu.c
->@@ -456,6 +456,10 @@ static const struct of_device_id exynos_tmu_match[] = {
-> 		.compatible = "samsung,exynos5250-tmu",
-> 		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
-> 	},
->+	{
->+		.compatible = "samsung,exynos5440-tmu",
->+		.data = (void *)EXYNOS5440_TMU_DRV_DATA,
->+	},
-> 	{},
-> };
-> MODULE_DEVICE_TABLE(of, exynos_tmu_match);
->diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
->index 2612b45..5952915 100644
->--- a/drivers/thermal/samsung/exynos_tmu_data.c
->+++ b/drivers/thermal/samsung/exynos_tmu_data.c
->@@ -175,3 +175,74 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
-> 	.tmu_count = 1,
-> };
-> #endif
->+
->+#if defined(CONFIG_SOC_EXYNOS5440)
->+static const struct exynos_tmu_registers exynos5440_tmu_registers = {
->+	.triminfo_data = EXYNOS5440_TMU_S0_7_TRIM,
->+	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
->+	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
->+	.tmu_ctrl = EXYNOS5440_TMU_S0_7_CTRL,
->+	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
->+	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
->+	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
->+	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
->+	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
->+	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
->+	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
->+	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
->+	.tmu_status = EXYNOS5440_TMU_S0_7_STATUS,
->+	.tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
->+	.threshold_th0 = EXYNOS5440_TMU_S0_7_TH0,
->+	.threshold_th1 = EXYNOS5440_TMU_S0_7_TH1,
->+	.threshold_th2 = EXYNOS5440_TMU_S0_7_TH2,
->+	.threshold_th3_l0_shift = EXYNOS5440_TMU_TH_RISE4_SHIFT,
->+	.tmu_inten = EXYNOS5440_TMU_S0_7_IRQEN,
->+	.inten_rise_mask = EXYNOS5440_TMU_RISE_INT_MASK,
->+	.inten_rise_shift = EXYNOS5440_TMU_RISE_INT_SHIFT,
->+	.inten_fall_mask = EXYNOS5440_TMU_FALL_INT_MASK,
->+	.inten_fall_shift = EXYNOS5440_TMU_FALL_INT_SHIFT,
->+	.inten_rise0_shift = EXYNOS5440_TMU_INTEN_RISE0_SHIFT,
->+	.inten_rise1_shift = EXYNOS5440_TMU_INTEN_RISE1_SHIFT,
->+	.inten_rise2_shift = EXYNOS5440_TMU_INTEN_RISE2_SHIFT,
->+	.inten_rise3_shift = EXYNOS5440_TMU_INTEN_RISE3_SHIFT,
->+	.inten_fall0_shift = EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
->+	.tmu_intstat = EXYNOS5440_TMU_S0_7_IRQ,
->+	.tmu_intclear = EXYNOS5440_TMU_S0_7_IRQ,
->+	.tmu_irqstatus = EXYNOS5440_TMU_IRQ_STATUS,
->+	.emul_con = EXYNOS5440_TMU_S0_7_DEBUG,
->+	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
->+	.tmu_pmin = EXYNOS5440_TMU_PMIN,
->+};
->+
->+#define EXYNOS5440_TMU_DATA \
->+	.trigger_levels[0] = 100, \
->+	.trigger_levels[4] = 105, \
->+	.trigger_enable[0] = 1, \
->+	.trigger_type[0] = SW_TRIP, \
->+	.trigger_type[4] = HW_TRIP, \
->+	.max_trigger_level = 5, \
->+	.gain = 5, \
->+	.reference_voltage = 16, \
->+	.noise_cancel_mode = 4, \
->+	.cal_type = TYPE_ONE_POINT_TRIMMING, \
->+	.cal_mode = 0, \
+On 2013=E5=B9=B406=E6=9C=8826=E6=97=A5 07:02, Rafael J. Wysocki wrote:
+> On Tuesday, June 25, 2013 04:19:14 PM Lan Tianyu wrote:
+>> On 2013=E5=B9=B406=E6=9C=8825=E6=97=A5 15:48, Viresh Kumar wrote:
+>>> On 25 June 2013 12:24, Lan Tianyu <tianyu.lan@intel.com> wrote:
+>>>> On 2013=E5=B9=B406=E6=9C=8825=E6=97=A5 11:56, Viresh Kumar wrote:
+>>>
+>>>>> This is generic file, don't add this information here. Add this i=
+n
+>>>>> acpi-cpufreq file.
+>>>> I don't find acpi-cpufreq.txt under
+>>>> Documentation/cpu-freq/acpi-cpufreq.txt. So I should create it?
+>>>
+>>> I meant acpi-cpufreq.c file
+>> Ok. From my opinion, the new attribute is an ABI and it's better to =
+add
+>> descriptor under Document directory. The user can be easy to find ho=
+w to
+>> use it.
+>=20
+> Yes, this should be documented under Documentation/ABI/testing/.
 
-.cal_mode = SW_MODE is a clearer expression.
+I find the following descriptor in the
+Documentation/ABI/testing/sysfs-devices-system-cpu. So I originally put
+the new attribute descriptor in the user-guide.txt. Now, creating new
+acpi-cpufreq file under Documentation/cpu-freq/ and adding the
+descriptor in the new file maybe a good choice?
 
->+	.efuse_value = 0x5b2d, \
 
-.efuse_value should be incremented by one.
+What:           /sys/devices/system/cpu/cpu#/cpufreq/*
+Date:           pre-git history
+Contact:        cpufreq@vger.kernel.org
+Description:    Discover and change clock speed of CPUs
 
-Thanks,
-Jungseok Lee
->+	.min_efuse_value = 16, \
->+	.max_efuse_value = 76, \
->+	.first_point_trim = 25, \
->+	.second_point_trim = 70, \
->+	.default_temp_offset = 25, \
->+	.type = SOC_ARCH_EXYNOS5440, \
->+	.registers = &exynos5440_tmu_registers, \
->+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
->+			TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_SHARED_MEMORY),
->+
->+struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
->+	.tmu_data = {
->+		{ EXYNOS5440_TMU_DATA } ,
->+		{ EXYNOS5440_TMU_DATA } ,
->+		{ EXYNOS5440_TMU_DATA } ,
->+	},
->+	.tmu_count = 3,
->+};
->+#endif
->diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
->index ad263e9..43ce5fb 100644
->--- a/drivers/thermal/samsung/exynos_tmu_data.h
->+++ b/drivers/thermal/samsung/exynos_tmu_data.h
->@@ -143,4 +143,11 @@ extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
-> #define EXYNOS5250_TMU_DRV_DATA (NULL)
-> #endif
->
->+#if defined(CONFIG_SOC_EXYNOS5440)
->+extern struct exynos_tmu_init_data const exynos5440_default_tmu_data;
->+#define EXYNOS5440_TMU_DRV_DATA (&exynos5440_default_tmu_data)
->+#else
->+#define EXYNOS5440_TMU_DRV_DATA (NULL)
->+#endif
->+
-> #endif /*_EXYNOS_TMU_DATA_H*/
->--
->1.7.1
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
+                Clock scaling allows you to change the clock speed of t=
+he
+                CPUs on the fly. This is a nice method to save battery
+                power, because the lower the clock speed, the less powe=
+r
+                the CPU consumes.
+
+                There are many knobs to tweak in this directory.
+
+                See files in Documentation/cpu-freq/ for more informati=
+on.
+
+                In particular, read Documentation/cpu-freq/user-guide.t=
+xt
+                to learn how to control the knobs.
+
+
+>=20
+> Thanks,
+> Rafael
+>=20
+>=20
+
+
+--=20
+Best regards
+Tianyu Lan
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
