@@ -1,71 +1,51 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v2 38/45] MIPS: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-Date: Wed, 26 Jun 2013 15:39:12 +0200
-Message-ID: <20130626133912.GA4559@linux-mips.org>
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com>
- <20130625203257.16593.15358.stgit@srivatsabhat.in.ibm.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 3/3] cpufreq:exynos:Extend Exynos cpufreq driver to
+ support boost framework
+Date: Wed, 26 Jun 2013 15:58:23 +0200
+Message-ID: <20130626155823.47eb36fb@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1370941408-29304-1-git-send-email-l.majewski@samsung.com>
+ <1370941408-29304-4-git-send-email-l.majewski@samsung.com>
+ <CAKohponJ5FyuKywCGz5j8GYomwqEJ0B-CvJybp+_eLjrsRkXDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([78.24.191.182]:53163 "EHLO
-	cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896Ab3FZNjx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 09:39:53 -0400
-Content-Disposition: inline
-In-Reply-To: <20130625203257.16593.15358.stgit@srivatsabhat.in.ibm.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:62855 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355Ab3FZN6b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 09:58:31 -0400
+In-reply-to: <CAKohponJ5FyuKywCGz5j8GYomwqEJ0B-CvJybp+_eLjrsRkXDA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com, vincent.guittot@linaro.org, laijs@cn.fujitsu.com, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, fweisbec@gmail.com, zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, David Daney <david.daney@cavium.com>, Yong Zhang <yong.zhang0@gmail.com>, Sanjay Lal <sanjayl@kymasys.com>, "Steven J. Hill" <sjhill@mips.com>, John Crispin <blogic@openwrt.org>, Florian Fainelli <florian@openwrt.org>, linux-mips@linux-mips.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-On Wed, Jun 26, 2013 at 02:02:57AM +0530, Srivatsa S. Bhat wrote:
-
-> Once stop_machine() is gone from the CPU offline path, we won't be able
-> to depend on disabling preemption to prevent CPUs from going offline
-> from under us.
+On Wed, 26 Jun 2013 16:35:32 +0530, Viresh Kumar wrote:
+> On 11 June 2013 14:33, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > The struct cpufreq_driver has been extended to embrace the
+> > information related to boost support.
+> >
+> > When "boost_mode" device tree attribute is defined for a platform,
+> > the low_level_boost pointer is filled with proper address. The
+> > .low_level_boost field filled to NULL, indicates that boost is not
+> > supported.
 > 
-> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going
-> offline, while invoking from atomic context.
+> This patch is still few generations back :)
 
-I think the same change also needs to be applied to r4k_on_each_cpu() in
-arch/mips/mm/c-r4k.c which currently looks like:
+But this is v2 version of boost patches.
 
-static inline void r4k_on_each_cpu(void (*func) (void *info), void *info)
-{
-        preempt_disable();
+Please also review:
+[PATCH v4 4/7]
+[PATCH v4 5/7]
+[PATCH v4 6/7]
+[PATCH v4 7/7] - disable boost at thermal framework
 
-#if !defined(CONFIG_MIPS_MT_SMP) && !defined(CONFIG_MIPS_MT_SMTC)
-        smp_call_function(func, info, 1);
-#endif
-        func(info);
-        preempt_enable();
-}
 
-This is a slightly specialized version of on_each_cpu() which only calls
-out to other CPUs in actual multi-core environments and also - unlike
-on_each_cpu() doesn't disable interrupts for the sake of better
-interrupt latencies.
 
-Which reminds me ...
+-- 
+Best regards,
 
-Andrew, I was wondering why did 78eef01b0fae087c5fadbd85dd4fe2918c3a015f
-[[PATCH] on_each_cpu(): disable local interrupts] disable interrupts?
-The log is:
+Lukasz Majewski
 
------ snip -----
-    When on_each_cpu() runs the callback on other CPUs, it runs with local
-    interrupts disabled.  So we should run the function with local interrupts
-    disabled on this CPU, too.
-    
-    And do the same for UP, so the callback is run in the same environment on bo
-    UP and SMP.  (strictly it should do preempt_disable() too, but I think
-    local_irq_disable is sufficiently equivalent).
-[...]
------ snip -----
-
-I'm not entirely convinced the symmetry between UP and SMP environments is
-really worth it.  Would anybody mind removing the local_irq_disable() ...
-local_irq_enable() from on_each_cpu()?
-
-  Ralf
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
