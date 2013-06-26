@@ -1,45 +1,65 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Wed, 26 Jun 2013 16:02:37 +0200
-Message-ID: <20130626160237.659f9b1d@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-3-git-send-email-l.majewski@samsung.com>
- <CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
- <20130626145412.1e9bfa63@amdc308.digital.local>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
+Date: Wed, 26 Jun 2013 19:39:40 +0530
+Message-ID: <51CAF624.6060004@linux.vnet.ibm.com>
+References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com> <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com> <20130625220026.GG3828@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:63185 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498Ab3FZOCr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 10:02:47 -0400
-In-reply-to: <20130626145412.1e9bfa63@amdc308.digital.local>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arch-owner@vger.kernel.org>
+In-Reply-To: <20130625220026.GG3828@linux.vnet.ibm.com>
+Sender: linux-arch-owner@vger.kernel.org
+To: paulmck@linux.vnet.ibm.com
+Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com, vincent.guittot@linaro.org, laijs@cn.fujitsu.com, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, fweisbec@gmail.com, zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@in.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, t.figa@samsung.com
 
-On Wed, 26 Jun 2013 14:54:12 +0200, Lukasz Majewski wrote:
-> > >
-> > > +int cpufreq_boost_trigger_state(int state);  
-> > 
-> > Why is this present here?  
+On 06/26/2013 03:30 AM, Paul E. McKenney wrote:
+> On Wed, Jun 26, 2013 at 01:57:55AM +0530, Srivatsa S. Bhat wrote:
+>> Once stop_machine() is gone from the CPU offline path, we won't be able
+>> to depend on disabling preemption to prevent CPUs from going offline
+>> from under us.
+>>
+>> In RCU code, rcu_implicit_dynticks_qs() checks if a CPU is offline,
+>> while being protected by a spinlock. Use the get/put_online_cpus_atomic()
+>> APIs to prevent CPUs from going offline, while invoking from atomic context.
 > 
-> We had agreed to talk only about cpufreq :-).
+> I am not completely sure that this is needed.  Here is a (quite possibly
+> flawed) argument for its not being needed:
 > 
-> This declaration will be removed.
+> o	rcu_gp_init() holds off CPU-hotplug operations during
+> 	grace-period initialization.  Therefore, RCU will avoid
+> 	looking for quiescent states from CPUs that were offline
+> 	(and thus in an extended quiescent state) at the beginning
+> 	of the grace period.
+> 
+> o	If force_qs_rnp() is looking for a quiescent state from
+> 	a given CPU, and if it senses that CPU as being offline,
+> 	then even without synchronization we know that the CPU
+> 	was offline some time during the current grace period.
+> 
+> 	After all, it was online at the beginning of the grace
+> 	period (otherwise, we would not be looking at it at all),
+> 	and our later sampling of its state must have therefore
+> 	happened after the start of the grace period.  Given that
+> 	the grace period has not yet ended, it also has to happened
+> 	before the end of the grace period.
+> 
+> o	Therefore, we should be able to sample the offline state
+> 	without synchronization.
+>
 
-Correction:
+Thanks a lot for explaining the synchronization design in detail, Paul!
+I agree that get/put_online_cpus_atomic() is not necessary here.
 
-This declaration is needed for allowing disabling cpufreq boost at
-thermal subsystem (please refer to [PATCH v4 7/7]).
+Regarding the debug checks under CONFIG_DEBUG_HOTPLUG_CPU, to avoid
+false-positives, I'm thinking of introducing a few _nocheck() variants,
+on a case-by-case basis, like cpu_is_offline_nocheck() (useful here in RCU)
+and for_each_online_cpu_nocheck() (useful in percpu-counter code, as
+pointed out by Tejun Heo). These fine synchronization details are kinda
+hard to encapsulate in that debug logic, so we can use the _nocheck()
+variants here to avoid getting splats when running with DEBUG_HOTPLUG_CPU
+enabled.
 
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Regards,
+Srivatsa S. Bhat
