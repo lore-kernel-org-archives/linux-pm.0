@@ -1,161 +1,194 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 0/8] ARM: move cpuidle drivers to drivers/cpuidle/
-Date: Wed, 26 Jun 2013 14:22:46 +0200
-Message-ID: <5859839.2xKkDrLODE@amdc1032>
-References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com>
- <51CAC9A9.5070906@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:55085 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843Ab3FZMWy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 08:22:54 -0400
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MP000FH62E3A941@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 26 Jun 2013 21:22:52 +0900 (KST)
-In-reply-to: <51CAC9A9.5070906@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH 2/2 V2] CPUFreq: Add new sysfs attribute freqdomain_cpus for acpi-freq driver
+Date: Wed, 26 Jun 2013 20:38:24 +0800
+Message-ID: <1372250304-20975-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, lenb@kernel.org, viresh.kumar@linaro.org, jean-philippe.halimi@exascale-computing.eu
+Cc: Lan Tianyu <tianyu.lan@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, nsekhar@ti.com, khilman@deeprootsystems.com, kernel@pengutronix.de, shawn.guo@linaro.org, tony@atomide.com, ben-linux@fluff.org, kgene.kim@samsung.com, horms@verge.net.au, magnus.damm@gmail.com, swarren@wwwdotorg.org, srinidhi.kasagar@stericsson.com, linus.walleij@linaro.org, rjw@sisk.pl, kyungmin.park@samsung.com
 
+Commit aa77a52 and fcf8058 changes the content of "related_cpus" and user
+space can't get cpus which are in the same hardware coordination cpu domain
+(These info are provided by ACPI AML method _PSD) via "related_cpus". This
+change affects some users of original "related_cpus".
 
-Hi,
+This patch is to add a new sysfs attribute "freqdomian_cpus" for acpi-cpufreq
+driver which exposes all cpus in the same domain regardless of hardware or
+software coordination to make up the info loss of previous change.
 
-On Wednesday, June 26, 2013 12:59:53 PM Daniel Lezcano wrote:
-> On 06/26/2013 12:15 PM, Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > This patchset moves ARM cpuidle drivers to drivers/cpuidle/ to make
-> > code match new driver placement rules (per commit a8e39c3 "cpuidle: add
-> > maintainer entry").
-> 
-> I second this initiative but as stated in a previous email, a bit of
-> code cleanup, consolidation and encapsulation should be done before.
-> 
-> Again, from my POV, it is worth to do that but we have to split the pm
-> code from the driver.
+Reference:https://bugzilla.kernel.org/show_bug.cgi?id=58761
+Reported-by: Jean-Philippe Halimi <jean-philippe.halimi@exascale-computing.eu>
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+Change since v1:
+     Create new file acpi-cpufreq.txt under Documentation/cpu-freq and
+move new attribute descriptor to it.
+     Add new field freqdomain_cpus in struct acpi_cpufreq_data and record
+cpu domain info in it. For AMD case, use sibling cpus info to overwrite
+cpu domain info from ACPI.        
 
-OK, I'll look into separating the pm code from the drivers.  However it
-seems that patch #2 (for davinci) can be applied as it is.
+ Documentation/cpu-freq/acpi-cpufreq.txt |    7 +++++++
+ drivers/cpufreq/acpi-cpufreq.c          |   23 ++++++++++++++++++++++-
+ drivers/cpufreq/cpufreq.c               |    7 ++++---
+ include/linux/cpufreq.h                 |    3 +++
+ 4 files changed, 36 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/cpu-freq/acpi-cpufreq.txt
 
-> Please review some patches I sent recently to split this code and
-> comment them. Otherwise, we will collide on this work.
-> 
-> All the patches sent [1] was to unify the code to make the drivers as
-> unified as possible to converge to the same code pattern and to
-> facilitate the factoring out.
-
-I've looked at the patches ([1] and at91 ones) and they look fine to me.
-
-I don't think that there is currently a risk of colliding on this work
-(except at91 case) as your patches (except at91 ones) are already merged
-in upstream or linux-next branch of linux-pm tree (which is included in
-linux-next tree which I based my patches on). I'm subscribed to linux-pm
-mailing list now but please cc: me on your future ARM cpuidle changes
-(thanks!).
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> Thanks
->   -- Daniel
-> 
-> [1]
-> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/log/?h=linux-next&qt=author&q=daniel.lezcano%40linaro.org
-> 
-> > [ Please note that movement of Samsung EXYNOS cpuidle driver is handled
-> >   in separate patchset since it needs some other changes applied first. ]
-> > 
-> > Patches are based on linux-next (next-20130624) and are compile tested
-> > only.  If agreed they all should probably go together through one tree
-> > (linux-pm or arm-soc) since they all modify drivers/cpuidle/Makefile.
-> > 
-> > PS It seems that majority of cpuidle drivers is not used by default
-> > (CONFIG_CPU_IDLE is not turned on in corresponding defconfigs). The only
-> > exceptions are shmobile (kota2_defconfig) and tegra (tegra_defconfig).
-> > This is probably also something that needs updating.
-> > 
-> > Best regards,
-> > --
-> > Bartlomiej Zolnierkiewicz
-> > Samsung R&D Institute Poland
-> > Samsung Electronics
-> > 
-> > 
-> > Bartlomiej Zolnierkiewicz (8):
-> >   ARM: at91: move cpuidle driver to drivers/cpuidle/
-> >   ARM: davinci: move cpuidle driver to drivers/cpuidle/
-> >   ARM: imx: move cpuidle drivers to drivers/cpuidle/
-> >   ARM: OMAP: move cpuidle drivers to drivers/cpuidle/
-> >   ARM: S3C64XX: move cpuidle driver to drivers/cpuidle/
-> >   ARM: shmobile: move cpuidle driver to drivers/cpuidle/
-> >   ARM: tegra: move cpuidle drivers to drivers/cpuidle/
-> >   ARM: ux500: move cpuidle drivers to drivers/cpuidle/
-> > 
-> >  arch/arm/mach-at91/Makefile            |   1 -
-> >  arch/arm/mach-at91/cpuidle.c           |  68 -------
-> >  arch/arm/mach-davinci/Makefile         |   1 -
-> >  arch/arm/mach-davinci/cpuidle.c        | 105 ----------
-> >  arch/arm/mach-imx/Makefile             |   5 -
-> >  arch/arm/mach-imx/cpuidle-imx5.c       |  37 ----
-> >  arch/arm/mach-imx/cpuidle-imx6q.c      |  75 -------
-> >  arch/arm/mach-omap2/Makefile           |   5 -
-> >  arch/arm/mach-omap2/cpuidle34xx.c      | 344 ---------------------------------
-> >  arch/arm/mach-omap2/cpuidle44xx.c      | 217 ---------------------
-> >  arch/arm/mach-s3c64xx/Makefile         |   1 -
-> >  arch/arm/mach-s3c64xx/cpuidle.c        |  63 ------
-> >  arch/arm/mach-shmobile/Makefile        |   1 -
-> >  arch/arm/mach-shmobile/cpuidle.c       |  37 ----
-> >  arch/arm/mach-tegra/Makefile           |   9 -
-> >  arch/arm/mach-tegra/cpuidle-tegra114.c |  35 ----
-> >  arch/arm/mach-tegra/cpuidle-tegra20.c  | 217 ---------------------
-> >  arch/arm/mach-tegra/cpuidle-tegra30.c  | 149 --------------
-> >  arch/arm/mach-ux500/Makefile           |   1 -
-> >  arch/arm/mach-ux500/cpuidle.c          | 128 ------------
-> >  drivers/cpuidle/Makefile               |  42 ++++
-> >  drivers/cpuidle/cpuidle-at91.c         |  68 +++++++
-> >  drivers/cpuidle/cpuidle-davinci.c      | 104 ++++++++++
-> >  drivers/cpuidle/cpuidle-imx5.c         |  37 ++++
-> >  drivers/cpuidle/cpuidle-imx6q.c        |  74 +++++++
-> >  drivers/cpuidle/cpuidle-omap34xx.c     | 342 ++++++++++++++++++++++++++++++++
-> >  drivers/cpuidle/cpuidle-omap44xx.c     | 216 +++++++++++++++++++++
-> >  drivers/cpuidle/cpuidle-s3c64xx.c      |  62 ++++++
-> >  drivers/cpuidle/cpuidle-shmobile.c     |  37 ++++
-> >  drivers/cpuidle/cpuidle-tegra114.c     |  35 ++++
-> >  drivers/cpuidle/cpuidle-tegra20.c      | 217 +++++++++++++++++++++
-> >  drivers/cpuidle/cpuidle-tegra30.c      | 149 ++++++++++++++
-> >  drivers/cpuidle/cpuidle-ux500.c        | 128 ++++++++++++
-> >  33 files changed, 1511 insertions(+), 1499 deletions(-)
-> >  delete mode 100644 arch/arm/mach-at91/cpuidle.c
-> >  delete mode 100644 arch/arm/mach-davinci/cpuidle.c
-> >  delete mode 100644 arch/arm/mach-imx/cpuidle-imx5.c
-> >  delete mode 100644 arch/arm/mach-imx/cpuidle-imx6q.c
-> >  delete mode 100644 arch/arm/mach-omap2/cpuidle34xx.c
-> >  delete mode 100644 arch/arm/mach-omap2/cpuidle44xx.c
-> >  delete mode 100644 arch/arm/mach-s3c64xx/cpuidle.c
-> >  delete mode 100644 arch/arm/mach-shmobile/cpuidle.c
-> >  delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra114.c
-> >  delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra20.c
-> >  delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra30.c
-> >  delete mode 100644 arch/arm/mach-ux500/cpuidle.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-at91.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-davinci.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-imx5.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-imx6q.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-omap34xx.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-omap44xx.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-s3c64xx.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-shmobile.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-tegra114.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-tegra20.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-tegra30.c
-> >  create mode 100644 drivers/cpuidle/cpuidle-ux500.c
+diff --git a/Documentation/cpu-freq/acpi-cpufreq.txt b/Documentation/cpu-freq/acpi-cpufreq.txt
+new file mode 100644
+index 0000000..9c59d09
+--- /dev/null
++++ b/Documentation/cpu-freq/acpi-cpufreq.txt
+@@ -0,0 +1,7 @@
++Sysfs interface
++---------------------------
++(Interface locates in the directory /sys/devices/system/cpu/cpuN/cpufreq)
++
++freqdomain_cpus :               List of Online + Offline CPUs in same CPU dependency
++                                domain.
++
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index f4fef0a..3926402 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -70,6 +70,7 @@ struct acpi_cpufreq_data {
+ 	struct cpufreq_frequency_table *freq_table;
+ 	unsigned int resume;
+ 	unsigned int cpu_feature;
++	cpumask_var_t freqdomain_cpus;
+ };
+ 
+ static DEFINE_PER_CPU(struct acpi_cpufreq_data *, acfreq_data);
+@@ -176,6 +177,15 @@ static struct global_attr global_boost = __ATTR(boost, 0644,
+ 						show_global_boost,
+ 						store_global_boost);
+ 
++static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
++{
++	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
++
++	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
++}
++
++cpufreq_freq_attr_ro(freqdomain_cpus);
++
+ #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+ static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
+ 			 size_t count)
+@@ -704,6 +714,11 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	if (!data)
+ 		return -ENOMEM;
+ 
++	if (!zalloc_cpumask_var(&data->freqdomain_cpus, GFP_KERNEL)) {
++		result = -ENOMEM;
++		goto err_free;
++	}
++
+ 	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
+ 	per_cpu(acfreq_data, cpu) = data;
+ 
+@@ -712,7 +727,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	result = acpi_processor_register_performance(data->acpi_data, cpu);
+ 	if (result)
+-		goto err_free;
++		goto err_free_mask;
+ 
+ 	perf = data->acpi_data;
+ 	policy->shared_type = perf->shared_type;
+@@ -725,6 +740,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+ 		cpumask_copy(policy->cpus, perf->shared_cpu_map);
+ 	}
++	cpumask_copy(data->freqdomain_cpus, perf->shared_cpu_map);
+ 
+ #ifdef CONFIG_SMP
+ 	dmi_check_system(sw_any_bug_dmi_table);
+@@ -736,6 +752,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	if (check_amd_hwpstate_cpu(cpu) && !acpi_pstate_strict) {
+ 		cpumask_clear(policy->cpus);
+ 		cpumask_set_cpu(cpu, policy->cpus);
++		cpumask_copy(data->freqdomain_cpus, cpu_sibling_mask(cpu));
+ 		policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
+ 		pr_info_once(PFX "overriding BIOS provided _PSD data\n");
+ 	}
+@@ -870,6 +887,8 @@ err_freqfree:
+ 	kfree(data->freq_table);
+ err_unreg:
+ 	acpi_processor_unregister_performance(perf, cpu);
++err_free_mask:
++	free_cpumask_var(data->freqdomain_cpus);
+ err_free:
+ 	kfree(data);
+ 	per_cpu(acfreq_data, cpu) = NULL;
+@@ -888,6 +907,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ 		per_cpu(acfreq_data, policy->cpu) = NULL;
+ 		acpi_processor_unregister_performance(data->acpi_data,
+ 						      policy->cpu);
++		free_cpumask_var(data->freqdomain_cpus);
+ 		kfree(data->freq_table);
+ 		kfree(data);
+ 	}
+@@ -908,6 +928,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
+ 
+ static struct freq_attr *acpi_cpufreq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
++	&freqdomain_cpus,
+ 	NULL,	/* this is a placeholder for cpb, do not remove */
+ 	NULL,
+ };
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index d976e22..adf12a9f 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -573,7 +573,7 @@ out:
+ 	return i;
+ }
+ 
+-static ssize_t show_cpus(const struct cpumask *mask, char *buf)
++ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf)
+ {
+ 	ssize_t i = 0;
+ 	unsigned int cpu;
+@@ -588,6 +588,7 @@ static ssize_t show_cpus(const struct cpumask *mask, char *buf)
+ 	i += sprintf(&buf[i], "\n");
+ 	return i;
+ }
++EXPORT_SYMBOL_GPL(cpufreq_show_cpus);
+ 
+ /**
+  * show_related_cpus - show the CPUs affected by each transition even if
+@@ -595,7 +596,7 @@ static ssize_t show_cpus(const struct cpumask *mask, char *buf)
+  */
+ static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
+ {
+-	return show_cpus(policy->related_cpus, buf);
++	return cpufreq_show_cpus(policy->related_cpus, buf);
+ }
+ 
+ /**
+@@ -603,7 +604,7 @@ static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
+  */
+ static ssize_t show_affected_cpus(struct cpufreq_policy *policy, char *buf)
+ {
+-	return show_cpus(policy->cpus, buf);
++	return cpufreq_show_cpus(policy->cpus, buf);
+ }
+ 
+ static ssize_t store_scaling_setspeed(struct cpufreq_policy *policy,
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 3c7ee2f..5fedb6c 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -438,4 +438,7 @@ void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
+ void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
+ 
+ void cpufreq_frequency_table_put_attr(unsigned int cpu);
++
++ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
++
+ #endif /* _LINUX_CPUFREQ_H */
+-- 
+1.7.10.4
 
