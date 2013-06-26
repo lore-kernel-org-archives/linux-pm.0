@@ -1,65 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
-Date: Wed, 26 Jun 2013 21:12:41 +0200
-Message-ID: <1475885.FjB577tJj8@vostro.rjw.lan>
-References: <51C08370.4050906@gmx.de> <1778593.ufLkNuJuaY@vostro.rjw.lan> <51CB34A2.7090404@gmx.de>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 8/8] ARM: ux500: move cpuidle drivers to drivers/cpuidle/
+Date: Wed, 26 Jun 2013 22:42:54 +0200
+Message-ID: <CACRpkda4NqFaniYP=bXZar+_0nM0c4b7OuKy4D_vYdfSORGQTg@mail.gmail.com>
+References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com>
+	<1372241747-21083-9-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:52334 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751633Ab3FZTDM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 15:03:12 -0400
-In-Reply-To: <51CB34A2.7090404@gmx.de>
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:57427 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843Ab3FZUmy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 16:42:54 -0400
+Received: by mail-oa0-f43.google.com with SMTP id i7so15501301oag.16
+        for <linux-pm@vger.kernel.org>; Wed, 26 Jun 2013 13:42:54 -0700 (PDT)
+In-Reply-To: <1372241747-21083-9-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rickard ANDERSSON <rickard.andersson@stericsson.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, "Nori, Sekhar" <nsekhar@ti.com>, ext Kevin Hilman <khilman@deeprootsystems.com>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, ext Tony Lindgren <tony@atomide.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Srinidhi KASAGAR <srinidhi.kasagar@stericsson.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On Wednesday, June 26, 2013 08:36:18 PM Toralf F=C3=B6rster wrote:
-> On 06/19/2013 12:05 AM, Rafael J. Wysocki wrote:
-> > Hmm.  This looks like something unrelated to the previous reports.
->=20
-> yes
->=20
-> > How do you check the frequencies?
->=20
-> much more significant is the temperature :
->=20
-> $> cat /sys/devices/system/cpu/cpu\?/thermal_throttle/package_power_l=
-imit_count /proc/acpi/ibm/fan /sys/class/hwmon/hwmon\?/device/temp\?_in=
-put'
->=20
-> - it is around 49=C2=B0 if just 4 BOINC childs are running at nice le=
-vel -19, but it is above 65=C2=B0C if the issue exists. And in hat case=
- I just do run=20
->=20
-> $> for g in performance ondemand; do for i in 0 1 2 3; do echo $g > /=
-sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor; done; done; echo=
- 1 > /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice
->=20
-> and the system is back to normal.
->=20
-> > Does that happen every time?  If so, any chance to bisect driver/cp=
-ufreq
-> > changes between 3.9 and now?
->=20
-> first bisect attempts failed. I realized that the issue only occurs i=
-f the power is plugged in. If the system is running on battery the issu=
-e doesn't occurred (I checked it more than once)
->=20
-> > Does it work without ignore_nice?
-> Seems not to be related to that.
+On Wed, Jun 26, 2013 at 12:15 PM, Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
 
-Well, I'm not aware of any recent changes in cpufreq that would make th=
-ings
-work differently depending on whether or not AC power is used.
+--- a/arch/arm/mach-ux500/cpuidle
+-#include "db8500-regs.h"
+-#include "id.h"
+> +++ b/drivers/cpuidle/cpuidle-ux500.c
+(...)
+> +#include "../../arch/arm/mach-ux500/db8500-regs.h"
+> +#include "../../arch/arm/mach-ux500/id.h"
 
-Thanks,
-Rafael
+Well that was creative. NACK.
 
+If you want to move the driver you need to come up with
+proper interfaces making the move clean, not just move the files
+and make them compile somewhere else I think.
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Yours,
+Linus Walleij
