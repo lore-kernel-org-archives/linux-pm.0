@@ -1,39 +1,35 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v4] thermal: add imx thermal driver support
-Date: Thu, 27 Jun 2013 09:15:31 +0800
-Message-ID: <20130627011529.GA3942@shlinux1.ap.freescale.net>
-References: <1372055444-5286-1-git-send-email-shawn.guo@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 3/3] cpufreq:exynos:Extend Exynos cpufreq driver to
+ support boost framework
+Date: Thu, 27 Jun 2013 09:32:56 +0530
+Message-ID: <CAKohpo=G+BJVDVs3ToajkUobQHBeY2GZ3nzyKHc3vechmLTLXQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1370941408-29304-1-git-send-email-l.majewski@samsung.com>
+	<1370941408-29304-4-git-send-email-l.majewski@samsung.com>
+	<CAKohponJ5FyuKywCGz5j8GYomwqEJ0B-CvJybp+_eLjrsRkXDA@mail.gmail.com>
+	<20130626155823.47eb36fb@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from co9ehsobe003.messaging.microsoft.com ([207.46.163.26]:52670
-	"EHLO co9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751460Ab3F0C4K (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 22:56:10 -0400
-Content-Disposition: inline
-In-Reply-To: <1372055444-5286-1-git-send-email-shawn.guo@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130626155823.47eb36fb@amdc308.digital.local>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-arm-kernel@lists.infradead.org
 
-On Mon, Jun 24, 2013 at 02:30:44PM +0800, Shawn Guo wrote:
-> This is based on the initial imx thermal work done by
-> Rob Lee <rob.lee@linaro.org> (Not sure if the email address is still
-> valid).  Since he is no longer interested in the work and I have
-> rewritten a significant amount of the code, I just took the authorship
-> over from him.
-> 
-> It adds the imx thermal support using Temperature Monitor (TEMPMON)
-> block found on some Freescale i.MX SoCs.  The driver uses syscon regmap
-> interface to access TEMPMON control registers and calibration data, and
-> supports cpufreq as the cooling device.
-> 
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+On 26 June 2013 19:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Wed, 26 Jun 2013 16:35:32 +0530, Viresh Kumar wrote:
+>> This patch is still few generations back :)
+>
+> But this is v2 version of boost patches.
 
-Rui,
+My mistake....
 
-Can this patch be applied for 3.11?
+> Please also review:
+> [PATCH v4 4/7]
+> [PATCH v4 5/7]
+> [PATCH v4 6/7]
+> [PATCH v4 7/7] - disable boost at thermal framework
 
-Shawn
-
+don't worry I will review everything. I went home after reviewing half
+of the patches.
