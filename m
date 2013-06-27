@@ -1,165 +1,33 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Thu, 27 Jun 2013 09:55:05 -0500
-Message-ID: <20130627145505.GA3076@jshin-Toonie>
-References: <51C87ADC.4070409@canonical.com>
- <CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
- <20130625161935.GA10208@jshin-Toonie>
- <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
- <20130626142852.GA2326@jshin-Toonie>
- <CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
- <20130626175722.GA20226@jshin-Toonie>
- <CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [ACPI+PM] Changes for v3.11 merge window, no more new material
+ for v3.11 (please)
+Date: Thu, 27 Jun 2013 20:36:07 +0530
+Message-ID: <CAKohpo=qWuaqgCzingUMPZAbJgHzNsMzDEVpjS1=BaYJS=UjSA@mail.gmail.com>
+References: <2857260.qHcRpz1Po6@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f52.google.com ([209.85.219.52]:50227 "EHLO
+	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893Ab3F0PGJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 11:06:09 -0400
+Received: by mail-oa0-f52.google.com with SMTP id g12so967315oah.25
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 08:06:08 -0700 (PDT)
+In-Reply-To: <2857260.qHcRpz1Po6@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Thu, Jun 27, 2013 at 12:32:36PM +0530, Viresh Kumar wrote:
-> On 26 June 2013 23:27, Jacob Shin <jacob.shin@amd.com> wrote:
-> > On Wed, Jun 26, 2013 at 08:02:29PM +0530, Viresh Kumar wrote:
-> >> On 26 June 2013 19:58, Jacob Shin <jacob.shin@amd.com> wrote:
-> >> > On Wed, Jun 26, 2013 at 12:18:27PM +0530, Viresh Kumar wrote:
-> >>
-> >> >> I am not sure if this is enough. What if we had ondemand as the
-> >> >> governor initially, then we changed it to something else. Now also
-> >> >> cur_policy contains a address and isn't zero.
-> >
-> > I just tested this case with this patch applied, and did not have any
-> > problems.
-> 
-> Try this:
-> - you need a system with multiple policy groups to test it
-> - Suppose we have two groups of CPUs: 0 and 1
-> - Set ondemand as governor for both
-> - change governor of group 1 to something else (we still have valid policy
-> struct in Ondemand)
-> - offline all CPUs from group 1. this will free struct cpufreq_policy
-> - Online these CPUs back, this will reallocate policy
-> - Now run this function, the earlier policy struct is already freed and
-> you are accessing it here.
+On 27 June 2013 17:57, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Below is a summary of my current queue for the v3.11 merge window.
+>
+> I will be very reluctant to add anything that is not a fix for a serious
+> problem to it from now on.  If you have such a fix, please let me know,
+> however.
+>
+> Other material will be queued up for 3.12, but I'd very much appreciate it
+> if people refrained from sending me stuff which is not fixes until the
+> release of 3.11-rc1.
 
-Ah, I understand now.
-
-> 
-> >> >> >                 cpumask_or(&done, &done, policy->cpus);
-> >> >> > +
-> >> >> > +               if (policy->governor != &cpufreq_gov_ondemand)
-> >> >> > +                       continue;
-> >> >
-> >> > This should catch that case no ?
-> >>
-> >> Policy might be freed and reallocated by then. And so doing
-> >> policy->governor is dangerous.
-> >
-> > Are you worried that after we have passed the above if check, and
-> > before we access ->tuner governor change might occur?
-> >
-> > Is there something synonymous to get/put_online_cpus() for cpufreq to
-> > prevent governor change while we update ->tuner values?
-> >
-> > Otherwise, should just spinlock?
-> 
-> No, i wasn't worrying about this but a sequence of events that I told to
-> you earlier.
-> 
-> Replying to your other mail:
-> > Hm . any hints on how to check for if ondemand is running on this CPU
-> > or not ? I'm not sure what the best way to handle this is ..
-> 
-> Make cur_policy zero in cpufreq_governor_dbs() for
-> CPUFREQ_GOV_STOP notification. This will make sure we use correct
-> policy pointer.
-
-Thanks for the tip :-)
-
-Here is V2:
-
----8<---
-
->From d99ee318c0f9c415a60e6b0b79605232edbb749c Mon Sep 17 00:00:00 2001
-From: Jacob Shin <jacob.shin@amd.com>
-Date: Thu, 27 Jun 2013 09:39:48 -0500
-Subject: [PATCH V2 1/1] cpufreq: fix NULL pointer deference at
- od_set_powersave_bias()
-
-When initializing the default powersave_bias value, we need to first
-make sure that this policy is running the ondemand governor.
-
-Reported-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Jacob Shin <jacob.shin@amd.com>
----
- drivers/cpufreq/cpufreq_governor.c |    1 +
- drivers/cpufreq/cpufreq_ondemand.c |   17 +++++++++++++----
- 2 files changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index dc9b72e..834ad86 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -403,6 +403,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		gov_cancel_work(dbs_data, policy);
- 
- 		mutex_lock(&dbs_data->mutex);
-+		cpu_cdbs->cur_policy = NULL;
- 		mutex_destroy(&cpu_cdbs->timer_mutex);
- 
- 		mutex_unlock(&dbs_data->mutex);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 4b9bb5d..93eb5cb 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -47,6 +47,8 @@ static struct od_ops od_ops;
- static struct cpufreq_governor cpufreq_gov_ondemand;
- #endif
- 
-+static unsigned int default_powersave_bias;
-+
- static void ondemand_powersave_bias_init_cpu(int cpu)
- {
- 	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-@@ -543,7 +545,7 @@ static int od_init(struct dbs_data *dbs_data)
- 
- 	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
- 	tuners->ignore_nice = 0;
--	tuners->powersave_bias = 0;
-+	tuners->powersave_bias = default_powersave_bias;
- 	tuners->io_is_busy = should_io_be_busy();
- 
- 	dbs_data->tuners = tuners;
-@@ -585,6 +587,7 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
- 	unsigned int cpu;
- 	cpumask_t done;
- 
-+	default_powersave_bias = powersave_bias;
- 	cpumask_clear(&done);
- 
- 	get_online_cpus();
-@@ -593,11 +596,17 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
- 			continue;
- 
- 		policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.cur_policy;
--		dbs_data = policy->governor_data;
--		od_tuners = dbs_data->tuners;
--		od_tuners->powersave_bias = powersave_bias;
-+		if (!policy)
-+			continue;
- 
- 		cpumask_or(&done, &done, policy->cpus);
-+
-+		if (policy->governor != &cpufreq_gov_ondemand)
-+			continue;
-+
-+		dbs_data = policy->governor_data;
-+		od_tuners = dbs_data->tuners;
-+		od_tuners->powersave_bias = default_powersave_bias;
- 	}
- 	put_online_cpus();
- }
--- 
-1.7.10.4
+Looks good. Thanks.
