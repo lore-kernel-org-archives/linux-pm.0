@@ -1,111 +1,39 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
-Date: Thu, 27 Jun 2013 16:42:04 +0200
-Message-ID: <20130627164204.370dc4a6@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-6-git-send-email-l.majewski@samsung.com>
- <CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
- <20130627125819.5c90da30@amdc308.digital.local>
- <CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Subject: Re: [PATCH] ARM: cpuidle: davinci: Fix target residency
+Date: Thu, 27 Jun 2013 18:47:56 +0400
+Message-ID: <51CC509C.6040804@cogentembedded.com>
+References: <1372327012-13528-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:19916 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663Ab3F0OmS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 10:42:18 -0400
-In-reply-to: <CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
+Received: from mail-la0-f53.google.com ([209.85.215.53]:51508 "EHLO
+	mail-la0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746Ab3F0Or4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 10:47:56 -0400
+Received: by mail-la0-f53.google.com with SMTP id fs12so926402lab.40
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 07:47:55 -0700 (PDT)
+In-Reply-To: <1372327012-13528-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: nsekhar@ti.com, khilman@deeprootsystems.com, rjw@sisk.pl, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Thu, 27 Jun 2013 16:46:44 +0530, Viresh Kumar wrote:
-> @Rafael: We need you to jump into this discussion now, I don't
-> have a good idea about what we should do :)
-> 
-> On 27 June 2013 16:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > Do you have any idea of how to precisely set the load threshold?
-> 
-> I thought we are talking about cpu being in idle state.
+Hello.
 
-If we _drop_ the idea with thermal subsystem to disable the boost,
-the logic as far as I've understood shall here be as follow:
+On 27-06-2013 13:56, Daniel Lezcano wrote:
 
-Only enable BOOST when one CPU load > THRESHOLD_MAX and other CPUs <
-THRESHOLD_MIN
+> The commit 19976c2a88d125aec16b9255c7197c297bbdd637 changed the target
 
-THRESHOLD_MIN & THRESHOLD_MAX are SoC specific. 
+    Please also specify the summary line of that commit in parens.
 
-In my opinion the above constrain imposes policy to the cpufreq driver.
+> residency to 100000, assuming this is a careless mistake.
 
-> 
-> > As a side note:
-> >
-> > I've thought about this patch for some time and for me it looks
-> > like we are mixing policy (number of busy CPUs) with abilities,
-> > which shall be provided by the driver (boost).
-> > Additionally, we can only roughly "estimate" [*] when boost shall
-> > run and when it shall be turned off.
-> 
-> This is another problem in the patch you sent. User would simply
-> enable or disable boost feature from userspace only once.
+> The same happened to the at91's cpuidle driver.
 
-The above statement is definitely true for Intel. There HW manage the
-frequency.
+> Fix it by putting the initial value to 10000.
 
-> 
-> Now, if you disable it at high temperatures then its responsibility
-> to enable it again. Which you are missing.
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-So thermal or "other solution" [*] shall disable boost when overheated
-and enable it back when things cool down.
+WBR, Sergei
 
-[*] @ Viresh & Rafael do you have any idea about the "other solution"
-here?
-
-
-> 
-> > I think that, we shall leave this management [*] to the thermal
-> > framework. This framework is designed exactly to protect from over
-> > heating (it uses the same freq_table for passive CPU cooling) with
-> > several trip points -> e.g. 40 deg (disable boost), 75 deg (impose
-> > max freq as 1.0 GHz to cool down, 90 deg (shutdown immediately).
-> > Please refer to PATH v4 7/7.
-> 
-> There might be platforms where overheating isn't a issue with boost,
-> if it is only enabled while only one cpu is in use.
-
-Could you elaborate more on this?
-
-I thought, that with multi core one needs to keep itself inside
-power/thermal dissipation envelope. 
-
-> 
-> > Unfortunately, since we dropped Kconfig flag for BOOST we cannot
-> > impose "select THERMAL_FRAMEWORK", when flag for BOOST is enabled at
-> > Kconfig.
-> 
-> Not a big deal, we can get that in if required.
-> 
-> > Ideally kernel shall not even build when CONFIG_CPUFREQ_BOOST
-> > Kconfig flag is set and thermal for target architecture is not
-> > correctly configured (including proper trip points).
-
-This would prevent situation when somebody made a mistake and
-had enabled boost, but for some reason had forgotten to
-configure/enable thermal subsystem.
-
-Moreover Kconfig's CONFIG_CPUFREQ_BOOST flag would indicate that user
-enabled boost for some reason and he/she (presumably) knows what is
-doing.
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
