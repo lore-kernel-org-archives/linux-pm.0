@@ -1,216 +1,263 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: [PATCH 2/2 V3] CPUFreq: Add new sysfs attribute freqdomain_cpus for acpi-freq driver
-Date: Thu, 27 Jun 2013 15:08:54 +0800
-Message-ID: <1372316934-27225-1-git-send-email-tianyu.lan@intel.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 2/2] ARM: shmobile: r8a73a4: implement CPU clock scaling
+ for CPUFreq
+Date: Thu, 27 Jun 2013 16:21:02 +0900
+Message-ID: <20130627072102.GB22054@verge.net.au>
+References: <Pine.LNX.4.64.1305221108500.12715@axis700.grange>
+ <Pine.LNX.4.64.1305221111210.12715@axis700.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:47873 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752286Ab3F0HQ5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Jun 2013 03:16:57 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:56131 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752368Ab3F0HVF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 03:21:05 -0400
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.1305221111210.12715@axis700.grange>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, lenb@kernel.org, viresh.kumar@linaro.org, jean-philippe.halimi@exascale-computing.eu
-Cc: Lan Tianyu <tianyu.lan@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 
-Commit aa77a52 and fcf8058 changes the content of "related_cpus" and user
-space can't get cpus which are in the same hardware coordination cpu domain
-(These info are provided by ACPI AML method _PSD) via "related_cpus". This
-change affects some users of original "related_cpus".
+On Wed, May 22, 2013 at 11:12:37AM +0200, Guennadi Liakhovetski wrote:
+> This patch adds support for the Z-clock on r8a73a4 SoCs, which is driving
+> the Cortex A15 core, and a "cpufreq-cpu0" platform device. Adding an
+> "operating-points" property to the CPU0 DT node and a regulator, this
+> patch allows platforms to use the generic cpufreq-cpu0 driver to use
+> SoC's DVFS capabilities.
+> 
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
 
-This patch is to add a new sysfs attribute "freqdomian_cpus" for acpi-cpufreq
-driver which exposes all cpus in the same domain regardless of hardware or
-software coordination to make up the info loss of previous change.
+I have queued this up for v3.12 in the soc branch of the renesas tree.
+I have included an Ack from Morimoto-san which he provided here:
 
-Reference:https://bugzilla.kernel.org/show_bug.cgi?id=58761
-Reported-by: Jean-Philippe Halimi <jean-philippe.halimi@exascale-computing.eu>
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
-Change since v1:
-     Create new file acpi-cpufreq.txt under Documentation/cpu-freq and
-move new attribute descriptor to it.
-     Add new field freqdomain_cpus in struct acpi_cpufreq_data and record
-cpu domain info in it. For AMD case, use sibling cpus info to overwrite
-cpu domain info from ACPI.
+"Re: [PATCH 0/4] Add DVFS support on APE6EVM"
+http://www.spinics.net/lists/arm-kernel/msg255480.html
 
-Change since v2:
-     Move new attribute descriptor to Documentation/ABI/testing/
-sysfs-devices-system-cpu and update descriptor content according Viresh's
-comment.
-    http://www.spinics.net/lists/cpufreq/msg06119.html
-
- Documentation/ABI/testing/sysfs-devices-system-cpu |   15 +++++++++++++
- drivers/cpufreq/acpi-cpufreq.c                     |   23 +++++++++++++++++++-
- drivers/cpufreq/cpufreq.c                          |    7 +++---
- include/linux/cpufreq.h                            |    3 +++
- 4 files changed, 44 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 2447698..c72fccc 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -144,6 +144,21 @@ Description:	Discover and change clock speed of CPUs
- 		to learn how to control the knobs.
- 
- 
-+What:		/sys/devices/system/cpu/cpu#/cpufreq/freqdomain_cpus
-+Date:		June 2013
-+Contact:	cpufreq@vger.kernel.org
-+Description:	Discover CPUs in the same CPU frequency dependency domain
-+
-+		"freqdomain_cpus" are the list of cpus (online+offline) that share
-+		same clock/freq domain at hardware level. This information might
-+		be hidden from cpufreq core and so related_cpus can have different
-+		value compared to this. This is not used by kernel but userspace
-+		DVFS controllers to get better power/performance values for platforms
-+		using acpi-cpufreq.c driver.
-+
-+		This file is only present if the acpi-cpufreq driver is in use.
-+
-+
- What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
- Date:		August 2008
- KernelVersion:	2.6.27
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index f4fef0a..3926402 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -70,6 +70,7 @@ struct acpi_cpufreq_data {
- 	struct cpufreq_frequency_table *freq_table;
- 	unsigned int resume;
- 	unsigned int cpu_feature;
-+	cpumask_var_t freqdomain_cpus;
- };
- 
- static DEFINE_PER_CPU(struct acpi_cpufreq_data *, acfreq_data);
-@@ -176,6 +177,15 @@ static struct global_attr global_boost = __ATTR(boost, 0644,
- 						show_global_boost,
- 						store_global_boost);
- 
-+static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
-+{
-+	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-+
-+	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
-+}
-+
-+cpufreq_freq_attr_ro(freqdomain_cpus);
-+
- #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
- static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
- 			 size_t count)
-@@ -704,6 +714,11 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	if (!data)
- 		return -ENOMEM;
- 
-+	if (!zalloc_cpumask_var(&data->freqdomain_cpus, GFP_KERNEL)) {
-+		result = -ENOMEM;
-+		goto err_free;
-+	}
-+
- 	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
- 	per_cpu(acfreq_data, cpu) = data;
- 
-@@ -712,7 +727,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	result = acpi_processor_register_performance(data->acpi_data, cpu);
- 	if (result)
--		goto err_free;
-+		goto err_free_mask;
- 
- 	perf = data->acpi_data;
- 	policy->shared_type = perf->shared_type;
-@@ -725,6 +740,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
- 		cpumask_copy(policy->cpus, perf->shared_cpu_map);
- 	}
-+	cpumask_copy(data->freqdomain_cpus, perf->shared_cpu_map);
- 
- #ifdef CONFIG_SMP
- 	dmi_check_system(sw_any_bug_dmi_table);
-@@ -736,6 +752,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	if (check_amd_hwpstate_cpu(cpu) && !acpi_pstate_strict) {
- 		cpumask_clear(policy->cpus);
- 		cpumask_set_cpu(cpu, policy->cpus);
-+		cpumask_copy(data->freqdomain_cpus, cpu_sibling_mask(cpu));
- 		policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
- 		pr_info_once(PFX "overriding BIOS provided _PSD data\n");
- 	}
-@@ -870,6 +887,8 @@ err_freqfree:
- 	kfree(data->freq_table);
- err_unreg:
- 	acpi_processor_unregister_performance(perf, cpu);
-+err_free_mask:
-+	free_cpumask_var(data->freqdomain_cpus);
- err_free:
- 	kfree(data);
- 	per_cpu(acfreq_data, cpu) = NULL;
-@@ -888,6 +907,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 		per_cpu(acfreq_data, policy->cpu) = NULL;
- 		acpi_processor_unregister_performance(data->acpi_data,
- 						      policy->cpu);
-+		free_cpumask_var(data->freqdomain_cpus);
- 		kfree(data->freq_table);
- 		kfree(data);
- 	}
-@@ -908,6 +928,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
- 
- static struct freq_attr *acpi_cpufreq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
-+	&freqdomain_cpus,
- 	NULL,	/* this is a placeholder for cpb, do not remove */
- 	NULL,
- };
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index d976e22..adf12a9f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -573,7 +573,7 @@ out:
- 	return i;
- }
- 
--static ssize_t show_cpus(const struct cpumask *mask, char *buf)
-+ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf)
- {
- 	ssize_t i = 0;
- 	unsigned int cpu;
-@@ -588,6 +588,7 @@ static ssize_t show_cpus(const struct cpumask *mask, char *buf)
- 	i += sprintf(&buf[i], "\n");
- 	return i;
- }
-+EXPORT_SYMBOL_GPL(cpufreq_show_cpus);
- 
- /**
-  * show_related_cpus - show the CPUs affected by each transition even if
-@@ -595,7 +596,7 @@ static ssize_t show_cpus(const struct cpumask *mask, char *buf)
-  */
- static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
- {
--	return show_cpus(policy->related_cpus, buf);
-+	return cpufreq_show_cpus(policy->related_cpus, buf);
- }
- 
- /**
-@@ -603,7 +604,7 @@ static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
-  */
- static ssize_t show_affected_cpus(struct cpufreq_policy *policy, char *buf)
- {
--	return show_cpus(policy->cpus, buf);
-+	return cpufreq_show_cpus(policy->cpus, buf);
- }
- 
- static ssize_t store_scaling_setspeed(struct cpufreq_policy *policy,
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 3c7ee2f..5fedb6c 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -438,4 +438,7 @@ void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
- void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
- 
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
-+
-+ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
-+
- #endif /* _LINUX_CPUFREQ_H */
--- 
-1.7.10.4
-
+> ---
+>  arch/arm/mach-shmobile/Kconfig         |    2 +
+>  arch/arm/mach-shmobile/clock-r8a73a4.c |  123 +++++++++++++++++++++++++++++++-
+>  arch/arm/mach-shmobile/setup-r8a73a4.c |    1 +
+>  3 files changed, 125 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+> index 97bc6cf..ec349ad 100644
+> --- a/arch/arm/mach-shmobile/Kconfig
+> +++ b/arch/arm/mach-shmobile/Kconfig
+> @@ -26,6 +26,8 @@ config ARCH_R8A73A4
+>  	select ARM_ARCH_TIMER
+>  	select SH_CLK_CPG
+>  	select RENESAS_IRQC
+> +	select ARCH_HAS_CPUFREQ
+> +	select ARCH_HAS_OPP
+>  
+>  config ARCH_R8A7740
+>  	bool "R-Mobile A1 (R8A77400)"
+> diff --git a/arch/arm/mach-shmobile/clock-r8a73a4.c b/arch/arm/mach-shmobile/clock-r8a73a4.c
+> index d5176d0..824789c 100644
+> --- a/arch/arm/mach-shmobile/clock-r8a73a4.c
+> +++ b/arch/arm/mach-shmobile/clock-r8a73a4.c
+> @@ -34,6 +34,7 @@
+>  
+>  #define FRQCRA		0xE6150000
+>  #define FRQCRB		0xE6150004
+> +#define FRQCRC		0xE61500E0
+>  #define VCLKCR1		0xE6150008
+>  #define VCLKCR2		0xE615000C
+>  #define VCLKCR3		0xE615001C
+> @@ -52,6 +53,7 @@
+>  #define HSICKCR		0xE615026C
+>  #define M4CKCR		0xE6150098
+>  #define PLLECR		0xE61500D0
+> +#define PLL0CR		0xE61500D8
+>  #define PLL1CR		0xE6150028
+>  #define PLL2CR		0xE615002C
+>  #define PLL2SCR		0xE61501F4
+> @@ -177,6 +179,7 @@ static struct sh_clk_ops pll_clk_ops = {
+>  		.mapping	= &cpg_mapping,		\
+>  	}
+>  
+> +PLL_CLOCK(pll0_clk,  &main_clk,      pll_parent_main,      1, 20, PLL0CR,  0);
+>  PLL_CLOCK(pll1_clk,  &main_clk,      pll_parent_main,       1, 7, PLL1CR,  1);
+>  PLL_CLOCK(pll2_clk,  &main_div2_clk, pll_parent_main_extal, 3, 5, PLL2CR,  2);
+>  PLL_CLOCK(pll2s_clk, &main_div2_clk, pll_parent_main_extal, 3, 5, PLL2SCR, 4);
+> @@ -184,6 +187,14 @@ PLL_CLOCK(pll2h_clk, &main_div2_clk, pll_parent_main_extal, 3, 5, PLL2HCR, 5);
+>  
+>  SH_FIXED_RATIO_CLK(pll1_div2_clk,	pll1_clk,	div2);
+>  
+> +static atomic_t frqcr_lock;
+> +
+> +/* Several clocks need to access FRQCRB, have to lock */
+> +static bool frqcr_kick_check(struct clk *clk)
+> +{
+> +	return !(ioread32(CPG_MAP(FRQCRB)) & BIT(31));
+> +}
+> +
+>  static int frqcr_kick_do(struct clk *clk)
+>  {
+>  	int i;
+> @@ -199,6 +210,107 @@ static int frqcr_kick_do(struct clk *clk)
+>  	return -ETIMEDOUT;
+>  }
+>  
+> +static int zclk_set_rate(struct clk *clk, unsigned long rate)
+> +{
+> +	void __iomem *frqcrc;
+> +	int ret;
+> +	unsigned long step, p_rate;
+> +	u32 val;
+> +
+> +	if (!clk->parent || !__clk_get(clk->parent))
+> +		return -ENODEV;
+> +
+> +	if (!atomic_inc_and_test(&frqcr_lock) || !frqcr_kick_check(clk)) {
+> +		ret = -EBUSY;
+> +		goto done;
+> +	}
+> +
+> +	frqcrc = clk->mapped_reg + (FRQCRC - (u32)clk->enable_reg);
+> +
+> +	p_rate = clk_get_rate(clk->parent);
+> +	if (rate == p_rate) {
+> +		val = 0;
+> +	} else {
+> +		step = DIV_ROUND_CLOSEST(p_rate, 32);
+> +		val = 32 - rate / step;
+> +	}
+> +
+> +	iowrite32((ioread32(frqcrc) & ~(clk->div_mask << clk->enable_bit)) |
+> +		  (val << clk->enable_bit), frqcrc);
+> +
+> +	ret = frqcr_kick_do(clk);
+> +
+> +done:
+> +	atomic_dec(&frqcr_lock);
+> +	__clk_put(clk->parent);
+> +	return ret;
+> +}
+> +
+> +static long zclk_round_rate(struct clk *clk, unsigned long rate)
+> +{
+> +	/*
+> +	 * theoretical rate = parent rate * multiplier / 32,
+> +	 * where 1 <= multiplier <= 32. Therefore we should do
+> +	 * multiplier = rate * 32 / parent rate
+> +	 * rounded rate = parent rate * multiplier / 32.
+> +	 * However, multiplication before division won't fit in 32 bits, so
+> +	 * we sacrifice some precision by first dividing and then multiplying.
+> +	 * To find the nearest divisor we calculate both and pick up the best
+> +	 * one. This avoids 64-bit arithmetics.
+> +	 */
+> +	unsigned long step, mul_min, mul_max, rate_min, rate_max;
+> +
+> +	rate_max = clk_get_rate(clk->parent);
+> +
+> +	/* output freq <= parent */
+> +	if (rate >= rate_max)
+> +		return rate_max;
+> +
+> +	step = DIV_ROUND_CLOSEST(rate_max, 32);
+> +	/* output freq >= parent / 32 */
+> +	if (step >= rate)
+> +		return step;
+> +
+> +	mul_min = rate / step;
+> +	mul_max = DIV_ROUND_UP(rate, step);
+> +	rate_min = step * mul_min;
+> +	if (mul_max == mul_min)
+> +		return rate_min;
+> +
+> +	rate_max = step * mul_max;
+> +
+> +	if (rate_max - rate <  rate - rate_min)
+> +		return rate_max;
+> +
+> +	return rate_min;
+> +}
+> +
+> +static unsigned long zclk_recalc(struct clk *clk)
+> +{
+> +	void __iomem *frqcrc = FRQCRC - (u32)clk->enable_reg + clk->mapped_reg;
+> +	unsigned int max = clk->div_mask + 1;
+> +	unsigned long val = ((ioread32(frqcrc) >> clk->enable_bit) &
+> +			     clk->div_mask);
+> +
+> +	return DIV_ROUND_CLOSEST(clk_get_rate(clk->parent), max) *
+> +		(max - val);
+> +}
+> +
+> +static struct sh_clk_ops zclk_ops = {
+> +	.recalc = zclk_recalc,
+> +	.set_rate = zclk_set_rate,
+> +	.round_rate = zclk_round_rate,
+> +};
+> +
+> +static struct clk z_clk = {
+> +	.parent = &pll0_clk,
+> +	.div_mask = 0x1f,
+> +	.enable_bit = 8,
+> +	/* We'll need to access FRQCRB and FRQCRC */
+> +	.enable_reg = (void __iomem *)FRQCRB,
+> +	.ops = &zclk_ops,
+> +};
+> +
+>  static struct clk *main_clks[] = {
+>  	&extalr_clk,
+>  	&extal1_clk,
+> @@ -210,17 +322,21 @@ static struct clk *main_clks[] = {
+>  	&main_div2_clk,
+>  	&fsiack_clk,
+>  	&fsibck_clk,
+> +	&pll0_clk,
+>  	&pll1_clk,
+>  	&pll1_div2_clk,
+>  	&pll2_clk,
+>  	&pll2s_clk,
+>  	&pll2h_clk,
+> +	&z_clk,
+>  };
+>  
+>  /* DIV4 */
+>  static void div4_kick(struct clk *clk)
+>  {
+> -	frqcr_kick_do(clk);
+> +	if (!WARN(!atomic_inc_and_test(&frqcr_lock), "FRQCR* lock broken!\n"))
+> +		frqcr_kick_do(clk);
+> +	atomic_dec(&frqcr_lock);
+>  }
+>  
+>  static int divisors[] = { 2, 3, 4, 6, 8, 12, 16, 18, 24, 0, 36, 48, 10};
+> @@ -396,6 +512,9 @@ static struct clk_lookup lookups[] = {
+>  	CLKDEV_CON_ID("pll2s",			&pll2s_clk),
+>  	CLKDEV_CON_ID("pll2h",			&pll2h_clk),
+>  
+> +	/* CPU clock */
+> +	CLKDEV_DEV_ID("cpufreq-cpu0",		&z_clk),
+> +
+>  	/* DIV6 */
+>  	CLKDEV_CON_ID("zb",			&div6_clks[DIV6_ZB]),
+>  	CLKDEV_CON_ID("vck1",			&div6_clks[DIV6_VCK1]),
+> @@ -439,6 +558,8 @@ void __init r8a73a4_clock_init(void)
+>  	int k, ret = 0;
+>  	u32 ckscr;
+>  
+> +	atomic_set(&frqcr_lock, -1);
+> +
+>  	reg = ioremap_nocache(CKSCR, PAGE_SIZE);
+>  	BUG_ON(!reg);
+>  	ckscr = ioread32(reg);
+> diff --git a/arch/arm/mach-shmobile/setup-r8a73a4.c b/arch/arm/mach-shmobile/setup-r8a73a4.c
+> index c5a75a7..7265e14 100644
+> --- a/arch/arm/mach-shmobile/setup-r8a73a4.c
+> +++ b/arch/arm/mach-shmobile/setup-r8a73a4.c
+> @@ -185,6 +185,7 @@ void __init r8a73a4_add_standard_devices(void)
+>  #ifdef CONFIG_USE_OF
+>  void __init r8a73a4_add_standard_devices_dt(void)
+>  {
+> +	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
+>  	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+>  }
+>  
+> -- 
+> 1.7.2.5
+> 
