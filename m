@@ -1,28 +1,111 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v3] thermal: add imx thermal driver support
-Date: Thu, 27 Jun 2013 21:01:23 +0800
-Message-ID: <20130627130031.GA2695@S2101-09.ap.freescale.net>
-References: <1371816567-22821-1-git-send-email-shawn.guo@linaro.org>
- <CAHLCerPjGBfxugCTYkOLcGkP5N53Li=X98kz6hmb5J82SG7vdQ@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
+Date: Thu, 27 Jun 2013 16:42:04 +0200
+Message-ID: <20130627164204.370dc4a6@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-6-git-send-email-l.majewski@samsung.com>
+ <CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
+ <20130627125819.5c90da30@amdc308.digital.local>
+ <CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from co9ehsobe005.messaging.microsoft.com ([207.46.163.28]:35382
-	"EHLO co9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753479Ab3F0NBe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 09:01:34 -0400
-Content-Disposition: inline
-In-Reply-To: <CAHLCerPjGBfxugCTYkOLcGkP5N53Li=X98kz6hmb5J82SG7vdQ@mail.gmail.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:19916 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751663Ab3F0OmS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 10:42:18 -0400
+In-reply-to: <CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-pm@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, lakml <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On Thu, Jun 27, 2013 at 05:27:02PM +0530, Amit Kucheria wrote:
-> Rob doesn't work in Linaro anymore. I've cc'ed him on his last known good
-> address at Freescale.
+On Thu, 27 Jun 2013 16:46:44 +0530, Viresh Kumar wrote:
+> @Rafael: We need you to jump into this discussion now, I don't
+> have a good idea about what we should do :)
+> 
+> On 27 June 2013 16:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > Do you have any idea of how to precisely set the load threshold?
+> 
+> I thought we are talking about cpu being in idle state.
 
-He left Freescale half year ago.
+If we _drop_ the idea with thermal subsystem to disable the boost,
+the logic as far as I've understood shall here be as follow:
 
-Shawn
+Only enable BOOST when one CPU load > THRESHOLD_MAX and other CPUs <
+THRESHOLD_MIN
 
+THRESHOLD_MIN & THRESHOLD_MAX are SoC specific. 
+
+In my opinion the above constrain imposes policy to the cpufreq driver.
+
+> 
+> > As a side note:
+> >
+> > I've thought about this patch for some time and for me it looks
+> > like we are mixing policy (number of busy CPUs) with abilities,
+> > which shall be provided by the driver (boost).
+> > Additionally, we can only roughly "estimate" [*] when boost shall
+> > run and when it shall be turned off.
+> 
+> This is another problem in the patch you sent. User would simply
+> enable or disable boost feature from userspace only once.
+
+The above statement is definitely true for Intel. There HW manage the
+frequency.
+
+> 
+> Now, if you disable it at high temperatures then its responsibility
+> to enable it again. Which you are missing.
+
+So thermal or "other solution" [*] shall disable boost when overheated
+and enable it back when things cool down.
+
+[*] @ Viresh & Rafael do you have any idea about the "other solution"
+here?
+
+
+> 
+> > I think that, we shall leave this management [*] to the thermal
+> > framework. This framework is designed exactly to protect from over
+> > heating (it uses the same freq_table for passive CPU cooling) with
+> > several trip points -> e.g. 40 deg (disable boost), 75 deg (impose
+> > max freq as 1.0 GHz to cool down, 90 deg (shutdown immediately).
+> > Please refer to PATH v4 7/7.
+> 
+> There might be platforms where overheating isn't a issue with boost,
+> if it is only enabled while only one cpu is in use.
+
+Could you elaborate more on this?
+
+I thought, that with multi core one needs to keep itself inside
+power/thermal dissipation envelope. 
+
+> 
+> > Unfortunately, since we dropped Kconfig flag for BOOST we cannot
+> > impose "select THERMAL_FRAMEWORK", when flag for BOOST is enabled at
+> > Kconfig.
+> 
+> Not a big deal, we can get that in if required.
+> 
+> > Ideally kernel shall not even build when CONFIG_CPUFREQ_BOOST
+> > Kconfig flag is set and thermal for target architecture is not
+> > correctly configured (including proper trip points).
+
+This would prevent situation when somebody made a mistake and
+had enabled boost, but for some reason had forgotten to
+configure/enable thermal subsystem.
+
+Moreover Kconfig's CONFIG_CPUFREQ_BOOST flag would indicate that user
+enabled boost for some reason and he/she (presumably) knows what is
+doing.
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
