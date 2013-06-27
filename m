@@ -1,81 +1,45 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH 4/8] ARM: OMAP: move cpuidle drivers to drivers/cpuidle/
-Date: Thu, 27 Jun 2013 10:25:14 -0700
-Message-ID: <878v1vqxdx.fsf@linaro.org>
-References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com>
-	<1372241747-21083-5-git-send-email-b.zolnierkie@samsung.com>
-	<20130627080653.GH5523@atomide.com>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Thu, 27 Jun 2013 20:00:18 +0200
+Message-ID: <51CC7DB2.3020502@gmx.de>
+References: <51C08370.4050906@gmx.de> <1778593.ufLkNuJuaY@vostro.rjw.lan> <51CB34A2.7090404@gmx.de> <1475885.FjB577tJj8@vostro.rjw.lan> <CAKohpokbQS8Bb5D2B_UaN-eyVnAbQYKDKh5pm_QzEDMoABwcOw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f53.google.com ([209.85.160.53]:48689 "EHLO
-	mail-pb0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152Ab3F0RZT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 13:25:19 -0400
-Received: by mail-pb0-f53.google.com with SMTP id xb12so1206869pbc.12
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 10:25:18 -0700 (PDT)
-In-Reply-To: <20130627080653.GH5523@atomide.com> (Tony Lindgren's message of
-	"Thu, 27 Jun 2013 01:06:54 -0700")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokbQS8Bb5D2B_UaN-eyVnAbQYKDKh5pm_QzEDMoABwcOw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, kgene.kim@samsung.com, magnus.damm@gmail.com, ben-linux@fluff.org, linux-pm@vger.kernel.org, nsekhar@ti.com, linus.walleij@linaro.org, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, daniel.lezcano@linaro.org, kyungmin.park@samsung.com, horms@verge.net.au, srinidhi.kasagar@stericsson.com, kernel@pengutronix.de, shawn.guo@linaro.org, plagnioj@jcrosoft.com, linux@maxim.org.za
 
-Tony Lindgren <tony@atomide.com> writes:
+On 06/27/2013 06:10 AM, Viresh Kumar wrote:
+> On 27 June 2013 00:42, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> Well, I'm not aware of any recent changes in cpufreq that would make=
+ things
+>> work differently depending on whether or not AC power is used.
+>=20
+> Toralf,
+>=20
+> It would be helpful if you can do git bisect and let us know which pa=
+tch
+> created this problem. Otherwise its very difficult to trace it.
+>=20
 
-> * Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> [130626 12:25]:
->> While at it:
->> - remove file path from comment
->> - fix whitespace issues
->> 
->> Compile tested only.
-> ...
->
->> --- /dev/null
->> +++ b/drivers/cpuidle/cpuidle-omap34xx.c
->> @@ -0,0 +1,342 @@
->> +/*
->> + * OMAP3 CPU IDLE Routines
->> + *
->> + * Copyright (C) 2008 Texas Instruments, Inc.
->> + * Rajendra Nayak <rnayak@ti.com>
->> + *
->> + * Copyright (C) 2007 Texas Instruments, Inc.
->> + * Karthik Dasu <karthik-dp@ti.com>
->> + *
->> + * Copyright (C) 2006 Nokia Corporation
->> + * Tony Lindgren <tony@atomide.com>
->> + *
->> + * Copyright (C) 2005 Texas Instruments, Inc.
->> + * Richard Woodruff <r-woodruff2@ti.com>
->> + *
->> + * Based on pm.c for omap2
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/sched.h>
->> +#include <linux/cpuidle.h>
->> +#include <linux/export.h>
->> +#include <linux/cpu_pm.h>
->> +#include <asm/cpuidle.h>
->> +
->> +#include "../../arch/arm/mach-omap2/powerdomain.h"
->> +#include "../../arch/arm/mach-omap2/clockdomain.h"
->> +
->> +#include "../../arch/arm/mach-omap2/pm.h"
->> +#include "../../arch/arm/mach-omap2/control.h"
->> +#include "../../arch/arm/mach-omap2/common.h"
->
-> Do we really want to do includes like this from drivers?
-> Presumably these will go away with DT, but still.
->
-> Kevin, any comments?
+Yep, but 14 commits to bisect and about 20-30 min for each - will see,
+when I find a time slot.
 
-NACK
+Just FWIW thie following is now a good indicator for the issue - that's
+the picture after wakeup, where I'd expect always 800 MHz:
 
-We need proper interfaces to platform-specific code before moving.
+$ sudo cat /sys/devices/system/cpu/cpu?/cpufreq/cpuinfo_cur_freq
+800000
+2601000
+2601000
+2601000
 
-Kevin
+
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
