@@ -1,131 +1,44 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Thu, 27 Jun 2013 11:48:52 +0200
-Message-ID: <20130627114852.2889eea6@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-3-git-send-email-l.majewski@samsung.com>
- <CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
- <20130626145412.1e9bfa63@amdc308.digital.local>
- <CAKohpo==702FnSwhrPi6L1VzLbxO5LT3VDQCru9cwKjgmbppxA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo==702FnSwhrPi6L1VzLbxO5LT3VDQCru9cwKjgmbppxA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, t.figa@samsung.com
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] ARM: cpuidle: davinci: Fix target residency
+Date: Thu, 27 Jun 2013 11:56:52 +0200
+Message-ID: <1372327012-13528-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f180.google.com ([74.125.82.180]:54506 "EHLO
+	mail-we0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751531Ab3F0J4k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 05:56:40 -0400
+Received: by mail-we0-f180.google.com with SMTP id w56so394861wes.11
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 02:56:39 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: nsekhar@ti.com, khilman@deeprootsystems.com
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org
 
-On Thu, 27 Jun 2013 14:32:57 +0530, Viresh Kumar wrote:
-> On 26 June 2013 18:24, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > On Wed, 26 Jun 2013 16:24:32 +0530, Viresh Kumar wrote:
-> >> On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com>
-> >> wrote:
-> 
-> >> > +static ssize_t store_boost(struct kobject *kobj, struct
-> >> > attribute *attr,
-> >> > +                                 const char *buf, size_t count)
-> >> > +{
-> >> > +       int ret, enable;
-> >> > +
-> >> > +       ret = sscanf(buf, "%d", &enable);
-> >> > +       if (ret != 1 || enable < 0 || enable > 1)
-> >> > +               return -EINVAL;
-> >> > +
-> >> > +       if (cpufreq_boost_trigger_state(enable)) {
-> >> > +               pr_err("%s: Cannot enable boost!\n", __func__);
-> >> > +               return -EINVAL;
-> >> > +       }
-> >>
-> >> Probably do boost_enabled = true here.
-> >
-> > I would prefer to set boot_enabled at
-> > cpufreq_boost_trigger_state() method. It is closer to the
-> > cpufreq_driver->enable_boost and cpufreq_boost_trigger_state_sw();
-> > functions, which do change the freq.
-> 
-> I said that as this will be more inclined towards the purpose of
-> this routine. This routine should store boost as show_boost()
-> is returning it. So, what would be better is if you just return
-> 0 or err from cpufreq_boost_trigger_state() and then set boost
-> here. This will also solve your problem where you revert back
-> to older boost value for failure cases.
+The commit 19976c2a88d125aec16b9255c7197c297bbdd637 changed the target
+residency to 100000, assuming this is a careless mistake.
 
-I thought about this idea, but at cpufreq_boost_trigger_state_sw()
-I iterate through all available policies and call
-cpufreq_frequency_table_cpuinfo()[*] on them. In this routine [*] I use 
-cpufreq_boost_enabled() [**] route to search for maximal (boost)
-frequency.
-The [**] reads boost_enabled flag, which shall be updated before. When
-this search fails, then I restore the old value of boost_enabled. 
+The same happened to the at91's cpuidle driver.
 
-> 
-> >> > +                       ret =
-> >> > cpufreq_driver->enable_boost(state);
-> >                                                   ^^^^^^^^^^^^^
-> >                                         I would prefer to change
-> > this name to enable_boost_hw
-> > It is more informative, since it is tailored to hw based boost
-> > (Intel).
-> 
-> Ok
+Fix it by putting the initial value to 10000.
 
-OK.
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/mach-davinci/cpuidle.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> 
-> >> > +               else
-> >> > +                       ret = cpufreq_boost_trigger_state_sw();
-> 
-> then why not enable_boost_sw() here? that would be more
-> relevant.
-
-Could you be more specific here?
-
-The distinction here is done on purpose:
-
-You can either call cpufreq_driver->enable_boost for HW controlled
-boost or cpufreq_boost_trigger_state_sw() for SW controlled one.
-
-I could write:
-	if (cpufreq_driver->enable_boost)
-		ret = cpufreq_driver->enable_boost(state);
-
-	ret = cpufreq_boost_trigger_state_sw();
-
-But then for Intel CPUs I will iterate over its policies to seek for
-CPUFREQ_BOOST_FREQ marked frequencies without any purpose, since HW is
-taking care of boosting. 
-
-> 
-> > I will rewrite it as follow:
-> >
-> > if (ret)
-> >         boost_enabled = 0;
-> >
-> > write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> > pr_debug("%s: cpufreq BOOST %s\n", __func__,
-> >                  state ? "enabled" : "disabled");
-> 
-> So, you will not print error but current state? Probably
-> printing error is better.
-
-I will change it to:
-
-write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-if (ret)
-	pr_err("%s: BOOST cannot enable (%d)\n",
-			       __func__, ret);
-
-return ret;
-
-I want to avoid time consuming operations (like print) with holding
-lock (and boost_enabled shall be modified under lock).
-
+diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
+index 36aef3a..f1ac1c9 100644
+--- a/arch/arm/mach-davinci/cpuidle.c
++++ b/arch/arm/mach-davinci/cpuidle.c
+@@ -65,7 +65,7 @@ static struct cpuidle_driver davinci_idle_driver = {
+ 	.states[1]		= {
+ 		.enter			= davinci_enter_idle,
+ 		.exit_latency		= 10,
+-		.target_residency	= 100000,
++		.target_residency	= 10000,
+ 		.flags			= CPUIDLE_FLAG_TIME_VALID,
+ 		.name			= "DDR SR",
+ 		.desc			= "WFI and DDR Self Refresh",
 -- 
-Best regards,
+1.7.9.5
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
