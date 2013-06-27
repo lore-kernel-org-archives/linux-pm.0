@@ -1,86 +1,102 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3] cpufreq: stats: Add 'load_table' debugfs file to show
- accumulated data of CPUs
-Date: Thu, 27 Jun 2013 19:32:06 +0900
-Message-ID: <51CC14A6.6070800@samsung.com>
-References: <1372064549-5872-1-git-send-email-cw00.choi@samsung.com>
- <CAKohpokvK0fBbfH_L8DETpMPr9UKzTtRRnzOzHOrHmX=NC-jDg@mail.gmail.com>
- <51CC1099.5060201@samsung.com>
- <CAKohpo=oZS8U1ZZ4Kbiz2yf_LLEMTr5HsrWFt_LiBkmRqKfdvQ@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
+Date: Thu, 27 Jun 2013 12:58:19 +0200
+Message-ID: <20130627125819.5c90da30@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-6-git-send-email-l.majewski@samsung.com>
+ <CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=oZS8U1ZZ4Kbiz2yf_LLEMTr5HsrWFt_LiBkmRqKfdvQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:31692 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752410Ab3F0K63 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 06:58:29 -0400
+In-reply-to: <CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocky" <rjw@sisk.pl>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 06/27/2013 07:23 PM, Viresh Kumar wrote:
-> On 27 June 2013 15:44, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> On 06/26/2013 05:04 PM, Viresh Kumar wrote:
->>> On 24 June 2013 14:32, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+On Thu, 27 Jun 2013 15:06:43 +0530, Viresh Kumar wrote:
+> On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > In the core governor code, per cpu load value is calculated. This
+> > patch uses it to mark processor as a "busy" one, when load value is
+> > higher than 90%.
 > 
->>> Maybe 10 to 1000.. Lets give others a chance to see long logs :)
->>>
->>
->> OK, I'll extend the maximum value from 100 to 1000.
+> How can we take this assumption. What about a cpu which is only 70-80%
+> busy [*]? 
+
+Do you have any idea of how to precisely set the load threshold?
+
+As a side note:
+
+I've thought about this patch for some time and for me it looks like we
+are mixing policy (number of busy CPUs) with abilities, which shall be
+provided by the driver (boost). 
+Additionally, we can only roughly "estimate" [*] when boost shall run
+and when it shall be turned off.
+
+I think that, we shall leave this management [*] to the thermal
+framework. This framework is designed exactly to protect from over
+heating (it uses the same freq_table for passive CPU cooling) with
+several trip points -> e.g. 40 deg (disable boost), 75 deg (impose max
+freq as 1.0 GHz to cool down, 90 deg (shutdown immediately).
+Please refer to PATH v4 7/7.
+
+Unfortunately, since we dropped Kconfig flag for BOOST we cannot
+impose "select THERMAL_FRAMEWORK", when flag for BOOST is enabled at
+Kconfig.
+
+Ideally kernel shall not even build when CONFIG_CPUFREQ_BOOST Kconfig
+flag is set and thermal for target architecture is not correctly
+configured (including proper trip points).
+
+
+
+
+> So, we would be running at around 70% of policy->max.. Now at
+> this point you want to enable boost frequency and so that will happen
+> for all cores... Wouldn't that burn your chip?
+
+As I've written above, we can only estimate here. Even with the same
+manufacturer at one SoC revision BOOST will work with 95% of policy max
+but the other revision will work stable only with 70%.
+
 > 
-> 10-1000 please.
-
-OK.
-
->>>> +       freq.old = freq.new = policy->cur;
->>>
->>> No need to set freq.new here.
->>
->> If cpufreq governor don't change cpu frequency on specific situation,
->> cpufreq SoC driver won't send CPUFREQ_POSTCHANGE. In case of this situation,
->> I store current cpu frequency to freq.new field.
+> > New cpufreq sysfs attribute is created (busy_cpus). It is read only
+> > and provides information about number of actually busy CPU.
 > 
-> You are doing this at the time of LOADCHECK notification :)
+> Not required.
+
+This attribute seems helpful for debug.
+
 > 
->                stat->load_table[last_idx].new = freq->old;
+> > diff --git a/drivers/cpufreq/cpufreq_governor.c
+> > b/drivers/cpufreq/cpufreq_governor.c index 077cea7..3402533 100644
+> > --- a/drivers/cpufreq/cpufreq_governor.c
+> > +++ b/drivers/cpufreq/cpufreq_governor.c
+> > @@ -148,6 +148,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data,
+> > int cpu) continue;
+> >
+> >                 load = 100 * (wall_time - idle_time) / wall_time;
+> > +               cpufreq_set_busy_cpu(j, load > 90 ? 1 : 0);
 > 
+> do this only when boost is enabled.
 
-OK, I'll fix it.
+Please read above side note.
 
->>>> +static ssize_t load_table_read(struct file *file, char __user *user_buf,
->>>> +                                       size_t count, loff_t *ppos)
->>>> +{
->>>> +       struct cpufreq_policy *policy = file->private_data;
->>>> +       struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
->>>> +       struct cpufreq_freqs *load_table = stat->load_table;
->>>> +       ssize_t len = 0;
->>>> +       char *buf;
->>>> +       int i, cpu, ret;
->>>> +
->>>> +       buf = kzalloc(MAX_LINE_SIZE * stat->load_max_index, GFP_KERNEL);
->>>> +       if (!buf)
->>>> +               return 0;
->>>
->>> Above use of stat->load_max_index must be inside locks I guess. Otherwise
->>> you may allocate memory for 10 lines and by the time lock is taken, we
->>> already have 12 entries. And so, below loop will go beyond array limits.
->>>
->>
->> I store CONFIG_NR_CPU_LOAD_STORAGE to stat->load_max_index in cpufreq_stats_create_debugfs()
->> So, stat->load_max_index value isn't always 10.
->>
->> If I misunderstood for your comment, I'd like you to explain more detailed about this comment.
 > 
-> No you didn't but looking second time at the code, i couldn't find a
-> problem with it.
-> 
-> You allocate memory for max entries and so shouldn't be a problem.
-> 
-
-OK,
-
-I'll send v4 patch. Thanks.
-
-Best Regards,
-Chanwoo Choi
+> >                 if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+> >                         int freq_avg =
+> > __cpufreq_driver_getavg(policy, j);
 
 
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
