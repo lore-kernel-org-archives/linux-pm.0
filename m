@@ -1,59 +1,47 @@
-From: "David Laight" <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH v2 15/45] rcu: Use get/put_online_cpus_atomic() to prevent CPU offline
-Date: Thu, 27 Jun 2013 09:54:41 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B72AB@saturn3.aculab.com>
-References: <20130625202452.16593.22810.stgit@srivatsabhat.in.ibm.com> <20130625202755.16593.67819.stgit@srivatsabhat.in.ibm.com> <20130625220026.GG3828@linux.vnet.ibm.com> <51CAF624.6060004@linux.vnet.ibm.com> <AE90C24D6B3A694183C094C60CF0A2F6026B72AA@saturn3.aculab.com> <20130626143424.GN3828@linux.vnet.ibm.com> <1372258271.18733.256.camel@gandalf.local.home> <20130626152148.GA4405@mtj.dyndns.org> <51CB3159.8000509@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 4/7] cpufreq:exynos:Extend Exynos cpufreq driver to
+ support boost framework
+Date: Thu, 27 Jun 2013 14:28:11 +0530
+Message-ID: <CAKohpokf8TZkP5Nzpp+m5KaUK8zJ6mwiuiW-td7boHQ7NtB-DQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-5-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0.aculab.com ([213.249.233.131]:53030 "HELO mx0.aculab.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753273Ab3F0Iyx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 04:54:53 -0400
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 18339-03 for <linux-pm@vger.kernel.org>;
- Thu, 27 Jun 2013 09:54:48 +0100 (BST)
-Content-class: urn:content-classes:message
-In-Reply-To: <51CB3159.8000509@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1371661969-7660-5-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, namhyung@kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com, zhong@linux.vnet.ibm.com, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 
-> >>> It would also increase the latency of CPU-hotunplug operations.
-> >>
-> >> Is that a big deal?
-> >
-> > I thought that was the whole deal with this patchset - making cpu
-> > hotunplugs lighter and faster mostly for powersaving.  That said, just
-> > removing stop_machine call would be a pretty good deal and I don't
-> > know how meaningful reducing CPU hotunplug latency is.  Srivatsa?
-> >
-> 
-> Keeping the hotunplug latency is important for suspend/resume, where
-> we take all non-boot CPUs in a loop. That's an interesting use-case
-> where intrusiveness doesn't matter much, but latency does. So yes,
-> making CPU hotplug faster is also one of the goals of this patchset.
+On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> The struct cpufreq_driver has been extended to embrace the information
+> related to boost support.
+>
+> When "boost_mode" device tree attribute is defined for a platform, the
+> boost_supported flag is set. Moreover boost related attributes were
+> exported.
+>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>
+> Changes for v4:
+> - None
+>
+> Changes for v3:
+> - Remove low level boost code
+> - Move boost management code to cpufreq core code
+> - Use boost_supported flag to indicate if driver supports over clocking
+>
+> Changes for v2:
+> - Removal of struct cpufreq_boost
+> - Removal of the CONFIG_CPU_FREQ_BOOST flag
+> - low_level_boost with valid address when boost is supported
+> ---
+>  drivers/cpufreq/exynos-cpufreq.c |    4 ++++
+>  1 file changed, 4 insertions(+)
 
-If you are removing all but one of the cpu, the you only need
-one rcu cycle (remove everything from the list first).
+Yes, this looks fine..
 
-I'd also guess that you can't suspend a cpu until you can sleep
-the process that is running on it - so if a process has pre-emption
-disabled you aren't going to complete suspend until the process
-sleeps (this wouldn't be true if you suspended the cpu with its
-current stack - but if suspend is removing the non-boot cpus first
-it must be doing so from the scheduler idle loop).
-
-If you are doing suspend for aggressive power saving, then all the
-processes (and processors) will already be idle. However you
-probably wouldn't want the memory accesses to determine this on
-a large NUMA system with 1024+ processors.
-
-	David
-
-
-
+I will Ack the whole series in the end, so no individual acks :)
