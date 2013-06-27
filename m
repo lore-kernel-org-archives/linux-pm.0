@@ -1,45 +1,131 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
-Date: Thu, 27 Jun 2013 15:06:43 +0530
-Message-ID: <CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+Date: Thu, 27 Jun 2013 11:48:52 +0200
+Message-ID: <20130627114852.2889eea6@amdc308.digital.local>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-6-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-3-git-send-email-l.majewski@samsung.com>
+ <CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
+ <20130626145412.1e9bfa63@amdc308.digital.local>
+ <CAKohpo==702FnSwhrPi6L1VzLbxO5LT3VDQCru9cwKjgmbppxA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1371661969-7660-6-git-send-email-l.majewski@samsung.com>
+In-reply-to: <CAKohpo==702FnSwhrPi6L1VzLbxO5LT3VDQCru9cwKjgmbppxA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, t.figa@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> In the core governor code, per cpu load value is calculated. This patch
-> uses it to mark processor as a "busy" one, when load value is higher than
-> 90%.
+On Thu, 27 Jun 2013 14:32:57 +0530, Viresh Kumar wrote:
+> On 26 June 2013 18:24, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > On Wed, 26 Jun 2013 16:24:32 +0530, Viresh Kumar wrote:
+> >> On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com>
+> >> wrote:
+> 
+> >> > +static ssize_t store_boost(struct kobject *kobj, struct
+> >> > attribute *attr,
+> >> > +                                 const char *buf, size_t count)
+> >> > +{
+> >> > +       int ret, enable;
+> >> > +
+> >> > +       ret = sscanf(buf, "%d", &enable);
+> >> > +       if (ret != 1 || enable < 0 || enable > 1)
+> >> > +               return -EINVAL;
+> >> > +
+> >> > +       if (cpufreq_boost_trigger_state(enable)) {
+> >> > +               pr_err("%s: Cannot enable boost!\n", __func__);
+> >> > +               return -EINVAL;
+> >> > +       }
+> >>
+> >> Probably do boost_enabled = true here.
+> >
+> > I would prefer to set boot_enabled at
+> > cpufreq_boost_trigger_state() method. It is closer to the
+> > cpufreq_driver->enable_boost and cpufreq_boost_trigger_state_sw();
+> > functions, which do change the freq.
+> 
+> I said that as this will be more inclined towards the purpose of
+> this routine. This routine should store boost as show_boost()
+> is returning it. So, what would be better is if you just return
+> 0 or err from cpufreq_boost_trigger_state() and then set boost
+> here. This will also solve your problem where you revert back
+> to older boost value for failure cases.
 
-How can we take this assumption. What about a cpu which is only 70-80%
-busy? So, we would be running at around 70% of policy->max.. Now at
-this point you want to enable boost frequency and so that will happen for
-all cores... Wouldn't that burn your chip?
+I thought about this idea, but at cpufreq_boost_trigger_state_sw()
+I iterate through all available policies and call
+cpufreq_frequency_table_cpuinfo()[*] on them. In this routine [*] I use 
+cpufreq_boost_enabled() [**] route to search for maximal (boost)
+frequency.
+The [**] reads boost_enabled flag, which shall be updated before. When
+this search fails, then I restore the old value of boost_enabled. 
 
-> New cpufreq sysfs attribute is created (busy_cpus). It is read only
-> and provides information about number of actually busy CPU.
+> 
+> >> > +                       ret =
+> >> > cpufreq_driver->enable_boost(state);
+> >                                                   ^^^^^^^^^^^^^
+> >                                         I would prefer to change
+> > this name to enable_boost_hw
+> > It is more informative, since it is tailored to hw based boost
+> > (Intel).
+> 
+> Ok
 
-Not required.
+OK.
 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 077cea7..3402533 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -148,6 +148,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->                         continue;
->
->                 load = 100 * (wall_time - idle_time) / wall_time;
-> +               cpufreq_set_busy_cpu(j, load > 90 ? 1 : 0);
+> 
+> >> > +               else
+> >> > +                       ret = cpufreq_boost_trigger_state_sw();
+> 
+> then why not enable_boost_sw() here? that would be more
+> relevant.
 
-do this only when boost is enabled.
+Could you be more specific here?
 
->                 if (dbs_data->cdata->governor == GOV_ONDEMAND) {
->                         int freq_avg = __cpufreq_driver_getavg(policy, j);
+The distinction here is done on purpose:
+
+You can either call cpufreq_driver->enable_boost for HW controlled
+boost or cpufreq_boost_trigger_state_sw() for SW controlled one.
+
+I could write:
+	if (cpufreq_driver->enable_boost)
+		ret = cpufreq_driver->enable_boost(state);
+
+	ret = cpufreq_boost_trigger_state_sw();
+
+But then for Intel CPUs I will iterate over its policies to seek for
+CPUFREQ_BOOST_FREQ marked frequencies without any purpose, since HW is
+taking care of boosting. 
+
+> 
+> > I will rewrite it as follow:
+> >
+> > if (ret)
+> >         boost_enabled = 0;
+> >
+> > write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> > pr_debug("%s: cpufreq BOOST %s\n", __func__,
+> >                  state ? "enabled" : "disabled");
+> 
+> So, you will not print error but current state? Probably
+> printing error is better.
+
+I will change it to:
+
+write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+if (ret)
+	pr_err("%s: BOOST cannot enable (%d)\n",
+			       __func__, ret);
+
+return ret;
+
+I want to avoid time consuming operations (like print) with holding
+lock (and boost_enabled shall be modified under lock).
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
