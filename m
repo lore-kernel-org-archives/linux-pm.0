@@ -1,52 +1,48 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [PATCH 2/2 V2] CPUFreq: Add new sysfs attribute freqdomain_cpus
- for acpi-freq driver
-Date: Thu, 27 Jun 2013 13:34:05 +0800
-Message-ID: <51CBCECD.6030106@intel.com>
-References: <1372250304-20975-1-git-send-email-tianyu.lan@intel.com> <CAKohpokrU4LYGeL_oai+F1irHgk4y+KmO+71_MGVNOhEG6_QDw@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 3/3] cpufreq:exynos:Extend Exynos cpufreq driver to
+ support boost framework
+Date: Thu, 27 Jun 2013 08:31:51 +0200
+Message-ID: <20130627083151.3deb06a6@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1370941408-29304-1-git-send-email-l.majewski@samsung.com>
+ <1370941408-29304-4-git-send-email-l.majewski@samsung.com>
+ <CAKohponJ5FyuKywCGz5j8GYomwqEJ0B-CvJybp+_eLjrsRkXDA@mail.gmail.com>
+ <20130626155823.47eb36fb@amdc308.digital.local>
+ <CAKohpo=G+BJVDVs3ToajkUobQHBeY2GZ3nzyKHc3vechmLTLXQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokrU4LYGeL_oai+F1irHgk4y+KmO+71_MGVNOhEG6_QDw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohpo=G+BJVDVs3ToajkUobQHBeY2GZ3nzyKHc3vechmLTLXQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, lenb@kernel.org, jean-philippe.halimi@exascale-computing.eu, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2013=E5=B9=B406=E6=9C=8827=E6=97=A5 13:24, Viresh Kumar wrote:
-> On 26 June 2013 18:08, Lan Tianyu <tianyu.lan@intel.com> wrote:
->> diff --git a/Documentation/cpu-freq/acpi-cpufreq.txt b/Documentation=
-/cpu-freq/acpi-cpufreq.txt
->> new file mode 100644
->> index 0000000..9c59d09
->> --- /dev/null
->> +++ b/Documentation/cpu-freq/acpi-cpufreq.txt
->> @@ -0,0 +1,7 @@
->> +Sysfs interface
->> +---------------------------
->> +(Interface locates in the directory /sys/devices/system/cpu/cpuN/cp=
-ufreq)
->> +
->> +freqdomain_cpus :               List of Online + Offline CPUs in sa=
-me CPU dependency
->> +                                domain.
->> +
->=20
-> Apart from the comments from Rafael, this must be described a bit
-> more. We must write here how is it different than related_cpus.
->=20
-> Write: freqdomain_cpus are the list of cpus (online+offline) that sha=
-re
-> same clock/freq domain at hardware level. This information might
-> be hidden from cpufreq core and so related_cpus can have different
-> value compared to this. This is not used by kernel but userspace
-> DVFS controllers to get better power/performance values for platforms
-> using acpi-cpufreq.c driver.
->=20
-Thanks for your comments. I will add this in my patch.
+On Thu, 27 Jun 2013 09:32:56 +0530, Viresh Kumar wrote:
 
+> On 26 June 2013 19:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > On Wed, 26 Jun 2013 16:35:32 +0530, Viresh Kumar wrote:
+> >> This patch is still few generations back :)
+> >
+> > But this is v2 version of boost patches.
+> 
+> My mistake....
+> 
+> > Please also review:
+> > [PATCH v4 4/7]
+> > [PATCH v4 5/7]
+> > [PATCH v4 6/7]
+> > [PATCH v4 7/7] - disable boost at thermal framework
+> 
+> don't worry I will review everything. I went home after reviewing half
+> of the patches.
 
---=20
-Best regards
-Tianyu Lan
+Ok, Thanks.
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
