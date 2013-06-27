@@ -1,39 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Thu, 27 Jun 2013 20:55:07 +0530
-Message-ID: <CAKohpomJRhbgHx08ifgychMTOsk=WqtvAKAOSrbu_iE8w8b2bQ@mail.gmail.com>
-References: <51C87ADC.4070409@canonical.com>
-	<CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
-	<20130625161935.GA10208@jshin-Toonie>
-	<CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
-	<20130626142852.GA2326@jshin-Toonie>
-	<CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
-	<20130626175722.GA20226@jshin-Toonie>
-	<CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
-	<20130627145505.GA3076@jshin-Toonie>
-	<CAKohpomSNGn1wTzbCxpHN5fu2L6mJ1fnhvt2uLBWLgQE8fS6Rg@mail.gmail.com>
-	<20130627152143.GA5324@jshin-Toonie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [RFC PATCH] ARM: ux500: cpuidle: use of_compatible instead of cpu_id
+Date: Thu, 27 Jun 2013 17:30:53 +0200
+Message-ID: <1372347053-27739-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:46283 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893Ab3F0PZH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 11:25:07 -0400
-Received: by mail-oa0-f44.google.com with SMTP id l10so1014723oag.31
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 08:25:07 -0700 (PDT)
-In-Reply-To: <20130627152143.GA5324@jshin-Toonie>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:34257 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302Ab3F0Pak (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 11:30:40 -0400
+Received: by mail-wi0-f178.google.com with SMTP id k10so757407wiv.17
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 08:30:39 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: linus.walleij@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 27 June 2013 20:51, Jacob Shin <jacob.shin@amd.com> wrote:
-> Sorry I totally missed it,
->
-> I was trying to account for the case when od_set_powersave_bias() is
-> called while ondemand is not the current governor. And then later
-> becomes the current governor. So when od_init() is called it will take
-> the expected default, rather than 0.
+Remove the dependency on the id.h header by replacing the cpu_is_
+functions by of_machine_is_compatible.
 
-Ok. leave it as is.
+In order to have cpuidle working on these SoC, the device tree must be
+enabled.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/mach-ux500/cpuidle.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
+index a45dd09..872c6e9 100644
+--- a/arch/arm/mach-ux500/cpuidle.c
++++ b/arch/arm/mach-ux500/cpuidle.c
+@@ -14,6 +14,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/atomic.h>
+ #include <linux/smp.h>
++#include <linux/of.h>
+ #include <linux/mfd/dbx500-prcmu.h>
+ #include <linux/platform_data/arm-ux500-pm.h>
+ 
+@@ -21,7 +22,6 @@
+ #include <asm/proc-fns.h>
+ 
+ #include "db8500-regs.h"
+-#include "id.h"
+ 
+ static atomic_t master = ATOMIC_INIT(0);
+ static DEFINE_SPINLOCK(master_lock);
+@@ -115,7 +115,11 @@ static struct cpuidle_driver ux500_idle_driver = {
+ 
+ int __init ux500_idle_init(void)
+ {
+-	if (!(cpu_is_u8500_family() || cpu_is_ux540_family()))
++	if (!of_machine_is_compatible("st-ericsson,u8500") &&
++	    !of_machine_is_compatible("st-ericsson,u9540") &&
++	    !of_machine_is_compatible("calaosystems,snowball-a9500") &&
++	    !of_machine_is_compatible("st-ericsson,u9500") &&
++	    !of_machine_is_compatible("st-ericsson,mop500"))
+ 		return -ENODEV;
+ 
+ 	/* Configure wake up reasons */
+-- 
+1.7.9.5
+
