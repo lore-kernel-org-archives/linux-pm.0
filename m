@@ -1,60 +1,65 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Thu, 27 Jun 2013 17:55:46 +0200
-Message-ID: <20130627175546.677d9f9b@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-3-git-send-email-l.majewski@samsung.com>
- <CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: od_set_powersave_bias: NULL pointer dereference
+Date: Thu, 27 Jun 2013 11:22:03 -0500
+Message-ID: <20130627162203.GB5324@jshin-Toonie>
+References: <CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
+ <20130625161935.GA10208@jshin-Toonie>
+ <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
+ <20130626142852.GA2326@jshin-Toonie>
+ <CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
+ <20130626175722.GA20226@jshin-Toonie>
+ <CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
+ <20130627145505.GA3076@jshin-Toonie>
+ <CAKohpomSNGn1wTzbCxpHN5fu2L6mJ1fnhvt2uLBWLgQE8fS6Rg@mail.gmail.com>
+ <CAKohpokQcL0iq6Oyt3zLGGTh4k_PoCpCzHFrgqWUmpUA3-2O3w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAKohpokQcL0iq6Oyt3zLGGTh4k_PoCpCzHFrgqWUmpUA3-2O3w@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 Jun 2013 16:24:32 +0530, Viresh Kumar wrote:
+On Thu, Jun 27, 2013 at 08:50:44PM +0530, Viresh Kumar wrote:
+> BTW, your v1 is already applied and sent to Linus. So,
+> you need to send only fixup now.
 
-> > +int cpufreq_boost_trigger_state(int state)
-> > +{
-> > +       unsigned long flags;
-> > +       int ret = 0;
-> > +
-> > +       if (boost_enabled != state) {
-> > +               write_lock_irqsave(&cpufreq_driver_lock, flags);
-> > +               boost_enabled = state;
-> > +               if (cpufreq_driver->enable_boost)
-> > +                       ret = cpufreq_driver->enable_boost(state);
-> > +               else
-> > +                       ret = cpufreq_boost_trigger_state_sw();
+Here is the fixup delta patch, thanks! :
 
-I will use only one call to cpufreq_driver->enable_boost(state) [*] with
-either cpufreq_boost_enable_sw() (function with SW boost handling) or
- the one provided by cpufreq driver.
+---8<---
 
-Only when cpufreq driver doesn't provide [*], it will be filled with
-"default" cpufreq_boost_enable_sw().
+>From 133f670aa1dc450fd37ba39081d046bf238c507b Mon Sep 17 00:00:00 2001
+From: Jacob Shin <jacob.shin@amd.com>
+Date: Thu, 27 Jun 2013 10:44:42 -0500
+Subject: [PATCH 1/1] cpufreq: don't leave stale policy pointer in
+ cdbs->cur_policy
 
-> > +
-> > +               if (ret) {
-> > +                       boost_enabled = 0;
-> > +
-> > write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> > +                       pr_err("%s: BOOST cannot enable (%d)\n",
-> > +                              __func__, ret);
-> > +
-> > +                       return ret;
-> > +               }
-> > +               write_unlock_irqrestore(&cpufreq_driver_lock,
-> > flags);  
+Set ->cur_policy to NULL when stopping a governor. Otherwise, the
+->cur_policy pointer may be stale on systems that
+have_governor_per_policy when a new policy is allocated due to CPU
+hotplug offline/online.
 
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+---
+ drivers/cpufreq/cpufreq_governor.c |    1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index dc9b72e..320474e 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -404,6 +404,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 
+ 		mutex_lock(&dbs_data->mutex);
+ 		mutex_destroy(&cpu_cdbs->timer_mutex);
++		cpu_cdbs->cur_policy = NULL;
+ 
+ 		mutex_unlock(&dbs_data->mutex);
+ 
 -- 
-Best regards,
+1.7.10.4
 
-Lukasz Majewski
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
