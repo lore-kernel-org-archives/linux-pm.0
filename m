@@ -1,71 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Thu, 27 Jun 2013 12:32:36 +0530
-Message-ID: <CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
-References: <51C87ADC.4070409@canonical.com>
-	<CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
-	<20130625161935.GA10208@jshin-Toonie>
-	<CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
-	<20130626142852.GA2326@jshin-Toonie>
-	<CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
-	<20130626175722.GA20226@jshin-Toonie>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 1/2] ARM: shmobile: r8a73a4: wait for completion when
+ kicking the clock
+Date: Thu, 27 Jun 2013 16:07:31 +0900
+Message-ID: <20130627070731.GA25014@verge.net.au>
+References: <Pine.LNX.4.64.1305221108500.12715@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130626175722.GA20226@jshin-Toonie>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.1305221108500.12715@axis700.grange>
+Sender: linux-sh-owner@vger.kernel.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 26 June 2013 23:27, Jacob Shin <jacob.shin@amd.com> wrote:
-> On Wed, Jun 26, 2013 at 08:02:29PM +0530, Viresh Kumar wrote:
->> On 26 June 2013 19:58, Jacob Shin <jacob.shin@amd.com> wrote:
->> > On Wed, Jun 26, 2013 at 12:18:27PM +0530, Viresh Kumar wrote:
->>
->> >> I am not sure if this is enough. What if we had ondemand as the
->> >> governor initially, then we changed it to something else. Now also
->> >> cur_policy contains a address and isn't zero.
->
-> I just tested this case with this patch applied, and did not have any
-> problems.
+On Wed, May 22, 2013 at 11:12:33AM +0200, Guennadi Liakhovetski wrote:
+> To reconfigure clocks, controlled by FRQCRA and FRQCRB, a kick bit has to
+> be set and to make sure the setting has taken effect, it has to be read
+> back repeatedly until it is cleared by the hardware. This patch adds the
+> waiting part, that was missing until now.
+> 
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
 
-Try this:
-- you need a system with multiple policy groups to test it
-- Suppose we have two groups of CPUs: 0 and 1
-- Set ondemand as governor for both
-- change governor of group 1 to something else (we still have valid policy
-struct in Ondemand)
-- offline all CPUs from group 1. this will free struct cpufreq_policy
-- Online these CPUs back, this will reallocate policy
-- Now run this function, the earlier policy struct is already freed and
-you are accessing it here.
+I have queued this up for v3.12 in the soc branch of the renesas tree.
+I have included an Ack from Morimoto-san which he provided here:
 
->> >> >                 cpumask_or(&done, &done, policy->cpus);
->> >> > +
->> >> > +               if (policy->governor != &cpufreq_gov_ondemand)
->> >> > +                       continue;
->> >
->> > This should catch that case no ?
->>
->> Policy might be freed and reallocated by then. And so doing
->> policy->governor is dangerous.
->
-> Are you worried that after we have passed the above if check, and
-> before we access ->tuner governor change might occur?
->
-> Is there something synonymous to get/put_online_cpus() for cpufreq to
-> prevent governor change while we update ->tuner values?
->
-> Otherwise, should just spinlock?
+"Re: [PATCH 0/4] Add DVFS support on APE6EVM"
+http://www.spinics.net/lists/arm-kernel/msg255480.html
 
-No, i wasn't worrying about this but a sequence of events that I told to
-you earlier.
-
-Replying to your other mail:
-> Hm . any hints on how to check for if ondemand is running on this CPU
-> or not ? I'm not sure what the best way to handle this is ..
-
-Make cur_policy zero in cpufreq_governor_dbs() for
-CPUFREQ_GOV_STOP notification. This will make sure we use correct
-policy pointer.
+> ---
+>  arch/arm/mach-shmobile/clock-r8a73a4.c |   22 ++++++++++++++++------
+>  1 files changed, 16 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm/mach-shmobile/clock-r8a73a4.c b/arch/arm/mach-shmobile/clock-r8a73a4.c
+> index 5f7fe62..d5176d0 100644
+> --- a/arch/arm/mach-shmobile/clock-r8a73a4.c
+> +++ b/arch/arm/mach-shmobile/clock-r8a73a4.c
+> @@ -184,6 +184,21 @@ PLL_CLOCK(pll2h_clk, &main_div2_clk, pll_parent_main_extal, 3, 5, PLL2HCR, 5);
+>  
+>  SH_FIXED_RATIO_CLK(pll1_div2_clk,	pll1_clk,	div2);
+>  
+> +static int frqcr_kick_do(struct clk *clk)
+> +{
+> +	int i;
+> +
+> +	/* set KICK bit in FRQCRB to update hardware setting, check success */
+> +	iowrite32(ioread32(CPG_MAP(FRQCRB)) | BIT(31), CPG_MAP(FRQCRB));
+> +	for (i = 1000; i; i--)
+> +		if (ioread32(CPG_MAP(FRQCRB)) & BIT(31))
+> +			cpu_relax();
+> +		else
+> +			return 0;
+> +
+> +	return -ETIMEDOUT;
+> +}
+> +
+>  static struct clk *main_clks[] = {
+>  	&extalr_clk,
+>  	&extal1_clk,
+> @@ -205,12 +220,7 @@ static struct clk *main_clks[] = {
+>  /* DIV4 */
+>  static void div4_kick(struct clk *clk)
+>  {
+> -	unsigned long value;
+> -
+> -	/* set KICK bit in FRQCRB to update hardware setting */
+> -	value = ioread32(CPG_MAP(FRQCRB));
+> -	value |= (1 << 31);
+> -	iowrite32(value, CPG_MAP(FRQCRB));
+> +	frqcr_kick_do(clk);
+>  }
+>  
+>  static int divisors[] = { 2, 3, 4, 6, 8, 12, 16, 18, 24, 0, 36, 48, 10};
+> -- 
+> 1.7.2.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
