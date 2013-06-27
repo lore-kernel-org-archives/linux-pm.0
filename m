@@ -1,63 +1,96 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFC PATCH] ARM: ux500: cpuidle: use of_compatible instead of cpu_id
-Date: Thu, 27 Jun 2013 17:30:53 +0200
-Message-ID: <1372347053-27739-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:34257 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302Ab3F0Pak (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 11:30:40 -0400
-Received: by mail-wi0-f178.google.com with SMTP id k10so757407wiv.17
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 08:30:39 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 4/8] ARM: OMAP: move cpuidle drivers to drivers/cpuidle/
+Date: Thu, 27 Jun 2013 11:36:44 -0400
+Message-ID: <51CC5C0C.2090505@ti.com>
+References: <1372241747-21083-1-git-send-email-b.zolnierkie@samsung.com>
+ <1372241747-21083-5-git-send-email-b.zolnierkie@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1372241747-21083-5-git-send-email-b.zolnierkie@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: swarren@wwwdotorg.org, srinidhi.kasagar@stericsson.com, khilman@deeprootsystems.com, linus.walleij@linaro.org, nsekhar@ti.com, kgene.kim@samsung.com, daniel.lezcano@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, nicolas.ferre@atmel.com, Rajendra Nayak <rnayak@ti.com>, rjw@sisk.pl, horms@verge.net.au, ben-linux@fluff.org, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, "Kristo, Tero" <t-kristo@ti.com>, kyungmin.park@samsung.com, kernel@pengutronix.de, shawn.guo@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: linus.walleij@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Remove the dependency on the id.h header by replacing the cpu_is_
-functions by of_machine_is_compatible.
+(You have missed few CC's)
 
-In order to have cpuidle working on these SoC, the device tree must be
-enabled.
++Kevin, Tero, Rajendra
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/mach-ux500/cpuidle.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+On Wednesday 26 June 2013 06:15 AM, Bartlomiej Zolnierkiewicz wrote:
+> While at it:
+> - remove file path from comment
+> - fix whitespace issues
+> 
+> Compile tested only.
+> 
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  arch/arm/mach-omap2/Makefile       |   5 -
+>  arch/arm/mach-omap2/cpuidle34xx.c  | 344 -------------------------------------
+>  arch/arm/mach-omap2/cpuidle44xx.c  | 217 -----------------------
+>  drivers/cpuidle/Makefile           |  10 ++
+>  drivers/cpuidle/cpuidle-omap34xx.c | 342 ++++++++++++++++++++++++++++++++++++
+>  drivers/cpuidle/cpuidle-omap44xx.c | 216 +++++++++++++++++++++++
+>  6 files changed, 568 insertions(+), 566 deletions(-)
+>  delete mode 100644 arch/arm/mach-omap2/cpuidle34xx.c
+>  delete mode 100644 arch/arm/mach-omap2/cpuidle44xx.c
+>  create mode 100644 drivers/cpuidle/cpuidle-omap34xx.c
+>  create mode 100644 drivers/cpuidle/cpuidle-omap44xx.c
+> 
 
-diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
-index a45dd09..872c6e9 100644
---- a/arch/arm/mach-ux500/cpuidle.c
-+++ b/arch/arm/mach-ux500/cpuidle.c
-@@ -14,6 +14,7 @@
- #include <linux/spinlock.h>
- #include <linux/atomic.h>
- #include <linux/smp.h>
-+#include <linux/of.h>
- #include <linux/mfd/dbx500-prcmu.h>
- #include <linux/platform_data/arm-ux500-pm.h>
- 
-@@ -21,7 +22,6 @@
- #include <asm/proc-fns.h>
- 
- #include "db8500-regs.h"
--#include "id.h"
- 
- static atomic_t master = ATOMIC_INIT(0);
- static DEFINE_SPINLOCK(master_lock);
-@@ -115,7 +115,11 @@ static struct cpuidle_driver ux500_idle_driver = {
- 
- int __init ux500_idle_init(void)
- {
--	if (!(cpu_is_u8500_family() || cpu_is_ux540_family()))
-+	if (!of_machine_is_compatible("st-ericsson,u8500") &&
-+	    !of_machine_is_compatible("st-ericsson,u9540") &&
-+	    !of_machine_is_compatible("calaosystems,snowball-a9500") &&
-+	    !of_machine_is_compatible("st-ericsson,u9500") &&
-+	    !of_machine_is_compatible("st-ericsson,mop500"))
- 		return -ENODEV;
- 
- 	/* Configure wake up reasons */
--- 
-1.7.9.5
+[..]
 
+> diff --git a/drivers/cpuidle/cpuidle-omap44xx.c b/drivers/cpuidle/cpuidle-omap44xx.c
+> new file mode 100644
+> index 0000000..86b8a51
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-omap44xx.c
+> @@ -0,0 +1,216 @@
+> +/*
+> + * OMAP4+ CPU idle Routines
+> + *
+> + * Copyright (C) 2011-2013 Texas Instruments, Inc.
+> + * Santosh Shilimkar <santosh.shilimkar@ti.com>
+> + * Rajendra Nayak <rnayak@ti.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/cpuidle.h>
+> +#include <linux/cpu_pm.h>
+> +#include <linux/export.h>
+> +
+> +#include <asm/cpuidle.h>
+> +#include <asm/proc-fns.h>
+> +
+> +#include "../../arch/arm/mach-omap2/common.h"
+> +#include "../../arch/arm/mach-omap2/pm.h"
+> +#include "../../arch/arm/mach-omap2/prm.h"
+> +#include "../../arch/arm/mach-omap2/clockdomain.h"
+> +
+We have discussed it already on the list in past. The
+movement was pending exactly for above dependencies.
+
+I let Kevin take a call but moving drivers with
+such dependency with platform code is just not
+right.
+
+Regards,
+Santosh
