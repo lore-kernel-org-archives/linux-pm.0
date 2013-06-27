@@ -1,45 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3] power: Add warning message about incorrect system date and time after resume when pm_trace is enabled
-Date: Thu, 27 Jun 2013 14:32:25 +0200
-Message-ID: <1706054.BUola9D1zu@vostro.rjw.lan>
-References: <1372285655-2450-1-git-send-email-shuah.kh@samsung.com> <20130626231808.GB13166@amd.pavel.ucw.cz>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v3] thermal: add imx thermal driver support
+Date: Thu, 27 Jun 2013 21:01:23 +0800
+Message-ID: <20130627130031.GA2695@S2101-09.ap.freescale.net>
+References: <1371816567-22821-1-git-send-email-shawn.guo@linaro.org>
+ <CAHLCerPjGBfxugCTYkOLcGkP5N53Li=X98kz6hmb5J82SG7vdQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:53208 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916Ab3F0MW4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Jun 2013 08:22:56 -0400
-In-Reply-To: <20130626231808.GB13166@amd.pavel.ucw.cz>
+Received: from co9ehsobe005.messaging.microsoft.com ([207.46.163.28]:35382
+	"EHLO co9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753479Ab3F0NBe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 09:01:34 -0400
+Content-Disposition: inline
+In-Reply-To: <CAHLCerPjGBfxugCTYkOLcGkP5N53Li=X98kz6hmb5J82SG7vdQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Shuah Khan <shuah.kh@samsung.com>, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-pm@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, lakml <linux-arm-kernel@lists.infradead.org>
 
-On Thursday, June 27, 2013 01:18:08 AM Pavel Machek wrote:
-> On Wed 2013-06-26 16:27:35, Shuah Khan wrote:
-> > pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
-> > Reason for this is that the RTC is the only reliably available piece of
-> > hardware during resume operations where a value can be set that will
-> > survive a reboot.
-> > 
-> > Consequence is that after a resume (even if it is successful) your system
-> > clock will have a value corresponding to the magic number instead of the
-> > correct date/time! It is therefore advisable to use a program like ntp-date
-> > or rdate to reset the correct date/time from an external time source when
-> > using this trace option.
-> > 
-> > There is no run-time message to warn users of the consequences of enabling
-> > pm_trace. Adding a warning message to pm_trace_store() will serve as a
-> > reminder to users to set the system date and time after resume.
-> > 
-> > Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+On Thu, Jun 27, 2013 at 05:27:02PM +0530, Amit Kucheria wrote:
+> Rob doesn't work in Linaro anymore. I've cc'ed him on his last known good
+> address at Freescale.
 
-Queued up for 3.11.
+He left Freescale half year ago.
 
-Thanks,
-Rafael
+Shawn
 
