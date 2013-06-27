@@ -1,43 +1,215 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3] power: Add warning message about incorrect system
- date and time after resume when pm_trace is enabled
-Date: Thu, 27 Jun 2013 01:18:08 +0200
-Message-ID: <20130626231808.GB13166@amd.pavel.ucw.cz>
-References: <1372285655-2450-1-git-send-email-shuah.kh@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2 V2] CPUFreq: Add new sysfs attribute freqdomain_cpus for acpi-freq driver
+Date: Thu, 27 Jun 2013 02:10:30 +0200
+Message-ID: <7392221.sLUEUIm1sY@vostro.rjw.lan>
+References: <1372250304-20975-1-git-send-email-tianyu.lan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55003 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953Ab3FZXSK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jun 2013 19:18:10 -0400
-Content-Disposition: inline
-In-Reply-To: <1372285655-2450-1-git-send-email-shuah.kh@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1372250304-20975-1-git-send-email-tianyu.lan@intel.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: lenb@kernel.org, viresh.kumar@linaro.org, jean-philippe.halimi@exascale-computing.eu, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Wed 2013-06-26 16:27:35, Shuah Khan wrote:
-> pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
-> Reason for this is that the RTC is the only reliably available piece of
-> hardware during resume operations where a value can be set that will
-> survive a reboot.
+On Wednesday, June 26, 2013 08:38:24 PM Lan Tianyu wrote:
+> Commit aa77a52 and fcf8058 changes the content of "related_cpus" and user
+> space can't get cpus which are in the same hardware coordination cpu domain
+> (These info are provided by ACPI AML method _PSD) via "related_cpus". This
+> change affects some users of original "related_cpus".
 > 
-> Consequence is that after a resume (even if it is successful) your system
-> clock will have a value corresponding to the magic number instead of the
-> correct date/time! It is therefore advisable to use a program like ntp-date
-> or rdate to reset the correct date/time from an external time source when
-> using this trace option.
+> This patch is to add a new sysfs attribute "freqdomian_cpus" for acpi-cpufreq
+> driver which exposes all cpus in the same domain regardless of hardware or
+> software coordination to make up the info loss of previous change.
 > 
-> There is no run-time message to warn users of the consequences of enabling
-> pm_trace. Adding a warning message to pm_trace_store() will serve as a
-> reminder to users to set the system date and time after resume.
-> 
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> Reference:https://bugzilla.kernel.org/show_bug.cgi?id=58761
+> Reported-by: Jean-Philippe Halimi <jean-philippe.halimi@exascale-computing.eu>
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+It looks from the bug entry that this has been tested too?
 
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> ---
+> Change since v1:
+>      Create new file acpi-cpufreq.txt under Documentation/cpu-freq and
+> move new attribute descriptor to it.
+>      Add new field freqdomain_cpus in struct acpi_cpufreq_data and record
+> cpu domain info in it. For AMD case, use sibling cpus info to overwrite
+> cpu domain info from ACPI.        
+> 
+>  Documentation/cpu-freq/acpi-cpufreq.txt |    7 +++++++
+>  drivers/cpufreq/acpi-cpufreq.c          |   23 ++++++++++++++++++++++-
+>  drivers/cpufreq/cpufreq.c               |    7 ++++---
+>  include/linux/cpufreq.h                 |    3 +++
+>  4 files changed, 36 insertions(+), 4 deletions(-)
+>  create mode 100644 Documentation/cpu-freq/acpi-cpufreq.txt
+> 
+> diff --git a/Documentation/cpu-freq/acpi-cpufreq.txt b/Documentation/cpu-freq/acpi-cpufreq.txt
+> new file mode 100644
+> index 0000000..9c59d09
+> --- /dev/null
+> +++ b/Documentation/cpu-freq/acpi-cpufreq.txt
+> @@ -0,0 +1,7 @@
+> +Sysfs interface
+> +---------------------------
+> +(Interface locates in the directory /sys/devices/system/cpu/cpuN/cpufreq)
+> +
+> +freqdomain_cpus :               List of Online + Offline CPUs in same CPU dependency
+> +                                domain.
+> +
+
+No, this is confusing.
+
+Please document it in Documentation/ABI/testing/sysfs-devices-system-cpu below
+the /sys/devices/system/cpu/cpu#/cpufreq/* thing, but please write in the
+description that this is only present if the acpi-cpufreq driver is in use.
+
+Thanks,
+Rafael
+
+
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index f4fef0a..3926402 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -70,6 +70,7 @@ struct acpi_cpufreq_data {
+>  	struct cpufreq_frequency_table *freq_table;
+>  	unsigned int resume;
+>  	unsigned int cpu_feature;
+> +	cpumask_var_t freqdomain_cpus;
+>  };
+>  
+>  static DEFINE_PER_CPU(struct acpi_cpufreq_data *, acfreq_data);
+> @@ -176,6 +177,15 @@ static struct global_attr global_boost = __ATTR(boost, 0644,
+>  						show_global_boost,
+>  						store_global_boost);
+>  
+> +static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
+> +{
+> +	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
+> +
+> +	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
+> +}
+> +
+> +cpufreq_freq_attr_ro(freqdomain_cpus);
+> +
+>  #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+>  static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
+>  			 size_t count)
+> @@ -704,6 +714,11 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	if (!data)
+>  		return -ENOMEM;
+>  
+> +	if (!zalloc_cpumask_var(&data->freqdomain_cpus, GFP_KERNEL)) {
+> +		result = -ENOMEM;
+> +		goto err_free;
+> +	}
+> +
+>  	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
+>  	per_cpu(acfreq_data, cpu) = data;
+>  
+> @@ -712,7 +727,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  
+>  	result = acpi_processor_register_performance(data->acpi_data, cpu);
+>  	if (result)
+> -		goto err_free;
+> +		goto err_free_mask;
+>  
+>  	perf = data->acpi_data;
+>  	policy->shared_type = perf->shared_type;
+> @@ -725,6 +740,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+>  		cpumask_copy(policy->cpus, perf->shared_cpu_map);
+>  	}
+> +	cpumask_copy(data->freqdomain_cpus, perf->shared_cpu_map);
+>  
+>  #ifdef CONFIG_SMP
+>  	dmi_check_system(sw_any_bug_dmi_table);
+> @@ -736,6 +752,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	if (check_amd_hwpstate_cpu(cpu) && !acpi_pstate_strict) {
+>  		cpumask_clear(policy->cpus);
+>  		cpumask_set_cpu(cpu, policy->cpus);
+> +		cpumask_copy(data->freqdomain_cpus, cpu_sibling_mask(cpu));
+>  		policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
+>  		pr_info_once(PFX "overriding BIOS provided _PSD data\n");
+>  	}
+> @@ -870,6 +887,8 @@ err_freqfree:
+>  	kfree(data->freq_table);
+>  err_unreg:
+>  	acpi_processor_unregister_performance(perf, cpu);
+> +err_free_mask:
+> +	free_cpumask_var(data->freqdomain_cpus);
+>  err_free:
+>  	kfree(data);
+>  	per_cpu(acfreq_data, cpu) = NULL;
+> @@ -888,6 +907,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+>  		per_cpu(acfreq_data, policy->cpu) = NULL;
+>  		acpi_processor_unregister_performance(data->acpi_data,
+>  						      policy->cpu);
+> +		free_cpumask_var(data->freqdomain_cpus);
+>  		kfree(data->freq_table);
+>  		kfree(data);
+>  	}
+> @@ -908,6 +928,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
+>  
+>  static struct freq_attr *acpi_cpufreq_attr[] = {
+>  	&cpufreq_freq_attr_scaling_available_freqs,
+> +	&freqdomain_cpus,
+>  	NULL,	/* this is a placeholder for cpb, do not remove */
+>  	NULL,
+>  };
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index d976e22..adf12a9f 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -573,7 +573,7 @@ out:
+>  	return i;
+>  }
+>  
+> -static ssize_t show_cpus(const struct cpumask *mask, char *buf)
+> +ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf)
+>  {
+>  	ssize_t i = 0;
+>  	unsigned int cpu;
+> @@ -588,6 +588,7 @@ static ssize_t show_cpus(const struct cpumask *mask, char *buf)
+>  	i += sprintf(&buf[i], "\n");
+>  	return i;
+>  }
+> +EXPORT_SYMBOL_GPL(cpufreq_show_cpus);
+>  
+>  /**
+>   * show_related_cpus - show the CPUs affected by each transition even if
+> @@ -595,7 +596,7 @@ static ssize_t show_cpus(const struct cpumask *mask, char *buf)
+>   */
+>  static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
+>  {
+> -	return show_cpus(policy->related_cpus, buf);
+> +	return cpufreq_show_cpus(policy->related_cpus, buf);
+>  }
+>  
+>  /**
+> @@ -603,7 +604,7 @@ static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
+>   */
+>  static ssize_t show_affected_cpus(struct cpufreq_policy *policy, char *buf)
+>  {
+> -	return show_cpus(policy->cpus, buf);
+> +	return cpufreq_show_cpus(policy->cpus, buf);
+>  }
+>  
+>  static ssize_t store_scaling_setspeed(struct cpufreq_policy *policy,
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 3c7ee2f..5fedb6c 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -438,4 +438,7 @@ void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
+>  void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
+>  
+>  void cpufreq_frequency_table_put_attr(unsigned int cpu);
+> +
+> +ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
+> +
+>  #endif /* _LINUX_CPUFREQ_H */
+> 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
