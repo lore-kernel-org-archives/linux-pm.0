@@ -1,61 +1,45 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 4/7] cpufreq:exynos:Extend Exynos cpufreq driver to
- support boost framework
-Date: Thu, 27 Jun 2013 11:08:13 +0200
-Message-ID: <20130627110813.6797b1fe@amdc308.digital.local>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
+Date: Thu, 27 Jun 2013 15:06:43 +0530
+Message-ID: <CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-5-git-send-email-l.majewski@samsung.com>
- <CAKohpokf8TZkP5Nzpp+m5KaUK8zJ6mwiuiW-td7boHQ7NtB-DQ@mail.gmail.com>
+	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-6-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpokf8TZkP5Nzpp+m5KaUK8zJ6mwiuiW-td7boHQ7NtB-DQ@mail.gmail.com>
+In-Reply-To: <1371661969-7660-6-git-send-email-l.majewski@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
 Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 Jun 2013 14:28:11 +0530, Viresh Kumar wrote:
+On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> In the core governor code, per cpu load value is calculated. This patch
+> uses it to mark processor as a "busy" one, when load value is higher than
+> 90%.
 
-> On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > The struct cpufreq_driver has been extended to embrace the
-> > information related to boost support.
-> >
-> > When "boost_mode" device tree attribute is defined for a platform,
-> > the boost_supported flag is set. Moreover boost related attributes
-> > were exported.
-> >
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> >
-> > Changes for v4:
-> > - None
-> >
-> > Changes for v3:
-> > - Remove low level boost code
-> > - Move boost management code to cpufreq core code
-> > - Use boost_supported flag to indicate if driver supports over
-> > clocking
-> >
-> > Changes for v2:
-> > - Removal of struct cpufreq_boost
-> > - Removal of the CONFIG_CPU_FREQ_BOOST flag
-> > - low_level_boost with valid address when boost is supported
-> > ---
-> >  drivers/cpufreq/exynos-cpufreq.c |    4 ++++
-> >  1 file changed, 4 insertions(+)
-> 
-> Yes, this looks fine..
-> 
-> I will Ack the whole series in the end, so no individual acks :)
+How can we take this assumption. What about a cpu which is only 70-80%
+busy? So, we would be running at around 70% of policy->max.. Now at
+this point you want to enable boost frequency and so that will happen for
+all cores... Wouldn't that burn your chip?
 
-Ok.
+> New cpufreq sysfs attribute is created (busy_cpus). It is read only
+> and provides information about number of actually busy CPU.
 
--- 
-Best regards,
+Not required.
 
-Lukasz Majewski
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 077cea7..3402533 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -148,6 +148,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>                         continue;
+>
+>                 load = 100 * (wall_time - idle_time) / wall_time;
+> +               cpufreq_set_busy_cpu(j, load > 90 ? 1 : 0);
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+do this only when boost is enabled.
+
+>                 if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+>                         int freq_avg = __cpufreq_driver_getavg(policy, j);
