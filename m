@@ -1,67 +1,43 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 16/45] rcu: Use cpu_is_offline_nocheck() to avoid
- false-positive warnings
-Date: Thu, 27 Jun 2013 13:12:46 -0700
-Message-ID: <20130627201246.GA3828@linux.vnet.ibm.com>
-References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com>
- <20130627195517.29830.64108.stgit@srivatsabhat.in.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+Date: Fri, 28 Jun 2013 09:10:53 +0530
+Message-ID: <CAKohpomuGHQ53SohgN9UyF0ODJVq3TgiyTk6TaWFSotTEZm_9w@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-3-git-send-email-l.majewski@samsung.com>
+	<CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
+	<20130627175546.677d9f9b@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130627195517.29830.64108.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com, vincent.guittot@linaro.org, laijs@cn.fujitsu.com, David.Laight@aculab.com, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, fweisbec@gmail.com, zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f52.google.com ([209.85.219.52]:51130 "EHLO
+	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754229Ab3F1Dky (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 23:40:54 -0400
+Received: by mail-oa0-f52.google.com with SMTP id g12so1740754oah.25
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 20:40:53 -0700 (PDT)
+In-Reply-To: <20130627175546.677d9f9b@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On Fri, Jun 28, 2013 at 01:25:17AM +0530, Srivatsa S. Bhat wrote:
-> In RCU code, rcu_implicit_dynticks_qs() checks if a CPU is offline,
-> while being protected by a spinlock. At first, it appears as if we need to
-> use the get/put_online_cpus_atomic() APIs to properly synchronize with CPU
-> hotplug, once we get rid of stop_machine(). However, RCU has adequate
-> synchronization with CPU hotplug, making that unnecessary. But since the
-> locking details are non-trivial, it is hard to teach this to the rudimentary
-> hotplug locking validator.
-> 
-> So use the _nocheck() variants of the cpu accessor functions to prevent false-
-> positive warnings from the CPU hotplug debug code. Also, add a comment
-> explaining the hotplug synchronization design used in RCU, so that its easy
-> to see why it is justified to use the _nocheck() variants.
-> 
-> Cc: Dipankar Sarma <dipankar@in.ibm.com>
-> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+On 27 June 2013 21:25, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Wed, 26 Jun 2013 16:24:32 +0530, Viresh Kumar wrote:
+>> > +       if (boost_enabled != state) {
+>> > +               write_lock_irqsave(&cpufreq_driver_lock, flags);
+>> > +               boost_enabled = state;
+>> > +               if (cpufreq_driver->enable_boost)
+>> > +                       ret = cpufreq_driver->enable_boost(state);
+>> > +               else
+>> > +                       ret = cpufreq_boost_trigger_state_sw();
+>
+> I will use only one call to cpufreq_driver->enable_boost(state) [*] with
+> either cpufreq_boost_enable_sw() (function with SW boost handling) or
+>  the one provided by cpufreq driver.
+>
+> Only when cpufreq driver doesn't provide [*], it will be filled with
+> "default" cpufreq_boost_enable_sw().
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> ---
-> 
->  kernel/rcutree.c |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index cf3adc6..ced28a45 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -794,7 +794,17 @@ static int rcu_implicit_dynticks_qs(struct rcu_data *rdp)
->  	if (ULONG_CMP_GE(rdp->rsp->gp_start + 2, jiffies))
->  		return 0;  /* Grace period is not old enough. */
->  	barrier();
-> -	if (cpu_is_offline(rdp->cpu)) {
-> +
-> +	/*
-> +	 * It is safe to use the _nocheck() version of cpu_is_offline() here
-> +	 * (to avoid false-positive warnings from CPU hotplug debug code),
-> +	 * because:
-> +	 * 1. rcu_gp_init() holds off CPU hotplug operations during grace
-> +	 *    period initialization.
-> +	 * 2. The current grace period has not ended yet.
-> +	 * So it is safe to sample the offline state without synchronization.
-> +	 */
-> +	if (cpu_is_offline_nocheck(rdp->cpu)) {
->  		trace_rcu_fqs(rdp->rsp->name, rdp->gpnum, rdp->cpu, "ofl");
->  		rdp->offline_fqs++;
->  		return 1;
-> 
+I didn't get it completely. You are saying you will send a function pointer
+now?
