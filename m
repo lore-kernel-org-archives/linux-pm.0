@@ -1,33 +1,103 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v4] cpufreq: stats: Add 'load_table' debugfs file to show
- accumulated data of CPUs
-Date: Fri, 28 Jun 2013 18:24:13 +0900
-Message-ID: <51CD563D.9010809@samsung.com>
-References: <1372405697-13556-1-git-send-email-cw00.choi@samsung.com>
- <CAKohpomk7tC4xZ32sOh4NQR-qNOM=xHj43GcMu_squ1nFELGpg@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH] cpu hotplug: rework cpu_hotplug locking (was [LOCKDEP]
+ cpufreq: possible circular locking dependency detected)
+Date: Fri, 28 Jun 2013 15:01:34 +0530
+Message-ID: <51CD57F6.9050906@linux.vnet.ibm.com>
+References: <20130625211544.GA2270@swordfish> <CAKohpo=ij+LTB80FtVFQZa_4uh-fceG80GBhGnhbxKio7N-Zuw@mail.gmail.com> <20130628074403.GA2201@swordfish>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpomk7tC4xZ32sOh4NQR-qNOM=xHj43GcMu_squ1nFELGpg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:55283 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755299Ab3F1JfN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jun 2013 05:35:13 -0400
+Received: from /spool/local
+	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 28 Jun 2013 19:28:46 +1000
+In-Reply-To: <20130628074403.GA2201@swordfish>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Michael Wang <wangyun@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 06/28/2013 05:27 PM, Viresh Kumar wrote:
-> On 28 June 2013 13:18, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->>  drivers/cpufreq/Kconfig            |   6 +
->>  drivers/cpufreq/cpufreq.c          |   4 +
->>  drivers/cpufreq/cpufreq_governor.c |  15 +++
->>  drivers/cpufreq/cpufreq_stats.c    | 241 +++++++++++++++++++++++++++++++++----
->>  include/linux/cpufreq.h            |   6 +
->>  5 files changed, 246 insertions(+), 26 deletions(-)
+On 06/28/2013 01:14 PM, Sergey Senozhatsky wrote:
+> On (06/28/13 10:13), Viresh Kumar wrote:
+>> On 26 June 2013 02:45, Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote:
+>>>
+>>> [   60.277396] ======================================================
+>>> [   60.277400] [ INFO: possible circular locking dependency detected ]
+>>> [   60.277407] 3.10.0-rc7-dbg-01385-g241fd04-dirty #1744 Not tainted
+>>> [   60.277411] -------------------------------------------------------
+>>> [   60.277417] bash/2225 is trying to acquire lock:
+>>> [   60.277422]  ((&(&j_cdbs->work)->work)){+.+...}, at: [<ffffffff810621b5>] flush_work+0x5/0x280
+>>> [   60.277444]
+>>> but task is already holding lock:
+>>> [   60.277449]  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81042d8b>] cpu_hotplug_begin+0x2b/0x60
+>>> [   60.277465]
+>>> which lock already depends on the new lock.
+>>
+>> Hi Sergey,
+>>
+>> Can you try reverting this patch?
+>>
+>> commit 2f7021a815f20f3481c10884fe9735ce2a56db35
+>> Author: Michael Wang <wangyun@linux.vnet.ibm.com>
+>> Date:   Wed Jun 5 08:49:37 2013 +0000
+>>
+>>     cpufreq: protect 'policy->cpus' from offlining during __gov_queue_work()
+>>
 > 
-> Please update Documentation/cpu-freq/cpufreq-stats.txt for this as well.
+> Hello,
+> Yes, this helps, of course, but at the same time it returns the previous
+> problem -- preventing cpu_hotplug in some places.
+> 
+> 
+> I have a bit different (perhaps naive) RFC patch and would like to hear
+> comments.
+> 
+> 
+> 
+> The idead is to brake existing lock dependency chain by not holding
+> cpu_hotplug lock mutex across the calls. In order to detect active
+> refcount readers or active writer, refcount now may have the following
+> values:
+> 
+> -1: active writer -- only one writer may be active, readers are blocked
+>  0: no readers/writer
+>> 0: active readers -- many readers may be active, writer is blocked
+> 
+> "blocked" reader or writer goes to wait_queue. as soon as writer finishes
+> (refcount becomes 0), it wakeups all existing processes in a wait_queue.
+> reader perform wakeup call only when it sees that pending writer is present
+> (active_writer is not NULL).
+> 
+> cpu_hotplug lock now only required to protect refcount cmp, inc, dec
+> operations so it can be changed to spinlock.
+> 
 
-OK. I'll add description.
+Its best to avoid changing the core infrastructure in order to fix some
+call-site, unless that scenario is really impossible to handle with the
+current infrastructure.
 
-Best Regards,
-Chanwoo Choi
+I have a couple of suggestions below, to solve this issue, without touching
+the core hotplug code:
+
+You can perhaps try cancelling the work item in two steps:
+  a. using cancel_delayed_work() under CPU_DOWN_PREPARE
+  b. using cancel_delayed_work_sync() under CPU_POST_DEAD
+
+And of course, destroy the resources associated with that work (like
+the timer_mutex) only after the full tear-down.
+
+Or perhaps you might find a way to perform the tear-down in just one step
+at the CPU_POST_DEAD stage. Whatever works correctly.
+
+The key point here is that the core CPU hotplug code provides us with the
+CPU_POST_DEAD stage, where the hotplug lock is _not_ held. Which is exactly
+what you want in solving the issue with cpufreq.
+
+Regards,
+Srivatsa S. Bhat
 
