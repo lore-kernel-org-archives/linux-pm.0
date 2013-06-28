@@ -1,45 +1,170 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
-Date: Fri, 28 Jun 2013 20:51:11 +0200
-Message-ID: <51CDDB1F.3080306@gmx.de>
-References: <51C08370.4050906@gmx.de> <CAKohponp7JbQeeC7D=X7+DBcWtUr2NhRKz7spxKA=+K8SAY+Og@mail.gmail.com> <51CDC518.8030907@gmx.de> <1875598.7eDhd0iuMQ@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/3] ARM: EXYNOS: remove non-working AFTR mode support
+Date: Fri, 28 Jun 2013 23:47:49 +0200
+Message-ID: <51CE0485.8020109@linaro.org>
+References: <1372241627-22695-1-git-send-email-b.zolnierkie@samsung.com> <19893620.AhWB5HomTT@amdc1227> <51CD7169.6010905@linaro.org> <2484012.IH9WOi4iIR@amdc1032>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1875598.7eDhd0iuMQ@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:37933 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635Ab3F1Vrg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jun 2013 17:47:36 -0400
+Received: by mail-wi0-f176.google.com with SMTP id ey16so1273924wid.3
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jun 2013 14:47:34 -0700 (PDT)
+In-Reply-To: <2484012.IH9WOi4iIR@amdc1032>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, jc.lee@samsung.com, lorenzo.pieralisi@arm.com, Amit Kachhap <amit.daniel@samsung.com>, rjw@sisk.pl, kyungmin.park@samsung.com
 
-On 06/28/2013 08:56 PM, Rafael J. Wysocki wrote:
-> On Friday, June 28, 2013 07:17:12 PM Toralf F=C3=B6rster wrote:
->> On 06/28/2013 05:44 AM, Viresh Kumar wrote:
->>> Can you give dumps of complete cpufreq directories for all cpus bef=
-ore
->>> and after s2r. That may give us some hint about the problem.
+On 06/28/2013 06:27 PM, Bartlomiej Zolnierkiewicz wrote:
+> On Friday, June 28, 2013 01:20:09 PM Daniel Lezcano wrote:
+>> On 06/28/2013 12:11 PM, Tomasz Figa wrote:
+>>> Hi Daniel,
+>>>
+>>> I've been fighting with this whole AFTR state as well, before Bartl=
+omiej.=20
+>>> Let me share my thoughts on this.
+>>>
+
+[ ... ]
+
+>>>
+>>> If you don't unplug all the CPUs >0 the state is obviously never re=
+ached.=20
+>>> Otherwise the whole system hangs after it tries to enter this mode =
+without=20
+>>> any reaction for external events, other than reset.
 >>
->> Because CPU0 is not affected I somehow arguing about nohz patches ..=
-=2E
+>> Need investigation.
+>>
+>> What is the exynos board version where that occurs ?
 >=20
-> Do you have CONFIG_NO_HZ_FULL set by chance?
+> Could you please tell me what exactly do you mean by that?
 >=20
-> Rafael
+> I already wrote that we can reproduce the problem on EXYNOS4210 rev0
+> and rev1.1 (we don't have rev1.0). Tomek has also reproduced the prob=
+lem
+> on some later SoCs (I hope that he can give you exact revisions).
 >=20
+> In our testing we didn't encounter the board on which the problem
+> doesn't occur. Our current working theory is that the problem may be
+> u-boot (or first stage bootloader) related.
+
+Ok, the status for what I know:
+
+Origen Exynos4210, board ver A: works for me
+Arndale Exynos5250: works for me but only if u-boot does not enable the
+hypervisor mode.
+Chromebook Exynos5250: works for me
+
+I found the following drivers:
+
+https://github.com/AndreiLux/Perseus-UNIVERSAL5410/blob/samsung/arch/ar=
+m/mach-exynos/cpuidle.c
+
+https://github.com/CyanogenMod/hardkernel-kernel-4412/blob/cm-10.1/arch=
+/arm/mach-exynos/cpuidle-exynos4.c
+
+Sounds like the num cpus > 1 is still there.
+
+[ ... ]
+
+>> The kernel is not a playground where you can upstream code and then
+>> remove it because a feature seems broken and you don't have an idea =
+of why.
 >=20
-no
+> Neither me or Tomek did upstream this code and we couldn't react in
+> time because we haven't noticed that it is completely unusable for us
+> as EXYNOS cpuidle driver is not even used by default on EXYNOS (it is
+> not enabled either in defconfig or Kconfig).
+>=20
+> Moreover the feature we are talking about (AFTR mode) is also not use=
+d
+> by default (except EXYNOS4210 rev0 on which it lockups system for us)
+> even with EXYNOS cpuidle driver being enabled (because this specific
+> feature depends on CPU hot-unplug which is not done automatically rig=
+ht
+> now).
+>=20
+> Such things like unused/broken code removal is not something very
+> unusual in the upstream kernel (I'm speaking from the experience here
+> having maintained large subsystem for a couple of years). In this
+> particular case we are talking about ~130 lines of code which can
+> be trivially brought back later when/if needed.
+>=20
+> Anyway if the code removal is controversial for you we can just disab=
+le
+> AFTR mode by default and enable it only when special command line opt=
+ion
+> is given (i.e. "aftr"). This would fix all the broken configuration
+> while still allowing the feature to be enabled on systems that had it
+> working previously (since you claim that it works on some chipset/u-b=
+oot
+> configurations).
 
-$ zgrep  CONFIG_NO_HZ_FULL /proc/config.gz
+Actually, there are several reasons I am not in favor for the moment to
+remove this code:
 
-I do just have :
+1) code can't be pushed upstream and then removed so easily
+2) I asked several times what was this cpu1 hack, I had no answer
+3) I tried to make both cpus entering the AFTR state, but the cpu1 neve=
+r
+wakes up, I asked but no answer.
 
-$ zgrep  CONFIG_NO_HZ /proc/config.gz
-CONFIG_NO_HZ_COMMON=3Dy
-CONFIG_NO_HZ_IDLE=3Dy
-CONFIG_NO_HZ=3Dy
+I would like to have some answers :)
 
+Before taking the decision to remove this state (btw you can remove the
+driver directly, no ? the default idle function is WFI), IMO it is wort=
+h
+to investigate and to spend some time to clarify what is happening. The=
+n
+we can take a decision.
+
+I am willing to help.
+
+>> I asked several times the reasons of why the AFTR state couldn't wor=
+k
+>> with multiple CPUs and I had no answer.
+>=20
+> Unfortunately I don't know the answer for your question.
+>=20
+> The AFTR mode doesn't work for us *at*all* (even with *one* CPU).
+>=20
+>> Frankly speaking I have a couple of hypothesis:
+>>
+>> 1. something is not correctly setup and the PMU does not wake up the=
+ CPU1
+>> 2. there is a silicon bug and no one wants to tell it is the case
+>>
+>> In any case, this must be investigated and identified. And then we c=
+an
+>> take a decision about this state.
+>=20
+> I don't have good idea currently how to investigate it further.
+>=20
+> I also don't have any prove that the actual work is worth it
+> (and this work can easily take some weeks).
+>=20
+> One of main responsibilities of the maintainer it to make sure that
+> the code does indeed work and that regressions (like these caused by
+> AFTR mode feature) are fixed in the timely manner, not let the code
+> sit in the limbo state for large periods of time.  It is already very
+> bad situation that the regression we are hitting was present since
+> v3.4 and we are in v3.10 now, I would like to have it fixed ASAP so
+> we may actually consider enabling cpuidle in our exynos_defconfig.
+
+I agree.
+
+Thanks
+  -- Daniel
 --=20
-MfG/Sincerely
-Toralf F=C3=B6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
