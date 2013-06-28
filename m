@@ -1,43 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Fri, 28 Jun 2013 09:10:53 +0530
-Message-ID: <CAKohpomuGHQ53SohgN9UyF0ODJVq3TgiyTk6TaWFSotTEZm_9w@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-3-git-send-email-l.majewski@samsung.com>
-	<CAKohpon7GLGvrkFQdWpco5f9P7S8L-2-ETMu2-3dFEDwOgL1RQ@mail.gmail.com>
-	<20130627175546.677d9f9b@amdc308.digital.local>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Fri, 28 Jun 2013 09:14:48 +0530
+Message-ID: <CAKohponp7JbQeeC7D=X7+DBcWtUr2NhRKz7spxKA=+K8SAY+Og@mail.gmail.com>
+References: <51C08370.4050906@gmx.de>
+	<1778593.ufLkNuJuaY@vostro.rjw.lan>
+	<51CB34A2.7090404@gmx.de>
+	<1475885.FjB577tJj8@vostro.rjw.lan>
+	<CAKohpokbQS8Bb5D2B_UaN-eyVnAbQYKDKh5pm_QzEDMoABwcOw@mail.gmail.com>
+	<51CC7DB2.3020502@gmx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f52.google.com ([209.85.219.52]:51130 "EHLO
-	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754229Ab3F1Dky (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 23:40:54 -0400
-Received: by mail-oa0-f52.google.com with SMTP id g12so1740754oah.25
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 20:40:53 -0700 (PDT)
-In-Reply-To: <20130627175546.677d9f9b@amdc308.digital.local>
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:51289 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754210Ab3F1Dot convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jun 2013 23:44:49 -0400
+Received: by mail-ob0-f173.google.com with SMTP id wc20so1506956obb.32
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jun 2013 20:44:48 -0700 (PDT)
+In-Reply-To: <51CC7DB2.3020502@gmx.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+To: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 27 June 2013 21:25, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> On Wed, 26 Jun 2013 16:24:32 +0530, Viresh Kumar wrote:
->> > +       if (boost_enabled != state) {
->> > +               write_lock_irqsave(&cpufreq_driver_lock, flags);
->> > +               boost_enabled = state;
->> > +               if (cpufreq_driver->enable_boost)
->> > +                       ret = cpufreq_driver->enable_boost(state);
->> > +               else
->> > +                       ret = cpufreq_boost_trigger_state_sw();
->
-> I will use only one call to cpufreq_driver->enable_boost(state) [*] with
-> either cpufreq_boost_enable_sw() (function with SW boost handling) or
->  the one provided by cpufreq driver.
->
-> Only when cpufreq driver doesn't provide [*], it will be filled with
-> "default" cpufreq_boost_enable_sw().
+On 27 June 2013 23:30, Toralf F=F6rster <toralf.foerster@gmx.de> wrote:
+> Yep, but 14 commits to bisect and about 20-30 min for each - will see=
+,
+> when I find a time slot.
 
-I didn't get it completely. You are saying you will send a function pointer
-now?
+Hmm..
+
+> Just FWIW thie following is now a good indicator for the issue - that=
+'s
+> the picture after wakeup, where I'd expect always 800 MHz:
+>
+> $ sudo cat /sys/devices/system/cpu/cpu?/cpufreq/cpuinfo_cur_freq
+> 800000
+> 2601000
+> 2601000
+> 2601000
+
+Can you give dumps of complete cpufreq directories for all cpus before
+and after s2r. That may give us some hint about the problem.
