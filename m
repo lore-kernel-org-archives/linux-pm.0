@@ -1,75 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
-Date: Fri, 28 Jun 2013 09:20:40 +0530
-Message-ID: <CAKohpomrPP9Lzk+fMn+Ba+J+2N740LR5NurVMomx8zww3AWLww@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-6-git-send-email-l.majewski@samsung.com>
-	<CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
-	<20130627125819.5c90da30@amdc308.digital.local>
-	<CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
-	<20130627164204.370dc4a6@amdc308.digital.local>
+Subject: Re: [LOCKDEP] cpufreq: possible circular locking dependency detected
+Date: Fri, 28 Jun 2013 10:13:14 +0530
+Message-ID: <CAKohpo=ij+LTB80FtVFQZa_4uh-fceG80GBhGnhbxKio7N-Zuw@mail.gmail.com>
+References: <20130625211544.GA2270@swordfish>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130627164204.370dc4a6@amdc308.digital.local>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130625211544.GA2270@swordfish>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Michael Wang <wangyun@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 27 June 2013 20:12, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> On Thu, 27 Jun 2013 16:46:44 +0530, Viresh Kumar wrote:
->> @Rafael: We need you to jump into this discussion now, I don't
->> have a good idea about what we should do :)
->>
->> On 27 June 2013 16:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
->> > Do you have any idea of how to precisely set the load threshold?
->>
->> I thought we are talking about cpu being in idle state.
+On 26 June 2013 02:45, Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote:
 >
-> If we _drop_ the idea with thermal subsystem to disable the boost,
-> the logic as far as I've understood shall here be as follow:
->
-> Only enable BOOST when one CPU load > THRESHOLD_MAX and other CPUs <
-> THRESHOLD_MIN
+> [   60.277396] ======================================================
+> [   60.277400] [ INFO: possible circular locking dependency detected ]
+> [   60.277407] 3.10.0-rc7-dbg-01385-g241fd04-dirty #1744 Not tainted
+> [   60.277411] -------------------------------------------------------
+> [   60.277417] bash/2225 is trying to acquire lock:
+> [   60.277422]  ((&(&j_cdbs->work)->work)){+.+...}, at: [<ffffffff810621b5>] flush_work+0x5/0x280
+> [   60.277444]
+> but task is already holding lock:
+> [   60.277449]  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81042d8b>] cpu_hotplug_begin+0x2b/0x60
+> [   60.277465]
+> which lock already depends on the new lock.
 
-Again, I thought that we are talking about cpus being completely idle.
-i.e. in WFI (wait for interrupt) or deeper states.
+Hi Sergey,
 
-> THRESHOLD_MIN & THRESHOLD_MAX are SoC specific.
->
-> In my opinion the above constrain imposes policy to the cpufreq driver.
+Can you try reverting this patch?
 
-Hmm.
+commit 2f7021a815f20f3481c10884fe9735ce2a56db35
+Author: Michael Wang <wangyun@linux.vnet.ibm.com>
+Date:   Wed Jun 5 08:49:37 2013 +0000
 
-> So thermal or "other solution" [*] shall disable boost when overheated
-> and enable it back when things cool down.
-
-yeah..
-
-> [*] @ Viresh & Rafael do you have any idea about the "other solution"
-> here?
-
-Not really sure :)
-
->> There might be platforms where overheating isn't a issue with boost,
->> if it is only enabled while only one cpu is in use.
->
-> Could you elaborate more on this?
-
-I meant platforms where chip doesn't heat up much when only one core
-is in use and is using boost frequency. So, they may not require support
-for thermal layer at all.. But I am not aware of what the ground reality is. If
-such systems can be possible or not.
-
-> This would prevent situation when somebody made a mistake and
-> had enabled boost, but for some reason had forgotten to
-> configure/enable thermal subsystem.
->
-> Moreover Kconfig's CONFIG_CPUFREQ_BOOST flag would indicate that user
-> enabled boost for some reason and he/she (presumably) knows what is
-> doing.
-
-Yeah.. And drivers like ACPI cpufreq and exynos can simply do a select
-from their Kconfig entries so that user isn't required to select them.
+    cpufreq: protect 'policy->cpus' from offlining during __gov_queue_work()
