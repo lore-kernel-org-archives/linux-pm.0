@@ -1,103 +1,120 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH 1/3] ARM: EXYNOS: remove non-working AFTR mode support
-Date: Sat, 29 Jun 2013 01:07:13 +0200
-Message-ID: <23262498.GmEHQP5Xlz@flatron>
-References: <1372241627-22695-1-git-send-email-b.zolnierkie@samsung.com> <1721255.XMYjiW81jp@amdc1227> <51CE0DB8.5040407@linaro.org>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: Re: [RFC PATCH] cpu hotplug: rework cpu_hotplug locking (was
+ [LOCKDEP] cpufreq: possible circular locking dependency detected)
+Date: Sat, 29 Jun 2013 10:35:39 +0300
+Message-ID: <20130629073539.GA2227@swordfish>
+References: <20130625211544.GA2270@swordfish>
+ <CAKohpo=ij+LTB80FtVFQZa_4uh-fceG80GBhGnhbxKio7N-Zuw@mail.gmail.com>
+ <20130628074403.GA2201@swordfish>
+ <51CD9A1A.1060908@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <51CE0DB8.5040407@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Tomasz Figa <t.figa@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, jc.lee@samsung.com, lorenzo.pieralisi@arm.com, Amit Kachhap <amit.daniel@samsung.com>, rjw@sisk.pl, kyungmin.park@samsung.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f47.google.com ([209.85.214.47]:44124 "EHLO
+	mail-bk0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039Ab3F2HgV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 29 Jun 2013 03:36:21 -0400
+Content-Disposition: inline
+In-Reply-To: <51CD9A1A.1060908@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Wang <wangyun@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Saturday 29 of June 2013 00:27:04 Daniel Lezcano wrote:
-> On 06/28/2013 07:31 PM, Tomasz Figa wrote:
-> > On Friday 28 of June 2013 13:20:09 Daniel Lezcano wrote:
-> [ ... ]
-> 
-> >> The kernel is not a playground where you can upstream code and then
-> >> remove it because a feature seems broken and you don't have an idea
-> >> of
-> >> why.
+On (06/28/13 19:43), Srivatsa S. Bhat wrote:
+> On 06/28/2013 01:14 PM, Sergey Senozhatsky wrote:
+> > Hello,
+> > Yes, this helps, of course, but at the same time it returns the previous
+> > problem -- preventing cpu_hotplug in some places.
 > > 
-> > Well, first of all, it has not been upstreamed correctly: a) without
-> > any given rationale (or at least without any I could find) and b)
-> > without enough testing.
-> 
-> +1
-> 
-> >> I asked several times the reasons of why the AFTR state couldn't work
-> >> with multiple CPUs and I had no answer.
-> >> 
-> >> Frankly speaking I have a couple of hypothesis:
-> >> 
-> >> 1. something is not correctly setup and the PMU does not wake up the
-> >> CPU1 2. there is a silicon bug and no one wants to tell it is the
-> >> case
-> >> 
-> >> In any case, this must be investigated and identified. And then we
-> >> can
-> >> take a decision about this state.
 > > 
-> > Well, everything you're saying is correct, assuming that this feature
-> > is useful, which needs confirmation. I'd still want any evidence of
-> > this feature being of any use first, to not waste time on something
-> > that is useless.
+> > I have a bit different (perhaps naive) RFC patch and would like to hear
+> > comments.
+> > 
+> > 
+> > 
+> > The idead is to brake existing lock dependency chain by not holding
+> > cpu_hotplug lock mutex across the calls. In order to detect active
+> > refcount readers or active writer, refcount now may have the following
+> > values:
+> > 
+> > -1: active writer -- only one writer may be active, readers are blocked
+> >  0: no readers/writer
+> >> 0: active readers -- many readers may be active, writer is blocked
+> > 
+> > "blocked" reader or writer goes to wait_queue. as soon as writer finishes
+> > (refcount becomes 0), it wakeups all existing processes in a wait_queue.
+> > reader perform wakeup call only when it sees that pending writer is present
+> > (active_writer is not NULL).
+> > 
+> > cpu_hotplug lock now only required to protect refcount cmp, inc, dec
+> > operations so it can be changed to spinlock.
+> > 
 > 
-> IMHO, it is useful. That's sure a highly integrated hardware with a lot
-> of peripherals, the power saving is lost in the noise but with a small
-> embedded device, the power saving is significant.
+> Hmm, now that I actually looked at your patch, I see that it is completely
+> wrong! I'm sure you intended to fix the *bug*, but instead you ended
+> up merely silencing the *warning* (and also left lockdep blind), leaving
+> the actual bug as it is!
+>
 
-Be aware that we might be talking here about savings of single 
-milliamperes, because the highest, dynamic, power consumption is already 
-bypassed in WFI idle mode, with stopped core clock.
+Thank you for your time and review.
 
-Our measurements have shown that static leakage is pretty low on SoCs we 
-checked, that is Exynos 4210 and Exynos 4412. I don't remember exactly 
-ATM, because it was some time ago, but it was something around 2 mA per 
-core.
 
-Now it depends on overall power consumption of given system, whether such 
-saving is significant or ignorable - in our case it is the latter, because 
-consumption caused by rest of the system (think of display, wireless 
-radios, etc.) is much higher.
+> So let me summarize what the actual bug is and what is it that actually
+> needs fixing:
+> 
+> Basically you have 2 things -
+> 1. A worker item (cs_dbs_timer in this case) that can re-arm itself
+>    using gov_queue_work(). And gov_queue_work() uses get/put_online_cpus().
+> 
+> 2. In the cpu_down() path, you want to cancel the worker item and destroy
+>    and cleanup its resources (the timer_mutex).
+> 
+> So the problem is that you can deadlock like this:
+> 
+>     CPU 3                                  CPU 4
+> 
+>    cpu_down()
+>    -> acquire hotplug.lock
+> 
+> 				      cs_dbs_timer()
+> 				        -> get_online_cpus()
+> 					   //wait on hotplug.lock
+> 
+> 
+>    try to cancel cs_dbs_timer()
+>    synchronously.
+> 
+> That leads to a deadlock, because, cs_dbs_timer() is waiting to
+> get the hotplug lock which CPU 3 is holding, whereas CPU 3 is
+> waiting for cs_dbs_timer() to finish. So they can end up mutually
+> waiting for each other, forever. (Yeah, the lockdep splat might have
+> been a bit cryptic to decode this, but here it is).
+> 
+> So to fix the *bug*, you need to avoid waiting synchronously while
+> holding the hotplug lock. Possibly by using cancel_delayed_work_sync()
+> under CPU_POST_DEAD or something like that. That would remove the deadlock
+> possibility.
 
-> What I am worried about is the different SoCs being introduced in this
-> driver without investigating this cpu1 restriction and it sounds like
-> the AFTR seems to work (I have an odroid-u2 with a 4412 I will test to
-> check if the AFTR works on it) and nobody seems to be hurt by this and,
-> as you stated, there is no rational about it. That means the Exynos will
-> become really more and more power aggressive with 4/A15 or 8/A15 based
-> boards if the AFTR state is not correctly supported.
+will take a look. Thank you!
 
-See my other reply, for a bit more information about this state and CPU1 
-restriction.
+	-ss
 
-> AFAICT, there is also the LPA state and the DEEPSLEEP, right ? If the
-> AFTR does not work, I don't see these states working too.
-
-Yes, there are other states as well. With similar execution flow, but 
-different set of preserved and lost context, requiring more or less save 
-and restore on kernel side.
-
-> The cpuidle driver is critical for the new b.L architecture. If we
-> aren't able to put a cluster of big cpus in a power down state, we lose
-> the benefit of all the work made up-front at the scheduler level (eg.
-> small task packing, workqueue/timer migration) and more generally we
-> lose the benefit of the b.L architecture (except if we do some hacks
-> which are orthogonal to the generic approach).
-
-In this case just simple power down of CPU cores is enough, which doesn't 
-require entering system-wide low power state, such as AFTR and friends. 
-Such low power mode is needed only when you want to power off all the 
-cores, which makes you lose program execution state.
-
-When at least one of the cores is still active, the whole system is in 
-control of kernel and no special care must be taken to bring up cores that 
-are down and back, just standard SMP/hotplug ops.
-
-Best regards,
-Tomasz
+> Your patch, on the other hand, doesn't remove the deadlock possibility:
+> just because you don't hold the lock throughout the hotplug operation
+> doesn't mean that the task calling get_online_cpus() can sneak in and
+> finish its work in-between a hotplug operation (because the refcount
+> won't allow it to). Also, it should *not* be allowed to sneak in like
+> that, since that constitutes *racing* with CPU hotplug, which it was
+> meant to avoid!.
+> 
+> Also, as a side effect of not holding the lock throughout the hotplug
+> operation, lockdep goes blind, and doesn't complain, even though the
+> actual bug is still there! Effectively, this is nothing but papering
+> over the bug and silencing the warning, which we should never do.
+> 
+> So, please, fix the _cpufreq_ code to resolve the deadlock.
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
