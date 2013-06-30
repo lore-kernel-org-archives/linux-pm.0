@@ -1,100 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
-Date: Mon, 01 Jul 2013 00:46:03 +0200
-Message-ID: <19337614.Mnu5DqParj@vostro.rjw.lan>
-References: <51C08370.4050906@gmx.de> <51D06556.7080204@gmx.de> <51D07E7F.2030709@linux.vnet.ibm.com>
+From: Nell Hardcastle <nell@spicious.com>
+Subject: [PATCH V2] intel_pstate: Add Haswell CPU models
+Date: Sun, 30 Jun 2013 15:58:57 -0700
+Message-ID: <51D0B831.3000707@spicious.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51D07E7F.2030709@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:47013 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485Ab3F3W7A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jun 2013 18:59:00 -0400
+Received: by mail-pa0-f41.google.com with SMTP id bj3so4364998pad.28
+        for <linux-pm@vger.kernel.org>; Sun, 30 Jun 2013 15:58:59 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com
 
-On Monday, July 01, 2013 12:22:47 AM Srivatsa S. Bhat wrote:
-> On 06/30/2013 10:35 PM, Toralf F=C3=B6rster wrote:
-> > On 06/30/2013 06:33 PM, Srivatsa S. Bhat wrote:
-> >> Toralf, can you please
-> >> try out the below patch and see if it improves anything? (Don't re=
-vert anything,
-> >> just apply the below diff on a problematic kernel and see if it so=
-lves your
-> >> issue).
-> >=20
-> > applied on top of a66b2e5 - issue went away (either fixed or hidden=
- now)
-> >=20
->=20
-> Cool! So here is the proper patch, with changelog added.
->=20
-> Regards,
-> Srivatsa S. Bhat
->=20
->=20
-> ---------------------------------------------------------------------=
---------
->=20
-> From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> Subject: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
->=20
-> Toralf F=C3=B6rster reported that the cpufreq ondemand governor behav=
-es erratically
-> (doesn't scale well) after a suspend/resume cycle. The problem was th=
-at the
-> cpufreq subsystem's idea of the cpu frequencies differed from the act=
-ual
-> frequencies set in the hardware after a suspend/resume cycle. Toralf =
-bisected
-> the problem to commit a66b2e5 (cpufreq: Preserve sysfs files across
-> suspend/resume).
->=20
-> Among other (harmless) things, that commit skipped the call to
-> cpufreq_update_policy() in the resume path. But cpufreq_update_policy=
-() plays
-> an important role during resume, because it is responsible for checki=
-ng if
-> the BIOS changed the cpu frequencies behind our back and resynchroniz=
-e the
-> cpufreq subsystem's knowledge of the cpu frequencies, and update them
-> accordingly.
->=20
-> So, restore the call to cpufreq_update_policy() in the resume path to=
- fix
-> the cpufreq regression.
->=20
-> Reported-by: Toralf F=C3=B6rster <toralf.foerster@gmx.de>
-> Tested-by: Toralf F=C3=B6rster <toralf.foerster@gmx.de>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Enable the intel_pstate driver for Haswell CPUs. One missing Ivy Bridge
+model (0x3E) is also included. Models referenced from
+tools/power/x86/turbostat/turbostat.c:has_nehalem_turbo_ratio_limit
 
-Thanks Srivatsa, I'll queue it up as 3.11 (and 3.10-stable) material.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Nell Hardcastle <nell@spicious.com>
+---
+ drivers/cpufreq/intel_pstate.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Thanks,
-Rafael
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 07f2840..dbd1032 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -522,6 +522,11 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x2a, default_policy),
+ 	ICPU(0x2d, default_policy),
+ 	ICPU(0x3a, default_policy),
++	ICPU(0x3c, default_policy),
++	ICPU(0x3e, default_policy),
++	ICPU(0x3f, default_policy),
++	ICPU(0x45, default_policy),
++	ICPU(0x46, default_policy),
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
+-- 
+1.8.3.1
 
-
-> ---
->=20
->  drivers/cpufreq/cpufreq_stats.c |    1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufre=
-q_stats.c
-> index fb65dec..591b6fb 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -349,6 +349,7 @@ static int __cpuinit cpufreq_stat_cpu_callback(st=
-ruct notifier_block *nfb,
-> =20
->  	switch (action) {
->  	case CPU_ONLINE:
-> +	case CPU_ONLINE_FROZEN:
->  		cpufreq_update_policy(cpu);
->  		break;
->  	case CPU_DOWN_PREPARE:
->=20
->=20
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
