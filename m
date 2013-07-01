@@ -1,64 +1,49 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] block: Fix possible sleep in invalid context
-Date: Mon, 1 Jul 2013 15:30:15 -0700
-Message-ID: <20130701153015.9842a0b2d291e01105d853d0@linux-foundation.org>
-References: <1372692515-31969-1-git-send-email-sthumma@codeaurora.org>
-	<20130701151712.f453745bc0c587f449cc3214@linux-foundation.org>
-	<1372717451.2385.58.camel@dabdike>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: [RFC/PATCH 0/2] ARM: kirkwood: Add suspend/resume support
+Date: Mon,  1 Jul 2013 19:47:27 -0300
+Message-ID: <1372718849-2912-1-git-send-email-ezequiel.garcia@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:50006 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753736Ab3GAWaR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jul 2013 18:30:17 -0400
-In-Reply-To: <1372717451.2385.58.camel@dabdike>
+Received: from mail.free-electrons.com ([94.23.35.102]:43508 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196Ab3GAWri (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jul 2013 18:47:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Sujit Reddy Thumma <sthumma@codeaurora.org>, Aaron Lu <aaron.lu@intel.com>, Jens Axboe <axboe@kernel.dk>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, stable@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Simon Guinot <sguinot@lacie.com>, Russell King <linux@arm.linux.org.uk>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-On Mon, 01 Jul 2013 15:24:11 -0700 James Bottomley <James.Bottomley@hansenpartnership.com> wrote:
+This patchset implements a very basic suspend/resume support on
+Kirkwood SoC's, based on the work of Simon Guinot.
+Given the CPU itself is not stopped on suspend, but just sits
+waiting for interruption, this is more similar to a standby-mode,
+than to a real suspend-to-RAM.
 
-> > --- a/block/blk-core.c~block-fix-possible-sleep-in-invalid-context-fix
-> > +++ a/block/blk-core.c
-> > @@ -3159,15 +3159,14 @@ EXPORT_SYMBOL(blk_pre_runtime_resume);
-> >   */
-> >  void blk_post_runtime_resume(struct request_queue *q, int err)
-> >  {
-> > +	spin_lock_irq(q->queue_lock);
-> >  	if (!err) {
-> > -		spin_lock_irq(q->queue_lock);
-> >  		q->rpm_status = RPM_ACTIVE;
-> >  		__blk_run_queue(q);
-> >  		pm_runtime_mark_last_busy(q->dev);
-> >  		spin_unlock_irq(q->queue_lock);
-> >  		pm_request_autosuspend(q->dev);
-> >  	} else {
-> > -		spin_lock_irq(q->queue_lock);
-> >  		q->rpm_status = RPM_SUSPENDED;
-> >  		spin_unlock_irq(q->queue_lock);
-> >  	}
-> > _
-> > 
-> > 
-> > I wonder if we actually need locking around that second write to
-> > q->rpm_status.
-> 
-> Shouldn't: it's an int, which makes it a 32 bit quantity we believe to
-> have atomic write properties on every platform.
+In this opportunity, I'm sending this patchset as a very early RFC,
+mostly to get some feedback on the first patch that implements the
+suspend/resume procedures in the Feroceon CPU. This implemenation
+has been copy-pasted from the one in ARM926, since I failed to spot
+any differences between the CPU's on that matter.
 
-Yes, but.  If there's some other code path which does:
+Maybe someone more knowledgable can take a look and provide some insights.
 
-	spin_lock(queue_lock);
-	x = q->rpm_status;
-	...
-	y = q->rpm_status;
-	...
-	<assumes x == y>
-	spin_unlock(queue_lock);
+This applies cleanly on top of v3.10-rc7 and has been tested on an
+Openblocks A6 box. Notice that the network controller clock is not gated,
+because the driver still needs proper suspend/resume operations.
 
-then it blows up if we make the suggested change.  Stranger things have
-happened...
+Thanks a lot!
+
+Ezequiel Garcia (2):
+  ARM: feroceon: Add suspend/resume operation
+  ARM: kirkwood: Add basic suspend-to-RAM support
+
+ arch/arm/Kconfig                                  |  2 +-
+ arch/arm/mach-kirkwood/Makefile                   |  1 +
+ arch/arm/mach-kirkwood/include/mach/bridge-regs.h |  2 +
+ arch/arm/mach-kirkwood/pm.c                       | 83 +++++++++++++++++++++++
+ arch/arm/mm/proc-feroceon.S                       | 26 +++++++
+ 5 files changed, 113 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/mach-kirkwood/pm.c
+
+-- 
+1.8.1.5
 
