@@ -1,136 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix runtime warnings on systems with shared core clocks
-Date: Tue, 2 Jul 2013 10:45:02 +0530
-Message-ID: <CAKohponeEC=CGzJhgCY+Cvwna6YkkRBkANjYSAqP9jf8qfJ2yA@mail.gmail.com>
-References: <1372724227-17209-1-git-send-email-broonie@kernel.org>
+From: Michael Wang <wangyun@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 10/45] smp: Use get/put_online_cpus_atomic() to prevent
+ CPU offline
+Date: Tue, 02 Jul 2013 13:32:58 +0800
+Message-ID: <51D2660A.8000401@linux.vnet.ibm.com>
+References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com> <20130627195418.29830.34958.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=001a11c21b0467e3e604e0806d6c
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:45268 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379Ab3GBFPE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2013 01:15:04 -0400
-Received: by mail-oa0-f44.google.com with SMTP id l10so5808970oag.17
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jul 2013 22:15:02 -0700 (PDT)
-In-Reply-To: <1372724227-17209-1-git-send-email-broonie@kernel.org>
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:60378 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932102Ab3GBFdP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2013 01:33:15 -0400
+Received: from /spool/local
+	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <wangyun@linux.vnet.ibm.com>;
+	Tue, 2 Jul 2013 15:25:51 +1000
+In-Reply-To: <20130627195418.29830.34958.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Mark Brown <broonie@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com, vincent.guittot@linaro.org, laijs@cn.fujitsu.com, David.Laight@aculab.com, rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, fweisbec@gmail.com, zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Wang YanQing <udknight@gmail.com>, Shaohua Li <shli@fusionio.com>, Jan Beulich <jbeulich@suse.com>, liguang <lig.fnst@cn.fujitsu.com>
 
---001a11c21b0467e3e604e0806d6c
-Content-Type: text/plain; charset=ISO-8859-1
+Hi, Srivatsa
 
-On 2 July 2013 05:47, Mark Brown <broonie@kernel.org> wrote:
-> I'll try to have a look at doing the code motion fix tomorrow if that's
-> more suitable, the check seems like a good idea and looking at the code
-> it's probably sensible to factor out more of the changes.
+On 06/28/2013 03:54 AM, Srivatsa S. Bhat wrote:
+[snip]
+> @@ -625,8 +632,9 @@ EXPORT_SYMBOL(on_each_cpu_mask);
+>   * The function might sleep if the GFP flags indicates a non
+>   * atomic allocation is allowed.
+>   *
+> - * Preemption is disabled to protect against CPUs going offline but not online.
+> - * CPUs going online during the call will not be seen or sent an IPI.
+> + * We use get/put_online_cpus_atomic() to protect against CPUs going
+> + * offline but not online. CPUs going online during the call will
+> + * not be seen or sent an IPI.
 
-So sorry for this, The time I tried it, was booting it with only one cpu
-per cluster for some reason :(
+I was a little confused about this comment, if the offline-cpu still
+have chances to become online, then there is chances that we will pick
+it from for_each_online_cpu(), isn't it? Did I miss some point?
 
-Please see if below fixes it for you. Use attached patch for testing it.
+Regards,
+Michael Wang
 
-------x------------------x-------------
+>   *
+>   * You must not call this function with disabled interrupts or
+>   * from a hardware interrupt handler or from a bottom half handler.
+> @@ -641,26 +649,26 @@ void on_each_cpu_cond(bool (*cond_func)(int cpu, void *info),
+>  	might_sleep_if(gfp_flags & __GFP_WAIT);
+> 
+>  	if (likely(zalloc_cpumask_var(&cpus, (gfp_flags|__GFP_NOWARN)))) {
+> -		preempt_disable();
+> +		get_online_cpus_atomic();
+>  		for_each_online_cpu(cpu)
+>  			if (cond_func(cpu, info))
+>  				cpumask_set_cpu(cpu, cpus);
+>  		on_each_cpu_mask(cpus, func, info, wait);
+> -		preempt_enable();
+> +		put_online_cpus_atomic();
+>  		free_cpumask_var(cpus);
+>  	} else {
+>  		/*
+>  		 * No free cpumask, bother. No matter, we'll
+>  		 * just have to IPI them one by one.
+>  		 */
+> -		preempt_disable();
+> +		get_online_cpus_atomic();
+>  		for_each_online_cpu(cpu)
+>  			if (cond_func(cpu, info)) {
+>  				ret = smp_call_function_single(cpu, func,
+>  								info, wait);
+>  				WARN_ON_ONCE(!ret);
+>  			}
+> -		preempt_enable();
+> +		put_online_cpus_atomic();
+>  	}
+>  }
+>  EXPORT_SYMBOL(on_each_cpu_cond);
+> 
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Tue, 2 Jul 2013 10:41:54 +0530
-Subject: [PATCH] cpufreq: Fix serialization of frequency transitions
-
-Commit 7c30ed ("cpufreq: make sure frequency transitions are serialized")
-interacts poorly with systems that have a single core freqency for all
-cores.  On such systems we have a single policy for all cores with
-several CPUs.  When we do a frequency transition the governor calls the
-pre and post change notifiers which causes cpufreq_notify_transition()
-per CPU.  Since the policy is the same for all of them all CPUs after
-the first and the warnings added are generated by checking a per-policy
-flag the warnings will be triggered for all cores after the first.
-
-Fix this by allowing notifier to be called for n times. Where n is the number of
-cpus in policy->cpus.
-
-Reported-by: Mark Brown <broonie@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 75715f1..438dcee 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -264,11 +264,12 @@ void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
- 	switch (state) {
-
- 	case CPUFREQ_PRECHANGE:
--		if (WARN(policy->transition_ongoing,
-+		if (WARN(policy->transition_ongoing ==
-+					cpumask_weight(policy->cpus),
- 				"In middle of another frequency transition\n"))
- 			return;
-
--		policy->transition_ongoing = true;
-+		policy->transition_ongoing++;
-
- 		/* detect if the driver reported a value as "old frequency"
- 		 * which is not equal to what the cpufreq core thinks is
-@@ -293,7 +294,7 @@ void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
- 				"No frequency transition in progress\n"))
- 			return;
-
--		policy->transition_ongoing = false;
-+		policy->transition_ongoing--;
-
- 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
- 		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
-
---001a11c21b0467e3e604e0806d6c
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-Fix-serialization-of-frequency-transitions.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-Fix-serialization-of-frequency-transitions.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_himn78sx0
-
-RnJvbSA0NDIzYmMyZmFkZTNhN2RlODA3YTk5ZDhiODg5NGE1MzFjYWU0YjgxIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NDQyM2JjMmZhZGUzYTdkZTgwN2E5OWQ4Yjg4OTRh
-NTMxY2FlNGI4MS4xMzcyNzQyMDM1LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVHVlLCAyIEp1bCAy
-MDEzIDEwOjQxOjU0ICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogRml4IHNlcmlhbGl6
-YXRpb24gb2YgZnJlcXVlbmN5IHRyYW5zaXRpb25zCgpDb21taXQgN2MzMGVkICgiY3B1ZnJlcTog
-bWFrZSBzdXJlIGZyZXF1ZW5jeSB0cmFuc2l0aW9ucyBhcmUgc2VyaWFsaXplZCIpCmludGVyYWN0
-cyBwb29ybHkgd2l0aCBzeXN0ZW1zIHRoYXQgaGF2ZSBhIHNpbmdsZSBjb3JlIGZyZXFlbmN5IGZv
-ciBhbGwKY29yZXMuICBPbiBzdWNoIHN5c3RlbXMgd2UgaGF2ZSBhIHNpbmdsZSBwb2xpY3kgZm9y
-IGFsbCBjb3JlcyB3aXRoCnNldmVyYWwgQ1BVcy4gIFdoZW4gd2UgZG8gYSBmcmVxdWVuY3kgdHJh
-bnNpdGlvbiB0aGUgZ292ZXJub3IgY2FsbHMgdGhlCnByZSBhbmQgcG9zdCBjaGFuZ2Ugbm90aWZp
-ZXJzIHdoaWNoIGNhdXNlcyBjcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCkKcGVyIENQVS4gIFNp
-bmNlIHRoZSBwb2xpY3kgaXMgdGhlIHNhbWUgZm9yIGFsbCBvZiB0aGVtIGFsbCBDUFVzIGFmdGVy
-CnRoZSBmaXJzdCBhbmQgdGhlIHdhcm5pbmdzIGFkZGVkIGFyZSBnZW5lcmF0ZWQgYnkgY2hlY2tp
-bmcgYSBwZXItcG9saWN5CmZsYWcgdGhlIHdhcm5pbmdzIHdpbGwgYmUgdHJpZ2dlcmVkIGZvciBh
-bGwgY29yZXMgYWZ0ZXIgdGhlIGZpcnN0LgoKRml4IHRoaXMgYnkgYWxsb3dpbmcgbm90aWZpZXIg
-dG8gYmUgY2FsbGVkIGZvciBuIHRpbWVzLiBXaGVyZSBuIGlzIHRoZSBudW1iZXIgb2YKY3B1cyBp
-biBwb2xpY3ktPmNwdXMuCgpSZXBvcnRlZC1ieTogTWFyayBCcm93biA8YnJvb25pZUBsaW5hcm8u
-b3JnPgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3Jn
-PgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgfCA3ICsrKystLS0KIDEgZmlsZSBjaGFu
-Z2VkLCA0IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy9jcHVmcmVxL2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKaW5kZXggNzU3
-MTVmMS4uNDM4ZGNlZSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYworKysg
-Yi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCkBAIC0yNjQsMTEgKzI2NCwxMiBAQCB2b2lkIF9f
-Y3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbihzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwK
-IAlzd2l0Y2ggKHN0YXRlKSB7CiAKIAljYXNlIENQVUZSRVFfUFJFQ0hBTkdFOgotCQlpZiAoV0FS
-Tihwb2xpY3ktPnRyYW5zaXRpb25fb25nb2luZywKKwkJaWYgKFdBUk4ocG9saWN5LT50cmFuc2l0
-aW9uX29uZ29pbmcgPT0KKwkJCQkJY3B1bWFza193ZWlnaHQocG9saWN5LT5jcHVzKSwKIAkJCQki
-SW4gbWlkZGxlIG9mIGFub3RoZXIgZnJlcXVlbmN5IHRyYW5zaXRpb25cbiIpKQogCQkJcmV0dXJu
-OwogCi0JCXBvbGljeS0+dHJhbnNpdGlvbl9vbmdvaW5nID0gdHJ1ZTsKKwkJcG9saWN5LT50cmFu
-c2l0aW9uX29uZ29pbmcrKzsKIAogCQkvKiBkZXRlY3QgaWYgdGhlIGRyaXZlciByZXBvcnRlZCBh
-IHZhbHVlIGFzICJvbGQgZnJlcXVlbmN5IgogCQkgKiB3aGljaCBpcyBub3QgZXF1YWwgdG8gd2hh
-dCB0aGUgY3B1ZnJlcSBjb3JlIHRoaW5rcyBpcwpAQCAtMjkzLDcgKzI5NCw3IEBAIHZvaWQgX19j
-cHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LAog
-CQkJCSJObyBmcmVxdWVuY3kgdHJhbnNpdGlvbiBpbiBwcm9ncmVzc1xuIikpCiAJCQlyZXR1cm47
-CiAKLQkJcG9saWN5LT50cmFuc2l0aW9uX29uZ29pbmcgPSBmYWxzZTsKKwkJcG9saWN5LT50cmFu
-c2l0aW9uX29uZ29pbmctLTsKIAogCQlhZGp1c3RfamlmZmllcyhDUFVGUkVRX1BPU1RDSEFOR0Us
-IGZyZXFzKTsKIAkJcHJfZGVidWcoIkZSRVE6ICVsdSAtIENQVTogJWx1IiwgKHVuc2lnbmVkIGxv
-bmcpZnJlcXMtPm5ldywKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
---001a11c21b0467e3e604e0806d6c--
