@@ -1,113 +1,168 @@
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 10/45] smp: Use get/put_online_cpus_atomic() to prevent
- CPU offline
-Date: Tue, 02 Jul 2013 18:08:34 +0800
-Message-ID: <51D2A6A2.207@linux.vnet.ibm.com>
-References: <20130627195136.29830.10445.stgit@srivatsabhat.in.ibm.com> <20130627195418.29830.34958.stgit@srivatsabhat.in.ibm.com> <51D2660A.8000401@linux.vnet.ibm.com> <51D28E69.9060205@linux.vnet.ibm.com> <51D2939C.5090205@linux.vnet.ibm.com> <51D2A289.7070805@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Fix runtime warnings on systems with shared core clocks
+Date: Tue, 2 Jul 2013 15:32:34 +0530
+Message-ID: <CAKohpom0NOymffysneOcygFHT9QTMgPA+BVKmoZTMg9bUpaedw@mail.gmail.com>
+References: <1372724227-17209-1-git-send-email-broonie@kernel.org>
+	<CAKohponeEC=CGzJhgCY+Cvwna6YkkRBkANjYSAqP9jf8qfJ2yA@mail.gmail.com>
+	<20130702094831.GA27646@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary=047d7b67878cb60c5304e08471d7
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:60079 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932339Ab3GBKIu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2013 06:08:50 -0400
-Received: from /spool/local
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <wangyun@linux.vnet.ibm.com>;
-	Tue, 2 Jul 2013 19:57:02 +1000
-In-Reply-To: <51D2A289.7070805@linux.vnet.ibm.com>
+Received: from mail-qc0-f175.google.com ([209.85.216.175]:41947 "EHLO
+	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755046Ab3GBKKX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2013 06:10:23 -0400
+Received: by mail-qc0-f175.google.com with SMTP id k14so3520961qcv.20
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jul 2013 03:10:22 -0700 (PDT)
+In-Reply-To: <20130702094831.GA27646@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com, vincent.guittot@linaro.org, laijs@cn.fujitsu.com, David.Laight@aculab.com, rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, fweisbec@gmail.com, zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Wang YanQing <udknight@gmail.com>, Shaohua Li <shli@fusionio.com>, Jan Beulich <jbeulich@suse.com>, liguang <lig.fnst@cn.fujitsu.com>
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 07/02/2013 05:51 PM, Srivatsa S. Bhat wrote:
-[snip]
-> 
-> Well, as I said, its timing dependent. We might miss the newly onlined CPU in
-> the for_each_online_cpu() loop itself, based on when exactly the CPU was added
-> to the cpu_online_mask. So you can't exactly pin-point the places where you'll
-> miss the CPU and where you won't. Besides, is it _that_ important? It is after
-> all unpredictable..
+--047d7b67878cb60c5304e08471d7
+Content-Type: text/plain; charset=ISO-8859-1
 
-Sure, it's nothing important ;-)
+On 2 July 2013 15:18, Mark Brown <broonie@kernel.org> wrote:
+> On Tue, Jul 02, 2013 at 10:45:02AM +0530, Viresh Kumar wrote:
+>
+>> Please see if below fixes it for you. Use attached patch for testing it.
+>
+> This doesn't apply terribly easily, the patch is corrupt and appears to
+> be based on something other than what's in -next so neither git am nor
+> patch can figure out how to apply it.
 
-I just think this comment:
+Two things,
 
-+ * We use get/put_online_cpus_atomic() to protect against CPUs going
-+ * offline but not online. CPUs going online during the call will
-+ * not be seen or sent an IPI
+- I rebased my patch now against latest linux-next/master and it applied
+  cleanly.
+- Somehow one of my changes to include/linux/cpufreq.h didn't get commited
 
-It told people that the cpu could online during the call, but won't get
-IPI, while actually they have a chance to get it, folks haven't look
-inside may missed some thing when use it.
+Try attached patch now and it should really work..
 
-But it's just self-opinion, so let's put down the discuss :)
+I am using gmail for replying to mails from office which corrupts mails. And
+I can't use other mail clients from office, firewall issues.
 
-Regards,
-Michael Wang
+--------x---------------x------------
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Tue, 2 Jul 2013 10:41:54 +0530
+Subject: [PATCH] cpufreq: Fix serialization of frequency transitions
 
-> 
->> The comment position seems like it declaim that during the call of this
->> func, online-cpu won't be seem and send IPI...
->>
-> 
-> Doesn't matter, AFAICS. The key take-away from that whole comment is: nothing is
-> done to prevent CPUs from coming online while the function is running, whereas
-> the online CPUs are guaranteed to remain online throughout the function. In other
-> words, its a weaker form of get_online_cpus()/put_online_cpus(), providing a
-> one-way synchronization (CPU offline).
-> 
-> As long as that idea is conveyed properly, the purpose of that comment is served,
-> IMHO.
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
-> 
->>>>>   *
->>>>>   * You must not call this function with disabled interrupts or
->>>>>   * from a hardware interrupt handler or from a bottom half handler.
->>>>> @@ -641,26 +649,26 @@ void on_each_cpu_cond(bool (*cond_func)(int cpu, void *info),
->>>>>  	might_sleep_if(gfp_flags & __GFP_WAIT);
->>>>>
->>>>>  	if (likely(zalloc_cpumask_var(&cpus, (gfp_flags|__GFP_NOWARN)))) {
->>>>> -		preempt_disable();
->>>>> +		get_online_cpus_atomic();
->>>>>  		for_each_online_cpu(cpu)
->>>>>  			if (cond_func(cpu, info))
->>>>>  				cpumask_set_cpu(cpu, cpus);
->>>>>  		on_each_cpu_mask(cpus, func, info, wait);
->>>>> -		preempt_enable();
->>>>> +		put_online_cpus_atomic();
->>>>>  		free_cpumask_var(cpus);
->>>>>  	} else {
->>>>>  		/*
->>>>>  		 * No free cpumask, bother. No matter, we'll
->>>>>  		 * just have to IPI them one by one.
->>>>>  		 */
->>>>> -		preempt_disable();
->>>>> +		get_online_cpus_atomic();
->>>>>  		for_each_online_cpu(cpu)
->>>>>  			if (cond_func(cpu, info)) {
->>>>>  				ret = smp_call_function_single(cpu, func,
->>>>>  								info, wait);
->>>>>  				WARN_ON_ONCE(!ret);
->>>>>  			}
->>>>> -		preempt_enable();
->>>>> +		put_online_cpus_atomic();
->>>>>  	}
->>>>>  }
->>>>>  EXPORT_SYMBOL(on_each_cpu_cond);
->>>>>
->>>>
->>>
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Commit 7c30ed ("cpufreq: make sure frequency transitions are serialized")
+interacts poorly with systems that have a single core freqency for all
+cores.  On such systems we have a single policy for all cores with
+several CPUs.  When we do a frequency transition the governor calls the
+pre and post change notifiers which causes cpufreq_notify_transition()
+per CPU.  Since the policy is the same for all of them all CPUs after
+the first and the warnings added are generated by checking a per-policy
+flag the warnings will be triggered for all cores after the first.
 
+Fix this by allowing notifier to be called for n times. Where n is the number of
+cpus in policy->cpus.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 7 ++++---
+ include/linux/cpufreq.h   | 2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b557503..b7bda8d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -312,11 +312,12 @@ static void __cpufreq_notify_transition(struct
+cpufreq_policy *policy,
+ 	switch (state) {
+
+ 	case CPUFREQ_PRECHANGE:
+-		if (WARN(policy->transition_ongoing,
++		if (WARN(policy->transition_ongoing ==
++					cpumask_weight(policy->cpus),
+ 				"In middle of another frequency transition\n"))
+ 			return;
+
+-		policy->transition_ongoing = true;
++		policy->transition_ongoing++;
+
+ 		/* detect if the driver reported a value as "old frequency"
+ 		 * which is not equal to what the cpufreq core thinks is
+@@ -341,7 +342,7 @@ static void __cpufreq_notify_transition(struct
+cpufreq_policy *policy,
+ 				"No frequency transition in progress\n"))
+ 			return;
+
+-		policy->transition_ongoing = false;
++		policy->transition_ongoing--;
+
+ 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+ 		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 4d7390b..90d5a15 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -119,7 +119,7 @@ struct cpufreq_policy {
+
+ 	struct kobject		kobj;
+ 	struct completion	kobj_unregister;
+-	bool			transition_ongoing; /* Tracks transition status */
++	int			transition_ongoing; /* Tracks transition status */
+ };
+
+ #define CPUFREQ_ADJUST			(0)
+
+--047d7b67878cb60c5304e08471d7
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-Fix-serialization-of-frequency-transitions.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-Fix-serialization-of-frequency-transitions.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_himxf0zw1
+
+RnJvbSBkMzY3ZmM2ZmRhMGYxNjc2NzhhODNlMWQ3MGUwY2ZkMjQwYTMyY2JjIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ZDM2N2ZjNmZkYTBmMTY3Njc4YTgzZTFkNzBlMGNm
+ZDI0MGEzMmNiYy4xMzcyNzU5MDIyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVHVlLCAyIEp1bCAy
+MDEzIDEwOjQxOjU0ICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogRml4IHNlcmlhbGl6
+YXRpb24gb2YgZnJlcXVlbmN5IHRyYW5zaXRpb25zCgpDb21taXQgN2MzMGVkICgiY3B1ZnJlcTog
+bWFrZSBzdXJlIGZyZXF1ZW5jeSB0cmFuc2l0aW9ucyBhcmUgc2VyaWFsaXplZCIpCmludGVyYWN0
+cyBwb29ybHkgd2l0aCBzeXN0ZW1zIHRoYXQgaGF2ZSBhIHNpbmdsZSBjb3JlIGZyZXFlbmN5IGZv
+ciBhbGwKY29yZXMuICBPbiBzdWNoIHN5c3RlbXMgd2UgaGF2ZSBhIHNpbmdsZSBwb2xpY3kgZm9y
+IGFsbCBjb3JlcyB3aXRoCnNldmVyYWwgQ1BVcy4gIFdoZW4gd2UgZG8gYSBmcmVxdWVuY3kgdHJh
+bnNpdGlvbiB0aGUgZ292ZXJub3IgY2FsbHMgdGhlCnByZSBhbmQgcG9zdCBjaGFuZ2Ugbm90aWZp
+ZXJzIHdoaWNoIGNhdXNlcyBjcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCkKcGVyIENQVS4gIFNp
+bmNlIHRoZSBwb2xpY3kgaXMgdGhlIHNhbWUgZm9yIGFsbCBvZiB0aGVtIGFsbCBDUFVzIGFmdGVy
+CnRoZSBmaXJzdCBhbmQgdGhlIHdhcm5pbmdzIGFkZGVkIGFyZSBnZW5lcmF0ZWQgYnkgY2hlY2tp
+bmcgYSBwZXItcG9saWN5CmZsYWcgdGhlIHdhcm5pbmdzIHdpbGwgYmUgdHJpZ2dlcmVkIGZvciBh
+bGwgY29yZXMgYWZ0ZXIgdGhlIGZpcnN0LgoKRml4IHRoaXMgYnkgYWxsb3dpbmcgbm90aWZpZXIg
+dG8gYmUgY2FsbGVkIGZvciBuIHRpbWVzLiBXaGVyZSBuIGlzIHRoZSBudW1iZXIgb2YKY3B1cyBp
+biBwb2xpY3ktPmNwdXMuCgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1h
+ckBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgfCA3ICsrKystLS0K
+IGluY2x1ZGUvbGludXgvY3B1ZnJlcS5oICAgfCAyICstCiAyIGZpbGVzIGNoYW5nZWQsIDUgaW5z
+ZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEv
+Y3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwppbmRleCBiNTU3NTAzLi5iN2Jk
+YThkIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMv
+Y3B1ZnJlcS9jcHVmcmVxLmMKQEAgLTMxMiwxMSArMzEyLDEyIEBAIHN0YXRpYyB2b2lkIF9fY3B1
+ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbihzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKIAlz
+d2l0Y2ggKHN0YXRlKSB7CiAKIAljYXNlIENQVUZSRVFfUFJFQ0hBTkdFOgotCQlpZiAoV0FSTihw
+b2xpY3ktPnRyYW5zaXRpb25fb25nb2luZywKKwkJaWYgKFdBUk4ocG9saWN5LT50cmFuc2l0aW9u
+X29uZ29pbmcgPT0KKwkJCQkJY3B1bWFza193ZWlnaHQocG9saWN5LT5jcHVzKSwKIAkJCQkiSW4g
+bWlkZGxlIG9mIGFub3RoZXIgZnJlcXVlbmN5IHRyYW5zaXRpb25cbiIpKQogCQkJcmV0dXJuOwog
+Ci0JCXBvbGljeS0+dHJhbnNpdGlvbl9vbmdvaW5nID0gdHJ1ZTsKKwkJcG9saWN5LT50cmFuc2l0
+aW9uX29uZ29pbmcrKzsKIAogCQkvKiBkZXRlY3QgaWYgdGhlIGRyaXZlciByZXBvcnRlZCBhIHZh
+bHVlIGFzICJvbGQgZnJlcXVlbmN5IgogCQkgKiB3aGljaCBpcyBub3QgZXF1YWwgdG8gd2hhdCB0
+aGUgY3B1ZnJlcSBjb3JlIHRoaW5rcyBpcwpAQCAtMzQxLDcgKzM0Miw3IEBAIHN0YXRpYyB2b2lk
+IF9fY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbihzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGlj
+eSwKIAkJCQkiTm8gZnJlcXVlbmN5IHRyYW5zaXRpb24gaW4gcHJvZ3Jlc3NcbiIpKQogCQkJcmV0
+dXJuOwogCi0JCXBvbGljeS0+dHJhbnNpdGlvbl9vbmdvaW5nID0gZmFsc2U7CisJCXBvbGljeS0+
+dHJhbnNpdGlvbl9vbmdvaW5nLS07CiAKIAkJYWRqdXN0X2ppZmZpZXMoQ1BVRlJFUV9QT1NUQ0hB
+TkdFLCBmcmVxcyk7CiAJCXByX2RlYnVnKCJGUkVROiAlbHUgLSBDUFU6ICVsdSIsICh1bnNpZ25l
+ZCBsb25nKWZyZXFzLT5uZXcsCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaCBi
+L2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oCmluZGV4IDRkNzM5MGIuLjkwZDVhMTUgMTAwNjQ0Ci0t
+LSBhL2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oCisrKyBiL2luY2x1ZGUvbGludXgvY3B1ZnJlcS5o
+CkBAIC0xMTksNyArMTE5LDcgQEAgc3RydWN0IGNwdWZyZXFfcG9saWN5IHsKIAogCXN0cnVjdCBr
+b2JqZWN0CQlrb2JqOwogCXN0cnVjdCBjb21wbGV0aW9uCWtvYmpfdW5yZWdpc3RlcjsKLQlib29s
+CQkJdHJhbnNpdGlvbl9vbmdvaW5nOyAvKiBUcmFja3MgdHJhbnNpdGlvbiBzdGF0dXMgKi8KKwlp
+bnQJCQl0cmFuc2l0aW9uX29uZ29pbmc7IC8qIFRyYWNrcyB0cmFuc2l0aW9uIHN0YXR1cyAqLwog
+fTsKIAogI2RlZmluZSBDUFVGUkVRX0FESlVTVAkJCSgwKQotLSAKMS43LjEyLnJjMi4xOC5nNjFi
+NDcyZQoK
+--047d7b67878cb60c5304e08471d7--
