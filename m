@@ -1,24 +1,24 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
 Subject: Re: [RFC PATCH 6/6] Thermal: step_wise: set next cooling target explicitly
-Date: Tue, 2 Jul 2013 17:03:49 -0400
-Message-ID: <51D34035.3000008@ti.com>
+Date: Tue, 2 Jul 2013 17:05:39 -0400
+Message-ID: <51D340A3.8030303@ti.com>
 References: <1371475468-5351-1-git-send-email-rui.zhang@intel.com> <1371475468-5351-7-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="----enig2LXRHHBSBAGFOKRNNSGCU"
+	boundary="----enig2PICDFLPNDKUEKKCQVQLR"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:60866 "EHLO arroyo.ext.ti.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:36906 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755124Ab3GBVD5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Jul 2013 17:03:57 -0400
+	id S1754908Ab3GBVFs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Jul 2013 17:05:48 -0400
 In-Reply-To: <1371475468-5351-7-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, durgadoss.r@intel.com, shawn.guo@linaro.org, ruslan.ruslichenko@ti.com
+Cc: eduardo.valentin@ti.com, linux-pm@vger.kernel.org, durgadoss.r@intel.com, shawn.guo@linaro.org, ruslan.ruslichenko@ti.com
 
-------enig2LXRHHBSBAGFOKRNNSGCU
+------enig2PICDFLPNDKUEKKCQVQLR
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
@@ -96,7 +96,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
-------enig2LXRHHBSBAGFOKRNNSGCU
+------enig2PICDFLPNDKUEKKCQVQLR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -105,9 +105,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlHTQDUACgkQCXcVR3XQvP3hFgEAyF0fZMuh6BdNTKpj7VLIGqeS
-BPkbOAW3018QK71kDrUA/j2SBLUy3hZekMU4LJ99EojOzgr2N736/P/lHRWX4Rxk
-=aVxb
+iF4EAREIAAYFAlHTQKMACgkQCXcVR3XQvP0kPAD/QqTEPqSN8XckMj9aDZrEkrPc
+VYU0F5RiULaJCuyTTAQA/32cvtCeDVR77jC9uZhLMQ4idfsK0HKXUIRz5szkB90k
+=JhC5
 -----END PGP SIGNATURE-----
 
-------enig2LXRHHBSBAGFOKRNNSGCU--
+------enig2PICDFLPNDKUEKKCQVQLR--
