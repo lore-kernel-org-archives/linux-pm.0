@@ -1,39 +1,69 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCHv3 5/6] arm: omap2plus_defconfig: enable TI bandgap
- driver
-Date: Thu, 4 Jul 2013 04:48:11 -0700
-Message-ID: <20130704114811.GG5523@atomide.com>
-References: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com>
- <1370637968-23299-6-git-send-email-eduardo.valentin@ti.com>
- <51C0C2A8.4020707@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
+Date: Thu, 04 Jul 2013 14:50:13 +0200
+Message-ID: <2394846.9qggnDATev@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <20130701101516.7945e387@amdc308.digital.local> <CAKohponiy3ebnt0_Cdaan5=DkAfA3U4g=m4NnYGLA-a+tPJJQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <51C0C2A8.4020707@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: grant.likely@linaro.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux@arm.linux.org.uk, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponiy3ebnt0_Cdaan5=DkAfA3U4g=m4NnYGLA-a+tPJJQg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Eduardo Valentin <eduardo.valentin@ti.com> [130618 13:33]:
-> Tony,
+On Thursday, July 04, 2013 10:36:53 AM Viresh Kumar wrote:
+> Hi Lukasz,
 > 
-> On 07-06-2013 16:46, Eduardo Valentin wrote:
-> > Enable the bandgap driver for TI SoCs thermal support.
-> > 
-> > Cc: Russell King <linux@arm.linux.org.uk>
-> > Cc: Tony Lindgren <tony@atomide.com>
-> > Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> > Cc: AnilKumar Ch <anilkumar@ti.com>
-> > Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> Sorry for being late. Actually I didn't had an answer to your mail
+> and wanted to go through it with some fresh mind. This is my
+> first mail this morning, lets see if I can bring something good
+> into the discussion.
 > 
-> Is it possible for you to queue this one and patch 6 for 3.11?
+> On 1 July 2013 13:45, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > Does anybody have any idea here? As written above, thermal is suitable
+> > to disable boost.
+> 
+> See, one thing is very clear. User space applications aren't responsible
+> for enabling boost again and again. There has to be a internal mechanism
+> inside kernel for that.
+> 
+> > I'd like to bring those three options under discussion:
+> >
+> > 1. boost attr is always exported -> do not enable boost automatically
+> >    when disabled by thermal (as it was proposed at v4).
+> 
+> So, that's a problem. I see one more solution to that.
+> - Create another Macro in cpufreq.c which would contain the time
+> after which we will autoenable boost.
 
-Yes thanks applying into omap-for-v3.11/fixes.
+Well, how can we tell what time is correct here?  It may depend on factors not
+under our control or even variable, like the ambient temperature, so surely
+it might not be a hard coded value.
 
-Tony
+> - So, suppose thermal disabled it due to high temperature (Lets not
+> change value of sysfs variable boost_enable, but create another
+> variable like: skip_boost: which means skip boost temporarily).
+
+What about "block_boost"?  Other than that, this particular item is a good idea
+I think.
+
+> - Thermal would enable this variable skip_boost.
+> - Then we will continue to get requests for next frequency and will
+> check eveytime if we have exceeded time for autoenabling boost.
+> - If yes, then we disable this variable and start boosting again..
+
+I wonder if we could use thermal watermarks instead?  Such that a high
+watermark would cause block_boost to be set and a low watermark would cause
+it to be reset?  And the thermal layer would be in control of both watermarks?
+
+> - Then thermal can disable it again later.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
