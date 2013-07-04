@@ -1,69 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
-Date: Thu, 04 Jul 2013 14:50:13 +0200
-Message-ID: <2394846.9qggnDATev@vostro.rjw.lan>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <20130701101516.7945e387@amdc308.digital.local> <CAKohponiy3ebnt0_Cdaan5=DkAfA3U4g=m4NnYGLA-a+tPJJQg@mail.gmail.com>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Thu, 04 Jul 2013 18:42:13 +0200
+Message-ID: <51D5A5E5.9060302@gmx.de>
+References: <51C08370.4050906@gmx.de> <CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com> <51CF1E53.6060902@gmx.de> <8029836.CFiJCXmRQ0@vostro.rjw.lan> <51D05DF4.50704@linux.vnet.ibm.com> <51D06556.7080204@gmx.de> <51D47FB0.5090604@gmx.de> <51D51C63.2080702@linux.vnet.ibm.com> <CAKohpomfM55cRfLOohpv4nhLBcwVcD-y3-WcYOaznVhA6H2TAw@mail.gmail.com> <51D51F63.8080905@linux.vnet.ibm.com> <CAKohpom1KE=yxTi1HNoSn4cJ1mNpvZTeeVwK3A=4qSZ6Ut98gA@mail.gmail.com> <CAKohpok=iLyiiV5F4Q8ZK_-7ZzZqiGchHkmVWEvCRsV55z7gzA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponiy3ebnt0_Cdaan5=DkAfA3U4g=m4NnYGLA-a+tPJJQg@mail.gmail.com>
+In-Reply-To: <CAKohpok=iLyiiV5F4Q8ZK_-7ZzZqiGchHkmVWEvCRsV55z7gzA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 04, 2013 10:36:53 AM Viresh Kumar wrote:
-> Hi Lukasz,
-> 
-> Sorry for being late. Actually I didn't had an answer to your mail
-> and wanted to go through it with some fresh mind. This is my
-> first mail this morning, lets see if I can bring something good
-> into the discussion.
-> 
-> On 1 July 2013 13:45, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > Does anybody have any idea here? As written above, thermal is suitable
-> > to disable boost.
-> 
-> See, one thing is very clear. User space applications aren't responsible
-> for enabling boost again and again. There has to be a internal mechanism
-> inside kernel for that.
-> 
-> > I'd like to bring those three options under discussion:
-> >
-> > 1. boost attr is always exported -> do not enable boost automatically
-> >    when disabled by thermal (as it was proposed at v4).
-> 
-> So, that's a problem. I see one more solution to that.
-> - Create another Macro in cpufreq.c which would contain the time
-> after which we will autoenable boost.
-
-Well, how can we tell what time is correct here?  It may depend on factors not
-under our control or even variable, like the ambient temperature, so surely
-it might not be a hard coded value.
-
-> - So, suppose thermal disabled it due to high temperature (Lets not
-> change value of sysfs variable boost_enable, but create another
-> variable like: skip_boost: which means skip boost temporarily).
-
-What about "block_boost"?  Other than that, this particular item is a good idea
-I think.
-
-> - Thermal would enable this variable skip_boost.
-> - Then we will continue to get requests for next frequency and will
-> check eveytime if we have exceeded time for autoenabling boost.
-> - If yes, then we disable this variable and start boosting again..
-
-I wonder if we could use thermal watermarks instead?  Such that a high
-watermark would cause block_boost to be set and a low watermark would cause
-it to be reset?  And the thermal layer would be in control of both watermarks?
-
-> - Then thermal can disable it again later.
-
-Thanks,
-Rafael
+On 07/04/2013 10:23 AM, Viresh Kumar wrote:
+> Ok, I did a mistake here (Thanks Srivatsa for telling me), this wasn'=
+t
+> there in 3.10 but 3.11-rc1
+>=20
+>> > c28375583b6471c1cb833a628ab6afb5b69079d0
+>> >
+>> > They are touching ondemand governor and this may be creating some
+>> > problems. But I am not sure about it, I must admit.
+> So just try reverting about commit.
+>=20
+> In case you are using acpi-cpufreq driver, please try reverting this =
+before
+> above one:
+>=20
+> 8673b83bf2f013379453b4779047bf3c6ae387e4
+I reverted  8673b83b on top of 3.10.0  - no success, then I reverted
+c2837558 too - no success.
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
