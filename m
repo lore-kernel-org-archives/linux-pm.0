@@ -1,7 +1,8 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 5/7] thermal:boost: Automatic enable/disable of BOOST feature
-Date: Thu, 04 Jul 2013 10:50:28 +0200
-Message-ID: <1372927830-2949-6-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v5 6/7] cpufreq:boost:Kconfig: Enable software managed BOOST
+ support at Kconfig
+Date: Thu, 04 Jul 2013 10:50:29 +0200
+Message-ID: <1372927830-2949-7-git-send-email-l.majewski@samsung.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
  <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -11,101 +12,81 @@ To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Z
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch provides auto disable/enable operation for boost. When any
-defined trip point is passed, the boost is disabled.
-In that moment thermal monitor workqueue is woken up and it monitors
-if the device temperature drops below 75% of the smallest trip point.
-When device cools down, the boost is enabled again.
+For safety reasons new flag - CONFIG_CPU_FREQ_BOOST_SW has been added.
+Only after selecting "CPU frequency BOOST support" Kconfig option the
+software managed boost is enabled. It also selects thermal subsystem
+to be compiled in. Thermal is necessary for disabling boost and cooling
+down the device when overheating detected.
+
+Boost _MUST_NOT_ be enabled without thermal subsystem with properly
+defined temperatures, which indicate overheating.
+
+This option doesn't affect x86's ACPI hardware managed boost support
+(i.e. Intel, AMD). In this situation boost management is embedded at
+hardware.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 
 ---
 Changes for v5:
-- Move boost disable code from cpu_cooling.c to thermal_core.c
-  (to handle_non_critical_trips)
-- Extent struct thermal_zone_device by adding overheated bool flag
-- Implement auto enable of boost after device cools down
-- Introduce boost_polling flag, which indicates if thermal uses it's predefined
-  pool delay or has woken up thermal workqueue only to wait until device
-  cools down.
-
-Changes for v4:
 - New patch
 
- drivers/thermal/thermal_core.c |   31 +++++++++++++++++++++++++++++++
- include/linux/thermal.h        |    2 ++
- 2 files changed, 33 insertions(+)
+ drivers/cpufreq/Kconfig          |   14 ++++++++++++++
+ drivers/cpufreq/exynos-cpufreq.c |    5 ++++-
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d755440..12adbad 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -33,6 +33,7 @@
- #include <linux/idr.h>
- #include <linux/thermal.h>
- #include <linux/reboot.h>
-+#include <linux/cpufreq.h>
- #include <net/netlink.h>
- #include <net/genetlink.h>
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 534fcb8..e65a112 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -23,6 +23,20 @@ config CPU_FREQ_TABLE
+ config CPU_FREQ_GOV_COMMON
+ 	bool
  
-@@ -326,6 +327,15 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
- static void handle_non_critical_trips(struct thermal_zone_device *tz,
- 			int trip, enum thermal_trip_type trip_type)
++config CPU_FREQ_BOOST_SW
++       bool "CPU frequency overclocking (BOOST)"
++       depends on ARM_EXYNOS_CPUFREQ && EXYNOS_THERMAL
++       default n
++       help
++	 This driver supports software managed overclocking (BOOST).
++         It allows usage of special frequencies for a particular processor
++         if thermal conditions are appropriate.
++
++	 It reguires, for safe operation, thermal framework with properly defined
++         trip points.
++
++	 If in doubt, say N.
++
+ config CPU_FREQ_STAT
+ 	tristate "CPU frequency translation statistics"
+ 	select CPU_FREQ_TABLE
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 4f42fcc..7586b28 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -288,7 +288,9 @@ static struct cpufreq_driver exynos_driver = {
+ 
+ static int __init exynos_cpufreq_init(void)
  {
-+	if (cpufreq_boost_supported()) {
-+		tz->overheated = true;
-+		cpufreq_boost_trigger_state(0);
-+		if (!tz->polling_delay) {
-+			tz->boost_polling = true;
-+			tz->polling_delay = 1000;
-+		}
-+	}
-+
- 	if (tz->governor)
- 		tz->governor->throttle(tz, trip);
- }
-@@ -453,6 +463,27 @@ static void thermal_zone_device_check(struct work_struct *work)
- 	struct thermal_zone_device *tz = container_of(work, struct
- 						      thermal_zone_device,
- 						      poll_queue.work);
-+	long trip_temp;
-+
-+	if (cpufreq_boost_supported() && tz->overheated) {
-+		tz->ops->get_trip_temp(tz, 0, &trip_temp);
-+		/*
-+		 * Enable boost again only when current temperature is less
-+		 * than 75% of trip_temp[0]
-+		 */
-+		if ((tz->temperature + (trip_temp >> 2)) < trip_temp) {
-+			tz->overheated = false;
-+			if (tz->boost_polling) {
-+				tz->boost_polling = false;
-+				tz->polling_delay = 0;
-+				monitor_thermal_zone(tz);
-+			}
-+
-+			cpufreq_boost_trigger_state(1);
-+			return;
-+		}
-+	}
-+
- 	thermal_zone_device_update(tz);
- }
++#ifdef CONFIG_CPU_FREQ_BOOST_SW
+ 	struct device_node *node = pdev->dev.of_node;
++#endif
+ 	int ret = -EINVAL;
  
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index a386a1c..f1aa3c2 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -172,6 +172,8 @@ struct thermal_zone_device {
- 	int emul_temperature;
- 	int passive;
- 	unsigned int forced_passive;
-+	bool overheated;
-+	bool boost_polling;
- 	const struct thermal_zone_device_ops *ops;
- 	const struct thermal_zone_params *tzp;
- 	struct thermal_governor *governor;
+ 	exynos_info = kzalloc(sizeof(struct exynos_dvfs_info), GFP_KERNEL);
+@@ -319,9 +321,10 @@ static int __init exynos_cpufreq_init(void)
+ 	}
+ 
+ 	locking_frequency = exynos_getspeed(0);
++#ifdef CONFIG_CPU_FREQ_BOOST_SW
+ 	if (of_property_read_bool(node, "boost_mode"))
+ 		exynos_driver.boost_supported = 1;
+-
++#endif
+ 	register_pm_notifier(&exynos_cpufreq_nb);
+ 
+ 	if (cpufreq_register_driver(&exynos_driver)) {
 -- 
 1.7.10.4
 
