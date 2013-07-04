@@ -1,29 +1,18 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v5 6/7] cpufreq:boost:Kconfig: Enable software managed BOOST
- support at Kconfig
-Date: Thu, 04 Jul 2013 10:50:29 +0200
-Message-ID: <1372927830-2949-7-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v5 7/7] Documentation:cpufreq:boost: Update BOOST documentation
+Date: Thu, 04 Jul 2013 10:50:30 +0200
+Message-ID: <1372927830-2949-8-git-send-email-l.majewski@samsung.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
  <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-For safety reasons new flag - CONFIG_CPU_FREQ_BOOST_SW has been added.
-Only after selecting "CPU frequency BOOST support" Kconfig option the
-software managed boost is enabled. It also selects thermal subsystem
-to be compiled in. Thermal is necessary for disabling boost and cooling
-down the device when overheating detected.
-
-Boost _MUST_NOT_ be enabled without thermal subsystem with properly
-defined temperatures, which indicate overheating.
-
-This option doesn't affect x86's ACPI hardware managed boost support
-(i.e. Intel, AMD). In this situation boost management is embedded at
-hardware.
+Since the support for software and hardware controlled boosting has been
+added, the corresponding Documentation entry had been updated.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
@@ -32,61 +21,59 @@ Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 Changes for v5:
 - New patch
 
- drivers/cpufreq/Kconfig          |   14 ++++++++++++++
- drivers/cpufreq/exynos-cpufreq.c |    5 ++++-
- 2 files changed, 18 insertions(+), 1 deletion(-)
+ Documentation/cpu-freq/boost.txt |   26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 534fcb8..e65a112 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -23,6 +23,20 @@ config CPU_FREQ_TABLE
- config CPU_FREQ_GOV_COMMON
- 	bool
+diff --git a/Documentation/cpu-freq/boost.txt b/Documentation/cpu-freq/boost.txt
+index 9b4edfc..dd62e13 100644
+--- a/Documentation/cpu-freq/boost.txt
++++ b/Documentation/cpu-freq/boost.txt
+@@ -17,8 +17,8 @@ Introduction
+ Some CPUs support a functionality to raise the operating frequency of
+ some cores in a multi-core package if certain conditions apply, mostly
+ if the whole chip is not fully utilized and below it's intended thermal
+-budget. This is done without operating system control by a combination
+-of hardware and firmware.
++budget. The decision about boost disable/enable is made either at hardware
++(e.g. x86) or software (e.g ARM).
+ On Intel CPUs this is called "Turbo Boost", AMD calls it "Turbo-Core",
+ in technical documentation "Core performance boost". In Linux we use
+ the term "boost" for convenience.
+@@ -48,24 +48,24 @@ be desirable:
+ User controlled switch
+ ----------------------
  
-+config CPU_FREQ_BOOST_SW
-+       bool "CPU frequency overclocking (BOOST)"
-+       depends on ARM_EXYNOS_CPUFREQ && EXYNOS_THERMAL
-+       default n
-+       help
-+	 This driver supports software managed overclocking (BOOST).
-+         It allows usage of special frequencies for a particular processor
-+         if thermal conditions are appropriate.
-+
-+	 It reguires, for safe operation, thermal framework with properly defined
-+         trip points.
-+
-+	 If in doubt, say N.
-+
- config CPU_FREQ_STAT
- 	tristate "CPU frequency translation statistics"
- 	select CPU_FREQ_TABLE
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 4f42fcc..7586b28 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -288,7 +288,9 @@ static struct cpufreq_driver exynos_driver = {
+-To allow the user to toggle the boosting functionality, the acpi-cpufreq
+-driver exports a sysfs knob to disable it. There is a file:
++To allow the user to toggle the boosting functionality, the cpufreq core
++driver exports a sysfs knob to enable or disable it. There is a file:
+ /sys/devices/system/cpu/cpufreq/boost
+ which can either read "0" (boosting disabled) or "1" (boosting enabled).
+-Reading the file is always supported, even if the processor does not
+-support boosting. In this case the file will be read-only and always
+-reads as "0". Explicitly changing the permissions and writing to that
+-file anyway will return EINVAL.
++The file is exported only when cpufreq driver supports boosting.
++Explicitly changing the permissions and writing to that file anyway will
++return EINVAL.
  
- static int __init exynos_cpufreq_init(void)
- {
-+#ifdef CONFIG_CPU_FREQ_BOOST_SW
- 	struct device_node *node = pdev->dev.of_node;
-+#endif
- 	int ret = -EINVAL;
+ On supported CPUs one can write either a "0" or a "1" into this file.
+ This will either disable the boost functionality on all cores in the
+-whole system (0) or will allow the hardware to boost at will (1).
++whole system (0) or will allow the software or hardware to boost at will
++(1).
  
- 	exynos_info = kzalloc(sizeof(struct exynos_dvfs_info), GFP_KERNEL);
-@@ -319,9 +321,10 @@ static int __init exynos_cpufreq_init(void)
- 	}
+ Writing a "1" does not explicitly boost the system, but just allows the
+-CPU (and the firmware) to boost at their discretion. Some implementations
+-take external factors like the chip's temperature into account, so
+-boosting once does not necessarily mean that it will occur every time
+-even using the exact same software setup.
++CPU to boost at their discretion. Some implementations take external
++factors like the chip's temperature into account, so boosting once does
++not necessarily mean that it will occur every time even using the exact
++same software setup.
  
- 	locking_frequency = exynos_getspeed(0);
-+#ifdef CONFIG_CPU_FREQ_BOOST_SW
- 	if (of_property_read_bool(node, "boost_mode"))
- 		exynos_driver.boost_supported = 1;
--
-+#endif
- 	register_pm_notifier(&exynos_cpufreq_nb);
  
- 	if (cpufreq_register_driver(&exynos_driver)) {
+ AMD legacy cpb switch
 -- 
 1.7.10.4
-
