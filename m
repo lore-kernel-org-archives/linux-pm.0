@@ -1,42 +1,84 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
-Date: Wed, 03 Jul 2013 21:46:56 +0200
-Message-ID: <51D47FB0.5090604@gmx.de>
-References: <51C08370.4050906@gmx.de> <CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com> <51CF1E53.6060902@gmx.de> <8029836.CFiJCXmRQ0@vostro.rjw.lan> <51D05DF4.50704@linux.vnet.ibm.com> <51D06556.7080204@gmx.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
+Date: Thu, 4 Jul 2013 10:36:53 +0530
+Message-ID: <CAKohponiy3ebnt0_Cdaan5=DkAfA3U4g=m4NnYGLA-a+tPJJQg@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-6-git-send-email-l.majewski@samsung.com>
+	<CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
+	<20130627125819.5c90da30@amdc308.digital.local>
+	<CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
+	<20130627164204.370dc4a6@amdc308.digital.local>
+	<CAKohpomrPP9Lzk+fMn+Ba+J+2N740LR5NurVMomx8zww3AWLww@mail.gmail.com>
+	<20130628085457.05d64878@amdc308.digital.local>
+	<20130701101516.7945e387@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.gmx.net ([212.227.17.22]:53500 "EHLO mout.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932502Ab3GCTrG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Jul 2013 15:47:06 -0400
-In-Reply-To: <51D06556.7080204@gmx.de>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:40291 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881Ab3GDFGy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jul 2013 01:06:54 -0400
+Received: by mail-oa0-f45.google.com with SMTP id j1so1347219oag.18
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jul 2013 22:06:54 -0700 (PDT)
+In-Reply-To: <20130701101516.7945e387@amdc308.digital.local>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 06/30/2013 07:05 PM, Toralf F=C3=B6rster wrote:
-> On 06/30/2013 06:33 PM, Srivatsa S. Bhat wrote:
->> Toralf, can you please
->> try out the below patch and see if it improves anything? (Don't reve=
-rt anything,
->> just apply the below diff on a problematic kernel and see if it solv=
-es your
->> issue).
->=20
-> applied on top of a66b2e5 - issue went away (either fixed or hidden n=
-ow)
->=20
-> Thx
->=20
-But if I do apply that patch on top of kernel 3.10 then it has no effec=
-t
-- 3.10 shows the same issue.
+Hi Lukasz,
 
+Sorry for being late. Actually I didn't had an answer to your mail
+and wanted to go through it with some fresh mind. This is my
+first mail this morning, lets see if I can bring something good
+into the discussion.
 
---=20
-MfG/Sincerely
-Toralf F=C3=B6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+On 1 July 2013 13:45, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Does anybody have any idea here? As written above, thermal is suitable
+> to disable boost.
+
+See, one thing is very clear. User space applications aren't responsible
+for enabling boost again and again. There has to be a internal mechanism
+inside kernel for that.
+
+> I'd like to bring those three options under discussion:
+>
+> 1. boost attr is always exported -> do not enable boost automatically
+>    when disabled by thermal (as it was proposed at v4).
+
+So, that's a problem. I see one more solution to that.
+- Create another Macro in cpufreq.c which would contain the time
+after which we will autoenable boost.
+- So, suppose thermal disabled it due to high temperature (Lets not
+change value of sysfs variable boost_enable, but create another
+variable like: skip_boost: which means skip boost temporarily).
+- Thermal would enable this variable skip_boost.
+- Then we will continue to get requests for next frequency and will
+check eveytime if we have exceeded time for autoenabling boost.
+- If yes, then we disable this variable and start boosting again..
+- Then thermal can disable it again later.
+
+This variable (time for autoenable) looks to be more platform
+dependent for now, but lets don't make it like that unless somebody
+needs it.
+
+> 2. boost attr is always exported -> find a way to enable boost after
+>    emergency disablement when thermal detects overheating (newest
+>    proposition).
+
+My solution above probably.
+
+> 3. boost attr only exported at x86 (when supported)
+>    boost attr NOT exported via sysfs for SW controlled boost (e.g.
+>    Exynos ARM).
+>
+>    Then we only enable/disable boost at kernel and don't need to take
+>    care of the user space interaction. This scenario is my use case. I
+>    hadn't planned to expose boost to userspace and use it with LAB as a
+>    kernel API.
+
+Userspace must have control of this feature after kernel is built. That kernel
+image may run for ever without changing in a product.
+
+@Rafael: How crazy do you think my solution is? :)
