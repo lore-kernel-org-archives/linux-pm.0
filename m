@@ -1,164 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 1/6] cpufreq: Add debugfs directory for cpufreq
-Date: Fri, 05 Jul 2013 17:46:36 +0900
-Message-ID: <1373014001-17746-2-git-send-email-cw00.choi@samsung.com>
-References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Fri, 05 Jul 2013 16:06:39 +0200
+Message-ID: <51D6D2EF.8020307@gmx.de>
+References: <51C08370.4050906@gmx.de> <CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com> <51CF1E53.6060902@gmx.de> <8029836.CFiJCXmRQ0@vostro.rjw.lan> <51D05DF4.50704@linux.vnet.ibm.com> <51D06556.7080204@gmx.de> <51D47FB0.5090604@gmx.de> <51D51C63.2080702@linux.vnet.ibm.com> <CAKohpomfM55cRfLOohpv4nhLBcwVcD-y3-WcYOaznVhA6H2TAw@mail.gmail.com> <51D51F63.8080905@linux.vnet.ibm.com> <CAKohpom1KE=yxTi1HNoSn4cJ1mNpvZTeeVwK3A=4qSZ6Ut98gA@mail.gmail.com> <CAKohpok=iLyiiV5F4Q8ZK_-7ZzZqiGchHkmVWEvCRsV55z7gzA@mail.gmail.com> <51D5A5E5.9060302@gmx.de> <CAKohponPboo5awGj5uowrdo=e168BaRtkwQ8qte-Gj8R2FUgZg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
+In-Reply-To: <CAKohponPboo5awGj5uowrdo=e168BaRtkwQ8qte-Gj8R2FUgZg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: viresh.kumar@linaro.org, rjw@sisk.pl, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch create debugfs root directory and child directory according to
-the number of CPUs for CPUFreq as below debugfs directory path:
-- /sys/kernel/debug/cpufreq/cpuX
+On 07/05/2013 06:35 AM, Viresh Kumar wrote:
+> I assume that you have applied the patch given by Srivatsa earlier ov=
+er
+> these reverts?
+yes
 
-If many CPUs share only one cpufreq policy, other CPU(except for CPU0) create
-a link for debugfs directory of CPU0.
-- /sys/kernel/debug/cpufreq/cpu0
-- /sys/kernel/debug/cpufreq/cpu[1-(N-1)] -> /sys/kernel/debug/cpufreq/cpu0
+> But I now also suspect that this might have been caused by something
+> outside cpufreq.
 
-And then cpufreq may need to create debugfs specific file below of debugfs
-directory of cpufreq. (e.g., /sys/kernel/debug/cpufreq/cpu0/load_table)
++1
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
----
- drivers/cpufreq/cpufreq.c | 57 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |  1 +
- 2 files changed, 58 insertions(+)
+At least the likelihood is big and the "saving" to narrow down bisectin=
+g just to
+the cpufreq patch is small compared to the "cost" of the risk of an unw=
+anted side effect.
+OTOH not sure when I find a time frame for the bisect nightmare.
+That's why I tweaked my s2ram script in this way:
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2d53f47..bc01c8e 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -23,6 +23,7 @@
- #include <linux/notifier.h>
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
-+#include <linux/debugfs.h>
- #include <linux/interrupt.h>
- #include <linux/spinlock.h>
- #include <linux/device.h>
-@@ -47,6 +48,10 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
- static DEFINE_RWLOCK(cpufreq_driver_lock);
- 
-+/* The cpufreq_debugfs is used to create debugfs root directory for CPUFreq. */
-+#define MAX_DEBUGFS_NAME_LEN	CPUFREQ_NAME_LEN
-+static struct dentry *cpufreq_debugfs;
-+
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-  * all cpufreq/hotplug/workqueue/etc related lock issues.
-@@ -726,6 +731,20 @@ static int cpufreq_add_dev_symlink(unsigned int cpu,
- 			cpufreq_cpu_put(managed_policy);
- 			return ret;
- 		}
-+
-+		if (cpufreq_debugfs) {
-+			char symlink_name[MAX_DEBUGFS_NAME_LEN];
-+			char target_name[MAX_DEBUGFS_NAME_LEN];
-+
-+			sprintf(symlink_name, "cpu%d", j);
-+			sprintf(target_name, "./cpu%d", cpu);
-+			managed_policy->cpu_debugfs[j] = debugfs_create_symlink(
-+							symlink_name,
-+							cpufreq_debugfs,
-+							target_name);
-+			if (!managed_policy->cpu_debugfs[j])
-+				pr_debug("creating debugfs symlink failed\n");
-+		}
- 	}
- 	return ret;
- }
-@@ -746,6 +765,22 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
- 	if (ret)
- 		return ret;
- 
-+	/* prepare interface data for debugfs */
-+	if (cpufreq_debugfs) {
-+		char name[MAX_DEBUGFS_NAME_LEN];
-+		int size, i;
-+
-+		sprintf(name, "cpu%d", policy->cpu);
-+		size = sizeof(struct dentry*) * NR_CPUS;
-+		i = cpu;
-+
-+		policy->cpu_debugfs = devm_kzalloc(dev, size, GFP_KERNEL);
-+		policy->cpu_debugfs[i] = debugfs_create_dir(name,
-+							    cpufreq_debugfs);
-+		if (!policy->cpu_debugfs[i])
-+			pr_debug("creating debugfs directory failed\n");
-+	}
-+
- 	/* set up files for this cpu device */
- 	drv_attr = cpufreq_driver->attr;
- 	while ((drv_attr) && (*drv_attr)) {
-@@ -839,6 +874,20 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
- 		return ret;
- 	}
- 
-+	if (cpufreq_debugfs) {
-+		char symlink_name[MAX_DEBUGFS_NAME_LEN];
-+		char target_name[MAX_DEBUGFS_NAME_LEN];
-+
-+		sprintf(symlink_name, "cpu%d", cpu);
-+		sprintf(target_name, "./cpu%d", sibling);
-+		policy->cpu_debugfs[cpu] = debugfs_create_symlink(
-+						symlink_name,
-+						cpufreq_debugfs,
-+						target_name);
-+		if (!policy->cpu_debugfs[cpu])
-+			pr_debug("creating debugfs symlink failed\n");
-+	}
-+
- 	return 0;
- }
- #endif
-@@ -1046,6 +1095,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 
- 	if (cpu != data->cpu) {
- 		sysfs_remove_link(&dev->kobj, "cpufreq");
-+		debugfs_remove(data->cpu_debugfs[cpu]);
- 	} else if (cpus > 1) {
- 		/* first sibling now owns the new sysfs dir */
- 		cpu_dev = get_cpu_device(cpumask_first(data->cpus));
-@@ -1068,6 +1118,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 			return -EINVAL;
- 		}
- 
-+		debugfs_remove_recursive(data->cpu_debugfs[cpu]);
-+		debugfs_remove(cpufreq_debugfs);
-+
- 		WARN_ON(lock_policy_rwsem_write(cpu));
- 		update_policy_cpu(data, cpu_dev->id);
- 		unlock_policy_rwsem_write(cpu);
-@@ -1976,6 +2029,10 @@ static int __init cpufreq_core_init(void)
- 	BUG_ON(!cpufreq_global_kobject);
- 	register_syscore_ops(&cpufreq_syscore_ops);
- 
-+	cpufreq_debugfs = debugfs_create_dir("cpufreq", NULL);
-+	if (!cpufreq_debugfs)
-+		pr_debug("creating debugfs root failed\n");
-+
- 	return 0;
- }
- core_initcall(cpufreq_core_init);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 037d36a..825f379 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -115,6 +115,7 @@ struct cpufreq_policy {
- 
- 	struct kobject		kobj;
- 	struct completion	kobj_unregister;
-+	struct dentry		**cpu_debugfs;
- };
- 
- #define CPUFREQ_ADJUST			(0)
--- 
-1.8.0
++       if [[ "$1" =3D "mem" && "$(uname -r)" =3D "3.10.0" ]]; then
++               echo " tweak governor ..."
++               for g in performance ondemand; do
++                       for i in 0 1 2 3; do
++                               echo $g > /sys/devices/system/cpu/cpu$i=
+/cpufreq/scaling_governor
++                       done
++               done
++               echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/ignor=
+e_nice
++       fi
 
+
+
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
