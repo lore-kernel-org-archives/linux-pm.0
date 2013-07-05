@@ -1,164 +1,112 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v5 5/7] thermal:boost: Automatic enable/disable of BOOST
- feature
-Date: Fri, 05 Jul 2013 08:43:16 +0200
-Message-ID: <20130705084316.3f84aeb8@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-6-git-send-email-l.majewski@samsung.com>
- <4D68720C2E767A4AA6A8796D42C8EB59CCF152@BGSMSX101.gar.corp.intel.com>
- <20130704225806.6d08b0a9@jawa>
- <4D68720C2E767A4AA6A8796D42C8EB59CCF66C@BGSMSX101.gar.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <4D68720C2E767A4AA6A8796D42C8EB59CCF66C@BGSMSX101.gar.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>
-Cc: Lukasz Majewski <l.majewski@majess.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 0/6] cpufreq: Add 'load_table' debugfs file to show colleced
+ CPUs load
+Date: Fri, 05 Jul 2013 17:46:35 +0900
+Message-ID: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: viresh.kumar@linaro.org, rjw@sisk.pl, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 05 Jul 2013 05:31:42 +0000, R, Durgadoss wrote:
-Hi Durga,
+This patchset add 'load_table' debugfs file to provide collected CPUs data.
+The load_table debugfs file gives below CPU datas.
+- measured time
+- old CPU frequency
+- new CPU frequency
+- each CPU load
 
-> Hi Lukasz,
-> 
-> > -----Original Message-----
-> > From: Lukasz Majewski [mailto:l.majewski@majess.pl]
-> > Sent: Friday, July 05, 2013 2:28 AM
-> > To: R, Durgadoss
-> > Cc: Lukasz Majewski; Viresh Kumar; Rafael J. Wysocki; Zhang, Rui;
-> > Eduardo Valentin; cpufreq@vger.kernel.org; Linux PM list; Jonghwa
-> > Lee; linux-kernel; Andre Przywara; Daniel Lezcano; Kukjin Kim;
-> > Myungjoo Ham Subject: Re: [PATCH v5 5/7] thermal:boost: Automatic
-> > enable/disable of BOOST feature
-> > 
-> > On Thu, 4 Jul 2013 17:19:04 +0000
-> > "R, Durgadoss" <durgadoss.r@intel.com> wrote:
-> > Hi,
-> > 
-> 
-> [Cut.]
-> 
-> > > > @@ -326,6 +327,15 @@ static void monitor_thermal_zone(struct
-> > > > thermal_zone_device *tz)
-> > > >  static void handle_non_critical_trips(struct
-> > > > thermal_zone_device *tz, int trip, enum thermal_trip_type
-> > > > trip_type) {
-> > > > +	if (cpufreq_boost_supported()) {
-> > > > +		tz->overheated = true;
-> > > > +		cpufreq_boost_trigger_state(0);
-> > > > +		if (!tz->polling_delay) {
-> > > > +			tz->boost_polling = true;
-> > > > +			tz->polling_delay = 1000;
-> > > > +		}
-> > > > +	}
-> > > > +
-> > > >  	if (tz->governor)
-> > > >  		tz->governor->throttle(tz, trip);
-> > > >  }
-> > > > @@ -453,6 +463,27 @@ static void
-> > > > thermal_zone_device_check(struct work_struct *work)
-> > > >  	struct thermal_zone_device *tz = container_of(work,
-> > > > struct thermal_zone_device,
-> > > >  						      poll_queue.work);
-> > > > +	long trip_temp;
-> > > > +
-> > > > +	if (cpufreq_boost_supported() && tz->overheated) {
-> > >
-> > > Not all thermal drivers support trip points. So, we first need a
-> > > if (tz->ops->get_trip_temp) check here.
-> > 
-> > Ok, thanks for tip. Bluntly speaking, I thought, that all SoCs
-> > supported by thermal set trip points.
-> 
-> We would wish to get there. But not the reality today ;)
+These data will mean the change of CPU frequency according to CPUs load at
+specific measured time. Also, the user can determine the storage size of colleced
+CPUs data. The range is from 10 to 1000.
 
-Ok, I see :-).
+Second, previous performance/powersave governor haven't calculated CPUs load
+becuase these governor didn't change CPU frequency according to CPUs load. But,
+load_table debugfs file always should indicate the collected CPUs data regardless
+of the kind of cpufreq governor. So, the patch3/4/5 implement that performance/
+powersave governor will check periodically CPUs load by calling dbs_check_cpu()
+with timer.
 
-> 
-> > 
-> > >
-> > > > +		tz->ops->get_trip_temp(tz, 0, &trip_temp);
-> > > > +		/*
-> > > > +		 * Enable boost again only when current
-> > > > temperature is less
-> > > > +		 * than 75% of trip_temp[0]
-> > > > +		 */
-> > > > +		if ((tz->temperature + (trip_temp >> 2)) <
-> > > > trip_temp) {
-> > >
-> > > Another way would be to use the get_trend APIs for this thermal
-> > > zone. If the trend is cooling we can re-enable boost otherwise
-> > > not.
-> > 
-> > Trend evaluation seems like a good complementary idea.
-> > 
-> > However, I would also like to have the relative temperature drop
-> > measurement (if possible) like above (to 75% of the first trip
-> > point).
-> > 
-> > Then I would be more confident, that everything cooled down and
-> > that I can start boost again.
-> > 
-> > >
-> > > > +			tz->overheated = false;
-> > > > +			if (tz->boost_polling) {
-> > > > +				tz->boost_polling = false;
-> > > > +				tz->polling_delay = 0;
-> > > > +				monitor_thermal_zone(tz);
-> > > > +			}
-> > >
-> > > Overall, I believe this will work well only if the thermal zone is
-> > > CPU.
-> > 
-> > My assumption:
-> > 
-> > When I enable boost at CPU, then I also shall cool down the CPU. And
-> > the CPU zone seemed a natural choice.
-> > 
-> > However I might be missing something, so hints are welcome.
-> > 
-> > >
-> > > Another suggestion is: We tried hard to remove all throttling
-> > > logic from thermal_core.c.
-> > 
-> > By throttling logic you mean:
-> > if ((tz->temperature + (trip_temp >> 2)) and other conditions (like
-> > trend measurement)?
-> 
-> Yes. That is correct.
+Finally, the patch 6 explain the detailed description of load_table debugfs file.
 
-Ok.
+Thanks,
+Chanwoo Choi
 
-> 
-> > 
-> > > May be we should include this kind of logic in
-> > > step_wise.c ?
-> > 
-> > It sounds interesting (since ->throttle at thermal_core.c is called
-> > always when needed), but I'm afraid of a code duplication when one
-> > use Boost with fair_share or other thermal governor.
-> 
-> right. So, for the time being, (as part of this patch series)
-> I am Okay to have this code in thermal_core.c. From the thermal
-> subsystem perspective, we will (need to) work out a better/
-> cleaner/easier approach for this later.
+[Test Result]
+- the kind of SoC : Samsung EXYNOS4412
+- a range of frequency : 200 ~ 1400MHz
 
-Thanks for understanding. I'm going to embed the trend checking in the
-next version of this patch (to be more confident that I can reenable
-boost).
+- Ondemand governor and the number of online CPU is 4
+Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU1 CPU2 CPU3
+23820      500000       500000       53   86   2    73   
+23920      500000       400000       66   40   0    42   
+24020      400000       400000       71   71   10   52   
+24120      400000       300000       33   27   45   65   
+24220      300000       300000       4    37   71   34   
+24320      300000       300000       1    85   38   16   
+24420      300000       200000       6    41   15   51   
+24520      200000       200000       12   62   1    51   
+24620      200000       200000       9    51   0    58   
+24720      200000       200000       32   32   11   27 
 
-> 
-> Thanks,
-> Durga
-> 
+- Performance governor and the number of online CPU is 4
+Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU1 CPU2 CPU3 
+3425930    1400000      1400000      0    0    0    0    
+3425945    1400000      1400000      0    0    0    0    
+3425960    1400000      1400000      0    0    0    0    
+3427105    1400000      1400000      0    0    0    0    
+3427109    1400000      1400000      0    0    33   100  
+3428135    1400000      1400000      0    0    0    0    
+3428425    1400000      1400000      0    0    0    0    
+3429385    1400000      1400000      0    0    0    0    
+3429400    1400000      1400000      0    0    0    0    
+3429415    1400000      1400000      0    0    0    0
 
+- Powersave governor and the number of online CPU is 4
+Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU1 CPU2 CPU3 
+3451945    200000       200000       3    0    0    2    
+3453930    200000       200000       0    1    0    1    
+3453945    200000       200000       2    2    0    0    
+3453960    200000       200000       1    0    1    0    
+3455065    200000       200000       0    0    0    0    
+3455075    200000       200000       1    5    1    0    
+3455570    200000       200000       0    0    0    0    
+3455605    200000       200000       0    0    0    3    
+3456350    200000       200000       0    0    0    0    
+3456360    200000       200000       41   2    39   43   
+
+- Powersave governor and the number of online CPU is 2 (CPU[1-2] is offline)
+Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU3 
+3501930    200000       200000       0    0    
+3502040    200000       200000       0    0    
+3502100    200000       200000       75   16   
+3502575    200000       200000       0    0    
+3503025    200000       200000       11   2    
+3503100    200000       200000       62   14   
+3503455    200000       200000       1    0    
+3503930    200000       200000       3    9    
+3504000    200000       200000       65   15   
+3504440    200000       200000       1    0    
+
+Chanwoo Choi (6):
+  cpufreq: Add debugfs directory for cpufreq
+  cpufreq: stats: Add 'load_table' debugfs file to show accumulated data of CPUs
+  cpufreq: Update governor core to support all governors
+  cpufreq: performance: Add support to collect CPUs load periodically
+  cpufreq: powersave: Add support to collect CPUs load periodically
+  Documentation: cpufreq: load_table: Update load_table debugfs file documentation
+
+ Documentation/cpu-freq/cpufreq-stats.txt |  39 ++++-
+ drivers/cpufreq/Kconfig                  |   6 +
+ drivers/cpufreq/cpufreq.c                |  61 ++++++++
+ drivers/cpufreq/cpufreq_governor.c       |  37 ++++-
+ drivers/cpufreq/cpufreq_governor.h       |  11 ++
+ drivers/cpufreq/cpufreq_performance.c    | 156 ++++++++++++++++++-
+ drivers/cpufreq/cpufreq_powersave.c      | 158 ++++++++++++++++++-
+ drivers/cpufreq/cpufreq_stats.c          | 256 ++++++++++++++++++++++++++++---
+ include/linux/cpufreq.h                  |   7 +
+ 9 files changed, 692 insertions(+), 39 deletions(-)
 
 -- 
-Best regards,
+1.8.0
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
