@@ -1,8 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 2/6] cpufreq: stats: Add 'load_table' debugfs file to show
- accumulated data of CPUs
-Date: Fri, 05 Jul 2013 17:46:37 +0900
-Message-ID: <1373014001-17746-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 6/6] Documentation: cpufreq: load_table: Update load_table
+ debugfs file documentation
+Date: Fri, 05 Jul 2013 17:46:41 +0900
+Message-ID: <1373014001-17746-7-git-send-email-cw00.choi@samsung.com>
 References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
@@ -11,499 +11,93 @@ To: viresh.kumar@linaro.org, rjw@sisk.pl, linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch add new 'load_table' debugfs file to show previous accumulated data
-of CPUs load as following path and add CPUFREQ_LOADCHECK notification to
-CPUFREQ_TRANSITION_NOTIFIER notifier chain.
-- /sys/kernel/debug/cpufreq/cpuX/load_table
-
-When governor calculates CPUs load on dbs_check_cpu(), governor send
-CPUFREQ_LOADCHECK notification with CPUs load, so that cpufreq_stats
-accumulates calculated CPUs load on 'load_table' storage.
-
-This debugfs file is used to judge the correct system state or determine
-suitable system resource according to current CPUs load on user-space.
-
-This debugfs file include following data:
-- Measurement point of time
-- CPU frequency
-- Per-CPU load
+This patch add the detailed description of 'load_table' debugfs file to show
+collected CPUs load and the change of CPU frequency.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
-Changes since v4:
-- Reset the data of CPUs load when cpufreq governor is performance or powersave
-- Move code about creating debugfs directory to below first patch
-	: [PATCH 1/2] cpufreq: Add debugfs directory for cpufreq
+ Documentation/cpu-freq/cpufreq-stats.txt | 39 ++++++++++++++++++++++++++++----
+ 1 file changed, 35 insertions(+), 4 deletions(-)
 
-Changes since v3:
-- Extend a range of accumulated data (10 ~ 1000)
-- Add unit information of time/freq and align 'Time' field as left for readability
-- Use CONFIG_CPU_FREQ_STAT depdendency instead of CONFIG_CPU_FREQ_STAT_DETATILS
-- Initialize load of offline CPUx as zero(0)
-- Create/remove debugfs root directory on cpufreq_stats_init/exit() because
-  debugfs root is used on all CPUs.
-
-Changes since v2:
-- Code clean according to Viresh Kumar's comment
-- Show both old frequency and new frequency on 'load_table' debugfs file
-- Change debufs file patch as below
-  old: /sys/kernel/debugfs/cpufreq/load_table
-  new: /sys/kernel/debugfs/cpufreq/cpuX/load_table
-
-Changes since v1:
-- Set maximum storage size to save CPUs load on Kconfig
-- Use spinlock to synchronize read/write operation for CPUs load
-- Use local variable instead of global variable(struct cpufreq_freqs *freqs)
-- Use pointer of data structure to get correct size of data structure
-  in sizeof() macro instead of structure name
-  : sizeof(struct cpufreq_freqs) -> sizeof(*stat->load_table)
-- Change time unit from nanosecond to microsecond
-- Remove unnecessary memory copy
-
-Following Test result :
-- Cpufreq governor : ondemand governor
-- Test application : MP3 play + Picture Audo-slide application
-- NR_CPU_LOAD_STORAGE : 10
-- command : cat /sys/kernel/debug/cpufreq/cpu0/load_table
-
- drivers/cpufreq/Kconfig            |   6 +
- drivers/cpufreq/cpufreq.c          |   4 +
- drivers/cpufreq/cpufreq_governor.c |  13 ++
- drivers/cpufreq/cpufreq_stats.c    | 256 +++++++++++++++++++++++++++++++++----
- include/linux/cpufreq.h            |   6 +
- 5 files changed, 261 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 534fcb8..5c3f406 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -36,6 +36,12 @@ config CPU_FREQ_STAT
+diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
+index fc64749..8c2e4f2 100644
+--- a/Documentation/cpu-freq/cpufreq-stats.txt
++++ b/Documentation/cpu-freq/cpufreq-stats.txt
+@@ -18,10 +18,12 @@ Contents
+ 1. Introduction
  
- 	  If in doubt, say N.
+ cpufreq-stats is a driver that provides CPU frequency statistics for each CPU.
+-These statistics are provided in /sysfs as a bunch of read_only interfaces. This
+-interface (when configured) will appear in a separate directory under cpufreq
+-in /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/) for each CPU.
+-Various statistics will form read_only files under this directory.
++These statistics are provided in /sysfs and /debugfs as a bunch of read_only
++interfaces. This interface (when configured) will appear in a separate directory
++under cpufreq in below directory list for each CPU. Various statistics will form
++read_only files under this directory.
++- /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/)
++- /debugfs (<sysfs root>/kernel/debug/cpufreq/cpuX/)
  
-+config NR_CPU_LOAD_STORAGE
-+	int "Maximum storage size to save CPU load (10-1000)"
-+	range 10 1000
-+	depends on CPU_FREQ_STAT
-+	default "10"
-+
- config CPU_FREQ_STAT_DETAILS
- 	bool "CPU frequency translation statistics details"
- 	depends on CPU_FREQ_STAT
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index bc01c8e..8a2c4c2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -297,6 +297,10 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		if (likely(policy) && likely(policy->cpu == freqs->cpu))
- 			policy->cur = freqs->new;
- 		break;
-+	case CPUFREQ_LOADCHECK:
-+		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
-+				CPUFREQ_LOADCHECK, freqs);
-+		break;
- 	}
- }
- /**
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index dc9b72e..3e73107 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -87,6 +87,9 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	struct cpufreq_policy *policy;
-+#ifdef CONFIG_CPU_FREQ_STAT
-+	struct cpufreq_freqs freq = {0};
-+#endif
- 	unsigned int max_load = 0;
- 	unsigned int ignore_nice;
- 	unsigned int j;
-@@ -148,6 +151,9 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- 			continue;
+ This driver is designed to be independent of any particular cpufreq_driver
+ that may be running on your CPU. So, it will work with any cpufreq_driver.
+@@ -33,6 +35,7 @@ cpufreq stats provides following statistics (explained in detail below).
+ -  time_in_state
+ -  total_trans
+ -  trans_table
++-  load_table
  
- 		load = 100 * (wall_time - idle_time) / wall_time;
-+#ifdef CONFIG_CPU_FREQ_STAT
-+		freq.load[j] = load;
-+#endif
+ All the statistics will be from the time the stats driver has been inserted 
+ to the time when a read of a particular statistic is done. Obviously, stats 
+@@ -95,6 +98,28 @@ contains the actual freq values for each row and column for better readability.
+   2800000:         0         0         0         2         0 
+ --------------------------------------------------------------------------------
  
- 		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
- 			int freq_avg = __cpufreq_driver_getavg(policy, j);
-@@ -161,6 +167,13 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- 			max_load = load;
- 	}
++-  load_table
++This gives the collected CPUs data which include measured time, old CPU
++frequency, new CPU frequency and each CPU load. The cat output will have
++"<measured time> <old CPU frequency> <new CPU frequency> <CPUs load> ..." pair
++in each line, which will mean the change of CPU frequency according to CPUs load
++at <measured time>.
++
++--------------------------------------------------------------------------------
++<mysystem>:/sys/kernel/debug/cpufreq/cpu0 # cat load_table
++Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU1 CPU2 CPU3
++23820      500000       500000       53   86   2    73
++23920      500000       400000       66   40   0    42
++24020      400000       400000       71   71   10   52
++24120      400000       300000       33   27   45   65
++24220      300000       300000       4    37   71   34
++24320      300000       300000       1    85   38   16
++24420      300000       200000       6    41   15   51
++24520      200000       200000       12   62   1    51
++24620      200000       200000       9    51   0    58
++24720      200000       200000       32   32   11   27
++--------------------------------------------------------------------------------
++
  
-+#ifdef CONFIG_CPU_FREQ_STAT
-+	freq.time = ktime_to_ms(ktime_get());
-+	freq.old = policy->cur;
-+
-+	cpufreq_notify_transition(policy, &freq, CPUFREQ_LOADCHECK);
-+#endif
-+
- 	dbs_data->cdata->gov_check_cpu(cpu, max_load);
- }
- EXPORT_SYMBOL_GPL(dbs_check_cpu);
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index fb65dec..3211f46 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -12,6 +12,7 @@
- #include <linux/kernel.h>
- #include <linux/slab.h>
- #include <linux/cpu.h>
-+#include <linux/debugfs.h>
- #include <linux/sysfs.h>
- #include <linux/cpufreq.h>
- #include <linux/module.h>
-@@ -36,6 +37,12 @@ struct cpufreq_stats {
- #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
- 	unsigned int *trans_table;
- #endif
-+
-+	/* Debugfs file for load_table */
-+	struct cpufreq_freqs *load_table;
-+	unsigned int load_last_index;
-+	unsigned int load_max_index;
-+	struct dentry *debugfs_load_table;
- };
+ 3. Configuring cpufreq-stats
  
- static DEFINE_PER_CPU(struct cpufreq_stats *, cpufreq_stats_table);
-@@ -149,6 +156,179 @@ static struct attribute_group stats_attr_group = {
- 	.name = "stats"
- };
- 
-+#define MAX_LINE_SIZE		255
-+static ssize_t load_table_read(struct file *file, char __user *user_buf,
-+					size_t count, loff_t *ppos)
-+{
-+	struct cpufreq_policy *policy = file->private_data;
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
-+	struct cpufreq_freqs *load_table = stat->load_table;
-+	ssize_t len = 0;
-+	char *buf;
-+	int i, cpu, ret;
-+
-+	buf = kzalloc(MAX_LINE_SIZE * stat->load_max_index, GFP_KERNEL);
-+	if (!buf)
-+		return 0;
-+
-+	spin_lock(&cpufreq_stats_lock);
-+	len += sprintf(buf + len, "%-10s %-12s %-12s ", "Time(ms)",
-+						    "Old Freq(Hz)",
-+						    "New Freq(Hz)");
-+	for_each_cpu(cpu, policy->cpus)
-+		len += sprintf(buf + len, "%3s%d ", "CPU", cpu);
-+	len += sprintf(buf + len, "\n");
-+
-+	i = stat->load_last_index;
-+	do {
-+		len += sprintf(buf + len, "%-10lld %-12d %-12d ",
-+				load_table[i].time,
-+				load_table[i].old,
-+				load_table[i].new);
-+
-+		for_each_cpu(cpu, policy->cpus)
-+			len += sprintf(buf + len, "%-4d ",
-+					load_table[i].load[cpu]);
-+		len += sprintf(buf + len, "\n");
-+
-+		if (++i == stat->load_max_index)
-+			i = 0;
-+	} while (i != stat->load_last_index);
-+	spin_unlock(&cpufreq_stats_lock);
-+
-+	ret = simple_read_from_buffer(user_buf, count, ppos, buf, len);
-+	kfree(buf);
-+
-+	return ret;
-+}
-+
-+static const struct file_operations load_table_fops = {
-+	.read		= load_table_read,
-+	.open		= simple_open,
-+	.llseek		= no_llseek,
-+};
-+
-+static int cpufreq_stats_reset_debugfs(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
-+	int size;
-+
-+	if (!stat)
-+		return -EINVAL;
-+
-+	if (stat->load_table)
-+		kfree(stat->load_table);
-+	stat->load_last_index = 0;
-+
-+	size = sizeof(*stat->load_table) * stat->load_max_index;
-+	stat->load_table = kzalloc(size, GFP_KERNEL);
-+	if (!stat->load_table)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static int cpufreq_stats_create_debugfs(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
-+	int size, ret = 0;
-+
-+	if (!stat)
-+		return -EINVAL;
-+
-+	if (!policy->cpu_debugfs)
-+		return -EINVAL;
-+
-+	stat->load_last_index = 0;
-+	stat->load_max_index = CONFIG_NR_CPU_LOAD_STORAGE;
-+
-+	/* Allocate memory for storage of CPUs load */
-+	size = sizeof(*stat->load_table) * stat->load_max_index;
-+	stat->load_table = kzalloc(size, GFP_KERNEL);
-+	if (!stat->load_table)
-+		return -ENOMEM;
-+
-+	/* Create debugfs directory and file for cpufreq */
-+	stat->debugfs_load_table = debugfs_create_file("load_table", S_IWUSR,
-+					policy->cpu_debugfs[policy->cpu],
-+					policy, &load_table_fops);
-+	if (!stat->debugfs_load_table) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	pr_debug("Creating debugfs file for CPU%d \n", policy->cpu);
-+
-+	return 0;
-+err:
-+	kfree(stat->load_table);
-+	return ret;
-+}
-+
-+/* should be called late in the CPU removal sequence so that the stats
-+ * memory is still available in case someone tries to use it.
-+ */
-+static void cpufreq_stats_free_load_table(unsigned int cpu)
-+{
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
-+
-+	if (stat) {
-+		pr_debug("Free memory of load_table\n");
-+		kfree(stat->load_table);
-+	}
-+}
-+
-+/* must be called early in the CPU removal sequence (before
-+ * cpufreq_remove_dev) so that policy is still valid.
-+ */
-+static void cpufreq_stats_free_debugfs(unsigned int cpu)
-+{
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
-+
-+	if (stat) {
-+		pr_debug("Remove load_table debugfs file\n");
-+		debugfs_remove(stat->debugfs_load_table);
-+	}
-+}
-+
-+static void cpufreq_stats_store_load_table(struct cpufreq_freqs *freq,
-+					   unsigned long val)
-+{
-+	struct cpufreq_stats *stat;
-+	int cpu, last_idx;
-+
-+	stat = per_cpu(cpufreq_stats_table, freq->cpu);
-+	if (!stat)
-+		return;
-+
-+	spin_lock(&cpufreq_stats_lock);
-+
-+	switch (val) {
-+	case CPUFREQ_POSTCHANGE:
-+		if (!stat->load_last_index)
-+			last_idx = stat->load_max_index;
-+		else
-+			last_idx = stat->load_last_index - 1;
-+
-+		stat->load_table[last_idx].new = freq->new;
-+		break;
-+	case CPUFREQ_LOADCHECK:
-+		last_idx = stat->load_last_index;
-+
-+		stat->load_table[last_idx].time = freq->time;
-+		stat->load_table[last_idx].old = freq->old;
-+		stat->load_table[last_idx].new = freq->old;
-+		for_each_present_cpu(cpu)
-+			stat->load_table[last_idx].load[cpu] = freq->load[cpu];
-+
-+		if (++stat->load_last_index == stat->load_max_index)
-+			stat->load_last_index = 0;
-+		break;
-+	}
-+
-+	spin_unlock(&cpufreq_stats_lock);
-+}
-+
- static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
- {
- 	int index;
-@@ -204,7 +384,7 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
- 	unsigned int alloc_size;
- 	unsigned int cpu = policy->cpu;
- 	if (per_cpu(cpufreq_stats_table, cpu))
--		return -EBUSY;
-+		return 0;
- 	stat = kzalloc(sizeof(struct cpufreq_stats), GFP_KERNEL);
- 	if ((stat) == NULL)
- 		return -ENOMEM;
-@@ -257,6 +437,14 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
- 	spin_lock(&cpufreq_stats_lock);
- 	stat->last_time = get_jiffies_64();
- 	stat->last_index = freq_table_get_index(stat, policy->cur);
-+
-+	ret = cpufreq_stats_create_debugfs(data);
-+	if (ret < 0) {
-+		spin_unlock(&cpufreq_stats_lock);
-+		ret = -EINVAL;
-+		goto error_out;
-+	}
-+
- 	spin_unlock(&cpufreq_stats_lock);
- 	cpufreq_cpu_put(data);
- 	return 0;
-@@ -297,11 +485,18 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
- 	if (val != CPUFREQ_NOTIFY)
- 		return 0;
- 	table = cpufreq_frequency_get_table(cpu);
--	if (!table)
--		return 0;
--	ret = cpufreq_stats_create_table(policy, table);
--	if (ret)
-+	if (table) {
-+		ret = cpufreq_stats_create_table(policy, table);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	ret = cpufreq_stats_reset_debugfs(policy);
-+	if (ret < 0) {
-+		pr_debug("Failed to reset CPUs data of debugfs\n");
- 		return ret;
-+	}
-+
- 	return 0;
- }
- 
-@@ -312,32 +507,40 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
- 	struct cpufreq_stats *stat;
- 	int old_index, new_index;
- 
--	if (val != CPUFREQ_POSTCHANGE)
--		return 0;
-+	switch (val) {
-+	case CPUFREQ_POSTCHANGE:
-+		stat = per_cpu(cpufreq_stats_table, freq->cpu);
-+		if (!stat)
-+			return 0;
- 
--	stat = per_cpu(cpufreq_stats_table, freq->cpu);
--	if (!stat)
--		return 0;
-+		old_index = stat->last_index;
-+		new_index = freq_table_get_index(stat, freq->new);
- 
--	old_index = stat->last_index;
--	new_index = freq_table_get_index(stat, freq->new);
-+		/* We can't do stat->time_in_state[-1]= .. */
-+		if (old_index == -1 || new_index == -1)
-+			return 0;
- 
--	/* We can't do stat->time_in_state[-1]= .. */
--	if (old_index == -1 || new_index == -1)
--		return 0;
-+		cpufreq_stats_update(freq->cpu);
- 
--	cpufreq_stats_update(freq->cpu);
-+		if (old_index == new_index)
-+			return 0;
- 
--	if (old_index == new_index)
--		return 0;
--
--	spin_lock(&cpufreq_stats_lock);
--	stat->last_index = new_index;
-+		spin_lock(&cpufreq_stats_lock);
-+		stat->last_index = new_index;
- #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
--	stat->trans_table[old_index * stat->max_state + new_index]++;
-+		stat->trans_table[old_index * stat->max_state + new_index]++;
- #endif
--	stat->total_trans++;
--	spin_unlock(&cpufreq_stats_lock);
-+		stat->total_trans++;
-+		spin_unlock(&cpufreq_stats_lock);
-+
-+		cpufreq_stats_store_load_table(freq, CPUFREQ_POSTCHANGE);
-+
-+		break;
-+	case CPUFREQ_LOADCHECK:
-+		cpufreq_stats_store_load_table(freq, CPUFREQ_LOADCHECK);
-+		break;
-+	}
-+
- 	return 0;
- }
- 
-@@ -352,12 +555,16 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 		cpufreq_update_policy(cpu);
- 		break;
- 	case CPU_DOWN_PREPARE:
-+		cpufreq_stats_free_debugfs(cpu);
- 		cpufreq_stats_free_sysfs(cpu);
- 		break;
- 	case CPU_DEAD:
-+		cpufreq_stats_free_load_table(cpu);
- 		cpufreq_stats_free_table(cpu);
- 		break;
- 	case CPU_UP_CANCELED_FROZEN:
-+		cpufreq_stats_free_debugfs(cpu);
-+		cpufreq_stats_free_load_table(cpu);
- 		cpufreq_stats_free_sysfs(cpu);
- 		cpufreq_stats_free_table(cpu);
- 		break;
-@@ -418,6 +625,7 @@ static void __exit cpufreq_stats_exit(void)
- 	unregister_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
- 	for_each_online_cpu(cpu) {
- 		cpufreq_stats_free_table(cpu);
-+		cpufreq_stats_free_debugfs(cpu);
- 		cpufreq_stats_free_sysfs(cpu);
- 	}
- }
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 825f379..4d0a4fd 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -141,12 +141,18 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
- #define CPUFREQ_POSTCHANGE	(1)
- #define CPUFREQ_RESUMECHANGE	(8)
- #define CPUFREQ_SUSPENDCHANGE	(9)
-+#define CPUFREQ_LOADCHECK	(10)
- 
- struct cpufreq_freqs {
- 	unsigned int cpu;	/* cpu nr */
- 	unsigned int old;
- 	unsigned int new;
- 	u8 flags;		/* flags of cpufreq_driver, see below. */
-+
-+#ifdef CONFIG_CPU_FREQ_STAT
-+	int64_t time;
-+	unsigned int load[NR_CPUS];
-+#endif
- };
+@@ -104,6 +129,7 @@ Config Main Menu
+ 		CPU Frequency scaling  --->
+ 			[*] CPU Frequency scaling
+ 			<*>   CPU frequency translation statistics 
++			(10)    Maximum storage size to save CPU load (10-1000)
+ 			[*]     CPU frequency translation statistics details
  
  
+@@ -113,6 +139,11 @@ cpufreq-stats.
+ "CPU frequency translation statistics" (CONFIG_CPU_FREQ_STAT) provides the
+ basic statistics which includes time_in_state and total_trans.
+ 
++"Maximum storage size to save CPU load (10-1000)" (depends on CONFIG_CPU_FREQ_
++STAT) indicates the total number of load_table data and provides collected data
++which include old cpu frequency, new cpu frequency and CPUs load. The user can
++determine the storage size of collected CPUs data. The range is from 10 to 1000.
++
+ "CPU frequency translation statistics details" (CONFIG_CPU_FREQ_STAT_DETAILS)
+ provides fine grained cpufreq stats by trans_table. The reason for having a
+ separate config option for trans_table is:
 -- 
 1.8.0
