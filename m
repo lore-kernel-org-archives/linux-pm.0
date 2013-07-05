@@ -1,57 +1,140 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
-Date: Fri, 5 Jul 2013 10:05:22 +0530
-Message-ID: <CAKohponPboo5awGj5uowrdo=e168BaRtkwQ8qte-Gj8R2FUgZg@mail.gmail.com>
-References: <51C08370.4050906@gmx.de>
-	<CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com>
-	<51CF1E53.6060902@gmx.de>
-	<8029836.CFiJCXmRQ0@vostro.rjw.lan>
-	<51D05DF4.50704@linux.vnet.ibm.com>
-	<51D06556.7080204@gmx.de>
-	<51D47FB0.5090604@gmx.de>
-	<51D51C63.2080702@linux.vnet.ibm.com>
-	<CAKohpomfM55cRfLOohpv4nhLBcwVcD-y3-WcYOaznVhA6H2TAw@mail.gmail.com>
-	<51D51F63.8080905@linux.vnet.ibm.com>
-	<CAKohpom1KE=yxTi1HNoSn4cJ1mNpvZTeeVwK3A=4qSZ6Ut98gA@mail.gmail.com>
-	<CAKohpok=iLyiiV5F4Q8ZK_-7ZzZqiGchHkmVWEvCRsV55z7gzA@mail.gmail.com>
-	<51D5A5E5.9060302@gmx.de>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH v5 5/7] thermal:boost: Automatic enable/disable of BOOST
+ feature
+Date: Fri, 5 Jul 2013 05:31:42 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59CCF66C@BGSMSX101.gar.corp.intel.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
+ <1372927830-2949-6-git-send-email-l.majewski@samsung.com>
+ <4D68720C2E767A4AA6A8796D42C8EB59CCF152@BGSMSX101.gar.corp.intel.com>
+ <20130704225806.6d08b0a9@jawa>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51D5A5E5.9060302@gmx.de>
+In-Reply-To: <20130704225806.6d08b0a9@jawa>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
-To: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+To: Lukasz Majewski <l.majewski@majess.pl>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 4 July 2013 22:12, Toralf F=F6rster <toralf.foerster@gmx.de> wrote:
-> On 07/04/2013 10:23 AM, Viresh Kumar wrote:
->> Ok, I did a mistake here (Thanks Srivatsa for telling me), this wasn=
-'t
->> there in 3.10 but 3.11-rc1
->>
->>> > c28375583b6471c1cb833a628ab6afb5b69079d0
->>> >
->>> > They are touching ondemand governor and this may be creating some
->>> > problems. But I am not sure about it, I must admit.
->> So just try reverting about commit.
->>
->> In case you are using acpi-cpufreq driver, please try reverting this=
- before
->> above one:
->>
->> 8673b83bf2f013379453b4779047bf3c6ae387e4
-> I reverted  8673b83b on top of 3.10.0  - no success, then I reverted
-> c2837558 too - no success.
+Hi Lukasz,
 
-I assume that you have applied the patch given by Srivatsa earlier over
-these reverts?
+> -----Original Message-----
+> From: Lukasz Majewski [mailto:l.majewski@majess.pl]
+> Sent: Friday, July 05, 2013 2:28 AM
+> To: R, Durgadoss
+> Cc: Lukasz Majewski; Viresh Kumar; Rafael J. Wysocki; Zhang, Rui; Eduardo
+> Valentin; cpufreq@vger.kernel.org; Linux PM list; Jonghwa Lee; linux-kernel;
+> Andre Przywara; Daniel Lezcano; Kukjin Kim; Myungjoo Ham
+> Subject: Re: [PATCH v5 5/7] thermal:boost: Automatic enable/disable of BOOST
+> feature
+> 
+> On Thu, 4 Jul 2013 17:19:04 +0000
+> "R, Durgadoss" <durgadoss.r@intel.com> wrote:
+> Hi,
+> 
 
-In that case you can go for a revert I believe. There aren't many cpufr=
-eq
-patches between 3.10 and the commit where you tested successfully
-earlier.
+[Cut.]
 
-But I now also suspect that this might have been caused by something
-outside cpufreq.
+> > > @@ -326,6 +327,15 @@ static void monitor_thermal_zone(struct
+> > > thermal_zone_device *tz)
+> > >  static void handle_non_critical_trips(struct thermal_zone_device
+> > > *tz, int trip, enum thermal_trip_type trip_type)
+> > >  {
+> > > +	if (cpufreq_boost_supported()) {
+> > > +		tz->overheated = true;
+> > > +		cpufreq_boost_trigger_state(0);
+> > > +		if (!tz->polling_delay) {
+> > > +			tz->boost_polling = true;
+> > > +			tz->polling_delay = 1000;
+> > > +		}
+> > > +	}
+> > > +
+> > >  	if (tz->governor)
+> > >  		tz->governor->throttle(tz, trip);
+> > >  }
+> > > @@ -453,6 +463,27 @@ static void thermal_zone_device_check(struct
+> > > work_struct *work)
+> > >  	struct thermal_zone_device *tz = container_of(work, struct
+> > >  						      thermal_zone_device,
+> > >  						      poll_queue.work);
+> > > +	long trip_temp;
+> > > +
+> > > +	if (cpufreq_boost_supported() && tz->overheated) {
+> >
+> > Not all thermal drivers support trip points. So, we first need a
+> > if (tz->ops->get_trip_temp) check here.
+> 
+> Ok, thanks for tip. Bluntly speaking, I thought, that all SoCs supported
+> by thermal set trip points.
+
+We would wish to get there. But not the reality today ;)
+
+> 
+> >
+> > > +		tz->ops->get_trip_temp(tz, 0, &trip_temp);
+> > > +		/*
+> > > +		 * Enable boost again only when current
+> > > temperature is less
+> > > +		 * than 75% of trip_temp[0]
+> > > +		 */
+> > > +		if ((tz->temperature + (trip_temp >> 2)) <
+> > > trip_temp) {
+> >
+> > Another way would be to use the get_trend APIs for this thermal zone.
+> > If the trend is cooling we can re-enable boost otherwise not.
+> 
+> Trend evaluation seems like a good complementary idea.
+> 
+> However, I would also like to have the relative temperature drop
+> measurement (if possible) like above (to 75% of the first trip point).
+> 
+> Then I would be more confident, that everything cooled down and that I
+> can start boost again.
+> 
+> >
+> > > +			tz->overheated = false;
+> > > +			if (tz->boost_polling) {
+> > > +				tz->boost_polling = false;
+> > > +				tz->polling_delay = 0;
+> > > +				monitor_thermal_zone(tz);
+> > > +			}
+> >
+> > Overall, I believe this will work well only if the thermal zone is
+> > CPU.
+> 
+> My assumption:
+> 
+> When I enable boost at CPU, then I also shall cool down the CPU. And
+> the CPU zone seemed a natural choice.
+> 
+> However I might be missing something, so hints are welcome.
+> 
+> >
+> > Another suggestion is: We tried hard to remove all throttling logic
+> > from thermal_core.c.
+> 
+> By throttling logic you mean:
+> if ((tz->temperature + (trip_temp >> 2)) and other conditions (like
+> trend measurement)?
+
+Yes. That is correct.
+
+> 
+> > May be we should include this kind of logic in
+> > step_wise.c ?
+> 
+> It sounds interesting (since ->throttle at thermal_core.c is called
+> always when needed), but I'm afraid of a code duplication when one
+> use Boost with fair_share or other thermal governor.
+
+right. So, for the time being, (as part of this patch series)
+I am Okay to have this code in thermal_core.c. From the thermal
+subsystem perspective, we will (need to) work out a better/
+cleaner/easier approach for this later.
+
+Thanks,
+Durga
+
