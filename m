@@ -1,8 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 6/6] Documentation: cpufreq: load_table: Update load_table
- debugfs file documentation
-Date: Fri, 05 Jul 2013 17:46:41 +0900
-Message-ID: <1373014001-17746-7-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 5/6] cpufreq: powersave: Add support to collect CPUs load
+ periodically
+Date: Fri, 05 Jul 2013 17:46:40 +0900
+Message-ID: <1373014001-17746-6-git-send-email-cw00.choi@samsung.com>
 References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
@@ -11,93 +11,210 @@ To: viresh.kumar@linaro.org, rjw@sisk.pl, linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch add the detailed description of 'load_table' debugfs file to show
-collected CPUs load and the change of CPU frequency.
+This patch collect CPUs load and create create basic sysfs file as below:
+- /sys/devices/system/cpu/cpufreq/powersave/ignore_nice (rw)
+- /sys/devices/system/cpu/cpufreq/powersave/sampling_rate (rw)
+- /sys/devices/system/cpu/cpufreq/powersave/sampling_rate_min (r)
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
- Documentation/cpu-freq/cpufreq-stats.txt | 39 ++++++++++++++++++++++++++++----
- 1 file changed, 35 insertions(+), 4 deletions(-)
+ drivers/cpufreq/cpufreq_governor.h  |   1 +
+ drivers/cpufreq/cpufreq_powersave.c | 158 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 156 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
-index fc64749..8c2e4f2 100644
---- a/Documentation/cpu-freq/cpufreq-stats.txt
-+++ b/Documentation/cpu-freq/cpufreq-stats.txt
-@@ -18,10 +18,12 @@ Contents
- 1. Introduction
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 7ad4d3b..a926c74 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -199,6 +199,7 @@ struct common_dbs_data {
+ 	#define GOV_ONDEMAND		0
+ 	#define GOV_CONSERVATIVE	1
+ 	#define GOV_PERFORMANCE		2
++	#define GOV_POWERSAVE		3
+ 	int governor;
+ 	struct attribute_group *attr_group_gov_sys; /* one governor - system */
+ 	struct attribute_group *attr_group_gov_pol; /* one governor - policy */
+diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
+index 2d948a1..39c7857 100644
+--- a/drivers/cpufreq/cpufreq_powersave.c
++++ b/drivers/cpufreq/cpufreq_powersave.c
+@@ -17,9 +17,159 @@
+ #include <linux/cpufreq.h>
+ #include <linux/init.h>
  
- cpufreq-stats is a driver that provides CPU frequency statistics for each CPU.
--These statistics are provided in /sysfs as a bunch of read_only interfaces. This
--interface (when configured) will appear in a separate directory under cpufreq
--in /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/) for each CPU.
--Various statistics will form read_only files under this directory.
-+These statistics are provided in /sysfs and /debugfs as a bunch of read_only
-+interfaces. This interface (when configured) will appear in a separate directory
-+under cpufreq in below directory list for each CPU. Various statistics will form
-+read_only files under this directory.
-+- /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/)
-+- /debugfs (<sysfs root>/kernel/debug/cpufreq/cpuX/)
- 
- This driver is designed to be independent of any particular cpufreq_driver
- that may be running on your CPU. So, it will work with any cpufreq_driver.
-@@ -33,6 +35,7 @@ cpufreq stats provides following statistics (explained in detail below).
- -  time_in_state
- -  total_trans
- -  trans_table
-+-  load_table
- 
- All the statistics will be from the time the stats driver has been inserted 
- to the time when a read of a particular statistic is done. Obviously, stats 
-@@ -95,6 +98,28 @@ contains the actual freq values for each row and column for better readability.
-   2800000:         0         0         0         2         0 
- --------------------------------------------------------------------------------
- 
-+-  load_table
-+This gives the collected CPUs data which include measured time, old CPU
-+frequency, new CPU frequency and each CPU load. The cat output will have
-+"<measured time> <old CPU frequency> <new CPU frequency> <CPUs load> ..." pair
-+in each line, which will mean the change of CPU frequency according to CPUs load
-+at <measured time>.
++#ifdef CONFIG_CPU_FREQ_STAT
 +
-+--------------------------------------------------------------------------------
-+<mysystem>:/sys/kernel/debug/cpufreq/cpu0 # cat load_table
-+Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU1 CPU2 CPU3
-+23820      500000       500000       53   86   2    73
-+23920      500000       400000       66   40   0    42
-+24020      400000       400000       71   71   10   52
-+24120      400000       300000       33   27   45   65
-+24220      300000       300000       4    37   71   34
-+24320      300000       300000       1    85   38   16
-+24420      300000       200000       6    41   15   51
-+24520      200000       200000       12   62   1    51
-+24620      200000       200000       9    51   0    58
-+24720      200000       200000       32   32   11   27
-+--------------------------------------------------------------------------------
++#include <linux/kernel_stat.h>
++#include <linux/slab.h>
 +
- 
- 3. Configuring cpufreq-stats
- 
-@@ -104,6 +129,7 @@ Config Main Menu
- 		CPU Frequency scaling  --->
- 			[*] CPU Frequency scaling
- 			<*>   CPU frequency translation statistics 
-+			(10)    Maximum storage size to save CPU load (10-1000)
- 			[*]     CPU frequency translation statistics details
- 
- 
-@@ -113,6 +139,11 @@ cpufreq-stats.
- "CPU frequency translation statistics" (CONFIG_CPU_FREQ_STAT) provides the
- basic statistics which includes time_in_state and total_trans.
- 
-+"Maximum storage size to save CPU load (10-1000)" (depends on CONFIG_CPU_FREQ_
-+STAT) indicates the total number of load_table data and provides collected data
-+which include old cpu frequency, new cpu frequency and CPUs load. The user can
-+determine the storage size of collected CPUs data. The range is from 10 to 1000.
++#include "cpufreq_governor.h"
 +
- "CPU frequency translation statistics details" (CONFIG_CPU_FREQ_STAT_DETAILS)
- provides fine grained cpufreq stats by trans_table. The reason for having a
- separate config option for trans_table is:
++#define ps_cpu_dbs_info_s	cpu_dbs_info_s
++#define ps_dbs_tuners		dbs_tuners
++
++static DEFINE_PER_CPU(struct cpu_dbs_info_s, ps_cpu_dbs_info);
++static struct common_dbs_data ps_dbs_cdata;
++
++static ssize_t store_sampling_rate(struct dbs_data *dbs_data, const char *buf,
++		size_t count)
++{
++	struct dbs_tuners *tuners = dbs_data->tuners;
++	unsigned int input;
++	int ret;
++	ret = sscanf(buf, "%u", &input);
++
++	if (ret != 1)
++		return -EINVAL;
++
++	tuners->sampling_rate = max(input, dbs_data->min_sampling_rate);
++	return count;
++}
++
++static ssize_t store_ignore_nice(struct dbs_data *dbs_data, const char *buf,
++		size_t count)
++{
++	struct dbs_tuners *tuners = dbs_data->tuners;
++	unsigned int input, j;
++	int ret;
++
++	ret = sscanf(buf, "%u", &input);
++	if (ret != 1)
++		return -EINVAL;
++
++	if (input > 1)
++		input = 1;
++
++	if (input == tuners->ignore_nice) /* nothing to do */
++		return count;
++
++	tuners->ignore_nice = input;
++
++	/* we need to re-evaluate prev_cpu_idle */
++	for_each_online_cpu(j) {
++		struct ps_cpu_dbs_info_s *dbs_info;
++		dbs_info = &per_cpu(ps_cpu_dbs_info, j);
++		dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
++					&dbs_info->cdbs.prev_cpu_wall, 0);
++		if (tuners->ignore_nice)
++			dbs_info->cdbs.prev_cpu_nice =
++				kcpustat_cpu(j).cpustat[CPUTIME_NICE];
++	}
++	return count;
++}
++
++show_store_one(ps, sampling_rate);
++show_store_one(ps, ignore_nice);
++declare_show_sampling_rate_min(ps);
++
++gov_sys_pol_attr_rw(sampling_rate);
++gov_sys_pol_attr_rw(ignore_nice);
++gov_sys_pol_attr_ro(sampling_rate_min);
++
++static struct attribute *dbs_attributes_gov_sys[] = {
++	&sampling_rate_min_gov_sys.attr,
++	&sampling_rate_gov_sys.attr,
++	&ignore_nice_gov_sys.attr,
++	NULL
++};
++
++static struct attribute_group ps_attr_group_gov_sys = {
++	.attrs = dbs_attributes_gov_sys,
++	.name = "powersave",
++};
++
++static struct attribute *dbs_attributes_gov_pol[] = {
++	&sampling_rate_min_gov_pol.attr,
++	&sampling_rate_gov_pol.attr,
++	&ignore_nice_gov_pol.attr,
++	NULL
++};
++
++static struct attribute_group ps_attr_group_gov_pol = {
++	.attrs = dbs_attributes_gov_pol,
++	.name = "powersave",
++};
++
++static void ps_dbs_timer(struct work_struct *work)
++{
++	struct cpu_dbs_info_s *dbs_info = container_of(work,
++			struct cpu_dbs_info_s, cdbs.work.work);
++	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
++	struct dbs_data *dbs_data = dbs_info->cdbs.cur_policy->governor_data;
++	struct dbs_tuners *tuners = dbs_data->tuners;
++	unsigned int delay = 0;
++
++	delay = max(tuners->sampling_rate, dbs_data->min_sampling_rate);
++	delay = usecs_to_jiffies(delay);
++
++	mutex_lock(&dbs_info->cdbs.timer_mutex);
++	dbs_check_cpu(dbs_data, cpu);
++	gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy, delay, false);
++	mutex_unlock(&dbs_info->cdbs.timer_mutex);
++}
++
++static int ps_init(struct dbs_data *dbs_data)
++{
++	struct dbs_tuners *tuners;
++
++	tuners = kzalloc(sizeof(struct dbs_tuners), GFP_KERNEL);
++	if (!tuners) {
++		pr_err("%s: kzalloc failed\n", __func__);
++		return -ENOMEM;
++	}
++
++	tuners->ignore_nice = 0;
++
++	dbs_data->tuners = tuners;
++	dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO
++					* jiffies_to_usecs(100);
++	mutex_init(&dbs_data->mutex);
++
++	return 0;
++}
++static void ps_exit(struct dbs_data *dbs_data)
++{
++	kfree(dbs_data->tuners);
++}
++
++define_get_cpu_dbs_routines(ps_cpu_dbs_info);
++
++static struct common_dbs_data ps_dbs_cdata = {
++	.governor = GOV_POWERSAVE,
++	.attr_group_gov_sys = &ps_attr_group_gov_sys,
++	.attr_group_gov_pol = &ps_attr_group_gov_pol,
++	.get_cpu_cdbs = get_cpu_cdbs,
++	.get_cpu_dbs_info_s = get_cpu_dbs_info_s,
++	.gov_dbs_timer = ps_dbs_timer,
++	.init = ps_init,
++	.exit = ps_exit,
++};
++#endif	/* CONFIG_CPU_FREQ_STAT */
++
+ static int cpufreq_governor_powersave(struct cpufreq_policy *policy,
+ 					unsigned int event)
+ {
++	int ret = 0;
++
+ 	switch (event) {
+ 	case CPUFREQ_GOV_START:
+ 	case CPUFREQ_GOV_LIMITS:
+@@ -28,10 +178,12 @@ static int cpufreq_governor_powersave(struct cpufreq_policy *policy,
+ 		__cpufreq_driver_target(policy, policy->min,
+ 						CPUFREQ_RELATION_L);
+ 		break;
+-	default:
+-		break;
+ 	}
+-	return 0;
++
++#ifdef CONFIG_CPU_FREQ_STAT
++	ret = cpufreq_governor_dbs(policy, &ps_dbs_cdata, event);
++#endif
++	return ret;
+ }
+ 
+ #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
 -- 
 1.8.0
