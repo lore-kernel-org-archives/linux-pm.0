@@ -1,59 +1,180 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression in 3.10] Garbage displayed after resume on Acer
-	Aspire S5
-Date: Sun, 07 Jul 2013 01:36:15 +0200
-Message-ID: <14306109.Kf2NcaamIl@vostro.rjw.lan>
-References: <1511667.B4N0cEgdH9@vostro.rjw.lan>
+From: Pankaj Jangra <jangra.pankaj9@gmail.com>
+Subject: Re: [PATCH 1/6] cpufreq: Add debugfs directory for cpufreq
+Date: Sun, 7 Jul 2013 11:54:40 -0700
+Message-ID: <CADTbHxqsSpyAKFBg7t31h3SH-p_x2UO=jTpLz80GZW4+64eo5g@mail.gmail.com>
+References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
+	<1373014001-17746-2-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org>
-In-Reply-To: <1511667.B4N0cEgdH9@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Sender: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-Errors-To: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-To: intel-gfx@lists.freedesktop.org, Chris Wilson <chris@chris-wilson.co.uk>
-Cc: =?ISO-8859-1?Q?St=E9phane?= Marchesin <marcheu@chromium.org>, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1373014001-17746-2-git-send-email-cw00.choi@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: viresh.kumar@linaro.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, July 06, 2013 03:59:49 PM Rafael J. Wysocki wrote:
-> Hi,
-> 
-> I've just started to play with a new Acer Aspire S5 test box and noticed that
-> garbage is displayed after resume from suspend to RAM with the 3.10 kernel
-> (under KDE 4.10.3 on openSUSE 12.3).  The display corruption goes away after
-> killing X and restarting it.
-> 
-> The CPU is a Core i5-3317U (Ivy Bridge), i915 graphics.
-> 
-> That doesn't happen with 3.9 (same config otherwise).  It also doesn't happen
-> with my older Sandy Bridge-based box (with 3.10), so I suspect Ivy Bridge
-> specifics.
-> 
-> Is this known?  Do you want me to bisect?
+Hi Chanwoo,
 
-Most likely, this has been introduced by this commit:
+On Fri, Jul 5, 2013 at 1:46 AM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> This patch create debugfs root directory and child directory according to
+> the number of CPUs for CPUFreq as below debugfs directory path:
+> - /sys/kernel/debug/cpufreq/cpuX
+>
+> If many CPUs share only one cpufreq policy, other CPU(except for CPU0) create
+> a link for debugfs directory of CPU0.
+> - /sys/kernel/debug/cpufreq/cpu0
+> - /sys/kernel/debug/cpufreq/cpu[1-(N-1)] -> /sys/kernel/debug/cpufreq/cpu0
+>
+> And then cpufreq may need to create debugfs specific file below of debugfs
+> directory of cpufreq. (e.g., /sys/kernel/debug/cpufreq/cpu0/load_table)
+>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 57 +++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/cpufreq.h   |  1 +
+>  2 files changed, 58 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 2d53f47..bc01c8e 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/notifier.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/delay.h>
+> +#include <linux/debugfs.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/device.h>
+> @@ -47,6 +48,10 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  #endif
+>  static DEFINE_RWLOCK(cpufreq_driver_lock);
+>
+> +/* The cpufreq_debugfs is used to create debugfs root directory for CPUFreq. */
+> +#define MAX_DEBUGFS_NAME_LEN   CPUFREQ_NAME_LEN
+> +static struct dentry *cpufreq_debugfs;
+> +
+>  /*
+>   * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
+>   * all cpufreq/hotplug/workqueue/etc related lock issues.
+> @@ -726,6 +731,20 @@ static int cpufreq_add_dev_symlink(unsigned int cpu,
+>                         cpufreq_cpu_put(managed_policy);
+>                         return ret;
+>                 }
+> +
+> +               if (cpufreq_debugfs) {
+> +                       char symlink_name[MAX_DEBUGFS_NAME_LEN];
+> +                       char target_name[MAX_DEBUGFS_NAME_LEN];
+> +
+> +                       sprintf(symlink_name, "cpu%d", j);
+> +                       sprintf(target_name, "./cpu%d", cpu);
+> +                       managed_policy->cpu_debugfs[j] = debugfs_create_symlink(
+> +                                                       symlink_name,
+> +                                                       cpufreq_debugfs,
+> +                                                       target_name);
+> +                       if (!managed_policy->cpu_debugfs[j])
+> +                               pr_debug("creating debugfs symlink failed\n");
+> +               }
+>         }
+>         return ret;
+>  }
+> @@ -746,6 +765,22 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+>         if (ret)
+>                 return ret;
+>
+> +       /* prepare interface data for debugfs */
+> +       if (cpufreq_debugfs) {
+> +               char name[MAX_DEBUGFS_NAME_LEN];
+> +               int size, i;
+> +
+> +               sprintf(name, "cpu%d", policy->cpu);
+> +               size = sizeof(struct dentry*) * NR_CPUS;
+> +               i = cpu;
+> +
+> +               policy->cpu_debugfs = devm_kzalloc(dev, size, GFP_KERNEL);
+> +               policy->cpu_debugfs[i] = debugfs_create_dir(name,
+> +                                                           cpufreq_debugfs);
+> +               if (!policy->cpu_debugfs[i])
+> +                       pr_debug("creating debugfs directory failed\n");
+> +       }
+> +
+>         /* set up files for this cpu device */
+>         drv_attr = cpufreq_driver->attr;
+>         while ((drv_attr) && (*drv_attr)) {
+> @@ -839,6 +874,20 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+>                 return ret;
+>         }
+>
+> +       if (cpufreq_debugfs) {
+> +               char symlink_name[MAX_DEBUGFS_NAME_LEN];
+> +               char target_name[MAX_DEBUGFS_NAME_LEN];
+> +
+> +               sprintf(symlink_name, "cpu%d", cpu);
+> +               sprintf(target_name, "./cpu%d", sibling);
+> +               policy->cpu_debugfs[cpu] = debugfs_create_symlink(
+> +                                               symlink_name,
+> +                                               cpufreq_debugfs,
+> +                                               target_name);
+> +               if (!policy->cpu_debugfs[cpu])
+> +                       pr_debug("creating debugfs symlink failed\n");
+> +       }
+> +
+>         return 0;
+>  }
+>  #endif
+> @@ -1046,6 +1095,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+>
+>         if (cpu != data->cpu) {
+>                 sysfs_remove_link(&dev->kobj, "cpufreq");
+> +               debugfs_remove(data->cpu_debugfs[cpu]);
 
-commit 19b2dbde5732170a03bd82cc8bd442cf88d856f7
-Author: Chris Wilson <chris@chris-wilson.co.uk>
-Date:   Wed Jun 12 10:15:12 2013 +0100
+I think you should add the call to remove the "cpufreq" also ???
+               "debugfs_remove(cpufreq_debugfs);"
+>         } else if (cpus > 1) {
+>                 /* first sibling now owns the new sysfs dir */
+>                 cpu_dev = get_cpu_device(cpumask_first(data->cpus));
+> @@ -1068,6 +1118,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+>                         return -EINVAL;
+>                 }
+>
+> +               debugfs_remove_recursive(data->cpu_debugfs[cpu]);
+> +               debugfs_remove(cpufreq_debugfs);
+> +
+>                 WARN_ON(lock_policy_rwsem_write(cpu));
+>                 update_policy_cpu(data, cpu_dev->id);
+>                 unlock_policy_rwsem_write(cpu);
+> @@ -1976,6 +2029,10 @@ static int __init cpufreq_core_init(void)
+>         BUG_ON(!cpufreq_global_kobject);
+>         register_syscore_ops(&cpufreq_syscore_ops);
+>
+> +       cpufreq_debugfs = debugfs_create_dir("cpufreq", NULL);
+> +       if (!cpufreq_debugfs)
+> +               pr_debug("creating debugfs root failed\n");
+> +
+>         return 0;
+>  }
+>  core_initcall(cpufreq_core_init);
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 037d36a..825f379 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -115,6 +115,7 @@ struct cpufreq_policy {
+>
+>         struct kobject          kobj;
+>         struct completion       kobj_unregister;
+> +       struct dentry           **cpu_debugfs;
+>  };
+>
+>  #define CPUFREQ_ADJUST                 (0)
+> --
+> 1.8.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-    drm/i915: Restore fences after resume and GPU resets
-
-At least I'm not able to reproduce it with that commit reverted.  With that
-commit in I was able to reproduce it quite readily on machines with Ivy Bridge
-and Sandy Bridge processors.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Pankaj Jangra
