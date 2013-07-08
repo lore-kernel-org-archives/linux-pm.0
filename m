@@ -1,237 +1,228 @@
 From: Mike Turquette <mturquette@linaro.org>
-Subject: [PATCH RFC 3/3] cpufreq: cpufreq-cpu0: clk rate-change notifiers
-Date: Sun,  7 Jul 2013 18:44:28 -0700
-Message-ID: <1373247868-21444-4-git-send-email-mturquette@linaro.org>
+Subject: [PATCH RFC 1/3] clk: notifier handler for dynamic voltage scaling
+Date: Sun,  7 Jul 2013 18:44:26 -0700
+Message-ID: <1373247868-21444-2-git-send-email-mturquette@linaro.org>
 References: <1373247868-21444-1-git-send-email-mturquette@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1373247868-21444-1-git-send-email-mturquette@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mike Turquette <mturquette@linaro.org>
+Cc: Mike Turquette <mturquette@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Removes direct handling of OPP tables and voltage regulators by calling
-of_clk_cpufreq_notifier_handler, introduced by commit "clk: cpufreq
-helper for voltage scaling".
+This patch provides helper functions for drivers that wish to scale
+voltage through the clock rate-change notifiers. The approach taken is
+that the driver does not care about the details of the OPP table, nor
+does it care about handling the voltage regulator directly. The driver
+only has a pointer to the struct clk object; the other details are
+hidden in the helper functions.
 
-In the future this can help consolidate code found across similar
-CPUfreq drivers.
+The assumptions about DT structure mostly come from the cpufreq-cpu0
+binding. Since this is a helper function it does not have a binding
+document of its own.
+
+A similar patch using platform data instead of DT was proposed in
+February[1].
+
+[1] http://patches.linaro.org/15128/
 
 Signed-off-by: Mike Turquette <mturquette@linaro.org>
 ---
- drivers/cpufreq/cpufreq-cpu0.c | 125 ++++++++---------------------------------
- 1 file changed, 22 insertions(+), 103 deletions(-)
+ drivers/clk/Makefile               |   1 +
+ drivers/clk/clk-voltage-notifier.c | 135 +++++++++++++++++++++++++++++++++++++
+ include/linux/clk.h                |   7 +-
+ 3 files changed, 142 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/clk/clk-voltage-notifier.c
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index ad1fde2..1e8f928 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -16,18 +16,15 @@
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index d3c3733..beb39f1 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -8,6 +8,7 @@ obj-$(CONFIG_COMMON_CLK)	+= clk-fixed-rate.o
+ obj-$(CONFIG_COMMON_CLK)	+= clk-gate.o
+ obj-$(CONFIG_COMMON_CLK)	+= clk-mux.o
+ obj-$(CONFIG_COMMON_CLK)	+= clk-composite.o
++obj-$(CONFIG_COMMON_CLK)	+= clk-voltage-notifier.o
+ 
+ # SoCs specific
+ obj-$(CONFIG_ARCH_BCM2835)	+= clk-bcm2835.o
+diff --git a/drivers/clk/clk-voltage-notifier.c b/drivers/clk/clk-voltage-notifier.c
+new file mode 100644
+index 0000000..cb6b85f
+--- /dev/null
++++ b/drivers/clk/clk-voltage-notifier.c
+@@ -0,0 +1,135 @@
++/*
++ * Copyright (C) 2013 Linaro Ltd <mturquette@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Helper functions for registering clock rate-change notifier handlers
++ * that scale voltage when a clock changes its output frequency.
++ */
++
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/notifier.h>
++#include <linux/of.h>
++#include <linux/opp.h>
++#include <linux/regulator/consumer.h>
++#include <linux/slab.h>
++
++struct volt_scale_data {
++	struct device *dev;
++	struct clk *clk;
++	struct regulator *reg;
++	int tol;
++	struct notifier_block nb;
++};
++
++#define to_volt_scale_data(_nb) container_of(_nb, \
++		struct volt_scale_data, nb)
++
++static int clk_volt_notifier_handler(struct notifier_block *nb,
++		unsigned long flags, void *data)
++{
++	struct clk_notifier_data *cnd = data;
++	struct volt_scale_data *vsd = to_volt_scale_data(nb);
++	int ret, new_volt, old_volt, tol;
++	struct opp *opp;
++	unsigned long old_rate = cnd->old_rate;
++	unsigned long new_rate = cnd->new_rate;
++
++	rcu_read_lock();
++	opp = opp_find_freq_ceil(vsd->dev, &new_rate);
++	if (IS_ERR(opp)) {
++		rcu_read_unlock();
++		dev_err(vsd->dev, "%s: failed to find OPP for %lu\n",
++				__func__, new_rate);
++		return notifier_from_errno(PTR_ERR(opp));
++	}
++	new_volt = opp_get_voltage(opp);
++	rcu_read_unlock();
++
++	tol = new_volt * vsd->tol / 100;
++	old_volt = regulator_get_voltage(vsd->reg);
++
++	/* scaling up? scale voltage before frequency */
++	if (new_rate > old_rate) {
++		ret = regulator_set_voltage_tol(vsd->reg, new_volt, tol);
++		if (ret) {
++			dev_err(vsd->dev, "%s: failed to scale voltage up: %d\n",
++					__func__, ret);
++			return notifier_from_errno(ret);
++		}
++	}
++
++	/* scaling down? scale voltage after frequency */
++	if (new_rate < old_rate) {
++		ret = regulator_set_voltage_tol(vsd->reg, new_volt, tol);
++		if (ret) {
++			dev_err(vsd->dev, "%s: failed to scale voltage down: %d\n",
++					__func__, ret);
++			return notifier_from_errno(ret);
++		}
++	}
++
++	return NOTIFY_OK;
++}
++
++/**
++ * of_clk_volt_notifier_register - register clock notifier to scale voltage
++ * @dev: device that scales clock and voltage regulator
++ * @np: pointer to DeviceTree node
++ * @supply: regulator id string
++ */
++struct notifier_block *of_clk_volt_notifier_register(struct device *dev,
++		struct device_node *np, struct clk *clk, const char *supply,
++		int *voltage_latency)
++{
++	struct volt_scale_data *vsd;
++	int ret;
++
++	vsd = kzalloc(sizeof(struct volt_scale_data), GFP_KERNEL);
++	if (!vsd)
++		return ERR_PTR(-ENOMEM);
++
++	vsd->dev = dev;
++	vsd->clk = clk;
++	vsd->nb.notifier_call = clk_volt_notifier_handler;
++
++	vsd->reg = devm_regulator_get(dev, supply);
++	if (IS_ERR(vsd->reg)) {
++		ret = PTR_ERR(vsd->reg);
++		goto err_free_vsd;
++	}
++
++	of_property_read_u32(np, "voltage-tolerance", &vsd->tol);
++
++	ret = of_init_opp_table(dev);
++	if (ret) {
++		pr_err("%s: failed to init OPP table: %d\n", __func__, ret);
++		goto err_free_vsd;
++	}
++
++	ret = clk_notifier_register(clk, &vsd->nb);
++
++	if (ret)
++		goto err_free_vsd;
++
++	return &vsd->nb;
++
++err_free_vsd:
++	kfree(vsd);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(of_clk_volt_notifier_register);
++
++void of_clk_volt_notifier_unregister(struct notifier_block *nb)
++{
++	struct volt_scale_data *vsd = to_volt_scale_data(nb);
++	struct clk *clk = vsd->clk;
++
++	clk_notifier_unregister(clk, nb);
++	kfree(vsd);
++}
++EXPORT_SYMBOL_GPL(of_clk_volt_notifier_unregister);
+diff --git a/include/linux/clk.h b/include/linux/clk.h
+index 9a6d045..85ea520 100644
+--- a/include/linux/clk.h
++++ b/include/linux/clk.h
+@@ -15,6 +15,8 @@
  #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/opp.h>
- #include <linux/platform_device.h>
--#include <linux/regulator/consumer.h>
- #include <linux/slab.h>
+ #include <linux/kernel.h>
+ #include <linux/notifier.h>
++#include <linux/cpufreq.h>
++#include <linux/device.h>
  
- static unsigned int transition_latency;
--static unsigned int voltage_tolerance; /* in percentage */
+ struct device;
  
- static struct device *cpu_dev;
- static struct clk *cpu_clk;
--static struct regulator *cpu_reg;
- static struct cpufreq_frequency_table *freq_table;
-+static struct notifier_block *clk_nb;
+@@ -79,8 +81,11 @@ struct clk_notifier_data {
+ };
  
- static int cpu0_verify_speed(struct cpufreq_policy *policy)
- {
-@@ -43,8 +40,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 			   unsigned int target_freq, unsigned int relation)
- {
- 	struct cpufreq_freqs freqs;
--	struct opp *opp;
--	unsigned long volt = 0, volt_old = 0, tol = 0;
-+	unsigned long volt = 0, volt_old = 0;
- 	long freq_Hz, freq_exact;
- 	unsigned int index;
- 	int ret;
-@@ -69,56 +65,16 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 
--	if (cpu_reg) {
--		rcu_read_lock();
--		opp = opp_find_freq_ceil(cpu_dev, &freq_Hz);
--		if (IS_ERR(opp)) {
--			rcu_read_unlock();
--			pr_err("failed to find OPP for %ld\n", freq_Hz);
--			freqs.new = freqs.old;
--			ret = PTR_ERR(opp);
--			goto post_notify;
--		}
--		volt = opp_get_voltage(opp);
--		rcu_read_unlock();
--		tol = volt * voltage_tolerance / 100;
--		volt_old = regulator_get_voltage(cpu_reg);
--	}
+ int clk_notifier_register(struct clk *clk, struct notifier_block *nb);
 -
- 	pr_debug("%u MHz, %ld mV --> %u MHz, %ld mV\n",
- 		 freqs.old / 1000, volt_old ? volt_old / 1000 : -1,
- 		 freqs.new / 1000, volt ? volt / 1000 : -1);
+ int clk_notifier_unregister(struct clk *clk, struct notifier_block *nb);
++struct notifier_block *of_clk_volt_notifier_register(struct device *dev,
++		struct device_node *np, struct clk *clk, const char *supply,
++		int *voltage_latency);
++void of_clk_volt_notifier_unregister(struct notifier_block *nb);
  
--	/* scaling up?  scale voltage before frequency */
--	if (cpu_reg && freqs.new > freqs.old) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
--		if (ret) {
--			pr_err("failed to scale voltage up: %d\n", ret);
--			freqs.new = freqs.old;
--			goto post_notify;
--		}
--	}
--
- 	ret = clk_set_rate(cpu_clk, freq_exact);
- 	if (ret) {
- 		pr_err("failed to set clock rate: %d\n", ret);
--		if (cpu_reg)
--			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
- 		freqs.new = freqs.old;
--		goto post_notify;
--	}
--
--	/* scaling down?  scale voltage after frequency */
--	if (cpu_reg && freqs.new < freqs.old) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
--		if (ret) {
--			pr_err("failed to scale voltage down: %d\n", ret);
--			clk_set_rate(cpu_clk, freqs.old * 1000);
--			freqs.new = freqs.old;
--		}
- 	}
+ #endif
  
--post_notify:
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 
- 	return ret;
-@@ -175,6 +131,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
- static int cpu0_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np, *parent;
-+	unsigned int voltage_latency;
- 	int ret;
- 
- 	parent = of_find_node_by_path("/cpus");
-@@ -197,22 +154,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	cpu_dev = &pdev->dev;
- 	cpu_dev->of_node = np;
- 
--	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
--	if (IS_ERR(cpu_reg)) {
--		/*
--		 * If cpu0 regulator supply node is present, but regulator is
--		 * not yet registered, we should try defering probe.
--		 */
--		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
--			dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
--			ret = -EPROBE_DEFER;
--			goto out_put_node;
--		}
--		pr_warn("failed to get cpu0 regulator: %ld\n",
--			PTR_ERR(cpu_reg));
--		cpu_reg = NULL;
--	}
--
- 	cpu_clk = devm_clk_get(cpu_dev, NULL);
- 	if (IS_ERR(cpu_clk)) {
- 		ret = PTR_ERR(cpu_clk);
-@@ -220,60 +161,38 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_put_node;
- 	}
- 
--	ret = of_init_opp_table(cpu_dev);
--	if (ret) {
--		pr_err("failed to init OPP table: %d\n", ret);
--		goto out_put_node;
--	}
--
--	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
--	if (ret) {
--		pr_err("failed to init cpufreq table: %d\n", ret);
--		goto out_put_node;
--	}
--
--	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
--
- 	if (of_property_read_u32(np, "clock-latency", &transition_latency))
- 		transition_latency = CPUFREQ_ETERNAL;
- 
--	if (cpu_reg) {
--		struct opp *opp;
--		unsigned long min_uV, max_uV;
--		int i;
--
--		/*
--		 * OPP is maintained in order of increasing frequency, and
--		 * freq_table initialised from OPP is therefore sorted in the
--		 * same order.
--		 */
--		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
--			;
--		rcu_read_lock();
--		opp = opp_find_freq_exact(cpu_dev,
--				freq_table[0].frequency * 1000, true);
--		min_uV = opp_get_voltage(opp);
--		opp = opp_find_freq_exact(cpu_dev,
--				freq_table[i-1].frequency * 1000, true);
--		max_uV = opp_get_voltage(opp);
--		rcu_read_unlock();
--		ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
--		if (ret > 0)
--			transition_latency += ret * 1000;
-+	clk_nb = of_clk_cpufreq_notifier_register(cpu_dev, np, cpu_clk, "cpu0",
-+			&freq_table, &voltage_latency);
-+
-+	if (IS_ERR(clk_nb)) {
-+		ret = PTR_ERR(clk_nb);
-+		/* defer probe if regulator is not yet registered */
-+		if (ret == -EPROBE_DEFER)
-+			dev_err(cpu_dev, "cpu0 clock notifier not ready, retry\n");
-+		else
-+			dev_err(cpu_dev, "failed to register cpu0 clock notifier: %d\n",
-+					ret);
-+		goto out_put_node;
- 	}
- 
-+	if (voltage_latency > 0)
-+		transition_latency += voltage_latency;
-+
- 	ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
- 	if (ret) {
- 		pr_err("failed register driver: %d\n", ret);
--		goto out_free_table;
-+		goto out_notifier_unregister;
- 	}
- 
- 	of_node_put(np);
- 	of_node_put(parent);
- 	return 0;
- 
--out_free_table:
--	opp_free_cpufreq_table(cpu_dev, &freq_table);
-+out_notifier_unregister:
-+	of_clk_cpufreq_notifier_unregister(clk_nb, freq_table);
- out_put_node:
- 	of_node_put(np);
- out_put_parent:
-@@ -283,8 +202,8 @@ out_put_parent:
- 
- static int cpu0_cpufreq_remove(struct platform_device *pdev)
- {
-+	of_clk_cpufreq_notifier_unregister(clk_nb, freq_table);
- 	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
--	opp_free_cpufreq_table(cpu_dev, &freq_table);
- 
- 	return 0;
- }
 -- 
 1.8.1.2
