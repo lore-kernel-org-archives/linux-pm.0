@@ -1,182 +1,581 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [v3.10 regression] deadlock on cpu hotplug
-Date: Mon, 08 Jul 2013 17:26:55 +0200
-Message-ID: <1443144.WnBWEpaopK@amdc1032>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v4] thermal: add imx thermal driver support
+Date: Mon, 8 Jul 2013 19:12:44 -0400
+Message-ID: <51DB476C.6090803@ti.com>
+References: <1372055444-5286-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:32233 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751743Ab3GHP1A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jul 2013 11:27:00 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============1797874877129070264=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1372055444-5286-1-git-send-email-shawn.guo@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Wang <wangyun@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@alien8.de>, Jiri Kosina <jkosina@suse.cz>, Tomasz Figa <t.figa@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+
+--===============1797874877129070264==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2HCNAEDNPCLWRWDBSSXON"
+
+------enig2HCNAEDNPCLWRWDBSSXON
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 24-06-2013 02:30, Shawn Guo wrote:
+> This is based on the initial imx thermal work done by
+> Rob Lee <rob.lee@linaro.org> (Not sure if the email address is still
+> valid).  Since he is no longer interested in the work and I have
+> rewritten a significant amount of the code, I just took the authorship
+> over from him.
+>=20
+> It adds the imx thermal support using Temperature Monitor (TEMPMON)
+> block found on some Freescale i.MX SoCs.  The driver uses syscon regmap=
+
+> interface to access TEMPMON control registers and calibration data, and=
+
+> supports cpufreq as the cooling device.
+>=20
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+
+Merged on linux-soc-thermal, branch for_3.12/imx. It will be queued on
+next merge window. To late for this one.
+
+> ---
+> Changes since v3:
+>  * Fix a couple of typos
+>  * Use "GPL v2" for MODULE_LICENSE()
+>=20
+>  .../devicetree/bindings/thermal/imx-thermal.txt    |   17 +
+>  drivers/thermal/Kconfig                            |   11 +
+>  drivers/thermal/Makefile                           |    1 +
+>  drivers/thermal/imx_thermal.c                      |  397 ++++++++++++=
+++++++++
+>  4 files changed, 426 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/imx-therm=
+al.txt
+>  create mode 100644 drivers/thermal/imx_thermal.c
+>=20
+> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt =
+b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> new file mode 100644
+> index 0000000..541c25e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> @@ -0,0 +1,17 @@
+> +* Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
+> +
+> +Required properties:
+> +- compatible : "fsl,imx6q-thermal"
+> +- fsl,tempmon : phandle pointer to system controller that contains TEM=
+PMON
+> +  control registers, e.g. ANATOP on imx6q.
+> +- fsl,tempmon-data : phandle pointer to fuse controller that contains =
+TEMPMON
+> +  calibration data, e.g. OCOTP on imx6q.  The details about calibratio=
+n data
+> +  can be found in SoC Reference Manual.
+> +
+> +Example:
+> +
+> +tempmon {
+> +	compatible =3D "fsl,imx6q-tempmon";
+> +	fsl,tempmon =3D <&anatop>;
+> +	fsl,tempmon-data =3D <&ocotp>;
+> +};
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index b13c2bc..22a702e 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -91,6 +91,17 @@ config THERMAL_EMULATION
+>  	  because userland can easily disable the thermal policy by simply
+>  	  flooding this sysfs node with low temperature values.
+> =20
+> +config IMX_THERMAL
+> +	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+> +	depends on CPU_THERMAL
+> +	depends on MFD_SYSCON
+> +	depends on OF
+> +	help
+> +	  Support for Temperature Monitor (TEMPMON) found on Freescale i.MX S=
+oCs.
+> +	  It supports one critical trip point and one passive trip point.  Th=
+e
+> +	  cpufreq is used as the cooling device to throttle CPUs when the
+> +	  passive trip is crossed.
+> +
+>  config SPEAR_THERMAL
+>  	bool "SPEAr thermal sensor driver"
+>  	depends on PLAT_SPEAR
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index 67184a2..dff19c6 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -21,6 +21,7 @@ obj-$(CONFIG_EXYNOS_THERMAL)	+=3D exynos_thermal.o
+>  obj-$(CONFIG_DOVE_THERMAL)  	+=3D dove_thermal.o
+>  obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
+>  obj-$(CONFIG_ARMADA_THERMAL)	+=3D armada_thermal.o
+> +obj-$(CONFIG_IMX_THERMAL)	+=3D imx_thermal.o
+>  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D db8500_cpufreq_cooling.o
+>  obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
+>  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+=3D x86_pkg_temp_thermal.o
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_therma=
+l.c
+> new file mode 100644
+> index 0000000..d16c33c
+> --- /dev/null
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -0,0 +1,397 @@
+> +/*
+> + * Copyright 2013 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modif=
+y
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +
+> +#include <linux/cpu_cooling.h>
+> +#include <linux/cpufreq.h>
+> +#include <linux/delay.h>
+> +#include <linux/device.h>
+> +#include <linux/init.h>
+> +#include <linux/io.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/slab.h>
+> +#include <linux/thermal.h>
+> +#include <linux/types.h>
+> +
+> +#define REG_SET		0x4
+> +#define REG_CLR		0x8
+> +#define REG_TOG		0xc
+> +
+> +#define MISC0				0x0150
+> +#define MISC0_REFTOP_SELBIASOFF		(1 << 3)
+> +
+> +#define TEMPSENSE0			0x0180
+> +#define TEMPSENSE0_TEMP_CNT_SHIFT	8
+> +#define TEMPSENSE0_TEMP_CNT_MASK	(0xfff << TEMPSENSE0_TEMP_CNT_SHIFT)
+> +#define TEMPSENSE0_FINISHED		(1 << 2)
+> +#define TEMPSENSE0_MEASURE_TEMP		(1 << 1)
+> +#define TEMPSENSE0_POWER_DOWN		(1 << 0)
+> +
+> +#define TEMPSENSE1			0x0190
+> +#define TEMPSENSE1_MEASURE_FREQ		0xffff
+> +
+> +#define OCOTP_ANA1			0x04e0
+> +
+> +/* The driver supports 1 passive trip point and 1 critical trip point =
+*/
+> +enum imx_thermal_trip {
+> +	IMX_TRIP_PASSIVE,
+> +	IMX_TRIP_CRITICAL,
+> +	IMX_TRIP_NUM,
+> +};
+> +
+> +/*
+> + * It defines the temperature in millicelsius for passive trip point
+> + * that will trigger cooling action when crossed.
+> + */
+> +#define IMX_TEMP_PASSIVE		85000
+> +
+> +/*
+> + * The maximum die temperature on imx parts is 105C, let's give some c=
+ushion
+> + * for noise and possible temperature rise between measurements.
+> + */
+> +#define IMX_TEMP_CRITICAL		100000
+> +
+> +#define IMX_POLLING_DELAY		2000 /* millisecond */
+> +#define IMX_PASSIVE_DELAY		1000
+> +
+> +struct imx_thermal_data {
+> +	struct thermal_zone_device *tz;
+> +	struct thermal_cooling_device *cdev;
+> +	enum thermal_device_mode mode;
+> +	struct regmap *tempmon;
+> +	int c1, c2; /* See formula in imx_get_sensor_data() */
+> +};
+> +
+> +static int imx_get_temp(struct thermal_zone_device *tz, unsigned long =
+*temp)
+> +{
+> +	struct imx_thermal_data *data =3D tz->devdata;
+> +	struct regmap *map =3D data->tempmon;
+> +	static unsigned long last_temp;
+> +	unsigned int n_meas;
+> +	u32 val;
+> +
+> +	/*
+> +	 * Every time we measure the temperature, we will power on the
+> +	 * temperature sensor, enable measurements, take a reading,
+> +	 * disable measurements, power off the temperature sensor.
+> +	 */
+> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
+> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
+> +
+> +	/*
+> +	 * According to the temp sensor designers, it may require up to ~17us=
+
+> +	 * to complete a measurement.
+> +	 */
+> +	usleep_range(20, 50);
+> +
+> +	regmap_read(map, TEMPSENSE0, &val);
+> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
+> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
+> +
+> +	if ((val & TEMPSENSE0_FINISHED) =3D=3D 0) {
+> +		dev_dbg(&tz->device, "temp measurement never finished\n");
+> +		return -EAGAIN;
+> +	}
+> +
+> +	n_meas =3D (val & TEMPSENSE0_TEMP_CNT_MASK) >> TEMPSENSE0_TEMP_CNT_SH=
+IFT;
+> +
+> +	/* See imx_get_sensor_data() for formula derivation */
+> +	*temp =3D data->c2 + data->c1 * n_meas;
+> +
+> +	if (*temp !=3D last_temp) {
+> +		dev_dbg(&tz->device, "millicelsius: %ld\n", *temp);
+> +		last_temp =3D *temp;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_get_mode(struct thermal_zone_device *tz,
+> +			enum thermal_device_mode *mode)
+> +{
+> +	struct imx_thermal_data *data =3D tz->devdata;
+> +
+> +	*mode =3D data->mode;
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_set_mode(struct thermal_zone_device *tz,
+> +			enum thermal_device_mode mode)
+> +{
+> +	struct imx_thermal_data *data =3D tz->devdata;
+> +
+> +	if (mode =3D=3D THERMAL_DEVICE_ENABLED) {
+> +		tz->polling_delay =3D IMX_POLLING_DELAY;
+> +		tz->passive_delay =3D IMX_PASSIVE_DELAY;
+> +	} else {
+> +		tz->polling_delay =3D 0;
+> +		tz->passive_delay =3D 0;
+> +	}
+> +
+> +	data->mode =3D mode;
+> +	thermal_zone_device_update(tz);
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_get_trip_type(struct thermal_zone_device *tz, int trip,=
+
+> +			     enum thermal_trip_type *type)
+> +{
+> +	*type =3D (trip =3D=3D IMX_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
+> +					     THERMAL_TRIP_CRITICAL;
+> +	return 0;
+> +}
+> +
+> +static int imx_get_crit_temp(struct thermal_zone_device *tz,
+> +			     unsigned long *temp)
+> +{
+> +	*temp =3D IMX_TEMP_CRITICAL;
+> +	return 0;
+> +}
+> +
+> +static int imx_get_trip_temp(struct thermal_zone_device *tz, int trip,=
+
+> +			     unsigned long *temp)
+> +{
+> +	*temp =3D (trip =3D=3D IMX_TRIP_PASSIVE) ? IMX_TEMP_PASSIVE :
+> +					     IMX_TEMP_CRITICAL;
+> +	return 0;
+> +}
+> +
+> +static int imx_bind(struct thermal_zone_device *tz,
+> +		    struct thermal_cooling_device *cdev)
+> +{
+> +	int ret;
+> +
+> +	ret =3D thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
+> +					       THERMAL_NO_LIMIT,
+> +					       THERMAL_NO_LIMIT);
+> +	if (ret) {
+> +		dev_err(&tz->device,
+> +			"binding zone %s with cdev %s failed:%d\n",
+> +			tz->type, cdev->type, ret);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_unbind(struct thermal_zone_device *tz,
+> +		      struct thermal_cooling_device *cdev)
+> +{
+> +	int ret;
+> +
+> +	ret =3D thermal_zone_unbind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev=
+);
+> +	if (ret) {
+> +		dev_err(&tz->device,
+> +			"unbinding zone %s with cdev %s failed:%d\n",
+> +			tz->type, cdev->type, ret);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct thermal_zone_device_ops imx_tz_ops =3D {
+> +	.bind =3D imx_bind,
+> +	.unbind =3D imx_unbind,
+> +	.get_temp =3D imx_get_temp,
+> +	.get_mode =3D imx_get_mode,
+> +	.set_mode =3D imx_set_mode,
+> +	.get_trip_type =3D imx_get_trip_type,
+> +	.get_trip_temp =3D imx_get_trip_temp,
+> +	.get_crit_temp =3D imx_get_crit_temp,
+> +};
+> +
+> +static int imx_get_sensor_data(struct platform_device *pdev)
+> +{
+> +	struct imx_thermal_data *data =3D platform_get_drvdata(pdev);
+> +	struct regmap *map;
+> +	int t1, t2, n1, n2;
+> +	int ret;
+> +	u32 val;
+> +
+> +	map =3D syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
+> +					      "fsl,tempmon-data");
+> +	if (IS_ERR(map)) {
+> +		ret =3D PTR_ERR(map);
+> +		dev_err(&pdev->dev, "failed to get sensor regmap: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	ret =3D regmap_read(map, OCOTP_ANA1, &val);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "failed to read sensor data: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	if (val =3D=3D 0 || val =3D=3D ~0) {
+> +		dev_err(&pdev->dev, "invalid sensor calibration data\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	/*
+> +	 * Sensor data layout:
+> +	 *   [31:20] - sensor value @ 25C
+> +	 *    [19:8] - sensor value of hot
+> +	 *     [7:0] - hot temperature value
+> +	 */
+> +	n1 =3D val >> 20;
+> +	n2 =3D (val & 0xfff00) >> 8;
+> +	t2 =3D val & 0xff;
+> +	t1 =3D 25; /* t1 always 25C */
+> +
+> +	/*
+> +	 * Derived from linear interpolation,
+> +	 * Tmeas =3D T2 + (Nmeas - N2) * (T1 - T2) / (N1 - N2)
+> +	 * We want to reduce this down to the minimum computation necessary
+> +	 * for each temperature read.  Also, we want Tmeas in millicelsius
+> +	 * and we don't want to lose precision from integer division. So...
+> +	 * milli_Tmeas =3D 1000 * T2 + 1000 * (Nmeas - N2) * (T1 - T2) / (N1 =
+- N2)
+> +	 * Let constant c1 =3D 1000 * (T1 - T2) / (N1 - N2)
+> +	 * milli_Tmeas =3D (1000 * T2) + c1 * (Nmeas - N2)
+> +	 * milli_Tmeas =3D (1000 * T2) + (c1 * Nmeas) - (c1 * N2)
+> +	 * Let constant c2 =3D (1000 * T2) - (c1 * N2)
+> +	 * milli_Tmeas =3D c2 + (c1 * Nmeas)
+> +	 */
+> +	data->c1 =3D 1000 * (t1 - t2) / (n1 - n2);
+> +	data->c2 =3D 1000 * t2 - data->c1 * n2;
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct imx_thermal_data *data;
+> +	struct cpumask clip_cpus;
+> +	struct regmap *map;
+> +	int ret;
+> +
+> +	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	map =3D syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "fsl,tempm=
+on");
+> +	if (IS_ERR(map)) {
+> +		ret =3D PTR_ERR(map);
+> +		dev_err(&pdev->dev, "failed to get tempmon regmap: %d\n", ret);
+> +		return ret;
+> +	}
+> +	data->tempmon =3D map;
+> +
+> +	platform_set_drvdata(pdev, data);
+> +
+> +	ret =3D imx_get_sensor_data(pdev);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "failed to get sensor data\n");
+> +		return ret;
+> +	}
+> +
+> +	/* Make sure sensor is in known good state for measurements */
+> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
+> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
+> +	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
+> +	regmap_write(map, MISC0 + REG_SET, MISC0_REFTOP_SELBIASOFF);
+> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
+> +
+> +	cpumask_set_cpu(0, &clip_cpus);
+> +	data->cdev =3D cpufreq_cooling_register(&clip_cpus);
+> +	if (IS_ERR(data->cdev)) {
+> +		ret =3D PTR_ERR(data->cdev);
+> +		dev_err(&pdev->dev,
+> +			"failed to register cpufreq cooling device: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	data->tz =3D thermal_zone_device_register("imx_thermal_zone",
+> +						IMX_TRIP_NUM, 0, data,
+> +						&imx_tz_ops, NULL,
+> +						IMX_PASSIVE_DELAY,
+> +						IMX_POLLING_DELAY);
+> +	if (IS_ERR(data->tz)) {
+> +		ret =3D PTR_ERR(data->tz);
+> +		dev_err(&pdev->dev,
+> +			"failed to register thermal zone device %d\n", ret);
+> +		cpufreq_cooling_unregister(data->cdev);
+> +		return ret;
+> +	}
+> +
+> +	data->mode =3D THERMAL_DEVICE_ENABLED;
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_thermal_remove(struct platform_device *pdev)
+> +{
+> +	struct imx_thermal_data *data =3D platform_get_drvdata(pdev);
+> +
+> +	thermal_zone_device_unregister(data->tz);
+> +	cpufreq_cooling_unregister(data->cdev);
+> +
+> +	return 0;
+> +}
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +static int imx_thermal_suspend(struct device *dev)
+> +{
+> +	struct imx_thermal_data *data =3D dev_get_drvdata(dev);
+> +	struct regmap *map =3D data->tempmon;
+> +	u32 val;
+> +
+> +	regmap_read(map, TEMPSENSE0, &val);
+> +	if ((val & TEMPSENSE0_POWER_DOWN) =3D=3D 0) {
+> +		/*
+> +		 * If a measurement is taking place, wait for a long enough
+> +		 * time for it to finish, and then check again.  If it still
+> +		 * does not finish, something must go wrong.
+> +		 */
+> +		udelay(50);
+> +		regmap_read(map, TEMPSENSE0, &val);
+> +		if ((val & TEMPSENSE0_POWER_DOWN) =3D=3D 0)
+> +			return -ETIMEDOUT;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_thermal_resume(struct device *dev)
+> +{
+> +	/* Nothing to do for now */
+> +	return 0;
+> +}
+> +#endif
+> +
+> +static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
+> +			 imx_thermal_suspend, imx_thermal_resume);
+> +
+> +static const struct of_device_id of_imx_thermal_match[] =3D {
+> +	{ .compatible =3D "fsl,imx6q-tempmon", },
+> +	{ /* end */ }
+> +};
+> +
+> +static struct platform_driver imx_thermal =3D {
+> +	.driver =3D {
+> +		.name	=3D "imx_thermal",
+> +		.owner  =3D THIS_MODULE,
+> +		.pm	=3D &imx_thermal_pm_ops,
+> +		.of_match_table =3D of_imx_thermal_match,
+> +	},
+> +	.probe		=3D imx_thermal_probe,
+> +	.remove		=3D imx_thermal_remove,
+> +};
+> +module_platform_driver(imx_thermal);
+> +
+> +MODULE_AUTHOR("Freescale Semiconductor, Inc.");
+> +MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_ALIAS("platform:imx-thermal");
+>=20
 
 
-Hi,
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-Commit 2f7021a8 ("cpufreq: protect 'policy->cpus' from offlining during
-__gov_queue_work()") causes the following deadlock for me when using kernel
-v3.10 on ARM EXYNOS4412:
+Eduardo Valentin
 
-[  960.380000] INFO: task kworker/0:1:34 blocked for more than 120 seconds.
-[  960.385000] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[  960.390000] kworker/0:1     D c0613d88     0    34      2 0x00000000
-[  960.395000] Workqueue: events od_dbs_timer
-[  960.400000] [<c0613d88>] (__schedule+0x39c/0x7ec) from [<c06145e8>] (schedule_preempt_disabled+0x24/0x34)
-[  960.410000] [<c06145e8>] (schedule_preempt_disabled+0x24/0x34) from [<c0612fe4>] (__mutex_lock_slowpath+0x15c/0x21c)
-[  960.420000] [<c0612fe4>] (__mutex_lock_slowpath+0x15c/0x21c) from [<c06130ec>] (mutex_lock+0x48/0x4c)
-[  960.430000] [<c06130ec>] (mutex_lock+0x48/0x4c) from [<c0027cdc>] (get_online_cpus+0x2c/0x48)
-[  960.440000] [<c0027cdc>] (get_online_cpus+0x2c/0x48) from [<c03b059c>] (gov_queue_work+0x1c/0xb8)
-[  960.450000] [<c03b059c>] (gov_queue_work+0x1c/0xb8) from [<c03afabc>] (od_dbs_timer+0xa8/0x12c)
-[  960.455000] [<c03afabc>] (od_dbs_timer+0xa8/0x12c) from [<c003ecdc>] (process_one_work+0x138/0x43c)
-[  960.465000] [<c003ecdc>] (process_one_work+0x138/0x43c) from [<c003f3d8>] (worker_thread+0x134/0x3b8)
-[  960.475000] [<c003f3d8>] (worker_thread+0x134/0x3b8) from [<c0044df8>] (kthread+0xa4/0xb0)
-[  960.485000] [<c0044df8>] (kthread+0xa4/0xb0) from [<c000ead8>] (ret_from_fork+0x14/0x3c)
-[  960.490000] INFO: task bash:2497 blocked for more than 120 seconds.
-[  960.495000] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[  960.505000] bash            D c0613d88     0  2497   2496 0x00000001
-[  960.510000] [<c0613d88>] (__schedule+0x39c/0x7ec) from [<c061244c>] (schedule_timeout+0x14c/0x20c)
-[  960.520000] [<c061244c>] (schedule_timeout+0x14c/0x20c) from [<c0613774>] (wait_for_common+0xac/0x150)
-[  960.530000] [<c0613774>] (wait_for_common+0xac/0x150) from [<c003deb8>] (flush_work+0xa4/0x130)
-[  960.540000] [<c003deb8>] (flush_work+0xa4/0x130) from [<c003f9d4>] (__cancel_work_timer+0x74/0x100)
-[  960.545000] [<c003f9d4>] (__cancel_work_timer+0x74/0x100) from [<c03b0dc8>] (cpufreq_governor_dbs+0x4dc/0x630)
-[  960.555000] [<c03b0dc8>] (cpufreq_governor_dbs+0x4dc/0x630) from [<c03ac70c>] (__cpufreq_governor+0x60/0x120)
-[  960.565000] [<c03ac70c>] (__cpufreq_governor+0x60/0x120) from [<c03ad1cc>] (cpufreq_add_dev+0x2f4/0x4d8)
-[  960.575000] [<c03ad1cc>] (cpufreq_add_dev+0x2f4/0x4d8) from [<c060dcd8>] (cpufreq_cpu_callback+0x54/0x5c)
-[  960.585000] [<c060dcd8>] (cpufreq_cpu_callback+0x54/0x5c) from [<c004a280>] (notifier_call_chain+0x44/0x84)
-[  960.595000] [<c004a280>] (notifier_call_chain+0x44/0x84) from [<c0027c94>] (__cpu_notify+0x2c/0x48)
-[  960.605000] [<c0027c94>] (__cpu_notify+0x2c/0x48) from [<c060b914>] (_cpu_up+0x10c/0x15c)
-[  960.615000] [<c060b914>] (_cpu_up+0x10c/0x15c) from [<c060b9c8>] (cpu_up+0x64/0x80)
-[  960.620000] [<c060b9c8>] (cpu_up+0x64/0x80) from [<c060a704>] (store_online+0x4c/0x74)
-[  960.630000] [<c060a704>] (store_online+0x4c/0x74) from [<c02b88b4>] (dev_attr_store+0x18/0x24)
-[  960.635000] [<c02b88b4>] (dev_attr_store+0x18/0x24) from [<c014f43c>] (sysfs_write_file+0xfc/0x164)
-[  960.645000] [<c014f43c>] (sysfs_write_file+0xfc/0x164) from [<c00f6e70>] (vfs_write+0xbc/0x184)
-[  960.655000] [<c00f6e70>] (vfs_write+0xbc/0x184) from [<c00f7208>] (SyS_write+0x40/0x68)
-[  960.665000] [<c00f7208>] (SyS_write+0x40/0x68) from [<c000ea40>] (ret_fast_syscall+0x0/0x30)
 
-Tomek has also managed to got a lockdep info for the problem:
+------enig2HCNAEDNPCLWRWDBSSXON
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-[   36.570161] 
-[   36.570233] ======================================================
-[   36.576376] [ INFO: possible circular locking dependency detected ]
-[   36.582637] 3.10.0-rc5-00336-g6905065-dirty #1069 Not tainted
-[   36.588355] -------------------------------------------------------
-[   36.594608] bash/2783 is trying to acquire lock:
-[   36.599205]  ((&(&j_cdbs->work)->work)){+.+.+.}, at: [<c0042138>] flush_work+0x0/0x27c
-[   36.607104] 
-[   36.607104] but task is already holding lock:
-[   36.612917]  (cpu_hotplug.lock){+.+.+.}, at: [<c0028cb0>] cpu_hotplug_begin+0x2c/0x58
-[   36.620731] 
-[   36.620731] which lock already depends on the new lock.
-[   36.620731] 
-[   36.628890] 
-[   36.628890] the existing dependency chain (in reverse order) is:
-[   36.636355] 
--> #2 (cpu_hotplug.lock){+.+.+.}:
-[   36.640867]        [<c007c828>] lock_acquire+0x9c/0x130
-[   36.646075]        [<c0643dc4>] mutex_lock_nested+0x68/0x3ec
-[   36.651716]        [<c0028db0>] get_online_cpus+0x40/0x60
-[   36.657097]        [<c03c2810>] gov_queue_work+0x1c/0xac
-[   36.662392]        [<c03c18c4>] od_dbs_timer+0xb8/0x16c
-[   36.667600]        [<c00415f8>] process_one_work+0x198/0x4d8
-[   36.673242]        [<c0042998>] worker_thread+0x134/0x3e8
-[   36.678624]        [<c0048ad8>] kthread+0xa8/0xb4
-[   36.683311]        [<c000ee88>] ret_from_fork+0x14/0x2c
-[   36.688522] 
--> #1 (&j_cdbs->timer_mutex){+.+.+.}:
-[   36.693380]        [<c007c828>] lock_acquire+0x9c/0x130
-[   36.698588]        [<c0643dc4>] mutex_lock_nested+0x68/0x3ec
-[   36.704229]        [<c03c184c>] od_dbs_timer+0x40/0x16c
-[   36.709438]        [<c00415f8>] process_one_work+0x198/0x4d8
-[   36.715080]        [<c0042998>] worker_thread+0x134/0x3e8
-[   36.720461]        [<c0048ad8>] kthread+0xa8/0xb4
-[   36.725148]        [<c000ee88>] ret_from_fork+0x14/0x2c
-[   36.730360] 
--> #0 ((&(&j_cdbs->work)->work)){+.+.+.}:
-[   36.735565]        [<c007bb70>] __lock_acquire+0x17c0/0x1e64
-[   36.741206]        [<c007c828>] lock_acquire+0x9c/0x130
-[   36.746414]        [<c0042170>] flush_work+0x38/0x27c
-[   36.751449]        [<c00424e8>] __cancel_work_timer+0x84/0x120
-[   36.757265]        [<c03c3040>] cpufreq_governor_dbs+0x4f4/0x674
-[   36.763254]        [<c03bdeac>] __cpufreq_governor+0x60/0x120
-[   36.768983]        [<c03bfaa0>] __cpufreq_remove_dev.clone.4+0x7c/0x480
-[   36.775579]        [<c06421d0>] cpufreq_cpu_callback+0x48/0x5c
-[   36.781396]        [<c004e688>] notifier_call_chain+0x44/0x84
-[   36.787124]        [<c0028c30>] __cpu_notify+0x2c/0x48
-[   36.792245]        [<c063de9c>] _cpu_down+0xb4/0x238
-[   36.797193]        [<c063e048>] cpu_down+0x28/0x3c
-[   36.801966]        [<c063e9c0>] store_online+0x30/0x74
-[   36.807088]        [<c02c9bbc>] dev_attr_store+0x18/0x24
-[   36.812382]        [<c0166e08>] sysfs_write_file+0x104/0x18c
-[   36.818025]        [<c010b704>] vfs_write+0xc8/0x194
-[   36.822973]        [<c010bac0>] SyS_write+0x44/0x70
-[   36.827833]        [<c000edc0>] ret_fast_syscall+0x0/0x48
-[   36.833218] 
-[   36.833218] other info that might help us debug this:
-[   36.833218] 
-[   36.841203] Chain exists of:
-  (&(&j_cdbs->work)->work) --> &j_cdbs->timer_mutex --> cpu_hotplug.lock
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-[   36.850663]  Possible unsafe locking scenario:
-[   36.850663] 
-[   36.856565]        CPU0                    CPU1
-[   36.861079]        ----                    ----
-[   36.865591]   lock(cpu_hotplug.lock);
-[   36.869237]                                lock(&j_cdbs->timer_mutex);
-[   36.875746]                                lock(cpu_hotplug.lock);
-[   36.881909]   lock((&(&j_cdbs->work)->work));
-[   36.886250] 
-[   36.886250]  *** DEADLOCK ***
-[   36.886250] 
-[   36.892163] 5 locks held by bash/2783:
-[   36.895886]  #0:  (sb_writers#7){.+.+.+}, at: [<c010b7cc>] vfs_write+0x190/0x194
-[   36.903264]  #1:  (&buffer->mutex){+.+.+.}, at: [<c0166d2c>] sysfs_write_file+0x28/0x18c
-[   36.911336]  #2:  (s_active#50){.+.+..}, at: [<c0166de4>] sysfs_write_file+0xe0/0x18c
-[   36.919148]  #3:  (cpu_add_remove_lock){+.+.+.}, at: [<c063e02c>] cpu_down+0xc/0x3c
-[   36.926787]  #4:  (cpu_hotplug.lock){+.+.+.}, at: [<c0028cb0>] cpu_hotplug_begin+0x2c/0x58
-[   36.935032] 
-[   36.935032] stack backtrace:
-[   36.939394] CPU: 1 PID: 2783 Comm: bash Not tainted 3.10.0-rc5-00336-g6905065-dirty #1069
-[   36.947591] [<c0015ed0>] (unwind_backtrace+0x0/0x13c) from [<c0012e58>] (show_stack+0x10/0x14)
-[   36.956164] [<c0012e58>] (show_stack+0x10/0x14) from [<c0078a9c>] (print_circular_bug+0x1c8/0x304)
-[   36.965105] [<c0078a9c>] (print_circular_bug+0x1c8/0x304) from [<c007bb70>] (__lock_acquire+0x17c0/0x1e64)
-[   36.974735] [<c007bb70>] (__lock_acquire+0x17c0/0x1e64) from [<c007c828>] (lock_acquire+0x9c/0x130)
-[   36.983767] [<c007c828>] (lock_acquire+0x9c/0x130) from [<c0042170>] (flush_work+0x38/0x27c)
-[   36.992187] [<c0042170>] (flush_work+0x38/0x27c) from [<c00424e8>] (__cancel_work_timer+0x84/0x120)
-[   37.001225] [<c00424e8>] (__cancel_work_timer+0x84/0x120) from [<c03c3040>] (cpufreq_governor_dbs+0x4f4/0x674)
-[   37.011196] [<c03c3040>] (cpufreq_governor_dbs+0x4f4/0x674) from [<c03bdeac>] (__cpufreq_governor+0x60/0x120)
-[   37.021087] [<c03bdeac>] (__cpufreq_governor+0x60/0x120) from [<c03bfaa0>] (__cpufreq_remove_dev.clone.4+0x7c/0x480)
-[   37.031607] [<c03bfaa0>] (__cpufreq_remove_dev.clone.4+0x7c/0x480) from [<c06421d0>] (cpufreq_cpu_callback+0x48/0x5c)
-[   37.042207] [<c06421d0>] (cpufreq_cpu_callback+0x48/0x5c) from [<c004e688>] (notifier_call_chain+0x44/0x84)
-[   37.051910] [<c004e688>] (notifier_call_chain+0x44/0x84) from [<c0028c30>] (__cpu_notify+0x2c/0x48)
-[   37.060931] [<c0028c30>] (__cpu_notify+0x2c/0x48) from [<c063de9c>] (_cpu_down+0xb4/0x238)
-[   37.069177] [<c063de9c>] (_cpu_down+0xb4/0x238) from [<c063e048>] (cpu_down+0x28/0x3c)
-[   37.077074] [<c063e048>] (cpu_down+0x28/0x3c) from [<c063e9c0>] (store_online+0x30/0x74)
-[   37.085147] [<c063e9c0>] (store_online+0x30/0x74) from [<c02c9bbc>] (dev_attr_store+0x18/0x24)
-[   37.093740] [<c02c9bbc>] (dev_attr_store+0x18/0x24) from [<c0166e08>] (sysfs_write_file+0x104/0x18c)
-[   37.102852] [<c0166e08>] (sysfs_write_file+0x104/0x18c) from [<c010b704>] (vfs_write+0xc8/0x194)
-[   37.111616] [<c010b704>] (vfs_write+0xc8/0x194) from [<c010bac0>] (SyS_write+0x44/0x70)
-[   37.119613] [<c010bac0>] (SyS_write+0x44/0x70) from [<c000edc0>] (ret_fast_syscall+0x0/0x48)
+iF4EAREIAAYFAlHbR2wACgkQCXcVR3XQvP3x7AD9FTZYqueRSm/4UM98vH6c394H
+jlNXTR1E4Q6xFg9VJXUBAKss7JAQbr7aW7nlJU0w2N9nZSDUmA/sBRlr9Q0VtCPb
+=zgAI
+-----END PGP SIGNATURE-----
 
-Reproducing the issue is very easy, i.e.:
+------enig2HCNAEDNPCLWRWDBSSXON--
 
-# echo 0 > /sys/devices/system/cpu/cpu3/online
-# echo 0 > /sys/devices/system/cpu/cpu2/online
-# echo 0 > /sys/devices/system/cpu/cpu1/online
-# while true;do echo 1 > /sys/devices/system/cpu/cpu1/online;echo 0 > /sys/devices/system/cpu/cpu1/online;done
 
-The commit in question (2f7021a8) was merged in v3.10-rc5 as a fix for
-commit 031299b ("cpufreq: governors: Avoid unnecessary per cpu timer
-interrupts") which was causing a kernel warning to show up.
+--===============1797874877129070264==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Michael/Viresh: do you have some idea how to fix the issue?
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+--===============1797874877129070264==--
