@@ -1,546 +1,225 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v4] thermal: add imx thermal driver support
-Date: Mon, 8 Jul 2013 19:12:44 -0400
-Message-ID: <51DB476C.6090803@ti.com>
-References: <1372055444-5286-1-git-send-email-shawn.guo@linaro.org>
+Subject: Re: [PATCH V7 00/30] thermal: exynos: Re-structure driver and add
+ support for exynos5440
+Date: Mon, 8 Jul 2013 19:13:45 -0400
+Message-ID: <51DB47A9.6070705@ti.com>
+References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1797874877129070264=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1372055444-5286-1-git-send-email-shawn.guo@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-
---===============1797874877129070264==
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="----enig2HCNAEDNPCLWRWDBSSXON"
+	boundary="----enig2JNQEMKDMAJSOUQURBTKF"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-------enig2HCNAEDNPCLWRWDBSSXON
+------enig2JNQEMKDMAJSOUQURBTKF
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 24-06-2013 02:30, Shawn Guo wrote:
-> This is based on the initial imx thermal work done by
-> Rob Lee <rob.lee@linaro.org> (Not sure if the email address is still
-> valid).  Since he is no longer interested in the work and I have
-> rewritten a significant amount of the code, I just took the authorship
-> over from him.
+On 24-06-2013 06:50, Amit Daniel Kachhap wrote:
+> Submitting V7 version with all comments fixed. Most of the patches are =
+acked by
+> Eduardo. All the un-acked patches are modified according to the review =
+comments.
+> If any comments please let me know.
+
+
+Applied on linux-soc-thermal branch for_3.12/exynos. It will be queued
+for next merge window. Too late for this one, sorry.
+
 >=20
-> It adds the imx thermal support using Temperature Monitor (TEMPMON)
-> block found on some Freescale i.MX SoCs.  The driver uses syscon regmap=
-
-> interface to access TEMPMON control registers and calibration data, and=
-
-> supports cpufreq as the cooling device.
+> Thanks,
+> Amit Daniel
 >=20
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-
-Merged on linux-soc-thermal, branch for_3.12/imx. It will be queued on
-next merge window. To late for this one.
-
-> ---
-> Changes since v3:
->  * Fix a couple of typos
->  * Use "GPL v2" for MODULE_LICENSE()
+> Changes in V7:
+> * Fixed all the coding guidelines comments given by Eduardo.
+> * Moved the request irq call below the core thermal registration as per=
+ discussion
+>   with Eduardo.
+> * Appropriate logs/TODO's/comments added for some review comments which=
+ are still
+>   same as before,
+>   1) calibration register setting still uses enums.
+>   2) very few soc check's still left in the driver.
+>   3) Cooling devices stored in an array in the exynos core thermal laye=
+r.=20
 >=20
->  .../devicetree/bindings/thermal/imx-thermal.txt    |   17 +
->  drivers/thermal/Kconfig                            |   11 +
->  drivers/thermal/Makefile                           |    1 +
->  drivers/thermal/imx_thermal.c                      |  397 ++++++++++++=
-++++++++
->  4 files changed, 426 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/imx-therm=
-al.txt
->  create mode 100644 drivers/thermal/imx_thermal.c
+> Changes in V6:
+> * Uses ARCH_HAS_BANDGAP config flag which is merged now in arm tree.
+> (http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=3D7758/=
+1).
+> * In this version patches 1, 2, 3, 4 and 30 are modified. Others are sa=
+me as V5.
+> * Added acked by from Jonghwa Lee.
+> * Rebased against Thermal Maintainer next tree.
 >=20
-> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt =
-b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> new file mode 100644
-> index 0000000..541c25e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> @@ -0,0 +1,17 @@
-> +* Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
-> +
-> +Required properties:
-> +- compatible : "fsl,imx6q-thermal"
-> +- fsl,tempmon : phandle pointer to system controller that contains TEM=
-PMON
-> +  control registers, e.g. ANATOP on imx6q.
-> +- fsl,tempmon-data : phandle pointer to fuse controller that contains =
-TEMPMON
-> +  calibration data, e.g. OCOTP on imx6q.  The details about calibratio=
-n data
-> +  can be found in SoC Reference Manual.
-> +
-> +Example:
-> +
-> +tempmon {
-> +	compatible =3D "fsl,imx6q-tempmon";
-> +	fsl,tempmon =3D <&anatop>;
-> +	fsl,tempmon-data =3D <&ocotp>;
-> +};
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index b13c2bc..22a702e 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -91,6 +91,17 @@ config THERMAL_EMULATION
->  	  because userland can easily disable the thermal policy by simply
->  	  flooding this sysfs node with low temperature values.
-> =20
-> +config IMX_THERMAL
-> +	tristate "Temperature sensor driver for Freescale i.MX SoCs"
-> +	depends on CPU_THERMAL
-> +	depends on MFD_SYSCON
-> +	depends on OF
-> +	help
-> +	  Support for Temperature Monitor (TEMPMON) found on Freescale i.MX S=
-oCs.
-> +	  It supports one critical trip point and one passive trip point.  Th=
-e
-> +	  cpufreq is used as the cooling device to throttle CPUs when the
-> +	  passive trip is crossed.
-> +
->  config SPEAR_THERMAL
->  	bool "SPEAr thermal sensor driver"
->  	depends on PLAT_SPEAR
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 67184a2..dff19c6 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -21,6 +21,7 @@ obj-$(CONFIG_EXYNOS_THERMAL)	+=3D exynos_thermal.o
->  obj-$(CONFIG_DOVE_THERMAL)  	+=3D dove_thermal.o
->  obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
->  obj-$(CONFIG_ARMADA_THERMAL)	+=3D armada_thermal.o
-> +obj-$(CONFIG_IMX_THERMAL)	+=3D imx_thermal.o
->  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D db8500_cpufreq_cooling.o
->  obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
->  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+=3D x86_pkg_temp_thermal.o
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_therma=
-l.c
-> new file mode 100644
-> index 0000000..d16c33c
-> --- /dev/null
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -0,0 +1,397 @@
-> +/*
-> + * Copyright 2013 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modif=
-y
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <linux/cpu_cooling.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/delay.h>
-> +#include <linux/device.h>
-> +#include <linux/init.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +#include <linux/slab.h>
-> +#include <linux/thermal.h>
-> +#include <linux/types.h>
-> +
-> +#define REG_SET		0x4
-> +#define REG_CLR		0x8
-> +#define REG_TOG		0xc
-> +
-> +#define MISC0				0x0150
-> +#define MISC0_REFTOP_SELBIASOFF		(1 << 3)
-> +
-> +#define TEMPSENSE0			0x0180
-> +#define TEMPSENSE0_TEMP_CNT_SHIFT	8
-> +#define TEMPSENSE0_TEMP_CNT_MASK	(0xfff << TEMPSENSE0_TEMP_CNT_SHIFT)
-> +#define TEMPSENSE0_FINISHED		(1 << 2)
-> +#define TEMPSENSE0_MEASURE_TEMP		(1 << 1)
-> +#define TEMPSENSE0_POWER_DOWN		(1 << 0)
-> +
-> +#define TEMPSENSE1			0x0190
-> +#define TEMPSENSE1_MEASURE_FREQ		0xffff
-> +
-> +#define OCOTP_ANA1			0x04e0
-> +
-> +/* The driver supports 1 passive trip point and 1 critical trip point =
-*/
-> +enum imx_thermal_trip {
-> +	IMX_TRIP_PASSIVE,
-> +	IMX_TRIP_CRITICAL,
-> +	IMX_TRIP_NUM,
-> +};
-> +
-> +/*
-> + * It defines the temperature in millicelsius for passive trip point
-> + * that will trigger cooling action when crossed.
-> + */
-> +#define IMX_TEMP_PASSIVE		85000
-> +
-> +/*
-> + * The maximum die temperature on imx parts is 105C, let's give some c=
-ushion
-> + * for noise and possible temperature rise between measurements.
-> + */
-> +#define IMX_TEMP_CRITICAL		100000
-> +
-> +#define IMX_POLLING_DELAY		2000 /* millisecond */
-> +#define IMX_PASSIVE_DELAY		1000
-> +
-> +struct imx_thermal_data {
-> +	struct thermal_zone_device *tz;
-> +	struct thermal_cooling_device *cdev;
-> +	enum thermal_device_mode mode;
-> +	struct regmap *tempmon;
-> +	int c1, c2; /* See formula in imx_get_sensor_data() */
-> +};
-> +
-> +static int imx_get_temp(struct thermal_zone_device *tz, unsigned long =
-*temp)
-> +{
-> +	struct imx_thermal_data *data =3D tz->devdata;
-> +	struct regmap *map =3D data->tempmon;
-> +	static unsigned long last_temp;
-> +	unsigned int n_meas;
-> +	u32 val;
-> +
-> +	/*
-> +	 * Every time we measure the temperature, we will power on the
-> +	 * temperature sensor, enable measurements, take a reading,
-> +	 * disable measurements, power off the temperature sensor.
-> +	 */
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-> +
-> +	/*
-> +	 * According to the temp sensor designers, it may require up to ~17us=
+> Changes in V5:
+> * Most of the changes in this version is as per suggestion from Jonghwa=
+ Lee. I
+>  have retained one to one mapping of platform data with TMU instances a=
+s the
+>  TMU's are different devices. In exynos5440 soc there is some register
+>  sharing across multiple TMU's but in exynos5420 there is no register b=
+etween
+>  multiple TMU's, so the current implementation is useful to support bot=
+h of the
+>  above.
+>  This patch uses localized ARCH_HAS_TMU Kconfig option and is a tempora=
+ry solution
+>  until a more generic macro ARCH_HAS_BANDGAP is introduced as per discu=
+ssion in
+>  the link https://patchwork.kernel.org/patch/2659001/.
+> * trip type is passed as platform data.
+> * HW trip is allowed only for maximum level.
+> * Platform data structure is now abstracted inside 1 more structure to =
+support
+>   multiple sensor TMU data.=20
+>=20
+> Changes in V4:
+>  Almost all the changes in this version is as per suggestion from Eduar=
+do.The
+>  major ones are listed below,
+> * Added kconfig symbol ARCH_HAS_TMU which needs to be enabled by platfo=
+rm. With
+>   this change existing symbol EXYNOS_TMU_DATA is not needed.
+> * Movement of freq_clip_table from exynos_tmu.h to exynos_thermal_commo=
+n.h is
+>   explained in the commit logs.
+> * Wrote all register description documentation.
+> * Split 5440 TMU support patch into controller change, configuration da=
+ta and
+>   feature addition patches.
+> * Remove all *LINUX_* in the header files.
+> * Still regulator enable is kept optional but a TODO: comment is added =
+to fix
+>   it later.
+>=20
+> Changes in V3:
+> * Added proper dependency of different exynos thermal Kconfig symbols. =
+Basically 3
+>  Kconfig can be enabled now and corresponds to tmu driver. exynos commo=
+n part
+>  and exynos configuration data. This issue was raised by Rui Zhang.
+>=20
+> Changes in V2:
+> * Separated SOC data from TMU driver. This is as per suggestion from Ed=
+uardo.
+> * Merged the new file created for exynos5440 TMU controller with the ex=
+isting
+>  TMU controller code.
+> * Removed the DT parsing code as now the SOC specific data are cleanly =
+put
+>  inside the data specific file.
+> * Even the register definations/bitfields are treated as data as there =
+is
+>  some variation across SOC's.
+>=20
+> This patchset adds TMU(Thermal management Unit) driver support for
+> exynos5440 platform. There are 3 instances of the TMU controllers so
+> necessary cleanup/re-structure is done to handle multiple thermal zone.=
 
-> +	 * to complete a measurement.
-> +	 */
-> +	usleep_range(20, 50);
-> +
-> +	regmap_read(map, TEMPSENSE0, &val);
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +
-> +	if ((val & TEMPSENSE0_FINISHED) =3D=3D 0) {
-> +		dev_dbg(&tz->device, "temp measurement never finished\n");
-> +		return -EAGAIN;
-> +	}
-> +
-> +	n_meas =3D (val & TEMPSENSE0_TEMP_CNT_MASK) >> TEMPSENSE0_TEMP_CNT_SH=
-IFT;
-> +
-> +	/* See imx_get_sensor_data() for formula derivation */
-> +	*temp =3D data->c2 + data->c1 * n_meas;
-> +
-> +	if (*temp !=3D last_temp) {
-> +		dev_dbg(&tz->device, "millicelsius: %ld\n", *temp);
-> +		last_temp =3D *temp;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_get_mode(struct thermal_zone_device *tz,
-> +			enum thermal_device_mode *mode)
-> +{
-> +	struct imx_thermal_data *data =3D tz->devdata;
-> +
-> +	*mode =3D data->mode;
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_set_mode(struct thermal_zone_device *tz,
-> +			enum thermal_device_mode mode)
-> +{
-> +	struct imx_thermal_data *data =3D tz->devdata;
-> +
-> +	if (mode =3D=3D THERMAL_DEVICE_ENABLED) {
-> +		tz->polling_delay =3D IMX_POLLING_DELAY;
-> +		tz->passive_delay =3D IMX_PASSIVE_DELAY;
-> +	} else {
-> +		tz->polling_delay =3D 0;
-> +		tz->passive_delay =3D 0;
-> +	}
-> +
-> +	data->mode =3D mode;
-> +	thermal_zone_device_update(tz);
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_get_trip_type(struct thermal_zone_device *tz, int trip,=
+>=20
+> Patch (exynos4: Add documentation for Exynos SoC thermal bindings) from=
 
-> +			     enum thermal_trip_type *type)
-> +{
-> +	*type =3D (trip =3D=3D IMX_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
-> +					     THERMAL_TRIP_CRITICAL;
-> +	return 0;
-> +}
-> +
-> +static int imx_get_crit_temp(struct thermal_zone_device *tz,
-> +			     unsigned long *temp)
-> +{
-> +	*temp =3D IMX_TEMP_CRITICAL;
-> +	return 0;
-> +}
-> +
-> +static int imx_get_trip_temp(struct thermal_zone_device *tz, int trip,=
-
-> +			     unsigned long *temp)
-> +{
-> +	*temp =3D (trip =3D=3D IMX_TRIP_PASSIVE) ? IMX_TEMP_PASSIVE :
-> +					     IMX_TEMP_CRITICAL;
-> +	return 0;
-> +}
-> +
-> +static int imx_bind(struct thermal_zone_device *tz,
-> +		    struct thermal_cooling_device *cdev)
-> +{
-> +	int ret;
-> +
-> +	ret =3D thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
-> +					       THERMAL_NO_LIMIT,
-> +					       THERMAL_NO_LIMIT);
-> +	if (ret) {
-> +		dev_err(&tz->device,
-> +			"binding zone %s with cdev %s failed:%d\n",
-> +			tz->type, cdev->type, ret);
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_unbind(struct thermal_zone_device *tz,
-> +		      struct thermal_cooling_device *cdev)
-> +{
-> +	int ret;
-> +
-> +	ret =3D thermal_zone_unbind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev=
-);
-> +	if (ret) {
-> +		dev_err(&tz->device,
-> +			"unbinding zone %s with cdev %s failed:%d\n",
-> +			tz->type, cdev->type, ret);
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct thermal_zone_device_ops imx_tz_ops =3D {
-> +	.bind =3D imx_bind,
-> +	.unbind =3D imx_unbind,
-> +	.get_temp =3D imx_get_temp,
-> +	.get_mode =3D imx_get_mode,
-> +	.set_mode =3D imx_set_mode,
-> +	.get_trip_type =3D imx_get_trip_type,
-> +	.get_trip_temp =3D imx_get_trip_temp,
-> +	.get_crit_temp =3D imx_get_crit_temp,
-> +};
-> +
-> +static int imx_get_sensor_data(struct platform_device *pdev)
-> +{
-> +	struct imx_thermal_data *data =3D platform_get_drvdata(pdev);
-> +	struct regmap *map;
-> +	int t1, t2, n1, n2;
-> +	int ret;
-> +	u32 val;
-> +
-> +	map =3D syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
-> +					      "fsl,tempmon-data");
-> +	if (IS_ERR(map)) {
-> +		ret =3D PTR_ERR(map);
-> +		dev_err(&pdev->dev, "failed to get sensor regmap: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	ret =3D regmap_read(map, OCOTP_ANA1, &val);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "failed to read sensor data: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	if (val =3D=3D 0 || val =3D=3D ~0) {
-> +		dev_err(&pdev->dev, "invalid sensor calibration data\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	/*
-> +	 * Sensor data layout:
-> +	 *   [31:20] - sensor value @ 25C
-> +	 *    [19:8] - sensor value of hot
-> +	 *     [7:0] - hot temperature value
-> +	 */
-> +	n1 =3D val >> 20;
-> +	n2 =3D (val & 0xfff00) >> 8;
-> +	t2 =3D val & 0xff;
-> +	t1 =3D 25; /* t1 always 25C */
-> +
-> +	/*
-> +	 * Derived from linear interpolation,
-> +	 * Tmeas =3D T2 + (Nmeas - N2) * (T1 - T2) / (N1 - N2)
-> +	 * We want to reduce this down to the minimum computation necessary
-> +	 * for each temperature read.  Also, we want Tmeas in millicelsius
-> +	 * and we don't want to lose precision from integer division. So...
-> +	 * milli_Tmeas =3D 1000 * T2 + 1000 * (Nmeas - N2) * (T1 - T2) / (N1 =
-- N2)
-> +	 * Let constant c1 =3D 1000 * (T1 - T2) / (N1 - N2)
-> +	 * milli_Tmeas =3D (1000 * T2) + c1 * (Nmeas - N2)
-> +	 * milli_Tmeas =3D (1000 * T2) + (c1 * Nmeas) - (c1 * N2)
-> +	 * Let constant c2 =3D (1000 * T2) - (c1 * N2)
-> +	 * milli_Tmeas =3D c2 + (c1 * Nmeas)
-> +	 */
-> +	data->c1 =3D 1000 * (t1 - t2) / (n1 - n2);
-> +	data->c2 =3D 1000 * t2 - data->c1 * n2;
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct imx_thermal_data *data;
-> +	struct cpumask clip_cpus;
-> +	struct regmap *map;
-> +	int ret;
-> +
-> +	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	map =3D syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "fsl,tempm=
-on");
-> +	if (IS_ERR(map)) {
-> +		ret =3D PTR_ERR(map);
-> +		dev_err(&pdev->dev, "failed to get tempmon regmap: %d\n", ret);
-> +		return ret;
-> +	}
-> +	data->tempmon =3D map;
-> +
-> +	platform_set_drvdata(pdev, data);
-> +
-> +	ret =3D imx_get_sensor_data(pdev);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "failed to get sensor data\n");
-> +		return ret;
-> +	}
-> +
-> +	/* Make sure sensor is in known good state for measurements */
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> +	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
-> +	regmap_write(map, MISC0 + REG_SET, MISC0_REFTOP_SELBIASOFF);
-> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +
-> +	cpumask_set_cpu(0, &clip_cpus);
-> +	data->cdev =3D cpufreq_cooling_register(&clip_cpus);
-> +	if (IS_ERR(data->cdev)) {
-> +		ret =3D PTR_ERR(data->cdev);
-> +		dev_err(&pdev->dev,
-> +			"failed to register cpufreq cooling device: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	data->tz =3D thermal_zone_device_register("imx_thermal_zone",
-> +						IMX_TRIP_NUM, 0, data,
-> +						&imx_tz_ops, NULL,
-> +						IMX_PASSIVE_DELAY,
-> +						IMX_POLLING_DELAY);
-> +	if (IS_ERR(data->tz)) {
-> +		ret =3D PTR_ERR(data->tz);
-> +		dev_err(&pdev->dev,
-> +			"failed to register thermal zone device %d\n", ret);
-> +		cpufreq_cooling_unregister(data->cdev);
-> +		return ret;
-> +	}
-> +
-> +	data->mode =3D THERMAL_DEVICE_ENABLED;
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct imx_thermal_data *data =3D platform_get_drvdata(pdev);
-> +
-> +	thermal_zone_device_unregister(data->tz);
-> +	cpufreq_cooling_unregister(data->cdev);
-> +
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +static int imx_thermal_suspend(struct device *dev)
-> +{
-> +	struct imx_thermal_data *data =3D dev_get_drvdata(dev);
-> +	struct regmap *map =3D data->tempmon;
-> +	u32 val;
-> +
-> +	regmap_read(map, TEMPSENSE0, &val);
-> +	if ((val & TEMPSENSE0_POWER_DOWN) =3D=3D 0) {
-> +		/*
-> +		 * If a measurement is taking place, wait for a long enough
-> +		 * time for it to finish, and then check again.  If it still
-> +		 * does not finish, something must go wrong.
-> +		 */
-> +		udelay(50);
-> +		regmap_read(map, TEMPSENSE0, &val);
-> +		if ((val & TEMPSENSE0_POWER_DOWN) =3D=3D 0)
-> +			return -ETIMEDOUT;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_thermal_resume(struct device *dev)
-> +{
-> +	/* Nothing to do for now */
-> +	return 0;
-> +}
-> +#endif
-> +
-> +static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
-> +			 imx_thermal_suspend, imx_thermal_resume);
-> +
-> +static const struct of_device_id of_imx_thermal_match[] =3D {
-> +	{ .compatible =3D "fsl,imx6q-tempmon", },
-> +	{ /* end */ }
-> +};
-> +
-> +static struct platform_driver imx_thermal =3D {
-> +	.driver =3D {
-> +		.name	=3D "imx_thermal",
-> +		.owner  =3D THIS_MODULE,
-> +		.pm	=3D &imx_thermal_pm_ops,
-> +		.of_match_table =3D of_imx_thermal_match,
-> +	},
-> +	.probe		=3D imx_thermal_probe,
-> +	.remove		=3D imx_thermal_remove,
-> +};
-> +module_platform_driver(imx_thermal);
-> +
-> +MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-> +MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_ALIAS("platform:imx-thermal");
+> Lukasz Majewski is already posted to mainline. Using it as it is needed=
+=2E
+> (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg17817=
+=2Ehtml)
+>=20
+> Patch (thermal: exynos: Support thermal tripping ) from Jonghwan Choi i=
+s
+> added here with some changes.
+> (https://patchwork.kernel.org/patch/1668371/)
+>=20
+> Patch (thermal: exynos: Support for TMU regulator defined at device tre=
+e)
+> is a repost of my earlier patch(https://patchwork-mail1.kernel.org/patc=
+h/2510771/)=20
+> and adds regulator support.
+>=20
+> Patch (ARM: dts: Add device tree node for exynos5440 TMU controller) an=
+d
+> patch (arm: exynos: enable ARCH_HAS_BANDGAP) can be merged through exyn=
+os platform
+> maintainer as this can cause merge conflict.
+>=20
+> All these patches are based on thermal maintainers git tree,
+> git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next.
+>=20
+> Amit Daniel Kachhap (30):
+>   thermal: exynos: Moving exynos thermal files into samsung directory
+>   thermal: exynos: Use ARCH_HAS_BANDGAP config to know the supported
+>     soc's
+>   thermal: exynos: Remove un-necessary CPU_THERMAL dependency
+>   thermal: exynos: Bifurcate exynos thermal common and tmu controller
+>     code
+>   thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
+>   thermal: exynos: Move exynos_thermal.h from include/* to driver/*
+>     folder
+>   thermal: exynos: Bifurcate exynos tmu driver and configuration data
+>   thermal: exynos: Add missing definations and code cleanup
+>   thermal: exynos: Add extra entries in the tmu platform data
+>   thermal: exynos: Move register definitions from driver to data file
+>   thermal: exynos: Support thermal tripping
+>   thermal: exynos: Fix to clear only the generated interrupts
+>   thermal: exynos: Add support for instance based register/unregister
+>   thermal: exynos: Modify private_data to appropriate name driver_data
+>   thermal: exynos: Return success even if no cooling data supplied
+>   thermal: exynos: Make the zone handling use trip information
+>   thermal: exynos: Remove non DT based support
+>   thermal: exynos: Add support to handle many instances of TMU
+>   thermal: exynos: Add TMU features to check instead of using SOC type
+>   thermal: exynos: use device resource management infrastructure
+>   thermal: exynos: Add support to access common register for
+>     multistance
+>   thermal: exynos: Add driver support for exynos5440 TMU sensor
+>   thermal: exynos: Add thermal configuration data for exynos5440 TMU
+>     sensor
+>   thermal: exynos: Fix to set the second point correction value
+>   thermal: exynos: Add hardware mode thermal calibration support
+>   thermal: exynos: Support for TMU regulator defined at device tree
+>   ARM: dts: thermal: exynos: Add documentation for Exynos SoC thermal
+>     bindings
+>   Documentation: thermal: Explain the exynos thermal driver model
+>   ARM: dts: Add device tree node for exynos5440 TMU controller
+>   arm: exynos: enable ARCH_HAS_BANDGAP
+>=20
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |   55 +
+>  Documentation/thermal/exynos_thermal               |   43 +-
+>  arch/arm/boot/dts/exynos5440.dtsi                  |   30 +
+>  arch/arm/mach-exynos/Kconfig                       |    5 +
+>  drivers/thermal/Kconfig                            |   13 +-
+>  drivers/thermal/Makefile                           |    2 +-
+>  drivers/thermal/exynos_thermal.c                   | 1058 ------------=
+--------
+>  drivers/thermal/samsung/Kconfig                    |   18 +
+>  drivers/thermal/samsung/Makefile                   |    7 +
+>  drivers/thermal/samsung/exynos_thermal_common.c    |  432 ++++++++
+>  drivers/thermal/samsung/exynos_thermal_common.h    |  107 ++
+>  drivers/thermal/samsung/exynos_tmu.c               |  752 ++++++++++++=
+++
+>  drivers/thermal/samsung/exynos_tmu.h               |  309 ++++++
+>  drivers/thermal/samsung/exynos_tmu_data.c          |  250 +++++
+>  drivers/thermal/samsung/exynos_tmu_data.h          |  155 +++
+>  include/linux/platform_data/exynos_thermal.h       |  119 ---
+>  16 files changed, 2160 insertions(+), 1195 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/exynos-th=
+ermal.txt
+>  delete mode 100644 drivers/thermal/exynos_thermal.c
+>  create mode 100644 drivers/thermal/samsung/Kconfig
+>  create mode 100644 drivers/thermal/samsung/Makefile
+>  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+>  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+>  create mode 100644 drivers/thermal/samsung/exynos_tmu.c
+>  create mode 100644 drivers/thermal/samsung/exynos_tmu.h
+>  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+>  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+>  delete mode 100644 include/linux/platform_data/exynos_thermal.h
+>=20
+>=20
 >=20
 
 
@@ -550,7 +229,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
-------enig2HCNAEDNPCLWRWDBSSXON
+------enig2JNQEMKDMAJSOUQURBTKF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -559,23 +238,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlHbR2wACgkQCXcVR3XQvP3x7AD9FTZYqueRSm/4UM98vH6c394H
-jlNXTR1E4Q6xFg9VJXUBAKss7JAQbr7aW7nlJU0w2N9nZSDUmA/sBRlr9Q0VtCPb
-=zgAI
+iF4EAREIAAYFAlHbR6kACgkQCXcVR3XQvP21NgEAp7zmaFLMDQD7GKM63DAWZi2e
+nshoSjo4lIlHtx8d7cABAOXd9wlIsJYOYHKtFlNbIevnDy6u1VFUp9CgbC7i5H4Q
+=IyPQ
 -----END PGP SIGNATURE-----
 
-------enig2HCNAEDNPCLWRWDBSSXON--
-
-
---===============1797874877129070264==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============1797874877129070264==--
+------enig2JNQEMKDMAJSOUQURBTKF--
