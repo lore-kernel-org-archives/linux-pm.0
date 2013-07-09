@@ -1,81 +1,32 @@
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: [v3.10 regression] deadlock on cpu hotplug
-Date: Tue, 09 Jul 2013 10:15:43 +0800
-Message-ID: <51DB724F.9050708@linux.vnet.ibm.com>
-References: <1443144.WnBWEpaopK@amdc1032>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/6] cpufreq: Add 'load_table' debugfs file to show
+ colleced CPUs load
+Date: Tue, 9 Jul 2013 12:20:02 +0530
+Message-ID: <CAKohpokzn4jrO3rr8pjzwd4Xn+0umOK-sMANV2Fj5xn6UhBHVg@mail.gmail.com>
+References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:46817 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524Ab3GICPx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jul 2013 22:15:53 -0400
-Received: from /spool/local
-	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <wangyun@linux.vnet.ibm.com>;
-	Tue, 9 Jul 2013 07:38:25 +0530
-In-Reply-To: <1443144.WnBWEpaopK@amdc1032>
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:59461 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859Ab3GIGuD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jul 2013 02:50:03 -0400
+Received: by mail-oa0-f43.google.com with SMTP id i7so7545627oag.30
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jul 2013 23:50:02 -0700 (PDT)
+In-Reply-To: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@alien8.de>, Jiri Kosina <jkosina@suse.cz>, Tomasz Figa <t.figa@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-Hi, Bartlomiej
+On 5 July 2013 14:16, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> Second, previous performance/powersave governor haven't calculated CPUs load
+> becuase these governor didn't change CPU frequency according to CPUs load. But,
+> load_table debugfs file always should indicate the collected CPUs data regardless
+> of the kind of cpufreq governor. So, the patch3/4/5 implement that performance/
+> powersave governor will check periodically CPUs load by calling dbs_check_cpu()
+> with timer.
 
-On 07/08/2013 11:26 PM, Bartlomiej Zolnierkiewicz wrote:
-[snip]
-> 
-> # echo 0 > /sys/devices/system/cpu/cpu3/online
-> # echo 0 > /sys/devices/system/cpu/cpu2/online
-> # echo 0 > /sys/devices/system/cpu/cpu1/online
-> # while true;do echo 1 > /sys/devices/system/cpu/cpu1/online;echo 0 > /sys/devices/system/cpu/cpu1/online;done
-> 
-> The commit in question (2f7021a8) was merged in v3.10-rc5 as a fix for
-> commit 031299b ("cpufreq: governors: Avoid unnecessary per cpu timer
-> interrupts") which was causing a kernel warning to show up.
-> 
-> Michael/Viresh: do you have some idea how to fix the issue?
-
-Thanks for the report :) would you like to take a try
-on below patch and see whether it solve the issue?
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 5af40ad..aa05eaa 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -229,6 +229,8 @@ static void set_sampling_rate(struct dbs_data *dbs_data,
-        }
- }
- 
-+static struct lock_class_key j_cdbs_key;
-+
- int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-                struct common_dbs_data *cdata, unsigned int event)
- {
-@@ -366,6 +368,8 @@ int (struct cpufreq_policy *policy,
-                                        kcpustat_cpu(j).cpustat[CPUTIME_NICE];
- 
-                        mutex_init(&j_cdbs->timer_mutex);
-+                       lockdep_set_class(&j_cdbs->timer_mutex, &j_cdbs_key);
-+
-                        INIT_DEFERRABLE_WORK(&j_cdbs->work,
-                                             dbs_data->cdata->gov_dbs_timer);
-                }
-
-Regards,
-Michael Wang
-
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+I raised a query on how can we call dbs_check_cpu() from
+performance/powersave? Also, calling this routine will degrade
+performance without any sense. So, I vote not for doing it.
