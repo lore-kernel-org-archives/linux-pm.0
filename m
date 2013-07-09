@@ -1,175 +1,85 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [v3.10 regression] deadlock on cpu hotplug
-Date: Tue, 09 Jul 2013 18:37:25 +0530
-Message-ID: <51DC0B0D.9070201@linux.vnet.ibm.com>
-References: <1443144.WnBWEpaopK@amdc1032> <51DB724F.9050708@linux.vnet.ibm.com> <1754044.EVIH1UZj6p@amdc1032>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [PATCH] PM / QOS: correct the valid range of pm_qos_class
+Date: Tue, 9 Jul 2013 06:29:18 -0700
+Message-ID: <20130709132918.GA14761@mgross-G62>
+References: <1371090717-22198-1-git-send-email-kpark3469@gmail.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:48526 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753542Ab3GINK4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jul 2013 09:10:56 -0400
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 9 Jul 2013 18:32:25 +0530
-In-Reply-To: <1754044.EVIH1UZj6p@amdc1032>
+Received: from mail-pb0-f43.google.com ([209.85.160.43]:51228 "EHLO
+	mail-pb0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753666Ab3GIN3V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jul 2013 09:29:21 -0400
+Received: by mail-pb0-f43.google.com with SMTP id md12so5481024pbc.30
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jul 2013 06:29:20 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1371090717-22198-1-git-send-email-kpark3469@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Michael Wang <wangyun@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@alien8.de>, Jiri Kosina <jkosina@suse.cz>, Tomasz Figa <t.figa@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: kpark3469@gmail.com
+Cc: linux-pm@vger.kernel.org, keun-o.park@windriver.com, len.brown@intel.com, rjw@sisk.pl
 
-On 07/09/2013 05:21 PM, Bartlomiej Zolnierkiewicz wrote:
+On Thu, Jun 13, 2013 at 11:31:57AM +0900, kpark3469@gmail.com wrote:
+> From: Sahara <keun-o.park@windriver.com>
 > 
-> Hi,
+> The valid start index for pm_qos_array is not 0 but 1. There is a
+> null_pm_qos at index 0 of pm_qos_array. However, null_pm_qos is not
+> created as misc device so that inclusion of 0 index for checking
+> pm_qos_class especially for file operations is not proper here.
 > 
-> On Tuesday, July 09, 2013 10:15:43 AM Michael Wang wrote:
->> Hi, Bartlomiej
->>
->> On 07/08/2013 11:26 PM, Bartlomiej Zolnierkiewicz wrote:
->> [snip]
->>>
->>> # echo 0 > /sys/devices/system/cpu/cpu3/online
->>> # echo 0 > /sys/devices/system/cpu/cpu2/online
->>> # echo 0 > /sys/devices/system/cpu/cpu1/online
->>> # while true;do echo 1 > /sys/devices/system/cpu/cpu1/online;echo 0 > /sys/devices/system/cpu/cpu1/online;done
->>>
->>> The commit in question (2f7021a8) was merged in v3.10-rc5 as a fix for
->>> commit 031299b ("cpufreq: governors: Avoid unnecessary per cpu timer
->>> interrupts") which was causing a kernel warning to show up.
->>>
->>> Michael/Viresh: do you have some idea how to fix the issue?
->>
->> Thanks for the report :) would you like to take a try
->> on below patch and see whether it solve the issue?
+> Signed-off-by: Sahara <keun-o.park@windriver.com>
+> ---
+>  kernel/power/qos.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> It doesn't help and unfortunately it just can't help as it only
-> addresses lockdep functionality while the issue is not a lockdep
-> problem but a genuine locking problem. CPU hot-unplug invokes
-> _cpu_down() which calls cpu_hotplug_begin() which in turn takes
-> &cpu_hotplug.lock. The lock is then hold during __cpu_notify()
-> call. Notifier chain goes up to cpufreq_governor_dbs() which for
-> CPUFREQ_GOV_STOP event does gov_cancel_work(). This function
-> flushes pending work and waits for it to finish. The all above
-> happens in one kernel thread. At the same time the other kernel
-> thread is doing the work we are waiting to complete and it also
-> happens to do gov_queue_work() which calls get_online_cpus().
-> Then the code tries to take &cpu_hotplug.lock which is already
-> held by the first thread and deadlocks.
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 587ddde..f2f5f6e 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -477,7 +477,7 @@ static int find_pm_qos_object_by_minor(int minor)
+>  {
+>  	int pm_qos_class;
+>  
+> -	for (pm_qos_class = 0;
+> +	for (pm_qos_class = PM_QOS_CPU_DMA_LATENCY;
+why not: for (pm_qos_class = PM_QOS_RESERVED + 1;?
+
+I don't like assigning symantics implying DMA_LATENCY is the first qos class.
+This is implicitly assuming an order I don't think is proper to assume.
+
+humph.  this has already been merged.  My gripe is WRT style anyway.
+
+surves me right for not paying attention. I'll post an stylistic tweak later.
+
+--mark
+
+
+>  		pm_qos_class < PM_QOS_NUM_CLASSES; pm_qos_class++) {
+>  		if (minor ==
+>  			pm_qos_array[pm_qos_class]->pm_qos_power_miscdev.minor)
+> @@ -491,7 +491,7 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+>  	long pm_qos_class;
+>  
+>  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+> -	if (pm_qos_class >= 0) {
+> +	if (pm_qos_class >= PM_QOS_CPU_DMA_LATENCY) {
+>  		struct pm_qos_request *req = kzalloc(sizeof(*req), GFP_KERNEL);
+>  		if (!req)
+>  			return -ENOMEM;
+> @@ -584,7 +584,7 @@ static int __init pm_qos_power_init(void)
+>  
+>  	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
+>  
+> -	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
+> +	for (i = PM_QOS_CPU_DMA_LATENCY; i < PM_QOS_NUM_CLASSES; i++) {
+>  		ret = register_pm_qos_misc(pm_qos_array[i]);
+>  		if (ret < 0) {
+>  			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
+> -- 
+> 1.7.1
 > 
-
-Yeah, exactly!
-
-So I had proposed doing an asynchronous cancel-work or doing the
-synchronous cancel-work in the CPU_POST_DEAD phase, where the
-cpu_hotplug.lock is not held. See this thread:
-
-http://marc.info/?l=linux-kernel&m=137241212616799&w=2
-http://marc.info/?l=linux-pm&m=137242906622537&w=2
-
-But now that I look at commit 2f7021a8 again, I still think we should
-revert it and fix the _actual_ root-cause of the bug.
-
-Cpufreq subsystem has enough synchronization to ensure that policy->cpus
-always contains online CPUs. And it also has the concept of cancelling
-queued work items, *before* that CPU is taken offline.
-So, where is the chance that we try to queue work items on offline CPUs?
-
-To answer that question, I was looking at the cpufreq code yesterday
-and found something very interesting: the gov_cancel_work() that is
-invoked before a CPU goes offline, can actually end up effectively
-*NOT* cancelling the queued work item!
-
-The reason is, the per-cpu work items are not just self-queueing (if
-that was the case, gov_cancel_work would have been successful without
-any doubt), but instead, they can also queue work items on *other* CPUs!
-
-Example from ondemand governor's per-cpu work item:
-
-static void od_dbs_timer(struct work_struct *work)
-{
-  ...
-  bool modify_all = true;
-  ...
-  gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy, delay, modify_all);
-}
-
-So, every per-cpu work item can re-queue the work item on *many other*
-CPUs, and not just itself!
-
-So that leads to a race which makes gov_cancel_work() ineffective.
-The call to cancel_delayed_work_sync() will cancel all pending work items
-on say CPU 3 (which is going down), but immediately after that, say CPU4's
-work item fires and queues the work item on CPU4 as well as CPU3. Thus,
-gov_cancel_work() _effectively_ didn't do anything useful.
-
-But this still doesn't immediately explain how we can end up trying to
-queue work items on offline CPUs (since policy->cpus is supposed to always
-contain online cpus only, and this does look correct in the code as well,
-at a first glance). But I just wanted to share this finding, in case it
-helps us find out the real root-cause.
-
-Also, you might perhaps want to try the (untested) patch shown below, and
-see if it resolves your problem. It basically makes work-items requeue
-themselves on only their respective CPUs and not others, so that
-gov_cancel_work succeeds in its mission. However, I guess the patch is
-wrong from a cpufreq perspective, in case cpufreq really depends on the
-"requeue-work-on-everybody" model.
-
-Regards,
-Srivatsa S. Bhat
-
-------------------------------------------------------------------------
-
- drivers/cpufreq/cpufreq_conservative.c |    2 +-
- drivers/cpufreq/cpufreq_governor.c     |    2 --
- drivers/cpufreq/cpufreq_ondemand.c     |    2 +-
- 3 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 0ceb2ef..bbfc1dd 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -120,7 +120,7 @@ static void cs_dbs_timer(struct work_struct *work)
- 	struct dbs_data *dbs_data = dbs_info->cdbs.cur_policy->governor_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	int delay = delay_for_sampling_rate(cs_tuners->sampling_rate);
--	bool modify_all = true;
-+	bool modify_all = false;
- 
- 	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
- 	if (!need_load_eval(&core_dbs_info->cdbs, cs_tuners->sampling_rate))
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 4645876..ec4baeb 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -137,10 +137,8 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- 	if (!all_cpus) {
- 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
- 	} else {
--		get_online_cpus();
- 		for_each_cpu(i, policy->cpus)
- 			__gov_queue_work(i, dbs_data, delay);
--		put_online_cpus();
- 	}
- }
- EXPORT_SYMBOL_GPL(gov_queue_work);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 93eb5cb..241ebc0 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -230,7 +230,7 @@ static void od_dbs_timer(struct work_struct *work)
- 	struct dbs_data *dbs_data = dbs_info->cdbs.cur_policy->governor_data;
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	int delay = 0, sample_type = core_dbs_info->sample_type;
--	bool modify_all = true;
-+	bool modify_all = false;
- 
- 	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
- 	if (!need_load_eval(&core_dbs_info->cdbs, od_tuners->sampling_rate)) {
-
-
-
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
