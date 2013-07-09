@@ -1,150 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/6] cpufreq: Add debugfs directory for cpufreq
-Date: Tue, 9 Jul 2013 14:53:00 +0530
-Message-ID: <CAKohpomriPXmK3TRFqinyEEuG39O1ppKmPuW0gvs3iRLnsoPrg@mail.gmail.com>
-References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
-	<1373014001-17746-2-git-send-email-cw00.choi@samsung.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: Re: [v3.10 regression] deadlock on cpu hotplug
+Date: Tue, 09 Jul 2013 13:51:19 +0200
+Message-ID: <1754044.EVIH1UZj6p@amdc1032>
+References: <1443144.WnBWEpaopK@amdc1032> <51DB724F.9050708@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1373014001-17746-2-git-send-email-cw00.choi@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:24291 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554Ab3GILvf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jul 2013 07:51:35 -0400
+In-reply-to: <51DB724F.9050708@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Wang <wangyun@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@alien8.de>, Jiri Kosina <jkosina@suse.cz>, Tomasz Figa <t.figa@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 5 July 2013 14:16, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 
-> +/* The cpufreq_debugfs is used to create debugfs root directory for CPUFreq. */
-> +#define MAX_DEBUGFS_NAME_LEN   CPUFREQ_NAME_LEN
+Hi,
 
-Why declare MAX_DEBUGFS_NAME_LEN if it is going to be equal to
-CPUFREQ_NAME_LEN. Simply use CPUFREQ_NAME_LEN everywhere.
+On Tuesday, July 09, 2013 10:15:43 AM Michael Wang wrote:
+> Hi, Bartlomiej
+> 
+> On 07/08/2013 11:26 PM, Bartlomiej Zolnierkiewicz wrote:
+> [snip]
+> > 
+> > # echo 0 > /sys/devices/system/cpu/cpu3/online
+> > # echo 0 > /sys/devices/system/cpu/cpu2/online
+> > # echo 0 > /sys/devices/system/cpu/cpu1/online
+> > # while true;do echo 1 > /sys/devices/system/cpu/cpu1/online;echo 0 > /sys/devices/system/cpu/cpu1/online;done
+> > 
+> > The commit in question (2f7021a8) was merged in v3.10-rc5 as a fix for
+> > commit 031299b ("cpufreq: governors: Avoid unnecessary per cpu timer
+> > interrupts") which was causing a kernel warning to show up.
+> > 
+> > Michael/Viresh: do you have some idea how to fix the issue?
+> 
+> Thanks for the report :) would you like to take a try
+> on below patch and see whether it solve the issue?
 
-> +static struct dentry *cpufreq_debugfs;
+It doesn't help and unfortunately it just can't help as it only
+addresses lockdep functionality while the issue is not a lockdep
+problem but a genuine locking problem. CPU hot-unplug invokes
+_cpu_down() which calls cpu_hotplug_begin() which in turn takes
+&cpu_hotplug.lock. The lock is then hold during __cpu_notify()
+call. Notifier chain goes up to cpufreq_governor_dbs() which for
+CPUFREQ_GOV_STOP event does gov_cancel_work(). This function
+flushes pending work and waits for it to finish. The all above
+happens in one kernel thread. At the same time the other kernel
+thread is doing the work we are waiting to complete and it also
+happens to do gov_queue_work() which calls get_online_cpus().
+Then the code tries to take &cpu_hotplug.lock which is already
+held by the first thread and deadlocks.
 
-Probably make this dependent on CONFIG_CPU_FREQ_STAT?
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
->  /*
->   * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
->   * all cpufreq/hotplug/workqueue/etc related lock issues.
-> @@ -726,6 +731,20 @@ static int cpufreq_add_dev_symlink(unsigned int cpu,
->                         cpufreq_cpu_put(managed_policy);
->                         return ret;
->                 }
-> +
-> +               if (cpufreq_debugfs) {
-> +                       char symlink_name[MAX_DEBUGFS_NAME_LEN];
-> +                       char target_name[MAX_DEBUGFS_NAME_LEN];
-> +
-> +                       sprintf(symlink_name, "cpu%d", j);
-> +                       sprintf(target_name, "./cpu%d", cpu);
-> +                       managed_policy->cpu_debugfs[j] = debugfs_create_symlink(
-> +                                                       symlink_name,
-> +                                                       cpufreq_debugfs,
-> +                                                       target_name);
-> +                       if (!managed_policy->cpu_debugfs[j])
-> +                               pr_debug("creating debugfs symlink failed\n");
-
-pr_err?
-
-> +               }
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 5af40ad..aa05eaa 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -229,6 +229,8 @@ static void set_sampling_rate(struct dbs_data *dbs_data,
 >         }
->         return ret;
 >  }
-> @@ -746,6 +765,22 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
->         if (ret)
->                 return ret;
->
-> +       /* prepare interface data for debugfs */
-> +       if (cpufreq_debugfs) {
-> +               char name[MAX_DEBUGFS_NAME_LEN];
-> +               int size, i;
+>  
+> +static struct lock_class_key j_cdbs_key;
 > +
-> +               sprintf(name, "cpu%d", policy->cpu);
-> +               size = sizeof(struct dentry*) * NR_CPUS;
-
-NR_CPUS? You only need to take care of cpus that belong to this
-policy, isn't it? policy->related_cpus should be good enough for you.
-
-> +               i = cpu;
+>  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>                 struct common_dbs_data *cdata, unsigned int event)
+>  {
+> @@ -366,6 +368,8 @@ int (struct cpufreq_policy *policy,
+>                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+>  
+>                         mutex_init(&j_cdbs->timer_mutex);
+> +                       lockdep_set_class(&j_cdbs->timer_mutex, &j_cdbs_key);
 > +
-> +               policy->cpu_debugfs = devm_kzalloc(dev, size, GFP_KERNEL);
-> +               policy->cpu_debugfs[i] = debugfs_create_dir(name,
-> +                                                           cpufreq_debugfs);
-> +               if (!policy->cpu_debugfs[i])
-> +                       pr_debug("creating debugfs directory failed\n");
-> +       }
-
-pr_err?
-
-And move this code just before the call to cpufreq_add_dev_symlink().
-
->         /* set up files for this cpu device */
->         drv_attr = cpufreq_driver->attr;
->         while ((drv_attr) && (*drv_attr)) {
-> @@ -839,6 +874,20 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
->                 return ret;
->         }
->
-> +       if (cpufreq_debugfs) {
-> +               char symlink_name[MAX_DEBUGFS_NAME_LEN];
-> +               char target_name[MAX_DEBUGFS_NAME_LEN];
-> +
-> +               sprintf(symlink_name, "cpu%d", cpu);
-> +               sprintf(target_name, "./cpu%d", sibling);
-> +               policy->cpu_debugfs[cpu] = debugfs_create_symlink(
-> +                                               symlink_name,
-> +                                               cpufreq_debugfs,
-> +                                               target_name);
-> +               if (!policy->cpu_debugfs[cpu])
-> +                       pr_debug("creating debugfs symlink failed\n");
-> +       }
-
-This is purely replication of same code. Create a routine to
-hold these lines and call it from wherever it is required.
-
->         return 0;
->  }
->  #endif
-> @@ -1046,6 +1095,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->
->         if (cpu != data->cpu) {
->                 sysfs_remove_link(&dev->kobj, "cpufreq");
-> +               debugfs_remove(data->cpu_debugfs[cpu]);
->         } else if (cpus > 1) {
->                 /* first sibling now owns the new sysfs dir */
->                 cpu_dev = get_cpu_device(cpumask_first(data->cpus));
-> @@ -1068,6 +1118,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->                         return -EINVAL;
+>                         INIT_DEFERRABLE_WORK(&j_cdbs->work,
+>                                              dbs_data->cdata->gov_dbs_timer);
 >                 }
->
-> +               debugfs_remove_recursive(data->cpu_debugfs[cpu]);
+> 
+> Regards,
+> Michael Wang
 
-So you removed load_table here? What about other cpus that were
-there in policy->cpus?
-
-> +               debugfs_remove(cpufreq_debugfs);
-
-Who will create this again? Also, there might be multiple policy struct's
-in a system and here we have reached to removal of all cpus of
-a policy. Other policies are still alive.
-
->                 WARN_ON(lock_policy_rwsem_write(cpu));
->                 update_policy_cpu(data, cpu_dev->id);
->                 unlock_policy_rwsem_write(cpu);
-> @@ -1976,6 +2029,10 @@ static int __init cpufreq_core_init(void)
->         BUG_ON(!cpufreq_global_kobject);
->         register_syscore_ops(&cpufreq_syscore_ops);
->
-> +       cpufreq_debugfs = debugfs_create_dir("cpufreq", NULL);
-> +       if (!cpufreq_debugfs)
-> +               pr_debug("creating debugfs root failed\n");
-
-So, you just added this directory once.. So you must not
-remove it.
-
->         return 0;
->  }
->  core_initcall(cpufreq_core_init);
