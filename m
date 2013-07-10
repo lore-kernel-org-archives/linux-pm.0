@@ -1,83 +1,52 @@
 From: Michael Wang <wangyun@linux.vnet.ibm.com>
 Subject: Re: [v3.10 regression] deadlock on cpu hotplug
-Date: Wed, 10 Jul 2013 11:29:45 +0800
-Message-ID: <51DCD529.6020606@linux.vnet.ibm.com>
+Date: Wed, 10 Jul 2013 12:12:12 +0800
+Message-ID: <51DCDF1C.1000208@linux.vnet.ibm.com>
 References: <1443144.WnBWEpaopK@amdc1032> <51DB724F.9050708@linux.vnet.ibm.com> <1754044.EVIH1UZj6p@amdc1032> <51DC0B0D.9070201@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:39106 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748Ab3GJEMV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2013 00:12:21 -0400
+Received: from /spool/local
+	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <wangyun@linux.vnet.ibm.com>;
+	Wed, 10 Jul 2013 09:36:53 +0530
 In-Reply-To: <51DC0B0D.9070201@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@alien8.de>, Jiri Kosina <jkosina@suse.cz>, Tomasz Figa <t.figa@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 On 07/09/2013 09:07 PM, Srivatsa S. Bhat wrote:
 [snip]
->>
-> 
-> Yeah, exactly!
-> 
-> So I had proposed doing an asynchronous cancel-work or doing the
-> synchronous cancel-work in the CPU_POST_DEAD phase, where the
-> cpu_hotplug.lock is not held. See this thread:
-> 
-> http://marc.info/?l=linux-kernel&m=137241212616799&w=2
-> http://marc.info/?l=linux-pm&m=137242906622537&w=2
-> 
-> But now that I look at commit 2f7021a8 again, I still think we should
-> revert it and fix the _actual_ root-cause of the bug.
-
-Agree, or we could revert it with some better fix, otherwise the prev
-bug report will back again...
-
-> 
-> Cpufreq subsystem has enough synchronization to ensure that policy->cpus
-> always contains online CPUs. And it also has the concept of cancelling
-> queued work items, *before* that CPU is taken offline.
-> So, where is the chance that we try to queue work items on offline CPUs?
-> 
-> To answer that question, I was looking at the cpufreq code yesterday
-> and found something very interesting: the gov_cancel_work() that is
-> invoked before a CPU goes offline, can actually end up effectively
-> *NOT* cancelling the queued work item!
-> 
-> The reason is, the per-cpu work items are not just self-queueing (if
-> that was the case, gov_cancel_work would have been successful without
-> any doubt), but instead, they can also queue work items on *other* CPUs!
-> 
-> Example from ondemand governor's per-cpu work item:
-> 
-> static void od_dbs_timer(struct work_struct *work)
-> {
->   ...
->   bool modify_all = true;
->   ...
->   gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy, delay, modify_all);
-> }
-> 
-> So, every per-cpu work item can re-queue the work item on *many other*
-> CPUs, and not just itself!
-> 
-> So that leads to a race which makes gov_cancel_work() ineffective.
-> The call to cancel_delayed_work_sync() will cancel all pending work items
-> on say CPU 3 (which is going down), but immediately after that, say CPU4's
-> work item fires and queues the work item on CPU4 as well as CPU3. Thus,
-> gov_cancel_work() _effectively_ didn't do anything useful.
-
-That's interesting, sense like a little closer to the root, the timer is
-supposed to stop but failed... I need some investigation here...
-
-Regards,
-Michael Wang
-
 > 
 > But this still doesn't immediately explain how we can end up trying to
 > queue work items on offline CPUs (since policy->cpus is supposed to always
 > contain online cpus only, and this does look correct in the code as well,
 > at a first glance). But I just wanted to share this finding, in case it
 > helps us find out the real root-cause.
+
+The prev info show the policy->cpus won't contain offline cpu, but after
+you get one cpu id from it, that cpu will go offline at any time.
+
+I'm not sure what is supposed after notify CPUFREQ_GOV_STOP event, if it
+is in order to stop queued work and prevent follow work happen again,
+then it failed to, and we need some method to stop queue work again when
+CPUFREQ_GOV_STOP notified, like some flag in policy which will be
+checked before re-queue work in work.
+
+But if the event is just to sync the queued work but not prevent follow
+work happen, then things will become tough...we need confirm.
+
+What's your opinion?
+
+Regards,
+Michael Wang
+
 > 
 > Also, you might perhaps want to try the (untested) patch shown below, and
 > see if it resolves your problem. It basically makes work-items requeue
@@ -141,9 +110,4 @@ Michael Wang
 > 
 > 
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+
