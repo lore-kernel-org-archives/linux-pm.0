@@ -1,35 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [v3.10 regression] deadlock on cpu hotplug
-Date: Wed, 10 Jul 2013 12:04:12 +0530
-Message-ID: <CAKohpomDednjDAtGR7Ccj3-mnRHpotUnFcDKjw=u9Y-Svq7swA@mail.gmail.com>
-References: <1443144.WnBWEpaopK@amdc1032>
-	<51DB724F.9050708@linux.vnet.ibm.com>
-	<1754044.EVIH1UZj6p@amdc1032>
-	<51DC0B0D.9070201@linux.vnet.ibm.com>
-	<51DCDF1C.1000208@linux.vnet.ibm.com>
-	<CAKohpokbo+X5bEYweBuSqr5bkdRsb-XHT7SrMWybwAvkfDsGBQ@mail.gmail.com>
-	<51DCF982.4070707@linux.vnet.ibm.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [RFC PATCH 2/4] thermal: introduce device tree parser
+Date: Wed, 10 Jul 2013 14:48:40 +0800
+Message-ID: <51DD03C8.1090207@nvidia.com>
+References: <1373378414-28086-1-git-send-email-eduardo.valentin@ti.com> <1373378414-28086-3-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f49.google.com ([209.85.216.49]:53412 "EHLO
-	mail-qa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768Ab3GJGeN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2013 02:34:13 -0400
-Received: by mail-qa0-f49.google.com with SMTP id hu16so3364478qab.8
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jul 2013 23:34:12 -0700 (PDT)
-In-Reply-To: <51DCF982.4070707@linux.vnet.ibm.com>
+Received: from hqemgate04.nvidia.com ([216.228.121.35]:17845 "EHLO
+	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736Ab3GJGsZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2013 02:48:25 -0400
+In-Reply-To: <1373378414-28086-3-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Wang <wangyun@linux.vnet.ibm.com>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Borislav Petkov <bp@alien8.de>, Jiri Kosina <jkosina@suse.cz>, Tomasz Figa <t.figa@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 10 July 2013 11:34, Michael Wang <wangyun@linux.vnet.ibm.com> wrote:
-> Thanks for the confirm :) seems like the root cause is very likely
-> related with the problem Srivatsa discovered.
->
-> I think the fix in his mail worth a try, but I need more investigations
-> to confirm that's the right way...
+On 07/09/2013 10:00 PM, Eduardo Valentin wrote:
+> In order to be able to build thermal policies
+> based on generic sensors, like I2C device, that
+> can be places in different points on different boards,
+> there is a need to have a way to feed board dependent
+> data into the thermal framework.
+> 
+> This patch introduces a thermal data parser for device
+> tree. The parsed data is used to build thermal zones
+> and thermal binding parameters. The output data
+> can then be used to deploy thermal policies.
+> 
+> This patch adds also documentation regarding this
+> API and how to define define tree nodes to use
+> this infrastructure.
 
-Its not a fix really, but with that we can atleast confirm that we are on
-the right path and the problem is exactly what he described.
+It looks good, with this infrastructure, we can add generic sensor
+driver into the thermal fw easily.
+
+
+> +
+> +Below is an example:
+> +thermal_zone {
+> +            type = "CPU";
+> +            mask = <0x03>; /* trips writability */
+> +            passive_delay = <250>; /* milliseconds */
+> +            polling_delay = <1000>; /* milliseconds */
+> +            governor = "step_wise";
+> +            trips {
+> +                    alert@100000{
+> +                            temperature = <100000>; /* milliCelsius */
+> +                            hysteresis = <0>; /* milliCelsius */
+> +                            type = <1>;
+
+how about to use the trip type name directly, such as named as
+"passive-trip;", I think it's more readable. for example:
+trip0 {
+....
+passive-trip;
+}
+trip1 {
+....
+active-trip;
+}
+
+> +                    };
+> +                    crit@125000{
+> +                            temperature = <125000>; /* milliCelsius */
+> +                            hysteresis = <0>; /* milliCelsius */
+> +                            type = <3>;
+> +                    };
+> +            };
+> +            bind_params {
+> +                    action@0{
+> +                            cooling_device = "thermal-cpufreq";
+> +                            weight = <100>; /* percentage */
+> +                            mask = <0x01>;
+> +                    };
+> +            };
+> +};
+
+as we know, thermal_zone_bind_cooling_device() will set the upper/lower
+in the thermal_instance. In the default .bind function, it just set to
+THERMAL_NO_LIMIT, but for some platform, it need to set these
+upper/lower values for different cooling device and trips, how to pass
+these values in DT? how about to set:
+action@0 {
+...
+mask = <0x03>; //or you can remove this property;
+trip0 = <&alert 1 2>; //1 is lower value, 2 is upper value;
+trip1 = <&crit 3 4>;
+}
+
+
+Thanks.
+Wei.
+
