@@ -1,161 +1,110 @@
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: [v3.10 regression] deadlock on cpu hotplug
-Date: Wed, 10 Jul 2013 16:57:35 +0800
-Message-ID: <51DD21FF.4090905@linux.vnet.ibm.com>
-References: <1443144.WnBWEpaopK@amdc1032> <51DB724F.9050708@linux.vnet.ibm.com> <1754044.EVIH1UZj6p@amdc1032> <51DCC9B0.9090507@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] More ACPI and power management updates for v3.11-rc1
+Date: Wed, 10 Jul 2013 14:28:37 +0200
+Message-ID: <17863900.yRJhKtHykF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:43699 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575Ab3GJI5s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2013 04:57:48 -0400
-Received: from /spool/local
-	by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <wangyun@linux.vnet.ibm.com>;
-	Wed, 10 Jul 2013 18:42:34 +1000
-In-Reply-To: <51DCC9B0.9090507@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@alien8.de>, Jiri Kosina <jkosina@suse.cz>, Tomasz Figa <t.figa@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 07/10/2013 10:40 AM, Michael Wang wrote:
-> On 07/09/2013 07:51 PM, Bartlomiej Zolnierkiewicz wrote:
-> [snip]
->>
->> It doesn't help and unfortunately it just can't help as it only
->> addresses lockdep functionality while the issue is not a lockdep
->> problem but a genuine locking problem. CPU hot-unplug invokes
->> _cpu_down() which calls cpu_hotplug_begin() which in turn takes
->> &cpu_hotplug.lock. The lock is then hold during __cpu_notify()
->> call. Notifier chain goes up to cpufreq_governor_dbs() which for
->> CPUFREQ_GOV_STOP event does gov_cancel_work(). This function
->> flushes pending work and waits for it to finish. The all above
->> happens in one kernel thread. At the same time the other kernel
->> thread is doing the work we are waiting to complete and it also
->> happens to do gov_queue_work() which calls get_online_cpus().
->> Then the code tries to take &cpu_hotplug.lock which is already
->> held by the first thread and deadlocks.
-> 
-> Hmm...I think I get your point, some thread hold the lock and
-> flush some work which also try to hold the same lock, correct?
-> 
-> Ok, that's a problem, let's figure out a good way to solve it :)
+Hi Linus,
 
-And besides the patch from Srivatsa, I also suggest below fix, it's
-try to really stop all the works during down notify, I'd like to know
-how do you think about it ;-)
+Please pull from the git repository at
 
-Regards,
-Michael Wang
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.11-rc1-more
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index dc9b72e..a64b544 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -178,13 +178,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- {
- 	int i;
- 
-+	if (dbs_data->queue_stop)
-+		return;
-+
- 	if (!all_cpus) {
- 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
- 	} else {
--		get_online_cpus();
- 		for_each_cpu(i, policy->cpus)
- 			__gov_queue_work(i, dbs_data, delay);
--		put_online_cpus();
- 	}
- }
- EXPORT_SYMBOL_GPL(gov_queue_work);
-@@ -193,12 +194,27 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
- 		struct cpufreq_policy *policy)
- {
- 	struct cpu_dbs_common_info *cdbs;
--	int i;
-+	int i, round = 2;
- 
-+	dbs_data->queue_stop = 1;
-+redo:
-+	round--;
- 	for_each_cpu(i, policy->cpus) {
- 		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
- 		cancel_delayed_work_sync(&cdbs->work);
- 	}
-+
-+	/*
-+	 * Since there is no lock to prvent re-queue the
-+	 * cancelled work, some early cancelled work might
-+	 * have been queued again by later cancelled work.
-+	 *
-+	 * Flush the work again with dbs_data->queue_stop
-+	 * enabled, this time there will be no survivors.
-+	 */
-+	if (round)
-+		goto redo;
-+	dbs_data->queue_stop = 0;
- }
- 
- /* Will return if we need to evaluate cpu load again or not */
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index e16a961..9116135 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -213,6 +213,7 @@ struct dbs_data {
- 	unsigned int min_sampling_rate;
- 	int usage_count;
- 	void *tuners;
-+	int queue_stop;
- 
- 	/* dbs_mutex protects dbs_enable in governor start/stop */
- 	struct mutex mutex;
+to receive additional ACPI and power management updates for v3.11-rc1 with
+top-most commit d8851b4b0c1e7cf6cae829d060510437d2d320ee
+
+  Merge branch 'pm-tools'
+
+on top of commit f991fae5c6d42dfc5029150b05a78cf3f6c18cc9
+
+  Merge tag 'pm+acpi-3.11-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+
+These are fixes collected since the 3.10 release (most importantly, a fix
+for a recent cpufreq regression), a couple of trivial cleanups and a cpupower
+tool update that missed the opening of the merge window by a whisker.
+
+Specifics:
+
+ - Fix for a recent cpufreq regression that caused WARN() to trigger
+   overzealously in a couple of places and spam the kernel log with
+   useless garbage as a result.  From Viresh Kumar.
+
+ - ACPI dock fix removing a discrepancy between the definition of
+   acpi_dock_init(), which says that the function returns int, and
+   its header in the header file, which says that it is a void
+   function.  The function is now defined as void too.
+
+ - ACPI PM fix for failures to update device power states as needed,
+   for example, during resume from system suspend, because the old
+   state was deeper than the new one, but the new one is not D0.
+
+ - Fix for two debug messages in the ACPI power resources code that
+   don't have a newline at the end and make the kernel log difficult
+   to read.  From Mika Westerberg.
+
+ - Two ACPI cleanups from Naresh Bhat and Haicheng Li.
+
+ - cpupower updates from Thomas Renninger, including Intel Haswell
+   support improvements and a new idle-set subcommand among other
+   things.
+
+Thanks!
 
 
+---------------
 
+Haicheng Li (1):
+      ACPI / scan: remove unused LIST_HEAD(acpi_device_list)
 
-> 
-> Regards,
-> Michael Wang
-> 
-> 
-> 
-> 
->>
->> Best regards,
->> --
->> Bartlomiej Zolnierkiewicz
->> Samsung R&D Institute Poland
->> Samsung Electronics
->>
->>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
->>> index 5af40ad..aa05eaa 100644
->>> --- a/drivers/cpufreq/cpufreq_governor.c
->>> +++ b/drivers/cpufreq/cpufreq_governor.c
->>> @@ -229,6 +229,8 @@ static void set_sampling_rate(struct dbs_data *dbs_data,
->>>         }
->>>  }
->>>  
->>> +static struct lock_class_key j_cdbs_key;
->>> +
->>>  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->>>                 struct common_dbs_data *cdata, unsigned int event)
->>>  {
->>> @@ -366,6 +368,8 @@ int (struct cpufreq_policy *policy,
->>>                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
->>>  
->>>                         mutex_init(&j_cdbs->timer_mutex);
->>> +                       lockdep_set_class(&j_cdbs->timer_mutex, &j_cdbs_key);
->>> +
->>>                         INIT_DEFERRABLE_WORK(&j_cdbs->work,
->>>                                              dbs_data->cdata->gov_dbs_timer);
->>>                 }
->>>
->>> Regards,
->>> Michael Wang
->>
-> 
+Mika Westerberg (1):
+      ACPI / power: add missing newline to debug messages
 
+Naresh Bhat (1):
+      ACPI / fan: Initialize acpi_state variable
+
+Rafael J. Wysocki (2):
+      ACPI / PM: Fix corner case in acpi_bus_update_power()
+      ACPI / dock: Actually define acpi_dock_init() as void
+
+Thomas Renninger (5):
+      cpupower: Make idlestate usage unsigned
+      cpupower: Implement disabling of cstate interface
+      cpupower: Introduce idle-set subcommand and C-state enabling/disabling
+      cpupower: Haswell also supports the C-states introduced with SandyBridge
+      cpupower: Add Haswell family 0x45 specific idle monitor to show PC8,9,10 states
+
+Viresh Kumar (1):
+      cpufreq: Fix serialization of frequency transitions
+
+---------------
+
+ drivers/acpi/device_pm.c                                |   23 ++-
+ drivers/acpi/dock.c                                     |    7 +-
+ drivers/acpi/fan.c                                      |    2 +-
+ drivers/acpi/power.c                                    |    4 +-
+ drivers/acpi/scan.c                                     |    1 -
+ drivers/cpufreq/cpufreq.c                               |    7 +-
+ include/linux/cpufreq.h                                 |    2 +-
+ tools/power/cpupower/Makefile                           |    4 +-
+ tools/power/cpupower/man/cpupower-monitor.1             |   10 +-
+ tools/power/cpupower/utils/builtin.h                    |    1 +
+ tools/power/cpupower/utils/cpuidle-info.c               |   24 ++-
+ tools/power/cpupower/utils/cpuidle-set.c                |  118 ++++++++++++++
+ tools/power/cpupower/utils/cpupower.c                   |   13 +-
+ tools/power/cpupower/utils/helpers/sysfs.c              |  118 +++++++++++++-
+ tools/power/cpupower/utils/helpers/sysfs.h              |   10 +-
+ tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c  |  196 +++++++++++++++++++++++
+ .../power/cpupower/utils/idle_monitor/idle_monitors.def |    1 +
+ tools/power/cpupower/utils/idle_monitor/snb_idle.c      |    4 +
+ 18 files changed, 502 insertions(+), 43 deletions(-)
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
