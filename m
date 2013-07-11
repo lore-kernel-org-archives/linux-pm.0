@@ -1,111 +1,131 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 3/8] cpufreq: Add helper to perform alloc/free of policy
- structure
-Date: Fri, 12 Jul 2013 03:46:07 +0530
-Message-ID: <20130711221605.547.69988.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 5/8] cpufreq: Extract the handover of policy cpu to a helper
+ function
+Date: Fri, 12 Jul 2013 03:46:47 +0530
+Message-ID: <20130711221644.547.74786.stgit@srivatsabhat.in.ibm.com>
 References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:39990 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757016Ab3GKWUT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 18:20:19 -0400
+Received: from /spool/local
+	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 12 Jul 2013 08:10:58 +1000
 In-Reply-To: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com
 Cc: stern@rowland.harvard.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-Separate out the allocation of the cpufreq policy structure (along with
-its error handling) to a helper function. This makes the code easier to
-read and also helps with some upcoming code reorganization.
+During cpu offline, when the policy->cpu is going down, some other CPU
+present in the policy->cpus mask is nominated as the new policy->cpu.
+Extract this functionality from __cpufreq_remove_dev() and implement
+it in a helper function. This helps in upcoming code reorganization.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/cpufreq.c |   50 ++++++++++++++++++++++++++++++++-------------
- 1 file changed, 35 insertions(+), 15 deletions(-)
+ drivers/cpufreq/cpufreq.c |   62 ++++++++++++++++++++++++++++-----------------
+ 1 file changed, 38 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f8c3100..ca14dc2 100644
+index 2ab39f3..efdb607 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -943,6 +943,37 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+@@ -1128,6 +1128,38 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+ 			CPUFREQ_UPDATE_POLICY_CPU, policy);
  }
- #endif
  
-+static struct cpufreq_policy *cpufreq_policy_alloc(void)
++static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *data,
++					   unsigned int old_cpu)
 +{
-+	struct cpufreq_policy *policy;
++	struct device *cpu_dev;
++	unsigned long flags;
++	int ret;
 +
-+	policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
-+	if (!policy)
-+		return NULL;
++	/* first sibling now owns the new sysfs dir */
++	cpu_dev = get_cpu_device(cpumask_first(data->cpus));
++	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
++	ret = kobject_move(&data->kobj, &cpu_dev->kobj);
++	if (ret) {
++		pr_err("%s: Failed to move kobj: %d", __func__, ret);
 +
-+	if (!alloc_cpumask_var(&policy->cpus, GFP_KERNEL))
-+		goto err_free_policy;
++		WARN_ON(lock_policy_rwsem_write(old_cpu));
++		cpumask_set_cpu(old_cpu, data->cpus);
 +
-+	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
-+		goto err_free_cpumask;
++		write_lock_irqsave(&cpufreq_driver_lock, flags);
++		per_cpu(cpufreq_cpu_data, old_cpu) = data;
++		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 +
-+	return policy;
++		unlock_policy_rwsem_write(old_cpu);
 +
-+err_free_cpumask:
-+	free_cpumask_var(policy->cpus);
-+err_free_policy:
-+	kfree(policy);
++		ret = sysfs_create_link(&cpu_dev->kobj, &data->kobj,
++					"cpufreq");
 +
-+	return NULL;
-+}
++		return -EINVAL;
++	}
 +
-+static void cpufreq_policy_free(struct cpufreq_policy *policy)
-+{
-+	free_cpumask_var(policy->related_cpus);
-+	free_cpumask_var(policy->cpus);
-+	kfree(policy);
++	return cpu_dev->id;
 +}
 +
  /**
-  * cpufreq_add_dev - add a CPU device
+  * __cpufreq_remove_dev - remove a CPU device
   *
-@@ -996,16 +1027,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		goto module_out;
+@@ -1138,12 +1170,11 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+ static int __cpufreq_remove_dev(struct device *dev,
+ 		struct subsys_interface *sif)
+ {
+-	unsigned int cpu = dev->id, ret, cpus;
++	unsigned int cpu = dev->id, cpus, new_cpu;
+ 	unsigned long flags;
+ 	struct cpufreq_policy *data;
+ 	struct kobject *kobj;
+ 	struct completion *cmp;
+-	struct device *cpu_dev;
+ 
+ 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+ 
+@@ -1178,32 +1209,15 @@ static int __cpufreq_remove_dev(struct device *dev,
+ 	if (cpu != data->cpu) {
+ 		sysfs_remove_link(&dev->kobj, "cpufreq");
+ 	} else if (cpus > 1) {
+-		/* first sibling now owns the new sysfs dir */
+-		cpu_dev = get_cpu_device(cpumask_first(data->cpus));
+-		sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+-		ret = kobject_move(&data->kobj, &cpu_dev->kobj);
+-		if (ret) {
+-			pr_err("%s: Failed to move kobj: %d", __func__, ret);
+ 
++		new_cpu = cpufreq_nominate_new_policy_cpu(data, cpu);
++		if (new_cpu >= 0) {
+ 			WARN_ON(lock_policy_rwsem_write(cpu));
+-			cpumask_set_cpu(cpu, data->cpus);
+-
+-			write_lock_irqsave(&cpufreq_driver_lock, flags);
+-			per_cpu(cpufreq_cpu_data, cpu) = data;
+-			write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-
++			update_policy_cpu(data, new_cpu);
+ 			unlock_policy_rwsem_write(cpu);
+-
+-			ret = sysfs_create_link(&cpu_dev->kobj, &data->kobj,
+-					"cpufreq");
+-			return -EINVAL;
++			pr_debug("%s: policy Kobject moved to cpu: %d "
++				 "from: %d\n",__func__, new_cpu, cpu);
+ 		}
+-
+-		WARN_ON(lock_policy_rwsem_write(cpu));
+-		update_policy_cpu(data, cpu_dev->id);
+-		unlock_policy_rwsem_write(cpu);
+-		pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
+-				__func__, cpu_dev->id, cpu);
  	}
  
--	policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
-+	policy = cpufreq_policy_alloc();
- 	if (!policy)
- 		goto nomem_out;
- 
--	if (!alloc_cpumask_var(&policy->cpus, GFP_KERNEL))
--		goto err_free_policy;
--
--	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
--		goto err_free_cpumask;
--
- 	policy->cpu = cpu;
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	cpumask_copy(policy->cpus, cpumask_of(cpu));
-@@ -1070,11 +1095,7 @@ err_out_unregister:
- 
- err_set_policy_cpu:
- 	per_cpu(cpufreq_policy_cpu, cpu) = -1;
--	free_cpumask_var(policy->related_cpus);
--err_free_cpumask:
--	free_cpumask_var(policy->cpus);
--err_free_policy:
--	kfree(policy);
-+	cpufreq_policy_free(policy);
- nomem_out:
- 	module_put(cpufreq_driver->owner);
- module_out:
-@@ -1201,9 +1222,8 @@ static int __cpufreq_remove_dev(struct device *dev,
- 		if (cpufreq_driver->exit)
- 			cpufreq_driver->exit(data);
- 
--		free_cpumask_var(data->related_cpus);
--		free_cpumask_var(data->cpus);
--		kfree(data);
-+		cpufreq_policy_free(data);
-+
- 	} else if (cpufreq_driver->target) {
- 		__cpufreq_governor(data, CPUFREQ_GOV_START);
- 		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
+ 	if ((cpus == 1) && (cpufreq_driver->target))
+
