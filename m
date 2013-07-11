@@ -1,78 +1,43 @@
-From: "Brandt, Todd E" <todd.e.brandt@intel.com>
-Subject: [PATCH] increase ftrace coverage in suspend/resume
-Date: Thu, 11 Jul 2013 07:44:35 +0000
-Message-ID: <11E08D716F0541429B7042699DD5C1A17064F086@FMSMSX103.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+From: shuox.liu@intel.com
+Subject: [PATCH] PM: avoid 'autosleep' in shutdown progress
+Date: Thu, 11 Jul 2013 16:03:45 +0800
+Message-ID: <1373529825-20741-1-git-send-email-shuox.liu@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:16961 "EHLO mga09.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:56966 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755835Ab3GKHoh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 03:44:37 -0400
-Content-Language: en-US
+	id S1755611Ab3GKIEU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Jul 2013 04:04:20 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, yanmin_zhang@linux.intel.com, linux-pm@vger.kernel.org
 
-This new patch changes where ftrace is disabled and re-enabled during a 
-suspend/resume to allow tracing of device driver pm callbacks. Ftrace 
-is turned off when suspend reaches the disable_nonboot_cpus instead of
-at the very beginning of system suspend.
+From: Liu ShuoX <shuox.liu@intel.com>
 
-Ftrace was disabled during suspend/resume back in 2008 by Steven Rostedt
-as he discovered there was a conflict in the enable_nonboot_cpus call
-(see commit f42ac38c59e0a03d6da0c24a63fb211393f484b0). This patch preserves 
-his fix by disabling ftrace, but only at the function where it is known
-to cause problems. I think the first patch might have been a bit 
-overzealous in disabling all of suspend/resume ftrace, but please correct
-me if I'm wrong. 
+In shutdown progress, system is possible to do power transition
+(such as suspend-to-ram) in parallel. It is unreasonable. So,
+fixes it by adding a system_state checking and queue try_to_suspend
+again when system status is not running.
 
-The new patch allows tracing of the device level code for better debug. 
-
-Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+Signed-off-by: Liu ShuoX <shuox.liu@intel.com>
 ---
- kernel/power/suspend.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/power/autosleep.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index bef86d1..6c23af7 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -210,6 +210,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 		goto Platform_wake;
+diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
+index c6422ff..9012ecf 100644
+--- a/kernel/power/autosleep.c
++++ b/kernel/power/autosleep.c
+@@ -32,7 +32,8 @@ static void try_to_suspend(struct work_struct *work)
+ 
+ 	mutex_lock(&autosleep_lock);
+ 
+-	if (!pm_save_wakeup_count(initial_count)) {
++	if (!pm_save_wakeup_count(initial_count) ||
++		system_state != SYSTEM_RUNNING) {
+ 		mutex_unlock(&autosleep_lock);
+ 		goto out;
  	}
- 
-+	ftrace_stop();
- 	error = disable_nonboot_cpus();
- 	if (error || suspend_test(TEST_CPUS))
- 		goto Enable_cpus;
-@@ -232,6 +233,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 
-  Enable_cpus:
- 	enable_nonboot_cpus();
-+	ftrace_start();
- 
-  Platform_wake:
- 	if (need_suspend_ops(state) && suspend_ops->wake)
-@@ -265,7 +267,6 @@ int suspend_devices_and_enter(suspend_state_t state)
- 			goto Close;
- 	}
- 	suspend_console();
--	ftrace_stop();
- 	suspend_test_start();
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
-@@ -285,7 +286,6 @@ int suspend_devices_and_enter(suspend_state_t state)
- 	suspend_test_start();
- 	dpm_resume_end(PMSG_RESUME);
- 	suspend_test_finish("resume devices");
--	ftrace_start();
- 	resume_console();
-  Close:
- 	if (need_suspend_ops(state) && suspend_ops->end)
+-- 
+1.7.1
 
---
-Todd Brandt
-Linux Kernel Developer OTC, Hillsboro OR
