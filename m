@@ -1,7 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 2/8] cpufreq: Fix misplaced call to cpufreq_update_policy()
-Date: Fri, 12 Jul 2013 03:45:56 +0530
-Message-ID: <20130711221553.547.56787.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 3/8] cpufreq: Add helper to perform alloc/free of policy
+ structure
+Date: Fri, 12 Jul 2013 03:46:07 +0530
+Message-ID: <20130711221605.547.69988.stgit@srivatsabhat.in.ibm.com>
 References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -13,59 +14,98 @@ To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik
 Cc: stern@rowland.harvard.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The call to cpufreq_update_policy() is placed in the CPU hotplug callback
-of cpufreq_stats, which has a higher priority than the CPU hotplug callback
-of cpufreq-core. As a result, during CPU_ONLINE/CPU_ONLINE_FROZEN, we end up
-calling cpufreq_update_policy() *before* calling cpufreq_add_dev() !
-And for uninitialized CPUs, it just returns silently, not doing anything.
-
-To add to it, cpufreq_stats is not even the right place to call
-cpufreq_update_policy() to begin with. The cpufreq core ought to handle
-this in its own callback, from an elegance/relevance perspective.
-
-So move the invocation of cpufreq_update_policy() to cpufreq_cpu_callback,
-and place it *after* cpufreq_add_dev().
+Separate out the allocation of the cpufreq policy structure (along with
+its error handling) to a helper function. This makes the code easier to
+read and also helps with some upcoming code reorganization.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/cpufreq.c       |    1 +
- drivers/cpufreq/cpufreq_stats.c |    6 ------
- 2 files changed, 1 insertion(+), 6 deletions(-)
+ drivers/cpufreq/cpufreq.c |   50 ++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 35 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index ccc6eab..f8c3100 100644
+index f8c3100..ca14dc2 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1943,6 +1943,7 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
- 		case CPU_ONLINE:
- 		case CPU_ONLINE_FROZEN:
- 			cpufreq_add_dev(dev, NULL);
-+			cpufreq_update_policy(cpu);
- 			break;
- 		case CPU_DOWN_PREPARE:
- 		case CPU_DOWN_PREPARE_FROZEN:
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 12225d1..a3e7475 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -348,10 +348,6 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 	unsigned int cpu = (unsigned long)hcpu;
+@@ -943,6 +943,37 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ }
+ #endif
  
- 	switch (action) {
--	case CPU_ONLINE:
--	case CPU_ONLINE_FROZEN:
--		cpufreq_update_policy(cpu);
--		break;
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		cpufreq_stats_free_sysfs(cpu);
-@@ -390,8 +386,6 @@ static int __init cpufreq_stats_init(void)
- 		return ret;
++static struct cpufreq_policy *cpufreq_policy_alloc(void)
++{
++	struct cpufreq_policy *policy;
++
++	policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
++	if (!policy)
++		return NULL;
++
++	if (!alloc_cpumask_var(&policy->cpus, GFP_KERNEL))
++		goto err_free_policy;
++
++	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
++		goto err_free_cpumask;
++
++	return policy;
++
++err_free_cpumask:
++	free_cpumask_var(policy->cpus);
++err_free_policy:
++	kfree(policy);
++
++	return NULL;
++}
++
++static void cpufreq_policy_free(struct cpufreq_policy *policy)
++{
++	free_cpumask_var(policy->related_cpus);
++	free_cpumask_var(policy->cpus);
++	kfree(policy);
++}
++
+ /**
+  * cpufreq_add_dev - add a CPU device
+  *
+@@ -996,16 +1027,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		goto module_out;
+ 	}
  
- 	register_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
--	for_each_online_cpu(cpu)
--		cpufreq_update_policy(cpu);
+-	policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
++	policy = cpufreq_policy_alloc();
+ 	if (!policy)
+ 		goto nomem_out;
  
- 	ret = cpufreq_register_notifier(&notifier_trans_block,
- 				CPUFREQ_TRANSITION_NOTIFIER);
+-	if (!alloc_cpumask_var(&policy->cpus, GFP_KERNEL))
+-		goto err_free_policy;
+-
+-	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
+-		goto err_free_cpumask;
+-
+ 	policy->cpu = cpu;
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+@@ -1070,11 +1095,7 @@ err_out_unregister:
+ 
+ err_set_policy_cpu:
+ 	per_cpu(cpufreq_policy_cpu, cpu) = -1;
+-	free_cpumask_var(policy->related_cpus);
+-err_free_cpumask:
+-	free_cpumask_var(policy->cpus);
+-err_free_policy:
+-	kfree(policy);
++	cpufreq_policy_free(policy);
+ nomem_out:
+ 	module_put(cpufreq_driver->owner);
+ module_out:
+@@ -1201,9 +1222,8 @@ static int __cpufreq_remove_dev(struct device *dev,
+ 		if (cpufreq_driver->exit)
+ 			cpufreq_driver->exit(data);
+ 
+-		free_cpumask_var(data->related_cpus);
+-		free_cpumask_var(data->cpus);
+-		kfree(data);
++		cpufreq_policy_free(data);
++
+ 	} else if (cpufreq_driver->target) {
+ 		__cpufreq_governor(data, CPUFREQ_GOV_START);
+ 		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
