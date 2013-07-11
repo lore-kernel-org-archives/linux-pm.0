@@ -1,101 +1,62 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
-Date: Thu, 11 Jul 2013 22:03:39 +0800
-Message-ID: <CAOLK0pyJ=MoE20adyg8oUP-bTiwvXobRNX4ayA5eGRH0UGbpgw@mail.gmail.com>
-References: <51C08370.4050906@gmx.de>
-	<CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com>
-	<51CF1E53.6060902@gmx.de>
-	<8029836.CFiJCXmRQ0@vostro.rjw.lan>
-	<51D05DF4.50704@linux.vnet.ibm.com>
-	<51D06556.7080204@gmx.de>
-	<51D07E7F.2030709@linux.vnet.ibm.com>
-	<51DDC8FA.4020609@gmx.de>
-	<51DDE067.2020106@linux.vnet.ibm.com>
-	<CAOLK0pwr03reaMWAEeaUs-6H2URoisFEJ3J4r83Rm1eTs1hU5w@mail.gmail.com>
-	<51DE4F44.6060506@linux.vnet.ibm.com>
+Date: Thu, 11 Jul 2013 10:23:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1307111010180.1276-100000@iolanthe.rowland.org>
+References: <51DE4F44.6060506@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:34102 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755839Ab3GKOXU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 10:23:20 -0400
 In-Reply-To: <51DE4F44.6060506@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, tianyu.lan@intel.com
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Lan Tianyu <lantianyu1986@gmail.com>, =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, tianyu.lan@intel.com
 
-2013/7/11 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>:
-> On 07/11/2013 11:10 AM, Lan Tianyu wrote:
->> 2013/7/11 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>:
+On Thu, 11 Jul 2013, Srivatsa S. Bhat wrote:
+
 > Oops! You are right. Hmm, this looks quite difficult to get right :(
 > There are multiple challenges here:
-
-If I understand correctly, the most concern is how to deal with per cpus'
-cpufreq_policy structure. If something wrong , please correct me.
-
->
+> 
 > 1. The sysfs files must not be removed during cpu_down, and not initialized
->
+> 
 >    during cpu_up. That would help us preserve the file permissions.
-
-For this case, cpufreq_policy must be reserved since all related cpufreq data
-and kobj is also store into it. We can't release it.
-
 > 2. But we should ensure that we really do the cpufreq-core parts of the cpu
 >    initialization during cpu_up. If we fail to free some of the data-structures
 >    during cpu_down, the cpu_up callback will think that a full-init is not
 >    required and not do its job. That will make cpufreq behave erratically after
 >    suspend/resume and take us back to square one.
->
-
-cpufreq_add_dev() checks whether the cpu has been attached cpufreq_cpu_data
-and associated kobj has been created. If yes, it would try to release it by
-cpufreq_cpu_put() and return directly. This seems to be conflicted
-with the above.
-
+> 
 > 3. A full re-init in the cpu_up callback also involves memory allocations.
 >    So if we don't release the memory in the cpu_down callback, we'll end up
 >    in a memory leak.
->
-
-Even we remove the previous check, cpu scaling driver's init()  also will change
-some data of struct cpufreq_policy and this is also what we don't like to see.
-
+> 
 > I tried to address all these in this patch, but you found yet another serious
 > loop-hole. I guess I'm out of ideas now... if anybody has any thoughts on how
 > to get this right, then I'm all ears. Else, we'll just revert the original
 > commit like Rafael suggested and leave it upto userspace to save and restore
 > the permissions across suspend/resume if it wants ;-(
->
 
-How about implement scaling driver's suspend/resume callback()? Although this
-needs to be dealt with case by case. If one's callbacks hasn't been implemented,
-it would have to follow current rule.
+Asking as a naive outsider who is completely unfamiliar with the code,
+why are any of these things at all troublesome?
 
->>> +                       unlock_policy_rwsem_read(cpu);
->>> +                       kobject_put(kobj);
->>> +
->>> +                       pr_debug("waiting for dropping of refcount\n");
->>> +                       wait_for_completion(cmp);
->>> +                       pr_debug("wait complete\n");
->>> +               }
->>> +
->>>         } else if (cpufreq_driver->target) {
->>>                 __cpufreq_governor(data, CPUFREQ_GOV_START);
->>>                 __cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
->>> @@ -1221,7 +1230,7 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
->>>         if (cpu_is_offline(cpu))
->>>                 return 0;
->>>
->>> -       retval = __cpufreq_remove_dev(dev, sif);
->>> +       retval = __cpufreq_remove_dev(dev, sif, true);
->>>         return retval;
->>>  }
->
-> Regards,
-> Srivatsa S. Bhat
->
+	Can't cpu_up tell the difference between activating a brand-new
+	CPU and reactivating one that was present before but was
+	temporarily disabled?
 
+	Doesn't cpu_up know which data structures get freed when an
+	active CPU is temporarily deactivated?
 
+	Doesn't cpu_down know what memory gets allocated in cpu_up?
+	Can't it deallocate just the right parts for the type of
+	transition it is doing?
 
--- 
-Best regards
-Tianyu Lan
+It sounds like you're really asking how to make sure that cpu_up and 
+cpu_down both know what the other is doing, so that each can do the 
+opposite of the other.  That doesn't sound hard.
+
+Alan Stern
+
