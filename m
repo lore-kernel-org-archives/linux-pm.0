@@ -1,36 +1,72 @@
-From: "Jarzmik, Robert" <robert.jarzmik@intel.com>
-Subject: RE: [PATCH 0/8] Cpufreq, cpu hotplug, suspend/resume related fixes
-Date: Thu, 11 Jul 2013 22:25:35 +0000
-Message-ID: <65F5F98566038744B1B43C8FD3B7549F1BED3B7B@IRSMSX104.ger.corp.intel.com>
-References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/8] Cpufreq, cpu hotplug, suspend/resume related fixes
+Date: Fri, 12 Jul 2013 03:53:55 +0530
+Message-ID: <51DF307B.7060307@linux.vnet.ibm.com>
+References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <6515593.XAmN11qlGF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
-Content-Language: en-US
+In-Reply-To: <6515593.XAmN11qlGF@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "toralf.foerster@gmx.de" <toralf.foerster@gmx.de>, "R, Durgadoss" <durgadoss.r@intel.com>, "Lan, Tianyu" <tianyu.lan@intel.com>, "lantianyu1986@gmail.com" <lantianyu1986@gmail.com>, "dirk.brandewie@gmail.com" <dirk.brandewie@gmail.com>
-Cc: "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFNyaXZhdHNhIFMuIEJoYXQgW21haWx0
-bzpzcml2YXRzYS5iaGF0QGxpbnV4LnZuZXQuaWJtLmNvbV0gDQpTZW50OiBGcmlkYXksIEp1bHkg
-MTIsIDIwMTMgMDA6MTUNCg0KPiBSb2JlcnQsIER1cmdhZG9zcywgaXQgd291bGQgYmUgZ3JlYXQg
-aWYgeW91IGNvdWxkIHRyeSBpdCBvdXQgYW5kDQo+ICBzZWUgaWYgaXQgd29ya3Mgd2VsbCBmb3Ig
-eW91ciB1c2VjYXNlLiBJIHRlc3RlZCBpdCBsb2NhbGx5IGFuZCANCj4gY3B1ZnJlcSByZWxhdGVk
-IGZpbGVzIGRpZCByZXRhaW4gdGhlaXIgcGVybWlzc2lvbnMgYWNyb3NzIA0KPiBzdXNwZW5kL3Jl
-c3VtZS4gTGV0IG1lIGtub3cgaWYgaXQgd29ya3MgZmluZSBpbiB5b3VyIHNldHVwIHRvby4NCg0K
-U3VyZSwgIEknbGwgY2hlY2sgZm9yIE1vbmRheSBsYXN0IGRlbGF5LCBpZiB0aGF0J3Mgbm90IHRv
-byBsYXRlIGZvciB5b3UsIGFzIEknbSBhIGJpdCBpbiBhIGh1cnJ5IHJpZ2h0IG5vdywgYnV0IEkn
-bGwgZ2l2ZSBpdCBhIHRyeSBpbiB0aGUgV0UgSSB0aGluay4NCg0KQ2hlZXJzLg0KDQotLQ0KUm9i
-ZXJ0DQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0KSW50ZWwgQ29ycG9yYXRpb24gU0FTIChGcmVuY2ggc2ltcGxpZmll
-ZCBqb2ludCBzdG9jayBjb21wYW55KQpSZWdpc3RlcmVkIGhlYWRxdWFydGVyczogIkxlcyBNb250
-YWxldHMiLSAyLCBydWUgZGUgUGFyaXMsIAo5MjE5NiBNZXVkb24gQ2VkZXgsIEZyYW5jZQpSZWdp
-c3RyYXRpb24gTnVtYmVyOiAgMzAyIDQ1NiAxOTkgUi5DLlMuIE5BTlRFUlJFCkNhcGl0YWw6IDQs
-NTcyLDAwMCBFdXJvcwoKVGhpcyBlLW1haWwgYW5kIGFueSBhdHRhY2htZW50cyBtYXkgY29udGFp
-biBjb25maWRlbnRpYWwgbWF0ZXJpYWwgZm9yCnRoZSBzb2xlIHVzZSBvZiB0aGUgaW50ZW5kZWQg
-cmVjaXBpZW50KHMpLiBBbnkgcmV2aWV3IG9yIGRpc3RyaWJ1dGlvbgpieSBvdGhlcnMgaXMgc3Ry
-aWN0bHkgcHJvaGliaXRlZC4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkCnJlY2lwaWVudCwg
-cGxlYXNlIGNvbnRhY3QgdGhlIHNlbmRlciBhbmQgZGVsZXRlIGFsbCBjb3BpZXMuCg==
+On 07/12/2013 04:03 AM, Rafael J. Wysocki wrote:
+> On Friday, July 12, 2013 03:45:17 AM Srivatsa S. Bhat wrote:
+>>
+>> Hi,
+> 
+> Hi,
+> 
+>> Commit a66b2e (cpufreq: Preserve sysfs files across suspend/resume) caused
+>> some subtle regressions in the cpufreq subsystem during suspend/resume.
+>> This patchset is aimed at rectifying those problems, by fixing the regression
+>> as well as achieving the original goal of that commit in a proper way.
+>>
+>> Patch 1 reverts the above commit, and is CC'ed to stable.
+>>
+>> Patches 2 - 5 reorganize the code and have no functional impact, and can go
+>> in as general cleanups as well. This reorganization builds a base that the
+>> rest of the patches will make use of.
+>>
+>> Patch 6 and 7 add a mechanism to perform light-weight init/tear-down of CPUs
+>> in the cpufreq subsystem and finally patch 8 uses it to preserve sysfs files
+>> across suspend/resume.
+>>
+>> All the patches apply on current mainline.
+>>
+>>
+>> Robert, Durgadoss, it would be great if you could try it out and see if it works
+>> well for your usecase. I tested it locally and cpufreq related files did retain
+>> their permissions across suspend/resume. Let me know if it works fine in your
+>> setup too.
+>>
+>> And I'd of course appreciate to hear from Dirk, Tianyu and Toralf to know
+>> whether their systems work fine after:
+>> a. applying only the first commit (this is what gets backported to stable)
+>> b. applying all the commits
+>>
+>> (Note: I had to use Michael's fix[1] to avoid CPU hotplug deadlock while
+>> testing this patchset. Though that patch also touches cpufreq subsystem, it
+>> doesn't affect this patchset in any way and there is absolutely no dependency
+>> between the two in terms of code. That fix just makes basic CPU hotplug work
+>> without locking up on current mainline).
+>>
+>> [1]. https://lkml.org/lkml/2013/7/10/611
+>>
+>>
+>> Thank you very much!
+> 
+> Thanks Srivatsa!
+> 
+> I'm going to take [1/8] for 3.11 and queue up the rest for 3.12 if people don't
+> hate them.  This way we'll have some more testing coverage before they reach
+> the mainline hopefully.
+> 
+
+Sounds great! Thanks a lot Rafael!
+ 
+Regards,
+Srivatsa S. Bhat
