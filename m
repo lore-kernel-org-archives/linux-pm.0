@@ -1,162 +1,101 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: Re: [PATCH 1/3] ARM: EXYNOS: remove non-working AFTR mode support
-Date: Thu, 11 Jul 2013 15:14:49 +0200
-Message-ID: <5509794.32CckI9OQ8@amdc1032>
-References: <1372241627-22695-1-git-send-email-b.zolnierkie@samsung.com>
- <2484012.IH9WOi4iIR@amdc1032> <51CE0485.8020109@linaro.org>
+From: Lan Tianyu <lantianyu1986@gmail.com>
+Subject: Re: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
+Date: Thu, 11 Jul 2013 22:03:39 +0800
+Message-ID: <CAOLK0pyJ=MoE20adyg8oUP-bTiwvXobRNX4ayA5eGRH0UGbpgw@mail.gmail.com>
+References: <51C08370.4050906@gmx.de>
+	<CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com>
+	<51CF1E53.6060902@gmx.de>
+	<8029836.CFiJCXmRQ0@vostro.rjw.lan>
+	<51D05DF4.50704@linux.vnet.ibm.com>
+	<51D06556.7080204@gmx.de>
+	<51D07E7F.2030709@linux.vnet.ibm.com>
+	<51DDC8FA.4020609@gmx.de>
+	<51DDE067.2020106@linux.vnet.ibm.com>
+	<CAOLK0pwr03reaMWAEeaUs-6H2URoisFEJ3J4r83Rm1eTs1hU5w@mail.gmail.com>
+	<51DE4F44.6060506@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <51CE0485.8020109@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Tomasz Figa <t.figa@samsung.com>, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, jc.lee@samsung.com, lorenzo.pieralisi@arm.com, Amit Kachhap <amit.daniel@samsung.com>, rjw@sisk.pl, kyungmin.park@samsung.com
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51DE4F44.6060506@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, tianyu.lan@intel.com
 List-Id: linux-pm@vger.kernel.org
 
+2013/7/11 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>:
+> On 07/11/2013 11:10 AM, Lan Tianyu wrote:
+>> 2013/7/11 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>:
+> Oops! You are right. Hmm, this looks quite difficult to get right :(
+> There are multiple challenges here:
 
-Hi,
+If I understand correctly, the most concern is how to deal with per cpus'
+cpufreq_policy structure. If something wrong , please correct me.
 
-On Friday, June 28, 2013 11:47:49 PM Daniel Lezcano wrote:
-> On 06/28/2013 06:27 PM, Bartlomiej Zolnierkiewicz wrote:
-> > On Friday, June 28, 2013 01:20:09 PM Daniel Lezcano wrote:
-> >> On 06/28/2013 12:11 PM, Tomasz Figa wrote:
-> >>> Hi Daniel,
-> >>>
-> >>> I've been fighting with this whole AFTR state as well, before Bartlomiej. 
-> >>> Let me share my thoughts on this.
-> >>>
-> 
-> [ ... ]
-> 
-> >>>
-> >>> If you don't unplug all the CPUs >0 the state is obviously never reached. 
-> >>> Otherwise the whole system hangs after it tries to enter this mode without 
-> >>> any reaction for external events, other than reset.
-> >>
-> >> Need investigation.
-> >>
-> >> What is the exynos board version where that occurs ?
-> > 
-> > Could you please tell me what exactly do you mean by that?
-> > 
-> > I already wrote that we can reproduce the problem on EXYNOS4210 rev0
-> > and rev1.1 (we don't have rev1.0). Tomek has also reproduced the problem
-> > on some later SoCs (I hope that he can give you exact revisions).
-> > 
-> > In our testing we didn't encounter the board on which the problem
-> > doesn't occur. Our current working theory is that the problem may be
-> > u-boot (or first stage bootloader) related.
-> 
-> Ok, the status for what I know:
-> 
-> Origen Exynos4210, board ver A: works for me
-> Arndale Exynos5250: works for me but only if u-boot does not enable the
-> hypervisor mode.
-> Chromebook Exynos5250: works for me
+>
+> 1. The sysfs files must not be removed during cpu_down, and not initialized
+>
+>    during cpu_up. That would help us preserve the file permissions.
 
-I've also done some more testing. First I tested on some Exynos4412 devices
-(M0 and SLP_PQ) and AFTR was not working on them. Then I got my hands on
-Origen Exynos4210 (thanks to Tomek Figa for providing it) and AFTR is working
-just fine on it. Finally I tried Trats board again but with the upstream
-u-boot instead of our custom modified version (thanks to help from Lukasz
-Majewski) and I found out that after this change AFTR works fine on it! It
-also gives quite nice power savings (~80mA less current drawn in AFTR mode
-compared to just WFI one).
+For this case, cpufreq_policy must be reserved since all related cpufreq data
+and kobj is also store into it. We can't release it.
 
-With the above findings it now seems that the issue is on our side and is
-outside the kernel. Thanks for help with narrowing down the problem and
-sorry for wasting your time.
+> 2. But we should ensure that we really do the cpufreq-core parts of the cpu
+>    initialization during cpu_up. If we fail to free some of the data-structures
+>    during cpu_down, the cpu_up callback will think that a full-init is not
+>    required and not do its job. That will make cpufreq behave erratically after
+>    suspend/resume and take us back to square one.
+>
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+cpufreq_add_dev() checks whether the cpu has been attached cpufreq_cpu_data
+and associated kobj has been created. If yes, it would try to release it by
+cpufreq_cpu_put() and return directly. This seems to be conflicted
+with the above.
 
-> I found the following drivers:
-> 
-> https://github.com/AndreiLux/Perseus-UNIVERSAL5410/blob/samsung/arch/arm/mach-exynos/cpuidle.c
-> 
-> https://github.com/CyanogenMod/hardkernel-kernel-4412/blob/cm-10.1/arch/arm/mach-exynos/cpuidle-exynos4.c
-> 
-> Sounds like the num cpus > 1 is still there.
-> 
-> [ ... ]
-> 
-> >> The kernel is not a playground where you can upstream code and then
-> >> remove it because a feature seems broken and you don't have an idea of why.
-> > 
-> > Neither me or Tomek did upstream this code and we couldn't react in
-> > time because we haven't noticed that it is completely unusable for us
-> > as EXYNOS cpuidle driver is not even used by default on EXYNOS (it is
-> > not enabled either in defconfig or Kconfig).
-> > 
-> > Moreover the feature we are talking about (AFTR mode) is also not used
-> > by default (except EXYNOS4210 rev0 on which it lockups system for us)
-> > even with EXYNOS cpuidle driver being enabled (because this specific
-> > feature depends on CPU hot-unplug which is not done automatically right
-> > now).
-> > 
-> > Such things like unused/broken code removal is not something very
-> > unusual in the upstream kernel (I'm speaking from the experience here
-> > having maintained large subsystem for a couple of years). In this
-> > particular case we are talking about ~130 lines of code which can
-> > be trivially brought back later when/if needed.
-> > 
-> > Anyway if the code removal is controversial for you we can just disable
-> > AFTR mode by default and enable it only when special command line option
-> > is given (i.e. "aftr"). This would fix all the broken configuration
-> > while still allowing the feature to be enabled on systems that had it
-> > working previously (since you claim that it works on some chipset/u-boot
-> > configurations).
-> 
-> Actually, there are several reasons I am not in favor for the moment to
-> remove this code:
-> 
-> 1) code can't be pushed upstream and then removed so easily
-> 2) I asked several times what was this cpu1 hack, I had no answer
-> 3) I tried to make both cpus entering the AFTR state, but the cpu1 never
-> wakes up, I asked but no answer.
-> 
-> I would like to have some answers :)
-> 
-> Before taking the decision to remove this state (btw you can remove the
-> driver directly, no ? the default idle function is WFI), IMO it is worth
-> to investigate and to spend some time to clarify what is happening. Then
-> we can take a decision.
-> 
-> I am willing to help.
-> 
-> >> I asked several times the reasons of why the AFTR state couldn't work
-> >> with multiple CPUs and I had no answer.
-> > 
-> > Unfortunately I don't know the answer for your question.
-> > 
-> > The AFTR mode doesn't work for us *at*all* (even with *one* CPU).
-> > 
-> >> Frankly speaking I have a couple of hypothesis:
-> >>
-> >> 1. something is not correctly setup and the PMU does not wake up the CPU1
-> >> 2. there is a silicon bug and no one wants to tell it is the case
-> >>
-> >> In any case, this must be investigated and identified. And then we can
-> >> take a decision about this state.
-> > 
-> > I don't have good idea currently how to investigate it further.
-> > 
-> > I also don't have any prove that the actual work is worth it
-> > (and this work can easily take some weeks).
-> > 
-> > One of main responsibilities of the maintainer it to make sure that
-> > the code does indeed work and that regressions (like these caused by
-> > AFTR mode feature) are fixed in the timely manner, not let the code
-> > sit in the limbo state for large periods of time.  It is already very
-> > bad situation that the regression we are hitting was present since
-> > v3.4 and we are in v3.10 now, I would like to have it fixed ASAP so
-> > we may actually consider enabling cpuidle in our exynos_defconfig.
-> 
-> I agree.
-> 
-> Thanks
->   -- Daniel
+> 3. A full re-init in the cpu_up callback also involves memory allocations.
+>    So if we don't release the memory in the cpu_down callback, we'll end up
+>    in a memory leak.
+>
+
+Even we remove the previous check, cpu scaling driver's init()  also will change
+some data of struct cpufreq_policy and this is also what we don't like to see.
+
+> I tried to address all these in this patch, but you found yet another serious
+> loop-hole. I guess I'm out of ideas now... if anybody has any thoughts on how
+> to get this right, then I'm all ears. Else, we'll just revert the original
+> commit like Rafael suggested and leave it upto userspace to save and restore
+> the permissions across suspend/resume if it wants ;-(
+>
+
+How about implement scaling driver's suspend/resume callback()? Although this
+needs to be dealt with case by case. If one's callbacks hasn't been implemented,
+it would have to follow current rule.
+
+>>> +                       unlock_policy_rwsem_read(cpu);
+>>> +                       kobject_put(kobj);
+>>> +
+>>> +                       pr_debug("waiting for dropping of refcount\n");
+>>> +                       wait_for_completion(cmp);
+>>> +                       pr_debug("wait complete\n");
+>>> +               }
+>>> +
+>>>         } else if (cpufreq_driver->target) {
+>>>                 __cpufreq_governor(data, CPUFREQ_GOV_START);
+>>>                 __cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
+>>> @@ -1221,7 +1230,7 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+>>>         if (cpu_is_offline(cpu))
+>>>                 return 0;
+>>>
+>>> -       retval = __cpufreq_remove_dev(dev, sif);
+>>> +       retval = __cpufreq_remove_dev(dev, sif, true);
+>>>         return retval;
+>>>  }
+>
+> Regards,
+> Srivatsa S. Bhat
+>
+
+
+
+-- 
+Best regards
+Tianyu Lan
