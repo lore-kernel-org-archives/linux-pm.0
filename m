@@ -1,8 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 8/8] cpufreq: Perform light-weight init/teardown during
- suspend/resume
-Date: Fri, 12 Jul 2013 03:47:19 +0530
-Message-ID: <20130711221717.547.54461.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 4/8] cpufreq: Extract non-interface related stuff from
+ cpufreq_add_dev_interface
+Date: Fri, 12 Jul 2013 03:46:29 +0530
+Message-ID: <20130711221623.547.5846.stgit@srivatsabhat.in.ibm.com>
 References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,73 +14,106 @@ To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik
 Cc: stern@rowland.harvard.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have the infrastructure to perform a light-weight init/tear-down,
-use that in the cpufreq CPU hotplug notifier when invoked from the
-suspend/resume path.
-
-This also ensures that the file permissions of the cpufreq sysfs files are
-preserved across suspend/resume, something which commit a66b2e (cpufreq:
-Preserve sysfs files across suspend/resume) originally intended to do, but
-had to be reverted due to other problems.
+cpufreq_add_dev_interface() includes the work of exposing the interface
+to the device, as well as a lot of unrelated stuff. Move the latter to
+cpufreq_add_dev(), where it is more appropriate.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/cpufreq.c       |   18 +++++++++++-------
- drivers/cpufreq/cpufreq_stats.c |    2 --
- 2 files changed, 11 insertions(+), 9 deletions(-)
+ drivers/cpufreq/cpufreq.c |   43 ++++++++++++++++++++++++++-----------------
+ 1 file changed, 26 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 15ced5f..c7f59e8 100644
+index ca14dc2..2ab39f3 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -2030,22 +2030,26 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+@@ -834,11 +834,8 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+ 				     struct cpufreq_policy *policy,
+ 				     struct device *dev)
  {
- 	unsigned int cpu = (unsigned long)hcpu;
- 	struct device *dev;
-+	bool frozen = false;
+-	struct cpufreq_policy new_policy;
+ 	struct freq_attr **drv_attr;
+-	unsigned long flags;
+ 	int ret = 0;
+-	unsigned int j;
  
- 	dev = get_cpu_device(cpu);
- 	if (dev) {
--		switch (action) {
-+
-+		if (action & CPU_TASKS_FROZEN)
-+			frozen = true;
-+
-+		switch (action & ~CPU_TASKS_FROZEN) {
- 		case CPU_ONLINE:
--		case CPU_ONLINE_FROZEN:
--			cpufreq_add_dev(dev, NULL);
-+			__cpufreq_add_dev(dev, NULL, frozen);
- 			cpufreq_update_policy(cpu);
- 			break;
-+
- 		case CPU_DOWN_PREPARE:
--		case CPU_DOWN_PREPARE_FROZEN:
--			__cpufreq_remove_dev(dev, NULL, false);
-+			__cpufreq_remove_dev(dev, NULL, frozen);
- 			break;
-+
- 		case CPU_DOWN_FAILED:
--		case CPU_DOWN_FAILED_FROZEN:
--			cpufreq_add_dev(dev, NULL);
-+			__cpufreq_add_dev(dev, NULL, frozen);
- 			break;
- 		}
+ 	/* prepare interface data */
+ 	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+@@ -870,17 +867,23 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+ 			goto err_out_kobj_put;
  	}
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index a3e7475..4e1eb3f 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -349,11 +349,9 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
  
- 	switch (action) {
- 	case CPU_DOWN_PREPARE:
--	case CPU_DOWN_PREPARE_FROZEN:
- 		cpufreq_stats_free_sysfs(cpu);
- 		break;
- 	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
- 		cpufreq_stats_free_table(cpu);
- 		break;
+-	write_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu(j, policy->cpus) {
+-		per_cpu(cpufreq_cpu_data, j) = policy;
+-		per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
+-	}
+-	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-
+ 	ret = cpufreq_add_dev_symlink(cpu, policy);
+ 	if (ret)
+ 		goto err_out_kobj_put;
+ 
++	return ret;
++
++err_out_kobj_put:
++	kobject_put(&policy->kobj);
++	wait_for_completion(&policy->kobj_unregister);
++	return ret;
++}
++
++static void cpufreq_init_policy(struct cpufreq_policy *policy)
++{
++	struct cpufreq_policy new_policy;
++	int ret = 0;
++
+ 	memcpy(&new_policy, policy, sizeof(struct cpufreq_policy));
+ 	/* assure that the starting sequence is run in __cpufreq_set_policy */
+ 	policy->governor = NULL;
+@@ -895,12 +898,6 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+ 		if (cpufreq_driver->exit)
+ 			cpufreq_driver->exit(policy);
  	}
+-	return ret;
+-
+-err_out_kobj_put:
+-	kobject_put(&policy->kobj);
+-	wait_for_completion(&policy->kobj_unregister);
+-	return ret;
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -1074,10 +1071,19 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	}
+ #endif
+ 
++	write_lock_irqsave(&cpufreq_driver_lock, flags);
++	for_each_cpu(j, policy->cpus) {
++		per_cpu(cpufreq_cpu_data, j) = policy;
++		per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
++	}
++	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
++
+ 	ret = cpufreq_add_dev_interface(cpu, policy, dev);
+ 	if (ret)
+ 		goto err_out_unregister;
+ 
++	cpufreq_init_policy(policy);
++
+ 	kobject_uevent(&policy->kobj, KOBJ_ADD);
+ 	module_put(cpufreq_driver->owner);
+ 	pr_debug("initialization complete\n");
+@@ -1086,8 +1092,11 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 
+ err_out_unregister:
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu(j, policy->cpus)
++	for_each_cpu(j, policy->cpus) {
+ 		per_cpu(cpufreq_cpu_data, j) = NULL;
++		if (j != cpu)
++			per_cpu(cpufreq_policy_cpu, j) = -1;
++	}
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+ 	kobject_put(&policy->kobj);
