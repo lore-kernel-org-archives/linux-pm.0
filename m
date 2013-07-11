@@ -1,32 +1,83 @@
-From: Pankaj Jangra <jangra.pankaj9@gmail.com>
-Subject: Re: [PATCH] power: Fix comment typo in pm_wakeup.h
-Date: Thu, 11 Jul 2013 22:25:16 +0530
-Message-ID: <CADTbHxqU8_qvS2sfDfdp3Cvn1htedZ7UUSrZNg8oxxOFapAqxw@mail.gmail.com>
-References: <1373518558-670-1-git-send-email-cw00.choi@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH 0/8] Cpufreq, cpu hotplug, suspend/resume related fixes
+Date: Fri, 12 Jul 2013 03:45:17 +0530
+Message-ID: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f42.google.com ([209.85.215.42]:36605 "EHLO
-	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752635Ab3GKQzT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 12:55:19 -0400
-In-Reply-To: <1373518558-670-1-git-send-email-cw00.choi@samsung.com>
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:46876 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756887Ab3GKWSv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 18:18:51 -0400
+Received: from /spool/local
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 12 Jul 2013 19:14:31 +1000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com
+Cc: stern@rowland.harvard.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+
 
 Hi,
 
-On Thu, Jul 11, 2013 at 10:25 AM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> This patch fix typo (sorce -> source)
->
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  include/linux/pm_wakeup.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-Looks Good.
+Commit a66b2e (cpufreq: Preserve sysfs files across suspend/resume) caused
+some subtle regressions in the cpufreq subsystem during suspend/resume.
+This patchset is aimed at rectifying those problems, by fixing the regression
+as well as achieving the original goal of that commit in a proper way.
 
-Regards,
-Pankaj Jangra
+Patch 1 reverts the above commit, and is CC'ed to stable.
+
+Patches 2 - 5 reorganize the code and have no functional impact, and can go
+in as general cleanups as well. This reorganization builds a base that the
+rest of the patches will make use of.
+
+Patch 6 and 7 add a mechanism to perform light-weight init/tear-down of CPUs
+in the cpufreq subsystem and finally patch 8 uses it to preserve sysfs files
+across suspend/resume.
+
+All the patches apply on current mainline.
+
+
+Robert, Durgadoss, it would be great if you could try it out and see if it works
+well for your usecase. I tested it locally and cpufreq related files did retain
+their permissions across suspend/resume. Let me know if it works fine in your
+setup too.
+
+And I'd of course appreciate to hear from Dirk, Tianyu and Toralf to know
+whether their systems work fine after:
+a. applying only the first commit (this is what gets backported to stable)
+b. applying all the commits
+
+(Note: I had to use Michael's fix[1] to avoid CPU hotplug deadlock while
+testing this patchset. Though that patch also touches cpufreq subsystem, it
+doesn't affect this patchset in any way and there is absolutely no dependency
+between the two in terms of code. That fix just makes basic CPU hotplug work
+without locking up on current mainline).
+
+[1]. https://lkml.org/lkml/2013/7/10/611
+
+
+Thank you very much!
+
+
+ Srivatsa S. Bhat (8):
+      cpufreq: Revert commit a66b2e to fix cpufreq regression during suspend/resume
+      cpufreq: Fix misplaced call to cpufreq_update_policy()
+      cpufreq: Add helper to perform alloc/free of policy structure
+      cpufreq: Extract non-interface related stuff from cpufreq_add_dev_interface
+      cpufreq: Extract the handover of policy cpu to a helper function
+      cpufreq: Introduce a flag ('frozen') to separate full vs temporary init/teardown
+      cpufreq: Preserve policy structure across suspend/resume
+      cpufreq: Perform light-weight init/teardown during suspend/resume
+
+ drivers/cpufreq/cpufreq.c       |  297 ++++++++++++++++++++++++++-------------
+ drivers/cpufreq/cpufreq_stats.c |   10 -
+ 2 files changed, 199 insertions(+), 108 deletions(-)
+
+
+Thanks,
+Srivatsa S. Bhat
+IBM Linux Technology Center
+
