@@ -1,131 +1,177 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 5/8] cpufreq: Extract the handover of policy cpu to a helper
- function
-Date: Fri, 12 Jul 2013 03:46:47 +0530
-Message-ID: <20130711221644.547.74786.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 7/8] cpufreq: Preserve policy structure across suspend/resume
+Date: Fri, 12 Jul 2013 03:47:08 +0530
+Message-ID: <20130711221704.547.64296.stgit@srivatsabhat.in.ibm.com>
 References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:39990 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757016Ab3GKWUT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 18:20:19 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:56092 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757168Ab3GKWUj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 18:20:39 -0400
 Received: from /spool/local
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 12 Jul 2013 08:10:58 +1000
+	Fri, 12 Jul 2013 08:17:44 +1000
 In-Reply-To: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com
 Cc: stern@rowland.harvard.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-During cpu offline, when the policy->cpu is going down, some other CPU
-present in the policy->cpus mask is nominated as the new policy->cpu.
-Extract this functionality from __cpufreq_remove_dev() and implement
-it in a helper function. This helps in upcoming code reorganization.
+To perform light-weight cpu-init and teardown in the cpufreq subsystem
+during suspend/resume, we need to separate out the 2 main functionalities
+of the cpufreq CPU hotplug callbacks, as outlined below:
+
+1. Init/tear-down of core cpufreq and CPU-specific components, which are
+   critical to the correct functioning of the cpufreq subsystem.
+
+2. Init/tear-down of cpufreq sysfs files during suspend/resume.
+
+The first part requires accurate updates to the policy structure such as
+its ->cpus and ->related_cpus masks, whereas the second part requires that
+the policy->kobj structure is not released or re-initialized during
+suspend/resume.
+
+To handle both these requirements, we need to allow updates to the policy
+structure throughout suspend/resume, but prevent the structure from getting
+freed up. Also, we must have a mechanism by which the cpu-up callbacks can
+restore the policy structure, without allocating things afresh. (That also
+helps avoid memory leaks).
+
+To achieve this, we use 2 schemes:
+a. Use a fallback per-cpu storage area for preserving the policy structures
+   during suspend, so that they can be restored during resume appropriately.
+
+b. Use the 'frozen' flag to determine when to free or allocate the policy
+   structure vs when to restore the policy from the saved fallback storage.
+   Thus we can successfully preserve the structure across suspend/resume.
+
+Effectively, this helps us complete the separation of the 'light-weight'
+and the 'full' init/tear-down sequences in the cpufreq subsystem, so that
+this can be made use of in the suspend/resume scenario.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/cpufreq.c |   62 ++++++++++++++++++++++++++++-----------------
- 1 file changed, 38 insertions(+), 24 deletions(-)
+ drivers/cpufreq/cpufreq.c |   69 ++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 52 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2ab39f3..efdb607 100644
+index 1128753..15ced5f 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1128,6 +1128,38 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
- 			CPUFREQ_UPDATE_POLICY_CPU, policy);
- }
+@@ -44,6 +44,7 @@
+  */
+ static struct cpufreq_driver *cpufreq_driver;
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
++static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data_fallback);
+ static DEFINE_RWLOCK(cpufreq_driver_lock);
+ static DEFINE_MUTEX(cpufreq_governor_lock);
  
-+static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *data,
-+					   unsigned int old_cpu)
+@@ -942,6 +943,20 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ }
+ #endif
+ 
++static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
 +{
-+	struct device *cpu_dev;
++	struct cpufreq_policy *policy;
 +	unsigned long flags;
-+	int ret;
 +
-+	/* first sibling now owns the new sysfs dir */
-+	cpu_dev = get_cpu_device(cpumask_first(data->cpus));
-+	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
-+	ret = kobject_move(&data->kobj, &cpu_dev->kobj);
-+	if (ret) {
-+		pr_err("%s: Failed to move kobj: %d", __func__, ret);
++	write_lock_irqsave(&cpufreq_driver_lock, flags);
 +
-+		WARN_ON(lock_policy_rwsem_write(old_cpu));
-+		cpumask_set_cpu(old_cpu, data->cpus);
++	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
 +
-+		write_lock_irqsave(&cpufreq_driver_lock, flags);
-+		per_cpu(cpufreq_cpu_data, old_cpu) = data;
-+		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
++	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 +
-+		unlock_policy_rwsem_write(old_cpu);
-+
-+		ret = sysfs_create_link(&cpu_dev->kobj, &data->kobj,
-+					"cpufreq");
-+
-+		return -EINVAL;
-+	}
-+
-+	return cpu_dev->id;
++	return policy;
 +}
 +
- /**
-  * __cpufreq_remove_dev - remove a CPU device
-  *
-@@ -1138,12 +1170,11 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
- static int __cpufreq_remove_dev(struct device *dev,
- 		struct subsys_interface *sif)
+ static struct cpufreq_policy *cpufreq_policy_alloc(void)
  {
--	unsigned int cpu = dev->id, ret, cpus;
-+	unsigned int cpu = dev->id, cpus, new_cpu;
- 	unsigned long flags;
- 	struct cpufreq_policy *data;
- 	struct kobject *kobj;
- 	struct completion *cmp;
--	struct device *cpu_dev;
- 
- 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
- 
-@@ -1178,32 +1209,15 @@ static int __cpufreq_remove_dev(struct device *dev,
- 	if (cpu != data->cpu) {
- 		sysfs_remove_link(&dev->kobj, "cpufreq");
- 	} else if (cpus > 1) {
--		/* first sibling now owns the new sysfs dir */
--		cpu_dev = get_cpu_device(cpumask_first(data->cpus));
--		sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
--		ret = kobject_move(&data->kobj, &cpu_dev->kobj);
--		if (ret) {
--			pr_err("%s: Failed to move kobj: %d", __func__, ret);
- 
-+		new_cpu = cpufreq_nominate_new_policy_cpu(data, cpu);
-+		if (new_cpu >= 0) {
- 			WARN_ON(lock_policy_rwsem_write(cpu));
--			cpumask_set_cpu(cpu, data->cpus);
--
--			write_lock_irqsave(&cpufreq_driver_lock, flags);
--			per_cpu(cpufreq_cpu_data, cpu) = data;
--			write_unlock_irqrestore(&cpufreq_driver_lock, flags);
--
-+			update_policy_cpu(data, new_cpu);
- 			unlock_policy_rwsem_write(cpu);
--
--			ret = sysfs_create_link(&cpu_dev->kobj, &data->kobj,
--					"cpufreq");
--			return -EINVAL;
-+			pr_debug("%s: policy Kobject moved to cpu: %d "
-+				 "from: %d\n",__func__, new_cpu, cpu);
- 		}
--
--		WARN_ON(lock_policy_rwsem_write(cpu));
--		update_policy_cpu(data, cpu_dev->id);
--		unlock_policy_rwsem_write(cpu);
--		pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
--				__func__, cpu_dev->id, cpu);
+ 	struct cpufreq_policy *policy;
+@@ -1019,7 +1034,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 		goto module_out;
  	}
  
+-	policy = cpufreq_policy_alloc();
++	if (frozen)
++		/* Restore the saved policy when doing light-weight init */
++		policy = cpufreq_policy_restore(cpu);
++	else
++		policy = cpufreq_policy_alloc();
++
+ 	if (!policy)
+ 		goto nomem_out;
+ 
+@@ -1199,6 +1219,10 @@ static int __cpufreq_remove_dev(struct device *dev,
+ 	data = per_cpu(cpufreq_cpu_data, cpu);
+ 	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+ 
++	/* Save the policy somewhere when doing a light-weight tear-down */
++	if (frozen)
++		per_cpu(cpufreq_cpu_data_fallback, cpu) = data;
++
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+ 	if (!data) {
+@@ -1239,29 +1263,40 @@ static int __cpufreq_remove_dev(struct device *dev,
  	if ((cpus == 1) && (cpufreq_driver->target))
+ 		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+ 
+-	pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+-	cpufreq_cpu_put(data);
++	if (!frozen) {
++		pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
++		cpufreq_cpu_put(data);
++	}
+ 
+ 	/* If cpu is last user of policy, free policy */
+ 	if (cpus == 1) {
+-		lock_policy_rwsem_read(cpu);
+-		kobj = &data->kobj;
+-		cmp = &data->kobj_unregister;
+-		unlock_policy_rwsem_read(cpu);
+-		kobject_put(kobj);
+-
+-		/* we need to make sure that the underlying kobj is actually
+-		 * not referenced anymore by anybody before we proceed with
+-		 * unloading.
+-		 */
+-		pr_debug("waiting for dropping of refcount\n");
+-		wait_for_completion(cmp);
+-		pr_debug("wait complete\n");
++		if (!frozen) {
++			lock_policy_rwsem_read(cpu);
++			kobj = &data->kobj;
++			cmp = &data->kobj_unregister;
++			unlock_policy_rwsem_read(cpu);
++			kobject_put(kobj);
++
++			/*
++			 * We need to make sure that the underlying kobj is
++			 * actually not referenced anymore by anybody before we
++			 * proceed with unloading.
++			 */
++			pr_debug("waiting for dropping of refcount\n");
++			wait_for_completion(cmp);
++			pr_debug("wait complete\n");
++		}
+ 
++		/*
++		 * Perform the ->exit() even during light-weight tear-down,
++		 * since this is a core component, and is essential for the
++		 * the subsequent light-weight ->init() to succeed.
++		 */
+ 		if (cpufreq_driver->exit)
+ 			cpufreq_driver->exit(data);
+ 
+-		cpufreq_policy_free(data);
++		if (!frozen)
++			cpufreq_policy_free(data);
+ 
+ 	} else if (cpufreq_driver->target) {
+ 		__cpufreq_governor(data, CPUFREQ_GOV_START);
 
