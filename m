@@ -1,177 +1,187 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 7/8] cpufreq: Preserve policy structure across suspend/resume
-Date: Fri, 12 Jul 2013 03:47:08 +0530
-Message-ID: <20130711221704.547.64296.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 6/8] cpufreq: Introduce a flag ('frozen') to separate full vs
+ temporary init/teardown
+Date: Fri, 12 Jul 2013 03:46:59 +0530
+Message-ID: <20130711221657.547.2293.stgit@srivatsabhat.in.ibm.com>
 References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:56092 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757168Ab3GKWUj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 18:20:39 -0400
-Received: from /spool/local
-	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 12 Jul 2013 08:17:44 +1000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com
 Cc: stern@rowland.harvard.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-To perform light-weight cpu-init and teardown in the cpufreq subsystem
-during suspend/resume, we need to separate out the 2 main functionalities
-of the cpufreq CPU hotplug callbacks, as outlined below:
-
-1. Init/tear-down of core cpufreq and CPU-specific components, which are
-   critical to the correct functioning of the cpufreq subsystem.
-
-2. Init/tear-down of cpufreq sysfs files during suspend/resume.
-
-The first part requires accurate updates to the policy structure such as
-its ->cpus and ->related_cpus masks, whereas the second part requires that
-the policy->kobj structure is not released or re-initialized during
-suspend/resume.
-
-To handle both these requirements, we need to allow updates to the policy
-structure throughout suspend/resume, but prevent the structure from getting
-freed up. Also, we must have a mechanism by which the cpu-up callbacks can
-restore the policy structure, without allocating things afresh. (That also
-helps avoid memory leaks).
-
-To achieve this, we use 2 schemes:
-a. Use a fallback per-cpu storage area for preserving the policy structures
-   during suspend, so that they can be restored during resume appropriately.
-
-b. Use the 'frozen' flag to determine when to free or allocate the policy
-   structure vs when to restore the policy from the saved fallback storage.
-   Thus we can successfully preserve the structure across suspend/resume.
-
-Effectively, this helps us complete the separation of the 'light-weight'
-and the 'full' init/tear-down sequences in the cpufreq subsystem, so that
-this can be made use of in the suspend/resume scenario.
+During suspend/resume we would like to do a light-weight init/teardown of
+CPUs in the cpufreq subsystem and preserve certain things such as sysfs files
+etc across suspend/resume transitions. Add a flag called 'frozen' to help
+distinguish the full init/teardown sequence from the light-weight one.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/cpufreq.c |   69 ++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 52 insertions(+), 17 deletions(-)
+ drivers/cpufreq/cpufreq.c |   66 ++++++++++++++++++++++++++++-----------------
+ 1 file changed, 41 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1128753..15ced5f 100644
+index efdb607..1128753 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -44,6 +44,7 @@
-  */
- static struct cpufreq_driver *cpufreq_driver;
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
-+static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data_fallback);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
- static DEFINE_MUTEX(cpufreq_governor_lock);
+@@ -902,7 +902,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
  
-@@ -942,6 +943,20 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ #ifdef CONFIG_HOTPLUG_CPU
+ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+-				  struct device *dev)
++				  struct device *dev, bool frozen)
+ {
+ 	struct cpufreq_policy *policy;
+ 	int ret = 0, has_target = !!cpufreq_driver->target;
+@@ -930,13 +930,15 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 	}
+ 
++	/* Don't touch sysfs links during light-weight init */
++	if (frozen)
++		return 0;
++
+ 	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+-	if (ret) {
++	if (ret)
+ 		cpufreq_cpu_put(policy);
+-		return ret;
+-	}
+ 
+-	return 0;
++	return ret;
  }
  #endif
  
-+static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy;
-+	unsigned long flags;
-+
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+
-+	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
-+
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+
-+	return policy;
-+}
-+
- static struct cpufreq_policy *cpufreq_policy_alloc(void)
+@@ -971,16 +973,8 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+ 	kfree(policy);
+ }
+ 
+-/**
+- * cpufreq_add_dev - add a CPU device
+- *
+- * Adds the cpufreq interface for a CPU device.
+- *
+- * The Oracle says: try running cpufreq registration/unregistration concurrently
+- * with with cpu hotplugging and all hell will break loose. Tried to clean this
+- * mess up, but more thorough testing is needed. - Mathieu
+- */
+-static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
++static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
++			     bool frozen)
  {
- 	struct cpufreq_policy *policy;
-@@ -1019,7 +1034,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		goto module_out;
+ 	unsigned int j, cpu = dev->id;
+ 	int ret = -ENOMEM;
+@@ -1012,7 +1006,8 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
+ 		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
+ 			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-			return cpufreq_add_policy_cpu(cpu, sibling, dev);
++			return cpufreq_add_policy_cpu(cpu, sibling, dev,
++						      frozen);
+ 		}
  	}
- 
--	policy = cpufreq_policy_alloc();
-+	if (frozen)
-+		/* Restore the saved policy when doing light-weight init */
-+		policy = cpufreq_policy_restore(cpu);
-+	else
-+		policy = cpufreq_policy_alloc();
-+
- 	if (!policy)
- 		goto nomem_out;
- 
-@@ -1199,6 +1219,10 @@ static int __cpufreq_remove_dev(struct device *dev,
- 	data = per_cpu(cpufreq_cpu_data, cpu);
- 	per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 
-+	/* Save the policy somewhere when doing a light-weight tear-down */
-+	if (frozen)
-+		per_cpu(cpufreq_cpu_data_fallback, cpu) = data;
-+
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+@@ -1078,9 +1073,11 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	}
  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
  
- 	if (!data) {
-@@ -1239,29 +1263,40 @@ static int __cpufreq_remove_dev(struct device *dev,
- 	if ((cpus == 1) && (cpufreq_driver->target))
- 		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
- 
--	pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
--	cpufreq_cpu_put(data);
+-	ret = cpufreq_add_dev_interface(cpu, policy, dev);
+-	if (ret)
+-		goto err_out_unregister;
 +	if (!frozen) {
-+		pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
-+		cpufreq_cpu_put(data);
++		ret = cpufreq_add_dev_interface(cpu, policy, dev);
++		if (ret)
++			goto err_out_unregister;
 +	}
  
- 	/* If cpu is last user of policy, free policy */
- 	if (cpus == 1) {
--		lock_policy_rwsem_read(cpu);
--		kobj = &data->kobj;
--		cmp = &data->kobj_unregister;
--		unlock_policy_rwsem_read(cpu);
--		kobject_put(kobj);
--
--		/* we need to make sure that the underlying kobj is actually
--		 * not referenced anymore by anybody before we proceed with
--		 * unloading.
--		 */
--		pr_debug("waiting for dropping of refcount\n");
--		wait_for_completion(cmp);
--		pr_debug("wait complete\n");
-+		if (!frozen) {
-+			lock_policy_rwsem_read(cpu);
-+			kobj = &data->kobj;
-+			cmp = &data->kobj_unregister;
-+			unlock_policy_rwsem_read(cpu);
-+			kobject_put(kobj);
+ 	cpufreq_init_policy(policy);
+ 
+@@ -1111,6 +1108,20 @@ module_out:
+ 	return ret;
+ }
+ 
++/**
++ * cpufreq_add_dev - add a CPU device
++ *
++ * Adds the cpufreq interface for a CPU device.
++ *
++ * The Oracle says: try running cpufreq registration/unregistration concurrently
++ * with with cpu hotplugging and all hell will break loose. Tried to clean this
++ * mess up, but more thorough testing is needed. - Mathieu
++ */
++static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
++{
++	return __cpufreq_add_dev(dev, sif, false);
++}
 +
-+			/*
-+			 * We need to make sure that the underlying kobj is
-+			 * actually not referenced anymore by anybody before we
-+			 * proceed with unloading.
-+			 */
-+			pr_debug("waiting for dropping of refcount\n");
-+			wait_for_completion(cmp);
-+			pr_debug("wait complete\n");
-+		}
+ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+ {
+ 	int j;
+@@ -1129,7 +1140,7 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+ }
  
-+		/*
-+		 * Perform the ->exit() even during light-weight tear-down,
-+		 * since this is a core component, and is essential for the
-+		 * the subsequent light-weight ->init() to succeed.
-+		 */
- 		if (cpufreq_driver->exit)
- 			cpufreq_driver->exit(data);
+ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *data,
+-					   unsigned int old_cpu)
++					   unsigned int old_cpu, bool frozen)
+ {
+ 	struct device *cpu_dev;
+ 	unsigned long flags;
+@@ -1137,6 +1148,11 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *data,
  
--		cpufreq_policy_free(data);
-+		if (!frozen)
-+			cpufreq_policy_free(data);
+ 	/* first sibling now owns the new sysfs dir */
+ 	cpu_dev = get_cpu_device(cpumask_first(data->cpus));
++
++	/* Don't touch sysfs files during light-weight tear-down */
++	if (frozen)
++		return cpu_dev->id;
++
+ 	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+ 	ret = kobject_move(&data->kobj, &cpu_dev->kobj);
+ 	if (ret) {
+@@ -1168,7 +1184,7 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *data,
+  * This routine frees the rwsem before returning.
+  */
+ static int __cpufreq_remove_dev(struct device *dev,
+-		struct subsys_interface *sif)
++				struct subsys_interface *sif, bool frozen)
+ {
+ 	unsigned int cpu = dev->id, cpus, new_cpu;
+ 	unsigned long flags;
+@@ -1206,11 +1222,11 @@ static int __cpufreq_remove_dev(struct device *dev,
+ 		cpumask_clear_cpu(cpu, data->cpus);
+ 	unlock_policy_rwsem_write(cpu);
  
- 	} else if (cpufreq_driver->target) {
- 		__cpufreq_governor(data, CPUFREQ_GOV_START);
-
+-	if (cpu != data->cpu) {
++	if (cpu != data->cpu && !frozen) {
+ 		sysfs_remove_link(&dev->kobj, "cpufreq");
+ 	} else if (cpus > 1) {
+ 
+-		new_cpu = cpufreq_nominate_new_policy_cpu(data, cpu);
++		new_cpu = cpufreq_nominate_new_policy_cpu(data, cpu, frozen);
+ 		if (new_cpu >= 0) {
+ 			WARN_ON(lock_policy_rwsem_write(cpu));
+ 			update_policy_cpu(data, new_cpu);
+@@ -1264,7 +1280,7 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+ 	if (cpu_is_offline(cpu))
+ 		return 0;
+ 
+-	retval = __cpufreq_remove_dev(dev, sif);
++	retval = __cpufreq_remove_dev(dev, sif, false);
+ 	return retval;
+ }
+ 
+@@ -1990,7 +2006,7 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+ 			break;
+ 		case CPU_DOWN_PREPARE:
+ 		case CPU_DOWN_PREPARE_FROZEN:
+-			__cpufreq_remove_dev(dev, NULL);
++			__cpufreq_remove_dev(dev, NULL, false);
+ 			break;
+ 		case CPU_DOWN_FAILED:
+ 		case CPU_DOWN_FAILED_FROZEN:
