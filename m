@@ -1,73 +1,53 @@
-From: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
-Subject: [PATCH v1 2/2] PM / AVS: SmartReflex: disable spamming interrupts
-Date: Fri, 12 Jul 2013 16:52:03 +0300
-Message-ID: <1373637123-1152-3-git-send-email-andrii.tseglytskyi@ti.com>
-References: <1373637123-1152-1-git-send-email-andrii.tseglytskyi@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: avoid 'autosleep' in shutdown progress
+Date: Fri, 12 Jul 2013 10:37:33 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1307121034180.1469-100000@iolanthe.rowland.org>
+References: <1373609651.4432.122.camel@ymzhang.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1373637123-1152-1-git-send-email-andrii.tseglytskyi@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: khilman@linaro.org
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>, Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:32952 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757461Ab3GLOhe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jul 2013 10:37:34 -0400
+In-Reply-To: <1373609651.4432.122.camel@ymzhang.sh.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Cc: shuox.liu@intel.com, linux-kernel@vger.kernel.org, len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, linux-pm@vger.kernel.org
 
-From: Nishanth Menon <nm@ti.com>
+On Fri, 12 Jul 2013, Yanmin Zhang wrote:
 
-At times with bad SR configurations, especially during silicon bring-ups,
-we could get continuous spurious interrupts which end up hanging the
-platform in the form of an ISR call for status bits that are
-automatically enabled by the hardware without any software clearing
-option.
+> On Thu, 2013-07-11 at 16:03 +0800, shuox.liu@intel.com wrote:
+> > From: Liu ShuoX <shuox.liu@intel.com>
+> > 
+> > In shutdown progress, system is possible to do power transition
+> > (such as suspend-to-ram) in parallel. It is unreasonable. So,
+> > fixes it by adding a system_state checking and queue try_to_suspend
+> > again when system status is not running.
+> > 
+> > Signed-off-by: Liu ShuoX <shuox.liu@intel.com>
+> > ---
+> >  kernel/power/autosleep.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> Without this patch, we hit an hang issue on Android.
+> 
+> Scenario:
+> Kernel starts shutdown and calls all device driver's shutdown callback.
+> When a driver's shutdown is called, the last wakelock is released and
+> suspend-to-ram starts. However, as some driver's shut down callbacks
+> already shut down devices and disable runtime pm, the suspend-to-ram
+> calls driver's suspend callback without noticing that device is already
+> off and causes crash.
+> We know the drivers should be fixed, but can we also change generic
+> codes a little to make it stronger?
 
-If we detect scenarios where ISR was called without the corresponding
-notification bit being set, instead of hanging up the system,
-we will disable interrupt after noting the event in the system log
-to try and keep system sanity and allow developer to debug and fix
-the condition.
+Indeed, this does seem like the sort of thing we want to have.  
+Allowing an "automatic" or "opportunistic" sleep in the middle of a
+shutdown makes no sense at all.  In fact, it might be a good idea to
+disable system sleep completely at this time -- not even a write to
+/sys/power/state should be allowed to interrupt a shutdown.
 
-The same condition applies when a notifier does not exist OR is unable
-to handle the interrupt as well.
+Alan Stern
 
-Signed-off-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
----
- drivers/power/avs/smartreflex.c |   23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-index 5b2b703..185098f 100644
---- a/drivers/power/avs/smartreflex.c
-+++ b/drivers/power/avs/smartreflex.c
-@@ -120,8 +120,27 @@ static irqreturn_t sr_interrupt(int irq, void *data)
- 		return IRQ_NONE;
- 	}
- 
--	if (sr_class->notify)
--		sr_class->notify(sr_info, status);
-+	/* Attempt some resemblance of recovery! */
-+	if (!status) {
-+		dev_err(&sr_info->pdev->dev,
-+			"%s: Spurious interrupt!status = 0x%08x."
-+			"Disabling to prevent spamming!!\n",
-+			__func__, status);
-+		disable_irq_nosync(sr_info->irq);
-+	} else {
-+		/*
-+		 * If the notifier does not exist OR reports inability to
-+		 * handle, disable as well
-+		 */
-+		if (!sr_class->notify ||
-+		    sr_class->notify(sr_info, status)) {
-+			dev_err(&sr_info->pdev->dev,
-+				"%s: Callback cant handle int status=0x%08x."
-+				"Disabling to prevent spam!!\n",
-+				__func__, status);
-+			disable_irq_nosync(sr_info->irq);
-+		}
-+	}
- 
- 	return IRQ_HANDLED;
- }
--- 
-1.7.9.5
