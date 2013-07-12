@@ -1,57 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/8] cpufreq: Fix misplaced call to cpufreq_update_policy()
-Date: Fri, 12 Jul 2013 12:36:59 +0530
-Message-ID: <CAKohpo=DNhKTGdectgyWLW3XkfDOAiEhJ=hi+zW=6G6fWShybg@mail.gmail.com>
+Subject: Re: [PATCH 3/8] cpufreq: Add helper to perform alloc/free of policy structure
+Date: Fri, 12 Jul 2013 12:39:58 +0530
+Message-ID: <CAKohponVobWCLNf3ryPiEXpmru+qrp=EYLyX0zLh2SSabpf-SQ@mail.gmail.com>
 References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
-	<20130711221553.547.56787.stgit@srivatsabhat.in.ibm.com>
+	<20130711221605.547.69988.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:55539 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289Ab3GLHHA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jul 2013 03:07:00 -0400
-Received: by mail-oa0-f45.google.com with SMTP id j1so12506559oag.32
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2013 00:06:59 -0700 (PDT)
-In-Reply-To: <20130711221553.547.56787.stgit@srivatsabhat.in.ibm.com>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:56496 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756788Ab3GLHJ7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jul 2013 03:09:59 -0400
+Received: by mail-ob0-f177.google.com with SMTP id ta17so10928410obb.8
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2013 00:09:58 -0700 (PDT)
+In-Reply-To: <20130711221605.547.69988.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Cc: rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12 July 2013 03:45, Srivatsa S. Bhat
+On 12 July 2013 03:46, Srivatsa S. Bhat
 <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> The call to cpufreq_update_policy() is placed in the CPU hotplug callback
-> of cpufreq_stats, which has a higher priority than the CPU hotplug callback
-> of cpufreq-core. As a result, during CPU_ONLINE/CPU_ONLINE_FROZEN, we end up
-> calling cpufreq_update_policy() *before* calling cpufreq_add_dev() !
-> And for uninitialized CPUs, it just returns silently, not doing anything.
-
-Hmm..
-
-> To add to it, cpufreq_stats is not even the right place to call
-> cpufreq_update_policy() to begin with. The cpufreq core ought to handle
-> this in its own callback, from an elegance/relevance perspective.
->
-> So move the invocation of cpufreq_update_policy() to cpufreq_cpu_callback,
-> and place it *after* cpufreq_add_dev().
+> Separate out the allocation of the cpufreq policy structure (along with
+> its error handling) to a helper function. This makes the code easier to
+> read and also helps with some upcoming code reorganization.
 >
 > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 > ---
 >
->  drivers/cpufreq/cpufreq.c       |    1 +
->  drivers/cpufreq/cpufreq_stats.c |    6 ------
->  2 files changed, 1 insertion(+), 6 deletions(-)
+>  drivers/cpufreq/cpufreq.c |   50 ++++++++++++++++++++++++++++++++-------------
+>  1 file changed, 35 insertions(+), 15 deletions(-)
 >
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index ccc6eab..f8c3100 100644
+> index f8c3100..ca14dc2 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1943,6 +1943,7 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
->                 case CPU_ONLINE:
->                 case CPU_ONLINE_FROZEN:
->                         cpufreq_add_dev(dev, NULL);
-> +                       cpufreq_update_policy(cpu);
+> @@ -943,6 +943,37 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+>  }
+>  #endif
+>
+> +static struct cpufreq_policy *cpufreq_policy_alloc(void)
+> +{
+> +       struct cpufreq_policy *policy;
+> +
+> +       policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
 
-Do we need to call this for every hotplug of cpu? I am not
-talking about suspend/resume here.
+sizeof(*policy) ??
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
