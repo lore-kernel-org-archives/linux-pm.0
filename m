@@ -1,60 +1,30 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/8] cpufreq: Revert commit a66b2e to fix cpufreq
- regression during suspend/resume
-Date: Fri, 12 Jul 2013 12:48:10 +0530
-Message-ID: <CAKohpomVo5FEN1fOHQQ9jQuLnrRfHcNkH7QcnJG7x6x-Xd7J-A@mail.gmail.com>
+Subject: Re: [PATCH 5/8] cpufreq: Extract the handover of policy cpu to a
+ helper function
+Date: Fri, 12 Jul 2013 12:49:21 +0530
+Message-ID: <CAKohpo=eo5KAjE6Nk32aLJ3-KZZ4Ge-mm+hB1-gUMk+ZDF8iqw@mail.gmail.com>
 References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
-	<20130711221527.547.46447.stgit@srivatsabhat.in.ibm.com>
+	<20130711221644.547.74786.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:39091 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757145Ab3GLHSL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jul 2013 03:18:11 -0400
-Received: by mail-oa0-f54.google.com with SMTP id o6so12654893oag.27
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2013 00:18:10 -0700 (PDT)
-In-Reply-To: <20130711221527.547.46447.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130711221644.547.74786.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Cc: rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 12 July 2013 03:45, Srivatsa S. Bhat
+On 12 July 2013 03:46, Srivatsa S. Bhat
 <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> commit a66b2e (cpufreq: Preserve sysfs files across suspend/resume) has
-> unfortunately caused several things in the cpufreq subsystem to break subtly
-> after a suspend/resume cycle.
+> During cpu offline, when the policy->cpu is going down, some other CPU
+> present in the policy->cpus mask is nominated as the new policy->cpu.
+> Extract this functionality from __cpufreq_remove_dev() and implement
+> it in a helper function. This helps in upcoming code reorganization.
 >
-> The intention of that patch was to retain the file permissions of the
-> cpufreq related sysfs files across suspend/resume. To achieve that, the commit
-> completely removed the calls to cpufreq_add_dev() and __cpufreq_remove_dev()
-> during suspend/resume transitions. But the problem is that those functions
-> do 2 kinds of things:
->   1. Low-level initialization/tear-down that are critical to the correct
->      functioning of cpufreq-core.
->   2. Kobject and sysfs related initialization/teardown.
->
-> Ideally we should have reorganized the code to cleanly separate these two
-> responsibilities, and skipped only the sysfs related parts during
-> suspend/resume. Since we skipped the entire callbacks instead (which also
-> included some CPU and cpufreq-specific critical components), cpufreq
-> subsystem started behaving erratically after suspend/resume.
->
-> So revert the commit to fix the regression. We'll revisit and address the
-> original goal of that commit separately, since it involves quite a bit of
-> careful code reorganization and appears to be non-trivial.
->
-> (While reverting the commit, note that another commit f51e1eb "cpufreq:
-> Fix cpufreq regression after suspend/resume" already reverted part of the
-> original set of changes. So revert only the remaining ones).
->
-> Cc: stable@vger.kernel.org
 > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 > ---
 >
->  drivers/cpufreq/cpufreq.c       |    4 +++-
->  drivers/cpufreq/cpufreq_stats.c |    6 ++----
->  2 files changed, 5 insertions(+), 5 deletions(-)
+>  drivers/cpufreq/cpufreq.c |   62 ++++++++++++++++++++++++++++-----------------
+>  1 file changed, 38 insertions(+), 24 deletions(-)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
