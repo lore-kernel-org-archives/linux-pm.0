@@ -1,79 +1,84 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH] pnp: convert pnp driver bus legacy pm_ops to dev_pm_ops
-Date: Thu, 11 Jul 2013 17:33:38 -0600
-Message-ID: <1373585618-3741-1-git-send-email-shuah.kh@samsung.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH -next] Thermal: x86_pkg_temp: fix krealloc() misuse in
+ in pkg_temp_thermal_device_add()
+Date: Thu, 11 Jul 2013 17:36:12 -0700
+Message-ID: <51DF4F7C.10906@linux.intel.com>
+References: <CAPgLHd_d5DHn==OFdBsLi_Kkekd5h44Cx6m9Hj5EM_yOGJXKPQ@mail.gmail.com> <1371802062.2170.6.camel@rzhang1-mobl4> <CAPgLHd_T+ez7_fifC9sY33EKcuAa_A+P6w6gK72nn=4hjzp87Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta12.emeryville.ca.mail.comcast.net ([76.96.27.227]:50693
-	"EHLO qmta12.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754983Ab3GKXdq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2013 19:33:46 -0400
+Received: from mga09.intel.com ([134.134.136.24]:37295 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756430Ab3GLA3n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Jul 2013 20:29:43 -0400
+In-Reply-To: <CAPgLHd_T+ez7_fifC9sY33EKcuAa_A+P6w6gK72nn=4hjzp87Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com, bhelgaas@google.com
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, shuahkhan@gmail.com
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-Convert drivers/pnp/driver.c bus legacy pm_ops to dev_pm_ops using
-existing suspend and resume routines. Added freeze interface to
-handle PM_EVENT_FREEZE correctly with dev_pm_ops. pm_op() looks for
-freeze interface when the event is PM_EVENT_FREEZE.
+Tested this patch and it works fine.
 
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
- drivers/pnp/driver.c |   21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
+Thanks,
+Srinivas
 
-diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
-index c3f9e89..0c89dfa 100644
---- a/drivers/pnp/driver.c
-+++ b/drivers/pnp/driver.c
-@@ -154,7 +154,7 @@ static int pnp_bus_match(struct device *dev, struct device_driver *drv)
- 	return 1;
- }
- 
--static int pnp_bus_suspend(struct device *dev, pm_message_t state)
-+static int __pnp_bus_suspend(struct device *dev, pm_message_t state)
- {
- 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
- 	struct pnp_driver *pnp_drv = pnp_dev->driver;
-@@ -187,6 +187,16 @@ static int pnp_bus_suspend(struct device *dev, pm_message_t state)
- 	return 0;
- }
- 
-+static int pnp_bus_suspend(struct device *dev)
-+{
-+	return __pnp_bus_suspend(dev, PMSG_SUSPEND);
-+}
-+
-+static int pnp_bus_freeze(struct device *dev)
-+{
-+	return __pnp_bus_suspend(dev, PMSG_FREEZE);
-+}
-+
- static int pnp_bus_resume(struct device *dev)
- {
- 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
-@@ -223,14 +233,19 @@ static int pnp_bus_resume(struct device *dev)
- 	return 0;
- }
- 
-+const struct dev_pm_ops pnp_bus_dev_pm_ops = {
-+	.suspend = pnp_bus_suspend,
-+	.freeze = pnp_bus_freeze,
-+	.resume = pnp_bus_resume,
-+};
-+
- struct bus_type pnp_bus_type = {
- 	.name    = "pnp",
- 	.match   = pnp_bus_match,
- 	.probe   = pnp_device_probe,
- 	.remove  = pnp_device_remove,
- 	.shutdown = pnp_device_shutdown,
--	.suspend = pnp_bus_suspend,
--	.resume  = pnp_bus_resume,
-+	.pm	 = &pnp_bus_dev_pm_ops,
- 	.dev_attrs = pnp_interface_attrs,
- };
- 
--- 
-1.7.10.4
+On 06/21/2013 01:49 AM, Wei Yongjun wrote:
+> On 06/21/2013 04:07 PM, Zhang Rui wrote:
+>> On Tue, 2013-06-18 at 21:09 +0800, Wei Yongjun wrote:
+>>> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>>>
+>>> If krealloc() returns NULL, it doesn't free the original. So any code
+>>> of the form 'foo = krealloc(foo, ...);' is almost certainly a bug.
+>>>
+>> you mean this would probably cause a memory leak, right?
+> Yes.
+>
+>>> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>>> ---
+>>>   drivers/thermal/x86_pkg_temp_thermal.c | 8 +++++---
+>>>   1 file changed, 5 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+>>> index 5de56f6..b90e84b 100644
+>>> --- a/drivers/thermal/x86_pkg_temp_thermal.c
+>>> +++ b/drivers/thermal/x86_pkg_temp_thermal.c
+>>> @@ -394,6 +394,7 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+>>>   	char buffer[30];
+>>>   	int thres_count;
+>>>   	u32 eax, ebx, ecx, edx;
+>>> +	u8 *temp;
+>>>   
+>>>   	cpuid(6, &eax, &ebx, &ecx, &edx);
+>>>   	thres_count = ebx & 0x07;
+>>> @@ -417,13 +418,14 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+>>>   	spin_lock(&pkg_work_lock);
+>>>   	if (topology_physical_package_id(cpu) > max_phy_id)
+>>>   		max_phy_id = topology_physical_package_id(cpu);
+>>> -	pkg_work_scheduled = krealloc(pkg_work_scheduled,
+>>> -				(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
+>>> -	if (!pkg_work_scheduled) {
+>>> +	temp = krealloc(pkg_work_scheduled,
+>>> +			(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
+>>> +	if (!temp) {
+>> without this patch, this function will quite if krealloc returns NULL,
+>> but with the previous pkg_work_scheduled unfreed, right?
+> Yes, without patch, previous pkg_work_scheduled will unfreed if krealloc
+> return NULL.
+>
+>> thanks,
+>> rui
+>>>   		spin_unlock(&pkg_work_lock);
+>>>   		err = -ENOMEM;
+>>>   		goto err_ret_free;
+>>>   	}
+>>> +	pkg_work_scheduled = temp;
+>>>   	pkg_work_scheduled[topology_physical_package_id(cpu)] = 0;
+>>>   	spin_unlock(&pkg_work_lock);
+>>>   
+>>>
+>>
+>>
+>
+>
 
