@@ -1,30 +1,52 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
-Date: Sat, 13 Jul 2013 14:52:52 +0200
-Message-ID: <1373719972.1359.8.camel@x61.thuisdomein>
-References: <51C08370.4050906@gmx.de>
-	 <CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com>
-	 <51CF1E53.6060902@gmx.de> <8029836.CFiJCXmRQ0@vostro.rjw.lan>
-	 <51D05DF4.50704@linux.vnet.ibm.com> <51D06556.7080204@gmx.de>
-	 <51D07E7F.2030709@linux.vnet.ibm.com> <51DDC8FA.4020609@gmx.de>
-	 <1373710596.1352.26.camel@x61.thuisdomein>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: [PATCH 0/8] Cpufreq, cpu hotplug, suspend/resume related fixes
+Date: Sat, 13 Jul 2013 15:50:09 +0200
+Message-ID: <51E15B11.4070907@gmx.de>
+References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <51E11C82.8000805@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1373710596.1352.26.camel@x61.thuisdomein>
+In-Reply-To: <51E11C82.8000805@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: rjw@sisk.pl, viresh.kumar@linaro.org, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2013-07-13 at 12:16 +0200, Paul Bolle wrote:
-> I suspect that the stuck frequency is a regression introduced in v3.10.0.
+On 07/13/2013 11:23 AM, Toralf F=C3=B6rster wrote:
+> On 07/12/2013 12:15 AM, Srivatsa S. Bhat wrote:
+>> And I'd of course appreciate to hear from Dirk, Tianyu and Toralf to=
+ know
+>> whether their systems work fine after:
+>> a. applying only the first commit (this is what gets backported to s=
+table)
+>=20
+> applied on top of straight 3.10 .0 : Breaks my system completely -
 
-The culprit apparently is commit a66b2e503f ("cpufreq: Preserve sysfs
-files across suspend/resume"). Srivatsa submitted a patch to revert that
-commit (see https://lkml.org/lkml/2013/7/11/661 ). That revert seems to
-fix this issue too.
+overlooked, that the 8 patches are 3.11/3.12 material - but nevertheles=
+s :
+
+Applied 1/8 on top of v3.10-9289-g9903883 brought same bad picture as
+described for 3.10.0
+
+And applying patches 1-8 on top of that commit id just gives the same
+pciture - systems hangs during s2ram completly
 
 
-Paul Bolle
+> trying s2ram just blanks the console, lets the power led blinking,
+> neither sys-rq nor anything else worked now, no output to console nor=
+ to
+> syslog
+>=20
+>> b. applying all the commits
+> patch 2#8 doesn't apply at 3.10.0 (neither after patch 1#8 nor direct=
+ly)
+
+I attached the .config I'm using for my tests
+(/me wonders if it is worth to notice, that it is a 32bit system booted
+from an external USB drive ?)
+
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
