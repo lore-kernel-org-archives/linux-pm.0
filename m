@@ -1,173 +1,71 @@
-From: Sudeep.KarkadaNagesha@arm.com
-Subject: [RFC PATCH 03/11] ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
-Date: Mon, 15 Jul 2013 11:22:04 +0100
-Message-ID: <1373883732-26303-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 7/8] cpufreq: Preserve policy structure across suspend/resume
+Date: Mon, 15 Jul 2013 13:35:56 +0200
+Message-ID: <5802844.Fghi6KKD2P@vostro.rjw.lan>
+References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <CAKohpom+WcTcefCZitgZQcSjTPsgXsa6VKQF5y6GJA31-rBm0w@mail.gmail.com> <51E3C950.90503@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:33679 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755022Ab3GOKWY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 06:22:24 -0400
-In-Reply-To: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:43345 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755772Ab3GOL0I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jul 2013 07:26:08 -0400
+In-Reply-To: <51E3C950.90503@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: cpufreq@vger.kernel.org, arnd@arndb.de, olof@lixom.net, lorenzo.pieralisi@arm.com, rob.herring@calxeda.com, grant.likely@linaro.org, rjw@sisk.pl, viresh.kumar@linaro.org, gregkh@linuxfoundation.org, gregory.clement@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, linux@arm.linux.org.uk, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On Monday, July 15, 2013 03:35:04 PM Srivatsa S. Bhat wrote:
+> On 07/15/2013 03:25 PM, Viresh Kumar wrote:
+> > Hi Srivatsa,
+> > 
+> > I may be wrong but it looks something is wrong in this patch.
+> > 
+> > On 12 July 2013 03:47, Srivatsa S. Bhat
+> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > 
+> >> @@ -1239,29 +1263,40 @@ static int __cpufreq_remove_dev(struct device *dev,
+> >>         if ((cpus == 1) && (cpufreq_driver->target))
+> >>                 __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+> >>
+> >> -       pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+> >> -       cpufreq_cpu_put(data);
+> >> +       if (!frozen) {
+> >> +               pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+> >> +               cpufreq_cpu_put(data);
+> > 
+> > So, we don't decrement usage count here. But we are still increasing
+> > counts on cpufreq_add_dev after resume, isn't it?
+> > 
+> > So, we wouldn't be able to free policy struct once all the cpus of a
+> > policy are removed after suspend/resume has happened once.
+> > 
+> 
+> Actually even I was wondering about this while writing the patch and
+> I even tested shutdown after multiple suspend/resume cycles, to verify that
+> the refcount is messed up. But surprisingly, things worked just fine.
+> 
+> Logically there should've been a refcount mismatch and things should have
+> failed, but everything worked fine during my tests. Apart from suspend/resume
+> and shutdown tests, I even tried mixing a few regular CPU hotplug operations
+> (echo 0/1 to sysfs online files), but nothing stood out.
+> 
+> Sorry, I forgot to document this in the patch. Either the patch is wrong
+> or something else is silently fixing this up. Not sure what is the exact
+> situation.
 
-Currently the topology code computes cpu capacity and stores it in
-the list along with hwid(which is MPIDR) as it parses the CPU nodes
-in the device tree. This is required as it needs to be mapped to the
-logical CPU later.
+OK, so I'm not going to queue [2-8/8] up until we find out what's going on
+here (and until Toralf tells me that it doesn't break his system any more).
 
-Since the CPU device nodes can be retrieved in the logical ordering
-using helpers, its possible to store cpu_capacity also in logical
-ordering and avoid storing hwid for each entry.
+I've queued up [1/8] for 3.11 already.
 
-This patch removes hwid by making use of arch_of_get_cpu_node.
-
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- arch/arm/kernel/topology.c | 61 +++++++++++++++---------------------------=
-----
- 1 file changed, 19 insertions(+), 42 deletions(-)
-
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index c5a5954..c1a8f05 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -74,12 +74,8 @@ struct cpu_efficiency table_efficiency[] =3D {
- =09{NULL, },
- };
-=20
--struct cpu_capacity {
--=09unsigned long hwid;
--=09unsigned long capacity;
--};
--
--struct cpu_capacity *cpu_capacity;
-+unsigned long *__cpu_capacity;
-+#define cpu_capacity(cpu)=09__cpu_capacity[cpu]
-=20
- unsigned long middle_capacity =3D 1;
-=20
-@@ -100,15 +96,19 @@ static void __init parse_dt_topology(void)
- =09unsigned long capacity =3D 0;
- =09int alloc_size, cpu =3D 0;
-=20
--=09alloc_size =3D nr_cpu_ids * sizeof(struct cpu_capacity);
--=09cpu_capacity =3D kzalloc(alloc_size, GFP_NOWAIT);
-+=09alloc_size =3D nr_cpu_ids * sizeof(*__cpu_capacity);
-+=09__cpu_capacity =3D kzalloc(alloc_size, GFP_NOWAIT);
-=20
--=09while ((cn =3D of_find_node_by_type(cn, "cpu"))) {
--=09=09const u32 *rate, *reg;
-+=09for_each_possible_cpu(cpu) {
-+=09=09const u32 *rate;
- =09=09int len;
-=20
--=09=09if (cpu >=3D num_possible_cpus())
--=09=09=09break;
-+=09=09/* too early to use cpu->of_node */
-+=09=09cn =3D arch_of_get_cpu_node(cpu);
-+=09=09if (!cn) {
-+=09=09=09pr_err("missing device node for CPU %d\n", cpu);
-+=09=09=09continue;
-+=09=09}
-=20
- =09=09for (cpu_eff =3D table_efficiency; cpu_eff->compatible; cpu_eff++)
- =09=09=09if (of_device_is_compatible(cn, cpu_eff->compatible))
-@@ -124,12 +124,6 @@ static void __init parse_dt_topology(void)
- =09=09=09continue;
- =09=09}
-=20
--=09=09reg =3D of_get_property(cn, "reg", &len);
--=09=09if (!reg || len !=3D 4) {
--=09=09=09pr_err("%s missing reg property\n", cn->full_name);
--=09=09=09continue;
--=09=09}
--
- =09=09capacity =3D ((be32_to_cpup(rate)) >> 20) * cpu_eff->efficiency;
-=20
- =09=09/* Save min capacity of the system */
-@@ -140,13 +134,9 @@ static void __init parse_dt_topology(void)
- =09=09if (capacity > max_capacity)
- =09=09=09max_capacity =3D capacity;
-=20
--=09=09cpu_capacity[cpu].capacity =3D capacity;
--=09=09cpu_capacity[cpu++].hwid =3D be32_to_cpup(reg);
-+=09=09cpu_capacity(cpu) =3D capacity;
- =09}
-=20
--=09if (cpu < num_possible_cpus())
--=09=09cpu_capacity[cpu].hwid =3D (unsigned long)(-1);
--
- =09/* If min and max capacities are equals, we bypass the update of the
- =09 * cpu_scale because all CPUs have the same capacity. Otherwise, we
- =09 * compute a middle_capacity factor that will ensure that the capacity
-@@ -154,9 +144,7 @@ static void __init parse_dt_topology(void)
- =09 * SCHED_POWER_SCALE, which is the default value, but with the
- =09 * constraint explained near table_efficiency[].
- =09 */
--=09if (min_capacity =3D=3D max_capacity)
--=09=09cpu_capacity[0].hwid =3D (unsigned long)(-1);
--=09else if (4*max_capacity < (3*(max_capacity + min_capacity)))
-+=09if (4*max_capacity < (3*(max_capacity + min_capacity)))
- =09=09middle_capacity =3D (min_capacity + max_capacity)
- =09=09=09=09>> (SCHED_POWER_SHIFT+1);
- =09else
-@@ -170,23 +158,12 @@ static void __init parse_dt_topology(void)
-  * boot. The update of all CPUs is in O(n^2) for heteregeneous system but =
-the
-  * function returns directly for SMP system.
-  */
--void update_cpu_power(unsigned int cpu, unsigned long hwid)
-+void update_cpu_power(unsigned int cpu)
- {
--=09unsigned int idx =3D 0;
--
--=09/* look for the cpu's hwid in the cpu capacity table */
--=09for (idx =3D 0; idx < num_possible_cpus(); idx++) {
--=09=09if (cpu_capacity[idx].hwid =3D=3D hwid)
--=09=09=09break;
--
--=09=09if (cpu_capacity[idx].hwid =3D=3D -1)
--=09=09=09return;
--=09}
--
--=09if (idx =3D=3D num_possible_cpus())
-+=09if (!cpu_capacity(cpu))
- =09=09return;
-=20
--=09set_power_scale(cpu, cpu_capacity[idx].capacity / middle_capacity);
-+=09set_power_scale(cpu, cpu_capacity(cpu) / middle_capacity);
-=20
- =09printk(KERN_INFO "CPU%u: update cpu_power %lu\n",
- =09=09cpu, arch_scale_freq_power(NULL, cpu));
-@@ -194,7 +171,7 @@ void update_cpu_power(unsigned int cpu, unsigned long h=
-wid)
-=20
- #else
- static inline void parse_dt_topology(void) {}
--static inline void update_cpu_power(unsigned int cpuid, unsigned int mpidr=
-) {}
-+static inline void update_cpu_power(unsigned int cpuid) {}
- #endif
-=20
-  /*
-@@ -281,7 +258,7 @@ void store_cpu_topology(unsigned int cpuid)
-=20
- =09update_siblings_masks(cpuid);
-=20
--=09update_cpu_power(cpuid, mpidr & MPIDR_HWID_BITMASK);
-+=09update_cpu_power(cpuid);
-=20
- =09printk(KERN_INFO "CPU%u: thread %d, cpu %d, socket %d, mpidr %x\n",
- =09=09cpuid, cpu_topology[cpuid].thread_id,
---=20
-1.8.1.2
+Thanks,
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
