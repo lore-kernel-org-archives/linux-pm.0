@@ -1,120 +1,90 @@
 From: Sudeep.KarkadaNagesha@arm.com
-Subject: [RFC PATCH 04/11] ARM: mvebu: remove device tree parsing for cpu nodes
-Date: Mon, 15 Jul 2013 11:22:05 +0100
-Message-ID: <1373883732-26303-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH 02/11] ARM: DT/kernel: define ARM specific arch_of_get_cpu_node
+Date: Mon, 15 Jul 2013 11:22:03 +0100
+Message-ID: <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: cpufreq-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, linux@arm.linux.org.uk, arnd@arndb.de, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, viresh.kumar@linaro.org, rob.herring@calxeda.com, rjw@sisk.pl, grant.likely@linaro.org, cpufreq@vger.kernel.org, kernel@pengutronix.de, gregkh@linuxfoundation.org, olof@lixom.net, gregory.clement@free-electrons.com, shawn.guo@linaro.org
+Cc: cpufreq@vger.kernel.org, arnd@arndb.de, olof@lixom.net, lorenzo.pieralisi@arm.com, rob.herring@calxeda.com, grant.likely@linaro.org, rjw@sisk.pl, viresh.kumar@linaro.org, gregkh@linuxfoundation.org, gregory.clement@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, linux@arm.linux.org.uk, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Currently set_secondary_cpus_clock assume the CPU logical ordering
-and the MPDIR in DT are same, which is incorrect.
+CPU subsystem now provides architecture specific hook to retrieve the
+of_node. Most of the cpu DT node parsing and initialisation is contained
+in devtree.c. It's better to contain all CPU device node parsing there.
 
-Since the CPU device nodes can be retrieved in the logical ordering
-using the helper, we can remove the devices tree parsing.
+arch_of_get_cpu_node is mainly used to assign cpu->of_node when CPUs get
+registered. This patch overrides the defination of the same. It can also
+act as the helper function in pre-SMP/early initialisation stages to
+retrieve CPU device node pointers in logical ordering.
 
-This patch removes DT parsing by making use of arch_of_get_cpu_node.
+This mainly helps to avoid replication of the code doing CPU node parsing
+and physical(MPIDR) to logical mapping.
 
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
- 1 file changed, 24 insertions(+), 28 deletions(-)
+ arch/arm/include/asm/prom.h |  1 +
+ arch/arm/kernel/devtree.c   | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
 
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index 93f2f3a..b57af6c 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -23,51 +23,47 @@
- #include <linux/of.h>
- #include <linux/mbus.h>
- #include <asm/cacheflush.h>
-+#include <asm/prom.h>
- #include <asm/smp_plat.h>
- #include "common.h"
- #include "armada-370-xp.h"
- #include "pmsu.h"
- #include "coherency.h"
- 
-+static struct clk *__init get_cpu_clk(int cpu)
+diff --git a/arch/arm/include/asm/prom.h b/arch/arm/include/asm/prom.h
+index a219227..96f1682 100644
+--- a/arch/arm/include/asm/prom.h
++++ b/arch/arm/include/asm/prom.h
+@@ -18,6 +18,7 @@
+ extern struct machine_desc *setup_machine_fdt(unsigned int dt_phys);
+ extern void arm_dt_memblock_reserve(void);
+ extern void __init arm_dt_init_cpu_maps(void);
++extern struct device_node *arch_of_get_cpu_node(int cpu);
+=20
+ #else /* CONFIG_OF */
+=20
+diff --git a/arch/arm/kernel/devtree.c b/arch/arm/kernel/devtree.c
+index 5859c8b..3431aa9 100644
+--- a/arch/arm/kernel/devtree.c
++++ b/arch/arm/kernel/devtree.c
+@@ -169,6 +169,35 @@ void __init arm_dt_init_cpu_maps(void)
+ =09}
+ }
+=20
++struct device_node * __init arch_of_get_cpu_node(int cpu)
 +{
-+	struct clk *cpu_clk;
-+	struct device_node *np = arch_of_get_cpu_node(cpu);
++=09struct device_node *cpun, *cpus;
++=09const u32 *cell;
++=09u64 hwid;
++=09int ac;
 +
-+	if (WARN(!np, "missing cpu node\n"))
-+		return NULL;
-+	cpu_clk = of_clk_get(np, 0);
-+	if (WARN_ON(IS_ERR(cpu_clk)))
-+		return NULL;
-+	return cpu_clk;
++=09cpus =3D of_find_node_by_path("/cpus");
++=09if (WARN(!cpus, "Missing cpus node, bailing out\n"))
++=09=09return NULL;
++
++=09if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
++=09=09ac =3D of_n_addr_cells(cpus);
++
++=09for_each_child_of_node(cpus, cpun) {
++=09=09if (of_node_cmp(cpun->type, "cpu"))
++=09=09=09continue;
++=09=09cell =3D of_get_property(cpun, "reg", NULL);
++=09=09if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
++=09=09=09continue;
++
++=09=09hwid =3D of_read_number(cell, ac);
++=09=09if ((hwid & MPIDR_HWID_BITMASK) =3D=3D cpu_logical_map(cpu))
++=09=09=09return cpun;
++=09}
++
++=09return NULL;
 +}
 +
- void __init set_secondary_cpus_clock(void)
- {
--	int thiscpu;
-+	int thiscpu, cpu;
- 	unsigned long rate;
--	struct clk *cpu_clk = NULL;
--	struct device_node *np = NULL;
-+	struct clk *cpu_clk;
- 
- 	thiscpu = smp_processor_id();
--	for_each_node_by_type(np, "cpu") {
--		int err;
--		int cpu;
--
--		err = of_property_read_u32(np, "reg", &cpu);
--		if (WARN_ON(err))
--			return;
--
--		if (cpu == thiscpu) {
--			cpu_clk = of_clk_get(np, 0);
--			break;
--		}
--	}
--	if (WARN_ON(IS_ERR(cpu_clk)))
-+	cpu_clk = get_cpu_clk(thiscpu);
-+	if (!cpu_clk)
- 		return;
- 	clk_prepare_enable(cpu_clk);
- 	rate = clk_get_rate(cpu_clk);
- 
- 	/* set all the other CPU clk to the same rate than the boot CPU */
--	for_each_node_by_type(np, "cpu") {
--		int err;
--		int cpu;
--
--		err = of_property_read_u32(np, "reg", &cpu);
--		if (WARN_ON(err))
-+	for_each_possible_cpu(cpu) {
-+		if (cpu == thiscpu)
-+			continue;
-+		cpu_clk = get_cpu_clk(cpu);
-+		if (!cpu_clk)
- 			return;
--
--		if (cpu != thiscpu) {
--			cpu_clk = of_clk_get(np, 0);
--			clk_set_rate(cpu_clk, rate);
--		}
-+		clk_set_rate(cpu_clk, rate);
- 	}
- }
- 
--- 
+ /**
+  * setup_machine_fdt - Machine setup when an dtb was passed to the kernel
+  * @dt_phys: physical address of dt blob
+--=20
 1.8.1.2
+
+
