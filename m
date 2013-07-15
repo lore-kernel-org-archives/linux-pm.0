@@ -1,76 +1,69 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/8] cpufreq: Revert commit a66b2e to fix cpufreq regression
- during suspend/resume
-Date: Mon, 15 Jul 2013 11:48:04 +0530
-Message-ID: <51E3941C.2010101@linux.vnet.ibm.com>
-References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <20130711221527.547.46447.stgit@srivatsabhat.in.ibm.com> <CAKohpomVo5FEN1fOHQQ9jQuLnrRfHcNkH7QcnJG7x6x-Xd7J-A@mail.gmail.com> <1373719585.1359.3.camel@x61.thuisdomein>
+Subject: Re: [PATCH 2/8] cpufreq: Fix misplaced call to cpufreq_update_policy()
+Date: Mon, 15 Jul 2013 11:50:24 +0530
+Message-ID: <51E394A8.1030001@linux.vnet.ibm.com>
+References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <20130711221553.547.56787.stgit@srivatsabhat.in.ibm.com> <CAKohpo=DNhKTGdectgyWLW3XkfDOAiEhJ=hi+zW=6G6fWShybg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:38131 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753973Ab3GOGVk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 02:21:40 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:47857 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997Ab3GOGXz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 02:23:55 -0400
 Received: from /spool/local
-	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 15 Jul 2013 16:13:59 +1000
-In-Reply-To: <1373719585.1359.3.camel@x61.thuisdomein>
+	Tue, 16 Jul 2013 03:19:28 +1000
+In-Reply-To: <CAKohpo=DNhKTGdectgyWLW3XkfDOAiEhJ=hi+zW=6G6fWShybg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/13/2013 06:16 PM, Paul Bolle wrote:
-> On Fri, 2013-07-12 at 12:48 +0530, Viresh Kumar wrote:
->> On 12 July 2013 03:45, Srivatsa S. Bhat
->> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>> commit a66b2e (cpufreq: Preserve sysfs files across suspend/resume) has
->>> unfortunately caused several things in the cpufreq subsystem to break subtly
->>> after a suspend/resume cycle.
->>>
->>> The intention of that patch was to retain the file permissions of the
->>> cpufreq related sysfs files across suspend/resume. To achieve that, the commit
->>> completely removed the calls to cpufreq_add_dev() and __cpufreq_remove_dev()
->>> during suspend/resume transitions. But the problem is that those functions
->>> do 2 kinds of things:
->>>   1. Low-level initialization/tear-down that are critical to the correct
->>>      functioning of cpufreq-core.
->>>   2. Kobject and sysfs related initialization/teardown.
->>>
->>> Ideally we should have reorganized the code to cleanly separate these two
->>> responsibilities, and skipped only the sysfs related parts during
->>> suspend/resume. Since we skipped the entire callbacks instead (which also
->>> included some CPU and cpufreq-specific critical components), cpufreq
->>> subsystem started behaving erratically after suspend/resume.
->>>
->>> So revert the commit to fix the regression. We'll revisit and address the
->>> original goal of that commit separately, since it involves quite a bit of
->>> careful code reorganization and appears to be non-trivial.
->>>
->>> (While reverting the commit, note that another commit f51e1eb "cpufreq:
->>> Fix cpufreq regression after suspend/resume" already reverted part of the
->>> original set of changes. So revert only the remaining ones).
->>>
->>> Cc: stable@vger.kernel.org
->>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->>> ---
->>>
->>>  drivers/cpufreq/cpufreq.c       |    4 +++-
->>>  drivers/cpufreq/cpufreq_stats.c |    6 ++----
->>>  2 files changed, 5 insertions(+), 5 deletions(-)
+On 07/12/2013 12:36 PM, Viresh Kumar wrote:
+> On 12 July 2013 03:45, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>> The call to cpufreq_update_policy() is placed in the CPU hotplug callback
+>> of cpufreq_stats, which has a higher priority than the CPU hotplug callback
+>> of cpufreq-core. As a result, during CPU_ONLINE/CPU_ONLINE_FROZEN, we end up
+>> calling cpufreq_update_policy() *before* calling cpufreq_add_dev() !
+>> And for uninitialized CPUs, it just returns silently, not doing anything.
+> 
+> Hmm..
+> 
+>> To add to it, cpufreq_stats is not even the right place to call
+>> cpufreq_update_policy() to begin with. The cpufreq core ought to handle
+>> this in its own callback, from an elegance/relevance perspective.
 >>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> So move the invocation of cpufreq_update_policy() to cpufreq_cpu_callback,
+>> and place it *after* cpufreq_add_dev().
+>>
+>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>> ---
+>>
+>>  drivers/cpufreq/cpufreq.c       |    1 +
+>>  drivers/cpufreq/cpufreq_stats.c |    6 ------
+>>  2 files changed, 1 insertion(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index ccc6eab..f8c3100 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1943,6 +1943,7 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+>>                 case CPU_ONLINE:
+>>                 case CPU_ONLINE_FROZEN:
+>>                         cpufreq_add_dev(dev, NULL);
+>> +                       cpufreq_update_policy(cpu);
 > 
-> This seems to fix the "core stuck at some frequency after resume" issue
-> I ran into since v3.10. So:
-> 
-> Tested-by: Paul Bolle <pebolle@tiscali.nl>
+> Do we need to call this for every hotplug of cpu? I am not
+> talking about suspend/resume here.
 > 
 
-Thanks Paul!
- 
+I don't think we need to, but I think it would be better to postpone
+optimizations until all the cpufreq regressions get fixed. Later perhaps
+we could revisit these minor optimizations if desired.
+
 Regards,
 Srivatsa S. Bhat
 
