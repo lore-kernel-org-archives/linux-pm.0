@@ -1,103 +1,87 @@
 From: Sudeep.KarkadaNagesha@arm.com
-Subject: [RFC PATCH 11/11] cpufreq: arm_big_little: remove device tree parsing for cpu nodes
-Date: Mon, 15 Jul 2013 11:22:12 +0100
-Message-ID: <1373883732-26303-12-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH 05/11] drivers/bus: arm-cci: avoid parsing DT for cpu
+ device nodes
+Date: Mon, 15 Jul 2013 11:22:06 +0100
+Message-ID: <1373883732-26303-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: cpufreq@vger.kernel.org, arnd@arndb.de, olof@lixom.net, lorenzo.pieralisi@arm.com, rob.herring@calxeda.com, grant.likely@linaro.org, rjw@sisk.pl, viresh.kumar@linaro.org, gregkh@linuxfoundation.org, gregory.clement@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, linux@arm.linux.org.uk, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Cc: lorenzo.pieralisi@arm.com, linux@arm.linux.org.uk, arnd@arndb.de, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, viresh.kumar@linaro.org, rob.herring@calxeda.com, rjw@sisk.pl, grant.likely@linaro.org, cpufreq@vger.kernel.org, kernel@pengutronix.de, gregkh@linuxfoundation.org, olof@lixom.net, gregory.clement@free-electrons.com, shawn.guo@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Now that the cpu device registration initialises the of_node(if available)
-appropriately for all the cpus, parsing here is redundant.
+Since the CPU device nodes can be retrieved using arch_of_get_cpu_node,
+we can use it to avoid parsing the cpus node searching the cpu nodes and
+mapping to logical index.
 
-This patch removes all DT parsing and uses cpu->of_node instead.
+This patch removes parsing DT for cpu nodes by using arch_of_get_cpu_node.
 
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/cpufreq/arm_big_little_dt.c | 39 ++++++++++++++++-----------------=
-----
- 1 file changed, 17 insertions(+), 22 deletions(-)
+ drivers/bus/arm-cci.c | 28 +++++++---------------------
+ 1 file changed, 7 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_=
-little_dt.c
-index fd9e3ea..d2648d1 100644
---- a/drivers/cpufreq/arm_big_little_dt.c
-+++ b/drivers/cpufreq/arm_big_little_dt.c
-@@ -34,27 +34,19 @@
- /* get cpu node with valid operating-points */
- static struct device_node *get_cpu_node_with_valid_op(int cpu)
+diff --git a/drivers/bus/arm-cci.c b/drivers/bus/arm-cci.c
+index 7332889..8de67c2 100644
+--- a/drivers/bus/arm-cci.c
++++ b/drivers/bus/arm-cci.c
+@@ -122,17 +122,8 @@ EXPORT_SYMBOL_GPL(cci_ace_get_port);
+ 
+ static void __init cci_ace_init_ports(void)
  {
--=09struct device_node *np =3D NULL, *parent;
--=09int count =3D 0;
-+=09struct device *cpu_dev =3D get_cpu_device(cpu);
-+=09struct device_node *np;
-=20
--=09parent =3D of_find_node_by_path("/cpus");
--=09if (!parent) {
--=09=09pr_err("failed to find OF /cpus\n");
-+=09if (!cpu_dev) {
-+=09=09pr_err("failed to get cpu device\n");
- =09=09return NULL;
- =09}
+-	int port, ac, cpu;
+-	u64 hwid;
+-	const u32 *cell;
+-	struct device_node *cpun, *cpus;
 -
--=09for_each_child_of_node(parent, np) {
--=09=09if (count++ !=3D cpu)
--=09=09=09continue;
--=09=09if (!of_get_property(np, "operating-points", NULL)) {
--=09=09=09of_node_put(np);
--=09=09=09np =3D NULL;
--=09=09}
+-	cpus = of_find_node_by_path("/cpus");
+-	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+-		return;
 -
--=09=09break;
-+=09np =3D of_node_get(cpu_dev->of_node);
-+=09if (!of_get_property(np, "operating-points", NULL)) {
-+=09=09of_node_put(np);
-+=09=09np =3D NULL;
- =09}
-=20
--=09of_node_put(parent);
- =09return np;
- }
-=20
-@@ -63,11 +55,12 @@ static int dt_init_opp_table(struct device *cpu_dev)
- =09struct device_node *np;
- =09int ret;
-=20
--=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
--=09if (!np)
--=09=09return -ENODATA;
-+=09np =3D of_node_get(cpu_dev->of_node);
-+=09if (!np) {
-+=09=09pr_err("failed to find cpu%d node\n", cpu_dev->id);
-+=09=09return -ENOENT;
-+=09}
-=20
--=09cpu_dev->of_node =3D np;
- =09ret =3D of_init_opp_table(cpu_dev);
- =09of_node_put(np);
-=20
-@@ -79,9 +72,11 @@ static int dt_get_transition_latency(struct device *cpu_=
-dev)
- =09struct device_node *np;
- =09u32 transition_latency =3D CPUFREQ_ETERNAL;
-=20
--=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
--=09if (!np)
-+=09np =3D of_node_get(cpu_dev->of_node);
-+=09if (!np) {
-+=09=09pr_info("Failed to find cpu node. Use CPUFREQ_ETERNAL transition lat=
-ency\n");
- =09=09return CPUFREQ_ETERNAL;
-+=09}
-=20
- =09of_property_read_u32(np, "clock-latency", &transition_latency);
- =09of_node_put(np);
---=20
+-	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
+-		ac = of_n_addr_cells(cpus);
++	int port, cpu;
++	struct device_node *cpun;
+ 
+ 	/*
+ 	 * Port index look-up speeds up the function disabling ports by CPU,
+@@ -141,18 +132,13 @@ static void __init cci_ace_init_ports(void)
+ 	 * The stashed index array is initialized for all possible CPUs
+ 	 * at probe time.
+ 	 */
+-	for_each_child_of_node(cpus, cpun) {
+-		if (of_node_cmp(cpun->type, "cpu"))
+-			continue;
+-		cell = of_get_property(cpun, "reg", NULL);
+-		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
+-			continue;
+-
+-		hwid = of_read_number(cell, ac);
+-		cpu = get_logical_index(hwid & MPIDR_HWID_BITMASK);
++	for_each_possible_cpu(cpu) {
++		/* too early to use cpu->of_node */
++		cpun = arch_of_get_cpu_node(cpu);
+ 
+-		if (cpu < 0 || !cpu_possible(cpu))
++		if (WARN(!cpun, "Missing cpu device node\n"))
+ 			continue;
++
+ 		port = __cci_ace_get_port(cpun, ACE_PORT);
+ 		if (port < 0)
+ 			continue;
+-- 
 1.8.1.2
