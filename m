@@ -1,68 +1,263 @@
-From: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH] PM: avoid 'autosleep' in shutdown progress
-Date: Mon, 15 Jul 2013 08:51:26 +0800
-Message-ID: <1373849486.4432.127.camel@ymzhang.sh.intel.com>
-References: <1373609651.4432.122.camel@ymzhang.sh.intel.com>
-	 <Pine.LNX.4.44L0.1307121034180.1469-100000@iolanthe.rowland.org>
-	 <20130713115631.GA16473@amd.pavel.ucw.cz>
-Reply-To: yanmin_zhang@linux.intel.com
+From: Michael Wang <wangyun@linux.vnet.ibm.com>
+Subject: Re: [LOCKDEP] cpufreq: possible circular locking dependency detected
+Date: Mon, 15 Jul 2013 10:42:35 +0800
+Message-ID: <51E3619B.6060901@linux.vnet.ibm.com>
+References: <20130625211544.GA2270@swordfish> <51D10899.1080501@linux.vnet.ibm.com> <20130710231305.GA4046@swordfish> <51DE1BE1.3090707@linux.vnet.ibm.com> <20130714114721.GB2178@swordfish>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:18620 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753732Ab3GOAvl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 14 Jul 2013 20:51:41 -0400
-In-Reply-To: <20130713115631.GA16473@amd.pavel.ucw.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130714114721.GB2178@swordfish>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan Stern <stern@rowland.harvard.edu>, shuox.liu@intel.com, linux-kernel@vger.kernel.org, len.brown@intel.com, rjw@sisk.pl, linux-pm@vger.kernel.org
 
-On Sat, 2013-07-13 at 13:56 +0200, Pavel Machek wrote:
-> On Fri 2013-07-12 10:37:33, Alan Stern wrote:
-> > On Fri, 12 Jul 2013, Yanmin Zhang wrote:
-> > 
-> > > On Thu, 2013-07-11 at 16:03 +0800, shuox.liu@intel.com wrote:
-> > > > From: Liu ShuoX <shuox.liu@intel.com>
-> > > > 
-> > > > In shutdown progress, system is possible to do power transition
-> > > > (such as suspend-to-ram) in parallel. It is unreasonable. So,
-> > > > fixes it by adding a system_state checking and queue try_to_suspend
-> > > > again when system status is not running.
-> > > > 
-> > > > Signed-off-by: Liu ShuoX <shuox.liu@intel.com>
-> > > > ---
-> > > >  kernel/power/autosleep.c |    3 ++-
-> > > >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > > > 
-> > > Without this patch, we hit an hang issue on Android.
-> > > 
-> > > Scenario:
-> > > Kernel starts shutdown and calls all device driver's shutdown callback.
-> > > When a driver's shutdown is called, the last wakelock is released and
-> > > suspend-to-ram starts. However, as some driver's shut down callbacks
-> > > already shut down devices and disable runtime pm, the suspend-to-ram
-> > > calls driver's suspend callback without noticing that device is already
-> > > off and causes crash.
-> > > We know the drivers should be fixed, but can we also change generic
-> > > codes a little to make it stronger?
-> > 
-> > Indeed, this does seem like the sort of thing we want to have.  
-> > Allowing an "automatic" or "opportunistic" sleep in the middle of a
-> > shutdown makes no sense at all.  In fact, it might be a good idea to
-> > disable system sleep completely at this time -- not even a write to
-> > /sys/power/state should be allowed to interrupt a shutdown.
+On 07/14/2013 07:47 PM, Sergey Senozhatsky wrote:
+[snip]
 > 
-> I'm not completely sure, but as long as userland is running, we should
-> have system_state == RUNNING, no?
-No. The reboot/shutdown is started by application processes, then kernel
-changes system_state quickly. See kernel_restart_prepare, kernel_shutdown_prepare.
+> Hello,
+> 
+> I just realized that lockdep was disabling itself at startup (after recent AMD
+> radeon patch set) due to radeon kms error:
+> 
+> [    4.790019] [drm] Loading CEDAR Microcode
+> [    4.790943] r600_cp: Failed to load firmware "radeon/CEDAR_smc.bin"
+> [    4.791152] [drm:evergreen_startup] *ERROR* Failed to load firmware!
+> [    4.791330] radeon 0000:01:00.0: disabling GPU acceleration
+> [    4.792633] INFO: trying to register non-static key.
+> [    4.792792] the code is fine but needs lockdep annotation.
+> [    4.792953] turning off the locking correctness validator.
+> 
+> 
+> Now, as I fixed radeon kms, I can see:
+> 
+> [  806.660530] ------------[ cut here ]------------
+> [  806.660539] WARNING: CPU: 0 PID: 2389 at arch/x86/kernel/smp.c:124
+> native_smp_send_reschedule+0x57/0x60()
+> 
+> [  806.660572] Workqueue: events od_dbs_timer
+> [  806.660575]  0000000000000009 ffff8801531cfbd8 ffffffff816044ee
+> 0000000000000000
+> [  806.660577]  ffff8801531cfc10 ffffffff8104995d 0000000000000003
+> ffff8801531f8000
+> [  806.660579]  000000010001ee39 0000000000000003 0000000000000003
+> ffff8801531cfc20
+> [  806.660580] Call Trace:
+> [  806.660587]  [<ffffffff816044ee>] dump_stack+0x4e/0x82
+> [  806.660591]  [<ffffffff8104995d>] warn_slowpath_common+0x7d/0xa0
+> [  806.660593]  [<ffffffff81049a3a>] warn_slowpath_null+0x1a/0x20
+> [  806.660595]  [<ffffffff8102ca07>] native_smp_send_reschedule+0x57/0x60
+> [  806.660599]  [<ffffffff81085211>] wake_up_nohz_cpu+0x61/0xb0
+> [  806.660603]  [<ffffffff8105cb6d>] add_timer_on+0x8d/0x1e0
+> [  806.660607]  [<ffffffff8106cc66>] __queue_delayed_work+0x166/0x1a0
+> [  806.660609]  [<ffffffff8106d6a9>] ? try_to_grab_pending+0xd9/0x1a0
+> [  806.660611]  [<ffffffff8106d7bf>] mod_delayed_work_on+0x4f/0x90
+> [  806.660613]  [<ffffffff8150f436>] gov_queue_work+0x56/0xd0
+> [  806.660615]  [<ffffffff8150e740>] od_dbs_timer+0xc0/0x160
+> [  806.660617]  [<ffffffff8106dbcd>] process_one_work+0x1cd/0x6a0
+> [  806.660619]  [<ffffffff8106db63>] ? process_one_work+0x163/0x6a0
+> [  806.660622]  [<ffffffff8106e8d1>] worker_thread+0x121/0x3a0
+> [  806.660627]  [<ffffffff810b668d>] ? trace_hardirqs_on+0xd/0x10
+> [  806.660629]  [<ffffffff8106e7b0>] ? manage_workers.isra.24+0x2a0/0x2a0
+> [  806.660633]  [<ffffffff810760cb>] kthread+0xdb/0xe0
+> [  806.660635]  [<ffffffff81075ff0>] ? insert_kthread_work+0x70/0x70
+> [  806.660639]  [<ffffffff8160de6c>] ret_from_fork+0x7c/0xb0
+> [  806.660640]  [<ffffffff81075ff0>] ? insert_kthread_work+0x70/0x70
+> [  806.660642] ---[ end trace 01ae278488a0ad6d ]---
 
-But indeed, it's a good question. We hit many other issues around rebooting.
-When system is rebooting, user space processes are still running. There is no
-freeze step. Some processes might jump in to access devices. To avoid it, we
-have to add some tricks in some device drivers. It's a little crazy.
+So it back again...
 
+Currently I have some assumptions in my mind:
+1. we still failed to stop od_dbs_timer after STOP notify.
+2. there is some code else which restart the work after STOP notify.
+3. policy->cpus is broken.
+
+I think we need a more detail investigation this time, let's catch the
+mouse out ;-)
+
+Regards,
+Michael Wang
+
+> 
+> 
+> The same problem why get/put_online_cpus() has been added to  __gov_queue_work()
+> 
+> commit 2f7021a815f20f3481c10884fe9735ce2a56db35
+> Author: Michael Wang
+> 
+>     cpufreq: protect 'policy->cpus' from offlining during
+>     __gov_queue_work()
+> 
+> 	-ss
+> 
+>> Regards,
+>> Michael Wang
+>>
+>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>> index dc9b72e..a64b544 100644
+>> --- a/drivers/cpufreq/cpufreq_governor.c
+>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>> @@ -178,13 +178,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>>  {
+>>  	int i;
+>>  
+>> +	if (dbs_data->queue_stop)
+>> +		return;
+>> +
+>>  	if (!all_cpus) {
+>>  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
+>>  	} else {
+>> -		get_online_cpus();
+>>  		for_each_cpu(i, policy->cpus)
+>>  			__gov_queue_work(i, dbs_data, delay);
+>> -		put_online_cpus();
+>>  	}
+>>  }
+>>  EXPORT_SYMBOL_GPL(gov_queue_work);
+>> @@ -193,12 +194,27 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
+>>  		struct cpufreq_policy *policy)
+>>  {
+>>  	struct cpu_dbs_common_info *cdbs;
+>> -	int i;
+>> +	int i, round = 2;
+>>  
+>> +	dbs_data->queue_stop = 1;
+>> +redo:
+>> +	round--;
+>>  	for_each_cpu(i, policy->cpus) {
+>>  		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
+>>  		cancel_delayed_work_sync(&cdbs->work);
+>>  	}
+>> +
+>> +	/*
+>> +	 * Since there is no lock to prvent re-queue the
+>> +	 * cancelled work, some early cancelled work might
+>> +	 * have been queued again by later cancelled work.
+>> +	 *
+>> +	 * Flush the work again with dbs_data->queue_stop
+>> +	 * enabled, this time there will be no survivors.
+>> +	 */
+>> +	if (round)
+>> +		goto redo;
+>> +	dbs_data->queue_stop = 0;
+>>  }
+>>  
+>>  /* Will return if we need to evaluate cpu load again or not */
+>> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+>> index e16a961..9116135 100644
+>> --- a/drivers/cpufreq/cpufreq_governor.h
+>> +++ b/drivers/cpufreq/cpufreq_governor.h
+>> @@ -213,6 +213,7 @@ struct dbs_data {
+>>  	unsigned int min_sampling_rate;
+>>  	int usage_count;
+>>  	void *tuners;
+>> +	int queue_stop;
+>>  
+>>  	/* dbs_mutex protects dbs_enable in governor start/stop */
+>>  	struct mutex mutex;
+>>
+>>>
+>>> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+>>>
+>>> ---
+>>>
+>>>  drivers/cpufreq/cpufreq.c          |  5 +----
+>>>  drivers/cpufreq/cpufreq_governor.c | 17 +++++++++++------
+>>>  drivers/cpufreq/cpufreq_stats.c    |  2 +-
+>>>  3 files changed, 13 insertions(+), 11 deletions(-)
+>>>
+>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>> index 6a015ad..f8aacf1 100644
+>>> --- a/drivers/cpufreq/cpufreq.c
+>>> +++ b/drivers/cpufreq/cpufreq.c
+>>> @@ -1943,13 +1943,10 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+>>>  		case CPU_ONLINE:
+>>>  			cpufreq_add_dev(dev, NULL);
+>>>  			break;
+>>> -		case CPU_DOWN_PREPARE:
+>>> +		case CPU_POST_DEAD:
+>>>  		case CPU_UP_CANCELED_FROZEN:
+>>>  			__cpufreq_remove_dev(dev, NULL);
+>>>  			break;
+>>> -		case CPU_DOWN_FAILED:
+>>> -			cpufreq_add_dev(dev, NULL);
+>>> -			break;
+>>>  		}
+>>>  	}
+>>>  	return NOTIFY_OK;
+>>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>>> index 4645876..681d5d6 100644
+>>> --- a/drivers/cpufreq/cpufreq_governor.c
+>>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>>> @@ -125,7 +125,11 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+>>>  		unsigned int delay)
+>>>  {
+>>>  	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+>>> -
+>>> +	/* cpu offline might block existing gov_queue_work() user,
+>>> +	 * unblocking it after CPU_DEAD and before CPU_POST_DEAD.
+>>> +	 * thus potentially we can hit offlined CPU */
+>>> +	if (unlikely(cpu_is_offline(cpu)))
+>>> +		return;
+>>>  	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
+>>>  }
+>>>
+>>> @@ -133,15 +137,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>>>  		unsigned int delay, bool all_cpus)
+>>>  {
+>>>  	int i;
+>>> -
+>>> +	get_online_cpus();
+>>>  	if (!all_cpus) {
+>>>  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
+>>>  	} else {
+>>> -		get_online_cpus();
+>>>  		for_each_cpu(i, policy->cpus)
+>>>  			__gov_queue_work(i, dbs_data, delay);
+>>> -		put_online_cpus();
+>>>  	}
+>>> +	put_online_cpus();
+>>>  }
+>>>  EXPORT_SYMBOL_GPL(gov_queue_work);
+>>>
+>>> @@ -354,8 +357,10 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>>  		/* Initiate timer time stamp */
+>>>  		cpu_cdbs->time_stamp = ktime_get();
+>>>
+>>> -		gov_queue_work(dbs_data, policy,
+>>> -				delay_for_sampling_rate(sampling_rate), true);
+>>> +		/* hotplug lock already held */
+>>> +		for_each_cpu(j, policy->cpus)
+>>> +			__gov_queue_work(j, dbs_data,
+>>> +				delay_for_sampling_rate(sampling_rate));
+>>>  		break;
+>>>
+>>>  	case CPUFREQ_GOV_STOP:
+>>> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+>>> index cd9e817..833816e 100644
+>>> --- a/drivers/cpufreq/cpufreq_stats.c
+>>> +++ b/drivers/cpufreq/cpufreq_stats.c
+>>> @@ -355,7 +355,7 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+>>>  	case CPU_DOWN_PREPARE:
+>>>  		cpufreq_stats_free_sysfs(cpu);
+>>>  		break;
+>>> -	case CPU_DEAD:
+>>> +	case CPU_POST_DEAD:
+>>>  		cpufreq_stats_free_table(cpu);
+>>>  		break;
+>>>  	case CPU_UP_CANCELED_FROZEN:
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
