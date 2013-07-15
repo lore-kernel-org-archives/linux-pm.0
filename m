@@ -1,34 +1,50 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Bisected] 3.7-rc1 can't resume (still present in 3.9)
-Date: Mon, 15 Jul 2013 14:11:50 -0700
-Message-ID: <51E46596.9050702@zytor.com>
-References: <20130218155439.GA902@onny> <201305031515.55595.jarkko.sakkinen@intel.com> <20130708095042.GA20797@onny.Speedport_W_700V> <3442698.l2vNEGx5aV@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] Thermal: x86_pkg_temp: Limit number of pkg temp zones
+Date: Mon, 15 Jul 2013 15:38:52 -0700
+Message-ID: <1373927932-26176-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from terminus.zytor.com ([198.137.202.10]:44901 "EHLO mail.zytor.com"
+Received: from mga02.intel.com ([134.134.136.20]:59278 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754991Ab3GOVMO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Jul 2013 17:12:14 -0400
-In-Reply-To: <3442698.l2vNEGx5aV@vostro.rjw.lan>
+	id S1758296Ab3GOWc3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jul 2013 18:32:29 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jonas Heinrich <onny@project-insanity.org>, Jarkko Sakkinen <jarkko.sakkinen@intel.com>, len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: rui.zhang@intel.com
+Cc: eduardo.valentin@ti.com, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 07/08/2013 06:05 AM, Rafael J. Wysocki wrote:
-> 
-> That's because no one knows how to fix it.  Actually, we don't even know
-> what the root cause of it is.  Sorry about that.
-> 
-> Are you still able to make things work again by reverting the commit you
-> bisected to?
-> 
+Although it is unlikley that physical package id is set to some
+arbitary number, it is better to prevent in anycase. Since package
+temp zones use this in thermal zone type and for allocation, added
+a limit.
 
-Well, we know now.   Hopefully we should have the fix in 3.11-rc2 and
-then on its way to stable.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/x86_pkg_temp_thermal.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-	-hpa
-
+diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+index cf172d5..810143a 100644
+--- a/drivers/thermal/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -54,6 +54,8 @@ MODULE_PARM_DESC(notify_delay_ms,
+ * is some wrong values returned by cpuid for number of thresholds.
+ */
+ #define MAX_NUMBER_OF_TRIPS	2
++/* Limit number of package temp zones */
++#define MAX_PKG_TEMP_ZONE_IDS	256
+ 
+ struct phy_dev_entry {
+ 	struct list_head list;
+@@ -401,6 +403,9 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+ 	if (!thres_count)
+ 		return -ENODEV;
+ 
++	if (topology_physical_package_id(cpu) > MAX_PKG_TEMP_ZONE_IDS)
++		return -ENODEV;
++
+ 	thres_count = clamp_val(thres_count, 0, MAX_NUMBER_OF_TRIPS);
+ 
+ 	err = get_tj_max(cpu, &tj_max);
+-- 
+1.7.11.7
 
