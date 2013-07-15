@@ -1,51 +1,113 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2] cpuidle: Add Kconfig.arm and move calxeda, kirkwood
- and zynq
-Date: Mon, 15 Jul 2013 16:18:58 +0200
-Message-ID: <51E404D2.5030907@linaro.org>
-References: <1372841395-30891-1-git-send-email-kpark3469@gmail.com> <1429422.16N7g1KiV4@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH 2/4] thermal: introduce device tree parser
+Date: Mon, 15 Jul 2013 10:30:27 -0400
+Message-ID: <51E40783.3070402@ti.com>
+References: <1373378414-28086-1-git-send-email-eduardo.valentin@ti.com> <1373378414-28086-3-git-send-email-eduardo.valentin@ti.com> <51DD03C8.1090207@nvidia.com> <51DD7ABC.2010009@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f54.google.com ([74.125.82.54]:34366 "EHLO
-	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756542Ab3GOOTE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 10:19:04 -0400
-Received: by mail-wg0-f54.google.com with SMTP id n11so10176876wgh.33
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2013 07:19:02 -0700 (PDT)
-In-Reply-To: <1429422.16N7g1KiV4@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2WNXJXJORCJDOLQITRWAS"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51DD7ABC.2010009@wwwdotorg.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Wei Ni <wni@nvidia.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kpark3469@gmail.com, linux-pm@vger.kernel.org, keun-o.park@windriver.com
 
-On 07/15/2013 01:26 AM, Rafael J. Wysocki wrote:
-> On Wednesday, July 03, 2013 05:49:55 PM kpark3469@gmail.com wrote:
->> From: Sahara <keun-o.park@windriver.com>
+------enig2WNXJXJORCJDOLQITRWAS
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 10-07-2013 11:16, Stephen Warren wrote:
+> On 07/10/2013 12:48 AM, Wei Ni wrote:
+>> On 07/09/2013 10:00 PM, Eduardo Valentin wrote:
+>>> In order to be able to build thermal policies
+>>> based on generic sensors, like I2C device, that
+>>> can be places in different points on different boards,
+>>> there is a need to have a way to feed board dependent
+>>> data into the thermal framework.
+>>>
+>>> This patch introduces a thermal data parser for device
+>>> tree. The parsed data is used to build thermal zones
+>>> and thermal binding parameters. The output data
+>>> can then be used to deploy thermal policies.
+>>>
+>>> This patch adds also documentation regarding this
+>>> API and how to define define tree nodes to use
+>>> this infrastructure.
 >>
->> This patch adds Kconfig.arm for cpuidle drivers for ARM. And, this
->> also moves calxeda, kirkwood and zynq to Kconfig.arm. Like cpufreq
->> menu, "CPU Idle" menu is added to drivers/cpuidle/Kconfig.
+>> It looks good, with this infrastructure, we can add generic sensor
+>> driver into the thermal fw easily.
 >>
->> Signed-off-by: Sahara <keun-o.park@windriver.com>
+>>
+>>> +
+>>> +Below is an example:
+>>> +thermal_zone {
+>>> +            type =3D "CPU";
+>>> +            mask =3D <0x03>; /* trips writability */
+>>> +            passive_delay =3D <250>; /* milliseconds */
+>>> +            polling_delay =3D <1000>; /* milliseconds */
+>>> +            governor =3D "step_wise";
+>>> +            trips {
+>>> +                    alert@100000{
+>>> +                            temperature =3D <100000>; /* milliCelsiu=
+s */
+>>> +                            hysteresis =3D <0>; /* milliCelsius */
+>>> +                            type =3D <1>;
+>>
+>> how about to use the trip type name directly, such as named as
+>> "passive-trip;", I think it's more readable. for example:
+>> trip0 {
+>> ....
+>> passive-trip;
+>> }
+>> trip1 {
+>> ....
+>> active-trip;
+>> }
 >=20
-> Daniel: Yes, no, maybe?
+> You can always use the C pre-processor in DT now to define named consta=
+nts:
+>=20
+> include/dt-bindings/..../....h
+>=20
+> 	#define THERMAL_PASSIVE_TRIP 0
+> 	#define THERMAL_ACTIVE_TRIP 1
+>=20
+> *.dts:
+>=20
+> 	type =3D <THERMAL_PASSIVE_TRIP>;
+>=20
+> Having a single 'property =3D value;' rather than n different Boolean
+> property names seems better, irrespective of whether value is an intege=
+r
+> or string; parsing and error-checking will be simpler.
 
-Actually I picked the patch in my tree, I was waiting for the -rc1
-before sending the pull request.
+agreed here. I will amend with the above suggestions. makes the dt file
+much more readable. thanks Stephen and Wei.
 
-I have 3 other patches on top of it I want to send for review before
-sending the pull request (as you take 1PR/week).
+>=20
+>=20
 
-Thanks
-  -- Daniel
 
 --=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+You have got to be excited about what you are doing. (L. Lamport)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Eduardo Valentin
 
+
+------enig2WNXJXJORCJDOLQITRWAS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHkB4MACgkQCXcVR3XQvP0+dwD/UKpccxBila2ObAZ9S7PhtsyE
+WSVctmckrKtGv9zVW7gA/2J1Kb622gW8E6npS4K8rgo+W6Ujyjut2tbWGu/3cUNB
+=bcmb
+-----END PGP SIGNATURE-----
+
+------enig2WNXJXJORCJDOLQITRWAS--
