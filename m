@@ -1,44 +1,67 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: config SOC_DRA7XX?
-Date: Mon, 15 Jul 2013 14:01:47 +0200
-Message-ID: <1373889707.2591.31.camel@x61.thuisdomein>
-References: <1373813686.1370.55.camel@x61.thuisdomein>
-	 <51E3DF09.4070109@ti.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [RFC PATCH 3/4] thermal: ti-soc-thermal: use thermal DT infrastructure
+Date: Mon, 15 Jul 2013 12:12:43 +0000 (UTC)
+Message-ID: <loom.20130715T124843-388@post.gmane.org>
+References: <1373378414-28086-1-git-send-email-eduardo.valentin@ti.com> <1373378414-28086-4-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpsmtpb-ews05.kpnxchange.com ([213.75.39.8]:60128 "EHLO
-	cpsmtpb-ews05.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755867Ab3GOMBt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 08:01:49 -0400
-In-Reply-To: <51E3DF09.4070109@ti.com>
+Received: from plane.gmane.org ([80.91.229.3]:49346 "EHLO plane.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755362Ab3GOMPF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jul 2013 08:15:05 -0400
+Received: from list by plane.gmane.org with local (Exim 4.69)
+	(envelope-from <gll-linux-pm2@m.gmane.org>)
+	id 1UyhgF-0001lA-A6
+	for linux-pm@vger.kernel.org; Mon, 15 Jul 2013 14:15:03 +0200
+Received: from lysithea.ext.pengutronix.de ([92.198.50.40])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2013 14:15:03 +0200
+Received: from l.stach by lysithea.ext.pengutronix.de with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2013 14:15:03 +0200
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+Hi Eduardo and others,
 
-On Mon, 2013-07-15 at 07:37 -0400, Eduardo Valentin wrote:
-> On 14-07-2013 10:54, Paul Bolle wrote:
-> > 2) Why is this dependency on SOC_DRA7XX needed? And what would
-> > SOC_DRA7XX actually be? Some searches on the web returned nothing that
-> > could show me what it is.
+Eduardo Valentin <eduardo.valentin <at> ti.com> writes:
+
 > 
-> That is the config which says the kernel has the support for the DRA7XX
-> soc family. The core support didnt make for 3.11. But I had already sent
-> this code for review and merge by then. The core code can be seen here:
-> git://github.com/rrnayak/linux.git for-3.12/dra-core-data
+> This patch improves the ti-soc-thermal driver by adding the
+> support to build the thermal zones based on DT nodes.
 > 
-> for instance.
+> The driver will have two options now to build the thermal
+> zones. The first option is the zones originally coded
+> in this driver. So, the driver behavior will be same
+> if there is no DT node describing the zones. The second
+> option, when it is found a DT node with thermal data,
+> will used the common infrastructure to build the thermal
+> zone and bind its cooling devices.
+> 
+> In either case, this driver still adds to the system
+> a cpufreq cooling device.
+> 
 
-I'll stop worrying about this. And unless SOC_DRA7XX still pops up in my
-list of invalid Kconfig symbols in, say, early 2014, I won't have to
-bother you again.
+I really like the idea to configure thermal zones using devicetree, it's a
+step in the right direction. We might follow suit with the i.MX6 tempmon
+driver to use this infrastructure.
 
-Thanks!
+What I strongly dislike is the notion of the sensor drivers instantiating
+the cooling devices and the resulting devicetree binding. This seems really
+backward to me.
+I would rather see the drivers associated with the cooling devices (like
+cpufreq and the respective gpu drivers) to instantiate the cooling devices
+and the thermal zone referring to them through phandles. I think it
+shouldn't be too much work to go in that direction.
+The current method might be enough to work with the current thermal platform
+drivers, but if you want to go down the route to eventually use plain i2c
+devices (likely with an existing hwmon driver) you have to get away from the
+sensor devices instantiating the cooling devices.
 
-
-Paul Bolle
+Regards,
+Lucas
 
