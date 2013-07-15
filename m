@@ -1,62 +1,312 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] Thermal: x86 package temp thermal crash
-Date: Mon, 15 Jul 2013 16:27:19 +0800
-Message-ID: <1373876839.3034.1.camel@rzhang1-mobl4>
-References: <1373561430-29314-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: Re: [LOCKDEP] cpufreq: possible circular locking dependency detected
+Date: Mon, 15 Jul 2013 11:29:18 +0300
+Message-ID: <20130715082918.GA2435@swordfish>
+References: <20130625211544.GA2270@swordfish>
+ <51D10899.1080501@linux.vnet.ibm.com>
+ <20130710231305.GA4046@swordfish>
+ <51DE1BE1.3090707@linux.vnet.ibm.com>
+ <20130714114721.GB2178@swordfish>
+ <20130714120629.GA4067@swordfish>
+ <51E37194.1080103@linux.vnet.ibm.com>
+ <51E3AA3B.9090003@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:15355 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754345Ab3GOI13 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Jul 2013 04:27:29 -0400
-In-Reply-To: <1373561430-29314-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mail-ee0-f47.google.com ([74.125.83.47]:33690 "EHLO
+	mail-ee0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754321Ab3GOI34 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 04:29:56 -0400
+Content-Disposition: inline
+In-Reply-To: <51E3AA3B.9090003@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: dwalker@fifo99.com, linux-pm@vger.kernel.org, eduardo.valentin@ti.com
+To: Michael Wang <wangyun@linux.vnet.ibm.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, 2013-07-11 at 09:50 -0700, Srinivas Pandruvada wrote:
-> On systems with no package MSR support this caused crash as there
-> is a bug in the logic to check presence of DTHERM and PTS feature
-> together. Added a change so that when there is no PTS support, module
-> doesn't get loaded. Even if some CPU comes online with the PTS
-> feature disabled, and other CPUs has this support, this patch
-> will still prevent such MSR accesses.
+On (07/15/13 15:52), Michael Wang wrote:
+> > 
+> > And may be we could try below patch to get more info, I've moved the timing
+> > of restore stop flag from 'after STOP' to 'before START', I suppose that
+> > could create a window to prevent the work re-queue, it could at least provide
+> > us more info...
+> > 
+> > I think I may need to setup a environment for debug now, what's the steps to
+> > produce this WARN?
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Reported-by: Daniel Walker <dwalker@fifo99.com>
-
-applied to thermal -next.
-
-thanks,
-rui
-> ---
->  drivers/thermal/x86_pkg_temp_thermal.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> I have done some test, although I failed to reproduce this WARN, but I
+> found that the work is still running and re-queue itself after STOP,
+> even with my prev suggestion...
 > 
-> diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
-> index 5de56f6..034604c 100644
-> --- a/drivers/thermal/x86_pkg_temp_thermal.c
-> +++ b/drivers/thermal/x86_pkg_temp_thermal.c
-> @@ -511,7 +511,7 @@ static int get_core_online(unsigned int cpu)
->  
->  	/* Check if there is already an instance for this package */
->  	if (!phdev) {
-> -		if (!cpu_has(c, X86_FEATURE_DTHERM) &&
-> +		if (!cpu_has(c, X86_FEATURE_DTHERM) ||
->  					!cpu_has(c, X86_FEATURE_PTS))
->  			return -ENODEV;
->  		if (pkg_temp_thermal_device_add(cpu))
-> @@ -562,7 +562,7 @@ static struct notifier_block pkg_temp_thermal_notifier __refdata = {
->  };
->  
->  static const struct x86_cpu_id __initconst pkg_temp_thermal_ids[] = {
-> -	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_DTHERM },
-> +	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_PTS },
->  	{}
->  };
->  MODULE_DEVICE_TABLE(x86cpu, pkg_temp_thermal_ids);
+> However, enlarge the stop window as my suggestion below, the work do
+> stopped...I suppose it will also stop the first WARN too.
+> 
+> Now we need to figure out the reason...
+>
 
+Hello,
 
+WARN is triggered during laptop suspend/hibernate phase.
+I'll test your patch soon.
+
+	-ss
+
+> Regards,
+> Michael Wang
+> 
+> > 
+> > Regards,
+> > Michael Wang
+> > 
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> > index dc9b72e..b1446fe 100644
+> > --- a/drivers/cpufreq/cpufreq_governor.c
+> > +++ b/drivers/cpufreq/cpufreq_governor.c
+> > @@ -178,13 +178,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+> >  {
+> >  	int i;
+> > 
+> > +	if (!dbs_data->queue_start)
+> > +		return;
+> > +
+> >  	if (!all_cpus) {
+> >  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
+> >  	} else {
+> > -		get_online_cpus();
+> >  		for_each_cpu(i, policy->cpus)
+> >  			__gov_queue_work(i, dbs_data, delay);
+> > -		put_online_cpus();
+> >  	}
+> >  }
+> >  EXPORT_SYMBOL_GPL(gov_queue_work);
+> > @@ -193,12 +194,26 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
+> >  		struct cpufreq_policy *policy)
+> >  {
+> >  	struct cpu_dbs_common_info *cdbs;
+> > -	int i;
+> > +	int i, round = 2;
+> > 
+> > +	dbs_data->queue_start = 0;
+> > +redo:
+> > +	round--;
+> >  	for_each_cpu(i, policy->cpus) {
+> >  		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
+> >  		cancel_delayed_work_sync(&cdbs->work);
+> >  	}
+> > +
+> > +	/*
+> > +	 * Since there is no lock to prvent re-queue the
+> > +	 * cancelled work, some early cancelled work might
+> > +	 * have been queued again by later cancelled work.
+> > +	 *
+> > +	 * Flush the work again with dbs_data->queue_stop
+> > +	 * enabled, this time there will be no survivors.
+> > +	 */
+> > +	if (round)
+> > +		goto redo;
+> >  }
+> > 
+> >  /* Will return if we need to evaluate cpu load again or not */
+> > @@ -391,6 +406,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> > 
+> >  		/* Initiate timer time stamp */
+> >  		cpu_cdbs->time_stamp = ktime_get();
+> > +		dbs_data->queue_start = 1;
+> > 
+> >  		gov_queue_work(dbs_data, policy,
+> >  				delay_for_sampling_rate(sampling_rate), true);
+> > diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> > index e16a961..9116135 100644
+> > --- a/drivers/cpufreq/cpufreq_governor.h
+> > +++ b/drivers/cpufreq/cpufreq_governor.h
+> > @@ -213,6 +213,7 @@ struct dbs_data {
+> >  	unsigned int min_sampling_rate;
+> >  	int usage_count;
+> >  	void *tuners;
+> > +	int queue_start;
+> > 
+> >  	/* dbs_mutex protects dbs_enable in governor start/stop */
+> >  	struct mutex mutex;
+> > 
+> > 
+> > 
+> >> 	-ss
+> >>
+> >>>> Regards,
+> >>>> Michael Wang
+> >>>>
+> >>>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> >>>> index dc9b72e..a64b544 100644
+> >>>> --- a/drivers/cpufreq/cpufreq_governor.c
+> >>>> +++ b/drivers/cpufreq/cpufreq_governor.c
+> >>>> @@ -178,13 +178,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+> >>>>  {
+> >>>>  	int i;
+> >>>>  
+> >>>> +	if (dbs_data->queue_stop)
+> >>>> +		return;
+> >>>> +
+> >>>>  	if (!all_cpus) {
+> >>>>  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
+> >>>>  	} else {
+> >>>> -		get_online_cpus();
+> >>>>  		for_each_cpu(i, policy->cpus)
+> >>>>  			__gov_queue_work(i, dbs_data, delay);
+> >>>> -		put_online_cpus();
+> >>>>  	}
+> >>>>  }
+> >>>>  EXPORT_SYMBOL_GPL(gov_queue_work);
+> >>>> @@ -193,12 +194,27 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
+> >>>>  		struct cpufreq_policy *policy)
+> >>>>  {
+> >>>>  	struct cpu_dbs_common_info *cdbs;
+> >>>> -	int i;
+> >>>> +	int i, round = 2;
+> >>>>  
+> >>>> +	dbs_data->queue_stop = 1;
+> >>>> +redo:
+> >>>> +	round--;
+> >>>>  	for_each_cpu(i, policy->cpus) {
+> >>>>  		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
+> >>>>  		cancel_delayed_work_sync(&cdbs->work);
+> >>>>  	}
+> >>>> +
+> >>>> +	/*
+> >>>> +	 * Since there is no lock to prvent re-queue the
+> >>>> +	 * cancelled work, some early cancelled work might
+> >>>> +	 * have been queued again by later cancelled work.
+> >>>> +	 *
+> >>>> +	 * Flush the work again with dbs_data->queue_stop
+> >>>> +	 * enabled, this time there will be no survivors.
+> >>>> +	 */
+> >>>> +	if (round)
+> >>>> +		goto redo;
+> >>>> +	dbs_data->queue_stop = 0;
+> >>>>  }
+> >>>>  
+> >>>>  /* Will return if we need to evaluate cpu load again or not */
+> >>>> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> >>>> index e16a961..9116135 100644
+> >>>> --- a/drivers/cpufreq/cpufreq_governor.h
+> >>>> +++ b/drivers/cpufreq/cpufreq_governor.h
+> >>>> @@ -213,6 +213,7 @@ struct dbs_data {
+> >>>>  	unsigned int min_sampling_rate;
+> >>>>  	int usage_count;
+> >>>>  	void *tuners;
+> >>>> +	int queue_stop;
+> >>>>  
+> >>>>  	/* dbs_mutex protects dbs_enable in governor start/stop */
+> >>>>  	struct mutex mutex;
+> >>>>
+> >>>>>
+> >>>>> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> >>>>>
+> >>>>> ---
+> >>>>>
+> >>>>>  drivers/cpufreq/cpufreq.c          |  5 +----
+> >>>>>  drivers/cpufreq/cpufreq_governor.c | 17 +++++++++++------
+> >>>>>  drivers/cpufreq/cpufreq_stats.c    |  2 +-
+> >>>>>  3 files changed, 13 insertions(+), 11 deletions(-)
+> >>>>>
+> >>>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> >>>>> index 6a015ad..f8aacf1 100644
+> >>>>> --- a/drivers/cpufreq/cpufreq.c
+> >>>>> +++ b/drivers/cpufreq/cpufreq.c
+> >>>>> @@ -1943,13 +1943,10 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+> >>>>>  		case CPU_ONLINE:
+> >>>>>  			cpufreq_add_dev(dev, NULL);
+> >>>>>  			break;
+> >>>>> -		case CPU_DOWN_PREPARE:
+> >>>>> +		case CPU_POST_DEAD:
+> >>>>>  		case CPU_UP_CANCELED_FROZEN:
+> >>>>>  			__cpufreq_remove_dev(dev, NULL);
+> >>>>>  			break;
+> >>>>> -		case CPU_DOWN_FAILED:
+> >>>>> -			cpufreq_add_dev(dev, NULL);
+> >>>>> -			break;
+> >>>>>  		}
+> >>>>>  	}
+> >>>>>  	return NOTIFY_OK;
+> >>>>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> >>>>> index 4645876..681d5d6 100644
+> >>>>> --- a/drivers/cpufreq/cpufreq_governor.c
+> >>>>> +++ b/drivers/cpufreq/cpufreq_governor.c
+> >>>>> @@ -125,7 +125,11 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+> >>>>>  		unsigned int delay)
+> >>>>>  {
+> >>>>>  	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+> >>>>> -
+> >>>>> +	/* cpu offline might block existing gov_queue_work() user,
+> >>>>> +	 * unblocking it after CPU_DEAD and before CPU_POST_DEAD.
+> >>>>> +	 * thus potentially we can hit offlined CPU */
+> >>>>> +	if (unlikely(cpu_is_offline(cpu)))
+> >>>>> +		return;
+> >>>>>  	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
+> >>>>>  }
+> >>>>>
+> >>>>> @@ -133,15 +137,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+> >>>>>  		unsigned int delay, bool all_cpus)
+> >>>>>  {
+> >>>>>  	int i;
+> >>>>> -
+> >>>>> +	get_online_cpus();
+> >>>>>  	if (!all_cpus) {
+> >>>>>  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
+> >>>>>  	} else {
+> >>>>> -		get_online_cpus();
+> >>>>>  		for_each_cpu(i, policy->cpus)
+> >>>>>  			__gov_queue_work(i, dbs_data, delay);
+> >>>>> -		put_online_cpus();
+> >>>>>  	}
+> >>>>> +	put_online_cpus();
+> >>>>>  }
+> >>>>>  EXPORT_SYMBOL_GPL(gov_queue_work);
+> >>>>>
+> >>>>> @@ -354,8 +357,10 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> >>>>>  		/* Initiate timer time stamp */
+> >>>>>  		cpu_cdbs->time_stamp = ktime_get();
+> >>>>>
+> >>>>> -		gov_queue_work(dbs_data, policy,
+> >>>>> -				delay_for_sampling_rate(sampling_rate), true);
+> >>>>> +		/* hotplug lock already held */
+> >>>>> +		for_each_cpu(j, policy->cpus)
+> >>>>> +			__gov_queue_work(j, dbs_data,
+> >>>>> +				delay_for_sampling_rate(sampling_rate));
+> >>>>>  		break;
+> >>>>>
+> >>>>>  	case CPUFREQ_GOV_STOP:
+> >>>>> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> >>>>> index cd9e817..833816e 100644
+> >>>>> --- a/drivers/cpufreq/cpufreq_stats.c
+> >>>>> +++ b/drivers/cpufreq/cpufreq_stats.c
+> >>>>> @@ -355,7 +355,7 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+> >>>>>  	case CPU_DOWN_PREPARE:
+> >>>>>  		cpufreq_stats_free_sysfs(cpu);
+> >>>>>  		break;
+> >>>>> -	case CPU_DEAD:
+> >>>>> +	case CPU_POST_DEAD:
+> >>>>>  		cpufreq_stats_free_table(cpu);
+> >>>>>  		break;
+> >>>>>  	case CPU_UP_CANCELED_FROZEN:
+> >>>>> --
+> >>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >>>>> the body of a message to majordomo@vger.kernel.org
+> >>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >>>>> Please read the FAQ at  http://www.tux.org/lkml/
+> >>>>>
+> >>>>
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >> Please read the FAQ at  http://www.tux.org/lkml/
+> >>
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
