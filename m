@@ -1,265 +1,251 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
 Subject: Re: [RFC PATCH 3/4] thermal: ti-soc-thermal: use thermal DT infrastructure
-Date: Mon, 15 Jul 2013 10:09:32 -0400
-Message-ID: <51E4029C.8020402@ti.com>
-References: <1373378414-28086-1-git-send-email-eduardo.valentin@ti.com>   <1373378414-28086-4-git-send-email-eduardo.valentin@ti.com>   <loom.20130715T124843-388@post.gmane.org> <51E3EC2C.2030803@ti.com>  <1373893198.4172.28.camel@weser.hi.pengutronix.de>  <51E3F864.1060000@ti.com> <1373896381.4172.48.camel@weser.hi.pengutronix.de>
+Date: Mon, 15 Jul 2013 10:14:47 -0400
+Message-ID: <51E403D7.30506@ti.com>
+References: <1373378414-28086-1-git-send-email-eduardo.valentin@ti.com>   <1373378414-28086-4-git-send-email-eduardo.valentin@ti.com>   <loom.20130715T124843-388@post.gmane.org> <51E3EC2C.2030803@ti.com>  <1373893198.4172.28.camel@weser.hi.pengutronix.de>  <51E3F864.1060000@ti.com> <51E3FAE7.3090609@ti.com> <1373897120.4172.57.camel@weser.hi.pengutronix.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="----enig2TPJAOJECAKMIXELAVWBC"
+	boundary="----enig2SIVANWOQWOEMOSBKXTVK"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:44073 "EHLO arroyo.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:36090 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757259Ab3GOOJp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Jul 2013 10:09:45 -0400
-In-Reply-To: <1373896381.4172.48.camel@weser.hi.pengutronix.de>
+	id S1757231Ab3GOOPE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jul 2013 10:15:04 -0400
+In-Reply-To: <1373897120.4172.57.camel@weser.hi.pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Lucas Stach <l.stach@pengutronix.de>
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 
-------enig2TPJAOJECAKMIXELAVWBC
+------enig2SIVANWOQWOEMOSBKXTVK
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-Hi Lucas,
+On 15-07-2013 10:05, Lucas Stach wrote:
+> Am Montag, den 15.07.2013, 09:36 -0400 schrieb Eduardo Valentin:
+> [...]
+>>
+>>
+>> as simple as the following:
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-=
+cpu0.c
+>> index 3ab8294..486881c 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -20,6 +20,9 @@
+>>  #include <linux/platform_device.h>
+>>  #include <linux/regulator/consumer.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/thermal.h>
+>> +#include <linux/cpu_cooling.h>
+>> +#include <linux/cpumask.h>
+>>
+>>  static unsigned int transition_latency;
+>>  static unsigned int voltage_tolerance; /* in percentage */
+>> @@ -28,6 +31,7 @@ static struct device *cpu_dev;
+>>  static struct clk *cpu_clk;
+>>  static struct regulator *cpu_reg;
+>>  static struct cpufreq_frequency_table *freq_table;
+>> +static struct thermal_cooling_device *cdev;
+>>
+>>  static int cpu0_verify_speed(struct cpufreq_policy *policy)
+>>  {
+>> @@ -256,6 +260,9 @@ static int cpu0_cpufreq_probe(struct platform_devi=
+ce
+>> *pdev)
+>>                 goto out_free_table;
+>>         }
+>>
+>> +       if (!of_property_read_bool(np, "needs-cooling"))
+>> +               cdev =3D cpufreq_cooling_register(cpu_present_mask);
+>> +
+>>         of_node_put(np);
+>>         of_node_put(parent);
+>>         return 0;
+>> @@ -269,6 +276,7 @@ out_put_node:
+>>
+>>  static int cpu0_cpufreq_remove(struct platform_device *pdev)
+>>  {
+>> +       cpufreq_cooling_unregister(cdev);
+>>         cpufreq_unregister_driver(&cpu0_cpufreq_driver);
+>>         opp_free_cpufreq_table(cpu_dev, &freq_table);
+>>
+>>> For instance, assuming that all systems will need a cpufreq cooling
+>>> device is a flaw, because that is not the case. Thus, it makes sense =
+to
+>>> have a property, say at the cpu node, to determine that it needs
+>>> cooling. However, that won't be saying how it would cool off.
+>>
+>>
+>> Then you would define your cpu0 node as:
+>>
+>> 		cpu@0 {
+>> 			/* OMAP443x variants OPP50-OPPNT */
+>> 			operating-points =3D <
+>> 				/* kHz    uV */
+>> 				300000  1025000
+>> 				600000  1200000
+>> 				800000  1313000
+>> 				1008000 1375000
+>> 			>;
+>> 			clock-latency =3D <300000>; /* From legacy driver */
+>> 			needs-cooling; /* make sure we have cpufreq-cooling */
+>> 		};
+>>
+>> Because in that system we actually need to take care of the cpu therma=
+l.
+>>
+> I don't see what not registering the cooling device is buying us (aside=
 
-On 15-07-2013 09:53, Lucas Stach wrote:
-> Am Montag, den 15.07.2013, 09:25 -0400 schrieb Eduardo Valentin:
->> On 15-07-2013 08:59, Lucas Stach wrote:
->>> Am Montag, den 15.07.2013, 08:33 -0400 schrieb Eduardo Valentin:
->>>> On 15-07-2013 08:12, Lucas Stach wrote:
->>>>> Hi Eduardo and others,
->>>>>
->>>>> Eduardo Valentin <eduardo.valentin <at> ti.com> writes:
->>>>>
->>>>>>
->>>>>> This patch improves the ti-soc-thermal driver by adding the
->>>>>> support to build the thermal zones based on DT nodes.
->>>>>>
->>>>>> The driver will have two options now to build the thermal
->>>>>> zones. The first option is the zones originally coded
->>>>>> in this driver. So, the driver behavior will be same
->>>>>> if there is no DT node describing the zones. The second
->>>>>> option, when it is found a DT node with thermal data,
->>>>>> will used the common infrastructure to build the thermal
->>>>>> zone and bind its cooling devices.
->>>>>>
->>>>>> In either case, this driver still adds to the system
->>>>>> a cpufreq cooling device.
->>>>>>
->>>>>
->>>>> I really like the idea to configure thermal zones using devicetree,=
- it's a
->>>>> step in the right direction. We might follow suit with the i.MX6 te=
-mpmon
->>>>> driver to use this infrastructure.
->>>>>
->>>>> What I strongly dislike is the notion of the sensor drivers instant=
-iating
->>>>> the cooling devices and the resulting devicetree binding. This seem=
-s really
->>>>> backward to me.
->>>>> I would rather see the drivers associated with the cooling devices =
-(like
->>>>> cpufreq and the respective gpu drivers) to instantiate the cooling =
-devices
->>>>> and the thermal zone referring to them through phandles. I think it=
+> from a small resource saving). The cpu is one potential source of heat
+> in a system, so we may want to reference it in a thermal zone, so to me=
 
->>>>> shouldn't be too much work to go in that direction.
->>>>> The current method might be enough to work with the current thermal=
- platform
->>>>> drivers, but if you want to go down the route to eventually use pla=
-in i2c
->>>>> devices (likely with an existing hwmon driver) you have to get away=
- from the
->>>>> sensor devices instantiating the cooling devices.
+> it makes sense to always register the cooling device.
+
+The 'aside from a small resource saving' that bugs me :-). And
+conceptually, to me it won't be correct to load stuff you don't need,
+specially the 'always' loading part of it.
+
+>=20
+>>
+>>>
+>>>
 >>>>
->>>> I agree with you. While implementing the RFC, it looks awkward that =
-the
->>>> ti-soc-thermal driver had to do the job to load the cpufreq-cooling
->>>> device. Problem is that a cooling device is not really a real device=
+>>>>> I could try to push something following the same idea as the one I =
+am
+>>>>> trying to sell with this series for sensor devices. For instance, i=
+n a
+>>>>> sensor node I am attaching a phandle to describe how thermal fw mus=
+t
+>>>>> behave. Then the sensor driver it is supposed to load the thermal d=
+ata
+>>>>> into the thermal fw. Same could apply for instance for cpufreq cool=
+ing
+>>>>> device. at the cpu node we could have a 'cooling_device' node at th=
+e cpu
+>>>>> node, while loading cpufreq-cpu0.
+>>>>
+>>>> I think a separate cooling_device node may be only necessary if we s=
+tuff
+>>>> additional info in there. If it's just a plain cooling device I thin=
+k it
+>>>> is reasonable for the cpufreq driver to just register a cooling devi=
+ce
+>>>> if the thermal framework is there.
+>>>
+>>> no, I think this is not what we want, because, as I said, not all cpu=
+s
+>>> will need cooling. Just because the thermal framework is there does n=
+ot
+>>> mean your cpu needs cooling. As you can see, the thermal framework is=
+
+>>> not only for cpu cooling. It can be used for any other thermal need.
+>>> Besides one needs to cover for the case where you are building for
+>>> multiple platform support. Assuming system needs based on Kconfig set=
+up
+>>> is not very likely to scale in this case.
+>>>
+>>>>
+>>>> I would really like the information about a thermal zone to hang off=
+ one
+>>>> dt node rather than being scattered over several nodes. This way it =
+may
+>>>
+>>> Again, thermal framework is not about only cpu(freq) cooling. Thermal=
+
+>>> zone info can (and will) be hanged off in one dt node. But please don=
+'t
+>>> mix concepts. Just because a cooling device is part of a thermal zone=
 ,
->>>> and might get flamed while represented as a device tree node.
->>>>
->>> I don't think we even need to represent this into the device tree. We=
+>>> it does not mean it is only used there and that it can be defined the=
+re.
+>>> One can use a cooling device in different thermal zones.
+>>>
+>>>> be easy to reference a cooling device in different thermal zones wit=
+h
+>>>> different weight, etc. As long as we define a thermal zone to always=
+ be
+>>>> defined by a single sensor the right place seems to be the proposed
+>>>> subnode to the sensor. If we want a zone to have more than one senso=
+r,
+>>>> we might even want a separate dt node for the thermal zone, referenc=
+ing
+>>>> both sensors and cooling devices through phandles.
+>>>
+>>> I still don't get why and how defining a thermal zone inside a sensor=
 
->>> already have the CPU nodes there and the cpu-freq driver is already
->>> linked to those. It should be easy to have a global list of registere=
+>>> phandle can prevent us defining a cooling device in different device
+>>> phandle.
+>>
+>>
+>> Then you can keep everything about your thermal zone in one single
+>> phandle, as follows, but remember, this is is the info about the therm=
+al
+>> zone, not about a cooling device. For instance, that is the zone built=
+
+>> on top of a bandgap sensor:
+>> 	bandgap {
+>> 		reg =3D <0x4a002260 0x4 0x4a00232C 0x4>;
+>> 		compatible =3D "ti,omap4430-bandgap";
+>> 		thermal_zone {
+>> 			type =3D "CPU";
+>> 			mask =3D <0x03>; /* trips writability */
+>> 			passive_delay =3D <250>; /* milliseconds */
+>> 			polling_delay =3D <1000>; /* milliseconds */
+>> 			governor =3D "step_wise";
+>> 			trips {
+>> 				alert@100000{
+>> 					temperature =3D <100000>;
+>> 					hysteresis =3D <0>;
+>> 					type =3D <1>;
+>> 				};
+>> 				crit@125000{
+>> 					temperature =3D <125000>;
+>> 					hysteresis =3D <0>;
+>> 					type =3D <3>;
+>> 				};
+>> 			};
+>> 			bind_params {
+>> 				action@0{
+>> 					cooling_device =3D "thermal-cpufreq";
+>> 					weight =3D <100>; /* percentage */
+>> 					mask =3D <0x01>;
+>> 				};
+>> 			};
+>> 		};
+>> 	};
+>>
+>>
+>> And you see that, in this case, the bandgap sensor driver does not nee=
 d
->>> thermal devices in the thermal framework together with their associat=
-ed
->>> devices, so one could look up cooling devices through the thermal
->>> framework when we only have a phandle to the cpu node.
->>
->> Well, we do have a list of thermal cooling devices associated with its=
-
->> corresponding struct device. That is private data to the thermal
->> framework. However, one needs to load the cooling device in order to i=
-ts
->> data structure appear in this list. The framework can not be proactive=
-
->> here. Some other entity needs to see the need and inform the thermal
->> framework of it.
->>
-> That's why I said it would be a good idea (IMHO) if the cpufreq driver
-> would register the cooling device.
+>> to worry about loading the cpufreq cooling device anymore. Who is
+>> responsible of doing that is the cpufreq driver, with the above
+>> proposal, when it makes sense and when there is a need.
+>=20
+> Yes, this makes perfect sense to me. What I would like is to have the
+> links more specific in the devicetree, so to me this stringmatching
+> thing doesn't look too appealing, as it makes it harder to follow the
+> links just looking at the DT. That's why I would prefer them to be
+> phandles, so I could do something like:
+>=20
+> bind_params {
+> 	action@0 {
+> 		cooling_device =3D <&cpu@0>;
+> 		weight =3D <40>; /* percentage */
+> 		mask =3D <0x01>;
+> 	};
+> 	action@1 {
+> 		cooling_device =3D <&gpu3d>;
+> 		weigth =3D <60>;
+> 		mask =3D <0x01>;
+> };
 >=20
 
-Ok. we are at the same page. cpufreq driver needs to load cpufreq
-cooling device to the thermal fw.
-
->> For instance, assuming that all systems will need a cpufreq cooling
->> device is a flaw, because that is not the case. Thus, it makes sense t=
-o
->> have a property, say at the cpu node, to determine that it needs
->> cooling. However, that won't be saying how it would cool off.
->>
-> Maybe I'm not up to speed with the thermal framework yet (just starting=
-
-> to look into this), but isn't it the other way around? The thermal zone=
-
-> is defined by the sensor providing temp readings and trip points. The
-> CPUs may be just one source of heat in the thermal zone, thus they have=
-
-> to register a cooling device with the thermalfw, so they can be
-> throttled if the zone crosses a certain trip point.
->=20
-
-The above statement is correct.
-
-> I don't see how it would be problematic if the cpufreq driver just
-> always registers the cooling devices. If no thermal zone references the=
-m
-> they are of no use, but they are also not causing any harm.(?)
-
-Harm it won't cause, but it will be loading something to a system that
-it does not need. Simply said, what I am proposing is to have a way to
-say to cpufreq driver to load cpufreq cooling only on those systems that
-needs cooling.
-
->>
->>>
->>>> I could try to push something following the same idea as the one I a=
-m
->>>> trying to sell with this series for sensor devices. For instance, in=
- a
->>>> sensor node I am attaching a phandle to describe how thermal fw must=
-
->>>> behave. Then the sensor driver it is supposed to load the thermal da=
-ta
->>>> into the thermal fw. Same could apply for instance for cpufreq cooli=
-ng
->>>> device. at the cpu node we could have a 'cooling_device' node at the=
- cpu
->>>> node, while loading cpufreq-cpu0.
->>>
->>> I think a separate cooling_device node may be only necessary if we st=
-uff
->>> additional info in there. If it's just a plain cooling device I think=
- it
->>> is reasonable for the cpufreq driver to just register a cooling devic=
-e
->>> if the thermal framework is there.
->>
->> no, I think this is not what we want, because, as I said, not all cpus=
-
->> will need cooling. Just because the thermal framework is there does no=
-t
->> mean your cpu needs cooling. As you can see, the thermal framework is
->> not only for cpu cooling. It can be used for any other thermal need.
->> Besides one needs to cover for the case where you are building for
->> multiple platform support. Assuming system needs based on Kconfig setu=
-p
->> is not very likely to scale in this case.
->>
-> Mhm, I think we have a bit of a misunderstanding here. I don't see how
-> always registering the cooling devices from the cpufreq driver would be=
-
-> in the way of multiplatform support. In fact if I know the cpufreq
-> registers the cooling device I can just reference the CPU node from
-> whatever thermal zone the particular platform happens to define.
-
-Again, it wont cause harm or wont be in the way, but we could be loading
-stuff that the system does not need. And we could avoid that with a
-simple flag.
-
-Yes, when you have to cool off the cpu in you system, you have to:
-1. ask cpufreq driver to load cpufreq cooling
-2. describe what to do with cpufreq cooling device when your sensor
-detects heat (by referencing cpufreq cooling device).
-
-> =20
->>>
->>> I would really like the information about a thermal zone to hang off =
-one
->>> dt node rather than being scattered over several nodes. This way it m=
-ay
->>
->> Again, thermal framework is not about only cpu(freq) cooling. Thermal
->> zone info can (and will) be hanged off in one dt node. But please don'=
-t
->> mix concepts. Just because a cooling device is part of a thermal zone,=
-
->> it does not mean it is only used there and that it can be defined ther=
-e.
->> One can use a cooling device in different thermal zones.
->>
-> That's exactly what I want, so we seem to be on the same page.
->=20
-
-ok
-
-> I'm fine with having subnodes for the cooling devices, if we need to
-> stuff some sort of info in there. I'm just not sure if we need those
-> nodes at all, or if would be ok for the device drivers (cpufreq, gpu,
-> memory controller, etc.) to just register the cooling devices and
-> thermal zones to then look them up through the phandles of those parent=
-
-> devices.
-
-Some ppl just don't want kernel to mess around with thermal for
-instance. Sometimes, your driver supports several chip versions, and
-some of them do have thermal needs, some don't. That's why it makes
-sense to load thermal stuff only when it really is required.
-
-> Again, I'm not an expert with this topic, just want to provide my view,=
-
-> so we can work something out, which works for everybody on multiple
-> platforms.=20
-
-+1
-
->=20
->>> be easy to reference a cooling device in different thermal zones with=
-
->>> different weight, etc. As long as we define a thermal zone to always =
-be
->>> defined by a single sensor the right place seems to be the proposed
->>> subnode to the sensor. If we want a zone to have more than one sensor=
-,
->>> we might even want a separate dt node for the thermal zone, referenci=
-ng
->>> both sensors and cooling devices through phandles.
->>
->> I still don't get why and how defining a thermal zone inside a sensor
->> phandle can prevent us defining a cooling device in different device
->> phandle.
->>
-> I'm not saying this. What I said is that if we define the thermal zone
-> inside the sensor node it's inherently bound to this single sensor,
-> which is completely fine, as long as we keep the current definition of
-> one thermal zone per sensor. It's just that I stumbled about the
-> proposal to have more than one sensor per thermal zone. For this to wor=
-k
-> we would have to define the thermal zone in it's own node, so that we
-> can reference multiple sensors. I just wanted to point this out, as it
-> seems fundamental to the design of the dt binding. Personally I'm fine
-> either way.
->=20
-> Regards,
-> Lucas
->=20
+I see, but the matching won't work at device tree anyway. But I
+understand your point. However, those would need to be 'cooling device'
+phandles, not 'cpu' phandles or 'gpu3d' phandles, in order to this make
+really sense.
 
 
 --=20
@@ -268,7 +254,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
-------enig2TPJAOJECAKMIXELAVWBC
+------enig2SIVANWOQWOEMOSBKXTVK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -277,9 +263,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlHkApwACgkQCXcVR3XQvP3sNwD9FmdNL2vWlz30dNY5Ygz9dWfc
-zkbxM6lA+Bwr3O/U8hgBAIi5fyCwL0OuaR3xmrxjVJvhfzAMVXTTyFMbny1LcKKy
-=9E/n
+iF4EAREIAAYFAlHkA9cACgkQCXcVR3XQvP09JQD/bIeWwxChscIvbJY9klZgucN9
+sdD9e64E5FRZ5MBc5HgBANyD6aE5I4wuKzpAac9JSXMiRIumAyFIv4LUiq6VUGeT
+=ogz2
 -----END PGP SIGNATURE-----
 
-------enig2TPJAOJECAKMIXELAVWBC--
+------enig2SIVANWOQWOEMOSBKXTVK--
