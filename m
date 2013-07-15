@@ -1,87 +1,91 @@
 From: Sudeep.KarkadaNagesha@arm.com
-Subject: [RFC PATCH 05/11] drivers/bus: arm-cci: avoid parsing DT for cpu
- device nodes
-Date: Mon, 15 Jul 2013 11:22:06 +0100
-Message-ID: <1373883732-26303-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH 07/11] cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
+Date: Mon, 15 Jul 2013 11:22:08 +0100
+Message-ID: <1373883732-26303-8-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:41630 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755094Ab3GOKW3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 06:22:29 -0400
 In-Reply-To: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, linux@arm.linux.org.uk, arnd@arndb.de, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, viresh.kumar@linaro.org, rob.herring@calxeda.com, rjw@sisk.pl, grant.likely@linaro.org, cpufreq@vger.kernel.org, kernel@pengutronix.de, gregkh@linuxfoundation.org, olof@lixom.net, gregory.clement@free-electrons.com, shawn.guo@linaro.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: cpufreq@vger.kernel.org, arnd@arndb.de, olof@lixom.net, lorenzo.pieralisi@arm.com, rob.herring@calxeda.com, grant.likely@linaro.org, rjw@sisk.pl, viresh.kumar@linaro.org, gregkh@linuxfoundation.org, gregory.clement@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, linux@arm.linux.org.uk, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Since the CPU device nodes can be retrieved using arch_of_get_cpu_node,
-we can use it to avoid parsing the cpus node searching the cpu nodes and
-mapping to logical index.
+Now that the cpu device registration initialises the of_node(if available)
+appropriately for all the cpus, parsing here is redundant.
 
-This patch removes parsing DT for cpu nodes by using arch_of_get_cpu_node.
+This patch removes all DT parsing and uses cpu->of_node instead.
 
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/bus/arm-cci.c | 28 +++++++---------------------
- 1 file changed, 7 insertions(+), 21 deletions(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 23 ++++-------------------
+ 1 file changed, 4 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/bus/arm-cci.c b/drivers/bus/arm-cci.c
-index 7332889..8de67c2 100644
---- a/drivers/bus/arm-cci.c
-+++ b/drivers/bus/arm-cci.c
-@@ -122,17 +122,8 @@ EXPORT_SYMBOL_GPL(cci_ace_get_port);
- 
- static void __init cci_ace_init_ports(void)
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.=
+c
+index ad1fde2..5b05c26 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -174,29 +174,17 @@ static struct cpufreq_driver cpu0_cpufreq_driver =3D =
+{
+=20
+ static int cpu0_cpufreq_probe(struct platform_device *pdev)
  {
--	int port, ac, cpu;
--	u64 hwid;
--	const u32 *cell;
--	struct device_node *cpun, *cpus;
+-=09struct device_node *np, *parent;
++=09struct device_node *np;
+ =09int ret;
+=20
+-=09parent =3D of_find_node_by_path("/cpus");
+-=09if (!parent) {
+-=09=09pr_err("failed to find OF /cpus\n");
+-=09=09return -ENOENT;
+-=09}
 -
--	cpus = of_find_node_by_path("/cpus");
--	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
--		return;
+-=09for_each_child_of_node(parent, np) {
+-=09=09if (of_get_property(np, "operating-points", NULL))
+-=09=09=09break;
+-=09}
++=09cpu_dev =3D &pdev->dev;
+=20
++=09np =3D of_node_get(cpu_dev->of_node);
+ =09if (!np) {
+ =09=09pr_err("failed to find cpu0 node\n");
+-=09=09ret =3D -ENOENT;
+-=09=09goto out_put_parent;
++=09=09return -ENOENT;
+ =09}
+=20
+-=09cpu_dev =3D &pdev->dev;
+-=09cpu_dev->of_node =3D np;
 -
--	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
--		ac = of_n_addr_cells(cpus);
-+	int port, cpu;
-+	struct device_node *cpun;
- 
- 	/*
- 	 * Port index look-up speeds up the function disabling ports by CPU,
-@@ -141,18 +132,13 @@ static void __init cci_ace_init_ports(void)
- 	 * The stashed index array is initialized for all possible CPUs
- 	 * at probe time.
- 	 */
--	for_each_child_of_node(cpus, cpun) {
--		if (of_node_cmp(cpun->type, "cpu"))
--			continue;
--		cell = of_get_property(cpun, "reg", NULL);
--		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
--			continue;
--
--		hwid = of_read_number(cell, ac);
--		cpu = get_logical_index(hwid & MPIDR_HWID_BITMASK);
-+	for_each_possible_cpu(cpu) {
-+		/* too early to use cpu->of_node */
-+		cpun = arch_of_get_cpu_node(cpu);
- 
--		if (cpu < 0 || !cpu_possible(cpu))
-+		if (WARN(!cpun, "Missing cpu device node\n"))
- 			continue;
-+
- 		port = __cci_ace_get_port(cpun, ACE_PORT);
- 		if (port < 0)
- 			continue;
--- 
+ =09cpu_reg =3D devm_regulator_get(cpu_dev, "cpu0");
+ =09if (IS_ERR(cpu_reg)) {
+ =09=09/*
+@@ -269,15 +257,12 @@ static int cpu0_cpufreq_probe(struct platform_device =
+*pdev)
+ =09}
+=20
+ =09of_node_put(np);
+-=09of_node_put(parent);
+ =09return 0;
+=20
+ out_free_table:
+ =09opp_free_cpufreq_table(cpu_dev, &freq_table);
+ out_put_node:
+ =09of_node_put(np);
+-out_put_parent:
+-=09of_node_put(parent);
+ =09return ret;
+ }
+=20
+--=20
 1.8.1.2
+
+
