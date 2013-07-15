@@ -1,72 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/8] cpufreq: Fix misplaced call to cpufreq_update_policy()
-Date: Mon, 15 Jul 2013 13:37:35 +0200
-Message-ID: <2436314.Felxb6Mvh0@vostro.rjw.lan>
-References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <CAKohpo=DNhKTGdectgyWLW3XkfDOAiEhJ=hi+zW=6G6fWShybg@mail.gmail.com> <51E394A8.1030001@linux.vnet.ibm.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: config SOC_DRA7XX?
+Date: Mon, 15 Jul 2013 07:37:45 -0400
+Message-ID: <51E3DF09.4070109@ti.com>
+References: <1373813686.1370.55.camel@x61.thuisdomein>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2TMCWTAIEVBPORIITNKLP"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:43357 "EHLO hydra.sisk.pl"
+Received: from comal.ext.ti.com ([198.47.26.152]:41276 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755794Ab3GOL1l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Jul 2013 07:27:41 -0400
-In-Reply-To: <51E394A8.1030001@linux.vnet.ibm.com>
+	id S1755765Ab3GOLh5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jul 2013 07:37:57 -0400
+In-Reply-To: <1373813686.1370.55.camel@x61.thuisdomein>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-On Monday, July 15, 2013 11:50:24 AM Srivatsa S. Bhat wrote:
-> On 07/12/2013 12:36 PM, Viresh Kumar wrote:
-> > On 12 July 2013 03:45, Srivatsa S. Bhat
-> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> >> The call to cpufreq_update_policy() is placed in the CPU hotplug callback
-> >> of cpufreq_stats, which has a higher priority than the CPU hotplug callback
-> >> of cpufreq-core. As a result, during CPU_ONLINE/CPU_ONLINE_FROZEN, we end up
-> >> calling cpufreq_update_policy() *before* calling cpufreq_add_dev() !
-> >> And for uninitialized CPUs, it just returns silently, not doing anything.
-> > 
-> > Hmm..
-> > 
-> >> To add to it, cpufreq_stats is not even the right place to call
-> >> cpufreq_update_policy() to begin with. The cpufreq core ought to handle
-> >> this in its own callback, from an elegance/relevance perspective.
-> >>
-> >> So move the invocation of cpufreq_update_policy() to cpufreq_cpu_callback,
-> >> and place it *after* cpufreq_add_dev().
-> >>
-> >> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> >> ---
-> >>
-> >>  drivers/cpufreq/cpufreq.c       |    1 +
-> >>  drivers/cpufreq/cpufreq_stats.c |    6 ------
-> >>  2 files changed, 1 insertion(+), 6 deletions(-)
-> >>
-> >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> >> index ccc6eab..f8c3100 100644
-> >> --- a/drivers/cpufreq/cpufreq.c
-> >> +++ b/drivers/cpufreq/cpufreq.c
-> >> @@ -1943,6 +1943,7 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
-> >>                 case CPU_ONLINE:
-> >>                 case CPU_ONLINE_FROZEN:
-> >>                         cpufreq_add_dev(dev, NULL);
-> >> +                       cpufreq_update_policy(cpu);
-> > 
-> > Do we need to call this for every hotplug of cpu? I am not
-> > talking about suspend/resume here.
-> > 
-> 
-> I don't think we need to, but I think it would be better to postpone
-> optimizations until all the cpufreq regressions get fixed. Later perhaps
-> we could revisit these minor optimizations if desired.
+------enig2TMCWTAIEVBPORIITNKLP
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Agreed.
+Hi Paul,
 
-Thanks,
-Rafael
+On 14-07-2013 10:54, Paul Bolle wrote:
+> 0) Mainline commit 8926fa4f9b6160b1953ca44852d6044b58a829e1 ("thermal:
+> ti-soc-thermal: add thermal data for DRA752 chips") added a Kconfig
+> entry for DRA752_THERMAL.
+>=20
+> 1) That symbol depends on SOC_DRA7XX. But SOC_DRA7XX doesn't exist. Thi=
+s
+> means that currently the code depending on DRA752_THERMAL can't be
+> build.
+>=20
+> 2) Why is this dependency on SOC_DRA7XX needed? And what would
+> SOC_DRA7XX actually be? Some searches on the web returned nothing that
+> could show me what it is.
+
+That is the config which says the kernel has the support for the DRA7XX
+soc family. The core support didnt make for 3.11. But I had already sent
+this code for review and merge by then. The core code can be seen here:
+git://github.com/rrnayak/linux.git for-3.12/dra-core-data
+
+for instance.
+
+>=20
+>=20
+> Paul Bolle
+>=20
+>=20
+>=20
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2TMCWTAIEVBPORIITNKLP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHj3w4ACgkQCXcVR3XQvP09zgEAjIE/d/fB2fq73oSKnsO9Z0/j
+1VvmAhEe/pbfrijb9DMA/RarqWpLlo+K6QbThJvZwDubYCJORJA+6WmBhlzCBQIM
+=/Z2G
+-----END PGP SIGNATURE-----
+
+------enig2TMCWTAIEVBPORIITNKLP--
