@@ -1,66 +1,50 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: pull request for cpuidle/arm
-Date: Tue, 16 Jul 2013 01:28:25 +0200
-Message-ID: <51E48599.8000104@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2] cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq
+Date: Tue, 16 Jul 2013 01:44:02 +0200
+Message-ID: <2756026.ocYqpU9MCn@vostro.rjw.lan>
+References: <1372841395-30891-1-git-send-email-kpark3469@gmail.com> <1429422.16N7g1KiV4@vostro.rjw.lan> <51E404D2.5030907@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:40460 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989Ab3GOX22 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 19:28:28 -0400
-Received: by mail-wi0-f172.google.com with SMTP id c10so3480950wiw.17
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2013 16:28:27 -0700 (PDT)
+Received: from hydra.sisk.pl ([212.160.235.94]:43994 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758446Ab3GOXeJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jul 2013 19:34:09 -0400
+In-Reply-To: <51E404D2.5030907@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Sekhar Nori <nsekhar@ti.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: kpark3469@gmail.com, linux-pm@vger.kernel.org, keun-o.park@windriver.com
 
-The following changes since commit 68ba7add2f6e216227c3a3d225316987624b=
-71c8:
+On Monday, July 15, 2013 04:18:58 PM Daniel Lezcano wrote:
+> On 07/15/2013 01:26 AM, Rafael J. Wysocki wrote:
+> > On Wednesday, July 03, 2013 05:49:55 PM kpark3469@gmail.com wrote:
+> >> From: Sahara <keun-o.park@windriver.com>
+> >>
+> >> This patch adds Kconfig.arm for cpuidle drivers for ARM. And, this
+> >> also moves calxeda, kirkwood and zynq to Kconfig.arm. Like cpufreq
+> >> menu, "CPU Idle" menu is added to drivers/cpuidle/Kconfig.
+> >>
+> >> Signed-off-by: Sahara <keun-o.park@windriver.com>
+> > 
+> > Daniel: Yes, no, maybe?
+> 
+> Actually I picked the patch in my tree, I was waiting for the -rc1
+> before sending the pull request.
+> 
+> I have 3 other patches on top of it I want to send for review before
+> sending the pull request (as you take 1PR/week).
 
-Merge branch 'pm-cpufreq-next' into linux-next (2013-07-15 14:12:32 +02=
-00)
+OK, I'm dropping it then.
 
-are available in the git repository at:
+I'll assume you'll handle ARM-specific changes from now on, so I'm going to
+ignore them going forward.
 
-
-git://git.linaro.org/people/dlezcano/linux.git cpuidle/arm-next
-
-for you to fetch changes up to 6a814a059092c3934d13c19c34123827d0e1dc95=
-:
-
-ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpuidle
-(2013-07-16 00:55:05 +0200)
-
-----------------------------------------------------------------
-Daniel Lezcano (2):
-ARM: davinci: cpuidle: Fix target residency
-ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpuidle
-
-Linus Walleij (2):
-ARM: ux500: cpuidle: Instantiate the driver from platform device
-ARM: ux500: cpuidle: Remove pointless include
-
-arch/arm/mach-davinci/cpuidle.c | 2 +-
-arch/arm/mach-ux500/Makefile | 1 -
-drivers/cpuidle/Kconfig.arm | 8 ++++++++
-drivers/cpuidle/Makefile | 1 +
-=2E../cpuidle.c =3D> drivers/cpuidle/cpuidle-ux500.c | 19 +++++++++++--=
-------
-drivers/mfd/db8500-prcmu.c | 4 ++++
-6 files changed, 25 insertions(+), 10 deletions(-)
-rename arch/arm/mach-ux500/cpuidle.c =3D> drivers/cpuidle/cpuidle-ux500=
-=2Ec
-(90%)
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
