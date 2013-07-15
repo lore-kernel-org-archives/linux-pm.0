@@ -1,68 +1,69 @@
-From: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v3 1/4] hwmon: (lm90) split set&show temp as common
- codes
-Date: Mon, 15 Jul 2013 19:52:52 +0200
-Message-ID: <20130715195252.5d2064d7@endymion.delvare>
-References: <1373615287-18502-1-git-send-email-wni@nvidia.com>
-	<1373615287-18502-2-git-send-email-wni@nvidia.com>
-	<20130712152615.23464a6b@endymion.delvare>
-	<20130712135000.GA3386@roeck-us.net>
-	<20130712163034.1fc1cd66@endymion.delvare>
-	<20130712144011.GC3629@roeck-us.net>
-	<51E395D9.6070000@nvidia.com>
-	<20130715092415.6d082aa2@endymion.delvare>
-	<51E3BD5F.6060806@nvidia.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [RFC PATCH 02/11] ARM: DT/kernel: define ARM specific arch_of_get_cpu_node
+Date: Mon, 15 Jul 2013 14:10:59 -0500
+Message-ID: <51E44943.7000600@gmail.com>
+References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <51E3BD5F.6060806-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep.KarkadaNagesha@arm.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, linux@arm.linux.org.uk, arnd@arndb.de, viresh.kumar@linaro.org, rob.herring@calxeda.com, rjw@sisk.pl, grant.likely@linaro.org, cpufreq@vger.kernel.org, kernel@pengutronix.de, gregkh@linuxfoundation.org, olof@lixom.net, gregory.clement@free-electrons.com, shawn.guo@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Wei,
-
-On Mon, 15 Jul 2013 17:14:07 +0800, Wei Ni wrote:
-> On 07/15/2013 03:24 PM, Jean Delvare wrote:
-> > On Mon, 15 Jul 2013 14:25:29 +0800, Wei Ni wrote:
-> >> I think we can decide it in the DT, we can add a dt property in the lm90
-> >> device node, such as:
-> >> sys-interface = SYS_HWMON;
-> >> or
-> >> sys-interface = SYS_THERMAL;
-> >> So we register it as the hwmon or thermal device
-> > 
-> > This is an option, but please keep in mind that DT is not the only way
-> > to instantiate LM90-like devices, and we should not expose duplicate
-> > inputs by default. It is fine with me if the default is to create only a
-> > HWMON device (as the lm90 driver was doing so far), and only
-> > DT-instantiated devices have the choice.
+On 07/15/2013 05:22 AM, Sudeep.KarkadaNagesha@arm.com wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> Yes, we should not expose duplicate inputs, we may have tree permutation:
-> 1. only hwmon device:
-> for this items, we just need to call hwmon_device_register().
-> 2. only thermal device + virtual hwmon device:
-> for this items, we just need to call thermal_zone_device_register().
+> CPU subsystem now provides architecture specific hook to retrieve the
+> of_node. Most of the cpu DT node parsing and initialisation is contained
+> in devtree.c. It's better to contain all CPU device node parsing there.
 > 
-> We can set #1 as the default, and if use DT, we provide option to choice
-> #1 or #2.
+> arch_of_get_cpu_node is mainly used to assign cpu->of_node when CPUs get
+> registered. This patch overrides the defination of the same. It can also
+> act as the helper function in pre-SMP/early initialisation stages to
+> retrieve CPU device node pointers in logical ordering.
+> 
+> This mainly helps to avoid replication of the code doing CPU node parsing
+> and physical(MPIDR) to logical mapping.
+> 
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-#2 makes little sense IMHO, for a driver which properly implements
-hwmon support. The point of the virtual hwmon device created for
-thermal zones was to not put an extra burden on thermal driver authors
-by asking them to additionally implement the hwmon interface. But the
-hwmon interface it richer than the thermal interface in some respects
-so native hwmon implementations are preferred when available. Thus I
-think your option #3 below is what we want in addition to #1, and we
-don't need #2.
+[snip]
 
-> 3. hwmon device + thermal device:
-> for this items, we doesn't need the virtual hwmon which registered by
-> the thermal fw, how to handle this one? Add flag when register as
-> thermal device to indicate if want virtual hwmon device or not,
-> something like your below another option.
+> +struct device_node * __init arch_of_get_cpu_node(int cpu)
+> +{
+> +	struct device_node *cpun, *cpus;
+> +	const u32 *cell;
+> +	u64 hwid;
+> +	int ac;
+> +
+> +	cpus = of_find_node_by_path("/cpus");
+> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+> +		return NULL;
+> +
+> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
+> +		ac = of_n_addr_cells(cpus);
+> +
+> +	for_each_child_of_node(cpus, cpun) {
+> +		if (of_node_cmp(cpun->type, "cpu"))
+> +			continue;
+> +		cell = of_get_property(cpun, "reg", NULL);
+> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
+> +			continue;
+> +
+> +		hwid = of_read_number(cell, ac);
+> +		if ((hwid & MPIDR_HWID_BITMASK) == cpu_logical_map(cpu))
 
--- 
-Jean Delvare
+Most of this function is not ARM specific, so it would be nice if we
+could shrink the arch specific part down to just this match. A default
+match of reg == logical cpu number might be useful.
+
+The powermac cpufreq driver could probably also be converted
+(arch/powerpc/platforms/powermac/cpufreq_64.c).
+
+Other than that, this series looks good to me.
+
+Rob
+
