@@ -1,81 +1,92 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/8] Cpufreq, cpu hotplug, suspend/resume related fixes
-Date: Mon, 15 Jul 2013 14:13:49 +0530
-Message-ID: <51E3B645.8070705@linux.vnet.ibm.com>
-References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <51E3B262.6030005@intel.com>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v3 1/4] hwmon: (lm90) split set&show temp as common codes
+Date: Mon, 15 Jul 2013 17:14:07 +0800
+Message-ID: <51E3BD5F.6060806@nvidia.com>
+References: <1373615287-18502-1-git-send-email-wni@nvidia.com> <1373615287-18502-2-git-send-email-wni@nvidia.com> <20130712152615.23464a6b@endymion.delvare> <20130712135000.GA3386@roeck-us.net> <20130712163034.1fc1cd66@endymion.delvare> <20130712144011.GC3629@roeck-us.net>	<51E395D9.6070000@nvidia.com> <20130715092415.6d082aa2@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp07.in.ibm.com ([122.248.162.7]:49712 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754529Ab3GOIr0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 04:47:26 -0400
-Received: from /spool/local
-	by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 15 Jul 2013 14:09:39 +0530
-In-Reply-To: <51E3B262.6030005@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20130715092415.6d082aa2-R0o5gVi9kd7kN2dkZ6Wm7A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, "thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/15/2013 01:57 PM, Lan Tianyu wrote:
-> On 2013=E5=B9=B407=E6=9C=8812=E6=97=A5 06:15, Srivatsa S. Bhat wrote:
+On 07/15/2013 03:24 PM, Jean Delvare wrote:
+> On Mon, 15 Jul 2013 14:25:29 +0800, Wei Ni wrote:
+>> On 07/12/2013 10:40 PM, Guenter Roeck wrote:
+>>> On Fri, Jul 12, 2013 at 04:30:34PM +0200, Jean Delvare wrote:
+>>>> If that means that for example the ACPI thermal zone is no longer
+>>>> displayed by "sensors", then I strongly object - unless it is
+>>>> explicitly registered as a separate hwmon device from now on, of course.
+>>>
+>>> If I recall correctly that was the idea. Of course, in practice that will mean
+>>> that devices will _not_ get exposed as hwmon devices, as implementers won't
+>>> bother doing both.
+>>>
+>>>> My idea was to make the bridge optional - you decide when you register
+>>>> a thermal device if it should be exposed as hwmon or not.
+>>>
+>>> Yes, that would be a much better solution.
 >>
->> Hi,
->>
->> Commit a66b2e (cpufreq: Preserve sysfs files across suspend/resume) =
-caused
->> some subtle regressions in the cpufreq subsystem during suspend/resu=
-me.
->> This patchset is aimed at rectifying those problems, by fixing the r=
-egression
->> as well as achieving the original goal of that commit in a proper wa=
-y.
->>
->> Patch 1 reverts the above commit, and is CC'ed to stable.
->>
->> Patches 2 - 5 reorganize the code and have no functional impact, and=
- can go
->> in as general cleanups as well. This reorganization builds a base th=
-at the
->> rest of the patches will make use of.
->>
->> Patch 6 and 7 add a mechanism to perform light-weight init/tear-down=
- of CPUs
->> in the cpufreq subsystem and finally patch 8 uses it to preserve sys=
-fs files
->> across suspend/resume.
->>
->> All the patches apply on current mainline.
->>
->>
->> Robert, Durgadoss, it would be great if you could try it out and see=
- if it works
->> well for your usecase. I tested it locally and cpufreq related files=
- did retain
->> their permissions across suspend/resume. Let me know if it works fin=
-e in your
->> setup too.
->>
->> And I'd of course appreciate to hear from Dirk, Tianyu and Toralf to=
- know
->> whether their systems work fine after:
->> a. applying only the first commit (this is what gets backported to s=
-table)
->> b. applying all the commits
->=20
-> Hi, I tested this patchset on my machine and the issue in bug 59781 h=
-as
-> been resolved.
->=20
-> Tested-by: Tianyu Lan <tianyu.lan@intel.com>
->=20
+>> I think we can decide it in the DT, we can add a dt property in the lm90
+>> device node, such as:
+>> sys-interface = SYS_HWMON;
+>> or
+>> sys-interface = SYS_THERMAL;
+>> So we register it as the hwmon or thermal device
+> 
+> This is an option, but please keep in mind that DT is not the only way
+> to instantiate LM90-like devices, and we should not expose duplicate
+> inputs by default. It is fine with me if the default is to create only a
+> HWMON device (as the lm90 driver was doing so far), and only
+> DT-instantiated devices have the choice.
 
-Awesome! Thanks a lot!
+Yes, we should not expose duplicate inputs, we may have tree permutation:
+1. only hwmon device:
+for this items, we just need to call hwmon_device_register().
+2. only thermal device + virtual hwmon device:
+for this items, we just need to call thermal_zone_device_register().
 
-Regards,
-Srivatsa S. Bhat
+We can set #1 as the default, and if use DT, we provide option to choice
+#1 or #2.
 
+3. hwmon device + thermal device:
+for this items, we doesn't need the virtual hwmon which registered by
+the thermal fw, how to handle this one? Add flag when register as
+thermal device to indicate if want virtual hwmon device or not,
+something like your below another option.
+
+> 
+> Another option, as discussed before, would be that the thermal devices
+> registered by lm90 are specifically tagged as "do not expose as hwmon".
+> This would avoid the duplicate hwmon inputs in all cases.
+
+It seems in current thermal fw, it can't be tagged as "do not expose as
+hwmon", we need to add flag when register thermal device.
+
+Rui, what do you think for it?
+
+> 
+> Again - no strong opinion on the implementation, as long as it does the
+> right thing.
+
+I'm working on the Tegra platform, we uses nct1008 as the temperature
+sensor, and we want to register it as thermal device, so that we can run
+the throttle function. So I prepared these patches to enhance this driver.
+
+> 
+> Oh, and we'll have to be careful with the Kconfig dependencies. I do
+> not want the lm90 driver to depend on the thermal framework.
+
+Yes, absolutely agree, lm90 should be independent.
+Indeed, the thermal folks is trying to restructure the thermal fw, and
+in this new fw, it's more easy to add the generic sensors to the thermal
+fw. If you interest it, please refer
+http://thread.gmane.org/gmane.linux.power-management.general/30692.
+
+Thanks.
+Wei.
+
+> 
