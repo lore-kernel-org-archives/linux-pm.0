@@ -1,20 +1,16 @@
 From: Sudeep.KarkadaNagesha@arm.com
-Subject: [RFC PATCH 10/11] cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
-Date: Mon, 15 Jul 2013 11:22:11 +0100
-Message-ID: <1373883732-26303-11-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH 11/11] cpufreq: arm_big_little: remove device tree parsing for cpu nodes
+Date: Mon, 15 Jul 2013 11:22:12 +0100
+Message-ID: <1373883732-26303-12-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:41704 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225Ab3GOKWa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2013 06:22:30 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: cpufreq@vger.kernel.org, arnd@arndb.de, olof@lixom.net, lorenzo.pieralisi@arm.com, rob.herring@calxeda.com, grant.likely@linaro.org, rjw@sisk.pl, viresh.kumar@linaro.org, gregkh@linuxfoundation.org, gregory.clement@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, linux@arm.linux.org.uk, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
@@ -25,53 +21,83 @@ This patch removes all DT parsing and uses cpu->of_node instead.
 
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/cpufreq/kirkwood-cpufreq.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ drivers/cpufreq/arm_big_little_dt.c | 39 ++++++++++++++++-----------------=
+----
+ 1 file changed, 17 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-=
-cpufreq.c
-index c233ea6..18aa3eb 100644
---- a/drivers/cpufreq/kirkwood-cpufreq.c
-+++ b/drivers/cpufreq/kirkwood-cpufreq.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/clk.h>
- #include <linux/clk-provider.h>
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/of.h>
- #include <linux/platform_device.h>
-@@ -165,6 +166,7 @@ static struct cpufreq_driver kirkwood_cpufreq_driver =
-=3D {
- static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_=
+little_dt.c
+index fd9e3ea..d2648d1 100644
+--- a/drivers/cpufreq/arm_big_little_dt.c
++++ b/drivers/cpufreq/arm_big_little_dt.c
+@@ -34,27 +34,19 @@
+ /* get cpu node with valid operating-points */
+ static struct device_node *get_cpu_node_with_valid_op(int cpu)
  {
- =09struct device_node *np;
-+=09struct device *cpu_dev;
- =09struct resource *res;
- =09int err;
+-=09struct device_node *np =3D NULL, *parent;
+-=09int count =3D 0;
++=09struct device *cpu_dev =3D get_cpu_device(cpu);
++=09struct device_node *np;
 =20
-@@ -175,9 +177,17 @@ static int kirkwood_cpufreq_probe(struct platform_devi=
-ce *pdev)
- =09if (IS_ERR(priv.base))
- =09=09return PTR_ERR(priv.base);
-=20
--=09np =3D of_find_node_by_path("/cpus/cpu@0");
--=09if (!np)
-+=09cpu_dev =3D get_cpu_device(0);
+-=09parent =3D of_find_node_by_path("/cpus");
+-=09if (!parent) {
+-=09=09pr_err("failed to find OF /cpus\n");
 +=09if (!cpu_dev) {
-+=09=09dev_err(&pdev->dev, "failed to get cpu device\n");
- =09=09return -ENODEV;
-+=09}
-+
++=09=09pr_err("failed to get cpu device\n");
+ =09=09return NULL;
+ =09}
+-
+-=09for_each_child_of_node(parent, np) {
+-=09=09if (count++ !=3D cpu)
+-=09=09=09continue;
+-=09=09if (!of_get_property(np, "operating-points", NULL)) {
+-=09=09=09of_node_put(np);
+-=09=09=09np =3D NULL;
+-=09=09}
+-
+-=09=09break;
++=09np =3D of_node_get(cpu_dev->of_node);
++=09if (!of_get_property(np, "operating-points", NULL)) {
++=09=09of_node_put(np);
++=09=09np =3D NULL;
+ =09}
+=20
+-=09of_node_put(parent);
+ =09return np;
+ }
+=20
+@@ -63,11 +55,12 @@ static int dt_init_opp_table(struct device *cpu_dev)
+ =09struct device_node *np;
+ =09int ret;
+=20
+-=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
+-=09if (!np)
+-=09=09return -ENODATA;
 +=09np =3D of_node_get(cpu_dev->of_node);
 +=09if (!np) {
-+=09=09dev_err(&pdev->dev, "failed to get cpu device node\n");
-+=09=09return -ENODEV;
++=09=09pr_err("failed to find cpu%d node\n", cpu_dev->id);
++=09=09return -ENOENT;
 +=09}
 =20
- =09priv.cpu_clk =3D of_clk_get_by_name(np, "cpu_clk");
- =09if (IS_ERR(priv.cpu_clk)) {
+-=09cpu_dev->of_node =3D np;
+ =09ret =3D of_init_opp_table(cpu_dev);
+ =09of_node_put(np);
+=20
+@@ -79,9 +72,11 @@ static int dt_get_transition_latency(struct device *cpu_=
+dev)
+ =09struct device_node *np;
+ =09u32 transition_latency =3D CPUFREQ_ETERNAL;
+=20
+-=09np =3D get_cpu_node_with_valid_op(cpu_dev->id);
+-=09if (!np)
++=09np =3D of_node_get(cpu_dev->of_node);
++=09if (!np) {
++=09=09pr_info("Failed to find cpu node. Use CPUFREQ_ETERNAL transition lat=
+ency\n");
+ =09=09return CPUFREQ_ETERNAL;
++=09}
+=20
+ =09of_property_read_u32(np, "clock-latency", &transition_latency);
+ =09of_node_put(np);
 --=20
 1.8.1.2
-
-
