@@ -1,123 +1,65 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq
-Date: Mon, 15 Jul 2013 01:26:03 +0200
-Message-ID: <1429422.16N7g1KiV4@vostro.rjw.lan>
-References: <1372841395-30891-1-git-send-email-kpark3469@gmail.com>
+Subject: Re: [PATCH] cpufreq: s3c24xx: rename CONFIG_CPU_FREQ_S3C24XX_DEBUGFS
+Date: Mon, 15 Jul 2013 02:14:27 +0200
+Message-ID: <12749497.boFBrcRXQg@vostro.rjw.lan>
+References: <1373826596.1370.59.camel@x61.thuisdomein>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:42681 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:42714 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753422Ab3GNXQO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 14 Jul 2013 19:16:14 -0400
-In-Reply-To: <1372841395-30891-1-git-send-email-kpark3469@gmail.com>
+	id S1753511Ab3GOAEe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 14 Jul 2013 20:04:34 -0400
+In-Reply-To: <1373826596.1370.59.camel@x61.thuisdomein>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kpark3469@gmail.com, daniel.lezcano@linaro.org
-Cc: linux-pm@vger.kernel.org, keun-o.park@windriver.com
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, July 03, 2013 05:49:55 PM kpark3469@gmail.com wrote:
-> From: Sahara <keun-o.park@windriver.com>
+On Sunday, July 14, 2013 08:29:56 PM Paul Bolle wrote:
+> The Kconfig symbol CPU_FREQ_S3C24XX_DEBUGFS was renamed to
+> ARM_S3C24XX_CPUFREQ_DEBUGFS in commit f023f8dd59 ("cpufreq: s3c24xx:
+> move cpufreq driver to drivers/cpufreq"). But that commit missed one
+> instance of its macro CONFIG_CPU_FREQ_S3C24XX_DEBUGFS. Rename it too.
 > 
-> This patch adds Kconfig.arm for cpuidle drivers for ARM. And, this
-> also moves calxeda, kirkwood and zynq to Kconfig.arm. Like cpufreq
-> menu, "CPU Idle" menu is added to drivers/cpuidle/Kconfig.
-> 
-> Signed-off-by: Sahara <keun-o.park@windriver.com>
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 
-Daniel: Yes, no, maybe?
+Queued up as a fix for 3.11.
 
+Thanks,
 Rafael
 
 
 > ---
->  drivers/cpuidle/Kconfig     |   19 +++++++------------
->  drivers/cpuidle/Kconfig.arm |   21 +++++++++++++++++++++
->  drivers/cpuidle/Makefile    |    8 +++++---
->  3 files changed, 33 insertions(+), 15 deletions(-)
->  create mode 100644 drivers/cpuidle/Kconfig.arm
+> Untested. Needs compile testing. But please note that setting
+> ARM_S3C24XX_CPUFREQ_DEBUGFS should currently lead to compile errors.
 > 
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> index 81de5d9..b3fb81d 100644
-> --- a/drivers/cpuidle/Kconfig
-> +++ b/drivers/cpuidle/Kconfig
-> @@ -1,5 +1,6 @@
-> +menu "CPU Idle"
+>  drivers/cpufreq/s3c24xx-cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+> index 3513e74..87781eb 100644
+> --- a/drivers/cpufreq/s3c24xx-cpufreq.c
+> +++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+> @@ -49,7 +49,7 @@ static struct clk *clk_hclk;
+>  static struct clk *clk_pclk;
+>  static struct clk *clk_arm;
 >  
-> -menuconfig CPU_IDLE
-> +config CPU_IDLE
->  	bool "CPU idle PM support"
->  	default y if ACPI || PPC_PSERIES
->  	select CPU_IDLE_GOV_LADDER if (!NO_HZ && !NO_HZ_IDLE)
-> @@ -29,19 +30,13 @@ config CPU_IDLE_GOV_MENU
->  	bool "Menu governor (for tickless system)"
->  	default y
+> -#ifdef CONFIG_CPU_FREQ_S3C24XX_DEBUGFS
+> +#ifdef CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS
+>  struct s3c_cpufreq_config *s3c_cpufreq_getconfig(void)
+>  {
+>  	return &cpu_cur;
+> @@ -59,7 +59,7 @@ struct s3c_iotimings *s3c_cpufreq_getiotimings(void)
+>  {
+>  	return &s3c24xx_iotiming;
+>  }
+> -#endif /* CONFIG_CPU_FREQ_S3C24XX_DEBUGFS */
+> +#endif /* CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS */
 >  
-> -config CPU_IDLE_CALXEDA
-> -	bool "CPU Idle Driver for Calxeda processors"
-> -	depends on ARCH_HIGHBANK
-> -	help
-> -	  Select this to enable cpuidle on Calxeda processors.
-> -
-> -config CPU_IDLE_ZYNQ
-> -	bool "CPU Idle Driver for Xilinx Zynq processors"
-> -	depends on ARCH_ZYNQ
-> -	help
-> -	  Select this to enable cpuidle on Xilinx Zynq processors.
-> +menu "ARM CPU Idle Drivers"
-> +depends on ARM
-> +source "drivers/cpuidle/Kconfig.arm"
-> +endmenu
->  
->  endif
->  
->  config ARCH_NEEDS_CPU_IDLE_COUPLED
->  	def_bool n
-> +endmenu
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-> new file mode 100644
-> index 0000000..df69259
-> --- /dev/null
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -0,0 +1,21 @@
-> +#
-> +# ARM CPU Idle drivers
-> +#
-> +
-> +config ARM_HIGHBANK_CPUIDLE
-> +	bool "CPU Idle Driver for Calxeda processors"
-> +	depends on ARCH_HIGHBANK
-> +	help
-> +	  Select this to enable cpuidle on Calxeda processors.
-> +
-> +config ARM_KIRKWOOD_CPUIDLE
-> +	bool "CPU Idle Driver for Marvell Kirkwood SoCs"
-> +	depends on ARCH_KIRKWOOD
-> +	help
-> +	  This adds the CPU Idle driver for Marvell Kirkwood SoCs.
-> +
-> +config ARM_ZYNQ_CPUIDLE
-> +	bool "CPU Idle Driver for Xilinx Zynq processors"
-> +	depends on ARCH_ZYNQ
-> +	help
-> +	  Select this to enable cpuidle on Xilinx Zynq processors.
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index 8767a7b..77cf767 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -5,6 +5,8 @@
->  obj-y += cpuidle.o driver.o governor.o sysfs.o governors/
->  obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
->  
-> -obj-$(CONFIG_CPU_IDLE_CALXEDA) += cpuidle-calxeda.o
-> -obj-$(CONFIG_ARCH_KIRKWOOD) += cpuidle-kirkwood.o
-> -obj-$(CONFIG_CPU_IDLE_ZYNQ) += cpuidle-zynq.o
-> +##################################################################################
-> +# ARM SoC drivers
-> +obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
-> +obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
-> +obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
+>  static void s3c_cpufreq_getcur(struct s3c_cpufreq_config *cfg)
+>  {
 > 
 -- 
 I speak only for myself.
