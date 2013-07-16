@@ -1,26 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 00/11] ARM: DT: update cpu device of_node
-Date: Tue, 16 Jul 2013 12:01:37 +0530
-Message-ID: <CAKohponiPd6YZFiQGY3UXdtb0WDWsqsPoZJ-53z6Qjm4e7ap_w@mail.gmail.com>
-References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v5 0/7] cpufreq:boost: CPU Boost mode support
+Date: Tue, 16 Jul 2013 09:26:47 +0200
+Message-ID: <20130716092647.67dd1aff@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
+ <20130709090243.7d492f82@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-reply-to: <20130709090243.7d492f82@amdc308.digital.local>
 Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep.KarkadaNagesha@arm.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, arnd@arndb.de, olof@lixom.net, lorenzo.pieralisi@arm.com, rob.herring@calxeda.com, grant.likely@linaro.org, rjw@sisk.pl, gregkh@linuxfoundation.org, gregory.clement@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, linux@arm.linux.org.uk
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 15 July 2013 15:52,  <Sudeep.KarkadaNagesha@arm.com> wrote:
-> Sudeep KarkadaNagesha (11):
->   cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
->   cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
->   cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
->   cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
->   cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
->   cpufreq: arm_big_little: remove device tree parsing for cpu nodes
+Dear Viresh, Rafael,
 
-For cpufreq part:
+> On Thu, 04 Jul 2013 10:50:23 +0200, Lukasz Majewski wrote:
+> 
+> Dear Viresh, Rafael
+> 
+> Do you have any comments/feedback for me regarding those patches?
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Will you find time to review version 5 of cpufreq boost patch series?
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
