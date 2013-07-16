@@ -1,80 +1,100 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 02/11] ARM: DT/kernel: define ARM specific arch_of_get_cpu_node
-Date: Tue, 16 Jul 2013 10:03:21 +0100
-Message-ID: <51E50C59.50900@arm.com>
-References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51E44943.7000600@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 7/8] cpufreq: Preserve policy structure across suspend/resume
+Date: Tue, 16 Jul 2013 14:40:50 +0530
+Message-ID: <CAKohponOeqptU2mz4XCFZKoEs5EBTTx0A3Dvev5k-BJiW_2McA@mail.gmail.com>
+References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
+	<20130711221704.547.64296.stgit@srivatsabhat.in.ibm.com>
+	<CAKohpom+WcTcefCZitgZQcSjTPsgXsa6VKQF5y6GJA31-rBm0w@mail.gmail.com>
+	<51E3C950.90503@linux.vnet.ibm.com>
+	<CAKohpo=tfd_CXDBkbE23=UdEF99ZK-17NM_cvpGJ_e9wXGzsZQ@mail.gmail.com>
+	<51E50AD4.6040208@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:46229 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753479Ab3GPJDO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 05:03:14 -0400
-In-Reply-To: <51E44943.7000600@gmail.com>
+Received: from mail-ob0-f180.google.com ([209.85.214.180]:36523 "EHLO
+	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752705Ab3GPJKu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 05:10:50 -0400
+Received: by mail-ob0-f180.google.com with SMTP id eh20so462568obb.39
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2013 02:10:50 -0700 (PDT)
+In-Reply-To: <51E50AD4.6040208@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "arnd@arndb.de" <arnd@arndb.de>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "olof@lixom.net" <olof@lixom.net>, "gregory.clement@free-electrons.com" <gregory.clement@free-electrons.com>, "shawn.guo@linaro.org" <shawn.guo@>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 15/07/13 20:10, Rob Herring wrote:
-> On 07/15/2013 05:22 AM, Sudeep.KarkadaNagesha@arm.com wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 16 July 2013 14:26, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> On 07/16/2013 11:45 AM, Viresh Kumar wrote:
+
+>> To understand it I actually applied your patches to get better view of the code.
+>> (Haven't tested it though).. And found that your code is doing the right thing
+>> and we shouldn't get a mismatch.. This is the sequence of events I can draw:
 >>
->> CPU subsystem now provides architecture specific hook to retrieve the
->> of_node. Most of the cpu DT node parsing and initialisation is contained
->> in devtree.c. It's better to contain all CPU device node parsing there.
+>> - __cpu_add_dev() for first cpu. sets the refcount to 'x', where x are
+>> the no. of
+>> cpus in its clock domain.
+>> - _cpu_add_dev() for other cpus: doesn't change anything in refcount
 >>
->> arch_of_get_cpu_node is mainly used to assign cpu->of_node when CPUs get
->> registered. This patch overrides the defination of the same. It can also
->> act as the helper function in pre-SMP/early initialisation stages to
->> retrieve CPU device node pointers in logical ordering.
+>> - Suspend:
+>>  - cpu_remove_dev() for all cpus, due to frozen flag we don't touch the value
+>> of count
+>> - Resume:
+>>  - cpu_add_dev() for all cpus, due to frozen flag we don't touch the
+>> value of count.
 >>
->> This mainly helps to avoid replication of the code doing CPU node parsing
->> and physical(MPIDR) to logical mapping.
->>
->> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> [snip]
-> 
->> +struct device_node * __init arch_of_get_cpu_node(int cpu)
->> +{
->> +	struct device_node *cpun, *cpus;
->> +	const u32 *cell;
->> +	u64 hwid;
->> +	int ac;
->> +
->> +	cpus = of_find_node_by_path("/cpus");
->> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
->> +		return NULL;
->> +
->> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
->> +		ac = of_n_addr_cells(cpus);
->> +
->> +	for_each_child_of_node(cpus, cpun) {
->> +		if (of_node_cmp(cpun->type, "cpu"))
->> +			continue;
->> +		cell = of_get_property(cpun, "reg", NULL);
->> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
->> +			continue;
->> +
->> +		hwid = of_read_number(cell, ac);
->> +		if ((hwid & MPIDR_HWID_BITMASK) == cpu_logical_map(cpu))
-> 
-> Most of this function is not ARM specific, so it would be nice if we
-> could shrink the arch specific part down to just this match. A default
-> match of reg == logical cpu number might be useful.
-> 
-I completely agree, in fact that was my initial idea too.
+>
+> Actually this one is tricky (I took a look again). So we have this code in the
+> beginning of _cpufreq_add_dev():
+>
+>
+> 1008 #ifdef CONFIG_SMP
+> 1009         /* check whether a different CPU already registered this
+> 1010          * CPU because it is in the same boat. */
+> 1011         policy = cpufreq_cpu_get(cpu);
+> 1012         if (unlikely(policy)) {
+> 1013                 cpufreq_cpu_put(policy);
+> 1014                 return 0;
+> 1015         }
+>
+> The _get() is not controlled by the frozen flag, but it still doesn't take a
+> refcount because of a subtle reason: per_cpu(cpufreq_cpu_data, cpu) was set to
+> NULL in __cpufreq_remove_dev() and the memory was saved away in fallback storage.
+> So, when __cpufreq_cpu_get() executes, it sees:
+>
+>  204         /* get the CPU */
+>  205         data = per_cpu(cpufreq_cpu_data, cpu);
+>  206
+>  207         if (!data)
+>  208                 goto err_out_put_module;
+>
+> Thus, since data is NULL, cpufreq_cpu_get() won't take a refcount and will return
+> silently.
 
-But when I had a look at powerpc implementation of "of_get_cpu_node" in
-arch/powerpc/kernel/prom.c, it looked like PPC is using some
-compatibles(e.g. ibm,ppc-interrupt-server#s) which are not specified in
-ePAPR. I am not sure is that's allowed or not, if allowed then we can't
-have generic of_get_cpu_node with just arch specific hwid matching function.
+Even if this wouldn't have happened, refcount wouldn't have been
+touched due to this code:
 
-Let me know how would you prefer me to proceed on this.
+> 1012         if (unlikely(policy)) {
+> 1013                 cpufreq_cpu_put(policy);
+> 1014                 return 0;
+> 1015         }
 
-Regards,
-Sudeep
+i.e. If we get a valid policy structure, we siimply put the policy again
+and so decrement the incremented refcount.
 
+So, even if you don't keep the fallback storage, things should work
+without any issue (probably worth trying as this will get rid of a per
+cpu variable :))
+
+> Further down in __cpufreq_add_dev(), we restore the original memory, using
+> the frozen flag:
+>
+> 1037         if (frozen)
+> 1038                 /* Restore the saved policy when doing light-weight init */
+> 1039                 policy = cpufreq_policy_restore(cpu);
+> 1040         else
+> 1041                 policy = cpufreq_policy_alloc();
+>
+>
+> So that is how we manage to fool cpufreq_cpu_get() into not taking a fresh
+> refcount while resuming :)
