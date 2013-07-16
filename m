@@ -1,69 +1,53 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v5 4/7] cpufreq:exynos:Extend Exynos cpufreq driver to
- support boost framework
-Date: Tue, 16 Jul 2013 12:58:48 +0200
-Message-ID: <20130716125848.770ba264@amdc308.digital.local>
+Subject: Re: [PATCH v5 3/7] cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to
+ work with common boost solution
+Date: Tue, 16 Jul 2013 13:17:04 +0200
+Message-ID: <20130716131704.6e3c5373@amdc308.digital.local>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
  <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-5-git-send-email-l.majewski@samsung.com>
- <CAKohpokiF8ZamE_=XdPrjZQ8VHQ9wvzQy6w+6byO-T7J9c=6mA@mail.gmail.com>
+ <1372927830-2949-4-git-send-email-l.majewski@samsung.com>
+ <CAKohpomdkF-XVWXaxNx+SfnHvHE_N6=gcU06YD6D7_oB0-M9aA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpokiF8ZamE_=XdPrjZQ8VHQ9wvzQy6w+6byO-T7J9c=6mA@mail.gmail.com>
+In-reply-to: <CAKohpomdkF-XVWXaxNx+SfnHvHE_N6=gcU06YD6D7_oB0-M9aA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 16 Jul 2013 15:18:57 +0530 Viresh Kumar viresh.kumar@linaro.org
+On Tue, 16 Jul 2013 15:34:02 +0530 Viresh Kumar viresh.kumar@linaro.org
 wrote,
 > On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > The struct cpufreq_driver has been extended to embrace the
-> > information related to boost support.
+> >  static void __init acpi_cpufreq_boost_init(void)
+> > @@ -953,33 +937,22 @@ static void __init
+> > acpi_cpufreq_boost_init(void) if (!msrs)
+> >                         return;
 > >
-> > When "boost_mode" device tree attribute is defined for a platform,
-> > the boost_supported flag is set. Moreover boost related attributes
-> > were exported.
-> >
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> > -               boost_supported = true;
+> > -               boost_enabled = boost_state(0);
+> > +               cpufreq_set_boost_enabled(boost_state(0));
+> > +               acpi_cpufreq_driver.boost_supported = true;
 > 
-> Don't we need to mark any frequencies in the freq table with BOOST?
-> How?
+> You are again doing the same mistake. Boost must be
+> always supported for acpi-cpufreq with read permissions, as it was
+> earlier.
 
-The (trivial) patch is already prepared to enable BOOST at cpufreq for
-Exynos4412. I will post it for v6. Sorry for not posting it earlier.
+The boost attribute is exported to sysfs only when boost is supported
+by the driver (as we had agreed earlier).  
 
-The whole patch is as follow:
+The problem here is that the original acpi-cpufreq.c file had two
+static flags:
+static bool boost_enabled, boost_supported;
 
-static struct clk *cpu_clk;
-static struct clk *mout_core;
-static struct clk *sclk_mpll;
-static struct clk *mout_apll;
- 
-static unsigned int exynos4x12_volt_table[] = {
-	1350000, 1287500, 1250000, 1187500, 1137500, 1087500, 1037500,
- 	1000000,  987500,  975000,  950000,  925000,  900000,  900000
-};
- 
- static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
--	{L0, CPUFREQ_ENTRY_INVALID},
-+	{CPUFREQ_BOOST_FREQ, 1500 * 1000},
- 	{L1, 1400 * 1000},
- 	{L2, 1300 * 1000},
- 	{L3, 1200 * 1000},
- 	{L4, 1100 * 1000},
- 	{L5, 1000 * 1000},
- 	{L6,  900 * 1000},
- 	{L7,  800 * 1000},
- 	{L8,  700 * 1000},
- 	{L9,  600 * 1000},
- 	{L10, 500 * 1000},
- 	{L11, 400 * 1000},
- 	{L12, 300 * 1000},
+Both of them are not needed at acpi-cpufreq, since:
+1. boost_enabled is defined at cpufreq.c core file.
+2. boost_supported is defined at struct cpufreq_driver
+(acpi_cpufreq_driver).
 
+I've reused the boost_supported from acpi_cpufreq_driver structure to
+avoid code duplication.
 
 
 -- 
