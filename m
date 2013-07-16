@@ -1,92 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 2/7] cpufreq: Add boost frequency support in core
-Date: Tue, 16 Jul 2013 15:11:54 +0530
-Message-ID: <CAKohpomfWKiRjznXeYsg32xAAWPTBQ4Gd0D_pftbA5=zMDiH4Q@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
-	<1372927830-2949-3-git-send-email-l.majewski@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2] cpuidle: Add Kconfig.arm and move calxeda, kirkwood
+ and zynq
+Date: Tue, 16 Jul 2013 11:46:08 +0200
+Message-ID: <51E51660.50309@linaro.org>
+References: <1372841395-30891-1-git-send-email-kpark3469@gmail.com> <1429422.16N7g1KiV4@vostro.rjw.lan> <51E404D2.5030907@linaro.org> <2756026.ocYqpU9MCn@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:52037 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815Ab3GPJlz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 05:41:55 -0400
-Received: by mail-oa0-f44.google.com with SMTP id l10so548278oag.3
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2013 02:41:54 -0700 (PDT)
-In-Reply-To: <1372927830-2949-3-git-send-email-l.majewski@samsung.com>
+Received: from mail-bk0-f48.google.com ([209.85.214.48]:54864 "EHLO
+	mail-bk0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754416Ab3GPJqL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 05:46:11 -0400
+Received: by mail-bk0-f48.google.com with SMTP id jf17so165898bkc.7
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2013 02:46:10 -0700 (PDT)
+In-Reply-To: <2756026.ocYqpU9MCn@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kpark3469@gmail.com, linux-pm@vger.kernel.org, keun-o.park@windriver.com
 
-On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+On 07/16/2013 01:44 AM, Rafael J. Wysocki wrote:
+> On Monday, July 15, 2013 04:18:58 PM Daniel Lezcano wrote:
+>> On 07/15/2013 01:26 AM, Rafael J. Wysocki wrote:
+>>> On Wednesday, July 03, 2013 05:49:55 PM kpark3469@gmail.com wrote:
+>>>> From: Sahara <keun-o.park@windriver.com>
+>>>>
+>>>> This patch adds Kconfig.arm for cpuidle drivers for ARM. And, this
+>>>> also moves calxeda, kirkwood and zynq to Kconfig.arm. Like cpufreq
+>>>> menu, "CPU Idle" menu is added to drivers/cpuidle/Kconfig.
+>>>>
+>>>> Signed-off-by: Sahara <keun-o.park@windriver.com>
+>>>
+>>> Daniel: Yes, no, maybe?
+>>
+>> Actually I picked the patch in my tree, I was waiting for the -rc1
+>> before sending the pull request.
+>>
+>> I have 3 other patches on top of it I want to send for review before
+>> sending the pull request (as you take 1PR/week).
+>=20
+> OK, I'm dropping it then.
+>=20
+> I'll assume you'll handle ARM-specific changes from now on, so I'm go=
+ing to
+> ignore them going forward.
 
-> +int cpufreq_boost_trigger_state(int state)
-> +{
-> +       unsigned long flags;
-> +       int ret = 0;
-> +
-> +       if (boost_enabled != state) {
-> +               write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +               boost_enabled = state;
-> +
-> +               ret = cpufreq_driver->enable_boost(state);
-> +               if (ret)
-> +                       boost_enabled = 0;
-> +
-> +               write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +
-> +               if (ret)
-> +                       pr_err("%s: BOOST cannot enable (%d)\n",
+Ok, please ignore my previous PR, it was based on your pm-next branch
+which has this patch.
 
-Who said we are enabling it?
+I rebased my branch adding this patch and I will send you another
+updated PR.
 
-> +                              __func__, ret);
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +int cpufreq_boost_supported(void)
-> +{
-> +       if (cpufreq_driver)
-> +               return cpufreq_driver->boost_supported;
-> +
-> +       return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
-> +
-> +int cpufreq_boost_enabled(void)
-> +{
-> +       return boost_enabled;
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
-> +
-> +void cpufreq_set_boost_enabled(int state)
+Thanks
+  -- Daniel
 
-Maybe cpufreq_block_boost? As suggested by Rafael.
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-> +{
-> +       boost_enabled = state;
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_set_boost_enabled);
-> +
-> +/*********************************************************************
->   *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
->   *********************************************************************/
->
-> @@ -2001,6 +2094,22 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->         cpufreq_driver = driver_data;
->         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->
-> +       if (cpufreq_driver->boost_supported) {
-> +               /*
-> +                * Check if boost driver provides function to enable boost -
-> +                * if not, use cpufreq_boost_enable_sw as default
-> +                */
-> +               if (!cpufreq_driver->enable_boost)
-> +                       cpufreq_driver->enable_boost = &cpufreq_boost_enable_sw;
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-& is redundant.
