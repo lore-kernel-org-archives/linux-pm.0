@@ -1,50 +1,92 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v5 1/7] cpufreq: Store cpufreq policies in a list
-Date: Tue, 16 Jul 2013 11:39:24 +0200
-Message-ID: <20130716113924.46f40467@amdc308.digital.local>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 2/7] cpufreq: Add boost frequency support in core
+Date: Tue, 16 Jul 2013 15:11:54 +0530
+Message-ID: <CAKohpomfWKiRjznXeYsg32xAAWPTBQ4Gd0D_pftbA5=zMDiH4Q@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-2-git-send-email-l.majewski@samsung.com>
- <CAKohponOEcwq4eAjwxHMM6puuqGmtJ4GpqqRHyEqvhXM+Yt6wQ@mail.gmail.com>
+	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
+	<1372927830-2949-3-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohponOEcwq4eAjwxHMM6puuqGmtJ4GpqqRHyEqvhXM+Yt6wQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "l.majewski@majess.pl" <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f44.google.com ([209.85.219.44]:52037 "EHLO
+	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815Ab3GPJlz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 05:41:55 -0400
+Received: by mail-oa0-f44.google.com with SMTP id l10so548278oag.3
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2013 02:41:54 -0700 (PDT)
+In-Reply-To: <1372927830-2949-3-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-On Tue, 16 Jul 2013 10:51:27 +0200 Viresh Kumar wrote,
-> On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> 
-> > @@ -2056,6 +2058,7 @@ int cpufreq_unregister_driver(struct
-> > cpufreq_driver *driver)
-> > subsys_interface_unregister(&cpufreq_interface);
-> > unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
-> >
-> > +       list_del(&cpufreq_policy_list);
-> 
-> You can't delete the list this way... You must have passed the list
-> entry you wanted to delete. More precisely link from the struct
-> cpufreq_policy.
+On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 
-Yes. I shouldn't delete statically defined head of the list. Thanks for
-spotting.
+> +int cpufreq_boost_trigger_state(int state)
+> +{
+> +       unsigned long flags;
+> +       int ret = 0;
+> +
+> +       if (boost_enabled != state) {
+> +               write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +               boost_enabled = state;
+> +
+> +               ret = cpufreq_driver->enable_boost(state);
+> +               if (ret)
+> +                       boost_enabled = 0;
+> +
+> +               write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +               if (ret)
+> +                       pr_err("%s: BOOST cannot enable (%d)\n",
 
-> 
-> Over that, it shouldn't be done at the time of unregistering cpufreq
-> driver but as and when cpus are removed and _cpu_remove_dev
-> is called.
+Who said we are enabling it?
 
-OK, I will iterate the list at __cpufreq_remove_dev() and remove each
-of them there.
+> +                              __func__, ret);
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +int cpufreq_boost_supported(void)
+> +{
+> +       if (cpufreq_driver)
+> +               return cpufreq_driver->boost_supported;
+> +
+> +       return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
+> +
+> +int cpufreq_boost_enabled(void)
+> +{
+> +       return boost_enabled;
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+> +
+> +void cpufreq_set_boost_enabled(int state)
 
--- 
-Best regards,
+Maybe cpufreq_block_boost? As suggested by Rafael.
 
-Lukasz Majewski
+> +{
+> +       boost_enabled = state;
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_set_boost_enabled);
+> +
+> +/*********************************************************************
+>   *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
+>   *********************************************************************/
+>
+> @@ -2001,6 +2094,22 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>         cpufreq_driver = driver_data;
+>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+> +       if (cpufreq_driver->boost_supported) {
+> +               /*
+> +                * Check if boost driver provides function to enable boost -
+> +                * if not, use cpufreq_boost_enable_sw as default
+> +                */
+> +               if (!cpufreq_driver->enable_boost)
+> +                       cpufreq_driver->enable_boost = &cpufreq_boost_enable_sw;
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+& is redundant.
