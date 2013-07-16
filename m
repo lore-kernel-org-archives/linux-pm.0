@@ -1,44 +1,108 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v5 7/7] Documentation:cpufreq:boost: Update BOOST
- documentation
-Date: Tue, 16 Jul 2013 13:33:19 +0200
-Message-ID: <20130716133319.49ed0838@amdc308.digital.local>
+Subject: Re: [PATCH v5 6/7] cpufreq:boost:Kconfig: Enable software managed
+ BOOST support at Kconfig
+Date: Tue, 16 Jul 2013 13:50:22 +0200
+Message-ID: <20130716135022.64a102f8@amdc308.digital.local>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
  <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-8-git-send-email-l.majewski@samsung.com>
- <CAKohpo=oB_4gGtNn6jvxSCp665pOq6oqeTCCyGzmN_eWqt0Lhg@mail.gmail.com>
+ <1372927830-2949-7-git-send-email-l.majewski@samsung.com>
+ <CAKohpokR=jrcLQQ7VAD+vr7GWgSFBfuqbOhWHwA3FCgk__EJ3Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=oB_4gGtNn6jvxSCp665pOq6oqeTCCyGzmN_eWqt0Lhg@mail.gmail.com>
+In-reply-to: <CAKohpokR=jrcLQQ7VAD+vr7GWgSFBfuqbOhWHwA3FCgk__EJ3Q@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 16 Jul 2013 15:31:43 +0530 Viresh Kumar viresh.kumar@linaro.org
+On Tue, 16 Jul 2013 15:28:40 +0530 Viresh Kumar viresh.kumar@linaro.org
 wrote,
 > On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > -Reading the file is always supported, even if the processor does
-> > not -support boosting. In this case the file will be read-only and
-> > always -reads as "0". Explicitly changing the permissions and
-> > writing to that -file anyway will return EINVAL.
-> > +The file is exported only when cpufreq driver supports boosting.
-> > +Explicitly changing the permissions and writing to that file
-> > anyway will +return EINVAL.
+> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
 > 
-> For acpi-cpufreq reading the file should be always supported. And this
-> must be mentioned in doc.
+> > +config CPU_FREQ_BOOST_SW
+> > +       bool "CPU frequency overclocking (BOOST)"
+> 
+> Name it "CPU Frequency Overclocking - Software"
 
-As fair as I've understood our previous discussion (at [*]) we have
-agreed about this. We only export boost attribute when it is supported
-by cpufreq_driver. Rafael was very clear about exporting boost
-attribute:
+Thanks, I had a puzzle to came up with a good short name :-).
 
-"Simple: Export it only when supported."
+> 
+> > +       depends on ARM_EXYNOS_CPUFREQ && EXYNOS_THERMAL && EXYNOS_THERMAL
+ 		       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
+> 
+> Remote Exynos from here. If you want to enable it for your platform by
+> default, then select it from EXYNOS.
 
-[*]: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+The purpose of the condition [*] here is to prevent from enabling
+boost when thermal for Exynos is not supported.
+
+Only for properly configured Exynos (when thermal + cpufreq is set) the
+option is possible to enable. And by default it is disabled.
+This shall prevent from accidental boost usage. 
+  
+
+Please also note, that this switch only affects software based
+boost. The HW boost (Intel ACPI) support doesn't depend on this Kconfig
+setting. 
+
+> 
+> > +       default n
+> > +       help
+> > +        This driver supports software managed overclocking (BOOST).
+> > +         It allows usage of special frequencies for a particular
+> > processor
+> > +         if thermal conditions are appropriate.
+> > +
+> > +        It reguires, for safe operation, thermal framework with
+> > properly defined
+> > +         trip points.
+> > +
+> > +        If in doubt, say N.
+> > +
+> >  config CPU_FREQ_STAT
+> >         tristate "CPU frequency translation statistics"
+> >         select CPU_FREQ_TABLE
+> > diff --git a/drivers/cpufreq/exynos-cpufreq.c
+> > b/drivers/cpufreq/exynos-cpufreq.c index 4f42fcc..7586b28 100644
+> > --- a/drivers/cpufreq/exynos-cpufreq.c
+> > +++ b/drivers/cpufreq/exynos-cpufreq.c
+> > @@ -288,7 +288,9 @@ static struct cpufreq_driver exynos_driver = {
+> >
+> >  static int __init exynos_cpufreq_init(void)
+> >  {
+> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> >         struct device_node *node = pdev->dev.of_node;
+> > +#endif
+> >         int ret = -EINVAL;
+> >
+> >         exynos_info = kzalloc(sizeof(struct exynos_dvfs_info),
+> > GFP_KERNEL); @@ -319,9 +321,10 @@ static int __init
+> > exynos_cpufreq_init(void) }
+> >
+> >         locking_frequency = exynos_getspeed(0);
+> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> >         if (of_property_read_bool(node, "boost_mode"))
+> >                 exynos_driver.boost_supported = 1;
+> > -
+> > +#endif
+> 
+> Add a blank line here.
+
+OK
+
+> 
+> >         register_pm_notifier(&exynos_cpufreq_nb);
+> >
+> >         if (cpufreq_register_driver(&exynos_driver)) {
+> > --
+> > 1.7.10.4
+> >
+
+
+
 -- 
 Best regards,
 
