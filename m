@@ -1,50 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq
-Date: Tue, 16 Jul 2013 01:44:02 +0200
-Message-ID: <2756026.ocYqpU9MCn@vostro.rjw.lan>
-References: <1372841395-30891-1-git-send-email-kpark3469@gmail.com> <1429422.16N7g1KiV4@vostro.rjw.lan> <51E404D2.5030907@linaro.org>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [RFC PATCH 06/11] cpufreq: imx6q-cpufreq: remove device tree
+ parsing for cpu nodes
+Date: Tue, 16 Jul 2013 09:22:11 +0800
+Message-ID: <20130716012209.GA28375@S2101-09.ap.freescale.net>
+References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1373883732-26303-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:43994 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758446Ab3GOXeJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Jul 2013 19:34:09 -0400
-In-Reply-To: <51E404D2.5030907@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1373883732-26303-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep.KarkadaNagesha@arm.com
+Cc: lorenzo.pieralisi@arm.com, linux@arm.linux.org.uk, arnd@arndb.de, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, grant.likely@linaro.org, rob.herring@calxeda.com, kernel@pengutronix.de, gregkh@linuxfoundation.org, olof@lixom.net, gregory.clement@free-electrons.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: kpark3469@gmail.com, linux-pm@vger.kernel.org, keun-o.park@windriver.com
 
-On Monday, July 15, 2013 04:18:58 PM Daniel Lezcano wrote:
-> On 07/15/2013 01:26 AM, Rafael J. Wysocki wrote:
-> > On Wednesday, July 03, 2013 05:49:55 PM kpark3469@gmail.com wrote:
-> >> From: Sahara <keun-o.park@windriver.com>
-> >>
-> >> This patch adds Kconfig.arm for cpuidle drivers for ARM. And, this
-> >> also moves calxeda, kirkwood and zynq to Kconfig.arm. Like cpufreq
-> >> menu, "CPU Idle" menu is added to drivers/cpuidle/Kconfig.
-> >>
-> >> Signed-off-by: Sahara <keun-o.park@windriver.com>
-> > 
-> > Daniel: Yes, no, maybe?
+On Mon, Jul 15, 2013 at 11:22:07AM +0100, Sudeep.KarkadaNagesha@arm.com wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> Actually I picked the patch in my tree, I was waiting for the -rc1
-> before sending the pull request.
+> Now that the cpu device registration initialises the of_node(if available)
+> appropriately for all the cpus, parsing here is redundant.
 > 
-> I have 3 other patches on top of it I want to send for review before
-> sending the pull request (as you take 1PR/week).
+> This patch removes all DT parsing and uses cpu->of_node instead.
+> 
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-OK, I'm dropping it then.
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
-I'll assume you'll handle ARM-specific changes from now on, so I'm going to
-ignore them going forward.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> ---
+>  arch/arm/mach-imx/mach-imx6q.c  | 3 +--
+>  drivers/cpufreq/imx6q-cpufreq.c | 4 +---
+>  2 files changed, 2 insertions(+), 5 deletions(-)
