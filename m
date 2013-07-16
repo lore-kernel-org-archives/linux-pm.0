@@ -1,98 +1,88 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [PATCH] power: new trace event to print device suspend and resume
- time
-Date: Tue, 16 Jul 2013 22:04:03 +0000
-Message-ID: <B8EFE96D1287C24090BAD9D858E15E6173C1B6@sisaex02sj>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] power: new trace event to print device suspend and
+ resume time
+Date: Tue, 16 Jul 2013 15:16:59 -0700
+Message-ID: <1374013019.1949.52.camel@joe-AO722>
 References: <1374009806-11823-1-git-send-email-shuah.kh@samsung.com>
- <1374010741.1949.46.camel@joe-AO722>
+	 <1374010741.1949.46.camel@joe-AO722>
+	 <B8EFE96D1287C24090BAD9D858E15E6173C1B6@sisaex02sj>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w2.samsung.com ([211.189.100.14]:57975 "EHLO
-	usmailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933597Ab3GPWEG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 18:04:06 -0400
-Content-language: en-US
+Received: from perches-mx.perches.com ([206.117.179.246]:35061 "EHLO
+	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933295Ab3GPWRB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Jul 2013 18:17:01 -0400
+In-Reply-To: <B8EFE96D1287C24090BAD9D858E15E6173C1B6@sisaex02sj>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "fweisbec@gmail.com" <fweisbec@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "fweisbec@gmail.com" <fweisbec@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
 
-On 07/16/2013 03:39 PM, Joe Perches wrote:
-> On Tue, 2013-07-16 at 15:23 -0600, Shuah Khan wrote:
->> A new trace event is added to pm events to print time it takes to suspend and
->> resume a device. It generates trace message that includes device, driver,
->> parent information in addition to the type of pm ops invoked as well as the
->> pm event and error status from the pm ops. Example trace below:
->
->> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-> []
->> @@ -66,6 +66,41 @@ TRACE_EVENT(machine_suspend,
->>   	TP_printk("state=%lu", (unsigned long)__entry->state)
->>   );
->>
->> +TRACE_EVENT(device_pm_report_time,
->> +
->> +	TP_PROTO(const char *device, const char *driver, const char *parent,
->> +		 const char *pm_ops, ktime_t ops_time, char *pm_event_str,
->> +		 int error),
->> +
->> +	TP_ARGS(device, driver, parent, pm_ops, ops_time, pm_event_str, error),
->> +
->> +	TP_STRUCT__entry(
->> +		__string(device, device)
->> +		__string(driver, driver)
->> +		__string(parent, parent)
->> +		__string(pm_ops, pm_ops)
->> +		__string(pm_event_str, pm_event_str)
->> +		__field(unsigned long long, ops_time)
->
-> s64
+On Tue, 2013-07-16 at 22:04 +0000, Shuah Khan wrote:
+> On 07/16/2013 03:39 PM, Joe Perches wrote:
+> > On Tue, 2013-07-16 at 15:23 -0600, Shuah Khan wrote:
+> >> A new trace event is added to pm events to print time it takes to suspend and
+> >> resume a device. It generates trace message that includes device, driver,
+> >> parent information in addition to the type of pm ops invoked as well as the
+> >> pm event and error status from the pm ops. Example trace below:
+> >
+> >> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> > []
+> >> @@ -66,6 +66,41 @@ TRACE_EVENT(machine_suspend,
+> >>   	TP_printk("state=%lu", (unsigned long)__entry->state)
+> >>   );
+> >>
+> >> +TRACE_EVENT(device_pm_report_time,
+> >> +
+> >> +	TP_PROTO(const char *device, const char *driver, const char *parent,
+> >> +		 const char *pm_ops, ktime_t ops_time, char *pm_event_str,
+> >> +		 int error),
+> >> +
+> >> +	TP_ARGS(device, driver, parent, pm_ops, ops_time, pm_event_str, error),
+> >> +
+> >> +	TP_STRUCT__entry(
+> >> +		__string(device, device)
+> >> +		__string(driver, driver)
+> >> +		__string(parent, parent)
+> >> +		__string(pm_ops, pm_ops)
+> >> +		__string(pm_event_str, pm_event_str)
+> >> +		__field(unsigned long long, ops_time)
+> >
+> > s64
+> 
+> Followed the ktime_t example in include/trace/events/timer.h - thinking 
+> it would be the correct way to cast ktime_t :)  I can change it to s64.
 
-Followed the ktime_t example in include/trace/events/timer.h - thinking 
-it would be the correct way to cast ktime_t :)  I can change it to s64.
+You mean this one below where s64 is used for the
+variable type?
+
+I do think the %llu is odd below here and it should be
+%lld without the casts.
+
+I prefer the TP_printk style of "foo=val" over "foo(val)"
+but there's no requirement for one style over another.
+
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 166)   TP_STRUCT__entry(
+434a83c3f (Ingo Molnar         2009-10-15 11:50:39 +0200 167)           __field( void *,        hrtimer         )
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 168)           __field( void *,        function        )
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 169)           __field( s64,           expires         )
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 170)           __field( s64,           softexpires     )
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 171)   ),
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 172) 
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 173)   TP_fast_assign(
+434a83c3f (Ingo Molnar         2009-10-15 11:50:39 +0200 174)           __entry->hrtimer        = hrtimer;
+434a83c3f (Ingo Molnar         2009-10-15 11:50:39 +0200 175)           __entry->function       = hrtimer->function;
+434a83c3f (Ingo Molnar         2009-10-15 11:50:39 +0200 176)           __entry->expires        = hrtimer_get_expires(hrtimer).tv64;
+434a83c3f (Ingo Molnar         2009-10-15 11:50:39 +0200 177)           __entry->softexpires    = hrtimer_get_softexpires(hrtimer).tv64;
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 178)   ),
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 179) 
+434a83c3f (Ingo Molnar         2009-10-15 11:50:39 +0200 180)   TP_printk("hrtimer=%p function=%pf expires=%llu softexpires=%llu",
+434a83c3f (Ingo Molnar         2009-10-15 11:50:39 +0200 181)             __entry->hrtimer, __entry->function,
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 182)             (unsigned long long)ktime_to_ns((ktime_t) {
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 183)                             .tv64 = __entry->expires }),
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 184)             (unsigned long long)ktime_to_ns((ktime_t) {
+c6a2a1770 (Xiao Guangrong      2009-08-10 10:51:23 +0800 185)                             .tv64 = __entry->softexpires }))
 
 
->
->> +		__field(int, error)
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__assign_str(device, device);
->> +		__assign_str(driver, driver);
->> +		__assign_str(parent, parent);
->> +		__assign_str(pm_ops, pm_ops);
->> +		__assign_str(pm_event_str, pm_event_str);
->> +		__entry->ops_time = (unsigned long long)
->> +					ktime_to_ns(ops_time) >> 10;
-
-Followed the ktime_t example in include/trace/events/timer.h - figured 
-it would be the right one. I can change it.
-
->
-> so no need for cast.
->
->> +		__entry->error = error;
->> +	),
->> +
->> +	TP_printk("%s driver(%s) parent(%s) %s %s (%llu usecs) err(%d)\n",
->
-> %lld and no newline
->
->> +		__get_str(device), __get_str(driver), __get_str(parent),
->> +		__get_str(pm_event_str), __get_str(pm_ops),
->> +		__entry->ops_time, __entry->error)
->> +);
->> +
->>   DECLARE_EVENT_CLASS(wakeup_source,
->>
->>   	TP_PROTO(const char *name, unsigned int state),
->
->
->
-
--- Shuah
-
-Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
-America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
