@@ -1,87 +1,119 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RESEND] cpuidle for ARM pull request
-Date: Tue, 16 Jul 2013 14:04:21 +0200
-Message-ID: <51E536C5.1020609@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v5 2/7] cpufreq: Add boost frequency support in core
+Date: Tue, 16 Jul 2013 14:06:32 +0200
+Message-ID: <20130716140632.70fb2838@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
+ <1372927830-2949-3-git-send-email-l.majewski@samsung.com>
+ <CAKohpomfWKiRjznXeYsg32xAAWPTBQ4Gd0D_pftbA5=zMDiH4Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f51.google.com ([74.125.82.51]:36008 "EHLO
-	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932146Ab3GPMEY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 08:04:24 -0400
-Received: by mail-wg0-f51.google.com with SMTP id e11so514723wgh.18
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2013 05:04:23 -0700 (PDT)
+Received: from mailout2.samsung.com ([203.254.224.25]:25488 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932146Ab3GPMHQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 08:07:16 -0400
+In-reply-to: <CAKohpomfWKiRjznXeYsg32xAAWPTBQ4Gd0D_pftbA5=zMDiH4Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linus Walleij <linus.walleij@linaro.org>, keun-o.park@windriver.com, "nsekhar@ti.com >> Sekhar Nori" <nsekhar@ti.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+
+On Tue, 16 Jul 2013 15:11:54 +0530 Viresh Kumar viresh.kumar@linaro.org
+wrote,
+> On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> 
+> > +int cpufreq_boost_trigger_state(int state)
+> > +{
+> > +       unsigned long flags;
+> > +       int ret = 0;
+> > +
+> > +       if (boost_enabled != state) {
+> > +               write_lock_irqsave(&cpufreq_driver_lock, flags);
+> > +               boost_enabled = state;
+> > +
+> > +               ret = cpufreq_driver->enable_boost(state);
+> > +               if (ret)
+> > +                       boost_enabled = 0;
+> > +
+> > +               write_unlock_irqrestore(&cpufreq_driver_lock,
+> > flags); +
+> > +               if (ret)
+> > +                       pr_err("%s: BOOST cannot enable (%d)\n",
+> 
+> Who said we are enabling it?
+
+You are right here - also disablement could fail. I will fix it.
+
+> 
+> > +                              __func__, ret);
+> > +       }
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +int cpufreq_boost_supported(void)
+> > +{
+> > +       if (cpufreq_driver)
+> > +               return cpufreq_driver->boost_supported;
+> > +
+> > +       return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
+> > +
+> > +int cpufreq_boost_enabled(void)
+> > +{
+> > +       return boost_enabled;
+> > +}
+> > +EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+> > +
+> > +void cpufreq_set_boost_enabled(int state)
+	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
+
+> 
+> Maybe cpufreq_block_boost? As suggested by Rafael.
+
+What do you mean by cpufreq_block_boost()? This name would reverse the
+logic.
+
+Function [*] is used to change boost_enabled static flag (defined at
+cpufreq.c file) state according to acpi-cpufreq.c boost support status.
 
 
-Hi,
+> 
+> > +{
+> > +       boost_enabled = state;
+> > +}
+> > +EXPORT_SYMBOL_GPL(cpufreq_set_boost_enabled);
+> > +
+> > +/*********************************************************************
+> >   *               REGISTER / UNREGISTER CPUFREQ
+> > DRIVER                *
+> > *********************************************************************/
+> >
+> > @@ -2001,6 +2094,22 @@ int cpufreq_register_driver(struct
+> > cpufreq_driver *driver_data) cpufreq_driver = driver_data;
+> >         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> >
+> > +       if (cpufreq_driver->boost_supported) {
+> > +               /*
+> > +                * Check if boost driver provides function to
+> > enable boost -
+> > +                * if not, use cpufreq_boost_enable_sw as default
+> > +                */
+> > +               if (!cpufreq_driver->enable_boost)
+> > +                       cpufreq_driver->enable_boost =
+> > &cpufreq_boost_enable_sw;
+> 
+> & is redundant.
 
-The first PR was against the linux-pm-next tree including the patch:
+Yes, correct. I will change that.
 
-"cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq"
+-- 
+Best regards,
 
-This patch has been dropped in the meantime.
+Lukasz Majewski
 
-Here is a new PR where my tree has been rebased against linux-pm-next
-and adding the patch mentioned above.
-
-As stated by Rafael, I will handle the ARM specific patches from now.
-
-The following changes since commit 48f99d5a97d32d70c0738d6e314d9f4dbefd=
-89bf:
-
-  Merge branch 'pm-cpuidle-next' into linux-next (2013-07-16 02:41:06 +=
-0200)
-
-are available in the git repository at:
-
-
-  git://git.linaro.org/people/dlezcano/linux.git cpuidle/arm-next
-
-for you to fetch changes up to 2b7e79f4a75e803184f483985a25cc751a990f06=
-:
-
-  ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpuidle
-(2013-07-16 13:57:24 +0200)
-
-----------------------------------------------------------------
-Daniel Lezcano (2):
-      ARM: davinci: cpuidle: Fix target residency
-      ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpuidle
-
-Linus Walleij (2):
-      ARM: ux500: cpuidle: Instantiate the driver from platform device
-      ARM: ux500: cpuidle: Remove pointless include
-
-Sahara (1):
-      cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq
-
- arch/arm/mach-davinci/cpuidle.c                    |    2 +-
- arch/arm/mach-ux500/Makefile                       |    1 -
- drivers/cpuidle/Kconfig                            |   20 +++++-------=
---
- drivers/cpuidle/Kconfig.arm                        |   29
-++++++++++++++++++++
- drivers/cpuidle/Makefile                           |    9 ++++--
- .../cpuidle.c =3D> drivers/cpuidle/cpuidle-ux500.c   |   19 +++++++---=
----
- drivers/mfd/db8500-prcmu.c                         |    4 +++
- 7 files changed, 58 insertions(+), 26 deletions(-)
- create mode 100644 drivers/cpuidle/Kconfig.arm
- rename arch/arm/mach-ux500/cpuidle.c =3D> drivers/cpuidle/cpuidle-ux50=
-0.c
-(90%)
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
