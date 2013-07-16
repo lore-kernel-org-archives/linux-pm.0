@@ -1,32 +1,105 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 1/7] cpufreq: Store cpufreq policies in a list
-Date: Tue, 16 Jul 2013 14:21:27 +0530
-Message-ID: <CAKohponOEcwq4eAjwxHMM6puuqGmtJ4GpqqRHyEqvhXM+Yt6wQ@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
-	<1372927830-2949-2-git-send-email-l.majewski@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 7/8] cpufreq: Preserve policy structure across suspend/resume
+Date: Tue, 16 Jul 2013 14:26:52 +0530
+Message-ID: <51E50AD4.6040208@linux.vnet.ibm.com>
+References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com> <20130711221704.547.64296.stgit@srivatsabhat.in.ibm.com> <CAKohpom+WcTcefCZitgZQcSjTPsgXsa6VKQF5y6GJA31-rBm0w@mail.gmail.com> <51E3C950.90503@linux.vnet.ibm.com> <CAKohpo=tfd_CXDBkbE23=UdEF99ZK-17NM_cvpGJ_e9wXGzsZQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1372927830-2949-2-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=tfd_CXDBkbE23=UdEF99ZK-17NM_cvpGJ_e9wXGzsZQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-
-> @@ -2056,6 +2058,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
->         subsys_interface_unregister(&cpufreq_interface);
->         unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
+On 07/16/2013 11:45 AM, Viresh Kumar wrote:
+> On 15 July 2013 15:35, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>> Actually even I was wondering about this while writing the patch and
+>> I even tested shutdown after multiple suspend/resume cycles, to verify that
+>> the refcount is messed up. But surprisingly, things worked just fine.
+>>
+>> Logically there should've been a refcount mismatch and things should have
+>> failed, but everything worked fine during my tests. Apart from suspend/resume
+>> and shutdown tests, I even tried mixing a few regular CPU hotplug operations
+>> (echo 0/1 to sysfs online files), but nothing stood out.
+>>
+>> Sorry, I forgot to document this in the patch. Either the patch is wrong
+>> or something else is silently fixing this up. Not sure what is the exact
+>> situation.
+> 
+> To understand it I actually applied your patches to get better view of the code.
+> (Haven't tested it though).. And found that your code is doing the right thing
+> and we shouldn't get a mismatch.. This is the sequence of events I can draw:
+> 
+> - __cpu_add_dev() for first cpu. sets the refcount to 'x', where x are
+> the no. of
+> cpus in its clock domain.
+> - _cpu_add_dev() for other cpus: doesn't change anything in refcount
+> 
+> - Suspend:
+>  - cpu_remove_dev() for all cpus, due to frozen flag we don't touch the value
+> of count
+> - Resume:
+>  - cpu_add_dev() for all cpus, due to frozen flag we don't touch the
+> value of count.
 >
-> +       list_del(&cpufreq_policy_list);
 
-You can't delete the list this way... You must have passed the list
-entry you wanted to delete. More precisely link from the struct
-cpufreq_policy.
+Actually this one is tricky (I took a look again). So we have this code in the
+beginning of _cpufreq_add_dev():
 
-Over that, it shouldn't be done at the time of unregistering cpufreq
-driver but as and when cpus are removed and _cpu_remove_dev
-is called.
+
+1008 #ifdef CONFIG_SMP
+1009         /* check whether a different CPU already registered this
+1010          * CPU because it is in the same boat. */
+1011         policy = cpufreq_cpu_get(cpu);
+1012         if (unlikely(policy)) {
+1013                 cpufreq_cpu_put(policy);
+1014                 return 0;
+1015         }
+
+The _get() is not controlled by the frozen flag, but it still doesn't take a
+refcount because of a subtle reason: per_cpu(cpufreq_cpu_data, cpu) was set to
+NULL in __cpufreq_remove_dev() and the memory was saved away in fallback storage.
+So, when __cpufreq_cpu_get() executes, it sees:
+
+ 204         /* get the CPU */
+ 205         data = per_cpu(cpufreq_cpu_data, cpu);
+ 206 
+ 207         if (!data)
+ 208                 goto err_out_put_module;
+
+Thus, since data is NULL, cpufreq_cpu_get() won't take a refcount and will return
+silently.
+
+Further down in __cpufreq_add_dev(), we restore the original memory, using
+the frozen flag:
+
+1037         if (frozen)
+1038                 /* Restore the saved policy when doing light-weight init */
+1039                 policy = cpufreq_policy_restore(cpu);
+1040         else
+1041                 policy = cpufreq_policy_alloc();
+
+
+So that is how we manage to fool cpufreq_cpu_get() into not taking a fresh
+refcount while resuming :)
+ 
+> And so things work as expected. That's why your code isn't breaking anything I
+> believe.
+> 
+
+Thanks a lot for the code inspection and your detailed analysis!
+
+> But can no. of cpus change inbetween suspend/resume? Then count would be
+> tricky as we are using the same policy structure.
+> 
+
+No, number of CPUs won't change in between suspend/resume. Even if somebody
+tried that, that would be an eccentric case and we won't handle that.
+Besides, *many more* things will break than just cpufreq, if somebody actually
+tries that out!
+
+Regards,
+Srivatsa S. Bhat
