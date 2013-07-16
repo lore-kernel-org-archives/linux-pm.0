@@ -1,59 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 7/8] cpufreq: Preserve policy structure across suspend/resume
-Date: Tue, 16 Jul 2013 11:45:16 +0530
-Message-ID: <CAKohpo=tfd_CXDBkbE23=UdEF99ZK-17NM_cvpGJ_e9wXGzsZQ@mail.gmail.com>
-References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
-	<20130711221704.547.64296.stgit@srivatsabhat.in.ibm.com>
-	<CAKohpom+WcTcefCZitgZQcSjTPsgXsa6VKQF5y6GJA31-rBm0w@mail.gmail.com>
-	<51E3C950.90503@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 01/11] driver/core: cpu: initialize of_node in cpu's
+ device struture
+Date: Tue, 16 Jul 2013 11:57:02 +0530
+Message-ID: <CAKohpom-u3hCZrxWi-oaneXY_7ewLn06C8Wn78nE28mn9=TOHQ@mail.gmail.com>
+References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+	<1373883732-26303-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f46.google.com ([209.85.219.46]:58755 "EHLO
-	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618Ab3GPGPQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 02:15:16 -0400
-Received: by mail-oa0-f46.google.com with SMTP id h1so349954oag.33
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2013 23:15:16 -0700 (PDT)
-In-Reply-To: <51E3C950.90503@linux.vnet.ibm.com>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:46552 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618Ab3GPG1D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 02:27:03 -0400
+Received: by mail-ob0-f170.google.com with SMTP id ef5so337673obb.1
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2013 23:27:02 -0700 (PDT)
+In-Reply-To: <1373883732-26303-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sudeep.KarkadaNagesha@arm.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, arnd@arndb.de, olof@lixom.net, lorenzo.pieralisi@arm.com, rob.herring@calxeda.com, grant.likely@linaro.org, rjw@sisk.pl, gregkh@linuxfoundation.org, gregory.clement@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, linux@arm.linux.org.uk
 
-On 15 July 2013 15:35, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Actually even I was wondering about this while writing the patch and
-> I even tested shutdown after multiple suspend/resume cycles, to verify that
-> the refcount is messed up. But surprisingly, things worked just fine.
+On 15 July 2013 15:52,  <Sudeep.KarkadaNagesha@arm.com> wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 >
-> Logically there should've been a refcount mismatch and things should have
-> failed, but everything worked fine during my tests. Apart from suspend/resume
-> and shutdown tests, I even tried mixing a few regular CPU hotplug operations
-> (echo 0/1 to sysfs online files), but nothing stood out.
+> CPUs are also registered as devices but the of_node in these cpu
+> devices are not initialized. Currently different drivers requiring
+> to access cpu device node are parsing the nodes themselves and
+> initialising the of_node in cpu device.
 >
-> Sorry, I forgot to document this in the patch. Either the patch is wrong
-> or something else is silently fixing this up. Not sure what is the exact
-> situation.
+> The of_node in all the cpu devices properly needs to be initialized
 
-To understand it I actually applied your patches to get better view of the code.
-(Haven't tested it though).. And found that your code is doing the right thing
-and we shouldn't get a mismatch.. This is the sequence of events I can draw:
+s/properly /
 
-- __cpu_add_dev() for first cpu. sets the refcount to 'x', where x are
-the no. of
-cpus in its clock domain.
-- _cpu_add_dev() for other cpus: doesn't change anything in refcount
-
-- Suspend:
- - cpu_remove_dev() for all cpus, due to frozen flag we don't touch the value
-of count
-- Resume:
- - cpu_add_dev() for all cpus, due to frozen flag we don't touch the
-value of count.
-
-And so things work as expected. That's why your code isn't breaking anything I
-believe.
-
-But can no. of cpus change inbetween suspend/resume? Then count would be
-tricky as we are using the same policy structure.
+> properly and at one place. The best place to update this is CPU
+> subsystem driver when registering the cpu devices.
+>
+> This patch introduces a new function arch_of_get_cpu_node and uses it
+> to assign of_node. The definition of this function can be overridden
+> by architecture specific implementation.
+>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> ---
+>  drivers/base/cpu.c | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>
+> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> index a16d20e..4b3047a 100644
+> --- a/drivers/base/cpu.c
+> +++ b/drivers/base/cpu.c
+> @@ -28,6 +28,24 @@ static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
+>         return 0;
+>  }
+>
+> +/**
+> + * arch_of_get_cpu_node - Get device node associated with the given logical CPU
+> + * @cpu: CPU number(logical index) for which device node is required
+> + *
+> + * The only purpose of this function is to retrieve the device node for the
+> + * given logical CPU index. It should be used to intialise the of_node in
+> + * cpu device. Once of_node in cpu device is populated, all the further
+> + * references can use that instead.
+> + *
+> + * CPU logical to physical index mapping is architecure specific and is built
+> + * before booting secondary cores. Hence this function is marked __weak and
+> + * can be overridden by architecture specific implementation.
+> + */
+> +struct device_node * __weak arch_of_get_cpu_node(int cpu)
+> +{
+> +       return NULL;
+> +}
+> +
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  static void change_cpu_under_node(struct cpu *cpu,
+>                         unsigned int from_nid, unsigned int to_nid)
+> @@ -289,6 +307,7 @@ int __cpuinit register_cpu(struct cpu *cpu, int num)
+>         cpu->dev.release = cpu_device_release;
+>         cpu->dev.offline_disabled = !cpu->hotpluggable;
+>         cpu->dev.offline = !cpu_online(num);
+> +       cpu->dev.of_node = arch_of_get_cpu_node(num);
+>  #ifdef CONFIG_ARCH_HAS_CPU_AUTOPROBE
+>         cpu->dev.bus->uevent = arch_cpu_uevent;
+>  #endif
+> --
+> 1.8.1.2
+>
+>
