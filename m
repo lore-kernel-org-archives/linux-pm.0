@@ -1,111 +1,87 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v5 6/7] cpufreq:boost:Kconfig: Enable software managed
- BOOST support at Kconfig
-Date: Tue, 16 Jul 2013 13:50:22 +0200
-Message-ID: <20130716135022.64a102f8@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-7-git-send-email-l.majewski@samsung.com>
- <CAKohpokR=jrcLQQ7VAD+vr7GWgSFBfuqbOhWHwA3FCgk__EJ3Q@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [RESEND] cpuidle for ARM pull request
+Date: Tue, 16 Jul 2013 14:04:21 +0200
+Message-ID: <51E536C5.1020609@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpokR=jrcLQQ7VAD+vr7GWgSFBfuqbOhWHwA3FCgk__EJ3Q@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f51.google.com ([74.125.82.51]:36008 "EHLO
+	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932146Ab3GPMEY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 08:04:24 -0400
+Received: by mail-wg0-f51.google.com with SMTP id e11so514723wgh.18
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2013 05:04:23 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On Tue, 16 Jul 2013 15:28:40 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> 
-> > +config CPU_FREQ_BOOST_SW
-> > +       bool "CPU frequency overclocking (BOOST)"
-> 
-> Name it "CPU Frequency Overclocking - Software"
-
-Thanks, I had a puzzle to came up with a good short name :-).
-
-> 
-> > +       depends on ARM_EXYNOS_CPUFREQ && EXYNOS_THERMAL && EXYNOS_THERMAL
- 		       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
-> 
-> Remote Exynos from here. If you want to enable it for your platform by
-> default, then select it from EXYNOS.
-
-The purpose of the condition [*] here is to prevent from enabling
-boost when thermal for Exynos is not supported.
-
-Only for properly configured Exynos (when thermal + cpufreq is set) the
-option is possible to enable. And by default it is disabled.
-This shall prevent from accidental boost usage. 
-  
-
-Please also note, that this switch only affects software based
-boost. The HW boost (Intel ACPI) support doesn't depend on this Kconfig
-setting. 
-
-> 
-> > +       default n
-> > +       help
-> > +        This driver supports software managed overclocking (BOOST).
-> > +         It allows usage of special frequencies for a particular
-> > processor
-> > +         if thermal conditions are appropriate.
-> > +
-> > +        It reguires, for safe operation, thermal framework with
-> > properly defined
-> > +         trip points.
-> > +
-> > +        If in doubt, say N.
-> > +
-> >  config CPU_FREQ_STAT
-> >         tristate "CPU frequency translation statistics"
-> >         select CPU_FREQ_TABLE
-> > diff --git a/drivers/cpufreq/exynos-cpufreq.c
-> > b/drivers/cpufreq/exynos-cpufreq.c index 4f42fcc..7586b28 100644
-> > --- a/drivers/cpufreq/exynos-cpufreq.c
-> > +++ b/drivers/cpufreq/exynos-cpufreq.c
-> > @@ -288,7 +288,9 @@ static struct cpufreq_driver exynos_driver = {
-> >
-> >  static int __init exynos_cpufreq_init(void)
-> >  {
-> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
-> >         struct device_node *node = pdev->dev.of_node;
-> > +#endif
-> >         int ret = -EINVAL;
-> >
-> >         exynos_info = kzalloc(sizeof(struct exynos_dvfs_info),
-> > GFP_KERNEL); @@ -319,9 +321,10 @@ static int __init
-> > exynos_cpufreq_init(void) }
-> >
-> >         locking_frequency = exynos_getspeed(0);
-> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
-> >         if (of_property_read_bool(node, "boost_mode"))
-> >                 exynos_driver.boost_supported = 1;
-> > -
-> > +#endif
-> 
-> Add a blank line here.
-
-OK
-
-> 
-> >         register_pm_notifier(&exynos_cpufreq_nb);
-> >
-> >         if (cpufreq_register_driver(&exynos_driver)) {
-> > --
-> > 1.7.10.4
-> >
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linus Walleij <linus.walleij@linaro.org>, keun-o.park@windriver.com, "nsekhar@ti.com >> Sekhar Nori" <nsekhar@ti.com>
 
 
+Hi,
 
--- 
-Best regards,
+The first PR was against the linux-pm-next tree including the patch:
 
-Lukasz Majewski
+"cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq"
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+This patch has been dropped in the meantime.
+
+Here is a new PR where my tree has been rebased against linux-pm-next
+and adding the patch mentioned above.
+
+As stated by Rafael, I will handle the ARM specific patches from now.
+
+The following changes since commit 48f99d5a97d32d70c0738d6e314d9f4dbefd=
+89bf:
+
+  Merge branch 'pm-cpuidle-next' into linux-next (2013-07-16 02:41:06 +=
+0200)
+
+are available in the git repository at:
+
+
+  git://git.linaro.org/people/dlezcano/linux.git cpuidle/arm-next
+
+for you to fetch changes up to 2b7e79f4a75e803184f483985a25cc751a990f06=
+:
+
+  ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpuidle
+(2013-07-16 13:57:24 +0200)
+
+----------------------------------------------------------------
+Daniel Lezcano (2):
+      ARM: davinci: cpuidle: Fix target residency
+      ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpuidle
+
+Linus Walleij (2):
+      ARM: ux500: cpuidle: Instantiate the driver from platform device
+      ARM: ux500: cpuidle: Remove pointless include
+
+Sahara (1):
+      cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq
+
+ arch/arm/mach-davinci/cpuidle.c                    |    2 +-
+ arch/arm/mach-ux500/Makefile                       |    1 -
+ drivers/cpuidle/Kconfig                            |   20 +++++-------=
+--
+ drivers/cpuidle/Kconfig.arm                        |   29
+++++++++++++++++++++
+ drivers/cpuidle/Makefile                           |    9 ++++--
+ .../cpuidle.c =3D> drivers/cpuidle/cpuidle-ux500.c   |   19 +++++++---=
+---
+ drivers/mfd/db8500-prcmu.c                         |    4 +++
+ 7 files changed, 58 insertions(+), 26 deletions(-)
+ create mode 100644 drivers/cpuidle/Kconfig.arm
+ rename arch/arm/mach-ux500/cpuidle.c =3D> drivers/cpuidle/cpuidle-ux50=
+0.c
+(90%)
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
