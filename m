@@ -1,146 +1,59 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [GIT PULL 3/3] soc-thermal: refactoring exynos thermal driver (for
- 3.12)
-Date: Tue, 16 Jul 2013 13:17:47 +0900
-Message-ID: <028701ce81db$6dfa1550$49ee3ff0$%kim@samsung.com>
-References: <1373296673-19295-1-git-send-email-eduardo.valentin@ti.com>
- <1373296673-19295-3-git-send-email-eduardo.valentin@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 7/8] cpufreq: Preserve policy structure across suspend/resume
+Date: Tue, 16 Jul 2013 11:45:16 +0530
+Message-ID: <CAKohpo=tfd_CXDBkbE23=UdEF99ZK-17NM_cvpGJ_e9wXGzsZQ@mail.gmail.com>
+References: <20130711221419.547.69781.stgit@srivatsabhat.in.ibm.com>
+	<20130711221704.547.64296.stgit@srivatsabhat.in.ibm.com>
+	<CAKohpom+WcTcefCZitgZQcSjTPsgXsa6VKQF5y6GJA31-rBm0w@mail.gmail.com>
+	<51E3C950.90503@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:52010 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919Ab3GPERu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 00:17:50 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MQ00011AH8WVGA0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 16 Jul 2013 13:17:48 +0900 (KST)
-In-reply-to: <1373296673-19295-3-git-send-email-eduardo.valentin@ti.com>
-Content-language: ko
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:58755 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618Ab3GPGPQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 02:15:16 -0400
+Received: by mail-oa0-f46.google.com with SMTP id h1so349954oag.33
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2013 23:15:16 -0700 (PDT)
+In-Reply-To: <51E3C950.90503@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Eduardo Valentin' <eduardo.valentin@ti.com>, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, 'Jonghwa Lee' <jonghwa3.lee@samsung.com>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Kukjin Kim' <kgene@kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: rjw@sisk.pl, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Eduardo Valentin wrote:
-> 
-> Rui,
-> 
-> Please pull the following changes for 3.12. This is a major rework of the
-> Exynos thermal driver by Amit D. Kachhap. We have been working on this
-> for a while and the code has really improved. Thanks Amit for this.
-> 
-> The changelog is as it follows:
-> 
-> . Several fixes on Exynos thermal driver.
-> . Refactoring Exynos thermal driver to split code and data.
-> . Support for multiple thermal instances on Exynos thermal driver.
-> . Add thermal support for Exynos 5440 TMU sensor.
-> . Updated documentation of Exynos thermal driver.
-> 
-> Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> 
-> This pull request contains obviously only the part that touches the
-> thermal area.
-> Platform code changes were already submitted to the corresponding trees.
-> 
-OK, let me sort out arch/arm/ part for this series.
+On 15 July 2013 15:35, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Actually even I was wondering about this while writing the patch and
+> I even tested shutdown after multiple suspend/resume cycles, to verify that
+> the refcount is messed up. But surprisingly, things worked just fine.
+>
+> Logically there should've been a refcount mismatch and things should have
+> failed, but everything worked fine during my tests. Apart from suspend/resume
+> and shutdown tests, I even tried mixing a few regular CPU hotplug operations
+> (echo 0/1 to sysfs online files), but nothing stood out.
+>
+> Sorry, I forgot to document this in the patch. Either the patch is wrong
+> or something else is silently fixing this up. Not sure what is the exact
+> situation.
 
-[PATCH V7 29/30] ARM: dts: Add device tree node for exynos5440 TMU
-controller
-[PATCH V7 30/30] arm: exynos: enable ARCH_HAS_BANDGAP
+To understand it I actually applied your patches to get better view of the code.
+(Haven't tested it though).. And found that your code is doing the right thing
+and we shouldn't get a mismatch.. This is the sequence of events I can draw:
 
-Above patches are queued into the Samsung tree for v3.12
+- __cpu_add_dev() for first cpu. sets the refcount to 'x', where x are
+the no. of
+cpus in its clock domain.
+- _cpu_add_dev() for other cpus: doesn't change anything in refcount
 
-Thanks,
-- Kukjin
+- Suspend:
+ - cpu_remove_dev() for all cpus, due to frozen flag we don't touch the value
+of count
+- Resume:
+ - cpu_add_dev() for all cpus, due to frozen flag we don't touch the
+value of count.
 
-> The following changes since commit
-> 9d1968fdabc69981ea98ea82082de1cc12a60385:
-> 
->   Merge branch 'cpu-package-thermal' of .git into next (2013-06-18
-> 07:26:49 +0800)
-> 
-> are available in the git repository at:
-> 
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
-> thermal.git for_3.12/exynos
-> 
-> for you to fetch changes up to 72a23f5881b4cf073ebc96869e6c38f4619ec3c9:
-> 
->   Documentation: thermal: Explain the exynos thermal driver model (2013-
-> 07-08 11:06:52 -0400)
-> 
-> ----------------------------------------------------------------
-> Amit Daniel Kachhap (28):
->       thermal: exynos: Moving exynos thermal files into samsung directory
->       thermal: exynos: Use ARCH_HAS_BANDGAP config to know the supported
-> soc's
->       thermal: exynos: Remove un-necessary CPU_THERMAL dependency
->       thermal: exynos: Bifurcate exynos thermal common and tmu controller
-> code
->       thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
->       thermal: exynos: Move exynos_thermal.h from include/* to driver/*
-> folder
->       thermal: exynos: Bifurcate exynos tmu driver and configuration data
->       thermal: exynos: Add missing definations and code cleanup
->       thermal: exynos: Add extra entries in the tmu platform data
->       thermal: exynos: Move register definitions from driver to data file
->       thermal: exynos: Support thermal tripping
->       thermal: exynos: Fix to clear only the generated interrupts
->       thermal: exynos: Add support for instance based register/unregister
->       thermal: exynos: Modify private_data to appropriate name driver_data
->       thermal: exynos: Return success even if no cooling data supplied
->       thermal: exynos: Make the zone handling use trip information
->       thermal: exynos: Remove non DT based support
->       thermal: exynos: Add support to handle many instances of TMU
->       thermal: exynos: Add TMU features to check instead of using SOC type
->       thermal: exynos: use device resource management infrastructure
->       thermal: exynos: Add support to access common register for
-> multistance
->       thermal: exynos: Add driver support for exynos5440 TMU sensor
->       thermal: exynos: Add thermal configuration data for exynos5440 TMU
-> sensor
->       thermal: exynos: Fix to set the second point correction value
->       thermal: exynos: Add hardware mode thermal calibration support
->       thermal: exynos: Support for TMU regulator defined at device tree
->       ARM: dts: thermal: exynos: Add documentation for Exynos SoC thermal
-> bindings
->       Documentation: thermal: Explain the exynos thermal driver model
-> 
->  .../devicetree/bindings/thermal/exynos-thermal.txt |   55 +
->  Documentation/thermal/exynos_thermal               |   43 +-
->  drivers/thermal/Kconfig                            |   13 +-
->  drivers/thermal/Makefile                           |    2 +-
->  drivers/thermal/exynos_thermal.c                   | 1058
---------------------
->  drivers/thermal/samsung/Kconfig                    |   18 +
->  drivers/thermal/samsung/Makefile                   |    7 +
->  drivers/thermal/samsung/exynos_thermal_common.c    |  432 ++++++++
->  drivers/thermal/samsung/exynos_thermal_common.h    |  107 ++
->  drivers/thermal/samsung/exynos_tmu.c               |  752 ++++++++++++++
->  drivers/thermal/samsung/exynos_tmu.h               |  309 ++++++
->  drivers/thermal/samsung/exynos_tmu_data.c          |  250 +++++
->  drivers/thermal/samsung/exynos_tmu_data.h          |  155 +++
->  include/linux/platform_data/exynos_thermal.h       |  119 ---
->  14 files changed, 2125 insertions(+), 1195 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/thermal/exynos-
-> thermal.txt
->  delete mode 100644 drivers/thermal/exynos_thermal.c
->  create mode 100644 drivers/thermal/samsung/Kconfig
->  create mode 100644 drivers/thermal/samsung/Makefile
->  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
->  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
->  create mode 100644 drivers/thermal/samsung/exynos_tmu.c
->  create mode 100644 drivers/thermal/samsung/exynos_tmu.h
->  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
->  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
->  delete mode 100644 include/linux/platform_data/exynos_thermal.h
+And so things work as expected. That's why your code isn't breaking anything I
+believe.
 
+But can no. of cpus change inbetween suspend/resume? Then count would be
+tricky as we are using the same policy structure.
