@@ -1,87 +1,178 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 02/11] ARM: DT/kernel: define ARM specific arch_of_get_cpu_node
-Date: Wed, 17 Jul 2013 15:16:54 +0100
-Message-ID: <51E6A756.1000300@arm.com>
-References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51E44943.7000600@gmail.com> <51E50C59.50900@arm.com>
+From: Nicolas Pitre <nicolas.pitre-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH v2 01/15] of: add support for retrieving cpu node
+ for a given logical cpu index
+Date: Wed, 17 Jul 2013 10:30:10 -0400 (EDT)
+Message-ID: <alpine.LFD.2.03.1307171023410.14924@syhkavp.arg>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:58732 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755285Ab3GQOQ4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 10:16:56 -0400
-In-Reply-To: <51E50C59.50900@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+In-Reply-To: <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "arnd@arndb.de" <arnd@arndb.de>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "olof@lixom.net" <olof@lixom.net>, "gregory.clement@free-electrons.com" <gregory.clement@free-electrons.com>, "shawn.guo@linaro.org" <shawn.guo@>
 
-On 16/07/13 10:03, Sudeep KarkadaNagesha wrote:
-> On 15/07/13 20:10, Rob Herring wrote:
->> On 07/15/2013 05:22 AM, Sudeep.KarkadaNagesha@arm.com wrote:
->>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>
->>> CPU subsystem now provides architecture specific hook to retrieve the
->>> of_node. Most of the cpu DT node parsing and initialisation is contained
->>> in devtree.c. It's better to contain all CPU device node parsing there.
->>>
->>> arch_of_get_cpu_node is mainly used to assign cpu->of_node when CPUs get
->>> registered. This patch overrides the defination of the same. It can also
->>> act as the helper function in pre-SMP/early initialisation stages to
->>> retrieve CPU device node pointers in logical ordering.
->>>
->>> This mainly helps to avoid replication of the code doing CPU node parsing
->>> and physical(MPIDR) to logical mapping.
->>>
->>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> [snip]
->>
->>> +struct device_node * __init arch_of_get_cpu_node(int cpu)
->>> +{
->>> +	struct device_node *cpun, *cpus;
->>> +	const u32 *cell;
->>> +	u64 hwid;
->>> +	int ac;
->>> +
->>> +	cpus = of_find_node_by_path("/cpus");
->>> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
->>> +		return NULL;
->>> +
->>> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
->>> +		ac = of_n_addr_cells(cpus);
->>> +
->>> +	for_each_child_of_node(cpus, cpun) {
->>> +		if (of_node_cmp(cpun->type, "cpu"))
->>> +			continue;
->>> +		cell = of_get_property(cpun, "reg", NULL);
->>> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
->>> +			continue;
->>> +
->>> +		hwid = of_read_number(cell, ac);
->>> +		if ((hwid & MPIDR_HWID_BITMASK) == cpu_logical_map(cpu))
->>
->> Most of this function is not ARM specific, so it would be nice if we
->> could shrink the arch specific part down to just this match. A default
->> match of reg == logical cpu number might be useful.
->>
-> I completely agree, in fact that was my initial idea too.
+On Wed, 17 Jul 2013, Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org wrote:
+
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 > 
-> But when I had a look at powerpc implementation of "of_get_cpu_node" in
-> arch/powerpc/kernel/prom.c, it looked like PPC is using some
-> compatibles(e.g. ibm,ppc-interrupt-server#s) which are not specified in
-> ePAPR. I am not sure is that's allowed or not, if allowed then we can't
-> have generic of_get_cpu_node with just arch specific hwid matching function.
+> Currently different drivers requiring to access cpu device node are
+> parsing the device tree themselves. Since the ordering in the DT need
+> not match the logical cpu ordering, the parsing logic needs to consider
+> that. However, this has resulted in lots of code duplication and in some
+> cases even incorrect logic.
+> 
+> It's better to consolidate them by adding support for getting cpu
+> device node for a given logical cpu index in DT core library. However
+> logical to physical index mapping can be architecture specific.
+> 
+> This patch adds of_get_cpu_node to retrieve a cpu device node for a
+> given logical cpu index. The default matching of the physical id to the
+> logical cpu index can be overridden by architecture specific code.
+> 
+> It is recommended to use these helper function only in pre-SMP/early
+> initialisation stages to retrieve CPU device node pointers in logical
+> ordering. Once the cpu devices are registered, it can be retrieved easily
+> from cpu device of_node which avoids unnecessary parsing and matching.
+> 
+> Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+> ---
+>  drivers/of/base.c  | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/of.h |  5 +++++
+>  2 files changed, 71 insertions(+)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 5c54279..363b8f9 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -230,6 +230,72 @@ const void *of_get_property(const struct device_node *np, const char *name,
+>  }
+>  EXPORT_SYMBOL(of_get_property);
+>  
+> +/*
+> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
+> + *
+> + * @cpu: logical index of a cpu
+> + * @phys_id: physical identifier of a cpu
+> + *
+> + * CPU logical to physical index mapping is architecure specific.
 
-I meant property names not compatibles. Looks like PPC and SPARC seem to
-use non-standard property names like "cpuid",
-"ibm,ppc-interrupt-server#s" instead of single "reg" property for all
-cpus/threads
+Typo.
 
-Since the cpufreq driver doesn't depend on those properties, I moved
-arch_of_get_cpu_node to OF/DT core in v2.
+> + * However this __weak function provides a default match of physical
+> + * id to logical cpu index.
+> + *
+> + * Returns 1 if the physical identifier and the logical index correspond
+> + * to the same cpu, 0 otherwise.
+> + */
+> +int __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
 
-Regards,
-Sudeep
+Please use a bool return type, and use true/false rather than 1/0 in the 
+comment.
 
+> +{
+> +	return (u32)phys_id == cpu;
+> +}
+> +
+> +/**
+> + * of_get_cpu_node - Get device node associated with the given logical CPU
+> + *
+> + * @cpu: CPU number(logical index) for which device node is required
+> + *
+> + * The main purpose of this function is to retrieve the device node for the
+> + * given logical CPU index. It should be used to intialise the of_node in
+
+Typo.
+
+> + * cpu device. Once of_node in cpu device is populated, all the further
+> + * references can use that instead.
+> + *
+> + * CPU logical to physical index mapping is architecure specific and is built
+
+Typo.
+
+> + * before booting secondary cores. This function uses arch_match_cpu_phys_id
+> + * which can be overridden by architecture specific implementation.
+> + *
+> + * Returns a node pointer for the logical cpu if found, else NULL.
+> + */
+> +struct device_node *of_get_cpu_node(int cpu)
+> +{
+> +	struct device_node *cpun, *cpus;
+> +	const u32 *cell;
+> +	u64 hwid;
+> +	int ac, prop_len;
+> +
+> +	cpus = of_find_node_by_path("/cpus");
+> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+> +		return NULL;
+> +
+> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
+> +		ac = of_n_addr_cells(cpus);
+> +
+> +	for_each_child_of_node(cpus, cpun) {
+> +		if (of_node_cmp(cpun->type, "cpu"))
+> +			continue;
+> +		cell = of_get_property(cpun, "reg", &prop_len);
+> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
+> +			continue;
+> +
+> +		while (prop_len) {
+> +			hwid = of_read_number(cell, ac);
+> +			prop_len -= ac;
+> +			if (arch_match_cpu_phys_id(cpu, hwid))
+> +				return cpun;
+> +		}
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+>  /** Checks if the given "compat" string matches one of the strings in
+>   * the device's "compatible" property
+>   */
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index 1fd08ca..150b48e 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -266,6 +266,7 @@ extern int of_device_is_available(const struct device_node *device);
+>  extern const void *of_get_property(const struct device_node *node,
+>  				const char *name,
+>  				int *lenp);
+> +extern struct device_node *of_get_cpu_node(int cpu);
+>  #define for_each_property_of_node(dn, pp) \
+>  	for (pp = dn->properties; pp != NULL; pp = pp->next)
+>  
+> @@ -458,6 +459,10 @@ static inline const void *of_get_property(const struct device_node *node,
+>  {
+>  	return NULL;
+>  }
+> +static inline struct device_node *of_get_cpu_node(int cpu)
+> +{
+> +	return NULL;
+> +}
+>  
+>  static inline int of_property_read_u64(const struct device_node *np,
+>  				       const char *propname, u64 *out_value)
+> -- 
+> 1.8.1.2
+> 
+> 
+> _______________________________________________
+> devicetree-discuss mailing list
+> devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+> https://lists.ozlabs.org/listinfo/devicetree-discuss
+> 
