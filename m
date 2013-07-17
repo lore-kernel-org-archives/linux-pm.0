@@ -1,81 +1,88 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v5 7/7] Documentation:cpufreq:boost: Update BOOST
- documentation
-Date: Wed, 17 Jul 2013 09:36:14 +0200
-Message-ID: <20130717093614.1ee4839e@amdc308.digital.local>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 6/7] cpufreq:boost:Kconfig: Enable software managed
+ BOOST support at Kconfig
+Date: Wed, 17 Jul 2013 13:22:20 +0530
+Message-ID: <CAKohpona8E-JgLxyLnc_QuS9LAuJ7FBbsSGPZawQtOd8kRd4JA@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-1-git-send-email-l.majewski@samsung.com>
- <1372927830-2949-8-git-send-email-l.majewski@samsung.com>
- <CAKohpo=oB_4gGtNn6jvxSCp665pOq6oqeTCCyGzmN_eWqt0Lhg@mail.gmail.com>
- <20130716133319.49ed0838@amdc308.digital.local>
- <CAKohponeZ15ruJA9__V70u1Ztr4F9aT+zBinMT5Ewyew53rbyQ@mail.gmail.com>
+	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
+	<1372927830-2949-7-git-send-email-l.majewski@samsung.com>
+	<CAKohpokR=jrcLQQ7VAD+vr7GWgSFBfuqbOhWHwA3FCgk__EJ3Q@mail.gmail.com>
+	<20130716135022.64a102f8@amdc308.digital.local>
+	<CAKohpo=XbUtYBVQ_y4_R18wpag_HAVvXrxfSfmaNSqq=wLpciQ@mail.gmail.com>
+	<20130717091706.69b77c2f@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohponeZ15ruJA9__V70u1Ztr4F9aT+zBinMT5Ewyew53rbyQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f171.google.com ([209.85.214.171]:38926 "EHLO
+	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358Ab3GQHwV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 03:52:21 -0400
+Received: by mail-ob0-f171.google.com with SMTP id dn14so1929468obc.30
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jul 2013 00:52:21 -0700 (PDT)
+In-Reply-To: <20130717091706.69b77c2f@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-On Wed, 17 Jul 2013 10:52:18 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 16 July 2013 17:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > As fair as I've understood our previous discussion (at [*]) we have
-> > agreed about this. We only export boost attribute when it is
-> > supported by cpufreq_driver. Rafael was very clear about exporting
-> > boost attribute:
-> >
-> > "Simple: Export it only when supported."
-> >
-> > [*]: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-> 
-> I don't want to search in the Archives but I am sure what we decided
-> earlier.
+On 17 July 2013 12:47, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Wed, 17 Jul 2013 10:54:55 +0530 Viresh Kumar viresh.kumar@linaro.org
+> wrote,
+>> On 16 July 2013 17:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> > On Tue, 16 Jul 2013 15:28:40 +0530 Viresh Kumar
+>> > viresh.kumar@linaro.org wrote,
+>> >> On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com>
+>> >> wrote:
+>> >> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+>> >>
+>> >> > +config CPU_FREQ_BOOST_SW
+>> >> > +       bool "CPU frequency overclocking (BOOST)"
+>> >>
+>> >> Name it "CPU Frequency Overclocking - Software"
+>> >
+>> > Thanks, I had a puzzle to came up with a good short name :-).
+>> >
+>> >>
+>> >> > +       depends on ARM_EXYNOS_CPUFREQ && EXYNOS_THERMAL
+>> >                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
+>> >>
+>> >> Remote Exynos from here. If you want to enable it for your
+>> >> platform by default, then select it from EXYNOS.
+>
+> I can change ARM_EXYNOS_CPUFREQ -> CPUFREQ at [*]
 
-At v4 there was the old acpi-cpufreq.c behaviour preserved (with always
-exporting boost - when not supported ro, when supported rw).
+We are in cpufreq Kconfig and so dependency is automatically
+there on cpufreq.
 
-Due to Rafael and Dirk comments it has been rewritten at v5:
+>>
+>> I misread it a bit. I wanted to say make it dependent only on THERMAL
+>> and not on Exynos.
+>
+> The cpufreq boost feature is possible to be enabled only when those [*]
+> dependencies are met. Moreover, it is disabled by default.
+>
+> This means that not only THERMAL generic code must be supported, but
+> also EXYNOS specific one - like per SoC trip points [**].
+>
+> With thermal it is possible (and correct) to only define THERMAL, with
+> no platform (in this case Exynos) specific definitions. To force
+> potential user to define [**], I think, that EXYNOS_THERMAL is required.
+>
+>>
+>> > The purpose of the condition [*] here is to prevent from enabling
+>> > boost when thermal for Exynos is not supported.
+>>
+>> Why? Can't others use it? Its not exynos specific :)
+>
+> No it is not exynos specific.
+> For other platform one need to define:
+>
+> depends on CPUFREQ && (EXYNOS_THERMAL || <PLATFORM_SUPPORTED>_THERMAL)
 
-http://thread.gmane.org/gmane.linux.kernel/1511831/match=patch+v4+2+7+cpufreq+add+boost+frequency+support+core
+Exactly. I don't want this kind of mess to be present here.
 
+People selecting this feature must know what it does and
+dependency on a coolant is enough.
 
-> 
-> Rafael Said:
-> "Simple: Export it only when supported."
-              [*]
-
-> 
-> AND
-> 
-> "Don't change behavior of acpi-cpufreq driver" 
-              [**]
-> 
-> If you see acpi-cpufreq driver carefully, it always creates "boost"
-> sysfs entry. If its not supported then it creates a read only entry.
-
-For me those two statements [*] and [**] contradict:
-
-At v5:
-1. ARM - export "boost" only when supported (rw)
-2. x86 - export boost only when x86 supports it (as rw). When x86
-	 doesn't support HW boost - DO NOT export it at all.
-
-At v4:
-1. ARM - export "boost" only when supported (rw)
-2. x86 - always export boost - no matter if supported or not. If not
-	 supported, then export it as ro only.
-
-
-> 
-> So, please preserve that.
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+For other drivers, selecting this doesn't matter as they don't
+support boost.
