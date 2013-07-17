@@ -1,158 +1,155 @@
-From: Sudeep.KarkadaNagesha@arm.com
-Subject: [RFC PATCH v2 14/15] cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
-Date: Wed, 17 Jul 2013 15:06:23 +0100
-Message-ID: <1374069984-20567-15-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org
+Subject: [RFC PATCH v2 01/15] of: add support for retrieving cpu node for a
+ given logical cpu index
+Date: Wed, 17 Jul 2013 15:06:10 +0100
+Message-ID: <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:56217 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755560Ab3GQOGs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 10:06:48 -0400
-In-Reply-To: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+In-Reply-To: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
-Cc: Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 
-Now that the cpu device registration initialises the of_node(if available)
-appropriately for all the cpus, parsing here is redundant.
+Currently different drivers requiring to access cpu device node are
+parsing the device tree themselves. Since the ordering in the DT need
+not match the logical cpu ordering, the parsing logic needs to consider
+that. However, this has resulted in lots of code duplication and in some
+cases even incorrect logic.
 
-This patch removes all DT parsing and uses cpu->of_node instead.
+It's better to consolidate them by adding support for getting cpu
+device node for a given logical cpu index in DT core library. However
+logical to physical index mapping can be architecture specific.
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+This patch adds of_get_cpu_node to retrieve a cpu device node for a
+given logical cpu index. The default matching of the physical id to the
+logical cpu index can be overridden by architecture specific code.
+
+It is recommended to use these helper function only in pre-SMP/early
+initialisation stages to retrieve CPU device node pointers in logical
+ordering. Once the cpu devices are registered, it can be retrieved easily
+from cpu device of_node which avoids unnecessary parsing and matching.
+
+Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 ---
- drivers/cpufreq/pmac64-cpufreq.c | 54 ++++++++++++++----------------------=
-----
- 1 file changed, 18 insertions(+), 36 deletions(-)
+ drivers/of/base.c  | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of.h |  5 +++++
+ 2 files changed, 71 insertions(+)
 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpuf=
-req.c
-index 7ba4234..b60ccea 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -18,6 +18,7 @@
- #include <linux/kernel.h>
- #include <linux/delay.h>
- #include <linux/sched.h>
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/init.h>
- #include <linux/completion.h>
-@@ -383,9 +384,8 @@ static struct cpufreq_driver g5_cpufreq_driver =3D {
-=20
- #ifdef CONFIG_PMAC_SMU
-=20
--static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
-+static int __init g5_neo2_cpufreq_init(struct device_node *cpunode)
- {
--=09struct device_node *cpunode;
- =09unsigned int psize, ssize;
- =09unsigned long max_freq;
- =09char *freq_method, *volt_method;
-@@ -405,20 +405,6 @@ static int __init g5_neo2_cpufreq_init(struct device_n=
-ode *cpus)
- =09else
- =09=09return -ENODEV;
-=20
--=09/* Get first CPU node */
--=09for (cpunode =3D NULL;
--=09     (cpunode =3D of_get_next_child(cpus, cpunode)) !=3D NULL;) {
--=09=09const u32 *reg =3D of_get_property(cpunode, "reg", NULL);
--=09=09if (reg =3D=3D NULL || (*reg) !=3D 0)
--=09=09=09continue;
--=09=09if (!strcmp(cpunode->type, "cpu"))
--=09=09=09break;
--=09}
--=09if (cpunode =3D=3D NULL) {
--=09=09printk(KERN_ERR "cpufreq: Can't find any CPU 0 node\n");
--=09=09return -ENODEV;
--=09}
--
- =09/* Check 970FX for now */
- =09valp =3D of_get_property(cpunode, "cpu-version", NULL);
- =09if (!valp) {
-@@ -537,9 +523,9 @@ static int __init g5_neo2_cpufreq_init(struct device_no=
-de *cpus)
- #endif /* CONFIG_PMAC_SMU */
-=20
-=20
--static int __init g5_pm72_cpufreq_init(struct device_node *cpus)
-+static int __init g5_pm72_cpufreq_init(struct device_node *cpunode)
- {
--=09struct device_node *cpuid =3D NULL, *hwclock =3D NULL, *cpunode =3D NUL=
-L;
-+=09struct device_node *cpuid =3D NULL, *hwclock =3D NULL;
- =09const u8 *eeprom =3D NULL;
- =09const u32 *valp;
- =09u64 max_freq, min_freq, ih, il;
-@@ -548,17 +534,6 @@ static int __init g5_pm72_cpufreq_init(struct device_n=
-ode *cpus)
- =09DBG("cpufreq: Initializing for PowerMac7,2, PowerMac7,3 and"
- =09    " RackMac3,1...\n");
-=20
--=09/* Get first CPU node */
--=09for (cpunode =3D NULL;
--=09     (cpunode =3D of_get_next_child(cpus, cpunode)) !=3D NULL;) {
--=09=09if (!strcmp(cpunode->type, "cpu"))
--=09=09=09break;
--=09}
--=09if (cpunode =3D=3D NULL) {
--=09=09printk(KERN_ERR "cpufreq: Can't find any CPU node\n");
--=09=09return -ENODEV;
--=09}
--
- =09/* Lookup the cpuid eeprom node */
-         cpuid =3D of_find_node_by_path("/u3@0,f8000000/i2c@f8001000/cpuid@=
-a0");
- =09if (cpuid !=3D NULL)
-@@ -718,25 +693,32 @@ static int __init g5_pm72_cpufreq_init(struct device_=
-node *cpus)
-=20
- static int __init g5_cpufreq_init(void)
- {
--=09struct device_node *cpus;
-+=09struct device *cpu_dev;
-+=09struct device_node *cpunode;
- =09int rc =3D 0;
-=20
--=09cpus =3D of_find_node_by_path("/cpus");
--=09if (cpus =3D=3D NULL) {
--=09=09DBG("No /cpus node !\n");
-+=09cpu_dev =3D get_cpu_device(0);
-+=09if (!cpu_dev) {
-+=09=09pr_err("failed to get cpu device\n");
-+=09=09return -ENODEV;
-+=09}
-+
-+=09/* Get first CPU node */
-+=09cpunode =3D of_node_get(cpu_dev->of_node);
-+=09if (cpunode =3D=3D NULL) {
-+=09=09pr_err("cpufreq: Can't find any CPU node\n");
- =09=09return -ENODEV;
- =09}
-=20
- =09if (of_machine_is_compatible("PowerMac7,2") ||
- =09    of_machine_is_compatible("PowerMac7,3") ||
- =09    of_machine_is_compatible("RackMac3,1"))
--=09=09rc =3D g5_pm72_cpufreq_init(cpus);
-+=09=09rc =3D g5_pm72_cpufreq_init(cpunode);
- #ifdef CONFIG_PMAC_SMU
- =09else
--=09=09rc =3D g5_neo2_cpufreq_init(cpus);
-+=09=09rc =3D g5_neo2_cpufreq_init(cpunode);
- #endif /* CONFIG_PMAC_SMU */
-=20
--=09of_node_put(cpus);
- =09return rc;
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 5c54279..363b8f9 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -230,6 +230,72 @@ const void *of_get_property(const struct device_node *np, const char *name,
  }
-=20
---=20
+ EXPORT_SYMBOL(of_get_property);
+ 
++/*
++ * arch_match_cpu_phys_id - Match the given logical CPU and physical id
++ *
++ * @cpu: logical index of a cpu
++ * @phys_id: physical identifier of a cpu
++ *
++ * CPU logical to physical index mapping is architecure specific.
++ * However this __weak function provides a default match of physical
++ * id to logical cpu index.
++ *
++ * Returns 1 if the physical identifier and the logical index correspond
++ * to the same cpu, 0 otherwise.
++ */
++int __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
++{
++	return (u32)phys_id == cpu;
++}
++
++/**
++ * of_get_cpu_node - Get device node associated with the given logical CPU
++ *
++ * @cpu: CPU number(logical index) for which device node is required
++ *
++ * The main purpose of this function is to retrieve the device node for the
++ * given logical CPU index. It should be used to intialise the of_node in
++ * cpu device. Once of_node in cpu device is populated, all the further
++ * references can use that instead.
++ *
++ * CPU logical to physical index mapping is architecure specific and is built
++ * before booting secondary cores. This function uses arch_match_cpu_phys_id
++ * which can be overridden by architecture specific implementation.
++ *
++ * Returns a node pointer for the logical cpu if found, else NULL.
++ */
++struct device_node *of_get_cpu_node(int cpu)
++{
++	struct device_node *cpun, *cpus;
++	const u32 *cell;
++	u64 hwid;
++	int ac, prop_len;
++
++	cpus = of_find_node_by_path("/cpus");
++	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
++		return NULL;
++
++	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
++		ac = of_n_addr_cells(cpus);
++
++	for_each_child_of_node(cpus, cpun) {
++		if (of_node_cmp(cpun->type, "cpu"))
++			continue;
++		cell = of_get_property(cpun, "reg", &prop_len);
++		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
++			continue;
++
++		while (prop_len) {
++			hwid = of_read_number(cell, ac);
++			prop_len -= ac;
++			if (arch_match_cpu_phys_id(cpu, hwid))
++				return cpun;
++		}
++	}
++
++	return NULL;
++}
++
+ /** Checks if the given "compat" string matches one of the strings in
+  * the device's "compatible" property
+  */
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 1fd08ca..150b48e 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -266,6 +266,7 @@ extern int of_device_is_available(const struct device_node *device);
+ extern const void *of_get_property(const struct device_node *node,
+ 				const char *name,
+ 				int *lenp);
++extern struct device_node *of_get_cpu_node(int cpu);
+ #define for_each_property_of_node(dn, pp) \
+ 	for (pp = dn->properties; pp != NULL; pp = pp->next)
+ 
+@@ -458,6 +459,10 @@ static inline const void *of_get_property(const struct device_node *node,
+ {
+ 	return NULL;
+ }
++static inline struct device_node *of_get_cpu_node(int cpu)
++{
++	return NULL;
++}
+ 
+ static inline int of_property_read_u64(const struct device_node *np,
+ 				       const char *propname, u64 *out_value)
+-- 
 1.8.1.2
-
-
