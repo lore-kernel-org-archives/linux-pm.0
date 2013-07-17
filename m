@@ -1,95 +1,87 @@
-From: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org
-Subject: [RFC PATCH v2 08/15] cpufreq: cpufreq-cpu0: remove device tree
- parsing for cpu nodes
-Date: Wed, 17 Jul 2013 15:06:17 +0100
-Message-ID: <1374069984-20567-9-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH 02/11] ARM: DT/kernel: define ARM specific arch_of_get_cpu_node
+Date: Wed, 17 Jul 2013 15:16:54 +0100
+Message-ID: <51E6A756.1000300@arm.com>
+References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51E44943.7000600@gmail.com> <51E50C59.50900@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:58732 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755285Ab3GQOQ4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 10:16:56 -0400
+In-Reply-To: <51E50C59.50900@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "arnd@arndb.de" <arnd@arndb.de>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "olof@lixom.net" <olof@lixom.net>, "gregory.clement@free-electrons.com" <gregory.clement@free-electrons.com>, "shawn.guo@linaro.org" <shawn.guo@>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+On 16/07/13 10:03, Sudeep KarkadaNagesha wrote:
+> On 15/07/13 20:10, Rob Herring wrote:
+>> On 07/15/2013 05:22 AM, Sudeep.KarkadaNagesha@arm.com wrote:
+>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>
+>>> CPU subsystem now provides architecture specific hook to retrieve the
+>>> of_node. Most of the cpu DT node parsing and initialisation is contained
+>>> in devtree.c. It's better to contain all CPU device node parsing there.
+>>>
+>>> arch_of_get_cpu_node is mainly used to assign cpu->of_node when CPUs get
+>>> registered. This patch overrides the defination of the same. It can also
+>>> act as the helper function in pre-SMP/early initialisation stages to
+>>> retrieve CPU device node pointers in logical ordering.
+>>>
+>>> This mainly helps to avoid replication of the code doing CPU node parsing
+>>> and physical(MPIDR) to logical mapping.
+>>>
+>>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> [snip]
+>>
+>>> +struct device_node * __init arch_of_get_cpu_node(int cpu)
+>>> +{
+>>> +	struct device_node *cpun, *cpus;
+>>> +	const u32 *cell;
+>>> +	u64 hwid;
+>>> +	int ac;
+>>> +
+>>> +	cpus = of_find_node_by_path("/cpus");
+>>> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+>>> +		return NULL;
+>>> +
+>>> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
+>>> +		ac = of_n_addr_cells(cpus);
+>>> +
+>>> +	for_each_child_of_node(cpus, cpun) {
+>>> +		if (of_node_cmp(cpun->type, "cpu"))
+>>> +			continue;
+>>> +		cell = of_get_property(cpun, "reg", NULL);
+>>> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
+>>> +			continue;
+>>> +
+>>> +		hwid = of_read_number(cell, ac);
+>>> +		if ((hwid & MPIDR_HWID_BITMASK) == cpu_logical_map(cpu))
+>>
+>> Most of this function is not ARM specific, so it would be nice if we
+>> could shrink the arch specific part down to just this match. A default
+>> match of reg == logical cpu number might be useful.
+>>
+> I completely agree, in fact that was my initial idea too.
+> 
+> But when I had a look at powerpc implementation of "of_get_cpu_node" in
+> arch/powerpc/kernel/prom.c, it looked like PPC is using some
+> compatibles(e.g. ibm,ppc-interrupt-server#s) which are not specified in
+> ePAPR. I am not sure is that's allowed or not, if allowed then we can't
+> have generic of_get_cpu_node with just arch specific hwid matching function.
 
-Now that the cpu device registration initialises the of_node(if available)
-appropriately for all the cpus, parsing here is redundant.
+I meant property names not compatibles. Looks like PPC and SPARC seem to
+use non-standard property names like "cpuid",
+"ibm,ppc-interrupt-server#s" instead of single "reg" property for all
+cpus/threads
 
-This patch removes all DT parsing and uses cpu->of_node instead.
+Since the cpufreq driver doesn't depend on those properties, I moved
+arch_of_get_cpu_node to OF/DT core in v2.
 
-Acked-by: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
----
- drivers/cpufreq/cpufreq-cpu0.c | 23 ++++-------------------
- 1 file changed, 4 insertions(+), 19 deletions(-)
+Regards,
+Sudeep
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index ad1fde2..5b05c26 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -174,29 +174,17 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
- 
- static int cpu0_cpufreq_probe(struct platform_device *pdev)
- {
--	struct device_node *np, *parent;
-+	struct device_node *np;
- 	int ret;
- 
--	parent = of_find_node_by_path("/cpus");
--	if (!parent) {
--		pr_err("failed to find OF /cpus\n");
--		return -ENOENT;
--	}
--
--	for_each_child_of_node(parent, np) {
--		if (of_get_property(np, "operating-points", NULL))
--			break;
--	}
-+	cpu_dev = &pdev->dev;
- 
-+	np = of_node_get(cpu_dev->of_node);
- 	if (!np) {
- 		pr_err("failed to find cpu0 node\n");
--		ret = -ENOENT;
--		goto out_put_parent;
-+		return -ENOENT;
- 	}
- 
--	cpu_dev = &pdev->dev;
--	cpu_dev->of_node = np;
--
- 	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
- 	if (IS_ERR(cpu_reg)) {
- 		/*
-@@ -269,15 +257,12 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	of_node_put(np);
--	of_node_put(parent);
- 	return 0;
- 
- out_free_table:
- 	opp_free_cpufreq_table(cpu_dev, &freq_table);
- out_put_node:
- 	of_node_put(np);
--out_put_parent:
--	of_node_put(parent);
- 	return ret;
- }
- 
--- 
-1.8.1.2
