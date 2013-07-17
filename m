@@ -1,50 +1,128 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Wed, 17 Jul 2013 16:59:43 +0200
-Message-ID: <20130717165943.7f06acd9@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <6633375.dICiDrHJgK@vostro.rjw.lan>
- <CAKohpokw-bSWEgKvx0jd2QZ0RCz5dORHM9z+VYbTdKoCmKFvsg@mail.gmail.com>
- <2509113.ybUsa2l9tg@vostro.rjw.lan>
- <CAKohpo=1Qov8p3f2xZkfOqaFRNJPJN60KeK4SOXcL9Hw82MkAg@mail.gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 0/9] thermal: introduce DT thermal zone build
+Date: Wed, 17 Jul 2013 11:02:36 -0400
+Message-ID: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=1Qov8p3f2xZkfOqaFRNJPJN60KeK4SOXcL9Hw82MkAg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lukasz Majewski <l.majewski@majess.pl>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:33551 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941Ab3GQPEX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 11:04:23 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On Wed, 17 Jul 2013 18:31:19 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 17 July 2013 17:01, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > First off, I'm not sure how many applications actually use it and I
-> > think, if any, they should be able cope with the attribute not
-> > being present.
-> >
-> > Of course, if it turns out that yes, there are applications using
-> > it and no, they cannot cope with the missing attribute, we'll need
-> > to address this. That said such applications wouldn't work with
-> > earlier kernels in which that attribute wasn't present at all, so I
-> > suppose this is really unlikely.
-> >
-> > So, do whichever makes more sense to you: Design things to preserve
-> > the old behavior (which is sightly confusing) or design them to
-> > expose the attribute if the feature is actually supported and be
-> > prepared to address the (unlikely) case when some hypothetical
-> > applications break because of that.
-> 
-> Okay. Its better to keep it the way Lukasz designed it in his last
-> patchset.
+Hello all,
 
-To be 100% sure - we export boost only when supported (as proposed at v5).
+As you noticed, I am working in a way to represent thermal data
+using device tree [1]. Essentially, this should be a way to say
+what to do with a sensor and how to associate (cooling) actions
+with it.
 
+The motivation to create such infrastructure is:
+(i) - to reuse the existing temperature sensor code base;
+(ii) - have a way to easily describe thermal data across different
+boards for the same sensor. Say you have an i2c temp sensor,
+which is placed close to your battery on board A but on
+board B, another instance of this same senor is placed
+close to your display, for instance.
+
+This series introduces then a DT parser. The data expected in
+DT must contain the needed properties to build a thermal zone
+out of the desired sensor. All properties are documented and
+they are derived from the existing requirements of current
+thermal API.
+
+In order to perform a binding with cooling devices,
+the new thermal zone built using DT nodes will use
+the existing thermal API that uses binding parameters. This is
+the current proposed way to register thermal zones with platform
+information, written by Durga.
+
+There are some virtual concepts that are pushed to device tree,
+I know. But I believe using device tree to do this makes sense
+because we are still describing the HW and how they are related
+to each other. Things like cooling devices are not represented
+in device tree though, as I believe that will cause a lot of
+confusion with real devices (as already does).
+
+So the series is short but I think it makes sense to describe
+how it is organized, as it touches several places. First four
+patches are a preparation for this parser. There is a change
+on cpufreq-cpu0, so that it knows now how to load its
+corresponding cooling device. There is a change on thermal_core
+to split its hwmon code, because I think we may need to improve
+this code base when we start to integrate better with hwmon
+temperature sensors. Then, another needed preparation is to
+improve the bind_params, so that we are able to bind with
+upper and lower limits. The remaining patches are the changes
+with the proposed DT parser. A part from the DT thermal zone
+builder itself (patch 05), I also changed the ti-soc-thermal
+driver to use this new API and the omap4430 bandgap DT node,
+as an example (this has been tested on panda omap4430); and also changed
+the hwmon drivers lm75 and tmp102 to have the option to build
+a thermal zone using DT. I haven't touched any dts file using
+lm75 or tmp102 because this should come on a need basis.
+
+I believe this code is pretty usable the way it is, but might
+need to be revisited, in case the enhancement proposed by Durga
+get in. This is because representing virtual thermal zones
+built out of several sensors may need a different representation
+in DT.
+
+[1] - RFC of this work:
+http://comments.gmane.org/gmane.linux.power-management.general/35874
+
+Changes from RFC:
+- Added a way to load cpufreq cooling device out of DT
+- Added a way to bind with upper and lower limits using bind_params
+- Added a way to specify upper and lower binding limits on DT
+- Added DT thermal builder support to lm75 and tmp102 hwmon drivers
+- Changed ERANGE to EDOM
+- Added thermal constants for zone type and bind limit, so that
+  dts file could be more readable
+
+Tested on panda omap4430 (3.11-rc1 with minor changes for getting cpufreq working)
+
+BR,
+
+Eduardo Valentin (9):
+  cpufreq: cpufreq-cpu0: add dt node parsing for 'needs-cooling'
+  thermal: hwmon: move hwmon support to single file
+  thermal: thermal_core: allow binding with limits on bind_params
+  arm: dts: flag omap4430 with needs-cooling for cpu node
+  thermal: introduce device tree parser
+  thermal: ti-soc-thermal: use thermal DT infrastructure
+  arm: dts: add omap4430 thermal data
+  hwmon: lm75: expose to thermal fw via DT nodes
+  hwmon: tmp102: expose to thermal fw via DT nodes
+
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   3 +
+ .../devicetree/bindings/thermal/thermal.txt        | 133 ++++++
+ Documentation/thermal/sysfs-api.txt                |   7 +
+ arch/arm/boot/dts/omap443x.dtsi                    |  32 +-
+ drivers/cpufreq/cpufreq-cpu0.c                     |   8 +
+ drivers/hwmon/lm75.c                               |  29 ++
+ drivers/hwmon/tmp102.c                             |  25 ++
+ drivers/thermal/Kconfig                            |  22 +
+ drivers/thermal/Makefile                           |   4 +
+ drivers/thermal/thermal_core.c                     | 274 +-----------
+ drivers/thermal/thermal_dt.c                       | 458 +++++++++++++++++++++
+ drivers/thermal/thermal_hwmon.c                    | 269 ++++++++++++
+ drivers/thermal/thermal_hwmon.h                    |  49 +++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  46 ++-
+ include/dt-bindings/thermal/thermal.h              |  27 ++
+ include/linux/thermal.h                            |  13 +
+ 16 files changed, 1129 insertions(+), 270 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/thermal.txt
+ create mode 100644 drivers/thermal/thermal_dt.c
+ create mode 100644 drivers/thermal/thermal_hwmon.c
+ create mode 100644 drivers/thermal/thermal_hwmon.h
+ create mode 100644 include/dt-bindings/thermal/thermal.h
 
 -- 
-Best regards,
+1.8.2.1.342.gfa7285d
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
