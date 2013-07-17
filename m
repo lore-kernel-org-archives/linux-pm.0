@@ -1,147 +1,176 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH 1/3] ARM: EXYNOS: remove non-working AFTR mode support
-Date: Wed, 17 Jul 2013 16:07:35 +0200
-Message-ID: <3222513.hHN6nfv2Cl@amdc1227>
-References: <1372241627-22695-1-git-send-email-b.zolnierkie@samsung.com>
- <51E694BA.3030906@linaro.org>
- <20130717133123.GA5453@e102568-lin.cambridge.arm.com>
+From: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org
+Subject: [RFC PATCH v2 04/15] ARM: topology: remove hwid/MPIDR dependency from
+ cpu_capacity
+Date: Wed, 17 Jul 2013 15:06:13 +0100
+Message-ID: <1374069984-20567-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20130717133123.GA5453@e102568-lin.cambridge.arm.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "jc.lee@samsung.com" <jc.lee@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, chander.kashyap@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+In-Reply-To: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 
-On Wednesday 17 of July 2013 14:31:23 Lorenzo Pieralisi wrote:
-> On Wed, Jul 17, 2013 at 01:57:30PM +0100, Daniel Lezcano wrote:
-> > On 07/11/2013 03:14 PM, Bartlomiej Zolnierkiewicz wrote:
-> > > Hi,
-> > > 
-> > > On Friday, June 28, 2013 11:47:49 PM Daniel Lezcano wrote:
-> > >> On 06/28/2013 06:27 PM, Bartlomiej Zolnierkiewicz wrote:
-> > >>> On Friday, June 28, 2013 01:20:09 PM Daniel Lezcano wrote:
-> > >>>> On 06/28/2013 12:11 PM, Tomasz Figa wrote:
-> > >>>>> Hi Daniel,
-> > >>>>> 
-> > >>>>> I've been fighting with this whole AFTR state as well, before
-> > >>>>> Bartlomiej. Let me share my thoughts on this.
-> > >> 
-> > >> [ ... ]
-> > >> 
-> > >>>>> If you don't unplug all the CPUs >0 the state is obviously never
-> > >>>>> reached. Otherwise the whole system hangs after it tries to
-> > >>>>> enter this mode without any reaction for external events, other
-> > >>>>> than reset.
-> > >>>> 
-> > >>>> Need investigation.
-> > >>>> 
-> > >>>> What is the exynos board version where that occurs ?
-> > >>> 
-> > >>> Could you please tell me what exactly do you mean by that?
-> > >>> 
-> > >>> I already wrote that we can reproduce the problem on EXYNOS4210
-> > >>> rev0
-> > >>> and rev1.1 (we don't have rev1.0). Tomek has also reproduced the
-> > >>> problem
-> > >>> on some later SoCs (I hope that he can give you exact revisions).
-> > >>> 
-> > >>> In our testing we didn't encounter the board on which the problem
-> > >>> doesn't occur. Our current working theory is that the problem may
-> > >>> be
-> > >>> u-boot (or first stage bootloader) related.
-> > >> 
-> > >> Ok, the status for what I know:
-> > >> 
-> > >> Origen Exynos4210, board ver A: works for me
-> > >> Arndale Exynos5250: works for me but only if u-boot does not enable
-> > >> the
-> > >> hypervisor mode.
-> > >> Chromebook Exynos5250: works for me
-> > > 
-> > > I've also done some more testing. First I tested on some Exynos4412
-> > > devices (M0 and SLP_PQ) and AFTR was not working on them. Then I got
-> > > my hands on Origen Exynos4210 (thanks to Tomek Figa for providing
-> > > it) and AFTR is working just fine on it. Finally I tried Trats board
-> > > again but with the upstream u-boot instead of our custom modified
-> > > version (thanks to help from Lukasz Majewski) and I found out that
-> > > after this change AFTR works fine on it! It also gives quite nice
-> > > power savings (~80mA less current drawn in AFTR mode compared to
-> > > just WFI one).
-> > 
-> > Is the 80mA power saving comparing with:
-> >  * (cpu0/cpu1 online) vs (cpu0 AFTR and cpu1 offline)
-> > 
-> > or
-> > 
-> >  * (cpu0 AFTR and cpu1 offline) vs (cpu0 WFI and cpu1 offline)
-> > 
-> > ?
-> > 
-> > > With the above findings it now seems that the issue is on our side
-> > > and is outside the kernel. Thanks for help with narrowing down the
-> > > problem and sorry for wasting your time.
-> > 
-> > May be we were not working on the same tree.
-> > 
-> > I am on the linux-pm-next tree.
-> > 
-> > Now the merge window occurred, the AFTR is no longer working on my
-> > board.
-> > 
-> > After git bisecting:
-> > 
-> > commit 87107d89052bcec1fe91b309631de4ed294a5171
-> > Author: Arnd Bergmann <arnd@arndb.de>
-> > Date:   Wed Jun 19 01:36:52 2013 +0900
-> > 
-> >     ARM: EXYNOS: Remove legacy L2X0 initialization
-> >     
-> >     Since Exynos is now supporting only DT-based boot, the old L2X0
-> >     initialization code is not needed anymore, so
-> >     exynos4_l2x0_cache_init()
-> >     can be greatly simplified.
-> >     
-> >     Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> >     Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-> >     Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> >     Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
-> > :
-> > :040000 040000 79e1adfd6386256ba71b3f609592d5acf9c08222
-> > 
-> > 9cb0026563b3b8657d906767493d26c501963269 M	arch
-> > 
-> > Reverting the patch solves the problem.
-> > 
-> > Any ideas ?
-> 
-> It is certainly a problem related to restoring L2 control registers in
-> plat-samsung/s5p-sleep.S, probably DT init misses some registers
-> (prefetch and power control) that are restored to zero values most
-> likely, or the cluster cannot be shut down owing to those values not
-> being programmed properly.
+Currently the topology code computes cpu capacity and stores it in
+the list along with hwid(which is MPIDR) as it parses the CPU nodes
+in the device tree. This is required as it needs to be mapped to the
+logical CPU later.
 
-Looks like it.
+Since the CPU device nodes can be retrieved in the logical ordering
+using DT/OF helpers, its possible to store cpu_capacity also in logical
+ordering and avoid storing hwid for each entry.
 
-> Chander posted a patch to fix that but I could
-> not follow that thread, I have no idea where he got to and if that fixes
-> the issue, I think so.
+This patch removes hwid by making use of of_get_cpu_node.
 
-I will be doing a lot of cleanup of PM code for Samsung platforms starting 
-from next week. Mostly low level suspend/resume handling (Samsung PM core), 
-but since AFTR mode has much in common with sleep mode (e.g. both go 
-through s5p-sleep.S after waking up), so I can look at this issue too, on 
-our internal boards and Origen.
+Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+---
+ arch/arm/kernel/topology.c | 61 +++++++++++++++-------------------------------
+ 1 file changed, 19 insertions(+), 42 deletions(-)
 
-As for L2 suspend/resume on Samsung platforms, it has to be reworked 
-completely, because on newer boards which have secure firmware it can't be 
-resumed normally, because this requires calling several firmware operations. 
-I already have patches for this, but need to do more testing, including 
-checking how this interferes with things like AFTR mode.
-
-Best regards,
-Tomasz
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index c5a5954..28ef27a 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -74,12 +74,8 @@ struct cpu_efficiency table_efficiency[] = {
+ 	{NULL, },
+ };
+ 
+-struct cpu_capacity {
+-	unsigned long hwid;
+-	unsigned long capacity;
+-};
+-
+-struct cpu_capacity *cpu_capacity;
++unsigned long *__cpu_capacity;
++#define cpu_capacity(cpu)	__cpu_capacity[cpu]
+ 
+ unsigned long middle_capacity = 1;
+ 
+@@ -100,15 +96,19 @@ static void __init parse_dt_topology(void)
+ 	unsigned long capacity = 0;
+ 	int alloc_size, cpu = 0;
+ 
+-	alloc_size = nr_cpu_ids * sizeof(struct cpu_capacity);
+-	cpu_capacity = kzalloc(alloc_size, GFP_NOWAIT);
++	alloc_size = nr_cpu_ids * sizeof(*__cpu_capacity);
++	__cpu_capacity = kzalloc(alloc_size, GFP_NOWAIT);
+ 
+-	while ((cn = of_find_node_by_type(cn, "cpu"))) {
+-		const u32 *rate, *reg;
++	for_each_possible_cpu(cpu) {
++		const u32 *rate;
+ 		int len;
+ 
+-		if (cpu >= num_possible_cpus())
+-			break;
++		/* too early to use cpu->of_node */
++		cn = of_get_cpu_node(cpu);
++		if (!cn) {
++			pr_err("missing device node for CPU %d\n", cpu);
++			continue;
++		}
+ 
+ 		for (cpu_eff = table_efficiency; cpu_eff->compatible; cpu_eff++)
+ 			if (of_device_is_compatible(cn, cpu_eff->compatible))
+@@ -124,12 +124,6 @@ static void __init parse_dt_topology(void)
+ 			continue;
+ 		}
+ 
+-		reg = of_get_property(cn, "reg", &len);
+-		if (!reg || len != 4) {
+-			pr_err("%s missing reg property\n", cn->full_name);
+-			continue;
+-		}
+-
+ 		capacity = ((be32_to_cpup(rate)) >> 20) * cpu_eff->efficiency;
+ 
+ 		/* Save min capacity of the system */
+@@ -140,13 +134,9 @@ static void __init parse_dt_topology(void)
+ 		if (capacity > max_capacity)
+ 			max_capacity = capacity;
+ 
+-		cpu_capacity[cpu].capacity = capacity;
+-		cpu_capacity[cpu++].hwid = be32_to_cpup(reg);
++		cpu_capacity(cpu) = capacity;
+ 	}
+ 
+-	if (cpu < num_possible_cpus())
+-		cpu_capacity[cpu].hwid = (unsigned long)(-1);
+-
+ 	/* If min and max capacities are equals, we bypass the update of the
+ 	 * cpu_scale because all CPUs have the same capacity. Otherwise, we
+ 	 * compute a middle_capacity factor that will ensure that the capacity
+@@ -154,9 +144,7 @@ static void __init parse_dt_topology(void)
+ 	 * SCHED_POWER_SCALE, which is the default value, but with the
+ 	 * constraint explained near table_efficiency[].
+ 	 */
+-	if (min_capacity == max_capacity)
+-		cpu_capacity[0].hwid = (unsigned long)(-1);
+-	else if (4*max_capacity < (3*(max_capacity + min_capacity)))
++	if (4*max_capacity < (3*(max_capacity + min_capacity)))
+ 		middle_capacity = (min_capacity + max_capacity)
+ 				>> (SCHED_POWER_SHIFT+1);
+ 	else
+@@ -170,23 +158,12 @@ static void __init parse_dt_topology(void)
+  * boot. The update of all CPUs is in O(n^2) for heteregeneous system but the
+  * function returns directly for SMP system.
+  */
+-void update_cpu_power(unsigned int cpu, unsigned long hwid)
++void update_cpu_power(unsigned int cpu)
+ {
+-	unsigned int idx = 0;
+-
+-	/* look for the cpu's hwid in the cpu capacity table */
+-	for (idx = 0; idx < num_possible_cpus(); idx++) {
+-		if (cpu_capacity[idx].hwid == hwid)
+-			break;
+-
+-		if (cpu_capacity[idx].hwid == -1)
+-			return;
+-	}
+-
+-	if (idx == num_possible_cpus())
++	if (!cpu_capacity(cpu))
+ 		return;
+ 
+-	set_power_scale(cpu, cpu_capacity[idx].capacity / middle_capacity);
++	set_power_scale(cpu, cpu_capacity(cpu) / middle_capacity);
+ 
+ 	printk(KERN_INFO "CPU%u: update cpu_power %lu\n",
+ 		cpu, arch_scale_freq_power(NULL, cpu));
+@@ -194,7 +171,7 @@ void update_cpu_power(unsigned int cpu, unsigned long hwid)
+ 
+ #else
+ static inline void parse_dt_topology(void) {}
+-static inline void update_cpu_power(unsigned int cpuid, unsigned int mpidr) {}
++static inline void update_cpu_power(unsigned int cpuid) {}
+ #endif
+ 
+  /*
+@@ -281,7 +258,7 @@ void store_cpu_topology(unsigned int cpuid)
+ 
+ 	update_siblings_masks(cpuid);
+ 
+-	update_cpu_power(cpuid, mpidr & MPIDR_HWID_BITMASK);
++	update_cpu_power(cpuid);
+ 
+ 	printk(KERN_INFO "CPU%u: thread %d, cpu %d, socket %d, mpidr %x\n",
+ 		cpuid, cpu_topology[cpuid].thread_id,
+-- 
+1.8.1.2
