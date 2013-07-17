@@ -1,123 +1,84 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 1/3] ARM: EXYNOS: remove non-working AFTR mode support
-Date: Wed, 17 Jul 2013 14:31:23 +0100
-Message-ID: <20130717133123.GA5453@e102568-lin.cambridge.arm.com>
-References: <1372241627-22695-1-git-send-email-b.zolnierkie@samsung.com>
- <2484012.IH9WOi4iIR@amdc1032>
- <51CE0485.8020109@linaro.org>
- <5509794.32CckI9OQ8@amdc1032>
- <51E694BA.3030906@linaro.org>
-Mime-Version: 1.0
+From: Sudeep.KarkadaNagesha@arm.com
+Subject: [RFC PATCH v2 00/15] DT/core: update cpu device of_node
+Date: Wed, 17 Jul 2013 15:06:09 +0100
+Message-ID: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <51E694BA.3030906@linaro.org>
-Content-Disposition: inline
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "jc.lee@samsung.com" <jc.lee@samsung.com>, Amit Kachhap <amit.daniel@samsung.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, chander.kashyap@linaro.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Cc: Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 17, 2013 at 01:57:30PM +0100, Daniel Lezcano wrote:
-> On 07/11/2013 03:14 PM, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Hi,
-> > 
-> > On Friday, June 28, 2013 11:47:49 PM Daniel Lezcano wrote:
-> >> On 06/28/2013 06:27 PM, Bartlomiej Zolnierkiewicz wrote:
-> >>> On Friday, June 28, 2013 01:20:09 PM Daniel Lezcano wrote:
-> >>>> On 06/28/2013 12:11 PM, Tomasz Figa wrote:
-> >>>>> Hi Daniel,
-> >>>>>
-> >>>>> I've been fighting with this whole AFTR state as well, before Bartlomiej. 
-> >>>>> Let me share my thoughts on this.
-> >>>>>
-> >>
-> >> [ ... ]
-> >>
-> >>>>>
-> >>>>> If you don't unplug all the CPUs >0 the state is obviously never reached. 
-> >>>>> Otherwise the whole system hangs after it tries to enter this mode without 
-> >>>>> any reaction for external events, other than reset.
-> >>>>
-> >>>> Need investigation.
-> >>>>
-> >>>> What is the exynos board version where that occurs ?
-> >>>
-> >>> Could you please tell me what exactly do you mean by that?
-> >>>
-> >>> I already wrote that we can reproduce the problem on EXYNOS4210 rev0
-> >>> and rev1.1 (we don't have rev1.0). Tomek has also reproduced the problem
-> >>> on some later SoCs (I hope that he can give you exact revisions).
-> >>>
-> >>> In our testing we didn't encounter the board on which the problem
-> >>> doesn't occur. Our current working theory is that the problem may be
-> >>> u-boot (or first stage bootloader) related.
-> >>
-> >> Ok, the status for what I know:
-> >>
-> >> Origen Exynos4210, board ver A: works for me
-> >> Arndale Exynos5250: works for me but only if u-boot does not enable the
-> >> hypervisor mode.
-> >> Chromebook Exynos5250: works for me
-> > 
-> > I've also done some more testing. First I tested on some Exynos4412 devices
-> > (M0 and SLP_PQ) and AFTR was not working on them. Then I got my hands on
-> > Origen Exynos4210 (thanks to Tomek Figa for providing it) and AFTR is working
-> > just fine on it. Finally I tried Trats board again but with the upstream
-> > u-boot instead of our custom modified version (thanks to help from Lukasz
-> > Majewski) and I found out that after this change AFTR works fine on it! It
-> > also gives quite nice power savings (~80mA less current drawn in AFTR mode
-> > compared to just WFI one).
-> 
-> Is the 80mA power saving comparing with:
-> 
->  * (cpu0/cpu1 online) vs (cpu0 AFTR and cpu1 offline)
-> or
->  * (cpu0 AFTR and cpu1 offline) vs (cpu0 WFI and cpu1 offline)
-> 
-> ?
-> 
-> > With the above findings it now seems that the issue is on our side and is
-> > outside the kernel. Thanks for help with narrowing down the problem and
-> > sorry for wasting your time.
-> 
-> May be we were not working on the same tree.
-> 
-> I am on the linux-pm-next tree.
-> 
-> Now the merge window occurred, the AFTR is no longer working on my board.
-> 
-> After git bisecting:
-> 
-> commit 87107d89052bcec1fe91b309631de4ed294a5171
-> Author: Arnd Bergmann <arnd@arndb.de>
-> Date:   Wed Jun 19 01:36:52 2013 +0900
-> 
->     ARM: EXYNOS: Remove legacy L2X0 initialization
-> 
->     Since Exynos is now supporting only DT-based boot, the old L2X0
->     initialization code is not needed anymore, so exynos4_l2x0_cache_init()
->     can be greatly simplified.
-> 
->     Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->     Signed-off-by: Tomasz Figa <t.figa@samsung.com>
->     Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->     Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
-> 
-> :040000 040000 79e1adfd6386256ba71b3f609592d5acf9c08222
-> 9cb0026563b3b8657d906767493d26c501963269 M	arch
-> 
-> Reverting the patch solves the problem.
-> 
-> Any ideas ?
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-It is certainly a problem related to restoring L2 control registers in
-plat-samsung/s5p-sleep.S, probably DT init misses some registers
-(prefetch and power control) that are restored to zero values most
-likely, or the cluster cannot be shut down owing to those values not
-being programmed properly. Chander posted a patch to fix that but I could
-not follow that thread, I have no idea where he got to and if that fixes
-the issue, I think so.
+As more and more information is getting added into the cpu node, the number
+of drivers needing to parse the device tree for CPU nodes are increasing.
+Most of the time, the information needed from the cpu node is preferred
+in the logical CPU order. Hence many drivers first parse and search the
+CPU node, match them to logical index if needed and then search for the
+required property inside a particular cpu node. Some of them assume the
+logical and physical CPU ordering to be same which is incorrect.
 
-Lorenzo
+This patch series initialises the of_node in all the cpu devices when
+registering the CPU device.
+1. This avoids different drivers having to parse the cpu nodes to obtain
+   different attributes like operating points, latency,...etc.
+2. This handles different physical and logical cpu ordering which is not
+   the case in current code.
+3. Also all the cpu nodes will have their of_node initialised correctly.
+   Currently different drivers assign them partially and incorrectly.
+4. Removes all the reduntant parsing in various drivers.
+
+Changes v1->v2:
+1. Moved most of arch_of_get_cpu_node to OF/DT core as of_get_cpu_node
+   adding a provision for architecture specific hooks for matching
+   logical and physical ids.
+2. Extended removal of DT cpu node parsing to PPC cpufreq drivers
+3. Added Acks from Viresh and Shawn
+
+Regards,
+Sudeep
+
+Sudeep KarkadaNagesha (15):
+  of: add support for retrieving cpu node for a given logical cpu index
+  driver/core: cpu: initialize of_node in cpu's device struture
+  ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
+  ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
+  ARM: mvebu: remove device tree parsing for cpu nodes
+  drivers/bus: arm-cci: avoid parsing DT for cpu device nodes
+  cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
+  cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: arm_big_little: remove device tree parsing for cpu nodes
+  cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+
+ arch/arm/kernel/devtree.c           |  5 +++
+ arch/arm/kernel/topology.c          | 61 +++++++++++----------------------=
+-
+ arch/arm/mach-imx/mach-imx6q.c      |  3 +-
+ arch/arm/mach-mvebu/platsmp.c       | 52 ++++++++++++++---------------
+ drivers/base/cpu.c                  |  2 ++
+ drivers/bus/arm-cci.c               | 28 ++++------------
+ drivers/cpufreq/arm_big_little_dt.c | 39 ++++++++++------------
+ drivers/cpufreq/cpufreq-cpu0.c      | 23 +++----------
+ drivers/cpufreq/highbank-cpufreq.c  | 18 ++++------
+ drivers/cpufreq/imx6q-cpufreq.c     |  4 +--
+ drivers/cpufreq/kirkwood-cpufreq.c  | 14 ++++++--
+ drivers/cpufreq/maple-cpufreq.c     | 23 ++++---------
+ drivers/cpufreq/pmac32-cpufreq.c    | 11 ++++++-
+ drivers/cpufreq/pmac64-cpufreq.c    | 54 ++++++++++--------------------
+ drivers/cpufreq/spear-cpufreq.c     | 10 +++++-
+ drivers/of/base.c                   | 66 +++++++++++++++++++++++++++++++++=
+++++
+ include/linux/of.h                  |  5 +++
+ 17 files changed, 213 insertions(+), 205 deletions(-)
+
+--=20
+1.8.1.2
+
+
