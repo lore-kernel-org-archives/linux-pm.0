@@ -1,178 +1,220 @@
-From: Nicolas Pitre <nicolas.pitre-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH v2 01/15] of: add support for retrieving cpu node
- for a given logical cpu index
-Date: Wed, 17 Jul 2013 10:30:10 -0400 (EDT)
-Message-ID: <alpine.LFD.2.03.1307171023410.14924@syhkavp.arg>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: Re: [PATCH 1/3] ARM: EXYNOS: remove non-working AFTR mode support
+Date: Wed, 17 Jul 2013 16:36:26 +0200
+Message-ID: <8703473.ctkuh2YRQb@amdc1032>
+References: <1372241627-22695-1-git-send-email-b.zolnierkie@samsung.com>
+ <5509794.32CckI9OQ8@amdc1032> <51E694BA.3030906@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <51E694BA.3030906@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Tomasz Figa <t.figa@samsung.com>, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, jc.lee@samsung.com, lorenzo.pieralisi@arm.com, Amit Kachhap <amit.daniel@samsung.com>, rjw@sisk.pl, kyungmin.park@samsung.com, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 17 Jul 2013, Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org wrote:
-
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+On Wednesday, July 17, 2013 02:57:30 PM Daniel Lezcano wrote:
+> On 07/11/2013 03:14 PM, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > Hi,
+> > 
+> > On Friday, June 28, 2013 11:47:49 PM Daniel Lezcano wrote:
+> >> On 06/28/2013 06:27 PM, Bartlomiej Zolnierkiewicz wrote:
+> >>> On Friday, June 28, 2013 01:20:09 PM Daniel Lezcano wrote:
+> >>>> On 06/28/2013 12:11 PM, Tomasz Figa wrote:
+> >>>>> Hi Daniel,
+> >>>>>
+> >>>>> I've been fighting with this whole AFTR state as well, before Bartlomiej. 
+> >>>>> Let me share my thoughts on this.
+> >>>>>
+> >>
+> >> [ ... ]
+> >>
+> >>>>>
+> >>>>> If you don't unplug all the CPUs >0 the state is obviously never reached. 
+> >>>>> Otherwise the whole system hangs after it tries to enter this mode without 
+> >>>>> any reaction for external events, other than reset.
+> >>>>
+> >>>> Need investigation.
+> >>>>
+> >>>> What is the exynos board version where that occurs ?
+> >>>
+> >>> Could you please tell me what exactly do you mean by that?
+> >>>
+> >>> I already wrote that we can reproduce the problem on EXYNOS4210 rev0
+> >>> and rev1.1 (we don't have rev1.0). Tomek has also reproduced the problem
+> >>> on some later SoCs (I hope that he can give you exact revisions).
+> >>>
+> >>> In our testing we didn't encounter the board on which the problem
+> >>> doesn't occur. Our current working theory is that the problem may be
+> >>> u-boot (or first stage bootloader) related.
+> >>
+> >> Ok, the status for what I know:
+> >>
+> >> Origen Exynos4210, board ver A: works for me
+> >> Arndale Exynos5250: works for me but only if u-boot does not enable the
+> >> hypervisor mode.
+> >> Chromebook Exynos5250: works for me
+> > 
+> > I've also done some more testing. First I tested on some Exynos4412 devices
+> > (M0 and SLP_PQ) and AFTR was not working on them. Then I got my hands on
+> > Origen Exynos4210 (thanks to Tomek Figa for providing it) and AFTR is working
+> > just fine on it. Finally I tried Trats board again but with the upstream
+> > u-boot instead of our custom modified version (thanks to help from Lukasz
+> > Majewski) and I found out that after this change AFTR works fine on it! It
+> > also gives quite nice power savings (~80mA less current drawn in AFTR mode
+> > compared to just WFI one).
 > 
-> Currently different drivers requiring to access cpu device node are
-> parsing the device tree themselves. Since the ordering in the DT need
-> not match the logical cpu ordering, the parsing logic needs to consider
-> that. However, this has resulted in lots of code duplication and in some
-> cases even incorrect logic.
+> Is the 80mA power saving comparing with:
 > 
-> It's better to consolidate them by adding support for getting cpu
-> device node for a given logical cpu index in DT core library. However
-> logical to physical index mapping can be architecture specific.
+>  * (cpu0/cpu1 online) vs (cpu0 AFTR and cpu1 offline)
+> or
+>  * (cpu0 AFTR and cpu1 offline) vs (cpu0 WFI and cpu1 offline)
+> ?
+
+The latter one and the following scenario:
+
+ * (cpu0/cpu1 online) vs (cpu0 WFI and cpu1 offline)
+
+gives only ~10mA saving. Maybe something is not working as it should be in
+the hotplug support and the code is not doing as much as it could but these
+are the actual results (using vanilla v3.10).
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> > With the above findings it now seems that the issue is on our side and is
+> > outside the kernel. Thanks for help with narrowing down the problem and
+> > sorry for wasting your time.
 > 
-> This patch adds of_get_cpu_node to retrieve a cpu device node for a
-> given logical cpu index. The default matching of the physical id to the
-> logical cpu index can be overridden by architecture specific code.
+> May be we were not working on the same tree.
 > 
-> It is recommended to use these helper function only in pre-SMP/early
-> initialisation stages to retrieve CPU device node pointers in logical
-> ordering. Once the cpu devices are registered, it can be retrieved easily
-> from cpu device of_node which avoids unnecessary parsing and matching.
+> I am on the linux-pm-next tree.
 > 
-> Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
-> ---
->  drivers/of/base.c  | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/of.h |  5 +++++
->  2 files changed, 71 insertions(+)
+> Now the merge window occurred, the AFTR is no longer working on my board.
 > 
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 5c54279..363b8f9 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -230,6 +230,72 @@ const void *of_get_property(const struct device_node *np, const char *name,
->  }
->  EXPORT_SYMBOL(of_get_property);
->  
-> +/*
-> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
-> + *
-> + * @cpu: logical index of a cpu
-> + * @phys_id: physical identifier of a cpu
-> + *
-> + * CPU logical to physical index mapping is architecure specific.
-
-Typo.
-
-> + * However this __weak function provides a default match of physical
-> + * id to logical cpu index.
-> + *
-> + * Returns 1 if the physical identifier and the logical index correspond
-> + * to the same cpu, 0 otherwise.
-> + */
-> +int __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
-
-Please use a bool return type, and use true/false rather than 1/0 in the 
-comment.
-
-> +{
-> +	return (u32)phys_id == cpu;
-> +}
-> +
-> +/**
-> + * of_get_cpu_node - Get device node associated with the given logical CPU
-> + *
-> + * @cpu: CPU number(logical index) for which device node is required
-> + *
-> + * The main purpose of this function is to retrieve the device node for the
-> + * given logical CPU index. It should be used to intialise the of_node in
-
-Typo.
-
-> + * cpu device. Once of_node in cpu device is populated, all the further
-> + * references can use that instead.
-> + *
-> + * CPU logical to physical index mapping is architecure specific and is built
-
-Typo.
-
-> + * before booting secondary cores. This function uses arch_match_cpu_phys_id
-> + * which can be overridden by architecture specific implementation.
-> + *
-> + * Returns a node pointer for the logical cpu if found, else NULL.
-> + */
-> +struct device_node *of_get_cpu_node(int cpu)
-> +{
-> +	struct device_node *cpun, *cpus;
-> +	const u32 *cell;
-> +	u64 hwid;
-> +	int ac, prop_len;
-> +
-> +	cpus = of_find_node_by_path("/cpus");
-> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
-> +		return NULL;
-> +
-> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
-> +		ac = of_n_addr_cells(cpus);
-> +
-> +	for_each_child_of_node(cpus, cpun) {
-> +		if (of_node_cmp(cpun->type, "cpu"))
-> +			continue;
-> +		cell = of_get_property(cpun, "reg", &prop_len);
-> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
-> +			continue;
-> +
-> +		while (prop_len) {
-> +			hwid = of_read_number(cell, ac);
-> +			prop_len -= ac;
-> +			if (arch_match_cpu_phys_id(cpu, hwid))
-> +				return cpun;
-> +		}
-> +	}
-> +
-> +	return NULL;
-> +}
-> +
->  /** Checks if the given "compat" string matches one of the strings in
->   * the device's "compatible" property
->   */
-> diff --git a/include/linux/of.h b/include/linux/of.h
-> index 1fd08ca..150b48e 100644
-> --- a/include/linux/of.h
-> +++ b/include/linux/of.h
-> @@ -266,6 +266,7 @@ extern int of_device_is_available(const struct device_node *device);
->  extern const void *of_get_property(const struct device_node *node,
->  				const char *name,
->  				int *lenp);
-> +extern struct device_node *of_get_cpu_node(int cpu);
->  #define for_each_property_of_node(dn, pp) \
->  	for (pp = dn->properties; pp != NULL; pp = pp->next)
->  
-> @@ -458,6 +459,10 @@ static inline const void *of_get_property(const struct device_node *node,
->  {
->  	return NULL;
->  }
-> +static inline struct device_node *of_get_cpu_node(int cpu)
-> +{
-> +	return NULL;
-> +}
->  
->  static inline int of_property_read_u64(const struct device_node *np,
->  				       const char *propname, u64 *out_value)
-> -- 
-> 1.8.1.2
+> After git bisecting:
+> 
+> commit 87107d89052bcec1fe91b309631de4ed294a5171
+> Author: Arnd Bergmann <arnd@arndb.de>
+> Date:   Wed Jun 19 01:36:52 2013 +0900
+> 
+>     ARM: EXYNOS: Remove legacy L2X0 initialization
+> 
+>     Since Exynos is now supporting only DT-based boot, the old L2X0
+>     initialization code is not needed anymore, so exynos4_l2x0_cache_init()
+>     can be greatly simplified.
+> 
+>     Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>     Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+>     Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>     Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
+> 
+> :040000 040000 79e1adfd6386256ba71b3f609592d5acf9c08222
+> 9cb0026563b3b8657d906767493d26c501963269 M	arch
+> 
+> Reverting the patch solves the problem.
+> 
+> Any ideas ?
+> 
+> Thanks
+>   -- Daniel
 > 
 > 
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
-> 
+> > 
+> > Best regards,
+> > --
+> > Bartlomiej Zolnierkiewicz
+> > Samsung R&D Institute Poland
+> > Samsung Electronics
+> > 
+> >> I found the following drivers:
+> >>
+> >> https://github.com/AndreiLux/Perseus-UNIVERSAL5410/blob/samsung/arch/arm/mach-exynos/cpuidle.c
+> >>
+> >> https://github.com/CyanogenMod/hardkernel-kernel-4412/blob/cm-10.1/arch/arm/mach-exynos/cpuidle-exynos4.c
+> >>
+> >> Sounds like the num cpus > 1 is still there.
+> >>
+> >> [ ... ]
+> >>
+> >>>> The kernel is not a playground where you can upstream code and then
+> >>>> remove it because a feature seems broken and you don't have an idea of why.
+> >>>
+> >>> Neither me or Tomek did upstream this code and we couldn't react in
+> >>> time because we haven't noticed that it is completely unusable for us
+> >>> as EXYNOS cpuidle driver is not even used by default on EXYNOS (it is
+> >>> not enabled either in defconfig or Kconfig).
+> >>>
+> >>> Moreover the feature we are talking about (AFTR mode) is also not used
+> >>> by default (except EXYNOS4210 rev0 on which it lockups system for us)
+> >>> even with EXYNOS cpuidle driver being enabled (because this specific
+> >>> feature depends on CPU hot-unplug which is not done automatically right
+> >>> now).
+> >>>
+> >>> Such things like unused/broken code removal is not something very
+> >>> unusual in the upstream kernel (I'm speaking from the experience here
+> >>> having maintained large subsystem for a couple of years). In this
+> >>> particular case we are talking about ~130 lines of code which can
+> >>> be trivially brought back later when/if needed.
+> >>>
+> >>> Anyway if the code removal is controversial for you we can just disable
+> >>> AFTR mode by default and enable it only when special command line option
+> >>> is given (i.e. "aftr"). This would fix all the broken configuration
+> >>> while still allowing the feature to be enabled on systems that had it
+> >>> working previously (since you claim that it works on some chipset/u-boot
+> >>> configurations).
+> >>
+> >> Actually, there are several reasons I am not in favor for the moment to
+> >> remove this code:
+> >>
+> >> 1) code can't be pushed upstream and then removed so easily
+> >> 2) I asked several times what was this cpu1 hack, I had no answer
+> >> 3) I tried to make both cpus entering the AFTR state, but the cpu1 never
+> >> wakes up, I asked but no answer.
+> >>
+> >> I would like to have some answers :)
+> >>
+> >> Before taking the decision to remove this state (btw you can remove the
+> >> driver directly, no ? the default idle function is WFI), IMO it is worth
+> >> to investigate and to spend some time to clarify what is happening. Then
+> >> we can take a decision.
+> >>
+> >> I am willing to help.
+> >>
+> >>>> I asked several times the reasons of why the AFTR state couldn't work
+> >>>> with multiple CPUs and I had no answer.
+> >>>
+> >>> Unfortunately I don't know the answer for your question.
+> >>>
+> >>> The AFTR mode doesn't work for us *at*all* (even with *one* CPU).
+> >>>
+> >>>> Frankly speaking I have a couple of hypothesis:
+> >>>>
+> >>>> 1. something is not correctly setup and the PMU does not wake up the CPU1
+> >>>> 2. there is a silicon bug and no one wants to tell it is the case
+> >>>>
+> >>>> In any case, this must be investigated and identified. And then we can
+> >>>> take a decision about this state.
+> >>>
+> >>> I don't have good idea currently how to investigate it further.
+> >>>
+> >>> I also don't have any prove that the actual work is worth it
+> >>> (and this work can easily take some weeks).
+> >>>
+> >>> One of main responsibilities of the maintainer it to make sure that
+> >>> the code does indeed work and that regressions (like these caused by
+> >>> AFTR mode feature) are fixed in the timely manner, not let the code
+> >>> sit in the limbo state for large periods of time.  It is already very
+> >>> bad situation that the regression we are hitting was present since
+> >>> v3.4 and we are in v3.10 now, I would like to have it fixed ASAP so
+> >>> we may actually consider enabling cpuidle in our exynos_defconfig.
+> >>
+> >> I agree.
+> >>
+> >> Thanks
+> >>   -- Daniel
