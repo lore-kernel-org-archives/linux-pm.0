@@ -1,168 +1,119 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 0/9] thermal: introduce DT thermal zone build
-Date: Wed, 17 Jul 2013 11:10:54 -0400
-Message-ID: <51E6B3FE.2010000@ti.com>
-References: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH v2 01/15] of: add support for retrieving cpu node
+ for a given logical cpu index
+Date: Wed, 17 Jul 2013 16:18:17 +0100
+Message-ID: <51E6B5B9.4090506@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51E6AF49.20403@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2TXBWLCJPUHKTMKLIHDHX"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:39725 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755279Ab3GQPMI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Jul 2013 11:12:08 -0400
-In-Reply-To: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51E6AF49.20403@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org
 
-------enig2TXBWLCJPUHKTMKLIHDHX
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On 17/07/13 15:50, Rob Herring wrote:
+> On 07/17/2013 09:06 AM, Sudeep.KarkadaNagesha@arm.com wrote:
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> Currently different drivers requiring to access cpu device node are
+>> parsing the device tree themselves. Since the ordering in the DT need
+>> not match the logical cpu ordering, the parsing logic needs to consider
+>> that. However, this has resulted in lots of code duplication and in some
+>> cases even incorrect logic.
+>>
+>> It's better to consolidate them by adding support for getting cpu
+>> device node for a given logical cpu index in DT core library. However
+>> logical to physical index mapping can be architecture specific.
+>>
+>> This patch adds of_get_cpu_node to retrieve a cpu device node for a
+>> given logical cpu index. The default matching of the physical id to the
+>> logical cpu index can be overridden by architecture specific code.
+>>
+>> It is recommended to use these helper function only in pre-SMP/early
+>> initialisation stages to retrieve CPU device node pointers in logical
+>> ordering. Once the cpu devices are registered, it can be retrieved easily
+>> from cpu device of_node which avoids unnecessary parsing and matching.
+>>
+>> Cc: Rob Herring <rob.herring@calxeda.com>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> One comment below, but otherwise for patches 1-4, 8 and 9:
+> 
+> Acked-by: Rob Herring <rob.herring@calxeda.com>
+> 
+> Also, patch 3 needs to come before patch 2 or the matching will be wrong
+> if patch 3 is not applied.
+Ah, correct will fix it in next version.
 
-Hi,
+> 
+>> ---
+>>  drivers/of/base.c  | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/of.h |  5 +++++
+>>  2 files changed, 71 insertions(+)
+>>
+>> diff --git a/drivers/of/base.c b/drivers/of/base.c
+>> index 5c54279..363b8f9 100644
+>> --- a/drivers/of/base.c
+>> +++ b/drivers/of/base.c
+>> @@ -230,6 +230,72 @@ const void *of_get_property(const struct device_node *np, const char *name,
+>>  }
+>>  EXPORT_SYMBOL(of_get_property);
+>>  
+>> +/*
+>> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
+>> + *
+>> + * @cpu: logical index of a cpu
+>> + * @phys_id: physical identifier of a cpu
+>> + *
+>> + * CPU logical to physical index mapping is architecure specific.
+>> + * However this __weak function provides a default match of physical
+>> + * id to logical cpu index.
+>> + *
+>> + * Returns 1 if the physical identifier and the logical index correspond
+>> + * to the same cpu, 0 otherwise.
+>> + */
+>> +int __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
+>> +{
+>> +	return (u32)phys_id == cpu;
+>> +}
+>> +
+>> +/**
+>> + * of_get_cpu_node - Get device node associated with the given logical CPU
+>> + *
+>> + * @cpu: CPU number(logical index) for which device node is required
+>> + *
+>> + * The main purpose of this function is to retrieve the device node for the
+>> + * given logical CPU index. It should be used to intialise the of_node in
+>> + * cpu device. Once of_node in cpu device is populated, all the further
+>> + * references can use that instead.
+>> + *
+>> + * CPU logical to physical index mapping is architecure specific and is built
+>> + * before booting secondary cores. This function uses arch_match_cpu_phys_id
+>> + * which can be overridden by architecture specific implementation.
+>> + *
+>> + * Returns a node pointer for the logical cpu if found, else NULL.
+>> + */
+>> +struct device_node *of_get_cpu_node(int cpu)
+>> +{
+>> +	struct device_node *cpun, *cpus;
+>> +	const u32 *cell;
+>> +	u64 hwid;
+>> +	int ac, prop_len;
+>> +
+>> +	cpus = of_find_node_by_path("/cpus");
+>> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+> 
+> What happens on a system with no /cpus nodes? Seems like this is another
+> case of adding new warnings to existing working systems.
+> 
+> I'd replace all the WARN's with a single pr_warn on any errors below.
+> For missing /cpus, I would just silently return.
 
-On 17-07-2013 11:02, Eduardo Valentin wrote:
-> Hello all,
->=20
+Ah, forgot recent discussions on this, will fix it.
 
+Regards,
+Sudeep
 
-Looks like I sent duplicated series. Please consider the series
-containing 9 patches. I will resend with proper set.
-
-
-> As you noticed, I am working in a way to represent thermal data
-> using device tree [1]. Essentially, this should be a way to say
-> what to do with a sensor and how to associate (cooling) actions
-> with it.
->=20
-> The motivation to create such infrastructure is:
-> (i) - to reuse the existing temperature sensor code base;
-> (ii) - have a way to easily describe thermal data across different
-> boards for the same sensor. Say you have an i2c temp sensor,
-> which is placed close to your battery on board A but on
-> board B, another instance of this same senor is placed
-> close to your display, for instance.
->=20
-> This series introduces then a DT parser. The data expected in
-> DT must contain the needed properties to build a thermal zone
-> out of the desired sensor. All properties are documented and
-> they are derived from the existing requirements of current
-> thermal API.
->=20
-> In order to perform a binding with cooling devices,
-> the new thermal zone built using DT nodes will use
-> the existing thermal API that uses binding parameters. This is
-> the current proposed way to register thermal zones with platform
-> information, written by Durga.
->=20
-> There are some virtual concepts that are pushed to device tree,
-> I know. But I believe using device tree to do this makes sense
-> because we are still describing the HW and how they are related
-> to each other. Things like cooling devices are not represented
-> in device tree though, as I believe that will cause a lot of
-> confusion with real devices (as already does).
->=20
-> So the series is short but I think it makes sense to describe
-> how it is organized, as it touches several places. First four
-> patches are a preparation for this parser. There is a change
-> on cpufreq-cpu0, so that it knows now how to load its
-> corresponding cooling device. There is a change on thermal_core
-> to split its hwmon code, because I think we may need to improve
-> this code base when we start to integrate better with hwmon
-> temperature sensors. Then, another needed preparation is to
-> improve the bind_params, so that we are able to bind with
-> upper and lower limits. The remaining patches are the changes
-> with the proposed DT parser. A part from the DT thermal zone
-> builder itself (patch 05), I also changed the ti-soc-thermal
-> driver to use this new API and the omap4430 bandgap DT node,
-> as an example (this has been tested on panda omap4430); and also change=
-d
-> the hwmon drivers lm75 and tmp102 to have the option to build
-> a thermal zone using DT. I haven't touched any dts file using
-> lm75 or tmp102 because this should come on a need basis.
->=20
-> I believe this code is pretty usable the way it is, but might
-> need to be revisited, in case the enhancement proposed by Durga
-> get in. This is because representing virtual thermal zones
-> built out of several sensors may need a different representation
-> in DT.
->=20
-> [1] - RFC of this work:
-> http://comments.gmane.org/gmane.linux.power-management.general/35874
->=20
-> Changes from RFC:
-> - Added a way to load cpufreq cooling device out of DT
-> - Added a way to bind with upper and lower limits using bind_params
-> - Added a way to specify upper and lower binding limits on DT
-> - Added DT thermal builder support to lm75 and tmp102 hwmon drivers
-> - Changed ERANGE to EDOM
-> - Added thermal constants for zone type and bind limit, so that
->   dts file could be more readable
->=20
-> Tested on panda omap4430 (3.11-rc1 with minor changes for getting cpufr=
-eq working)
->=20
-> BR,
->=20
-> Eduardo Valentin (9):
->   cpufreq: cpufreq-cpu0: add dt node parsing for 'needs-cooling'
->   thermal: hwmon: move hwmon support to single file
->   thermal: thermal_core: allow binding with limits on bind_params
->   arm: dts: flag omap4430 with needs-cooling for cpu node
->   thermal: introduce device tree parser
->   thermal: ti-soc-thermal: use thermal DT infrastructure
->   arm: dts: add omap4430 thermal data
->   hwmon: lm75: expose to thermal fw via DT nodes
->   hwmon: tmp102: expose to thermal fw via DT nodes
->=20
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   3 +
->  .../devicetree/bindings/thermal/thermal.txt        | 133 ++++++
->  Documentation/thermal/sysfs-api.txt                |   7 +
->  arch/arm/boot/dts/omap443x.dtsi                    |  32 +-
->  drivers/cpufreq/cpufreq-cpu0.c                     |   8 +
->  drivers/hwmon/lm75.c                               |  29 ++
->  drivers/hwmon/tmp102.c                             |  25 ++
->  drivers/thermal/Kconfig                            |  22 +
->  drivers/thermal/Makefile                           |   4 +
->  drivers/thermal/thermal_core.c                     | 274 +-----------
->  drivers/thermal/thermal_dt.c                       | 458 +++++++++++++=
-++++++++
->  drivers/thermal/thermal_hwmon.c                    | 269 ++++++++++++
->  drivers/thermal/thermal_hwmon.h                    |  49 +++
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  46 ++-
->  include/dt-bindings/thermal/thermal.h              |  27 ++
->  include/linux/thermal.h                            |  13 +
->  16 files changed, 1129 insertions(+), 270 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/thermal/thermal.t=
-xt
->  create mode 100644 drivers/thermal/thermal_dt.c
->  create mode 100644 drivers/thermal/thermal_hwmon.c
->  create mode 100644 drivers/thermal/thermal_hwmon.h
->  create mode 100644 include/dt-bindings/thermal/thermal.h
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2TXBWLCJPUHKTMKLIHDHX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHms/4ACgkQCXcVR3XQvP2NPgEAjlxYm3M25SYAUisafjXTvnyi
-OZiWDjph1p2AhufqesoBAMMoOW8oTHWPvr4tWbMHkC5Hp1tzEn2yVA0a+vR1cGnS
-=7JzG
------END PGP SIGNATURE-----
-
-------enig2TXBWLCJPUHKTMKLIHDHX--
