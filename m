@@ -1,125 +1,97 @@
-From: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org
-Subject: [RFC PATCH v2 05/15] ARM: mvebu: remove device tree parsing for cpu
- nodes
-Date: Wed, 17 Jul 2013 15:06:14 +0100
-Message-ID: <1374069984-20567-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Sudeep.KarkadaNagesha@arm.com
+Subject: [RFC PATCH v2 13/15] cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
+Date: Wed, 17 Jul 2013 15:06:22 +0100
+Message-ID: <1374069984-20567-14-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Cc: Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Cc: Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Currently set_secondary_cpus_clock assume the CPU logical ordering
-and the MPDIR in DT are same, which is incorrect.
+Now that the cpu device registration initialises the of_node(if available)
+appropriately for all the cpus, parsing here is redundant.
 
-Since the CPU device nodes can be retrieved in the logical ordering
-using the DT helper, we can remove the devices tree parsing.
+This patch removes all DT parsing and uses cpu->of_node instead.
 
-This patch removes DT parsing by making use of of_get_cpu_node.
-
-Cc: Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>
-Cc: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
- 1 file changed, 24 insertions(+), 28 deletions(-)
+ drivers/cpufreq/maple-cpufreq.c | 23 +++++++----------------
+ 1 file changed, 7 insertions(+), 16 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index 93f2f3a..12585ad 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -23,51 +23,47 @@
- #include <linux/of.h>
- #include <linux/mbus.h>
- #include <asm/cacheflush.h>
-+#include <asm/prom.h>
- #include <asm/smp_plat.h>
- #include "common.h"
- #include "armada-370-xp.h"
- #include "pmsu.h"
- #include "coherency.h"
- 
-+static struct clk *__init get_cpu_clk(int cpu)
-+{
-+	struct clk *cpu_clk;
-+	struct device_node *np = of_get_cpu_node(cpu);
-+
-+	if (WARN(!np, "missing cpu node\n"))
-+		return NULL;
-+	cpu_clk = of_clk_get(np, 0);
-+	if (WARN_ON(IS_ERR(cpu_clk)))
-+		return NULL;
-+	return cpu_clk;
-+}
-+
- void __init set_secondary_cpus_clock(void)
+diff --git a/drivers/cpufreq/maple-cpufreq.c b/drivers/cpufreq/maple-cpufre=
+q.c
+index cdd6291..bc7233b 100644
+--- a/drivers/cpufreq/maple-cpufreq.c
++++ b/drivers/cpufreq/maple-cpufreq.c
+@@ -19,6 +19,7 @@
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
+ #include <linux/sched.h>
++#include <linux/cpu.h>
+ #include <linux/cpufreq.h>
+ #include <linux/init.h>
+ #include <linux/completion.h>
+@@ -201,7 +202,7 @@ static struct cpufreq_driver maple_cpufreq_driver =3D {
+=20
+ static int __init maple_cpufreq_init(void)
  {
--	int thiscpu;
-+	int thiscpu, cpu;
- 	unsigned long rate;
--	struct clk *cpu_clk = NULL;
--	struct device_node *np = NULL;
-+	struct clk *cpu_clk;
- 
- 	thiscpu = smp_processor_id();
--	for_each_node_by_type(np, "cpu") {
--		int err;
--		int cpu;
--
--		err = of_property_read_u32(np, "reg", &cpu);
--		if (WARN_ON(err))
--			return;
--
--		if (cpu == thiscpu) {
--			cpu_clk = of_clk_get(np, 0);
--			break;
--		}
--	}
--	if (WARN_ON(IS_ERR(cpu_clk)))
-+	cpu_clk = get_cpu_clk(thiscpu);
-+	if (!cpu_clk)
- 		return;
- 	clk_prepare_enable(cpu_clk);
- 	rate = clk_get_rate(cpu_clk);
- 
- 	/* set all the other CPU clk to the same rate than the boot CPU */
--	for_each_node_by_type(np, "cpu") {
--		int err;
--		int cpu;
--
--		err = of_property_read_u32(np, "reg", &cpu);
--		if (WARN_ON(err))
-+	for_each_possible_cpu(cpu) {
-+		if (cpu == thiscpu)
-+			continue;
-+		cpu_clk = get_cpu_clk(cpu);
-+		if (!cpu_clk)
- 			return;
--
--		if (cpu != thiscpu) {
--			cpu_clk = of_clk_get(np, 0);
--			clk_set_rate(cpu_clk, rate);
--		}
-+		clk_set_rate(cpu_clk, rate);
- 	}
+-=09struct device_node *cpus;
++=09struct device *cpu_dev;
+ =09struct device_node *cpunode;
+ =09unsigned int psize;
+ =09unsigned long max_freq;
+@@ -217,24 +218,17 @@ static int __init maple_cpufreq_init(void)
+ =09    !of_machine_is_compatible("Momentum,Apache"))
+ =09=09return 0;
+=20
+-=09cpus =3D of_find_node_by_path("/cpus");
+-=09if (cpus =3D=3D NULL) {
+-=09=09DBG("No /cpus node !\n");
++=09cpu_dev =3D get_cpu_device(0);
++=09if (!cpu_dev) {
++=09=09pr_err("failed to get cpu device\n");
+ =09=09return -ENODEV;
+ =09}
+=20
+ =09/* Get first CPU node */
+-=09for (cpunode =3D NULL;
+-=09     (cpunode =3D of_get_next_child(cpus, cpunode)) !=3D NULL;) {
+-=09=09const u32 *reg =3D of_get_property(cpunode, "reg", NULL);
+-=09=09if (reg =3D=3D NULL || (*reg) !=3D 0)
+-=09=09=09continue;
+-=09=09if (!strcmp(cpunode->type, "cpu"))
+-=09=09=09break;
+-=09}
++=09cpunode =3D of_node_get(cpu_dev->of_node);
+ =09if (cpunode =3D=3D NULL) {
+ =09=09printk(KERN_ERR "cpufreq: Can't find any CPU 0 node\n");
+-=09=09goto bail_cpus;
++=09=09goto bail_noprops;
+ =09}
+=20
+ =09/* Check 970FX for now */
+@@ -290,14 +284,11 @@ static int __init maple_cpufreq_init(void)
+ =09rc =3D cpufreq_register_driver(&maple_cpufreq_driver);
+=20
+ =09of_node_put(cpunode);
+-=09of_node_put(cpus);
+=20
+ =09return rc;
+=20
+ bail_noprops:
+ =09of_node_put(cpunode);
+-bail_cpus:
+-=09of_node_put(cpus);
+=20
+ =09return rc;
  }
- 
--- 
+--=20
 1.8.1.2
