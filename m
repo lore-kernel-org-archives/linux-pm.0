@@ -1,20 +1,16 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 3/8] cpufreq: cpufreq-cpu0: add dt node parsing on cooling need
-Date: Wed, 17 Jul 2013 11:02:42 -0400
-Message-ID: <1374073374-30946-7-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 1/9] cpufreq: cpufreq-cpu0: add dt node parsing for 'needs-cooling'
+Date: Wed, 17 Jul 2013 11:02:37 -0400
+Message-ID: <1374073374-30946-2-git-send-email-eduardo.valentin@ti.com>
 References: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:33599 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138Ab3GQPE7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 11:04:59 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: devicetree-discuss@lists.ozlabs.org
 Cc: wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 This patch changes the cpufreq-cpu0 driver to consider if
 a cpu needs cooling (with cpufreq). In case the cooling is needed,
@@ -23,12 +19,13 @@ property 'needs-cooling'.
 
 In case this boolean is present, the driver will
 load a cpufreq cooling device in the system. The cpufreq-cpu0
-driver is not capable of determining how the system should
-be using the cooling device. This can be described using device
-tree, to determine what needs to be done with the loaded
-cpufreq cooling device, in case the system temperature is detected
-to be high, with help of temperature sensors (check
-Documentation/devicetree/bindings/thermal/thermal.txt).
+driver is not interested in determining how the system should
+be using the cooling device. The driver is responsible
+only of loading the cooling device.
+
+Describing how the cooling device will be used can be
+accomplished by setting up a thermal zone that references
+and is composed by the cpufreq cooling device.
 
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
@@ -40,10 +37,9 @@ Cc: linux-kernel@vger.kernel.org
 Cc: devicetree-discuss@lists.ozlabs.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |  3 ++
- .../devicetree/bindings/thermal/thermal.txt        | 34 ++++++++++++++++++++++
- drivers/cpufreq/cpufreq-cpu0.c                     |  8 +++++
- 3 files changed, 45 insertions(+)
+ Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 3 +++
+ drivers/cpufreq/cpufreq-cpu0.c                             | 8 ++++++++
+ 2 files changed, 11 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
 index 051f764..e8ff916 100644
@@ -66,48 +62,6 @@ index 051f764..e8ff916 100644
  	};
  
  	cpu@1 {
-diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-index 03751bb..ac0c7b9 100644
---- a/Documentation/devicetree/bindings/thermal/thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-@@ -97,3 +97,37 @@ thermal_zone {
-                     };
-             };
- };
-+
-+***************
-+cpufreq-cooling
-+***************
-+
-+The generic cpu cooling (freq clipping) can be loaded by the
-+generic cpufreq-cpu0 driver in case the device tree node informs
-+this need.
-+
-+In order to load the cpufreq cooling device, it is possible to
-+inform that the cpu needs cooling by adding the boolean flag
-+'needs-cooling' at the cpu0 phandle.
-+
-+Example:
-+	cpus {
-+		cpu@0 {
-+			operating-points = <
-+				/* kHz    uV */
-+				800000  1313000
-+				1008000 1375000
-+			>;
-+			needs-cooling; /* make sure we have cpufreq-cooling */
-+		};
-+	...
-+	};
-+
-+The above will cause the cpufreq-cpu0 driver to understand that
-+the cpu will need passive cooling and while probing that node it will
-+also load the cpufreq cpu cooling device in that system.
-+
-+However, be advised that this flag will not describe what needs to
-+be done or how the cpufreq cooling device will be used. In order to
-+accomplish this, one needs to write a phandle for a thermal zone, as
-+described in the section 'thermal_zone'.
 diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
 index ad1fde2..4a8747a 100644
 --- a/drivers/cpufreq/cpufreq-cpu0.c
@@ -150,4 +104,3 @@ index ad1fde2..4a8747a 100644
  
 -- 
 1.8.2.1.342.gfa7285d
-
