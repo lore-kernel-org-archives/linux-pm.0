@@ -1,48 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 7/7] Documentation:cpufreq:boost: Update BOOST documentation
-Date: Wed, 17 Jul 2013 10:52:18 +0530
-Message-ID: <CAKohponeZ15ruJA9__V70u1Ztr4F9aT+zBinMT5Ewyew53rbyQ@mail.gmail.com>
+Subject: Re: [PATCH v5 6/7] cpufreq:boost:Kconfig: Enable software managed
+ BOOST support at Kconfig
+Date: Wed, 17 Jul 2013 10:54:55 +0530
+Message-ID: <CAKohpo=XbUtYBVQ_y4_R18wpag_HAVvXrxfSfmaNSqq=wLpciQ@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
 	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
-	<1372927830-2949-8-git-send-email-l.majewski@samsung.com>
-	<CAKohpo=oB_4gGtNn6jvxSCp665pOq6oqeTCCyGzmN_eWqt0Lhg@mail.gmail.com>
-	<20130716133319.49ed0838@amdc308.digital.local>
+	<1372927830-2949-7-git-send-email-l.majewski@samsung.com>
+	<CAKohpokR=jrcLQQ7VAD+vr7GWgSFBfuqbOhWHwA3FCgk__EJ3Q@mail.gmail.com>
+	<20130716135022.64a102f8@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:44950 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315Ab3GQFWT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 01:22:19 -0400
-Received: by mail-ob0-f174.google.com with SMTP id wd20so1736170obb.5
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2013 22:22:18 -0700 (PDT)
-In-Reply-To: <20130716133319.49ed0838@amdc308.digital.local>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130716135022.64a102f8@amdc308.digital.local>
+Sender: cpufreq-owner@vger.kernel.org
 To: Lukasz Majewski <l.majewski@samsung.com>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 16 July 2013 17:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> As fair as I've understood our previous discussion (at [*]) we have
-> agreed about this. We only export boost attribute when it is supported
-> by cpufreq_driver. Rafael was very clear about exporting boost
-> attribute:
+On 16 July 2013 17:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Tue, 16 Jul 2013 15:28:40 +0530 Viresh Kumar viresh.kumar@linaro.org
+> wrote,
+>> On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+>>
+>> > +config CPU_FREQ_BOOST_SW
+>> > +       bool "CPU frequency overclocking (BOOST)"
+>>
+>> Name it "CPU Frequency Overclocking - Software"
 >
-> "Simple: Export it only when supported."
+> Thanks, I had a puzzle to came up with a good short name :-).
 >
-> [*]: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+>>
+>> > +       depends on ARM_EXYNOS_CPUFREQ && EXYNOS_THERMAL
+>                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
+>>
+>> Remote Exynos from here. If you want to enable it for your platform by
+>> default, then select it from EXYNOS.
 
-I don't want to search in the Archives but I am sure what we decided
-earlier.
+I misread it a bit. I wanted to say make it dependent only on THERMAL and
+not on Exynos.
 
-Rafael Said:
-"Simple: Export it only when supported."
+> The purpose of the condition [*] here is to prevent from enabling
+> boost when thermal for Exynos is not supported.
 
-AND
-
-"Don't change behavior of acpi-cpufreq driver"
-
-If you see acpi-cpufreq driver carefully, it always creates "boost"
-sysfs entry. If its not supported then it creates a read only entry.
-
-So, please preserve that.
+Why? Can't others use it? Its not exynos specific :)
