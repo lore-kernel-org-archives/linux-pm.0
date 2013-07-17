@@ -1,107 +1,153 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 8/9] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Wed, 17 Jul 2013 11:02:52 -0400
-Message-ID: <1374073374-30946-17-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 3/8] cpufreq: cpufreq-cpu0: add dt node parsing on cooling need
+Date: Wed, 17 Jul 2013 11:02:42 -0400
+Message-ID: <1374073374-30946-7-git-send-email-eduardo.valentin@ti.com>
 References: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:33599 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138Ab3GQPE7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2013 11:04:59 -0400
 In-Reply-To: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree-discuss@lists.ozlabs.org
-Cc: wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
 
-This patch adds to lm75 temperature sensor the possibility
-to expose itself as thermal zone device, registered on the
-thermal framework.
+This patch changes the cpufreq-cpu0 driver to consider if
+a cpu needs cooling (with cpufreq). In case the cooling is needed,
+it can be flagged at the cpu0 device tree node, with the boolean
+property 'needs-cooling'.
 
-The thermal zone is built only if a device tree node
-describing a thermal zone for this sensor is present
-inside the lm75 DT node. Otherwise, the driver behavior
-will be the same.
+In case this boolean is present, the driver will
+load a cpufreq cooling device in the system. The cpufreq-cpu0
+driver is not capable of determining how the system should
+be using the cooling device. This can be described using device
+tree, to determine what needs to be done with the loaded
+cpufreq cooling device, in case the system temperature is detected
+to be high, with help of temperature sensors (check
+Documentation/devicetree/bindings/thermal/thermal.txt).
 
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: lm-sensors@lm-sensors.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Cc: devicetree-discuss@lists.ozlabs.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/hwmon/lm75.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |  3 ++
+ .../devicetree/bindings/thermal/thermal.txt        | 34 ++++++++++++++++++++++
+ drivers/cpufreq/cpufreq-cpu0.c                     |  8 +++++
+ 3 files changed, 45 insertions(+)
 
-diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
-index c03b490..0aa5e28 100644
---- a/drivers/hwmon/lm75.c
-+++ b/drivers/hwmon/lm75.c
-@@ -27,6 +27,8 @@
- #include <linux/hwmon-sysfs.h>
- #include <linux/err.h>
- #include <linux/mutex.h>
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+index 051f764..e8ff916 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+@@ -15,6 +15,8 @@ Optional properties:
+ - clock-latency: Specify the possible maximum transition latency for clock,
+   in unit of nanoseconds.
+ - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
++- needs-cooling: The generic cpu cooling (freq clipping) is loaded by the
++generic cpufreq-cpu0 driver in case the device tree node has this boolean.
+ 
+ Examples:
+ 
+@@ -33,6 +35,7 @@ cpus {
+ 			198000  850000
+ 		>;
+ 		clock-latency = <61036>; /* two CLK32 periods */
++		needs-cooling;
+ 	};
+ 
+ 	cpu@1 {
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+index 03751bb..ac0c7b9 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -97,3 +97,37 @@ thermal_zone {
+                     };
+             };
+ };
++
++***************
++cpufreq-cooling
++***************
++
++The generic cpu cooling (freq clipping) can be loaded by the
++generic cpufreq-cpu0 driver in case the device tree node informs
++this need.
++
++In order to load the cpufreq cooling device, it is possible to
++inform that the cpu needs cooling by adding the boolean flag
++'needs-cooling' at the cpu0 phandle.
++
++Example:
++	cpus {
++		cpu@0 {
++			operating-points = <
++				/* kHz    uV */
++				800000  1313000
++				1008000 1375000
++			>;
++			needs-cooling; /* make sure we have cpufreq-cooling */
++		};
++	...
++	};
++
++The above will cause the cpufreq-cpu0 driver to understand that
++the cpu will need passive cooling and while probing that node it will
++also load the cpufreq cpu cooling device in that system.
++
++However, be advised that this flag will not describe what needs to
++be done or how the cpufreq cooling device will be used. In order to
++accomplish this, one needs to write a phandle for a thermal zone, as
++described in the section 'thermal_zone'.
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index ad1fde2..4a8747a 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -20,6 +20,9 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
 +#include <linux/thermal.h>
-+#include <linux/of.h>
- #include "lm75.h"
++#include <linux/cpu_cooling.h>
++#include <linux/cpumask.h>
  
+ static unsigned int transition_latency;
+ static unsigned int voltage_tolerance; /* in percentage */
+@@ -28,6 +31,7 @@ static struct device *cpu_dev;
+ static struct clk *cpu_clk;
+ static struct regulator *cpu_reg;
+ static struct cpufreq_frequency_table *freq_table;
++static struct thermal_cooling_device *cdev;
  
-@@ -70,6 +72,7 @@ static const u8 LM75_REG_TEMP[3] = {
- /* Each client has this additional data */
- struct lm75_data {
- 	struct device		*hwmon_dev;
-+	struct thermal_zone_device	*tz;
- 	struct mutex		update_lock;
- 	u8			orig_conf;
- 	u8			resolution;	/* In bits, between 9 and 12 */
-@@ -92,6 +95,19 @@ static struct lm75_data *lm75_update_device(struct device *dev);
- 
- /* sysfs attributes for hwmon */
- 
-+static int lm75_read_temp(void *dev, unsigned long *temp)
-+{
-+	struct lm75_data *data = lm75_update_device(dev);
-+
-+	if (IS_ERR(data))
-+		return PTR_ERR(data);
-+
-+	*temp = ((data->temp[0] >> (16 - data->resolution)) * 1000) >>
-+			(data->resolution - 8);
-+
-+	return 0;
-+}
-+
- static ssize_t show_temp(struct device *dev, struct device_attribute *da,
- 			 char *buf)
+ static int cpu0_verify_speed(struct cpufreq_policy *policy)
  {
-@@ -271,11 +287,23 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 		goto exit_remove;
+@@ -268,6 +272,9 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_free_table;
  	}
  
-+	if (of_find_node_by_name(client->dev.of_node, "thermal_zone")) {
-+		data->tz = thermal_zone_of_device_register(&client->dev,
-+							   &client->dev,
-+							   lm75_read_temp);
-+		if (IS_ERR(data->tz)) {
-+			status = PTR_ERR(data->tz);
-+			goto exit_hwmon;
-+		}
-+	}
++	if (of_property_read_bool(np, "needs-cooling"))
++		cdev = cpufreq_cooling_register(cpu_present_mask);
 +
- 	dev_info(&client->dev, "%s: sensor '%s'\n",
- 		 dev_name(data->hwmon_dev), client->name);
- 
+ 	of_node_put(np);
+ 	of_node_put(parent);
  	return 0;
+@@ -283,6 +290,7 @@ out_put_parent:
  
-+exit_hwmon:
-+	hwmon_device_unregister(data->hwmon_dev);
- exit_remove:
- 	sysfs_remove_group(&client->dev.kobj, &lm75_group);
- 	return status;
-@@ -285,6 +313,7 @@ static int lm75_remove(struct i2c_client *client)
+ static int cpu0_cpufreq_remove(struct platform_device *pdev)
  {
- 	struct lm75_data *data = i2c_get_clientdata(client);
++	cpufreq_cooling_unregister(cdev);
+ 	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
+ 	opp_free_cpufreq_table(cpu_dev, &freq_table);
  
-+	thermal_zone_device_unregister(data->tz);
- 	hwmon_device_unregister(data->hwmon_dev);
- 	sysfs_remove_group(&client->dev.kobj, &lm75_group);
- 	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
 -- 
 1.8.2.1.342.gfa7285d
+
