@@ -1,83 +1,95 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [PATCH] power: new trace event to print device suspend and resume
- time
-Date: Tue, 16 Jul 2013 22:27:08 +0000
-Message-ID: <B8EFE96D1287C24090BAD9D858E15E6173C248@sisaex02sj>
-References: <1374009806-11823-1-git-send-email-shuah.kh@samsung.com>
- <1374010741.1949.46.camel@joe-AO722>
- <B8EFE96D1287C24090BAD9D858E15E6173C1B6@sisaex02sj>
- <1374013019.1949.52.camel@joe-AO722>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v3 1/4] hwmon: (lm90) split set&show temp as common codes
+Date: Wed, 17 Jul 2013 06:26:20 +0200
+Message-ID: <20130717042618.GA11359@mithrandir>
+References: <1373615287-18502-1-git-send-email-wni@nvidia.com>
+ <1373615287-18502-2-git-send-email-wni@nvidia.com>
+ <20130712152615.23464a6b@endymion.delvare>
+ <20130712135000.GA3386@roeck-us.net>
+ <20130712163034.1fc1cd66@endymion.delvare>
+ <20130712144011.GC3629@roeck-us.net>
+ <51E395D9.6070000@nvidia.com>
+ <20130715092415.6d082aa2@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w2.samsung.com ([211.189.100.11]:24609 "EHLO
-	usmailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933295Ab3GPW1M convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2013 18:27:12 -0400
-Content-language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130715092415.6d082aa2@endymion.delvare>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Wei Ni <wni@nvidia.com>, Guenter Roeck <linux@roeck-us.net>, rui.zhang@intel.com, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "fweisbec@gmail.com" <fweisbec@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
 
-On 07/16/2013 04:17 PM, Joe Perches wrote:
-> On Tue, 2013-07-16 at 22:04 +0000, Shuah Khan wrote:
->> On 07/16/2013 03:39 PM, Joe Perches wrote:
->>> On Tue, 2013-07-16 at 15:23 -0600, Shuah Khan wrote:
->>>> A new trace event is added to pm events to print time it takes to suspend and
->>>> resume a device. It generates trace message that includes device, driver,
->>>> parent information in addition to the type of pm ops invoked as well as the
->>>> pm event and error status from the pm ops. Example trace below:
->>>
->>>> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
->>> []
->>>> @@ -66,6 +66,41 @@ TRACE_EVENT(machine_suspend,
->>>>    	TP_printk("state=%lu", (unsigned long)__entry->state)
->>>>    );
->>>>
->>>> +TRACE_EVENT(device_pm_report_time,
->>>> +
->>>> +	TP_PROTO(const char *device, const char *driver, const char *parent,
->>>> +		 const char *pm_ops, ktime_t ops_time, char *pm_event_str,
->>>> +		 int error),
->>>> +
->>>> +	TP_ARGS(device, driver, parent, pm_ops, ops_time, pm_event_str, error),
->>>> +
->>>> +	TP_STRUCT__entry(
->>>> +		__string(device, device)
->>>> +		__string(driver, driver)
->>>> +		__string(parent, parent)
->>>> +		__string(pm_ops, pm_ops)
->>>> +		__string(pm_event_str, pm_event_str)
->>>> +		__field(unsigned long long, ops_time)
->>>
->>> s64
->>
->> Followed the ktime_t example in include/trace/events/timer.h - thinking
->> it would be the correct way to cast ktime_t :)  I can change it to s64.
->
-> You mean this one below where s64 is used for the
-> variable type?
 
-oh yeah it does have s64.
+--+HP7ph2BbKc20aGI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> I do think the %llu is odd below here and it should be
-> %lld without the casts.
+On Mon, Jul 15, 2013 at 09:24:15AM +0200, Jean Delvare wrote:
+> On Mon, 15 Jul 2013 14:25:29 +0800, Wei Ni wrote:
+> > On 07/12/2013 10:40 PM, Guenter Roeck wrote:
+> > > On Fri, Jul 12, 2013 at 04:30:34PM +0200, Jean Delvare wrote:
+> > >> If that means that for example the ACPI thermal zone is no longer
+> > >> displayed by "sensors", then I strongly object - unless it is
+> > >> explicitly registered as a separate hwmon device from now on, of cou=
+rse.
+> > >
+> > > If I recall correctly that was the idea. Of course, in practice that =
+will mean
+> > > that devices will _not_ get exposed as hwmon devices, as implementers=
+ won't
+> > > bother doing both.
+> > >=20
+> > >> My idea was to make the bridge optional - you decide when you regist=
+er
+> > >> a thermal device if it should be exposed as hwmon or not.
+> > >
+> > > Yes, that would be a much better solution.
+> >=20
+> > I think we can decide it in the DT, we can add a dt property in the lm90
+> > device node, such as:
+> > sys-interface =3D SYS_HWMON;
+> > or
+> > sys-interface =3D SYS_THERMAL;
+> > So we register it as the hwmon or thermal device
+>=20
+> This is an option, but please keep in mind that DT is not the only way
+> to instantiate LM90-like devices, and we should not expose duplicate
+> inputs by default. It is fine with me if the default is to create only a
+> HWMON device (as the lm90 driver was doing so far), and only
+> DT-instantiated devices have the choice.
 
-ok.
+I don't think this information belongs in the device tree. Whether the
+device is exposed as hwmon or thermal device (or both) is entirely a
+software issue whereas DT is a means to describe the hardware.
 
->
-> I prefer the TP_printk style of "foo=val" over "foo(val)"
-> but there's no requirement for one style over another.
->
+It seems to me that the earlier proposal of communicating to the bridge
+whether or not a device should be exposed as hwmon device is the right
+thing to do here.
 
-Existing events in power.h use foo=val convention - I will make the 
-change to be consistent.
+Thierry
 
-thanks for the review.
--- Shuah
+--+HP7ph2BbKc20aGI
+Content-Type: application/pgp-signature
 
-Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
-America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJR5hzqAAoJEN0jrNd/PrOhQXgP/jYIUYFfrCEVA0amd99jVdp9
+Tas04q9u/pBOoGmse32QaSrmNmxRkbCEzyGT+HWaij8+LYnd5NUPj1B9Z7pnd/hh
+DikqXGgoogJQksVpLNTdYfkMcxCwtI/L0P2pm7yx/YCSRYJhGwfOqXHEy9XLpoey
+/6MlXVWsA1iOvAvXynCjapk+feklF16gmGK3Wbc3bBavTGHZ8DvxlFs6WbVF2Eem
+Wyc/kYVYnsRPy0xoSEyjycLnpyR/x3NuaIhxJs45fdinKoPzWtjStr+iE+6/R3Mo
+dfQ2BIjIOtMDBmOQYS/dLAWraPKwfZItBte/mIxDkEUq0vVvF5IvvI/VZNtv4P6p
+2nzFGf80h6G7UKrxQ7+8XCnuWH52hZz5UsrDlAOkcOPKobVRCcDMcfWbiydn9D6I
+y5gugQ41RgnYZrt4/HZLU8xzbwcxviqrwxH2K0C5wzGmAwDCSEw+V1o6KZ4zD7sf
+K00c9CwsaXi3+Hv6kgiKDe74gNb8nbSQFppp9zvYGOkLXRamwzTiJixnUu6nJ2+B
+FyOBAp2YtM9XBm65K541blJXJhTVb9MaGgN2Sdlflo9QSJ9CZWHM0nowHfug1jYC
+hMsbhaq1Rm4d/hR2TaZhj12gDdB9gPC/6jjk67LMoZ9pq9O5u/o7oGcVeXhSD7vM
+TBSBiKomeTIEIVoz4gDs
+=69qf
+-----END PGP SIGNATURE-----
+
+--+HP7ph2BbKc20aGI--
