@@ -1,140 +1,102 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [RESEND PATCH V1 3/9] thermal: thermal_core: allow
-	binding with limits on bind_params
-Date: Wed, 17 Jul 2013 11:17:22 -0400
-Message-ID: <1374074248-31690-4-git-send-email-eduardo.valentin@ti.com>
+Subject: [RESEND PATCH V1 9/9] hwmon: tmp102: expose to thermal fw via DT nodes
+Date: Wed, 17 Jul 2013 11:17:28 -0400
+Message-ID: <1374074248-31690-10-git-send-email-eduardo.valentin@ti.com>
 References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <lm-sensors-bounces@lm-sensors.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com>
-List-Unsubscribe: <http://lists.lm-sensors.org/mailman/options/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=unsubscribe>
-List-Archive: <http://lists.lm-sensors.org/pipermail/lm-sensors/>
-List-Post: <mailto:lm-sensors@lm-sensors.org>
-List-Help: <mailto:lm-sensors-request@lm-sensors.org?subject=help>
-List-Subscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=subscribe>
-Sender: lm-sensors-bounces@lm-sensors.org
-Errors-To: lm-sensors-bounces@lm-sensors.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: devicetree-discuss@lists.ozlabs.org
-Cc: wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, l.stach@pengutronix.de
+Cc: wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
 
-When registering a thermal zone device using platform information
-via bind_params, the thermal framework will always perform the
-cdev binding using the lowest and highest limits (THERMAL_NO_LIMIT).
+This patch adds to tmp102 temperature sensor the possibility
+to expose itself as thermal zone device, registered on the
+thermal framework.
 
-This patch changes the data structures so that it is possible
-to inform what are the desired limits for each trip point
-inside a bind_param. The way the binding is performed is also
-changed so that it uses the new data structure.
+The thermal zone is built only if a device tree node
+describing a thermal zone for this sensor is present
+inside the tmp102 DT node. Otherwise, the driver behavior
+will be the same.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: lm-sensors@lm-sensors.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- Documentation/thermal/sysfs-api.txt |  7 +++++++
- drivers/thermal/thermal_core.c      | 19 +++++++++++++++----
- include/linux/thermal.h             | 10 ++++++++++
- 3 files changed, 32 insertions(+), 4 deletions(-)
+ drivers/hwmon/tmp102.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index a71bd5b..2ad50e7 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -134,6 +134,13 @@ temperature) and throttle appropriate devices.
-                this thermal zone and cdev, for a particular trip point.
-                If nth bit is set, then the cdev and thermal zone are bound
-                for trip point n.
-+    .limits: This is an array of cooling state limits. Must have exactly
-+         2 * thermal_zone.number_of_trip_points. It is an array consisting
-+         of tuples <lower-state upper-state> of state limits. Each trip
-+         will be associated with one state limit tuple when binding.
-+         A NULL pointer means <THERMAL_NO_LIMITS THERMAL_NO_LIMITS>
-+         on all trips. These limits are used when binding a cdev to a
-+         trip point.
-     .match: This call back returns success(0) if the 'tz and cdev' need to
- 	    be bound, as per platform data.
- 1.4.2 struct thermal_zone_params
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 247528b..096c8be 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -202,14 +202,23 @@ static void print_bind_err_msg(struct thermal_zone_device *tz,
+diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
+index d7b47ab..621093b 100644
+--- a/drivers/hwmon/tmp102.c
++++ b/drivers/hwmon/tmp102.c
+@@ -27,6 +27,8 @@
+ #include <linux/mutex.h>
+ #include <linux/device.h>
+ #include <linux/jiffies.h>
++#include <linux/thermal.h>
++#include <linux/of.h>
+ 
+ #define	DRIVER_NAME "tmp102"
+ 
+@@ -50,6 +52,7 @@
+ 
+ struct tmp102 {
+ 	struct device *hwmon_dev;
++	struct thermal_zone_device *tz;
+ 	struct mutex lock;
+ 	u16 config_orig;
+ 	unsigned long last_update;
+@@ -93,6 +96,15 @@ static struct tmp102 *tmp102_update_device(struct i2c_client *client)
+ 	return tmp102;
  }
  
- static void __bind(struct thermal_zone_device *tz, int mask,
--			struct thermal_cooling_device *cdev)
-+			struct thermal_cooling_device *cdev,
-+			unsigned long *limits)
++static int tmp102_read_temp(void *dev, unsigned long *temp)
++{
++	struct tmp102 *tmp102 = tmp102_update_device(to_i2c_client(dev));
++
++	*temp = tmp102->temp[0];
++
++	return 0;
++}
++
+ static ssize_t tmp102_show_temp(struct device *dev,
+ 				struct device_attribute *attr,
+ 				char *buf)
+@@ -204,10 +216,22 @@ static int tmp102_probe(struct i2c_client *client,
+ 		goto fail_remove_sysfs;
+ 	}
+ 
++	if (of_find_node_by_name(client->dev.of_node, "thermal_zone")) {
++		tmp102->tz = thermal_zone_of_device_register(&client->dev,
++							     &client->dev,
++							     tmp102_read_temp);
++		if (IS_ERR(tmp102->tz)) {
++			status = PTR_ERR(tmp102->tz);
++			goto exit_hwmon;
++		}
++	}
++
+ 	dev_info(&client->dev, "initialized\n");
+ 
+ 	return 0;
+ 
++exit_hwmon:
++	hwmon_device_unregister(tmp102->hwmon_dev);
+ fail_remove_sysfs:
+ 	sysfs_remove_group(&client->dev.kobj, &tmp102_attr_group);
+ fail_restore_config:
+@@ -220,6 +244,7 @@ static int tmp102_remove(struct i2c_client *client)
  {
- 	int i, ret;
+ 	struct tmp102 *tmp102 = i2c_get_clientdata(client);
  
- 	for (i = 0; i < tz->trips; i++) {
- 		if (mask & (1 << i)) {
-+			unsigned long upper, lower;
-+
-+			upper = THERMAL_NO_LIMIT;
-+			lower = THERMAL_NO_LIMIT;
-+			if (limits) {
-+				lower = limits[i * 2];
-+				upper = limits[i * 2 + 1];
-+			}
- 			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
--					THERMAL_NO_LIMIT, THERMAL_NO_LIMIT);
-+							       upper, lower);
- 			if (ret)
- 				print_bind_err_msg(tz, cdev, ret);
- 		}
-@@ -254,7 +263,8 @@ static void bind_cdev(struct thermal_cooling_device *cdev)
- 			if (tzp->tbp[i].match(pos, cdev))
- 				continue;
- 			tzp->tbp[i].cdev = cdev;
--			__bind(pos, tzp->tbp[i].trip_mask, cdev);
-+			__bind(pos, tzp->tbp[i].trip_mask, cdev,
-+			       tzp->tbp[i].binding_limits);
- 		}
- 	}
++	thermal_zone_device_unregister(tmp102->tz);
+ 	hwmon_device_unregister(tmp102->hwmon_dev);
+ 	sysfs_remove_group(&client->dev.kobj, &tmp102_attr_group);
  
-@@ -292,7 +302,8 @@ static void bind_tz(struct thermal_zone_device *tz)
- 			if (tzp->tbp[i].match(tz, pos))
- 				continue;
- 			tzp->tbp[i].cdev = pos;
--			__bind(tz, tzp->tbp[i].trip_mask, pos);
-+			__bind(tz, tzp->tbp[i].trip_mask, pos,
-+			       tzp->tbp[i].binding_limits);
- 		}
- 	}
- exit:
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index a386a1c..39575eb 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -207,6 +207,16 @@ struct thermal_bind_params {
- 	 * See Documentation/thermal/sysfs-api.txt for more information.
- 	 */
- 	int trip_mask;
-+
-+	/*
-+	 * This is an array of cooling state limits. Must have exactly
-+	 * 2 * thermal_zone.number_of_trip_points. It is an array consisting
-+	 * of tuples <lower-state upper-state> of state limits. Each trip
-+	 * will be associated with one state limit tuple when binding.
-+	 * A NULL pointer means <THERMAL_NO_LIMITS THERMAL_NO_LIMITS>
-+	 * on all trips.
-+	 */
-+	unsigned long *binding_limits;
- 	int (*match) (struct thermal_zone_device *tz,
- 			struct thermal_cooling_device *cdev);
- };
 -- 
 1.8.2.1.342.gfa7285d
-
-
-_______________________________________________
-lm-sensors mailing list
-lm-sensors@lm-sensors.org
-http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
