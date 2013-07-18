@@ -1,319 +1,512 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 1/3 v6] cpufreq: Add debugfs directory for cpufreq
-Date: Thu, 18 Jul 2013 20:17:53 +0900
-Message-ID: <1374146275-5758-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 2/3 v6] cpufreq: stats: Add 'load_table' debugfs file to show
+ accumulated data of CPUs
+Date: Thu, 18 Jul 2013 20:17:54 +0900
+Message-ID: <1374146275-5758-3-git-send-email-cw00.choi@samsung.com>
 References: <1374146275-5758-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:17935 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758186Ab3GRLSF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 07:18:05 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1374146275-5758-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: viresh.kumar@linaro.org, rjw@sisk.pl, linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch create debugfs root directory and child directory according to
-the number of CPUs for CPUFreq as below debugfs directory path:
-- /sys/kernel/debug/cpufreq/cpuX
+This patch add new 'load_table' debugfs file to show previous accumulated data
+of CPUs load as following path and add CPUFREQ_LOADCHECK notification to
+CPUFREQ_TRANSITION_NOTIFIER notifier chain.
+- /sys/kernel/debug/cpufreq/cpuX/load_table
 
-If many CPUs share only one cpufreq policy, other CPUs(except for first CPU)
-create a symbolic link for debugfs directory of CPU0.
-- link: /sys/kernel/debug/cpufreq/cpu[1-(N-1)] -> /sys/kernel/debug/cpufreq/cpu0
+When governor calculates CPUs load on dbs_check_cpu(), governor send
+CPUFREQ_LOADCHECK notification with CPUs load, so that cpufreq_stats
+accumulates calculated CPUs load on 'load_table' storage.
 
-And then cpufreq may need to create debugfs specific file below of debugfs
-directory of cpufreq. (e.g., /sys/kernel/debug/cpufreq/cpu0/load_table)
+This debugfs file is used to judge the correct system state or determine
+suitable system resource according to current CPUs load on user-space.
+
+This debugfs file include following data:
+- Measurement point of time
+- CPU frequency
+- Per-CPU load
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
 Changes since v5:
-- Refactoring patch v4
-- Create again symbolic link of debugfs directory when first CPU dev is removed
-  (In this case, many CPUs share only one cpufreq policy)
+- Determine index value of policy->cpu_debugfs[] according to
+  cpumask_weight(policy->cpus) value
+- Bug fix, store 'policy->cpu' to 'freq->cpu' before notify
+  CPUFREQ_LOADCHECK notification
 
- drivers/cpufreq/cpufreq.c | 177 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |   1 +
- 2 files changed, 178 insertions(+)
+Changes since v4:
+- Reset the data of CPUs load when cpufreq governor is changed
+- Move code about creating debugfs directory to below first patch
+	: [PATCH 1/2] cpufreq: Add debugfs directory for cpufreq
 
+Changes since v3:
+- Extend a range of accumulated data (10 ~ 1000)
+- Add unit information of time/freq and align 'Time' field as left for readability
+- Use CONFIG_CPU_FREQ_STAT depdendency instead of CONFIG_CPU_FREQ_STAT_DETATILS
+- Initialize load of offline CPUx as zero(0)
+- Create/remove debugfs root directory on cpufreq_stats_init/exit() because
+  debugfs root is used on all CPUs.
+
+Changes since v2:
+- Code clean according to Viresh Kumar's comment
+- Show both old frequency and new frequency on 'load_table' debugfs file
+- Change debufs file patch as below
+  old: /sys/kernel/debugfs/cpufreq/load_table
+  new: /sys/kernel/debugfs/cpufreq/cpuX/load_table
+
+Changes since v1:
+- Set maximum storage size to save CPUs load on Kconfig
+- Use spinlock to synchronize read/write operation for CPUs load
+- Use local variable instead of global variable(struct cpufreq_freqs *freqs)
+- Use pointer of data structure to get correct size of data structure
+  in sizeof() macro instead of structure name
+  : sizeof(struct cpufreq_freqs) -> sizeof(*stat->load_table)
+- Change time unit from nanosecond to microsecond
+- Remove unnecessary memory copy
+
+ drivers/cpufreq/Kconfig            |   6 +
+ drivers/cpufreq/cpufreq.c          |   4 +
+ drivers/cpufreq/cpufreq_governor.c |  14 ++
+ drivers/cpufreq/cpufreq_stats.c    | 258 +++++++++++++++++++++++++++++++++----
+ include/linux/cpufreq.h            |   6 +
+ 5 files changed, 264 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 534fcb8..5c3f406 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -36,6 +36,12 @@ config CPU_FREQ_STAT
+ 
+ 	  If in doubt, say N.
+ 
++config NR_CPU_LOAD_STORAGE
++	int "Maximum storage size to save CPU load (10-1000)"
++	range 10 1000
++	depends on CPU_FREQ_STAT
++	default "10"
++
+ config CPU_FREQ_STAT_DETAILS
+ 	bool "CPU frequency translation statistics details"
+ 	depends on CPU_FREQ_STAT
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2d53f47..924d654 100644
+index 924d654..cb68873 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -23,6 +23,7 @@
- #include <linux/notifier.h>
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
-+#include <linux/debugfs.h>
- #include <linux/interrupt.h>
- #include <linux/spinlock.h>
- #include <linux/device.h>
-@@ -703,6 +704,164 @@ static struct kobj_type ktype_cpufreq = {
- 	.release	= cpufreq_sysfs_release,
- };
+@@ -293,6 +293,10 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		if (likely(policy) && likely(policy->cpu == freqs->cpu))
+ 			policy->cur = freqs->new;
+ 		break;
++	case CPUFREQ_LOADCHECK:
++		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
++				CPUFREQ_LOADCHECK, freqs);
++		break;
+ 	}
+ }
+ /**
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index dc9b72e..decabcb 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -87,6 +87,9 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+ 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+ 	struct cpufreq_policy *policy;
++#ifdef CONFIG_CPU_FREQ_STAT
++	struct cpufreq_freqs freq = {0};
++#endif
+ 	unsigned int max_load = 0;
+ 	unsigned int ignore_nice;
+ 	unsigned int j;
+@@ -148,6 +151,9 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 			continue;
+ 
+ 		load = 100 * (wall_time - idle_time) / wall_time;
++#ifdef CONFIG_CPU_FREQ_STAT
++		freq.load[j] = load;
++#endif
+ 
+ 		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+ 			int freq_avg = __cpufreq_driver_getavg(policy, j);
+@@ -161,6 +167,14 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 			max_load = load;
+ 	}
  
 +#ifdef CONFIG_CPU_FREQ_STAT
-+/* The cpufreq_debugfs is used to create debugfs root directory for CPUFreq. */
-+static struct dentry *cpufreq_debugfs;
++	freq.time = ktime_to_ms(ktime_get());
++	freq.old = policy->cur;
++	freq.cpu = policy->cpu;
 +
-+static int cpufreq_create_debugfs_dir(struct cpufreq_policy *policy,
-+				      struct device *dev)
-+{
-+	char name[CPUFREQ_NAME_LEN];
-+	unsigned int cpus, size, idx;
-+
-+	if (!cpufreq_debugfs)
-+		return -EINVAL;
-+
-+	cpus = cpumask_weight(policy->cpus);
-+	idx = cpus > 1 ? policy->cpu : 0;
-+
-+	size = sizeof(struct dentry*) * cpus;
-+	policy->cpu_debugfs = devm_kzalloc(dev, size, GFP_KERNEL);
-+	if (!policy->cpu_debugfs) {
-+		pr_err("allocating debugfs memory failed\n");
-+		return -ENOMEM;
-+	}
-+
-+	sprintf(name, "cpu%d", policy->cpu);
-+	policy->cpu_debugfs[idx] = debugfs_create_dir(name, cpufreq_debugfs);
-+	if (!policy->cpu_debugfs[idx]) {
-+		pr_err("creating debugfs directory failed\n");
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+static int cpufreq_create_debugfs_symlink(struct cpufreq_policy *policy,
-+					   unsigned int src_cpu,
-+					   unsigned int dest_cpu)
-+{
-+	char symlink_name[CPUFREQ_NAME_LEN];
-+	char target_name[CPUFREQ_NAME_LEN];
-+
-+	if (!cpufreq_debugfs)
-+		return -EINVAL;
-+
-+	if (!policy->cpu_debugfs[src_cpu])
-+		return -EINVAL;
-+
-+	sprintf(symlink_name, "cpu%d", dest_cpu);
-+	sprintf(target_name, "./cpu%d", src_cpu);
-+	policy->cpu_debugfs[dest_cpu] = debugfs_create_symlink(
-+					symlink_name,
-+					cpufreq_debugfs,
-+					target_name);
-+	if (!policy->cpu_debugfs[dest_cpu]) {
-+		pr_err("creating debugfs symlink failed\n");
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+static void cpufreq_remove_debugfs_dir(struct cpufreq_policy *policy,
-+				       unsigned int cpu)
-+{
-+	unsigned int idx = cpumask_weight(policy->cpus) > 1 ? cpu : 0;
-+
-+	if (!policy->cpu_debugfs[idx])
-+		return;
-+
-+	debugfs_remove_recursive(policy->cpu_debugfs[idx]);
-+}
-+
-+static void cpufreq_move_debugfs_dir(struct cpufreq_policy *policy,
-+				     unsigned int new_cpu)
-+{
-+	struct dentry *old_entry, *new_entry;
-+	char new_dir_name[CPUFREQ_NAME_LEN];
-+	unsigned int j, old_cpu = policy->cpu;
-+
-+	if (!policy->cpu_debugfs[new_cpu])
-+		return;
-+
-+	/*
-+	 * Remove symbolic link of debugfs directory except for debugfs
-+	 * directory of old_cpu.
-+	 */
-+	for_each_present_cpu(j) {
-+		if (old_cpu == j)
-+			continue;
-+
-+		debugfs_remove(policy->cpu_debugfs[j]);
-+	}
-+
-+	/*
-+	 * Change debugfs directory name from as following:
-+	 * - old debugfs dir name : /sys/kernel/debugfs/cpufreq/cpu${old_cpu}
-+	 * - new debugfs dir name : /sys/kernel/debugfs/cpufreq/cpu${new_cpu}
-+	 */
-+	sprintf(new_dir_name, "cpu%d", new_cpu);
-+	old_entry = policy->cpu_debugfs[old_cpu];
-+	new_entry = debugfs_rename(cpufreq_debugfs, old_entry,
-+				   cpufreq_debugfs, new_dir_name);
-+	if (!new_entry) {
-+		pr_err("changing debugfs directory name failed\n");
-+		goto err_rename;
-+	}
-+
-+	policy->cpu_debugfs[new_cpu] = new_entry;
-+	policy->cpu_debugfs[old_cpu] = NULL;
-+
-+	/* Create again symbolic link of debugfs directory */
-+	for_each_present_cpu(j) {
-+		if (new_cpu == j)
-+			continue;
-+
-+		cpufreq_create_debugfs_symlink(policy, new_cpu, j);
-+	}
-+
-+	return;
-+
-+err_rename:
-+	for_each_present_cpu(j) {
-+		if (old_cpu == j)
-+			continue;
-+
-+		cpufreq_create_debugfs_symlink(policy, old_cpu, j);
-+	}
-+}
-+
-+static int cpufreq_create_debugfs(void)
-+{
-+	cpufreq_debugfs = debugfs_create_dir("cpufreq", NULL);
-+	if (!cpufreq_debugfs) {
-+		pr_err("creating debugfs root failed\n");
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+static void cpufreq_remove_debugfs(void)
-+{
-+	if (cpufreq_debugfs)
-+		debugfs_remove_recursive(cpufreq_debugfs);
-+}
-+#else
-+static int cpufreq_create_debugfs_dir(struct cpufreq_policy *policy,
-+					struct device *dev) { return 0; }
-+static int cpufreq_create_debugfs_symlink(struct cpufreq_policy *policy,
-+					unsigned int src_cpu,
-+					unsigned int dest_cpu) { return 0;}
-+static void cpufreq_remove_debugfs_dir(struct cpufreq_policy *policy,
-+					unsigned int cpu) { }
-+static void cpufreq_move_debugfs_dir(struct cpufreq_policy *policy,
-+					unsigned int new_cpu) { }
-+static int cpufreq_create_debugfs(void) { return 0; }
-+static void cpufreq_remove_debugfs(void) { }
++	cpufreq_notify_transition(policy, &freq, CPUFREQ_LOADCHECK);
 +#endif
 +
- /* symlink affected CPUs */
- static int cpufreq_add_dev_symlink(unsigned int cpu,
- 				   struct cpufreq_policy *policy)
-@@ -726,6 +885,8 @@ static int cpufreq_add_dev_symlink(unsigned int cpu,
- 			cpufreq_cpu_put(managed_policy);
- 			return ret;
- 		}
-+
-+		cpufreq_create_debugfs_symlink(policy, cpu, j);
- 	}
- 	return ret;
+ 	dbs_data->cdata->gov_check_cpu(cpu, max_load);
  }
-@@ -777,6 +938,9 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
- 	}
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+	/* prepare interface data for debugfs */
-+	cpufreq_create_debugfs_dir(policy, dev);
-+
- 	ret = cpufreq_add_dev_symlink(cpu, policy);
- 	if (ret)
- 		goto err_out_kobj_put;
-@@ -839,6 +1003,8 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
- 		return ret;
- 	}
- 
-+	cpufreq_create_debugfs_symlink(policy, sibling, cpu);
-+
- 	return 0;
- }
+ EXPORT_SYMBOL_GPL(dbs_check_cpu);
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index fb65dec..fd171ba 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -12,6 +12,7 @@
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/cpu.h>
++#include <linux/debugfs.h>
+ #include <linux/sysfs.h>
+ #include <linux/cpufreq.h>
+ #include <linux/module.h>
+@@ -36,6 +37,12 @@ struct cpufreq_stats {
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	unsigned int *trans_table;
  #endif
-@@ -1046,6 +1212,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 
- 	if (cpu != data->cpu) {
- 		sysfs_remove_link(&dev->kobj, "cpufreq");
-+		cpufreq_remove_debugfs_dir(data, cpu);
- 	} else if (cpus > 1) {
- 		/* first sibling now owns the new sysfs dir */
- 		cpu_dev = get_cpu_device(cpumask_first(data->cpus));
-@@ -1068,6 +1235,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 			return -EINVAL;
- 		}
- 
-+		cpufreq_move_debugfs_dir(data, cpu_dev->id);
 +
- 		WARN_ON(lock_policy_rwsem_write(cpu));
- 		update_policy_cpu(data, cpu_dev->id);
- 		unlock_policy_rwsem_write(cpu);
-@@ -1089,6 +1258,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 		unlock_policy_rwsem_read(cpu);
- 		kobject_put(kobj);
- 
-+		cpufreq_remove_debugfs_dir(data, cpu);
-+
- 		/* we need to make sure that the underlying kobj is actually
- 		 * not referenced anymore by anybody before we proceed with
- 		 * unloading.
-@@ -1894,6 +2065,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	cpufreq_driver = driver_data;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+	cpufreq_create_debugfs();
-+
- 	ret = subsys_interface_register(&cpufreq_interface);
- 	if (ret)
- 		goto err_null_driver;
-@@ -1918,12 +2091,14 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	}
- 
- 	register_hotcpu_notifier(&cpufreq_cpu_notifier);
-+
- 	pr_debug("driver %s up and running\n", driver_data->name);
- 
- 	return 0;
- err_if_unreg:
- 	subsys_interface_unregister(&cpufreq_interface);
- err_null_driver:
-+	cpufreq_remove_debugfs();
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_driver = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-@@ -1949,6 +2124,8 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- 
- 	pr_debug("unregistering driver %s\n", driver->name);
- 
-+	cpufreq_remove_debugfs();
-+
- 	subsys_interface_unregister(&cpufreq_interface);
- 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 037d36a..825f379 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -115,6 +115,7 @@ struct cpufreq_policy {
- 
- 	struct kobject		kobj;
- 	struct completion	kobj_unregister;
-+	struct dentry		**cpu_debugfs;
++	/* Debugfs file for load_table */
++	struct cpufreq_freqs *load_table;
++	unsigned int load_last_index;
++	unsigned int load_max_index;
++	struct dentry *debugfs_load_table;
  };
  
- #define CPUFREQ_ADJUST			(0)
+ static DEFINE_PER_CPU(struct cpufreq_stats *, cpufreq_stats_table);
+@@ -149,6 +156,181 @@ static struct attribute_group stats_attr_group = {
+ 	.name = "stats"
+ };
+ 
++#define MAX_LINE_SIZE		255
++static ssize_t load_table_read(struct file *file, char __user *user_buf,
++					size_t count, loff_t *ppos)
++{
++	struct cpufreq_policy *policy = file->private_data;
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
++	struct cpufreq_freqs *load_table = stat->load_table;
++	ssize_t len = 0;
++	char *buf;
++	int i, cpu, ret;
++
++	buf = kzalloc(MAX_LINE_SIZE * stat->load_max_index, GFP_KERNEL);
++	if (!buf)
++		return 0;
++
++	spin_lock(&cpufreq_stats_lock);
++	len += sprintf(buf + len, "%-10s %-12s %-12s ", "Time(ms)",
++						    "Old Freq(Hz)",
++						    "New Freq(Hz)");
++	for_each_cpu(cpu, policy->cpus)
++		len += sprintf(buf + len, "%3s%d ", "CPU", cpu);
++	len += sprintf(buf + len, "\n");
++
++	i = stat->load_last_index;
++	do {
++		len += sprintf(buf + len, "%-10lld %-12d %-12d ",
++				load_table[i].time,
++				load_table[i].old,
++				load_table[i].new);
++
++		for_each_cpu(cpu, policy->cpus)
++			len += sprintf(buf + len, "%-4d ",
++					load_table[i].load[cpu]);
++		len += sprintf(buf + len, "\n");
++
++		if (++i == stat->load_max_index)
++			i = 0;
++	} while (i != stat->load_last_index);
++	spin_unlock(&cpufreq_stats_lock);
++
++	ret = simple_read_from_buffer(user_buf, count, ppos, buf, len);
++	kfree(buf);
++
++	return ret;
++}
++
++static const struct file_operations load_table_fops = {
++	.read		= load_table_read,
++	.open		= simple_open,
++	.llseek		= no_llseek,
++};
++
++static int cpufreq_stats_reset_debugfs(struct cpufreq_policy *policy)
++{
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
++	int size;
++
++	if (!stat)
++		return -EINVAL;
++
++	if (stat->load_table)
++		kfree(stat->load_table);
++	stat->load_last_index = 0;
++
++	size = sizeof(*stat->load_table) * stat->load_max_index;
++	stat->load_table = kzalloc(size, GFP_KERNEL);
++	if (!stat->load_table)
++		return -ENOMEM;
++
++	return 0;
++}
++
++static int cpufreq_stats_create_debugfs(struct cpufreq_policy *policy)
++{
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
++	unsigned int idx, size;
++	int ret = 0;
++
++	if (!stat)
++		return -EINVAL;
++
++	if (!policy->cpu_debugfs)
++		return -EINVAL;
++
++	stat->load_last_index = 0;
++	stat->load_max_index = CONFIG_NR_CPU_LOAD_STORAGE;
++
++	/* Allocate memory for storage of CPUs load */
++	size = sizeof(*stat->load_table) * stat->load_max_index;
++	stat->load_table = kzalloc(size, GFP_KERNEL);
++	if (!stat->load_table)
++		return -ENOMEM;
++
++	/* Create debugfs directory and file for cpufreq */
++	idx = cpumask_weight(policy->cpus) > 1 ? policy->cpu : 0;
++	stat->debugfs_load_table = debugfs_create_file("load_table", S_IWUSR,
++					policy->cpu_debugfs[idx],
++					policy, &load_table_fops);
++	if (!stat->debugfs_load_table) {
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	pr_debug("Creating debugfs file for CPU%d \n", policy->cpu);
++
++	return 0;
++err:
++	kfree(stat->load_table);
++	return ret;
++}
++
++/* should be called late in the CPU removal sequence so that the stats
++ * memory is still available in case someone tries to use it.
++ */
++static void cpufreq_stats_free_load_table(unsigned int cpu)
++{
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
++
++	if (stat) {
++		pr_debug("Free memory of load_table\n");
++		kfree(stat->load_table);
++	}
++}
++
++/* must be called early in the CPU removal sequence (before
++ * cpufreq_remove_dev) so that policy is still valid.
++ */
++static void cpufreq_stats_free_debugfs(unsigned int cpu)
++{
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
++
++	if (stat) {
++		pr_debug("Remove load_table debugfs file\n");
++		debugfs_remove(stat->debugfs_load_table);
++	}
++}
++
++static void cpufreq_stats_store_load_table(struct cpufreq_freqs *freq,
++					   unsigned long val)
++{
++	struct cpufreq_stats *stat;
++	int cpu, last_idx;
++
++	stat = per_cpu(cpufreq_stats_table, freq->cpu);
++	if (!stat)
++		return;
++
++	spin_lock(&cpufreq_stats_lock);
++
++	switch (val) {
++	case CPUFREQ_POSTCHANGE:
++		if (!stat->load_last_index)
++			last_idx = stat->load_max_index;
++		else
++			last_idx = stat->load_last_index - 1;
++
++		stat->load_table[last_idx].new = freq->new;
++		break;
++	case CPUFREQ_LOADCHECK:
++		last_idx = stat->load_last_index;
++
++		stat->load_table[last_idx].time = freq->time;
++		stat->load_table[last_idx].old = freq->old;
++		stat->load_table[last_idx].new = freq->old;
++		for_each_present_cpu(cpu)
++			stat->load_table[last_idx].load[cpu] = freq->load[cpu];
++
++		if (++stat->load_last_index == stat->load_max_index)
++			stat->load_last_index = 0;
++		break;
++	}
++
++	spin_unlock(&cpufreq_stats_lock);
++}
++
+ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+ {
+ 	int index;
+@@ -204,7 +386,7 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	unsigned int alloc_size;
+ 	unsigned int cpu = policy->cpu;
+ 	if (per_cpu(cpufreq_stats_table, cpu))
+-		return -EBUSY;
++		return 0;
+ 	stat = kzalloc(sizeof(struct cpufreq_stats), GFP_KERNEL);
+ 	if ((stat) == NULL)
+ 		return -ENOMEM;
+@@ -257,6 +439,14 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	spin_lock(&cpufreq_stats_lock);
+ 	stat->last_time = get_jiffies_64();
+ 	stat->last_index = freq_table_get_index(stat, policy->cur);
++
++	ret = cpufreq_stats_create_debugfs(data);
++	if (ret < 0) {
++		spin_unlock(&cpufreq_stats_lock);
++		ret = -EINVAL;
++		goto error_out;
++	}
++
+ 	spin_unlock(&cpufreq_stats_lock);
+ 	cpufreq_cpu_put(data);
+ 	return 0;
+@@ -297,11 +487,18 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+ 	if (val != CPUFREQ_NOTIFY)
+ 		return 0;
+ 	table = cpufreq_frequency_get_table(cpu);
+-	if (!table)
+-		return 0;
+-	ret = cpufreq_stats_create_table(policy, table);
+-	if (ret)
++	if (table) {
++		ret = cpufreq_stats_create_table(policy, table);
++		if (ret)
++			return ret;
++	}
++
++	ret = cpufreq_stats_reset_debugfs(policy);
++	if (ret < 0) {
++		pr_debug("Failed to reset CPUs data of debugfs\n");
+ 		return ret;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -312,32 +509,40 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+ 	struct cpufreq_stats *stat;
+ 	int old_index, new_index;
+ 
+-	if (val != CPUFREQ_POSTCHANGE)
+-		return 0;
++	switch (val) {
++	case CPUFREQ_POSTCHANGE:
++		stat = per_cpu(cpufreq_stats_table, freq->cpu);
++		if (!stat)
++			return 0;
+ 
+-	stat = per_cpu(cpufreq_stats_table, freq->cpu);
+-	if (!stat)
+-		return 0;
++		old_index = stat->last_index;
++		new_index = freq_table_get_index(stat, freq->new);
+ 
+-	old_index = stat->last_index;
+-	new_index = freq_table_get_index(stat, freq->new);
++		/* We can't do stat->time_in_state[-1]= .. */
++		if (old_index == -1 || new_index == -1)
++			return 0;
+ 
+-	/* We can't do stat->time_in_state[-1]= .. */
+-	if (old_index == -1 || new_index == -1)
+-		return 0;
++		cpufreq_stats_update(freq->cpu);
+ 
+-	cpufreq_stats_update(freq->cpu);
++		if (old_index == new_index)
++			return 0;
+ 
+-	if (old_index == new_index)
+-		return 0;
+-
+-	spin_lock(&cpufreq_stats_lock);
+-	stat->last_index = new_index;
++		spin_lock(&cpufreq_stats_lock);
++		stat->last_index = new_index;
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+-	stat->trans_table[old_index * stat->max_state + new_index]++;
++		stat->trans_table[old_index * stat->max_state + new_index]++;
+ #endif
+-	stat->total_trans++;
+-	spin_unlock(&cpufreq_stats_lock);
++		stat->total_trans++;
++		spin_unlock(&cpufreq_stats_lock);
++
++		cpufreq_stats_store_load_table(freq, CPUFREQ_POSTCHANGE);
++
++		break;
++	case CPUFREQ_LOADCHECK:
++		cpufreq_stats_store_load_table(freq, CPUFREQ_LOADCHECK);
++		break;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -352,12 +557,16 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+ 		cpufreq_update_policy(cpu);
+ 		break;
+ 	case CPU_DOWN_PREPARE:
++		cpufreq_stats_free_debugfs(cpu);
+ 		cpufreq_stats_free_sysfs(cpu);
+ 		break;
+ 	case CPU_DEAD:
++		cpufreq_stats_free_load_table(cpu);
+ 		cpufreq_stats_free_table(cpu);
+ 		break;
+ 	case CPU_UP_CANCELED_FROZEN:
++		cpufreq_stats_free_debugfs(cpu);
++		cpufreq_stats_free_load_table(cpu);
+ 		cpufreq_stats_free_sysfs(cpu);
+ 		cpufreq_stats_free_table(cpu);
+ 		break;
+@@ -418,6 +627,7 @@ static void __exit cpufreq_stats_exit(void)
+ 	unregister_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
+ 	for_each_online_cpu(cpu) {
+ 		cpufreq_stats_free_table(cpu);
++		cpufreq_stats_free_debugfs(cpu);
+ 		cpufreq_stats_free_sysfs(cpu);
+ 	}
+ }
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 825f379..4d0a4fd 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -141,12 +141,18 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
+ #define CPUFREQ_POSTCHANGE	(1)
+ #define CPUFREQ_RESUMECHANGE	(8)
+ #define CPUFREQ_SUSPENDCHANGE	(9)
++#define CPUFREQ_LOADCHECK	(10)
+ 
+ struct cpufreq_freqs {
+ 	unsigned int cpu;	/* cpu nr */
+ 	unsigned int old;
+ 	unsigned int new;
+ 	u8 flags;		/* flags of cpufreq_driver, see below. */
++
++#ifdef CONFIG_CPU_FREQ_STAT
++	int64_t time;
++	unsigned int load[NR_CPUS];
++#endif
+ };
+ 
+ 
 -- 
 1.8.0
-
