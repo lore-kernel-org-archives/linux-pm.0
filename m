@@ -1,49 +1,60 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [lm-sensors] [RESEND PATCH V1 0/9] thermal: introduce DT thermal
- zone build
-Date: Thu, 18 Jul 2013 11:18:05 -0600
-Message-ID: <51E8234D.1020607@wwwdotorg.org>
-References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <20130717220942.GB990@roeck-us.net> <51E7F341.8020508@ti.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [RFC PATCH v2 11/15] cpufreq: kirkwood-cpufreq: remove device
+ tree parsing for cpu nodes
+Date: Thu, 18 Jul 2013 13:30:55 -0500
+Message-ID: <51E8345F.30608@gmail.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374069984-20567-12-git-send-email-Sudeep.KarkadaNagesha@arm.com> <20130717144355.GE1026@lunn.ch> <51E7A63F.7020207@arm.com> <51E7BFFA.8010101@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:33276 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932394Ab3GRRSK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 13:18:10 -0400
-In-Reply-To: <51E7F341.8020508@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51E7BFFA.8010101@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Jason Cooper <jason@lakedaemon.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, l.stach@pengutronix.de
 
-On 07/18/2013 07:53 AM, Eduardo Valentin wrote:
-> Hello Guenter,
-> 
-> On 17-07-2013 18:09, Guenter Roeck wrote:
->> On Wed, Jul 17, 2013 at 11:17:19AM -0400, Eduardo Valentin
->> wrote:
->>> Hello all,
->>> 
->>> As you noticed, I am working in a way to represent thermal
->>> data using device tree [1]. Essentially, this should be a way
->>> to say what to do with a sensor and how to associate (cooling)
->>> actions with it.
->>> 
->> Seems to me that goes way beyond the supposed scope of devicetree
->> data. Devicetree data is supposed to describe hardware, not its
->> configuration or use. This is clearly a use case.
-> 
-> Thanks for rising your voice here. It is important to know what
-> hwmon ppl think about this.
+On 07/18/2013 05:14 AM, Sudeep KarkadaNagesha wrote:
+> On 18/07/13 09:24, Sudeep KarkadaNagesha wrote:
+>> On 17/07/13 15:43, Andrew Lunn wrote:
+>>> On Wed, Jul 17, 2013 at 03:06:20PM +0100, Sudeep.KarkadaNagesha@arm.com wrote:
+>>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>>
+> [...]
 
-I meant to find time to read Guenter's original email where he
-initially objected to putting data into DT, and determine exactly what
-was being objected to. I still haven't:-( However, the arguments that
-Eduardo stated in his email do make sense to me; I agree that
-temperature limits really are a description of HW. Details of which
-cooling methods to invoke when certain temperature limits are reached
-is also part of the HW/system design, and hence I would tend to agree
-that they're appropriate to include in DT. Anyway, that's just my 2
-cents on the matter:-)
+>>> Are we not going a bit backwards here? You are replacing two lines
+>>> with 10 lines.
+>>>
+>>> How about putting these 10 lines into some helper,
+>>> of_get_cpu_device()?  It would be useful for spear, kirkwood and
+>>> imx6q, and maybe others.
+>>>
+>> Yes I realised that after making changes to this and pmac32 drivers. I
+>> have already made those changes in v3. I am waiting for more response
+>> before posting them.
+>>
+> I thought of placing this helper in include/linux/of_device.h but I see:
+> #include <linux/of_platform.h> /* temporary until merge */
+> 
+> Does this mean of_platform.h and of_device.h will be merged ?
+
+No, I think that was probably to avoid adding includes of of_platform.h
+for 100's of files. Maybe things are cleaned up enough to remove this line.
+
+> If so, which will be the final merged one ? I would like to avoid
+> changing all the header file inclusions later in users of this new helper.
+
+of_device.h is the right place.
+
+Rob
+
+> 
+> Regards,
+> Sudeep
+> 
+> 
+> _______________________________________________
+> devicetree-discuss mailing list
+> devicetree-discuss@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/devicetree-discuss
+> 
