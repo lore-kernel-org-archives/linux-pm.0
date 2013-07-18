@@ -1,24 +1,25 @@
-From: Wei Ni <wni@nvidia.com>
+From: Guenter Roeck <linux@roeck-us.net>
 Subject: Re: [RESEND PATCH V1 8/9] hwmon: lm75: expose to thermal fw via DT
  nodes
-Date: Thu, 18 Jul 2013 13:33:17 +0800
-Message-ID: <51E77E1D.3000306@nvidia.com>
-References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <1374074248-31690-9-git-send-email-eduardo.valentin@ti.com>
+Date: Thu, 18 Jul 2013 00:22:33 -0700
+Message-ID: <20130718072233.GA11120@roeck-us.net>
+References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com>
+ <1374074248-31690-9-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate03.nvidia.com ([216.228.121.140]:13151 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752287Ab3GRFdW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 01:33:22 -0400
+Received: from mail-pb0-f43.google.com ([209.85.160.43]:35529 "EHLO
+	mail-pb0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753074Ab3GRHWa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 03:22:30 -0400
+Content-Disposition: inline
 In-Reply-To: <1374074248-31690-9-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>
+Cc: devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Jean Delvare <khali@linux-fr.org>
 
-On 07/17/2013 11:17 PM, Eduardo Valentin wrote:
+On Wed, Jul 17, 2013 at 11:17:27AM -0400, Eduardo Valentin wrote:
 > This patch adds to lm75 temperature sensor the possibility
 > to expose itself as thermal zone device, registered on the
 > thermal framework.
@@ -28,6 +29,17 @@ On 07/17/2013 11:17 PM, Eduardo Valentin wrote:
 > inside the lm75 DT node. Otherwise, the driver behavior
 > will be the same.
 > 
+As mentioned before, your usage of devicetree information is clearly
+outside the scope for devicetree data.
+
+One clear guideline for devicetree data is that it is supposed to be usable
+across multiple operating systems. Your proposal is clearly operating system
+and even subsystem specific. It does _not_ describe hardware.
+
+NACK.
+
+Guenter
+
 > Cc: Jean Delvare <khali@linux-fr.org>
 > Cc: Guenter Roeck <linux@roeck-us.net>
 > Cc: lm-sensors@lm-sensors.org
@@ -86,22 +98,6 @@ On 07/17/2013 11:17 PM, Eduardo Valentin wrote:
 > +		data->tz = thermal_zone_of_device_register(&client->dev,
 > +							   &client->dev,
 > +							   lm75_read_temp);
-
-Hi, Eduardo
-I have two questions:
-1. As we know, after register to the thermal framework, it will have
-duplicate hwmon devices. I think lm-sensor maintainer would not like this.
-How about to add a flag to indicate it, which I talk about with
-Durgadoss in your [RFC 1/4]patch.
-
-2. I'm also trying to use your codes on lm90. The LM90 serial has more
-then one sensors in one chip, local sensor, remote sensor and may have
-remote2 sensor, so it mean there may have more than one thermal_zone
-under the lm90 device node, will you consider it?
-
-Thanks.
-Wei.
-
 > +		if (IS_ERR(data->tz)) {
 > +			status = PTR_ERR(data->tz);
 > +			goto exit_hwmon;
@@ -126,5 +122,7 @@ Wei.
 >  	hwmon_device_unregister(data->hwmon_dev);
 >  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
 >  	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
+> -- 
+> 1.8.2.1.342.gfa7285d
 > 
-
+> 
