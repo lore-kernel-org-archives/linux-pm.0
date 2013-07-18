@@ -1,58 +1,76 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [PATCH v3] power: new trace event to print device suspend and
- resume time
-Date: Thu, 18 Jul 2013 15:12:39 +0000
-Message-ID: <B8EFE96D1287C24090BAD9D858E15E6173D634@sisaex02sj>
-References: <1374102201-2937-1-git-send-email-shuah.kh@samsung.com>
- <1374110574.6458.201.camel@gandalf.local.home>
- <B8EFE96D1287C24090BAD9D858E15E6173D4A9@sisaex02sj>
- <1374157309.6458.232.camel@gandalf.local.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+From: dirk.brandewie@gmail.com
+Subject: [PATCH] cpufreq/intel_pstate: Change to scale off of max P-state
+Date: Thu, 18 Jul 2013 08:48:42 -0700
+Message-ID: <1374162523-2777-1-git-send-email-dirk.j.brandewie@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w2.samsung.com ([211.189.100.13]:43418 "EHLO
-	usmailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932345Ab3GRPMm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 11:12:42 -0400
-Content-language: en-US
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:50074 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759086Ab3GRPtW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 11:49:22 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "fweisbec@gmail.com" <fweisbec@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>, "joe@perches.com" <joe@perches.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
+To: kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org, dsmythies@telus.net
 
-On 07/18/2013 08:21 AM, Steven Rostedt wrote:
-> On Thu, 2013-07-18 at 14:00 +0000, Shuah Khan wrote:
->
->>>
->>> Don't you want to convert the ops_time on display? You can have:
->>>
->>> 	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
->>> 		__get_str(driver), __get_str(device), __get_str(parent),
->>> 		__get_str(pm_event_str), __get_str(pm_ops),
->>> 		ktime_to_ns(__entry->ops_time), __entry->error)
->>>
->>>
->>> -- Steve
->>
->> I decided to pass in the converted value to the tracepoint. Please see
->> the drivers/base/power/main.c call to trace_device_pm_report_time()
->
-> But why? You are still doing the calculation in the fast path. The
-> TP_printk() is in the slow path. Why add overhead to the execution of
-> the code?
->
-> -- Steve
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Yes. You are right. I want to avoid passing in ktime_t, I can still do 
-that without doing the conversion in fast path. I could pass in tv64 
-value and do the conversion in TP_printk.
+Change to using max P-state instead of max turbo P-state.  This change
+resolves two issues.
 
-Hopefully I will get this right this time. This is my first tracepoint. 
-Thanks for your patience.
+On a quiet system intel_pstate can fail to respond to a load change.
+   https://bugzilla.kernel.org/show_bug.cgi?id=59481
 
--- Shuah
+On CPU SKUs that have a limited number of P-states and no turbo range
+intel_pstate fails to select the highest available P-state.
 
+This change is suitable for stable v3.9+
+
+Reported-by: arjan@linux.intel.com
+Reported-by: dsmythies@telus.net
+Tested-by: arjan@linux.intel.com
+Tested-by: dsmythies@telus.net
+
+CC: stable@vger.kernel.org
+CC: dsmythies@telus.net
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 07f2840..6d6a0b4 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -103,10 +103,10 @@ struct pstate_adjust_policy {
+ static struct pstate_adjust_policy default_policy = {
+ 	.sample_rate_ms = 10,
+ 	.deadband = 0,
+-	.setpoint = 109,
+-	.p_gain_pct = 17,
++	.setpoint = 97,
++	.p_gain_pct = 20,
+ 	.d_gain_pct = 0,
+-	.i_gain_pct = 4,
++	.i_gain_pct = 0,
+ };
+ 
+ struct perf_limits {
+@@ -468,12 +468,12 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+ static inline int intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ {
+ 	int32_t busy_scaled;
+-	int32_t core_busy, turbo_pstate, current_pstate;
++	int32_t core_busy, max_pstate, current_pstate;
+ 
+ 	core_busy = int_tofp(cpu->samples[cpu->sample_ptr].core_pct_busy);
+-	turbo_pstate = int_tofp(cpu->pstate.turbo_pstate);
++	max_pstate = int_tofp(cpu->pstate.max_pstate);
+ 	current_pstate = int_tofp(cpu->pstate.current_pstate);
+-	busy_scaled = mul_fp(core_busy, div_fp(turbo_pstate, current_pstate));
++	busy_scaled = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+ 
+ 	return fp_toint(busy_scaled);
+ }
 -- 
-Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
-America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
+1.8.3.1
+
