@@ -1,60 +1,183 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [RFC PATCH v2 11/15] cpufreq: kirkwood-cpufreq: remove device
- tree parsing for cpu nodes
-Date: Thu, 18 Jul 2013 13:30:55 -0500
-Message-ID: <51E8345F.30608@gmail.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374069984-20567-12-git-send-email-Sudeep.KarkadaNagesha@arm.com> <20130717144355.GE1026@lunn.ch> <51E7A63F.7020207@arm.com> <51E7BFFA.8010101@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51E7BFFA.8010101@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Jason Cooper <jason@lakedaemon.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH v4] power: new trace event to print device suspend and resume time
+Date: Thu, 18 Jul 2013 13:22:29 -0600
+Message-ID: <1374175349-3435-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta06.emeryville.ca.mail.comcast.net ([76.96.30.56]:47445 "EHLO
+	qmta06.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759317Ab3GRTWf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 15:22:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org, rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com, paul.gortmaker@windriver.com, joe@perches.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On 07/18/2013 05:14 AM, Sudeep KarkadaNagesha wrote:
-> On 18/07/13 09:24, Sudeep KarkadaNagesha wrote:
->> On 17/07/13 15:43, Andrew Lunn wrote:
->>> On Wed, Jul 17, 2013 at 03:06:20PM +0100, Sudeep.KarkadaNagesha@arm.com wrote:
->>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>
-> [...]
+A new trace event is added to pm events to print time it takes to suspend and
+resume a device. It generates trace message that includes device, driver,
+parent information in addition to the type of pm ops invoked as well as the
+pm event and error status from the pm ops. Example trace below:
 
->>> Are we not going a bit backwards here? You are replacing two lines
->>> with 10 lines.
->>>
->>> How about putting these 10 lines into some helper,
->>> of_get_cpu_device()?  It would be useful for spear, kirkwood and
->>> imx6q, and maybe others.
->>>
->> Yes I realised that after making changes to this and pmac32 drivers. I
->> have already made those changes in v3. I am waiting for more response
->> before posting them.
->>
-> I thought of placing this helper in include/linux/of_device.h but I see:
-> #include <linux/of_platform.h> /* temporary until merge */
-> 
-> Does this mean of_platform.h and of_device.h will be merged ?
+bash-2239  [000] ....   290.883035: device_pm_report_time: backlight
+ acpi_video0 parent=0000:00:02.0 state=freeze ops=class nsecs=332 err=0
+bash-2239  [000] ....   290.883041: device_pm_report_time: rfkill rf
+kill3 parent=phy0 state=freeze ops=legacy class nsecs=216 err=0
+bash-2239  [001] ....   290.973892: device_pm_report_time: ieee80211
+ phy0 parent=0000:01:00.0 state=freeze ops=legacy class nsecs=90846477 err=0
 
-No, I think that was probably to avoid adding includes of of_platform.h
-for 100's of files. Maybe things are cleaned up enough to remove this line.
+bash-2239  [001] ....   293.660129: device_pm_report_time: ieee80211 phy0 parent=0000:01:00.0 state=restore ops=legacy class nsecs=101295162 err=0
+bash-2239  [001] ....   293.660147: device_pm_report_time: rfkill rfkill3 parent=phy0 state=restore ops=legacy class nsecs=1804 err=0
+bash-2239  [001] ....   293.660157: device_pm_report_time: backlight acpi_video0 parent=0000:00:02.0 state=restore ops=class nsecs=757 err=0
 
-> If so, which will be the final merged one ? I would like to avoid
-> changing all the header file inclusions later in users of this new helper.
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ drivers/base/power/main.c    |   33 +++++++++++++++++++++++----------
+ include/trace/events/power.h |   35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+), 10 deletions(-)
 
-of_device.h is the right place.
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 5a9b656..e7401c6 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -28,6 +28,7 @@
+ #include <linux/sched.h>
+ #include <linux/async.h>
+ #include <linux/suspend.h>
++#include <trace/events/power.h>
+ #include <linux/cpuidle.h>
+ #include "../base.h"
+ #include "power.h"
+@@ -56,6 +57,8 @@ static pm_message_t pm_transition;
+ 
+ static int async_error;
+ 
++static char *pm_verb(int);
++
+ /**
+  * device_pm_sleep_init - Initialize system suspend-related device fields.
+  * @dev: Device object being initialized.
+@@ -172,16 +175,23 @@ static ktime_t initcall_debug_start(struct device *dev)
+ }
+ 
+ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+-				  int error)
++				  int error, pm_message_t state, char *info)
+ {
+-	ktime_t delta, rettime;
++	ktime_t rettime;
++	s64 nsecs;
++
++	rettime = ktime_get();
++	nsecs = (s64) ktime_to_ns(ktime_sub(rettime, calltime));
+ 
+ 	if (pm_print_times_enabled) {
+-		rettime = ktime_get();
+-		delta = ktime_sub(rettime, calltime);
+ 		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
+-			error, (unsigned long long)ktime_to_ns(delta) >> 10);
++			error, (unsigned long long)nsecs >> 10);
+ 	}
++
++	trace_device_pm_report_time(dev_name(dev), dev_driver_string(dev),
++				dev->parent ? dev_name(dev->parent) : "none",
++				info ? info : "none ",
++				nsecs, pm_verb(state.event), error);
+ }
+ 
+ /**
+@@ -379,7 +389,7 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	error = cb(dev);
+ 	suspend_report_result(cb, error);
+ 
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, state, info);
+ 
+ 	return error;
+ }
+@@ -1027,7 +1037,8 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
+  * @cb: Suspend callback to execute.
+  */
+ static int legacy_suspend(struct device *dev, pm_message_t state,
+-			  int (*cb)(struct device *dev, pm_message_t state))
++			  int (*cb)(struct device *dev, pm_message_t state),
++			  char *info)
+ {
+ 	int error;
+ 	ktime_t calltime;
+@@ -1037,7 +1048,7 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
+ 	error = cb(dev, state);
+ 	suspend_report_result(cb, error);
+ 
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, state, info);
+ 
+ 	return error;
+ }
+@@ -1097,7 +1108,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 			goto Run;
+ 		} else if (dev->class->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy class ");
+-			error = legacy_suspend(dev, state, dev->class->suspend);
++			error = legacy_suspend(dev, state, dev->class->suspend,
++						"legacy class ");
+ 			goto End;
+ 		}
+ 	}
+@@ -1108,7 +1120,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 			callback = pm_op(dev->bus->pm, state);
+ 		} else if (dev->bus->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy bus ");
+-			error = legacy_suspend(dev, state, dev->bus->suspend);
++			error = legacy_suspend(dev, state, dev->bus->suspend,
++						"legacy bus ");
+ 			goto End;
+ 		}
+ 	}
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 8e42410..24afd22 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -66,6 +66,41 @@ TRACE_EVENT(machine_suspend,
+ 	TP_printk("state=%lu", (unsigned long)__entry->state)
+ );
+ 
++TRACE_EVENT(device_pm_report_time,
++
++	TP_PROTO(const char *device, const char *driver, const char *parent,
++		 const char *pm_ops, s64 ops_time, char *pm_event_str,
++		 int error),
++
++	TP_ARGS(device, driver, parent, pm_ops, ops_time, pm_event_str, error),
++
++	TP_STRUCT__entry(
++		__string(device, device)
++		__string(driver, driver)
++		__string(parent, parent)
++		__string(pm_ops, pm_ops)
++		__string(pm_event_str, pm_event_str)
++		__field(s64, ops_time)
++		__field(int, error)
++	),
++
++	TP_fast_assign(
++		__assign_str(device, device);
++		__assign_str(driver, driver);
++		__assign_str(parent, parent);
++		__assign_str(pm_ops, pm_ops);
++		__assign_str(pm_event_str, pm_event_str);
++		__entry->ops_time = ops_time;
++		__entry->error = error;
++	),
++
++	/* ops_str has an extra space at the end */
++	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
++		__get_str(driver), __get_str(device), __get_str(parent),
++		__get_str(pm_event_str), __get_str(pm_ops),
++		__entry->ops_time, __entry->error)
++);
++
+ DECLARE_EVENT_CLASS(wakeup_source,
+ 
+ 	TP_PROTO(const char *name, unsigned int state),
+-- 
+1.7.10.4
 
-Rob
-
-> 
-> Regards,
-> Sudeep
-> 
-> 
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
-> 
