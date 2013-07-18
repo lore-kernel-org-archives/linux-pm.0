@@ -1,76 +1,49 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] cpufreq/intel_pstate: Change to scale off of max P-state
-Date: Thu, 18 Jul 2013 08:48:42 -0700
-Message-ID: <1374162523-2777-1-git-send-email-dirk.j.brandewie@gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [lm-sensors] [RESEND PATCH V1 0/9] thermal: introduce DT thermal
+ zone build
+Date: Thu, 18 Jul 2013 11:18:05 -0600
+Message-ID: <51E8234D.1020607@wwwdotorg.org>
+References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <20130717220942.GB990@roeck-us.net> <51E7F341.8020508@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:50074 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759086Ab3GRPtW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 11:49:22 -0400
+Received: from avon.wwwdotorg.org ([70.85.31.133]:33276 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932394Ab3GRRSK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 13:18:10 -0400
+In-Reply-To: <51E7F341.8020508@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org, dsmythies@telus.net
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, l.stach@pengutronix.de
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 07/18/2013 07:53 AM, Eduardo Valentin wrote:
+> Hello Guenter,
+> 
+> On 17-07-2013 18:09, Guenter Roeck wrote:
+>> On Wed, Jul 17, 2013 at 11:17:19AM -0400, Eduardo Valentin
+>> wrote:
+>>> Hello all,
+>>> 
+>>> As you noticed, I am working in a way to represent thermal
+>>> data using device tree [1]. Essentially, this should be a way
+>>> to say what to do with a sensor and how to associate (cooling)
+>>> actions with it.
+>>> 
+>> Seems to me that goes way beyond the supposed scope of devicetree
+>> data. Devicetree data is supposed to describe hardware, not its
+>> configuration or use. This is clearly a use case.
+> 
+> Thanks for rising your voice here. It is important to know what
+> hwmon ppl think about this.
 
-Change to using max P-state instead of max turbo P-state.  This change
-resolves two issues.
-
-On a quiet system intel_pstate can fail to respond to a load change.
-   https://bugzilla.kernel.org/show_bug.cgi?id=59481
-
-On CPU SKUs that have a limited number of P-states and no turbo range
-intel_pstate fails to select the highest available P-state.
-
-This change is suitable for stable v3.9+
-
-Reported-by: arjan@linux.intel.com
-Reported-by: dsmythies@telus.net
-Tested-by: arjan@linux.intel.com
-Tested-by: dsmythies@telus.net
-
-CC: stable@vger.kernel.org
-CC: dsmythies@telus.net
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 07f2840..6d6a0b4 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -103,10 +103,10 @@ struct pstate_adjust_policy {
- static struct pstate_adjust_policy default_policy = {
- 	.sample_rate_ms = 10,
- 	.deadband = 0,
--	.setpoint = 109,
--	.p_gain_pct = 17,
-+	.setpoint = 97,
-+	.p_gain_pct = 20,
- 	.d_gain_pct = 0,
--	.i_gain_pct = 4,
-+	.i_gain_pct = 0,
- };
- 
- struct perf_limits {
-@@ -468,12 +468,12 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
- static inline int intel_pstate_get_scaled_busy(struct cpudata *cpu)
- {
- 	int32_t busy_scaled;
--	int32_t core_busy, turbo_pstate, current_pstate;
-+	int32_t core_busy, max_pstate, current_pstate;
- 
- 	core_busy = int_tofp(cpu->samples[cpu->sample_ptr].core_pct_busy);
--	turbo_pstate = int_tofp(cpu->pstate.turbo_pstate);
-+	max_pstate = int_tofp(cpu->pstate.max_pstate);
- 	current_pstate = int_tofp(cpu->pstate.current_pstate);
--	busy_scaled = mul_fp(core_busy, div_fp(turbo_pstate, current_pstate));
-+	busy_scaled = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
- 
- 	return fp_toint(busy_scaled);
- }
--- 
-1.8.3.1
-
+I meant to find time to read Guenter's original email where he
+initially objected to putting data into DT, and determine exactly what
+was being objected to. I still haven't:-( However, the arguments that
+Eduardo stated in his email do make sense to me; I agree that
+temperature limits really are a description of HW. Details of which
+cooling methods to invoke when certain temperature limits are reached
+is also part of the HW/system design, and hence I would tend to agree
+that they're appropriate to include in DT. Anyway, that's just my 2
+cents on the matter:-)
