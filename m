@@ -1,116 +1,110 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.11-rc2
-Date: Fri, 19 Jul 2013 15:11 +0200
-Message-ID: <10849265.6UBS59mCp5@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [lm-sensors] [RESEND PATCH V1 0/9] thermal: introduce DT thermal
+ zone build
+Date: Fri, 19 Jul 2013 09:03:43 -0400
+Message-ID: <51E9392F.8060604@ti.com>
+References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <20130717220942.GB990@roeck-us.net> <51E7F341.8020508@ti.com> <51E8234D.1020607@wwwdotorg.org> <20130718212108.GC4110@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2BIREBRJXPSEJHVPFLJRW"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:50180 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760287Ab3GSNFR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jul 2013 09:05:17 -0400
+In-Reply-To: <20130718212108.GC4110@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, l.stach@pengutronix.de
 
-Hi Linus,
+------enig2BIREBRJXPSEJHVPFLJRW
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Please pull from the git repository at
+On 18-07-2013 17:21, Guenter Roeck wrote:
+> On Thu, Jul 18, 2013 at 11:18:05AM -0600, Stephen Warren wrote:
+>> On 07/18/2013 07:53 AM, Eduardo Valentin wrote:
+>>> Hello Guenter,
+>>>
+>>> On 17-07-2013 18:09, Guenter Roeck wrote:
+>>>> On Wed, Jul 17, 2013 at 11:17:19AM -0400, Eduardo Valentin
+>>>> wrote:
+>>>>> Hello all,
+>>>>>
+>>>>> As you noticed, I am working in a way to represent thermal
+>>>>> data using device tree [1]. Essentially, this should be a way
+>>>>> to say what to do with a sensor and how to associate (cooling)
+>>>>> actions with it.
+>>>>>
+>>>> Seems to me that goes way beyond the supposed scope of devicetree
+>>>> data. Devicetree data is supposed to describe hardware, not its
+>>>> configuration or use. This is clearly a use case.
+>>>
+>>> Thanks for rising your voice here. It is important to know what
+>>> hwmon ppl think about this.
+>>
+>> I meant to find time to read Guenter's original email where he
+>> initially objected to putting data into DT, and determine exactly what=
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.11-rc2
+>> was being objected to. I still haven't:-( However, the arguments that
+>> Eduardo stated in his email do make sense to me; I agree that
+>> temperature limits really are a description of HW. Details of which
+>> cooling methods to invoke when certain temperature limits are reached
+>> is also part of the HW/system design, and hence I would tend to agree
+>> that they're appropriate to include in DT. Anyway, that's just my 2
+>> cents on the matter:-)
+>=20
+> Many systems have multiple profiles for various use cases (high perform=
+ance,
+> low power etc), and limits are different based on the use case. If that=
+ means
+> you are going to have multiple devicetree variants based on the profile=
+,
 
-to receive ACPI and power management fixes for v3.11-rc2 with
-top-most commit 5a8d2815593007d4eb59f337ef919c871c2649ab
+No, definitely this patch series is *not* about mapping multiples
+profiles for various use cases on device tree! This series is about
+mapping *hw thermal limits* on device tree.
 
-  Merge branch 'pm-fixes'
-
-on top of commit ad81f0545ef01ea651886dddac4bef6cec930092
-
-  Linux 3.11-rc1
-
-These are fixes collected over the last week, most importnatly two cpufreq
-reverts fixing regressions introduced in 3.10, an autoseelp fix preventing
-systems using it from crashing during shutdown and two ACPI scan fixes
-related to hotplug.
-
-Specifics:
-
-- Two cpufreq commits from the 3.10 cycle introduced regressions.
-  The first of them was buggy (it did way much more than it needed
-  to do) and the second one attempted to fix an issue introduced by
-  the first one.  Fixes from Srivatsa S Bhat revert both.
-
-- If autosleep triggers during system shutdown and the shutdown
-  callbacks of some device drivers have been called already, it may
-  crash the system.  Fix from Liu Shuo prevents that from happening
-  by making try_to_suspend() check system_state.
-
-- The ACPI memory hotplug driver doesn't clear its driver_data on
-  errors which may cause a NULL poiter dereference to happen later.
-  Fix from Toshi Kani.
-
-- The ACPI namespace scanning code should not try to attach scan
-  handlers to device objects that have them already, which may confuse
-  things quite a bit, and it should rescan the whole namespace branch
-  starting at the given node after receiving a bus check notify event
-  even if the device at that particular node has been discovered
-  already.  Fixes from yours truly.
-
-- New ACPI video blacklist entry for a system whose initial backlight
-  setting from the BIOS doesn't make sense.  From Lan Tianyu.
-
-- Garbage string output avoindance for ACPI PNP from Liu Shuo.
-
-- Two Kconfig fixes for issues introduced recently in the s3c24xx
-  cpufreq driver (when moving the driver to drivers/cpufreq) from
-  Paul Bolle.
-
-- Trivial comment fix in pm_wakeup.h from Chanwoo Choi.
-
-Thanks!
+> I would argue that you crossed the line. With thermal profiles it gets =
+even more
+> complicated, as those parameters may be played around with and changed
+> multiple times to find the best settings to achieve optimal cooling.
+> Does this describe hardware ? I don't think so, but, as I mentioned bef=
+ore,
+> maybe I am wrong.
 
 
----------------
+Again, this is about describing points and actions to avoid your hw
+degradation. May be also useful to avoid end user harm.
 
-Chanwoo Choi (1):
-      PM / Sleep: Fix comment typo in pm_wakeup.h
+This series is not about describing performance profiles.
 
-Lan Tianyu (1):
-      ACPI / video: ignore BIOS initial backlight value for Fujitsu E753
+>=20
+> Guenter
+>=20
+>=20
 
-Liu ShuoX (2):
-      PM / Sleep: avoid 'autosleep' in shutdown progress
-      PNP / ACPI: avoid garbage in resource name
 
-Paul Bolle (2):
-      cpufreq: s3c24xx: rename CONFIG_CPU_FREQ_S3C24XX_DEBUGFS
-      cpufreq: s3c24xx: fix "depends on ARM_S3C24XX" in Kconfig
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-Rafael J. Wysocki (2):
-      ACPI / scan: Do not try to attach scan handlers to devices having them
-      ACPI / scan: Always call acpi_bus_scan() for bus check notifications
+Eduardo Valentin
 
-Srivatsa S. Bhat (2):
-      cpufreq: Revert commit a66b2e to fix suspend/resume regression
-      cpufreq: Revert commit 2f7021a8 to fix CPU hotplug regression
 
-Toshi Kani (1):
-      ACPI / memhotplug: Fix a stale pointer in error path
+------enig2BIREBRJXPSEJHVPFLJRW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
----------------
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
- arch/arm/mach-s3c24xx/Kconfig      |    2 +-
- drivers/acpi/acpi_memhotplug.c     |    1 +
- drivers/acpi/scan.c                |   13 +++++++++----
- drivers/acpi/video.c               |    8 ++++++++
- drivers/cpufreq/cpufreq.c          |    4 +++-
- drivers/cpufreq/cpufreq_governor.c |    3 ---
- drivers/cpufreq/cpufreq_stats.c    |    6 ++----
- drivers/cpufreq/s3c24xx-cpufreq.c  |    4 ++--
- drivers/pnp/pnpacpi/rsparser.c     |    2 +-
- drivers/pnp/resource.c             |    1 +
- include/linux/pm_wakeup.h          |    4 ++--
- kernel/power/autosleep.c           |    3 ++-
- 12 files changed, 32 insertions(+), 19 deletions(-)
+iF4EAREIAAYFAlHpOTYACgkQCXcVR3XQvP1NHgEA7ywKtUv4uynaz3d9jz+0loXf
+OwksdKtQvXKOf0aiKVwA/j63Xo1FE8uul74h3pYRfysJDOdE0AtatjHl4P3MI+zP
+=bzLm
+-----END PGP SIGNATURE-----
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+------enig2BIREBRJXPSEJHVPFLJRW--
