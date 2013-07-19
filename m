@@ -1,68 +1,41 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v5] power: new trace event to print device suspend and
- resume time
-Date: Thu, 18 Jul 2013 18:53:33 -0400
-Message-ID: <1374188013.3356.7.camel@gandalf.local.home>
-References: <1374187352-3283-1-git-send-email-shuah.kh@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Change to scale off of max P-state
+Date: Fri, 19 Jul 2013 09:23:12 +0530
+Message-ID: <CAOh2x=m1M0ty5ibCrNUTvm5XjzDHu6fTDt0e-Hcdvkc-BdOA0g@mail.gmail.com>
+References: <1374162523-2777-1-git-send-email-dirk.j.brandewie@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:7074 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754991Ab3GRWxf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2013 18:53:35 -0400
-In-Reply-To: <1374187352-3283-1-git-send-email-shuah.kh@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1374162523-2777-1-git-send-email-dirk.j.brandewie@gmail.com>
+Sender: stable-owner@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org, dsmythies@telus.net
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org, fweisbec@gmail.com, mingo@redhat.com, paul.gortmaker@windriver.com, joe@perches.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Thu, 2013-07-18 at 16:42 -0600, Shuah Khan wrote:
+On Thu, Jul 18, 2013 at 9:18 PM,  <dirk.brandewie@gmail.com> wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>
+> Change to using max P-state instead of max turbo P-state.  This change
+> resolves two issues.
+>
+> On a quiet system intel_pstate can fail to respond to a load change.
+>    https://bugzilla.kernel.org/show_bug.cgi?id=59481
+>
+> On CPU SKUs that have a limited number of P-states and no turbo range
+> intel_pstate fails to select the highest available P-state.
+>
+> This change is suitable for stable v3.9+
+>
+> Reported-by: arjan@linux.intel.com
+> Reported-by: dsmythies@telus.net
+> Tested-by: arjan@linux.intel.com
+> Tested-by: dsmythies@telus.net
+>
+> CC: stable@vger.kernel.org
+> CC: dsmythies@telus.net
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 
-> +TRACE_EVENT(device_pm_report_time,
-> +
-> +	TP_PROTO(struct device *dev, const char *pm_ops, s64 ops_time,
-> +		 char *pm_event_str, int error),
-> +
-> +	TP_ARGS(dev, pm_ops, ops_time, pm_event_str, error),
-> +
-> +	TP_STRUCT__entry(
-> +		__string(device, dev_name(dev))
-> +		__string(driver, dev_driver_string(dev))
-> +		__string(parent, dev->parent ? dev_name(dev->parent) : "none")
-> +		__string(pm_ops, pm_ops ? pm_ops : "none ")
-> +		__string(pm_event_str, pm_event_str)
-> +		__field(s64, ops_time)
-> +		__field(int, error)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__assign_str(device, dev_name(dev));
-> +		__assign_str(driver, dev_driver_string(dev));
-> +		__assign_str(parent,
-> +				dev->parent ? dev_name(dev->parent) : "none");
-
-Have you tried using the temp variables? These macros expand to be
-called multiple times.
-
--- Steve
-
-> +		__assign_str(pm_ops, pm_ops ? pm_ops : "none ");
-> +		__assign_str(pm_event_str, pm_event_str);
-> +		__entry->ops_time = ops_time;
-> +		__entry->error = error;
-> +	),
-> +
-> +	/* ops_str has an extra space at the end */
-> +	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
-> +		__get_str(driver), __get_str(device), __get_str(parent),
-> +		__get_str(pm_event_str), __get_str(pm_ops),
-> +		__entry->ops_time, __entry->error)
-> +);
-> +
->  DECLARE_EVENT_CLASS(wakeup_source,
->  
->  	TP_PROTO(const char *name, unsigned int state),
-
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
