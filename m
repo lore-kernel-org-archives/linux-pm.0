@@ -1,100 +1,236 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 2/4] ARM: exynos: cpuidle: Use the common cpuidle register
- routine
-Date: Fri, 19 Jul 2013 18:03:01 +0200
-Message-ID: <4097491.3y6BBYmzze@amdc1032>
-References: <1374152070-21008-1-git-send-email-daniel.lezcano@linaro.org>
- <1374152070-21008-2-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH v6] power: new trace event to print device suspend and resume time
+Date: Fri, 19 Jul 2013 12:27:20 -0600
+Message-ID: <1374258440-7152-1-git-send-email-shuah.kh@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:60757 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330Ab3GSQDI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jul 2013 12:03:08 -0400
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MQ6004XQXX4G7A0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Sat, 20 Jul 2013 01:03:06 +0900 (KST)
-In-reply-to: <1374152070-21008-2-git-send-email-daniel.lezcano@linaro.org>
+Received: from qmta02.emeryville.ca.mail.comcast.net ([76.96.30.24]:39397 "EHLO
+	qmta02.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760873Ab3GSS1b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jul 2013 14:27:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: kgene.kim@samsung.com, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org
+To: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org, rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com, paul.gortmaker@windriver.com, joe@perches.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
+A new trace event is added to pm events to print time it takes to suspend and
+resume a device. It generates trace message that includes device, driver,
+parent information in addition to the type of pm ops invoked as well as the
+pm event and error status from the pm ops. Example trace below:
 
-Hi,
+bash-2239  [000] ....   290.883035: device_pm_report_time: backlight
+ acpi_video0 parent=0000:00:02.0 state=freeze ops=class nsecs=332 err=0
+bash-2239  [000] ....   290.883041: device_pm_report_time: rfkill rf
+kill3 parent=phy0 state=freeze ops=legacy class nsecs=216 err=0
+bash-2239  [001] ....   290.973892: device_pm_report_time: ieee80211
+ phy0 parent=0000:01:00.0 state=freeze ops=legacy class nsecs=90846477 err=0
 
-On Thursday, July 18, 2013 02:54:28 PM Daniel Lezcano wrote:
-> Now we have the same routine than the one handled by the cpuidle framework.
+bash-2239  [001] ....   293.660129: device_pm_report_time: ieee80211 phy0 parent=0000:01:00.0 state=restore ops=legacy class nsecs=101295162 err=0
+bash-2239  [001] ....   293.660147: device_pm_report_time: rfkill rfkill3 parent=phy0 state=restore ops=legacy class nsecs=1804 err=0
+bash-2239  [001] ....   293.660157: device_pm_report_time: backlight acpi_video0 parent=0000:00:02.0 state=restore ops=class nsecs=757 err=0
 
-Small nitpick:
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ drivers/base/power/main.c    |   77 +++++++++++++++++++++++-------------------
+ include/trace/events/power.h |   37 ++++++++++++++++++++
+ 2 files changed, 80 insertions(+), 34 deletions(-)
 
-To be exact the routine is not the same, on error cpuidle_register() does
-complete unregister operation of the cpuidle driver, exynos4_init_cpuidle()
-just stops the registration procedure. 
-
-The change itself is okay but the patch description could be better.
-
-Anyway all patches (#1-4) look fine to me. Thanks for this work.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 5a9b656..9f098a8 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -28,6 +28,7 @@
+ #include <linux/sched.h>
+ #include <linux/async.h>
+ #include <linux/suspend.h>
++#include <trace/events/power.h>
+ #include <linux/cpuidle.h>
+ #include "../base.h"
+ #include "power.h"
+@@ -56,6 +57,30 @@ static pm_message_t pm_transition;
  
-> Let's use it.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  arch/arm/mach-exynos/cpuidle.c |   24 +-----------------------
->  1 file changed, 1 insertion(+), 23 deletions(-)
-> 
-> diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
-> index cc4b097..d8fc1a2 100644
-> --- a/arch/arm/mach-exynos/cpuidle.c
-> +++ b/arch/arm/mach-exynos/cpuidle.c
-> @@ -41,8 +41,6 @@ static int exynos4_enter_lowpower(struct cpuidle_device *dev,
->  				struct cpuidle_driver *drv,
->  				int index);
->  
-> -static DEFINE_PER_CPU(struct cpuidle_device, exynos4_cpuidle_device);
-> -
->  static struct cpuidle_driver exynos4_idle_driver = {
->  	.name			= "exynos4_idle",
->  	.owner			= THIS_MODULE,
-> @@ -188,29 +186,9 @@ static void __init exynos5_core_down_clk(void)
->  
->  static int __init exynos4_init_cpuidle(void)
->  {
-> -	int cpu_id, ret;
-> -	struct cpuidle_device *device;
-> -
->  	if (soc_is_exynos5250())
->  		exynos5_core_down_clk();
->  
-> -	ret = cpuidle_register_driver(&exynos4_idle_driver);
-> -	if (ret) {
-> -		printk(KERN_ERR "CPUidle failed to register driver\n");
-> -		return ret;
-> -	}
-> -
-> -	for_each_online_cpu(cpu_id) {
-> -		device = &per_cpu(exynos4_cpuidle_device, cpu_id);
-> -		device->cpu = cpu_id;
-> -
-> -		ret = cpuidle_register_device(device);
-> -		if (ret) {
-> -			printk(KERN_ERR "CPUidle register device failed\n");
-> -			return ret;
-> -		}
-> -	}
-> -
-> -	return 0;
-> +	return cpuidle_register(&exynos4_idle_driver, NULL);
->  }
->  device_initcall(exynos4_init_cpuidle);
+ static int async_error;
+ 
++static char *pm_verb(int event)
++{
++	switch (event) {
++	case PM_EVENT_SUSPEND:
++		return "suspend";
++	case PM_EVENT_RESUME:
++		return "resume";
++	case PM_EVENT_FREEZE:
++		return "freeze";
++	case PM_EVENT_QUIESCE:
++		return "quiesce";
++	case PM_EVENT_HIBERNATE:
++		return "hibernate";
++	case PM_EVENT_THAW:
++		return "thaw";
++	case PM_EVENT_RESTORE:
++		return "restore";
++	case PM_EVENT_RECOVER:
++		return "recover";
++	default:
++		return "(unknown PM event)";
++	}
++}
++
+ /**
+  * device_pm_sleep_init - Initialize system suspend-related device fields.
+  * @dev: Device object being initialized.
+@@ -172,16 +197,21 @@ static ktime_t initcall_debug_start(struct device *dev)
+ }
+ 
+ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+-				  int error)
++				  int error, pm_message_t state, char *info)
+ {
+-	ktime_t delta, rettime;
++	ktime_t rettime;
++	s64 nsecs;
++
++	rettime = ktime_get();
++	nsecs = (s64) ktime_to_ns(ktime_sub(rettime, calltime));
+ 
+ 	if (pm_print_times_enabled) {
+-		rettime = ktime_get();
+-		delta = ktime_sub(rettime, calltime);
+ 		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
+-			error, (unsigned long long)ktime_to_ns(delta) >> 10);
++			error, (unsigned long long)nsecs >> 10);
+ 	}
++
++	trace_device_pm_report_time(dev, info, nsecs, pm_verb(state.event),
++				    error);
+ }
+ 
+ /**
+@@ -309,30 +339,6 @@ static pm_callback_t pm_noirq_op(const struct dev_pm_ops *ops, pm_message_t stat
+ 	return NULL;
+ }
+ 
+-static char *pm_verb(int event)
+-{
+-	switch (event) {
+-	case PM_EVENT_SUSPEND:
+-		return "suspend";
+-	case PM_EVENT_RESUME:
+-		return "resume";
+-	case PM_EVENT_FREEZE:
+-		return "freeze";
+-	case PM_EVENT_QUIESCE:
+-		return "quiesce";
+-	case PM_EVENT_HIBERNATE:
+-		return "hibernate";
+-	case PM_EVENT_THAW:
+-		return "thaw";
+-	case PM_EVENT_RESTORE:
+-		return "restore";
+-	case PM_EVENT_RECOVER:
+-		return "recover";
+-	default:
+-		return "(unknown PM event)";
+-	}
+-}
+-
+ static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
+ {
+ 	dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
+@@ -379,7 +385,7 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	error = cb(dev);
+ 	suspend_report_result(cb, error);
+ 
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, state, info);
+ 
+ 	return error;
+ }
+@@ -1027,7 +1033,8 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
+  * @cb: Suspend callback to execute.
+  */
+ static int legacy_suspend(struct device *dev, pm_message_t state,
+-			  int (*cb)(struct device *dev, pm_message_t state))
++			  int (*cb)(struct device *dev, pm_message_t state),
++			  char *info)
+ {
+ 	int error;
+ 	ktime_t calltime;
+@@ -1037,7 +1044,7 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
+ 	error = cb(dev, state);
+ 	suspend_report_result(cb, error);
+ 
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, state, info);
+ 
+ 	return error;
+ }
+@@ -1097,7 +1104,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 			goto Run;
+ 		} else if (dev->class->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy class ");
+-			error = legacy_suspend(dev, state, dev->class->suspend);
++			error = legacy_suspend(dev, state, dev->class->suspend,
++						"legacy class ");
+ 			goto End;
+ 		}
+ 	}
+@@ -1108,7 +1116,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 			callback = pm_op(dev->bus->pm, state);
+ 		} else if (dev->bus->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy bus ");
+-			error = legacy_suspend(dev, state, dev->bus->suspend);
++			error = legacy_suspend(dev, state, dev->bus->suspend,
++						"legacy bus ");
+ 			goto End;
+ 		}
+ 	}
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 8e42410..5d6a208 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -66,6 +66,43 @@ TRACE_EVENT(machine_suspend,
+ 	TP_printk("state=%lu", (unsigned long)__entry->state)
+ );
+ 
++TRACE_EVENT(device_pm_report_time,
++
++	TP_PROTO(struct device *dev, const char *pm_ops, s64 ops_time,
++		 char *pm_event_str, int error),
++
++	TP_ARGS(dev, pm_ops, ops_time, pm_event_str, error),
++
++	TP_STRUCT__entry(
++		__string(device, dev_name(dev))
++		__string(driver, dev_driver_string(dev))
++		__string(parent, dev->parent ? dev_name(dev->parent) : "none")
++		__string(pm_ops, pm_ops ? pm_ops : "none ")
++		__string(pm_event_str, pm_event_str)
++		__field(s64, ops_time)
++		__field(int, error)
++	),
++
++	TP_fast_assign(
++		char *tmp_p = dev->parent ? dev_name(dev->parent) : "none";
++		char *tmp_i = pm_ops ? pm_ops : "none ";
++
++		__assign_str(device, dev_name(dev));
++		__assign_str(driver, dev_driver_string(dev));
++		__assign_str(parent, tmp_p);
++		__assign_str(pm_ops, tmp_i);
++		__assign_str(pm_event_str, pm_event_str);
++		__entry->ops_time = ops_time;
++		__entry->error = error;
++	),
++
++	/* ops_str has an extra space at the end */
++	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
++		__get_str(driver), __get_str(device), __get_str(parent),
++		__get_str(pm_event_str), __get_str(pm_ops),
++		__entry->ops_time, __entry->error)
++);
++
+ DECLARE_EVENT_CLASS(wakeup_source,
+ 
+ 	TP_PROTO(const char *name, unsigned int state),
+-- 
+1.7.10.4
 
