@@ -1,235 +1,100 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [lm-sensors] [RESEND PATCH V1 0/9] thermal: introduce DT thermal
- zone build
-Date: Fri, 19 Jul 2013 09:38:04 -0400
-Message-ID: <51E9413C.2080007@ti.com>
-References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <20130717220942.GB990@roeck-us.net> <51E7F341.8020508@ti.com> <20130718211154.GB4110@roeck-us.net>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 2/4] ARM: exynos: cpuidle: Use the common cpuidle register
+ routine
+Date: Fri, 19 Jul 2013 18:03:01 +0200
+Message-ID: <4097491.3y6BBYmzze@amdc1032>
+References: <1374152070-21008-1-git-send-email-daniel.lezcano@linaro.org>
+ <1374152070-21008-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2BFWIVTNOWNEEFQNLGFHB"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:57013 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759989Ab3GSNjZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 19 Jul 2013 09:39:25 -0400
-In-Reply-To: <20130718211154.GB4110@roeck-us.net>
+Received: from mailout4.samsung.com ([203.254.224.34]:60757 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330Ab3GSQDI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jul 2013 12:03:08 -0400
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0MQ6004XQXX4G7A0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Sat, 20 Jul 2013 01:03:06 +0900 (KST)
+In-reply-to: <1374152070-21008-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, l.stach@pengutronix.de
-
-------enig2BFWIVTNOWNEEFQNLGFHB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 18-07-2013 17:11, Guenter Roeck wrote:
-> On Thu, Jul 18, 2013 at 09:53:05AM -0400, Eduardo Valentin wrote:
->> Hello Guenter,
->>
->> On 17-07-2013 18:09, Guenter Roeck wrote:
->>> On Wed, Jul 17, 2013 at 11:17:19AM -0400, Eduardo Valentin wrote:
->>>> Hello all,
->>>>
->>>> As you noticed, I am working in a way to represent thermal data
->>>> using device tree [1]. Essentially, this should be a way to say
->>>> what to do with a sensor and how to associate (cooling) actions
->>>> with it.
->>>>
->>> Seems to me that goes way beyond the supposed scope of devicetree dat=
-a.
->>> Devicetree data is supposed to describe hardware, not its configurati=
-on or use.
->>> This is clearly a use case.
->>
->> Thanks for rising your voice here. It is important to know what hwmon
->> ppl think about this.
->>
-> Sorry, I don't know what ppl stands for.
->=20
->>>
->>> Guenter
->>
->> As your answers to the series are giving same argument, I chose to
->> answer on patch 0. I would be happier if you could elaborate a bit mor=
-e
->> on your concern, specially if you take hwmon cap here, and give your
->> view with that perspective.
->>
->> I also considered that this work could be abusing of DT purposes. But
->> let me explain why I still think it makes sense to have it.
->>
-> Ultimately, you are making my point here. If you considered it, did you=
- ask
-> devicetree experts for an opinion ? Did you discuss the subject on the
-> devicetree-discuss mailing list ? If so, what was the result ?
-
-Although I have asked, I didn't get any feedback.
-https://lkml.org/lkml/2013/4/11/760
-
-But now I am requesting feedback in a formal (patch) way.
-
-Consider this patch series as official request for (devicetree experts
-and everyone involved) opinions.
-
->=20
->> First thing is that this series intend to describe the thermal data
->> required for a specific board. That means, considering your board
->> layout, mechanics, power dissipation and composition of your ICs, etc,=
-
->> that will impose thermal requirements on your system. That is not
->> configuration, but part of your board design and non-functional
->> requirement. To me, configuration would be something like saying you
->> want to use a specific keyboard layout, or defining your wifi card
->> channel, or display size, etc.
->>
->> Here what is described and setup may get confused with configuration,
->> but it is not because what goes in DT in this case must be actually
->> derived from your HW needs. Putting a sensor  close to your battery ha=
-s
->> a strong meaning behind. Same if you put a sensor close to your
->> processor. For instance, we have cases we need to consider external he=
-at
->> in order to properly determine our CPU hotspot level, using a board
->> sensor. That is what I mean by HW requirement/need.
->>
->> Again, just to refresh our minds, this is about protecting your board
->> and ICs from operating out of their spec and extending their lifetime.=
-
->> This is not about configuring something just because user has chosen t=
-o.
->> That is definitely not a configuration.
->>
->> Being a use case, well, these new DT nodes can still be seen as a use
->> case, yes. But depends on your understanding of use case. Because a
->> sensor device may be used on different needs, composing different use
->> cases. But still here we are talking about HW needs and composition. A=
-nd
->> yes, if you take that perspective, there are use cases already describ=
-ed
->> in DT.
->>
->> For instance, just because you use an LDO to power a MMC, does it mean=
-
->> you always will use it to power MMC on all boards. Would that be a use=
-
->> case? And in that example, because your MMC requires 2.8V, if you have=
- a
->> DT property to say that, does it mean it is  configuration? Well, yes,=
-
->> but that is based on HW needs, otherwise it wont operate properly. Sam=
-e
->> thing here, leave your hw operating out of temperature specs and you
->> will see what is the outcome.
->>
->> Similar example would be cpufreq, or OPPs for opp layer. Defining an O=
-PP
->> in DT could be considered a configuration?  Well in theory yes, one ca=
-n
->> pick what ever configuration for your (D)PLL then match with a
->> minimalist voltage level. And in theory, a voltage level can sustain
->> more than one frequency level. An OPP is still a virtual concept, and =
-we
->> still describe it in DT. Why? To me is because it is a HW need, becaus=
-e
->> HW folks have actually validated that configuration of PLL (frequency)=
-
->> and voltage level. Sometimes they have even optimized it (for low powe=
-r
->> consumption for instance), as one may achieve same OPP with different
->> configuration. Then why thermal data, which is again, a 'HW
->> configuration' that has been optimized by HW folks, known to be a HW
->> requirement, cannot be described in DT?
->>
->> Similar argument goes to the fact that one may think this is subsystem=
-
->> specific. Again, describing your OPPs is not OPP layer specific?
->> Besides, one can still read the device tree nodes I have written for
->> describing thermal data and implement the HW requirement elsewhere, if=
-
->> wanted (say in user land). I don't see as subsystem specific.
->>
->> Keep in mind that these very same concepts are actually derived from
->> ACPI specification. They don't come from nowhere. And just because you=
-r
->> system does not have ACPI support, does not mean it won't have a need =
-to
->> describe thermal?
->>
->> So, because with this work (i) we are describing something that is
->> required for properly usage of your HW (and not choice of the user),
->> because (ii) same data is used on different specification (that is use=
-d
->> on different OSes too), because (iii) you don't need thermal fw to rea=
-d
->> this data and you could implement the HW requirement elsewhere, becaus=
-e
->> (iv) there are other similar requirements already implemented via DT; =
-I
->> still think this work is within DT scope. And that is based on evidenc=
-e
->> of existing work not because DT is nice and I would want to use it.
->>
->> Hope that clarifies.
->>
->> Of course it is always welcome to hear ppl opinion. I would be really
->> interested to know what ppl from OF think about this topic.
->>
-> Yes, me too, or more widely the devicetree community. This is exactly
-> why I brought it up.
-
-And that is why I copied them.
-
->=20
->> If still, this does not fit DT, I would like to understand a proper
->> argument. Better than, this is configuration/use case.
->>
->=20
-> I am not a devicetree expert. One of the complaints by the devicetree
-> folks is that much is added to devicetree which should not be there.
-> I find this use case questionable. Maybe I am wrong and it isn't,
-
-ok..
-
-> which may well be. But you thought about it as well, so I don't think
-> I am that far off track.
-
-Well, what I meant was more like, yes, I considered DT requirements
-before writing this code.
-
->=20
-> This needs to be discussed and determined by devicetree experts, not me=
-=2E
-> I'll be happy with your patch series if you get an agreement or an Ack
-> by the devicetree maintainer for your patch series.
-
-Ok. Thanks for your review and taking the time to express your judgment,
-Guenter. Let s wait for Grant and dt folks to express their too.
-
->=20
-> Guenter
->=20
->=20
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: kgene.kim@samsung.com, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+Hi,
 
-Eduardo Valentin
+On Thursday, July 18, 2013 02:54:28 PM Daniel Lezcano wrote:
+> Now we have the same routine than the one handled by the cpuidle framework.
 
+Small nitpick:
 
-------enig2BFWIVTNOWNEEFQNLGFHB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+To be exact the routine is not the same, on error cpuidle_register() does
+complete unregister operation of the cpuidle driver, exynos4_init_cpuidle()
+just stops the registration procedure. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+The change itself is okay but the patch description could be better.
 
-iF4EAREIAAYFAlHpQUEACgkQCXcVR3XQvP1TxwEAx7Ak/u30tKm9nqVV0PzUE68o
-XUn99nKbW+ufbAgvyb8A/jq3ZIkSybbjSFU0OH0dA5qQ3Vz/zcIu/Ns+rGNgP+jT
-=6KhV
------END PGP SIGNATURE-----
+Anyway all patches (#1-4) look fine to me. Thanks for this work.
 
-------enig2BFWIVTNOWNEEFQNLGFHB--
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+ 
+> Let's use it.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  arch/arm/mach-exynos/cpuidle.c |   24 +-----------------------
+>  1 file changed, 1 insertion(+), 23 deletions(-)
+> 
+> diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
+> index cc4b097..d8fc1a2 100644
+> --- a/arch/arm/mach-exynos/cpuidle.c
+> +++ b/arch/arm/mach-exynos/cpuidle.c
+> @@ -41,8 +41,6 @@ static int exynos4_enter_lowpower(struct cpuidle_device *dev,
+>  				struct cpuidle_driver *drv,
+>  				int index);
+>  
+> -static DEFINE_PER_CPU(struct cpuidle_device, exynos4_cpuidle_device);
+> -
+>  static struct cpuidle_driver exynos4_idle_driver = {
+>  	.name			= "exynos4_idle",
+>  	.owner			= THIS_MODULE,
+> @@ -188,29 +186,9 @@ static void __init exynos5_core_down_clk(void)
+>  
+>  static int __init exynos4_init_cpuidle(void)
+>  {
+> -	int cpu_id, ret;
+> -	struct cpuidle_device *device;
+> -
+>  	if (soc_is_exynos5250())
+>  		exynos5_core_down_clk();
+>  
+> -	ret = cpuidle_register_driver(&exynos4_idle_driver);
+> -	if (ret) {
+> -		printk(KERN_ERR "CPUidle failed to register driver\n");
+> -		return ret;
+> -	}
+> -
+> -	for_each_online_cpu(cpu_id) {
+> -		device = &per_cpu(exynos4_cpuidle_device, cpu_id);
+> -		device->cpu = cpu_id;
+> -
+> -		ret = cpuidle_register_device(device);
+> -		if (ret) {
+> -			printk(KERN_ERR "CPUidle register device failed\n");
+> -			return ret;
+> -		}
+> -	}
+> -
+> -	return 0;
+> +	return cpuidle_register(&exynos4_idle_driver, NULL);
+>  }
+>  device_initcall(exynos4_init_cpuidle);
+
