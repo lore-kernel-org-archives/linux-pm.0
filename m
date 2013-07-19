@@ -1,193 +1,116 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [RESEND PATCH V1 8/9] hwmon: lm75: expose to thermal fw via DT
- nodes
-Date: Fri, 19 Jul 2013 15:43:29 +0800
-Message-ID: <51E8EE21.1070803@nvidia.com>
-References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <1374074248-31690-9-git-send-email-eduardo.valentin@ti.com> <51E77E1D.3000306@nvidia.com> <51E7E9A1.3040800@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] ACPI and power management fixes for v3.11-rc2
+Date: Fri, 19 Jul 2013 15:11 +0200
+Message-ID: <10849265.6UBS59mCp5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51E7E9A1.3040800@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/18/2013 09:12 PM, Eduardo Valentin wrote:
-> * PGP Signed: 07/18/2013 at 06:12:01 AM
-> 
-> Hi Wei,
-> 
-> 
-> On 18-07-2013 01:33, Wei Ni wrote:
->> On 07/17/2013 11:17 PM, Eduardo Valentin wrote:
->>> This patch adds to lm75 temperature sensor the possibility
->>> to expose itself as thermal zone device, registered on the
->>> thermal framework.
->>>
->>> The thermal zone is built only if a device tree node
->>> describing a thermal zone for this sensor is present
->>> inside the lm75 DT node. Otherwise, the driver behavior
->>> will be the same.
->>>
->>> Cc: Jean Delvare <khali@linux-fr.org>
->>> Cc: Guenter Roeck <linux@roeck-us.net>
->>> Cc: lm-sensors@lm-sensors.org
->>> Cc: linux-kernel@vger.kernel.org
->>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->>> ---
->>>  drivers/hwmon/lm75.c | 29 +++++++++++++++++++++++++++++
->>>  1 file changed, 29 insertions(+)
->>>
->>> diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
->>> index c03b490..0aa5e28 100644
->>> --- a/drivers/hwmon/lm75.c
->>> +++ b/drivers/hwmon/lm75.c
->>> @@ -27,6 +27,8 @@
->>>  #include <linux/hwmon-sysfs.h>
->>>  #include <linux/err.h>
->>>  #include <linux/mutex.h>
->>> +#include <linux/thermal.h>
->>> +#include <linux/of.h>
->>>  #include "lm75.h"
->>>  
->>>  
->>> @@ -70,6 +72,7 @@ static const u8 LM75_REG_TEMP[3] = {
->>>  /* Each client has this additional data */
->>>  struct lm75_data {
->>>  	struct device		*hwmon_dev;
->>> +	struct thermal_zone_device	*tz;
->>>  	struct mutex		update_lock;
->>>  	u8			orig_conf;
->>>  	u8			resolution;	/* In bits, between 9 and 12 */
->>> @@ -92,6 +95,19 @@ static struct lm75_data *lm75_update_device(struct device *dev);
->>>  
->>>  /* sysfs attributes for hwmon */
->>>  
->>> +static int lm75_read_temp(void *dev, unsigned long *temp)
->>> +{
->>> +	struct lm75_data *data = lm75_update_device(dev);
->>> +
->>> +	if (IS_ERR(data))
->>> +		return PTR_ERR(data);
->>> +
->>> +	*temp = ((data->temp[0] >> (16 - data->resolution)) * 1000) >>
->>> +			(data->resolution - 8);
->>> +
->>> +	return 0;
->>> +}
->>> +
->>>  static ssize_t show_temp(struct device *dev, struct device_attribute *da,
->>>  			 char *buf)
->>>  {
->>> @@ -271,11 +287,23 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
->>>  		goto exit_remove;
->>>  	}
->>>  
->>> +	if (of_find_node_by_name(client->dev.of_node, "thermal_zone")) {
->>> +		data->tz = thermal_zone_of_device_register(&client->dev,
->>> +							   &client->dev,
->>> +							   lm75_read_temp);
->>
->> Hi, Eduardo
->> I have two questions:
->> 1. As we know, after register to the thermal framework, it will have
->> duplicate hwmon devices. I think lm-sensor maintainer would not like this.
-> 
-> Yes I noticed. You have always the option to disable the
-> CONFIG_THERMAL_HWMON in your build.
+Hi Linus,
 
-Yes, we can disable this config, but it will disable all hwmon interface
-which registered by the thermal fw, it may affect other driver.
+Please pull from the git repository at
 
-> 
->> How about to add a flag to indicate it, which I talk about with
->> Durgadoss in your [RFC 1/4]patch.
-> 
-> This would be very much appreciated, but I don't think this is a blocker
-> for this series. We can of course include this patch on it. Having a
-> flag to control this thermal fw to hwmon interface is actually a good idea.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.11-rc2
 
-Ok, I think I can post it as a separate patches.
+to receive ACPI and power management fixes for v3.11-rc2 with
+top-most commit 5a8d2815593007d4eb59f337ef919c871c2649ab
 
-> 
->>
->> 2. I'm also trying to use your codes on lm90. The LM90 serial has more
->> then one sensors in one chip, local sensor, remote sensor and may have
->> remote2 sensor, so it mean there may have more than one thermal_zone
->> under the lm90 device node, will you consider it?
->>
-> 
-> I haven't looked lm90 source code. How do you map it? Do you probe each
-> sensor or do you probe 1 device and expose 3 sensors?
+  Merge branch 'pm-fixes'
 
-lm90.c is the driver for all LM90 register compatible chips, it probe 1
-device, and normally it can expose local and remote sensor, and for
-max669x chip, it also expose remote2 sensor.
+on top of commit ad81f0545ef01ea651886dddac4bef6cec930092
 
-> 
-> In first case, you can still reuse what is in this series.
-> 
-> Later case, we need to change it slightly.
-> 
-> That is the case which is pretty similar on OMAP5 for instance, where
-> the device has three sensors. This patch series does not cover for this
-> case. But it can be simply modified to get around it.
-> 
-> We would need to allow more than one 'thermal_zone' nodes inside a
-> single device. But then we would need to have a way to determine which
-> sensor goes to which zone too.
+  Linux 3.11-rc1
 
-Yes, agreed, we need a way to determine it.
-I have tentative suggestions, how about following:
-lm90 {
-  ...
-  thermal_zone@0 {
-    type = "local_sensor";
-    ...
-  }
-  thermal_zone@1 {
-    type = "remote_sensor";
-  }
-}
-And in the driver's probe routine, we can parse the thermal_zone node,
-and pass it to thermal_zone_of_device_register() with the right .get_temp().
+These are fixes collected over the last week, most importnatly two cpufreq
+reverts fixing regressions introduced in 3.10, an autoseelp fix preventing
+systems using it from crashing during shutdown and two ACPI scan fixes
+related to hotplug.
 
-Wei.
+Specifics:
 
-> 
-> 
->> Thanks.
->> Wei.
->>
->>> +		if (IS_ERR(data->tz)) {
->>> +			status = PTR_ERR(data->tz);
->>> +			goto exit_hwmon;
->>> +		}
->>> +	}
->>> +
->>>  	dev_info(&client->dev, "%s: sensor '%s'\n",
->>>  		 dev_name(data->hwmon_dev), client->name);
->>>  
->>>  	return 0;
->>>  
->>> +exit_hwmon:
->>> +	hwmon_device_unregister(data->hwmon_dev);
->>>  exit_remove:
->>>  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
->>>  	return status;
->>> @@ -285,6 +313,7 @@ static int lm75_remove(struct i2c_client *client)
->>>  {
->>>  	struct lm75_data *data = i2c_get_clientdata(client);
->>>  
->>> +	thermal_zone_device_unregister(data->tz);
->>>  	hwmon_device_unregister(data->hwmon_dev);
->>>  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
->>>  	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
->>>
->>
->>
->>
-> 
-> 
+- Two cpufreq commits from the 3.10 cycle introduced regressions.
+  The first of them was buggy (it did way much more than it needed
+  to do) and the second one attempted to fix an issue introduced by
+  the first one.  Fixes from Srivatsa S Bhat revert both.
+
+- If autosleep triggers during system shutdown and the shutdown
+  callbacks of some device drivers have been called already, it may
+  crash the system.  Fix from Liu Shuo prevents that from happening
+  by making try_to_suspend() check system_state.
+
+- The ACPI memory hotplug driver doesn't clear its driver_data on
+  errors which may cause a NULL poiter dereference to happen later.
+  Fix from Toshi Kani.
+
+- The ACPI namespace scanning code should not try to attach scan
+  handlers to device objects that have them already, which may confuse
+  things quite a bit, and it should rescan the whole namespace branch
+  starting at the given node after receiving a bus check notify event
+  even if the device at that particular node has been discovered
+  already.  Fixes from yours truly.
+
+- New ACPI video blacklist entry for a system whose initial backlight
+  setting from the BIOS doesn't make sense.  From Lan Tianyu.
+
+- Garbage string output avoindance for ACPI PNP from Liu Shuo.
+
+- Two Kconfig fixes for issues introduced recently in the s3c24xx
+  cpufreq driver (when moving the driver to drivers/cpufreq) from
+  Paul Bolle.
+
+- Trivial comment fix in pm_wakeup.h from Chanwoo Choi.
+
+Thanks!
+
+
+---------------
+
+Chanwoo Choi (1):
+      PM / Sleep: Fix comment typo in pm_wakeup.h
+
+Lan Tianyu (1):
+      ACPI / video: ignore BIOS initial backlight value for Fujitsu E753
+
+Liu ShuoX (2):
+      PM / Sleep: avoid 'autosleep' in shutdown progress
+      PNP / ACPI: avoid garbage in resource name
+
+Paul Bolle (2):
+      cpufreq: s3c24xx: rename CONFIG_CPU_FREQ_S3C24XX_DEBUGFS
+      cpufreq: s3c24xx: fix "depends on ARM_S3C24XX" in Kconfig
+
+Rafael J. Wysocki (2):
+      ACPI / scan: Do not try to attach scan handlers to devices having them
+      ACPI / scan: Always call acpi_bus_scan() for bus check notifications
+
+Srivatsa S. Bhat (2):
+      cpufreq: Revert commit a66b2e to fix suspend/resume regression
+      cpufreq: Revert commit 2f7021a8 to fix CPU hotplug regression
+
+Toshi Kani (1):
+      ACPI / memhotplug: Fix a stale pointer in error path
+
+---------------
+
+ arch/arm/mach-s3c24xx/Kconfig      |    2 +-
+ drivers/acpi/acpi_memhotplug.c     |    1 +
+ drivers/acpi/scan.c                |   13 +++++++++----
+ drivers/acpi/video.c               |    8 ++++++++
+ drivers/cpufreq/cpufreq.c          |    4 +++-
+ drivers/cpufreq/cpufreq_governor.c |    3 ---
+ drivers/cpufreq/cpufreq_stats.c    |    6 ++----
+ drivers/cpufreq/s3c24xx-cpufreq.c  |    4 ++--
+ drivers/pnp/pnpacpi/rsparser.c     |    2 +-
+ drivers/pnp/resource.c             |    1 +
+ include/linux/pm_wakeup.h          |    4 ++--
+ kernel/power/autosleep.c           |    3 ++-
+ 12 files changed, 32 insertions(+), 19 deletions(-)
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
