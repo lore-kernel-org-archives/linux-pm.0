@@ -1,38 +1,47 @@
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH 0/2] PM / OPP: updates to enable sharing OPPs info
-Date: Sat, 20 Jul 2013 06:09:43 +0100
-Message-ID: <20130720050943.5EB853E169C@localhost>
-References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <519B45C3.8050700@arm.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <519B45C3.8050700@arm.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Landley <rob@landley.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: thermal / x86: Fix init error code path in package temperature driver
+Date: Sat, 20 Jul 2013 22:48:03 +0200
+Message-ID: <1652739.TRfBKHdnvc@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63849 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754860Ab3GTUiG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Jul 2013 16:38:06 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Tue, 21 May 2013 11:00:35 +0100, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com> wrote:
-> Hi Rob, Grant,
-> 
-> On 01/05/13 12:11, Sudeep KarkadaNagesha wrote:
-> > From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> > 
-> > These are couple of updates to existing PM/OPP library to support
-> > sharing of OPPs between different device nodes.
-> > 
-> > Currently all the cpu nodes are parsed until the OPPs are found. This
-> > is essential to support cpuhotplug without having to replicate OPP
-> > information in all the cpu nodes.
-> > 
-> > However in systems with multiple cpu power domain, its better to have
-> > OPP entry for each cpu. To avoid replication, phandle can be specified
-> > to the node which contains the full OPP information.
-> > 
-> Is proposed option of phandle for OPP acceptable to avoid replication ?
-> Any suggestions to proceed on this ? This is needed to support CPU
-> hotplug on big LITTLE system where current methods like parsing all the
-> nodes or just CPU0 node will not work.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Looks fine to me.
+The error code path of the x86 package temperature thermal driver's
+initialization routine, pkg_temp_thermal_init(), makes an unbalanced
+call to get_online_cpus(), which causes subsequent CPU offline
+operations, and consequently system suspend, to permanently block
+in cpu_hotplug_begin() on systems where get_core_online() returns
+an error code.
 
-g.
+Remove the extra get_online_cpus() to fix the problem (tested on
+Toshiba Portege R500).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/thermal/x86_pkg_temp_thermal.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+Index: linux-pm/drivers/thermal/x86_pkg_temp_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/thermal/x86_pkg_temp_thermal.c
++++ linux-pm/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -592,7 +592,6 @@ static int __init pkg_temp_thermal_init(
+ 	return 0;
+ 
+ err_ret:
+-	get_online_cpus();
+ 	for_each_online_cpu(i)
+ 		put_core_offline(i);
+ 	put_online_cpus();
 
