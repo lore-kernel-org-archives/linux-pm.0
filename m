@@ -1,7 +1,7 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v3 16/16] cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
-Date: Mon, 22 Jul 2013 12:32:27 +0100
-Message-ID: <1374492747-13879-17-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v3 02/16] ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
+Date: Mon, 22 Jul 2013 12:32:13 +0100
+Message-ID: <1374492747-13879-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
@@ -10,46 +10,42 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sudeep.KarkadaNagesha@arm.com, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Now that the cpu device registration initialises the of_node(if available)
-appropriately for all the cpus, parsing here is redundant.
+OF/DT core library now provides architecture specific hook to match the
+logical cpu index with the corresponding physical identifier. Most of the
+cpu DT node parsing and initialisation is contained in devtree.c. So it's
+better to define ARM specific arch_match_cpu_phys_id there.
 
-This patch removes DT parsing and uses cpu->of_node instead.
+This mainly helps to avoid replication of the code doing CPU node parsing
+and physical(MPIDR) to logical mapping.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/arm/kernel/devtree.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpuf=
-req.c
-index 3104fad..56bfb6f 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -25,6 +25,7 @@
- #include <linux/init.h>
- #include <linux/device.h>
- #include <linux/hardirq.h>
-+#include <linux/of_device.h>
- #include <asm/prom.h>
- #include <asm/machdep.h>
- #include <asm/irq.h>
-@@ -649,8 +650,8 @@ static int __init pmac_cpufreq_setup(void)
- =09if (strstr(cmd_line, "nocpufreq"))
- =09=09return 0;
+diff --git a/arch/arm/kernel/devtree.c b/arch/arm/kernel/devtree.c
+index 5859c8b..2ee8a17 100644
+--- a/arch/arm/kernel/devtree.c
++++ b/arch/arm/kernel/devtree.c
+@@ -169,6 +169,11 @@ void __init arm_dt_init_cpu_maps(void)
+ =09}
+ }
 =20
--=09/* Assume only one CPU */
--=09cpunode =3D of_find_node_by_type(NULL, "cpu");
-+=09/* Get first CPU node */
-+=09cpunode =3D of_cpu_device_node_get(0);
- =09if (!cpunode)
- =09=09goto out;
-=20
++bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
++{
++=09return (phys_id & MPIDR_HWID_BITMASK) =3D=3D cpu_logical_map(cpu);
++}
++
+ /**
+  * setup_machine_fdt - Machine setup when an dtb was passed to the kernel
+  * @dt_phys: physical address of dt blob
 --=20
 1.8.1.2
