@@ -1,196 +1,93 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: RFC: device thermal limits represented in device tree nodes
-Date: Mon, 22 Jul 2013 10:25:39 -0400
-Message-ID: <51ED40E3.5020703@ti.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v3 06/16] drivers/bus: arm-cci: avoid parsing DT for cpu
+ device nodes
+Date: Mon, 22 Jul 2013 10:37:59 -0400 (EDT)
+Message-ID: <alpine.LFD.2.03.1307221036510.15022@syhkavp.arg>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2GMSSEWKGMJVHNNELKSIB"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:34587 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755937Ab3GVO0p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 22 Jul 2013 10:26:45 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1374492747-13879-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
-To: Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Stephen Warren <swarren@wwwdotorg.org>, Durgadoss R <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>
-Cc: eduardo.valentin@ti.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-------enig2GMSSEWKGMJVHNNELKSIB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 22 Jul 2013, Sudeep KarkadaNagesha wrote:
 
-Hello Grant and Rob,
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Since the CPU device nodes can be retrieved using arch_of_get_cpu_node,
+> we can use it to avoid parsing the cpus node searching the cpu nodes and
+> mapping to logical index.
+> 
+> This patch removes parsing DT for cpu nodes by using of_get_cpu_node.
+> 
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-(Resending, as I got a message saying:
-<devicetree-discuss@lists.ozlabs.org>: Recipient address rejected: User
-has moved to devicetree at vger.kernel.org)
-
-I am writing this email to you specifically to ask your technical
-assessment with respect to representing device thermal limits as device
-tree nodes. I am proposing to introduce device tree nodes to describe
-these limits as thermal zones, their composition and their relations
-with cooling devices and other thermal zones (thermal data).
-
-As you should know, device thermal limits are part of hardware
-specification. Considering your board layout, mechanics, power
-dissipation and composition of ICs, etc, that will impose thermal
-requirements on your system, and infringing these limits can lead to
-device damage, device life time reduction or even end user harm. Thus,
-the thermal data help to describe the hardware limits and what needs to
-be done if those limits are crosses, as part of your board design and
-non-functional requirements. Obviously that is very dependent on your
-hardware, and not all of them will have these non-functional
-requirements. Besides, describing these limits has *nothing* to do with
-how you actually find these limits.
-
-In any case, there is a need to properly represent these requirements
-and I am proposing to have this representation in device tree. There
-were already couple of counter-arguments claiming this is actually about
-configuration and performance profile description. But I still stand
-against these two readings of this proposal and again state that if one
-interprets it as configuration or performance profile, that is a
-mis-understanding [0]. Let me state it clear (again [1]), my proposal is
-to describe hardware thermal limits, because these limits are part of a
-hardware specification; representing in device tree would not infringe
-the original purpose of this data structure  ("The Device Tree is a data
-structure for describing hardware."[2]).
-
-Before I explain my proposal, I want to highlight also that these data
-is represented elsewhere already and it is reused across different OS's.
-Thermal data is described using ACPI [3] and operating systems
-ACPI-aware do support the interpretation of thermal data. Linux is one
-example of such systems (I believe I do not need to enlist here all
-systems supporting ACPI). On the other hand, not all systems have ACPI
-or are specified to use ACPI.  Thus, here is another reason to represent
-properly thermal data, so that we can scale across systems.
-
-In the specific case of Linux, the common thermal concepts between ACPI
-systems and non-ACPI systems have been represented in the thermal
-framework (CONFIG_THERMAL). Today, on ACPI systems, thermal data is
-fetched from bootloader with help from the common ACPI parser. For
-non-ACPI systems, the thermal data is actually coded as part of device
-drivers.
-
-So, to the point, a brief explanation of my proposal goes as follows:
-i   - trip points: a node to describe a point in the temperature domain
-in which the system has to take an action. This node describes just the
-point, not the action. Properties here are temperature, hysteresis, and
-type (critical, hot, passive, active, etc).
-ii  - binding parameters: the bind_param node is a node to describe how
-actions (cooling devices) get assigned to trip points. Cooling devices
-are expected to be loaded in the target system. Properties here are:
-cooling device name, weight, trip_mask and limits.
-iii - thermal zones: the thermal_zone node is the node containing all
-the required info for describing a thermal zone with hardware thermal
-limitation, including its bindings with cooling devices. Properties here
-are:  type, passive_delay, polling_delay, governor. The thermal_zone
-node must contain, apart from its own properties, one node containing
-trip nodes and one node containing all the zone bind parameters.
-
-Here is an example (on OMAP4430):
-thermal_zone {
-	type =3D "CPU";
-	mask =3D <0x03>; /* trips writability */
-	passive_delay =3D <250>; /* milliseconds */
-	polling_delay =3D <1000>; /* milliseconds */
-	governor =3D "step_wise";
-	trips {
-		alert@100000{
-			temperature =3D <100000>; /* milliCelsius
-			hysteresis =3D <2000>; /* milliCelsius */
-			type =3D <THERMAL_TRIP_PASSIVE>;
-		};
-		crit@125000{
-			temperature =3D <125000>; /* milliCelsius
-			hysteresis =3D <2000>; /* milliCelsius */
-			type =3D <THERMAL_TRIP_CRITICAL>;
-		};
-	};
-	bind_params {
-		action@0{
-			cooling_device =3D "thermal-cpufreq";
-			weight =3D <100>; /* percentage */
-			mask =3D <0x01>;
-			/* no limits, using defaults */
-		};
-	};
-};
-
-In this current proposal, a 'thermal_zone' node would be embedded inside
-a temperature sensor node, for simplicity. But other possible builds
-could embedded them in the device with thermal limits (CPU nodes, for
-instance) or they could be not embedded in any specific node.
-
-A full documented description can be found here [4]. Also a branch
-containing:
-(a) needed changes in order to have this DT parser;
-(b) the DT parser with documentation
-(c) examples on how drivers could be changes to use the parser
-can be found in my branch here [5]. I wrote the thermal DT parser to
-build thermal zones with the thermal framework API. However, if one does
-not want to do that, it can simple do not include a CONFIG_THERMAL_OF=3Dy=
-
-in her/his build, and the calls will be translated to nops, and the
-device tree thermal data can be parsed to somewhere else interested
-(other subsystem or even user land). A TODO on this implementation is
-that it still lacks the representation of thermal zones composed by
-several sensors. However, I believe it is better to take an incremental
-approach here.  This series can already be used to improve most of the
-existing platform thermal drivers (most are CPU thermal drivers) and to
-reuse the existing code of some hwmon sensors to build thermal zones for
-board thermal requirements.
-
-I have already posted a patch series with this proposal on [6], that
-contains a reference for the original RFC. But looks like my messages
-got moderated on device tree mailing list. Obviously, within PM forum,
-feedback was quite positive. However, we cannot proceed without proper
-assessment of other subsystems. lm-sensors  folks (Guenter) seam to be
-strongly against this series, as there is a fear that this may introduce
-a mis-usage of DT. I still believe this is needed for  hardware
-description, and thus not a infringement on DT purposes.
-
-Please let me know your thoughts on this topic and apologize me if my
-previous messages on this topic did not reach you (hope they reach now).
-
-All best,
-
-Eduardo Valentin
-
-[0] - https://lkml.org/lkml/2013/7/17/621
-[1] - https://lkml.org/lkml/2013/7/18/279
-[2] - www.devicetree.org
-[3] - http://www.acpi.info/
-[4] -
-https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/diff/Docu=
-mentation/devicetree/bindings/thermal/thermal.txt?h=3Dthermal_work/therma=
-l_core/dt_parser&id=3D405bf0b51457ed055a082af2653d7ce757bc2e91
-[5] -
-https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/log/?h=3D=
-thermal_work/thermal_core/dt_parser
-[6] - https://lkml.org/lkml/2013/7/17/923
+Acked-by: Nicolas Pitre <nico@linaro.org>
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-
-
-------enig2GMSSEWKGMJVHNNELKSIB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHtQOQACgkQCXcVR3XQvP2MXQD+J+QCiegC3ZlsjubbV/pz2AYJ
-+x13MdKcHshyhdm8Rc4A/Ru+e0NG2kBIjSSS1a5qLj6O9fywxAhccc3IyS03LCFK
-=bDq5
------END PGP SIGNATURE-----
-
-------enig2GMSSEWKGMJVHNNELKSIB--
+> ---
+>  drivers/bus/arm-cci.c | 28 +++++++---------------------
+>  1 file changed, 7 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/bus/arm-cci.c b/drivers/bus/arm-cci.c
+> index 7332889..7dd891c 100644
+> --- a/drivers/bus/arm-cci.c
+> +++ b/drivers/bus/arm-cci.c
+> @@ -122,17 +122,8 @@ EXPORT_SYMBOL_GPL(cci_ace_get_port);
+>  
+>  static void __init cci_ace_init_ports(void)
+>  {
+> -	int port, ac, cpu;
+> -	u64 hwid;
+> -	const u32 *cell;
+> -	struct device_node *cpun, *cpus;
+> -
+> -	cpus = of_find_node_by_path("/cpus");
+> -	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+> -		return;
+> -
+> -	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
+> -		ac = of_n_addr_cells(cpus);
+> +	int port, cpu;
+> +	struct device_node *cpun;
+>  
+>  	/*
+>  	 * Port index look-up speeds up the function disabling ports by CPU,
+> @@ -141,18 +132,13 @@ static void __init cci_ace_init_ports(void)
+>  	 * The stashed index array is initialized for all possible CPUs
+>  	 * at probe time.
+>  	 */
+> -	for_each_child_of_node(cpus, cpun) {
+> -		if (of_node_cmp(cpun->type, "cpu"))
+> -			continue;
+> -		cell = of_get_property(cpun, "reg", NULL);
+> -		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
+> -			continue;
+> -
+> -		hwid = of_read_number(cell, ac);
+> -		cpu = get_logical_index(hwid & MPIDR_HWID_BITMASK);
+> +	for_each_possible_cpu(cpu) {
+> +		/* too early to use cpu->of_node */
+> +		cpun = of_get_cpu_node(cpu);
+>  
+> -		if (cpu < 0 || !cpu_possible(cpu))
+> +		if (WARN(!cpun, "Missing cpu device node\n"))
+>  			continue;
+> +
+>  		port = __cci_ace_get_port(cpun, ACE_PORT);
+>  		if (port < 0)
+>  			continue;
+> -- 
+> 1.8.1.2
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
