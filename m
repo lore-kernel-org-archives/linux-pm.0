@@ -1,160 +1,61 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v3 01/16] of: add support for retrieving cpu node for a given logical cpu index
-Date: Mon, 22 Jul 2013 12:32:12 +0100
-Message-ID: <1374492747-13879-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH 0/2] PM / OPP: updates to enable sharing OPPs info
+Date: Mon, 22 Jul 2013 13:56:34 +0100
+Message-ID: <51ED2C02.3040202@arm.com>
+References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <519B45C3.8050700@arm.com> <20130720050943.5EB853E169C@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:41726 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207Ab3GVM4V convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 08:56:21 -0400
+In-Reply-To: <20130720050943.5EB853E169C@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grant Likely <grant.likely@linaro.org>
+Cc: Sudeep.KarkadaNagesha@arm.com, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Landley <rob@landley.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, mturquette@linaro.org
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Currently different drivers requiring to access cpu device node are
-parsing the device tree themselves. Since the ordering in the DT need
-not match the logical cpu ordering, the parsing logic needs to consider
-that. However, this has resulted in lots of code duplication and in some
-cases even incorrect logic.
+On 20/07/13 06:09, Grant Likely wrote:
+> On Tue, 21 May 2013 11:00:35 +0100, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com> wrote:
+>> Hi Rob, Grant,
+>>
+>> On 01/05/13 12:11, Sudeep KarkadaNagesha wrote:
+>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>
+>>> These are couple of updates to existing PM/OPP library to support
+>>> sharing of OPPs between different device nodes.
+>>>
+>>> Currently all the cpu nodes are parsed until the OPPs are found. This
+>>> is essential to support cpuhotplug without having to replicate OPP
+>>> information in all the cpu nodes.
+>>>
+>>> However in systems with multiple cpu power domain, its better to have
+>>> OPP entry for each cpu. To avoid replication, phandle can be specified
+>>> to the node which contains the full OPP information.
+>>>
+>> Is proposed option of phandle for OPP acceptable to avoid replication ?
+>> Any suggestions to proceed on this ? This is needed to support CPU
+>> hotplug on big LITTLE system where current methods like parsing all the
+>> nodes or just CPU0 node will not work.
+> 
+> Looks fine to me.
+Hi Grant,
 
-It's better to consolidate them by adding support for getting cpu
-device node for a given logical cpu index in DT core library. However
-logical to physical index mapping can be architecture specific.
+Thanks for the response.
 
-This patch adds of_get_cpu_node to retrieve a cpu device node for a
-given logical cpu index. The default matching of the physical id to the
-logical cpu index can be overridden by architecture specific code.
+However I had a thought after seeing recent patch series by Mike[1]
+Since the OPPs are usually associated with clocks, and multiple devices
+sharing clocks will point to same clock node in DT, clk node is more
+logical place to specify the OPPs. IMO this will be good alignment for
+the consolidation effort by Mike. One issue with this approach is
+backward compatibility(using old DT)
 
-It is recommended to use these helper function only in pre-SMP/early
-initialisation stages to retrieve CPU device node pointers in logical
-ordering. Once the cpu devices are registered, it can be retrieved easily
-from cpu device of_node which avoids unnecessary parsing and matching.
+Regards,
+Sudeep
 
-Acked-by: Rob Herring <rob.herring@calxeda.com>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- drivers/of/base.c  | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++=
-++++
- include/linux/of.h |  6 +++++
- 2 files changed, 78 insertions(+)
+[1]
+http://lists.infradead.org/pipermail/linux-arm-kernel/2013-July/182231.html
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 5c54279..1e690bf 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -230,6 +230,78 @@ const void *of_get_property(const struct device_node *=
-np, const char *name,
- }
- EXPORT_SYMBOL(of_get_property);
-=20
-+/*
-+ * arch_match_cpu_phys_id - Match the given logical CPU and physical id
-+ *
-+ * @cpu: logical index of a cpu
-+ * @phys_id: physical identifier of a cpu
-+ *
-+ * CPU logical to physical index mapping is architecture specific.
-+ * However this __weak function provides a default match of physical
-+ * id to logical cpu index.
-+ *
-+ * Returns true if the physical identifier and the logical index correspon=
-d
-+ * to the same cpu, false otherwise.
-+ */
-+bool __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
-+{
-+=09return (u32)phys_id =3D=3D cpu;
-+}
-+
-+/**
-+ * of_get_cpu_node - Get device node associated with the given logical CPU
-+ *
-+ * @cpu: CPU number(logical index) for which device node is required
-+ *
-+ * The main purpose of this function is to retrieve the device node for th=
-e
-+ * given logical CPU index. It should be used to intialize the of_node in
-+ * cpu device. Once of_node in cpu device is populated, all the further
-+ * references can use that instead.
-+ *
-+ * CPU logical to physical index mapping is architecture specific and is b=
-uilt
-+ * before booting secondary cores. This function uses arch_match_cpu_phys_=
-id
-+ * which can be overridden by architecture specific implementation.
-+ *
-+ * Returns a node pointer for the logical cpu if found, else NULL.
-+ */
-+struct device_node *of_get_cpu_node(int cpu)
-+{
-+=09struct device_node *cpun, *cpus;
-+=09const __be32 *cell;
-+=09u64 hwid;
-+=09int ac, prop_len;
-+
-+=09cpus =3D of_find_node_by_path("/cpus");
-+=09if (!cpus) {
-+=09=09pr_warn("Missing cpus node, bailing out\n");
-+=09=09return NULL;
-+=09}
-+
-+=09if (of_property_read_u32(cpus, "#address-cells", &ac)) {
-+=09=09pr_warn("%s: missing #address-cells\n", cpus->full_name);
-+=09=09ac =3D of_n_addr_cells(cpus);
-+=09}
-+
-+=09for_each_child_of_node(cpus, cpun) {
-+=09=09if (of_node_cmp(cpun->type, "cpu"))
-+=09=09=09continue;
-+=09=09cell =3D of_get_property(cpun, "reg", &prop_len);
-+=09=09if (!cell) {
-+=09=09=09pr_warn("%s: missing reg property\n", cpun->full_name);
-+=09=09=09continue;
-+=09=09}
-+=09=09prop_len /=3D sizeof(*cell);
-+=09=09while (prop_len) {
-+=09=09=09hwid =3D of_read_number(cell, ac);
-+=09=09=09prop_len -=3D ac;
-+=09=09=09if (arch_match_cpu_phys_id(cpu, hwid))
-+=09=09=09=09return cpun;
-+=09=09}
-+=09}
-+
-+=09return NULL;
-+}
-+
- /** Checks if the given "compat" string matches one of the strings in
-  * the device's "compatible" property
-  */
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 1fd08ca..9e82812 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -266,6 +266,7 @@ extern int of_device_is_available(const struct device_n=
-ode *device);
- extern const void *of_get_property(const struct device_node *node,
- =09=09=09=09const char *name,
- =09=09=09=09int *lenp);
-+extern struct device_node *of_get_cpu_node(int cpu);
- #define for_each_property_of_node(dn, pp) \
- =09for (pp =3D dn->properties; pp !=3D NULL; pp =3D pp->next)
-=20
-@@ -459,6 +460,11 @@ static inline const void *of_get_property(const struct=
- device_node *node,
- =09return NULL;
- }
-=20
-+static inline struct device_node *of_get_cpu_node(int cpu)
-+{
-+=09return NULL;
-+}
-+
- static inline int of_property_read_u64(const struct device_node *np,
- =09=09=09=09       const char *propname, u64 *out_value)
- {
---=20
-1.8.1.2
