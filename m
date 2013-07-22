@@ -1,7 +1,7 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu nodes
-Date: Mon, 22 Jul 2013 12:32:16 +0100
-Message-ID: <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v3 03/16] driver/core: cpu: initialize of_node in cpu's device struture
+Date: Mon, 22 Jul 2013 12:32:14 +0100
+Message-ID: <1374492747-13879-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
@@ -10,107 +10,53 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>
+Cc: Sudeep.KarkadaNagesha@arm.com, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Currently set_secondary_cpus_clock assume the CPU logical ordering
-and the MPDIR in DT are same, which is incorrect.
+CPUs are also registered as devices but the of_node in these cpu
+devices are not initialized. Currently different drivers requiring
+to access cpu device node are parsing the nodes themselves and
+initialising the of_node in cpu device.
 
-Since the CPU device nodes can be retrieved in the logical ordering
-using the DT helper, we can remove the devices tree parsing.
+The of_node in all the cpu devices needs to be initialized properly
+and at one place. The best place to update this is CPU subsystem
+driver when registering the cpu devices.
 
-This patch removes DT parsing by making use of of_get_cpu_node.
+The OF/DT core library now provides of_get_cpu_node to retrieve a cpu
+device node for a given logical index by abstracting the architecture
+specific details.
 
-Cc: Gregory Clement <gregory.clement@free-electrons.com>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>
+This patch uses of_get_cpu_node to assign of_node when registering the
+cpu devices.
+
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-------------------=
-----
- 1 file changed, 24 insertions(+), 28 deletions(-)
+ drivers/base/cpu.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index ce81d30..001dd42 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -23,51 +23,47 @@
- #include <linux/of.h>
- #include <linux/mbus.h>
- #include <asm/cacheflush.h>
-+#include <asm/prom.h>
- #include <asm/smp_plat.h>
- #include "common.h"
- #include "armada-370-xp.h"
- #include "pmsu.h"
- #include "coherency.h"
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 4c358bc..ea51c6d 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -14,6 +14,7 @@
+ #include <linux/slab.h>
+ #include <linux/percpu.h>
+ #include <linux/acpi.h>
++#include <linux/of.h>
 =20
-+static struct clk *__init get_cpu_clk(int cpu)
-+{
-+=09struct clk *cpu_clk;
-+=09struct device_node *np =3D of_get_cpu_node(cpu);
-+
-+=09if (WARN(!np, "missing cpu node\n"))
-+=09=09return NULL;
-+=09cpu_clk =3D of_clk_get(np, 0);
-+=09if (WARN_ON(IS_ERR(cpu_clk)))
-+=09=09return NULL;
-+=09return cpu_clk;
-+}
-+
- void __init set_secondary_cpus_clock(void)
- {
--=09int thiscpu;
-+=09int thiscpu, cpu;
- =09unsigned long rate;
--=09struct clk *cpu_clk =3D NULL;
--=09struct device_node *np =3D NULL;
-+=09struct clk *cpu_clk;
+ #include "base.h"
 =20
- =09thiscpu =3D smp_processor_id();
--=09for_each_node_by_type(np, "cpu") {
--=09=09int err;
--=09=09int cpu;
--
--=09=09err =3D of_property_read_u32(np, "reg", &cpu);
--=09=09if (WARN_ON(err))
--=09=09=09return;
--
--=09=09if (cpu =3D=3D thiscpu) {
--=09=09=09cpu_clk =3D of_clk_get(np, 0);
--=09=09=09break;
--=09=09}
--=09}
--=09if (WARN_ON(IS_ERR(cpu_clk)))
-+=09cpu_clk =3D get_cpu_clk(thiscpu);
-+=09if (!cpu_clk)
- =09=09return;
- =09clk_prepare_enable(cpu_clk);
- =09rate =3D clk_get_rate(cpu_clk);
-=20
- =09/* set all the other CPU clk to the same rate than the boot CPU */
--=09for_each_node_by_type(np, "cpu") {
--=09=09int err;
--=09=09int cpu;
--
--=09=09err =3D of_property_read_u32(np, "reg", &cpu);
--=09=09if (WARN_ON(err))
-+=09for_each_possible_cpu(cpu) {
-+=09=09if (cpu =3D=3D thiscpu)
-+=09=09=09continue;
-+=09=09cpu_clk =3D get_cpu_clk(cpu);
-+=09=09if (!cpu_clk)
- =09=09=09return;
--
--=09=09if (cpu !=3D thiscpu) {
--=09=09=09cpu_clk =3D of_clk_get(np, 0);
--=09=09=09clk_set_rate(cpu_clk, rate);
--=09=09}
-+=09=09clk_set_rate(cpu_clk, rate);
- =09}
- }
-=20
+@@ -289,6 +290,7 @@ int register_cpu(struct cpu *cpu, int num)
+ =09cpu->dev.release =3D cpu_device_release;
+ =09cpu->dev.offline_disabled =3D !cpu->hotpluggable;
+ =09cpu->dev.offline =3D !cpu_online(num);
++=09cpu->dev.of_node =3D of_get_cpu_node(num);
+ #ifdef CONFIG_ARCH_HAS_CPU_AUTOPROBE
+ =09cpu->dev.bus->uevent =3D arch_cpu_uevent;
+ #endif
 --=20
 1.8.1.2
