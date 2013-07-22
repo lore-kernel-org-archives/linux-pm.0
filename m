@@ -1,63 +1,99 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH 0/2] PM / OPP: updates to enable sharing OPPs info
-Date: Mon, 22 Jul 2013 14:01:27 +0100
-Message-ID: <51ED2D27.2030904@arm.com>
-References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <519B45C3.8050700@arm.com> <20130720050943.5EB853E169C@localhost>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v3 01/16] of: add support for retrieving cpu node for a
+ given logical cpu index
+Date: Mon, 22 Jul 2013 10:14:02 -0400 (EDT)
+Message-ID: <alpine.LFD.2.03.1307221007160.15022@syhkavp.arg>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:47929 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635Ab3GVNBL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 09:01:11 -0400
-In-Reply-To: <20130720050943.5EB853E169C@localhost>
+Received: from mail-qa0-f46.google.com ([209.85.216.46]:44007 "EHLO
+	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009Ab3GVOOG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 10:14:06 -0400
+Received: by mail-qa0-f46.google.com with SMTP id bq6so480721qab.12
+        for <linux-pm@vger.kernel.org>; Mon, 22 Jul 2013 07:14:05 -0700 (PDT)
+In-Reply-To: <1374492747-13879-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grant Likely <grant.likely@linaro.org>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Landley <rob@landley.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, mturquette@linaro.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 
-(sorry with new DT mailing list address this time)
-On 20/07/13 06:09, Grant Likely wrote:
-> On Tue, 21 May 2013 11:00:35 +0100, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com> wrote:
->> Hi Rob, Grant,
->>
->> On 01/05/13 12:11, Sudeep KarkadaNagesha wrote:
->>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>
->>> These are couple of updates to existing PM/OPP library to support
->>> sharing of OPPs between different device nodes.
->>>
->>> Currently all the cpu nodes are parsed until the OPPs are found. This
->>> is essential to support cpuhotplug without having to replicate OPP
->>> information in all the cpu nodes.
->>>
->>> However in systems with multiple cpu power domain, its better to have
->>> OPP entry for each cpu. To avoid replication, phandle can be specified
->>> to the node which contains the full OPP information.
->>>
->> Is proposed option of phandle for OPP acceptable to avoid replication ?
->> Any suggestions to proceed on this ? This is needed to support CPU
->> hotplug on big LITTLE system where current methods like parsing all the
->> nodes or just CPU0 node will not work.
+On Mon, 22 Jul 2013, Sudeep KarkadaNagesha wrote:
+
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> Looks fine to me.
+> Currently different drivers requiring to access cpu device node are
+> parsing the device tree themselves. Since the ordering in the DT need
+> not match the logical cpu ordering, the parsing logic needs to consider
+> that. However, this has resulted in lots of code duplication and in some
+> cases even incorrect logic.
 > 
-Hi Grant,
+> It's better to consolidate them by adding support for getting cpu
+> device node for a given logical cpu index in DT core library. However
+> logical to physical index mapping can be architecture specific.
+> 
+> This patch adds of_get_cpu_node to retrieve a cpu device node for a
+> given logical cpu index. The default matching of the physical id to the
+> logical cpu index can be overridden by architecture specific code.
+> 
+> It is recommended to use these helper function only in pre-SMP/early
+> initialisation stages to retrieve CPU device node pointers in logical
+> ordering. Once the cpu devices are registered, it can be retrieved easily
+> from cpu device of_node which avoids unnecessary parsing and matching.
+> 
+> Acked-by: Rob Herring <rob.herring@calxeda.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Thanks for the response.
+Minor nits below.  Otherwise...
 
-However I had a thought after seeing recent patch series by Mike[1]
-Since the OPPs are usually associated with clocks, and multiple devices
-sharing clocks will point to same clock node in DT, clk node is more
-logical place to specify the OPPs. IMO this will be good alignment for
-the consolidation effort by Mike. One issue with this approach is
-backward compatibility(using old DT)
+Acked-by: Nicolas Pitre <nico@linaro.org>
 
-Regards,
-Sudeep
+> ---
+>  drivers/of/base.c  | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/of.h |  6 +++++
+>  2 files changed, 78 insertions(+)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 5c54279..1e690bf 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -230,6 +230,78 @@ const void *of_get_property(const struct device_node *np, const char *name,
+>  }
+>  EXPORT_SYMBOL(of_get_property);
+>  
+> +/*
+> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
+> + *
+> + * @cpu: logical index of a cpu
+> + * @phys_id: physical identifier of a cpu
+> + *
+> + * CPU logical to physical index mapping is architecture specific.
+> + * However this __weak function provides a default match of physical
+> + * id to logical cpu index.
+> + *
+> + * Returns true if the physical identifier and the logical index correspond
+> + * to the same cpu, false otherwise.
+> + */
+> +bool __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
 
-[1]
-http://lists.infradead.org/pipermail/linux-arm-kernel/2013-July/182231.html
+Maybe a prototype declaration for this function should be added to 
+include/linux/of.h to avoid mismatch with architecture provided 
+versions.
+
+> +{
+> +	return (u32)phys_id == cpu;
+> +}
+> +
+> +/**
+> + * of_get_cpu_node - Get device node associated with the given logical CPU
+> + *
+> + * @cpu: CPU number(logical index) for which device node is required
+> + *
+> + * The main purpose of this function is to retrieve the device node for the
+> + * given logical CPU index. It should be used to intialize the of_node in
+
+s/intialize/initialize/
 
 
+Nicolas
