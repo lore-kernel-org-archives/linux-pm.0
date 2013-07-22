@@ -1,93 +1,91 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH v3 06/16] drivers/bus: arm-cci: avoid parsing DT for cpu
- device nodes
-Date: Mon, 22 Jul 2013 10:37:59 -0400 (EDT)
-Message-ID: <alpine.LFD.2.03.1307221036510.15022@syhkavp.arg>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v3 01/16] of: add support for retrieving cpu node for
+ a given logical cpu index
+Date: Mon, 22 Jul 2013 16:07:05 +0100
+Message-ID: <51ED4A99.3030403@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <alpine.LFD.2.03.1307221007160.15022@syhkavp.arg>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1374492747-13879-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <alpine.LFD.2.03.1307221007160.15022@syhkavp.arg>
 Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 22 Jul 2013, Sudeep KarkadaNagesha wrote:
+Hi Nico,
 
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 22/07/13 15:14, Nicolas Pitre wrote:
+> On Mon, 22 Jul 2013, Sudeep KarkadaNagesha wrote:
 > 
-> Since the CPU device nodes can be retrieved using arch_of_get_cpu_node,
-> we can use it to avoid parsing the cpus node searching the cpu nodes and
-> mapping to logical index.
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> Currently different drivers requiring to access cpu device node are
+>> parsing the device tree themselves. Since the ordering in the DT need
+>> not match the logical cpu ordering, the parsing logic needs to consider
+>> that. However, this has resulted in lots of code duplication and in some
+>> cases even incorrect logic.
+>>
+>> It's better to consolidate them by adding support for getting cpu
+>> device node for a given logical cpu index in DT core library. However
+>> logical to physical index mapping can be architecture specific.
+>>
+>> This patch adds of_get_cpu_node to retrieve a cpu device node for a
+>> given logical cpu index. The default matching of the physical id to the
+>> logical cpu index can be overridden by architecture specific code.
+>>
+>> It is recommended to use these helper function only in pre-SMP/early
+>> initialisation stages to retrieve CPU device node pointers in logical
+>> ordering. Once the cpu devices are registered, it can be retrieved easily
+>> from cpu device of_node which avoids unnecessary parsing and matching.
+>>
+>> Acked-by: Rob Herring <rob.herring@calxeda.com>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> This patch removes parsing DT for cpu nodes by using of_get_cpu_node.
+> Minor nits below.  Otherwise...
 > 
-> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Acked-by: Nicolas Pitre <nico@linaro.org>
+> 
+Thanks for all the Acks.
 
-Acked-by: Nicolas Pitre <nico@linaro.org>
+>> ---
+>>  drivers/of/base.c  | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/of.h |  6 +++++
+>>  2 files changed, 78 insertions(+)
+>>
+>> diff --git a/drivers/of/base.c b/drivers/of/base.c
+>> index 5c54279..1e690bf 100644
+>> --- a/drivers/of/base.c
+>> +++ b/drivers/of/base.c
+>> @@ -230,6 +230,78 @@ const void *of_get_property(const struct device_node *np, const char *name,
+>>  }
+>>  EXPORT_SYMBOL(of_get_property);
+>>  
+>> +/*
+>> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
+>> + *
+>> + * @cpu: logical index of a cpu
+>> + * @phys_id: physical identifier of a cpu
+>> + *
+>> + * CPU logical to physical index mapping is architecture specific.
+>> + * However this __weak function provides a default match of physical
+>> + * id to logical cpu index.
+>> + *
+>> + * Returns true if the physical identifier and the logical index correspond
+>> + * to the same cpu, false otherwise.
+>> + */
+>> +bool __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
+> 
+> Maybe a prototype declaration for this function should be added to 
+> include/linux/of.h to avoid mismatch with architecture provided 
+> versions.
+> 
+Agreed, but include/linux/of.h doesn't seem to be right choice for me as
+this function is not really related to OF/DT. I can't choose any better
+place either. I don't have a strong opinion on that, just a thought.
+
+Regards,
+Sudeep
 
 
-> ---
->  drivers/bus/arm-cci.c | 28 +++++++---------------------
->  1 file changed, 7 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/bus/arm-cci.c b/drivers/bus/arm-cci.c
-> index 7332889..7dd891c 100644
-> --- a/drivers/bus/arm-cci.c
-> +++ b/drivers/bus/arm-cci.c
-> @@ -122,17 +122,8 @@ EXPORT_SYMBOL_GPL(cci_ace_get_port);
->  
->  static void __init cci_ace_init_ports(void)
->  {
-> -	int port, ac, cpu;
-> -	u64 hwid;
-> -	const u32 *cell;
-> -	struct device_node *cpun, *cpus;
-> -
-> -	cpus = of_find_node_by_path("/cpus");
-> -	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
-> -		return;
-> -
-> -	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
-> -		ac = of_n_addr_cells(cpus);
-> +	int port, cpu;
-> +	struct device_node *cpun;
->  
->  	/*
->  	 * Port index look-up speeds up the function disabling ports by CPU,
-> @@ -141,18 +132,13 @@ static void __init cci_ace_init_ports(void)
->  	 * The stashed index array is initialized for all possible CPUs
->  	 * at probe time.
->  	 */
-> -	for_each_child_of_node(cpus, cpun) {
-> -		if (of_node_cmp(cpun->type, "cpu"))
-> -			continue;
-> -		cell = of_get_property(cpun, "reg", NULL);
-> -		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
-> -			continue;
-> -
-> -		hwid = of_read_number(cell, ac);
-> -		cpu = get_logical_index(hwid & MPIDR_HWID_BITMASK);
-> +	for_each_possible_cpu(cpu) {
-> +		/* too early to use cpu->of_node */
-> +		cpun = of_get_cpu_node(cpu);
->  
-> -		if (cpu < 0 || !cpu_possible(cpu))
-> +		if (WARN(!cpun, "Missing cpu device node\n"))
->  			continue;
-> +
->  		port = __cci_ace_get_port(cpun, ACE_PORT);
->  		if (port < 0)
->  			continue;
-> -- 
-> 1.8.1.2
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
