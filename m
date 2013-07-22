@@ -1,45 +1,48 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: 3.10.1 cpufreq suspend/resume regression still present in 3.10.2
-Date: Mon, 22 Jul 2013 22:27:40 +0530
-Message-ID: <51ED6484.1070306@linux.vnet.ibm.com>
-References: <20130722151653.GA7213@sacarino.pirispons.net> <51ED4E2D.5020908@linux.vnet.ibm.com> <20130722165355.GA18371@kroah.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [lm-sensors] [RESEND PATCH V1 0/9] thermal: introduce DT thermal
+ zone build
+Date: Mon, 22 Jul 2013 12:43:43 -0700
+Message-ID: <51ED8B6F.6020700@wwwdotorg.org>
+References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <20130717220942.GB990@roeck-us.net> <51E7F341.8020508@ti.com> <51E8234D.1020607@wwwdotorg.org> <20130718212108.GC4110@roeck-us.net> <51E98A07.4050402@wwwdotorg.org> <20130721110807.GC24303@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:59984 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635Ab3GVRBT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 13:01:19 -0400
-Received: from /spool/local
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 23 Jul 2013 02:51:41 +1000
-In-Reply-To: <20130722165355.GA18371@kroah.com>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:58582 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932820Ab3GVTns (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 15:43:48 -0400
+In-Reply-To: <20130721110807.GC24303@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Kiko Piris <kernel@pirispons.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, l.stach@pengutronix.de
 
-On 07/22/2013 10:23 PM, Greg KH wrote:
-> On Mon, Jul 22, 2013 at 08:52:21PM +0530, Srivatsa S. Bhat wrote:
->> And both of them have been CC'ed to -stable. So they should be hitting
->> the stable tree soon.
->>
->> Hmm, that reminds me.. whenever a patch cc'ed to stable hit the mainline,
->> the patch signers used to receive an automatic email from Greg. I didn't
->> get that for the above two patches.. Did the process change due to the
->> recent discussions around -stable tree maintenance?
-> 
-> No, it did not change, I just have 150+ pending patches for the
-> 3.11-stable tree that I have yet to get through, give me a few weeks
-> please.
-> 
+On 07/21/2013 04:08 AM, Guenter Roeck wrote:
+> ... [a bunch of good points re: why DT shouldn't describe thermal
+> profiles]
 
-Oh! Sure, no problem.
+Yes, lots of good arguments there.
 
-Thank you!
+So, where/how in your opinion should thermal profiles be defined, and
+how should they get into the kernel? The nice thing about DT is that
+it's a single place that describes the platform, with a well-defined
+method of getting that information into the kernel. What alternatives exist?
 
-Regards,
-Srivatsa S. Bhat
+> Other but related subject .. from a thermal / hwmon driver's perspective, if
+> such a driver supports thermal subsystem, it should just register itself as
+> thermal sensor device, because that is what it is. If and how it is tied to
+> cooling devices should be part of the thermal subsystem and be decided there.
 
+For audio, we have individual DT nodes that represent individual
+audio-related components such as audio controllers, audio CODECs, etc.
+We also have a "virtual" node that describes how those components
+interact and create a complete sound card. Would it make sense to do
+something similar with thermal sensors and cooling devices; represent
+them all individually, have them register themselves with the
+thermal/hwmon subsystem as you describe, but then have another "system
+level" node that describes how the system designer intended them to
+interact?
+
+If you don't think so, how would the kernel represent and gain that
+higher-level knowledge?
