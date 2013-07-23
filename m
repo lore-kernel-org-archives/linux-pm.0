@@ -1,22 +1,29 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: RE: [PATCH 1/1] x86, acpi: Fix wrong checking condition in
- acpi_register_lapic().
-Date: Tue, 23 Jul 2013 01:38:14 +0000
-Message-ID: <1A7043D5F58CCB44A599DFD55ED4C9484119183C@FMSMSX106.amr.corp.intel.com>
-References: <1374543541-4451-1-git-send-email-tangchen@cn.fujitsu.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Panic - Bisected] f1a18a10566081abfce1649c2f3884b28fff7372 cases
+ panic on boot
+Date: Mon, 22 Jul 2013 19:11:44 -0700
+Message-ID: <CA+55aFwQ02N=Q8ArztM-XhdC-cSj=GE-EvwvkarkpZfDUt+Rsg@mail.gmail.com>
+References: <CAELBVzCK3Dm-HtAn3iy0Nz-MeOJVvRO20KqE0WojWF1nFv_-1Q@mail.gmail.com>
+	<CAELBVzCUrJXWB1dO2mOwoX97x+RO2AeCNEazXzG4DrHXSk9JmQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:42386 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754005Ab3GWBiZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 21:38:25 -0400
-In-Reply-To: <1374543541-4451-1-git-send-email-tangchen@cn.fujitsu.com>
-Content-Language: en-US
+Received: from mail-ve0-f180.google.com ([209.85.128.180]:45992 "EHLO
+	mail-ve0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343Ab3GWCLp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 22:11:45 -0400
+In-Reply-To: <CAELBVzCUrJXWB1dO2mOwoX97x+RO2AeCNEazXzG4DrHXSk9JmQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tang Chen <tangchen@cn.fujitsu.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Reviewed-by: Len Brown <len.brown@intel.com>
+On 22 July 2013 21:45, Kevin Winchester <kjwinchester@gmail.com> wrote:
+> I have found that the new CPU Package temperature thermal driver introduced
+> in this merge window causes my HP laptop to panic on boot.
 
+I just merged Zhang's pull request that should contain a fix for this,
+but was planning on the allmoconfig build finishing before pushing it
+out. Give me a few minutes..
+
+               Linus
