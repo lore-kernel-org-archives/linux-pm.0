@@ -1,41 +1,71 @@
-From: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: [PATCH 1/1 v2] x86, acpi: Fix wrong checking condition in acpi_register_lapic().
-Date: Tue, 23 Jul 2013 16:00:19 +0800
-Message-ID: <1374566419-21120-1-git-send-email-tangchen@cn.fujitsu.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cn.fujitsu.com ([222.73.24.84]:11623 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753914Ab3GWH5g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Jul 2013 03:57:36 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH v3 12/16] cpufreq: kirkwood-cpufreq: remove device tree
+ parsing for cpu nodes
+Date: Tue, 23 Jul 2013 11:25:16 +0200
+Message-ID: <20130723092516.GC6846@lunn.ch>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1374492747-13879-13-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1374492747-13879-13-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>
 List-Id: linux-pm@vger.kernel.org
-To: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-We wanted to check if the acpi id is out of range. It should be:
-	if (id >= MAX_LOCAL_APIC).
+On Mon, Jul 22, 2013 at 12:32:23PM +0100, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Now that the cpu device registration initialises the of_node(if available)
+> appropriately for all the cpus, parsing here is redundant.
+> 
+> This patch removes all DT parsing and uses cpu->of_node instead.
+> 
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> ---
+>  drivers/cpufreq/kirkwood-cpufreq.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> index c233ea6..25ac2cb 100644
+> --- a/drivers/cpufreq/kirkwood-cpufreq.c
+> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
+> @@ -14,7 +14,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/clk-provider.h>
+>  #include <linux/cpufreq.h>
+> -#include <linux/of.h>
+> +#include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/io.h>
+>  #include <asm/proc-fns.h>
+> @@ -175,9 +175,11 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+>  	if (IS_ERR(priv.base))
+>  		return PTR_ERR(priv.base);
+>  
+> -	np = of_find_node_by_path("/cpus/cpu@0");
+> -	if (!np)
+> +	np = of_cpu_device_node_get(0);
+> +	if (!np) {
+> +		dev_err(&pdev->dev, "failed to get cpu device node\n");
+>  		return -ENODEV;
+> +	}
+>  
+>  	priv.cpu_clk = of_clk_get_by_name(np, "cpu_clk");
+>  	if (IS_ERR(priv.cpu_clk)) {
+> -- 
+> 1.8.1.2
 
-v1 -> v2:
-Remove the superfluous parentheses around MAX_LOCAL_APIC.
+Hi Sudeep
 
-Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
-Reviewed-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/acpi/boot.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I've not had chance to test it, but it looks O.K.
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index d81a972..256479d 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -199,7 +199,7 @@ static void __cpuinit acpi_register_lapic(int id, u8 enabled)
- {
- 	unsigned int ver = 0;
- 
--	if (id >= (MAX_LOCAL_APIC-1)) {
-+	if (id >= MAX_LOCAL_APIC) {
- 		printk(KERN_INFO PREFIX "skipped apicid that is too big\n");
- 		return;
- 	}
--- 
-1.7.10.1
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 
+	  Andrew
