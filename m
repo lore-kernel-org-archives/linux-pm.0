@@ -1,71 +1,38 @@
-From: Michael Leun <lkml20130126@newton.leun.net>
-Subject: Re: 3.11-rc regression bisected: s2disk does not work (was Re:
- [PATCH v3 13/16] futex: use freezable blocking call)
-Date: Tue, 23 Jul 2013 20:08:54 +0200
-Message-ID: <20130723200854.2046296b@xenia.leun.net>
-References: <1367884221-20462-1-git-send-email-ccross@android.com>
-	<1367884221-20462-14-git-send-email-ccross@android.com>
-	<20130723010250.5a3465ec@xenia.leun.net>
-	<CAMbhsRQv+W897_5qGuNJD47jQ9ozN6KxeCa6UJAvZpqVuBpQ4w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: [PATCH 03/27] drivers/cpuidle: don't check resource with devm_ioremap_resource
+Date: Tue, 23 Jul 2013 20:01:36 +0200
+Message-ID: <1374602524-3398-4-git-send-email-wsa@the-dreams.de>
+References: <1374602524-3398-1-git-send-email-wsa@the-dreams.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMbhsRQv+W897_5qGuNJD47jQ9ozN6KxeCa6UJAvZpqVuBpQ4w@mail.gmail.com>
+In-Reply-To: <1374602524-3398-1-git-send-email-wsa@the-dreams.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: Michael Leun <lkml20130126@newton.leun.net>, lkml <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Oleg Nesterov <oleg@redhat.com>, linux-nfs <linux-nfs@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Darren Hart <dvhart@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Randy Dunlap <rdunlap@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 22 Jul 2013 16:55:58 -0700
-Colin Cross <ccross@android.com> wrote:
+devm_ioremap_resource does sanity checks on the given resource. No need to
+duplicate this in the driver.
 
-> On Mon, Jul 22, 2013 at 4:02 PM, Michael Leun
-> <lkml20130126@newton.leun.net> wrote:
-> > On Mon,  6 May 2013 16:50:18 -0700
-> > Colin Cross <ccross@android.com> wrote:
-> >
-> >> Avoid waking up every thread sleeping in a futex_wait call during
-> > [...]
-> >
-> > With 3.11-rc s2disk from suspend-utils stopped working: Frozen at
-> > displaying 0% of saving image to disk.
-> >
-> > echo "1" >/sys/power/state still works.
-> >
-> > Bisecting yielded 88c8004fd3a5fdd2378069de86b90b21110d33a4,
-> > reverting that from 3.11-rc2 makes s2disk working again.
-> >
-> 
-> I think the expanded use of the freezable_* helpers is exposing an
-> existing bug in hibernation.  The SNAPSHOT_FREEZE ioctl calls
-> freeze_processes(), which sets the global system_freezing_cnt and
-> pm_freezing.  try_to_freeze_tasks then sends every process except
-> current a signal which causes them all to end up in the refrigerator.
-> The current task then returns back to userspace and continues its work
-> to suspend to disk.  If that task ever hits a call to try_to_freeze()
-> in the kernel, it will see system_freezing_cnt and pm_freezing=true
-> and freeze, and suspend to disk will hang forever.  It could hit
-> try_to_freeze() because of a signal delivered to the task, or from
-> calling any syscall that uses a freezable_* helper like the one I
-> added to sys_futex.
-> 
-> I think the right solution is to add a flag to the freezing task that
-> marks it unfreezable.  I  think PF_NOFREEZE would work, although it is
-> normally used on kernel threads, can you see if the attached patch
-> helps?
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+---
+Please apply via the subsystem-tree.
 
-That patch helps.
+ drivers/cpuidle/cpuidle-kirkwood.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
-BTW, the only machine I can reproduce this bug with is an i7-3630QM
-notebook. Cannot reproduce on an Core Duo U1400 and cannot reproduce on
-an i7 M 620.
-
-Are the sysreq backtraces still wanted? If so, any tip, how I could get
-them saved?
-
-
+diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+index 521b0a7..2237135 100644
+--- a/drivers/cpuidle/cpuidle-kirkwood.c
++++ b/drivers/cpuidle/cpuidle-kirkwood.c
+@@ -60,9 +60,6 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res == NULL)
+-		return -EINVAL;
+-
+ 	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(ddr_operation_base))
+ 		return PTR_ERR(ddr_operation_base);
 -- 
-MfG,
-
-Michael Leun
+1.7.10.4
