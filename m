@@ -1,40 +1,54 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
 Subject: Re: 3.11-rc regression bisected: s2disk does not work (was Re: [PATCH
  v3 13/16] futex: use freezable blocking call)
-Date: Mon, 22 Jul 2013 17:32:48 -0700
-Message-ID: <CA+55aFzUVPJe96z8V0F-znc8ZcpJid7LEeYww80M-Mx=S91tAA@mail.gmail.com>
+Date: Mon, 22 Jul 2013 17:42:49 -0700
+Message-ID: <CAMbhsRReF9xB597i9CcCj7D1P5kvB4cc0JmDQYeboqi11Kp99A@mail.gmail.com>
 References: <1367884221-20462-1-git-send-email-ccross@android.com>
 	<1367884221-20462-14-git-send-email-ccross@android.com>
 	<20130723010250.5a3465ec@xenia.leun.net>
 	<CAMbhsRQv+W897_5qGuNJD47jQ9ozN6KxeCa6UJAvZpqVuBpQ4w@mail.gmail.com>
+	<CA+55aFzUVPJe96z8V0F-znc8ZcpJid7LEeYww80M-Mx=S91tAA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f173.google.com ([209.85.128.173]:52843 "EHLO
-	mail-ve0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753753Ab3GWAcu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 20:32:50 -0400
-In-Reply-To: <CAMbhsRQv+W897_5qGuNJD47jQ9ozN6KxeCa6UJAvZpqVuBpQ4w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CA+55aFzUVPJe96z8V0F-znc8ZcpJid7LEeYww80M-Mx=S91tAA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Cc: Michael Leun <lkml20130126-yS7QfQBdiAdyjo5WHAzKoQ@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-nfs <linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Darren Hart <dvhart-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: Michael Leun <lkml20130126@newton.leun.net>, lkml <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Oleg Nesterov <oleg@redhat.com>, linux-nfs <linux-nfs@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Darren Hart <dvhart@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Randy Dunlap <rdunlap@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>
 
-On Mon, Jul 22, 2013 at 4:55 PM, Colin Cross <ccross@android.com> wrote:
+On Mon, Jul 22, 2013 at 5:32 PM, Linus Torvalds
+<torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org> wrote:
+> On Mon, Jul 22, 2013 at 4:55 PM, Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org> wrote:
+>>
+>> I think the right solution is to add a flag to the freezing task that
+>> marks it unfreezable.  I  think PF_NOFREEZE would work, although it is
+>> normally used on kernel threads, can you see if the attached patch
+>> helps?
 >
-> I think the right solution is to add a flag to the freezing task that
-> marks it unfreezable.  I  think PF_NOFREEZE would work, although it is
-> normally used on kernel threads, can you see if the attached patch
-> helps?
+> Hmm. That does seem to be the right thing to do, but I wonder about
+> the *other* callers of freeze_processes() IOW, kexec and friends.
+>
+> So maybe we should do this in {freeze|thaw}_processes() itself, and
+> just make the rule be that the caller of freeze_processes() itself is
+> obviously not frozen, and has to be the same one that then thaws
+> things?
+>
+> Colin? Rafael? Comments?
+>
+>                 Linus
 
-Hmm. That does seem to be the right thing to do, but I wonder about
-the *other* callers of freeze_processes() IOW, kexec and friends.
+I was worried about clearing the flag in thaw_processes().  If a
+kernel thread with PF_NOFREEZE set ever called thaw_processes(), which
+autosleep might do, it would clear the flag.  Or if a different thread
+called freeze_processes() and thaw_processes().  All the other callers
+besides the SNAPSHOT_FREEZE ioctl stay in the kernel between
+freeze_processes() and thaw_processes(), which makes the fanout of
+places that could call try_to_freeze() much more controllable.
 
-So maybe we should do this in {freeze|thaw}_processes() itself, and
-just make the rule be that the caller of freeze_processes() itself is
-obviously not frozen, and has to be the same one that then thaws
-things?
-
-Colin? Rafael? Comments?
-
-                Linus
+Using a new flag that operates like PF_NOFREEZE but doesn't conflict
+with it, or a nofreeze_depth counter, would also work.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
