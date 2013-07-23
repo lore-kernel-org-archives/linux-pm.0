@@ -1,54 +1,49 @@
-From: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: 3.11-rc regression bisected: s2disk does not work (was Re: [PATCH
- v3 13/16] futex: use freezable blocking call)
-Date: Mon, 22 Jul 2013 17:42:49 -0700
-Message-ID: <CAMbhsRReF9xB597i9CcCj7D1P5kvB4cc0JmDQYeboqi11Kp99A@mail.gmail.com>
-References: <1367884221-20462-1-git-send-email-ccross@android.com>
-	<1367884221-20462-14-git-send-email-ccross@android.com>
-	<20130723010250.5a3465ec@xenia.leun.net>
-	<CAMbhsRQv+W897_5qGuNJD47jQ9ozN6KxeCa6UJAvZpqVuBpQ4w@mail.gmail.com>
-	<CA+55aFzUVPJe96z8V0F-znc8ZcpJid7LEeYww80M-Mx=S91tAA@mail.gmail.com>
+From: Kevin Winchester <kjwinchester@gmail.com>
+Subject: Re: [Panic - Bisected] f1a18a10566081abfce1649c2f3884b28fff7372 cases
+ panic on boot
+Date: Mon, 22 Jul 2013 21:48:47 -0300
+Message-ID: <CAELBVzCUrJXWB1dO2mOwoX97x+RO2AeCNEazXzG4DrHXSk9JmQ@mail.gmail.com>
+References: <CAELBVzCK3Dm-HtAn3iy0Nz-MeOJVvRO20KqE0WojWF1nFv_-1Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CA+55aFzUVPJe96z8V0F-znc8ZcpJid7LEeYww80M-Mx=S91tAA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
-Cc: Michael Leun <lkml20130126-yS7QfQBdiAdyjo5WHAzKoQ@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-nfs <linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Darren Hart <dvhart-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vb0-f48.google.com ([209.85.212.48]:43222 "EHLO
+	mail-vb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752581Ab3GWAss (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2013 20:48:48 -0400
+In-Reply-To: <CAELBVzCK3Dm-HtAn3iy0Nz-MeOJVvRO20KqE0WojWF1nFv_-1Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Mon, Jul 22, 2013 at 5:32 PM, Linus Torvalds
-<torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org> wrote:
-> On Mon, Jul 22, 2013 at 4:55 PM, Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org> wrote:
->>
->> I think the right solution is to add a flag to the freezing task that
->> marks it unfreezable.  I  think PF_NOFREEZE would work, although it is
->> normally used on kernel threads, can you see if the attached patch
->> helps?
->
-> Hmm. That does seem to be the right thing to do, but I wonder about
-> the *other* callers of freeze_processes() IOW, kexec and friends.
->
-> So maybe we should do this in {freeze|thaw}_processes() itself, and
-> just make the rule be that the caller of freeze_processes() itself is
-> obviously not frozen, and has to be the same one that then thaws
-> things?
->
-> Colin? Rafael? Comments?
->
->                 Linus
+Sorry, forgot to change gmail to plain text mode, so the mailing lists
+rejected this.
 
-I was worried about clearing the flag in thaw_processes().  If a
-kernel thread with PF_NOFREEZE set ever called thaw_processes(), which
-autosleep might do, it would clear the flag.  Or if a different thread
-called freeze_processes() and thaw_processes().  All the other callers
-besides the SNAPSHOT_FREEZE ioctl stay in the kernel between
-freeze_processes() and thaw_processes(), which makes the fanout of
-places that could call try_to_freeze() much more controllable.
-
-Using a new flag that operates like PF_NOFREEZE but doesn't conflict
-with it, or a nofreeze_depth counter, would also work.
---
-To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On 22 July 2013 21:45, Kevin Winchester <kjwinchester@gmail.com> wrote:
+> I have found that the new CPU Package temperature thermal driver introduced
+> in this merge window causes my HP laptop to panic on boot.
+>
+> An image of the panic information can be found here:
+>
+> https://lh6.googleusercontent.com/-lA_vInpGkIs/Ue3FySjGOoI/AAAAAAAAAG0/fRmh0Qjcs9o/w1135-h851-no/Linux+Screenshots+-+1
+>
+> I bisected to find the offending commit, since the error was quite
+> reproducible.
+>
+> # first bad commit: [f1a18a10566081abfce1649c2f3884b28fff7372] Thermal: CPU
+> Package temperature thermal
+>
+> I'll next try:
+>
+> - disabling the driver in my config (I enabled it when asked since thermal
+> control seems like a good thing)
+> - Reverting the patch on top of v3.11-rc2
+>
+>
+> What other info can I provide or steps can I take to help with this?
+>
+>
+> Thanks,
+> Kevin
+>
