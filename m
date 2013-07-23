@@ -1,49 +1,41 @@
 From: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: Re: [PATCH 1/1] x86, acpi: Fix wrong checking condition in acpi_register_lapic().
-Date: Tue, 23 Jul 2013 15:55:31 +0800
-Message-ID: <51EE36F3.2010308@cn.fujitsu.com>
-References: <1374543541-4451-1-git-send-email-tangchen@cn.fujitsu.com> <20130723073950.GB13710@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130723073950.GB13710@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1 v2] x86, acpi: Fix wrong checking condition in acpi_register_lapic().
+Date: Tue, 23 Jul 2013 16:00:19 +0800
+Message-ID: <1374566419-21120-1-git-send-email-tangchen@cn.fujitsu.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cn.fujitsu.com ([222.73.24.84]:11623 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753914Ab3GWH5g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Jul 2013 03:57:36 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/23/2013 03:39 PM, Ingo Molnar wrote:
->
-> * Tang Chen<tangchen@cn.fujitsu.com>  wrote:
->
->> We wanted to check if the acpi id is out of range. It should be:
->> 	if (id>= (MAX_LOCAL_APIC)).
->
-> Does this have any practical impact, or can it wait until v3.12?
+We wanted to check if the acpi id is out of range. It should be:
+	if (id >= MAX_LOCAL_APIC).
 
-I haven't tested out any impact now, just found it when reading the code.
-We can wait until v3.12.
+v1 -> v2:
+Remove the superfluous parentheses around MAX_LOCAL_APIC.
 
->
->> Signed-off-by: Tang Chen<tangchen@cn.fujitsu.com>
->> ---
->>   arch/x86/kernel/acpi/boot.c |    2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
->> index d81a972..2a15ae7 100644
->> --- a/arch/x86/kernel/acpi/boot.c
->> +++ b/arch/x86/kernel/acpi/boot.c
->> @@ -199,7 +199,7 @@ static void __cpuinit acpi_register_lapic(int id, u8 enabled)
->>   {
->>   	unsigned int ver = 0;
->>
->> -	if (id>= (MAX_LOCAL_APIC-1)) {
->> +	if (id>= (MAX_LOCAL_APIC)) {
->
-> The parentheses are now superfluous.
+Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
+Reviewed-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/kernel/acpi/boot.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Oh, yes. I'll send a new version without the parentheses.
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index d81a972..256479d 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -199,7 +199,7 @@ static void __cpuinit acpi_register_lapic(int id, u8 enabled)
+ {
+ 	unsigned int ver = 0;
+ 
+-	if (id >= (MAX_LOCAL_APIC-1)) {
++	if (id >= MAX_LOCAL_APIC) {
+ 		printk(KERN_INFO PREFIX "skipped apicid that is too big\n");
+ 		return;
+ 	}
+-- 
+1.7.10.1
 
-Thanks.
