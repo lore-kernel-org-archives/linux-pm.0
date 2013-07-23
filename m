@@ -1,85 +1,70 @@
-From: tianyu.lan@intel.com
-Subject: [PATCH] ACPI/glue: evaluate "_STA" method directly to get device actual status instead of using acpi_bus_get_status_handle()
-Date: Tue, 23 Jul 2013 10:47:13 +0800
-Message-ID: <1374547633-4477-1-git-send-email-tianyu.lan@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:49501 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753890Ab3GWCzt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 22 Jul 2013 22:55:49 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: 3.11-rc regression bisected: s2disk does not work (was Re: [PATCH
+ v3 13/16] futex: use freezable blocking call)
+Date: Mon, 22 Jul 2013 23:28:34 -0700
+Message-ID: <CAMbhsRSsq0pgS6KvCjiFGneDEJd6zSXsYB_2MCV=sh+6F2muog@mail.gmail.com>
+References: <1367884221-20462-1-git-send-email-ccross@android.com>
+	<CA+55aFzUVPJe96z8V0F-znc8ZcpJid7LEeYww80M-Mx=S91tAA@mail.gmail.com>
+	<CAMbhsRReF9xB597i9CcCj7D1P5kvB4cc0JmDQYeboqi11Kp99A@mail.gmail.com>
+	<15305281.aClQ8XUG9t@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <15305281.aClQ8XUG9t-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Cc: Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Michael Leun <lkml20130126-yS7QfQBdiAdyjo5WHAzKoQ@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-nfs <linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Darren Hart <dvhart-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: lenb@kernel.org
-Cc: Lan Tianyu <tianyu.lan@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Dagobertstaler@gmail.com, git@karolherbst.de
 
-From: Lan Tianyu <tianyu.lan@intel.com>
+On Mon, Jul 22, 2013 at 6:41 PM, Rafael J. Wysocki <rjw-KKrjLPT3xs0@public.gmane.org> wrote:
+> On Monday, July 22, 2013 05:42:49 PM Colin Cross wrote:
+>> On Mon, Jul 22, 2013 at 5:32 PM, Linus Torvalds
+>> <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org> wrote:
+>> > On Mon, Jul 22, 2013 at 4:55 PM, Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org> wrote:
+>> >>
+>> >> I think the right solution is to add a flag to the freezing task that
+>> >> marks it unfreezable.  I  think PF_NOFREEZE would work, although it is
+>> >> normally used on kernel threads, can you see if the attached patch
+>> >> helps?
+>> >
+>> > Hmm. That does seem to be the right thing to do, but I wonder about
+>> > the *other* callers of freeze_processes() IOW, kexec and friends.
+>> >
+>> > So maybe we should do this in {freeze|thaw}_processes() itself, and
+>> > just make the rule be that the caller of freeze_processes() itself is
+>> > obviously not frozen, and has to be the same one that then thaws
+>> > things?
+>> >
+>> > Colin? Rafael? Comments?
+>> >
+>> >                 Linus
+>>
+>> I was worried about clearing the flag in thaw_processes().  If a
+>> kernel thread with PF_NOFREEZE set ever called thaw_processes(), which
+>> autosleep might do, it would clear the flag.  Or if a different thread
+>> called freeze_processes() and thaw_processes().
+>
+> Is that legitimate?
 
-commit 33f767d7(ACPI: Rework acpi_get_child() to be more efficient) changes
-the logic of choosing child in the do_acpi_find_child() when there are
-multi child devices with same _ADR. Original, it returned the last one but
-it return the first one after commit 33f767d7. This causes regression on the
-Notebook P15SM that there is no ACPI handle for video card. This because
-there are two ACPI nodes with same _ADR for associated PCIE port. One
-contains video card's ACPI node and the other one doesn't(So called wrong
-ACPI node.). The wrong one is the first child device on this machine. So
-after commit 33f767d7, bbswitch can't find ACPI handle for video card.
-Further more, both these device nodes don't have _STA.
+Nothing precludes it today, but I don't see any need for it.  I'll add
+a comment when I add the flag.
 
-commit c7d9ca9(ACPI: add _STA evaluation at do_acpi_find_child()) also
-changes the logic of choosing child. On some platforms, there are multiple
-devices with the same "_ADR" and they are perceptively for WIN7, WIN8 and
-Linux. If one of them is enabled, others will be disabled. The commit calls
-acpi_bus_get_status_handle() to get device's status If a matching device object
-exists, but is disabled, acpi_get_child() will continue to walk the namespace
-in the hope of finding an enabled one. If one is found, its handle will be returned,
-but otherwise the function will return the handle of the disabled object found.
-For this case, Bios must provide _STA for these device nodes since this is designed
-for OS to select which device node should be chosen.
+>> All the other callers besides the SNAPSHOT_FREEZE ioctl stay in the kernel
+>> between freeze_processes() and thaw_processes(), which makes the fanout of
+>> places that could call try_to_freeze() much more controllable.
+>>
+>> Using a new flag that operates like PF_NOFREEZE but doesn't conflict
+>> with it, or a nofreeze_depth counter, would also work.
+>
+> Well, that would be robust enough.  At least if the purpose of that new flag
+> is clearly specified, people hopefully won't be tempted to optimize it away in
+> the future.
+>
+> Thanks,
+> Rafael
 
-After commit c7d9ca9, the first enabled device will be chosen or if
-all device nodes were disabled or acpi_bus_get_status_handle() always returned
-error, the last one would be returned. But for device nodes without _STA,
-according acpi spec "If a device object (including the processor object) does not
-have an _STA object, then OSPM assumes that the device is present, enabled, shown
-in the UI, and functioning." and so acpi_bus_get_status_handle() return 0x0F as
-status for these devices without _STA.
-
-On the Notebook P15SM, both PCIE port device node with same _ADR don't have _STA
-and are treated as ENABLED devices by do_acpi_find_child(). The first wrong device
-node is returned. To workaround the issue, evaluate the _STA directly in the
-do_acpi_find_child() and if all device nodes doesn't have _STA, the last one will
-be chosen. This also will not affect the case for commit c7d9ca9. This have been
-tested on Lenovo Y480 where commit 33f767d7 fixed one similar issue.
-
-Reference:https://bugzilla.kernel.org/show_bug.cgi?id=60561
-Reference:https://github.com/Bumblebee-Project/bbswitch/issues/65
-reference:https://github.com/Bumblebee-Project/bbswitch/issues/2#issuecomment-21101083
-Tested-by: Sergio Perez <Dagobertstaler@gmail.com>
-Tested-by: Karol Herbst <git@karolherbst.de>
-Cc: <stable@vger.kernel.org> #3.9+
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
-Hi Rafael:
-	This patch is based on the commit c7d9ca9 merged in v3.11
-and purposes to fix the regression introduced by 33f767d7 merged in v3.9.
-So it's necessary to backport both commit c7d9ca9 and this patch to 3.9+ stable tree?
-
- drivers/acpi/glue.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
-index f680957..732c707 100644
---- a/drivers/acpi/glue.c
-+++ b/drivers/acpi/glue.c
-@@ -87,7 +87,7 @@ static acpi_status do_acpi_find_child(acpi_handle handle, u32 lvl_not_used,
- 	status = acpi_evaluate_integer(handle, METHOD_NAME__ADR, NULL, &addr);
- 	if (ACPI_SUCCESS(status) && addr == *((u64 *)addr_p)) {
- 		*ret_p = handle;
--		status = acpi_bus_get_status_handle(handle, &sta);
-+		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
- 		if (ACPI_SUCCESS(status) && (sta & ACPI_STA_DEVICE_ENABLED))
- 			return AE_CTRL_TERMINATE;
- 	}
--- 
-1.8.3.2
-
+OK, I'll add a new flag.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
