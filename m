@@ -1,169 +1,249 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: RFC: device thermal limits represented in device tree nodes
-Date: Tue, 23 Jul 2013 18:44:38 -0700
-Message-ID: <51EF3186.9060001@wwwdotorg.org>
-References: <51ED40E3.5020703@ti.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 2/3 v6] cpufreq: stats: Add 'load_table' debugfs file to
+ show accumulated data of CPUs
+Date: Wed, 24 Jul 2013 10:56:36 +0900
+Message-ID: <51EF3454.50807@samsung.com>
+References: <1374146275-5758-1-git-send-email-cw00.choi@samsung.com>
+ <1374146275-5758-3-git-send-email-cw00.choi@samsung.com>
+ <CAKohponVEJv9e9V5qz+iugSMzu1zp1BeFf58W8m0qAV3_m6U1w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:48398 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760Ab3GXBop (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2013 21:44:45 -0400
-In-Reply-To: <51ED40E3.5020703@ti.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:15253 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833Ab3GXB4i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2013 21:56:38 -0400
+In-reply-to: <CAKohponVEJv9e9V5qz+iugSMzu1zp1BeFf58W8m0qAV3_m6U1w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>
-Cc: Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Durgadoss R <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-On 07/22/2013 07:25 AM, Eduardo Valentin wrote:
-> Hello Grant and Rob,
-> 
-> (Resending, as I got a message saying: 
-> <devicetree-discuss@lists.ozlabs.org>: Recipient address rejected:
-> User has moved to devicetree at vger.kernel.org)
-> 
-> I am writing this email to you specifically to ask your technical 
-> assessment with respect to representing device thermal limits as
-> device tree nodes. I am proposing to introduce device tree nodes to
-> describe these limits as thermal zones, their composition and their
-> relations with cooling devices and other thermal zones (thermal
-> data).
+Hi Viresh,
 
-Given:
-https://lkml.org/lkml/2013/7/20/69
-[PATCH 3/3] MAINTAINERS: Refactor device tree maintainership
+On 07/22/2013 08:05 PM, Viresh Kumar wrote:
+> On 18 July 2013 16:47, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> 
+>> +static int cpufreq_stats_reset_debugfs(struct cpufreq_policy *policy)
+>> +{
+>> +       struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
+>> +       int size;
+>> +
+>> +       if (!stat)
+>> +               return -EINVAL;
+>> +
+>> +       if (stat->load_table)
+>> +               kfree(stat->load_table);
+>> +       stat->load_last_index = 0;
+>> +
+>> +       size = sizeof(*stat->load_table) * stat->load_max_index;
+>> +       stat->load_table = kzalloc(size, GFP_KERNEL);
+>> +       if (!stat->load_table)
+>> +               return -ENOMEM;
+> 
+> Why are you freeing memory and allocating it again ??
 
-I'm explicitly CCing a few people besides Grant/Rob, and qouting the
-whole email.
+This purpose is reseting the data of stat->load_table.
+If you don't agree this, I'll initizliae stat->load_table array as zero(0) with loop statement.
 
->From my perspective, the concept of including thermal limits in DT
-seems reasonable, although I haven't looked at the proposed binding
-itself in detail yet.
+> 
+>> +       return 0;
+>> +}
+>> +
+>> +static int cpufreq_stats_create_debugfs(struct cpufreq_policy *policy)
+>> +{
+>> +       struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
+>> +       unsigned int idx, size;
+>> +       int ret = 0;
+>> +
+>> +       if (!stat)
+>> +               return -EINVAL;
+>> +
+>> +       if (!policy->cpu_debugfs)
+>> +               return -EINVAL;
+>> +
+>> +       stat->load_last_index = 0;
+>> +       stat->load_max_index = CONFIG_NR_CPU_LOAD_STORAGE;
+>> +
+>> +       /* Allocate memory for storage of CPUs load */
+>> +       size = sizeof(*stat->load_table) * stat->load_max_index;
+>> +       stat->load_table = kzalloc(size, GFP_KERNEL);
+>> +       if (!stat->load_table)
+>> +               return -ENOMEM;
+>> +
+>> +       /* Create debugfs directory and file for cpufreq */
+>> +       idx = cpumask_weight(policy->cpus) > 1 ? policy->cpu : 0;
+> 
+> idx is broken again..
 
-> As you should know, device thermal limits are part of hardware 
-> specification. Considering your board layout, mechanics, power 
-> dissipation and composition of ICs, etc, that will impose thermal 
-> requirements on your system, and infringing these limits can lead
-> to device damage, device life time reduction or even end user harm.
-> Thus, the thermal data help to describe the hardware limits and
-> what needs to be done if those limits are crosses, as part of your
-> board design and non-functional requirements. Obviously that is
-> very dependent on your hardware, and not all of them will have
-> these non-functional requirements. Besides, describing these limits
-> has *nothing* to do with how you actually find these limits.
+OK, I'll fix it.
+
 > 
-> In any case, there is a need to properly represent these
-> requirements and I am proposing to have this representation in
-> device tree. There were already couple of counter-arguments
-> claiming this is actually about configuration and performance
-> profile description. But I still stand against these two readings
-> of this proposal and again state that if one interprets it as
-> configuration or performance profile, that is a mis-understanding
-> [0]. Let me state it clear (again [1]), my proposal is to describe
-> hardware thermal limits, because these limits are part of a 
-> hardware specification; representing in device tree would not
-> infringe the original purpose of this data structure  ("The Device
-> Tree is a data structure for describing hardware."[2]).
+>> +       stat->debugfs_load_table = debugfs_create_file("load_table", S_IWUSR,
+>> +                                       policy->cpu_debugfs[idx],
+>> +                                       policy, &load_table_fops);
+>> +       if (!stat->debugfs_load_table) {
+>> +               ret = -ENOMEM;
+>> +               goto err;
+>> +       }
+>> +
+>> +       pr_debug("Creating debugfs file for CPU%d \n", policy->cpu);
 > 
-> Before I explain my proposal, I want to highlight also that these
-> data is represented elsewhere already and it is reused across
-> different OS's. Thermal data is described using ACPI [3] and
-> operating systems ACPI-aware do support the interpretation of
-> thermal data. Linux is one example of such systems (I believe I do
-> not need to enlist here all systems supporting ACPI). On the other
-> hand, not all systems have ACPI or are specified to use ACPI.
-> Thus, here is another reason to represent properly thermal data, so
-> that we can scale across systems.
+> s/Creating/Created
+
+OK, I'll fixt it.
+
 > 
-> In the specific case of Linux, the common thermal concepts between
-> ACPI systems and non-ACPI systems have been represented in the
-> thermal framework (CONFIG_THERMAL). Today, on ACPI systems, thermal
-> data is fetched from bootloader with help from the common ACPI
-> parser. For non-ACPI systems, the thermal data is actually coded as
-> part of device drivers.
+>> +
+>> +       return 0;
+>> +err:
+>> +       kfree(stat->load_table);
+>> +       return ret;
+>> +}
+>> +
+>> +/* should be called late in the CPU removal sequence so that the stats
+>> + * memory is still available in case someone tries to use it.
+>> + */
 > 
-> So, to the point, a brief explanation of my proposal goes as
-> follows: i   - trip points: a node to describe a point in the
-> temperature domain in which the system has to take an action. This
-> node describes just the point, not the action. Properties here are
-> temperature, hysteresis, and type (critical, hot, passive, active,
-> etc). ii  - binding parameters: the bind_param node is a node to
-> describe how actions (cooling devices) get assigned to trip points.
-> Cooling devices are expected to be loaded in the target system.
-> Properties here are: cooling device name, weight, trip_mask and
-> limits. iii - thermal zones: the thermal_zone node is the node
-> containing all the required info for describing a thermal zone with
-> hardware thermal limitation, including its bindings with cooling
-> devices. Properties here are:  type, passive_delay, polling_delay,
-> governor. The thermal_zone node must contain, apart from its own
-> properties, one node containing trip nodes and one node containing
-> all the zone bind parameters.
+> Please write multiline comment correctly..
+
+OK.
+
 > 
-> Here is an example (on OMAP4430): thermal_zone { type = "CPU"; mask
-> = <0x03>; /* trips writability */ passive_delay = <250>; /*
-> milliseconds */ polling_delay = <1000>; /* milliseconds */ governor
-> = "step_wise"; trips { alert@100000{ temperature = <100000>; /*
-> milliCelsius hysteresis = <2000>; /* milliCelsius */ type =
-> <THERMAL_TRIP_PASSIVE>; }; crit@125000{ temperature = <125000>; /*
-> milliCelsius hysteresis = <2000>; /* milliCelsius */ type =
-> <THERMAL_TRIP_CRITICAL>; }; }; bind_params { action@0{ 
-> cooling_device = "thermal-cpufreq"; weight = <100>; /* percentage
-> */ mask = <0x01>; /* no limits, using defaults */ }; }; };
+>> +static void cpufreq_stats_free_load_table(unsigned int cpu)
+>> +{
+>> +       struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
+>> +
+>> +       if (stat) {
+>> +               pr_debug("Free memory of load_table\n");
+>> +               kfree(stat->load_table);
+>> +       }
+>> +}
+>> +
+>> +/* must be called early in the CPU removal sequence (before
+>> + * cpufreq_remove_dev) so that policy is still valid.
+>> + */
+>> +static void cpufreq_stats_free_debugfs(unsigned int cpu)
+>> +{
+>> +       struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
+>> +
+>> +       if (stat) {
+>> +               pr_debug("Remove load_table debugfs file\n");
+>> +               debugfs_remove(stat->debugfs_load_table);
+>> +       }
+>> +}
+>> +
+>> +static void cpufreq_stats_store_load_table(struct cpufreq_freqs *freq,
+>> +                                          unsigned long val)
+>> +{
+>> +       struct cpufreq_stats *stat;
+>> +       int cpu, last_idx;
+>> +
+>> +       stat = per_cpu(cpufreq_stats_table, freq->cpu);
+>> +       if (!stat)
+>> +               return;
+>> +
+>> +       spin_lock(&cpufreq_stats_lock);
+>> +
+>> +       switch (val) {
+>> +       case CPUFREQ_POSTCHANGE:
+>> +               if (!stat->load_last_index)
+>> +                       last_idx = stat->load_max_index;
+>> +               else
+>> +                       last_idx = stat->load_last_index - 1;
+>> +
+>> +               stat->load_table[last_idx].new = freq->new;
+>> +               break;
+>> +       case CPUFREQ_LOADCHECK:
+>> +               last_idx = stat->load_last_index;
+>> +
+>> +               stat->load_table[last_idx].time = freq->time;
+>> +               stat->load_table[last_idx].old = freq->old;
+>> +               stat->load_table[last_idx].new = freq->old;
+>> +               for_each_present_cpu(cpu)
+>> +                       stat->load_table[last_idx].load[cpu] = freq->load[cpu];
+>> +
+>> +               if (++stat->load_last_index == stat->load_max_index)
+>> +                       stat->load_last_index = 0;
+>> +               break;
+>> +       }
+>> +
+>> +       spin_unlock(&cpufreq_stats_lock);
+>> +}
+>> +
+>>  static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+>>  {
+>>         int index;
+>> @@ -204,7 +386,7 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+>>         unsigned int alloc_size;
+>>         unsigned int cpu = policy->cpu;
+>>         if (per_cpu(cpufreq_stats_table, cpu))
+>> -               return -EBUSY;
+>> +               return 0;
+>>         stat = kzalloc(sizeof(struct cpufreq_stats), GFP_KERNEL);
+>>         if ((stat) == NULL)
+>>                 return -ENOMEM;
+>> @@ -257,6 +439,14 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+>>         spin_lock(&cpufreq_stats_lock);
+>>         stat->last_time = get_jiffies_64();
+>>         stat->last_index = freq_table_get_index(stat, policy->cur);
+>> +
+>> +       ret = cpufreq_stats_create_debugfs(data);
+>> +       if (ret < 0) {
+>> +               spin_unlock(&cpufreq_stats_lock);
+>> +               ret = -EINVAL;
+>> +               goto error_out;
+>> +       }
+>> +
+>>         spin_unlock(&cpufreq_stats_lock);
+>>         cpufreq_cpu_put(data);
+>>         return 0;
+>> @@ -297,11 +487,18 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+>>         if (val != CPUFREQ_NOTIFY)
+>>                 return 0;
+>>         table = cpufreq_frequency_get_table(cpu);
+>> -       if (!table)
+>> -               return 0;
+>> -       ret = cpufreq_stats_create_table(policy, table);
+>> -       if (ret)
+>> +       if (table) {
+>> +               ret = cpufreq_stats_create_table(policy, table);
+>> +               if (ret)
+>> +                       return ret;
+>> +       }
+>> +
+>> +       ret = cpufreq_stats_reset_debugfs(policy);
 > 
-> In this current proposal, a 'thermal_zone' node would be embedded
-> inside a temperature sensor node, for simplicity. But other
-> possible builds could embedded them in the device with thermal
-> limits (CPU nodes, for instance) or they could be not embedded in
-> any specific node.
+> Why?
+
+When cpufreq governor is changed, always reset stats->load_table for performance/powersave/userspace governor.
+
+-sh-4.1# cat /sys/kernel/debug/cpufreq/cpu0/load_table
+Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU1 CPU3
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+0          0            0            0    0    0
+
 > 
-> A full documented description can be found here [4]. Also a branch 
-> containing: (a) needed changes in order to have this DT parser; (b)
-> the DT parser with documentation (c) examples on how drivers could
-> be changes to use the parser can be found in my branch here [5]. I
-> wrote the thermal DT parser to build thermal zones with the thermal
-> framework API. However, if one does not want to do that, it can
-> simple do not include a CONFIG_THERMAL_OF=y in her/his build, and
-> the calls will be translated to nops, and the device tree thermal
-> data can be parsed to somewhere else interested (other subsystem or
-> even user land). A TODO on this implementation is that it still
-> lacks the representation of thermal zones composed by several
-> sensors. However, I believe it is better to take an incremental 
-> approach here.  This series can already be used to improve most of
-> the existing platform thermal drivers (most are CPU thermal
-> drivers) and to reuse the existing code of some hwmon sensors to
-> build thermal zones for board thermal requirements.
-> 
-> I have already posted a patch series with this proposal on [6],
-> that contains a reference for the original RFC. But looks like my
-> messages got moderated on device tree mailing list. Obviously,
-> within PM forum, feedback was quite positive. However, we cannot
-> proceed without proper assessment of other subsystems. lm-sensors
-> folks (Guenter) seam to be strongly against this series, as there
-> is a fear that this may introduce a mis-usage of DT. I still
-> believe this is needed for  hardware description, and thus not a
-> infringement on DT purposes.
-> 
-> Please let me know your thoughts on this topic and apologize me if
-> my previous messages on this topic did not reach you (hope they
-> reach now).
-> 
-> All best,
-> 
-> Eduardo Valentin
-> 
-> [0] - https://lkml.org/lkml/2013/7/17/621 [1] -
-> https://lkml.org/lkml/2013/7/18/279 [2] - www.devicetree.org [3] -
-> http://www.acpi.info/ [4] - 
-> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/diff/Documentation/devicetree/bindings/thermal/thermal.txt?h=thermal_work/thermal_core/dt_parser&id=405bf0b51457ed055a082af2653d7ce757bc2e91
->
-> 
-[5] -
-> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/log/?h=thermal_work/thermal_core/dt_parser
->
-> 
-[6] - https://lkml.org/lkml/2013/7/17/923
-> 
+>> +       if (ret < 0) {
+>> +               pr_debug("Failed to reset CPUs data of debugfs\n");
+>>                 return ret;
+>> +       }
+>> +
+>>         return 0;
+>>  }
 > 
 
+Thanks for your comment.
+
+Best Regards,
+Chanwoo Choi
