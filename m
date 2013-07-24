@@ -1,356 +1,169 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 1/3 v6] cpufreq: Add debugfs directory for cpufreq
-Date: Wed, 24 Jul 2013 10:25:26 +0900
-Message-ID: <51EF2D06.7000704@samsung.com>
-References: <1374146275-5758-1-git-send-email-cw00.choi@samsung.com>
- <1374146275-5758-2-git-send-email-cw00.choi@samsung.com>
- <CAKohpo=oTsEjzi_51UaZ8ww8UEfZ6hwKAnu9rFgGBkt=TfHi8A@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: RFC: device thermal limits represented in device tree nodes
+Date: Tue, 23 Jul 2013 18:44:38 -0700
+Message-ID: <51EF3186.9060001@wwwdotorg.org>
+References: <51ED40E3.5020703@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=oTsEjzi_51UaZ8ww8UEfZ6hwKAnu9rFgGBkt=TfHi8A@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:48398 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760Ab3GXBop (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2013 21:44:45 -0400
+In-Reply-To: <51ED40E3.5020703@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>
+Cc: Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Durgadoss R <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Viresh,
+On 07/22/2013 07:25 AM, Eduardo Valentin wrote:
+> Hello Grant and Rob,
+> 
+> (Resending, as I got a message saying: 
+> <devicetree-discuss@lists.ozlabs.org>: Recipient address rejected:
+> User has moved to devicetree at vger.kernel.org)
+> 
+> I am writing this email to you specifically to ask your technical 
+> assessment with respect to representing device thermal limits as
+> device tree nodes. I am proposing to introduce device tree nodes to
+> describe these limits as thermal zones, their composition and their
+> relations with cooling devices and other thermal zones (thermal
+> data).
 
-On 07/22/2013 07:11 PM, Viresh Kumar wrote:
-> On 18 July 2013 16:47, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> +#ifdef CONFIG_CPU_FREQ_STAT
->> +/* The cpufreq_debugfs is used to create debugfs root directory for CPUFreq. */
->> +static struct dentry *cpufreq_debugfs;
->> +
->> +static int cpufreq_create_debugfs_dir(struct cpufreq_policy *policy,
->> +                                     struct device *dev)
->> +{
->> +       char name[CPUFREQ_NAME_LEN];
->> +       unsigned int cpus, size, idx;
->> +
->> +       if (!cpufreq_debugfs)
->> +               return -EINVAL;
->> +
->> +       cpus = cpumask_weight(policy->cpus);
-> 
-> I remember I told you not to use policy->cpus for this purpose?? But
-> related_cpus.
+Given:
+https://lkml.org/lkml/2013/7/20/69
+[PATCH 3/3] MAINTAINERS: Refactor device tree maintainership
 
-You're right. I'll use policy->related_cpus instead of policy->cpus.
+I'm explicitly CCing a few people besides Grant/Rob, and qouting the
+whole email.
 
-> 
->> +       idx = cpus > 1 ? policy->cpu : 0;
-> 
->> +       policy->cpu_debugfs[idx] = debugfs_create_dir(name, cpufreq_debugfs);
-> 
-> This is broken. A policy may contain cpus 9,10 only.. You will allocate array
-> for 2 cpus and try to access cpu_debugfs[9] :)
+>From my perspective, the concept of including thermal limits in DT
+seems reasonable, although I haven't looked at the proposed binding
+itself in detail yet.
 
-Right, I'll consider other method to resolve issue related to index of array.
-
+> As you should know, device thermal limits are part of hardware 
+> specification. Considering your board layout, mechanics, power 
+> dissipation and composition of ICs, etc, that will impose thermal 
+> requirements on your system, and infringing these limits can lead
+> to device damage, device life time reduction or even end user harm.
+> Thus, the thermal data help to describe the hardware limits and
+> what needs to be done if those limits are crosses, as part of your
+> board design and non-functional requirements. Obviously that is
+> very dependent on your hardware, and not all of them will have
+> these non-functional requirements. Besides, describing these limits
+> has *nothing* to do with how you actually find these limits.
 > 
->> +       if (!policy->cpu_debugfs[idx]) {
->> +               pr_err("creating debugfs directory failed\n");
->> +               return -ENODEV;
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->> +static int cpufreq_create_debugfs_symlink(struct cpufreq_policy *policy,
->> +                                          unsigned int src_cpu,
->> +                                          unsigned int dest_cpu)
+> In any case, there is a need to properly represent these
+> requirements and I am proposing to have this representation in
+> device tree. There were already couple of counter-arguments
+> claiming this is actually about configuration and performance
+> profile description. But I still stand against these two readings
+> of this proposal and again state that if one interprets it as
+> configuration or performance profile, that is a mis-understanding
+> [0]. Let me state it clear (again [1]), my proposal is to describe
+> hardware thermal limits, because these limits are part of a 
+> hardware specification; representing in device tree would not
+> infringe the original purpose of this data structure  ("The Device
+> Tree is a data structure for describing hardware."[2]).
 > 
-> Only use policy and cpu for which symlink has to be created as param
-> to this routine. And create link to policy->cpu.
+> Before I explain my proposal, I want to highlight also that these
+> data is represented elsewhere already and it is reused across
+> different OS's. Thermal data is described using ACPI [3] and
+> operating systems ACPI-aware do support the interpretation of
+> thermal data. Linux is one example of such systems (I believe I do
+> not need to enlist here all systems supporting ACPI). On the other
+> hand, not all systems have ACPI or are specified to use ACPI.
+> Thus, here is another reason to represent properly thermal data, so
+> that we can scale across systems.
 > 
-
-OK, I'll simplify function prototype(cpufreq_create_debugfs_symlink) by removing
-unnecessary parameter.
-
->> +{
->> +       char symlink_name[CPUFREQ_NAME_LEN];
->> +       char target_name[CPUFREQ_NAME_LEN];
->> +
->> +       if (!cpufreq_debugfs)
->> +               return -EINVAL;
->> +
->> +       if (!policy->cpu_debugfs[src_cpu])
->> +               return -EINVAL;
->> +
->> +       sprintf(symlink_name, "cpu%d", dest_cpu);
->> +       sprintf(target_name, "./cpu%d", src_cpu);
->> +       policy->cpu_debugfs[dest_cpu] = debugfs_create_symlink(
->> +                                       symlink_name,
->> +                                       cpufreq_debugfs,
->> +                                       target_name);
->> +       if (!policy->cpu_debugfs[dest_cpu]) {
->> +               pr_err("creating debugfs symlink failed\n");
->> +               return -ENODEV;
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->> +static void cpufreq_remove_debugfs_dir(struct cpufreq_policy *policy,
->> +                                      unsigned int cpu)
->> +{
->> +       unsigned int idx = cpumask_weight(policy->cpus) > 1 ? cpu : 0;
->> +
->> +       if (!policy->cpu_debugfs[idx])
->> +               return;
->> +
->> +       debugfs_remove_recursive(policy->cpu_debugfs[idx]);
+> In the specific case of Linux, the common thermal concepts between
+> ACPI systems and non-ACPI systems have been represented in the
+> thermal framework (CONFIG_THERMAL). Today, on ACPI systems, thermal
+> data is fetched from bootloader with help from the common ACPI
+> parser. For non-ACPI systems, the thermal data is actually coded as
+> part of device drivers.
 > 
-> Whey do we need recursive here? And what exactly does recursive will
-> do?
+> So, to the point, a brief explanation of my proposal goes as
+> follows: i   - trip points: a node to describe a point in the
+> temperature domain in which the system has to take an action. This
+> node describes just the point, not the action. Properties here are
+> temperature, hysteresis, and type (critical, hot, passive, active,
+> etc). ii  - binding parameters: the bind_param node is a node to
+> describe how actions (cooling devices) get assigned to trip points.
+> Cooling devices are expected to be loaded in the target system.
+> Properties here are: cooling device name, weight, trip_mask and
+> limits. iii - thermal zones: the thermal_zone node is the node
+> containing all the required info for describing a thermal zone with
+> hardware thermal limitation, including its bindings with cooling
+> devices. Properties here are:  type, passive_delay, polling_delay,
+> governor. The thermal_zone node must contain, apart from its own
+> properties, one node containing trip nodes and one node containing
+> all the zone bind parameters.
 > 
-
-If cpu is last user of policy, __cpufreq_remove_dev() have to remove debugfs directory
-and child file/directory of root debugfs directory. So, I used debugfs_remove_recursive() function.
-
->> +}
->> +
+> Here is an example (on OMAP4430): thermal_zone { type = "CPU"; mask
+> = <0x03>; /* trips writability */ passive_delay = <250>; /*
+> milliseconds */ polling_delay = <1000>; /* milliseconds */ governor
+> = "step_wise"; trips { alert@100000{ temperature = <100000>; /*
+> milliCelsius hysteresis = <2000>; /* milliCelsius */ type =
+> <THERMAL_TRIP_PASSIVE>; }; crit@125000{ temperature = <125000>; /*
+> milliCelsius hysteresis = <2000>; /* milliCelsius */ type =
+> <THERMAL_TRIP_CRITICAL>; }; }; bind_params { action@0{ 
+> cooling_device = "thermal-cpufreq"; weight = <100>; /* percentage
+> */ mask = <0x01>; /* no limits, using defaults */ }; }; };
 > 
-> same problem here too.
->> +static void cpufreq_move_debugfs_dir(struct cpufreq_policy *policy,
->> +                                    unsigned int new_cpu)
->> +{
->> +       struct dentry *old_entry, *new_entry;
->> +       char new_dir_name[CPUFREQ_NAME_LEN];
->> +       unsigned int j, old_cpu = policy->cpu;
->> +
->> +       if (!policy->cpu_debugfs[new_cpu])
->> +               return;
->> +
->> +       /*
->> +        * Remove symbolic link of debugfs directory except for debugfs
->> +        * directory of old_cpu.
->> +        */
->> +       for_each_present_cpu(j) {
->> +               if (old_cpu == j)
->> +                       continue;
->> +
->> +               debugfs_remove(policy->cpu_debugfs[j]);
+> In this current proposal, a 'thermal_zone' node would be embedded
+> inside a temperature sensor node, for simplicity. But other
+> possible builds could embedded them in the device with thermal
+> limits (CPU nodes, for instance) or they could be not embedded in
+> any specific node.
 > 
-> Why you need this? We aren't removing the earlier dentry at all here.
+> A full documented description can be found here [4]. Also a branch 
+> containing: (a) needed changes in order to have this DT parser; (b)
+> the DT parser with documentation (c) examples on how drivers could
+> be changes to use the parser can be found in my branch here [5]. I
+> wrote the thermal DT parser to build thermal zones with the thermal
+> framework API. However, if one does not want to do that, it can
+> simple do not include a CONFIG_THERMAL_OF=y in her/his build, and
+> the calls will be translated to nops, and the device tree thermal
+> data can be parsed to somewhere else interested (other subsystem or
+> even user land). A TODO on this implementation is that it still
+> lacks the representation of thermal zones composed by several
+> sensors. However, I believe it is better to take an incremental 
+> approach here.  This series can already be used to improve most of
+> the existing platform thermal drivers (most are CPU thermal
+> drivers) and to reuse the existing code of some hwmon sensors to
+> build thermal zones for board thermal requirements.
 > 
->> +       }
->> +
->> +       /*
->> +        * Change debugfs directory name from as following:
->> +        * - old debugfs dir name : /sys/kernel/debugfs/cpufreq/cpu${old_cpu}
->> +        * - new debugfs dir name : /sys/kernel/debugfs/cpufreq/cpu${new_cpu}
->> +        */
->> +       sprintf(new_dir_name, "cpu%d", new_cpu);
->> +       old_entry = policy->cpu_debugfs[old_cpu];
->> +       new_entry = debugfs_rename(cpufreq_debugfs, old_entry,
->> +                                  cpufreq_debugfs, new_dir_name);
+> I have already posted a patch series with this proposal on [6],
+> that contains a reference for the original RFC. But looks like my
+> messages got moderated on device tree mailing list. Obviously,
+> within PM forum, feedback was quite positive. However, we cannot
+> proceed without proper assessment of other subsystems. lm-sensors
+> folks (Guenter) seam to be strongly against this series, as there
+> is a fear that this may introduce a mis-usage of DT. I still
+> believe this is needed for  hardware description, and thus not a
+> infringement on DT purposes.
 > 
-> This routine returns old_entry only.. and so you can simply create a
-> single routine with name dentry.
-
-I used 'new_entry' variable to improve readability to distinguish between old_entry and new_entry.
-But, as your comment, I'll simplify this statement to remove unnecessary code.
-
+> Please let me know your thoughts on this topic and apologize me if
+> my previous messages on this topic did not reach you (hope they
+> reach now).
 > 
->> +       if (!new_entry) {
->> +               pr_err("changing debugfs directory name failed\n");
->> +               goto err_rename;
->> +       }
->> +
->> +       policy->cpu_debugfs[new_cpu] = new_entry;
->> +       policy->cpu_debugfs[old_cpu] = NULL;
->> +
->> +       /* Create again symbolic link of debugfs directory */
->> +       for_each_present_cpu(j) {
+> All best,
 > 
-> present_cpu?? We discussed this before.. You will break multi cluster
-> systems.
-
-My mistake. I'll use for_each_cpu() macro instead of for_each_present_cpu().
-
+> Eduardo Valentin
 > 
->> +               if (new_cpu == j)
->> +                       continue;
->> +
->> +               cpufreq_create_debugfs_symlink(policy, new_cpu, j);
->> +       }
->> +
->> +       return;
->> +
->> +err_rename:
->> +       for_each_present_cpu(j) {
->> +               if (old_cpu == j)
->> +                       continue;
->> +
->> +               cpufreq_create_debugfs_symlink(policy, old_cpu, j);
->> +       }
->> +}
->> +
->> +static int cpufreq_create_debugfs(void)
->> +{
->> +       cpufreq_debugfs = debugfs_create_dir("cpufreq", NULL);
->> +       if (!cpufreq_debugfs) {
->> +               pr_err("creating debugfs root failed\n");
->> +               return -ENODEV;
->> +       }
->> +
->> +       return 0;
->> +}
->> +
->> +static void cpufreq_remove_debugfs(void)
->> +{
->> +       if (cpufreq_debugfs)
->> +               debugfs_remove_recursive(cpufreq_debugfs);
->> +}
->> +#else
->> +static int cpufreq_create_debugfs_dir(struct cpufreq_policy *policy,
->> +                                       struct device *dev) { return 0; }
->> +static int cpufreq_create_debugfs_symlink(struct cpufreq_policy *policy,
->> +                                       unsigned int src_cpu,
->> +                                       unsigned int dest_cpu) { return 0;}
->> +static void cpufreq_remove_debugfs_dir(struct cpufreq_policy *policy,
->> +                                       unsigned int cpu) { }
->> +static void cpufreq_move_debugfs_dir(struct cpufreq_policy *policy,
->> +                                       unsigned int new_cpu) { }
->> +static int cpufreq_create_debugfs(void) { return 0; }
->> +static void cpufreq_remove_debugfs(void) { }
+> [0] - https://lkml.org/lkml/2013/7/17/621 [1] -
+> https://lkml.org/lkml/2013/7/18/279 [2] - www.devicetree.org [3] -
+> http://www.acpi.info/ [4] - 
+> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/diff/Documentation/devicetree/bindings/thermal/thermal.txt?h=thermal_work/thermal_core/dt_parser&id=405bf0b51457ed055a082af2653d7ce757bc2e91
+>
 > 
-> make all above #else part routines inline.
-
-OK.
-
+[5] -
+> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/log/?h=thermal_work/thermal_core/dt_parser
+>
 > 
->> +#endif
->> +
->>  /* symlink affected CPUs */
->>  static int cpufreq_add_dev_symlink(unsigned int cpu,
->>                                    struct cpufreq_policy *policy)
->> @@ -726,6 +885,8 @@ static int cpufreq_add_dev_symlink(unsigned int cpu,
->>                         cpufreq_cpu_put(managed_policy);
->>                         return ret;
->>                 }
->> +
->> +               cpufreq_create_debugfs_symlink(policy, cpu, j);
->>         }
->>         return ret;
->>  }
->> @@ -777,6 +938,9 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
->>         }
->>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->>
->> +       /* prepare interface data for debugfs */
->> +       cpufreq_create_debugfs_dir(policy, dev);
->> +
->>         ret = cpufreq_add_dev_symlink(cpu, policy);
->>         if (ret)
->>                 goto err_out_kobj_put;
->> @@ -839,6 +1003,8 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
->>                 return ret;
->>         }
->>
->> +       cpufreq_create_debugfs_symlink(policy, sibling, cpu);
->> +
->>         return 0;
->>  }
->>  #endif
->> @@ -1046,6 +1212,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->>
->>         if (cpu != data->cpu) {
->>                 sysfs_remove_link(&dev->kobj, "cpufreq");
->> +               cpufreq_remove_debugfs_dir(data, cpu);
->>         } else if (cpus > 1) {
->>                 /* first sibling now owns the new sysfs dir */
->>                 cpu_dev = get_cpu_device(cpumask_first(data->cpus));
->> @@ -1068,6 +1235,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->>                         return -EINVAL;
->>                 }
->>
->> +               cpufreq_move_debugfs_dir(data, cpu_dev->id);
->> +
->>                 WARN_ON(lock_policy_rwsem_write(cpu));
->>                 update_policy_cpu(data, cpu_dev->id);
->>                 unlock_policy_rwsem_write(cpu);
->> @@ -1089,6 +1258,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->>                 unlock_policy_rwsem_read(cpu);
->>                 kobject_put(kobj);
->>
->> +               cpufreq_remove_debugfs_dir(data, cpu);
->> +
->>                 /* we need to make sure that the underlying kobj is actually
->>                  * not referenced anymore by anybody before we proceed with
->>                  * unloading.
->> @@ -1894,6 +2065,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->>         cpufreq_driver = driver_data;
->>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->>
->> +       cpufreq_create_debugfs();
+[6] - https://lkml.org/lkml/2013/7/17/923
 > 
-> Why you moved this to register_driver? It was fine at cpufreq_core_init()
-
-If we moved this to cpufreq_core_int(), I have to create cpufreq_core_exit().
-Do you agree about creating cpufreq_core_exit()(?
-
-
 > 
->>         ret = subsys_interface_register(&cpufreq_interface);
->>         if (ret)
->>                 goto err_null_driver;
->> @@ -1918,12 +2091,14 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->>         }
->>
->>         register_hotcpu_notifier(&cpufreq_cpu_notifier);
->> +
-> 
-> unrelated change.
-
-OK, I'll remove it.
-
-> 
->>         pr_debug("driver %s up and running\n", driver_data->name);
->>
->>         return 0;
->>  err_if_unreg:
->>         subsys_interface_unregister(&cpufreq_interface);
->>  err_null_driver:
->> +       cpufreq_remove_debugfs();
->>         write_lock_irqsave(&cpufreq_driver_lock, flags);
->>         cpufreq_driver = NULL;
->>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->> @@ -1949,6 +2124,8 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
->>
->>         pr_debug("unregistering driver %s\n", driver->name);
->>
->> +       cpufreq_remove_debugfs();
-> 
-> And so you don't need this.
-> 
->>         subsys_interface_unregister(&cpufreq_interface);
->>         unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
->>
->> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->> index 037d36a..825f379 100644
->> --- a/include/linux/cpufreq.h
->> +++ b/include/linux/cpufreq.h
->> @@ -115,6 +115,7 @@ struct cpufreq_policy {
->>
->>         struct kobject          kobj;
->>         struct completion       kobj_unregister;
->> +       struct dentry           **cpu_debugfs;
->>  };
->>
->>  #define CPUFREQ_ADJUST                 (0)
->> --
->> 1.8.0
->>
-> 
-
-Thanks for your comment.
-
-
-Best Regards,
-Chanwoo Choi
-
 
