@@ -1,49 +1,75 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 1/3 v6] cpufreq: Add debugfs directory for cpufreq
-Date: Wed, 24 Jul 2013 18:14:31 +0900
-Message-ID: <51EF9AF7.60007@samsung.com>
-References: <1374146275-5758-1-git-send-email-cw00.choi@samsung.com>
- <1374146275-5758-2-git-send-email-cw00.choi@samsung.com>
- <CAKohpo=oTsEjzi_51UaZ8ww8UEfZ6hwKAnu9rFgGBkt=TfHi8A@mail.gmail.com>
- <51EF2D06.7000704@samsung.com>
- <CAKohpok7B6DaqFPWZcODEgK5GRSoAQYZ27-h2=AQ1HBBP4gH8Q@mail.gmail.com>
- <51EF8590.7030405@samsung.com>
- <CAKohpom19C7JHSX6w31pSDrwcAR_PZn1HzP0Jui5iZL=bALDPQ@mail.gmail.com>
- <51EF945E.3080802@samsung.com>
- <CAKohpo=_3iR44XfxuRAmw-9DDk9APniWH=efd72v845wH3C-DQ@mail.gmail.com>
- <51EF98DD.4010607@samsung.com>
- <CAKohpon02iZpB7BVwdJR69Ne=8GbL0z76D7ExtAahCE-R_vnnA@mail.gmail.com>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: Re: [PATCH 2/3] cpufreq: pmac64: re-estimate G5 cpufreq transition
+ latency
+Date: Wed, 24 Jul 2013 13:18:32 +0300
+Message-ID: <20130724101832.GA26943@blackmetal.musicnaut.iki.fi>
+References: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
+ <1374611079-28091-2-git-send-email-aaro.koskinen@iki.fi>
+ <CAKohpo=t0C63m_WuZA-dGiLDtBu8FbdM8tgJLNh_NSAALnf+fw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpon02iZpB7BVwdJR69Ne=8GbL0z76D7ExtAahCE-R_vnnA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from filtteri6.pp.htv.fi ([213.243.153.189]:49165 "EHLO
+	filtteri6.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751064Ab3GXKSp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2013 06:18:45 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=t0C63m_WuZA-dGiLDtBu8FbdM8tgJLNh_NSAALnf+fw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Nick Piggin <npiggin@suse.de>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-On 07/24/2013 06:09 PM, Viresh Kumar wrote:
-> On 24 July 2013 14:35, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> And, I add additional step on below:
->>
->>> - Remove symlink for new policy->cpu, i..e cpu1 in your example
->>> - rename debugfs entry to give it to cpu1 instead of cpu0.
->>   - Store renamed cpu0 pointer to cpu1 pointer
->>   - Create new link for CPU[2-3] to CPU1's debugfs directory
->>         because debugfs use string path to create symbolic link.
->>         It isn't automatically connected with new CPU1 debugfs directory.
-> 
-> Honestly speaking I am not the best at debugfs core, but I still think
-> the link is connected to a struct debugfs node and not to any path..
-> This node is connected to a path though. And so even after rename
-> things should stay stable without your new step...
-> 
-> Just try and see if I am right or wrong.. Otherwise what you already
-> did is correct as you need to remove links for 2-3 as well..
-> 
+Hi,
 
-OK, I'll try it according to your suggestion. Thanks.
+On Wed, Jul 24, 2013 at 11:04:50AM +0530, Viresh Kumar wrote:
+> On 24 July 2013 01:54, Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
+> > The patch also enables to use ondemand governor on the latter.
+> 
+> How? I can't see anything obvious here. :(
 
-Best Regards,
-Chanwoo Choi
+It replaces CPUFREQ_ETERNAL with a proper value on older PowerMacs.
+ondemand does not accept CPUFREQ_ETERNAL transition latency.
+
+A.
+
+> 
+> >
+> > Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+> > ---
+> >  drivers/cpufreq/pmac64-cpufreq.c | 5 ++---
+> >  1 file changed, 2 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+> > index 674807d..f9e399b 100644
+> > --- a/drivers/cpufreq/pmac64-cpufreq.c
+> > +++ b/drivers/cpufreq/pmac64-cpufreq.c
+> > @@ -85,7 +85,8 @@ static int (*g5_query_freq)(void);
+> >
+> >  static DEFINE_MUTEX(g5_switch_mutex);
+> >
+> > -static unsigned long transition_latency;
+> > +/* A conservative estimate, based on Xserve G5 and iMac G5 (iSight). */
+> > +static const unsigned long transition_latency = 10 * NSEC_PER_MSEC;
+> >
+> >  #ifdef CONFIG_PMAC_SMU
+> >
+> > @@ -499,7 +500,6 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
+> >         g5_cpu_freqs[1].frequency = max_freq/2;
+> >
+> >         /* Set callbacks */
+> > -       transition_latency = 12000;
+> >         g5_switch_freq = g5_scom_switch_freq;
+> >         g5_query_freq = g5_scom_query_freq;
+> >         freq_method = "SCOM";
+> > @@ -675,7 +675,6 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpus)
+> >         g5_cpu_freqs[1].frequency = min_freq;
+> >
+> >         /* Set callbacks */
+> > -       transition_latency = CPUFREQ_ETERNAL;
+> >         g5_switch_volt = g5_pfunc_switch_volt;
+> >         g5_switch_freq = g5_pfunc_switch_freq;
+> >         g5_query_freq = g5_pfunc_query_freq;
+> > --
+> > 1.8.3.2
+> >
