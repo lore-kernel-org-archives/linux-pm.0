@@ -1,65 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: pmac64: re-estimate G5 cpufreq transition latency
-Date: Wed, 24 Jul 2013 11:04:50 +0530
-Message-ID: <CAKohpo=t0C63m_WuZA-dGiLDtBu8FbdM8tgJLNh_NSAALnf+fw@mail.gmail.com>
-References: <1374611079-28091-1-git-send-email-aaro.koskinen@iki.fi>
-	<1374611079-28091-2-git-send-email-aaro.koskinen@iki.fi>
+Subject: Re: backup/restore concept?
+Date: Wed, 24 Jul 2013 11:19:49 +0530
+Message-ID: <CAKohpo=i6xcUEXzkcJ9onHDc+O_TvKB1m_mwobuVbxF=BCwazg@mail.gmail.com>
+References: <CANMsd01y=eeQ356m=82PrdfZ0q50MpE53DoeQS6sDT=HaaZFzw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:58661 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843Ab3GXFeu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2013 01:34:50 -0400
-Received: by mail-ob0-f181.google.com with SMTP id 16so11964175obc.40
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2013 22:34:50 -0700 (PDT)
-In-Reply-To: <1374611079-28091-2-git-send-email-aaro.koskinen@iki.fi>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:35566 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750887Ab3GXFtu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2013 01:49:50 -0400
+Received: by mail-ob0-f178.google.com with SMTP id fb19so12288559obc.9
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2013 22:49:49 -0700 (PDT)
+In-Reply-To: <CANMsd01y=eeQ356m=82PrdfZ0q50MpE53DoeQS6sDT=HaaZFzw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Nick Piggin <npiggin@suse.de>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Ryan <ryanphilips19@googlemail.com>
+Cc: Lists linaro-dev <linaro-dev@lists.linaro.org>, linux-pm@vger.kernel.org
 
-On 24 July 2013 01:54, Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
-> The patch also enables to use ondemand governor on the latter.
+Adding more relevant list in cc.
 
-How? I can't see anything obvious here. :(
-
+On 23 July 2013 16:05, Ryan <ryanphilips19@googlemail.com> wrote:
+> Hi,
 >
-> Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-> ---
->  drivers/cpufreq/pmac64-cpufreq.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+> I have some doubts on backup and restore operation. From what i understand:
 >
-> diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-> index 674807d..f9e399b 100644
-> --- a/drivers/cpufreq/pmac64-cpufreq.c
-> +++ b/drivers/cpufreq/pmac64-cpufreq.c
-> @@ -85,7 +85,8 @@ static int (*g5_query_freq)(void);
+> We copy all registers values & addresses of all controllers in the SOC
+> to the internal RAM or SRAM.
+> before we put CPU to sleep?
 >
->  static DEFINE_MUTEX(g5_switch_mutex);
+> I want to know if we also copy the code segment into SRAM and what
+> happens after wakeup.
+> If so, where exactly we need to copy and how cpu jumps here after
+> wakeup. or is there any other mechanism
+> that is used. What executes first since DDR is in self-refresh.
 >
-> -static unsigned long transition_latency;
-> +/* A conservative estimate, based on Xserve G5 and iMac G5 (iSight). */
-> +static const unsigned long transition_latency = 10 * NSEC_PER_MSEC;
+> I use OMAP4 and this is my understanding. I could not understand much
+> other than in OFF mode
+> all the controller registers get copied to SRAM. Does anything else
+> also gets copied too?
+> or am i missing any basics here.
 >
->  #ifdef CONFIG_PMAC_SMU
 >
-> @@ -499,7 +500,6 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
->         g5_cpu_freqs[1].frequency = max_freq/2;
 >
->         /* Set callbacks */
-> -       transition_latency = 12000;
->         g5_switch_freq = g5_scom_switch_freq;
->         g5_query_freq = g5_scom_query_freq;
->         freq_method = "SCOM";
-> @@ -675,7 +675,6 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpus)
->         g5_cpu_freqs[1].frequency = min_freq;
+> Can anyone clarify my understanding.
 >
->         /* Set callbacks */
-> -       transition_latency = CPUFREQ_ETERNAL;
->         g5_switch_volt = g5_pfunc_switch_volt;
->         g5_switch_freq = g5_pfunc_switch_freq;
->         g5_query_freq = g5_pfunc_query_freq;
-> --
-> 1.8.3.2
+> /Ryan
 >
+> _______________________________________________
+> linaro-dev mailing list
+> linaro-dev@lists.linaro.org
+> http://lists.linaro.org/mailman/listinfo/linaro-dev
