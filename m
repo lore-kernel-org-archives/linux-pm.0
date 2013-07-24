@@ -1,76 +1,42 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 1/3 v6] cpufreq: Add debugfs directory for cpufreq
-Date: Wed, 24 Jul 2013 18:05:33 +0900
-Message-ID: <51EF98DD.4010607@samsung.com>
+Date: Wed, 24 Jul 2013 14:39:07 +0530
+Message-ID: <CAKohpon02iZpB7BVwdJR69Ne=8GbL0z76D7ExtAahCE-R_vnnA@mail.gmail.com>
 References: <1374146275-5758-1-git-send-email-cw00.choi@samsung.com>
- <1374146275-5758-2-git-send-email-cw00.choi@samsung.com>
- <CAKohpo=oTsEjzi_51UaZ8ww8UEfZ6hwKAnu9rFgGBkt=TfHi8A@mail.gmail.com>
- <51EF2D06.7000704@samsung.com>
- <CAKohpok7B6DaqFPWZcODEgK5GRSoAQYZ27-h2=AQ1HBBP4gH8Q@mail.gmail.com>
- <51EF8590.7030405@samsung.com>
- <CAKohpom19C7JHSX6w31pSDrwcAR_PZn1HzP0Jui5iZL=bALDPQ@mail.gmail.com>
- <51EF945E.3080802@samsung.com>
- <CAKohpo=_3iR44XfxuRAmw-9DDk9APniWH=efd72v845wH3C-DQ@mail.gmail.com>
+	<1374146275-5758-2-git-send-email-cw00.choi@samsung.com>
+	<CAKohpo=oTsEjzi_51UaZ8ww8UEfZ6hwKAnu9rFgGBkt=TfHi8A@mail.gmail.com>
+	<51EF2D06.7000704@samsung.com>
+	<CAKohpok7B6DaqFPWZcODEgK5GRSoAQYZ27-h2=AQ1HBBP4gH8Q@mail.gmail.com>
+	<51EF8590.7030405@samsung.com>
+	<CAKohpom19C7JHSX6w31pSDrwcAR_PZn1HzP0Jui5iZL=bALDPQ@mail.gmail.com>
+	<51EF945E.3080802@samsung.com>
+	<CAKohpo=_3iR44XfxuRAmw-9DDk9APniWH=efd72v845wH3C-DQ@mail.gmail.com>
+	<51EF98DD.4010607@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=_3iR44XfxuRAmw-9DDk9APniWH=efd72v845wH3C-DQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51EF98DD.4010607@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
 Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/24/2013 05:51 PM, Viresh Kumar wrote:
-> On 24 July 2013 14:16, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> In case that all CPUs share same cpufreq policy. Each debugfs dentry of CPU[1-3]
->> except for CPU0 has symbolic link to CPU0's debugfs directory as following.
->>
->> -sh-4.1# ls -al /sys/kernel/debug/cpufreq/
->> total 0
->> drwxr-xr-x  3 root root 0 Jan  1 09:00 .
->> drwx------ 28 root root 0 Jan  1 09:00 ..
->> drwxr-xr-x  2 root root 0 Jan  1 09:00 cpu0             (policy->cpu is 0)
->> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu1 -> ./cpu0
->> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu2 -> ./cpu0
->> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu3 -> ./cpu0
->>
->> If turn off CPU0 state, I have to move debugfs directory data from cpu0 to cpu1
->> and again create link to cpu1's debugfs directory for CPU[2-3] debugfs directory.
->> So, I removed dentry link of CPU[1-3] before creating link again.
->>
->> cpu1
->> cpu2 -> ./cpu1
->> cpu3 -> ./cpu1
->>
->> But I can rewrite new link of CPU[2-3] to previous dentry link(policy->cpu_debugfs[2] or policy->cpu_debugfs[3])
->> for reducing unnecessary code without revmoval sequence.
-> 
-> Because we aren't freeing the debugfs node at all (just renaming
-> it), the links might still be good after renaming.. But please check
-> if it is true.
-> 
-> So, according to me you need to do this:
-> - Remove symlink for new policy->cpu, i..e cpu1 in your example
-> - rename debugfs entry to give it to cpu1 instead of cpu0.
-> - Set cpu0 pointer to NULL.
-> 
-> Probably that's it.
-> 
+On 24 July 2013 14:35, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> And, I add additional step on below:
+>
+>> - Remove symlink for new policy->cpu, i..e cpu1 in your example
+>> - rename debugfs entry to give it to cpu1 instead of cpu0.
+>   - Store renamed cpu0 pointer to cpu1 pointer
+>   - Create new link for CPU[2-3] to CPU1's debugfs directory
+>         because debugfs use string path to create symbolic link.
+>         It isn't automatically connected with new CPU1 debugfs directory.
 
-And, I add additional step on below:
+Honestly speaking I am not the best at debugfs core, but I still think
+the link is connected to a struct debugfs node and not to any path..
+This node is connected to a path though. And so even after rename
+things should stay stable without your new step...
 
-> - Remove symlink for new policy->cpu, i..e cpu1 in your example
-> - rename debugfs entry to give it to cpu1 instead of cpu0.
-  - Store renamed cpu0 pointer to cpu1 pointer
-  - Create new link for CPU[2-3] to CPU1's debugfs directory
-	because debugfs use string path to create symbolic link.
-	It isn't automatically connected with new CPU1 debugfs directory. 
-> - Set cpu0 pointer to NULL.
-> 
+Just try and see if I am right or wrong.. Otherwise what you already
+did is correct as you need to remove links for 2-3 as well..
 
-Thanks,
-Chanwoo Choi
-
-
-
+>> - Set cpu0 pointer to NULL.
