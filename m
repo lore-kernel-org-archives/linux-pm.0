@@ -1,8 +1,8 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [RFC PATCH 5/5] cpuidle/ppc: Add longnap state to the idle states
- on powernv
-Date: Thu, 25 Jul 2013 14:33:09 +0530
-Message-ID: <20130725090309.12500.20286.stgit@preeti.in.ibm.com>
+Subject: [RFC PATCH 3/5] cpuidle/ppc: Add timer offload framework to support
+ deep idle states
+Date: Thu, 25 Jul 2013 14:32:57 +0530
+Message-ID: <20130725090257.12500.44766.stgit@preeti.in.ibm.com>
 References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -13,101 +13,256 @@ Sender: linux-kernel-owner@vger.kernel.org
 To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch hooks into the existing broadcast framework with the support that this
-patchset introduces for ppc, and the cpuidle driver backend
-for powernv(posted out recently by Deepthi Dharwar) to add sleep state as
-one of the deep idle states, in which the decrementer is switched off.
+On ppc, in deep idle states, the lapic of the cpus gets switched off.
+Hence make use of the broadcast framework to wakeup cpus in sleep state,
+except that on ppc, we do not have an external device such as HPET, but
+we use the lapic of a cpu itself as the broadcast device.
 
-However in this patch, we only emulate sleep by going into a state which does
-a nap with the decrementer interrupts disabled, termed as longnap. This enables
-focus on the timer broadcast framework for ppc in this series of patches ,
-which is required as a first step to enable sleep on ppc.
+Instantiate two different clock event devices, one representing the
+lapic and another representing the broadcast device for each cpu.
+Such a cpu is forbidden to enter the deep idle state. The cpu which hosts
+the broadcast device will be referred to as the broadcast cpu in the
+changelogs of this patchset for convenience.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+For now, only the boot cpu's broadcast device gets registered as a clock event
+device along with the lapic. Hence this is the broadcast cpu.
+
+On the broadcast cpu, on each timer interrupt, apart from the regular lapic event
+handler the broadcast handler is also called. We avoid the overhead of
+programming the lapic for a broadcast event specifically. The reason is
+prevent multiple cpus from sending IPIs to program the lapic of the broadcast
+cpu for their next local event each time they go to deep idle state.
+
+Apart from this there is no change in the way broadcast is handled today. On
+a broadcast ipi the event handler for a timer interrupt is called on the cpu
+in deep idle state to handle the local events.
+
+The current design and implementation of the timer offload framework supports
+the ONESHOT tick mode but not the PERIODIC mode.
+
+Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++++++++++++
- 1 file changed, 47 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/time.h        |    3 +
+ arch/powerpc/kernel/smp.c              |    4 +-
+ arch/powerpc/kernel/time.c             |   79 ++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/Kconfig |    1 
+ 4 files changed, 84 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/processor_idle.c b/arch/powerpc/platforms/powernv/processor_idle.c
-index f43ad91a..9aca502 100644
---- a/arch/powerpc/platforms/powernv/processor_idle.c
-+++ b/arch/powerpc/platforms/powernv/processor_idle.c
-@@ -9,16 +9,18 @@
- #include <linux/cpuidle.h>
- #include <linux/cpu.h>
- #include <linux/notifier.h>
-+#include <linux/clockchips.h>
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index c1f2676..936be0d 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -24,14 +24,17 @@ extern unsigned long tb_ticks_per_jiffy;
+ extern unsigned long tb_ticks_per_usec;
+ extern unsigned long tb_ticks_per_sec;
+ extern struct clock_event_device decrementer_clockevent;
++extern struct clock_event_device broadcast_clockevent;
  
- #include <asm/machdep.h>
- #include <asm/runlatch.h>
-+#include <asm/time.h>
+ struct rtc_time;
+ extern void to_tm(int tim, struct rtc_time * tm);
+ extern void GregorianDay(struct rtc_time *tm);
++extern void decrementer_timer_interrupt(void);
  
- struct cpuidle_driver powernv_idle_driver = {
- 	.name =		"powernv_idle",
- 	.owner =	THIS_MODULE,
- };
+ extern void generic_calibrate_decr(void);
  
--#define MAX_IDLE_STATE_COUNT	2
-+#define MAX_IDLE_STATE_COUNT	3
+ extern void set_dec_cpu6(unsigned int val);
++extern int bc_cpu;
  
- static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
- static struct cpuidle_device __percpu *powernv_cpuidle_devices;
-@@ -54,6 +56,43 @@ static int nap_loop(struct cpuidle_device *dev,
- 	return index;
+ /* Some sane defaults: 125 MHz timebase, 1GHz processor */
+ extern unsigned long ppc_proc_freq;
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 6a68ca4..d3b7014 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -114,7 +114,7 @@ int smp_generic_kick_cpu(int nr)
+ 
+ static irqreturn_t timer_action(int irq, void *data)
+ {
+-	timer_interrupt();
++	decrementer_timer_interrupt();
+ 	return IRQ_HANDLED;
  }
  
-+/* Emulate sleep, with long nap.
-+ * During sleep, the core does not receive decrementer interrupts.
-+ * Emulate sleep using long nap with decrementers interrupts disabled.
-+ * This is an initial prototype to test the timer offload framework for ppc.
-+ * We will eventually introduce the sleep state once the timer offload framework
-+ * for ppc is stable.
+@@ -223,7 +223,7 @@ irqreturn_t smp_ipi_demux(void)
+ 
+ #ifdef __BIG_ENDIAN
+ 		if (all & (1 << (24 - 8 * PPC_MSG_TIMER)))
+-			timer_interrupt();
++			decrementer_timer_interrupt();
+ 		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
+ 			scheduler_ipi();
+ 		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 65ab9e9..8ed0fb3 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -42,6 +42,7 @@
+ #include <linux/timex.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/time.h>
++#include <linux/timer.h>
+ #include <linux/init.h>
+ #include <linux/profile.h>
+ #include <linux/cpu.h>
+@@ -97,8 +98,11 @@ static struct clocksource clocksource_timebase = {
+ 
+ static int decrementer_set_next_event(unsigned long evt,
+ 				      struct clock_event_device *dev);
++static int broadcast_set_next_event(unsigned long evt,
++				      struct clock_event_device *dev);
+ static void decrementer_set_mode(enum clock_event_mode mode,
+ 				 struct clock_event_device *dev);
++static void decrementer_timer_broadcast(const struct cpumask *mask);
+ 
+ struct clock_event_device decrementer_clockevent = {
+ 	.name           = "decrementer",
+@@ -106,13 +110,26 @@ struct clock_event_device decrementer_clockevent = {
+ 	.irq            = 0,
+ 	.set_next_event = decrementer_set_next_event,
+ 	.set_mode       = decrementer_set_mode,
+-	.features       = CLOCK_EVT_FEAT_ONESHOT,
++	.broadcast	= decrementer_timer_broadcast,
++	.features       = CLOCK_EVT_FEAT_C3STOP | CLOCK_EVT_FEAT_ONESHOT,
+ };
+ EXPORT_SYMBOL(decrementer_clockevent);
+ 
++struct clock_event_device broadcast_clockevent = {
++	.name           = "broadcast",
++	.rating         = 200,
++	.irq            = 0,
++	.set_next_event = broadcast_set_next_event,
++	.set_mode       = decrementer_set_mode,
++	.features       = CLOCK_EVT_FEAT_ONESHOT,
++};
++EXPORT_SYMBOL(broadcast_clockevent);
++
+ DEFINE_PER_CPU(u64, decrementers_next_tb);
+ static DEFINE_PER_CPU(struct clock_event_device, decrementers);
++static DEFINE_PER_CPU(struct clock_event_device, bc_timer);
+ 
++int bc_cpu;
+ #define XSEC_PER_SEC (1024*1024)
+ 
+ #ifdef CONFIG_PPC64
+@@ -487,6 +504,8 @@ void timer_interrupt(struct pt_regs * regs)
+ 	struct pt_regs *old_regs;
+ 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+ 	struct clock_event_device *evt = &__get_cpu_var(decrementers);
++	struct clock_event_device *bc_evt = &__get_cpu_var(bc_timer);
++	int cpu = smp_processor_id();
+ 	u64 now;
+ 
+ 	/* Ensure a positive value is written to the decrementer, or else
+@@ -532,6 +551,10 @@ void timer_interrupt(struct pt_regs * regs)
+ 		*next_tb = ~(u64)0;
+ 		if (evt->event_handler)
+ 			evt->event_handler(evt);
++		if (cpu == bc_cpu && bc_evt->event_handler) {
++			bc_evt->event_handler(bc_evt);
++		}
++
+ 	} else {
+ 		now = *next_tb - now;
+ 		if (now <= DECREMENTER_MAX)
+@@ -806,6 +829,18 @@ static int decrementer_set_next_event(unsigned long evt,
+ 	return 0;
+ }
+ 
++/*
++ * We cannot program the decrementer of a remote CPU. Hence CPUs going into
++ * deep idle states need to send IPIs to the broadcast CPU to program its
++ * decrementer for their next local event so as to receive a broadcast IPI
++ * for the same. In order to avoid this overhead, this function is a nop.
 + */
-+static int longnap_loop(struct cpuidle_device *dev,
-+				struct cpuidle_driver *drv,
-+				int index)
++static int broadcast_set_next_event(unsigned long evt,
++					struct clock_event_device *dev)
 +{
-+	int cpu = dev->cpu;
-+
-+	unsigned long lpcr = mfspr(SPRN_LPCR);
-+
-+	lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
-+
-+	/* exit powersave upon external interrupt, but not decrementer
-+	 * interrupt, Emulate sleep.
-+	 */
-+	lpcr |= LPCR_PECE0;
-+
-+	if (cpu != bc_cpu) {
-+		mtspr(SPRN_LPCR, lpcr);
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+		power7_nap();
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-+	} else {
-+		/* Wakeup on a decrementer interrupt, Do a nap */
-+		lpcr |= LPCR_PECE1;
-+		mtspr(SPRN_LPCR, lpcr);
-+		power7_nap();
-+	}
-+
-+	return index;
++	return 0;
 +}
 +
- /*
-  * States for dedicated partition case.
-  */
-@@ -72,6 +111,13 @@ static struct cpuidle_state powernv_states[MAX_IDLE_STATE_COUNT] = {
- 		.exit_latency = 10,
- 		.target_residency = 100,
- 		.enter = &nap_loop },
-+	 { /* LongNap */
-+		.name = "LongNap",
-+		.desc = "LongNap",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 10,
-+		.target_residency = 100,
-+		.enter = &longnap_loop },
- };
+ static void decrementer_set_mode(enum clock_event_mode mode,
+ 				 struct clock_event_device *dev)
+ {
+@@ -813,6 +848,20 @@ static void decrementer_set_mode(enum clock_event_mode mode,
+ 		decrementer_set_next_event(DECREMENTER_MAX, dev);
+ }
  
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
++void decrementer_timer_interrupt(void)
++{
++	struct clock_event_device *evt;
++	evt = &per_cpu(decrementers, smp_processor_id());
++
++	if (evt->event_handler)
++		evt->event_handler(evt);
++}
++
++static void decrementer_timer_broadcast(const struct cpumask *mask)
++{
++	arch_send_tick_broadcast(mask);
++}
++
+ static void register_decrementer_clockevent(int cpu)
+ {
+ 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
+@@ -826,6 +875,20 @@ static void register_decrementer_clockevent(int cpu)
+ 	clockevents_register_device(dec);
+ }
+ 
++static void register_broadcast_clockevent(int cpu)
++{
++	struct clock_event_device *bc_evt = &per_cpu(bc_timer, cpu);
++
++	*bc_evt = broadcast_clockevent;
++	bc_evt->cpumask = cpumask_of(cpu);
++
++	printk_once(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
++		    bc_evt->name, bc_evt->mult, bc_evt->shift, cpu);
++
++	clockevents_register_device(bc_evt);
++	bc_cpu = cpu;
++}
++
+ static void __init init_decrementer_clockevent(void)
+ {
+ 	int cpu = smp_processor_id();
+@@ -840,6 +903,19 @@ static void __init init_decrementer_clockevent(void)
+ 	register_decrementer_clockevent(cpu);
+ }
+ 
++static void __init init_broadcast_clockevent(void)
++{
++	int cpu = smp_processor_id();
++
++	clockevents_calc_mult_shift(&broadcast_clockevent, ppc_tb_freq, 4);
++
++	broadcast_clockevent.max_delta_ns =
++		clockevent_delta2ns(DECREMENTER_MAX, &broadcast_clockevent);
++	broadcast_clockevent.min_delta_ns =
++		clockevent_delta2ns(2, &broadcast_clockevent);
++	register_broadcast_clockevent(cpu);
++}
++
+ void secondary_cpu_time_init(void)
+ {
+ 	/* Start the decrementer on CPUs that have manual control
+@@ -916,6 +992,7 @@ void __init time_init(void)
+ 	clocksource_init();
+ 
+ 	init_decrementer_clockevent();
++	init_broadcast_clockevent();
+ }
+ 
+ 
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index ace2d22..e1a96eb 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -6,6 +6,7 @@ config PPC_POWERNV
+ 	select PPC_ICP_NATIVE
+ 	select PPC_P7_NAP
+ 	select PPC_PCI_CHOICE if EMBEDDED
++	select GENERIC_CLOCKEVENTS_BROADCAST
+ 	select EPAPR_BOOT
+ 	default y
+ 
