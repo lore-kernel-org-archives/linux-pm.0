@@ -1,131 +1,70 @@
-From: Colin Cross <ccross@android.com>
-Subject: [PATCH] power: set PF_SUSPEND_TASK flag on tasks that call freeze_processes
-Date: Wed, 24 Jul 2013 17:41:33 -0700
-Message-ID: <1374712893-14487-1-git-send-email-ccross@android.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: [RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to support
+ deep idle states
+Date: Thu, 25 Jul 2013 14:32:38 +0530
+Message-ID: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f201.google.com ([209.85.216.201]:59484 "EHLO
-	mail-qc0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685Ab3GYAmS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2013 20:42:18 -0400
-Received: by mail-qc0-f201.google.com with SMTP id u11so104345qcx.4
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jul 2013 17:42:18 -0700 (PDT)
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:52462 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683Ab3GYJFe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 05:05:34 -0400
+Received: from /spool/local
+	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Thu, 25 Jul 2013 14:30:08 +0530
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Michael Leun <lkml20130126@newton.leun.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Darren Hart <dvhart@linux.intel.com>, Colin Cross <ccross@android.com>
+To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-Calling freeze_processes sets a global flag that will cause any
-process that calls try_to_freeze to enter the refrigerator.  It
-skips sending a signal to the current task, but if the current
-task ever hits try_to_freeze all threads will be frozen and the
-system will deadlock.
+On PowerPC, when CPUs enter deep idle states, their local timers are
+switched off. The responsibility of waking them up at their next timer event,
+needs to be handed over to an external device. On PowerPC, we do not have an
+external device equivalent to HPET, which is currently done on architectures
+like x86. Instead we assign the local timer of one of the CPUs to do this job.
 
-Set a new flag, PF_SUSPEND_TASK, on the task that calls
-freeze_processes.  The flag notifies the freezer that the thread
-is involved in suspend and should not be frozen.  Also add a
-WARN_ON in thaw_processes if the caller does not have the
-PF_SUSPEND_TASK flag set to catch if a different task calls
-thaw_processes than the one that called freeze_processes, leaving
-a task with PF_SUSPEND_TASK permanently set on it.
+This patchset is an attempt to make use of the existing timer broadcast
+framework in the kernel to meet the above requirement, except that the tick
+broadcast device is the local timer of the boot CPU.
 
-Threads that spawn off a task with PF_SUSPEND_TASK set (which
-swsusp does) will also have PF_SUSPEND_TASK set, preventing them
-from freezing while they are helping with suspend, but they need
-to be dead by the time suspend is triggered, otherwise they may
-run when userspace is expected to be frozen.  Add a WARN_ON in
-thaw_processes if more than one thread has the PF_SUSPEND_TASK
-flag set.
+This patch series is ported ontop of 3.11-rc1 + the cpuidle driver backend
+for powernv posted by Deepthi Dharwar recently. The current design and
+implementation supports the ONESHOT tick mode. It does not yet support
+the PERIODIC tick mode. This patch is tested with NOHZ_FULL off.
 
-Reported-by: Michael Leun <lkml20130126@newton.leun.net>
-Tested-by: Michael Leun <lkml20130126@newton.leun.net>
-Signed-off-by: Colin Cross <ccross@android.com>
+Patch[1/5], Patch[2/5]: optimize the broadcast mechanism on ppc.
+Patch[3/5]: Introduces the core of the timer offload framework on powerpc.
+Patch[4/5]: The cpu doing the broadcast should not go into tickless idle.
+Patch[5/5]: Add a deep idle state to the cpuidle state table on powernv.
+
+Patch[5/5] is the patch that ultimately makes use of the timer offload
+framework that the patches Patch[1/5] to Patch[4/5] build.
+
 ---
 
-Resending not as an attachment for review.
+Preeti U Murthy (3):
+      cpuidle/ppc: Add timer offload framework to support deep idle states
+      cpuidle/ppc: CPU goes tickless if there are no arch-specific constraints
+      cpuidle/ppc: Add longnap state to the idle states on powernv
 
-If the extra process flag is considered too precious for this
-(there are only 2 left after this patch) I could get the
-same functionality by having freeze_processes() reject calls
-from a PF_KTHREAD|PF_NOFREEZE thread, and use PF_KTHREAD to
-determine if PF_NOFREEZE should be cleared in thaw_processes().
+Srivatsa S. Bhat (2):
+      powerpc: Free up the IPI message slot of ipi call function (PPC_MSG_CALL_FUNC)
+      powerpc: Implement broadcast timer interrupt as an IPI message
 
- include/linux/sched.h  |  1 +
- kernel/freezer.c       |  2 +-
- kernel/power/process.c | 11 +++++++++++
- 3 files changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 50d04b9..d722490 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1628,6 +1628,7 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut,
- #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
- #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
- #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezable */
-+#define PF_SUSPEND_TASK 0x80000000      /* this thread called freeze_processes and should not be frozen */
- 
- /*
-  * Only the _current_ task can read/write to tsk->flags, but other
-diff --git a/kernel/freezer.c b/kernel/freezer.c
-index 8b2afc1..b462fa1 100644
---- a/kernel/freezer.c
-+++ b/kernel/freezer.c
-@@ -33,7 +33,7 @@ static DEFINE_SPINLOCK(freezer_lock);
-  */
- bool freezing_slow_path(struct task_struct *p)
- {
--	if (p->flags & PF_NOFREEZE)
-+	if (p->flags & (PF_NOFREEZE | PF_SUSPEND_TASK))
- 		return false;
- 
- 	if (pm_nosig_freezing || cgroup_freezing(p))
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index fc0df84..06ec886 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -109,6 +109,8 @@ static int try_to_freeze_tasks(bool user_only)
- 
- /**
-  * freeze_processes - Signal user space processes to enter the refrigerator.
-+ * The current thread will not be frozen.  The same process that calls
-+ * freeze_processes must later call thaw_processes.
-  *
-  * On success, returns 0.  On failure, -errno and system is fully thawed.
-  */
-@@ -120,6 +122,9 @@ int freeze_processes(void)
- 	if (error)
- 		return error;
- 
-+	/* Make sure this task doesn't get frozen */
-+	current->flags |= PF_SUSPEND_TASK;
-+
- 	if (!pm_freezing)
- 		atomic_inc(&system_freezing_cnt);
- 
-@@ -168,6 +173,7 @@ int freeze_kernel_threads(void)
- void thaw_processes(void)
- {
- 	struct task_struct *g, *p;
-+	struct task_struct *curr = current;
- 
- 	if (pm_freezing)
- 		atomic_dec(&system_freezing_cnt);
-@@ -182,10 +188,15 @@ void thaw_processes(void)
- 
- 	read_lock(&tasklist_lock);
- 	do_each_thread(g, p) {
-+		/* No other threads should have PF_SUSPEND_TASK set */
-+		WARN_ON((p != curr) && (p->flags & PF_SUSPEND_TASK));
- 		__thaw_task(p);
- 	} while_each_thread(g, p);
- 	read_unlock(&tasklist_lock);
- 
-+	WARN_ON(!(curr->flags & PF_SUSPEND_TASK));
-+	curr->flags &= ~PF_SUSPEND_TASK;
-+
- 	usermodehelper_enable();
- 
- 	schedule();
+ arch/powerpc/include/asm/smp.h                  |    3 +
+ arch/powerpc/include/asm/time.h                 |    3 +
+ arch/powerpc/kernel/smp.c                       |   23 ++++--
+ arch/powerpc/kernel/time.c                      |   84 +++++++++++++++++++++++
+ arch/powerpc/platforms/cell/interrupt.c         |    2 -
+ arch/powerpc/platforms/powernv/Kconfig          |    1 
+ arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++
+ arch/powerpc/platforms/ps3/smp.c                |    2 -
+ kernel/time/tick-sched.c                        |    7 ++
+ 9 files changed, 161 insertions(+), 12 deletions(-)
+
 -- 
-1.8.3
+Signature
 
