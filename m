@@ -1,108 +1,93 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Subject: Re: RFC: device thermal limits represented in device tree nodes
-Date: Thu, 25 Jul 2013 17:15:28 +0100
-Message-ID: <1374768928.3213.31.camel@hornet>
-References: <51ED40E3.5020703@ti.com> <51EF3186.9060001@wwwdotorg.org>
-	 <1374664745.25700.118.camel@hornet> <51EFED19.5090900@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51EFED19.5090900@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Durgadoss R <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v6 0/8] cpufreq:boost: CPU Boost mode support
+Date: Thu, 25 Jul 2013 18:33:23 +0200
+Message-ID: <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:41202 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754591Ab3GYQd4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 12:33:56 -0400
+In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 
-On Wed, 2013-07-24 at 16:04 +0100, Eduardo Valentin wrote:
-> > 1. As you have pointed out, the thermal limits are related to the
-> > *device being monitored*, not the sensor itself.
-> > 
-> Yeah, thinking of it now, this original proposal, it lacks a stronger
-> relationship mapping between monitored and monitoring devices. But it
-> does have it..
-> 
-> > 2. Therefore the tree should express relation between those two; a
-> > sensor mode should be connected (via phandle most likely) to the device
-> 
-> .. this is done, more or less, by means of the 'type' property (see
-> original RFC binding).
+This patch series introduces support for CPU overclocking technique
+called Boost.
 
-I'm not sure what do you mean (regarding "type"), but I think I got what
-I wanted with the "monitoring_device" phandles (shouldn't it be
-"_device*s*" then? ;-).
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
-> For example:
-> cpu0: cpu@0 {
-> 	/* ... cpu needed bindings  */
-> 
-> 	thermal_zone {
-> 		type = "CPU";
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to include
+common code.
 
-So what does this exactly mean? What is so special about CPU? What other
-types you've got there? (Am I just lazy not looking at the numerous
-links you provided? ;-)
+Important design decisions:
+- Boost related code is compiled-in unconditionally to cpufreq core and 
+  disabled by default. The cpufreq_driver is responsibile for setting 
+  boost_supported flag and providing set_boost callback(if HW support
+  is needed). For software managed boost, special Kconfig flag - 
+  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+  when a target platform has thermal framework properly configured.
 
-> 		monitoring_device = <&sensor@xxxx
-> 				    &sensor@yyyy>;
-> 
-> 		mask = <0x03>; /* trips writability */
-> 		passive_delay = <250>; /* milliseconds */
-> 		polling_delay = <1000>; /* milliseconds */
-> 		policy = "step_wise";
+- struct cpufreq_driver has been extended with boost related fields:
+        -- boost_supported - when driver supports boosting
+        -- boost_enabled - boost state
+        -- set_boost - callback to function, which is necessary to
+           enable/disable boost
 
-The word "policy" doesn't sound to me like a "hardware feature",
-wouldn't you agree?
+- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+  _only_ when cpufreq driver supports Boost.
 
-> 		trips {
-> 			alert@100000{
-> 				temperature = <100000>; /* milliCelsius
-> 				hysteresis = <2000>; /* milliCelsius */
-> 				type = <THERMAL_TRIP_PASSIVE>;
-> 			};
-> 			crit@125000{
-> 				temperature = <125000>; /* milliCelsius
-> 				hysteresis = <2000>; /* milliCelsius */
-> 				type = <THERMAL_TRIP_CRITICAL>;
-> 			};
-> 		};
-> 		bind_params {
-> 			action@0{
-> 				cooling_device = "thermal-cpufreq";
+- No special spin_lock for Boost was created. The one from cpufreq core
+  was reused.
 
-Why is it a string? It seems very Linux-y... (cpufreq) Is there any
-particular reason not to have phandles to the fans that have any impact
-on the zone?
+- All available policies are now stored in a list.
 
-> 				weight = <100>; /* percentage */
+- The Boost code doesn't rely on any policy. When boost state is changed,
+  then the policy list is iterated and proper adjustements are done.
 
-Does this mean: how "successful" will be the particular fan?
+- To improve safety level, the thermal framework is also extended to disable
+  software boosting, when thermal trip point is reached. Then it starts 
+  monitoring target temperature to evaluate if boost can be enabled 
+  again. This emulates behaviour similar to HW managed boost (like x86)
 
-> Another way, as I mentioned in the original RFC, an option would be to
-> have the thermal_zone node not embedded in any device node. But them, we
-> would need to firmly link it to other device nodes, to describe what is
-> monitored and what is used for monitoring. 
+New patches for v6:
+cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
 
-You mean the zone nodes would live at the top level of the tree? To my
-mind the root represents the device (the board, whatever you call it),
-which, I guess, may be what you want, if the zone "covers" the whole
-device? (as in: one fan and one sensor somewhere in the box and the only
-thing you may do is to check the ambient temperature and start the fan
-if it's to high)
+Tested at HW:
+       Exynos 4412 3.11-rc1 Linux
+       Intel Core i7-3770 3.11-rc1 Linux
 
-> With the above I believe we could have dts(i) files describing only
-> thermal, for instance.
 
-You can include a dtsi inside the device node, no problem with that:
+Lukasz Majewski (8):
+  cpufreq: Store cpufreq policies in a list
+  cpufreq: Add boost frequency support in core
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  thermal:boost: Automatic enable/disable of BOOST feature
+  cpufreq:boost:Kconfig: Provide support for software managed BOOST
+  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+    framework
+  Documentation:cpufreq:boost: Update BOOST documentation
+  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
 
-/dts-v1/;
-        
-/ {     
-        smb {                   
-                compatible = "simple-bus";
+ Documentation/cpu-freq/boost.txt     |   26 +++----
+ drivers/cpufreq/Kconfig              |    3 +
+ drivers/cpufreq/Kconfig.arm          |   16 +++++
+ drivers/cpufreq/acpi-cpufreq.c       |   87 ++++++++----------------
+ drivers/cpufreq/cpufreq.c            |  124 +++++++++++++++++++++++++++++++++-
+ drivers/cpufreq/exynos-cpufreq.c     |    6 ++
+ drivers/cpufreq/exynos4x12-cpufreq.c |    2 +-
+ drivers/cpufreq/freq_table.c         |   53 +++++++++++++--
+ drivers/thermal/thermal_core.c       |   55 +++++++++++++++
+ include/linux/cpufreq.h              |   26 +++++++
+ include/linux/thermal.h              |    2 +
+ 11 files changed, 321 insertions(+), 79 deletions(-)
 
-                /include/ "vexpress-v2m-rs1.dtsi"
-        };      
-};     
+-- 
+1.7.10.4
 
-Pawel
