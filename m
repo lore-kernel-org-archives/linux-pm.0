@@ -1,65 +1,131 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: backup/restore concept?
-Date: Wed, 24 Jul 2013 13:57:47 -0400
-Message-ID: <51F0159B.1090206@ti.com>
-References: <CANMsd01y=eeQ356m=82PrdfZ0q50MpE53DoeQS6sDT=HaaZFzw@mail.gmail.com> <CAKohpo=i6xcUEXzkcJ9onHDc+O_TvKB1m_mwobuVbxF=BCwazg@mail.gmail.com> <51F00D11.6020905@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+From: Colin Cross <ccross@android.com>
+Subject: [PATCH] power: set PF_SUSPEND_TASK flag on tasks that call freeze_processes
+Date: Wed, 24 Jul 2013 17:41:33 -0700
+Message-ID: <1374712893-14487-1-git-send-email-ccross@android.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:59710 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619Ab3GXR5w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2013 13:57:52 -0400
-In-Reply-To: <51F00D11.6020905@ti.com>
+Received: from mail-qc0-f201.google.com ([209.85.216.201]:59484 "EHLO
+	mail-qc0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752685Ab3GYAmS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2013 20:42:18 -0400
+Received: by mail-qc0-f201.google.com with SMTP id u11so104345qcx.4
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jul 2013 17:42:18 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-dev <linaro-dev@lists.linaro.org>, Ryan <ryanphilips19@googlemail.com>, linux-pm@vger.kernel.org
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Michael Leun <lkml20130126@newton.leun.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Darren Hart <dvhart@linux.intel.com>, Colin Cross <ccross@android.com>
 
-On Wednesday 24 July 2013 01:21 PM, Nishanth Menon wrote:
-> On 07/24/2013 12:49 AM, Viresh Kumar wrote:
->> Adding more relevant list in cc.
->>
->> On 23 July 2013 16:05, Ryan <ryanphilips19@googlemail.com> wrote:
->>> Hi,
->>>
->>> I have some doubts on backup and restore operation. From what i understand:
->>>
->>> We copy all registers values & addresses of all controllers in the SOC
->>> to the internal RAM or SRAM.
->>> before we put CPU to sleep?
->>>
->>> I want to know if we also copy the code segment into SRAM and what
->>> happens after wakeup.
->>> If so, where exactly we need to copy and how cpu jumps here after
->>> wakeup. or is there any other mechanism
->>> that is used. What executes first since DDR is in self-refresh.
->>>
->>> I use OMAP4 and this is my understanding. I could not understand much
->>> other than in OFF mode
->>> all the controller registers get copied to SRAM. Does anything else
->>> also gets copied too?
->>> or am i missing any basics here.
-> This understanding is not accurate. OMAP behavior for "OFF mode" is as follows (as part of suspend/resume):
-> - drivers do their own "context save" - saving of registers based on their need.
-> - SAR registers are saved (note - this is *not* every possible register on OMAP - but a core subset).
-> - cpu goes to WFI triggering h/w statemachine flow. (wfi instruction is in DDR)
->    - as part of "OFF mode" DDR is put into self refresh automatically by memory controller.
-> 
-> on wakeup
-> - core registers are restored by hardware
-> - DDR is brought out of selfrefresh,
-> - execution resume in resume function pointer
-> - drivers restore their own modules as needed.
-> 
-> So, there is no real black magic here :)
-> 
-:)
-Also if you are interested in how the SRAM copy stuff work, look
-at OMAP3 entry into OFF state and memory self refresh is triggered
-from code running from SRAM. On the wakeup though, we directly jump
-to DDR address.
+Calling freeze_processes sets a global flag that will cause any
+process that calls try_to_freeze to enter the refrigerator.  It
+skips sending a signal to the current task, but if the current
+task ever hits try_to_freeze all threads will be frozen and the
+system will deadlock.
 
-regards,
-Santosh
+Set a new flag, PF_SUSPEND_TASK, on the task that calls
+freeze_processes.  The flag notifies the freezer that the thread
+is involved in suspend and should not be frozen.  Also add a
+WARN_ON in thaw_processes if the caller does not have the
+PF_SUSPEND_TASK flag set to catch if a different task calls
+thaw_processes than the one that called freeze_processes, leaving
+a task with PF_SUSPEND_TASK permanently set on it.
+
+Threads that spawn off a task with PF_SUSPEND_TASK set (which
+swsusp does) will also have PF_SUSPEND_TASK set, preventing them
+from freezing while they are helping with suspend, but they need
+to be dead by the time suspend is triggered, otherwise they may
+run when userspace is expected to be frozen.  Add a WARN_ON in
+thaw_processes if more than one thread has the PF_SUSPEND_TASK
+flag set.
+
+Reported-by: Michael Leun <lkml20130126@newton.leun.net>
+Tested-by: Michael Leun <lkml20130126@newton.leun.net>
+Signed-off-by: Colin Cross <ccross@android.com>
+---
+
+Resending not as an attachment for review.
+
+If the extra process flag is considered too precious for this
+(there are only 2 left after this patch) I could get the
+same functionality by having freeze_processes() reject calls
+from a PF_KTHREAD|PF_NOFREEZE thread, and use PF_KTHREAD to
+determine if PF_NOFREEZE should be cleared in thaw_processes().
+
+ include/linux/sched.h  |  1 +
+ kernel/freezer.c       |  2 +-
+ kernel/power/process.c | 11 +++++++++++
+ 3 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 50d04b9..d722490 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1628,6 +1628,7 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut,
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezable */
++#define PF_SUSPEND_TASK 0x80000000      /* this thread called freeze_processes and should not be frozen */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
+diff --git a/kernel/freezer.c b/kernel/freezer.c
+index 8b2afc1..b462fa1 100644
+--- a/kernel/freezer.c
++++ b/kernel/freezer.c
+@@ -33,7 +33,7 @@ static DEFINE_SPINLOCK(freezer_lock);
+  */
+ bool freezing_slow_path(struct task_struct *p)
+ {
+-	if (p->flags & PF_NOFREEZE)
++	if (p->flags & (PF_NOFREEZE | PF_SUSPEND_TASK))
+ 		return false;
+ 
+ 	if (pm_nosig_freezing || cgroup_freezing(p))
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index fc0df84..06ec886 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -109,6 +109,8 @@ static int try_to_freeze_tasks(bool user_only)
+ 
+ /**
+  * freeze_processes - Signal user space processes to enter the refrigerator.
++ * The current thread will not be frozen.  The same process that calls
++ * freeze_processes must later call thaw_processes.
+  *
+  * On success, returns 0.  On failure, -errno and system is fully thawed.
+  */
+@@ -120,6 +122,9 @@ int freeze_processes(void)
+ 	if (error)
+ 		return error;
+ 
++	/* Make sure this task doesn't get frozen */
++	current->flags |= PF_SUSPEND_TASK;
++
+ 	if (!pm_freezing)
+ 		atomic_inc(&system_freezing_cnt);
+ 
+@@ -168,6 +173,7 @@ int freeze_kernel_threads(void)
+ void thaw_processes(void)
+ {
+ 	struct task_struct *g, *p;
++	struct task_struct *curr = current;
+ 
+ 	if (pm_freezing)
+ 		atomic_dec(&system_freezing_cnt);
+@@ -182,10 +188,15 @@ void thaw_processes(void)
+ 
+ 	read_lock(&tasklist_lock);
+ 	do_each_thread(g, p) {
++		/* No other threads should have PF_SUSPEND_TASK set */
++		WARN_ON((p != curr) && (p->flags & PF_SUSPEND_TASK));
+ 		__thaw_task(p);
+ 	} while_each_thread(g, p);
+ 	read_unlock(&tasklist_lock);
+ 
++	WARN_ON(!(curr->flags & PF_SUSPEND_TASK));
++	curr->flags &= ~PF_SUSPEND_TASK;
++
+ 	usermodehelper_enable();
+ 
+ 	schedule();
+-- 
+1.8.3
+
