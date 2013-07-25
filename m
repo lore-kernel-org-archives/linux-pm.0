@@ -1,51 +1,108 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
- arch-specific constraints
-Date: Thu, 25 Jul 2013 15:30:46 +0200
-Message-ID: <20130725133044.GA7400@somewhere>
-References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
- <20130725090302.12500.42998.stgit@preeti.in.ibm.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Subject: Re: RFC: device thermal limits represented in device tree nodes
+Date: Thu, 25 Jul 2013 17:15:28 +0100
+Message-ID: <1374768928.3213.31.camel@hornet>
+References: <51ED40E3.5020703@ti.com> <51EF3186.9060001@wwwdotorg.org>
+	 <1374664745.25700.118.camel@hornet> <51EFED19.5090900@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f48.google.com ([74.125.82.48]:37979 "EHLO
-	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755901Ab3GYNav (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 09:30:51 -0400
-Content-Disposition: inline
-In-Reply-To: <20130725090302.12500.42998.stgit@preeti.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51EFED19.5090900@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Durgadoss R <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-On Thu, Jul 25, 2013 at 02:33:02PM +0530, Preeti U Murthy wrote:
-> In the current design of timer offload framework, the broadcast cpu should
-> *not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
+On Wed, 2013-07-24 at 16:04 +0100, Eduardo Valentin wrote:
+> > 1. As you have pointed out, the thermal limits are related to the
+> > *device being monitored*, not the sensor itself.
+> > 
+> Yeah, thinking of it now, this original proposal, it lacks a stronger
+> relationship mapping between monitored and monitoring devices. But it
+> does have it..
 > 
-> Since we prevent the CPUs entering deep idle states from programming the lapic of the
-> broadcast cpu for their respective next local events for reasons mentioned in
-> PATCH[3/5], the broadcast CPU checks if there are any CPUs to be woken up during
-> each of its timer interrupt programmed to its local events.
+> > 2. Therefore the tree should express relation between those two; a
+> > sensor mode should be connected (via phandle most likely) to the device
 > 
-> With tickless idle, the broadcast CPU might not get a timer interrupt till after
-> many ticks which can result in missed wakeups on CPUs in deep idle states. By
-> disabling tickless idle, worst case, the tick_sched hrtimer will trigger a
-> timer interrupt every period to check for broadcast.
+> .. this is done, more or less, by means of the 'type' property (see
+> original RFC binding).
+
+I'm not sure what do you mean (regarding "type"), but I think I got what
+I wanted with the "monitoring_device" phandles (shouldn't it be
+"_device*s*" then? ;-).
+
+> For example:
+> cpu0: cpu@0 {
+> 	/* ... cpu needed bindings  */
 > 
-> However the current setup of tickless idle does not let us make the choice
-> of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
-> is a system wide setting. Hence resort to an arch specific call to check if a cpu
-> can go into tickless idle.
+> 	thermal_zone {
+> 		type = "CPU";
 
-Hi Preeti,
+So what does this exactly mean? What is so special about CPU? What other
+types you've got there? (Am I just lazy not looking at the numerous
+links you provided? ;-)
 
-I'm not exactly sure why you can't enter the broadcast CPU in dynticks idle mode.
-I read in the previous patch that's because in dynticks idle mode the broadcast
-CPU deactivates its lapic so it doesn't receive the IPI. But may be I misunderstood.
-Anyway that's not good for powersaving.
+> 		monitoring_device = <&sensor@xxxx
+> 				    &sensor@yyyy>;
+> 
+> 		mask = <0x03>; /* trips writability */
+> 		passive_delay = <250>; /* milliseconds */
+> 		polling_delay = <1000>; /* milliseconds */
+> 		policy = "step_wise";
 
-Also when an arch wants to prevent a CPU from entering dynticks idle mode, it typically
-use arch_needs_cpu(). May be that could fit for you as well?
+The word "policy" doesn't sound to me like a "hardware feature",
+wouldn't you agree?
 
-Thanks.
+> 		trips {
+> 			alert@100000{
+> 				temperature = <100000>; /* milliCelsius
+> 				hysteresis = <2000>; /* milliCelsius */
+> 				type = <THERMAL_TRIP_PASSIVE>;
+> 			};
+> 			crit@125000{
+> 				temperature = <125000>; /* milliCelsius
+> 				hysteresis = <2000>; /* milliCelsius */
+> 				type = <THERMAL_TRIP_CRITICAL>;
+> 			};
+> 		};
+> 		bind_params {
+> 			action@0{
+> 				cooling_device = "thermal-cpufreq";
+
+Why is it a string? It seems very Linux-y... (cpufreq) Is there any
+particular reason not to have phandles to the fans that have any impact
+on the zone?
+
+> 				weight = <100>; /* percentage */
+
+Does this mean: how "successful" will be the particular fan?
+
+> Another way, as I mentioned in the original RFC, an option would be to
+> have the thermal_zone node not embedded in any device node. But them, we
+> would need to firmly link it to other device nodes, to describe what is
+> monitored and what is used for monitoring. 
+
+You mean the zone nodes would live at the top level of the tree? To my
+mind the root represents the device (the board, whatever you call it),
+which, I guess, may be what you want, if the zone "covers" the whole
+device? (as in: one fan and one sensor somewhere in the box and the only
+thing you may do is to check the ambient temperature and start the fan
+if it's to high)
+
+> With the above I believe we could have dts(i) files describing only
+> thermal, for instance.
+
+You can include a dtsi inside the device node, no problem with that:
+
+/dts-v1/;
+        
+/ {     
+        smb {                   
+                compatible = "simple-bus";
+
+                /include/ "vexpress-v2m-rs1.dtsi"
+        };      
+};     
+
+Pawel
