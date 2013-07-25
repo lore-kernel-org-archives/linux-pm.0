@@ -1,85 +1,257 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
- arch-specific constraints
-Date: Thu, 25 Jul 2013 14:33:02 +0530
-Message-ID: <20130725090302.12500.42998.stgit@preeti.in.ibm.com>
-References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [RFC PATCH] thermal: powerclamp: Add support for ARM machine to
+ powerclamp driver.
+Date: Thu, 25 Jul 2013 19:22:07 +0900
+Message-ID: <1374747727-18602-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:42194 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752418Ab3GYJFh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 05:05:37 -0400
-Received: from /spool/local
-	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 25 Jul 2013 14:28:39 +0530
-In-Reply-To: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:29705 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754994Ab3GYKXI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 06:23:08 -0400
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MQH003BSM6C5QY0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 25 Jul 2013 19:23:06 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: linux-pm@vger.kernel.org
+Cc: jacob.jun.pan@linux.intel.com, rui.zhang@intel.com, eduardo.valentin@ti.com, amit.daniel@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-In the current design of timer offload framework, the broadcast cpu should
-*not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
+This patch modifies intel_powerclamp driver can be used in not only x86
+but also ARM. Any ARM system can use intel_powerclamp driver for managing
+thermal problem through injecting intentional idle cycle. The required
+modification is only that it replaces x86's instruction, mwait, with arm
+specific one, wfi and changes the way of calculation of idle rate of last
+window. Other algorithm and codes can be shared without any amendment.
 
-Since we prevent the CPUs entering deep idle states from programming the lapic of the
-broadcast cpu for their respective next local events for reasons mentioned in
-PATCH[3/5], the broadcast CPU checks if there are any CPUs to be woken up during
-each of its timer interrupt programmed to its local events.
-
-With tickless idle, the broadcast CPU might not get a timer interrupt till after
-many ticks which can result in missed wakeups on CPUs in deep idle states. By
-disabling tickless idle, worst case, the tick_sched hrtimer will trigger a
-timer interrupt every period to check for broadcast.
-
-However the current setup of tickless idle does not let us make the choice
-of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
-is a system wide setting. Hence resort to an arch specific call to check if a cpu
-can go into tickless idle.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
+ drivers/thermal/Kconfig            |    3 +-
+ drivers/thermal/intel_powerclamp.c |   94 ++++++++++++++++++++++++++----------
+ 2 files changed, 70 insertions(+), 27 deletions(-)
 
- arch/powerpc/kernel/time.c |    5 +++++
- kernel/time/tick-sched.c   |    7 +++++++
- 2 files changed, 12 insertions(+)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 8ed0fb3..68a636f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -862,6 +862,11 @@ static void decrementer_timer_broadcast(const struct cpumask *mask)
- 	arch_send_tick_broadcast(mask);
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index e988c81..912a788 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -162,8 +162,7 @@ config DB8500_CPUFREQ_COOLING
+ config INTEL_POWERCLAMP
+ 	tristate "Intel PowerClamp idle injection driver"
+ 	depends on THERMAL
+-	depends on X86
+-	depends on CPU_SUP_INTEL
++	depends on (X86 && CPU_SUP_INTEL) || ARM
+ 	help
+ 	  Enable this to enable Intel PowerClamp idle injection driver. This
+ 	  enforce idle time which results in more package C-state residency. The
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index b40b37c..3ff350b 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -52,12 +52,18 @@
+ #include <linux/seq_file.h>
+ #include <linux/sched/rt.h>
+ 
++#include <asm/hardirq.h>
++#ifdef CONFIG_X86
+ #include <asm/nmi.h>
+ #include <asm/msr.h>
+ #include <asm/mwait.h>
+ #include <asm/cpu_device_id.h>
+ #include <asm/idle.h>
+-#include <asm/hardirq.h>
++
++static unsigned int target_mwait;
++#elif CONFIG_ARM
++#include <asm/proc-fns.h>
++#endif
+ 
+ #define MAX_TARGET_RATIO (50U)
+ /* For each undisturbed clamping period (no extra wake ups during idle time),
+@@ -71,7 +77,6 @@
+  */
+ #define DEFAULT_DURATION_JIFFIES (6)
+ 
+-static unsigned int target_mwait;
+ static struct dentry *debug_dir;
+ 
+ /* user selected target */
+@@ -178,6 +183,7 @@ MODULE_PARM_DESC(window_size, "sliding window in number of clamping cycles\n"
+ 	"\twindow size results in slower response time but more smooth\n"
+ 	"\tclamping results. default to 2.");
+ 
++#ifdef CONFIG_X86
+ static void find_target_mwait(void)
+ {
+ 	unsigned int eax, ebx, ecx, edx;
+@@ -246,6 +252,7 @@ static u64 pkg_state_counter(void)
+ 
+ 	return count;
+ }
++#endif
+ 
+ static void noop_timer(unsigned long foo)
+ {
+@@ -316,6 +323,25 @@ static void adjust_compensation(int target_ratio, unsigned int win)
+ 	}
  }
  
-+int arch_can_stop_idle_tick(int cpu)
++#ifdef CONFIG_X86
++static void inline powerclamp_get_cstate_inform(u64 *msr_now, u64 *tsc_now)
 +{
-+	return cpu != bc_cpu;
++	*msr_now = pkg_state_counter();
++	rdtscll(*tsc_now);
 +}
++#elif CONFIG_ARM
++static void inline powerclamp_get_cstate_inform(u64 *idle, u64 *wall)
++{
++	u64 _wall;
++	int cpu;
 +
- static void register_decrementer_clockevent(int cpu)
++	for_each_online_cpu(cpu) {
++		*idle += get_cpu_idle_time_us(cpu, &_wall);
++		*wall += _wall;
++	}
++}
++#endif
++
+ static bool powerclamp_adjust_controls(unsigned int target_ratio,
+ 				unsigned int guard, unsigned int win)
  {
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 6960172..e9ffa84 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -700,8 +700,15 @@ static void tick_nohz_full_stop_tick(struct tick_sched *ts)
- #endif
+@@ -324,8 +350,7 @@ static bool powerclamp_adjust_controls(unsigned int target_ratio,
+ 	u64 val64;
+ 
+ 	/* check result for the last window */
+-	msr_now = pkg_state_counter();
+-	rdtscll(tsc_now);
++	powerclamp_get_cstate_inform(&msr_now, &tsc_now);
+ 
+ 	/* calculate pkg cstate vs tsc ratio */
+ 	if (!msr_last || !tsc_last)
+@@ -353,6 +378,34 @@ static bool powerclamp_adjust_controls(unsigned int target_ratio,
+ 	return set_target_ratio + guard <= current_ratio;
  }
  
-+int __weak arch_can_stop_idle_tick(int cpu)
++#ifdef CONFIG_X86
++static void powerclamp_enter_idle(void)
 +{
-+	return 1;
-+}
++	unsigned long ecx = 1;
++	unsigned long eax = target_mwait;
 +
- static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
++	/*
++	 * REVISIT: may call enter_idle() to notify drivers who
++	 * can save power during cpu idle. same for exit_idle()
++	 */
++	local_touch_nmi();
++	stop_critical_timings();
++	__monitor((void *)&current_thread_info()->flags, 0, 0);
++	cpu_relax(); /* allow HT sibling to run */
++	__mwait(eax, ecx);
++	start_critical_timings();
++	atomic_inc(&idle_wakeup_counter);
++}
++#elif CONFIG_ARM
++static void  powerclamp_enter_idle(void)
++{
++	stop_critical_timings();
++	cpu_do_idle();
++	start_critical_timings();
++	atomic_inc(&idle_wakeup_counter);
++}
++#endif
++
+ static int clamp_thread(void *arg)
  {
-+	if (!arch_can_stop_idle_tick(cpu))
-+		return false;
- 	/*
- 	 * If this cpu is offline and it is the one which updates
- 	 * jiffies, then give up the assignment and let it be taken by
+ 	int cpunr = (unsigned long)arg;
+@@ -428,22 +481,9 @@ static int clamp_thread(void *arg)
+ 		preempt_disable();
+ 		tick_nohz_idle_enter();
+ 		/* mwait until target jiffies is reached */
+-		while (time_before(jiffies, target_jiffies)) {
+-			unsigned long ecx = 1;
+-			unsigned long eax = target_mwait;
+-
+-			/*
+-			 * REVISIT: may call enter_idle() to notify drivers who
+-			 * can save power during cpu idle. same for exit_idle()
+-			 */
+-			local_touch_nmi();
+-			stop_critical_timings();
+-			__monitor((void *)&current_thread_info()->flags, 0, 0);
+-			cpu_relax(); /* allow HT sibling to run */
+-			__mwait(eax, ecx);
+-			start_critical_timings();
+-			atomic_inc(&idle_wakeup_counter);
+-		}
++		while (time_before(jiffies, target_jiffies))
++			powerclamp_enter_idle();
++
+ 		tick_nohz_idle_exit();
+ 		preempt_enable_no_resched();
+ 	}
+@@ -465,13 +505,12 @@ static void poll_pkg_cstate(struct work_struct *dummy)
+ 	static u64 tsc_last;
+ 	static unsigned long jiffies_last;
+ 
+-	u64 msr_now;
++	u64 msr_now = 0;
+ 	unsigned long jiffies_now;
+-	u64 tsc_now;
++	u64 tsc_now = 0;
+ 	u64 val64;
+ 
+-	msr_now = pkg_state_counter();
+-	rdtscll(tsc_now);
++	powerclamp_get_cstate_inform(&msr_now, &tsc_now);
+ 	jiffies_now = jiffies;
+ 
+ 	/* calculate pkg cstate vs tsc ratio */
+@@ -499,11 +538,13 @@ static int start_power_clamp(void)
+ 	unsigned long cpu;
+ 	struct task_struct *thread;
+ 
++#ifdef CONFIG_X86
+ 	/* check if pkg cstate counter is completely 0, abort in this case */
+ 	if (!pkg_state_counter()) {
+ 		pr_err("pkg cstate counter not functional, abort\n");
+ 		return -EINVAL;
+ 	}
++#endif
+ 
+ 	set_target_ratio = clamp(set_target_ratio, 0U, MAX_TARGET_RATIO - 1);
+ 	/* prevent cpu hotplug */
+@@ -661,6 +702,7 @@ static struct thermal_cooling_device_ops powerclamp_cooling_ops = {
+ 	.set_cur_state = powerclamp_set_cur_state,
+ };
+ 
++#ifdef CONFIG_X86
+ /* runs on Nehalem and later */
+ static const struct x86_cpu_id intel_powerclamp_ids[] = {
+ 	{ X86_VENDOR_INTEL, 6, 0x1a},
+@@ -678,9 +720,11 @@ static const struct x86_cpu_id intel_powerclamp_ids[] = {
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
++#endif
+ 
+ static int powerclamp_probe(void)
+ {
++#ifdef CONFIG_X86
+ 	if (!x86_match_cpu(intel_powerclamp_ids)) {
+ 		pr_err("Intel powerclamp does not run on family %d model %d\n",
+ 				boot_cpu_data.x86, boot_cpu_data.x86_model);
+@@ -694,7 +738,7 @@ static int powerclamp_probe(void)
+ 
+ 	/* find the deepest mwait value */
+ 	find_target_mwait();
+-
++#endif
+ 	return 0;
+ }
+ 
+-- 
+1.7.9.5
 
