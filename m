@@ -1,257 +1,87 @@
-From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [RFC PATCH] thermal: powerclamp: Add support for ARM machine to
- powerclamp driver.
-Date: Thu, 25 Jul 2013 19:22:07 +0900
-Message-ID: <1374747727-18602-1-git-send-email-jonghwa3.lee@samsung.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [RFC PATCH 0/3] ARM: TC2 big.LITTLE CPU idle driver
+Date: Thu, 25 Jul 2013 12:14:23 +0100
+Message-ID: <1374750866-750-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:29705 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754994Ab3GYKXI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 06:23:08 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MQH003BSM6C5QY0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 25 Jul 2013 19:23:06 +0900 (KST)
+Received: from service87.mimecast.com ([91.220.42.44]:39748 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009Ab3GYLOe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 07:14:34 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: jacob.jun.pan@linux.intel.com, rui.zhang@intel.com, eduardo.valentin@ti.com, amit.daniel@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Kevin Hilman <khilman@linaro.org>, Olof Johansson <olof@lixom.net>, Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-This patch modifies intel_powerclamp driver can be used in not only x86
-but also ARM. Any ARM system can use intel_powerclamp driver for managing
-thermal problem through injecting intentional idle cycle. The required
-modification is only that it replaces x86's instruction, mwait, with arm
-specific one, wfi and changes the way of calculation of idle rate of last
-window. Other algorithm and codes can be shared without any amendment.
+This patch series provides the implementation of CPU idle driver for the TC=
+2
+ARM big.LITTLE SoC. It is based and dependent on Nico's branch
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
----
- drivers/thermal/Kconfig            |    3 +-
- drivers/thermal/intel_powerclamp.c |   94 ++++++++++++++++++++++++++----------
- 2 files changed, 70 insertions(+), 27 deletions(-)
+git://git.linaro.org/people/nico/linux mcpm+tc2
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index e988c81..912a788 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -162,8 +162,7 @@ config DB8500_CPUFREQ_COOLING
- config INTEL_POWERCLAMP
- 	tristate "Intel PowerClamp idle injection driver"
- 	depends on THERMAL
--	depends on X86
--	depends on CPU_SUP_INTEL
-+	depends on (X86 && CPU_SUP_INTEL) || ARM
- 	help
- 	  Enable this to enable Intel PowerClamp idle injection driver. This
- 	  enforce idle time which results in more package C-state residency. The
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index b40b37c..3ff350b 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -52,12 +52,18 @@
- #include <linux/seq_file.h>
- #include <linux/sched/rt.h>
- 
-+#include <asm/hardirq.h>
-+#ifdef CONFIG_X86
- #include <asm/nmi.h>
- #include <asm/msr.h>
- #include <asm/mwait.h>
- #include <asm/cpu_device_id.h>
- #include <asm/idle.h>
--#include <asm/hardirq.h>
-+
-+static unsigned int target_mwait;
-+#elif CONFIG_ARM
-+#include <asm/proc-fns.h>
-+#endif
- 
- #define MAX_TARGET_RATIO (50U)
- /* For each undisturbed clamping period (no extra wake ups during idle time),
-@@ -71,7 +77,6 @@
-  */
- #define DEFAULT_DURATION_JIFFIES (6)
- 
--static unsigned int target_mwait;
- static struct dentry *debug_dir;
- 
- /* user selected target */
-@@ -178,6 +183,7 @@ MODULE_PARM_DESC(window_size, "sliding window in number of clamping cycles\n"
- 	"\twindow size results in slower response time but more smooth\n"
- 	"\tclamping results. default to 2.");
- 
-+#ifdef CONFIG_X86
- static void find_target_mwait(void)
- {
- 	unsigned int eax, ebx, ecx, edx;
-@@ -246,6 +252,7 @@ static u64 pkg_state_counter(void)
- 
- 	return count;
- }
-+#endif
- 
- static void noop_timer(unsigned long foo)
- {
-@@ -316,6 +323,25 @@ static void adjust_compensation(int target_ratio, unsigned int win)
- 	}
- }
- 
-+#ifdef CONFIG_X86
-+static void inline powerclamp_get_cstate_inform(u64 *msr_now, u64 *tsc_now)
-+{
-+	*msr_now = pkg_state_counter();
-+	rdtscll(*tsc_now);
-+}
-+#elif CONFIG_ARM
-+static void inline powerclamp_get_cstate_inform(u64 *idle, u64 *wall)
-+{
-+	u64 _wall;
-+	int cpu;
-+
-+	for_each_online_cpu(cpu) {
-+		*idle += get_cpu_idle_time_us(cpu, &_wall);
-+		*wall += _wall;
-+	}
-+}
-+#endif
-+
- static bool powerclamp_adjust_controls(unsigned int target_ratio,
- 				unsigned int guard, unsigned int win)
- {
-@@ -324,8 +350,7 @@ static bool powerclamp_adjust_controls(unsigned int target_ratio,
- 	u64 val64;
- 
- 	/* check result for the last window */
--	msr_now = pkg_state_counter();
--	rdtscll(tsc_now);
-+	powerclamp_get_cstate_inform(&msr_now, &tsc_now);
- 
- 	/* calculate pkg cstate vs tsc ratio */
- 	if (!msr_last || !tsc_last)
-@@ -353,6 +378,34 @@ static bool powerclamp_adjust_controls(unsigned int target_ratio,
- 	return set_target_ratio + guard <= current_ratio;
- }
- 
-+#ifdef CONFIG_X86
-+static void powerclamp_enter_idle(void)
-+{
-+	unsigned long ecx = 1;
-+	unsigned long eax = target_mwait;
-+
-+	/*
-+	 * REVISIT: may call enter_idle() to notify drivers who
-+	 * can save power during cpu idle. same for exit_idle()
-+	 */
-+	local_touch_nmi();
-+	stop_critical_timings();
-+	__monitor((void *)&current_thread_info()->flags, 0, 0);
-+	cpu_relax(); /* allow HT sibling to run */
-+	__mwait(eax, ecx);
-+	start_critical_timings();
-+	atomic_inc(&idle_wakeup_counter);
-+}
-+#elif CONFIG_ARM
-+static void  powerclamp_enter_idle(void)
-+{
-+	stop_critical_timings();
-+	cpu_do_idle();
-+	start_critical_timings();
-+	atomic_inc(&idle_wakeup_counter);
-+}
-+#endif
-+
- static int clamp_thread(void *arg)
- {
- 	int cpunr = (unsigned long)arg;
-@@ -428,22 +481,9 @@ static int clamp_thread(void *arg)
- 		preempt_disable();
- 		tick_nohz_idle_enter();
- 		/* mwait until target jiffies is reached */
--		while (time_before(jiffies, target_jiffies)) {
--			unsigned long ecx = 1;
--			unsigned long eax = target_mwait;
--
--			/*
--			 * REVISIT: may call enter_idle() to notify drivers who
--			 * can save power during cpu idle. same for exit_idle()
--			 */
--			local_touch_nmi();
--			stop_critical_timings();
--			__monitor((void *)&current_thread_info()->flags, 0, 0);
--			cpu_relax(); /* allow HT sibling to run */
--			__mwait(eax, ecx);
--			start_critical_timings();
--			atomic_inc(&idle_wakeup_counter);
--		}
-+		while (time_before(jiffies, target_jiffies))
-+			powerclamp_enter_idle();
-+
- 		tick_nohz_idle_exit();
- 		preempt_enable_no_resched();
- 	}
-@@ -465,13 +505,12 @@ static void poll_pkg_cstate(struct work_struct *dummy)
- 	static u64 tsc_last;
- 	static unsigned long jiffies_last;
- 
--	u64 msr_now;
-+	u64 msr_now = 0;
- 	unsigned long jiffies_now;
--	u64 tsc_now;
-+	u64 tsc_now = 0;
- 	u64 val64;
- 
--	msr_now = pkg_state_counter();
--	rdtscll(tsc_now);
-+	powerclamp_get_cstate_inform(&msr_now, &tsc_now);
- 	jiffies_now = jiffies;
- 
- 	/* calculate pkg cstate vs tsc ratio */
-@@ -499,11 +538,13 @@ static int start_power_clamp(void)
- 	unsigned long cpu;
- 	struct task_struct *thread;
- 
-+#ifdef CONFIG_X86
- 	/* check if pkg cstate counter is completely 0, abort in this case */
- 	if (!pkg_state_counter()) {
- 		pr_err("pkg cstate counter not functional, abort\n");
- 		return -EINVAL;
- 	}
-+#endif
- 
- 	set_target_ratio = clamp(set_target_ratio, 0U, MAX_TARGET_RATIO - 1);
- 	/* prevent cpu hotplug */
-@@ -661,6 +702,7 @@ static struct thermal_cooling_device_ops powerclamp_cooling_ops = {
- 	.set_cur_state = powerclamp_set_cur_state,
- };
- 
-+#ifdef CONFIG_X86
- /* runs on Nehalem and later */
- static const struct x86_cpu_id intel_powerclamp_ids[] = {
- 	{ X86_VENDOR_INTEL, 6, 0x1a},
-@@ -678,9 +720,11 @@ static const struct x86_cpu_id intel_powerclamp_ids[] = {
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
-+#endif
- 
- static int powerclamp_probe(void)
- {
-+#ifdef CONFIG_X86
- 	if (!x86_match_cpu(intel_powerclamp_ids)) {
- 		pr_err("Intel powerclamp does not run on family %d model %d\n",
- 				boot_cpu_data.x86, boot_cpu_data.x86_model);
-@@ -694,7 +738,7 @@ static int powerclamp_probe(void)
- 
- 	/* find the deepest mwait value */
- 	find_target_mwait();
--
-+#endif
- 	return 0;
- }
- 
--- 
-1.7.9.5
+and relative pull request
+
+http://lists.infradead.org/pipermail/linux-arm-kernel/2013-July/185411.html
+
+First two patches in the series simply implement a method to disable the
+GIC CPU IF and add the respective call in the MCPM TC2 back-end. Details
+are explained in the commit logs.
+
+Patch 3 implements the TC2 CPU idle driver, that paves the way for a
+generic ARM idle driver, MCPM based (but PSCI can be easily integrated
+as well) for all upcoming big.LITTLE systems.
+
+The CPU idle driver is built upon the multiple drivers CPU idle infrastruct=
+ure
+to define different target residencies for different clusters.
+
+Current driver matches the DT compatible string defining a TC2 testchip cor=
+e
+tile, but in the future will be augmented with a proper match table to
+match against all machines that can rely on this driver to implement CPU
+idle capabilities.
+
+This CPU idle driver integrates all existing PM kernel concepts recently
+implemented for ARM, MCPM, CPU PM notifiers and cpu_suspend and lays the
+foundation for a reference implementation of a generic CPU idle driver, sin=
+ce
+the driver as it stands is completely generic, C-states definition
+notwithstanding.
+
+C-state definition for the driver should be made dynamic so that the driver
+can become completely generic and decoupled from static C-states definition=
+.
+
+The driver has been tested, obviously on the TC2 testchip, with different
+Linux systems ranging from simple busybox to Android and Ubuntu rootfs,
+through millions of C-state iterations randomly triggered by the
+aforementioned root filesystem environments.
+
+Comments and review very welcome.
+
+With thanks,
+Lorenzo
+
+Lorenzo Pieralisi (2):
+  ARM: vexpress: tc2: disable GIC CPU IF in tc2_pm_suspend
+  cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver
+
+Nicolas Pitre (1):
+  drivers: irq-chip: irq-gic: introduce gic_cpu_if_down()
+
+ MAINTAINERS                          |   9 ++
+ arch/arm/mach-vexpress/tc2_pm.c      |   2 +
+ drivers/cpuidle/Kconfig              |  10 ++
+ drivers/cpuidle/Makefile             |   1 +
+ drivers/cpuidle/cpuidle-big_little.c | 187 +++++++++++++++++++++++++++++++=
+++++
+ drivers/irqchip/irq-gic.c            |   6 ++
+ include/linux/irqchip/arm-gic.h      |   1 +
+ 7 files changed, 216 insertions(+)
+ create mode 100644 drivers/cpuidle/cpuidle-big_little.c
+
+--=20
+1.8.2.2
+
 
