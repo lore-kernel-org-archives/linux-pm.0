@@ -1,98 +1,77 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] cpufreq-cpu0: support Device Tree initialisation
-Date: Fri, 26 Jul 2013 14:43:34 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1307261431510.22137@axis700.grange>
-References: <Pine.LNX.4.64.1307261214430.22137@axis700.grange>
- <51F2698A.5020904@ti.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v6 1/8] cpufreq: Store cpufreq policies in a list
+Date: Fri, 26 Jul 2013 14:46:12 +0200
+Message-ID: <20130726144612.5939419c@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+ <1374770011-22171-2-git-send-email-l.majewski@samsung.com>
+ <CAKohpoktwZUvs2ap7wk1tudVsiKjbhFkoM5=+AaFZP=+73fEyg@mail.gmail.com>
+ <20130726125827.72f9ef18@amdc308.digital.local>
+ <CAKohpokqHsHZP0AkPBbmGP=ekLPQrnLCc5j6BsfM6KY01uzG1w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51F2698A.5020904@ti.com>
+In-reply-to: <CAKohpokqHsHZP0AkPBbmGP=ekLPQrnLCc5j6BsfM6KY01uzG1w@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, durgadoss.r@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Nishanth
+On Fri, 26 Jul 2013 16:32:34 +0530 Viresh Kumar viresh.kumar@linaro.org
+wrote,
+> On 26 July 2013 16:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > On Fri, 26 Jul 2013 15:44:29 +0530 Viresh Kumar
+> > viresh.kumar@linaro.org wrote,
+> >> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com>
+> >> wrote:
+> 
+> >> Looks good but would have been better if you could have moved
+> >> existing code to use this infrastructure..
+> >>
+> >> For example, this code in __cpufreq_add_dev()
+> >>
+> >> #ifdef CONFIG_HOTPLUG_CPU
+> >>       /* Check if this cpu was hot-unplugged earlier and has
+> >> siblings */ read_lock_irqsave(&cpufreq_driver_lock, flags);
+> >>       for_each_online_cpu(sibling) {
+> >>
+> >>          ---
+> >>
+> >>       }
+> >>       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> >> #endif
+> >
+> > Do you mean to write something like:
+> >
+> > #ifdef CONFIG_CPU_FREQ_BOOST_SW
+> >         write_lock_irqsave(&cpufreq_driver_lock, flags);
+> >         list_add(&policy->policy_list, &cpufreq_policy_list);
+> >         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> > #endif
+> >
+> > Or Am I missing something?
+> 
+> I can't imaging how you though I am saying this :)
+>
 
-On Fri, 26 Jul 2013, Nishanth Menon wrote:
+:-)
+ 
+> The code I mentioned actually requires to iterate through the
+> list of available policies but was iterating over all online cpus..
+> 
+> And so your new infrastructure or this list can be used instead
+> of looping for all cpus.
 
-> On 07/26/2013 05:19 AM, Guennadi Liakhovetski wrote:
-> > Currently the cpufreq-cpu0 driver doesn't support Device Tree probing. To
-> > support it we add an OF match table to it. In principle this alone is
-> > enough to get the driver working with DT devices, but then the driver
-> > rewrites the .of_node field of the probed device with a different one,
-> > which isn't clean. To avoid this we use the cpu0 system device for clock
-> > and OPP handling, similar to what the arm_big_little CPUFreq driver does.
-> > This is also less intrusive, since the cpu0 device's .of_node field is
-> > initially NULL, since this isn't a DT device.
-> > 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-> > ---
-> >   drivers/cpufreq/cpufreq-cpu0.c |   14 +++++++++++---
-> >   1 files changed, 11 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> > index ad1fde2..d2ad7b8 100644
-> > --- a/drivers/cpufreq/cpufreq-cpu0.c
-> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> > @@ -12,6 +12,7 @@
-> >   #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
-> > 
-> >   #include <linux/clk.h>
-> > +#include <linux/cpu.h>
-> >   #include <linux/cpufreq.h>
-> >   #include <linux/err.h>
-> >   #include <linux/module.h>
-> > @@ -194,7 +195,7 @@ static int cpu0_cpufreq_probe(struct platform_device
-> > *pdev)
-> >   		goto out_put_parent;
-> >   	}
-> > 
-> > -	cpu_dev = &pdev->dev;
-> > +	cpu_dev = get_cpu_device(0);
-> >   	cpu_dev->of_node = np;
-> > 
-> >   	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
-> > @@ -289,10 +290,17 @@ static int cpu0_cpufreq_remove(struct platform_device
-> > *pdev)
-> >   	return 0;
-> >   }
-> > 
-> > +static const struct of_device_id cpu0_cpufreq_of_match[] = {
-> > +	{.compatible = "cpufreq-cpu0"},
-> > +	{}
-> > +};
-> > +MODULE_DEVICE_TABLE(of, cpu0_cpufreq_of_match);
-> > +
-> >   static struct platform_driver cpu0_cpufreq_platdrv = {
-> >   	.driver = {
-> > -		.name	= "cpufreq-cpu0",
-> > -		.owner	= THIS_MODULE,
-> > +		.name		= "cpufreq-cpu0",
-> > +		.of_match_table	= cpu0_cpufreq_of_match,
-> > +		.owner		= THIS_MODULE,
-> >   	},
-> >   	.probe		= cpu0_cpufreq_probe,
-> >   	.remove		= cpu0_cpufreq_remove,
-> > 
-> Did we not go down this approach[1] previously? Could you explain why this
-> path is different now?
+So instead of reading policies from per_cpu variables for all online
+cpus, you think of using the list explicitly.
 
-Yes, you're right, I forgot about that discussion, sorry. But my 
-motivation was the following: yes, I'm aware, that the DT should only 
-describe real hardware _devices_ and hardware _properties_. But this patch 
-- just like your original patch - don't add a pseudo _device_ or 
-_property_, but a compatibility string. So, to me it was like "a class of 
-all systems, where the CPU performance can be scaled using one power 
-supply and one clock. Isn't this a hardware feature? We already have CPU 
-nodes in DT, this would be just (an additional) compatibility string to 
-them? I'll be happy to drop this patch and revive yours, if we manage to 
-agree upon the scope.
+Good idea, but can we first finish the boost patches? Such change can
+be applied on top of boost patch series as well.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
