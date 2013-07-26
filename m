@@ -1,165 +1,77 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: RFC: device thermal limits represented in device tree nodes
-Date: Fri, 26 Jul 2013 15:55:47 -0400
-Message-ID: <51F2D443.6040909@ti.com>
-References: <51ED40E3.5020703@ti.com> <51EF3186.9060001@wwwdotorg.org>  <1374664745.25700.118.camel@hornet> <51EFED19.5090900@ti.com>  <1374768928.3213.31.camel@hornet> <51F15E42.1060409@ti.com> <1374773611.3213.44.camel@hornet>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:52824 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900Ab3GZT5A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 15:57:00 -0400
-In-Reply-To: <1374773611.3213.44.camel@hornet>
-Sender: linux-pm-owner@vger.kernel.org
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH v2] pnp: convert pnp driver bus legacy pm_ops to dev_pm_ops
+Date: Fri, 26 Jul 2013 15:07:26 -0600
+Message-ID: <1374872846-29606-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rafael.j.wysocki@intel.com, bhelgaas@google.com, fengguang.wu@intel.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, shuahkhan@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Pawel Moll <pawel.moll@arm.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Durgadoss R <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
---phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Convert drivers/pnp/driver.c bus legacy pm_ops to dev_pm_ops using
+existing suspend and resume routines. Added freeze interface to
+handle PM_EVENT_FREEZE correctly with dev_pm_ops. pm_op() looks for
+freeze interface when the event is PM_EVENT_FREEZE.
 
-On 25-07-2013 13:33, Pawel Moll wrote:
-> On Thu, 2013-07-25 at 18:20 +0100, Eduardo Valentin wrote:
->>>> 	thermal_zone {
->>>> 		type =3D "CPU";
->>>
->>> So what does this exactly mean? What is so special about CPU? What ot=
-her
->>> types you've got there? (Am I just lazy not looking at the numerous
->>> links you provided? ;-)
->>
->> Hehehe. OK. Type is supposed to describe what your zone is representin=
-g.
->=20
-> As in "a name"? So, for example "The board", "PSU"? What I meant to ask=
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+Changes since v1: Fixed the following warning found in kbuild test robot
+drivers/pnp/driver.c:223:25: sparse: symbol 'pnp_bus_dev_pm_ops' was not declared. Should it be static?
 
-> was: does the string carry any meaning?
->=20
->>>> 		monitoring_device =3D <&sensor@xxxx
->>>> 				    &sensor@yyyy>;
->>>>
->>>> 		mask =3D <0x03>; /* trips writability */
->>>> 		passive_delay =3D <250>; /* milliseconds */
->>>> 		polling_delay =3D <1000>; /* milliseconds */
->>>> 		policy =3D "step_wise";
->>>
->>> The word "policy" doesn't sound to me like a "hardware feature",
->>> wouldn't you agree?
->>
->> Agreed. As I mentioned in other email, we can leave this to OS decide
->> what to use, by default, for instance.
->=20
-> Cool, I believe it is the right thing to do.
->=20
->>>
->>>> 		trips {
->>>> 			alert@100000{
->>>> 				temperature =3D <100000>; /* milliCelsius
->>>> 				hysteresis =3D <2000>; /* milliCelsius */
->>>> 				type =3D <THERMAL_TRIP_PASSIVE>;
->>>> 			};
->>>> 			crit@125000{
->>>> 				temperature =3D <125000>; /* milliCelsius
->>>> 				hysteresis =3D <2000>; /* milliCelsius */
->>>> 				type =3D <THERMAL_TRIP_CRITICAL>;
->>>> 			};
->>>> 		};
->>>> 		bind_params {
->>>> 			action@0{
->>>> 				cooling_device =3D "thermal-cpufreq";
->>>
->>> Why is it a string? It seems very Linux-y... (cpufreq) Is there any
->>> particular reason not to have phandles to the fans that have any impa=
-ct
->>> on the zone?=20
->>
->> Because fans are not the only way to cool your system, specially those=
+ drivers/pnp/driver.c |   21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
 
->> systems that don't feature fans. Managing the speed of your CPU is one=
-
->> example of lowering temperature without fans. Managing the load on you=
-r
->> system is another way. These are obviously, virtual concepts. And
->> because we have physical ways and logical ways to cool the zone, then =
-I
->> didnt put a phandle to a device there.
->=20
-> "virtual concepts"... This is where my problem lies... It's not hardwar=
-e
-> so it doesn't seem to belong in the tree at the first sight. Shouldn't
-
-
-Yeah, in fact, this is exactly the point that creates most of the
-disagreement. You may check Guenter's arguments against this proposal
-(in my original RFC email, there is a link to it).
-
-Well, if one don't want to see this as a 'virtual concept' it could say
-the cooling device is the cpu itself:
-		cooling_device =3D <&cpu0>;
-
-
-
-> it focus on "physical data" instead? As in: point at devices that have
-> some impact on the conditions? For example, you can say "please, do the=
-
-> right thing to cool your environment down" to both CPU and fan, can't
-> you? The "cooling driver" for the CPU would know that it has to slow
-> down, while a driver for the fan would know that it has to speed up ;-)=
-
->=20
-> What I'm trying to say is that in my opinion the tree should simply lin=
-k
-> the object, the sensor and the actuator. Nothing more, nothing less.
-
-OK. I think it would be a little unfair to have only links, without
-describing what this link is supposed to be or how it is supposed to be
-used. In previous discussions, I have mentioned two similar examples
-already existing in DT. Here are they: regulator bindings, one does not
-describe only which device connects to which regulator, but also needs
-to describe, voltage limits, current limits, offsets, and other
-properties. And an existing 'virtual concept' would be predefined CPU
-OPPs, that feed the opp layer. Those are configurations of the hardware
-that define a 'virtual' concept of operating point.
-
-So, saying we need to describe only physical connections or touchable
-things would be a little unfair, IMO. Besides, thermal is still physical
-:-).
-
->=20
-> Thanks for your time!
-
-Thanks for the input!
-
->=20
-> Pawel
->=20
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHy1EYACgkQCXcVR3XQvP0BJAEAoLGkJ+CjY64raPd3tsmUf5up
-LJlr/JkqJMW2zS4sPOIA/2DJKpIKzy5zB0HAg2kzUGZEw/mXFJRplvONa2tKa8Ak
-=v+sa
------END PGP SIGNATURE-----
-
---phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J--
+diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
+index c3f9e89..a39ee38 100644
+--- a/drivers/pnp/driver.c
++++ b/drivers/pnp/driver.c
+@@ -154,7 +154,7 @@ static int pnp_bus_match(struct device *dev, struct device_driver *drv)
+ 	return 1;
+ }
+ 
+-static int pnp_bus_suspend(struct device *dev, pm_message_t state)
++static int __pnp_bus_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
+ 	struct pnp_driver *pnp_drv = pnp_dev->driver;
+@@ -187,6 +187,16 @@ static int pnp_bus_suspend(struct device *dev, pm_message_t state)
+ 	return 0;
+ }
+ 
++static int pnp_bus_suspend(struct device *dev)
++{
++	return __pnp_bus_suspend(dev, PMSG_SUSPEND);
++}
++
++static int pnp_bus_freeze(struct device *dev)
++{
++	return __pnp_bus_suspend(dev, PMSG_FREEZE);
++}
++
+ static int pnp_bus_resume(struct device *dev)
+ {
+ 	struct pnp_dev *pnp_dev = to_pnp_dev(dev);
+@@ -223,14 +233,19 @@ static int pnp_bus_resume(struct device *dev)
+ 	return 0;
+ }
+ 
++static const struct dev_pm_ops pnp_bus_dev_pm_ops = {
++	.suspend = pnp_bus_suspend,
++	.freeze = pnp_bus_freeze,
++	.resume = pnp_bus_resume,
++};
++
+ struct bus_type pnp_bus_type = {
+ 	.name    = "pnp",
+ 	.match   = pnp_bus_match,
+ 	.probe   = pnp_device_probe,
+ 	.remove  = pnp_device_remove,
+ 	.shutdown = pnp_device_shutdown,
+-	.suspend = pnp_bus_suspend,
+-	.resume  = pnp_bus_resume,
++	.pm	 = &pnp_bus_dev_pm_ops,
+ 	.dev_attrs = pnp_interface_attrs,
+ };
+ 
+-- 
+1.7.10.4
