@@ -1,70 +1,72 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: [PATCH] cpufreq-cpu0: support Device Tree initialisation
-Date: Fri, 26 Jul 2013 12:19:22 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1307261214430.22137@axis700.grange>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 5/8] cpufreq:boost:Kconfig: Provide support for
+ software managed BOOST
+Date: Fri, 26 Jul 2013 15:54:56 +0530
+Message-ID: <CAKohpokL57mXSQooX=4LZKtjMxJoXAB4uuzj13fgr3Gs7Wcf0A@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+	<1374770011-22171-6-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: linux-sh@vger.kernel.org
-Cc: Magnus Damm <magnus.damm@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f47.google.com ([209.85.219.47]:64985 "EHLO
+	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757776Ab3GZKY5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 06:24:57 -0400
+Received: by mail-oa0-f47.google.com with SMTP id m6so179319oag.6
+        for <linux-pm@vger.kernel.org>; Fri, 26 Jul 2013 03:24:56 -0700 (PDT)
+In-Reply-To: <1374770011-22171-6-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 
-Currently the cpufreq-cpu0 driver doesn't support Device Tree probing. To
-support it we add an OF match table to it. In principle this alone is
-enough to get the driver working with DT devices, but then the driver
-rewrites the .of_node field of the probed device with a different one,
-which isn't clean. To avoid this we use the cpu0 system device for clock
-and OPP handling, similar to what the arm_big_little CPUFreq driver does.
-This is also less intrusive, since the cpu0 device's .of_node field is
-initially NULL, since this isn't a DT device.
+On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> For safety reasons new flag - CONFIG_CPU_FREQ_BOOST_SW has been added.
+> Only after selecting "EXYNOS Frequency Overclocking - Software" Kconfig
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
----
- drivers/cpufreq/cpufreq-cpu0.c |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
+You shouldn't mention Exynos here and must do exynos stuff at the end
+in a separate patch. This one must be generic.
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index ad1fde2..d2ad7b8 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -12,6 +12,7 @@
- #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
- 
- #include <linux/clk.h>
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/err.h>
- #include <linux/module.h>
-@@ -194,7 +195,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_put_parent;
- 	}
- 
--	cpu_dev = &pdev->dev;
-+	cpu_dev = get_cpu_device(0);
- 	cpu_dev->of_node = np;
- 
- 	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
-@@ -289,10 +290,17 @@ static int cpu0_cpufreq_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id cpu0_cpufreq_of_match[] = {
-+	{.compatible = "cpufreq-cpu0"},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, cpu0_cpufreq_of_match);
-+
- static struct platform_driver cpu0_cpufreq_platdrv = {
- 	.driver = {
--		.name	= "cpufreq-cpu0",
--		.owner	= THIS_MODULE,
-+		.name		= "cpufreq-cpu0",
-+		.of_match_table	= cpu0_cpufreq_of_match,
-+		.owner		= THIS_MODULE,
- 	},
- 	.probe		= cpu0_cpufreq_probe,
- 	.remove		= cpu0_cpufreq_remove,
--- 
-1.7.2.5
+> option the software managed boost is enabled. It also selects thermal
+> subsystem to be compiled in. Thermal is necessary for disabling boost
+> and cooling down the device when overheating detected.
+>
+> Boost _MUST_NOT_ work without thermal subsystem with properly defined
+> overheating temperatures.
+>
+> This option doesn't affect x86's ACPI hardware managed boost support
+> (i.e. Intel, AMD). In this situation boost management is embedded at
+> hardware.
+>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>
+> ---
+> Changes for v6:
+> - CPU_FREQ_BOOST_SW [1] is now defined as "invisible" bool option.
+> - Platform dependent ARM_EXYNOS_CPU_FREQ_BOOST_SW config option has been
+>   added. It depends on ARM_EXYNOS_CPUFREQ options and selects
+>   EXYNOS_THERMAL with the main boost config [1].
+>
+> Changes for v5:
+> - New patch
+>
+>  drivers/cpufreq/Kconfig     |    3 +++
+>  drivers/cpufreq/Kconfig.arm |   16 ++++++++++++++++
+>  2 files changed, 19 insertions(+)
+>
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 534fcb8..3f058a3 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -23,6 +23,9 @@ config CPU_FREQ_TABLE
+>  config CPU_FREQ_GOV_COMMON
+>         bool
+>
+> +config CPU_FREQ_BOOST_SW
+> +       bool
 
+Invisible is fine but this must be disabled by default and must
+depend on thermal, rather than moving dependency on platform's
+config.
