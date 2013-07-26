@@ -1,74 +1,98 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RESEND] cpuidle for ARM pull request
-Date: Fri, 26 Jul 2013 02:07:06 +0200
-Message-ID: <1598661.FpX5cmjM1U@vostro.rjw.lan>
-References: <51E536C5.1020609@linaro.org> <1766778.ZYeDKBOsjV@vostro.rjw.lan> <2075555.RCmWLFAfjq@vostro.rjw.lan>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
+ arch-specific constraints
+Date: Fri, 26 Jul 2013 08:09:23 +0530
+Message-ID: <51F1E15B.3050106@linux.vnet.ibm.com>
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com> <20130725090302.12500.42998.stgit@preeti.in.ibm.com> <20130725133044.GA7400@somewhere>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:40615 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753586Ab3GYX5C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Jul 2013 19:57:02 -0400
-In-Reply-To: <2075555.RCmWLFAfjq@vostro.rjw.lan>
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:44106 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756662Ab3GZCnL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2013 22:43:11 -0400
+Received: from /spool/local
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Fri, 26 Jul 2013 12:40:02 +1000
+In-Reply-To: <20130725133044.GA7400@somewhere>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linus Walleij <linus.walleij@linaro.org>, keun-o.park@windriver.com, "nsekhar@ti.com >> Sekhar Nori" <nsekhar@ti.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: rjw@sisk.pl, shangw@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, geoff@infradead.org, rostedt@goodmis.org, deepthi@linux.vnet.ibm.com, paul.gortmaker@windriver.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, john.stultz@linaro.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, chenhui.zhao@freescale.com
 
-On Friday, July 26, 2013 12:41:09 AM Rafael J. Wysocki wrote:
-> On Friday, July 26, 2013 12:29:08 AM Rafael J. Wysocki wrote:
-> > On Friday, July 26, 2013 12:07:03 AM Daniel Lezcano wrote:
-> > > On 07/16/2013 02:04 PM, Daniel Lezcano wrote:
-> > > > 
-> > > > Hi,
-> > > > 
-> > > > The first PR was against the linux-pm-next tree including the patch:
-> > > > 
-> > > > "cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq"
-> > > > 
-> > > > This patch has been dropped in the meantime.
-> > > > 
-> > > > Here is a new PR where my tree has been rebased against linux-pm-next
-> > > > and adding the patch mentioned above.
-> > > > 
-> > > > As stated by Rafael, I will handle the ARM specific patches from now.
-> > > > 
-> > > > The following changes since commit 48f99d5a97d32d70c0738d6e314d9f4dbefd89bf:
-> > > > 
-> > > >   Merge branch 'pm-cpuidle-next' into linux-next (2013-07-16 02:41:06 +0200)
-> > > > 
-> > > > are available in the git repository at:
-> > > > 
-> > > > 
-> > > >   git://git.linaro.org/people/dlezcano/linux.git cpuidle/arm-next
-> > > > 
-> > > > for you to fetch changes up to 2b7e79f4a75e803184f483985a25cc751a990f06:
-> > > > 
-> > > >   ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpuidle
-> > > > (2013-07-16 13:57:24 +0200)
-> > > 
-> > > ping ?
-> > 
-> > Sorry, something distracted me.  I'll pull it later today unless there are any
-> > problems (in which case I'll let you know).
+Hi Frederic,
+
+On 07/25/2013 07:00 PM, Frederic Weisbecker wrote:
+> On Thu, Jul 25, 2013 at 02:33:02PM +0530, Preeti U Murthy wrote:
+>> In the current design of timer offload framework, the broadcast cpu should
+>> *not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
+>>
+>> Since we prevent the CPUs entering deep idle states from programming the lapic of the
+>> broadcast cpu for their respective next local events for reasons mentioned in
+>> PATCH[3/5], the broadcast CPU checks if there are any CPUs to be woken up during
+>> each of its timer interrupt programmed to its local events.
+>>
+>> With tickless idle, the broadcast CPU might not get a timer interrupt till after
+>> many ticks which can result in missed wakeups on CPUs in deep idle states. By
+>> disabling tickless idle, worst case, the tick_sched hrtimer will trigger a
+>> timer interrupt every period to check for broadcast.
+>>
+>> However the current setup of tickless idle does not let us make the choice
+>> of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
+>> is a system wide setting. Hence resort to an arch specific call to check if a cpu
+>> can go into tickless idle.
 > 
-> Well, there are some.
+> Hi Preeti,
 > 
-> It is based on my linux-next branch, but please rebase it on top of 3.11-rc2.
+> I'm not exactly sure why you can't enter the broadcast CPU in dynticks idle mode.
+> I read in the previous patch that's because in dynticks idle mode the broadcast
+> CPU deactivates its lapic so it doesn't receive the IPI. But may be I misunderstood.
+> Anyway that's not good for powersaving.
+
+Let me elaborate. The CPUs in deep idle states have their lapics
+deactivated. This means the next timer event which would typically have
+been taken care of by a lapic firing at the appropriate moment does not
+get taken care of in deep idle states, due to the lapic being switched off.
+
+Hence such CPUs offload their next timer event to the broadcast CPU,
+which should *not* enter deep idle states. The broadcast CPU has the
+responsibility of waking the CPUs in deep idle states.
+
+*The lapic of a broadcast CPU is active always*. Say CPUX, wants the
+broadcast CPU to wake it up at timeX.  Since we cannot program the lapic
+of a remote CPU, CPUX will need to send an IPI to the broadcast CPU,
+asking it to program its lapic to fire at timeX so as to wake up CPUX.
+*With multiple CPUs the overhead of sending IPI, could result in
+performance bottlenecks and may not scale well.*
+
+Hence the workaround is that the broadcast CPU on each of its timer
+interrupt checks if any of the next timer event of a CPU in deep idle
+state has expired, which can very well be found from dev->next_event of
+that CPU. For example the timeX that has been mentioned above has
+expired. If so the broadcast handler is called to send an IPI to the
+idling CPU to wake it up.
+
+*If the broadcast CPU, is in tickless idle, its timer interrupt could be
+many ticks away. It could miss waking up a CPU in deep idle*, if its
+wakeup is much before this timer interrupt of the broadcast CPU. But
+without tickless idle, atleast at each period we are assured of a timer
+interrupt. At which time broadcast handling is done as stated in the
+previous paragraph and we will not miss wakeup of CPUs in deep idle states.
+
+Yeah it is true that not allowing the broadcast CPU to enter tickless
+idle is bad for power savings, but for the use case that we are aiming
+at in this patch series, the current approach seems to be the best, with
+minimal trade-offs in performance, power savings, scalability and no
+change in the broadcast framework that exists today in the kernel.
+
 > 
-> Generally, please send me pull requests based on -rc kernels only (or major
-> releases).
+> Also when an arch wants to prevent a CPU from entering dynticks idle mode, it typically
+> use arch_needs_cpu(). May be that could fit for you as well?
 
-Unless your material depends on new things in my linux-next branch, in which
-case please let me know and I'll set up a stable branch for you to base things
-on.
+Oh ok thanks :) I will look into this and get back on if we can use it.
 
-Thanks,
-Rafael
+Regards
+Preeti U Murthy
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
