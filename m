@@ -1,94 +1,157 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to support
- deep idle states
-Date: Fri, 26 Jul 2013 18:41:38 +0530
-Message-ID: <51F2758A.1060108@linux.vnet.ibm.com>
-References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
- <94F013E7935FF44C83EBE7784D62AD3F097AD1D5@039-SN2MPN1-022.039d.mgd.msft.net>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RESEND PATCH V1 1/9] cpufreq: cpufreq-cpu0: add dt node parsing
+ for 'needs-cooling'
+Date: Fri, 26 Jul 2013 09:27:10 -0400
+Message-ID: <51F2792E.2060301@ti.com>
+References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <1374074248-31690-2-git-send-email-eduardo.valentin@ti.com> <36180776.zbN9qNcjis@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F097AD1D5@039-SN2MPN1-022.039d.mgd.msft.net>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Li Yang-R58472 <r58472@freescale.com>
-Cc: "fweisbec@gmail.com" <fweisbec@gmail.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>, "paulus@samba.org" <paulus@samba.org>, "shangw@linux.vnet.ibm.com" <shangw@linux.vnet.ibm.com>, Zhao Chenhui-B35336 <B35336@freescale.com>, "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>, "arnd@arndb.de" <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "john.stultz@linaro.org" <john.stultz@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "deepthi@linux.vnet.ibm.com" <deepthi@linux.vnet.ibm.com>, "geoff@infradead.org" <geoff@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <36180776.zbN9qNcjis@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Li,
+--e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On 07/26/2013 03:35 PM, Li Yang-R58472 wrote:
-> 
-> 
->> -----Original Message-----
->> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
->> owner@vger.kernel.org] On Behalf Of Preeti U Murthy
->> Sent: Thursday, July 25, 2013 5:03 PM
->> To: benh@kernel.crashing.org; paul.gortmaker@windriver.com;
->> paulus@samba.org; shangw@linux.vnet.ibm.com; galak@kernel.crashing.org;
->> fweisbec@gmail.com; paulmck@linux.vnet.ibm.com; michael@ellerman.id.au;
->> arnd@arndb.de; linux-pm@vger.kernel.org; rostedt@goodmis.org; rjw@sisk.pl;
->> john.stultz@linaro.org; tglx@linutronix.de; Zhao Chenhui-B35336;
->> deepthi@linux.vnet.ibm.com; geoff@infradead.org; linux-
->> kernel@vger.kernel.org; srivatsa.bhat@linux.vnet.ibm.com;
->> schwidefsky@de.ibm.com; svaidy@linux.vnet.ibm.com; linuxppc-
->> dev@lists.ozlabs.org
->> Subject: [RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to support
->> deep idle states
+On 25-07-2013 19:28, Rafael J. Wysocki wrote:
+> On Wednesday, July 17, 2013 11:17:20 AM Eduardo Valentin wrote:
+>> This patch changes the cpufreq-cpu0 driver to consider if
+>> a cpu needs cooling (with cpufreq). In case the cooling is needed,
+>> it can be flagged at the cpu0 device tree node, with the boolean
+>> property 'needs-cooling'.
 >>
->> On PowerPC, when CPUs enter deep idle states, their local timers are
->> switched off. The responsibility of waking them up at their next timer
->> event, needs to be handed over to an external device. On PowerPC, we do
->> not have an external device equivalent to HPET, which is currently done
->> on architectures like x86. Instead we assign the local timer of one of
->> the CPUs to do this job.
-> 
-> I don't know much about the deep idle states.  But is it necessary to turn off the timer in these states?  I mean the extra work needed on the booting CPU and re-syncing Time Base after wakeup might defeat the power consumption benefit of turning off the timer.
+>> In case this boolean is present, the driver will
+>> load a cpufreq cooling device in the system. The cpufreq-cpu0
+>> driver is not interested in determining how the system should
+>> be using the cooling device. The driver is responsible
+>> only of loading the cooling device.
+>>
+>> Describing how the cooling device will be used can be
+>> accomplished by setting up a thermal zone that references
+>> and is composed by the cpufreq cooling device.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>=20
+> FWIW, this change is fine by me, but I guess it should be handled along=
+ with
+> the entire series.
 
-The idle state that CPUs should enter into is chosen by the cpuidle
-governor. And the target residency and the wakeup latency of the idle
-states among others, are the factors considered by the governor before
-choosing an idle state for a CPU. So deep idle states which have a
-higher target residency and wakeup latency, but that have huge power
-savings, are usually targeted by the governors when there are large
-periods of idle, i.e. CPUs tend to remain idle for long.
+Raphael, thanks for your review.
 
-Depending on the workload running, large periods of idle could be rare,
-in which case deep idle states are not even entered into. But if the
-workload is such that it is woken up occasionally to do work, with large
-periods of idle in between, deep idle states are targeted. In such a
-scenario, the power savings that such idle states yield is significant
-to offset the overhead of the factors that you mention, which will need
-to be done occasionally.
+Yeah, this change must be handled along with the other changes in this
+series. There is still ongoing discussion in DT mailing list with
+respect to thermal bindings. Thus, for now, this patch is on hold.
 
-Hence for an almost completely idle system, having such deep idle states
-fetches enormous power savings.
+>=20
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: Grant Likely <grant.likely@linaro.org>
+>> Cc: Rob Herring <rob.herring@calxeda.com>
+>> Cc: cpufreq@vger.kernel.org
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Cc: devicetree-discuss@lists.ozlabs.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>  Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 3 +++
+>>  drivers/cpufreq/cpufreq-cpu0.c                             | 8 ++++++=
+++
+>>  2 files changed, 11 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.tx=
+t b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>> index 051f764..e8ff916 100644
+>> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>> @@ -15,6 +15,8 @@ Optional properties:
+>>  - clock-latency: Specify the possible maximum transition latency for =
+clock,
+>>    in unit of nanoseconds.
+>>  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.=
 
-> 
-> Btw, the Open PIC has an internal timer.  Can we use it as the wakeup event?
+>> +- needs-cooling: The generic cpu cooling (freq clipping) is loaded by=
+ the
+>> +generic cpufreq-cpu0 driver in case the device tree node has this boo=
+lean.
+>> =20
+>>  Examples:
+>> =20
+>> @@ -33,6 +35,7 @@ cpus {
+>>  			198000  850000
+>>  		>;
+>>  		clock-latency =3D <61036>; /* two CLK32 periods */
+>> +		needs-cooling;
+>>  	};
+>> =20
+>>  	cpu@1 {
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-=
+cpu0.c
+>> index ad1fde2..4a8747a 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -20,6 +20,9 @@
+>>  #include <linux/platform_device.h>
+>>  #include <linux/regulator/consumer.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/thermal.h>
+>> +#include <linux/cpu_cooling.h>
+>> +#include <linux/cpumask.h>
+>> =20
+>>  static unsigned int transition_latency;
+>>  static unsigned int voltage_tolerance; /* in percentage */
+>> @@ -28,6 +31,7 @@ static struct device *cpu_dev;
+>>  static struct clk *cpu_clk;
+>>  static struct regulator *cpu_reg;
+>>  static struct cpufreq_frequency_table *freq_table;
+>> +static struct thermal_cooling_device *cdev;
+>> =20
+>>  static int cpu0_verify_speed(struct cpufreq_policy *policy)
+>>  {
+>> @@ -268,6 +272,9 @@ static int cpu0_cpufreq_probe(struct platform_devi=
+ce *pdev)
+>>  		goto out_free_table;
+>>  	}
+>> =20
+>> +	if (of_property_read_bool(np, "needs-cooling"))
+>> +		cdev =3D cpufreq_cooling_register(cpu_present_mask);
+>> +
+>>  	of_node_put(np);
+>>  	of_node_put(parent);
+>>  	return 0;
+>> @@ -283,6 +290,7 @@ out_put_parent:
+>> =20
+>>  static int cpu0_cpufreq_remove(struct platform_device *pdev)
+>>  {
+>> +	cpufreq_cooling_unregister(cdev);
+>>  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
+>>  	opp_free_cpufreq_table(cpu_dev, &freq_table);
+>> =20
+>>
 
-I am not aware of such a device on PowerPC. Even if there is one, it is
-important to investigate what happens to it in deep idle states. If it
-is intended to be switched off in one of the deep idle states, again the
-idea that this patchset brings in has to be the fall-back solution.
 
-My point is, it is good to have the timer offload framework
-implementation because we cannot continue to rely on external devices
-being there to aid us in situations when the local timer devices of CPUs
-have to be turned off in deep idle states.
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-> 
-> Regards,
-> Leo
+Eduardo Valentin
 
-Regards
-Preeti U Murthy
+
+--e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHyeTEACgkQCXcVR3XQvP2YKwD8D8GXupOvyy+jcynhYLxoYaBx
+FIXrgeG5Dfxug/t9nI4BAOB6ErkWo5qIKUzOebHmcPLGPeDcU4JUHkMxvRdkxEBN
+=nW/X
+-----END PGP SIGNATURE-----
+
+--e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX--
