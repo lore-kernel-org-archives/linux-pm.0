@@ -1,98 +1,242 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v3 07/16] of/device: add helper to get cpu device node
- from logical cpu index
-Date: Fri, 26 Jul 2013 13:55:34 -0500
-Message-ID: <CAL_JsqK5i8fxskOtdqmPYL1pPicesAYHfW6+2NLR41t_fkf+6A@mail.gmail.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-	<1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-	<1374492747-13879-8-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-	<51F2AB71.3070102@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51F2AB71.3070102@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Olof Johansson <olof@lixom.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH 7] power: new trace event to print device suspend and resume time
+Date: Fri, 26 Jul 2013 13:30:20 -0600
+Message-ID: <1374867022-27133-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:60752 "EHLO
+	qmta09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751798Ab3GZTai (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 15:30:38 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org, rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com, paul.gortmaker@windriver.com, joe@perches.com, fengguang.wu@intel.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Fri, Jul 26, 2013 at 12:01 PM, Sudeep KarkadaNagesha
-<Sudeep.KarkadaNagesha@arm.com> wrote:
-> Rob,
->
-> On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> Multiple drivers need to get the cpu device node from the cpu logical
->> index and then access the of_node.
->>
->> This patch adds helper function to fetch the device node directly.
->>
->> Cc: Rob Herring <rob.herring@calxeda.com>
->> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->
-> If you have no objections with this patch, can I add your ACK ?
+A new trace event is added to pm events to print time it takes to suspend and
+resume a device. It generates trace message that includes device, driver,
+parent information in addition to the type of pm ops invoked as well as the
+pm event and error status from the pm ops. Example trace below:
 
-Yes.
+bash-2239  [000] ....   290.883035: device_pm_report_time: backlight
+ acpi_video0 parent=0000:00:02.0 state=freeze ops=class nsecs=332 err=0
+bash-2239  [000] ....   290.883041: device_pm_report_time: rfkill rf
+kill3 parent=phy0 state=freeze ops=legacy class nsecs=216 err=0
+bash-2239  [001] ....   290.973892: device_pm_report_time: ieee80211
+ phy0 parent=0000:01:00.0 state=freeze ops=legacy class nsecs=90846477 err=0
 
-Acked-by: Rob Herring <rob.herring@calxeda.com>
+bash-2239  [001] ....   293.660129: device_pm_report_time: ieee80211 phy0 parent=0000:01:00.0 state=restore ops=legacy class nsecs=101295162 err=0
+bash-2239  [001] ....   293.660147: device_pm_report_time: rfkill rfkill3 parent=phy0 state=restore ops=legacy class nsecs=1804 err=0
+bash-2239  [001] ....   293.660157: device_pm_report_time: backlight acpi_video0 parent=0000:00:02.0 state=restore ops=class nsecs=757 err=0
 
->
-> Regards,
-> Sudeep
->
->> ---
->>  include/linux/of_device.h | 15 +++++++++++++++
->>  1 file changed, 15 insertions(+)
->>
->> diff --git a/include/linux/of_device.h b/include/linux/of_device.h
->> index 9d27475..82ce324 100644
->> --- a/include/linux/of_device.h
->> +++ b/include/linux/of_device.h
->> @@ -1,6 +1,7 @@
->>  #ifndef _LINUX_OF_DEVICE_H
->>  #define _LINUX_OF_DEVICE_H
->>
->> +#include <linux/cpu.h>
->>  #include <linux/platform_device.h>
->>  #include <linux/of_platform.h> /* temporary until merge */
->>
->> @@ -43,6 +44,15 @@ static inline void of_device_node_put(struct device *dev)
->>       of_node_put(dev->of_node);
->>  }
->>
->> +static inline struct device_node *of_cpu_device_node_get(int cpu)
->> +{
->> +     struct device *cpu_dev;
->> +     cpu_dev = get_cpu_device(cpu);
->> +     if (!cpu_dev)
->> +             return NULL;
->> +     return of_node_get(cpu_dev->of_node);
->> +}
->> +
->>  #else /* CONFIG_OF */
->>
->>  static inline int of_driver_match_device(struct device *dev,
->> @@ -67,6 +77,11 @@ static inline const struct of_device_id *of_match_device(
->>  {
->>       return NULL;
->>  }
->> +
->> +static inline struct device_node *of_cpu_device_node_get(int cpu)
->> +{
->> +     return NULL;
->> +}
->>  #endif /* CONFIG_OF */
->>
->>  #endif /* _LINUX_OF_DEVICE_H */
->>
->
->
-> -- IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium.  Thank you.
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+Changes since v6: Fixed the following warnings found by kbuild test robot.
+>> include/trace/events/power.h:87:17: warning: initialization discards 'const' qualifier from pointer target type [enabled by default]
+      char *tmp_p = dev->parent ? dev_name(dev->parent) : "none";
+>> include/trace/events/power.h:88:17: warning: initialization discards 'const' qualifier from pointer target type [enabled by default]
+      char *tmp_i = pm_ops ? pm_ops : "none ";
+
+ drivers/base/power/main.c    |   77 +++++++++++++++++++++++-------------------
+ include/trace/events/power.h |   37 ++++++++++++++++++++
+ 2 files changed, 80 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 5a9b656..9f098a8 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -28,6 +28,7 @@
+ #include <linux/sched.h>
+ #include <linux/async.h>
+ #include <linux/suspend.h>
++#include <trace/events/power.h>
+ #include <linux/cpuidle.h>
+ #include "../base.h"
+ #include "power.h"
+@@ -56,6 +57,30 @@ static pm_message_t pm_transition;
+ 
+ static int async_error;
+ 
++static char *pm_verb(int event)
++{
++	switch (event) {
++	case PM_EVENT_SUSPEND:
++		return "suspend";
++	case PM_EVENT_RESUME:
++		return "resume";
++	case PM_EVENT_FREEZE:
++		return "freeze";
++	case PM_EVENT_QUIESCE:
++		return "quiesce";
++	case PM_EVENT_HIBERNATE:
++		return "hibernate";
++	case PM_EVENT_THAW:
++		return "thaw";
++	case PM_EVENT_RESTORE:
++		return "restore";
++	case PM_EVENT_RECOVER:
++		return "recover";
++	default:
++		return "(unknown PM event)";
++	}
++}
++
+ /**
+  * device_pm_sleep_init - Initialize system suspend-related device fields.
+  * @dev: Device object being initialized.
+@@ -172,16 +197,21 @@ static ktime_t initcall_debug_start(struct device *dev)
+ }
+ 
+ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+-				  int error)
++				  int error, pm_message_t state, char *info)
+ {
+-	ktime_t delta, rettime;
++	ktime_t rettime;
++	s64 nsecs;
++
++	rettime = ktime_get();
++	nsecs = (s64) ktime_to_ns(ktime_sub(rettime, calltime));
+ 
+ 	if (pm_print_times_enabled) {
+-		rettime = ktime_get();
+-		delta = ktime_sub(rettime, calltime);
+ 		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
+-			error, (unsigned long long)ktime_to_ns(delta) >> 10);
++			error, (unsigned long long)nsecs >> 10);
+ 	}
++
++	trace_device_pm_report_time(dev, info, nsecs, pm_verb(state.event),
++				    error);
+ }
+ 
+ /**
+@@ -309,30 +339,6 @@ static pm_callback_t pm_noirq_op(const struct dev_pm_ops *ops, pm_message_t stat
+ 	return NULL;
+ }
+ 
+-static char *pm_verb(int event)
+-{
+-	switch (event) {
+-	case PM_EVENT_SUSPEND:
+-		return "suspend";
+-	case PM_EVENT_RESUME:
+-		return "resume";
+-	case PM_EVENT_FREEZE:
+-		return "freeze";
+-	case PM_EVENT_QUIESCE:
+-		return "quiesce";
+-	case PM_EVENT_HIBERNATE:
+-		return "hibernate";
+-	case PM_EVENT_THAW:
+-		return "thaw";
+-	case PM_EVENT_RESTORE:
+-		return "restore";
+-	case PM_EVENT_RECOVER:
+-		return "recover";
+-	default:
+-		return "(unknown PM event)";
+-	}
+-}
+-
+ static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
+ {
+ 	dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
+@@ -379,7 +385,7 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	error = cb(dev);
+ 	suspend_report_result(cb, error);
+ 
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, state, info);
+ 
+ 	return error;
+ }
+@@ -1027,7 +1033,8 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
+  * @cb: Suspend callback to execute.
+  */
+ static int legacy_suspend(struct device *dev, pm_message_t state,
+-			  int (*cb)(struct device *dev, pm_message_t state))
++			  int (*cb)(struct device *dev, pm_message_t state),
++			  char *info)
+ {
+ 	int error;
+ 	ktime_t calltime;
+@@ -1037,7 +1044,7 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
+ 	error = cb(dev, state);
+ 	suspend_report_result(cb, error);
+ 
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, state, info);
+ 
+ 	return error;
+ }
+@@ -1097,7 +1104,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 			goto Run;
+ 		} else if (dev->class->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy class ");
+-			error = legacy_suspend(dev, state, dev->class->suspend);
++			error = legacy_suspend(dev, state, dev->class->suspend,
++						"legacy class ");
+ 			goto End;
+ 		}
+ 	}
+@@ -1108,7 +1116,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 			callback = pm_op(dev->bus->pm, state);
+ 		} else if (dev->bus->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy bus ");
+-			error = legacy_suspend(dev, state, dev->bus->suspend);
++			error = legacy_suspend(dev, state, dev->bus->suspend,
++						"legacy bus ");
+ 			goto End;
+ 		}
+ 	}
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 8e42410..cda100d 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -66,6 +66,43 @@ TRACE_EVENT(machine_suspend,
+ 	TP_printk("state=%lu", (unsigned long)__entry->state)
+ );
+ 
++TRACE_EVENT(device_pm_report_time,
++
++	TP_PROTO(struct device *dev, const char *pm_ops, s64 ops_time,
++		 char *pm_event_str, int error),
++
++	TP_ARGS(dev, pm_ops, ops_time, pm_event_str, error),
++
++	TP_STRUCT__entry(
++		__string(device, dev_name(dev))
++		__string(driver, dev_driver_string(dev))
++		__string(parent, dev->parent ? dev_name(dev->parent) : "none")
++		__string(pm_ops, pm_ops ? pm_ops : "none ")
++		__string(pm_event_str, pm_event_str)
++		__field(s64, ops_time)
++		__field(int, error)
++	),
++
++	TP_fast_assign(
++		const char *tmp = dev->parent ? dev_name(dev->parent) : "none";
++		const char *tmp_i = pm_ops ? pm_ops : "none ";
++
++		__assign_str(device, dev_name(dev));
++		__assign_str(driver, dev_driver_string(dev));
++		__assign_str(parent, tmp);
++		__assign_str(pm_ops, tmp_i);
++		__assign_str(pm_event_str, pm_event_str);
++		__entry->ops_time = ops_time;
++		__entry->error = error;
++	),
++
++	/* ops_str has an extra space at the end */
++	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
++		__get_str(driver), __get_str(device), __get_str(parent),
++		__get_str(pm_event_str), __get_str(pm_ops),
++		__entry->ops_time, __entry->error)
++);
++
+ DECLARE_EVENT_CLASS(wakeup_source,
+ 
+ 	TP_PROTO(const char *name, unsigned int state),
+-- 
+1.7.10.4
+
