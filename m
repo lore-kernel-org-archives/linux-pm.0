@@ -1,126 +1,158 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [Resend RFC PATCH 1/5] powerpc: Free up the IPI message slot of ipi
- call function (PPC_MSG_CALL_FUNC)
-Date: Fri, 26 Jul 2013 10:45:12 +0530
-Message-ID: <20130726051453.17167.4477.stgit@preeti>
+Subject: [Resend RFC PATCH 2/5] powerpc: Implement broadcast timer interrupt
+ as an IPI message
+Date: Fri, 26 Jul 2013 10:46:19 +0530
+Message-ID: <20130726051602.17167.60611.stgit@preeti>
 References: <20130726050915.17167.16298.stgit@preeti>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:37836 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961Ab3GZFTs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 01:19:48 -0400
+Received: from /spool/local
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Fri, 26 Jul 2013 10:39:46 +0530
 In-Reply-To: <20130726050915.17167.16298.stgit@preeti>
-Sender: linux-kernel-owner@vger.kernel.org
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
 From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-The IPI handlers for both PPC_MSG_CALL_FUNC and PPC_MSG_CALL_FUNC_SINGLE
-map to a common implementation - generic_smp_call_function_single_interrupt().
-So, we can consolidate them and save one of the IPI message slots, (which are
-precious, since only 4 of those slots are available).
+For scalability and performance reasons, we want the broadcast timer
+interrupts to be handled as efficiently as possible. Fixed IPI messages
+are one of the most efficient mechanisms available - they are faster
+than the smp_call_function mechanism because the IPI handlers are fixed
+and hence they don't involve costly operations such as adding IPI handlers
+to the target CPU's function queue, acquiring locks for synchronization etc.
 
-So, implement the functionality of PPC_MSG_CALL_FUNC using
-PPC_MSG_CALL_FUNC_SINGLE itself and release its IPI message slot, so that it
-can be used for something else in the future, if desired.
+Luckily we have an unused IPI message slot, so use that to implement
+broadcast timer interrupts efficiently.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/include/asm/smp.h          |    2 +-
- arch/powerpc/kernel/smp.c               |   12 +++++-------
+ arch/powerpc/include/asm/smp.h          |    3 ++-
+ arch/powerpc/kernel/smp.c               |   19 +++++++++++++++----
  arch/powerpc/platforms/cell/interrupt.c |    2 +-
  arch/powerpc/platforms/ps3/smp.c        |    2 +-
- 4 files changed, 8 insertions(+), 10 deletions(-)
+ 4 files changed, 19 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index ffbaabe..51bf017 100644
+index 51bf017..d877b69 100644
 --- a/arch/powerpc/include/asm/smp.h
 +++ b/arch/powerpc/include/asm/smp.h
 @@ -117,7 +117,7 @@ extern int cpu_to_core_id(int cpu);
   *
   * Make sure this matches openpic_request_IPIs in open_pic.c, or what shows up
   * in /proc/interrupts will be wrong!!! --Troy */
--#define PPC_MSG_CALL_FUNCTION   0
-+#define PPC_MSG_UNUSED		0
+-#define PPC_MSG_UNUSED		0
++#define PPC_MSG_TIMER		0
  #define PPC_MSG_RESCHEDULE      1
  #define PPC_MSG_CALL_FUNC_SINGLE	2
  #define PPC_MSG_DEBUGGER_BREAK  3
+@@ -190,6 +190,7 @@ extern struct smp_ops_t *smp_ops;
+ 
+ extern void arch_send_call_function_single_ipi(int cpu);
+ extern void arch_send_call_function_ipi_mask(const struct cpumask *mask);
++extern void arch_send_tick_broadcast(const struct cpumask *mask);
+ 
+ /* Definitions relative to the secondary CPU spin loop
+  * and entry point. Not all of them exist on both 32 and
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 38b0ba6..bc41e9f 100644
+index bc41e9f..6a68ca4 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -111,9 +111,9 @@ int smp_generic_kick_cpu(int nr)
+@@ -35,6 +35,7 @@
+ #include <asm/ptrace.h>
+ #include <linux/atomic.h>
+ #include <asm/irq.h>
++#include <asm/hw_irq.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/prom.h>
+@@ -111,9 +112,9 @@ int smp_generic_kick_cpu(int nr)
  }
  #endif /* CONFIG_PPC64 */
  
--static irqreturn_t call_function_action(int irq, void *data)
-+static irqreturn_t unused_action(int irq, void *data)
+-static irqreturn_t unused_action(int irq, void *data)
++static irqreturn_t timer_action(int irq, void *data)
  {
--	generic_smp_call_function_interrupt();
-+	/* This slot is unused and hence available for use, if needed */
+-	/* This slot is unused and hence available for use, if needed */
++	timer_interrupt();
  	return IRQ_HANDLED;
  }
  
-@@ -144,14 +144,14 @@ static irqreturn_t debug_ipi_action(int irq, void *data)
+@@ -144,14 +145,14 @@ static irqreturn_t debug_ipi_action(int irq, void *data)
  }
  
  static irq_handler_t smp_ipi_action[] = {
--	[PPC_MSG_CALL_FUNCTION] =  call_function_action,
-+	[PPC_MSG_UNUSED] =  unused_action, /* Slot available for future use */
+-	[PPC_MSG_UNUSED] =  unused_action, /* Slot available for future use */
++	[PPC_MSG_TIMER] =  timer_action,
  	[PPC_MSG_RESCHEDULE] = reschedule_action,
  	[PPC_MSG_CALL_FUNC_SINGLE] = call_function_single_action,
  	[PPC_MSG_DEBUGGER_BREAK] = debug_ipi_action,
  };
  
  const char *smp_ipi_name[] = {
--	[PPC_MSG_CALL_FUNCTION] =  "ipi call function",
-+	[PPC_MSG_UNUSED] =  "ipi unused",
+-	[PPC_MSG_UNUSED] =  "ipi unused",
++	[PPC_MSG_TIMER] =  "ipi timer",
  	[PPC_MSG_RESCHEDULE] = "ipi reschedule",
  	[PPC_MSG_CALL_FUNC_SINGLE] = "ipi call function single",
  	[PPC_MSG_DEBUGGER_BREAK] = "ipi debugger",
-@@ -221,8 +221,6 @@ irqreturn_t smp_ipi_demux(void)
+@@ -221,6 +222,8 @@ irqreturn_t smp_ipi_demux(void)
  		all = xchg(&info->messages, 0);
  
  #ifdef __BIG_ENDIAN
--		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
--			generic_smp_call_function_interrupt();
++		if (all & (1 << (24 - 8 * PPC_MSG_TIMER)))
++			timer_interrupt();
  		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
  			scheduler_ipi();
  		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
-@@ -265,7 +263,7 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
- 	unsigned int cpu;
- 
- 	for_each_cpu(cpu, mask)
--		do_message_pass(cpu, PPC_MSG_CALL_FUNCTION);
-+		do_message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
+@@ -266,6 +269,14 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
+ 		do_message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
  }
  
++void arch_send_tick_broadcast(const struct cpumask *mask)
++{
++	unsigned int cpu;
++
++	for_each_cpu(cpu, mask)
++		do_message_pass(cpu, PPC_MSG_TIMER);
++}
++
  #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ void smp_send_debugger_break(void)
+ {
 diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 2d42f3b..28166e4 100644
+index 28166e4..1359113 100644
 --- a/arch/powerpc/platforms/cell/interrupt.c
 +++ b/arch/powerpc/platforms/cell/interrupt.c
 @@ -213,7 +213,7 @@ static void iic_request_ipi(int msg)
  
  void iic_request_IPIs(void)
  {
--	iic_request_ipi(PPC_MSG_CALL_FUNCTION);
-+	iic_request_ipi(PPC_MSG_UNUSED);
+-	iic_request_ipi(PPC_MSG_UNUSED);
++	iic_request_ipi(PPC_MSG_TIMER);
  	iic_request_ipi(PPC_MSG_RESCHEDULE);
  	iic_request_ipi(PPC_MSG_CALL_FUNC_SINGLE);
  	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK);
 diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
-index 4b35166..488f069 100644
+index 488f069..5cb742a 100644
 --- a/arch/powerpc/platforms/ps3/smp.c
 +++ b/arch/powerpc/platforms/ps3/smp.c
 @@ -74,7 +74,7 @@ static int __init ps3_smp_probe(void)
  		* to index needs to be setup.
  		*/
  
--		BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
-+		BUILD_BUG_ON(PPC_MSG_UNUSED	      != 0);
+-		BUILD_BUG_ON(PPC_MSG_UNUSED	      != 0);
++		BUILD_BUG_ON(PPC_MSG_TIMER	      != 0);
  		BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
  		BUILD_BUG_ON(PPC_MSG_CALL_FUNC_SINGLE != 2);
  		BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
+
