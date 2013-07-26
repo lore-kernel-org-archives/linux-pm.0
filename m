@@ -1,84 +1,109 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 3/8] cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to
- work with common boost solution
-Date: Fri, 26 Jul 2013 11:44:14 +0200
-Message-ID: <20130726114414.6bb7bd65@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-4-git-send-email-l.majewski@samsung.com>
- <CAKohpo=3+JP0ppru5DSo72yWiN3Qg9xjNJX+6KgCNiEupZEMjA@mail.gmail.com>
- <20130726100940.1974559e@amdc308.digital.local>
- <CAKohpokjgpiCmynmecs5XtWazz23qJ8USPVtKY-6sk-=MN19Hw@mail.gmail.com>
+From: Li Yang-R58472 <r58472@freescale.com>
+Subject: RE: [RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to support
+ deep idle states
+Date: Fri, 26 Jul 2013 10:05:38 +0000
+Message-ID: <94F013E7935FF44C83EBE7784D62AD3F097AD1D5@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpokjgpiCmynmecs5XtWazz23qJ8USPVtKY-6sk-=MN19Hw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20130725090016.12500.28888.stgit@preeti.in.ibm.com>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>, "paulus@samba.org" <paulus@samba.org>, "shangw@linux.vnet.ibm.com" <shangw@linux.vnet.ibm.com>, "galak@kernel.crashing.org" <galak@kernel.crashing.org>, "fweisbec@gmail.com" <fweisbec@gmail.com>, "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>, "michael@ellerman.id.au" <michael@ellerman.id.au>, "arnd@arndb.de" <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "john.stultz@linaro.org" <john.stultz@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, Zhao Chenhui-B35336 <B35336@freescale.com>, "deepthi@linux.vnet.ibm.com" <deepthi@linux.vnet.ibm.com>, "geoff@infradead.org" <geoff@infradead.org>, linux-ker
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 26 Jul 2013 14:54:07 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 26 July 2013 13:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > On Fri, 26 Jul 2013 12:58:02 +0530 Viresh Kumar wrote,
-> >> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com>
-> >> wrote:
-> >> > diff --git a/drivers/cpufreq/acpi-cpufreq.c
-> >> > b/drivers/cpufreq/acpi-cpufreq.c
-> >>
-> >> >  static void __init acpi_cpufreq_boost_init(void)
-> >> >  {
-> >> > +       acpi_cpufreq_driver.boost_supported = false;
-> >             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
-> >>
-> >> Would be better if we do this in else of below if.
-> >
-> > We need to set boost_supported = false at [*] for the case when:
-> > 1. msrs_alloc fails
-> > or
-> > 2. acpi_cpufreq is built as a module and can be inserted and removed
-> > several times. Without [*] we could end up with wrong (not false)
-> > initial state.
+
+
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Preeti U Murthy
+> Sent: Thursday, July 25, 2013 5:03 PM
+> To: benh@kernel.crashing.org; paul.gortmaker@windriver.com;
+> paulus@samba.org; shangw@linux.vnet.ibm.com; galak@kernel.crashing.org;
+> fweisbec@gmail.com; paulmck@linux.vnet.ibm.com; michael@ellerman.id.au;
+> arnd@arndb.de; linux-pm@vger.kernel.org; rostedt@goodmis.org; rjw@sisk.pl;
+> john.stultz@linaro.org; tglx@linutronix.de; Zhao Chenhui-B35336;
+> deepthi@linux.vnet.ibm.com; geoff@infradead.org; linux-
+> kernel@vger.kernel.org; srivatsa.bhat@linux.vnet.ibm.com;
+> schwidefsky@de.ibm.com; svaidy@linux.vnet.ibm.com; linuxppc-
+> dev@lists.ozlabs.org
+> Subject: [RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to support
+> deep idle states
 > 
-> Hmm.. Now that I see the code again, we don't need to set it to false
-> as it is a global variable and this field is already set to false..
+> On PowerPC, when CPUs enter deep idle states, their local timers are
+> switched off. The responsibility of waking them up at their next timer
+> event, needs to be handed over to an external device. On PowerPC, we do
+> not have an external device equivalent to HPET, which is currently done
+> on architectures like x86. Instead we assign the local timer of one of
+> the CPUs to do this job.
 
-Ok, so then I will remove this line [*].
+I don't know much about the deep idle states.  But is it necessary to turn off the timer in these states?  I mean the extra work needed on the booting CPU and re-syncing Time Base after wakeup might defeat the power consumption benefit of turning off the timer.
+
+Btw, the Open PIC has an internal timer.  Can we use it as the wakeup event?
+
+Regards,
+Leo
 
 > 
-> >> >         if (boot_cpu_has(X86_FEATURE_CPB) ||
-> >> > boot_cpu_has(X86_FEATURE_IDA)) { msrs = msrs_alloc();
-> >>
-> >>
-> >> > @@ -1021,12 +995,11 @@ static int __init acpi_cpufreq_init(void)
-> >> >                         *iter = &cpb;
-> >> >         }
-> >> >  #endif
-> >> > +       acpi_cpufreq_boost_init();
-> >             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [**]
-> >>
-> >> We are calling it before registering cpufreq driver. Will this have
-> >> any complications?
-> >
-> > When we call [**] after the cpufreq_register_driver [***] we end up
-> > with sysfs boost attribute not exported at x86.
-> > The boost attribute is exported at [***] only when
-> > acpi_cpufreq.boost_supported = true. However support for boost at
-> > x86 is evaluated at acpi_cpufreq_boost_init().
+> This patchset is an attempt to make use of the existing timer broadcast
+> framework in the kernel to meet the above requirement, except that the
+> tick broadcast device is the local timer of the boot CPU.
 > 
-> I understand why you moved it above cpufreq driver register. I was
-> thinking if there can be few side effects of this..
-
-As fair as I've tested it, there weren't any side effects. 
-
-Moreover the acpi_cpufreq_boost_init() mostly read state of the HW, so
-IMHO can be done before cpufreg_register_driver(). 
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> This patch series is ported ontop of 3.11-rc1 + the cpuidle driver
+> backend for powernv posted by Deepthi Dharwar recently. The current
+> design and implementation supports the ONESHOT tick mode. It does not yet
+> support the PERIODIC tick mode. This patch is tested with NOHZ_FULL off.
+> 
+> Patch[1/5], Patch[2/5]: optimize the broadcast mechanism on ppc.
+> Patch[3/5]: Introduces the core of the timer offload framework on powerpc.
+> Patch[4/5]: The cpu doing the broadcast should not go into tickless idle.
+> Patch[5/5]: Add a deep idle state to the cpuidle state table on powernv.
+> 
+> Patch[5/5] is the patch that ultimately makes use of the timer offload
+> framework that the patches Patch[1/5] to Patch[4/5] build.
+> 
+> ---
+> 
+> Preeti U Murthy (3):
+>       cpuidle/ppc: Add timer offload framework to support deep idle
+> states
+>       cpuidle/ppc: CPU goes tickless if there are no arch-specific
+> constraints
+>       cpuidle/ppc: Add longnap state to the idle states on powernv
+> 
+> Srivatsa S. Bhat (2):
+>       powerpc: Free up the IPI message slot of ipi call function
+> (PPC_MSG_CALL_FUNC)
+>       powerpc: Implement broadcast timer interrupt as an IPI message
+> 
+> 
+>  arch/powerpc/include/asm/smp.h                  |    3 +
+>  arch/powerpc/include/asm/time.h                 |    3 +
+>  arch/powerpc/kernel/smp.c                       |   23 ++++--
+>  arch/powerpc/kernel/time.c                      |   84
+> +++++++++++++++++++++++
+>  arch/powerpc/platforms/cell/interrupt.c         |    2 -
+>  arch/powerpc/platforms/powernv/Kconfig          |    1
+>  arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++
+>  arch/powerpc/platforms/ps3/smp.c                |    2 -
+>  kernel/time/tick-sched.c                        |    7 ++
+>  9 files changed, 161 insertions(+), 12 deletions(-)
+> 
+> --
+> Signature
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org More majordomo info at
+> http://vger.kernel.org/majordomo-info.html
