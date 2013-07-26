@@ -1,86 +1,195 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [Resend RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are
- no arch-specific constraints
-Date: Fri, 26 Jul 2013 10:49:32 +0530
-Message-ID: <20130726051858.17167.72800.stgit@preeti>
-References: <20130726050915.17167.16298.stgit@preeti>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 2/8] cpufreq: Add boost frequency support in core
+Date: Fri, 26 Jul 2013 12:47:15 +0530
+Message-ID: <CAKohpom9QHf+XBYQcajv4tni4_KA2x+Y3BAXWhZkdCFnZxp3XA@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+	<1374770011-22171-3-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <20130726050915.17167.16298.stgit@preeti>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:44035 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384Ab3GZHRQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 03:17:16 -0400
+Received: by mail-ob0-f170.google.com with SMTP id ef5so3683289obb.29
+        for <linux-pm@vger.kernel.org>; Fri, 26 Jul 2013 00:17:16 -0700 (PDT)
+In-Reply-To: <1374770011-22171-3-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-In the current design of timer offload framework, the broadcast cpu should
-*not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
+On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 
-Since we prevent the CPUs entering deep idle states from programming the
-decrementer of the broadcast cpu for their respective next local events for
-reasons mentioned in PATCH[3/5], the broadcast CPU checks if there are any
-CPUs to be woken up during each of its timer interrupt, which is programmed
-to its local events.
+>  /*********************************************************************
+> + *               BOOST                                              *
+> + *********************************************************************/
+> +static int cpufreq_boost_set_sw(int state)
+> +{
+> +       struct cpufreq_frequency_table *freq_table;
+> +       struct cpufreq_policy *policy;
+> +       int ret = -EINVAL;
+> +
+> +       list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
+> +               freq_table = cpufreq_frequency_get_table(policy->cpu);
+> +               if (freq_table) {
+> +                       ret = cpufreq_frequency_table_cpuinfo(policy,
+> +                                                       freq_table);
+> +                       if (!ret) {
+> +                               policy->user_policy.max = policy->max;
+> +                               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> +                       }
+> +               }
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +int cpufreq_boost_trigger_state(int state)
+> +{
+> +       unsigned long flags;
+> +       int ret = 0;
+> +
+> +       if (cpufreq_driver->boost_enabled == state)
+> +               return 0;
+> +
+> +       write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +       cpufreq_driver->boost_enabled = state;
+> +       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 
-With tickless idle, the broadcast CPU might not have a timer interrupt
-pending till after many ticks, which can result in missed wakeups on CPUs
-in deep idle states. By disabling tickless idle, worst case, the tick_sched
-hrtimer will trigger a timer interrupt every period.
+Not sure if we should leave the lock at this point of time, as we
+haven't enabled boost until now.
 
-However the current setup of tickless idle does not let us make the choice
-of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
-is a system wide setting. Hence resort to an arch specific call to check if a cpu
-can go into tickless idle.
+If somebody tries to use this variable at this point of time, then
+it would get the wrong information about it.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+> +       ret = cpufreq_driver->set_boost(state);
+> +       if (ret) {
+> +               write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +               cpufreq_driver->boost_enabled = 0;
 
- arch/powerpc/kernel/time.c |    5 +++++
- kernel/time/tick-sched.c   |    7 +++++++
- 2 files changed, 12 insertions(+)
+should be:
+                    cpufreq_driver->boost_enabled = !state;
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 7e858e1..916c32f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -864,6 +864,11 @@ static void decrementer_timer_broadcast(const struct cpumask *mask)
- 	arch_send_tick_broadcast(mask);
- }
- 
-+int arch_can_stop_idle_tick(int cpu)
-+{
-+	return cpu != bc_cpu;
-+}
-+
- static void register_decrementer_clockevent(int cpu)
- {
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 6960172..e9ffa84 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -700,8 +700,15 @@ static void tick_nohz_full_stop_tick(struct tick_sched *ts)
- #endif
- }
- 
-+int __weak arch_can_stop_idle_tick(int cpu)
-+{
-+	return 1;
-+}
-+
- static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
- {
-+	if (!arch_can_stop_idle_tick(cpu))
-+		return false;
- 	/*
- 	 * If this cpu is offline and it is the one which updates
- 	 * jiffies, then give up the assignment and let it be taken by
+> +               write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +               pr_err("%s: BOOST cannot %s\n", __func__,
+
+s/BOOST cannot %s/Cannot %s BOOST
+
+> +                      state ? "enabled" : "disabled");
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +int cpufreq_boost_supported(void)
+> +{
+> +       if (cpufreq_driver)
+
+This routine is always called from places where cpufreq_driver
+can't be NULL..
+
+--contd--
+
+> +               return cpufreq_driver->boost_supported;
+> +
+> +       return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
+> +
+> +int cpufreq_boost_enabled(void)
+> +{
+> +       return cpufreq_driver->boost_enabled;
+
+And if above check is necessary, then don't you need to check
+it here as well?
+
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+> +
+> +/*********************************************************************
+>   *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
+>   *********************************************************************/
+>
+> @@ -2008,9 +2099,25 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>         cpufreq_driver = driver_data;
+>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+> +       if (cpufreq_boost_supported()) {
+> +               /*
+> +                * Check if boost driver provides function to enable boost -
+
+s/boost driver/driver
+
+> +                * if not, use cpufreq_boost_set_sw as default
+> +                */
+> +               if (!cpufreq_driver->set_boost)
+> +                       cpufreq_driver->set_boost = cpufreq_boost_set_sw;
+> +
+> +               ret = cpufreq_sysfs_create_file(&(boost.attr));
+
+You don't need braces around boost.attr.
+
+> +               if (ret) {
+> +                       pr_err("%s: cannot register global BOOST sysfs file\n",
+> +                               __func__);
+> +                       goto err_null_driver;
+> +               }
+> +       }
+> +
+>         ret = subsys_interface_register(&cpufreq_interface);
+>         if (ret)
+> -               goto err_null_driver;
+> +               goto err_boost_unreg;
+>
+>         if (!(cpufreq_driver->flags & CPUFREQ_STICKY)) {
+>                 int i;
+> @@ -2037,6 +2144,9 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>         return 0;
+>  err_if_unreg:
+>         subsys_interface_unregister(&cpufreq_interface);
+> +err_boost_unreg:
+> +       if (cpufreq_boost_supported())
+> +               cpufreq_sysfs_remove_file(&(boost.attr));
+
+same here.
+
+>  err_null_driver:
+>         write_lock_irqsave(&cpufreq_driver_lock, flags);
+>         cpufreq_driver = NULL;
+> @@ -2063,6 +2173,9 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+>         pr_debug("unregistering driver %s\n", driver->name);
+>
+>         subsys_interface_unregister(&cpufreq_interface);
+> +       if (cpufreq_boost_supported())
+> +               cpufreq_sysfs_remove_file(&(boost.attr));
+
+here too.
+
+> +
+>         unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
+>
+>         write_lock_irqsave(&cpufreq_driver_lock, flags);
+
+> +static ssize_t scaling_available_frequencies_show(struct cpufreq_policy *policy,
+> +                                                 char *buf)
+> +{
+> +       return show_available_freqs(policy, buf, 0);
+
+s/0/false
+
+> +}
+
+> +static ssize_t scaling_boost_frequencies_show(struct cpufreq_policy *policy,
+> +                                             char *buf)
+> +{
+> +       return show_available_freqs(policy, buf, 1);
+
+s/1/true
+
+> +}
+
+Looks good mostly.. We Should be to get it in 3.12 :)
