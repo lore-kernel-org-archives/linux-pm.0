@@ -1,242 +1,165 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH 7] power: new trace event to print device suspend and resume time
-Date: Fri, 26 Jul 2013 13:30:20 -0600
-Message-ID: <1374867022-27133-1-git-send-email-shuah.kh@samsung.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: RFC: device thermal limits represented in device tree nodes
+Date: Fri, 26 Jul 2013 15:55:47 -0400
+Message-ID: <51F2D443.6040909@ti.com>
+References: <51ED40E3.5020703@ti.com> <51EF3186.9060001@wwwdotorg.org>  <1374664745.25700.118.camel@hornet> <51EFED19.5090900@ti.com>  <1374768928.3213.31.camel@hornet> <51F15E42.1060409@ti.com> <1374773611.3213.44.camel@hornet>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:60752 "EHLO
-	qmta09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751798Ab3GZTai (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 15:30:38 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:52824 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900Ab3GZT5A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 15:57:00 -0400
+In-Reply-To: <1374773611.3213.44.camel@hornet>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org, rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com, paul.gortmaker@windriver.com, joe@perches.com, fengguang.wu@intel.com
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+To: Pawel Moll <pawel.moll@arm.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Durgadoss R <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Wei Ni <wni@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-A new trace event is added to pm events to print time it takes to suspend and
-resume a device. It generates trace message that includes device, driver,
-parent information in addition to the type of pm ops invoked as well as the
-pm event and error status from the pm ops. Example trace below:
+--phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-bash-2239  [000] ....   290.883035: device_pm_report_time: backlight
- acpi_video0 parent=0000:00:02.0 state=freeze ops=class nsecs=332 err=0
-bash-2239  [000] ....   290.883041: device_pm_report_time: rfkill rf
-kill3 parent=phy0 state=freeze ops=legacy class nsecs=216 err=0
-bash-2239  [001] ....   290.973892: device_pm_report_time: ieee80211
- phy0 parent=0000:01:00.0 state=freeze ops=legacy class nsecs=90846477 err=0
+On 25-07-2013 13:33, Pawel Moll wrote:
+> On Thu, 2013-07-25 at 18:20 +0100, Eduardo Valentin wrote:
+>>>> 	thermal_zone {
+>>>> 		type =3D "CPU";
+>>>
+>>> So what does this exactly mean? What is so special about CPU? What ot=
+her
+>>> types you've got there? (Am I just lazy not looking at the numerous
+>>> links you provided? ;-)
+>>
+>> Hehehe. OK. Type is supposed to describe what your zone is representin=
+g.
+>=20
+> As in "a name"? So, for example "The board", "PSU"? What I meant to ask=
 
-bash-2239  [001] ....   293.660129: device_pm_report_time: ieee80211 phy0 parent=0000:01:00.0 state=restore ops=legacy class nsecs=101295162 err=0
-bash-2239  [001] ....   293.660147: device_pm_report_time: rfkill rfkill3 parent=phy0 state=restore ops=legacy class nsecs=1804 err=0
-bash-2239  [001] ....   293.660157: device_pm_report_time: backlight acpi_video0 parent=0000:00:02.0 state=restore ops=class nsecs=757 err=0
+> was: does the string carry any meaning?
+>=20
+>>>> 		monitoring_device =3D <&sensor@xxxx
+>>>> 				    &sensor@yyyy>;
+>>>>
+>>>> 		mask =3D <0x03>; /* trips writability */
+>>>> 		passive_delay =3D <250>; /* milliseconds */
+>>>> 		polling_delay =3D <1000>; /* milliseconds */
+>>>> 		policy =3D "step_wise";
+>>>
+>>> The word "policy" doesn't sound to me like a "hardware feature",
+>>> wouldn't you agree?
+>>
+>> Agreed. As I mentioned in other email, we can leave this to OS decide
+>> what to use, by default, for instance.
+>=20
+> Cool, I believe it is the right thing to do.
+>=20
+>>>
+>>>> 		trips {
+>>>> 			alert@100000{
+>>>> 				temperature =3D <100000>; /* milliCelsius
+>>>> 				hysteresis =3D <2000>; /* milliCelsius */
+>>>> 				type =3D <THERMAL_TRIP_PASSIVE>;
+>>>> 			};
+>>>> 			crit@125000{
+>>>> 				temperature =3D <125000>; /* milliCelsius
+>>>> 				hysteresis =3D <2000>; /* milliCelsius */
+>>>> 				type =3D <THERMAL_TRIP_CRITICAL>;
+>>>> 			};
+>>>> 		};
+>>>> 		bind_params {
+>>>> 			action@0{
+>>>> 				cooling_device =3D "thermal-cpufreq";
+>>>
+>>> Why is it a string? It seems very Linux-y... (cpufreq) Is there any
+>>> particular reason not to have phandles to the fans that have any impa=
+ct
+>>> on the zone?=20
+>>
+>> Because fans are not the only way to cool your system, specially those=
 
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
-Changes since v6: Fixed the following warnings found by kbuild test robot.
->> include/trace/events/power.h:87:17: warning: initialization discards 'const' qualifier from pointer target type [enabled by default]
-      char *tmp_p = dev->parent ? dev_name(dev->parent) : "none";
->> include/trace/events/power.h:88:17: warning: initialization discards 'const' qualifier from pointer target type [enabled by default]
-      char *tmp_i = pm_ops ? pm_ops : "none ";
+>> systems that don't feature fans. Managing the speed of your CPU is one=
 
- drivers/base/power/main.c    |   77 +++++++++++++++++++++++-------------------
- include/trace/events/power.h |   37 ++++++++++++++++++++
- 2 files changed, 80 insertions(+), 34 deletions(-)
+>> example of lowering temperature without fans. Managing the load on you=
+r
+>> system is another way. These are obviously, virtual concepts. And
+>> because we have physical ways and logical ways to cool the zone, then =
+I
+>> didnt put a phandle to a device there.
+>=20
+> "virtual concepts"... This is where my problem lies... It's not hardwar=
+e
+> so it doesn't seem to belong in the tree at the first sight. Shouldn't
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 5a9b656..9f098a8 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -28,6 +28,7 @@
- #include <linux/sched.h>
- #include <linux/async.h>
- #include <linux/suspend.h>
-+#include <trace/events/power.h>
- #include <linux/cpuidle.h>
- #include "../base.h"
- #include "power.h"
-@@ -56,6 +57,30 @@ static pm_message_t pm_transition;
- 
- static int async_error;
- 
-+static char *pm_verb(int event)
-+{
-+	switch (event) {
-+	case PM_EVENT_SUSPEND:
-+		return "suspend";
-+	case PM_EVENT_RESUME:
-+		return "resume";
-+	case PM_EVENT_FREEZE:
-+		return "freeze";
-+	case PM_EVENT_QUIESCE:
-+		return "quiesce";
-+	case PM_EVENT_HIBERNATE:
-+		return "hibernate";
-+	case PM_EVENT_THAW:
-+		return "thaw";
-+	case PM_EVENT_RESTORE:
-+		return "restore";
-+	case PM_EVENT_RECOVER:
-+		return "recover";
-+	default:
-+		return "(unknown PM event)";
-+	}
-+}
-+
- /**
-  * device_pm_sleep_init - Initialize system suspend-related device fields.
-  * @dev: Device object being initialized.
-@@ -172,16 +197,21 @@ static ktime_t initcall_debug_start(struct device *dev)
- }
- 
- static void initcall_debug_report(struct device *dev, ktime_t calltime,
--				  int error)
-+				  int error, pm_message_t state, char *info)
- {
--	ktime_t delta, rettime;
-+	ktime_t rettime;
-+	s64 nsecs;
-+
-+	rettime = ktime_get();
-+	nsecs = (s64) ktime_to_ns(ktime_sub(rettime, calltime));
- 
- 	if (pm_print_times_enabled) {
--		rettime = ktime_get();
--		delta = ktime_sub(rettime, calltime);
- 		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
--			error, (unsigned long long)ktime_to_ns(delta) >> 10);
-+			error, (unsigned long long)nsecs >> 10);
- 	}
-+
-+	trace_device_pm_report_time(dev, info, nsecs, pm_verb(state.event),
-+				    error);
- }
- 
- /**
-@@ -309,30 +339,6 @@ static pm_callback_t pm_noirq_op(const struct dev_pm_ops *ops, pm_message_t stat
- 	return NULL;
- }
- 
--static char *pm_verb(int event)
--{
--	switch (event) {
--	case PM_EVENT_SUSPEND:
--		return "suspend";
--	case PM_EVENT_RESUME:
--		return "resume";
--	case PM_EVENT_FREEZE:
--		return "freeze";
--	case PM_EVENT_QUIESCE:
--		return "quiesce";
--	case PM_EVENT_HIBERNATE:
--		return "hibernate";
--	case PM_EVENT_THAW:
--		return "thaw";
--	case PM_EVENT_RESTORE:
--		return "restore";
--	case PM_EVENT_RECOVER:
--		return "recover";
--	default:
--		return "(unknown PM event)";
--	}
--}
--
- static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
- {
- 	dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
-@@ -379,7 +385,7 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	error = cb(dev);
- 	suspend_report_result(cb, error);
- 
--	initcall_debug_report(dev, calltime, error);
-+	initcall_debug_report(dev, calltime, error, state, info);
- 
- 	return error;
- }
-@@ -1027,7 +1033,8 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
-  * @cb: Suspend callback to execute.
-  */
- static int legacy_suspend(struct device *dev, pm_message_t state,
--			  int (*cb)(struct device *dev, pm_message_t state))
-+			  int (*cb)(struct device *dev, pm_message_t state),
-+			  char *info)
- {
- 	int error;
- 	ktime_t calltime;
-@@ -1037,7 +1044,7 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
- 	error = cb(dev, state);
- 	suspend_report_result(cb, error);
- 
--	initcall_debug_report(dev, calltime, error);
-+	initcall_debug_report(dev, calltime, error, state, info);
- 
- 	return error;
- }
-@@ -1097,7 +1104,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 			goto Run;
- 		} else if (dev->class->suspend) {
- 			pm_dev_dbg(dev, state, "legacy class ");
--			error = legacy_suspend(dev, state, dev->class->suspend);
-+			error = legacy_suspend(dev, state, dev->class->suspend,
-+						"legacy class ");
- 			goto End;
- 		}
- 	}
-@@ -1108,7 +1116,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 			callback = pm_op(dev->bus->pm, state);
- 		} else if (dev->bus->suspend) {
- 			pm_dev_dbg(dev, state, "legacy bus ");
--			error = legacy_suspend(dev, state, dev->bus->suspend);
-+			error = legacy_suspend(dev, state, dev->bus->suspend,
-+						"legacy bus ");
- 			goto End;
- 		}
- 	}
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index 8e42410..cda100d 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -66,6 +66,43 @@ TRACE_EVENT(machine_suspend,
- 	TP_printk("state=%lu", (unsigned long)__entry->state)
- );
- 
-+TRACE_EVENT(device_pm_report_time,
-+
-+	TP_PROTO(struct device *dev, const char *pm_ops, s64 ops_time,
-+		 char *pm_event_str, int error),
-+
-+	TP_ARGS(dev, pm_ops, ops_time, pm_event_str, error),
-+
-+	TP_STRUCT__entry(
-+		__string(device, dev_name(dev))
-+		__string(driver, dev_driver_string(dev))
-+		__string(parent, dev->parent ? dev_name(dev->parent) : "none")
-+		__string(pm_ops, pm_ops ? pm_ops : "none ")
-+		__string(pm_event_str, pm_event_str)
-+		__field(s64, ops_time)
-+		__field(int, error)
-+	),
-+
-+	TP_fast_assign(
-+		const char *tmp = dev->parent ? dev_name(dev->parent) : "none";
-+		const char *tmp_i = pm_ops ? pm_ops : "none ";
-+
-+		__assign_str(device, dev_name(dev));
-+		__assign_str(driver, dev_driver_string(dev));
-+		__assign_str(parent, tmp);
-+		__assign_str(pm_ops, tmp_i);
-+		__assign_str(pm_event_str, pm_event_str);
-+		__entry->ops_time = ops_time;
-+		__entry->error = error;
-+	),
-+
-+	/* ops_str has an extra space at the end */
-+	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
-+		__get_str(driver), __get_str(device), __get_str(parent),
-+		__get_str(pm_event_str), __get_str(pm_ops),
-+		__entry->ops_time, __entry->error)
-+);
-+
- DECLARE_EVENT_CLASS(wakeup_source,
- 
- 	TP_PROTO(const char *name, unsigned int state),
--- 
-1.7.10.4
 
+Yeah, in fact, this is exactly the point that creates most of the
+disagreement. You may check Guenter's arguments against this proposal
+(in my original RFC email, there is a link to it).
+
+Well, if one don't want to see this as a 'virtual concept' it could say
+the cooling device is the cpu itself:
+		cooling_device =3D <&cpu0>;
+
+
+
+> it focus on "physical data" instead? As in: point at devices that have
+> some impact on the conditions? For example, you can say "please, do the=
+
+> right thing to cool your environment down" to both CPU and fan, can't
+> you? The "cooling driver" for the CPU would know that it has to slow
+> down, while a driver for the fan would know that it has to speed up ;-)=
+
+>=20
+> What I'm trying to say is that in my opinion the tree should simply lin=
+k
+> the object, the sensor and the actuator. Nothing more, nothing less.
+
+OK. I think it would be a little unfair to have only links, without
+describing what this link is supposed to be or how it is supposed to be
+used. In previous discussions, I have mentioned two similar examples
+already existing in DT. Here are they: regulator bindings, one does not
+describe only which device connects to which regulator, but also needs
+to describe, voltage limits, current limits, offsets, and other
+properties. And an existing 'virtual concept' would be predefined CPU
+OPPs, that feed the opp layer. Those are configurations of the hardware
+that define a 'virtual' concept of operating point.
+
+So, saying we need to describe only physical connections or touchable
+things would be a little unfair, IMO. Besides, thermal is still physical
+:-).
+
+>=20
+> Thanks for your time!
+
+Thanks for the input!
+
+>=20
+> Pawel
+>=20
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHy1EYACgkQCXcVR3XQvP0BJAEAoLGkJ+CjY64raPd3tsmUf5up
+LJlr/JkqJMW2zS4sPOIA/2DJKpIKzy5zB0HAg2kzUGZEw/mXFJRplvONa2tKa8Ak
+=v+sa
+-----END PGP SIGNATURE-----
+
+--phU7QJohmu1JhvNiN5A0TN0dnfm2Ogs4J--
