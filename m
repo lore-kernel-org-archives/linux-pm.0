@@ -1,34 +1,115 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCH 3/3] cpuidle: big.LITTLE: vexpress-TC2 CPU idle
- driver
-Date: Fri, 26 Jul 2013 11:00:48 -0400 (EDT)
-Message-ID: <alpine.LFD.2.03.1307261058510.15022@syhkavp.arg>
-References: <1374750866-750-1-git-send-email-lorenzo.pieralisi@arm.com> <1374750866-750-4-git-send-email-lorenzo.pieralisi@arm.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 27/27] thermal: ti-bandgap: cleanup resource allocation
+Date: Fri, 26 Jul 2013 11:43:23 -0400
+Message-ID: <51F2991B.3060704@ti.com>
+References: <1374602524-3398-1-git-send-email-wsa@the-dreams.de> <1374602524-3398-28-git-send-email-wsa@the-dreams.de>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f46.google.com ([209.85.128.46]:33640 "EHLO
-	mail-qe0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759139Ab3GZPAv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 11:00:51 -0400
-Received: by mail-qe0-f46.google.com with SMTP id i11so377989qej.5
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jul 2013 08:00:51 -0700 (PDT)
-In-Reply-To: <1374750866-750-4-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="RrWdVxQg0XPUDmftcJlbS2saSU0pF6n5R"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1374602524-3398-28-git-send-email-wsa@the-dreams.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, Jon Medhurst <tixy@linaro.org>
 
-On Thu, 25 Jul 2013, Lorenzo Pieralisi wrote:
+--RrWdVxQg0XPUDmftcJlbS2saSU0pF6n5R
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> +static int notrace bl_powerdown_finisher(unsigned long arg)
-> +{
-> +	/* MCPM works with HW CPU identifiers */
-> +	unsigned int mpidr = read_cpuid_mpidr();
-> +	unsigned int cluster = (mpidr >> 8) & 0xf;
-> +	unsigned int cpu = mpidr & 0xf;
+On 23-07-2013 14:02, Wolfram Sang wrote:
+> When cleaning up usage of devm_ioremap_resource, I found that resource
+> allocation in this driver is ugly and buggy. If resource[0] is not
+> found, bgp->base will end up NULL, so OOPS. All other resources get
+> ioremapped, but their pointers are discarded, so why bother. So, let's
+> keep things simple. Just remap resource[0] and pass the error, if any.
+> Compile tested only, due to no hardware.
 
-You probably want to use the MPIDR_AFFINITY_LEVEL() macro here.
+
+Nack, this will actually break the driver. This device has several
+sections of registers, and not a single io region. Check
+Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt for examples=
+=2E
+
+>=20
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> ---
+> Please apply via the subsystem-tree.
+>=20
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c |   20 ++++---------------=
+-
+>  1 file changed, 4 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/ther=
+mal/ti-soc-thermal/ti-bandgap.c
+> index 9dfd471..416be5d 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -1130,7 +1130,6 @@ static struct ti_bandgap *ti_bandgap_build(struct=
+ platform_device *pdev)
+>  	const struct of_device_id *of_id;
+>  	struct ti_bandgap *bgp;
+>  	struct resource *res;
+> -	int i;
+> =20
+>  	/* just for the sake */
+>  	if (!node) {
+> @@ -1156,21 +1155,10 @@ static struct ti_bandgap *ti_bandgap_build(stru=
+ct platform_device *pdev)
+>  		return ERR_PTR(-ENOMEM);
+>  	}
+> =20
+> -	i =3D 0;
+> -	do {
+> -		void __iomem *chunk;
+> -
+> -		res =3D platform_get_resource(pdev, IORESOURCE_MEM, i);
+> -		if (!res)
+> -			break;
+> -		chunk =3D devm_ioremap_resource(&pdev->dev, res);
+> -		if (i =3D=3D 0)
+> -			bgp->base =3D chunk;
+> -		if (IS_ERR(chunk))
+> -			return ERR_CAST(chunk);
+
+In case resource 0 is not found, the error will be repassed.
+
+> -
+> -		i++;
+> -	} while (res);
+
+And yes, other IORESOURCE_MEM resources are required, depending on chip
+version.
+
+> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	bgp->base =3D devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(bgp->base))
+> +		return bgp->base;
+> =20
+>  	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+>  		bgp->tshut_gpio =3D of_get_gpio(node, 0);
+>=20
 
 
-Nicolas
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--RrWdVxQg0XPUDmftcJlbS2saSU0pF6n5R
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHymRsACgkQCXcVR3XQvP08bAD/WXdE1xeKFwlIvkKhT0IauKxb
+7x1mE/697WxMBSqbF9QBAIyocfKaM18iaZwmBxqNq7tGacxuArm1XTqnBHZr1C5r
+=Ur7J
+-----END PGP SIGNATURE-----
+
+--RrWdVxQg0XPUDmftcJlbS2saSU0pF6n5R--
