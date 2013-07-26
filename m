@@ -1,114 +1,72 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
- arch-specific constraints
-Date: Fri, 26 Jul 2013 09:41:37 +0530
-Message-ID: <51F1F6F9.1050102@linux.vnet.ibm.com>
-References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com> <20130725090302.12500.42998.stgit@preeti.in.ibm.com> <20130725133044.GA7400@somewhere> <51F1E15B.3050106@linux.vnet.ibm.com>
+Subject: [Resend RFC PATCH 0/5] cpuidle/ppc: Timer offload framework to
+ support deep idle states
+Date: Fri, 26 Jul 2013 10:43:54 +0530
+Message-ID: <20130726050915.17167.16298.stgit@preeti>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:57550 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929Ab3GZEOf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 00:14:35 -0400
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:39060 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183Ab3GZFRj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 01:17:39 -0400
 Received: from /spool/local
-	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 26 Jul 2013 09:35:48 +0530
-In-Reply-To: <51F1E15B.3050106@linux.vnet.ibm.com>
+	Fri, 26 Jul 2013 10:42:15 +0530
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: deepthi@linux.vnet.ibm.com, shangw@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, geoff@infradead.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, paul.gortmaker@windriver.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, john.stultz@linaro.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com
+To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-Hi Frederic,
+On PowerPC, when CPUs enter deep idle states, their local timers are
+switched off. The responsibility of waking them up at their next timer event,
+needs to be handed over to an external device. On PowerPC, we do not have an
+external device equivalent to HPET, which is currently done on architectures
+like x86. Instead we assign the local timer of one of the CPUs to do this
+job.
 
-I apologise for the confusion. As Paul pointed out maybe the usage of
-the term lapic is causing a large amount of confusion. So please see the
-clarification below. Maybe it will help answer your question.
+This patchset is an attempt to make use of the existing timer broadcast
+framework in the kernel to meet the above requirement, except that the tick
+broadcast device is the local timer of the boot CPU.
 
-On 07/26/2013 08:09 AM, Preeti U Murthy wrote:
-> Hi Frederic,
-> 
-> On 07/25/2013 07:00 PM, Frederic Weisbecker wrote:
->> On Thu, Jul 25, 2013 at 02:33:02PM +0530, Preeti U Murthy wrote:
->>> In the current design of timer offload framework, the broadcast cpu should
->>> *not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
->>>
->>> Since we prevent the CPUs entering deep idle states from programming the lapic of the
->>> broadcast cpu for their respective next local events for reasons mentioned in
->>> PATCH[3/5], the broadcast CPU checks if there are any CPUs to be woken up during
->>> each of its timer interrupt programmed to its local events.
->>>
->>> With tickless idle, the broadcast CPU might not get a timer interrupt till after
->>> many ticks which can result in missed wakeups on CPUs in deep idle states. By
->>> disabling tickless idle, worst case, the tick_sched hrtimer will trigger a
->>> timer interrupt every period to check for broadcast.
->>>
->>> However the current setup of tickless idle does not let us make the choice
->>> of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
->>> is a system wide setting. Hence resort to an arch specific call to check if a cpu
->>> can go into tickless idle.
->>
->> Hi Preeti,
->>
->> I'm not exactly sure why you can't enter the broadcast CPU in dynticks idle mode.
->> I read in the previous patch that's because in dynticks idle mode the broadcast
->> CPU deactivates its lapic so it doesn't receive the IPI. But may be I misunderstood.
->> Anyway that's not good for powersaving.
+This patch series is ported ontop of 3.11-rc1 + the cpuidle driver backend
+for powernv posted by Deepthi Dharwar recently. The current design and
+implementation supports the ONESHOT tick mode. It does not yet support
+the PERIODIC tick mode. This patch is tested with NOHZ_FULL off.
 
-Firstly, when CPUs enter deep idle states, their local clock event
-devices get switched off. In the case of powerpc, local clock event
-device is the decrementer. Hence such CPUs *do not get timer interrupts*
-but are still *capable of taking IPIs.*
+Patch[1/5], Patch[2/5]: optimize the broadcast mechanism on ppc.
+Patch[3/5]: Introduces the core of the timer offload framework on powerpc.
+Patch[4/5]: The cpu doing the broadcast should not go into tickless idle.
+Patch[5/5]: Add a deep idle state to the cpuidle state table on powernv.
 
-So we need to ensure that some other CPU, in this case the broadcast
-CPU, makes note of when the timer interrupt of the CPU in such deep idle
-states is to trigger and at that moment issue an IPI to that CPU.
+Patch[5/5] is the patch that ultimately makes use of the timer offload
+framework that the patches Patch[1/5] to Patch[4/5] build.
 
-*The broadcast CPU however should have its decrementer active always*,
-meaning it is disallowed from entering deep idle states, where the
-decrementer switches off, precisely because the other idling CPUs bank
-on it for the above mentioned reason.
+This patch series is being resent to clarify certain ambiguity in the patch
+descriptions from the previous post. Discussion around this:
+https://lkml.org/lkml/2013/7/25/754
 
-> *The lapic of a broadcast CPU is active always*. Say CPUX, wants the
-> broadcast CPU to wake it up at timeX.  Since we cannot program the lapic
-> of a remote CPU, CPUX will need to send an IPI to the broadcast CPU,
-> asking it to program its lapic to fire at timeX so as to wake up CPUX.
-> *With multiple CPUs the overhead of sending IPI, could result in
-> performance bottlenecks and may not scale well.*
+---
 
-Rewording the above. The decrementer of the broadcast CPU is active
-always. Since we cannot program the clock event device
-of a remote CPU, CPUX will need to send an IPI to the broadcast CPU,
-(which the broadcast CPU is very well capable of receiving), asking it
-to program its decrementer to fire at timeX so as to wake up CPUX
-*With multiple CPUs the overhead of sending IPI, could result in
-performance bottlenecks and may not scale well.*
+Preeti U Murthy (3):
+      cpuidle/ppc: Add timer offload framework to support deep idle states
+      cpuidle/ppc: CPU goes tickless if there are no arch-specific constraints
+      cpuidle/ppc: Add longnap state to the idle states on powernv
 
-> 
-> Hence the workaround is that the broadcast CPU on each of its timer
-> interrupt checks if any of the next timer event of a CPU in deep idle
-> state has expired, which can very well be found from dev->next_event of
-> that CPU. For example the timeX that has been mentioned above has
-> expired. If so the broadcast handler is called to send an IPI to the
-> idling CPU to wake it up.
-> 
-> *If the broadcast CPU, is in tickless idle, its timer interrupt could be
-> many ticks away. It could miss waking up a CPU in deep idle*, if its
-> wakeup is much before this timer interrupt of the broadcast CPU. But
-> without tickless idle, atleast at each period we are assured of a timer
-> interrupt. At which time broadcast handling is done as stated in the
-> previous paragraph and we will not miss wakeup of CPUs in deep idle states.
-> 
-> Yeah it is true that not allowing the broadcast CPU to enter tickless
-> idle is bad for power savings, but for the use case that we are aiming
-> at in this patch series, the current approach seems to be the best, with
-> minimal trade-offs in performance, power savings, scalability and no
-> change in the broadcast framework that exists today in the kernel.
-> 
+Srivatsa S. Bhat (2):
+      powerpc: Free up the IPI message slot of ipi call function (PPC_MSG_CALL_FUNC)
+      powerpc: Implement broadcast timer interrupt as an IPI message
 
-Regards
-Preeti U Murthy
+
+ arch/powerpc/include/asm/smp.h                  |    3 +
+ arch/powerpc/include/asm/time.h                 |    3 +
+ arch/powerpc/kernel/smp.c                       |   23 ++++--
+ arch/powerpc/kernel/time.c                      |   86 +++++++++++++++++++++++
+ arch/powerpc/platforms/cell/interrupt.c         |    2 -
+ arch/powerpc/platforms/powernv/Kconfig          |    1 
+ arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++
+ arch/powerpc/platforms/ps3/smp.c                |    2 -
+ kernel/time/tick-sched.c                        |    7 ++
+ 9 files changed, 163 insertions(+), 12 deletions(-)
 
