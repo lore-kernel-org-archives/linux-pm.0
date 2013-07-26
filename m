@@ -1,267 +1,64 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 2/8] cpufreq: Add boost frequency support in core
-Date: Fri, 26 Jul 2013 10:33:21 +0200
-Message-ID: <20130726103321.21238bbb@amdc308.digital.local>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 3/8] cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code
+ to work with common boost solution
+Date: Fri, 26 Jul 2013 14:54:07 +0530
+Message-ID: <CAKohpokjgpiCmynmecs5XtWazz23qJ8USPVtKY-6sk-=MN19Hw@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-3-git-send-email-l.majewski@samsung.com>
- <CAKohpom9QHf+XBYQcajv4tni4_KA2x+Y3BAXWhZkdCFnZxp3XA@mail.gmail.com>
+	<1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+	<1374770011-22171-4-git-send-email-l.majewski@samsung.com>
+	<CAKohpo=3+JP0ppru5DSo72yWiN3Qg9xjNJX+6KgCNiEupZEMjA@mail.gmail.com>
+	<20130726100940.1974559e@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpom9QHf+XBYQcajv4tni4_KA2x+Y3BAXWhZkdCFnZxp3XA@mail.gmail.com>
+In-Reply-To: <20130726100940.1974559e@amdc308.digital.local>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 26 Jul 2013 12:47:15 +0530 Viresh Kumar wrote,
-> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> 
-> >  /*********************************************************************
-> > + *
-> > BOOST                                              *
-> > +
-> > *********************************************************************/
-> > +static int cpufreq_boost_set_sw(int state) +{
-> > +       struct cpufreq_frequency_table *freq_table;
-> > +       struct cpufreq_policy *policy;
-> > +       int ret = -EINVAL;
-> > +
-> > +       list_for_each_entry(policy, &cpufreq_policy_list,
-> > policy_list) {
-> > +               freq_table =
-> > cpufreq_frequency_get_table(policy->cpu);
-> > +               if (freq_table) {
-> > +                       ret =
-> > cpufreq_frequency_table_cpuinfo(policy,
-> > +                                                       freq_table);
-> > +                       if (!ret) {
-> > +                               policy->user_policy.max =
-> > policy->max;
-> > +                               __cpufreq_governor(policy,
-> > CPUFREQ_GOV_LIMITS);
-> > +                       }
-> > +               }
-> > +       }
-> > +
-> > +       return ret;
-> > +}
-> > +
-> > +int cpufreq_boost_trigger_state(int state)
-> > +{
-> > +       unsigned long flags;
-> > +       int ret = 0;
-> > +
-> > +       if (cpufreq_driver->boost_enabled == state)
-> > +               return 0;
-> > +
-> > +       write_lock_irqsave(&cpufreq_driver_lock, flags);
-> > +       cpufreq_driver->boost_enabled = state;
-> > +       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-	    ^^^^^^^^^^^^^^^^^^^^ [*]
-> 
-> Not sure if we should leave the lock at this point of time, as we
-> haven't enabled boost until now.
+On 26 July 2013 13:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Fri, 26 Jul 2013 12:58:02 +0530 Viresh Kumar wrote,
+>> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> > diff --git a/drivers/cpufreq/acpi-cpufreq.c
+>> > b/drivers/cpufreq/acpi-cpufreq.c
+>>
+>> >  static void __init acpi_cpufreq_boost_init(void)
+>> >  {
+>> > +       acpi_cpufreq_driver.boost_supported = false;
+>             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
+>>
+>> Would be better if we do this in else of below if.
+>
+> We need to set boost_supported = false at [*] for the case when:
+> 1. msrs_alloc fails
+> or
+> 2. acpi_cpufreq is built as a module and can be inserted and removed
+> several times. Without [*] we could end up with wrong (not false)
+> initial state.
 
-The problem here is with the cpufreq_driver->set_boost() call.
+Hmm.. Now that I see the code again, we don't need to set it to false
+as it is a global variable and this field is already set to false..
 
-I tried to avoid acquiring lock at one function and release it at
-another (in this case cpufreq_boost_set_sw), especially since the
-__cpufreq_governor() acquires its own lock - good place for deadlock.
+>> >         if (boot_cpu_has(X86_FEATURE_CPB) ||
+>> > boot_cpu_has(X86_FEATURE_IDA)) { msrs = msrs_alloc();
+>>
+>>
+>> > @@ -1021,12 +995,11 @@ static int __init acpi_cpufreq_init(void)
+>> >                         *iter = &cpb;
+>> >         }
+>> >  #endif
+>> > +       acpi_cpufreq_boost_init();
+>             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [**]
+>>
+>> We are calling it before registering cpufreq driver. Will this have
+>> any complications?
+>
+> When we call [**] after the cpufreq_register_driver [***] we end up with
+> sysfs boost attribute not exported at x86.
+> The boost attribute is exported at [***] only when
+> acpi_cpufreq.boost_supported = true. However support for boost at x86
+> is evaluated at acpi_cpufreq_boost_init().
 
-Is it OK for you to grab lock at one function
-(cpufreq_boost_trigger_state()) and then at other function
-(cpufreq_boost_set_sw) release it before calling __cpufreq_governor()
-and grab it again after its completion?
-
-
-> 
-> If somebody tries to use this variable at this point of time, then
-> it would get the wrong information about it.
-> 
-> > +       ret = cpufreq_driver->set_boost(state);
-> > +       if (ret) {
-> > +               write_lock_irqsave(&cpufreq_driver_lock, flags);
-> > +               cpufreq_driver->boost_enabled = 0;
-> 
-> should be:
->                     cpufreq_driver->boost_enabled = !state;
-
-For me = 0 (or = false) is more readable. 
-If you wish, I will change it to = !state.
-
-> 
-> > +               write_unlock_irqrestore(&cpufreq_driver_lock,
-> > flags); +
-> > +               pr_err("%s: BOOST cannot %s\n", __func__,
-> 
-> s/BOOST cannot %s/Cannot %s BOOST
-
-Ok.
-
-> 
-> > +                      state ? "enabled" : "disabled");
-> > +       }
-> > +
-> > +       return ret;
-> > +}
-> > +
-> > +int cpufreq_boost_supported(void)
-> > +{
-> > +       if (cpufreq_driver)
-> 
-> This routine is always called from places where cpufreq_driver
-> can't be NULL..
-
-It is also called from thermal. And it happens that thermal is
-initialized earlier.
-Then "NULL pointer dereference" happens.
-
-> 
-> --contd--
-> 
-> > +               return cpufreq_driver->boost_supported;
-> > +
-> > +       return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
-> > +
-> > +int cpufreq_boost_enabled(void)
-> > +{
-> > +       return cpufreq_driver->boost_enabled;
-	^^^^^^^^^^^^^^ [1]
-
-> 
-> And if above check is necessary, then don't you need to check
-> it here as well?
-
-Because on thermal I check first if cpufreq_boost_supported() is true.
-If boost is not supported then check for cpufreq_boost_enabled() is not
-performed.
-
-In my opinion at [1] we don't need the if (cpufreq_driver) check.
-But it is up to you to decide. 
-
-> 
-> > +}
-> > +EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
-> > +
-> > +/*********************************************************************
-> >   *               REGISTER / UNREGISTER CPUFREQ
-> > DRIVER                *
-> > *********************************************************************/
-> >
-> > @@ -2008,9 +2099,25 @@ int cpufreq_register_driver(struct
-> > cpufreq_driver *driver_data) cpufreq_driver = driver_data;
-> >         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> >
-> > +       if (cpufreq_boost_supported()) {
-> > +               /*
-> > +                * Check if boost driver provides function to
-> > enable boost -
-> 
-> s/boost driver/driver
-
-Ok.
-
-> 
-> > +                * if not, use cpufreq_boost_set_sw as default
-> > +                */
-> > +               if (!cpufreq_driver->set_boost)
-> > +                       cpufreq_driver->set_boost =
-> > cpufreq_boost_set_sw; +
-> > +               ret = cpufreq_sysfs_create_file(&(boost.attr));
-> 
-> You don't need braces around boost.attr.
-
-Ok.
-
-> 
-> > +               if (ret) {
-> > +                       pr_err("%s: cannot register global BOOST
-> > sysfs file\n",
-> > +                               __func__);
-> > +                       goto err_null_driver;
-> > +               }
-> > +       }
-> > +
-> >         ret = subsys_interface_register(&cpufreq_interface);
-> >         if (ret)
-> > -               goto err_null_driver;
-> > +               goto err_boost_unreg;
-> >
-> >         if (!(cpufreq_driver->flags & CPUFREQ_STICKY)) {
-> >                 int i;
-> > @@ -2037,6 +2144,9 @@ int cpufreq_register_driver(struct
-> > cpufreq_driver *driver_data) return 0;
-> >  err_if_unreg:
-> >         subsys_interface_unregister(&cpufreq_interface);
-> > +err_boost_unreg:
-> > +       if (cpufreq_boost_supported())
-> > +               cpufreq_sysfs_remove_file(&(boost.attr));
-> 
-> same here.
-
-Ok.
-
-> 
-> >  err_null_driver:
-> >         write_lock_irqsave(&cpufreq_driver_lock, flags);
-> >         cpufreq_driver = NULL;
-> > @@ -2063,6 +2173,9 @@ int cpufreq_unregister_driver(struct
-> > cpufreq_driver *driver) pr_debug("unregistering driver %s\n",
-> > driver->name);
-> >
-> >         subsys_interface_unregister(&cpufreq_interface);
-> > +       if (cpufreq_boost_supported())
-> > +               cpufreq_sysfs_remove_file(&(boost.attr));
-> 
-> here too.
-
-Ok.
-
-> 
-> > +
-> >         unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
-> >
-> >         write_lock_irqsave(&cpufreq_driver_lock, flags);
-> 
-> > +static ssize_t scaling_available_frequencies_show(struct
-> > cpufreq_policy *policy,
-> > +                                                 char *buf)
-> > +{
-> > +       return show_available_freqs(policy, buf, 0);
-> 
-> s/0/false
-
-Ok.
-
-> 
-> > +}
-> 
-> > +static ssize_t scaling_boost_frequencies_show(struct
-> > cpufreq_policy *policy,
-> > +                                             char *buf)
-> > +{
-> > +       return show_available_freqs(policy, buf, 1);
-> 
-> s/1/true
-
-Ok.
-
-> 
-> > +}
-> 
-> Looks good mostly.. We Should be to get it in 3.12 :)
-
-If we agree about above comments, I will post v7 ASAP.
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+I understand why you moved it above cpufreq driver register. I was thinking
+if there can be few side effects of this..
