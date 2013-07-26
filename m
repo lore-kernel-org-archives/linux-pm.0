@@ -1,122 +1,86 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [Resend RFC PATCH 5/5] cpuidle/ppc: Add longnap state to the idle
- states on powernv
-Date: Fri, 26 Jul 2013 10:51:14 +0530
-Message-ID: <20130726052040.17167.21530.stgit@preeti>
+Subject: [Resend RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are
+ no arch-specific constraints
+Date: Fri, 26 Jul 2013 10:49:32 +0530
+Message-ID: <20130726051858.17167.72800.stgit@preeti>
 References: <20130726050915.17167.16298.stgit@preeti>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:45438 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116Ab3GZFYs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2013 01:24:48 -0400
-Received: from /spool/local
-	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 26 Jul 2013 15:16:54 +1000
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 In-Reply-To: <20130726050915.17167.16298.stgit@preeti>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, michael@ellerman.id.au, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch hooks into the existing broadcast framework with the support that this
-patchset introduces for ppc, and the cpuidle driver backend
-for powernv(posted out recently by Deepthi Dharwar) to add sleep state as
-one of the deep idle states, in which the decrementer is switched off.
+In the current design of timer offload framework, the broadcast cpu should
+*not* go into tickless idle so as to avoid missed wakeups on CPUs in deep idle states.
 
-However in this patch, we only emulate sleep by going into a state which does
-a nap with the decrementer interrupts disabled, termed as longnap. This enables
-focus on the timer broadcast framework for ppc in this series of patches ,
-which is required as a first step to enable sleep on ppc.
+Since we prevent the CPUs entering deep idle states from programming the
+decrementer of the broadcast cpu for their respective next local events for
+reasons mentioned in PATCH[3/5], the broadcast CPU checks if there are any
+CPUs to be woken up during each of its timer interrupt, which is programmed
+to its local events.
+
+With tickless idle, the broadcast CPU might not have a timer interrupt
+pending till after many ticks, which can result in missed wakeups on CPUs
+in deep idle states. By disabling tickless idle, worst case, the tick_sched
+hrtimer will trigger a timer interrupt every period.
+
+However the current setup of tickless idle does not let us make the choice
+of tickless on individual cpus. NOHZ_MODE_INACTIVE which disables tickless idle,
+is a system wide setting. Hence resort to an arch specific call to check if a cpu
+can go into tickless idle.
 
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++++++++++++
- 1 file changed, 47 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/time.c |    5 +++++
+ kernel/time/tick-sched.c   |    7 +++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/processor_idle.c b/arch/powerpc/platforms/powernv/processor_idle.c
-index f43ad91a..9aca502 100644
---- a/arch/powerpc/platforms/powernv/processor_idle.c
-+++ b/arch/powerpc/platforms/powernv/processor_idle.c
-@@ -9,16 +9,18 @@
- #include <linux/cpuidle.h>
- #include <linux/cpu.h>
- #include <linux/notifier.h>
-+#include <linux/clockchips.h>
- 
- #include <asm/machdep.h>
- #include <asm/runlatch.h>
-+#include <asm/time.h>
- 
- struct cpuidle_driver powernv_idle_driver = {
- 	.name =		"powernv_idle",
- 	.owner =	THIS_MODULE,
- };
- 
--#define MAX_IDLE_STATE_COUNT	2
-+#define MAX_IDLE_STATE_COUNT	3
- 
- static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
- static struct cpuidle_device __percpu *powernv_cpuidle_devices;
-@@ -54,6 +56,43 @@ static int nap_loop(struct cpuidle_device *dev,
- 	return index;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 7e858e1..916c32f 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -864,6 +864,11 @@ static void decrementer_timer_broadcast(const struct cpumask *mask)
+ 	arch_send_tick_broadcast(mask);
  }
  
-+/* Emulate sleep, with long nap.
-+ * During sleep, the core does not receive decrementer interrupts.
-+ * Emulate sleep using long nap with decrementers interrupts disabled.
-+ * This is an initial prototype to test the timer offload framework for ppc.
-+ * We will eventually introduce the sleep state once the timer offload framework
-+ * for ppc is stable.
-+ */
-+static int longnap_loop(struct cpuidle_device *dev,
-+				struct cpuidle_driver *drv,
-+				int index)
++int arch_can_stop_idle_tick(int cpu)
 +{
-+	int cpu = dev->cpu;
-+
-+	unsigned long lpcr = mfspr(SPRN_LPCR);
-+
-+	lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
-+
-+	/* exit powersave upon external interrupt, but not decrementer
-+	 * interrupt, Emulate sleep.
-+	 */
-+	lpcr |= LPCR_PECE0;
-+
-+	if (cpu != bc_cpu) {
-+		mtspr(SPRN_LPCR, lpcr);
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+		power7_nap();
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-+	} else {
-+		/* Wakeup on a decrementer interrupt, Do a nap */
-+		lpcr |= LPCR_PECE1;
-+		mtspr(SPRN_LPCR, lpcr);
-+		power7_nap();
-+	}
-+
-+	return index;
++	return cpu != bc_cpu;
 +}
 +
- /*
-  * States for dedicated partition case.
-  */
-@@ -72,6 +111,13 @@ static struct cpuidle_state powernv_states[MAX_IDLE_STATE_COUNT] = {
- 		.exit_latency = 10,
- 		.target_residency = 100,
- 		.enter = &nap_loop },
-+	 { /* LongNap */
-+		.name = "LongNap",
-+		.desc = "LongNap",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 10,
-+		.target_residency = 100,
-+		.enter = &longnap_loop },
- };
+ static void register_decrementer_clockevent(int cpu)
+ {
+ 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 6960172..e9ffa84 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -700,8 +700,15 @@ static void tick_nohz_full_stop_tick(struct tick_sched *ts)
+ #endif
+ }
  
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
-
++int __weak arch_can_stop_idle_tick(int cpu)
++{
++	return 1;
++}
++
+ static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
+ {
++	if (!arch_can_stop_idle_tick(cpu))
++		return false;
+ 	/*
+ 	 * If this cpu is offline and it is the one which updates
+ 	 * jiffies, then give up the assignment and let it be taken by
