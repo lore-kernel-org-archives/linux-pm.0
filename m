@@ -1,138 +1,28 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RESEND] cpuidle for ARM pull request
-Date: Sat, 27 Jul 2013 23:43:13 +0200
-Message-ID: <51F43EF1.1020108@linaro.org>
-References: <51E536C5.1020609@linaro.org> <1598661.FpX5cmjM1U@vostro.rjw.lan> <51F3650B.8080708@linaro.org> <2224191.VjCA0rsPcU@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: stable 3-10-3: strange output of  "lsmod | grep ^acpi_cpufreq"
+Date: Sun, 28 Jul 2013 01:39:25 +0200
+Message-ID: <4531734.kTFAPunoch@vostro.rjw.lan>
+References: <51F40612.2050403@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f172.google.com ([74.125.82.172]:38842 "EHLO
-	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752594Ab3G0VnO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Jul 2013 17:43:14 -0400
-Received: by mail-we0-f172.google.com with SMTP id t61so2895519wes.17
-        for <linux-pm@vger.kernel.org>; Sat, 27 Jul 2013 14:43:13 -0700 (PDT)
-In-Reply-To: <2224191.VjCA0rsPcU@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51F40612.2050403@gmx.de>
+Sender: cpufreq-owner@vger.kernel.org
+To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linus Walleij <linus.walleij@linaro.org>, keun-o.park@windriver.com, "nsekhar@ti.com >> Sekhar Nori" <nsekhar@ti.com>
 
-On 07/27/2013 02:37 PM, Rafael J. Wysocki wrote:
-> On Saturday, July 27, 2013 08:13:31 AM Daniel Lezcano wrote:
->> On 07/26/2013 02:07 AM, Rafael J. Wysocki wrote:
->>> On Friday, July 26, 2013 12:41:09 AM Rafael J. Wysocki wrote:
->>>> On Friday, July 26, 2013 12:29:08 AM Rafael J. Wysocki wrote:
->>>>> On Friday, July 26, 2013 12:07:03 AM Daniel Lezcano wrote:
->>>>>> On 07/16/2013 02:04 PM, Daniel Lezcano wrote:
->>>>>>>
->>>>>>> Hi,
->>>>>>>
->>>>>>> The first PR was against the linux-pm-next tree including the p=
-atch:
->>>>>>>
->>>>>>> "cpuidle: Add Kconfig.arm and move calxeda, kirkwood and zynq"
->>>>>>>
->>>>>>> This patch has been dropped in the meantime.
->>>>>>>
->>>>>>> Here is a new PR where my tree has been rebased against linux-p=
-m-next
->>>>>>> and adding the patch mentioned above.
->>>>>>>
->>>>>>> As stated by Rafael, I will handle the ARM specific patches fro=
-m now.
->>>>>>>
->>>>>>> The following changes since commit 48f99d5a97d32d70c0738d6e314d=
-9f4dbefd89bf:
->>>>>>>
->>>>>>>   Merge branch 'pm-cpuidle-next' into linux-next (2013-07-16 02=
-:41:06 +0200)
->>>>>>>
->>>>>>> are available in the git repository at:
->>>>>>>
->>>>>>>
->>>>>>>   git://git.linaro.org/people/dlezcano/linux.git cpuidle/arm-ne=
-xt
->>>>>>>
->>>>>>> for you to fetch changes up to 2b7e79f4a75e803184f483985a25cc75=
-1a990f06:
->>>>>>>
->>>>>>>   ARM: ux500: cpuidle: Move ux500 cpuidle driver to drivers/cpu=
-idle
->>>>>>> (2013-07-16 13:57:24 +0200)
->>>>>>
->>>>>> ping ?
->>>>>
->>>>> Sorry, something distracted me.  I'll pull it later today unless =
-there are any
->>>>> problems (in which case I'll let you know).
->>>>
->>>> Well, there are some.
->>>>
->>>> It is based on my linux-next branch, but please rebase it on top o=
-f 3.11-rc2.
->>>>
->>>> Generally, please send me pull requests based on -rc kernels only =
-(or major
->>>> releases).
->>>
->>> Unless your material depends on new things in my linux-next branch,=
- in which
->>> case please let me know and I'll set up a stable branch for you to =
-base things
->>> on.
->>
->> Hi Rafael,
->>
->> I rebased my branch on top of 3.11-rc2, you can try to pull it again=
-=2E
+On Saturday, July 27, 2013 07:40:34 PM Toralf F=C3=B6rster wrote:
+> it gives at a ThinkPad T420:
 >=20
-> Pulled, thanks!
->=20
-> Next time, can you please add a general description of what the patch=
-es do and
-> why they do that to the pull request?
+> tfoerste@n22 ~/tmp $ lsmod | grep ^acpi_cpufreq
+> acpi_cpufreq           12902  2147483647
 
-Yes, sure. I will do.
+That is -1, which indicates some module refcount woes.
 
->> I thought it would have been easier for us if I could based my PRs o=
-n
->> top of your linux-next branch, so acting as a proxy for ARM patches.=
- I
->> am maintaining the clocksource drivers and I am basing my tree on to=
-p of
->> tip/core.
->>
->> I guess you are rebasing your tree often and this is an issue for yo=
-u,
->> right ?
->=20
-> Yes, my linux-next branch may contain commits that will be modified l=
-ater
-> (e.g. ACKs added, fixes folded in etc.).
->=20
-> Anyway, as I said, as long as the material you have for me doesn't de=
-pend on
-> anything new in my tree, it's better to base it on top of an -rc kern=
-el.
->=20
-> In case it does depend on that, I've put the entire outstanding cpuid=
-le
-> material into my pm-cpuidle branch (including your ARM commits just p=
-ulled).
+I definitely can't see that with the mainline on my machines.
 
-Ok, thanks.
-
-  -- Daniel
-
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Rafael
 
