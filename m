@@ -1,137 +1,137 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH 2/3] ACPI / PM: Make messages in acpi_device_set_power()
- print device names
-Date: Mon, 29 Jul 2013 22:15:29 +0800
-Message-ID: <51F67901.9050409@intel.com>
-References: <10433383.dueoNg39qi@vostro.rjw.lan> <1782275.A7JEhQIj8Q@vostro.rjw.lan> <51F65D1F.9050402@cogentembedded.com> <8023117.JJXk2RBLtn@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 4/7] cpuidle: calxeda: add support to use PSCI calls
+Date: Mon, 29 Jul 2013 16:14:51 +0200
+Message-ID: <51F678DB.3030308@linaro.org>
+References: <1375048598-15637-1-git-send-email-robherring2@gmail.com> <1375048598-15637-5-git-send-email-robherring2@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:19510 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751077Ab3G2OOs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 29 Jul 2013 10:14:48 -0400
-In-Reply-To: <8023117.JJXk2RBLtn@vostro.rjw.lan>
+Received: from mail-ea0-f179.google.com ([209.85.215.179]:61335 "EHLO
+	mail-ea0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810Ab3G2OOw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2013 10:14:52 -0400
+Received: by mail-ea0-f179.google.com with SMTP id b10so531334eae.38
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2013 07:14:50 -0700 (PDT)
+In-Reply-To: <1375048598-15637-5-git-send-email-robherring2@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Joe Perches <joe@perches.com>, Lan Tianyu <lantianyu1986@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
 
-On 07/29/2013 09:36 PM, Rafael J. Wysocki wrote:
-> On Monday, July 29, 2013 04:16:31 PM Sergei Shtylyov wrote:
->> Hello.
->>
->> On 29-07-2013 16:17, Rafael J. Wysocki wrote:
->>
->> [...]
->>
->>>>>> @@ -166,20 +166,20 @@ int acpi_device_set_power(struct acpi_de
->>>> []
->>>>>>          if (device->parent && (state < device->parent->power.state)) {
->>>>>> -               printk(KERN_WARNING PREFIX
->>>>>> -                             "Cannot set device to a higher-powered"
->>>>>> -                             " state than parent\n");
->>>>>> +               dev_warn(&device->dev, "Cannot transition to a higher-powered "
->>>>>> +                        "state than parent\n");
->>
->>>> coalesce format please.
->>
->>> I can, but then it'll cross the 80 columns boundary.
->>
->>    It's not a problem with checkpatch.pl anymore. Contrariwise, it whines 
->> about the broken up string literals, AFAIR.
-> 
-> Oh, at last.
-> 
-> Updated patch follows.
-> 
-> Thanks,
-> Rafael
-> 
-> 
+On 07/28/2013 11:56 PM, Rob Herring wrote:
+> From: Rob Herring <rob.herring@calxeda.com>
+>=20
+> This updates the Calxeda cpuidle driver to use PSCI calls to powergat=
+e
+> cores. This is needed to enable cpuidle for the ECX-2000.
+>=20
+> This could possibly become a generic PSCI driver, but there are no ot=
+her
+> PSCI users in the kernel other than mach-virt.
+>=20
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
 > ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: ACPI / PM: Make messages in acpi_device_set_power() print device names
-> 
-> Modify acpi_device_set_power() so that diagnostic messages printed by
-> it to the kernel log always contain the name of the device concerned
-> to make it possible to identify the device that triggered the message
-> if need be.
-> 
-> Also replace printk(KERN_WARNING ) with dev_warn() everywhere in that
-> function.
 
-This makes the log much more informative, thanks!
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Rob,
 
-Reviewed-by: Aaron Lu <aaron.lu@intel.com>
+Shall I take the patch in my tree ?
 
-And I'll add the state information in another patch on top of this one
-later.
+Thanks
+  -- Daniel
 
--Aaron
 
-> ---
->  drivers/acpi/device_pm.c |   22 ++++++++++------------
->  1 file changed, 10 insertions(+), 12 deletions(-)
-> 
-> Index: linux-pm/drivers/acpi/device_pm.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/device_pm.c
-> +++ linux-pm/drivers/acpi/device_pm.c
-> @@ -166,20 +166,20 @@ int acpi_device_set_power(struct acpi_de
->  	/* Make sure this is a valid target state */
->  
->  	if (state == device->power.state) {
-> -		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device is already at %s\n",
-> +		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] already in %s\n",
-> +				  device->pnp.bus_id,
->  				  acpi_power_state_string(state)));
->  		return 0;
->  	}
->  
->  	if (!device->power.states[state].flags.valid) {
-> -		printk(KERN_WARNING PREFIX "Device does not support %s\n",
-> -		       acpi_power_state_string(state));
-> +		dev_warn(&device->dev, "Power state %s not supported\n",
-> +			 acpi_power_state_string(state));
+>  drivers/cpuidle/cpuidle-calxeda.c | 40 ++++++-----------------------=
+----------
+>  1 file changed, 6 insertions(+), 34 deletions(-)
+>=20
+> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpui=
+dle-calxeda.c
+> index 0e6e408..01cfecf3 100644
+> --- a/drivers/cpuidle/cpuidle-calxeda.c
+> +++ b/drivers/cpuidle/cpuidle-calxeda.c
+> @@ -22,51 +22,23 @@
+> =20
+>  #include <linux/cpuidle.h>
+>  #include <linux/init.h>
+> -#include <linux/io.h>
+>  #include <linux/of.h>
+> -#include <linux/time.h>
+> -#include <linux/delay.h>
+> -#include <linux/suspend.h>
+>  #include <asm/cpuidle.h>
+> -#include <asm/proc-fns.h>
+> -#include <asm/smp_scu.h>
+>  #include <asm/suspend.h>
+> -#include <asm/cacheflush.h>
+> -#include <asm/cp15.h>
+> -
+> -extern void highbank_set_cpu_jump(int cpu, void *jump_addr);
+> -extern void *scu_base_addr;
+> -
+> -static noinline void calxeda_idle_restore(void)
+> -{
+> -	set_cr(get_cr() | CR_C);
+> -	set_auxcr(get_auxcr() | 0x40);
+> -	scu_power_mode(scu_base_addr, SCU_PM_NORMAL);
+> -}
+> +#include <asm/psci.h>
+> =20
+>  static int calxeda_idle_finish(unsigned long val)
+>  {
+> -	/* Already flushed cache, but do it again as the outer cache functi=
+ons
+> -	 * dirty the cache with spinlocks */
+> -	flush_cache_all();
+> -
+> -	set_auxcr(get_auxcr() & ~0x40);
+> -	set_cr(get_cr() & ~CR_C);
+> -
+> -	scu_power_mode(scu_base_addr, SCU_PM_DORMANT);
+> -
+> -	cpu_do_idle();
+> -
+> -	/* Restore things if we didn't enter power-gating */
+> -	calxeda_idle_restore();
+> -	return 1;
+> +	const struct psci_power_state ps =3D {
+> +		.type =3D PSCI_POWER_STATE_TYPE_POWER_DOWN,
+> +	};
+> +	return psci_ops.cpu_suspend(ps, __pa(cpu_resume));
+>  }
+> =20
+>  static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
+>  				struct cpuidle_driver *drv,
+>  				int index)
+>  {
+> -	highbank_set_cpu_jump(smp_processor_id(), cpu_resume);
+>  	cpu_suspend(0, calxeda_idle_finish);
+>  	return index;
+>  }
+> @@ -90,7 +62,7 @@ static struct cpuidle_driver calxeda_idle_driver =3D=
+ {
+> =20
+>  static int __init calxeda_cpuidle_init(void)
+>  {
+> -	if (!of_machine_is_compatible("calxeda,highbank"))
+> +	if (!of_machine_is_compatible("calxeda,highbank") || !psci_ops.cpu_=
+suspend)
 >  		return -ENODEV;
->  	}
->  	if (device->parent && (state < device->parent->power.state)) {
-> -		printk(KERN_WARNING PREFIX
-> -			      "Cannot set device to a higher-powered"
-> -			      " state than parent\n");
-> +		dev_warn(&device->dev,
-> +			 "Cannot transition to a higher-powered state than parent\n");
->  		return -ENODEV;
->  	}
->  
-> @@ -192,8 +192,8 @@ int acpi_device_set_power(struct acpi_de
->  
->  	if (state < device->power.state && state != ACPI_STATE_D0
->  	    && device->power.state >= ACPI_STATE_D3_HOT) {
-> -		printk(KERN_WARNING PREFIX
-> -			"Cannot transition to non-D0 state from D3\n");
-> +		dev_warn(&device->dev,
-> +			 "Cannot transition to non-D0 state from D3\n");
->  		return -ENODEV;
->  	}
->  
-> @@ -220,10 +220,8 @@ int acpi_device_set_power(struct acpi_de
->  
->   end:
->  	if (result) {
-> -		printk(KERN_WARNING PREFIX
-> -			      "Device [%s] failed to transition to %s\n",
-> -			      device->pnp.bus_id,
-> -			      acpi_power_state_string(state));
-> +		dev_warn(&device->dev, "Failed to change power state to %s\n",
-> +			 acpi_power_state_string(state));
->  	} else {
->  		device->power.state = state;
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> 
+> =20
+>  	return cpuidle_register(&calxeda_idle_driver, NULL);
+>=20
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
