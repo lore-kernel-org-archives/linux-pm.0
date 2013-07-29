@@ -1,133 +1,104 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: stable 3-10-3: strange output of  "lsmod | grep ^acpi_cpufreq"
-Date: Mon, 29 Jul 2013 01:20:41 +0200
-Message-ID: <2368277.VjYrsHUseA@vostro.rjw.lan>
-References: <51F40612.2050403@gmx.de> <2111514.pxW5saG1J3@vostro.rjw.lan> <18359786.D7glpto546@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH 2/3] ACPI / PM: Make messages in acpi_device_set_power()
+ print device names
+Date: Mon, 29 Jul 2013 10:29:36 +0800
+Message-ID: <51F5D390.5040506@intel.com>
+References: <10433383.dueoNg39qi@vostro.rjw.lan> <1895563.95T8SxMegu@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <18359786.D7glpto546@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1895563.95T8SxMegu@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 29, 2013 12:43:59 AM Rafael J. Wysocki wrote:
-> On Monday, July 29, 2013 12:11:18 AM Rafael J. Wysocki wrote:
-> > On Sunday, July 28, 2013 12:21:22 PM Toralf F=C3=B6rster wrote:
-> > > On 07/28/2013 01:39 AM, Rafael J. Wysocki wrote:
-> > > > On Saturday, July 27, 2013 07:40:34 PM Toralf F=C3=B6rster wrot=
-e:
-> > > >> it gives at a ThinkPad T420:
-> > > >>
-> > > >> tfoerste@n22 ~/tmp $ lsmod | grep ^acpi_cpufreq
-> > > >> acpi_cpufreq           12902  2147483647
-> > > >=20
-> > > > That is -1, which indicates some module refcount woes.
-> > >=20
-> > > yes, ofc.
-> > >=20
-> > > The issue apears after 1 s2ram/resume cycle, before s2ram the ref=
-count is 1.
-> > >=20
-> > > > I definitely can't see that with the mainline on my machines.
-> > >=20
-> > > It is in mainline too.
-> >=20
-> > Does the appended patch help?
->=20
-> Actually, something as simple as this also should help:
->=20
-> ---
+On 07/27/2013 09:11 PM, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpufreq: Fix cpufreq driver module refcount balance after su=
-spend/resume
->=20
-> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops the
-> driver module refcount, __cpufreq_remove_dev() causes that refcount
-> to become negative after a suspend/resume cycle, for example.
->=20
-> To prevent this from happening make __cpufreq_remove_dev() put
-> the policy kobject only instead of calling cpufreq_cpu_put().
+> 
+> Modify acpi_device_set_power() so that diagnostic messages printed by
+> it to the kernel log always contain the name of the device concerned
+> to make it possible to identify the device that triggered the message
+> if need be.
+> 
+> Also replace printk(KERN_WARNING ) with dev_warn() everywhere in that
+> function.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/acpi/device_pm.c |   22 ++++++++++------------
+>  1 file changed, 10 insertions(+), 12 deletions(-)
+> 
+> Index: linux-pm/drivers/acpi/device_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/device_pm.c
+> +++ linux-pm/drivers/acpi/device_pm.c
+> @@ -166,20 +166,20 @@ int acpi_device_set_power(struct acpi_de
+>  	/* Make sure this is a valid target state */
+>  
+>  	if (state == device->power.state) {
+> -		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device is already at %s\n",
+> +		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] already in %s\n",
+> +				  device->pnp.bus_id,
+>  				  acpi_power_state_string(state)));
+>  		return 0;
+>  	}
+>  
+>  	if (!device->power.states[state].flags.valid) {
+> -		printk(KERN_WARNING PREFIX "Device does not support %s\n",
+> -		       acpi_power_state_string(state));
+> +		dev_warn(&device->dev, "Power state %s not supported\n",
+> +			 acpi_power_state_string(state));
+>  		return -ENODEV;
+>  	}
+>  	if (device->parent && (state < device->parent->power.state)) {
+> -		printk(KERN_WARNING PREFIX
+> -			      "Cannot set device to a higher-powered"
+> -			      " state than parent\n");
+> +		dev_warn(&device->dev, "Cannot transition to a higher-powered "
+> +			 "state than parent\n");
 
-Having a deeper look at it, though, I see that in fact the whole
-cpufreq_cpu_put() is needed if the CPU is not the last one for the give=
-n
-policy and is not needed at all otherwise (as described in the changelo=
-g
-of the patch below).
+I think the state information would also be useful here:
 
-Srivatsa, does this make sense to you?
+		dev_warn(&device->dev, "Cannot transition to a higher-powereed "
+		         "state %d than paeren's state %d\n", state,
+			 device->parent->power.state);
 
-Rafael
+Thanks,
+Aaron
 
-
----
-=46rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: cpufreq: Fix cpufreq driver module refcount balance after susp=
-end/resume
-
-Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops the
-driver module refcount, __cpufreq_remove_dev() causes that refcount
-to become negative for the acpi-cpufreq driver after a suspend/resume
-cycle.
-
-This is not the only bad thing that happens there, however, because
-kobject_put() should only be called for the policy kobject at this
-point if the CPU is not the last one for that policy.
-
-Namely, if the given CPU is the last one for that policy, the
-policy kobject's refcount should be 1 at this point, as set by
-cpufreq_add_dev_interface(), and only needs to be dropped once for
-the kobject to go away.  This actually happens under the cpu =3D=3D 1
-check, so it need not be done before by cpufreq_cpu_put().
-
-On the other hand, if the given CPU is not the last one for that
-policy, this means that cpufreq_add_policy_cpu() has been called
-at least once for that policy and cpufreq_cpu_get() has been
-called for it too.  To balance that cpufreq_cpu_get(), we need to
-call pufreq_cpu_put() in that case.
-
-Thus, to fix the described problem and keep the reference
-counters balanced in both cases, move the cpufreq_cpu_get() call
-in __cpufreq_remove_dev() to the code path executed only for
-CPUs that share the policy with other CPUs.
-
-Reported-by: Toralf F=C3=B6rster <toralf.foerster@gmx.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1181,7 +1181,6 @@ static int __cpufreq_remove_dev(struct d
- 		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
-=20
- 	pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
--	cpufreq_cpu_put(data);
-=20
- 	/* If cpu is last user of policy, free policy */
- 	if (cpus =3D=3D 1) {
-@@ -1205,9 +1204,12 @@ static int __cpufreq_remove_dev(struct d
- 		free_cpumask_var(data->related_cpus);
- 		free_cpumask_var(data->cpus);
- 		kfree(data);
--	} else if (cpufreq_driver->target) {
--		__cpufreq_governor(data, CPUFREQ_GOV_START);
--		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
-+	} else {
-+		cpufreq_cpu_put(data);
-+		if (cpufreq_driver->target) {
-+			__cpufreq_governor(data, CPUFREQ_GOV_START);
-+			__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
-+		}
- 	}
-=20
- 	per_cpu(cpufreq_policy_cpu, cpu) =3D -1;
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -192,8 +192,8 @@ int acpi_device_set_power(struct acpi_de
+>  
+>  	if (state < device->power.state && state != ACPI_STATE_D0
+>  	    && device->power.state >= ACPI_STATE_D3_HOT) {
+> -		printk(KERN_WARNING PREFIX
+> -			"Cannot transition to non-D0 state from D3\n");
+> +		dev_warn(&device->dev,
+> +			 "Cannot transition to non-D0 state from D3\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -220,10 +220,8 @@ int acpi_device_set_power(struct acpi_de
+>  
+>   end:
+>  	if (result) {
+> -		printk(KERN_WARNING PREFIX
+> -			      "Device [%s] failed to transition to %s\n",
+> -			      device->pnp.bus_id,
+> -			      acpi_power_state_string(state));
+> +		dev_warn(&device->dev, "Failed to change power state to %s\n",
+> +			 acpi_power_state_string(state));
+>  	} else {
+>  		device->power.state = state;
+>  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
