@@ -1,86 +1,89 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 7/7] cpufreq: Perform light-weight init/teardown during
- suspend/resume
-Date: Tue, 30 Jul 2013 04:25:25 +0530
-Message-ID: <20130729225519.20863.61030.stgit@srivatsabhat.in.ibm.com>
-References: <20130729225213.20863.56722.stgit@srivatsabhat.in.ibm.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH 1/3] ACPI / PM: Only set power states of devices that
+ are power manageable
+Date: Tue, 30 Jul 2013 07:43:48 +0800
+Message-ID: <51F6FE34.2020703@intel.com>
+References: <10433383.dueoNg39qi@vostro.rjw.lan> <1657971.1utElu0Hzo@vostro.rjw.lan> <51F677B1.9090502@intel.com> <3386345.rYEkrXssx8@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130729225213.20863.56722.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com
-Cc: stern@rowland.harvard.edu, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <3386345.rYEkrXssx8@vostro.rjw.lan>
+Sender: linux-ide-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have the infrastructure to perform a light-weight init/tear-down,
-use that in the cpufreq CPU hotplug notifier when invoked from the
-suspend/resume path.
+On 07/30/2013 06:21 AM, Rafael J. Wysocki wrote:
+> On Monday, July 29, 2013 10:09:53 PM Aaron Lu wrote:
+>> On 07/27/2013 09:10 PM, Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> Make acpi_device_set_power() check if the given device is power
+>>> manageable before checking if the given power state is valid for that
+>>> device.  Otherwise it will print that "Device does not support" that
+>>> power state into the kernel log, which may not make sense for some
+>>> power states (D0 and D3cold are supported by all devices by
+>>> definition).
+>>
+>> It will not print "Device does not support" that power state if that
+>> power state is D0 or D3cold since we have unconditionally set those two
+>> power state's valid flag.
+> 
+> So you didn't actually looked at acpi_bus_get_power_flags() that set the
+> power.states[].flags.valid flag, because If you had looked at it, you would
+> have seen that that's not the case.
+> 
+> No, we don't set the valid flag for devices that aren't power manageable
+> (i.e. have flags.power_manageable unset), which is the *whole* *point* of
+> this change.
 
-This also ensures that the file permissions of the cpufreq sysfs files are
-preserved across suspend/resume, something which commit a66b2e (cpufreq:
-Preserve sysfs files across suspend/resume) originally intended to do, but
-had to be reverted due to other problems.
+Right, I missed this. Sorry for the noise.
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
+> 
+>> OTOH, what value should we return for a device node that is not power
+>> manageable in acpi_device_set_power when the target state is D0 or D3
+>> cold? The old behavior is to return 0, meanning success without taking
+>> any actual action.
+>>
+>> In acpi_bus_set_power, if the device is not power manageable, we will
+>> return -ENODEV; in acpi_dev_pm_full/low_power, we will return 0 as in
+>> the original acpi_device_set_power. So return -EINVAL here is correct?
+> 
+> No, the original acpi_device_set_power() will return -ENODEV then, but
+> in my opinion returning -EINVAL is more accurate, because "power
+> manageable" means "you can change power state of it".
 
- drivers/cpufreq/cpufreq.c       |   18 +++++++++++-------
- drivers/cpufreq/cpufreq_stats.c |    2 --
- 2 files changed, 11 insertions(+), 9 deletions(-)
+Shall I prepare a patch to update the errno in acpi_bus_set_power?
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4c5ad4a..170d344 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2028,22 +2028,26 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
- {
- 	unsigned int cpu = (unsigned long)hcpu;
- 	struct device *dev;
-+	bool frozen = false;
- 
- 	dev = get_cpu_device(cpu);
- 	if (dev) {
--		switch (action) {
-+
-+		if (action & CPU_TASKS_FROZEN)
-+			frozen = true;
-+
-+		switch (action & ~CPU_TASKS_FROZEN) {
- 		case CPU_ONLINE:
--		case CPU_ONLINE_FROZEN:
--			cpufreq_add_dev(dev, NULL);
-+			__cpufreq_add_dev(dev, NULL, frozen);
- 			cpufreq_update_policy(cpu);
- 			break;
-+
- 		case CPU_DOWN_PREPARE:
--		case CPU_DOWN_PREPARE_FROZEN:
--			__cpufreq_remove_dev(dev, NULL, false);
-+			__cpufreq_remove_dev(dev, NULL, frozen);
- 			break;
-+
- 		case CPU_DOWN_FAILED:
--		case CPU_DOWN_FAILED_FROZEN:
--			cpufreq_add_dev(dev, NULL);
-+			__cpufreq_add_dev(dev, NULL, frozen);
- 			break;
- 		}
- 	}
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index bc73be2..cb38413 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -349,11 +349,9 @@ static int cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 
- 	switch (action) {
- 	case CPU_DOWN_PREPARE:
--	case CPU_DOWN_PREPARE_FROZEN:
- 		cpufreq_stats_free_sysfs(cpu);
- 		break;
- 	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
- 		cpufreq_stats_free_table(cpu);
- 		break;
- 	}
+Thanks,
+Aaron
+
+> 
+> Thanks,
+> Rafael
+> 
+> 
+>>> Tested-by: Yinghai Lu <yinghai@kernel.org>
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>  drivers/acpi/device_pm.c |    3 ++-
+>>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>>
+>>> Index: linux-pm/drivers/acpi/device_pm.c
+>>> ===================================================================
+>>> --- linux-pm.orig/drivers/acpi/device_pm.c
+>>> +++ linux-pm/drivers/acpi/device_pm.c
+>>> @@ -159,7 +159,8 @@ int acpi_device_set_power(struct acpi_de
+>>>  	int result = 0;
+>>>  	bool cut_power = false;
+>>>  
+>>> -	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
+>>> +	if (!device || !device->flags.power_manageable
+>>> +	    || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
+>>>  		return -EINVAL;
+>>>  
+>>>  	/* Make sure this is a valid target state */
+>>>
+>>
+
