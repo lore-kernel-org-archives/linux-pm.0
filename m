@@ -1,50 +1,210 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: stable 3-10-3: strange output of "lsmod | grep ^acpi_cpufreq"
-Date: Mon, 29 Jul 2013 15:14:08 +0530
-Message-ID: <51F63968.6060604@linux.vnet.ibm.com>
-References: <51F40612.2050403@gmx.de>	<2111514.pxW5saG1J3@vostro.rjw.lan> <18359786.D7glpto546@vostro.rjw.lan>	<2368277.VjYrsHUseA@vostro.rjw.lan> <CAOh2x=n0-a9amv5cfwOotvCnhNksnNZOSVp4jWk400z71UQeWQ@mail.gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 4/5] cpuidle/ppc: CPU goes tickless if there are no
+ arch-specific constraints
+Date: Mon, 29 Jul 2013 15:41:56 +0530
+Message-ID: <51F63FEC.2050409@linux.vnet.ibm.com>
+References: <20130725090016.12500.28888.stgit@preeti.in.ibm.com> <20130725090302.12500.42998.stgit@preeti.in.ibm.com> <20130725133044.GA7400@somewhere> <51F1E15B.3050106@linux.vnet.ibm.com> <1374906605.3795.11.camel@pasglop> <51F37BCD.706@linux.vnet.ibm.com> <20130729052810.GB8832@dirshya.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=n0-a9amv5cfwOotvCnhNksnNZOSVp4jWk400z71UQeWQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:52277 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752906Ab3G2KOo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2013 06:14:44 -0400
+Received: from /spool/local
+	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Mon, 29 Jul 2013 20:02:00 +1000
+In-Reply-To: <20130729052810.GB8832@dirshya.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: svaidy@linux.vnet.ibm.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com, shangw@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, geoff@infradead.org, Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, paul.gortmaker@windriver.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, john.stultz@linaro.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com
 
-On 07/29/2013 01:21 PM, Viresh Kumar wrote:
-> On Mon, Jul 29, 2013 at 4:50 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> Having a deeper look at it, though, I see that in fact the whole
->> cpufreq_cpu_put() is needed if the CPU is not the last one for the given
->> policy and is not needed at all otherwise (as described in the changelog
->> of the patch below).
+Hi,
+
+On 07/29/2013 10:58 AM, Vaidyanathan Srinivasan wrote:
+> * Preeti U Murthy <preeti@linux.vnet.ibm.com> [2013-07-27 13:20:37]:
+> 
+>> Hi Ben,
 >>
->> Srivatsa, does this make sense to you?
-> 
-> It makes atleast to me :)
-> 
->> This is not the only bad thing that happens there, however, because
->> kobject_put() should only be called for the policy kobject at this
->> point if the CPU is not the last one for that policy.
+>> On 07/27/2013 12:00 PM, Benjamin Herrenschmidt wrote:
+>>> On Fri, 2013-07-26 at 08:09 +0530, Preeti U Murthy wrote:
+>>>> *The lapic of a broadcast CPU is active always*. Say CPUX, wants the
+>>>> broadcast CPU to wake it up at timeX.  Since we cannot program the lapic
+>>>> of a remote CPU, CPUX will need to send an IPI to the broadcast CPU,
+>>>> asking it to program its lapic to fire at timeX so as to wake up CPUX.
+>>>> *With multiple CPUs the overhead of sending IPI, could result in
+>>>> performance bottlenecks and may not scale well.*
+>>>>
+>>>> Hence the workaround is that the broadcast CPU on each of its timer
+>>>> interrupt checks if any of the next timer event of a CPU in deep idle
+>>>> state has expired, which can very well be found from dev->next_event of
+>>>> that CPU. For example the timeX that has been mentioned above has
+>>>> expired. If so the broadcast handler is called to send an IPI to the
+>>>> idling CPU to wake it up.
+>>>>
+>>>> *If the broadcast CPU, is in tickless idle, its timer interrupt could be
+>>>> many ticks away. It could miss waking up a CPU in deep idle*, if its
+>>>> wakeup is much before this timer interrupt of the broadcast CPU. But
+>>>> without tickless idle, atleast at each period we are assured of a timer
+>>>> interrupt. At which time broadcast handling is done as stated in the
+>>>> previous paragraph and we will not miss wakeup of CPUs in deep idle states.
+>>>
+>>> But that means a great loss of power saving on the broadcast CPU when the machine
+>>> is basically completely idle. We might be able to come up with some thing better.
+>>>
+>>> (Note : I do no know the timer offload code if it exists already, I'm describing
+>>> how things could happen "out of the blue" without any knowledge of pre-existing
+>>> framework here)
+>>>
+>>> We can know when the broadcast CPU expects to wake up next. When a CPU goes to
+>>> a deep sleep state, it can then
+>>>
+>>>  - Indicate to the broadcast CPU when it intends to be woken up by queuing
+>>> itself into an ordered queue (ordered by target wakeup time). (OPTIMISATION:
+>>> Play with the locality of that: have one queue (and one "broadcast CPU") per
+>>> chip or per node instead of a global one to limit cache bouncing).
+>>>
+>>>  - Check if that happens before the broadcast CPU intended wake time (we
+>>> need statistics to see how often that happens), and in that case send an IPI
+>>> to wake it up now. When the broadcast CPU goes to sleep, it limits its sleep
+>>> time to the min of it's intended sleep time and the new sleeper time.
+>>> (OPTIMISATION: Dynamically chose a broadcast CPU based on closest expiry ?)
+>>>
+>>>  - We can probably limit spurrious wakeups a *LOT* by aligning that target time
+>>> to a global jiffy boundary, meaning that several CPUs going to idle are likely
+>>> to be choosing the same. Or maybe better, an adaptative alignment by essentially
+>>> getting more coarse grained as we go further in the future
+>>>
+>>>  - When the "broadcast" CPU goes to sleep, it can play the same game of alignment.
+>>>
+>>> I don't like the concept of a dedicated broadcast CPU however. I'd rather have a
+>>> general queue (or per node) of sleepers needing a wakeup and more/less dynamically
+>>> pick a waker to be the last man standing, but it does make things a bit more
+>>> tricky with tickless scheduler (non-idle).
+>>>
+>>> Still, I wonder if we could just have some algorithm to actually pick wakers
+>>> more dynamically based on who ever has the closest "next wakeup" planned,
+>>> that sort of thing. A fixed broadcaster will create an imbalance in
+>>> power/thermal within the chip in addition to needing to be moved around on
+>>> hotplug etc...
 >>
->> Namely, if the given CPU is the last one for that policy, the
->> policy kobject's refcount should be 1 at this point, as set by
->> cpufreq_add_dev_interface(), and only needs to be dropped once for
->> the kobject to go away.  This actually happens under the cpu == 1
->> check, so it need not be done before by cpufreq_cpu_put().
+>> Thank you for having listed out the above suggestions. Below, I will
+>> bring out some ideas about how the concerns that you have raised can be
+>> addressed in the increasing order of priority.
+>>
+>> - To begin with, I think we can have the following model to have the
+>> responsibility of the broadcast CPU float around certain CPUs. i.e. Not
+>> have a dedicated broadcast CPU. I will refer to the broadcast CPU as the
+>> bc_cpu henceforth for convenience.
+>>
+>> 1. The first CPU that intends to enter deep sleep state will be the bc_cpu.
+>>
+>> 2. Every other CPU that intends to enter deep idle state will enter
+>> themselves into a mask, say the bc_mask, which is already being done
+>> today, after they check that a bc_cpu has been assigned.
+>>
+>> 3. The bc_cpu should not enter tickless idle, until step 5a holds true.
+>>
+>> 4. So on every timer interrupt, which is at-least every period, it
+>> checks the bc_mask to see if any CPUs need to be woken up.
+>>
+>> 5. The bc cpu should not enter tickless idle *until* it is de-nominated
+>> as the bc_cpu. The de-nomination occurs when:
+>>   a. In one of its timer interrupts, it does broadcast handling to find
+>> out that there are no CPUs to be woken up.
+>>
+>> 6. So if 5a holds, then there is no bc_cpu anymore until a CPU decides
+>> to enter deep idle state again, in which case steps 1 to 5 repeat.
+>>
+>>
+>> - We could optimize this further, to allow the bc_cpu to enter tickless
+>> idle, even while it is nominated as one. This can be the next step, if
+>> we can get the above to work stably.
+>>
+>> You have already brought out this point, so I will just reword it. Each
+>> time broadcast handling is done, the bc_cpu needs to check if the wakeup
+>> time of a CPU, that has entered deep idle state, and is yet to be woken
+>> up, is before the bc_cpu's wakeup time, which was programmed to its
+>> local events.
+>>
+>> If so, then reprogram the decrementer to the wakeup time of a CPU that
+>> is in deep idle state.
+>>
+>> But we need to keep in mind one point. When CPUs go into deep idle, they
+>> cannot program the local timer of the bc_cpu to their wakeup time. This
+>> is because a CPU cannot program the timer of a remote CPU.
+>>
+>> Therefore the only time we can check if 'wakeup time of the CPU that
+>> enters deep idle state is before broadcast CPU's intended wake time so
+>> as to reprogram the decrementer', is in the broadcast handler itself,
+>> which is done *on* the bc_cpu alone.
+>>
+>>
+>>
+>> What do you think?
+>>
+>>
+>> - Coming to your third suggestion of aligning the wakeup time of CPUs, I
+>> will spend some time on this and get back regarding the same.
 > 
-> But I see one more issue with this code. For the last cpu we are just
-> calling kobject_put() and not cpufreq_cpu_put() and hence call to
-> module_put() is skipped. I am not sure, but that will probably cause
-> a problem when we try to rmmod the module? But which module then?
-> As we can't compile cpufreq.c as module.. So, is this part of code junk?
-> And so can be removed?
+> Hi Preeti,
 > 
+> One of Ben's suggestions is to coarse grain the waker's timer event.
+> The trade off is whether we issue an IPI for each CPU needing a wakeup
+> or let the bc_cpu wakeup periodically and *see* that there is a new
+> request.  The interval for a wakeup request will be much coarse grain
+> than a tick.  We maybe able to easily reduce the power impact of not
+> letting bc_cpu go tickless by choosing a right coarse grain period.
+> For example we can let the bc_cpu look for new wakeup requests once in
+> every 10 or 20 jiffies rather than every jiffy and align the wakeup
+> requests at this coarse grain wakeup.  We do pay a power penalty by
+> waking up few jiffies earlier which we can mitigate by reevaluating
+> the situation and queueing a fine grain timer to the right jiffy on
+> the bc_cpu if such a situation arises.
+> 
+> The point is a new wakeup request will *ask* for a wakeup later than
+> the coarse grain period.  So the bc_cpu can wakeup at the coarse time
+> period and reprogram its timer to the right jiffy.
+> 
+> --Vaidy
 
-I tried to address this concern in my other mail to Rafael. (Sorry I
-forgot to CC you on that!). Let me know what you think of that solution.
+Thanks Ben, Vaidy for your suggestions.
 
-Regards,
-Srivatsa S. Bhat
+I will work on the second version of this patchset, which will address
+two major issues that are brought out in this thread:
+
+1. Dynamically choosing a broadcast CPU and floating this responsibility
+around. This could have a lot of scope for optimization. and can be done
+in steps. To begin with we could have the first CPU that sleeps to be
+nominated the broadcast CPU. It would be relieved of this duty when
+there are no more CPUs in deep idle states to be woken up. The next time
+a CPU enters deep idle it will be nominated as the broadcast CPU.
+
+However although the above will address the problems associated with a
+dedicated broadcast CPU, it still does not solve the issue with
+broadcast CPU having to refrain from entering tickless idle.
+
+Point 2 will address this issue to an extent.
+
+2. Have a timer on the broadcast CPU, that is specifically intended to
+wake up CPUs in deep idle states. This timer will have a fixed period
+much larger than a jiffy, a period sufficient enough not to miss wakeup
+of CPUs in deep idle states. But if the wakeup of a CPU in deep idle is
+smaller than this fixed period, it will send an IPI to the broadcast CPU
+to reprogram its decrementer for this wakeup. This will allow the
+broadcast CPU to enter tickless idle.
+
+This is as opposed to the current approach where we have the broadcast
+CPU waking up every periodic tick to check if broadcast is required.
+
+Do let me know if there are points that are missed, which need to be
+considered as pressing next steps.
+
+Thank you
+
+Regards
+Preeti U Murthy
 
