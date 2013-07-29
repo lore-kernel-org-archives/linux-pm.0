@@ -1,64 +1,190 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 4/7] cpuidle: calxeda: add support to use PSCI calls
-Date: Mon, 29 Jul 2013 16:46:40 +0200
-Message-ID: <51F68050.5070107@linaro.org>
-References: <1375048598-15637-1-git-send-email-robherring2@gmail.com> <1375048598-15637-5-git-send-email-robherring2@gmail.com> <51F678DB.3030308@linaro.org> <51F67EA8.8010603@gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: stable 3-10-3: strange output of  "lsmod | grep ^acpi_cpufreq"
+Date: Mon, 29 Jul 2013 20:57:20 +0530
+Message-ID: <51F689D8.1050902@linux.vnet.ibm.com>
+References: <51F40612.2050403@gmx.de> <10771278.LGR8ezfsZF@vostro.rjw.lan> <51F65599.6050209@linux.vnet.ibm.com> <1459225.4vzj4GkXXt@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f173.google.com ([209.85.215.173]:45897 "EHLO
-	mail-ea0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751928Ab3G2Oqk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2013 10:46:40 -0400
-Received: by mail-ea0-f173.google.com with SMTP id g10so2982735eak.32
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2013 07:46:39 -0700 (PDT)
-In-Reply-To: <51F67EA8.8010603@gmail.com>
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:59444 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751560Ab3G2PcB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2013 11:32:01 -0400
+Received: from /spool/local
+	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 30 Jul 2013 01:25:14 +1000
+In-Reply-To: <1459225.4vzj4GkXXt@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 07/29/2013 04:39 PM, Rob Herring wrote:
-> On 07/29/2013 09:14 AM, Daniel Lezcano wrote:
->> On 07/28/2013 11:56 PM, Rob Herring wrote:
->>> From: Rob Herring <rob.herring@calxeda.com>
+On 07/29/2013 05:34 PM, Rafael J. Wysocki wrote:
+> On Monday, July 29, 2013 05:14:25 PM Srivatsa S. Bhat wrote:
+>> On 07/29/2013 05:19 PM, Rafael J. Wysocki wrote:
+>>> On Monday, July 29, 2013 03:11:45 PM Srivatsa S. Bhat wrote:
+>>>> On 07/29/2013 04:50 AM, Rafael J. Wysocki wrote:
+>>>>> On Monday, July 29, 2013 12:43:59 AM Rafael J. Wysocki wrote:
+>>>>>> On Monday, July 29, 2013 12:11:18 AM Rafael J. Wysocki wrote:
+>>>>>>> On Sunday, July 28, 2013 12:21:22 PM Toralf F=C3=B6rster wrote:
+>>>>>>>> On 07/28/2013 01:39 AM, Rafael J. Wysocki wrote:
+>>>>>>>>> On Saturday, July 27, 2013 07:40:34 PM Toralf F=C3=B6rster wr=
+ote:
+>>>>>>>>>> it gives at a ThinkPad T420:
+>>>>>>>>>>
+>>>>>>>>>> tfoerste@n22 ~/tmp $ lsmod | grep ^acpi_cpufreq
+>>>>>>>>>> acpi_cpufreq           12902  2147483647
+>>>>>>>>>
+>>>>>>>>> That is -1, which indicates some module refcount woes.
+>>>>>>>>
+>>>>>>>> yes, ofc.
+>>>>>>>>
+>>>>>>>> The issue apears after 1 s2ram/resume cycle, before s2ram the =
+refcount is 1.
+>>>>>>>>
+>>>>>>>>> I definitely can't see that with the mainline on my machines.
+>>>>>>>>
+>>>>>>>> It is in mainline too.
+>>>>>>>
+>>>>>>> Does the appended patch help?
+>>>>>>
+>>>>>> Actually, something as simple as this also should help:
+>>>>>>
+>>>>>> ---
+>>>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>>> Subject: cpufreq: Fix cpufreq driver module refcount balance aft=
+er suspend/resume
+>>>>>>
+>>>>>> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops t=
+he
+>>>>>> driver module refcount, __cpufreq_remove_dev() causes that refco=
+unt
+>>>>>> to become negative after a suspend/resume cycle, for example.
+>>>>>>
+>>>>>> To prevent this from happening make __cpufreq_remove_dev() put
+>>>>>> the policy kobject only instead of calling cpufreq_cpu_put().
+>>>>>
+>>>>> Having a deeper look at it, though, I see that in fact the whole
+>>>>> cpufreq_cpu_put() is needed if the CPU is not the last one for th=
+e given
+>>>>> policy and is not needed at all otherwise (as described in the ch=
+angelog
+>>>>> of the patch below).
+>>>>>
+>>>>> Srivatsa, does this make sense to you?
+>>>>>
+>>>>
+>>>> Code-wise, your patch looks good to me. But one thing in the exist=
+ing code
+>>>> struck me as a little strange.
+>>>>
+>>>> I'm assuming that the module_get() is used in the cpufreq core to =
+ensure that
+>>>> until the cpufreq core is managing (atleast one) CPU(s), the cpufr=
+eq backend
+>>>> driver module (eg: acpi-cpufreq) can't be removed.
 >>>
->>> This updates the Calxeda cpuidle driver to use PSCI calls to powerg=
-ate
->>> cores. This is needed to enable cpuidle for the ECX-2000.
+>>> Quite frankly, I'm not sure about that.  If that were the case,
+>>> cpufreq_add_dev() would not call module_put() which it does.
 >>>
->>> This could possibly become a generic PSCI driver, but there are no =
-other
->>> PSCI users in the kernel other than mach-virt.
+>>> That may be a bug, I agree, but that's not for the present release =
+cycle.  For
+>>> now, we need to ensure that the reference counts are *balanced* .
 >>>
->>> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
->>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Cc: linux-pm@vger.kernel.org
->>> ---
 >>
->> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->=20
-> Thanks.
->=20
+>> Sure, in that case, I agree that your patch is the right fix at this=
+ point,
+>> since it resolves the immediate problem that we have with the refcou=
+nts.
 >>
->> Rob,
->>
->> Shall I take the patch in my tree ?
+>> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 >=20
-> No, there are interdependencies with the rest of the series, so I pla=
-n
-> to send to arm-soc.
+> Great, thanks!
+>=20
+> Does your patchset avoiding the creation/removal of sysfs directories=
+ over
+> suspend/resume need to be modified to take this patch into account?
+>=20
 
-Ok, thanks.
+There will be some trivial conflicts, but looking a bit closer at my pa=
+tchset,
+I believe it has a subtle refcounting bug, relating to patches 6 and 7.
+
+Patch 6: http://marc.info/?l=3Dlinux-kernel&m=3D137358141628042&w=3D2
+Patch 7: http://marc.info/?l=3Dlinux-pm&m=3D137358124527993&w=3D2
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Patch 6 modifies cpufreq_add_policy_cpu() to return 0 if frozen =3D=3D =
+true.
+But by that time, it would have already done a cpufreq_cpu_get().
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+In patch 7, under __cpufreq_remove_dev(), we avoid dropping refcounts
+for *any* CPU when frozen =3D=3D true.
+
+In the general case, this is fine (like myself and Viresh had discussed
+earlier in that thread), because __cpufreq_add_dev() doesn't increment =
+the
+refcount in the frozen case.
+
+But we overlooked a rather subtle scenario: say, CPU 'X' went through
+cpufreq_add_dev in the resume path, and restored its policy structure.
+Since this was fresh, no refcount was taken. And then CPU 'Y' came alon=
+g,
+but it was related to CPU 'X', so it will take this path:
+
+1018         /* Check if this cpu was hot-unplugged earlier and has sib=
+lings */
+1019         read_lock_irqsave(&cpufreq_driver_lock, flags);
+1020         for_each_online_cpu(sibling) {
+1021                 struct cpufreq_policy *cp =3D per_cpu(cpufreq_cpu_=
+data, sibling);
+1022                 if (cp && cpumask_test_cpu(cpu, cp->related_cpus))=
+ {
+1023                         read_unlock_irqrestore(&cpufreq_driver_loc=
+k, flags);
+1024                         return cpufreq_add_policy_cpu(cpu, sibling=
+, dev,
+1025                                                       frozen);
+1026                 }
+1027         }
+
+This time, cp won't be NULL for CPU 'X', because its policy was restore=
+d
+in the previous call. So we end up calling cpufreq_add_policy_cpu() for
+CPU 'Y'. And that function takes a new refcount, as mentioned above.
+
+So we need to have this extra hunk in cpufreq_add_policy_cpu() to ensur=
+e
+we don't take any additional refcounts during suspend/resume:
+
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index c7f59e8..9681c01 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -932,8 +932,11 @@ static int cpufreq_add_policy_cpu(unsigned int cpu=
+, unsigned int sibling,
+ 	}
+=20
+ 	/* Don't touch sysfs links during light-weight init */
+-	if (frozen)
++	if (frozen) {
++		/* Drop the extra refcount that we took above */
++		cpufreq_cpu_put(policy);
+ 		return 0;
++	}
+=20
+ 	ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+ 	if (ret)
+
+
+I can respin my entire patchset with this fix included, on top of your
+patch. Please let me know if you'd prefer some other method for resolvi=
+ng
+this.
+
+Regards,
+Srivatsa S. Bhat
 
