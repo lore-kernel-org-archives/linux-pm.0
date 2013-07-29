@@ -1,80 +1,72 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] ACPI / PM: Only set power states of devices that are power manageable
-Date: Tue, 30 Jul 2013 00:21:28 +0200
-Message-ID: <3386345.rYEkrXssx8@vostro.rjw.lan>
-References: <10433383.dueoNg39qi@vostro.rjw.lan> <1657971.1utElu0Hzo@vostro.rjw.lan> <51F677B1.9090502@intel.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/7] Cpufreq, cpu hotplug, suspend/resume related fixes
+Date: Tue, 30 Jul 2013 04:23:12 +0530
+Message-ID: <20130729225213.20863.56722.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <51F677B1.9090502@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:39137 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755064Ab3G2W4z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2013 18:56:55 -0400
+Received: from /spool/local
+	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 30 Jul 2013 04:18:10 +0530
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl, viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com
+Cc: stern@rowland.harvard.edu, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, July 29, 2013 10:09:53 PM Aaron Lu wrote:
-> On 07/27/2013 09:10 PM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Make acpi_device_set_power() check if the given device is power
-> > manageable before checking if the given power state is valid for that
-> > device.  Otherwise it will print that "Device does not support" that
-> > power state into the kernel log, which may not make sense for some
-> > power states (D0 and D3cold are supported by all devices by
-> > definition).
-> 
-> It will not print "Device does not support" that power state if that
-> power state is D0 or D3cold since we have unconditionally set those two
-> power state's valid flag.
 
-So you didn't actually looked at acpi_bus_get_power_flags() that set the
-power.states[].flags.valid flag, because If you had looked at it, you would
-have seen that that's not the case.
+Hi,
 
-No, we don't set the valid flag for devices that aren't power manageable
-(i.e. have flags.power_manageable unset), which is the *whole* *point* of
-this change.
+This patchset reorganizes the cpufreq code and preserves the file permissions
+of cpufreq-related per-cpu sysfs files across suspend/resume cycles, by
+performing a light-weight init/teardown in those paths.
 
-> OTOH, what value should we return for a device node that is not power
-> manageable in acpi_device_set_power when the target state is D0 or D3
-> cold? The old behavior is to return 0, meanning success without taking
-> any actual action.
-> 
-> In acpi_bus_set_power, if the device is not power manageable, we will
-> return -ENODEV; in acpi_dev_pm_full/low_power, we will return 0 as in
-> the original acpi_device_set_power. So return -EINVAL here is correct?
+Patches 1 - 4 reorganize the code and have no functional impact, and can go
+in as general cleanups as well. This reorganization builds a base that the
+rest of the patches will make use of.
 
-No, the original acpi_device_set_power() will return -ENODEV then, but
-in my opinion returning -EINVAL is more accurate, because "power
-manageable" means "you can change power state of it".
+Patch 5 and 6 add a mechanism to perform light-weight init/tear-down of CPUs
+in the cpufreq subsystem and finally patch 7 uses it to preserve sysfs files
+across suspend/resume.
+
+All the patches apply on Rafael's bleeding-edge branch on linux-pm git
+tree[1].
+
+
+Changes in v2:
+* Fixed a refcounting bug explained here:
+  http://marc.info/?l=linux-kernel&m=137511192600806&w=2
+
+* Addressed some suggestions about code reorganization received in v1.
+* Rebased on top of the bleeding-edge branch.
+
+
+[1]. git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+
+Thank you very much!
+
+
+ Srivatsa S. Bhat (7):
+      cpufreq: Fix misplaced call to cpufreq_update_policy()
+      cpufreq: Add helper to perform alloc/free of policy structure
+      cpufreq: Extract non-interface related stuff from cpufreq_add_dev_interface
+      cpufreq: Extract the handover of policy cpu to a helper function
+      cpufreq: Introduce a flag ('frozen') to separate full vs temporary init/teardown
+      cpufreq: Preserve policy structure across suspend/resume
+      cpufreq: Perform light-weight init/teardown during suspend/resume
+
+
+ drivers/cpufreq/cpufreq.c       |  303 ++++++++++++++++++++++++++-------------
+ drivers/cpufreq/cpufreq_stats.c |    8 -
+ 2 files changed, 205 insertions(+), 106 deletions(-)
+
 
 Thanks,
-Rafael
+Srivatsa S. Bhat
+IBM Linux Technology Center
 
-
-> > Tested-by: Yinghai Lu <yinghai@kernel.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/acpi/device_pm.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-pm/drivers/acpi/device_pm.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/acpi/device_pm.c
-> > +++ linux-pm/drivers/acpi/device_pm.c
-> > @@ -159,7 +159,8 @@ int acpi_device_set_power(struct acpi_de
-> >  	int result = 0;
-> >  	bool cut_power = false;
-> >  
-> > -	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
-> > +	if (!device || !device->flags.power_manageable
-> > +	    || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
-> >  		return -EINVAL;
-> >  
-> >  	/* Make sure this is a valid target state */
-> > 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
