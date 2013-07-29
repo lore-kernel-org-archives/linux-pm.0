@@ -1,80 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/3] ACPI / PM: Make messages in acpi_device_set_power() print device names
-Date: Mon, 29 Jul 2013 14:20:07 +0200
-Message-ID: <4285597.UpTJrMA8Fu@vostro.rjw.lan>
-References: <10433383.dueoNg39qi@vostro.rjw.lan> <1895563.95T8SxMegu@vostro.rjw.lan> <51F5D390.5040506@intel.com>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Subject: Re: [PATCH 2/3] ACPI / PM: Make messages in acpi_device_set_power()
+ print device names
+Date: Mon, 29 Jul 2013 16:16:31 +0400
+Message-ID: <51F65D1F.9050402@cogentembedded.com>
+References: <10433383.dueoNg39qi@vostro.rjw.lan> <CAOLK0pyBsD8vR0a2mcSucnD8zFTz8ZB72OPE0R9Z67SxH9VHRw@mail.gmail.com> <1375067513.2075.27.camel@joe-AO722> <1782275.A7JEhQIj8Q@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:45941 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678Ab3G2MJ5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 29 Jul 2013 08:09:57 -0400
-In-Reply-To: <51F5D390.5040506@intel.com>
+Received: from mail-la0-f47.google.com ([209.85.215.47]:51112 "EHLO
+	mail-la0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753863Ab3G2MQe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2013 08:16:34 -0400
+Received: by mail-la0-f47.google.com with SMTP id eo20so2360877lab.20
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2013 05:16:32 -0700 (PDT)
+In-Reply-To: <1782275.A7JEhQIj8Q@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Joe Perches <joe@perches.com>, Lan Tianyu <lantianyu1986@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
 
-On Monday, July 29, 2013 10:29:36 AM Aaron Lu wrote:
-> On 07/27/2013 09:11 PM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Modify acpi_device_set_power() so that diagnostic messages printed by
-> > it to the kernel log always contain the name of the device concerned
-> > to make it possible to identify the device that triggered the message
-> > if need be.
-> > 
-> > Also replace printk(KERN_WARNING ) with dev_warn() everywhere in that
-> > function.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/acpi/device_pm.c |   22 ++++++++++------------
-> >  1 file changed, 10 insertions(+), 12 deletions(-)
-> > 
-> > Index: linux-pm/drivers/acpi/device_pm.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/acpi/device_pm.c
-> > +++ linux-pm/drivers/acpi/device_pm.c
-> > @@ -166,20 +166,20 @@ int acpi_device_set_power(struct acpi_de
-> >  	/* Make sure this is a valid target state */
-> >  
-> >  	if (state == device->power.state) {
-> > -		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device is already at %s\n",
-> > +		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] already in %s\n",
-> > +				  device->pnp.bus_id,
-> >  				  acpi_power_state_string(state)));
-> >  		return 0;
-> >  	}
-> >  
-> >  	if (!device->power.states[state].flags.valid) {
-> > -		printk(KERN_WARNING PREFIX "Device does not support %s\n",
-> > -		       acpi_power_state_string(state));
-> > +		dev_warn(&device->dev, "Power state %s not supported\n",
-> > +			 acpi_power_state_string(state));
-> >  		return -ENODEV;
-> >  	}
-> >  	if (device->parent && (state < device->parent->power.state)) {
-> > -		printk(KERN_WARNING PREFIX
-> > -			      "Cannot set device to a higher-powered"
-> > -			      " state than parent\n");
-> > +		dev_warn(&device->dev, "Cannot transition to a higher-powered "
-> > +			 "state than parent\n");
-> 
-> I think the state information would also be useful here:
-> 
-> 		dev_warn(&device->dev, "Cannot transition to a higher-powereed "
-> 		         "state %d than paeren's state %d\n", state,
-> 			 device->parent->power.state);
+Hello.
 
-This is not the scope of this patch, please send another one on top of it.
+On 29-07-2013 16:17, Rafael J. Wysocki wrote:
 
-Thanks,
-Rafael
+[...]
 
+>>>> @@ -166,20 +166,20 @@ int acpi_device_set_power(struct acpi_de
+>> []
+>>>>          if (device->parent && (state < device->parent->power.state)) {
+>>>> -               printk(KERN_WARNING PREFIX
+>>>> -                             "Cannot set device to a higher-powered"
+>>>> -                             " state than parent\n");
+>>>> +               dev_warn(&device->dev, "Cannot transition to a higher-powered "
+>>>> +                        "state than parent\n");
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>> coalesce format please.
+
+> I can, but then it'll cross the 80 columns boundary.
+
+   It's not a problem with checkpatch.pl anymore. Contrariwise, it whines 
+about the broken up string literals, AFAIR.
+
+> Thanks,
+> Rafael
+
+WBR, Sergei
+
