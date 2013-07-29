@@ -1,190 +1,199 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: stable 3-10-3: strange output of  "lsmod | grep ^acpi_cpufreq"
-Date: Mon, 29 Jul 2013 20:57:20 +0530
-Message-ID: <51F689D8.1050902@linux.vnet.ibm.com>
-References: <51F40612.2050403@gmx.de> <10771278.LGR8ezfsZF@vostro.rjw.lan> <51F65599.6050209@linux.vnet.ibm.com> <1459225.4vzj4GkXXt@vostro.rjw.lan>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: stable 3-10-3: strange output of "lsmod | grep ^acpi_cpufreq"
+Date: Mon, 29 Jul 2013 19:23:35 +0200
+Message-ID: <51F6A517.8060502@gmx.de>
+References: <51F40612.2050403@gmx.de> <51F638D9.7050904@linux.vnet.ibm.com> <CAOh2x=nQL+8DNaSFOnvq9eVMse8-gDvW1gPqFtu+CT52JsG15A@mail.gmail.com> <1462209.u176D8q1Fr@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:59444 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751560Ab3G2PcB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2013 11:32:01 -0400
-Received: from /spool/local
-	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 30 Jul 2013 01:25:14 +1000
-In-Reply-To: <1459225.4vzj4GkXXt@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1462209.u176D8q1Fr@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 07/29/2013 05:34 PM, Rafael J. Wysocki wrote:
-> On Monday, July 29, 2013 05:14:25 PM Srivatsa S. Bhat wrote:
->> On 07/29/2013 05:19 PM, Rafael J. Wysocki wrote:
->>> On Monday, July 29, 2013 03:11:45 PM Srivatsa S. Bhat wrote:
->>>> On 07/29/2013 04:50 AM, Rafael J. Wysocki wrote:
->>>>> On Monday, July 29, 2013 12:43:59 AM Rafael J. Wysocki wrote:
->>>>>> On Monday, July 29, 2013 12:11:18 AM Rafael J. Wysocki wrote:
->>>>>>> On Sunday, July 28, 2013 12:21:22 PM Toralf F=C3=B6rster wrote:
->>>>>>>> On 07/28/2013 01:39 AM, Rafael J. Wysocki wrote:
->>>>>>>>> On Saturday, July 27, 2013 07:40:34 PM Toralf F=C3=B6rster wr=
-ote:
->>>>>>>>>> it gives at a ThinkPad T420:
->>>>>>>>>>
->>>>>>>>>> tfoerste@n22 ~/tmp $ lsmod | grep ^acpi_cpufreq
->>>>>>>>>> acpi_cpufreq           12902  2147483647
->>>>>>>>>
->>>>>>>>> That is -1, which indicates some module refcount woes.
->>>>>>>>
->>>>>>>> yes, ofc.
->>>>>>>>
->>>>>>>> The issue apears after 1 s2ram/resume cycle, before s2ram the =
-refcount is 1.
->>>>>>>>
->>>>>>>>> I definitely can't see that with the mainline on my machines.
->>>>>>>>
->>>>>>>> It is in mainline too.
->>>>>>>
->>>>>>> Does the appended patch help?
->>>>>>
->>>>>> Actually, something as simple as this also should help:
->>>>>>
->>>>>> ---
->>>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>>> Subject: cpufreq: Fix cpufreq driver module refcount balance aft=
-er suspend/resume
->>>>>>
->>>>>> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops t=
-he
->>>>>> driver module refcount, __cpufreq_remove_dev() causes that refco=
-unt
->>>>>> to become negative after a suspend/resume cycle, for example.
->>>>>>
->>>>>> To prevent this from happening make __cpufreq_remove_dev() put
->>>>>> the policy kobject only instead of calling cpufreq_cpu_put().
->>>>>
->>>>> Having a deeper look at it, though, I see that in fact the whole
->>>>> cpufreq_cpu_put() is needed if the CPU is not the last one for th=
-e given
->>>>> policy and is not needed at all otherwise (as described in the ch=
-angelog
->>>>> of the patch below).
->>>>>
->>>>> Srivatsa, does this make sense to you?
->>>>>
->>>>
->>>> Code-wise, your patch looks good to me. But one thing in the exist=
-ing code
->>>> struck me as a little strange.
->>>>
->>>> I'm assuming that the module_get() is used in the cpufreq core to =
-ensure that
->>>> until the cpufreq core is managing (atleast one) CPU(s), the cpufr=
-eq backend
->>>> driver module (eg: acpi-cpufreq) can't be removed.
->>>
->>> Quite frankly, I'm not sure about that.  If that were the case,
->>> cpufreq_add_dev() would not call module_put() which it does.
->>>
->>> That may be a bug, I agree, but that's not for the present release =
-cycle.  For
->>> now, we need to ensure that the reference counts are *balanced* .
->>>
+On 07/29/2013 01:54 PM, Rafael J. Wysocki wrote:
+> On Monday, July 29, 2013 04:52:39 PM Viresh Kumar wrote:
+>> On Mon, Jul 29, 2013 at 3:11 PM, Srivatsa S. Bhat
+>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>> I'm assuming that the module_get() is used in the cpufreq core to e=
+nsure that
+>>> until the cpufreq core is managing (atleast one) CPU(s), the cpufre=
+q backend
+>>> driver module (eg: acpi-cpufreq) can't be removed.
 >>
->> Sure, in that case, I agree that your patch is the right fix at this=
- point,
->> since it resolves the immediate problem that we have with the refcou=
-nts.
+>> I missed this simple stuff in my email.. :(
 >>
->> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>>> But the cpufreq_add_dev() function does a module *put* at the end o=
+f
+>>> initializing a fresh CPU.
+>>>
+>>> 1057         kobject_uevent(&policy->kobj, KOBJ_ADD);
+>>> 1058         module_put(cpufreq_driver->owner);
+>>> 1059         pr_debug("initialization complete\n");
+>>> 1060
+>>> 1061         return 0;
+>>
+>> That actually looks wrong. And shoud be fixed.
 >=20
-> Great, thanks!
+> OK
 >=20
-> Does your patchset avoiding the creation/removal of sysfs directories=
- over
-> suspend/resume need to be modified to take this patch into account?
+>>> So, I wonder if it would be a good idea to instead allow that CPU t=
+o take a
+>>> module refcount as well. That way, the problem that Toralf reported=
+ would go
+>>> away, and at the same time, we can ensure that as long as the cpufr=
+eq core is
+>>> managing CPUs, the cpufreq-backend-driver module refcount never dro=
+ps to zero.
+>>>
+>>> Something like this:
+>>>
+>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>> index a4ad733..ecfbc52 100644
+>>> --- a/drivers/cpufreq/cpufreq.c
+>>> +++ b/drivers/cpufreq/cpufreq.c
+>>> @@ -878,9 +878,14 @@ static int cpufreq_add_dev_interface(unsigned =
+int cpu,
+>>>         }
+>>>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>>>
+>>> +       /* Bump up the refcount for this CPU */
+>>> +       policy =3D cpufreq_cpu_get(cpu);
+>>> +
+>>>         ret =3D cpufreq_add_dev_symlink(cpu, policy);
+>>> -       if (ret)
+>>> +       if (ret) {
+>>> +               cpufreq_cpu_put(policy);
+>>>                 goto err_out_kobj_put;
+>>> +       }
+>>
+>> That will do an extra kobject_get() which we don't require.. Only re=
+moving what
+>> I mentioned earlier should be good enough, I believe.
+>>
+>> Over that, I think below code in __cpufreq_governor() is also wrong.
+>>
+>> 	/* we keep one module reference alive for
+>> 			each CPU governed by this CPU */
+>> 	if ((event !=3D CPUFREQ_GOV_START) || ret)
+>> 		module_put(policy->governor->owner);
+>> 	if ((event =3D=3D CPUFREQ_GOV_STOP) && !ret)
+>> 		module_put(policy->governor->owner);
+>>
+>> The second if is sensible as it puts count when governor is stopped.
+>> But the first one decrements the count when we failed for anything
+>> other than START..
+>>
+>> But this routine is called for other stuff too:
+>> - INIT/Exit
+>> - LIMITS,
+>>
+>> And so, count must be incremented for a passed INIT call and
+>> decremented for a passed EXIT call, otherwise shouldn't be
+>> touched.
 >=20
-
-There will be some trivial conflicts, but looking a bit closer at my pa=
-tchset,
-I believe it has a subtle refcounting bug, relating to patches 6 and 7.
-
-Patch 6: http://marc.info/?l=3Dlinux-kernel&m=3D137358141628042&w=3D2
-Patch 7: http://marc.info/?l=3Dlinux-pm&m=3D137358124527993&w=3D2
-
-
-Patch 6 modifies cpufreq_add_policy_cpu() to return 0 if frozen =3D=3D =
-true.
-But by that time, it would have already done a cpufreq_cpu_get().
-
-In patch 7, under __cpufreq_remove_dev(), we avoid dropping refcounts
-for *any* CPU when frozen =3D=3D true.
-
-In the general case, this is fine (like myself and Viresh had discussed
-earlier in that thread), because __cpufreq_add_dev() doesn't increment =
-the
-refcount in the frozen case.
-
-But we overlooked a rather subtle scenario: say, CPU 'X' went through
-cpufreq_add_dev in the resume path, and restored its policy structure.
-Since this was fresh, no refcount was taken. And then CPU 'Y' came alon=
-g,
-but it was related to CPU 'X', so it will take this path:
-
-1018         /* Check if this cpu was hot-unplugged earlier and has sib=
-lings */
-1019         read_lock_irqsave(&cpufreq_driver_lock, flags);
-1020         for_each_online_cpu(sibling) {
-1021                 struct cpufreq_policy *cp =3D per_cpu(cpufreq_cpu_=
-data, sibling);
-1022                 if (cp && cpumask_test_cpu(cpu, cp->related_cpus))=
- {
-1023                         read_unlock_irqrestore(&cpufreq_driver_loc=
-k, flags);
-1024                         return cpufreq_add_policy_cpu(cpu, sibling=
-, dev,
-1025                                                       frozen);
-1026                 }
-1027         }
-
-This time, cp won't be NULL for CPU 'X', because its policy was restore=
+> That sounds good, but I don't want to make those changes for 3.11 and=
+ at the
+> same time I *do* want the reference count issue to go away.
+>=20
+> So the patch below is the one I'd like to apply for the time being an=
 d
-in the previous call. So we end up calling cpufreq_add_policy_cpu() for
-CPU 'Y'. And that function takes a new refcount, as mentioned above.
+> we can work on more improvements on top of that.
+>=20
+> Any objections?
+>=20
+> Toralf, please test this patch in the meantime.
 
-So we need to have this extra hunk in cpufreq_add_policy_cpu() to ensur=
-e
-we don't take any additional refcounts during suspend/resume:
+works - tested on top of 3.10.4
+
+> Rafael
+>=20
+>=20
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: cpufreq: Fix cpufreq driver module refcount balance after su=
+spend/resume
+>=20
+> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops the
+> driver module refcount, __cpufreq_remove_dev() causes that refcount
+> to become negative for the cpufreq driver after a suspend/resume
+> cycle.
+>=20
+> This is not the only bad thing that happens there, however, because
+> kobject_put() should only be called for the policy kobject at this
+> point if the CPU is not the last one for that policy.
+>=20
+> Namely, if the given CPU is the last one for that policy, the
+> policy kobject's refcount should be 1 at this point, as set by
+> cpufreq_add_dev_interface(), and only needs to be dropped once for
+> the kobject to go away.  This actually happens under the cpu =3D=3D 1
+> check, so it need not be done before by cpufreq_cpu_put().
+>=20
+> On the other hand, if the given CPU is not the last one for that
+> policy, this means that cpufreq_add_policy_cpu() has been called
+> at least once for that policy and cpufreq_cpu_get() has been
+> called for it too.  To balance that cpufreq_cpu_get(), we need to
+> call cpufreq_cpu_put() in that case.
+>=20
+> Thus, to fix the described problem and keep the reference
+> counters balanced in both cases, move the cpufreq_cpu_get() call
+> in __cpufreq_remove_dev() to the code path executed only for
+> CPUs that share the policy with other CPUs.
+>=20
+> Reported-by: Toralf F=C3=B6rster <toralf.foerster@gmx.de>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |   19 ++++++++++---------
+>  1 file changed, 10 insertions(+), 9 deletions(-)
+>=20
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -1177,14 +1177,11 @@ static int __cpufreq_remove_dev(struct d
+>  				__func__, cpu_dev->id, cpu);
+>  	}
+> =20
+> -	if ((cpus =3D=3D 1) && (cpufreq_driver->target))
+> -		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+> -
+> -	pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+> -	cpufreq_cpu_put(data);
+> -
+>  	/* If cpu is last user of policy, free policy */
+>  	if (cpus =3D=3D 1) {
+> +		if (cpufreq_driver->target)
+> +			__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+> +
+>  		lock_policy_rwsem_read(cpu);
+>  		kobj =3D &data->kobj;
+>  		cmp =3D &data->kobj_unregister;
+> @@ -1205,9 +1202,13 @@ static int __cpufreq_remove_dev(struct d
+>  		free_cpumask_var(data->related_cpus);
+>  		free_cpumask_var(data->cpus);
+>  		kfree(data);
+> -	} else if (cpufreq_driver->target) {
+> -		__cpufreq_governor(data, CPUFREQ_GOV_START);
+> -		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
+> +	} else {
+> +		pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+> +		cpufreq_cpu_put(data);
+> +		if (cpufreq_driver->target) {
+> +			__cpufreq_governor(data, CPUFREQ_GOV_START);
+> +			__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
+> +		}
+>  	}
+> =20
+>  	per_cpu(cpufreq_policy_cpu, cpu) =3D -1;
+>=20
+>=20
 
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c7f59e8..9681c01 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -932,8 +932,11 @@ static int cpufreq_add_policy_cpu(unsigned int cpu=
-, unsigned int sibling,
- 	}
-=20
- 	/* Don't touch sysfs links during light-weight init */
--	if (frozen)
-+	if (frozen) {
-+		/* Drop the extra refcount that we took above */
-+		cpufreq_cpu_put(policy);
- 		return 0;
-+	}
-=20
- 	ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
- 	if (ret)
-
-
-I can respin my entire patchset with this fix included, on top of your
-patch. Please let me know if you'd prefer some other method for resolvi=
-ng
-this.
-
-Regards,
-Srivatsa S. Bhat
-
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
