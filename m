@@ -1,106 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: stable 3-10-3: strange output of  "lsmod | grep ^acpi_cpufreq"
-Date: Mon, 29 Jul 2013 14:04:20 +0200
-Message-ID: <1459225.4vzj4GkXXt@vostro.rjw.lan>
-References: <51F40612.2050403@gmx.de> <10771278.LGR8ezfsZF@vostro.rjw.lan> <51F65599.6050209@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] ACPI / PM: Make messages in acpi_device_set_power() print device names
+Date: Mon, 29 Jul 2013 14:11:04 +0200
+Message-ID: <57324148.csaJoe9IZd@vostro.rjw.lan>
+References: <10433383.dueoNg39qi@vostro.rjw.lan> <1895563.95T8SxMegu@vostro.rjw.lan> <CAOLK0pyBsD8vR0a2mcSucnD8zFTz8ZB72OPE0R9Z67SxH9VHRw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51F65599.6050209@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <CAOLK0pyBsD8vR0a2mcSucnD8zFTz8ZB72OPE0R9Z67SxH9VHRw@mail.gmail.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Lan Tianyu <lantianyu1986@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Aaron Lu <aaron.lu@intel.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 29, 2013 05:14:25 PM Srivatsa S. Bhat wrote:
-> On 07/29/2013 05:19 PM, Rafael J. Wysocki wrote:
-> > On Monday, July 29, 2013 03:11:45 PM Srivatsa S. Bhat wrote:
-> >> On 07/29/2013 04:50 AM, Rafael J. Wysocki wrote:
-> >>> On Monday, July 29, 2013 12:43:59 AM Rafael J. Wysocki wrote:
-> >>>> On Monday, July 29, 2013 12:11:18 AM Rafael J. Wysocki wrote:
-> >>>>> On Sunday, July 28, 2013 12:21:22 PM Toralf F=C3=B6rster wrote:
-> >>>>>> On 07/28/2013 01:39 AM, Rafael J. Wysocki wrote:
-> >>>>>>> On Saturday, July 27, 2013 07:40:34 PM Toralf F=C3=B6rster wr=
-ote:
-> >>>>>>>> it gives at a ThinkPad T420:
-> >>>>>>>>
-> >>>>>>>> tfoerste@n22 ~/tmp $ lsmod | grep ^acpi_cpufreq
-> >>>>>>>> acpi_cpufreq           12902  2147483647
-> >>>>>>>
-> >>>>>>> That is -1, which indicates some module refcount woes.
-> >>>>>>
-> >>>>>> yes, ofc.
-> >>>>>>
-> >>>>>> The issue apears after 1 s2ram/resume cycle, before s2ram the =
-refcount is 1.
-> >>>>>>
-> >>>>>>> I definitely can't see that with the mainline on my machines.
-> >>>>>>
-> >>>>>> It is in mainline too.
-> >>>>>
-> >>>>> Does the appended patch help?
-> >>>>
-> >>>> Actually, something as simple as this also should help:
-> >>>>
-> >>>> ---
-> >>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>> Subject: cpufreq: Fix cpufreq driver module refcount balance aft=
-er suspend/resume
-> >>>>
-> >>>> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops t=
-he
-> >>>> driver module refcount, __cpufreq_remove_dev() causes that refco=
-unt
-> >>>> to become negative after a suspend/resume cycle, for example.
-> >>>>
-> >>>> To prevent this from happening make __cpufreq_remove_dev() put
-> >>>> the policy kobject only instead of calling cpufreq_cpu_put().
-> >>>
-> >>> Having a deeper look at it, though, I see that in fact the whole
-> >>> cpufreq_cpu_put() is needed if the CPU is not the last one for th=
-e given
-> >>> policy and is not needed at all otherwise (as described in the ch=
-angelog
-> >>> of the patch below).
-> >>>
-> >>> Srivatsa, does this make sense to you?
-> >>>
-> >>
-> >> Code-wise, your patch looks good to me. But one thing in the exist=
-ing code
-> >> struck me as a little strange.
-> >>
-> >> I'm assuming that the module_get() is used in the cpufreq core to =
-ensure that
-> >> until the cpufreq core is managing (atleast one) CPU(s), the cpufr=
-eq backend
-> >> driver module (eg: acpi-cpufreq) can't be removed.
-> >=20
-> > Quite frankly, I'm not sure about that.  If that were the case,
-> > cpufreq_add_dev() would not call module_put() which it does.
-> >=20
-> > That may be a bug, I agree, but that's not for the present release =
-cycle.  For
-> > now, we need to ensure that the reference counts are *balanced* .
-> >=20
->=20
-> Sure, in that case, I agree that your patch is the right fix at this =
-point,
-> since it resolves the immediate problem that we have with the refcoun=
-ts.
->=20
-> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+On Monday, July 29, 2013 11:06:36 AM Lan Tianyu wrote:
+> 2013/7/27 Rafael J. Wysocki <rjw@sisk.pl>:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Modify acpi_device_set_power() so that diagnostic messages printed by
+> > it to the kernel log always contain the name of the device concerned
+> > to make it possible to identify the device that triggered the message
+> > if need be.
+> >
+> > Also replace printk(KERN_WARNING ) with dev_warn() everywhere in that
+> > function.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/acpi/device_pm.c |   22 ++++++++++------------
+> >  1 file changed, 10 insertions(+), 12 deletions(-)
+> >
+> > Index: linux-pm/drivers/acpi/device_pm.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/acpi/device_pm.c
+> > +++ linux-pm/drivers/acpi/device_pm.c
+> > @@ -166,20 +166,20 @@ int acpi_device_set_power(struct acpi_de
+> >         /* Make sure this is a valid target state */
+> >
+> >         if (state == device->power.state) {
+> > -               ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device is already at %s\n",
+> > +               ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] already in %s\n",
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+> Missing "is" or it should be omitted?
 
-Great, thanks!
+The "is" is not necessary here (in my opinion).
 
-Does your patchset avoiding the creation/removal of sysfs directories o=
-ver
-suspend/resume need to be modified to take this patch into account?
+Kind of in analogy with "This has been done already" and "Already done".
 
+Thanks,
 Rafael
 
 
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
