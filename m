@@ -1,70 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 0/7] Cpufreq, cpu hotplug, suspend/resume related fixes
-Date: Tue, 30 Jul 2013 16:06:14 +0200
-Message-ID: <2115849.jgF3cVvlvK@vostro.rjw.lan>
-References: <20130729225213.20863.56722.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130729225213.20863.56722.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH 0/2] PM / OPP: updates to enable sharing OPPs info
+Date: Tue, 30 Jul 2013 19:00:15 +0100
+Message-ID: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:53212 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755926Ab3G3SAW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2013 14:00:22 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Sudeep.KarkadaNagesha@arm.com, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-On Tuesday, July 30, 2013 04:23:12 AM Srivatsa S. Bhat wrote:
-> 
-> Hi,
-> 
-> This patchset reorganizes the cpufreq code and preserves the file permissions
-> of cpufreq-related per-cpu sysfs files across suspend/resume cycles, by
-> performing a light-weight init/teardown in those paths.
-> 
-> Patches 1 - 4 reorganize the code and have no functional impact, and can go
-> in as general cleanups as well. This reorganization builds a base that the
-> rest of the patches will make use of.
-> 
-> Patch 5 and 6 add a mechanism to perform light-weight init/tear-down of CPUs
-> in the cpufreq subsystem and finally patch 7 uses it to preserve sysfs files
-> across suspend/resume.
-> 
-> All the patches apply on Rafael's bleeding-edge branch on linux-pm git
-> tree[1].
-> 
-> 
-> Changes in v2:
-> * Fixed a refcounting bug explained here:
->   http://marc.info/?l=linux-kernel&m=137511192600806&w=2
-> 
-> * Addressed some suggestions about code reorganization received in v1.
-> * Rebased on top of the bleeding-edge branch.
-> 
-> 
-> [1]. git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-> 
-> Thank you very much!
-> 
-> 
->  Srivatsa S. Bhat (7):
->       cpufreq: Fix misplaced call to cpufreq_update_policy()
->       cpufreq: Add helper to perform alloc/free of policy structure
->       cpufreq: Extract non-interface related stuff from cpufreq_add_dev_interface
->       cpufreq: Extract the handover of policy cpu to a helper function
->       cpufreq: Introduce a flag ('frozen') to separate full vs temporary init/teardown
->       cpufreq: Preserve policy structure across suspend/resume
->       cpufreq: Perform light-weight init/teardown during suspend/resume
-> 
-> 
->  drivers/cpufreq/cpufreq.c       |  303 ++++++++++++++++++++++++++-------------
->  drivers/cpufreq/cpufreq_stats.c |    8 -
->  2 files changed, 205 insertions(+), 106 deletions(-)
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Thanks, queued up for 3.12.
+Hi,
 
-Rafael
+These are couple of updates to existing PM/OPP library to support
+sharing of OPPs between different device nodes.
+
+Currently all the cpu nodes are parsed until the OPPs are found. This
+is essential to support cpuhotplug without having to replicate OPP
+information in all the cpu nodes.
+
+However in systems with multiple cpu power domain, its better to have
+OPP entry for each cpu. To avoid replication, phandle can be specified
+to the node which contains the full OPP information.
+
+Previously I had posted these patch[1] but didn't get much review.
+Previous approach mixed both OPP values and the phandle in the same propert=
+y.
+The current approach adds new (optional) property to hold phandle if OPPs a=
+re
+shared. This makes it simpler and easier to be backward compatible.
+
+Regards,
+Sudeep
+
+[1] https://lkml.org/lkml/2013/5/1/84
+
+Sudeep KarkadaNagesha (2):
+  PM / OPP: add support to specify phandle of another node for OPP
+  PM / OPP: check for existing OPP list when initialising from device
+    tree
+
+ Documentation/devicetree/bindings/power/opp.txt | 114 ++++++++++++++++++++=
++---
+ drivers/base/power/opp.c                        |  18 +++-
+ 2 files changed, 118 insertions(+), 14 deletions(-)
+
+--=20
+1.8.1.2
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
