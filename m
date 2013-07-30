@@ -1,130 +1,117 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
-Date: Tue, 30 Jul 2013 13:19:46 +0200
-Message-ID: <51F7A152.3030602@linaro.org>
-References: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com> <51F7872F.30101@linaro.org> <ABB05CD9C9F68C46A5CEDC7F15439259FEF32C@039-SN2MPN1-021.039d.mgd.msft.net>
+From: Igor Zhbanov <i.zhbanov@samsung.com>
+Subject: Re: [PATCH RFC 0/3] Per-process power consumption measurement facility
+Date: Tue, 30 Jul 2013 16:10:36 +0400
+Message-ID: <51F7AD3C.8030407@samsung.com>
+References: <1375172259-9641-1-git-send-email-k.krivyakin@samsung.com>
+ <20130730085256.GK3008@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:54528 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482Ab3G3LTp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2013 07:19:45 -0400
-Received: by mail-wi0-f169.google.com with SMTP id f14so1963263wiw.0
-        for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2013 04:19:44 -0700 (PDT)
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FEF32C@039-SN2MPN1-021.039d.mgd.msft.net>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:58952 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094Ab3G3MKk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2013 08:10:40 -0400
+In-reply-to: <20130730085256.GK3008@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Konstantin Krivyakin <k.krivyakin@samsung.com>, linux-kernel@vger.kernel.org, rjw@sisk.pl, viresh.kumar@linaro.org, mingo@redhat.com, kgene.kim@samsung.com, linux-pm@vger.kernel.org, e.voevodin@samsung.com, kyungmin.park@samsung.com, akpm@linux-foundation.org
 
-On 07/30/2013 12:48 PM, Wang Dongsheng-B40534 wrote:
->=20
->=20
->> -----Original Message-----
->> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
->> Sent: Tuesday, July 30, 2013 5:28 PM
->> To: Wang Dongsheng-B40534
->> Cc: rjw@sisk.pl; linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs=
-=2Eorg
->> Subject: Re: [PATCH] cpuidle: fix unremovable issue for module drive=
-r
+Dear Peter,
+
+Peter Zijlstra wrote:
+
+> On Tue, Jul 30, 2013 at 12:17:36PM +0400, Konstantin Krivyakin wrote:
+>> This patchset adds per-process power consumption measurement facility.
+>> Power consumption is very important on mobile platforms. This code
+>> allows to measure consumed power in Watts*Hours. The consumed power
+>> for process is updated on scheduler switch and depends on current
+>> CPU voltage and frequency.
 >>
->> On 07/30/2013 08:55 AM, Dongsheng Wang wrote:
->>> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->>>
->>> After __cpuidle_register_device, the cpu incs are added up, but dec=
-s
->>> are not, thus the module refcount is not match. So the module "exit=
-"
->>> function can not be executed when we do remove operation. Move
->>> module_put into __cpuidle_register_device to fix it.
+>> The formula for computation is: P = C * V^2 * f, where C is a constant
+>> that reflects capacity of the system, V is the current voltage and
+>> f is the current frequency.
+>> (Taken from: http://en.wikipedia.org/wiki/CPU_power_dissipation).
 >>
->> Sorry, I still don't get it :/
+>> In this patchset was added implementation for Exynos platform
+>> to demonstrate how it works.
 >>
->> register->module_get
->> unregister->module_put
->>
->> you change it by:
->>
->> register->module_get
->> register->module_put
->> unregister->none
->>
->> which is wrong.
->>
-> module_get->set per cpu incs=3D1
-> module_put->set per cpu decs=3D1
->=20
-> module_refcount-> incs - decs;
->=20
-> "unregister" usually call in module->exit function.=20
-> But if module_refcount is not zero, the module->exit() cannot be exec=
-uted.
+>> To minimize scheduler impact for each CPU P-state the value of (V^2 *f)
+>> was precomputed at the time of platform initialization.
+> It seems to me the 3 multiplies that takes could be done when cpufreq
+> actually changes the P-state.
+>> And to reduce performance impact furthermore, the C constant is multiplied
+>> in userspace.
+> That seems particularly silly; how is userspace to know C and why
+> isn't it a much better idea to do this in the code generating the number
+> for userspace to consume.
+>
+> Also, I intensely dislike this thing because:
+>
+>   - it adds more user interface
+>   - it adds more accounting muck
+>   - it completely lacks any useful changelogs
+>   - it completely fails to even begin addressing the issues we already
+>     have with cpufreq
+>
+> There's been a lot of talk about power aware scheduling in the recent
+> past, there's also been a lot of problems listed we must overcome/solve.
+> This patch set completely fails to tie into any of that.
+>
+> You also completely fail to explain the user case and thus related why
+> you can't use any of the other facilities like perf or ftrace to measure
+> this.
 
-Ok, IIUC, the refcount is decremented in the unregister function but
-this one is never called because the refcount is not zero.
+Our goal is to create new developer facility for power consumption measurement
+of different components of mobile system such as CPU, GPU, modem, storage, etc.
 
-=46unny, that means the module format was *never* used at all as it doe=
-s
-not work.
+This instrument should allow to correlate consumed power with applications' activity.
+It should show what application or system componet consumes lots of power and why.
+Then developers could optimize their applications to reduce power consumption.
 
-I am wondering if we shouldn't just remove the module support for
-cpuidle. Rafael ?
+The power consumption optimization is very critical for mobile platforms. And this
+instrument should help developers to reduce consumed power of their applications.
 
-> See, kernel/module.c +874
-> delete_module()-->try_stop_module();
+This patch is a first piece of a power consumption framework. It is not related to
+power aware scheduling. We want to get consumed power by CPU, GPU and other
+devices accounted for user processes that performed corresponding activity.
+As I know, any existing tools can't provide needed information or doing it
+in not efficient way.
 
-Thanks, I believe I understand the refcount mechanism.
+For example, it is possible to track scheduler switches and CPU frequency change
+via trace events. But it clould be big number of events to handle (consider
+CONFIG_HZ=1000 and 4 cores) just to track that at this timeslice a particaular
+application consumed that amount of power. The PowerTOP utility does like that.
+But we want to make it in a more efficient way. That's why we considered to modify
+process accounting code.
 
-> Test Log:
-> root:~# rmmod cpuidle-e500
-> module_refcount: incs[9], decs[1]
-> rmmod: can't unload 'cpuidle_e500': Resource temporarily unavailable
->=20
->> Can you describe the problem you are facing ? (a bit more than "I ca=
-n't
->> unload the module").
->>
->>> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->>>
->>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->>> index d75040d..e964ada 100644
->>> --- a/drivers/cpuidle/cpuidle.c
->>> +++ b/drivers/cpuidle/cpuidle.c
->>> @@ -351,11 +351,8 @@ EXPORT_SYMBOL_GPL(cpuidle_disable_device);
->>>
->>>  static void __cpuidle_unregister_device(struct cpuidle_device *dev=
-)
->>> {
->>> -	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
->>> -
->>>  	list_del(&dev->device_list);
->>>  	per_cpu(cpuidle_devices, dev->cpu) =3D NULL;
->>> -	module_put(drv->owner);
->>>  }
->>>
->>>  static int __cpuidle_device_init(struct cpuidle_device *dev) @@
->>> -384,6 +381,8 @@ static int __cpuidle_register_device(struct
->> cpuidle_device *dev)
->>>  	per_cpu(cpuidle_devices, dev->cpu) =3D dev;
->>>  	list_add(&dev->device_list, &cpuidle_detected_devices);
->>>
->>> +	module_put(drv->owner);
->>> +
->>>  	ret =3D cpuidle_coupled_register_device(dev);
->>>  	if (ret) {
->>>  		__cpuidle_unregister_device(dev);
->>>
+It seems reasonable to us to calculate consumed power right where the power state
+is changed -- in the kernel. For each power domain the kernel knows exact time when
+the state was changed, the duration of the time and all characteristics of the state,
+i.e. frequency and voltage.
 
+In our "final" solution we think about power consumption counters for each power
+domain (or device) that are orginized in a tree-like structure and state updates will
+propage from leaves to roots. So for each operation (network IO, block IO, CPU and
+GPU consuming) the corresponding user task will be accounted for real energy that
+was spent by the system.
 
+If you can suggest us some useful technique or existent approach, it would be very
+helpful to implement our task in correct way and enhance current kernel functionality.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Thank you.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+P.S. Since I'm not subscribed to LKML, please CC in reply.
+
+-- 
+Best regards,
+Igor Zhbanov,
+Sub-Project Leader,
+phone: +7 (495) 797 25 00 ext 3981
+e-mail: i.zhbanov@samsung.com
+
+Mobile group, Moscow R&D center, Samsung Electronics
+12 Dvintsev street, building 1
+127018, Moscow, Russian Federation
 
