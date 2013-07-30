@@ -1,65 +1,44 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [RFC PATCH 2/2] PM / OPP: check for existing OPP list when initialising from device tree
-Date: Tue, 30 Jul 2013 19:00:17 +0100
-Message-ID: <1375207217-4433-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Tue, 30 Jul 2013 12:34:56 -0600
+Message-ID: <51F80750.8030701@wwwdotorg.org>
+References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:49446 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753843Ab3G3SfA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2013 14:35:00 -0400
+In-Reply-To: <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> If more than one similar devices share the same OPPs, currently we
+> need to replicate the OPP entries in all the nodes.
+> 
+> Few drivers like cpufreq depend on physical cpu0 node to specify the
+> OPPs and only that node is referred irrespective of the logical cpu
+> accessing it. Alternatively to support cpuhotplug path, few drivers
+> parse all the cpu nodes for OPPs. Instead we can specify the phandle
+> of the node with which the current node shares the operating points.
+> 
+> This patch adds support to specify the phandle in the operating points
+> of any device node, where the node specified by the phandle holds the
+> actual OPPs.
 
-CPUs are registered as devices and their OPPs can be initialised from
-the device tree. Whenever CPUs can be hotplugged out, the corresponding
-cpu devices are not removed. As a result all their OPPs remain intact
-even when they are offlined.
+> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
 
-But when they are hotplugged back-in, the cpufreq along with other cpu
-related subsystem gets re-initialised. Since its almost same as secondary
-cpu being brought up, no special consideration is taken in the hotplug
-path. This may result in cpufreq trying to initialise the OPPs again though
-the cpu device already contains the OPPs.
+> +Optional properties:
+> +- operating-points-phandle: phandle to the device node with which this
 
-This patch checks if there exist an OPP list associated with the device,
-before attempting to initialise it.
+That's a funny name. Bikeshedding a bit, how about shared-operating-points?
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nishanth Menon <nm@ti.com>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- drivers/base/power/opp.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 9ac3c93..8a9d138 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -708,9 +708,15 @@ int of_init_opp_table(struct device *dev)
- {
- =09const struct property *prop;
- =09struct device_node *opp_node;
-+=09struct device_opp *dev_opp;
- =09const __be32 *val;
- =09int nr;
-=20
-+=09/* Check for existing list for 'dev' */
-+=09dev_opp =3D find_device_opp(dev);
-+=09if (!IS_ERR(dev_opp))
-+=09=09return -EEXIST; /* Device OPP already initialized */
-+
- =09opp_node =3D of_parse_phandle(dev->of_node,
- =09=09=09=09=09"operating-points-phandle", 0);
- =09if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
---=20
-1.8.1.2
-
-
+I haven't thought at all about whether this change conceptually makes sense.
