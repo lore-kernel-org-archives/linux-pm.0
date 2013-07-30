@@ -1,70 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] ACPI / PM: Only set power states of devices that are power manageable
-Date: Tue, 30 Jul 2013 16:04:47 +0200
-Message-ID: <1738639.5UcWLydKxR@vostro.rjw.lan>
-References: <10433383.dueoNg39qi@vostro.rjw.lan> <3386345.rYEkrXssx8@vostro.rjw.lan> <51F6FE34.2020703@intel.com>
+Subject: Re: [PATCH v2 0/7] Cpufreq, cpu hotplug, suspend/resume related fixes
+Date: Tue, 30 Jul 2013 16:06:14 +0200
+Message-ID: <2115849.jgF3cVvlvK@vostro.rjw.lan>
+References: <20130729225213.20863.56722.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:47466 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754396Ab3G3Nyh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Jul 2013 09:54:37 -0400
-In-Reply-To: <51F6FE34.2020703@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130729225213.20863.56722.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: viresh.kumar@linaro.org, toralf.foerster@gmx.de, robert.jarzmik@intel.com, durgadoss.r@intel.com, tianyu.lan@intel.com, lantianyu1986@gmail.com, dirk.brandewie@gmail.com, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
 
-On Tuesday, July 30, 2013 07:43:48 AM Aaron Lu wrote:
-> On 07/30/2013 06:21 AM, Rafael J. Wysocki wrote:
-> > On Monday, July 29, 2013 10:09:53 PM Aaron Lu wrote:
-> >> On 07/27/2013 09:10 PM, Rafael J. Wysocki wrote:
-> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>
-> >>> Make acpi_device_set_power() check if the given device is power
-> >>> manageable before checking if the given power state is valid for that
-> >>> device.  Otherwise it will print that "Device does not support" that
-> >>> power state into the kernel log, which may not make sense for some
-> >>> power states (D0 and D3cold are supported by all devices by
-> >>> definition).
-> >>
-> >> It will not print "Device does not support" that power state if that
-> >> power state is D0 or D3cold since we have unconditionally set those two
-> >> power state's valid flag.
-> > 
-> > So you didn't actually looked at acpi_bus_get_power_flags() that set the
-> > power.states[].flags.valid flag, because If you had looked at it, you would
-> > have seen that that's not the case.
-> > 
-> > No, we don't set the valid flag for devices that aren't power manageable
-> > (i.e. have flags.power_manageable unset), which is the *whole* *point* of
-> > this change.
+On Tuesday, July 30, 2013 04:23:12 AM Srivatsa S. Bhat wrote:
 > 
-> Right, I missed this. Sorry for the noise.
+> Hi,
 > 
-> > 
-> >> OTOH, what value should we return for a device node that is not power
-> >> manageable in acpi_device_set_power when the target state is D0 or D3
-> >> cold? The old behavior is to return 0, meanning success without taking
-> >> any actual action.
-> >>
-> >> In acpi_bus_set_power, if the device is not power manageable, we will
-> >> return -ENODEV; in acpi_dev_pm_full/low_power, we will return 0 as in
-> >> the original acpi_device_set_power. So return -EINVAL here is correct?
-> > 
-> > No, the original acpi_device_set_power() will return -ENODEV then, but
-> > in my opinion returning -EINVAL is more accurate, because "power
-> > manageable" means "you can change power state of it".
+> This patchset reorganizes the cpufreq code and preserves the file permissions
+> of cpufreq-related per-cpu sysfs files across suspend/resume cycles, by
+> performing a light-weight init/teardown in those paths.
 > 
-> Shall I prepare a patch to update the errno in acpi_bus_set_power?
+> Patches 1 - 4 reorganize the code and have no functional impact, and can go
+> in as general cleanups as well. This reorganization builds a base that the
+> rest of the patches will make use of.
+> 
+> Patch 5 and 6 add a mechanism to perform light-weight init/tear-down of CPUs
+> in the cpufreq subsystem and finally patch 7 uses it to preserve sysfs files
+> across suspend/resume.
+> 
+> All the patches apply on Rafael's bleeding-edge branch on linux-pm git
+> tree[1].
+> 
+> 
+> Changes in v2:
+> * Fixed a refcounting bug explained here:
+>   http://marc.info/?l=linux-kernel&m=137511192600806&w=2
+> 
+> * Addressed some suggestions about code reorganization received in v1.
+> * Rebased on top of the bleeding-edge branch.
+> 
+> 
+> [1]. git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+> 
+> Thank you very much!
+> 
+> 
+>  Srivatsa S. Bhat (7):
+>       cpufreq: Fix misplaced call to cpufreq_update_policy()
+>       cpufreq: Add helper to perform alloc/free of policy structure
+>       cpufreq: Extract non-interface related stuff from cpufreq_add_dev_interface
+>       cpufreq: Extract the handover of policy cpu to a helper function
+>       cpufreq: Introduce a flag ('frozen') to separate full vs temporary init/teardown
+>       cpufreq: Preserve policy structure across suspend/resume
+>       cpufreq: Perform light-weight init/teardown during suspend/resume
+> 
+> 
+>  drivers/cpufreq/cpufreq.c       |  303 ++++++++++++++++++++++++++-------------
+>  drivers/cpufreq/cpufreq_stats.c |    8 -
+>  2 files changed, 205 insertions(+), 106 deletions(-)
 
-In fact, it doesn't need to check flags.power_manageable after this patch
-and the debug message won't be missed I think, so please just remove
-the whole if () from there, if that's not a problem.
+Thanks, queued up for 3.12.
 
-Thanks,
 Rafael
 
 
