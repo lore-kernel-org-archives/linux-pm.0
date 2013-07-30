@@ -1,58 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: stable 3-10-3: strange output of "lsmod | grep ^acpi_cpufreq"
-Date: Tue, 30 Jul 2013 10:53:57 +0530
-Message-ID: <CAKohpo=QwTyMnXmzzk1yE6swVuhQHwyMWDiLCgQ1A=9Cy5bp9Q@mail.gmail.com>
-References: <51F40612.2050403@gmx.de>
-	<51F638D9.7050904@linux.vnet.ibm.com>
-	<CAOh2x=nQL+8DNaSFOnvq9eVMse8-gDvW1gPqFtu+CT52JsG15A@mail.gmail.com>
-	<1462209.u176D8q1Fr@vostro.rjw.lan>
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+Subject: [PATCH] cpuidle: fix unremovable issue for module driver
+Date: Tue, 30 Jul 2013 14:55:19 +0800
+Message-ID: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1462209.u176D8q1Fr@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ch1ehsobe004.messaging.microsoft.com ([216.32.181.184]:16907
+	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753802Ab3G3Hrs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2013 03:47:48 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Wang Dongsheng <dongsheng.wang@freescale.com>
 
-On 29 July 2013 17:24, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpufreq: Fix cpufreq driver module refcount balance after su=
-spend/resume
->
-> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops the
-> driver module refcount, __cpufreq_remove_dev() causes that refcount
-> to become negative for the cpufreq driver after a suspend/resume
-> cycle.
->
-> This is not the only bad thing that happens there, however, because
-> kobject_put() should only be called for the policy kobject at this
-> point if the CPU is not the last one for that policy.
->
-> Namely, if the given CPU is the last one for that policy, the
-> policy kobject's refcount should be 1 at this point, as set by
-> cpufreq_add_dev_interface(), and only needs to be dropped once for
-> the kobject to go away.  This actually happens under the cpu =3D=3D 1
-> check, so it need not be done before by cpufreq_cpu_put().
->
-> On the other hand, if the given CPU is not the last one for that
-> policy, this means that cpufreq_add_policy_cpu() has been called
-> at least once for that policy and cpufreq_cpu_get() has been
-> called for it too.  To balance that cpufreq_cpu_get(), we need to
-> call cpufreq_cpu_put() in that case.
->
-> Thus, to fix the described problem and keep the reference
-> counters balanced in both cases, move the cpufreq_cpu_get() call
-> in __cpufreq_remove_dev() to the code path executed only for
-> CPUs that share the policy with other CPUs.
->
-> Reported-by: Toralf F=F6rster <toralf.foerster@gmx.de>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |   19 ++++++++++---------
->  1 file changed, 10 insertions(+), 9 deletions(-)
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Looks fine.
+After __cpuidle_register_device, the cpu incs are added up, but decs
+are not, thus the module refcount is not match. So the module "exit"
+function can not be executed when we do remove operation. Move
+module_put into __cpuidle_register_device to fix it.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index d75040d..e964ada 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -351,11 +351,8 @@ EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+ 
+ static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+ {
+-	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+-
+ 	list_del(&dev->device_list);
+ 	per_cpu(cpuidle_devices, dev->cpu) = NULL;
+-	module_put(drv->owner);
+ }
+ 
+ static int __cpuidle_device_init(struct cpuidle_device *dev)
+@@ -384,6 +381,8 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ 	per_cpu(cpuidle_devices, dev->cpu) = dev;
+ 	list_add(&dev->device_list, &cpuidle_detected_devices);
+ 
++	module_put(drv->owner);
++
+ 	ret = cpuidle_coupled_register_device(dev);
+ 	if (ret) {
+ 		__cpuidle_unregister_device(dev);
+-- 
+1.8.0
+
+
