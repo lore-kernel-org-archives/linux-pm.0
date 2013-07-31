@@ -1,78 +1,98 @@
 From: Nishanth Menon <nm@ti.com>
 Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
  node for OPP
-Date: Wed, 31 Jul 2013 10:53:39 -0500
-Message-ID: <51F93303.7010609@ti.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <51F92D3B.3070103@arm.com>
+Date: Wed, 31 Jul 2013 10:58:22 -0500
+Message-ID: <51F9341E.60102@ti.com>
+References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51F92D3B.3070103@arm.com>
+In-Reply-To: <20130731152925.GP29859@e106331-lin.cambridge.arm.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/31/2013 10:28 AM, Sudeep KarkadaNagesha wrote:
-> On 31/07/13 15:46, Nishanth Menon wrote:
+On 07/31/2013 10:29 AM, Mark Rutland wrote:
+> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
 >> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
 >>> On 30/07/13 21:48, Nishanth Menon wrote:
-> [...]
->>>> This should setup stage for many of the work we have been trying to
->>>> figure out on AM/OMAP and few other processors which has to depend on
->>>> few sets of OPPs which may not be supported on various platforms.
+>>>> On 07/30/2013 01:34 PM, Stephen Warren wrote:
+>>>>> On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
+>>>>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>>>>
+>>>>>> If more than one similar devices share the same OPPs, currently we
+>>>>>> need to replicate the OPP entries in all the nodes.
+>>>>>>
+>>>>>> Few drivers like cpufreq depend on physical cpu0 node to specify the
+>>>>>> OPPs and only that node is referred irrespective of the logical cpu
+>>>>>> accessing it. Alternatively to support cpuhotplug path, few drivers
+>>>>>> parse all the cpu nodes for OPPs. Instead we can specify the phandle
+>>>>>> of the node with which the current node shares the operating points.
+>>>>>>
+>>>>>> This patch adds support to specify the phandle in the operating points
+>>>>>> of any device node, where the node specified by the phandle holds the
+>>>>>> actual OPPs.
+>>>>>
+>>>>>> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+>>>>>
+>>>>>> +Optional properties:
+>>>>>> +- operating-points-phandle: phandle to the device node with which this
+>>>>>
+>>>>> That's a funny name. Bikeshedding a bit, how about shared-operating-points?
+>>>>>
+>>>>> I haven't thought at all about whether this change conceptually makes sense.
+>>>>>
 >>>>
->>> I still don't get the point why you would publish some OPP in the DT
->>> when the hardware which it describes doesn't support it.
+>>>> They may not really be shared- we could have phandle list even. one
+>>>> might have optional OPP sets for a chip family that one may  - I was
+>>>> about to suggest something similar to pinctrl
+>>>>
+>>> I am not sure if I follow you here, if each chip family has its unique
+>>> set of OPPs, why do we need to represent all of them together ?
+>>> IIUC you are thinking about having these in include dts file, used by
+>>> multiple chip/board dts.
 >>>
->>> This may be already discussed when DT support was added to OPP library,
->>> IMO if for some reason the firmware/boot entity disables some of the
->>> OPPs, then it can append OPPs in DT with the state(enabled/disabled).
->>> But this needs extension of current binding.
+>>>> operating-points-names = "default", "performance", "cheapboard-config" ;)
+>>>> operating-points-0 = <&...>
+>>>> operating-points-1 = <&...>
+>>>> operating-points-2 = <&...>
+>>>>
+>>> This looks more like a PM policy.
 >>
->> you could also have reduced OPP set which needs to be invoked, appending
->> wont really work if cpufreq table is built as part of probe - it kind of
->> creates all kind of races which I would really like to avoid.
+>> Let me try to explain since SoCs such as OMAP/AM family dont make life
+>> trivial :)..
 >>
-> IIUC opp_set_availability(opp_enable/opp_disable) is designed for such
-> use-case ? Currently there are no users of this API but I see it fits
-> your use case.
+>> An legacy example[1][2]
+>>
+>> SoC DM explains that the chip is capable of X opps:
+>> opp1, 2 - for all devices
+>> opp1,2, 3 - if efuse bit X@y is set
+>> opp1,2,3,4 - if efuse bit X@y is set AND Board design meets SoC vendors
+>> requirements (including additional features A, B is enabled).
+>>
+>> So, the same chip family has a hardware feature - not just as a pm
+>> policy of selecting among a set of OPPs which opp to work on, but the
+>> actual set of OPPs are actually options in themselves that is selected
+>> based on board's SoC selection.
 >
-> Even with multiple OPP sets listed in DT as you described, you need to
-> read those fuses and chose the right set of OPPs. Instead you can use
-> opp_en(/dis)able methods to do that ?
->
-yes when the efuse data is present, but look at the other case I had 
-also pointed at:
+> This sounds like we're describing a set of features not applicable to
+> the device, then removing them, rather than only describing those
+> features applicable to the device. If you have to probe to figure out
+> which values in the dt are applicable, I'm not sure I see the benefit of
+> describing said values in dt.
 
-Lets take an example: SoC X has OPPs 1,2,3,4
+Device has *options* of operating points sets it can operate at. It is 
+not like "these are not applicable" for the device.
 
-Same SoC is used on Board A and B.
-Board A meets with all SoC vendor requirements for routing, IR drop 
-limits etc
-Board B *does not* meet with all SoC vendor requirements for routing, IR 
-drop limits etc
+DT does have to describe the hardware capability - that was it's entire 
+intent. operating points are valid configurations where it can be 
+operated at - and when you have options of configurations you need to 
+choose from based on the board you are using it on, it still retains 
+"hardware behavior" aspect.
 
-we no longer have board files, board will have to have a mechanism to 
-"state it is not optimal configuration".
-
-A real life example is BeagleBoard Xm and another product board(which I 
-cannot mention) -both use OMAP3630 1GHz part. 1GHz requirements are met 
-on BeagleBoard Xm, but on the product board it is not. Chip used is 
-exactly the same, we dont have "dts property" to mention "yes, this 
-board meets SoC data manual and associated documentation requirement" - 
-instead what we do have is what is the chip capable of doing.
-
-opp_enable/disable wont work here unless there is board specific 
-"properties" we introduce. However, board file could choose "low 
-performance" option of OPPs.
-
-the opp_enable/disable wont scale there. Further, opp_add is done 
-enmasse by cpufreq-cpu0 and and cpufreq table is built off it, there is 
-no option of SoC specific modification to the table (opportunity to do 
-opp_enable/disable) there - not something that cannot be fixed, and 
-eventually will be, but not there right now.
+Hope that explains.
 
 -- 
 Regards,
