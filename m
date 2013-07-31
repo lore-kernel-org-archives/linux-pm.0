@@ -1,67 +1,42 @@
-From: Shuah Khan <shuahkhan-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [Announcement] Linux Plumbers ACPI/PM, PCI Microconference
-Date: Wed, 31 Jul 2013 10:35:05 -0600
-Message-ID: <CAKocOOPOqqS80D23z6xTVSNYYYWZ7ACg9MtSMz_hTqVA3Duo0w@mail.gmail.com>
-References: <CAL-B5D03ki8NHsM6EuESTH2K-Eh+XyFHNXPDYwgDq+oagDjtMQ@mail.gmail.com>
-	<1755363.sGc8nLIQOW@vostro.rjw.lan>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 00/15] cpufreq: initialize drivers .owner field with THIS_MODULE
+Date: Wed, 31 Jul 2013 22:06:08 +0530
+Message-ID: <CAK9yfHwZCBk5boyiak1FJ7WVJ+FxLjPk1Wa5eYbuZw8BaOV5jw@mail.gmail.com>
+References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <1755363.sGc8nLIQOW-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Cc: shuah.kh-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kvm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, virtualization-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Myron Stowe <myron.stowe-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:36367 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638Ab3GaQgI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 12:36:08 -0400
+Received: by mail-oa0-f45.google.com with SMTP id m1so1959821oag.4
+        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2013 09:36:08 -0700 (PDT)
+In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org
 
-On Wed, Jul 31, 2013 at 5:40 AM, Rafael J. Wysocki <rjw-KKrjLPT3xs0@public.gmane.org> wrote:
-> Hi All,
->
-> The original announcement didn't go to linux-pm, so again:
->
-> On Tuesday, July 16, 2013 08:21:26 PM Myron Stowe wrote:
->> Linux Plumbers has approved an ACPI/PM, PCI microconference. The
->> overview page is here:
->>
->> http://wiki.linuxplumbersconf.org/2013:pci_subsystem
->>
->> We would like to start receiving volunteers for presenting topics of
->> interest.  There is a lot of activity in these subsystems so please
->> respond by submitting presentation or discussion proposals that you
->> would be willing to cover for consideration.  You should also feel
->> free to submit ideas as proposals that others could cover.  The
->> instructions for submitting ideas should be at:
->>
->> http://www.linuxplumbersconf.org/2013/submitting-topic/
->
-> If anyone who's going to attend the Linux Plumbers Conf this year is interested
-> in any particular topic for discussion during the ACPI/PM+PCI uconf, please
-> submit a formal topic proposal at:
->
-> http://www.linuxplumbersconf.org/2013/ocw/events/LPC2013/proposals/new
->
-> If you submit a topic, that doesn't mean you'll be expected to present anything
-> (if accepted).  In fact, we are mostly interested in discussion topics and we'd
-> like to know what is important to people.
->
-> That said if you have a (short) presentation to make, please submit it too.
->
-> We'll appreciate all submissions very much.
->
+Hi Viresh,
 
-What I have mind is a discussion topic for the Mini-conference, which
-in-line with what you are asking for.
-I will add it to the web. Thanks for pinging me on this.
+On 31 July 2013 19:49, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> CPUFreq core does following at multiple places:
+> module_{get|put}(cpufreq_driver->owner)).
+>
+> This is done to make sure module doesn't get unloaded if it is currently in use.
+> This will work only if the .owner field of cpufreq driver is initialized with a
+> valid pointer.
+>
+> This field wasn't initialized for many cpufreq driver, lets initialize it with
+> THIS_MODULE.
 
--- Shuah
 
-Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research
-America (Silicon Valley) shuah.kh-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org | (970) 672-0658
+Isn't it possible to do this inside cpufreq_register_driver function
+in a similar way as done for platform_driver_register [1].
+
+[1] https://lkml.org/lkml/2013/5/25/5
+
+-- 
+With warm regards,
+Sachin
