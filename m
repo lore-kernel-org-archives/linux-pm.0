@@ -1,91 +1,58 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Wed, 31 Jul 2013 12:14:03 +0100
-Message-ID: <51F8F17B.1020304@arm.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: [Announcement] Linux Plumbers ACPI/PM, PCI Microconference
+Date: Wed, 31 Jul 2013 13:40:14 +0200
+Message-ID: <1755363.sGc8nLIQOW@vostro.rjw.lan>
+References: <CAL-B5D03ki8NHsM6EuESTH2K-Eh+XyFHNXPDYwgDq+oagDjtMQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51F826A0.2000109@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <CAL-B5D03ki8NHsM6EuESTH2K-Eh+XyFHNXPDYwgDq+oagDjtMQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-pci <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: kvm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, virtualization-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Myron Stowe <myron.stowe-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 30/07/13 21:48, Nishanth Menon wrote:
-> On 07/30/2013 01:34 PM, Stephen Warren wrote:
->> On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
->>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>
->>> If more than one similar devices share the same OPPs, currently we
->>> need to replicate the OPP entries in all the nodes.
->>>
->>> Few drivers like cpufreq depend on physical cpu0 node to specify the
->>> OPPs and only that node is referred irrespective of the logical cpu
->>> accessing it. Alternatively to support cpuhotplug path, few drivers
->>> parse all the cpu nodes for OPPs. Instead we can specify the phandle
->>> of the node with which the current node shares the operating points.
->>>
->>> This patch adds support to specify the phandle in the operating points
->>> of any device node, where the node specified by the phandle holds the
->>> actual OPPs.
->>
->>> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
->>
->>> +Optional properties:
->>> +- operating-points-phandle: phandle to the device node with which this
->>
->> That's a funny name. Bikeshedding a bit, how about shared-operating-points?
->>
->> I haven't thought at all about whether this change conceptually makes sense.
->>
+Hi All,
+
+The original announcement didn't go to linux-pm, so again:
+
+On Tuesday, July 16, 2013 08:21:26 PM Myron Stowe wrote:
+> Linux Plumbers has approved an ACPI/PM, PCI microconference. The
+> overview page is here:
 > 
-> They may not really be shared- we could have phandle list even. one 
-> might have optional OPP sets for a chip family that one may  - I was 
-> about to suggest something similar to pinctrl
+> http://wiki.linuxplumbersconf.org/2013:pci_subsystem
 > 
-I am not sure if I follow you here, if each chip family has its unique
-set of OPPs, why do we need to represent all of them together ?
-IIUC you are thinking about having these in include dts file, used by
-multiple chip/board dts.
-
-> operating-points-names = "default", "performance", "cheapboard-config" ;)
-> operating-points-0 = <&...>
-> operating-points-1 = <&...>
-> operating-points-2 = <&...>
+> We would like to start receiving volunteers for presenting topics of
+> interest.  There is a lot of activity in these subsystems so please
+> respond by submitting presentation or discussion proposals that you
+> would be willing to cover for consideration.  You should also feel
+> free to submit ideas as proposals that others could cover.  The
+> instructions for submitting ideas should be at:
 > 
-This looks more like a PM policy.
+> http://www.linuxplumbersconf.org/2013/submitting-topic/
 
-> + wanted also to consider how we might have a single definition to scale 
-> across to what Mike is attempting to do with a generic clock framework 
-> support for DVFS.
-> 
-I don't quite follow what you are trying to say.
+If anyone who's going to attend the Linux Plumbers Conf this year is interested
+in any particular topic for discussion during the ACPI/PM+PCI uconf, please
+submit a formal topic proposal at:
 
-In fact, following Mike's consolidation I had a thought that OPP must be
-part of clock node as multiple devices in the same clock domain refer to
-the same clock node.
+http://www.linuxplumbersconf.org/2013/ocw/events/LPC2013/proposals/new
 
-> for compatibility sake, if operating-points is defined, we continue to 
-> expect old style definition, else we have options to pick from.
-> 
-Yes we can do that, but we need to agree on where these OPPs need to
-present in DTS.
+If you submit a topic, that doesn't mean you'll be expected to present anything
+(if accepted).  In fact, we are mostly interested in discussion topics and we'd
+like to know what is important to people.
 
-> This should setup stage for many of the work we have been trying to 
-> figure out on AM/OMAP and few other processors which has to depend on 
-> few sets of OPPs which may not be supported on various platforms.
-> 
-I still don't get the point why you would publish some OPP in the DT
-when the hardware which it describes doesn't support it.
+That said if you have a (short) presentation to make, please submit it too.
 
-This may be already discussed when DT support was added to OPP library,
-IMO if for some reason the firmware/boot entity disables some of the
-OPPs, then it can append OPPs in DT with the state(enabled/disabled).
-But this needs extension of current binding.
+We'll appreciate all submissions very much.
 
-Regards,
-Sudeep
-
+Thanks,
+Rafael
