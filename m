@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 13/15] cpufreq: SPEAr: initialize .owner field with THIS_MODULE
-Date: Wed, 31 Jul 2013 19:49:22 +0530
-Message-ID: <584c19ee84ad8a183985fd9a9152d147316038e3.1375279948.git.viresh.kumar@linaro.org>
+Subject: [PATCH 14/15] cpufreq: Tegra: initialize .owner field with THIS_MODULE
+Date: Wed, 31 Jul 2013 19:49:23 +0530
+Message-ID: <7e832fd210488da0675b6c70fc9a3947eec7899d.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
 CPUFreq core does following at multiple places:
@@ -22,21 +22,22 @@ valid pointer.
 This field wasn't initialized for this driver, lets initialize it with
 THIS_MODULE.
 
+Cc: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/spear-cpufreq.c | 1 +
+ drivers/cpufreq/tegra-cpufreq.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index c3efa7f..3c00dd5 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -212,6 +212,7 @@ static struct cpufreq_driver spear_cpufreq_driver = {
- 	.get		= spear_cpufreq_get,
- 	.init		= spear_cpufreq_init,
- 	.exit		= spear_cpufreq_exit,
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index cd66b85..fc0ea61 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -250,6 +250,7 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
+ 	.init		= tegra_cpu_init,
+ 	.exit		= tegra_cpu_exit,
+ 	.name		= "tegra",
 +	.owner		= THIS_MODULE,
- 	.attr		= spear_cpufreq_attr,
+ 	.attr		= tegra_cpufreq_attr,
  };
  
 -- 
