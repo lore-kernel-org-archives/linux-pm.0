@@ -1,22 +1,22 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 10/15] cpufreq: s3c24xx: initialize .owner field with THIS_MODULE
-Date: Wed, 31 Jul 2013 19:49:19 +0530
-Message-ID: <08ebac0313328bb7f9701417920e6668861d98be.1375279948.git.viresh.kumar@linaro.org>
+Subject: [PATCH 12/15] cpufreq: sa11**: initialize .owner field with THIS_MODULE
+Date: Wed, 31 Jul 2013 19:49:21 +0530
+Message-ID: <24a297bc16b61b2577266b8a8f4ab2ac7b83f03d.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:63673 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760399Ab3GaOUz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 10:20:55 -0400
-Received: by mail-pa0-f47.google.com with SMTP id kl13so909698pab.20
-        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2013 07:20:54 -0700 (PDT)
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:61910 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760449Ab3GaOVL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 10:21:11 -0400
+Received: by mail-pb0-f46.google.com with SMTP id rq2so835189pbb.33
+        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2013 07:21:10 -0700 (PDT)
 In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
 CPUFreq core does following at multiple places:
 module_{get|put}(cpufreq_driver->owner)).
@@ -28,22 +28,34 @@ valid pointer.
 This field wasn't initialized for this driver, lets initialize it with
 THIS_MODULE.
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/s3c24xx-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/sa1100-cpufreq.c | 1 +
+ drivers/cpufreq/sa1110-cpufreq.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index 87781eb..c5a46cc 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -479,6 +479,7 @@ static struct cpufreq_driver s3c24xx_driver = {
- 	.init		= s3c_cpufreq_init,
- 	.suspend	= s3c_cpufreq_suspend,
- 	.resume		= s3c_cpufreq_resume,
+diff --git a/drivers/cpufreq/sa1100-cpufreq.c b/drivers/cpufreq/sa1100-cpufreq.c
+index cff18e8..f41dbd7 100644
+--- a/drivers/cpufreq/sa1100-cpufreq.c
++++ b/drivers/cpufreq/sa1100-cpufreq.c
+@@ -233,6 +233,7 @@ static struct cpufreq_driver sa1100_driver __refdata = {
+ 	.target		= sa1100_target,
+ 	.get		= sa11x0_getspeed,
+ 	.init		= sa1100_cpu_init,
 +	.owner		= THIS_MODULE,
- 	.name		= "s3c24xx",
+ 	.name		= "sa1100",
+ };
+ 
+diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
+index 39c90b6..61627fb 100644
+--- a/drivers/cpufreq/sa1110-cpufreq.c
++++ b/drivers/cpufreq/sa1110-cpufreq.c
+@@ -349,6 +349,7 @@ static struct cpufreq_driver sa1110_driver __refdata = {
+ 	.target		= sa1110_target,
+ 	.get		= sa11x0_getspeed,
+ 	.init		= sa1110_cpu_init,
++	.owner		= THIS_MODULE,
+ 	.name		= "sa1110",
  };
  
 -- 
