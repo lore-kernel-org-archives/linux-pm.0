@@ -1,199 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Re-arrange header files
-Date: Wed, 31 Jul 2013 21:05:57 +0530
-Message-ID: <be0fa53fe03550ec49b8bade1af7d4e1f6e06b39.1375284946.git.viresh.kumar@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Wed, 31 Jul 2013 10:53:39 -0500
+Message-ID: <51F93303.7010609@ti.com>
+References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <51F92D3B.3070103@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51F92D3B.3070103@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-This exercise has been done earlier but hasn't been done for few files. Lets do
-it now. It targets to fix following problems:
-- Include headers in ascending order, so that we don't add same multiple times
-  by mistake.
-- <asm/> must be included after <linux/>, so that they override whatever they
-  need.
+On 07/31/2013 10:28 AM, Sudeep KarkadaNagesha wrote:
+> On 31/07/13 15:46, Nishanth Menon wrote:
+>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
+>>> On 30/07/13 21:48, Nishanth Menon wrote:
+> [...]
+>>>> This should setup stage for many of the work we have been trying to
+>>>> figure out on AM/OMAP and few other processors which has to depend on
+>>>> few sets of OPPs which may not be supported on various platforms.
+>>>>
+>>> I still don't get the point why you would publish some OPP in the DT
+>>> when the hardware which it describes doesn't support it.
+>>>
+>>> This may be already discussed when DT support was added to OPP library,
+>>> IMO if for some reason the firmware/boot entity disables some of the
+>>> OPPs, then it can append OPPs in DT with the state(enabled/disabled).
+>>> But this needs extension of current binding.
+>>
+>> you could also have reduced OPP set which needs to be invoked, appending
+>> wont really work if cpufreq table is built as part of probe - it kind of
+>> creates all kind of races which I would really like to avoid.
+>>
+> IIUC opp_set_availability(opp_enable/opp_disable) is designed for such
+> use-case ? Currently there are no users of this API but I see it fits
+> your use case.
+>
+> Even with multiple OPP sets listed in DT as you described, you need to
+> read those fuses and chose the right set of OPPs. Instead you can use
+> opp_en(/dis)able methods to do that ?
+>
+yes when the efuse data is present, but look at the other case I had 
+also pointed at:
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c             | 23 +++++++++++------------
- drivers/cpufreq/cpufreq_governor.c    |  2 +-
- drivers/cpufreq/cpufreq_ondemand.c    |  2 +-
- drivers/cpufreq/cpufreq_performance.c |  4 ++--
- drivers/cpufreq/cpufreq_powersave.c   |  4 ++--
- drivers/cpufreq/cpufreq_stats.c       | 12 ++++++------
- include/linux/cpufreq.h               | 10 +++++-----
- 7 files changed, 28 insertions(+), 29 deletions(-)
+Lets take an example: SoC X has OPPs 1,2,3,4
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 170d344..d5f2a09 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -17,25 +17,24 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
--#include <asm/cputime.h>
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/completion.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/kernel_stat.h>
- #include <linux/module.h>
--#include <linux/init.h>
-+#include <linux/mutex.h>
- #include <linux/notifier.h>
--#include <linux/cpufreq.h>
--#include <linux/delay.h>
--#include <linux/interrupt.h>
--#include <linux/spinlock.h>
--#include <linux/tick.h>
--#include <linux/device.h>
- #include <linux/slab.h>
--#include <linux/cpu.h>
--#include <linux/completion.h>
--#include <linux/mutex.h>
-+#include <linux/spinlock.h>
- #include <linux/syscore_ops.h>
--
-+#include <linux/tick.h>
- #include <trace/events/power.h>
-+#include <asm/cputime.h>
- 
- /**
-  * The "cpufreq driver" - the arch- or hardware-dependent low
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 7409dbd..5876788 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -16,7 +16,6 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
--#include <asm/cputime.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
- #include <linux/export.h>
-@@ -25,6 +24,7 @@
- #include <linux/slab.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
-+#include <asm/cputime.h>
- 
- #include "cpufreq_governor.h"
- 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index a3c5574..d3344b5 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -12,6 +12,7 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -24,7 +25,6 @@
- #include <linux/sysfs.h>
- #include <linux/tick.h>
- #include <linux/types.h>
--#include <linux/cpu.h>
- 
- #include "cpufreq_governor.h"
- 
-diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
-index 9fef7d6..bdfda75 100644
---- a/drivers/cpufreq/cpufreq_performance.c
-+++ b/drivers/cpufreq/cpufreq_performance.c
-@@ -12,10 +12,10 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
--#include <linux/kernel.h>
--#include <linux/module.h>
- #include <linux/cpufreq.h>
- #include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
- 
- static int cpufreq_governor_performance(struct cpufreq_policy *policy,
- 					unsigned int event)
-diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
-index 32109a1..47235e2 100644
---- a/drivers/cpufreq/cpufreq_powersave.c
-+++ b/drivers/cpufreq/cpufreq_powersave.c
-@@ -12,10 +12,10 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
--#include <linux/kernel.h>
--#include <linux/module.h>
- #include <linux/cpufreq.h>
- #include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
- 
- static int cpufreq_governor_powersave(struct cpufreq_policy *policy,
- 					unsigned int event)
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index cb38413..7610e4b 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -9,17 +9,17 @@
-  * published by the Free Software Foundation.
-  */
- 
--#include <linux/kernel.h>
--#include <linux/slab.h>
- #include <linux/cpu.h>
--#include <linux/sysfs.h>
- #include <linux/cpufreq.h>
--#include <linux/module.h>
- #include <linux/jiffies.h>
--#include <linux/percpu.h>
-+#include <linux/kernel.h>
- #include <linux/kobject.h>
--#include <linux/spinlock.h>
-+#include <linux/module.h>
- #include <linux/notifier.h>
-+#include <linux/percpu.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/sysfs.h>
- #include <asm/cputime.h>
- 
- static spinlock_t cpufreq_stats_lock;
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e1fd215..247d83a 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -11,15 +11,15 @@
- #ifndef _LINUX_CPUFREQ_H
- #define _LINUX_CPUFREQ_H
- 
--#include <asm/cputime.h>
-+#include <linux/cpumask.h>
-+#include <linux/completion.h>
-+#include <linux/kobject.h>
- #include <linux/mutex.h>
- #include <linux/notifier.h>
--#include <linux/threads.h>
--#include <linux/kobject.h>
- #include <linux/sysfs.h>
--#include <linux/completion.h>
-+#include <linux/threads.h>
- #include <linux/workqueue.h>
--#include <linux/cpumask.h>
-+#include <asm/cputime.h>
- #include <asm/div64.h>
- 
- #define CPUFREQ_NAME_LEN 16
+Same SoC is used on Board A and B.
+Board A meets with all SoC vendor requirements for routing, IR drop 
+limits etc
+Board B *does not* meet with all SoC vendor requirements for routing, IR 
+drop limits etc
+
+we no longer have board files, board will have to have a mechanism to 
+"state it is not optimal configuration".
+
+A real life example is BeagleBoard Xm and another product board(which I 
+cannot mention) -both use OMAP3630 1GHz part. 1GHz requirements are met 
+on BeagleBoard Xm, but on the product board it is not. Chip used is 
+exactly the same, we dont have "dts property" to mention "yes, this 
+board meets SoC data manual and associated documentation requirement" - 
+instead what we do have is what is the chip capable of doing.
+
+opp_enable/disable wont work here unless there is board specific 
+"properties" we introduce. However, board file could choose "low 
+performance" option of OPPs.
+
+the opp_enable/disable wont scale there. Further, opp_add is done 
+enmasse by cpufreq-cpu0 and and cpufreq table is built off it, there is 
+no option of SoC specific modification to the table (opportunity to do 
+opp_enable/disable) there - not something that cannot be fixed, and 
+eventually will be, but not there right now.
+
 -- 
-1.7.12.rc2.18.g61b472e
-
+Regards,
+Nishanth Menon
