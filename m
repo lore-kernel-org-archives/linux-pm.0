@@ -1,91 +1,209 @@
 From: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: RE: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
- driver to sysdev.
-Date: Wed, 31 Jul 2013 05:46:09 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FF2A3A@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <20130731025840.19448.24468.stgit@deepthi>
- <20130731025924.19448.46538.stgit@deepthi>
- <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
- <51F88BA7.7090404@linux.vnet.ibm.com>
+Subject: RE: [PATCH] cpuidle: add freescale e500 family porcessors idle
+ support
+Date: Wed, 31 Jul 2013 06:30:06 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FF2AAC@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1375167603-16722-1-git-send-email-dongsheng.wang@freescale.com>
+ (from	dongsheng.wang@freescale.com on Tue Jul 30 02:00:03 2013)
+ <1375213104.30721.79@snotra>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from co9ehsobe001.messaging.microsoft.com ([207.46.163.24]:43231
-	"EHLO co9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751316Ab3GaFqT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 01:46:19 -0400
-In-Reply-To: <51F88BA7.7090404@linux.vnet.ibm.com>
+Received: from co1ehsobe001.messaging.microsoft.com ([216.32.180.184]:17609
+	"EHLO co1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752865Ab3GaGaL convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Jul 2013 02:30:11 -0400
+In-Reply-To: <1375213104.30721.79@snotra>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "michael@ellerman.id.au" <michael@ellerman.id.au>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Li Yang-R58472 <r58472@freescale.com>, Zhao Chenhui-B35336 <B35336@freescale.com>, Wood Scott-B07421 <B07421@freescale.com>, "galak@kernel.crashing.org" <galak@kernel.crashing.org>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, Li Yang-R58472 <r58472@freescale.com>, Zhao Chenhui-B35336 <B35336@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-SGkgUHJlZXRpLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFByZWV0
-aSBVIE11cnRoeSBbbWFpbHRvOnByZWV0aUBsaW51eC52bmV0LmlibS5jb21dDQo+IFNlbnQ6IFdl
-ZG5lc2RheSwgSnVseSAzMSwgMjAxMyAxMjowMCBQTQ0KPiBUbzogV2FuZyBEb25nc2hlbmctQjQw
-NTM0DQo+IENjOiBEZWVwdGhpIERoYXJ3YXI7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgZGFu
-aWVsLmxlemNhbm9AbGluYXJvLm9yZzsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsg
-bWljaGFlbEBlbGxlcm1hbi5pZC5hdTsNCj4gc3JpdmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5j
-b207IHN2YWlkeUBsaW51eC52bmV0LmlibS5jb207IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3ps
-YWJzLm9yZzsgcmp3QHNpc2sucGw7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIIFYyIDQvNl0gY3B1aWRsZS9wc2VyaWVzOiBNb3ZlIHRoZSBwc2VyaWVzX2lk
-bGUNCj4gYmFja2VuZCBkcml2ZXIgdG8gc3lzZGV2Lg0KPiANCj4gSGkgRG9uZ3NoZW5nLA0KPiAN
-Cj4gT24gMDcvMzEvMjAxMyAwODo1MiBBTSwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0K
-PiA+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogRGVl
-cHRoaSBEaGFyd2FyIFttYWlsdG86ZGVlcHRoaUBsaW51eC52bmV0LmlibS5jb21dDQo+ID4+IFNl
-bnQ6IFdlZG5lc2RheSwgSnVseSAzMSwgMjAxMyAxMDo1OSBBTQ0KPiA+PiBUbzogYmVuaEBrZXJu
-ZWwuY3Jhc2hpbmcub3JnOyBkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnOyBsaW51eC0NCj4gPj4g
-a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbWljaGFlbEBlbGxlcm1hbi5pZC5hdTsNCj4gPj4gc3Jp
-dmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5jb207IHByZWV0aUBsaW51eC52bmV0LmlibS5jb207
-DQo+ID4+IHN2YWlkeUBsaW51eC52bmV0LmlibS5jb207IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnDQo+ID4+IENjOiByandAc2lzay5wbDsgV2FuZyBEb25nc2hlbmctQjQwNTM0OyBsaW51
-eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gU3ViamVjdDogW1BBVENIIFYyIDQvNl0gY3B1aWRs
-ZS9wc2VyaWVzOiBNb3ZlIHRoZSBwc2VyaWVzX2lkbGUNCj4gPj4gYmFja2VuZCBkcml2ZXIgdG8g
-c3lzZGV2Lg0KPiA+Pg0KPiA+PiBNb3ZlIHBzZXJpZXNfaWRsZSBiYWNrZW5kIGRyaXZlciBjb2Rl
-IHRvIGFyY2gvcG93ZXJwYy9zeXNkZXYgc28gdGhhdA0KPiA+PiB0aGUgY29kZSBjYW4gYmUgdXNl
-ZCBmb3IgYSBjb21tb24gZHJpdmVyIGZvciBwb3dlcm52IGFuZCBwc2VyaWVzLg0KPiA+PiBUaGlz
-IHJlbW92ZXMgYSBsb3Qgb2YgY29kZSBkdXBsaWNhY3kuDQo+ID4+DQo+ID4gV2h5IG5vdCBkcml2
-ZXJzL2NwdWlkbGUvPw0KPiA+DQo+ID4gSSB0aGluayBpdCBzaG91bGQgYmUgbW92ZSB0byBkcml2
-ZXJzL2NwdWlkbGUuDQo+IA0KPiBQbGVhc2UgdGFrZSBhIGxvb2sgYXQgd2hhdCB0aGUgY3B1aWRs
-ZSB1bmRlciBkcml2ZXJzIGhhcyB0byBwcm92aWRlLg0KPiBjcHVpZGxlIGhhcyB0d28gcGFydHMg
-dG8gaXQuIFRoZSBmcm9udCBlbmQgYW5kIHRoZSBiYWNrIGVuZC4gVGhlIGZyb250DQo+IGVuZCBj
-b25zdGl0dXRlcyB0aGUgY3B1aWRsZSBnb3Zlcm5vcnMsIHJlZ2lzdGVyaW5nIG9mIGFyY2ggc3Bl
-Y2lmaWMNCj4gY3B1aWRsZSBkcml2ZXJzLCBkaXNhYmxpbmcgYW5kIGVuYWJsaW5nIG9mIGNwdWlk
-bGUgZmVhdHVyZS4gSXQgaXMgdGhpcw0KPiBmcm9udCBlbmQgY29kZSB3aGljaCBpcyBwcmVzZW50
-IHVuZGVyIGRyaXZlcnMvY3B1aWRsZS4NCj4gDQo+IFRoZSBhcmNoIHNwZWNpZmljIGNwdWlkbGUg
-ZHJpdmVycyB3aGljaCBkZWNpZGUgd2hhdCBuZWVkcyB0byBiZSBkb25lIHRvDQo+IGVudGVyIGEg
-c3BlY2lmaWMgaWRsZSBzdGF0ZSBjaG9zZW4gYnkgdGhlIGNwdWlkbGUgZ292ZXJub3IgaXMgd2hh
-dA0KPiBjb25zdGl0dXRlcyB0aGUgYmFjayBlbmQgb2YgY3B1aWRsZS4gVGhpcyB3aWxsIG5vdCBi
-ZSBpbiBkcml2ZXJzL2NwdWlkbGUNCj4gYnV0IGluIGFuIGFyY2gvIHNwZWNpZmljIGNvZGUuDQo+
-IA0KPiBUaGUgY3B1aWRsZSB1bmRlciBkcml2ZXJzL2NwdWlkbGUgZHJpdmVzIHRoZSBpZGxlIHBv
-d2VyIG1hbmFnZW1lbnQsIGJ1dA0KPiB0aGUgbG93IGxldmVsIGhhbmRsaW5nIG9mIHRoZSBlbnRy
-eSBpbnRvIGlkbGUgc3RhdGVzIHNob3VsZCBiZSB0YWtlbiBjYXJlDQo+IG9mIGJ5IHRoZSBhcmNo
-aXRlY3R1cmUuDQo+IA0KPiBZb3VyIHJlY2VudCBwYXRjaCA6DQo+IGNwdWlkbGU6IGFkZCBmcmVl
-c2NhbGUgZTUwMCBmYW1pbHkgcG9yY2Vzc29ycyBpZGxlIHN1cHBvcnQgSU1PIHNob3VsZA0KPiBo
-b29rIG9udG8gdGhlIGJhY2tlbmQgY3B1aWRsZSBkcml2ZXIgdGhhdCB0aGlzIHBhdGNoc2V0IHBy
-b3ZpZGVzLg0KPiANClNvcnJ5LCBJIGRvbid0IHRoaW5rIHNvLCBjcHVpZGxlIGZyYW1ld29yayBo
-YXMgYmVlbiBhbHJlYWR5IHZlcnkgY29tbW9uLg0KSGVyZSB3ZSBqdXN0IG5lZWQgdG8gZG8gc3Rh
-dGUgZGVmaW5pdGlvbiBhbmQgaGFuZGxpbmcuIEkgd29uZGVyIHdoZXRoZXINCndlIG5lZWQgdGhp
-cyBsYXllci4NCg0KSWYgeW91ciBoYW5kbGUgaXMgcGxhdGZvcm0gZGVwZW5kZW50LCBpdCBzaG91
-bGQgYmUgaW4gYXJjaC9wbGF0Zm9ybS4NCg0KSWYgaXQgaXMgb25seSBmb3Igc29tZSBwbGF0Zm9y
-bXMgYW5kIHRoZSBvcGVyYXRpb24gb2YgdGhlc2UgcGxhdGZvcm1zIGNhbiBiZQ0KbXVsdGlwbGV4
-ZWQsIFdoeSBjYW5ub3QgYXMgYSBkcml2ZXIgdG8gcHV0IGludG8gZHJpdmVyL2NwdWlkbGU/DQoN
-CklmIGl0IGEgZ2VuZXJhbCBkcml2ZXIsIEkgdGhpbmsgd2UgY2FuIHB1dCBzb21lIGNvbW1vbiBv
-cGVyYXRpbmcgdG8gZHJpdmVyL2NwdWlkbGUNCmFuZCBtYWtlIHRoZSBwbGF0Zm9ybSBzcGVjaWZp
-YyBjb2RlIHRvIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybS4NCg0KVGhpcyBwYXRjaCBpbmNsdWRlIGZy
-b250IGVuZCBhbmQgYmFjayBlbmQsIG5vdCBqdXN0IGJhY2sgZW5kLg0KDQpUaGlzIHBhdGNoIGlu
-Y2x1ZGUgdG9vIG1hbnkgc3RhdGUgb2YgZGlmZmVyZW50IHBsYXRmb3JtcyBhbmQgaGFuZGxlIGZ1
-bmN0aW9uLiBUaGlzIHN0YXRlDQphbmQgaGFuZGxlIHRoYXQgc2hvdWxkIGJlbG9uZyB0byBpdHNl
-bGYgcGxhdGZvcm1zLiBOb3QgYSBnZW5lcmFsIHdheS4gSWYgRGVlcHRoaSB3aWxsIGRvDQphIGdl
-bmVyYWwgcG93ZXJwYyBjcHVpZGxlLCBJIHRoaW5rLCBpdCdzIGNhbm5vdCBqdXN0IHVzaW5nIHRo
-ZSBtYWNybyB0byBkaXN0aW5ndWlzaA0KcGxhdGZvcm0uIHRoZSBmcm9udCBlbmQgY29kZSBtYXli
-ZSBtb3ZlIHRvIGRyaXZlci9jcHVpZGxlKGRydmllciByZWdpc3Rlcikgc2hvdWxkIGJlIGJldHRl
-ciwNCm1ha2UgdGhlIExvdyBQb3dlciBTdGF0ZSBhbmQgd2hhdCBzaG91bGQgYmUgaGFuZGxlIHRv
-IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybS8qKiwgYmVjYXVzZSBkaWZmZXJlbnQNCnBsYXRmb3JtcyBo
-YXZlIGRpZmZlcmVudCBzdGF0ZSBvZiBsb3cgcG93ZXIgY29uc3VtcHRpb24sIGFuZCB0aGUgcHJv
-Y2Vzc2luZyBtZXRob2QuDQpUaGUgZnJvbnQgZW5kIGNhbiBwcm92aWRlIHNvbWUgZ2VuZXJhbCBt
-ZXRob2RzIHRvIHJlZ2lzdGVyIGludG8gZ2VuZXJhbCBwb3dlcnBjIGNwdWlkbGUgZHJpdmVyLg0K
-DQotZG9uZ3NoZW5nDQoNCg==
+
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Wednesday, July 31, 2013 3:38 AM
+> To: Wang Dongsheng-B40534
+> Cc: rjw@sisk.pl; daniel.lezcano@linaro.org; benh@kernel.crashing.org; Li
+> Yang-R58472; Zhao Chenhui-B35336; linux-pm@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org
+> Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle
+> support
+> 
+> On 07/30/2013 02:00:03 AM, Dongsheng Wang wrote:
+> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >
+> > Add cpuidle support for e500 family, using cpuidle framework to
+> > manage various low power modes. The new implementation will remain
+> > compatible with original idle method.
+> >
+> > Initially, this supports PW10, and subsequent patches will support
+> > PW20/DOZE/NAP.
+> 
+> Could you explain what the cpuidle framework does for us that the
+> current idle code doesn't?
+> 
+
+The current idle code, Only a state of low power can make the core idle.
+The core can't get into more low power state.
+
+> In particular, what scenario do you see where we would require a
+> software
+> governor to choose between idle states, and how much power is saved
+> compared to a simpler approach?  There is timer that can be used to
+> automatically enter PW20 after a certain amount of time in PW10.
+
+Yes, the hardware can automatically enter PW20 state. But this is hardware
+feature, we need to software to manage it. Only for PW20 state, we can drop
+this cpuidle and using the hardware to control it. But if we need to support
+PH10/PH15/PH20/PH30, the current idle code cannot support them. 
+
+> How much better results do you get from a software governor?  Do we even
+> have the right data to characterize each state so that a software governor
+> could make good decisions?  Is cpuidle capable of governing the interval
+> of such a timer, rather than directly governing states?
+> 
+>From now on we did not benchmark these data, because we only have PW10 state.
+
+I can do support doze/nap for e6500. To get some data to show you.
+
+> As for doze/nap, why would we want to use those on newer cores?  Do you
+> have numbers for how much power each mode saves?
+> 
+The PH state is plan to support, if the core can make into more low power state,
+why not to do this.
+
+PH10(doze)/PH15(nap)/PH20/PH30, These states can save more CPU power.
+
+> Active governors may be useful on older cores that only have doze/nap,
+> to
+> select between them, but if that's the use case then why start with
+> pw10?
+Pw10 is supported on E500MC/E5500/E6500. And we plan to support PW20 for E65OO core.
+I will take doze/nap up a bit later.
+
+> And I'd want to see numbers for how much power nap saves versus doze.
+> 
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > ---
+> > This patch keep using cpuidle_register_device(), because we need to
+> > support cpu
+> > hotplug. I will fix "device" issue in this driver, after
+> > Deepthi Dharwar <deepthi@linux.vnet.ibm.com> add a hotplug handler
+> > into cpuidle
+> > freamwork.
+> 
+> Where's the diffstat?
+> 
+See, http://patchwork.ozlabs.org/patch/260997/
+
+> > @@ -0,0 +1,222 @@
+> > +/*
+> > + * Copyright 2013 Freescale Semiconductor, Inc.
+> > + *
+> > + * CPU Idle driver for Freescale PowerPC e500 family processors.
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + *
+> > + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > + */
+> 
+> Is this derived from some other file?  It looks like it...  Where's the
+> attribution?
+> 
+The copyright is from drivers/cpufreq/ppc-corenet-cpufreq.c
+
+> > +#include <linux/cpu.h>
+> > +#include <linux/cpuidle.h>
+> > +#include <linux/init.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/notifier.h>
+> > +
+> > +#include <asm/machdep.h>
+> > +
+> > +static struct cpuidle_driver e500_idle_driver = {
+> > +	.name = "e500_idle",
+> > +	.owner = THIS_MODULE,
+> > +};
+> > +
+> > +static struct cpuidle_device __percpu *e500_cpuidle_devices;
+> > +
+> > +static void e500_cpuidle(void)
+> > +{
+> > +	/*
+> > +	 * This would call on the cpuidle framework, and the back-end
+> > +	 * driver to go to idle states.
+> > +	 */
+> > +	if (cpuidle_idle_call()) {
+> > +		/*
+> > +		 * On error, execute default handler
+> > +		 * to go into low thread priority and possibly
+> > +		 * low power mode.
+> > +		 */
+> > +		HMT_low();
+> > +		HMT_very_low();
+> 
+> This HMT stuff doesn't do anything on e500 derivatives AFAIK.
+> 
+Yes, there should do nothing, let arch_cpu_idle to do the failed.
+
+> > +static struct cpuidle_state fsl_pw_idle_states[] = {
+> > +	{
+> > +		.name = "pw10",
+> > +		.desc = "pw10",
+> > +		.flags = CPUIDLE_FLAG_TIME_VALID,
+> > +		.exit_latency = 0,
+> > +		.target_residency = 0,
+> > +		.enter = &pw10_enter
+> 
+> Where is pw10_enter defined?
+> 
+In this patch..
+
+> > +static int cpu_is_feature(unsigned long feature)
+> > +{
+> > +	return (cur_cpu_spec->cpu_features == feature);
+> > +}
+> > +
+> > +static int __init e500_idle_init(void)
+> > +{
+> > +	struct cpuidle_state *cpuidle_state_table = NULL;
+> > +	struct cpuidle_driver *drv = &e500_idle_driver;
+> > +	int err;
+> > +	unsigned int max_idle_state = 0;
+> > +
+> > +	if (cpuidle_disable != IDLE_NO_OVERRIDE)
+> > +		return -ENODEV;
+> > +
+> > +	if (cpu_is_feature(CPU_FTRS_E500MC) ||
+> > cpu_is_feature(CPU_FTRS_E5500) ||
+> > +			cpu_is_feature(CPU_FTRS_E6500)) {
+> 
+> There's no guarantee that a CPU with the same set of features is the
+> exact same CPU.
+> 
+> What specific feature are you looking for here?
+> 
+Here is the type of the core. E500MC,E5500,E6500 do wait.
+
+> > +		cpuidle_state_table = fsl_pw_idle_states;
+> > +		max_idle_state = ARRAY_SIZE(fsl_pw_idle_states);
+> > +	}
+> > +
+> > +	if (!cpuidle_state_table || !max_idle_state)
+> > +		return -EPERM;
+> 
+> ENODEV?
+> 
+Looks better than EPERM.
+
+-dongsheng
 
