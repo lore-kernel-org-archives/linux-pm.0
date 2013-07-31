@@ -1,70 +1,51 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
- driver to sysdev.
-Date: Wed, 31 Jul 2013 09:29:35 +0530
-Message-ID: <51F88BA7.7090404@linux.vnet.ibm.com>
-References: <20130731025840.19448.24468.stgit@deepthi> <20130731025924.19448.46538.stgit@deepthi> <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH RFC 3/3] cpufreq: cpufreq-cpu0: clk rate-change notifiers
+Date: Wed, 31 Jul 2013 10:09:03 +0530
+Message-ID: <CAKohpom-8KXixJ0ZbQ7Poh3uqJCqo7LFyYEfYeMyp+yZx9QmHA@mail.gmail.com>
+References: <1373247868-21444-1-git-send-email-mturquette@linaro.org>
+	<1373247868-21444-4-git-send-email-mturquette@linaro.org>
+	<CAOh2x=kAM98Qta5RquVVByR8jJ3=t+6fNZ4o4WSroVCCZi+0Cg@mail.gmail.com>
+	<20130731014328.5270.4248@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:48221 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775Ab3GaECW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 00:02:22 -0400
-Received: from /spool/local
-	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Wed, 31 Jul 2013 13:51:25 +1000
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:35741 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754Ab3GaEjE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 00:39:04 -0400
+Received: by mail-ob0-f172.google.com with SMTP id er7so496402obc.3
+        for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2013 21:39:03 -0700 (PDT)
+In-Reply-To: <20130731014328.5270.4248@quantum>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "michael@ellerman.id.au" <michael@ellerman.id.au>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-Hi Dongsheng,
-
-On 07/31/2013 08:52 AM, Wang Dongsheng-B40534 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Deepthi Dharwar [mailto:deepthi@linux.vnet.ibm.com]
->> Sent: Wednesday, July 31, 2013 10:59 AM
->> To: benh@kernel.crashing.org; daniel.lezcano@linaro.org; linux-
->> kernel@vger.kernel.org; michael@ellerman.id.au;
->> srivatsa.bhat@linux.vnet.ibm.com; preeti@linux.vnet.ibm.com;
->> svaidy@linux.vnet.ibm.com; linuxppc-dev@lists.ozlabs.org
->> Cc: rjw@sisk.pl; Wang Dongsheng-B40534; linux-pm@vger.kernel.org
->> Subject: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
->> driver to sysdev.
+On 31 July 2013 07:13, Mike Turquette <mturquette@linaro.org> wrote:
+> Quoting Viresh Kumar (2013-07-07 21:10:54)
+>> On Mon, Jul 8, 2013 at 7:14 AM, Mike Turquette <mturquette@linaro.org> wrote:
+>> > Removes direct handling of OPP tables and voltage regulators by calling
+>> > of_clk_cpufreq_notifier_handler, introduced by commit "clk: cpufreq
+>> > helper for voltage scaling".
+>> >
+>> > In the future this can help consolidate code found across similar
+>> > CPUfreq drivers.
+>> >
+>> > Signed-off-by: Mike Turquette <mturquette@linaro.org>
+>> > ---
+>> >  drivers/cpufreq/cpufreq-cpu0.c | 125 ++++++++---------------------------------
+>> >  1 file changed, 22 insertions(+), 103 deletions(-)
 >>
->> Move pseries_idle backend driver code to arch/powerpc/sysdev
->> so that the code can be used for a common driver for powernv
->> and pseries. This removes a lot of code duplicacy.
+>> Good patch, really gets lots of stuff out from cpufreq drivers.
 >>
-> Why not drivers/cpuidle/?
-> 
-> I think it should be move to drivers/cpuidle.
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Viresh,
+>
+> Thanks for the Ack. I received no comments on this series besides your
+> own, so I plan to merge it. Do you want to take patch #3, or do you want
+> me to take it, or should I give you and Rafael a stable branch instead?
 
-Please take a look at what the cpuidle under drivers has to provide.
-cpuidle has two parts to it. The front end and the back end. The front
-end constitutes the cpuidle governors, registering of arch specific
-cpuidle drivers, disabling and enabling of cpuidle feature. It is this
-front end code which is present under drivers/cpuidle.
-
-The arch specific cpuidle drivers which decide what needs to be done to
-enter a specific idle state chosen by the cpuidle governor is what
-constitutes the back end of cpuidle. This will not be in drivers/cpuidle
-but in an arch/ specific code.
-
-The cpuidle under drivers/cpuidle drives the idle power management, but
-the low level handling of the entry into idle states should be taken
-care of by the architecture.
-
-Your recent patch :
-cpuidle: add freescale e500 family porcessors idle support IMO should
-hook onto the backend cpuidle driver that this patchset provides.
-
-Regards
-Preeti U Murthy
-
+Its only related to cpufreq-cpu0 and to handle dependencies well they
+should go through a single tree.. Probably your tree is the right place for
+now. Rafael?
