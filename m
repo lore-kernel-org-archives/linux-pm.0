@@ -1,35 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] power: set PF_SUSPEND_TASK flag on tasks that call freeze_processes
-Date: Wed, 31 Jul 2013 01:46:20 +0200
-Message-ID: <4007751.kC1oJrggef@vostro.rjw.lan>
-References: <1374712893-14487-1-git-send-email-ccross@android.com> <17002595.Gazy686Cvx@vostro.rjw.lan> <CA+55aFzGwoYq+BRBx23045AG=fWzVEtGcN-7xBTi9o=rkGhU3A@mail.gmail.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH RFC 3/3] cpufreq: cpufreq-cpu0: clk rate-change notifiers
+Date: Tue, 30 Jul 2013 18:43:28 -0700
+Message-ID: <20130731014328.5270.4248@quantum>
+References: <1373247868-21444-1-git-send-email-mturquette@linaro.org>
+ <1373247868-21444-4-git-send-email-mturquette@linaro.org>
+ <CAOh2x=kAM98Qta5RquVVByR8jJ3=t+6fNZ4o4WSroVCCZi+0Cg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:48068 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757174Ab3G3XgL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Jul 2013 19:36:11 -0400
-In-Reply-To: <CA+55aFzGwoYq+BRBx23045AG=fWzVEtGcN-7xBTi9o=rkGhU3A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAOh2x=kAM98Qta5RquVVByR8jJ3=t+6fNZ4o4WSroVCCZi+0Cg@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Colin Cross <ccross@android.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Michael Leun <lkml20130126@newton.leun.net>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Darren Hart <dvhart@linux.intel.com>
 
-On Thursday, July 25, 2013 04:51:20 PM Linus Torvalds wrote:
-> On Thu, Jul 25, 2013 at 1:06 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Quoting Viresh Kumar (2013-07-07 21:10:54)
+> On Mon, Jul 8, 2013 at 7:14 AM, Mike Turquette <mturquette@linaro.org> wrote:
+> > Removes direct handling of OPP tables and voltage regulators by calling
+> > of_clk_cpufreq_notifier_handler, introduced by commit "clk: cpufreq
+> > helper for voltage scaling".
 > >
-> > Can we spend an extra process flag on that?
+> > In the future this can help consolidate code found across similar
+> > CPUfreq drivers.
+> >
+> > Signed-off-by: Mike Turquette <mturquette@linaro.org>
+> > ---
+> >  drivers/cpufreq/cpufreq-cpu0.c | 125 ++++++++---------------------------------
+> >  1 file changed, 22 insertions(+), 103 deletions(-)
 > 
-> I suspect we can. But if somebody hollers later, we'll need to do some
-> compaction..
+> Good patch, really gets lots of stuff out from cpufreq drivers.
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-OK, if we need that flag for something more important, it shouldn't be too
-difficult to recycle.
+Viresh,
 
-And I'm not seeing any complaints, so I'm going to fast-track this, as it
-fixes a recent regression.
+Thanks for the Ack. I received no comments on this series besides your
+own, so I plan to merge it. Do you want to take patch #3, or do you want
+me to take it, or should I give you and Rafael a stable branch instead?
 
-Rafael
-
+Regards,
+Mike
