@@ -1,44 +1,156 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 04/15] cpufreq: dbx500: initialize .owner field with THIS_MODULE
-Date: Wed, 31 Jul 2013 19:49:13 +0530
-Message-ID: <538b0cb147d3bd4a5e21b49c507f725f7fb7feb9.1375279948.git.viresh.kumar@linaro.org>
-References: <cover.1375279948.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
-References: <cover.1375279948.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Linus Walleij <linus.walleij@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH RFC 2/3] clk: cpufreq helper for voltage scaling
+Date: Wed, 31 Jul 2013 09:36:57 -0500
+Message-ID: <51F92109.2060707@ti.com>
+References: <1373247868-21444-1-git-send-email-mturquette@linaro.org> <1373247868-21444-3-git-send-email-mturquette@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:58200 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756572Ab3GaOhW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Jul 2013 10:37:22 -0400
+In-Reply-To: <1373247868-21444-3-git-send-email-mturquette@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-CPUFreq core does following at multiple places:
-module_{get|put}(cpufreq_driver->owner)).
+On 07/07/2013 08:44 PM, Mike Turquette wrote:
+> This patch builds on "clk: notifier handler for dynamic voltage scaling"
+> by adding a CPUfreq-specific helper function for registering a clock
+> rate-change notifier to scale regulator voltage as a function of clock
+> rate.
+>
+> In particular this patch creates an instance of struct
+> cpufreq_frequency_table and also calculate the voltage scaling latency,
+> both of which are returned to the caller for use in the CPUfreq driver.
+>
+> Signed-off-by: Mike Turquette <mturquette@linaro.org>
+> ---
+>   drivers/clk/clk-voltage-notifier.c | 71 ++++++++++++++++++++++++++++++++++++++
+>   include/linux/clk.h                |  6 ++++
+>   2 files changed, 77 insertions(+)
 
-This is done to make sure module doesn't get unloaded if it is currently in use.
-This will work only if the .owner field of cpufreq driver is initialized with a
-valid pointer.
+As stage 1 of the transition, I dont have any complaints, but for SoC 
+level, at least on OMAP, it is not just regulator and clock, we have 
+additional tweaks to do - like ABB, AVS etc.
 
-This field wasn't initialized for this driver, lets initialize it with
-THIS_MODULE.
+What would you suggest as the strategy to introduce SoC specific 
+handlers for voltage notifiers that can co-exist with this?
 
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/dbx500-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/clk/clk-voltage-notifier.c b/drivers/clk/clk-voltage-notifier.c
+> index cb6b85f..8e1707f 100644
+> --- a/drivers/clk/clk-voltage-notifier.c
+> +++ b/drivers/clk/clk-voltage-notifier.c
+> @@ -10,6 +10,7 @@
+>    */
+>
+>   #include <linux/clk.h>
+> +#include <linux/cpufreq.h>
 
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index 26321cd..2527f1d 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -120,6 +120,7 @@ static struct cpufreq_driver dbx500_cpufreq_driver = {
- 	.get    = dbx500_cpufreq_getspeed,
- 	.init   = dbx500_cpufreq_init,
- 	.name   = "DBX500",
-+	.owner  = THIS_MODULE,
- 	.attr   = dbx500_cpufreq_attr,
- };
- 
+for example - we should not depend on cpufreq in a generic clock based 
+dvfs approach. we would like to allow devfreq also to transition to this.
+
+>   #include <linux/device.h>
+>   #include <linux/module.h>
+>   #include <linux/notifier.h>
+> @@ -133,3 +134,73 @@ void of_clk_volt_notifier_unregister(struct notifier_block *nb)
+>   	kfree(vsd);
+>   }
+>   EXPORT_SYMBOL_GPL(of_clk_volt_notifier_unregister);
+> +
+> +void of_clk_cpufreq_notifier_unregister(struct notifier_block *nb,
+> +		struct cpufreq_frequency_table *freq_table)
+> +{
+> +	struct volt_scale_data *data = to_volt_scale_data(nb);
+> +	struct device *dev = data->dev;
+> +
+> +	opp_free_cpufreq_table(dev, &freq_table);
+> +	of_clk_volt_notifier_unregister(nb);
+> +}
+> +EXPORT_SYMBOL_GPL(of_clk_cpufreq_notifier_unregister);
+> +
+> +/**
+> + * of_clk_cpufreq_notifer_register - register clock notifier to scale voltage
+> + * @dev: device that owns this scaling operation
+> + * @np: pointer to device's DT node
+> + * @clk: clock whose rate-change notifier triggers voltage scaling
+> + * @supply: regulator id string
+> + * @freq_table: pointer to uninitialized CPUfreq frequency scaling table
+> + * @voltage_latency: worst case voltage scaling latency
+> + */
+> +struct notifier_block *of_clk_cpufreq_notifier_register(struct device *dev,
+> +		struct device_node *np, struct clk *clk, const char *supply,
+> +		struct cpufreq_frequency_table **table,
+> +		unsigned int *voltage_latency)
+> +{
+> +	struct notifier_block *nb;
+> +	struct volt_scale_data *vsd;
+> +	struct opp *opp;
+> +	unsigned long min, max;
+> +	int ret, i;
+> +
+> +	nb = of_clk_volt_notifier_register(dev, np, clk, supply,
+> +			voltage_latency);
+> +	if (IS_ERR(nb))
+> +		return nb;
+> +
+> +	vsd = to_volt_scale_data(nb);
+> +
+> +	ret = opp_init_cpufreq_table(dev, table);
+> +	if (ret) {
+> +		pr_err("failed to init cpufreq table: %d\n", ret);
+> +		goto err_unregister;
+> +	}
+> +
+> +	/* find the min and max voltages and compute worst-case latency */
+> +	for (i = 0; table[0][i].frequency != CPUFREQ_TABLE_END; i++)
+> +		;
+> +
+> +	rcu_read_lock();
+> +	opp = opp_find_freq_exact(dev,
+> +			table[0][0].frequency * 1000, true);
+> +	min = opp_get_voltage(opp);
+> +	opp = opp_find_freq_exact(dev,
+> +			table[0][i-1].frequency * 1000, true);
+> +	max = opp_get_voltage(opp);
+> +	rcu_read_unlock();
+> +
+> +	*voltage_latency = regulator_set_voltage_time(vsd->reg, min, max);
+> +	if (*voltage_latency < 0)
+> +		pr_warn("%s: failed to calculate voltage latency, %d\n",
+> +				__func__, ret);
+> +
+> +	return nb;
+> +
+> +err_unregister:
+> +	of_clk_volt_notifier_unregister(nb);
+> +	return ERR_PTR(ret);
+> +}
+> +EXPORT_SYMBOL_GPL(of_clk_cpufreq_notifier_register);
+> diff --git a/include/linux/clk.h b/include/linux/clk.h
+> index 85ea520..3104883 100644
+> --- a/include/linux/clk.h
+> +++ b/include/linux/clk.h
+> @@ -86,6 +86,12 @@ struct notifier_block *of_clk_volt_notifier_register(struct device *dev,
+>   		struct device_node *np, struct clk *clk, const char *supply,
+>   		int *voltage_latency);
+>   void of_clk_volt_notifier_unregister(struct notifier_block *nb);
+> +struct notifier_block *of_clk_cpufreq_notifier_register(struct device *dev,
+> +		struct device_node *np, struct clk *clk, const char *supply,
+> +		struct cpufreq_frequency_table **table,
+> +		unsigned int *voltage_latency);
+> +void of_clk_cpufreq_notifier_unregister(struct notifier_block *nb,
+> +		struct cpufreq_frequency_table *freq_table);
+>
+>   #endif
+>
+>
+
+
 -- 
-1.7.12.rc2.18.g61b472e
+Regards,
+Nishanth Menon
