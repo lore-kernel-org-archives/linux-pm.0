@@ -1,66 +1,219 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Announcement] Linux Plumbers ACPI/PM, PCI Microconference
-Date: Wed, 31 Jul 2013 23:17:36 +0200
-Message-ID: <7183196.Ov6Qetq3lO@vostro.rjw.lan>
-References: <CAL-B5D03ki8NHsM6EuESTH2K-Eh+XyFHNXPDYwgDq+oagDjtMQ@mail.gmail.com>
-	<1755363.sGc8nLIQOW@vostro.rjw.lan>
-	<CAKocOOPOqqS80D23z6xTVSNYYYWZ7ACg9MtSMz_hTqVA3Duo0w@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: Re-arrange header files
+Date: Wed, 31 Jul 2013 23:38:07 +0200
+Message-ID: <5948193.cosVqkRF9h@vostro.rjw.lan>
+References: <be0fa53fe03550ec49b8bade1af7d4e1f6e06b39.1375284946.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAKocOOPOqqS80D23z6xTVSNYYYWZ7ACg9MtSMz_hTqVA3Duo0w@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: Shuah Khan <shuahkhan@gmail.com>
-Cc: shuah.kh@samsung.com, kvm@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, linux-pci <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, virtualization@lists.linux-foundation.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, iommu@lists.linux-foundation.org, Myron Stowe <myron.stowe@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:49486 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751660Ab3GaV14 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Jul 2013 17:27:56 -0400
+In-Reply-To: <be0fa53fe03550ec49b8bade1af7d4e1f6e06b39.1375284946.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, July 31, 2013 10:35:05 AM Shuah Khan wrote:
-> On Wed, Jul 31, 2013 at 5:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Hi All,
-> >
-> > The original announcement didn't go to linux-pm, so again:
-> >
-> > On Tuesday, July 16, 2013 08:21:26 PM Myron Stowe wrote:
-> >> Linux Plumbers has approved an ACPI/PM, PCI microconference. The
-> >> overview page is here:
-> >>
-> >> http://wiki.linuxplumbersconf.org/2013:pci_subsystem
-> >>
-> >> We would like to start receiving volunteers for presenting topics of
-> >> interest.  There is a lot of activity in these subsystems so please
-> >> respond by submitting presentation or discussion proposals that you
-> >> would be willing to cover for consideration.  You should also feel
-> >> free to submit ideas as proposals that others could cover.  The
-> >> instructions for submitting ideas should be at:
-> >>
-> >> http://www.linuxplumbersconf.org/2013/submitting-topic/
-> >
-> > If anyone who's going to attend the Linux Plumbers Conf this year is interested
-> > in any particular topic for discussion during the ACPI/PM+PCI uconf, please
-> > submit a formal topic proposal at:
-> >
-> > http://www.linuxplumbersconf.org/2013/ocw/events/LPC2013/proposals/new
-> >
-> > If you submit a topic, that doesn't mean you'll be expected to present anything
-> > (if accepted).  In fact, we are mostly interested in discussion topics and we'd
-> > like to know what is important to people.
-> >
-> > That said if you have a (short) presentation to make, please submit it too.
-> >
-> > We'll appreciate all submissions very much.
-> >
+On Wednesday, July 31, 2013 09:05:57 PM Viresh Kumar wrote:
+> This exercise has been done earlier but hasn't been done for few files. Lets do
+> it now. It targets to fix following problems:
+> - Include headers in ascending order, so that we don't add same multiple times
+>   by mistake.
+
+Normally, I'd regard that as pointless churn, but why don't you actually
+remove direct #includes already included through cpufreq.h when you're at it?
+
+For example, what's the point of including cpumask.h directly from
+cpufreq_governor.c if it includes cpufreq.h too?
+
+Also it doesn't look like all of the includes are really necessary.
+
+> - <asm/> must be included after <linux/>, so that they override whatever they
+>   need.
 > 
-> What I have mind is a discussion topic for the Mini-conference, which
-> in-line with what you are asking for.
-> I will add it to the web.
-
-Thank you!
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c             | 23 +++++++++++------------
+>  drivers/cpufreq/cpufreq_governor.c    |  2 +-
+>  drivers/cpufreq/cpufreq_ondemand.c    |  2 +-
+>  drivers/cpufreq/cpufreq_performance.c |  4 ++--
+>  drivers/cpufreq/cpufreq_powersave.c   |  4 ++--
+>  drivers/cpufreq/cpufreq_stats.c       | 12 ++++++------
+>  include/linux/cpufreq.h               | 10 +++++-----
+>  7 files changed, 28 insertions(+), 29 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 170d344..d5f2a09 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -17,25 +17,24 @@
+>  
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>  
+> -#include <asm/cputime.h>
+> +#include <linux/cpu.h>
+> +#include <linux/cpufreq.h>
+> +#include <linux/completion.h>
+> +#include <linux/delay.h>
+> +#include <linux/device.h>
+> +#include <linux/init.h>
+> +#include <linux/interrupt.h>
+>  #include <linux/kernel.h>
+>  #include <linux/kernel_stat.h>
+>  #include <linux/module.h>
+> -#include <linux/init.h>
+> +#include <linux/mutex.h>
+>  #include <linux/notifier.h>
+> -#include <linux/cpufreq.h>
+> -#include <linux/delay.h>
+> -#include <linux/interrupt.h>
+> -#include <linux/spinlock.h>
+> -#include <linux/tick.h>
+> -#include <linux/device.h>
+>  #include <linux/slab.h>
+> -#include <linux/cpu.h>
+> -#include <linux/completion.h>
+> -#include <linux/mutex.h>
+> +#include <linux/spinlock.h>
+>  #include <linux/syscore_ops.h>
+> -
+> +#include <linux/tick.h>
+>  #include <trace/events/power.h>
+> +#include <asm/cputime.h>
+>  
+>  /**
+>   * The "cpufreq driver" - the arch- or hardware-dependent low
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 7409dbd..5876788 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -16,7 +16,6 @@
+>  
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>  
+> -#include <asm/cputime.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/cpumask.h>
+>  #include <linux/export.h>
+> @@ -25,6 +24,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/types.h>
+>  #include <linux/workqueue.h>
+> +#include <asm/cputime.h>
+>  
+>  #include "cpufreq_governor.h"
+>  
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index a3c5574..d3344b5 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -12,6 +12,7 @@
+>  
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>  
+> +#include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+> @@ -24,7 +25,6 @@
+>  #include <linux/sysfs.h>
+>  #include <linux/tick.h>
+>  #include <linux/types.h>
+> -#include <linux/cpu.h>
+>  
+>  #include "cpufreq_governor.h"
+>  
+> diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
+> index 9fef7d6..bdfda75 100644
+> --- a/drivers/cpufreq/cpufreq_performance.c
+> +++ b/drivers/cpufreq/cpufreq_performance.c
+> @@ -12,10 +12,10 @@
+>  
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>  
+> -#include <linux/kernel.h>
+> -#include <linux/module.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+>  
+>  static int cpufreq_governor_performance(struct cpufreq_policy *policy,
+>  					unsigned int event)
+> diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
+> index 32109a1..47235e2 100644
+> --- a/drivers/cpufreq/cpufreq_powersave.c
+> +++ b/drivers/cpufreq/cpufreq_powersave.c
+> @@ -12,10 +12,10 @@
+>  
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>  
+> -#include <linux/kernel.h>
+> -#include <linux/module.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+>  
+>  static int cpufreq_governor_powersave(struct cpufreq_policy *policy,
+>  					unsigned int event)
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index cb38413..7610e4b 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -9,17 +9,17 @@
+>   * published by the Free Software Foundation.
+>   */
+>  
+> -#include <linux/kernel.h>
+> -#include <linux/slab.h>
+>  #include <linux/cpu.h>
+> -#include <linux/sysfs.h>
+>  #include <linux/cpufreq.h>
+> -#include <linux/module.h>
+>  #include <linux/jiffies.h>
+> -#include <linux/percpu.h>
+> +#include <linux/kernel.h>
+>  #include <linux/kobject.h>
+> -#include <linux/spinlock.h>
+> +#include <linux/module.h>
+>  #include <linux/notifier.h>
+> +#include <linux/percpu.h>
+> +#include <linux/slab.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/sysfs.h>
+>  #include <asm/cputime.h>
+>  
+>  static spinlock_t cpufreq_stats_lock;
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index e1fd215..247d83a 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -11,15 +11,15 @@
+>  #ifndef _LINUX_CPUFREQ_H
+>  #define _LINUX_CPUFREQ_H
+>  
+> -#include <asm/cputime.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/completion.h>
+> +#include <linux/kobject.h>
+>  #include <linux/mutex.h>
+>  #include <linux/notifier.h>
+> -#include <linux/threads.h>
+> -#include <linux/kobject.h>
+>  #include <linux/sysfs.h>
+> -#include <linux/completion.h>
+> +#include <linux/threads.h>
+>  #include <linux/workqueue.h>
+> -#include <linux/cpumask.h>
+> +#include <asm/cputime.h>
+>  #include <asm/div64.h>
+>  
+>  #define CPUFREQ_NAME_LEN 16
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
