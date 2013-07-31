@@ -1,58 +1,64 @@
-From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Subject: [Announcement] Linux Plumbers ACPI/PM, PCI Microconference
-Date: Wed, 31 Jul 2013 13:40:14 +0200
-Message-ID: <1755363.sGc8nLIQOW@vostro.rjw.lan>
-References: <CAL-B5D03ki8NHsM6EuESTH2K-Eh+XyFHNXPDYwgDq+oagDjtMQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <CAL-B5D03ki8NHsM6EuESTH2K-Eh+XyFHNXPDYwgDq+oagDjtMQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: linux-pci <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: kvm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, virtualization-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Myron Stowe <myron.stowe-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/15] cpufreq: initialize drivers .owner field with THIS_MODULE
+Date: Wed, 31 Jul 2013 19:49:09 +0530
+Message-ID: <cover.1375279948.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+CPUFreq core does following at multiple places:
+module_{get|put}(cpufreq_driver->owner)).
 
-The original announcement didn't go to linux-pm, so again:
+This is done to make sure module doesn't get unloaded if it is currently in use.
+This will work only if the .owner field of cpufreq driver is initialized with a
+valid pointer.
 
-On Tuesday, July 16, 2013 08:21:26 PM Myron Stowe wrote:
-> Linux Plumbers has approved an ACPI/PM, PCI microconference. The
-> overview page is here:
-> 
-> http://wiki.linuxplumbersconf.org/2013:pci_subsystem
-> 
-> We would like to start receiving volunteers for presenting topics of
-> interest.  There is a lot of activity in these subsystems so please
-> respond by submitting presentation or discussion proposals that you
-> would be willing to cover for consideration.  You should also feel
-> free to submit ideas as proposals that others could cover.  The
-> instructions for submitting ideas should be at:
-> 
-> http://www.linuxplumbersconf.org/2013/submitting-topic/
+This field wasn't initialized for many cpufreq driver, lets initialize it with
+THIS_MODULE.
 
-If anyone who's going to attend the Linux Plumbers Conf this year is interested
-in any particular topic for discussion during the ACPI/PM+PCI uconf, please
-submit a formal topic proposal at:
+Rebased over: v3.11-rc3 and pushed here:
 
-http://www.linuxplumbersconf.org/2013/ocw/events/LPC2013/proposals/new
+https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-fix-owner
 
-If you submit a topic, that doesn't mean you'll be expected to present anything
-(if accepted).  In fact, we are mostly interested in discussion topics and we'd
-like to know what is important to people.
+Viresh Kumar (15):
+  cpufreq: arm_big_little: initialize .owner field with THIS_MODULE
+  cpufreq: cpufreq-cpu0: initialize .owner field with THIS_MODULE
+  cpufreq: davinci: initialize .owner field with THIS_MODULE
+  cpufreq: dbx500: initialize .owner field with THIS_MODULE
+  cpufreq: exynos: initialize .owner field with THIS_MODULE
+  cpufreq: imx6q: initialize .owner field with THIS_MODULE
+  cpufreq: integrator: initialize .owner field with THIS_MODULE
+  cpufreq: omap: initialize .owner field with THIS_MODULE
+  cpufreq: pxa: initialize .owner field with THIS_MODULE
+  cpufreq: s3c24xx: initialize .owner field with THIS_MODULE
+  cpufreq: s5pv210: initialize .owner field with THIS_MODULE
+  cpufreq: sa11**: initialize .owner field with THIS_MODULE
+  cpufreq: SPEAr: initialize .owner field with THIS_MODULE
+  cpufreq: Tegra: initialize .owner field with THIS_MODULE
+  cpufreq: Unicore: initialize .owner field with THIS_MODULE
 
-That said if you have a (short) presentation to make, please submit it too.
+ drivers/cpufreq/arm_big_little.c     | 1 +
+ drivers/cpufreq/cpufreq-cpu0.c       | 1 +
+ drivers/cpufreq/davinci-cpufreq.c    | 1 +
+ drivers/cpufreq/dbx500-cpufreq.c     | 1 +
+ drivers/cpufreq/exynos-cpufreq.c     | 1 +
+ drivers/cpufreq/exynos5440-cpufreq.c | 1 +
+ drivers/cpufreq/imx6q-cpufreq.c      | 1 +
+ drivers/cpufreq/integrator-cpufreq.c | 1 +
+ drivers/cpufreq/omap-cpufreq.c       | 1 +
+ drivers/cpufreq/pxa2xx-cpufreq.c     | 1 +
+ drivers/cpufreq/pxa3xx-cpufreq.c     | 1 +
+ drivers/cpufreq/s3c24xx-cpufreq.c    | 1 +
+ drivers/cpufreq/s5pv210-cpufreq.c    | 1 +
+ drivers/cpufreq/sa1100-cpufreq.c     | 1 +
+ drivers/cpufreq/sa1110-cpufreq.c     | 1 +
+ drivers/cpufreq/spear-cpufreq.c      | 1 +
+ drivers/cpufreq/tegra-cpufreq.c      | 1 +
+ drivers/cpufreq/unicore2-cpufreq.c   | 1 +
+ 18 files changed, 18 insertions(+)
 
-We'll appreciate all submissions very much.
+-- 
+1.7.12.rc2.18.g61b472e
 
-Thanks,
-Rafael
