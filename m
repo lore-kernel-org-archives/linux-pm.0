@@ -1,106 +1,200 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Wed, 31 Jul 2013 17:40:28 +0100
-Message-ID: <51F93DFC.7070904@arm.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <51F92D3B.3070103@arm.com> <51F93303.7010609@ti.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH RFC 2/3] clk: cpufreq helper for voltage scaling
+Date: Wed, 31 Jul 2013 11:08:02 -0700
+Message-ID: <20130731180802.6450.96509@quantum>
+References: <1373247868-21444-1-git-send-email-mturquette@linaro.org>
+ <1373247868-21444-3-git-send-email-mturquette@linaro.org>
+ <51F92109.2060707@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51F93303.7010609@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <51F92109.2060707@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Nishanth Menon <nm@ti.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 31/07/13 16:53, Nishanth Menon wrote:
-> On 07/31/2013 10:28 AM, Sudeep KarkadaNagesha wrote:
->> On 31/07/13 15:46, Nishanth Menon wrote:
->>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
->>>> On 30/07/13 21:48, Nishanth Menon wrote:
->> [...]
->>>>> This should setup stage for many of the work we have been trying to
->>>>> figure out on AM/OMAP and few other processors which has to depend on
->>>>> few sets of OPPs which may not be supported on various platforms.
->>>>>
->>>> I still don't get the point why you would publish some OPP in the DT
->>>> when the hardware which it describes doesn't support it.
->>>>
->>>> This may be already discussed when DT support was added to OPP library,
->>>> IMO if for some reason the firmware/boot entity disables some of the
->>>> OPPs, then it can append OPPs in DT with the state(enabled/disabled).
->>>> But this needs extension of current binding.
->>>
->>> you could also have reduced OPP set which needs to be invoked, appending
->>> wont really work if cpufreq table is built as part of probe - it kind of
->>> creates all kind of races which I would really like to avoid.
->>>
->> IIUC opp_set_availability(opp_enable/opp_disable) is designed for such
->> use-case ? Currently there are no users of this API but I see it fits
->> your use case.
->>
->> Even with multiple OPP sets listed in DT as you described, you need to
->> read those fuses and chose the right set of OPPs. Instead you can use
->> opp_en(/dis)able methods to do that ?
->>
-> yes when the efuse data is present, but look at the other case I had 
-> also pointed at:
+Quoting Nishanth Menon (2013-07-31 07:36:57)
+> On 07/07/2013 08:44 PM, Mike Turquette wrote:
+> > This patch builds on "clk: notifier handler for dynamic voltage scaling"
+> > by adding a CPUfreq-specific helper function for registering a clock
+> > rate-change notifier to scale regulator voltage as a function of clock
+> > rate.
+> >
+> > In particular this patch creates an instance of struct
+> > cpufreq_frequency_table and also calculate the voltage scaling latency,
+> > both of which are returned to the caller for use in the CPUfreq driver.
+> >
+> > Signed-off-by: Mike Turquette <mturquette@linaro.org>
+> > ---
+> >   drivers/clk/clk-voltage-notifier.c | 71 ++++++++++++++++++++++++++++++++++++++
+> >   include/linux/clk.h                |  6 ++++
+> >   2 files changed, 77 insertions(+)
 > 
-> Lets take an example: SoC X has OPPs 1,2,3,4
+> As stage 1 of the transition, I dont have any complaints, but for SoC 
+> level, at least on OMAP, it is not just regulator and clock, we have 
+> additional tweaks to do - like ABB, AVS etc.
 > 
-> Same SoC is used on Board A and B.
-> Board A meets with all SoC vendor requirements for routing, IR drop 
-> limits etc
-> Board B *does not* meet with all SoC vendor requirements for routing, IR 
-> drop limits etc
-> 
-> we no longer have board files, board will have to have a mechanism to 
-> "state it is not optimal configuration".
-> 
-But we still have DTS per board(I assume each board will at-least
-different in IRQ/GPIO assignments or even different pin-mux configuration)
+> What would you suggest as the strategy to introduce SoC specific 
+> handlers for voltage notifiers that can co-exist with this?
 
-> A real life example is BeagleBoard Xm and another product board(which I 
-> cannot mention) -both use OMAP3630 1GHz part. 1GHz requirements are met 
-> on BeagleBoard Xm, but on the product board it is not. Chip used is 
-> exactly the same, we dont have "dts property" to mention "yes, this 
-> board meets SoC data manual and associated documentation requirement" - 
-> instead what we do have is what is the chip capable of doing.
+I would suggest to use the clock rate-change notifier handlers. Every
+version of these "helper" functions that I have posted are simply that:
+helper functions.
+
+There is nothing stopping you today from using the rate-change notifiers
+that were merged back in v3.4 and scaling multiple regulators in a
+specific order.
+
+This patch is solving the simple case of one clock, one regulator. You
+may construct your own notifier handler as needed and I have said this
+many times in the past.
+
+I would also point out that if a DT binding existed to properly express
+operating points as tuples of clock/clock-rate and support for multiple
+regulator/voltage pairs then I would have implemented that in this
+patch. As it stands the OPP library today doesn't go into that
+complexity nor does the operating-points DT binding. This patch chooses
+the path of least resistance.
+
 > 
-If SoC gives configuration w.r.t OPPs, then its board property like
-pin-mux. Why is it not possible to have 1GHz only in BeagleBoard Xm and
-not in product board X ?
-
-> opp_enable/disable wont work here unless there is board specific 
-> "properties" we introduce. However, board file could choose "low 
-> performance" option of OPPs.
+> >
+> > diff --git a/drivers/clk/clk-voltage-notifier.c b/drivers/clk/clk-voltage-notifier.c
+> > index cb6b85f..8e1707f 100644
+> > --- a/drivers/clk/clk-voltage-notifier.c
+> > +++ b/drivers/clk/clk-voltage-notifier.c
+> > @@ -10,6 +10,7 @@
+> >    */
+> >
+> >   #include <linux/clk.h>
+> > +#include <linux/cpufreq.h>
 > 
-Again board file choice of selecting OPPs is policy and DT must describe
-all the features board supports.
+> for example - we should not depend on cpufreq in a generic clock based 
+> dvfs approach. we would like to allow devfreq also to transition to this.
 
-> the opp_enable/disable wont scale there. Further, opp_add is done 
-> enmasse by cpufreq-cpu0 and and cpufreq table is built off it, there is 
-> no option of SoC specific modification to the table (opportunity to do 
-> opp_enable/disable) there - not something that cannot be fixed, and 
-> eventually will be, but not there right now.
-> 
-Freescale iMX6 seems to be using it, not use if its SoC level or board
-level.(imx6q_opp_check_1p2ghz in arch/arm/mach-imx/mach-imx6q.c)
+See patch #1 in this series.
 
+Patch #2 builds on patch #1 to handle the very common case of CPUfreq.
+It is purely a helper and the goal is to reduce the duplicated
+boilerplate that would go into every CPUfreq driver if this patch did
+not exist.
 
-I just had a look @arch/arm/boot/dts/omap36xx.dtsi and
-omap3-beagle-xm.dts. This is my opinion(if you can't handle this
-dynamically):
+I would also like to see devfreq drivers use this mechanism and they can
+do exactly that with the stuff made available in patch #1.
 
-Now you have omap36xx SoC on 2 products X and BeagleBoard Xm.
-omap36xx can support up to 1GHz but depends on actual products.
-So its better not to publish OPPs in omap36xx.dtsi but leave to product
-X and BeagleBoard Xm to describe what that hardware supports.
+There is clearly no dependency on CPUfreq for you to scale voltage from
+a clock rate-change notifier.
 
 Regards,
-Sudeep
+Mike
 
-
-
-
+> 
+> >   #include <linux/device.h>
+> >   #include <linux/module.h>
+> >   #include <linux/notifier.h>
+> > @@ -133,3 +134,73 @@ void of_clk_volt_notifier_unregister(struct notifier_block *nb)
+> >       kfree(vsd);
+> >   }
+> >   EXPORT_SYMBOL_GPL(of_clk_volt_notifier_unregister);
+> > +
+> > +void of_clk_cpufreq_notifier_unregister(struct notifier_block *nb,
+> > +             struct cpufreq_frequency_table *freq_table)
+> > +{
+> > +     struct volt_scale_data *data = to_volt_scale_data(nb);
+> > +     struct device *dev = data->dev;
+> > +
+> > +     opp_free_cpufreq_table(dev, &freq_table);
+> > +     of_clk_volt_notifier_unregister(nb);
+> > +}
+> > +EXPORT_SYMBOL_GPL(of_clk_cpufreq_notifier_unregister);
+> > +
+> > +/**
+> > + * of_clk_cpufreq_notifer_register - register clock notifier to scale voltage
+> > + * @dev: device that owns this scaling operation
+> > + * @np: pointer to device's DT node
+> > + * @clk: clock whose rate-change notifier triggers voltage scaling
+> > + * @supply: regulator id string
+> > + * @freq_table: pointer to uninitialized CPUfreq frequency scaling table
+> > + * @voltage_latency: worst case voltage scaling latency
+> > + */
+> > +struct notifier_block *of_clk_cpufreq_notifier_register(struct device *dev,
+> > +             struct device_node *np, struct clk *clk, const char *supply,
+> > +             struct cpufreq_frequency_table **table,
+> > +             unsigned int *voltage_latency)
+> > +{
+> > +     struct notifier_block *nb;
+> > +     struct volt_scale_data *vsd;
+> > +     struct opp *opp;
+> > +     unsigned long min, max;
+> > +     int ret, i;
+> > +
+> > +     nb = of_clk_volt_notifier_register(dev, np, clk, supply,
+> > +                     voltage_latency);
+> > +     if (IS_ERR(nb))
+> > +             return nb;
+> > +
+> > +     vsd = to_volt_scale_data(nb);
+> > +
+> > +     ret = opp_init_cpufreq_table(dev, table);
+> > +     if (ret) {
+> > +             pr_err("failed to init cpufreq table: %d\n", ret);
+> > +             goto err_unregister;
+> > +     }
+> > +
+> > +     /* find the min and max voltages and compute worst-case latency */
+> > +     for (i = 0; table[0][i].frequency != CPUFREQ_TABLE_END; i++)
+> > +             ;
+> > +
+> > +     rcu_read_lock();
+> > +     opp = opp_find_freq_exact(dev,
+> > +                     table[0][0].frequency * 1000, true);
+> > +     min = opp_get_voltage(opp);
+> > +     opp = opp_find_freq_exact(dev,
+> > +                     table[0][i-1].frequency * 1000, true);
+> > +     max = opp_get_voltage(opp);
+> > +     rcu_read_unlock();
+> > +
+> > +     *voltage_latency = regulator_set_voltage_time(vsd->reg, min, max);
+> > +     if (*voltage_latency < 0)
+> > +             pr_warn("%s: failed to calculate voltage latency, %d\n",
+> > +                             __func__, ret);
+> > +
+> > +     return nb;
+> > +
+> > +err_unregister:
+> > +     of_clk_volt_notifier_unregister(nb);
+> > +     return ERR_PTR(ret);
+> > +}
+> > +EXPORT_SYMBOL_GPL(of_clk_cpufreq_notifier_register);
+> > diff --git a/include/linux/clk.h b/include/linux/clk.h
+> > index 85ea520..3104883 100644
+> > --- a/include/linux/clk.h
+> > +++ b/include/linux/clk.h
+> > @@ -86,6 +86,12 @@ struct notifier_block *of_clk_volt_notifier_register(struct device *dev,
+> >               struct device_node *np, struct clk *clk, const char *supply,
+> >               int *voltage_latency);
+> >   void of_clk_volt_notifier_unregister(struct notifier_block *nb);
+> > +struct notifier_block *of_clk_cpufreq_notifier_register(struct device *dev,
+> > +             struct device_node *np, struct clk *clk, const char *supply,
+> > +             struct cpufreq_frequency_table **table,
+> > +             unsigned int *voltage_latency);
+> > +void of_clk_cpufreq_notifier_unregister(struct notifier_block *nb,
+> > +             struct cpufreq_frequency_table *freq_table);
+> >
+> >   #endif
+> >
+> >
+> 
+> 
+> -- 
+> Regards,
+> Nishanth Menon
