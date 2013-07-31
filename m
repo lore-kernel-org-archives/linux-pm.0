@@ -1,55 +1,70 @@
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: RE: [PATCH V2 5/6] cpuidle/powerpc: Backend-powerpc idle driver for
- powernv and pseries.
-Date: Wed, 31 Jul 2013 04:01:31 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FF29B4@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <20130731025840.19448.24468.stgit@deepthi>
- <20130731025934.19448.16658.stgit@deepthi>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
+ driver to sysdev.
+Date: Wed, 31 Jul 2013 09:29:35 +0530
+Message-ID: <51F88BA7.7090404@linux.vnet.ibm.com>
+References: <20130731025840.19448.24468.stgit@deepthi> <20130731025924.19448.46538.stgit@deepthi> <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ch1ehsobe002.messaging.microsoft.com ([216.32.181.182]:28900
-	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750735Ab3GaEBg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 00:01:36 -0400
-In-Reply-To: <20130731025934.19448.16658.stgit@deepthi>
-Content-Language: en-US
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:48221 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775Ab3GaECW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 00:02:22 -0400
+Received: from /spool/local
+	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Wed, 31 Jul 2013 13:51:25 +1000
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "michael@ellerman.id.au" <michael@ellerman.id.au>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "michael@ellerman.id.au" <michael@ellerman.id.au>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-DQoNCj4gDQo+IC1zdGF0aWMgaW50IHBzZXJpZXNfY3B1aWRsZV9hZGRfY3B1X25vdGlmaWVyKHN0
-cnVjdCBub3RpZmllcl9ibG9jayAqbiwNCj4gK3N0YXRpYyBpbnQgcG93ZXJwY19jcHVpZGxlX2Fk
-ZF9jcHVfbm90aWZpZXIoc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuLA0KPiAgCQkJdW5zaWduZWQg
-bG9uZyBhY3Rpb24sIHZvaWQgKmhjcHUpDQo+ICB7DQo+ICAJaW50IGhvdGNwdSA9ICh1bnNpZ25l
-ZCBsb25nKWhjcHU7DQo+ICAJc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYgPQ0KPiAtCQkJcGVy
-X2NwdV9wdHIocHNlcmllc19jcHVpZGxlX2RldmljZXMsIGhvdGNwdSk7DQo+ICsJCQlwZXJfY3B1
-X3B0cihwb3dlcnBjX2NwdWlkbGVfZGV2aWNlcywgaG90Y3B1KTsNCj4gDQo+ICAJaWYgKGRldiAm
-JiBjcHVpZGxlX2dldF9kcml2ZXIoKSkgew0KPiAgCQlzd2l0Y2ggKGFjdGlvbikgew0KPiBAQCAt
-MjM1LDE2ICsyNzAsMTYgQEAgc3RhdGljIGludCBwc2VyaWVzX2NwdWlkbGVfYWRkX2NwdV9ub3Rp
-ZmllcihzdHJ1Y3QNCj4gbm90aWZpZXJfYmxvY2sgKm4sDQo+ICB9DQo+IA0KPiAgc3RhdGljIHN0
-cnVjdCBub3RpZmllcl9ibG9jayBzZXR1cF9ob3RwbHVnX25vdGlmaWVyID0gew0KPiAtCS5ub3Rp
-Zmllcl9jYWxsID0gcHNlcmllc19jcHVpZGxlX2FkZF9jcHVfbm90aWZpZXIsDQo+ICsJLm5vdGlm
-aWVyX2NhbGwgPSBwb3dlcnBjX2NwdWlkbGVfYWRkX2NwdV9ub3RpZmllciwNCj4gIH07DQo+IA0K
-SSB0aGluayBEYW5pZWwgbWVhbnMgbW92ZSB0aGUgbm90aWZpZXIgdG8gY3B1aWRsZSBmcmFtZXdv
-cmssIG5vdCBqdXN0IHBvd2VycGMuDQoNCkFuZCBzaG91bGQgYmUgcmVtb3ZlIGFsbCBhYm91dCAq
-ZGV2aWNlKi4gSWYgdGhlIG5vdGlmaWVyIGhhbmRsZSB1c2luZyBkZXZpY2UsDQp5b3UgY2FuIHVz
-ZSAiY3B1aWRsZV9kZXZpY2VzIi4NCg0KLSBkb25nc2hlbmcNCg0KPiAtc3RhdGljIGludCBfX2lu
-aXQgcHNlcmllc19wcm9jZXNzb3JfaWRsZV9pbml0KHZvaWQpDQo+ICtzdGF0aWMgaW50IF9faW5p
-dCBwb3dlcnBjX3Byb2Nlc3Nvcl9pZGxlX2luaXQodm9pZCkNCj4gIHsNCj4gIAlpbnQgcmV0dmFs
-Ow0KPiANCj4gLQlyZXR2YWwgPSBwc2VyaWVzX2lkbGVfcHJvYmUoKTsNCj4gKwlyZXR2YWwgPSBw
-b3dlcnBjX2lkbGVfcHJvYmUoKTsNCj4gIAlpZiAocmV0dmFsKQ0KPiAgCQlyZXR1cm4gcmV0dmFs
-Ow0KPiANCj4gLQlwc2VyaWVzX2NwdWlkbGVfZHJpdmVyX2luaXQoKTsNCj4gLQlyZXR2YWwgPSBj
-cHVpZGxlX3JlZ2lzdGVyX2RyaXZlcigmcHNlcmllc19pZGxlX2RyaXZlcik7DQo+ICsJcG93ZXJw
-Y19jcHVpZGxlX2RyaXZlcl9pbml0KCk7DQo+ICsJcmV0dmFsID0gY3B1aWRsZV9yZWdpc3Rlcl9k
-cml2ZXIoJnBvd2VycGNfaWRsZV9kcml2ZXIpOw0KPiAgCWlmIChyZXR2YWwpIHsNCj4gLQkJcHJp
-bnRrKEtFUk5fREVCVUcgIlJlZ2lzdHJhdGlvbiBvZiBwc2VyaWVzIGRyaXZlciBmYWlsZWQuXG4i
-KTsNCj4gKwkJcHJpbnRrKEtFUk5fREVCVUcgIlJlZ2lzdHJhdGlvbiBvZiBwb3dlcnBjIGRyaXZl
-ciBmYWlsZWQuXG4iKTsNCj4gIAkJcmV0dXJuIHJldHZhbDsNCj4gIAl9DQo+IA0KPiAgCXVwZGF0
-ZV9zbXRfc25vb3plX2RlbGF5KC0xLCBwZXJfY3B1KHNtdF9zbm9vemVfZGVsYXksIDApKTsNCj4g
-DQo+IC0JcmV0dmFsID0gcHNlcmllc19pZGxlX2RldmljZXNfaW5pdCgpOw0KPiArCXJldHZhbCA9
-IHBvd2VycGNfaWRsZV9kZXZpY2VzX2luaXQoKTsNClNob3VsZCBiZSByZW1vdmUgYWxsICpkZXZp
-Y2UqLCB1c2luZyBjcHVpZGxlX3JlZ2lzdGVyLg0KDQotIGRvbmdzaGVuZw0KDQo=
+Hi Dongsheng,
+
+On 07/31/2013 08:52 AM, Wang Dongsheng-B40534 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Deepthi Dharwar [mailto:deepthi@linux.vnet.ibm.com]
+>> Sent: Wednesday, July 31, 2013 10:59 AM
+>> To: benh@kernel.crashing.org; daniel.lezcano@linaro.org; linux-
+>> kernel@vger.kernel.org; michael@ellerman.id.au;
+>> srivatsa.bhat@linux.vnet.ibm.com; preeti@linux.vnet.ibm.com;
+>> svaidy@linux.vnet.ibm.com; linuxppc-dev@lists.ozlabs.org
+>> Cc: rjw@sisk.pl; Wang Dongsheng-B40534; linux-pm@vger.kernel.org
+>> Subject: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
+>> driver to sysdev.
+>>
+>> Move pseries_idle backend driver code to arch/powerpc/sysdev
+>> so that the code can be used for a common driver for powernv
+>> and pseries. This removes a lot of code duplicacy.
+>>
+> Why not drivers/cpuidle/?
+> 
+> I think it should be move to drivers/cpuidle.
+
+Please take a look at what the cpuidle under drivers has to provide.
+cpuidle has two parts to it. The front end and the back end. The front
+end constitutes the cpuidle governors, registering of arch specific
+cpuidle drivers, disabling and enabling of cpuidle feature. It is this
+front end code which is present under drivers/cpuidle.
+
+The arch specific cpuidle drivers which decide what needs to be done to
+enter a specific idle state chosen by the cpuidle governor is what
+constitutes the back end of cpuidle. This will not be in drivers/cpuidle
+but in an arch/ specific code.
+
+The cpuidle under drivers/cpuidle drives the idle power management, but
+the low level handling of the entry into idle states should be taken
+care of by the architecture.
+
+Your recent patch :
+cpuidle: add freescale e500 family porcessors idle support IMO should
+hook onto the backend cpuidle driver that this patchset provides.
+
+Regards
+Preeti U Murthy
 
