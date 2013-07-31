@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/15] cpufreq: cpufreq-cpu0: initialize .owner field with THIS_MODULE
-Date: Wed, 31 Jul 2013 19:49:11 +0530
-Message-ID: <8f37155d1524de4298f7b1de08b3474fe2d97241.1375279948.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/15] cpufreq: davinci: initialize .owner field with THIS_MODULE
+Date: Wed, 31 Jul 2013 19:49:12 +0530
+Message-ID: <506b1adf0161498d0f94aacb4c5f22de96839771.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Sekhar Nori <nsekhar@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
 CPUFreq core does following at multiple places:
@@ -22,22 +22,22 @@ valid pointer.
 This field wasn't initialized for this driver, lets initialize it with
 THIS_MODULE.
 
-Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-cpu0.c | 1 +
+ drivers/cpufreq/davinci-cpufreq.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index ad1fde2..a087bf1 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -169,6 +169,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
- 	.init = cpu0_cpufreq_init,
- 	.exit = cpu0_cpufreq_exit,
- 	.name = "generic_cpu0",
-+	.owner = THIS_MODULE,
- 	.attr = cpu0_cpufreq_attr,
+diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
+index 551dd65..db30e54 100644
+--- a/drivers/cpufreq/davinci-cpufreq.c
++++ b/drivers/cpufreq/davinci-cpufreq.c
+@@ -178,6 +178,7 @@ static struct cpufreq_driver davinci_driver = {
+ 	.init		= davinci_cpu_init,
+ 	.exit		= davinci_cpu_exit,
+ 	.name		= "davinci",
++	.owner		= THIS_MODULE,
+ 	.attr		= davinci_cpufreq_attr,
  };
  
 -- 
