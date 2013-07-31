@@ -1,209 +1,99 @@
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: RE: [PATCH] cpuidle: add freescale e500 family porcessors idle
- support
-Date: Wed, 31 Jul 2013 06:30:06 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259FF2AAC@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1375167603-16722-1-git-send-email-dongsheng.wang@freescale.com>
- (from	dongsheng.wang@freescale.com on Tue Jul 30 02:00:03 2013)
- <1375213104.30721.79@snotra>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH 1/3] ACPI / PM: Only set power states of devices that
+ are power manageable
+Date: Wed, 31 Jul 2013 14:48:58 +0800
+Message-ID: <51F8B35A.6000804@intel.com>
+References: <10433383.dueoNg39qi@vostro.rjw.lan> <3386345.rYEkrXssx8@vostro.rjw.lan> <51F6FE34.2020703@intel.com> <1738639.5UcWLydKxR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from co1ehsobe001.messaging.microsoft.com ([216.32.180.184]:17609
-	"EHLO co1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752865Ab3GaGaL convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Jul 2013 02:30:11 -0400
-In-Reply-To: <1375213104.30721.79@snotra>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1738639.5UcWLydKxR@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wood Scott-B07421 <B07421@freescale.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, Li Yang-R58472 <r58472@freescale.com>, Zhao Chenhui-B35336 <B35336@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
+On 07/30/2013 10:04 PM, Rafael J. Wysocki wrote:
+> On Tuesday, July 30, 2013 07:43:48 AM Aaron Lu wrote:
+>> On 07/30/2013 06:21 AM, Rafael J. Wysocki wrote:
+>>> On Monday, July 29, 2013 10:09:53 PM Aaron Lu wrote:
+>>>> On 07/27/2013 09:10 PM, Rafael J. Wysocki wrote:
+>>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>>
+>>>>> Make acpi_device_set_power() check if the given device is power
+>>>>> manageable before checking if the given power state is valid for that
+>>>>> device.  Otherwise it will print that "Device does not support" that
+>>>>> power state into the kernel log, which may not make sense for some
+>>>>> power states (D0 and D3cold are supported by all devices by
+>>>>> definition).
+>>>>
+>>>> It will not print "Device does not support" that power state if that
+>>>> power state is D0 or D3cold since we have unconditionally set those two
+>>>> power state's valid flag.
+>>>
+>>> So you didn't actually looked at acpi_bus_get_power_flags() that set the
+>>> power.states[].flags.valid flag, because If you had looked at it, you would
+>>> have seen that that's not the case.
+>>>
+>>> No, we don't set the valid flag for devices that aren't power manageable
+>>> (i.e. have flags.power_manageable unset), which is the *whole* *point* of
+>>> this change.
+>>
+>> Right, I missed this. Sorry for the noise.
+>>
+>>>
+>>>> OTOH, what value should we return for a device node that is not power
+>>>> manageable in acpi_device_set_power when the target state is D0 or D3
+>>>> cold? The old behavior is to return 0, meanning success without taking
+>>>> any actual action.
+>>>>
+>>>> In acpi_bus_set_power, if the device is not power manageable, we will
+>>>> return -ENODEV; in acpi_dev_pm_full/low_power, we will return 0 as in
+>>>> the original acpi_device_set_power. So return -EINVAL here is correct?
+>>>
+>>> No, the original acpi_device_set_power() will return -ENODEV then, but
+>>> in my opinion returning -EINVAL is more accurate, because "power
+>>> manageable" means "you can change power state of it".
+>>
+>> Shall I prepare a patch to update the errno in acpi_bus_set_power?
+> 
+> In fact, it doesn't need to check flags.power_manageable after this patch
+> and the debug message won't be missed I think, so please just remove
+> the whole if () from there, if that's not a problem.
 
+Patch to remove the redundant check, apply on top of this one.
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, July 31, 2013 3:38 AM
-> To: Wang Dongsheng-B40534
-> Cc: rjw@sisk.pl; daniel.lezcano@linaro.org; benh@kernel.crashing.org; Li
-> Yang-R58472; Zhao Chenhui-B35336; linux-pm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org
-> Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle
-> support
-> 
-> On 07/30/2013 02:00:03 AM, Dongsheng Wang wrote:
-> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> >
-> > Add cpuidle support for e500 family, using cpuidle framework to
-> > manage various low power modes. The new implementation will remain
-> > compatible with original idle method.
-> >
-> > Initially, this supports PW10, and subsequent patches will support
-> > PW20/DOZE/NAP.
-> 
-> Could you explain what the cpuidle framework does for us that the
-> current idle code doesn't?
-> 
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH 1/3] ACPI / PM: Remove redundant check for power manageable in
+ acpi_bus_set_power
 
-The current idle code, Only a state of low power can make the core idle.
-The core can't get into more low power state.
+Now that we will check if a device is power manageable in
+acpi_device_set_power, it is no longer necessary to do this check in
+acpi_bus_set_power, so remove it.
 
-> In particular, what scenario do you see where we would require a
-> software
-> governor to choose between idle states, and how much power is saved
-> compared to a simpler approach?  There is timer that can be used to
-> automatically enter PW20 after a certain amount of time in PW10.
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/acpi/device_pm.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-Yes, the hardware can automatically enter PW20 state. But this is hardware
-feature, we need to software to manage it. Only for PW20 state, we can drop
-this cpuidle and using the hardware to control it. But if we need to support
-PH10/PH15/PH20/PH30, the current idle code cannot support them. 
-
-> How much better results do you get from a software governor?  Do we even
-> have the right data to characterize each state so that a software governor
-> could make good decisions?  Is cpuidle capable of governing the interval
-> of such a timer, rather than directly governing states?
-> 
->From now on we did not benchmark these data, because we only have PW10 state.
-
-I can do support doze/nap for e6500. To get some data to show you.
-
-> As for doze/nap, why would we want to use those on newer cores?  Do you
-> have numbers for how much power each mode saves?
-> 
-The PH state is plan to support, if the core can make into more low power state,
-why not to do this.
-
-PH10(doze)/PH15(nap)/PH20/PH30, These states can save more CPU power.
-
-> Active governors may be useful on older cores that only have doze/nap,
-> to
-> select between them, but if that's the use case then why start with
-> pw10?
-Pw10 is supported on E500MC/E5500/E6500. And we plan to support PW20 for E65OO core.
-I will take doze/nap up a bit later.
-
-> And I'd want to see numbers for how much power nap saves versus doze.
-> 
-> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > ---
-> > This patch keep using cpuidle_register_device(), because we need to
-> > support cpu
-> > hotplug. I will fix "device" issue in this driver, after
-> > Deepthi Dharwar <deepthi@linux.vnet.ibm.com> add a hotplug handler
-> > into cpuidle
-> > freamwork.
-> 
-> Where's the diffstat?
-> 
-See, http://patchwork.ozlabs.org/patch/260997/
-
-> > @@ -0,0 +1,222 @@
-> > +/*
-> > + * Copyright 2013 Freescale Semiconductor, Inc.
-> > + *
-> > + * CPU Idle driver for Freescale PowerPC e500 family processors.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > modify
-> > + * it under the terms of the GNU General Public License version 2 as
-> > + * published by the Free Software Foundation.
-> > + *
-> > + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > + */
-> 
-> Is this derived from some other file?  It looks like it...  Where's the
-> attribution?
-> 
-The copyright is from drivers/cpufreq/ppc-corenet-cpufreq.c
-
-> > +#include <linux/cpu.h>
-> > +#include <linux/cpuidle.h>
-> > +#include <linux/init.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/module.h>
-> > +#include <linux/notifier.h>
-> > +
-> > +#include <asm/machdep.h>
-> > +
-> > +static struct cpuidle_driver e500_idle_driver = {
-> > +	.name = "e500_idle",
-> > +	.owner = THIS_MODULE,
-> > +};
-> > +
-> > +static struct cpuidle_device __percpu *e500_cpuidle_devices;
-> > +
-> > +static void e500_cpuidle(void)
-> > +{
-> > +	/*
-> > +	 * This would call on the cpuidle framework, and the back-end
-> > +	 * driver to go to idle states.
-> > +	 */
-> > +	if (cpuidle_idle_call()) {
-> > +		/*
-> > +		 * On error, execute default handler
-> > +		 * to go into low thread priority and possibly
-> > +		 * low power mode.
-> > +		 */
-> > +		HMT_low();
-> > +		HMT_very_low();
-> 
-> This HMT stuff doesn't do anything on e500 derivatives AFAIK.
-> 
-Yes, there should do nothing, let arch_cpu_idle to do the failed.
-
-> > +static struct cpuidle_state fsl_pw_idle_states[] = {
-> > +	{
-> > +		.name = "pw10",
-> > +		.desc = "pw10",
-> > +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> > +		.exit_latency = 0,
-> > +		.target_residency = 0,
-> > +		.enter = &pw10_enter
-> 
-> Where is pw10_enter defined?
-> 
-In this patch..
-
-> > +static int cpu_is_feature(unsigned long feature)
-> > +{
-> > +	return (cur_cpu_spec->cpu_features == feature);
-> > +}
-> > +
-> > +static int __init e500_idle_init(void)
-> > +{
-> > +	struct cpuidle_state *cpuidle_state_table = NULL;
-> > +	struct cpuidle_driver *drv = &e500_idle_driver;
-> > +	int err;
-> > +	unsigned int max_idle_state = 0;
-> > +
-> > +	if (cpuidle_disable != IDLE_NO_OVERRIDE)
-> > +		return -ENODEV;
-> > +
-> > +	if (cpu_is_feature(CPU_FTRS_E500MC) ||
-> > cpu_is_feature(CPU_FTRS_E5500) ||
-> > +			cpu_is_feature(CPU_FTRS_E6500)) {
-> 
-> There's no guarantee that a CPU with the same set of features is the
-> exact same CPU.
-> 
-> What specific feature are you looking for here?
-> 
-Here is the type of the core. E500MC,E5500,E6500 do wait.
-
-> > +		cpuidle_state_table = fsl_pw_idle_states;
-> > +		max_idle_state = ARRAY_SIZE(fsl_pw_idle_states);
-> > +	}
-> > +
-> > +	if (!cpuidle_state_table || !max_idle_state)
-> > +		return -EPERM;
-> 
-> ENODEV?
-> 
-Looks better than EPERM.
-
--dongsheng
-
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index 63324b8..8270711 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -245,13 +245,6 @@ int acpi_bus_set_power(acpi_handle handle, int state)
+ 	if (result)
+ 		return result;
+ 
+-	if (!device->flags.power_manageable) {
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-				"Device [%s] is not power manageable\n",
+-				dev_name(&device->dev)));
+-		return -ENODEV;
+-	}
+-
+ 	return acpi_device_set_power(device, state);
+ }
+ EXPORT_SYMBOL(acpi_bus_set_power);
+-- 
+1.8.3.2.10.g43d11f4
