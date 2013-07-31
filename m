@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 05/15] cpufreq: exynos: initialize .owner field with THIS_MODULE
-Date: Wed, 31 Jul 2013 19:49:14 +0530
-Message-ID: <b4dab0727f68614d56892719b82ae10450c4e7ae.1375279948.git.viresh.kumar@linaro.org>
+Subject: [PATCH 06/15] cpufreq: imx6q: initialize .owner field with THIS_MODULE
+Date: Wed, 31 Jul 2013 19:49:15 +0530
+Message-ID: <42eff9f40a2403332561d611e997613791c39f29.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1375279948.git.viresh.kumar@linaro.org>
 References: <cover.1375279948.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 CPUFreq core does following at multiple places:
@@ -22,35 +22,22 @@ valid pointer.
 This field wasn't initialized for this driver, lets initialize it with
 THIS_MODULE.
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/exynos-cpufreq.c     | 1 +
- drivers/cpufreq/exynos5440-cpufreq.c | 1 +
- 2 files changed, 2 insertions(+)
+ drivers/cpufreq/imx6q-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 0d32f02..fe0bbce 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -278,6 +278,7 @@ static struct cpufreq_driver exynos_driver = {
- 	.init		= exynos_cpufreq_cpu_init,
- 	.exit		= exynos_cpufreq_cpu_exit,
- 	.name		= "exynos_cpufreq",
-+	.owner		= THIS_MODULE,
- 	.attr		= exynos_cpufreq_attr,
- #ifdef CONFIG_PM
- 	.suspend	= exynos_cpufreq_suspend,
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index 0c74018..d0d353c 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -344,6 +344,7 @@ static struct cpufreq_driver exynos_driver = {
- 	.target		= exynos_target,
- 	.get		= exynos_getspeed,
- 	.init		= exynos_cpufreq_cpu_init,
-+	.owner		= THIS_MODULE,
- 	.name		= CPUFREQ_NAME,
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index e37cdae..adbda1a 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -209,6 +209,7 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
+ 	.init = imx6q_cpufreq_init,
+ 	.exit = imx6q_cpufreq_exit,
+ 	.name = "imx6q-cpufreq",
++	.owner = THIS_MODULE,
+ 	.attr = imx6q_cpufreq_attr,
  };
  
 -- 
