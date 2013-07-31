@@ -1,76 +1,94 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Wed, 31 Jul 2013 15:59:50 -0600
-Message-ID: <51F988D6.6090104@wwwdotorg.org>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
+Date: Thu, 01 Aug 2013 01:05:57 +0200
+Message-ID: <3434501.u5vXUZPfFA@vostro.rjw.lan>
+References: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com> <51F7A152.3030602@linaro.org> <2534583.WCBIj5YC29@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:50651 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756705Ab3GaV7y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2013 17:59:54 -0400
-In-Reply-To: <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:49565 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757781Ab3GaWzq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Jul 2013 18:55:46 -0400
+In-Reply-To: <2534583.WCBIj5YC29@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Nishanth Menon <nm@ti.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Wang Dongsheng-B40534 <B40534@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-On 07/31/2013 10:11 AM, Mark Rutland wrote:
-> On Wed, Jul 31, 2013 at 04:58:22PM +0100, Nishanth Menon wrote:
->> On 07/31/2013 10:29 AM, Mark Rutland wrote:
->>> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
-...
->>>> Let me try to explain since SoCs such as OMAP/AM family dont make life
->>>> trivial :)..
->>>>
->>>> An legacy example[1][2]
->>>>
->>>> SoC DM explains that the chip is capable of X opps:
->>>> opp1, 2 - for all devices
->>>> opp1,2, 3 - if efuse bit X@y is set
->>>> opp1,2,3,4 - if efuse bit X@y is set AND Board design meets SoC vendors
->>>> requirements (including additional features A, B is enabled).
->>>>
->>>> So, the same chip family has a hardware feature - not just as a pm
->>>> policy of selecting among a set of OPPs which opp to work on, but the
->>>> actual set of OPPs are actually options in themselves that is selected
->>>> based on board's SoC selection.
->>>
->>> This sounds like we're describing a set of features not applicable to
->>> the device, then removing them, rather than only describing those
->>> features applicable to the device. If you have to probe to figure out
->>> which values in the dt are applicable, I'm not sure I see the benefit of
->>> describing said values in dt.
->>
->> Device has *options* of operating points sets it can operate at. It is 
->> not like "these are not applicable" for the device.
+On Tuesday, July 30, 2013 03:33:44 PM Rafael J. Wysocki wrote:
+> On Tuesday, July 30, 2013 01:19:46 PM Daniel Lezcano wrote:
+> > On 07/30/2013 12:48 PM, Wang Dongsheng-B40534 wrote:
+> > > 
+> > > 
+> > >> -----Original Message-----
+> > >> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
+> > >> Sent: Tuesday, July 30, 2013 5:28 PM
+> > >> To: Wang Dongsheng-B40534
+> > >> Cc: rjw@sisk.pl; linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > >> Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
+> > >>
+> > >> On 07/30/2013 08:55 AM, Dongsheng Wang wrote:
+> > >>> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > >>>
+> > >>> After __cpuidle_register_device, the cpu incs are added up, but decs
+> > >>> are not, thus the module refcount is not match. So the module "exit"
+> > >>> function can not be executed when we do remove operation. Move
+> > >>> module_put into __cpuidle_register_device to fix it.
+> > >>
+> > >> Sorry, I still don't get it :/
+> > >>
+> > >> register->module_get
+> > >> unregister->module_put
+> > >>
+> > >> you change it by:
+> > >>
+> > >> register->module_get
+> > >> register->module_put
+> > >> unregister->none
+> > >>
+> > >> which is wrong.
+> > >>
+> > > module_get->set per cpu incs=1
+> > > module_put->set per cpu decs=1
+> > > 
+> > > module_refcount-> incs - decs;
+> > > 
+> > > "unregister" usually call in module->exit function. 
+> > > But if module_refcount is not zero, the module->exit() cannot be executed.
+> > 
+> > Ok, IIUC, the refcount is decremented in the unregister function but
+> > this one is never called because the refcount is not zero.
+> > 
+> > Funny, that means the module format was *never* used at all as it does
+> > not work.
+> > 
+> > I am wondering if we shouldn't just remove the module support for
+> > cpuidle. Rafael ?
 > 
-> I don't follow.
-> 
-> In the example above, if efuse bit X@y is not set, opp3 is not
-> applicable, but we're describing it in dt. It's not an option for the
-> particular device, yet it appears in the device's dt.
-> 
-> For opp4, it's even worse, as you're suggesting we describe an option
-> for the device that requires the driver to use some additional platform
-> knowledge to come to the conclusion that it cannot use. That sounds like
-> device knowledge internal to a driver, not how you describe an instance
-> of a device to an OS.
-> 
-> Have I misunderstood something here?
+> That would be the simplest thing to do and possibly the most correct one too,
+> but I need to double check how inte_idle/ACPI idle interactions depend on that.
 
->From the kernel's perspective here, a simple approach would be to say
-the the DT passed to the kernel must contain exactly the set of OPPs
-that the kernel should use. If this requires probing HW (fuses, board
-knowledge, etc.), then the bootloader/... must do that and fix up the DT
-to correctly represent the board at boot time (or choose the correct DT
-from a set of options in flash) or whoever flashed the board must have
-simply put the correct DT onto the board.
+As I thought, the ordering between intel_idle and the ACPI processor driver's
+idle part depends on the latter being modular.
 
-Of course, that simply pushes back the issue onto the flashing utility
-or bootloader. Perhaps pushing stuff back there isn't a good holistic
-solution, since we only get a clean kernel by making life suck for
-someone else, and we'd perhaps better optimize the entire SW stack.
+Also I'm not sure if the core is at fault here.  It evidently expects that
+drivers will be registered before devices, so the driver module cannot be
+released as long as there are any active devices.  This sounds logical from
+the correctness viewpoint.
+
+However, from the usability viewpoint it is not very convenient.  It would be
+nicer if the driver could be unregistered and registered while devices are
+there, but I'm afraid that would require some code reorganization.
+
+The $subject patch isn't a correct change anyway in my opinion, because it
+tries to kind of sidestep the core's assumptions.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
