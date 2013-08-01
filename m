@@ -1,140 +1,59 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for
- cpu nodes
-Date: Thu, 1 Aug 2013 08:02:56 -0400
-Message-ID: <20130801120256.GW5882@titan.lakedaemon.net>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <51FA3064.9080502@arm.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
+ another node for OPP
+Date: Thu, 1 Aug 2013 07:15:07 -0500
+Message-ID: <20130801121506.GA3048@kahuna>
+References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <51F80750.8030701@wwwdotorg.org>
+ <51F826A0.2000109@ti.com>
+ <51F8F17B.1020304@arm.com>
+ <51F9234A.6010501@ti.com>
+ <51F986D3.4060501@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:43151 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753884Ab3HAMPO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 08:15:14 -0400
 Content-Disposition: inline
-In-Reply-To: <51FA3064.9080502@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <51F986D3.4060501@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-Sudeep,
-
-On Thu, Aug 01, 2013 at 10:54:44AM +0100, Sudeep KarkadaNagesha wrote:
-> On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
-> > From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 15:51-20130731, Stephen Warren wrote:
+> On 07/31/2013 08:46 AM, Nishanth Menon wrote:
+> ...
+> > Let me try to explain since SoCs such as OMAP/AM family dont make life
+> > trivial :)..
 > > 
-> > Currently set_secondary_cpus_clock assume the CPU logical ordering
-> > and the MPDIR in DT are same, which is incorrect.
+> > An legacy example[1][2]
 > > 
-> > Since the CPU device nodes can be retrieved in the logical ordering
-> > using the DT helper, we can remove the devices tree parsing.
-> > 
-> > This patch removes DT parsing by making use of of_get_cpu_node.
-> > 
-> > Cc: Gregory Clement <gregory.clement@free-electrons.com>
-> > Cc: Andrew Lunn <andrew@lunn.ch>
-> > Cc: Jason Cooper <jason@lakedaemon.net>
-> > Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> > SoC DM explains that the chip is capable of X opps:
+> > opp1, 2 - for all devices
+> > opp1,2, 3 - if efuse bit X@y is set
+> > opp1,2,3,4 - if efuse bit X@y is set AND Board design meets SoC vendors
+> > requirements (including additional features A, B is enabled).
 > 
-> Hi Gregory/Andrew/Jason,
-> 
-> Does this change look fine for mvebu?
-> If yes, can I have your ACKs ?
+> Hopefully the text "board design meets SoC vendors requirements" means
+> something like "the board has a big fan capable of dissipating a lot of
+> heat" and not "the board manufacturer paid us a lot of money to license
+> the 'go faster' feature". The former could well be suitable to represent
+> in DT, the latter not.
 
-Gregory is the one best suited to review/Ack this.  He'll be back on
-Monday.
+Nope, these are technical requirements. In my company, these
+guidelines are called Power Distribution Network guideline - which
+control the IRDrop within reasonable limit, running DPLLs are varied
+frequencies have different current draw characteristics, such that noise
+limits, cleanup capacitors etc. For boards that dont care too much about
+higher frequencies, they tend to skimp a little on caps and board
+routing constraints to save on BOM (Bill Of Materials) cost.
 
-thx,
+I am sure similar constraints do exist in other SoC vendors as well.
 
-Jason.
-
-> 
-> Regards,
-> Sudeep
-> > ---
-> >  arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
-> >  1 file changed, 24 insertions(+), 28 deletions(-)
-> > 
-> > diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-> > index ce81d30..001dd42 100644
-> > --- a/arch/arm/mach-mvebu/platsmp.c
-> > +++ b/arch/arm/mach-mvebu/platsmp.c
-> > @@ -23,51 +23,47 @@
-> >  #include <linux/of.h>
-> >  #include <linux/mbus.h>
-> >  #include <asm/cacheflush.h>
-> > +#include <asm/prom.h>
-> >  #include <asm/smp_plat.h>
-> >  #include "common.h"
-> >  #include "armada-370-xp.h"
-> >  #include "pmsu.h"
-> >  #include "coherency.h"
-> >  
-> > +static struct clk *__init get_cpu_clk(int cpu)
-> > +{
-> > +	struct clk *cpu_clk;
-> > +	struct device_node *np = of_get_cpu_node(cpu);
-> > +
-> > +	if (WARN(!np, "missing cpu node\n"))
-> > +		return NULL;
-> > +	cpu_clk = of_clk_get(np, 0);
-> > +	if (WARN_ON(IS_ERR(cpu_clk)))
-> > +		return NULL;
-> > +	return cpu_clk;
-> > +}
-> > +
-> >  void __init set_secondary_cpus_clock(void)
-> >  {
-> > -	int thiscpu;
-> > +	int thiscpu, cpu;
-> >  	unsigned long rate;
-> > -	struct clk *cpu_clk = NULL;
-> > -	struct device_node *np = NULL;
-> > +	struct clk *cpu_clk;
-> >  
-> >  	thiscpu = smp_processor_id();
-> > -	for_each_node_by_type(np, "cpu") {
-> > -		int err;
-> > -		int cpu;
-> > -
-> > -		err = of_property_read_u32(np, "reg", &cpu);
-> > -		if (WARN_ON(err))
-> > -			return;
-> > -
-> > -		if (cpu == thiscpu) {
-> > -			cpu_clk = of_clk_get(np, 0);
-> > -			break;
-> > -		}
-> > -	}
-> > -	if (WARN_ON(IS_ERR(cpu_clk)))
-> > +	cpu_clk = get_cpu_clk(thiscpu);
-> > +	if (!cpu_clk)
-> >  		return;
-> >  	clk_prepare_enable(cpu_clk);
-> >  	rate = clk_get_rate(cpu_clk);
-> >  
-> >  	/* set all the other CPU clk to the same rate than the boot CPU */
-> > -	for_each_node_by_type(np, "cpu") {
-> > -		int err;
-> > -		int cpu;
-> > -
-> > -		err = of_property_read_u32(np, "reg", &cpu);
-> > -		if (WARN_ON(err))
-> > +	for_each_possible_cpu(cpu) {
-> > +		if (cpu == thiscpu)
-> > +			continue;
-> > +		cpu_clk = get_cpu_clk(cpu);
-> > +		if (!cpu_clk)
-> >  			return;
-> > -
-> > -		if (cpu != thiscpu) {
-> > -			cpu_clk = of_clk_get(np, 0);
-> > -			clk_set_rate(cpu_clk, rate);
-> > -		}
-> > +		clk_set_rate(cpu_clk, rate);
-> >  	}
-> >  }
-> >  
-> > 
-> 
-> 
+-- 
+Regards,
+Nishanth Menon
