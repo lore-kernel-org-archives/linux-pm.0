@@ -1,201 +1,112 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
- another node for OPP
-Date: Thu, 1 Aug 2013 14:54:22 +0100
-Message-ID: <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <51F80750.8030701@wwwdotorg.org>
- <51F826A0.2000109@ti.com>
- <51F8F17B.1020304@arm.com>
- <51F9234A.6010501@ti.com>
- <20130731152925.GP29859@e106331-lin.cambridge.arm.com>
- <51F9341E.60102@ti.com>
- <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
- <51F93AFB.1030104@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC][PATCH] cpufreq: Do not hold driver module references for
+ additional policy CPUs
+Date: Thu, 1 Aug 2013 20:14:31 +0530
+Message-ID: <CAKohponkEWs2r5ibR8RTAN6D2LfNfDB7bvy1nqdTN4C3jQHdJA@mail.gmail.com>
+References: <2362640.pUofnXyzOi@vostro.rjw.lan>
+	<51FA1818.2050203@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:43181 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756029Ab3HAN6N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 09:58:13 -0400
-Content-Disposition: inline
-In-Reply-To: <51F93AFB.1030104@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51FA1818.2050203@linux.vnet.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Wed, Jul 31, 2013 at 05:27:39PM +0100, Nishanth Menon wrote:
-> On 07/31/2013 11:11 AM, Mark Rutland wrote:
-> > On Wed, Jul 31, 2013 at 04:58:22PM +0100, Nishanth Menon wrote:
-> >> On 07/31/2013 10:29 AM, Mark Rutland wrote:
-> >>> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
-> >>>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
-> >>>>> On 30/07/13 21:48, Nishanth Menon wrote:
-> >>>>>> On 07/30/2013 01:34 PM, Stephen Warren wrote:
-> >>>>>>> On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
-> >>>>>>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> >>>>>>>>
-> >>>>>>>> If more than one similar devices share the same OPPs, currently we
-> >>>>>>>> need to replicate the OPP entries in all the nodes.
-> >>>>>>>>
-> >>>>>>>> Few drivers like cpufreq depend on physical cpu0 node to specify the
-> >>>>>>>> OPPs and only that node is referred irrespective of the logical cpu
-> >>>>>>>> accessing it. Alternatively to support cpuhotplug path, few drivers
-> >>>>>>>> parse all the cpu nodes for OPPs. Instead we can specify the phandle
-> >>>>>>>> of the node with which the current node shares the operating points.
-> >>>>>>>>
-> >>>>>>>> This patch adds support to specify the phandle in the operating points
-> >>>>>>>> of any device node, where the node specified by the phandle holds the
-> >>>>>>>> actual OPPs.
-> >>>>>>>
-> >>>>>>>> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-> >>>>>>>
-> >>>>>>>> +Optional properties:
-> >>>>>>>> +- operating-points-phandle: phandle to the device node with which this
-> >>>>>>>
-> >>>>>>> That's a funny name. Bikeshedding a bit, how about shared-operating-points?
-> >>>>>>>
-> >>>>>>> I haven't thought at all about whether this change conceptually makes sense.
-> >>>>>>>
-> >>>>>>
-> >>>>>> They may not really be shared- we could have phandle list even. one
-> >>>>>> might have optional OPP sets for a chip family that one may  - I was
-> >>>>>> about to suggest something similar to pinctrl
-> >>>>>>
-> >>>>> I am not sure if I follow you here, if each chip family has its unique
-> >>>>> set of OPPs, why do we need to represent all of them together ?
-> >>>>> IIUC you are thinking about having these in include dts file, used by
-> >>>>> multiple chip/board dts.
-> >>>>>
-> >>>>>> operating-points-names = "default", "performance", "cheapboard-config" ;)
-> >>>>>> operating-points-0 = <&...>
-> >>>>>> operating-points-1 = <&...>
-> >>>>>> operating-points-2 = <&...>
-> >>>>>>
-> >>>>> This looks more like a PM policy.
-> >>>>
-> >>>> Let me try to explain since SoCs such as OMAP/AM family dont make life
-> >>>> trivial :)..
-> >>>>
-> >>>> An legacy example[1][2]
-> >>>>
-> >>>> SoC DM explains that the chip is capable of X opps:
-> >>>> opp1, 2 - for all devices
-> >>>> opp1,2, 3 - if efuse bit X@y is set
-> >>>> opp1,2,3,4 - if efuse bit X@y is set AND Board design meets SoC vendors
-> >>>> requirements (including additional features A, B is enabled).
-> >>>>
-> >>>> So, the same chip family has a hardware feature - not just as a pm
-> >>>> policy of selecting among a set of OPPs which opp to work on, but the
-> >>>> actual set of OPPs are actually options in themselves that is selected
-> >>>> based on board's SoC selection.
-> >>>
-> >>> This sounds like we're describing a set of features not applicable to
-> >>> the device, then removing them, rather than only describing those
-> >>> features applicable to the device. If you have to probe to figure out
-> >>> which values in the dt are applicable, I'm not sure I see the benefit of
-> >>> describing said values in dt.
-> >>
-> >> Device has *options* of operating points sets it can operate at. It is
-> >> not like "these are not applicable" for the device.
-> >
-> > I don't follow.
-> >
-> > In the example above, if efuse bit X@y is not set, opp3 is not
-> > applicable, but we're describing it in dt. It's not an option for the
-> > particular device, yet it appears in the device's dt.
-> This one is easy - opp_enable/disable as discussed in 
-> http://marc.info/?l=linux-pm&m=137528631125365&w=2 should probably help.
+On 1 August 2013 13:41, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> On 08/01/2013 05:38 AM, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> The cpufreq core is a little inconsistent in the way it uses the
+>> driver module refcount.
+>>
+>> Namely, if __cpufreq_add_dev() is called for a CPU without siblings
+>> or generally a CPU for which a new policy object has to be created,
+>> it grabs a reference to the driver module to start with, but drops
+>> that reference before returning.  As a result, the driver module
+>> refcount is then equal to 0 after __cpufreq_add_dev() has returned.
+>>
+>> On the other hand, if the given CPU is a sibling of some other
+>> CPU already having a policy, cpufreq_add_policy_cpu() is called
+>> to link the new CPU to the existing policy.  In that case,
+>> cpufreq_cpu_get() is called to obtain that policy and grabs a
+>> reference to the driver module, but that reference is not
+>> released and the module refcount will be different from 0 after
+>> __cpufreq_add_dev() returns (unless there is an error).  That
+>> prevents the driver module from being unloaded until
+>> __cpufreq_remove_dev() is called for all the CPUs that
+>> cpufreq_add_policy_cpu() was called for previously.
+>>
+>> To remove that inconsistency make cpufreq_add_policy_cpu() execute
+>> cpufreq_cpu_put() for the given policy before returning, which
+>> decrements the driver module refcount so that it will be 0 after
+>> __cpufreq_add_dev() returns,
+>
+> Removing the inconsistency is a good thing, but I think we should
+> make it consistent the other way around - make a CPU-online increment
+> the driver module refcount and decrement it only on CPU-offline.
 
-Wrong link? There's no reference to opp_enable or opp_disable...
+I took time to review to this mail as I was looking at the problem
+yesterday. I am sorry to say, but I have completely different views as
+compared to You and Rafael both :)
 
-> >
-> > For opp4, it's even worse, as you're suggesting we describe an option
-> > for the device that requires the driver to use some additional platform
-> > knowledge to come to the conclusion that it cannot use. That sounds like
-> 
-> Precisely.. it wont have that knowledge and should not need that 
-> knowledge. See explanation above.
-> 
-> Specific examples: SoC vendors try to squeeze the max out of the chip, 
-> when voltage values are defined, they need to consider board markets 
-> that they try to address, pricepoints etc.. too many vectors.. not all 
-> board manufacturers care to meet SoC vendor requirements as they may not 
-> care about picking up the full potential of the chip - example - 
-> usecases on OMAP where ARM is seldom used and max DSP is used (video 
-> usecases) and others so they use a high performance chip, refuse to 
-> optimize vdd_mpu rail, dont care too much about higher ARM OPPs. Yeah, I 
-> could always tell them to hand edit the OPP entries and maintain kernel 
-> forks, but that is never the right thing to do.
+First of all, Rafael's patch is incomplete as it hasn't fixed the issue
+completely. When we have multiple CPUs per policy and
+cpufreq_add_dev() is called for the first one, it call cpufreq_get_cpu()
+for all cpus of this policy(), so count is == x (no. of CPUs in this policy)
++ 1 (This is the initial value of .owner).
 
-Sorry, but I still don't follow.
+And so we still have module count getting incremented for other cpus :)
 
-We seem to be going over two cases, which both feel wrong to me:
+Now few lines about My point of view to this whole thing. I believe we
+should get rid of .owner field from struct cpufreq_driver completely. It
+doesn't make sense to me in doing all this management at all. Surprised?
+Shocked? Laughing at me? :)
 
-* One SoC used in multiple boards, where on some boards an OPP cannot be
-  used because some requirement is not met. In this case, the board's
-  dts (by including the SoC's dtsi) describes something that's not
-  necessarily usable, and we seem to have no way to describe in the OPP
-  table that the OPP is not usable for that board.
+Well I may be wrong but this is what I think:
+- It looks stupid to me that I can't do this from userspace in one go:
+  $ insmod cpufreq_driver.ko
+  $ rmmod cpufreq_driver.ko
 
-* Performance profiles, in which you have a set of OPP tables for
-  "performance, "low-power", and whatever else. This arbitrary split
-  seems like a configuration decision rather than a hardware description
-  unless there is some hard limit that cannot be detected (e.g. the
-  processor can function at some arbitrary high speed, but becomes hot
-  enough to melt something, and there's no temperature sensor to handle
-  this case dynamically).
+What the hell changed in between that isn't visible to user? It looked
+completely stupid in that way..
 
-Have I've misunderstood something?
+Something like this sure makes sense:
+$ insmod ondemand-governor.ko
+$ change governor to ondemand for few CPUs
+$ rmmod ondemand-governor.ko
 
-> 
-> 
-> > device knowledge internal to a driver, not how you describe an instance
-> > of a device to an OS.
-> 
-> OPP has never been a device - it is a performance point at which to 
-> operate a device. I am not sure if we are discussing about phandle 
-> definition of OPP is an issue or options of operating-point sets is an 
-> issue now.
-> 
-> >
-> > Have I misunderstood something here?
-> 
-> Are you suggesting we have OPP tables per board?
+as we have deliberately add few users of governor. And so without second
+step, rmmod should really work smoothly. And it does.
 
-Yes, for the reasons I give above. Common OPP tabless can easily be
-factored into separate include files to allow for arbitrary composition.
+Now, why shouldn't there be a problem with this approach? I will write
+that inline to the problems you just described.
 
-> 
-> >
-> >>
-> >> DT does have to describe the hardware capability - that was it's entire
-> >> intent. operating points are valid configurations where it can be
-> >> operated at - and when you have options of configurations you need to
-> >> choose from based on the board you are using it on, it still retains
-> >> "hardware behavior" aspect.
-> >
-> > The dt should describe the particular board you're running on. As I see
-> > it what you're suggesting is equivalent to describing some hardware in
-> > the dt that isn't actually present, then relying on the OS to poke
-> > around somewhere else, figure out that the hardware isn't present, and
-> > then forget that the dt described it.
-> I will buy that eventual dtb should contain some way to choose the OPP 
-> that the particular board can operate on.
-> 
-> SoC dtsi is what we define, this allows multiple board dts to use them. 
-> the moment we start defining OPPs per board, all mayhem breaks loose.
-> 
-> SoC dtsi provides options for the SoC to be operated upon, it is like 
-> saying I have 10 Uarts, but board dts chooses to enable the ones it 
-> uses. pinctrl we do the same. why cant we do with operating-points as well?
+> The reason is, one should not be able to unload the back-end cpufreq
+> driver module when some CPUs are still being managed. Nasty things
+> will result if we allow that. For example, if we unload the module,
+> and then try to do a CPU offline, then the cpufreq hotplug notifier
+> won't even be called (because cpufreq_unregister_driver also
+> unregisters the hotplug notifier). And that might be troublesome.
 
-That's a possibility if we define a standard mechanism for stating OPPs
-are unusable (rather than having to probe the device to figure that
-out).
+So what? Its simply equivalent to we have booted our system, haven't
+inserted cpufreq module and taken out a cpu.
 
-Thanks,
-Mark.
+> Even worse, if we unload a cpufreq driver module and load a new
+> one and *then* try to offline the CPU, then the cpufreq_driver->exit()
+> function that we call during CPU offline will end up calling the
+> corresponding function of an entirely different driver! So the
+> ->init() and ->exit() calls won't match.
+
+That's not true. When we unload the module, it must call
+cpufreq_unregister_driver() which should call cpufreq_remove_cpu()
+for all cpus and so exit() is already called for last module.
+
+If we get something new now, it should simply work.
+
+What do you think gentlemen?
+
+--
+viresh
