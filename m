@@ -1,94 +1,118 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
-Date: Thu, 01 Aug 2013 01:05:57 +0200
-Message-ID: <3434501.u5vXUZPfFA@vostro.rjw.lan>
-References: <1375167319-12821-1-git-send-email-dongsheng.wang@freescale.com> <51F7A152.3030602@linaro.org> <2534583.WCBIj5YC29@vostro.rjw.lan>
+Subject: [RFC][PATCH] cpufreq: Do not hold driver module references for additional policy CPUs
+Date: Thu, 01 Aug 2013 02:08:15 +0200
+Message-ID: <2362640.pUofnXyzOi@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:49565 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:49614 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757781Ab3GaWzq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Jul 2013 18:55:46 -0400
-In-Reply-To: <2534583.WCBIj5YC29@vostro.rjw.lan>
+	id S1751305Ab3GaX6F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Jul 2013 19:58:05 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Wang Dongsheng-B40534 <B40534@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
 
-On Tuesday, July 30, 2013 03:33:44 PM Rafael J. Wysocki wrote:
-> On Tuesday, July 30, 2013 01:19:46 PM Daniel Lezcano wrote:
-> > On 07/30/2013 12:48 PM, Wang Dongsheng-B40534 wrote:
-> > > 
-> > > 
-> > >> -----Original Message-----
-> > >> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
-> > >> Sent: Tuesday, July 30, 2013 5:28 PM
-> > >> To: Wang Dongsheng-B40534
-> > >> Cc: rjw@sisk.pl; linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > >> Subject: Re: [PATCH] cpuidle: fix unremovable issue for module driver
-> > >>
-> > >> On 07/30/2013 08:55 AM, Dongsheng Wang wrote:
-> > >>> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > >>>
-> > >>> After __cpuidle_register_device, the cpu incs are added up, but decs
-> > >>> are not, thus the module refcount is not match. So the module "exit"
-> > >>> function can not be executed when we do remove operation. Move
-> > >>> module_put into __cpuidle_register_device to fix it.
-> > >>
-> > >> Sorry, I still don't get it :/
-> > >>
-> > >> register->module_get
-> > >> unregister->module_put
-> > >>
-> > >> you change it by:
-> > >>
-> > >> register->module_get
-> > >> register->module_put
-> > >> unregister->none
-> > >>
-> > >> which is wrong.
-> > >>
-> > > module_get->set per cpu incs=1
-> > > module_put->set per cpu decs=1
-> > > 
-> > > module_refcount-> incs - decs;
-> > > 
-> > > "unregister" usually call in module->exit function. 
-> > > But if module_refcount is not zero, the module->exit() cannot be executed.
-> > 
-> > Ok, IIUC, the refcount is decremented in the unregister function but
-> > this one is never called because the refcount is not zero.
-> > 
-> > Funny, that means the module format was *never* used at all as it does
-> > not work.
-> > 
-> > I am wondering if we shouldn't just remove the module support for
-> > cpuidle. Rafael ?
-> 
-> That would be the simplest thing to do and possibly the most correct one too,
-> but I need to double check how inte_idle/ACPI idle interactions depend on that.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-As I thought, the ordering between intel_idle and the ACPI processor driver's
-idle part depends on the latter being modular.
+The cpufreq core is a little inconsistent in the way it uses the
+driver module refcount.
 
-Also I'm not sure if the core is at fault here.  It evidently expects that
-drivers will be registered before devices, so the driver module cannot be
-released as long as there are any active devices.  This sounds logical from
-the correctness viewpoint.
+Namely, if __cpufreq_add_dev() is called for a CPU without siblings
+or generally a CPU for which a new policy object has to be created,
+it grabs a reference to the driver module to start with, but drops
+that reference before returning.  As a result, the driver module
+refcount is then equal to 0 after __cpufreq_add_dev() has returned.
 
-However, from the usability viewpoint it is not very convenient.  It would be
-nicer if the driver could be unregistered and registered while devices are
-there, but I'm afraid that would require some code reorganization.
+On the other hand, if the given CPU is a sibling of some other
+CPU already having a policy, cpufreq_add_policy_cpu() is called
+to link the new CPU to the existing policy.  In that case,
+cpufreq_cpu_get() is called to obtain that policy and grabs a
+reference to the driver module, but that reference is not
+released and the module refcount will be different from 0 after
+__cpufreq_add_dev() returns (unless there is an error).  That
+prevents the driver module from being unloaded until
+__cpufreq_remove_dev() is called for all the CPUs that
+cpufreq_add_policy_cpu() was called for previously.
 
-The $subject patch isn't a correct change anyway in my opinion, because it
-tries to kind of sidestep the core's assumptions.
+To remove that inconsistency make cpufreq_add_policy_cpu() execute
+cpufreq_cpu_put() for the given policy before returning, which
+decrements the driver module refcount so that it will be 0 after
+__cpufreq_add_dev() returns, but also make it take a reference to
+the policy itself using kobject_get() and do not release that
+reference (unless there's an error or system resume is under way),
+which again is consistent with the "raw" __cpufreq_add_dev()
+behavior.
+
+Accordingly, modify __cpufreq_remove_dev() to use kobject_put() to
+drop policy references taken by cpufreq_add_policy_cpu().
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+On top of current linux-pm.git/linux-next.
 
 Thanks,
 Rafael
 
+---
+ drivers/cpufreq/cpufreq.c |   24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -908,8 +908,10 @@ static int cpufreq_add_policy_cpu(unsign
+ 	unsigned long flags;
+ 
+ 	policy = cpufreq_cpu_get(sibling);
+-	WARN_ON(!policy);
++	if (WARN_ON_ONCE(!policy))
++		return -ENODATA;
+ 
++	kobject_get(&policy->kobj);
+ 	if (has_target)
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 
+@@ -932,14 +934,14 @@ static int cpufreq_add_policy_cpu(unsign
+ 	/* Don't touch sysfs links during light-weight init */
+ 	if (frozen) {
+ 		/* Drop the extra refcount that we took above */
+-		cpufreq_cpu_put(policy);
+-		return 0;
++		kobject_put(&policy->kobj);
++	} else {
++		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
++		if (ret)
++			kobject_put(&policy->kobj);
+ 	}
+ 
+-	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+-	if (ret)
+-		cpufreq_cpu_put(policy);
+-
++	cpufreq_cpu_put(policy);
+ 	return ret;
+ }
+ #endif
+@@ -1298,10 +1300,14 @@ static int __cpufreq_remove_dev(struct d
+ 		if (!frozen)
+ 			cpufreq_policy_free(data);
+ 	} else {
+-
++		/*
++		 * There are more CPUs using the same policy, so only drop the
++		 * reference taken by cpufreq_add_policy_cpu() (unless the
++		 * system is suspending).
++		 */
+ 		if (!frozen) {
+ 			pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+-			cpufreq_cpu_put(data);
++			kobject_put(&data->kobj);
+ 		}
+ 
+ 		if (cpufreq_driver->target) {
+
