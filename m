@@ -1,194 +1,130 @@
-From: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
-Subject: Re: [PATCH] thermal: exynos: Handle the misplaced TRIMINFO register
-Date: Thu, 1 Aug 2013 14:18:22 +0530
-Message-ID: <CAHfPSqAQ_tc+kKR+EBNCa5gM=2AJtnjt8uCdUgHV-1VNA_-9bQ@mail.gmail.com>
-References: <1375336979-14747-1-git-send-email-ch.naveen@samsung.com> <CADGdYn4DA83AcxAzEJW-ndg+wvojruqJYY=urKhxn_6GjJzE3w@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu
+ nodes
+Date: Thu, 01 Aug 2013 10:54:44 +0100
+Message-ID: <51FA3064.9080502@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn4DA83AcxAzEJW-ndg+wvojruqJYY=urKhxn_6GjJzE3w@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, kgene.kim@samsung.com
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:47571 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754289Ab3HAJyW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 05:54:22 -0400
+In-Reply-To: <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Gregory Clement <gregory.clement@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 
-On 1 August 2013 14:02, amit daniel kachhap <amit.daniel@samsung.com> wrote:
-> Hi Naveen,
->
-> Can you rebase these patches against
-> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/log/?h=next.
-> All these patches have been queued for 3.12 merge and contains the new
-> re-structured TMU driver.
-Sure, I will re base and submit.
->
-> Thanks,
-> Amit Daniel
->
-> On Thu, Aug 1, 2013 at 11:32 AM, Naveen Krishna Chatradhi
-> <ch.naveen@samsung.com> wrote:
->> This patch adds code to handle the misplaced TRIMINFO register
->> incase of Exynos5420.
->>
->> On Exynos5420 we have a TRIMINFO register being misplaced for
->> TMU channels 2, 3 and 4
->>
->> TRIMINFO at 0x1006c000 contains data for TMU channel 3
->> TRIMINFO at 0x100a0000 contains data for TMU channel 4
->> TRIMINFO at 0x10068000 contains data for TMU channel 2
->>
->> The misplaced register address is passed through devicetree and
->> map it seperately during probe.
->> Also, adds the documentation under devicetree/bindings/thermal/
->>
->> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
->> Reviewed-by: Doug Anderson <dianders@chromium.org>
->> ---
->>
->> Rebased on http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
->> master branch. I'm not sure which one is the right tree to rebase.
->>
->>  .../devicetree/bindings/thermal/exynos-thermal.txt | 48 ++++++++++++++++++++++
->>  drivers/thermal/exynos_thermal.c                   | 26 +++++++++++-
->>  2 files changed, 72 insertions(+), 2 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> new file mode 100644
->> index 0000000..1db279e
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> @@ -0,0 +1,48 @@
->> +* Exynos Thermal
->> +
->> +Required properties:
->> +- compatible: should be one of the following.
->> +    * "samsung,exynos4210-tmu" - for controllers compatible with exynos4210 tmu.
->> +    * "samsung,exynos5250-tmu" - for controllers compatible with exynos5250 tmu.
->> +    * "samsung,exynos5420-tmu" - for controllers compatible with exynos5420 tmu.
->> +
->> +- reg: physical base address of the controller and length of
->> +  memory mapped region.
->> +
->> +    ** NOTE FOR EXYNOS5420 **
->> +    TRIMINFO register is being misplaced for TMU channels 2, 3 and 4
->> +
->> +    TERMINFO for TMU channel 2 is present in address space of TMU channel 3
->> +    TERMINFO for TMU channel 3 is present in address space of TMU channel 4
->> +    TERMINFO for TMU channel 4 is present in address space of TMU channel 2
->> +
->> +    * In such cases the reg property contains the misplaced register address and
->> +      range as the second parameter.
->> +
->> +- interrupts : interrupt number to the cpu.
->> +- clocks : Clock number as per common clock framework for the cpu.
->> +- clock-names : clock name to be used in the driver
->> +
->> +Example:
->> +
->> +       /* tmu for CPU0 */
->> +       tmu@10060000 {
->> +               compatible = "samsung,exynos5420-tmu";
->> +               reg = <0x10060000 0x100>;
->> +               interrupts = <0 65 0>;
->> +               clocks = <&clock 318>;
->> +               clock-names = "tmu_apbif";
->> +       };
->> +
->> +Example: In case of Exynos5420 TMU channel 3
->> +
->> +       /* tmu for CPU3 */
->> +       tmu@1006c000 {
->> +               compatible = "samsung,exynos5420-tmu";
->> +               /* 2nd reg is for the misplaced TRIMINFO register */
->> +               reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
->> +               interrupts = <0 185 0>;
->> +               clocks = <&clock 318>;
->> +               clock-names = "tmu_apbif";
->> +       };
->> +
->> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
->> index cec3f1f..a229314 100644
->> --- a/drivers/thermal/exynos_thermal.c
->> +++ b/drivers/thermal/exynos_thermal.c
->> @@ -38,6 +38,7 @@
->>  #include <linux/cpufreq.h>
->>  #include <linux/cpu_cooling.h>
->>  #include <linux/of.h>
->> +#include <linux/of_address.h>
->>
->>  #include <plat/cpu.h>
->>  #include <mach/regs-pmu.h>     /* for EXYNOS5_PS_HOLD_CONTROL */
->> @@ -123,7 +124,7 @@ struct exynos_thermal_zone;
->>  struct exynos_tmu_data {
->>         struct exynos_tmu_platform_data *pdata;
->>         struct resource *mem;
->> -       void __iomem *base;
->> +       void __iomem *base, *triminfo_base;
->>         int irq;
->>         enum soc_type soc;
->>         struct work_struct irq_work;
->> @@ -665,8 +666,14 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->>                 __raw_writel(EXYNOS_TRIMINFO_RELOAD,
->>                                 data->base + EXYNOS_TMU_TRIMINFO_CON);
->>         }
->> +
->>         /* Save trimming info in order to perform calibration */
->> -       trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
->> +       if (data->triminfo_base)
->> +               /* On exynos5420 TRIMINFO is misplaced for some channels */
->> +               trim_info = readl(data->triminfo_base);
->> +       else
->> +               trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
->> +
->>         data->temp_error1 = trim_info & EXYNOS_TMU_TRIM_TEMP_MASK;
->>         data->temp_error2 = ((trim_info >> 8) & EXYNOS_TMU_TRIM_TEMP_MASK);
->>
->> @@ -1016,6 +1023,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>                 return -ENODEV;
->>         }
->>
->> +       /* For Exynos5420 The misplaced TERMINFO register address will be
->> +        * passed from device tree node.
->> +        *
->> +        * We cannot use devm_request_and_ioremap, as the base address
->> +        * over laps with the address space of the other TMU channel.
->> +        * Check Documentation for details
->> +        */
->> +       data->triminfo_base = of_iomap(pdev->dev.of_node, 1);
->> +
->>         data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
->>         if (IS_ERR(data->clk)) {
->>                 dev_err(&pdev->dev, "Failed to get clock\n");
->> @@ -1086,6 +1102,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>  err_irq:
->>         exynos_unregister_thermal(data);
->>  err_clk:
->> +       if (data->triminfo_base)
->> +               iounmap(data->triminfo_base);
->> +
->>         platform_set_drvdata(pdev, NULL);
->>         clk_unprepare(data->clk);
->>         return ret;
->> @@ -1100,6 +1119,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
->>
->>         exynos_unregister_thermal(data);
->>
->> +       if (data->triminfo_base)
->> +               iounmap(data->triminfo_base);
->> +
->>         clk_unprepare(data->clk);
->>
->>         platform_set_drvdata(pdev, NULL);
->> --
->> 1.7.12.4
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Currently set_secondary_cpus_clock assume the CPU logical ordering
+> and the MPDIR in DT are same, which is incorrect.
+> 
+> Since the CPU device nodes can be retrieved in the logical ordering
+> using the DT helper, we can remove the devices tree parsing.
+> 
+> This patch removes DT parsing by making use of of_get_cpu_node.
+> 
+> Cc: Gregory Clement <gregory.clement@free-electrons.com>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+
+Hi Gregory/Andrew/Jason,
+
+Does this change look fine for mvebu?
+If yes, can I have your ACKs ?
+
+Regards,
+Sudeep
+> ---
+>  arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
+>  1 file changed, 24 insertions(+), 28 deletions(-)
+> 
+> diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
+> index ce81d30..001dd42 100644
+> --- a/arch/arm/mach-mvebu/platsmp.c
+> +++ b/arch/arm/mach-mvebu/platsmp.c
+> @@ -23,51 +23,47 @@
+>  #include <linux/of.h>
+>  #include <linux/mbus.h>
+>  #include <asm/cacheflush.h>
+> +#include <asm/prom.h>
+>  #include <asm/smp_plat.h>
+>  #include "common.h"
+>  #include "armada-370-xp.h"
+>  #include "pmsu.h"
+>  #include "coherency.h"
+>  
+> +static struct clk *__init get_cpu_clk(int cpu)
+> +{
+> +	struct clk *cpu_clk;
+> +	struct device_node *np = of_get_cpu_node(cpu);
+> +
+> +	if (WARN(!np, "missing cpu node\n"))
+> +		return NULL;
+> +	cpu_clk = of_clk_get(np, 0);
+> +	if (WARN_ON(IS_ERR(cpu_clk)))
+> +		return NULL;
+> +	return cpu_clk;
+> +}
+> +
+>  void __init set_secondary_cpus_clock(void)
+>  {
+> -	int thiscpu;
+> +	int thiscpu, cpu;
+>  	unsigned long rate;
+> -	struct clk *cpu_clk = NULL;
+> -	struct device_node *np = NULL;
+> +	struct clk *cpu_clk;
+>  
+>  	thiscpu = smp_processor_id();
+> -	for_each_node_by_type(np, "cpu") {
+> -		int err;
+> -		int cpu;
+> -
+> -		err = of_property_read_u32(np, "reg", &cpu);
+> -		if (WARN_ON(err))
+> -			return;
+> -
+> -		if (cpu == thiscpu) {
+> -			cpu_clk = of_clk_get(np, 0);
+> -			break;
+> -		}
+> -	}
+> -	if (WARN_ON(IS_ERR(cpu_clk)))
+> +	cpu_clk = get_cpu_clk(thiscpu);
+> +	if (!cpu_clk)
+>  		return;
+>  	clk_prepare_enable(cpu_clk);
+>  	rate = clk_get_rate(cpu_clk);
+>  
+>  	/* set all the other CPU clk to the same rate than the boot CPU */
+> -	for_each_node_by_type(np, "cpu") {
+> -		int err;
+> -		int cpu;
+> -
+> -		err = of_property_read_u32(np, "reg", &cpu);
+> -		if (WARN_ON(err))
+> +	for_each_possible_cpu(cpu) {
+> +		if (cpu == thiscpu)
+> +			continue;
+> +		cpu_clk = get_cpu_clk(cpu);
+> +		if (!cpu_clk)
+>  			return;
+> -
+> -		if (cpu != thiscpu) {
+> -			cpu_clk = of_clk_get(np, 0);
+> -			clk_set_rate(cpu_clk, rate);
+> -		}
+> +		clk_set_rate(cpu_clk, rate);
+>  	}
+>  }
+>  
+> 
 
 
-
--- 
-Shine bright,
-(: Nav :)
