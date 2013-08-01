@@ -1,271 +1,53 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH 2/2] thermal: imx: implement thermal alarm interrupt handling
-Date: Thu,  1 Aug 2013 18:33:12 +0200
-Message-ID: <1375374792-32326-3-git-send-email-p.zabel@pengutronix.de>
-References: <1375374792-32326-1-git-send-email-p.zabel@pengutronix.de>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Thu, 01 Aug 2013 10:46:35 -0600
+Message-ID: <51FA90EB.2070001@wwwdotorg.org>
+References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <51F986D3.4060501@wwwdotorg.org> <20130801121506.GA3048@kahuna>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59816 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842Ab3HAQdm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 12:33:42 -0400
-In-Reply-To: <1375374792-32326-1-git-send-email-p.zabel@pengutronix.de>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:55845 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842Ab3HAQqi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 12:46:38 -0400
+In-Reply-To: <20130801121506.GA3048@kahuna>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Shawn Guo <shawn.guo@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, kernel@pengutronix.de, Philipp Zabel <p.zabel@pengutronix.de>
+To: Nishanth Menon <nm@ti.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-Enable automatic measurements at 10 Hz and use the alarm interrupt to react
-more quickly to sudden temperature changes above the passive or critical
-temperature trip points.
+On 08/01/2013 06:15 AM, Nishanth Menon wrote:
+> On 15:51-20130731, Stephen Warren wrote:
+>> On 07/31/2013 08:46 AM, Nishanth Menon wrote:
+>> ...
+>>> Let me try to explain since SoCs such as OMAP/AM family dont make life
+>>> trivial :)..
+>>>
+>>> An legacy example[1][2]
+>>>
+>>> SoC DM explains that the chip is capable of X opps:
+>>> opp1, 2 - for all devices
+>>> opp1,2, 3 - if efuse bit X@y is set
+>>> opp1,2,3,4 - if efuse bit X@y is set AND Board design meets SoC vendors
+>>> requirements (including additional features A, B is enabled).
+>>
+>> Hopefully the text "board design meets SoC vendors requirements" means
+>> something like "the board has a big fan capable of dissipating a lot of
+>> heat" and not "the board manufacturer paid us a lot of money to license
+>> the 'go faster' feature". The former could well be suitable to represent
+>> in DT, the latter not.
+> 
+> Nope, these are technical requirements. In my company, these
+> guidelines are called Power Distribution Network guideline - which
+> control the IRDrop within reasonable limit, running DPLLs are varied
+> frequencies have different current draw characteristics, such that noise
+> limits, cleanup capacitors etc. For boards that dont care too much about
+> higher frequencies, they tend to skimp a little on caps and board
+> routing constraints to save on BOM (Bill Of Materials) cost.
+> 
+> I am sure similar constraints do exist in other SoC vendors as well.
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/thermal/imx_thermal.c | 140 ++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 127 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 9387e47..411be0a 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -12,6 +12,7 @@
- #include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/init.h>
-+#include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/mfd/syscon.h>
-@@ -31,6 +32,8 @@
- #define MISC0_REFTOP_SELBIASOFF		(1 << 3)
- 
- #define TEMPSENSE0			0x0180
-+#define TEMPSENSE0_ALARM_VALUE_SHIFT	20
-+#define TEMPSENSE0_ALARM_VALUE_MASK	(0xfff << TEMPSENSE0_ALARM_VALUE_SHIFT)
- #define TEMPSENSE0_TEMP_CNT_SHIFT	8
- #define TEMPSENSE0_TEMP_CNT_MASK	(0xfff << TEMPSENSE0_TEMP_CNT_SHIFT)
- #define TEMPSENSE0_FINISHED		(1 << 2)
-@@ -66,33 +69,62 @@ struct imx_thermal_data {
- 	int c1, c2; /* See formula in imx_get_sensor_data() */
- 	unsigned long temp_passive;
- 	unsigned long temp_critical;
-+	unsigned long alarm_temp;
-+	unsigned long last_temp;
-+	bool irq_enabled;
-+	int irq;
- };
- 
-+static void imx_set_alarm_temp(struct imx_thermal_data *data,
-+			       signed long alarm_temp)
-+{
-+	struct regmap *map = data->tempmon;
-+	int alarm_value;
-+
-+	data->alarm_temp = alarm_temp;
-+	alarm_value = (alarm_temp - data->c2) / data->c1;
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_ALARM_VALUE_MASK);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, alarm_value <<
-+			TEMPSENSE0_ALARM_VALUE_SHIFT);
-+}
-+
- static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
- {
- 	struct imx_thermal_data *data = tz->devdata;
- 	struct regmap *map = data->tempmon;
--	static unsigned long last_temp;
- 	unsigned int n_meas;
-+	bool wait;
- 	u32 val;
- 
--	/*
--	 * Every time we measure the temperature, we will power on the
--	 * temperature sensor, enable measurements, take a reading,
--	 * disable measurements, power off the temperature sensor.
--	 */
--	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
--	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+	if (data->mode == THERMAL_DEVICE_ENABLED) {
-+		/* Check if a measurement is currently in progress */
-+		regmap_read(map, TEMPSENSE0, &val);
-+		wait = !(val & TEMPSENSE0_FINISHED);
-+	} else {
-+		/*
-+		 * Every time we measure the temperature, we will power on the
-+		 * temperature sensor, enable measurements, take a reading,
-+		 * disable measurements, power off the temperature sensor.
-+		 */
-+		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+
-+		wait = true;
-+	}
- 
- 	/*
- 	 * According to the temp sensor designers, it may require up to ~17us
- 	 * to complete a measurement.
- 	 */
--	usleep_range(20, 50);
-+	if (wait)
-+		usleep_range(20, 50);
- 
- 	regmap_read(map, TEMPSENSE0, &val);
--	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
--	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+
-+	if (data->mode != THERMAL_DEVICE_ENABLED) {
-+		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-+		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+	}
- 
- 	if ((val & TEMPSENSE0_FINISHED) == 0) {
- 		dev_dbg(&tz->device, "temp measurement never finished\n");
-@@ -104,9 +136,24 @@ static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
- 	/* See imx_get_sensor_data() for formula derivation */
- 	*temp = data->c2 + data->c1 * n_meas;
- 
--	if (*temp != last_temp) {
-+	/* Update alarm value to next higher trip point */
-+	if (data->alarm_temp == data->temp_passive && *temp >= data->temp_passive)
-+		imx_set_alarm_temp(data, data->temp_critical);
-+	if (data->alarm_temp == data->temp_critical && *temp < data->temp_passive) {
-+		imx_set_alarm_temp(data, data->temp_passive);
-+		dev_dbg(&tz->device, "thermal alarm off: T < %lu\n",
-+			data->alarm_temp / 1000);
-+	}
-+
-+	if (*temp != data->last_temp) {
- 		dev_dbg(&tz->device, "millicelsius: %ld\n", *temp);
--		last_temp = *temp;
-+		data->last_temp = *temp;
-+	}
-+
-+	/* Reenable alarm IRQ if temperature below alarm temperature */
-+	if (!data->irq_enabled && *temp < data->alarm_temp) {
-+		data->irq_enabled = true;
-+		enable_irq(data->irq);
- 	}
- 
- 	return 0;
-@@ -126,13 +173,30 @@ static int imx_set_mode(struct thermal_zone_device *tz,
- 			enum thermal_device_mode mode)
- {
- 	struct imx_thermal_data *data = tz->devdata;
-+	struct regmap *map = data->tempmon;
- 
- 	if (mode == THERMAL_DEVICE_ENABLED) {
- 		tz->polling_delay = IMX_POLLING_DELAY;
- 		tz->passive_delay = IMX_PASSIVE_DELAY;
-+
-+		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+
-+		if (!data->irq_enabled) {
-+			data->irq_enabled = true;
-+			enable_irq(data->irq);
-+		}
- 	} else {
-+		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-+		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+
- 		tz->polling_delay = 0;
- 		tz->passive_delay = 0;
-+
-+		if (data->irq_enabled) {
-+			disable_irq(data->irq);
-+			data->irq_enabled = false;
-+		}
- 	}
- 
- 	data->mode = mode;
-@@ -181,6 +245,8 @@ static int imx_set_trip_temp(struct thermal_zone_device *tz, int trip,
- 
- 	data->temp_passive = temp;
- 
-+	imx_set_alarm_temp(data, temp);
-+
- 	return 0;
- }
- 
-@@ -299,11 +365,34 @@ static int imx_get_sensor_data(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static irqreturn_t imx_thermal_alarm_irq(int irq, void *dev)
-+{
-+	struct imx_thermal_data *data = dev;
-+
-+	disable_irq_nosync(irq);
-+	data->irq_enabled = false;
-+
-+	return IRQ_WAKE_THREAD;
-+}
-+
-+static irqreturn_t imx_thermal_alarm_irq_thread(int irq, void *dev)
-+{
-+	struct imx_thermal_data *data = dev;
-+
-+	dev_dbg(&data->tz->device, "THERMAL ALARM: T > %lu\n",
-+		data->alarm_temp / 1000);
-+
-+	thermal_zone_device_update(data->tz);
-+
-+	return IRQ_HANDLED;
-+}
-+
- static int imx_thermal_probe(struct platform_device *pdev)
- {
- 	struct imx_thermal_data *data;
- 	struct cpumask clip_cpus;
- 	struct regmap *map;
-+	int measure_freq;
- 	int ret;
- 
- 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-@@ -318,6 +407,18 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 	}
- 	data->tempmon = map;
- 
-+	data->irq = platform_get_irq(pdev, 0);
-+	if (data->irq < 0)
-+		return data->irq;
-+
-+	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-+			imx_thermal_alarm_irq, imx_thermal_alarm_irq_thread,
-+			0, "imx_thermal", data);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
-+		return ret;
-+	}
-+
- 	platform_set_drvdata(pdev, data);
- 
- 	ret = imx_get_sensor_data(pdev);
-@@ -356,6 +457,15 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	/* Enable measurements at ~ 10 Hz */
-+	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
-+	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
-+	regmap_write(map, TEMPSENSE1 + REG_SET, measure_freq);
-+	imx_set_alarm_temp(data, data->temp_passive);
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+
-+	data->irq_enabled = true;
- 	data->mode = THERMAL_DEVICE_ENABLED;
- 
- 	return 0;
-@@ -364,6 +474,10 @@ static int imx_thermal_probe(struct platform_device *pdev)
- static int imx_thermal_remove(struct platform_device *pdev)
- {
- 	struct imx_thermal_data *data = platform_get_drvdata(pdev);
-+	struct regmap *map = data->tempmon;
-+
-+	/* Disable measurements */
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
- 
- 	thermal_zone_device_unregister(data->tz);
- 	cpufreq_cooling_unregister(data->cdev);
--- 
-1.8.4.rc0
+Great, sounds good then.
 
