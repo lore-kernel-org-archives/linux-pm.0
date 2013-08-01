@@ -1,170 +1,153 @@
-From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH] thermal: exynos: Handle the misplaced TRIMINFO register
-Date: Thu, 01 Aug 2013 11:32:59 +0530
-Message-ID: <1375336979-14747-1-git-send-email-ch.naveen@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] cpufreq: Do not hold driver module references for
+ additional policy CPUs
+Date: Thu, 01 Aug 2013 13:41:04 +0530
+Message-ID: <51FA1818.2050203@linux.vnet.ibm.com>
+References: <2362640.pUofnXyzOi@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:13828 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752840Ab3HAGIE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 02:08:04 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:52204 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732Ab3HAIOy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 04:14:54 -0400
+Received: from /spool/local
+	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Thu, 1 Aug 2013 18:02:05 +1000
+In-Reply-To: <2362640.pUofnXyzOi@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com
-Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, naveenkrishna.ch@gmail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
 
-This patch adds code to handle the misplaced TRIMINFO register
-incase of Exynos5420.
+On 08/01/2013 05:38 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The cpufreq core is a little inconsistent in the way it uses the
+> driver module refcount.
+> 
+> Namely, if __cpufreq_add_dev() is called for a CPU without siblings
+> or generally a CPU for which a new policy object has to be created,
+> it grabs a reference to the driver module to start with, but drops
+> that reference before returning.  As a result, the driver module
+> refcount is then equal to 0 after __cpufreq_add_dev() has returned.
+> 
+> On the other hand, if the given CPU is a sibling of some other
+> CPU already having a policy, cpufreq_add_policy_cpu() is called
+> to link the new CPU to the existing policy.  In that case,
+> cpufreq_cpu_get() is called to obtain that policy and grabs a
+> reference to the driver module, but that reference is not
+> released and the module refcount will be different from 0 after
+> __cpufreq_add_dev() returns (unless there is an error).  That
+> prevents the driver module from being unloaded until
+> __cpufreq_remove_dev() is called for all the CPUs that
+> cpufreq_add_policy_cpu() was called for previously.
+> 
+> To remove that inconsistency make cpufreq_add_policy_cpu() execute
+> cpufreq_cpu_put() for the given policy before returning, which
+> decrements the driver module refcount so that it will be 0 after
+> __cpufreq_add_dev() returns,
 
-On Exynos5420 we have a TRIMINFO register being misplaced for
-TMU channels 2, 3 and 4
+Removing the inconsistency is a good thing, but I think we should
+make it consistent the other way around - make a CPU-online increment
+the driver module refcount and decrement it only on CPU-offline.
 
-TRIMINFO at 0x1006c000 contains data for TMU channel 3
-TRIMINFO at 0x100a0000 contains data for TMU channel 4
-TRIMINFO at 0x10068000 contains data for TMU channel 2
+The reason is, one should not be able to unload the back-end cpufreq
+driver module when some CPUs are still being managed. Nasty things
+will result if we allow that. For example, if we unload the module,
+and then try to do a CPU offline, then the cpufreq hotplug notifier
+won't even be called (because cpufreq_unregister_driver also
+unregisters the hotplug notifier). And that might be troublesome.
 
-The misplaced register address is passed through devicetree and
-map it seperately during probe.
-Also, adds the documentation under devicetree/bindings/thermal/
+Even worse, if we unload a cpufreq driver module and load a new
+one and *then* try to offline the CPU, then the cpufreq_driver->exit()
+function that we call during CPU offline will end up calling the
+corresponding function of an entirely different driver! So the
+->init() and ->exit() calls won't match.
 
-Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Reviewed-by: Doug Anderson <dianders@chromium.org>
----
+These complications won't exist if we simply prevent unloading the
+driver module as long as they are used in managing atleast one CPU.
+So I think it would be good to make the code consistent that way.
 
-Rebased on http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-master branch. I'm not sure which one is the right tree to rebase.
+Regards,
+Srivatsa S. Bhat
 
- .../devicetree/bindings/thermal/exynos-thermal.txt | 48 ++++++++++++++++++++++
- drivers/thermal/exynos_thermal.c                   | 26 +++++++++++-
- 2 files changed, 72 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-
-diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-new file mode 100644
-index 0000000..1db279e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-@@ -0,0 +1,48 @@
-+* Exynos Thermal
-+
-+Required properties:
-+- compatible: should be one of the following.
-+    * "samsung,exynos4210-tmu" - for controllers compatible with exynos4210 tmu.
-+    * "samsung,exynos5250-tmu" - for controllers compatible with exynos5250 tmu.
-+    * "samsung,exynos5420-tmu" - for controllers compatible with exynos5420 tmu.
-+
-+- reg: physical base address of the controller and length of
-+  memory mapped region.
-+
-+    ** NOTE FOR EXYNOS5420 **
-+    TRIMINFO register is being misplaced for TMU channels 2, 3 and 4
-+
-+    TERMINFO for TMU channel 2 is present in address space of TMU channel 3
-+    TERMINFO for TMU channel 3 is present in address space of TMU channel 4
-+    TERMINFO for TMU channel 4 is present in address space of TMU channel 2
-+
-+    * In such cases the reg property contains the misplaced register address and
-+      range as the second parameter.
-+
-+- interrupts : interrupt number to the cpu.
-+- clocks : Clock number as per common clock framework for the cpu.
-+- clock-names : clock name to be used in the driver
-+
-+Example:
-+
-+	/* tmu for CPU0 */
-+	tmu@10060000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10060000 0x100>;
-+		interrupts = <0 65 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+Example: In case of Exynos5420 TMU channel 3
-+
-+	/* tmu for CPU3 */
-+	tmu@1006c000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		/* 2nd reg is for the misplaced TRIMINFO register */
-+		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-+		interrupts = <0 185 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index cec3f1f..a229314 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -38,6 +38,7 @@
- #include <linux/cpufreq.h>
- #include <linux/cpu_cooling.h>
- #include <linux/of.h>
-+#include <linux/of_address.h>
- 
- #include <plat/cpu.h>
- #include <mach/regs-pmu.h>	/* for EXYNOS5_PS_HOLD_CONTROL */
-@@ -123,7 +124,7 @@ struct exynos_thermal_zone;
- struct exynos_tmu_data {
- 	struct exynos_tmu_platform_data *pdata;
- 	struct resource *mem;
--	void __iomem *base;
-+	void __iomem *base, *triminfo_base;
- 	int irq;
- 	enum soc_type soc;
- 	struct work_struct irq_work;
-@@ -665,8 +666,14 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 		__raw_writel(EXYNOS_TRIMINFO_RELOAD,
- 				data->base + EXYNOS_TMU_TRIMINFO_CON);
- 	}
-+
- 	/* Save trimming info in order to perform calibration */
--	trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
-+	if (data->triminfo_base)
-+		/* On exynos5420 TRIMINFO is misplaced for some channels */
-+		trim_info = readl(data->triminfo_base);
-+	else
-+		trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
-+
- 	data->temp_error1 = trim_info & EXYNOS_TMU_TRIM_TEMP_MASK;
- 	data->temp_error2 = ((trim_info >> 8) & EXYNOS_TMU_TRIM_TEMP_MASK);
- 
-@@ -1016,6 +1023,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
-+	/* For Exynos5420 The misplaced TERMINFO register address will be
-+	 * passed from device tree node.
-+	 *
-+	 * We cannot use devm_request_and_ioremap, as the base address
-+	 * over laps with the address space of the other TMU channel.
-+	 * Check Documentation for details
-+	 */
-+	data->triminfo_base = of_iomap(pdev->dev.of_node, 1);
-+
- 	data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
- 	if (IS_ERR(data->clk)) {
- 		dev_err(&pdev->dev, "Failed to get clock\n");
-@@ -1086,6 +1102,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- err_irq:
- 	exynos_unregister_thermal(data);
- err_clk:
-+	if (data->triminfo_base)
-+		iounmap(data->triminfo_base);
-+
- 	platform_set_drvdata(pdev, NULL);
- 	clk_unprepare(data->clk);
- 	return ret;
-@@ -1100,6 +1119,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
- 
- 	exynos_unregister_thermal(data);
- 
-+	if (data->triminfo_base)
-+		iounmap(data->triminfo_base);
-+
- 	clk_unprepare(data->clk);
- 
- 	platform_set_drvdata(pdev, NULL);
--- 
-1.7.12.4
+> but also make it take a reference to
+> the policy itself using kobject_get() and do not release that
+> reference (unless there's an error or system resume is under way),
+> which again is consistent with the "raw" __cpufreq_add_dev()
+> behavior.
+> 
+> Accordingly, modify __cpufreq_remove_dev() to use kobject_put() to
+> drop policy references taken by cpufreq_add_policy_cpu().
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> On top of current linux-pm.git/linux-next.
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+>  drivers/cpufreq/cpufreq.c |   24 +++++++++++++++---------
+>  1 file changed, 15 insertions(+), 9 deletions(-)
+> 
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -908,8 +908,10 @@ static int cpufreq_add_policy_cpu(unsign
+>  	unsigned long flags;
+> 
+>  	policy = cpufreq_cpu_get(sibling);
+> -	WARN_ON(!policy);
+> +	if (WARN_ON_ONCE(!policy))
+> +		return -ENODATA;
+> 
+> +	kobject_get(&policy->kobj);
+>  	if (has_target)
+>  		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+> 
+> @@ -932,14 +934,14 @@ static int cpufreq_add_policy_cpu(unsign
+>  	/* Don't touch sysfs links during light-weight init */
+>  	if (frozen) {
+>  		/* Drop the extra refcount that we took above */
+> -		cpufreq_cpu_put(policy);
+> -		return 0;
+> +		kobject_put(&policy->kobj);
+> +	} else {
+> +		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> +		if (ret)
+> +			kobject_put(&policy->kobj);
+>  	}
+> 
+> -	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> -	if (ret)
+> -		cpufreq_cpu_put(policy);
+> -
+> +	cpufreq_cpu_put(policy);
+>  	return ret;
+>  }
+>  #endif
+> @@ -1298,10 +1300,14 @@ static int __cpufreq_remove_dev(struct d
+>  		if (!frozen)
+>  			cpufreq_policy_free(data);
+>  	} else {
+> -
+> +		/*
+> +		 * There are more CPUs using the same policy, so only drop the
+> +		 * reference taken by cpufreq_add_policy_cpu() (unless the
+> +		 * system is suspending).
+> +		 */
+>  		if (!frozen) {
+>  			pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+> -			cpufreq_cpu_put(data);
+> +			kobject_put(&data->kobj);
+>  		}
+> 
+>  		if (cpufreq_driver->target) {
+> 
 
