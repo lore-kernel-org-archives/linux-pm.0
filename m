@@ -1,218 +1,142 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Thu, 1 Aug 2013 11:25:06 -0500
-Message-ID: <51FA8BE2.9000309@ti.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: [PATCH 1/2] thermal: imx: dynamic passive and SoC specific critical trip points
+Date: Thu,  1 Aug 2013 18:33:11 +0200
+Message-ID: <1375374792-32326-2-git-send-email-p.zabel@pengutronix.de>
+References: <1375374792-32326-1-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:49212 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752842Ab3HAQZR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 1 Aug 2013 12:25:17 -0400
-In-Reply-To: <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:59797 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842Ab3HAQd0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 12:33:26 -0400
+In-Reply-To: <1375374792-32326-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-pm@vger.kernel.org
+Cc: Shawn Guo <shawn.guo@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, kernel@pengutronix.de, Philipp Zabel <p.zabel@pengutronix.de>
 
-On 08/01/2013 08:54 AM, Mark Rutland wrote:
-> On Wed, Jul 31, 2013 at 05:27:39PM +0100, Nishanth Menon wrote:
->> On 07/31/2013 11:11 AM, Mark Rutland wrote:
->>> On Wed, Jul 31, 2013 at 04:58:22PM +0100, Nishanth Menon wrote:
->>>> On 07/31/2013 10:29 AM, Mark Rutland wrote:
->>>>> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
->>>>>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
->>>>>>> On 30/07/13 21:48, Nishanth Menon wrote:
->>>>>>>> On 07/30/2013 01:34 PM, Stephen Warren wrote:
->>>>>>>>> On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
->>>>>>>>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>>>>>>>
->>>>>>>>>> If more than one similar devices share the same OPPs, currently we
->>>>>>>>>> need to replicate the OPP entries in all the nodes.
->>>>>>>>>>
->>>>>>>>>> Few drivers like cpufreq depend on physical cpu0 node to specify the
->>>>>>>>>> OPPs and only that node is referred irrespective of the logical cpu
->>>>>>>>>> accessing it. Alternatively to support cpuhotplug path, few drivers
->>>>>>>>>> parse all the cpu nodes for OPPs. Instead we can specify the phandle
->>>>>>>>>> of the node with which the current node shares the operating points.
->>>>>>>>>>
->>>>>>>>>> This patch adds support to specify the phandle in the operating points
->>>>>>>>>> of any device node, where the node specified by the phandle holds the
->>>>>>>>>> actual OPPs.
->>>>>>>>>
->>>>>>>>>> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
->>>>>>>>>
->>>>>>>>>> +Optional properties:
->>>>>>>>>> +- operating-points-phandle: phandle to the device node with which this
->>>>>>>>>
->>>>>>>>> That's a funny name. Bikeshedding a bit, how about shared-operating-points?
->>>>>>>>>
->>>>>>>>> I haven't thought at all about whether this change conceptually makes sense.
->>>>>>>>>
->>>>>>>>
->>>>>>>> They may not really be shared- we could have phandle list even. one
->>>>>>>> might have optional OPP sets for a chip family that one may  - I was
->>>>>>>> about to suggest something similar to pinctrl
->>>>>>>>
->>>>>>> I am not sure if I follow you here, if each chip family has its unique
->>>>>>> set of OPPs, why do we need to represent all of them together ?
->>>>>>> IIUC you are thinking about having these in include dts file, used by
->>>>>>> multiple chip/board dts.
->>>>>>>
->>>>>>>> operating-points-names = "default", "performance", "cheapboard-config" ;)
->>>>>>>> operating-points-0 = <&...>
->>>>>>>> operating-points-1 = <&...>
->>>>>>>> operating-points-2 = <&...>
->>>>>>>>
->>>>>>> This looks more like a PM policy.
->>>>>>
->>>>>> Let me try to explain since SoCs such as OMAP/AM family dont make life
->>>>>> trivial :)..
->>>>>>
->>>>>> An legacy example[1][2]
->>>>>>
->>>>>> SoC DM explains that the chip is capable of X opps:
->>>>>> opp1, 2 - for all devices
->>>>>> opp1,2, 3 - if efuse bit X@y is set
->>>>>> opp1,2,3,4 - if efuse bit X@y is set AND Board design meets SoC vendors
->>>>>> requirements (including additional features A, B is enabled).
->>>>>>
->>>>>> So, the same chip family has a hardware feature - not just as a pm
->>>>>> policy of selecting among a set of OPPs which opp to work on, but the
->>>>>> actual set of OPPs are actually options in themselves that is selected
->>>>>> based on board's SoC selection.
->>>>>
->>>>> This sounds like we're describing a set of features not applicable to
->>>>> the device, then removing them, rather than only describing those
->>>>> features applicable to the device. If you have to probe to figure out
->>>>> which values in the dt are applicable, I'm not sure I see the benefit of
->>>>> describing said values in dt.
->>>>
->>>> Device has *options* of operating points sets it can operate at. It is
->>>> not like "these are not applicable" for the device.
->>>
->>> I don't follow.
->>>
->>> In the example above, if efuse bit X@y is not set, opp3 is not
->>> applicable, but we're describing it in dt. It's not an option for the
->>> particular device, yet it appears in the device's dt.
->> This one is easy - opp_enable/disable as discussed in
->> http://marc.info/?l=linux-pm&m=137528631125365&w=2 should probably help.
->
-> Wrong link? There's no reference to opp_enable or opp_disable...
+Set passive and critical trip point values depending on the maximum die
+temperature stored in the OCOTP fuses. This allows higher trip points
+for industrial and automotive rated i.MX6 SoCs.
+Also allow to configure the passive trip point from userspace.
 
-Darned! sorry about that.. I think this is what I wanted to point yesterday.
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+---
+ drivers/thermal/imx_thermal.c | 50 ++++++++++++++++++++++++++++++++++-=
+--------
+ 1 file changed, 40 insertions(+), 10 deletions(-)
 
-http://marc.info/?l=linux-pm&m=137528603225295&w=2
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_therma=
+l.c
+index d16c33c..9387e47 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -55,12 +55,6 @@ enum imx_thermal_trip {
+  */
+ #define IMX_TEMP_PASSIVE		85000
+=20
+-/*
+- * The maximum die temperature on imx parts is 105C, let's give some c=
+ushion
+- * for noise and possible temperature rise between measurements.
+- */
+-#define IMX_TEMP_CRITICAL		100000
+-
+ #define IMX_POLLING_DELAY		2000 /* millisecond */
+ #define IMX_PASSIVE_DELAY		1000
+=20
+@@ -70,6 +64,8 @@ struct imx_thermal_data {
+ 	enum thermal_device_mode mode;
+ 	struct regmap *tempmon;
+ 	int c1, c2; /* See formula in imx_get_sensor_data() */
++	unsigned long temp_passive;
++	unsigned long temp_critical;
+ };
+=20
+ static int imx_get_temp(struct thermal_zone_device *tz, unsigned long =
+*temp)
+@@ -156,15 +152,35 @@ static int imx_get_trip_type(struct thermal_zone_=
+device *tz, int trip,
+ static int imx_get_crit_temp(struct thermal_zone_device *tz,
+ 			     unsigned long *temp)
+ {
+-	*temp =3D IMX_TEMP_CRITICAL;
++	struct imx_thermal_data *data =3D tz->devdata;
++
++	*temp =3D data->temp_critical;
+ 	return 0;
+ }
+=20
+ static int imx_get_trip_temp(struct thermal_zone_device *tz, int trip,
+ 			     unsigned long *temp)
+ {
+-	*temp =3D (trip =3D=3D IMX_TRIP_PASSIVE) ? IMX_TEMP_PASSIVE :
+-					     IMX_TEMP_CRITICAL;
++	struct imx_thermal_data *data =3D tz->devdata;
++
++	*temp =3D (trip =3D=3D IMX_TRIP_PASSIVE) ? data->temp_passive :
++					     data->temp_critical;
++	return 0;
++}
++
++static int imx_set_trip_temp(struct thermal_zone_device *tz, int trip,
++			     unsigned long temp)
++{
++	struct imx_thermal_data *data =3D tz->devdata;
++
++	if (trip =3D=3D IMX_TRIP_CRITICAL)
++		return -EPERM;
++
++	if (temp > IMX_TEMP_PASSIVE)
++		return -EINVAL;
++
++	data->temp_passive =3D temp;
++
+ 	return 0;
+ }
+=20
+@@ -211,6 +227,7 @@ static const struct thermal_zone_device_ops imx_tz_=
+ops =3D {
+ 	.get_trip_type =3D imx_get_trip_type,
+ 	.get_trip_temp =3D imx_get_trip_temp,
+ 	.get_crit_temp =3D imx_get_crit_temp,
++	.set_trip_temp =3D imx_set_trip_temp,
+ };
+=20
+ static int imx_get_sensor_data(struct platform_device *pdev)
+@@ -267,6 +284,18 @@ static int imx_get_sensor_data(struct platform_dev=
+ice *pdev)
+ 	data->c1 =3D 1000 * (t1 - t2) / (n1 - n2);
+ 	data->c2 =3D 1000 * t2 - data->c1 * n2;
+=20
++	/*
++	 * Set the default passive cooling trip point to 20 =C2=B0C below the
++	 * maximum die temperature. Can be changed from userspace.
++	 */
++	data->temp_passive =3D 1000 * (t2 - 20);
++
++	/*
++	 * The maximum die temperature is t2, let's give 5 =C2=B0C cushion
++	 * for noise and possible temperature rise between measurements.
++	 */
++	data->temp_critical =3D 1000 * (t2 - 5);
++
+ 	return 0;
+ }
+=20
+@@ -314,7 +343,8 @@ static int imx_thermal_probe(struct platform_device=
+ *pdev)
+ 	}
+=20
+ 	data->tz =3D thermal_zone_device_register("imx_thermal_zone",
+-						IMX_TRIP_NUM, 0, data,
++						IMX_TRIP_NUM,
++						BIT(IMX_TRIP_PASSIVE), data,
+ 						&imx_tz_ops, NULL,
+ 						IMX_PASSIVE_DELAY,
+ 						IMX_POLLING_DELAY);
+--=20
+1.8.4.rc0
 
->
->>>
->>> For opp4, it's even worse, as you're suggesting we describe an option
->>> for the device that requires the driver to use some additional platform
->>> knowledge to come to the conclusion that it cannot use. That sounds like
->>
->> Precisely.. it wont have that knowledge and should not need that
->> knowledge. See explanation above.
->>
->> Specific examples: SoC vendors try to squeeze the max out of the chip,
->> when voltage values are defined, they need to consider board markets
->> that they try to address, pricepoints etc.. too many vectors.. not all
->> board manufacturers care to meet SoC vendor requirements as they may not
->> care about picking up the full potential of the chip - example -
->> usecases on OMAP where ARM is seldom used and max DSP is used (video
->> usecases) and others so they use a high performance chip, refuse to
->> optimize vdd_mpu rail, dont care too much about higher ARM OPPs. Yeah, I
->> could always tell them to hand edit the OPP entries and maintain kernel
->> forks, but that is never the right thing to do.
->
-> Sorry, but I still don't follow.
->
-> We seem to be going over two cases, which both feel wrong to me:
->
-> * One SoC used in multiple boards, where on some boards an OPP cannot be
->    used because some requirement is not met. In this case, the board's
->    dts (by including the SoC's dtsi) describes something that's not
->    necessarily usable, and we seem to have no way to describe in the OPP
->    table that the OPP is not usable for that board.
-
-not at the moment at least - at least in the way we have described the 
-OPP in dts today.
-
->
-> * Performance profiles, in which you have a set of OPP tables for
->    "performance, "low-power", and whatever else. This arbitrary split
->    seems like a configuration decision rather than a hardware description
->    unless there is some hard limit that cannot be detected (e.g. the
->    processor can function at some arbitrary high speed, but becomes hot
->    enough to melt something, and there's no temperature sensor to handle
->    this case dynamically).
-
-precisely -> I think I point this out in this thread:
-http://marc.info/?l=devicetree&m=137535932402560&w=2
-
->
-> Have I've misunderstood something?
->
->>
->>
->>> device knowledge internal to a driver, not how you describe an instance
->>> of a device to an OS.
->>
->> OPP has never been a device - it is a performance point at which to
->> operate a device. I am not sure if we are discussing about phandle
->> definition of OPP is an issue or options of operating-point sets is an
->> issue now.
->>
->>>
->>> Have I misunderstood something here?
->>
->> Are you suggesting we have OPP tables per board?
->
-> Yes, for the reasons I give above. Common OPP tabless can easily be
-> factored into separate include files to allow for arbitrary composition.
-
-Hmm.. that could be one other way to do it..
-
-
->
->>
->>>
->>>>
->>>> DT does have to describe the hardware capability - that was it's entire
->>>> intent. operating points are valid configurations where it can be
->>>> operated at - and when you have options of configurations you need to
->>>> choose from based on the board you are using it on, it still retains
->>>> "hardware behavior" aspect.
->>>
->>> The dt should describe the particular board you're running on. As I see
->>> it what you're suggesting is equivalent to describing some hardware in
->>> the dt that isn't actually present, then relying on the OS to poke
->>> around somewhere else, figure out that the hardware isn't present, and
->>> then forget that the dt described it.
->> I will buy that eventual dtb should contain some way to choose the OPP
->> that the particular board can operate on.
->>
->> SoC dtsi is what we define, this allows multiple board dts to use them.
->> the moment we start defining OPPs per board, all mayhem breaks loose.
->>
->> SoC dtsi provides options for the SoC to be operated upon, it is like
->> saying I have 10 Uarts, but board dts chooses to enable the ones it
->> uses. pinctrl we do the same. why cant we do with operating-points as well?
->
-> That's a possibility if we define a standard mechanism for stating OPPs
-> are unusable (rather than having to probe the device to figure that
-> out).
->
-
-I did make a proposal here: 
-http://marc.info/?l=devicetree&m=137530056230441&w=2
-
-Do you see it making sense, If yes, I can help flesh out the idea with code.
-
-
--- 
-Regards,
-Nishanth Menon
