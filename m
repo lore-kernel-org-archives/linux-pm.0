@@ -1,129 +1,170 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle backend
- driver to sysdev.
-Date: Thu, 01 Aug 2013 10:26:54 +0530
-Message-ID: <51F9EA96.7030407@linux.vnet.ibm.com>
-References: <20130731025840.19448.24468.stgit@deepthi>
- <20130731025924.19448.46538.stgit@deepthi>
- <ABB05CD9C9F68C46A5CEDC7F15439259FF2953@039-SN2MPN1-021.039d.mgd.msft.net>
- <51F88BA7.7090404@linux.vnet.ibm.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259FF2A3A@039-SN2MPN1-021.039d.mgd.msft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FF2A3A@039-SN2MPN1-021.039d.mgd.msft.net>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Li Yang-R58472 <r58472@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@sisk.pl" <rjw@sisk.pl>, Zhao Chenhui-B35336 <B35336@freescale.com>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, Wood Scott-B07421 <B07421@freescale.com>
+From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Subject: [PATCH] thermal: exynos: Handle the misplaced TRIMINFO register
+Date: Thu, 01 Aug 2013 11:32:59 +0530
+Message-ID: <1375336979-14747-1-git-send-email-ch.naveen@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:13828 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752840Ab3HAGIE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 02:08:04 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com
+Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, naveenkrishna.ch@gmail.com
 
-Hi Dongsheng,
+This patch adds code to handle the misplaced TRIMINFO register
+incase of Exynos5420.
 
-On 07/31/2013 11:16 AM, Wang Dongsheng-B40534 wrote:
-> Hi Preeti,
-> 
->> -----Original Message-----
->> From: Preeti U Murthy [mailto:preeti@linux.vnet.ibm.com]
->> Sent: Wednesday, July 31, 2013 12:00 PM
->> To: Wang Dongsheng-B40534
->> Cc: Deepthi Dharwar; benh@kernel.crashing.org; daniel.lezcano@linaro.org;
->> linux-kernel@vger.kernel.org; michael@ellerman.id.au;
->> srivatsa.bhat@linux.vnet.ibm.com; svaidy@linux.vnet.ibm.com; linuxppc-
->> dev@lists.ozlabs.org; rjw@sisk.pl; linux-pm@vger.kernel.org
->> Subject: Re: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle
->> backend driver to sysdev.
->>
->> Hi Dongsheng,
->>
->> On 07/31/2013 08:52 AM, Wang Dongsheng-B40534 wrote:
->>>
->>>
->>>> -----Original Message-----
->>>> From: Deepthi Dharwar [mailto:deepthi@linux.vnet.ibm.com]
->>>> Sent: Wednesday, July 31, 2013 10:59 AM
->>>> To: benh@kernel.crashing.org; daniel.lezcano@linaro.org; linux-
->>>> kernel@vger.kernel.org; michael@ellerman.id.au;
->>>> srivatsa.bhat@linux.vnet.ibm.com; preeti@linux.vnet.ibm.com;
->>>> svaidy@linux.vnet.ibm.com; linuxppc-dev@lists.ozlabs.org
->>>> Cc: rjw@sisk.pl; Wang Dongsheng-B40534; linux-pm@vger.kernel.org
->>>> Subject: [PATCH V2 4/6] cpuidle/pseries: Move the pseries_idle
->>>> backend driver to sysdev.
->>>>
->>>> Move pseries_idle backend driver code to arch/powerpc/sysdev so that
->>>> the code can be used for a common driver for powernv and pseries.
->>>> This removes a lot of code duplicacy.
->>>>
->>> Why not drivers/cpuidle/?
->>>
->>> I think it should be move to drivers/cpuidle.
->>
->> Please take a look at what the cpuidle under drivers has to provide.
->> cpuidle has two parts to it. The front end and the back end. The front
->> end constitutes the cpuidle governors, registering of arch specific
->> cpuidle drivers, disabling and enabling of cpuidle feature. It is this
->> front end code which is present under drivers/cpuidle.
->>
->> The arch specific cpuidle drivers which decide what needs to be done to
->> enter a specific idle state chosen by the cpuidle governor is what
->> constitutes the back end of cpuidle. This will not be in drivers/cpuidle
->> but in an arch/ specific code.
->>
->> The cpuidle under drivers/cpuidle drives the idle power management, but
->> the low level handling of the entry into idle states should be taken care
->> of by the architecture.
->>
->> Your recent patch :
->> cpuidle: add freescale e500 family porcessors idle support IMO should
->> hook onto the backend cpuidle driver that this patchset provides.
->>
-> Sorry, I don't think so, cpuidle framework has been already very common.
-> Here we just need to do state definition and handling. I wonder whether
-> we need this layer.
-> 
-> If your handle is platform dependent, it should be in arch/platform.
-> 
-> If it is only for some platforms and the operation of these platforms can be
-> multiplexed, Why cannot as a driver to put into driver/cpuidle?
-> 
-> If it a general driver, I think we can put some common operating to driver/cpuidle
-> and make the platform specific code to arch/powerpc/platform.
-> 
-> This patch include front end and back end, not just back end.
-> 
-> This patch include too many state of different platforms and handle function. This state
-> and handle that should belong to itself platforms. Not a general way. If Deepthi will do
-> a general powerpc cpuidle, I think, it's cannot just using the macro to distinguish
-> platform. the front end code maybe move to driver/cpuidle(drvier register) should be better,
-> make the Low Power State and what should be handle to arch/powerpc/platform/**, because different
-> platforms have different state of low power consumption, and the processing method.
-> The front end can provide some general methods to register into general powerpc cpuidle driver.
+On Exynos5420 we have a TRIMINFO register being misplaced for
+TMU channels 2, 3 and 4
 
+TRIMINFO at 0x1006c000 contains data for TMU channel 3
+TRIMINFO at 0x100a0000 contains data for TMU channel 4
+TRIMINFO at 0x10068000 contains data for TMU channel 2
 
-As Daniel pointed out, with a call to cpuidle_register(), we can get the
-cpuidle_driver and cpuidle_device registered through the generic cpuidle
-framework. Hence we can get rid of the powerpc_idle_devices_init() routine.
+The misplaced register address is passed through devicetree and
+map it seperately during probe.
+Also, adds the documentation under devicetree/bindings/thermal/
 
-We can have the hotplug notifier in the generic cpuidle framework as
-well. The rest of the patchset however should be arch specific IMO.
+Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Reviewed-by: Doug Anderson <dianders@chromium.org>
+---
 
-Regards
-Preeti U Murthy
+Rebased on http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+master branch. I'm not sure which one is the right tree to rebase.
 
-> 
-> -dongsheng
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+ .../devicetree/bindings/thermal/exynos-thermal.txt | 48 ++++++++++++++++++++++
+ drivers/thermal/exynos_thermal.c                   | 26 +++++++++++-
+ 2 files changed, 72 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+
+diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+new file mode 100644
+index 0000000..1db279e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+@@ -0,0 +1,48 @@
++* Exynos Thermal
++
++Required properties:
++- compatible: should be one of the following.
++    * "samsung,exynos4210-tmu" - for controllers compatible with exynos4210 tmu.
++    * "samsung,exynos5250-tmu" - for controllers compatible with exynos5250 tmu.
++    * "samsung,exynos5420-tmu" - for controllers compatible with exynos5420 tmu.
++
++- reg: physical base address of the controller and length of
++  memory mapped region.
++
++    ** NOTE FOR EXYNOS5420 **
++    TRIMINFO register is being misplaced for TMU channels 2, 3 and 4
++
++    TERMINFO for TMU channel 2 is present in address space of TMU channel 3
++    TERMINFO for TMU channel 3 is present in address space of TMU channel 4
++    TERMINFO for TMU channel 4 is present in address space of TMU channel 2
++
++    * In such cases the reg property contains the misplaced register address and
++      range as the second parameter.
++
++- interrupts : interrupt number to the cpu.
++- clocks : Clock number as per common clock framework for the cpu.
++- clock-names : clock name to be used in the driver
++
++Example:
++
++	/* tmu for CPU0 */
++	tmu@10060000 {
++		compatible = "samsung,exynos5420-tmu";
++		reg = <0x10060000 0x100>;
++		interrupts = <0 65 0>;
++		clocks = <&clock 318>;
++		clock-names = "tmu_apbif";
++	};
++
++Example: In case of Exynos5420 TMU channel 3
++
++	/* tmu for CPU3 */
++	tmu@1006c000 {
++		compatible = "samsung,exynos5420-tmu";
++		/* 2nd reg is for the misplaced TRIMINFO register */
++		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
++		interrupts = <0 185 0>;
++		clocks = <&clock 318>;
++		clock-names = "tmu_apbif";
++	};
++
+diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+index cec3f1f..a229314 100644
+--- a/drivers/thermal/exynos_thermal.c
++++ b/drivers/thermal/exynos_thermal.c
+@@ -38,6 +38,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/cpu_cooling.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ 
+ #include <plat/cpu.h>
+ #include <mach/regs-pmu.h>	/* for EXYNOS5_PS_HOLD_CONTROL */
+@@ -123,7 +124,7 @@ struct exynos_thermal_zone;
+ struct exynos_tmu_data {
+ 	struct exynos_tmu_platform_data *pdata;
+ 	struct resource *mem;
+-	void __iomem *base;
++	void __iomem *base, *triminfo_base;
+ 	int irq;
+ 	enum soc_type soc;
+ 	struct work_struct irq_work;
+@@ -665,8 +666,14 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 		__raw_writel(EXYNOS_TRIMINFO_RELOAD,
+ 				data->base + EXYNOS_TMU_TRIMINFO_CON);
+ 	}
++
+ 	/* Save trimming info in order to perform calibration */
+-	trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
++	if (data->triminfo_base)
++		/* On exynos5420 TRIMINFO is misplaced for some channels */
++		trim_info = readl(data->triminfo_base);
++	else
++		trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
++
+ 	data->temp_error1 = trim_info & EXYNOS_TMU_TRIM_TEMP_MASK;
+ 	data->temp_error2 = ((trim_info >> 8) & EXYNOS_TMU_TRIM_TEMP_MASK);
+ 
+@@ -1016,6 +1023,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	/* For Exynos5420 The misplaced TERMINFO register address will be
++	 * passed from device tree node.
++	 *
++	 * We cannot use devm_request_and_ioremap, as the base address
++	 * over laps with the address space of the other TMU channel.
++	 * Check Documentation for details
++	 */
++	data->triminfo_base = of_iomap(pdev->dev.of_node, 1);
++
+ 	data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
+ 	if (IS_ERR(data->clk)) {
+ 		dev_err(&pdev->dev, "Failed to get clock\n");
+@@ -1086,6 +1102,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ err_irq:
+ 	exynos_unregister_thermal(data);
+ err_clk:
++	if (data->triminfo_base)
++		iounmap(data->triminfo_base);
++
+ 	platform_set_drvdata(pdev, NULL);
+ 	clk_unprepare(data->clk);
+ 	return ret;
+@@ -1100,6 +1119,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 
+ 	exynos_unregister_thermal(data);
+ 
++	if (data->triminfo_base)
++		iounmap(data->triminfo_base);
++
+ 	clk_unprepare(data->clk);
+ 
+ 	platform_set_drvdata(pdev, NULL);
+-- 
+1.7.12.4
+
