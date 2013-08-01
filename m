@@ -1,230 +1,95 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle
- support
-Date: Wed, 31 Jul 2013 19:23:55 -0500
-Message-ID: <1375316635.30721.122@snotra>
-References: <ABB05CD9C9F68C46A5CEDC7F15439259FF2AAC@039-SN2MPN1-021.039d.mgd.msft.net>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH updated] ACPI / PM: Add state information in error message
+ for acpi_device_set_power
+Date: Thu, 01 Aug 2013 08:49:45 +0800
+Message-ID: <51F9B0A9.8000207@intel.com>
+References: <10433383.dueoNg39qi@vostro.rjw.lan> <4285597.UpTJrMA8Fu@vostro.rjw.lan> <51F8B445.1070000@intel.com> <1858303.iaJrUSpF87@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from va3ehsobe010.messaging.microsoft.com ([216.32.180.30]:59928
-	"EHLO va3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750857Ab3HAAYE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Jul 2013 20:24:04 -0400
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259FF2AAC@039-SN2MPN1-021.039d.mgd.msft.net>
-	(from B40534@freescale.com on Wed Jul 31 01:30:06 2013)
-Content-Disposition: inline
+Received: from mga01.intel.com ([192.55.52.88]:52972 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750863Ab3HAAs7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Jul 2013 20:48:59 -0400
+In-Reply-To: <1858303.iaJrUSpF87@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, Li Yang-R58472 <r58472@freescale.com>, Zhao Chenhui-B35336 <B35336@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
 
-On 07/31/2013 01:30:06 AM, Wang Dongsheng-B40534 wrote:
+On 07/31/2013 06:27 PM, Rafael J. Wysocki wrote:
+>> Patch to add state information in error message, apply on top of this
+>> > one.
+>> > 
+>> > From: Aaron Lu <aaron.lu@intel.com>
+>> > Subject: [PATCH] ACPI / PM: Add state information in error message for
+>> >  acpi_device_set_power
+>> > 
+>> > The state information can be useful to know what the problem is when it
+>> > appeared in an error message about a device can not being set to a higher
+>> > power state than its parent, so this patch adds such state information
+>> > for both the target state of the device failed to be set and the current
+>> > parent's state.
+>> > 
+>> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+>> > ---
+>> >  drivers/acpi/device_pm.c | 3 ++-
+>> >  1 file changed, 2 insertions(+), 1 deletion(-)
+>> > 
+>> > diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+>> > index beb9625..707258b 100644
+>> > --- a/drivers/acpi/device_pm.c
+>> > +++ b/drivers/acpi/device_pm.c
+>> > @@ -179,7 +179,8 @@ int acpi_device_set_power(struct acpi_device *device, int state)
+>> >  	}
+>> >  	if (device->parent && (state < device->parent->power.state)) {
+>> >  		dev_warn(&device->dev,
+>> > -			 "Cannot transition to a higher-powered state than parent\n");
+>> > +			 "Cannot transition to a higher-powered state %d than parent's state %d\n",
+> This message will look a little odd I think ->
 > 
+>> > +			 state, device->parent->power.state);
+> -> and please don't use raw numbers in such messages.
 > 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, July 31, 2013 3:38 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: rjw@sisk.pl; daniel.lezcano@linaro.org;  
-> benh@kernel.crashing.org; Li
-> > Yang-R58472; Zhao Chenhui-B35336; linux-pm@vger.kernel.org;  
-> linuxppc-
-> > dev@lists.ozlabs.org
-> > Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors  
-> idle
-> > support
-> >
-> > On 07/30/2013 02:00:03 AM, Dongsheng Wang wrote:
-> > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > >
-> > > Add cpuidle support for e500 family, using cpuidle framework to
-> > > manage various low power modes. The new implementation will remain
-> > > compatible with original idle method.
-> > >
-> > > Initially, this supports PW10, and subsequent patches will support
-> > > PW20/DOZE/NAP.
-> >
-> > Could you explain what the cpuidle framework does for us that the
-> > current idle code doesn't?
-> >
+> What about
 > 
-> The current idle code, Only a state of low power can make the core  
-> idle.
-> The core can't get into more low power state.
-> 
-> > In particular, what scenario do you see where we would require a
-> > software
-> > governor to choose between idle states, and how much power is saved
-> > compared to a simpler approach?  There is timer that can be used to
-> > automatically enter PW20 after a certain amount of time in PW10.
-> 
-> Yes, the hardware can automatically enter PW20 state. But this is  
-> hardware
-> feature, we need to software to manage it. Only for PW20 state, we  
-> can drop
-> this cpuidle and using the hardware to control it. But if we need to  
-> support
-> PH10/PH15/PH20/PH30, the current idle code cannot support them.
+> 	"Cannot transition to power state %s for parent in %s\n",
+> 	acpi_power_state_string(state),
+> 	acpi_power_state_string(device->parent->power.state)
 
-PH30 wasn't really meant as idle state, but rather a CPU hotplug  
-state.  This isn't just about enter/exit latency (and complexity) but  
-also about wakeup events.
 
-PH15 and PH20 were mainly intended as intermediate states on the way to  
-PH30 or debug halt.  It looks like PH15 is the deepest PH state in  
-which core timers continue to run.
+Thanks for the suggestion, updated patch here:
 
-The intended idle states on e6500 are PW10 and PW20.
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH] ACPI / PM: Add state information in error message for
+ acpi_device_set_power
 
-> > How much better results do you get from a software governor?  Do we  
-> even
-> > have the right data to characterize each state so that a software  
-> governor
-> > could make good decisions?  Is cpuidle capable of governing the  
-> interval
-> > of such a timer, rather than directly governing states?
-> >
-> >From now on we did not benchmark these data, because we only have  
-> PW10 state.
-> 
-> I can do support doze/nap for e6500. To get some data to show you.
-> 
-> > As for doze/nap, why would we want to use those on newer cores?  Do  
-> you
-> > have numbers for how much power each mode saves?
-> >
-> The PH state is plan to support, if the core can make into more low  
-> power state,
-> why not to do this.
+The state information can be useful to know what the problem is when an
+error message about a device can not being set to a higher power state
+than its parent appeared, so this patch adds such state information
+for both the target state of the device and the current state of its
+parent.
 
-We don't do things just to do them.  We do things to make things better.
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/acpi/device_pm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> PH10(doze)/PH15(nap)/PH20/PH30, These states can save more CPU power.
-
-If you have evidence that PH15 saves more power than PW20, please  
-provide it.
-
-> > Active governors may be useful on older cores that only have  
-> doze/nap,
-> > to
-> > select between them, but if that's the use case then why start with
-> > pw10?
-> Pw10 is supported on E500MC/E5500/E6500. And we plan to support PW20  
-> for E65OO core.
-> I will take doze/nap up a bit later.
-
-By "older cores" I meant before e500mc.
-
-> > And I'd want to see numbers for how much power nap saves versus  
-> doze.
-> >
-> > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > ---
-> > > This patch keep using cpuidle_register_device(), because we need  
-> to
-> > > support cpu
-> > > hotplug. I will fix "device" issue in this driver, after
-> > > Deepthi Dharwar <deepthi@linux.vnet.ibm.com> add a hotplug handler
-> > > into cpuidle
-> > > freamwork.
-> >
-> > Where's the diffstat?
-> >
-> See, http://patchwork.ozlabs.org/patch/260997/
-
-That's a totally different patch.
-
-> > > @@ -0,0 +1,222 @@
-> > > +/*
-> > > + * Copyright 2013 Freescale Semiconductor, Inc.
-> > > + *
-> > > + * CPU Idle driver for Freescale PowerPC e500 family processors.
-> > > + *
-> > > + * This program is free software; you can redistribute it and/or
-> > > modify
-> > > + * it under the terms of the GNU General Public License version  
-> 2 as
-> > > + * published by the Free Software Foundation.
-> > > + *
-> > > + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > + */
-> >
-> > Is this derived from some other file?  It looks like it...  Where's  
-> the
-> > attribution?
-> >
-> The copyright is from drivers/cpufreq/ppc-corenet-cpufreq.c
-
-But the code isn't.
-
-> > > +static void e500_cpuidle(void)
-> > > +{
-> > > +	/*
-> > > +	 * This would call on the cpuidle framework, and the back-end
-> > > +	 * driver to go to idle states.
-> > > +	 */
-> > > +	if (cpuidle_idle_call()) {
-> > > +		/*
-> > > +		 * On error, execute default handler
-> > > +		 * to go into low thread priority and possibly
-> > > +		 * low power mode.
-> > > +		 */
-> > > +		HMT_low();
-> > > +		HMT_very_low();
-> >
-> > This HMT stuff doesn't do anything on e500 derivatives AFAIK.
-> >
-> Yes, there should do nothing, let arch_cpu_idle to do the failed.
-
-I can't parse this.
-
-> > > +static struct cpuidle_state fsl_pw_idle_states[] = {
-> > > +	{
-> > > +		.name = "pw10",
-> > > +		.desc = "pw10",
-> > > +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> > > +		.exit_latency = 0,
-> > > +		.target_residency = 0,
-> > > +		.enter = &pw10_enter
-> >
-> > Where is pw10_enter defined?
-> >
-> In this patch..
-
-OK, I see it now -- sorry about that.
-
-> > > +static int cpu_is_feature(unsigned long feature)
-> > > +{
-> > > +	return (cur_cpu_spec->cpu_features == feature);
-> > > +}
-> > > +
-> > > +static int __init e500_idle_init(void)
-> > > +{
-> > > +	struct cpuidle_state *cpuidle_state_table = NULL;
-> > > +	struct cpuidle_driver *drv = &e500_idle_driver;
-> > > +	int err;
-> > > +	unsigned int max_idle_state = 0;
-> > > +
-> > > +	if (cpuidle_disable != IDLE_NO_OVERRIDE)
-> > > +		return -ENODEV;
-> > > +
-> > > +	if (cpu_is_feature(CPU_FTRS_E500MC) ||
-> > > cpu_is_feature(CPU_FTRS_E5500) ||
-> > > +			cpu_is_feature(CPU_FTRS_E6500)) {
-> >
-> > There's no guarantee that a CPU with the same set of features is the
-> > exact same CPU.
-> >
-> > What specific feature are you looking for here?
-> >
-> Here is the type of the core. E500MC,E5500,E6500 do wait.
-
-There's no guarantee that a CPU with the same set of features is the  
-exact same CPU.
-
-The CPU feature mechanism is for checking *features*, not identity.
-
--Scott
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index beb9625..59d3202 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -179,7 +179,9 @@ int acpi_device_set_power(struct acpi_device *device, int state)
+ 	}
+ 	if (device->parent && (state < device->parent->power.state)) {
+ 		dev_warn(&device->dev,
+-			 "Cannot transition to a higher-powered state than parent\n");
++			 "Cannot transition to power state %s for parent in %s\n",
++			 acpi_power_state_string(state),
++			 acpi_power_state_string(device->parent->power.state));
+ 		return -ENODEV;
+ 	}
+ 
+-- 
+1.8.3.2.10.g43d11f4
