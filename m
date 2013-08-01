@@ -1,95 +1,73 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH] cpufreq: Do not hold driver module references for
- additional policy CPUs
-Date: Fri, 02 Aug 2013 00:51:24 +0530
-Message-ID: <51FAB534.1070301@linux.vnet.ibm.com>
-References: <2362640.pUofnXyzOi@vostro.rjw.lan> <1656801.jLHjvytfNU@vostro.rjw.lan> <51FAB083.5050900@linux.vnet.ibm.com> <7752148.JjTSgAt1Xy@vostro.rjw.lan>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: Re: [Announcement] Linux Plumbers ACPI/PM, PCI Microconference
+Date: Thu, 01 Aug 2013 19:45:35 +0000
+Message-ID: <B8EFE96D1287C24090BAD9D858E15E617505EB@sisaex01sj>
+References: <CAL-B5D03ki8NHsM6EuESTH2K-Eh+XyFHNXPDYwgDq+oagDjtMQ@mail.gmail.com>
+ <1755363.sGc8nLIQOW@vostro.rjw.lan>
+ <CAKocOOPOqqS80D23z6xTVSNYYYWZ7ACg9MtSMz_hTqVA3Duo0w@mail.gmail.com>
+ <7183196.Ov6Qetq3lO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <7752148.JjTSgAt1Xy@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w2.samsung.com ([211.189.100.14]:60733 "EHLO
+	usmailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087Ab3HATpi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2013 15:45:38 -0400
+Content-language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Shuah Khan <shuahkhan@gmail.com>, linux-pci <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Myron Stowe <myron.stowe@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, "virtualization@lists.linux-foundation.org" <virtualization@lists.linux-foundation.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Shuah Khan <shuah.kh@samsung.com>
 
-On 08/02/2013 12:51 AM, Rafael J. Wysocki wrote:
-> On Friday, August 02, 2013 12:31:23 AM Srivatsa S. Bhat wrote:
->> On 08/02/2013 12:31 AM, Rafael J. Wysocki wrote:
->>> On Thursday, August 01, 2013 11:36:49 PM Srivatsa S. Bhat wrote:
->>>> Its the cpufreq_cpu_get() hidden away in cpufreq_add_dev_symlink(). With
->>>> that taken care of, everything should be OK. Then we can change the
->>>> synchronization part to avoid using refcounts.
+On 07/31/2013 03:07 PM, Rafael J. Wysocki wrote:
+> On Wednesday, July 31, 2013 10:35:05 AM Shuah Khan wrote:
+>> On Wed, Jul 31, 2013 at 5:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>> Hi All,
 >>>
->>> So I actually don't see why cpufreq_add_dev_symlink() needs to call
->>> cpufreq_cpu_get() at all, since the policy refcount is already 1 at the
->>> point it is called and the bumping up of the driver module refcount is
->>> pointless.
+>>> The original announcement didn't go to linux-pm, so again:
+>>>
+>>> On Tuesday, July 16, 2013 08:21:26 PM Myron Stowe wrote:
+>>>> Linux Plumbers has approved an ACPI/PM, PCI microconference. The
+>>>> overview page is here:
+>>>>
+>>>> http://wiki.linuxplumbersconf.org/2013:pci_subsystem
+>>>>
+>>>> We would like to start receiving volunteers for presenting topics of
+>>>> interest.  There is a lot of activity in these subsystems so please
+>>>> respond by submitting presentation or discussion proposals that you
+>>>> would be willing to cover for consideration.  You should also feel
+>>>> free to submit ideas as proposals that others could cover.  The
+>>>> instructions for submitting ideas should be at:
+>>>>
+>>>> http://www.linuxplumbersconf.org/2013/submitting-topic/
+>>>
+>>> If anyone who's going to attend the Linux Plumbers Conf this year is interested
+>>> in any particular topic for discussion during the ACPI/PM+PCI uconf, please
+>>> submit a formal topic proposal at:
+>>>
+>>> http://www.linuxplumbersconf.org/2013/ocw/events/LPC2013/proposals/new
+>>>
+>>> If you submit a topic, that doesn't mean you'll be expected to present anything
+>>> (if accepted).  In fact, we are mostly interested in discussion topics and we'd
+>>> like to know what is important to people.
+>>>
+>>> That said if you have a (short) presentation to make, please submit it too.
+>>>
+>>> We'll appreciate all submissions very much.
 >>>
 >>
->> Hmm, yes, it seems so.
->>
->>> However, if I change that I also need to change the piece of code that
->>> calls the complementary cpufreq_cpu_put() and I kind of cannot find it.
->>>
->>
->> ... I guess that's because you are looking at the code with your patch
->> applied (and your patch removed that _put()) ;-)
-> 
-> No, it's not that one.  That one was complementary to the cpufreq_cpu_get()
-> done by cpufreq_add_policy_cpu() before my patch.  Since my patch changes
-> cpufreq_add_policy_cpu() to call cpufreq_cpu_put() before returning and
-> bump up the policy refcount with kobject_get(), the one in
-> __cpufreq_remove_dev() is changed into kobject_put() (correctly, IMO).
-> 
-> What gives?
-> 
+>> What I have mind is a discussion topic for the Mini-conference, which
+>> in-line with what you are asking for.
+>> I will add it to the web.
+>
+> Thank you!
 
-Actually, it _is_ the one I pointed above. This thing is tricky, here's why:
+Rafael,
 
-cpufreq_add_policy_cpu() is called only if:
-a. The CPU being onlined has per_cpu(cpufreq_cpu_data, cpu) == NULL
-and 
-b. Its is present in some CPU's related_cpus mask. 
+Done. I submitted a topic for discussion.
 
-If condition (a) doesn't hold good, you get out right in the beginning of
-__cpufreq_add_dev().
+-- Shuah
 
-So, cpufreq_add_policy_cpu() is called very rarely because, inside
-__cpufreq_add_dev we do:
-
-1093         write_lock_irqsave(&cpufreq_driver_lock, flags);
-1094         for_each_cpu(j, policy->cpus) {
-1095                 per_cpu(cpufreq_cpu_data, j) = policy;
-1096                 per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
-1097         }
-1098         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-
-So for all the CPUs in the above policy->cpus mask, we simply return
-without further ado when they are onlined. In particular, we *dont* call
-cpufreq_add_policy_cpu() for any of them.
-
-And their refcounts are incremented by the cpufreq_add_dev_interface()->
-cpufreq_add_dev_symlink() function.
-
-So, ultimately, we increment the refcount for a given non-policy-owner CPU
-only once. *Either* in cpufreq_add_dev_symlink() *or* in cpufreq_add_policy_cpu(),
-but never both.
-
-So, in the teardown path, __cpufreq_remove_dev() needs only one place to
-decrement it as shown below:
-
-1303         } else {
-1304 
-1305                 if (!frozen) {
-1306                         pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
-1307                         cpufreq_cpu_put(data);
-1308                 }
-
-
-Pretty good maze, right? ;-(
- 
-Regards,
-Srivatsa S. Bhat
-
+Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
+America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
