@@ -1,46 +1,46 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 00/15] cpufreq: initialize drivers .owner field with THIS_MODULE
-Date: Fri, 2 Aug 2013 15:12:22 +0530
-Message-ID: <CAK9yfHy_qUysGHNqcyJWQiW4eBAFs-U-FAZa952FBnqNdB-=Bw@mail.gmail.com>
-References: <cover.1375279948.git.viresh.kumar@linaro.org>
-	<CAK9yfHwZCBk5boyiak1FJ7WVJ+FxLjPk1Wa5eYbuZw8BaOV5jw@mail.gmail.com>
-	<CAKohpokTPBv5Z7uGffRJqKB-V=pMi8WAeWUuxNvt+3QV3YcRKg@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references
+ for additional policy CPUs
+Date: Fri, 02 Aug 2013 15:42:05 +0530
+Message-ID: <51FB85F5.6060600@linux.vnet.ibm.com>
+References: <2362640.pUofnXyzOi@vostro.rjw.lan> <51FAC46D.1000703@linux.vnet.ibm.com>	<1757496.qSuJuAun9Z@vostro.rjw.lan> <2298639.F0Qv2QqRnZ@vostro.rjw.lan> <CAKohponru8Z1fod43dVtAODmYuMTGX70+73b8wk4wuGN=Vuh-w@mail.gmail.com> <51FB568B.1040902@linux.vnet.ibm.com> <CAKohpomGi0FzL-3FwsP=zzmbNMNUc6CN0S9Lyba+vx8m7MS4uQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokTPBv5Z7uGffRJqKB-V=pMi8WAeWUuxNvt+3QV3YcRKg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomGi0FzL-3FwsP=zzmbNMNUc6CN0S9Lyba+vx8m7MS4uQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 31 July 2013 22:09, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 31 July 2013 22:06, Sachin Kamat <sachin.kamat@linaro.org> wrote:
->> Hi Viresh,
->>
->> On 31 July 2013 19:49, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> CPUFreq core does following at multiple places:
->>> module_{get|put}(cpufreq_driver->owner)).
+On 08/02/2013 03:06 PM, Viresh Kumar wrote:
+> On 2 August 2013 12:19, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>> On 08/02/2013 10:07 AM, Viresh Kumar wrote:
+>>> So, we can't rmmod the module as soon as it is inserted and so the
+>>> problem stays as is. :(
 >>>
->>> This is done to make sure module doesn't get unloaded if it is currently in use.
->>> This will work only if the .owner field of cpufreq driver is initialized with a
->>> valid pointer.
->>>
->>> This field wasn't initialized for many cpufreq driver, lets initialize it with
->>> THIS_MODULE.
 >>
->>
->> Isn't it possible to do this inside cpufreq_register_driver function
->> in a similar way as done for platform_driver_register [1].
->>
->> [1] https://lkml.org/lkml/2013/5/25/5
->
-> Don't know if its possible to set it to something other than THIS_MODULE.
-> In which case we want something else to be done.
+>> No, we get one step closer to the solution, since we fix the inconsistency
+>> between refcounts. Next step would be to get rid of refcounts and use
+>> locking like you suggested. Then we can rmmod it easily. I'm assuming
+>> Rafael has the same plan.
+> 
+> Not really. We are putting the reference at the end of add_dev() and
+> so refcount would be zero when we aren't running any critical sections.
+> And so, we can rmmod the module now and that problem is gone.
+> 
 
-Even I am curious to know if it is possible to set the owner to
-something other than THIS_MODULE.
+Ah, yes, you are right.
 
--- 
-With warm regards,
-Sachin
+> @Rafael: I will try to do generic cleanups in cpufreq in coming time
+> and will take care to remove .owner field completely in that. Until that
+> point your patches look fine:
+> 
+> For both of your patches:
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+ 
+Regards,
+Srivatsa S. Bhat
