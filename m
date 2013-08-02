@@ -1,51 +1,84 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Fri, 02 Aug 2013 14:43:36 +0100
-Message-ID: <51FBB788.7040209@arm.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA917D.4060408@wwwdotorg.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] ACPI and power management fixes for v3.11-rc4
+Date: Fri, 02 Aug 2013 16:29:31 +0200
+Message-ID: <2052880.bHfzt6NKt5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:46792 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661Ab3HBNnl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2013 09:43:41 -0400
-In-Reply-To: <51FA917D.4060408@wwwdotorg.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Nishanth Menon <nm@ti.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 01/08/13 17:49, Stephen Warren wrote:
-> On 08/01/2013 07:54 AM, Mark Rutland wrote:
-> ...
->> We seem to be going over two cases, which both feel wrong to me:
->>
->> * One SoC used in multiple boards, where on some boards an OPP cannot be
->>   used because some requirement is not met. In this case, the board's
->>   dts (by including the SoC's dtsi) describes something that's not
->>   necessarily usable, and we seem to have no way to describe in the OPP
->>   table that the OPP is not usable for that board.
-> 
-> There are probably a lot of examples of this already. For example, for
-> pinctrl, people often want the SoC .dtsi file to include "pin
-> configuration nodes" (see
-> Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt) for many
-> common pinmux configurations in the SoC .dtsi file, so that board files
-> can simply refer to the already-existing nodes rather than having to
-> write everything from scratch. Obviously, not all common configurations
-> are used by every board.
-> 
-> ...
-Agreed, but I am not convinced with the comparison(pinmux and OPPs).
-The main concern I have is that if some developer wants to experiment
-with various configurations provided by SoC(e.g. I have seen some SoC
-where the pinmux have multiple functions and you can chose one of them)
-But that's not true with OPPs, if someone experiments with wrong OPP
-profile, then it might damage the board permanently.
+Hi Linus,
 
-Regards,
-Sudeep
+Please pull from the git repository at
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.11-rc4
+
+to receive ACPI and power management fixes for v3.11-rc4 with
+top-most commit 2b44c4db2e2f1765d35163a861d301038e0c8a75
+
+  freezer: set PF_SUSPEND_TASK flag on tasks that call freeze_processes
+
+on top of commit 5ae90d8e467e625e447000cb4335c4db973b1095
+
+  Linux 3.11-rc3
+
+These revert two cpuidle commits from 3.8 that turn out to hurt performance,
+fix a recent s2disk regression related to the freezer, fix cpufreq reference
+couting problem uncovered by one of the recent reverts and fix a particularly
+embarrassing bug in the ACPI battery driver.
+
+Specifics:
+
+- Revert two cpuidle commits added during the 3.8 development cycle that
+  turn out to have introduced a significant performance regression as
+  requested by Jeremy Eder.
+
+- The recent patches that made the freezer less heavy-weight introduced
+  a regression causing user-space-driven hibernation using the ioctl()
+  interface to block indefinitely when the hibernate process executes
+  try_to_freeze().  Fix from Colin Cross addresses this by adding a
+  process flag to mark the hibernate/suspend process to inform the
+  freezer that that process should be ignored.
+
+- One of the recent cpufreq reverts uncovered a problem in the core
+  causing the cpufreq driver module refcount to become negative after
+  a system suspend-resume cycle.  Fix from yours truly.
+
+- The evaluation of the ACPI battery _BIX method has never worked
+  correctly, because the commit that added support for it forgot to
+  take the "Revision" field in the return package into account.  As
+  a result, the reading of battery info doesn't work at all on some
+  systems, which is addressed by a fix from Lan Tianyu.
+
+Thanks!
+
+
+---------------
+
+Colin Cross (1):
+      freezer: set PF_SUSPEND_TASK flag on tasks that call freeze_processes
+
+Lan Tianyu (1):
+      ACPI / battery: Fix parsing _BIX return value
+
+Rafael J. Wysocki (3):
+      Revert "cpuidle: Quickly notice prediction failure in general case"
+      Revert "cpuidle: Quickly notice prediction failure for repeat mode"
+      cpufreq: Fix cpufreq driver module refcount balance after suspend/resume
+
+---------------
+
+ drivers/acpi/battery.c           |    2 +
+ drivers/cpufreq/cpufreq.c        |   19 +++++----
+ drivers/cpuidle/governors/menu.c |  106 ++--------------------------------------------
+ include/linux/sched.h            |    1 +
+ include/linux/tick.h             |    6 ---
+ kernel/freezer.c                 |    2 +-
+ kernel/power/process.c           |   11 +++++
+ kernel/time/tick-sched.c         |    9 +---
+ 8 files changed, 31 insertions(+), 125 deletions(-)
 
