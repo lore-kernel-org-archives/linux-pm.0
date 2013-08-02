@@ -1,48 +1,39 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references
- for additional policy CPUs
-Date: Fri, 02 Aug 2013 20:16:01 +0530
-Message-ID: <51FBC629.9080908@linux.vnet.ibm.com>
-References: <2362640.pUofnXyzOi@vostro.rjw.lan> <CAKohponru8Z1fod43dVtAODmYuMTGX70+73b8wk4wuGN=Vuh-w@mail.gmail.com> <CAKohpon7jyJWhf+j-M6Nuqy-AaY73YUpBpt-1uh12e_SYRv2bQ@mail.gmail.com> <5361062.ChI1FUI32W@vostro.rjw.lan> <CAKohpo=KhzFiiihCPfZ9kAm4rx1ZUfgWDJPQkhCgM5u2Gj3+uA@mail.gmail.com>
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: Re: [GIT PULL] ACPI and power management fixes for v3.11-rc4
+Date: Fri, 2 Aug 2013 14:12:49 -0500
+Message-ID: <CAMP44s2a2HqohWL9d+i3cpifJiUfidTw_ZfO3PttvhMn_hGE1A@mail.gmail.com>
+References: <2052880.bHfzt6NKt5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=KhzFiiihCPfZ9kAm4rx1ZUfgWDJPQkhCgM5u2Gj3+uA@mail.gmail.com>
+In-Reply-To: <2052880.bHfzt6NKt5@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/02/2013 08:08 PM, Viresh Kumar wrote:
-> On 2 August 2013 19:01, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> Care to add a changelog?
->>
->> I'll apply this on top of my $subject patch, then.
-> 
-> I thought you will merge this one with your patch, but there is no
-> harm in getting one more on my name :)
-> 
-> Changelog is (patch attached):
-> 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Fri, 2 Aug 2013 16:17:33 +0530
-> Subject: [PATCH] cpufreq: Pass policy to cpufreq_add_policy_cpu()
-> 
-> Caller of cpufreq_add_policy_cpu() already has pointer to policy structure and
-> so there is no need to find it again in cpufreq_add_policy_cpu(). Lets pass it
-> directly.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+On Fri, Aug 2, 2013 at 9:29 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-The patch looks good.
+> ---------------
+>
+> Colin Cross (1):
+>       freezer: set PF_SUSPEND_TASK flag on tasks that call freeze_processes
+>
+> Lan Tianyu (1):
+>       ACPI / battery: Fix parsing _BIX return value
+>
+> Rafael J. Wysocki (3):
+>       Revert "cpuidle: Quickly notice prediction failure in general case"
+>       Revert "cpuidle: Quickly notice prediction failure for repeat mode"
+>       cpufreq: Fix cpufreq driver module refcount balance after suspend/resume
+>
+> ---------------
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+You forgot this patch:
 
-Regards,
-Srivatsa S. Bhat
+https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=3706231332d57072e0e2c0e59975443f3f18e673
 
->  drivers/cpufreq/cpufreq.c | 18 ++++++------------
->  1 file changed, 6 insertions(+), 12 deletions(-)
-> 
+Or do you think it's fine to boot these machines into a black screen?
+
+-- 
+Felipe Contreras
