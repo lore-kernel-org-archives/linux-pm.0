@@ -1,50 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: [GIT PULL] ACPI and power management fixes for v3.11-rc4
-Date: Fri, 02 Aug 2013 23:21:37 +0200
-Message-ID: <1820071.Lqgn6ZcLbB@vostro.rjw.lan>
-References: <2052880.bHfzt6NKt5@vostro.rjw.lan> <CAMP44s2a2HqohWL9d+i3cpifJiUfidTw_ZfO3PttvhMn_hGE1A@mail.gmail.com>
+Date: Fri, 2 Aug 2013 16:31:37 -0500
+Message-ID: <CAMP44s2DNkkBP4G2oD+yRwxPYUDx6HAQyAEetLkBTe3mEpLR=A@mail.gmail.com>
+References: <2052880.bHfzt6NKt5@vostro.rjw.lan>
+	<CAMP44s2a2HqohWL9d+i3cpifJiUfidTw_ZfO3PttvhMn_hGE1A@mail.gmail.com>
+	<1820071.Lqgn6ZcLbB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAMP44s2a2HqohWL9d+i3cpifJiUfidTw_ZfO3PttvhMn_hGE1A@mail.gmail.com>
+In-Reply-To: <1820071.Lqgn6ZcLbB@vostro.rjw.lan>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 02, 2013 02:12:49 PM Felipe Contreras wrote:
-> On Fri, Aug 2, 2013 at 9:29 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > ---------------
-> >
-> > Colin Cross (1):
-> >       freezer: set PF_SUSPEND_TASK flag on tasks that call freeze_processes
-> >
-> > Lan Tianyu (1):
-> >       ACPI / battery: Fix parsing _BIX return value
-> >
-> > Rafael J. Wysocki (3):
-> >       Revert "cpuidle: Quickly notice prediction failure in general case"
-> >       Revert "cpuidle: Quickly notice prediction failure for repeat mode"
-> >       cpufreq: Fix cpufreq driver module refcount balance after suspend/resume
-> >
-> > ---------------
-> 
-> You forgot this patch:
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=3706231332d57072e0e2c0e59975443f3f18e673
-> 
-> Or do you think it's fine to boot these machines into a black screen?
+On Fri, Aug 2, 2013 at 4:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday, August 02, 2013 02:12:49 PM Felipe Contreras wrote:
 
-Seriously, what's wrong with you?!
+>> You forgot this patch:
+>>
+>> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=3706231332d57072e0e2c0e59975443f3f18e673
+>>
+>> Or do you think it's fine to boot these machines into a black screen?
+>
+> Seriously, what's wrong with you?!
+>
+> I didn't forget about it, I just didn't include it into this particular
+> pull request.
+>
+> And I'm not even sure I will push it for 3.11, because I prefer to revert
+> efaa14c for 3.11 if that's necessary to make your broken box work as before.
 
-I didn't forget about it, I just didn't include it into this particular
-pull request.
+The issue happens in more than just "my broken box", and yes,
+reverting that patch would help (in more than just my box), in the
+sense that at least Linux won't boot into a black screen.
 
-And I'm not even sure I will push it for 3.11, because I prefer to revert
-efaa14c for 3.11 if that's necessary to make your broken box work as before.
+But the backlight control still wouldn't work, as it hasn't worked
+since v3.7, possibly in many ASUS laptops, for that you need more than
+just reverting efaa14c.
 
-Well, perhaps I just won't push it at all so that you actually can go and
-complain to Linus about that ...
+> Well, perhaps I just won't push it at all so that you actually can go and
+> complain to Linus about that ...
 
+That is very responsible from you. Screw the users, right?
+
+-- 
+Felipe Contreras
