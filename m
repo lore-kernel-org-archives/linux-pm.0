@@ -1,135 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references for
- additional policy CPUs
-Date: Fri, 2 Aug 2013 10:07:23 +0530
-Message-ID: <CAKohponru8Z1fod43dVtAODmYuMTGX70+73b8wk4wuGN=Vuh-w@mail.gmail.com>
-References: <2362640.pUofnXyzOi@vostro.rjw.lan>
-	<51FAC46D.1000703@linux.vnet.ibm.com>
-	<1757496.qSuJuAun9Z@vostro.rjw.lan>
-	<2298639.F0Qv2QqRnZ@vostro.rjw.lan>
+Subject: Re: BUG_ON(irqs_disabled()) in cpufreq.c
+Date: Fri, 2 Aug 2013 10:32:37 +0530
+Message-ID: <CAOh2x=nfzMEgbetmaUhjKx2FfCvxPjOxk6A_XC-Q9h0+HOEnGQ@mail.gmail.com>
+References: <CAEL66Hib_KJ3=5Hi-=OAye=2pbQz_0-PcC6CicjP9n2Ng2KG9g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:43850 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796Ab3HBEhY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2013 00:37:24 -0400
-Received: by mail-ob0-f181.google.com with SMTP id dn14so351081obc.26
-        for <linux-pm@vger.kernel.org>; Thu, 01 Aug 2013 21:37:23 -0700 (PDT)
-In-Reply-To: <2298639.F0Qv2QqRnZ@vostro.rjw.lan>
+Received: from mail-ve0-f172.google.com ([209.85.128.172]:60491 "EHLO
+	mail-ve0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754097Ab3HBFCi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2013 01:02:38 -0400
+In-Reply-To: <CAEL66Hib_KJ3=5Hi-=OAye=2pbQz_0-PcC6CicjP9n2Ng2KG9g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Michael Giardino <giardino@ece.gatech.edu>
+Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-Wow!! Lot of stuff happened while I was asleep..
+More lists cc'd
 
-@Srivatsa: Thanks for answering what I would have answered to Rafael :)
-And you should really get some sleep, I would suggest :)
-
-On 2 August 2013 02:23, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpufreq: Do not hold driver module references for additional policy CPUs
-
-I still have issues with this subject. Why don't we get rid of .owner
-field completely? And stop using a mix of cpufreq_cpu_get() and
-kobject_get()?
-
-> The cpufreq core is a little inconsistent in the way it uses the
-> driver module refcount.
+On Thu, Aug 1, 2013 at 6:08 PM, Michael Giardino
+<giardino@ece.gatech.edu> wrote:
+> Hi,
 >
-> Namely, if __cpufreq_add_dev() is called for a CPU that doesn't
-> share the policy object with any other CPUs, the driver module
-> refcount it grabs to start with will be dropped by it before
-> returning and will be equal to 0 afterward.
-
-It wouldn't be zero but 1, this is what it is initialized with probably.
-That's what I can see in my tests.
-
-> However, if the given CPU does share the policy object with other
-> CPUs, either cpufreq_add_policy_cpu() is called to link the new CPU
-> to the existing policy, or cpufreq_add_dev_symlink() is used to link
-> the other CPUs sharing the policy with it to the just created policy
-> object.  In that case, because both cpufreq_add_policy_cpu() and
-> cpufreq_add_dev_symlink() call cpufreq_cpu_get() for the given
-> policy (the latter possibly many times) without the balancing
-> cpufreq_cpu_put() (unless there is an error), the driver module
-> refcount will be left by __cpufreq_add_dev() with a nonzero value.
+> I hope this is the right spot to ask this.
 >
-> To remove that inconsistency make cpufreq_add_policy_cpu() execute
-> cpufreq_cpu_put() for the given policy before returning, which
-> decrements the driver module refcount so that it will be 0 after
-> __cpufreq_add_dev() returns.  Moreover, remove the cpufreq_cpu_get()
-> call from cpufreq_add_dev_symlink(), since both the policy refcount
-> and the driver module refcount are nonzero when it is called and they
-> don't need to be bumped up by it.
+> Is there any way to change the cpu frequency using the cpufreq driver
+> from within an hrtimer callback function? I encounter a kernel panic
+> at cpufreq.c line 255 (260 in 3.9.5)
 >
-> Accordingly, drop the cpufreq_cpu_put() from __cpufreq_remove_dev(),
-> since it is only necessary to balance the cpufreq_cpu_get() called
-> by cpufreq_add_policy_cpu() or cpufreq_add_dev_symlink().
+> void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+> 253                 struct cpufreq_freqs *freqs, unsigned int state)
+> 254 {
+> 255         BUG_ON(irqs_disabled());
 >
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/cpufreq.c |   28 +++++++---------------------
->  1 file changed, 7 insertions(+), 21 deletions(-)
-
-So, we can't rmmod the module as soon as it is inserted and so the
-problem stays as is. :(
-
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -818,14 +818,11 @@ static int cpufreq_add_dev_symlink(struc
->                         continue;
 >
->                 pr_debug("Adding link for CPU: %u\n", j);
-> -               cpufreq_cpu_get(policy->cpu);
->                 cpu_dev = get_cpu_device(j);
->                 ret = sysfs_create_link(&cpu_dev->kobj, &policy->kobj,
->                                         "cpufreq");
-> -               if (ret) {
-> -                       cpufreq_cpu_put(policy);
-> -                       return ret;
-> -               }
-> +               if (ret)
-> +                       break;
->         }
->         return ret;
->  }
-> @@ -908,7 +905,8 @@ static int cpufreq_add_policy_cpu(unsign
->         unsigned long flags;
+> I'm assuming this is due to the cpufreq_notify_transition needs
+> interrupts to notify? Is there a way around this? It appears that
+> acpi-cpufreq.c is calling the notifier both before and after the
+> transition (CPUFREQ_PRECHANGE and CPUFREQ_POSTCHANGE).
 >
->         policy = cpufreq_cpu_get(sibling);
-
-This can be skipped completely at this place. Caller of
-cpufreq_add_policy_cpu() has got the policy pointer with it and so
-can be passed. I haven't done it earlier as the impression was we need
-to call cpufreq_cpu_get()..
-
-> -       WARN_ON(!policy);
-> +       if (WARN_ON_ONCE(!policy))
-> +               return -ENODATA;
+> Are there any frequency change functions that can operate without interrupts?
 >
->         if (has_target)
->                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> @@ -930,16 +928,10 @@ static int cpufreq_add_policy_cpu(unsign
->         }
+> The background is this:
 >
->         /* Don't touch sysfs links during light-weight init */
-> -       if (frozen) {
-> -               /* Drop the extra refcount that we took above */
-> -               cpufreq_cpu_put(policy);
-> -               return 0;
-> -       }
-> -
-> -       ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-> -       if (ret)
-> -               cpufreq_cpu_put(policy);
-> +       if (!frozen)
-> +               ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> For the past few days I have been trying to get to the bottom of a
+> problem involving a nonSMP governor I have written. The goal of this
+> governor is to change the frequency on a predefined schedule (in the
+> ms scale). The basic breakdown is this:
 >
-> +       cpufreq_cpu_put(policy);
-
-And so this will go away.
+> 1. The external scheduler computes schedules and then passes them to
+> the governor (with much code appropriated from the userspace governor)
+> via an exported function.
+> 2. The governor sets the frequency, then sets a timer to call the next
+> frequency change when it goes off
+>
+> In order to do this, I was using hrtimers. These timer's callback
+> functions run with interrupts disabled.
+>
+> Michael Giardino
+> <giardino@ece.gatech.edu>
+> <michael.giardino@gmail.com>
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
