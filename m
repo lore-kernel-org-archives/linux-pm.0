@@ -1,46 +1,36 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references
- for additional policy CPUs
-Date: Fri, 02 Aug 2013 15:42:05 +0530
-Message-ID: <51FB85F5.6060600@linux.vnet.ibm.com>
-References: <2362640.pUofnXyzOi@vostro.rjw.lan> <51FAC46D.1000703@linux.vnet.ibm.com>	<1757496.qSuJuAun9Z@vostro.rjw.lan> <2298639.F0Qv2QqRnZ@vostro.rjw.lan> <CAKohponru8Z1fod43dVtAODmYuMTGX70+73b8wk4wuGN=Vuh-w@mail.gmail.com> <51FB568B.1040902@linux.vnet.ibm.com> <CAKohpomGi0FzL-3FwsP=zzmbNMNUc6CN0S9Lyba+vx8m7MS4uQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references for
+ additional policy CPUs
+Date: Fri, 2 Aug 2013 16:00:47 +0530
+Message-ID: <CAKohpokbd=xX-DqVeEZOnGftZuE-54RDShpMJgFPskRc3CkZ5w@mail.gmail.com>
+References: <2362640.pUofnXyzOi@vostro.rjw.lan>
+	<51FAC46D.1000703@linux.vnet.ibm.com>
+	<1757496.qSuJuAun9Z@vostro.rjw.lan>
+	<2298639.F0Qv2QqRnZ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomGi0FzL-3FwsP=zzmbNMNUc6CN0S9Lyba+vx8m7MS4uQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2298639.F0Qv2QqRnZ@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/02/2013 03:06 PM, Viresh Kumar wrote:
-> On 2 August 2013 12:19, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> On 08/02/2013 10:07 AM, Viresh Kumar wrote:
->>> So, we can't rmmod the module as soon as it is inserted and so the
->>> problem stays as is. :(
->>>
->>
->> No, we get one step closer to the solution, since we fix the inconsistency
->> between refcounts. Next step would be to get rid of refcounts and use
->> locking like you suggested. Then we can rmmod it easily. I'm assuming
->> Rafael has the same plan.
-> 
-> Not really. We are putting the reference at the end of add_dev() and
-> so refcount would be zero when we aren't running any critical sections.
-> And so, we can rmmod the module now and that problem is gone.
-> 
+On 2 August 2013 02:23, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> To remove that inconsistency make cpufreq_add_policy_cpu() execute
+> cpufreq_cpu_put() for the given policy before returning, which
+> decrements the driver module refcount so that it will be 0 after
+> __cpufreq_add_dev() returns.  Moreover, remove the cpufreq_cpu_get()
+> call from cpufreq_add_dev_symlink(), since both the policy refcount
+> and the driver module refcount are nonzero when it is called and they
+> don't need to be bumped up by it.
 
-Ah, yes, you are right.
+Sorry for creating so many problems but my concerns with this patch
+aren't yet over :(
 
-> @Rafael: I will try to do generic cleanups in cpufreq in coming time
-> and will take care to remove .owner field completely in that. Until that
-> point your patches look fine:
-> 
-> For both of your patches:
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
- 
-Regards,
-Srivatsa S. Bhat
+Should we increment policy refcount or kobj refcount for every cpu it
+is used on? I think yes, that's probably the right way of doing it.
+
+And so we simply can't remove calls to cpufreq_cpu_get() from
+cpufreq_add_dev_symlink() routine and also from
+cpufreq_add_policy_cpu()..
