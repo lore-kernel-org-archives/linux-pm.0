@@ -1,32 +1,48 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: Re: [GIT PULL] ACPI and power management fixes for v3.11-rc4
-Date: Sat, 3 Aug 2013 15:21:44 -0500
-Message-ID: <CAMP44s2HSEnhWfgtvSmu3K-nrWzHnxfj44hpvAVerRQq-dUABg@mail.gmail.com>
-References: <2052880.bHfzt6NKt5@vostro.rjw.lan>
-	<6100577.WGRZRabKGy@vostro.rjw.lan>
-	<CAMP44s1Knox3oVt3-ePkDHxa2uNQAFVFRwmVTATNknWA46b_Uw@mail.gmail.com>
-	<1963015.Y2AObmEn2f@vostro.rjw.lan>
-	<1375546086.1988.2.camel@ThinkPad-X230.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 01/10] cpufreq: Cleanup header files included in core
+Date: Sat, 03 Aug 2013 23:42:30 +0200
+Message-ID: <2013377.ZVFroF3AQ6@vostro.rjw.lan>
+References: <cover.1375530162.git.viresh.kumar@linaro.org> <fe67f3269a07123b025468214e692af573b07364.1375530162.git.viresh.kumar@linaro.org> <CAKohponCtLRi1UJCN0z2hRVH=o326mtS2nUEvoi8Rf5H==vATw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f48.google.com ([209.85.215.48]:54287 "EHLO
-	mail-la0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982Ab3HCUVq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Aug 2013 16:21:46 -0400
-In-Reply-To: <1375546086.1988.2.camel@ThinkPad-X230.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponCtLRi1UJCN0z2hRVH=o326mtS2nUEvoi8Rf5H==vATw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Igor Gnatenko <i.gnatenko.brain@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sat, Aug 3, 2013 at 11:08 AM, Igor Gnatenko
-<i.gnatenko.brain@gmail.com> wrote:
+On Saturday, August 03, 2013 10:45:04 PM Viresh Kumar wrote:
+> On 3 August 2013 17:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > This patch intends to cleanup following issues in the header files included in
+> > cpufreq core layers:
+> > - Include headers in ascending order, so that we don't add same multiple times
+> >   by mistake.
+> > - <asm/> must be included after <linux/>, so that they override whatever they
+> >   need.
+> > - Remove unnecessary header files
+> > - Don't include files already included by cpufreq.h or cpufreq_governor.h
+> >
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Fixup due to compilation warning reported by Fengguang's kbuild system:
+> [Latest stuff pushed in my cpufreq-next branch]
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 70399ea..ccaf025 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -19,6 +19,7 @@
+> 
+>  #include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+> +#include <linux/delay.h>
+>  #include <linux/device.h>
+>  #include <linux/init.h>
+>  #include <linux/kernel_stat.h>
 
-> I am opposed to this patch. On ThinkPad X230 I had problems with it.
-> Felipe, come over to dark side. They have cookies.
+Can you please repost the complete patch with this folded in?
 
-And v3.11-rc3 works's fine out-of-the box?
+Rafael
 
--- 
-Felipe Contreras
