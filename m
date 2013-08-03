@@ -1,504 +1,393 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/10] cpufreq: Re-arrange declarations in cpufreq.h
-Date: Sat,  3 Aug 2013 17:19:20 +0530
-Message-ID: <c685424014a84ad05ee55b669a6cda1c8c66723e.1375530162.git.viresh.kumar@linaro.org>
+Subject: [PATCH 04/10] cpufreq: Use sizeof(*ptr) form for finding size of a struct
+Date: Sat,  3 Aug 2013 17:19:22 +0530
+Message-ID: <4ded853d33412a1659a8f98f1b5c58f91a4d39e2.1375530162.git.viresh.kumar@linaro.org>
 References: <cover.1375530162.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1375530162.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1375530162.git.viresh.kumar@linaro.org>
 References: <cover.1375530162.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-They are pretty much mixed up. Although generic headers are present but
-definitions/declarations are present outside them too..
+Chapter 14 of Documentation/CodingStyle says:
 
-This patch just moves stuff up and down to make it look better and consistent.
+The preferred form for passing a size of a struct is the following:
+
+	p = kmalloc(sizeof(*p), ...);
+
+The alternative form where struct name is spelled out hurts readability and
+introduces an opportunity for a bug when the pointer variable type is changed
+but the corresponding sizeof that is passed to a memory allocator is not.
+
+This wasn't followed consistently in drivers/cpufreq, lets make it more
+consistent by always following this rule.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- include/linux/cpufreq.h | 370 +++++++++++++++++++++++-------------------------
- 1 file changed, 177 insertions(+), 193 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c         |  4 ++--
+ drivers/cpufreq/cpufreq.c              |  9 ++++-----
+ drivers/cpufreq/cpufreq_conservative.c |  2 +-
+ drivers/cpufreq/cpufreq_ondemand.c     |  2 +-
+ drivers/cpufreq/cpufreq_stats.c        |  2 +-
+ drivers/cpufreq/e_powersaver.c         |  4 ++--
+ drivers/cpufreq/exynos-cpufreq.c       |  2 +-
+ drivers/cpufreq/gx-suspmod.c           |  2 +-
+ drivers/cpufreq/ia64-acpi-cpufreq.c    |  4 ++--
+ drivers/cpufreq/pmac64-cpufreq.c       |  5 ++---
+ drivers/cpufreq/powernow-k7.c          | 13 ++++++-------
+ drivers/cpufreq/powernow-k8.c          |  6 +++---
+ drivers/cpufreq/s3c24xx-cpufreq.c      |  6 +++---
+ drivers/cpufreq/sparc-us2e-cpufreq.c   |  5 ++---
+ drivers/cpufreq/sparc-us3-cpufreq.c    |  5 ++---
+ 15 files changed, 33 insertions(+), 38 deletions(-)
 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 97627bb..611b164 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -17,60 +17,30 @@
- #include <linux/notifier.h>
- #include <linux/sysfs.h>
- 
--#define CPUFREQ_NAME_LEN 16
--/* Print length for names. Extra 1 space for accomodating '\n' in prints */
--#define CPUFREQ_NAME_PLEN (CPUFREQ_NAME_LEN + 1)
--
- /*********************************************************************
-- *                     CPUFREQ NOTIFIER INTERFACE                    *
-+ *                        CPUFREQ INTERFACE                          *
-  *********************************************************************/
--
--#define CPUFREQ_TRANSITION_NOTIFIER	(0)
--#define CPUFREQ_POLICY_NOTIFIER		(1)
--
--#ifdef CONFIG_CPU_FREQ
--int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
--int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
--extern void disable_cpufreq(void);
--#else		/* CONFIG_CPU_FREQ */
--static inline int cpufreq_register_notifier(struct notifier_block *nb,
--						unsigned int list)
--{
--	return 0;
--}
--static inline int cpufreq_unregister_notifier(struct notifier_block *nb,
--						unsigned int list)
--{
--	return 0;
--}
--static inline void disable_cpufreq(void) { }
--#endif		/* CONFIG_CPU_FREQ */
--
--/* if (cpufreq_driver->target) exists, the ->governor decides what frequency
-- * within the limits is used. If (cpufreq_driver->setpolicy> exists, these
-- * two generic policies are available:
-- */
--
--#define CPUFREQ_POLICY_POWERSAVE	(1)
--#define CPUFREQ_POLICY_PERFORMANCE	(2)
--
--/* Frequency values here are CPU kHz so that hardware which doesn't run
-- * with some frequencies can complain without having to guess what per
-- * cent / per mille means.
-+/*
-+ * Frequency values here are CPU kHz
-+ *
-  * Maximum transition latency is in nanoseconds - if it's unknown,
-  * CPUFREQ_ETERNAL shall be used.
-  */
- 
-+#define CPUFREQ_ETERNAL			(-1)
-+#define CPUFREQ_NAME_LEN		16
-+/* Print length for names. Extra 1 space for accomodating '\n' in prints */
-+#define CPUFREQ_NAME_PLEN		(CPUFREQ_NAME_LEN + 1)
-+
- struct cpufreq_governor;
- 
--/* /sys/devices/system/cpu/cpufreq: entry point for global variables */
--extern struct kobject *cpufreq_global_kobject;
--int cpufreq_get_global_kobject(void);
--void cpufreq_put_global_kobject(void);
--int cpufreq_sysfs_create_file(const struct attribute *attr);
--void cpufreq_sysfs_remove_file(const struct attribute *attr);
-+struct cpufreq_freqs {
-+	unsigned int cpu;	/* cpu nr */
-+	unsigned int old;
-+	unsigned int new;
-+	u8 flags;		/* flags of cpufreq_driver, see below. */
-+};
- 
--#define CPUFREQ_ETERNAL			(-1)
- struct cpufreq_cpuinfo {
- 	unsigned int		max_freq;
- 	unsigned int		min_freq;
-@@ -117,111 +87,95 @@ struct cpufreq_policy {
- 	int			transition_ongoing; /* Tracks transition status */
- };
- 
--#define CPUFREQ_ADJUST			(0)
--#define CPUFREQ_INCOMPATIBLE		(1)
--#define CPUFREQ_NOTIFY			(2)
--#define CPUFREQ_START			(3)
--#define CPUFREQ_UPDATE_POLICY_CPU	(4)
--
- /* Only for ACPI */
- #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
- #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
- #define CPUFREQ_SHARED_TYPE_ALL	 (2) /* All dependent CPUs should set freq */
- #define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
- 
-+struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
-+void cpufreq_cpu_put(struct cpufreq_policy *data);
-+
- static inline bool policy_is_shared(struct cpufreq_policy *policy)
- {
- 	return cpumask_weight(policy->cpus) > 1;
- }
- 
--/******************** cpufreq transition notifiers *******************/
--
--#define CPUFREQ_PRECHANGE	(0)
--#define CPUFREQ_POSTCHANGE	(1)
--#define CPUFREQ_RESUMECHANGE	(8)
--#define CPUFREQ_SUSPENDCHANGE	(9)
-+/* /sys/devices/system/cpu/cpufreq: entry point for global variables */
-+extern struct kobject *cpufreq_global_kobject;
-+int cpufreq_get_global_kobject(void);
-+void cpufreq_put_global_kobject(void);
-+int cpufreq_sysfs_create_file(const struct attribute *attr);
-+void cpufreq_sysfs_remove_file(const struct attribute *attr);
- 
--struct cpufreq_freqs {
--	unsigned int cpu;	/* cpu nr */
--	unsigned int old;
--	unsigned int new;
--	u8 flags;		/* flags of cpufreq_driver, see below. */
--};
-+#ifdef CONFIG_CPU_FREQ
-+unsigned int cpufreq_get(unsigned int cpu);
-+unsigned int cpufreq_quick_get(unsigned int cpu);
-+unsigned int cpufreq_quick_get_max(unsigned int cpu);
-+void disable_cpufreq(void);
- 
--/**
-- * cpufreq_scale - "old * mult / div" calculation for large values (32-bit-arch
-- * safe)
-- * @old:   old value
-- * @div:   divisor
-- * @mult:  multiplier
-- *
-- *
-- * new = old * mult / div
-- */
--static inline unsigned long cpufreq_scale(unsigned long old, u_int div,
--		u_int mult)
-+u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
-+int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
-+int cpufreq_update_policy(unsigned int cpu);
-+bool have_governor_per_policy(void);
-+struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
-+#else
-+static inline unsigned int cpufreq_get(unsigned int cpu)
- {
--#if BITS_PER_LONG == 32
--
--	u64 result = ((u64) old) * ((u64) mult);
--	do_div(result, div);
--	return (unsigned long) result;
--
--#elif BITS_PER_LONG == 64
--
--	unsigned long result = old * ((u64) mult);
--	result /= div;
--	return result;
--
-+	return 0;
-+}
-+static inline unsigned int cpufreq_quick_get(unsigned int cpu)
-+{
-+	return 0;
-+}
-+static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
-+{
-+	return 0;
-+}
-+static inline void disable_cpufreq(void) { }
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index e673670..44758ce 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -709,7 +709,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		return blacklisted;
  #endif
--};
  
- /*********************************************************************
-- *                          CPUFREQ GOVERNORS                        *
-+ *                      CPUFREQ DRIVER INTERFACE                     *
-  *********************************************************************/
+-	data = kzalloc(sizeof(struct acpi_cpufreq_data), GFP_KERNEL);
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
  
--#define CPUFREQ_GOV_START	1
--#define CPUFREQ_GOV_STOP	2
--#define CPUFREQ_GOV_LIMITS	3
--#define CPUFREQ_GOV_POLICY_INIT	4
--#define CPUFREQ_GOV_POLICY_EXIT	5
-+#define CPUFREQ_RELATION_L 0  /* lowest frequency at or above target */
-+#define CPUFREQ_RELATION_H 1  /* highest frequency below or at target */
+@@ -799,7 +799,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_unreg;
+ 	}
  
--struct cpufreq_governor {
--	char	name[CPUFREQ_NAME_LEN];
--	int	initialized;
--	int	(*governor)	(struct cpufreq_policy *policy,
--				 unsigned int event);
--	ssize_t	(*show_setspeed)	(struct cpufreq_policy *policy,
--					 char *buf);
--	int	(*store_setspeed)	(struct cpufreq_policy *policy,
--					 unsigned int freq);
--	unsigned int max_transition_latency; /* HW must be able to switch to
--			next freq faster than this value in nano secs or we
--			will fallback to performance governor */
--	struct list_head	governor_list;
--	struct module		*owner;
-+struct freq_attr {
-+	struct attribute attr;
-+	ssize_t (*show)(struct cpufreq_policy *, char *);
-+	ssize_t (*store)(struct cpufreq_policy *, const char *, size_t count);
- };
+-	data->freq_table = kmalloc(sizeof(struct cpufreq_frequency_table) *
++	data->freq_table = kmalloc(sizeof(*data->freq_table) *
+ 		    (perf->state_count+1), GFP_KERNEL);
+ 	if (!data->freq_table) {
+ 		result = -ENOMEM;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index fd94923..47773a9 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -872,7 +872,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ 	struct cpufreq_policy new_policy;
+ 	int ret = 0;
  
--/*
-- * Pass a target to the cpufreq driver.
-- */
--extern int cpufreq_driver_target(struct cpufreq_policy *policy,
--				 unsigned int target_freq,
--				 unsigned int relation);
--extern int __cpufreq_driver_target(struct cpufreq_policy *policy,
--				   unsigned int target_freq,
--				   unsigned int relation);
--int cpufreq_register_governor(struct cpufreq_governor *governor);
--void cpufreq_unregister_governor(struct cpufreq_governor *governor);
-+#define cpufreq_freq_attr_ro(_name)		\
-+static struct freq_attr _name =			\
-+__ATTR(_name, 0444, show_##_name, NULL)
+-	memcpy(&new_policy, policy, sizeof(struct cpufreq_policy));
++	memcpy(&new_policy, policy, sizeof(*policy));
+ 	/* assure that the starting sequence is run in __cpufreq_set_policy */
+ 	policy->governor = NULL;
  
--/*********************************************************************
-- *                      CPUFREQ DRIVER INTERFACE                     *
-- *********************************************************************/
-+#define cpufreq_freq_attr_ro_perm(_name, _perm)	\
-+static struct freq_attr _name =			\
-+__ATTR(_name, _perm, show_##_name, NULL)
+@@ -1823,7 +1823,7 @@ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
+ 	if (!cpu_policy)
+ 		return -EINVAL;
  
--#define CPUFREQ_RELATION_L 0  /* lowest frequency at or above target */
--#define CPUFREQ_RELATION_H 1  /* highest frequency below or at target */
-+#define cpufreq_freq_attr_rw(_name)		\
-+static struct freq_attr _name =			\
-+__ATTR(_name, 0644, show_##_name, store_##_name)
-+
-+struct global_attr {
-+	struct attribute attr;
-+	ssize_t (*show)(struct kobject *kobj,
-+			struct attribute *attr, char *buf);
-+	ssize_t (*store)(struct kobject *a, struct attribute *b,
-+			 const char *c, size_t count);
-+};
-+
-+#define define_one_global_ro(_name)		\
-+static struct global_attr _name =		\
-+__ATTR(_name, 0444, show_##_name, NULL)
-+
-+#define define_one_global_rw(_name)		\
-+static struct global_attr _name =		\
-+__ATTR(_name, 0644, show_##_name, store_##_name)
+-	memcpy(policy, cpu_policy, sizeof(struct cpufreq_policy));
++	memcpy(policy, cpu_policy, sizeof(*policy));
  
--struct freq_attr;
- 
- struct cpufreq_driver {
- 	struct module		*owner;
-@@ -258,7 +212,6 @@ struct cpufreq_driver {
- };
- 
- /* flags */
--
- #define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if
- 					 * all ->init() calls failed */
- #define CPUFREQ_CONST_LOOPS	0x02	/* loops_per_jiffy or other kernel
-@@ -270,8 +223,7 @@ struct cpufreq_driver {
- int cpufreq_register_driver(struct cpufreq_driver *driver_data);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
- 
--void cpufreq_notify_transition(struct cpufreq_policy *policy,
--		struct cpufreq_freqs *freqs, unsigned int state);
-+const char *cpufreq_get_current_driver(void);
- 
- static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy,
- 		unsigned int min, unsigned int max)
-@@ -289,87 +241,121 @@ static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy,
- 	return;
- }
- 
--struct freq_attr {
--	struct attribute attr;
--	ssize_t (*show)(struct cpufreq_policy *, char *);
--	ssize_t (*store)(struct cpufreq_policy *, const char *, size_t count);
--};
-+/*********************************************************************
-+ *                     CPUFREQ NOTIFIER INTERFACE                    *
-+ *********************************************************************/
- 
--#define cpufreq_freq_attr_ro(_name)		\
--static struct freq_attr _name =			\
--__ATTR(_name, 0444, show_##_name, NULL)
-+#define CPUFREQ_TRANSITION_NOTIFIER	(0)
-+#define CPUFREQ_POLICY_NOTIFIER		(1)
- 
--#define cpufreq_freq_attr_ro_perm(_name, _perm)	\
--static struct freq_attr _name =			\
--__ATTR(_name, _perm, show_##_name, NULL)
-+/* Transition notifiers */
-+#define CPUFREQ_PRECHANGE		(0)
-+#define CPUFREQ_POSTCHANGE		(1)
-+#define CPUFREQ_RESUMECHANGE		(8)
-+#define CPUFREQ_SUSPENDCHANGE		(9)
- 
--#define cpufreq_freq_attr_rw(_name)		\
--static struct freq_attr _name =			\
--__ATTR(_name, 0644, show_##_name, store_##_name)
-+/* Policy Notifiers  */
-+#define CPUFREQ_ADJUST			(0)
-+#define CPUFREQ_INCOMPATIBLE		(1)
-+#define CPUFREQ_NOTIFY			(2)
-+#define CPUFREQ_START			(3)
-+#define CPUFREQ_UPDATE_POLICY_CPU	(4)
- 
--struct global_attr {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj,
--			struct attribute *attr, char *buf);
--	ssize_t (*store)(struct kobject *a, struct attribute *b,
--			 const char *c, size_t count);
--};
-+#ifdef CONFIG_CPU_FREQ
-+int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
-+int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
- 
--#define define_one_global_ro(_name)		\
--static struct global_attr _name =		\
--__ATTR(_name, 0444, show_##_name, NULL)
-+void cpufreq_notify_transition(struct cpufreq_policy *policy,
-+		struct cpufreq_freqs *freqs, unsigned int state);
- 
--#define define_one_global_rw(_name)		\
--static struct global_attr _name =		\
--__ATTR(_name, 0644, show_##_name, store_##_name)
-+/**
-+ * cpufreq_scale - "old * mult / div" calculation for large values (32-bit-arch
-+ * safe)
-+ * @old:   old value
-+ * @div:   divisor
-+ * @mult:  multiplier
-+ *
-+ *
-+ * new = old * mult / div
-+ */
-+static inline unsigned long cpufreq_scale(unsigned long old, u_int div,
-+		u_int mult)
-+{
-+#if BITS_PER_LONG == 32
- 
--struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
--void cpufreq_cpu_put(struct cpufreq_policy *data);
--const char *cpufreq_get_current_driver(void);
-+	u64 result = ((u64) old) * ((u64) mult);
-+	do_div(result, div);
-+	return (unsigned long) result;
- 
--/*********************************************************************
-- *                        CPUFREQ 2.6. INTERFACE                     *
-- *********************************************************************/
--u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
--int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
--int cpufreq_update_policy(unsigned int cpu);
--bool have_governor_per_policy(void);
--struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
-+#elif BITS_PER_LONG == 64
-+
-+	unsigned long result = old * ((u64) mult);
-+	result /= div;
-+	return result;
- 
--#ifdef CONFIG_CPU_FREQ
--/*
-- * query the current CPU frequency (in kHz). If zero, cpufreq couldn't detect it
-- */
--unsigned int cpufreq_get(unsigned int cpu);
--#else
--static inline unsigned int cpufreq_get(unsigned int cpu)
--{
--	return 0;
--}
- #endif
-+};
- 
--/*
-- * query the last known CPU freq (in kHz). If zero, cpufreq couldn't detect it
-- */
--#ifdef CONFIG_CPU_FREQ
--unsigned int cpufreq_quick_get(unsigned int cpu);
--unsigned int cpufreq_quick_get_max(unsigned int cpu);
--#else
--static inline unsigned int cpufreq_quick_get(unsigned int cpu)
-+#else /* CONFIG_CPU_FREQ */
-+static inline int cpufreq_register_notifier(struct notifier_block *nb,
-+						unsigned int list)
- {
+ 	cpufreq_cpu_put(cpu_policy);
  	return 0;
- }
--static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
-+static inline int cpufreq_unregister_notifier(struct notifier_block *nb,
-+						unsigned int list)
+@@ -1842,8 +1842,7 @@ static int __cpufreq_set_policy(struct cpufreq_policy *policy,
+ 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_policy->cpu,
+ 		new_policy->min, new_policy->max);
+ 
+-	memcpy(&new_policy->cpuinfo, &policy->cpuinfo,
+-				sizeof(struct cpufreq_cpuinfo));
++	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
+ 
+ 	if (new_policy->min > policy->max || new_policy->max < policy->min) {
+ 		ret = -EINVAL;
+@@ -1962,7 +1961,7 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	}
+ 
+ 	pr_debug("updating policy for CPU %u\n", cpu);
+-	memcpy(&new_policy, policy, sizeof(struct cpufreq_policy));
++	memcpy(&new_policy, policy, sizeof(*policy));
+ 	new_policy.min = policy->user_policy.min;
+ 	new_policy.max = policy->user_policy.max;
+ 	new_policy.policy = policy->user_policy.policy;
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 841e256..c400924 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -317,7 +317,7 @@ static int cs_init(struct dbs_data *dbs_data)
  {
- 	return 0;
- }
--#endif
-+#endif /* !CONFIG_CPU_FREQ */
+ 	struct cs_dbs_tuners *tuners;
  
- /*********************************************************************
-- *                       CPUFREQ DEFAULT GOVERNOR                    *
-+ *                          CPUFREQ GOVERNORS                        *
-  *********************************************************************/
+-	tuners = kzalloc(sizeof(struct cs_dbs_tuners), GFP_KERNEL);
++	tuners = kzalloc(sizeof(*tuners), GFP_KERNEL);
+ 	if (!tuners) {
+ 		pr_err("%s: kzalloc failed\n", __func__);
+ 		return -ENOMEM;
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 47d4b69b..117278a 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -482,7 +482,7 @@ static int od_init(struct dbs_data *dbs_data)
+ 	u64 idle_time;
+ 	int cpu;
  
- /*
-+ * If (cpufreq_driver->target) exists, the ->governor decides what frequency
-+ * within the limits is used. If (cpufreq_driver->setpolicy> exists, these
-+ * two generic policies are available:
-+ */
-+#define CPUFREQ_POLICY_POWERSAVE	(1)
-+#define CPUFREQ_POLICY_PERFORMANCE	(2)
-+
-+/* Governor Events */
-+#define CPUFREQ_GOV_START	1
-+#define CPUFREQ_GOV_STOP	2
-+#define CPUFREQ_GOV_LIMITS	3
-+#define CPUFREQ_GOV_POLICY_INIT	4
-+#define CPUFREQ_GOV_POLICY_EXIT	5
-+
-+struct cpufreq_governor {
-+	char	name[CPUFREQ_NAME_LEN];
-+	int	initialized;
-+	int	(*governor)	(struct cpufreq_policy *policy,
-+				 unsigned int event);
-+	ssize_t	(*show_setspeed)	(struct cpufreq_policy *policy,
-+					 char *buf);
-+	int	(*store_setspeed)	(struct cpufreq_policy *policy,
-+					 unsigned int freq);
-+	unsigned int max_transition_latency; /* HW must be able to switch to
-+			next freq faster than this value in nano secs or we
-+			will fallback to performance governor */
-+	struct list_head	governor_list;
-+	struct module		*owner;
-+};
-+
-+/* Pass a target to the cpufreq driver */
-+int cpufreq_driver_target(struct cpufreq_policy *policy,
-+				 unsigned int target_freq,
-+				 unsigned int relation);
-+int __cpufreq_driver_target(struct cpufreq_policy *policy,
-+				   unsigned int target_freq,
-+				   unsigned int relation);
-+int cpufreq_register_governor(struct cpufreq_governor *governor);
-+void cpufreq_unregister_governor(struct cpufreq_governor *governor);
-+
-+/* CPUFREQ DEFAULT GOVERNOR */
-+/*
-  * Performance governor is fallback governor if any other gov failed to auto
-  * load due latency restrictions
-  */
-@@ -417,18 +403,16 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 				   unsigned int relation,
- 				   unsigned int *index);
+-	tuners = kzalloc(sizeof(struct od_dbs_tuners), GFP_KERNEL);
++	tuners = kzalloc(sizeof(*tuners), GFP_KERNEL);
+ 	if (!tuners) {
+ 		pr_err("%s: kzalloc failed\n", __func__);
+ 		return -ENOMEM;
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index b6019b8..1fbe721 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -197,7 +197,7 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	unsigned int cpu = policy->cpu;
+ 	if (per_cpu(cpufreq_stats_table, cpu))
+ 		return -EBUSY;
+-	stat = kzalloc(sizeof(struct cpufreq_stats), GFP_KERNEL);
++	stat = kzalloc(sizeof(*stat), GFP_KERNEL);
+ 	if ((stat) == NULL)
+ 		return -ENOMEM;
  
--/* the following 3 funtions are for cpufreq core use only */
-+void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
-+ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
-+
-+/* the following funtion is for cpufreq core use only */
- struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index a60efae..de974be 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -54,7 +54,7 @@ static struct acpi_processor_performance *eps_acpi_cpu_perf;
+ /* Minimum necessary to get acpi_processor_get_bios_limit() working */
+ static int eps_acpi_init(void)
+ {
+-	eps_acpi_cpu_perf = kzalloc(sizeof(struct acpi_processor_performance),
++	eps_acpi_cpu_perf = kzalloc(sizeof(*eps_acpi_cpu_perf),
+ 				      GFP_KERNEL);
+ 	if (!eps_acpi_cpu_perf)
+ 		return -ENOMEM;
+@@ -366,7 +366,7 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 		states = 2;
  
- /* the following are really really optional */
- extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
--
- void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
- 				      unsigned int cpu);
--void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
--
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
+ 	/* Allocate private data and frequency table for current cpu */
+-	centaur = kzalloc(sizeof(struct eps_cpu_data)
++	centaur = kzalloc(sizeof(*centaur)
+ 		    + (states + 1) * sizeof(struct cpufreq_frequency_table),
+ 		    GFP_KERNEL);
+ 	if (!centaur)
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 0d32f02..3664751 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -289,7 +289,7 @@ static int __init exynos_cpufreq_init(void)
+ {
+ 	int ret = -EINVAL;
  
--ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
--
- #endif /* _LINUX_CPUFREQ_H */
+-	exynos_info = kzalloc(sizeof(struct exynos_dvfs_info), GFP_KERNEL);
++	exynos_info = kzalloc(sizeof(*exynos_info), GFP_KERNEL);
+ 	if (!exynos_info)
+ 		return -ENOMEM;
+ 
+diff --git a/drivers/cpufreq/gx-suspmod.c b/drivers/cpufreq/gx-suspmod.c
+index 3dfc99b..4f25fb6 100644
+--- a/drivers/cpufreq/gx-suspmod.c
++++ b/drivers/cpufreq/gx-suspmod.c
+@@ -466,7 +466,7 @@ static int __init cpufreq_gx_init(void)
+ 
+ 	pr_debug("geode suspend modulation available.\n");
+ 
+-	params = kzalloc(sizeof(struct gxfreq_params), GFP_KERNEL);
++	params = kzalloc(sizeof(*params), GFP_KERNEL);
+ 	if (params == NULL)
+ 		return -ENOMEM;
+ 
+diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+index 573c14e..08792dd 100644
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -274,7 +274,7 @@ acpi_cpufreq_cpu_init (
+ 
+ 	pr_debug("acpi_cpufreq_cpu_init\n");
+ 
+-	data = kzalloc(sizeof(struct cpufreq_acpi_io), GFP_KERNEL);
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return (-ENOMEM);
+ 
+@@ -304,7 +304,7 @@ acpi_cpufreq_cpu_init (
+ 	}
+ 
+ 	/* alloc freq_table */
+-	data->freq_table = kmalloc(sizeof(struct cpufreq_frequency_table) *
++	data->freq_table = kmalloc(sizeof(*data->freq_table) *
+ 	                           (data->acpi_data.state_count + 1),
+ 	                           GFP_KERNEL);
+ 	if (!data->freq_table) {
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index 7ba4234..4d7799b 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -447,9 +447,8 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
+ 		if (!shdr)
+ 			goto bail_noprops;
+ 		g5_fvt_table = (struct smu_sdbp_fvt *)&shdr[1];
+-		ssize = (shdr->len * sizeof(u32)) -
+-			sizeof(struct smu_sdbp_header);
+-		g5_fvt_count = ssize / sizeof(struct smu_sdbp_fvt);
++		ssize = (shdr->len * sizeof(u32)) - sizeof(*shdr);
++		g5_fvt_count = ssize / sizeof(*g5_fvt_table);
+ 		g5_fvt_cur = 0;
+ 
+ 		/* Sanity checking */
+diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
+index 9558708..4687d40 100644
+--- a/drivers/cpufreq/powernow-k7.c
++++ b/drivers/cpufreq/powernow-k7.c
+@@ -177,7 +177,7 @@ static int get_ranges(unsigned char *pst)
+ 	unsigned int speed;
+ 	u8 fid, vid;
+ 
+-	powernow_table = kzalloc((sizeof(struct cpufreq_frequency_table) *
++	powernow_table = kzalloc((sizeof(*powernow_table) *
+ 				(number_scales + 1)), GFP_KERNEL);
+ 	if (!powernow_table)
+ 		return -ENOMEM;
+@@ -309,8 +309,7 @@ static int powernow_acpi_init(void)
+ 		goto err0;
+ 	}
+ 
+-	acpi_processor_perf = kzalloc(sizeof(struct acpi_processor_performance),
+-				      GFP_KERNEL);
++	acpi_processor_perf = kzalloc(sizeof(*acpi_processor_perf), GFP_KERNEL);
+ 	if (!acpi_processor_perf) {
+ 		retval = -ENOMEM;
+ 		goto err0;
+@@ -346,7 +345,7 @@ static int powernow_acpi_init(void)
+ 		goto err2;
+ 	}
+ 
+-	powernow_table = kzalloc((sizeof(struct cpufreq_frequency_table) *
++	powernow_table = kzalloc((sizeof(*powernow_table) *
+ 				(number_scales + 1)), GFP_KERNEL);
+ 	if (!powernow_table) {
+ 		retval = -ENOMEM;
+@@ -497,7 +496,7 @@ static int powernow_decode_bios(int maxfid, int startvid)
+ 					"relevant to this CPU).\n",
+ 					psb->numpst);
+ 
+-			p += sizeof(struct psb_s);
++			p += sizeof(*psb);
+ 
+ 			pst = (struct pst_s *) p;
+ 
+@@ -510,12 +509,12 @@ static int powernow_decode_bios(int maxfid, int startvid)
+ 				    (maxfid == pst->maxfid) &&
+ 				    (startvid == pst->startvid)) {
+ 					print_pst_entry(pst, j);
+-					p = (char *)pst + sizeof(struct pst_s);
++					p = (char *)pst + sizeof(*pst);
+ 					ret = get_ranges(p);
+ 					return ret;
+ 				} else {
+ 					unsigned int k;
+-					p = (char *)pst + sizeof(struct pst_s);
++					p = (char *)pst + sizeof(*pst);
+ 					for (k = 0; k < number_scales; k++)
+ 						p += 2;
+ 				}
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index c39d189..3f3c6ca 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -623,7 +623,7 @@ static int fill_powernow_table(struct powernow_k8_data *data,
+ 	if (check_pst_table(data, pst, maxvid))
+ 		return -EINVAL;
+ 
+-	powernow_table = kmalloc((sizeof(struct cpufreq_frequency_table)
++	powernow_table = kmalloc((sizeof(*powernow_table)
+ 		* (data->numps + 1)), GFP_KERNEL);
+ 	if (!powernow_table) {
+ 		printk(KERN_ERR PFX "powernow_table memory alloc failure\n");
+@@ -793,7 +793,7 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
+ 	}
+ 
+ 	/* fill in data->powernow_table */
+-	powernow_table = kmalloc((sizeof(struct cpufreq_frequency_table)
++	powernow_table = kmalloc((sizeof(*powernow_table)
+ 		* (data->acpi_data.state_count + 1)), GFP_KERNEL);
+ 	if (!powernow_table) {
+ 		pr_debug("powernow_table memory alloc failure\n");
+@@ -1106,7 +1106,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 	if (rc)
+ 		return -ENODEV;
+ 
+-	data = kzalloc(sizeof(struct powernow_k8_data), GFP_KERNEL);
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 	if (!data) {
+ 		printk(KERN_ERR PFX "unable to alloc powernow_k8_data");
+ 		return -ENOMEM;
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index 87781eb..f169ee5 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -522,7 +522,7 @@ int __init s3c_cpufreq_setboard(struct s3c_cpufreq_board *board)
+ 	/* Copy the board information so that each board can make this
+ 	 * initdata. */
+ 
+-	ours = kzalloc(sizeof(struct s3c_cpufreq_board), GFP_KERNEL);
++	ours = kzalloc(sizeof(*ours), GFP_KERNEL);
+ 	if (ours == NULL) {
+ 		printk(KERN_ERR "%s: no memory\n", __func__);
+ 		return -ENOMEM;
+@@ -615,7 +615,7 @@ static int s3c_cpufreq_build_freq(void)
+ 	size = cpu_cur.info->calc_freqtable(&cpu_cur, NULL, 0);
+ 	size++;
+ 
+-	ftab = kmalloc(sizeof(struct cpufreq_frequency_table) * size, GFP_KERNEL);
++	ftab = kmalloc(sizeof(*ftab) * size, GFP_KERNEL);
+ 	if (!ftab) {
+ 		printk(KERN_ERR "%s: no memory for tables\n", __func__);
+ 		return -ENOMEM;
+@@ -691,7 +691,7 @@ int __init s3c_plltab_register(struct cpufreq_frequency_table *plls,
+ 	struct cpufreq_frequency_table *vals;
+ 	unsigned int size;
+ 
+-	size = sizeof(struct cpufreq_frequency_table) * (plls_no + 1);
++	size = sizeof(*vals) * (plls_no + 1);
+ 
+ 	vals = kmalloc(size, GFP_KERNEL);
+ 	if (vals) {
+diff --git a/drivers/cpufreq/sparc-us2e-cpufreq.c b/drivers/cpufreq/sparc-us2e-cpufreq.c
+index 93061a4..7c43a72 100644
+--- a/drivers/cpufreq/sparc-us2e-cpufreq.c
++++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
+@@ -351,12 +351,11 @@ static int __init us2e_freq_init(void)
+ 		struct cpufreq_driver *driver;
+ 
+ 		ret = -ENOMEM;
+-		driver = kzalloc(sizeof(struct cpufreq_driver), GFP_KERNEL);
++		driver = kzalloc(sizeof(*driver), GFP_KERNEL);
+ 		if (!driver)
+ 			goto err_out;
+ 
+-		us2e_freq_table = kzalloc(
+-			(NR_CPUS * sizeof(struct us2e_freq_percpu_info)),
++		us2e_freq_table = kzalloc((NR_CPUS * sizeof(*us2e_freq_table)),
+ 			GFP_KERNEL);
+ 		if (!us2e_freq_table)
+ 			goto err_out;
+diff --git a/drivers/cpufreq/sparc-us3-cpufreq.c b/drivers/cpufreq/sparc-us3-cpufreq.c
+index 880ee29..7f500c1 100644
+--- a/drivers/cpufreq/sparc-us3-cpufreq.c
++++ b/drivers/cpufreq/sparc-us3-cpufreq.c
+@@ -212,12 +212,11 @@ static int __init us3_freq_init(void)
+ 		struct cpufreq_driver *driver;
+ 
+ 		ret = -ENOMEM;
+-		driver = kzalloc(sizeof(struct cpufreq_driver), GFP_KERNEL);
++		driver = kzalloc(sizeof(*driver), GFP_KERNEL);
+ 		if (!driver)
+ 			goto err_out;
+ 
+-		us3_freq_table = kzalloc(
+-			(NR_CPUS * sizeof(struct us3_freq_percpu_info)),
++		us3_freq_table = kzalloc((NR_CPUS * sizeof(*us3_freq_table)),
+ 			GFP_KERNEL);
+ 		if (!us3_freq_table)
+ 			goto err_out;
 -- 
 1.7.12.rc2.18.g61b472e
+
