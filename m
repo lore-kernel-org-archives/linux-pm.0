@@ -1,48 +1,212 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 01/10] cpufreq: Cleanup header files included in core
-Date: Sat, 3 Aug 2013 22:45:04 +0530
-Message-ID: <CAKohponCtLRi1UJCN0z2hRVH=o326mtS2nUEvoi8Rf5H==vATw@mail.gmail.com>
-References: <cover.1375530162.git.viresh.kumar@linaro.org>
-	<fe67f3269a07123b025468214e692af573b07364.1375530162.git.viresh.kumar@linaro.org>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH] ARM: EXYNOS: add power domains support for EXYNOS5440
+Date: Sat, 3 Aug 2013 21:14:11 +0100
+Message-ID: <20130803201411.GB17755@e106331-lin.cambridge.arm.com>
+References: <2729097.X0eAsuYF97@amdc1032>
+ <51FC1E40.7030807@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:40562 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106Ab3HCRPF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Aug 2013 13:15:05 -0400
-Received: by mail-oa0-f42.google.com with SMTP id i18so3618258oag.29
-        for <linux-pm@vger.kernel.org>; Sat, 03 Aug 2013 10:15:04 -0700 (PDT)
-In-Reply-To: <fe67f3269a07123b025468214e692af573b07364.1375530162.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <51FC1E40.7030807@wwwdotorg.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <Pawel.Moll@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 3 August 2013 17:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> This patch intends to cleanup following issues in the header files included in
-> cpufreq core layers:
-> - Include headers in ascending order, so that we don't add same multiple times
->   by mistake.
-> - <asm/> must be included after <linux/>, so that they override whatever they
->   need.
-> - Remove unnecessary header files
-> - Don't include files already included by cpufreq.h or cpufreq_governor.h
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Fri, Aug 02, 2013 at 10:01:52PM +0100, Stephen Warren wrote:
+> (CCing the other DT maintainers, hence quoting binding in full)
+> 
+> On 08/02/2013 07:23 AM, Bartlomiej Zolnierkiewicz wrote:
+> > On EXYNOS5440 power domains are handled in a different way than on
+> > the previous EXYNOS SoCs. Add support for them to EXYNOS pm_domains
+> > driver. Then add device tree nodes for PCIe (controlling power for
+> > PCIe host controller) and Conn2 (controlling power for Ethernet,
+> > SATA and USB controllers) power domains to exynos5440.dtsi.
+> > 
+> > Currently if runtime Power Management is enabled and the driver
+> > for devices under power domain is disabled then the power domain
+> > will be disabled by EXYNOS pm_domains driver. To make more active
+> > use of power domains (dynamically enable and disabled them as
+> > needed) it is required to add runtime PM support to pci-exynos,
+> > stmmac, ahci_platform, ohci-exynos and ehci-s5p drivers (to be
+> > done later).
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> > Cc: Tomasz Figa <t.figa@samsung.com>
+> > Cc: Stephen Warren <swarren@wwwdotorg.org>
+> > ---
+> >  Documentation/devicetree/bindings/arm/exynos/power_domain.txt |   33 ++
+> >  arch/arm/boot/dts/exynos5440.dtsi                             |   23 +
+> >  arch/arm/mach-exynos/Kconfig                                  |    1 
+> >  arch/arm/mach-exynos/common.c                                 |    4 
+> >  arch/arm/mach-exynos/pm_domains.c                             |  138 +++++++++-
+> >  5 files changed, 190 insertions(+), 9 deletions(-)
+> > 
+> > Index: b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> > ===================================================================
+> > --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt	2013-08-02 14:45:53.551392396 +0200
+> > +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt	2013-08-02 14:46:29.799391845 +0200
+> > @@ -5,20 +5,47 @@ to gate power to one or more peripherals
+> >  
+> >  Required Properties:
+> >  - compatible: should be one of the following.
+> > -    * samsung,exynos4210-pd - for exynos4210 type power domain.
+> > +    * samsung,exynos4210-pd - for Exynos4210 type power domain.
+> > +    * samsung,exynos5440-pd - for Exynos5440 type power domain.
+> >  - reg: physical base address of the controller and length of memory mapped
+> > -    region.
+> > +    region (Exynos4210 type power domain) or bit offset in the control
+> > +    register (Exynos5440 type power domain).
+> > +
+> > +Additional parent node must be created for Exynos5440 power domains with
+> > +the following required properties:
+> > +- compatible: samsung,exynos5440-power-domains, simple-bus
+> > +- reg: physical base address of the XMU controller and length of memory
+> > +    mapped region
+> 
+> It's a little odd to describe the child nodes first. Given the 4210 and
+> 5440 bindings work so differently, I'd suggest making separate binding
+> files for the two; samsung,exynos4210-pd.txt and samsung,exynos5440-pd.txt.
+> 
+> The node being describe here clearly is not a simple-bus; the child
+> nodes appear to have a specific need that their parent be compatible =
+> "samsung,exynos5440-power-domains", hence they aren't the independent
+> devices that simple-bus would usually contain.
 
-Fixup due to compilation warning reported by Fengguang's kbuild system:
-[Latest stuff pushed in my cpufreq-next branch]
++1. This is most definitely not a simple-bus, the child nodes reg
+properties cdon't represent the same address space as the
+parent's reg property.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 70399ea..ccaf025 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -19,6 +19,7 @@
+How much does the association of bit-offsets to power domains vary? 
 
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
-+#include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/init.h>
- #include <linux/kernel_stat.h>
+> 
+> Note that I only briefly reviewed the low-level structural aspects of
+> the binding that I mentioned above; I haven't thought about the binding
+> at a higher level of e.g. "does this binding conceptually make sense".
+
+This is unfortunately difficult to do :(
+
+> 
+> >  Node of a device using power domains must have a samsung,power-domain property
+> >  defined with a phandle to respective power domain.
+> >  
+> > -Example:
+> > +Example for Exynos4210 compatible power domain:
+> >  
+> >  	lcd0: power-domain-lcd0 {
+> >  		compatible = "samsung,exynos4210-pd";
+> >  		reg = <0x10023C00 0x10>;
+> >  	};
+> >  
+> > +Example for Exynos5440 compatible power domains:
+> > +
+> > +	power-domains@00160000 {
+> > +		compatible = "samsung,exynos5440-power-domains", "simple-bus";
+> > +		reg = <0x00160000 0x1000>;
+> > +		#address-cells = <1>;
+> > +		#size-cells = <0>;
+> > +
+> > +		pd_pcie: pcie-power-domain@6 {
+> > +			compatible = "samsung,exynos5440-pd";
+> > +			reg = <6>;
+> > +		};
+> > +
+> > +		pd_conn2: conn2-power-domain@7 {
+> > +			compatible = "samsung,exynos5440-pd";
+> > +			reg = <7>;
+> > +		};
+> > +	};
+> > +
+> >  Example of the node using power domain:
+> >  
+> >  	node {
+> > Index: b/arch/arm/boot/dts/exynos5440.dtsi
+> > ===================================================================
+> > --- a/arch/arm/boot/dts/exynos5440.dtsi	2013-08-02 14:45:53.599392397 +0200
+> > +++ b/arch/arm/boot/dts/exynos5440.dtsi	2013-08-02 14:46:29.815391842 +0200
+> > @@ -29,6 +29,23 @@
+> >  		#clock-cells = <1>;
+> >  	};
+> >  
+> > +	power-domains@00160000 {
+> > +		compatible = "samsung,exynos5440-power-domains", "simple-bus";
+> > +		reg = <0x00160000 0x1000>;
+> > +		#address-cells = <1>;
+> > +		#size-cells = <0>;
+> > +
+> > +		pd_pcie: pcie-power-domain@6 {
+> > +			compatible = "samsung,exynos5440-pd";
+> > +			reg = <6>;
+> > +		};
+> > +
+> > +		pd_conn2: conn2-power-domain@7 {
+> > +			compatible = "samsung,exynos5440-pd";
+> > +			reg = <7>;
+> > +		};
+> > +	};
+> > +
+> >  	gic:interrupt-controller@2E0000 {
+> >  		compatible = "arm,cortex-a15-gic";
+> >  		#interrupt-cells = <3>;
+> > @@ -192,6 +209,7 @@
+> >  		phy-mode = "sgmii";
+> >  		clocks = <&clock 25>;
+> >  		clock-names = "stmmaceth";
+> > +		samsung,power-domain = <&pd_conn2>;
+> >  	};
+
+This feels like a clock style binding would fit better:
+samsung,power-domain = <&pwr 7>;
+
+But there may be a better, more general way of handling this. I'm not
+sure how this relates to regulators and so on, and how other vendors
+handle this stuff...
+
+Thanks,
+Mark.
+
+> >  
+> >  	amba {
+> > @@ -240,6 +258,7 @@
+> >  		interrupts = <0 30 0>;
+> >  		clocks = <&clock 23>;
+> >  		clock-names = "sata";
+> > +		samsung,power-domain = <&pd_conn2>;
+> >  	};
+> >  
+> >  	ohci@220000 {
+> > @@ -248,6 +267,7 @@
+> >  		interrupts = <0 29 0>;
+> >  		clocks = <&clock 24>;
+> >  		clock-names = "usbhost";
+> > +		samsung,power-domain = <&pd_conn2>;
+> >  	};
+> >  
+> >  	ehci@221000 {
+> > @@ -256,6 +276,7 @@
+> >  		interrupts = <0 29 0>;
+> >  		clocks = <&clock 24>;
+> >  		clock-names = "usbhost";
+> > +		samsung,power-domain = <&pd_conn2>;
+> >  	};
+> >  
+> >  	pcie@290000 {
+> > @@ -275,6 +296,7 @@
+> >  		#interrupt-cells = <1>;
+> >  		interrupt-map-mask = <0 0 0 0>;
+> >  		interrupt-map = <0x0 0 &gic 53>;
+> > +		samsung,power-domain = <&pd_pcie>;
+> >  	};
+> >  
+> >  	pcie@2a0000 {
+> > @@ -294,5 +316,6 @@
+> >  		#interrupt-cells = <1>;
+> >  		interrupt-map-mask = <0 0 0 0>;
+> >  		interrupt-map = <0x0 0 &gic 56>;
+> > +		samsung,power-domain = <&pd_pcie>;
+> >  	};
+> >  };
+> 
+> 
