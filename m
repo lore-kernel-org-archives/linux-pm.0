@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 07/10] cpufreq: Use cpufreq_policy_list for iterating over policies
-Date: Sat,  3 Aug 2013 17:19:25 +0530
-Message-ID: <f9e3746a815c08274f1a7157a709499bee32f98f.1375530162.git.viresh.kumar@linaro.org>
+Subject: [PATCH 05/10] cpufreq: Pass policy to cpufreq_add_policy_cpu()
+Date: Sat,  3 Aug 2013 17:19:23 +0530
+Message-ID: <19511592474bddb0737664c79632b3c1341c9956.1375530162.git.viresh.kumar@linaro.org>
 References: <cover.1375530162.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375530162.git.viresh.kumar@linaro.org>
@@ -12,42 +12,70 @@ To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-For iterating over all policies currently we are iterating over all CPUs and
-then finding their policies. Lets use the newly created infrastructure
-cpufreq_policy_list.
+Caller of cpufreq_add_policy_cpu() already has pointer to policy structure and
+so there is no need to find it again in cpufreq_add_policy_cpu(). Lets pass it
+directly.
 
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/cpufreq/cpufreq.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4c3aef0..e9b969f 100644
+index 47773a9..496e31c 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -983,8 +983,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	struct cpufreq_policy *policy;
- 	unsigned long flags;
- #ifdef CONFIG_HOTPLUG_CPU
-+	struct cpufreq_policy *tpolicy;
- 	struct cpufreq_governor *gov;
--	int sibling;
- #endif
+@@ -889,21 +889,17 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ }
  
- 	if (cpu_is_offline(cpu))
-@@ -1004,11 +1004,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
  #ifdef CONFIG_HOTPLUG_CPU
- 	/* Check if this cpu was hot-unplugged earlier and has siblings */
- 	read_lock_irqsave(&cpufreq_driver_lock, flags);
--	for_each_online_cpu(sibling) {
--		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
--		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
-+	list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list) {
-+		if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
+-static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+-				  struct device *dev, bool frozen)
++static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
++				  unsigned int cpu, struct device *dev,
++				  bool frozen)
+ {
+-	struct cpufreq_policy *policy;
+ 	int ret = 0, has_target = !!cpufreq_driver->target;
+ 	unsigned long flags;
+ 
+-	policy = cpufreq_cpu_get(sibling);
+-	if (WARN_ON_ONCE(!policy))
+-		return -ENODATA;
+-
+ 	if (has_target)
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 
+-	lock_policy_rwsem_write(sibling);
++	lock_policy_rwsem_write(policy->cpu);
+ 
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 
+@@ -912,7 +908,7 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ 	per_cpu(cpufreq_cpu_data, cpu) = policy;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+-	unlock_policy_rwsem_write(sibling);
++	unlock_policy_rwsem_write(policy->cpu);
+ 
+ 	if (has_target) {
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_START);
+@@ -923,7 +919,6 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ 	if (!frozen)
+ 		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+ 
+-	cpufreq_cpu_put(policy);
+ 	return ret;
+ }
+ #endif
+@@ -1006,8 +1001,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
+ 		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
  			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
--			return cpufreq_add_policy_cpu(cp, cpu, dev, frozen);
-+			return cpufreq_add_policy_cpu(tpolicy, cpu, dev,
-+					frozen);
+-			return cpufreq_add_policy_cpu(cpu, sibling, dev,
+-						      frozen);
++			return cpufreq_add_policy_cpu(cp, cpu, dev, frozen);
  		}
  	}
  	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
