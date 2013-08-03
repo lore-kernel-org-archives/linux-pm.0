@@ -1,59 +1,42 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
+From: Igor Gnatenko <i.gnatenko.brain@gmail.com>
 Subject: Re: [GIT PULL] ACPI and power management fixes for v3.11-rc4
-Date: Sat, 3 Aug 2013 17:33:36 -0500
-Message-ID: <CAMP44s0hbAjuvMYgaHwQ4A2DjSe1RhzsbXOck+muV_r9mMbAqQ@mail.gmail.com>
+Date: Sun, 04 Aug 2013 03:27:44 +0400
+Message-ID: <1375572464.1988.4.camel@ThinkPad-X230.localdomain>
 References: <2052880.bHfzt6NKt5@vostro.rjw.lan>
-	<2185529.xKyHXi1s1o@vostro.rjw.lan>
-	<CAMP44s3LC2XzDrQmJ9iPuT04=WnxZcNj7grx9pE=NTxqG=kSvQ@mail.gmail.com>
-	<2523721.mjZMWxdZdS@vostro.rjw.lan>
+	 <6100577.WGRZRabKGy@vostro.rjw.lan>
+	 <CAMP44s1Knox3oVt3-ePkDHxa2uNQAFVFRwmVTATNknWA46b_Uw@mail.gmail.com>
+	 <1963015.Y2AObmEn2f@vostro.rjw.lan>
+	 <1375546086.1988.2.camel@ThinkPad-X230.localdomain>
+	 <CAMP44s2HSEnhWfgtvSmu3K-nrWzHnxfj44hpvAVerRQq-dUABg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2523721.mjZMWxdZdS@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Igor Gnatenko <i.gnatenko.brain@gmail.com>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f42.google.com ([209.85.215.42]:34966 "EHLO
+	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753009Ab3HCX1t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Aug 2013 19:27:49 -0400
+In-Reply-To: <CAMP44s2HSEnhWfgtvSmu3K-nrWzHnxfj44hpvAVerRQq-dUABg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sat, Aug 3, 2013 at 5:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, August 03, 2013 05:06:10 PM Felipe Contreras wrote:
->> On Sat, Aug 3, 2013 at 4:59 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> [...]
->
->> > Whatever you are thinking you will achieve this way, it doesn't work.
->>
->> It is the reality: v3.7 is broken, v3.8 is broken, v3.9 is broken,
->> v3.10 is broken, v3.11 is going to be broken, v3.12 will probably be
->> broken too, and perhaps even v3.13.
->
-> Be precise and say "backlight control on a number of machines in broken in
-> those kernels".  Yes, it is.  It needs to be fixed.  Not necessarily your way,
-> though.
+On Sat, 2013-08-03 at 15:21 -0500, Felipe Contreras wrote:
+> On Sat, Aug 3, 2013 at 11:08 AM, Igor Gnatenko
+> <i.gnatenko.brain@gmail.com> wrote:
+>=20
+> > I am opposed to this patch. On ThinkPad X230 I had problems with it=
+=2E
+> > Felipe, come over to dark side. They have cookies.
+>=20
+> And v3.11-rc3 works's fine out-of-the box?
+>=20
 
-"My" way, can be done *today*. "Your" way can be done whenever it's ready.
+rc2 work's fine. Since rc3 Rafael reverted patch and I think backlight
+broken again (I don't have time to check rc3 yet).
+--=20
+Igor Gnatenko
+=46edora release 19 (Schr=C3=B6dinger=E2=80=99s Cat)
+Linux 3.10.4-300.fc19.x86_64
 
->> Who benefits from this?
->
-> Clearly, no one.
->
-> And who benefits from your "crusade"?
-
-Who benefits from yours?
-
-It's all very simple; we ask the owners of these machines if
-acpi_osi="!Windows 2012" makes things work better, if they do, they go
-into the blacklist, if not, they don't. That would fix the problems
-for these machines *today*. If later it turns out there are other
-issues introduced, they get removed, just like you removed the
-intel_backlight switch patch. Igor Gnatenko said he had problems, but
-didn't mention which problem. In bug #51231, tons of people reported
-that things improved for ThinkPad X230.
-
-And when the proper fix is done, everyone will be happy and we can
-drop the blacklist.
-
-Everybody benefits this way.
-
--- 
-Felipe Contreras
