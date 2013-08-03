@@ -1,212 +1,74 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] ARM: EXYNOS: add power domains support for EXYNOS5440
-Date: Sat, 3 Aug 2013 21:14:11 +0100
-Message-ID: <20130803201411.GB17755@e106331-lin.cambridge.arm.com>
-References: <2729097.X0eAsuYF97@amdc1032>
- <51FC1E40.7030807@wwwdotorg.org>
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: Re: [GIT PULL] ACPI and power management fixes for v3.11-rc4
+Date: Sat, 3 Aug 2013 15:20:22 -0500
+Message-ID: <CAMP44s2dbNBbKwLd9hGaYVPL_Z6-v_S0xZpmz8cwicg1wgMr+Q@mail.gmail.com>
+References: <2052880.bHfzt6NKt5@vostro.rjw.lan>
+	<6100577.WGRZRabKGy@vostro.rjw.lan>
+	<CAMP44s1Knox3oVt3-ePkDHxa2uNQAFVFRwmVTATNknWA46b_Uw@mail.gmail.com>
+	<1963015.Y2AObmEn2f@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <51FC1E40.7030807@wwwdotorg.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <Pawel.Moll@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f41.google.com ([209.85.215.41]:34873 "EHLO
+	mail-la0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752967Ab3HCUUY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Aug 2013 16:20:24 -0400
+In-Reply-To: <1963015.Y2AObmEn2f@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Aug 02, 2013 at 10:01:52PM +0100, Stephen Warren wrote:
-> (CCing the other DT maintainers, hence quoting binding in full)
-> 
-> On 08/02/2013 07:23 AM, Bartlomiej Zolnierkiewicz wrote:
-> > On EXYNOS5440 power domains are handled in a different way than on
-> > the previous EXYNOS SoCs. Add support for them to EXYNOS pm_domains
-> > driver. Then add device tree nodes for PCIe (controlling power for
-> > PCIe host controller) and Conn2 (controlling power for Ethernet,
-> > SATA and USB controllers) power domains to exynos5440.dtsi.
-> > 
-> > Currently if runtime Power Management is enabled and the driver
-> > for devices under power domain is disabled then the power domain
-> > will be disabled by EXYNOS pm_domains driver. To make more active
-> > use of power domains (dynamically enable and disabled them as
-> > needed) it is required to add runtime PM support to pci-exynos,
-> > stmmac, ahci_platform, ohci-exynos and ehci-s5p drivers (to be
-> > done later).
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> > Cc: Tomasz Figa <t.figa@samsung.com>
-> > Cc: Stephen Warren <swarren@wwwdotorg.org>
-> > ---
-> >  Documentation/devicetree/bindings/arm/exynos/power_domain.txt |   33 ++
-> >  arch/arm/boot/dts/exynos5440.dtsi                             |   23 +
-> >  arch/arm/mach-exynos/Kconfig                                  |    1 
-> >  arch/arm/mach-exynos/common.c                                 |    4 
-> >  arch/arm/mach-exynos/pm_domains.c                             |  138 +++++++++-
-> >  5 files changed, 190 insertions(+), 9 deletions(-)
-> > 
-> > Index: b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-> > ===================================================================
-> > --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt	2013-08-02 14:45:53.551392396 +0200
-> > +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt	2013-08-02 14:46:29.799391845 +0200
-> > @@ -5,20 +5,47 @@ to gate power to one or more peripherals
-> >  
-> >  Required Properties:
-> >  - compatible: should be one of the following.
-> > -    * samsung,exynos4210-pd - for exynos4210 type power domain.
-> > +    * samsung,exynos4210-pd - for Exynos4210 type power domain.
-> > +    * samsung,exynos5440-pd - for Exynos5440 type power domain.
-> >  - reg: physical base address of the controller and length of memory mapped
-> > -    region.
-> > +    region (Exynos4210 type power domain) or bit offset in the control
-> > +    register (Exynos5440 type power domain).
-> > +
-> > +Additional parent node must be created for Exynos5440 power domains with
-> > +the following required properties:
-> > +- compatible: samsung,exynos5440-power-domains, simple-bus
-> > +- reg: physical base address of the XMU controller and length of memory
-> > +    mapped region
-> 
-> It's a little odd to describe the child nodes first. Given the 4210 and
-> 5440 bindings work so differently, I'd suggest making separate binding
-> files for the two; samsung,exynos4210-pd.txt and samsung,exynos5440-pd.txt.
-> 
-> The node being describe here clearly is not a simple-bus; the child
-> nodes appear to have a specific need that their parent be compatible =
-> "samsung,exynos5440-power-domains", hence they aren't the independent
-> devices that simple-bus would usually contain.
+On Sat, Aug 3, 2013 at 6:54 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday, August 02, 2013 08:48:09 PM Felipe Contreras wrote:
 
-+1. This is most definitely not a simple-bus, the child nodes reg
-properties cdon't represent the same address space as the
-parent's reg property.
+>> Yes, that's fine, either the revert, or the patch I mentioned, or
+>> something else, but something has to be done, and it was better to do
+>> it in v3.11-rc4 than in v3.11-rc5, because that change itself can
+>> cause further problems.
+>
+> A revert can be done in -rc5 just fine.  If we don't have a working fix this
+> week, I'll do the revert.
 
-How much does the association of bit-offsets to power domains vary? 
+I think you are waiting for miracles. But whatever.
 
-> 
-> Note that I only briefly reviewed the low-level structural aspects of
-> the binding that I mentioned above; I haven't thought about the binding
-> at a higher level of e.g. "does this binding conceptually make sense".
+>> Let's do a though experiment, let's say you are right, and they can
+>> survive the 6 months it would take you to find the "perfect" solution,
+>> say in v3.13. What's wrong with having a partial solution in v3.12? If
+>> the blacklisting doesn't work properly (there's absolutely no evidence
+>> for that), then you revert it on v3.12.1.
+>>
+>> What's wrong with that approach?
+>
+> If the blacklisting leads to problems, they may not be reported in the 3.12
+> time frame, but much later.  For example because people won't realize that
+> the problems are caused by the blacklisting until much much later.  And then
+> we'll be in a spot where whatever we do will break things for someone.
 
-This is unfortunately difficult to do :(
+The key word is *may*, you don't *know*. Why do you insist in
+committing this reification fallacy?
 
-> 
-> >  Node of a device using power domains must have a samsung,power-domain property
-> >  defined with a phandle to respective power domain.
-> >  
-> > -Example:
-> > +Example for Exynos4210 compatible power domain:
-> >  
-> >  	lcd0: power-domain-lcd0 {
-> >  		compatible = "samsung,exynos4210-pd";
-> >  		reg = <0x10023C00 0x10>;
-> >  	};
-> >  
-> > +Example for Exynos5440 compatible power domains:
-> > +
-> > +	power-domains@00160000 {
-> > +		compatible = "samsung,exynos5440-power-domains", "simple-bus";
-> > +		reg = <0x00160000 0x1000>;
-> > +		#address-cells = <1>;
-> > +		#size-cells = <0>;
-> > +
-> > +		pd_pcie: pcie-power-domain@6 {
-> > +			compatible = "samsung,exynos5440-pd";
-> > +			reg = <6>;
-> > +		};
-> > +
-> > +		pd_conn2: conn2-power-domain@7 {
-> > +			compatible = "samsung,exynos5440-pd";
-> > +			reg = <7>;
-> > +		};
-> > +	};
-> > +
-> >  Example of the node using power domain:
-> >  
-> >  	node {
-> > Index: b/arch/arm/boot/dts/exynos5440.dtsi
-> > ===================================================================
-> > --- a/arch/arm/boot/dts/exynos5440.dtsi	2013-08-02 14:45:53.599392397 +0200
-> > +++ b/arch/arm/boot/dts/exynos5440.dtsi	2013-08-02 14:46:29.815391842 +0200
-> > @@ -29,6 +29,23 @@
-> >  		#clock-cells = <1>;
-> >  	};
-> >  
-> > +	power-domains@00160000 {
-> > +		compatible = "samsung,exynos5440-power-domains", "simple-bus";
-> > +		reg = <0x00160000 0x1000>;
-> > +		#address-cells = <1>;
-> > +		#size-cells = <0>;
-> > +
-> > +		pd_pcie: pcie-power-domain@6 {
-> > +			compatible = "samsung,exynos5440-pd";
-> > +			reg = <6>;
-> > +		};
-> > +
-> > +		pd_conn2: conn2-power-domain@7 {
-> > +			compatible = "samsung,exynos5440-pd";
-> > +			reg = <7>;
-> > +		};
-> > +	};
-> > +
-> >  	gic:interrupt-controller@2E0000 {
-> >  		compatible = "arm,cortex-a15-gic";
-> >  		#interrupt-cells = <3>;
-> > @@ -192,6 +209,7 @@
-> >  		phy-mode = "sgmii";
-> >  		clocks = <&clock 25>;
-> >  		clock-names = "stmmaceth";
-> > +		samsung,power-domain = <&pd_conn2>;
-> >  	};
+This threat is not real, it's theoretical.
 
-This feels like a clock style binding would fit better:
-samsung,power-domain = <&pwr 7>;
+But let's suppose you are right, and there are issues, and those don't
+get reported in v3.12. That is actually GOOD, if people don't report
+issues, it means the issues are not that big, or not even *there*.
 
-But there may be a better, more general way of handling this. I'm not
-sure how this relates to regulators and so on, and how other vendors
-handle this stuff...
+And no, we won't be in a spot where whatever we do will break things,
+because if the intel backlight driver works correctly, that solution
+would work for everyone. And if it doesn't, we should stay with what
+works best.
 
-Thanks,
-Mark.
+> And we had situations like that in the past, which is the source of my concern.
+> You obviously don't have that experience, or you won't be so eager to inflict
+> the blacklisting on everyone.
+>
+> Anyway, as you know, but conveniently don't mention, I asked some experienced
+> people for opinions about that.  If they agree with you, we will add the
+> blacklist.  If they don't, we won't add it.
 
-> >  
-> >  	amba {
-> > @@ -240,6 +258,7 @@
-> >  		interrupts = <0 30 0>;
-> >  		clocks = <&clock 23>;
-> >  		clock-names = "sata";
-> > +		samsung,power-domain = <&pd_conn2>;
-> >  	};
-> >  
-> >  	ohci@220000 {
-> > @@ -248,6 +267,7 @@
-> >  		interrupts = <0 29 0>;
-> >  		clocks = <&clock 24>;
-> >  		clock-names = "usbhost";
-> > +		samsung,power-domain = <&pd_conn2>;
-> >  	};
-> >  
-> >  	ehci@221000 {
-> > @@ -256,6 +276,7 @@
-> >  		interrupts = <0 29 0>;
-> >  		clocks = <&clock 24>;
-> >  		clock-names = "usbhost";
-> > +		samsung,power-domain = <&pd_conn2>;
-> >  	};
-> >  
-> >  	pcie@290000 {
-> > @@ -275,6 +296,7 @@
-> >  		#interrupt-cells = <1>;
-> >  		interrupt-map-mask = <0 0 0 0>;
-> >  		interrupt-map = <0x0 0 &gic 53>;
-> > +		samsung,power-domain = <&pd_pcie>;
-> >  	};
-> >  
-> >  	pcie@2a0000 {
-> > @@ -294,5 +316,6 @@
-> >  		#interrupt-cells = <1>;
-> >  		interrupt-map-mask = <0 0 0 0>;
-> >  		interrupt-map = <0x0 0 &gic 56>;
-> > +		samsung,power-domain = <&pd_pcie>;
-> >  	};
-> >  };
-> 
-> 
+Again, screw the users. We are stuck with broken backlight for several
+more months to come. Great.
+
+-- 
+Felipe Contreras
