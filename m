@@ -1,110 +1,101 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL] ACPI and power management fixes for v3.11-rc4
-Date: Sat, 03 Aug 2013 13:54:05 +0200
-Message-ID: <1963015.Y2AObmEn2f@vostro.rjw.lan>
-References: <2052880.bHfzt6NKt5@vostro.rjw.lan> <6100577.WGRZRabKGy@vostro.rjw.lan> <CAMP44s1Knox3oVt3-ePkDHxa2uNQAFVFRwmVTATNknWA46b_Uw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAMP44s1Knox3oVt3-ePkDHxa2uNQAFVFRwmVTATNknWA46b_Uw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/10] CPUFreq: Fixes & Cleanups for 3.12
+Date: Sat,  3 Aug 2013 17:19:18 +0530
+Message-ID: <cover.1375530162.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 02, 2013 08:48:09 PM Felipe Contreras wrote:
-> On Fri, Aug 2, 2013 at 5:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday, August 02, 2013 04:31:37 PM Felipe Contreras wrote:
-> >> On Fri, Aug 2, 2013 at 4:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Friday, August 02, 2013 02:12:49 PM Felipe Contreras wrote:
-> >>
-> >> >> You forgot this patch:
-> >> >>
-> >> >> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=3706231332d57072e0e2c0e59975443f3f18e673
-> >> >>
-> >> >> Or do you think it's fine to boot these machines into a black screen?
-> >> >
-> >> > Seriously, what's wrong with you?!
-> >> >
-> >> > I didn't forget about it, I just didn't include it into this particular
-> >> > pull request.
-> >> >
-> >> > And I'm not even sure I will push it for 3.11, because I prefer to revert
-> >> > efaa14c for 3.11 if that's necessary to make your broken box work as before.
-> >>
-> >> The issue happens in more than just "my broken box", and yes,
-> >> reverting that patch would help (in more than just my box), in the
-> >> sense that at least Linux won't boot into a black screen.
-> >>
-> >> But the backlight control still wouldn't work, as it hasn't worked
-> >> since v3.7, possibly in many ASUS laptops, for that you need more than
-> >> just reverting efaa14c.
-> >
-> > Yes, last time it worked in 3.6 and in particular it doesn't work in 3.10.
-> > My current goal is bring things back to the 3.10 state first, possibly without
-> > introducing any new problems, because we're kind of late in the cycle.
-> > That's better done by reverting stuff known to have introduced problems in
-> > the first place and not by doing things that may introduce more of them.
-> >
-> > And your blacklisting patch has potential to introduce problems.  Your goal is
-> > to bring backlight control to the 3.6 state on that particular machine, but
-> > the blacklist is done at the *system* level and very well may affect more
-> > things than just backlight.  You may not see any problems resulting from it
-> > and you may not care even if there are some, but other users of it may use
-> > different user space, for example, and may see problems that you're not seeing.
-> >
-> > That's why I'd very much prefer to do the revert at this point.
-> 
-> Yes, that's fine, either the revert, or the patch I mentioned, or
-> something else, but something has to be done, and it was better to do
-> it in v3.11-rc4 than in v3.11-rc5, because that change itself can
-> cause further problems.
+Hi Rafael,
 
-A revert can be done in -rc5 just fine.  If we don't have a working fix this
-week, I'll do the revert.
+This patchset tries to fix & cleanup many existing cpufreq core issues. First
+four patches tries to cleanup basic problems in cpufreq core. Its first patch
+was earlier sent separately but now is part of this series.
 
-> >> > Well, perhaps I just won't push it at all so that you actually can go and
-> >> > complain to Linus about that ...
-> >>
-> >> That is very responsible from you. Screw the users, right?
-> >
-> > No, that's not my goal, sorry for disappointing you.
-> >
-> > The problem is that I'm not really convinced about the validity of the
-> > blacklisting approach to begin with.  As I said, the blacklisting is done
-> > on the system level and the goal is to work around backlight control problems.
-> > That sounds like a sledgehammer approach to me, which I don't really like.
-> > If the blacklisting was more targeted, done at the video driver level etc.,
-> > I wouldn't really have any concerns about it, but that's not the case.
-> >
-> > And since people evidently could live for over 6 months with the backlight
-> > control problems, maybe they'll survive some more time still and allow us to
-> > find a better approach?
-> 
-> They probably can survive without Linux at all, that doesn't mean we
-> are doing our job.
-> 
-> Let's do a though experiment, let's say you are right, and they can
-> survive the 6 months it would take you to find the "perfect" solution,
-> say in v3.13. What's wrong with having a partial solution in v3.12? If
-> the blacklisting doesn't work properly (there's absolutely no evidence
-> for that), then you revert it on v3.12.1.
-> 
-> What's wrong with that approach?
+Fifth patch was also sent earlier as reply to your patches and was reviewed by
+Srivatsa. Sixth patch was picked from Lukasz's patchset on introducing software
+"boost" feature in core. It will be used by this patchset.
 
-If the blacklisting leads to problems, they may not be reported in the 3.12
-time frame, but much later.  For example because people won't realize that
-the problems are caused by the blacklisting until much much later.  And then
-we'll be in a spot where whatever we do will break things for someone.
+And last four are the most significant part of this set. They try to make many
+things simple and robust.
 
-And we had situations like that in the past, which is the source of my concern.
-You obviously don't have that experience, or you won't be so eager to inflict
-the blacklisting on everyone.
+This is rebased of your bleeding-edge branch + two patches from you:
+18a6b03 cpufreq: Avoid double kobject_put() for the same kobject in error code path
+d0cde63 cpufreq: Do not hold driver module references for additional policy CPUs
+abe513f Merge branch 'acpi-sleep-next' into linux-next
 
-Anyway, as you know, but conveniently don't mention, I asked some experienced
-people for opinions about that.  If they agree with you, we will add the
-blacklist.  If they don't, we won't add it.
+They are also pushed in my cpufreq-next branch
 
-Rafael
+--
+viresh
+
+Lukasz Majewski (1):
+  cpufreq: Store cpufreq policies in a list
+
+Viresh Kumar (9):
+  cpufreq: Cleanup header files included in core
+  cpufreq: Re-arrange declarations in cpufreq.h
+  cpufreq: Give consistent names for struct cpufreq_policy *
+  cpufreq: Use sizeof(*ptr) form for finding size of a struct
+  cpufreq: Pass policy to cpufreq_add_policy_cpu()
+  cpufreq: Use cpufreq_policy_list for iterating over policies
+  cpufreq: Fix broken usage of governor->owner's refcount
+  cpufreq: Don't use cpufreq_driver->owner's refcount to protect
+    critical sections
+  cpufreq: Remove struct cpufreq_driver's owner field
+
+ Documentation/cpu-freq/cpu-drivers.txt |   2 -
+ drivers/cpufreq/acpi-cpufreq.c         |   5 +-
+ drivers/cpufreq/at32ap-cpufreq.c       |   1 -
+ drivers/cpufreq/blackfin-cpufreq.c     |   1 -
+ drivers/cpufreq/cpufreq-nforce2.c      |   1 -
+ drivers/cpufreq/cpufreq.c              | 389 +++++++++++++++------------------
+ drivers/cpufreq/cpufreq_conservative.c |  14 +-
+ drivers/cpufreq/cpufreq_governor.c     |   6 -
+ drivers/cpufreq/cpufreq_governor.h     |   7 +-
+ drivers/cpufreq/cpufreq_ondemand.c     |  24 +-
+ drivers/cpufreq/cpufreq_performance.c  |   3 +-
+ drivers/cpufreq/cpufreq_powersave.c    |   3 +-
+ drivers/cpufreq/cpufreq_stats.c        |  25 +--
+ drivers/cpufreq/cris-artpec3-cpufreq.c |   1 -
+ drivers/cpufreq/cris-etraxfs-cpufreq.c |   1 -
+ drivers/cpufreq/e_powersaver.c         |   5 +-
+ drivers/cpufreq/elanfreq.c             |   1 -
+ drivers/cpufreq/exynos-cpufreq.c       |   2 +-
+ drivers/cpufreq/freq_table.c           |   4 +-
+ drivers/cpufreq/gx-suspmod.c           |   3 +-
+ drivers/cpufreq/ia64-acpi-cpufreq.c    |   5 +-
+ drivers/cpufreq/intel_pstate.c         |   1 -
+ drivers/cpufreq/kirkwood-cpufreq.c     |   1 -
+ drivers/cpufreq/longhaul.c             |   1 -
+ drivers/cpufreq/longrun.c              |   1 -
+ drivers/cpufreq/loongson2_cpufreq.c    |   1 -
+ drivers/cpufreq/maple-cpufreq.c        |   1 -
+ drivers/cpufreq/p4-clockmod.c          |   1 -
+ drivers/cpufreq/pasemi-cpufreq.c       |   1 -
+ drivers/cpufreq/pcc-cpufreq.c          |   1 -
+ drivers/cpufreq/pmac32-cpufreq.c       |   1 -
+ drivers/cpufreq/pmac64-cpufreq.c       |   6 +-
+ drivers/cpufreq/powernow-k6.c          |   1 -
+ drivers/cpufreq/powernow-k7.c          |  14 +-
+ drivers/cpufreq/powernow-k8.c          |   7 +-
+ drivers/cpufreq/ppc-corenet-cpufreq.c  |   1 -
+ drivers/cpufreq/ppc_cbe_cpufreq.c      |   1 -
+ drivers/cpufreq/s3c2416-cpufreq.c      |   1 -
+ drivers/cpufreq/s3c24xx-cpufreq.c      |   6 +-
+ drivers/cpufreq/s3c64xx-cpufreq.c      |   1 -
+ drivers/cpufreq/sc520_freq.c           |   1 -
+ drivers/cpufreq/sh-cpufreq.c           |   1 -
+ drivers/cpufreq/sparc-us2e-cpufreq.c   |   6 +-
+ drivers/cpufreq/sparc-us3-cpufreq.c    |   6 +-
+ drivers/cpufreq/speedstep-centrino.c   |   1 -
+ drivers/cpufreq/speedstep-ich.c        |   1 -
+ drivers/cpufreq/speedstep-smi.c        |   1 -
+ include/linux/cpufreq.h                | 383 +++++++++++++++-----------------
+ 48 files changed, 409 insertions(+), 542 deletions(-)
+
+-- 
+1.7.12.rc2.18.g61b472e
 
