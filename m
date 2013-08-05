@@ -1,52 +1,140 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH RESEND] PM / AVS: SmartReflex: remove redundant dev_err call in omap_sr_probe()
-Date: Mon, 05 Aug 2013 09:25:04 -0700
-Message-ID: <87r4e8gl5r.fsf@linaro.org>
-References: <CAPgLHd_K37Uf420FRiEkiCZQiL9bAdiE2_qG4dp7WmQRaCnDqQ@mail.gmail.com>
-	<20130626130641.GA26920@kahuna> <877gh8nbpm.fsf@linaro.org>
-	<CAPgLHd-toHh8DcooiVz7222kiE-F+xsj1nai2hNEHo95X-3+Ow@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu
+ nodes
+Date: Mon, 05 Aug 2013 17:28:33 +0100
+Message-ID: <51FFD2B1.70509@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51FA3064.9080502@arm.com> <20130801120256.GW5882@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPgLHd-toHh8DcooiVz7222kiE-F+xsj1nai2hNEHo95X-3+Ow@mail.gmail.com>
-	(Wei Yongjun's message of "Fri, 12 Jul 2013 12:59:40 +0800")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: nm@ti.com, anton@enomsg.org, dwmw2@infradead.org, andrii.tseglytskyi@ti.com, jean.pihet@newoldbits.com, tony@atomide.com, yongjun_wei@trendmicro.com.cn, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130801120256.GW5882@titan.lakedaemon.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Jason Cooper <jason@lakedaemon.net>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Andrew Lunn <andrew@lunn.ch>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-Wei Yongjun <weiyj.lk@gmail.com> writes:
+On 01/08/13 13:02, Jason Cooper wrote:
+> Sudeep,
+> 
+> On Thu, Aug 01, 2013 at 10:54:44AM +0100, Sudeep KarkadaNagesha wrote:
+>> On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
+>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>
+>>> Currently set_secondary_cpus_clock assume the CPU logical ordering
+>>> and the MPDIR in DT are same, which is incorrect.
+>>>
+>>> Since the CPU device nodes can be retrieved in the logical ordering
+>>> using the DT helper, we can remove the devices tree parsing.
+>>>
+>>> This patch removes DT parsing by making use of of_get_cpu_node.
+>>>
+>>> Cc: Gregory Clement <gregory.clement@free-electrons.com>
+>>> Cc: Andrew Lunn <andrew@lunn.ch>
+>>> Cc: Jason Cooper <jason@lakedaemon.net>
+>>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> Hi Gregory/Andrew/Jason,
+>>
+>> Does this change look fine for mvebu?
+>> If yes, can I have your ACKs ?
+> 
+> Gregory is the one best suited to review/Ack this.  He'll be back on
+> Monday.
+> 
+Hi Gregory,
 
-> There is a error message within devm_ioremap_resource
-> already, so remove the dev_err call to avoid redundant
-> error message.
->
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> Acked-by: Nishanth Menon <nm@ti.com>
-> ---
-> cc to linux-pm with Nishanth Menon's ACK
+Can you please review this patch ?
 
-Thanks, queued for v3.12.
+Regards,
+Sudeep
+>>> ---
+>>>  arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
+>>>  1 file changed, 24 insertions(+), 28 deletions(-)
+>>>
+>>> diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
+>>> index ce81d30..001dd42 100644
+>>> --- a/arch/arm/mach-mvebu/platsmp.c
+>>> +++ b/arch/arm/mach-mvebu/platsmp.c
+>>> @@ -23,51 +23,47 @@
+>>>  #include <linux/of.h>
+>>>  #include <linux/mbus.h>
+>>>  #include <asm/cacheflush.h>
+>>> +#include <asm/prom.h>
+>>>  #include <asm/smp_plat.h>
+>>>  #include "common.h"
+>>>  #include "armada-370-xp.h"
+>>>  #include "pmsu.h"
+>>>  #include "coherency.h"
+>>>  
+>>> +static struct clk *__init get_cpu_clk(int cpu)
+>>> +{
+>>> +	struct clk *cpu_clk;
+>>> +	struct device_node *np = of_get_cpu_node(cpu);
+>>> +
+>>> +	if (WARN(!np, "missing cpu node\n"))
+>>> +		return NULL;
+>>> +	cpu_clk = of_clk_get(np, 0);
+>>> +	if (WARN_ON(IS_ERR(cpu_clk)))
+>>> +		return NULL;
+>>> +	return cpu_clk;
+>>> +}
+>>> +
+>>>  void __init set_secondary_cpus_clock(void)
+>>>  {
+>>> -	int thiscpu;
+>>> +	int thiscpu, cpu;
+>>>  	unsigned long rate;
+>>> -	struct clk *cpu_clk = NULL;
+>>> -	struct device_node *np = NULL;
+>>> +	struct clk *cpu_clk;
+>>>  
+>>>  	thiscpu = smp_processor_id();
+>>> -	for_each_node_by_type(np, "cpu") {
+>>> -		int err;
+>>> -		int cpu;
+>>> -
+>>> -		err = of_property_read_u32(np, "reg", &cpu);
+>>> -		if (WARN_ON(err))
+>>> -			return;
+>>> -
+>>> -		if (cpu == thiscpu) {
+>>> -			cpu_clk = of_clk_get(np, 0);
+>>> -			break;
+>>> -		}
+>>> -	}
+>>> -	if (WARN_ON(IS_ERR(cpu_clk)))
+>>> +	cpu_clk = get_cpu_clk(thiscpu);
+>>> +	if (!cpu_clk)
+>>>  		return;
+>>>  	clk_prepare_enable(cpu_clk);
+>>>  	rate = clk_get_rate(cpu_clk);
+>>>  
+>>>  	/* set all the other CPU clk to the same rate than the boot CPU */
+>>> -	for_each_node_by_type(np, "cpu") {
+>>> -		int err;
+>>> -		int cpu;
+>>> -
+>>> -		err = of_property_read_u32(np, "reg", &cpu);
+>>> -		if (WARN_ON(err))
+>>> +	for_each_possible_cpu(cpu) {
+>>> +		if (cpu == thiscpu)
+>>> +			continue;
+>>> +		cpu_clk = get_cpu_clk(cpu);
+>>> +		if (!cpu_clk)
+>>>  			return;
+>>> -
+>>> -		if (cpu != thiscpu) {
+>>> -			cpu_clk = of_clk_get(np, 0);
+>>> -			clk_set_rate(cpu_clk, rate);
+>>> -		}
+>>> +		clk_set_rate(cpu_clk, rate);
+>>>  	}
+>>>  }
+>>>  
+>>>
+>>
+>>
+> 
 
-Kevin
 
-> ---
->  drivers/power/avs/smartreflex.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-> index db9973b..c26acfc 100644
-> --- a/drivers/power/avs/smartreflex.c
-> +++ b/drivers/power/avs/smartreflex.c
-> @@ -871,10 +871,8 @@ static int __init omap_sr_probe(struct platform_device *pdev)
->  
->  	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	sr_info->base = devm_ioremap_resource(&pdev->dev, mem);
-> -	if (IS_ERR(sr_info->base)) {
-> -		dev_err(&pdev->dev, "%s: ioremap fail\n", __func__);
-> +	if (IS_ERR(sr_info->base))
->  		return PTR_ERR(sr_info->base);
-> -	}
->  
->  	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
->  
