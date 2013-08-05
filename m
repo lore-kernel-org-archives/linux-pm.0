@@ -1,86 +1,29 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Walk physical_node_list under physical_node_lock
-Date: Mon, 05 Aug 2013 16:10:08 +0200
-Message-ID: <4934962.0gqQfGrEzP@vostro.rjw.lan>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH v1 0/2] PM / AVS: interrupt handling fixes
+Date: Mon, 05 Aug 2013 09:24:13 -0700
+Message-ID: <87y58ggl76.fsf@linaro.org>
+References: <1373637123-1152-1-git-send-email-andrii.tseglytskyi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:56605 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645Ab3HEN7v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 5 Aug 2013 09:59:51 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1373637123-1152-1-git-send-email-andrii.tseglytskyi@ti.com>
+	(Andrii Tseglytskyi's message of "Fri, 12 Jul 2013 16:52:01 +0300")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Andrii Tseglytskyi <andrii.tseglytskyi@ti.com> writes:
 
-The list of physical devices corresponding to an ACPI device
-object is walked by acpi_system_wakeup_device_seq_show() and
-physical_device_enable_wakeup() without taking that object's
-physical_node_lock mutex.  Since each of those functions may be
-run at any time as a result of a user space action, the lack of
-appropriate locking in them may lead to a kernel crash if that
-happens during device hot-add or hot-remove involving the device
-object in question.
+> Hi Kevin,
+>
+> Could you please take a look to the following patch series.
+> It consists of two patches, which are needed for proper
+> SmartReflex Interrupt handling.
 
-Fix the issue by modifying acpi_system_wakeup_device_seq_show() and
-physical_device_enable_wakeup() to use physical_node_lock as
-appropriate.
+Thanks.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: All <stable@vger.kernel.org>
----
+It doesn't appear that these are regression fixes, so I'm queuing for
+v3.12.  
 
-This is urgent stuff, so if anyone has any objections against this or sees
-any problems with it, please let me know immediately.
-
-Thanks,
-Rafael
-
----
- drivers/acpi/proc.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-Index: linux-pm/drivers/acpi/proc.c
-===================================================================
---- linux-pm.orig/drivers/acpi/proc.c
-+++ linux-pm/drivers/acpi/proc.c
-@@ -311,6 +311,8 @@ acpi_system_wakeup_device_seq_show(struc
- 			   dev->pnp.bus_id,
- 			   (u32) dev->wakeup.sleep_state);
- 
-+		mutex_lock(&dev->physical_node_lock);
-+
- 		if (!dev->physical_node_count) {
- 			seq_printf(seq, "%c%-8s\n",
- 				dev->wakeup.flags.run_wake ? '*' : ' ',
-@@ -338,6 +340,8 @@ acpi_system_wakeup_device_seq_show(struc
- 				put_device(ldev);
- 			}
- 		}
-+
-+		mutex_unlock(&dev->physical_node_lock);
- 	}
- 	mutex_unlock(&acpi_device_lock);
- 	return 0;
-@@ -347,12 +351,16 @@ static void physical_device_enable_wakeu
- {
- 	struct acpi_device_physical_node *entry;
- 
-+	mutex_lock(&adev->physical_node_lock);
-+
- 	list_for_each_entry(entry,
- 		&adev->physical_node_list, node)
- 		if (entry->dev && device_can_wakeup(entry->dev)) {
- 			bool enable = !device_may_wakeup(entry->dev);
- 			device_set_wakeup_enable(entry->dev, enable);
- 		}
-+
-+	mutex_unlock(&adev->physical_node_lock);
- }
- 
- static ssize_t
-
+Kevin (apologies for the major lag, just returning from some time off...)
