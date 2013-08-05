@@ -1,18 +1,12 @@
 From: Kevin Hilman <khilman@linaro.org>
 Subject: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex AVS drivers
-Date: Mon,  5 Aug 2013 09:29:19 -0700
-Message-ID: <1375720159-13684-1-git-send-email-khilman@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:38122 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157Ab3HEQ3X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Aug 2013 12:29:23 -0400
-Received: by mail-pd0-f178.google.com with SMTP id w10so3407146pde.23
-        for <linux-pm@vger.kernel.org>; Mon, 05 Aug 2013 09:29:22 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Date: Mon,  5 Aug 2013 09:29:37 -0700
+Message-ID: <1375720177-20063-1-git-send-email-khilman@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anton Vorontsov <anton@enomsg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Anton Vorontsov <anton@enomsg.org>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
 
 The SmartReflex AVS driver evolved out of the OMAP kernel and now
 lives under drivers/power/avs.
@@ -50,4 +44,3 @@ index defc053..466ca61 100644
  M:	Bjorn Helgaas <bhelgaas@google.com>
 -- 
 1.8.3
-
