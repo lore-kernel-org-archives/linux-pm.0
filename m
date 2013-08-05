@@ -1,65 +1,63 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: [PATCH v2] cpufreq: loongson2: fix broken cpufreq
-Date: Mon,  5 Aug 2013 21:27:12 +0300
-Message-ID: <1375727232-17796-1-git-send-email-aaro.koskinen@iki.fi>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, Julia Lawall <Julia.Lawall@lip6.fr>, Aaro Koskinen <aaro.koskinen@iki.fi>, stable@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sysfs support for scaling_cur_freq in intel_pstate
+Date: Tue, 06 Aug 2013 00:25:19 +0200
+Message-ID: <12076019.aizTGtbSrF@vostro.rjw.lan>
+References: <1375738663.6273.56.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:57129 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755280Ab3HEWPH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 Aug 2013 18:15:07 -0400
+In-Reply-To: <1375738663.6273.56.camel@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Radu Rendec <radu.rendec@mindbit.ro>
+Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Commit 42913c799 (MIPS: Loongson2: Use clk API instead of direct
-dereferences) broke the cpufreq functionality on Loongson2 boards:
-clk_set_rate() is called before the CPU frequency table is initialized,
-and therefore will always fail.
+[Adding CCs to linux-pm and Dirk.]
 
-Fix by moving the clk_set_rate() after the table initialization.
-Tested on Lemote FuLoong mini-PC.
-
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: stable@vger.kernel.org
----
-
-	Changes since the first version
-	(http://marc.info/?l=linux-kernel&m=137357177225034&w=2):
-
-	- Changed the subject prefix. I guess this should be merged through
-	  the cpufreq/PM instead of MIPS tree?
-
-	- Added ACK from Viresh Kumar.
-
- drivers/cpufreq/loongson2_cpufreq.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-index bb838b9..9536852 100644
---- a/drivers/cpufreq/loongson2_cpufreq.c
-+++ b/drivers/cpufreq/loongson2_cpufreq.c
-@@ -118,11 +118,6 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		clk_put(cpuclk);
- 		return -EINVAL;
- 	}
--	ret = clk_set_rate(cpuclk, rate);
--	if (ret) {
--		clk_put(cpuclk);
--		return ret;
--	}
- 
- 	/* clock table init */
- 	for (i = 2;
-@@ -130,6 +125,12 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	     i++)
- 		loongson2_clockmod_table[i].frequency = (rate * i) / 8;
- 
-+	ret = clk_set_rate(cpuclk, rate);
-+	if (ret) {
-+		clk_put(cpuclk);
-+		return ret;
-+	}
-+
- 	policy->cur = loongson2_cpufreq_get(policy->cpu);
- 
- 	cpufreq_frequency_table_get_attr(&loongson2_clockmod_table[0],
+On Tuesday, August 06, 2013 12:37:43 AM Radu Rendec wrote:
+> Hi!
+> 
+> After a recent kernel upgrade on my laptop I noticed that my cpu
+> frequency desktop applet wasn't working anymore. I quickly tracked down
+> the problem to the fact that the new scaling driver was intel_pstate,
+> and it didn't expose scaling_cur_freq in sysfs.
+> 
+> On the other hand, cpuinfo_cur_freq is available, but it's only readable
+> by root. Apparently there are good reasons for keeping it like this. I
+> found an older post about this here:
+> http://comments.gmane.org/gmane.linux.kernel.cpufreq/7005
+> 
+> However, looking at the code in intel_pstate.c, it seems that
+> intel_pstate_get() (which is the implementation for cpuinfo_cur_freq in
+> sysfs) simply extracts a value out of a larger structure. This seems
+> really harmless and very far away from the reasons why cpuinfo_cur_freq
+> was kept readable by root only.
+> 
+> Looking at cpufreq_add_dev_interface() in cpufreq.c, it seems that one
+> needs to define the "target" field in struct cpufreq_driver in order to
+> have scaling_cur_freq exposed in sysfs.
+> 
+> I think setting "target" to intel_pstate_get() in the definition of
+> intel_pstate_driver would fix my problem, since scaling_cur_freq in
+> sysfs is world readable. Is there any reason for not doing this?
+> 
+> If you reply, please cc my personal address - I'm not subscribed to the
+> list.
+> 
+> Thanks,
+> 
+> Radu Rendec
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 -- 
-1.8.3.2
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
