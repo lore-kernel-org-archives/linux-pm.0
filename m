@@ -1,59 +1,168 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: OPP: rename functions? (was [PATCH] OPP: Export opp_add())
-Date: Tue, 06 Aug 2013 16:15:17 +0200
-Message-ID: <1611420.5h2rr9N0mt@vostro.rjw.lan>
-References: <58acb4a8a4e98089078de3ed71999730b6d97b4b.1375521724.git.viresh.kumar@linaro.org> <5200F1B4.6050004@infradead.org> <20130806130820.GA6035@kahuna>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] cpuidle: add hotplug support to initialize the timer
+ broadcast
+Date: Tue, 06 Aug 2013 16:11:20 +0200
+Message-ID: <52010408.2000703@linaro.org>
+References: <1375192468-2255-1-git-send-email-daniel.lezcano@linaro.org> <5200B585.8040800@linaro.org> <3064063.5AHNzeThpF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:58000 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753150Ab3HFOFA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 6 Aug 2013 10:05:00 -0400
-In-Reply-To: <20130806130820.GA6035@kahuna>
+Received: from mail-we0-f175.google.com ([74.125.82.175]:43719 "EHLO
+	mail-we0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013Ab3HFOLP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 10:11:15 -0400
+Received: by mail-we0-f175.google.com with SMTP id q58so406123wes.6
+        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2013 07:11:14 -0700 (PDT)
+In-Reply-To: <3064063.5AHNzeThpF@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, pavel@ucw.cz, linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: lenb@kernel.org, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org
 
-On Tuesday, August 06, 2013 08:08:20 AM Nishanth Menon wrote:
-> change in subject to reflect new discussion.
-> 
-> On 05:53-20130806, Randy Dunlap wrote:
-> > On 08/03/2013 02:25 AM, Viresh Kumar wrote:
-> > >Export opp_add() so that modules can use it.
-> > >
-> > >Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > >---
-> > >  drivers/base/power/opp.c | 1 +
-> > >  1 file changed, 1 insertion(+)
-> > >
-> > >diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> > >index c8ec186..ef89897 100644
-> > >--- a/drivers/base/power/opp.c
-> > >+++ b/drivers/base/power/opp.c
-> > >@@ -460,6 +460,7 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
-> > >  	srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
-> > >  	return 0;
-> > >  }
-> > >+EXPORT_SYMBOL_GPL(opp_add);
-> > 
-> > Could it be renamed to pm_opp_add() or power_opp_add() ?
-> > The name is a bit too unspecific IMO.
-> Though this has nothing specific with this patch, an interesting point.
-> 
-> git grep -w opp . showed drivers/tty/n_tty.c,
-> drivers/sbus/char/openprom.c and arch/powerpc/kvm/mpic.c using
-> variables named opp to mean what ever they had in context. rest(around
-> 40 odd files) seem to use opp as in Documentation/power/opp.txt..
-> 
-> We could go with a pm_ prefix or even dev_pm_opp_ prefix to be more
-> specific, though I prefer just pm_. If Rafael and others are ok, I can
-> post a series out.
+On 08/06/2013 04:10 PM, Rafael J. Wysocki wrote:
+> On Tuesday, August 06, 2013 10:36:21 AM Daniel Lezcano wrote:
+>> On 07/30/2013 03:54 PM, Daniel Lezcano wrote:
+>>> Commit 89878baa73f0f1c679355006bd8632e5d78f96c2 introduced the flag
+>>> CPUIDLE_FLAG_TIMER_STOP where we specify a specific idle state stop=
+s the local
+>>> timer.
+>>>
+>>> Commit a06df062a189a8d5588babb8bf0bb78672497798 introduced the init=
+ialization
+>>> of the timer broadcast framework depending of the flag presence.
+>>>
+>>> If a system is booted with some cpus offline, by setting for exampl=
+e, maxcpus=3D1
+>>> in the kernel command line, and then they are set online, the timer=
+ broadcast
+>>> won't be setup automatically.
+>>>
+>>> Fix this by adding the cpu hotplug notifier and enable/disable the =
+timer
+>>> broadcast automatically. So no need to handle that at the arch spec=
+ific driver
+>>> level like eg. intel_idle does.
+>>>
+>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> ---
+>>
+>> Len, Rafael,
+>>
+>> any comment on these two patches ?
+>=20
+> Honestly, I didn't have the time to look into that and Len is on vaca=
+tion.
+>=20
+> It's on my todo list, however.
 
-Yup, that would be useful.  I'm for dev_pm_opp_ if that matters.
+Ah, ok. Thanks.
 
-Thanks,
-Rafael
+  -- Daniel
+
+
+>>>  drivers/cpuidle/driver.c |   48 ++++++++++++++++++++++++++++++++++=
+++++++++++++
+>>>  1 file changed, 48 insertions(+)
+>>>
+>>> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+>>> index 3ac499d..e976994 100644
+>>> --- a/drivers/cpuidle/driver.c
+>>> +++ b/drivers/cpuidle/driver.c
+>>> @@ -10,6 +10,7 @@
+>>> =20
+>>>  #include <linux/mutex.h>
+>>>  #include <linux/module.h>
+>>> +#include <linux/cpu.h>
+>>>  #include <linux/cpuidle.h>
+>>>  #include <linux/cpumask.h>
+>>>  #include <linux/clockchips.h>
+>>> @@ -147,6 +148,48 @@ static void cpuidle_setup_broadcast_timer(void=
+ *arg)
+>>>  }
+>>> =20
+>>>  /**
+>>> + * cpuidle_hotplug_notify: notifier callback when a cpu is onlined=
+/offlined
+>>> + * @n: the notifier block
+>>> + * @action: an unsigned long giving the event related to the notif=
+ication
+>>> + * @hcpu: a void pointer but used as the cpu number which the even=
+t is related
+>>> + *
+>>> + * The kernel can boot with some cpus offline, we have to init the=
+ timer
+>>> + * broadcast for these cpus when they are onlined. Also we have to=
+ disable
+>>> + * the timer broadcast when the cpu is down.
+>>> + *
+>>> + * Returns NOTIFY_OK
+>>> + */
+>>> +static int cpuidle_hotplug_notify(struct notifier_block *n,
+>>> +				  unsigned long action, void *hcpu)
+>>> +{
+>>> +	int cpu =3D (unsigned long)hcpu;
+>>> +	struct cpuidle_driver *drv;
+>>> +
+>>> +	drv =3D __cpuidle_get_cpu_driver(cpu);
+>>> +	if (!drv || !drv->bctimer)
+>>> +		goto out;
+>>> +
+>>> +	switch (action & 0xf) {
+>>> +	case CPU_ONLINE:
+>>> +		smp_call_function_single(cpu, cpuidle_setup_broadcast_timer,
+>>> +					 (void *)CLOCK_EVT_NOTIFY_BROADCAST_ON,
+>>> +					 1);
+>>> +		break;
+>>> +	case CPU_DEAD:
+>>> +		smp_call_function_single(cpu, cpuidle_setup_broadcast_timer,
+>>> +					 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF,
+>>> +					 1);
+>>> +		break;
+>>> +	}
+>>> +out:
+>>> +	return NOTIFY_OK;
+>>> +}
+>>> +
+>>> +static struct notifier_block cpuidle_hotplug_notifier =3D {
+>>> +	.notifier_call =3D cpuidle_hotplug_notify,
+>>> +};
+>>> +
+>>> +/**
+>>>   * __cpuidle_driver_init - initialize the driver's internal data
+>>>   * @drv: a valid pointer to a struct cpuidle_driver
+>>>   *
+>>> @@ -262,6 +305,9 @@ int cpuidle_register_driver(struct cpuidle_driv=
+er *drv)
+>>>  	ret =3D __cpuidle_register_driver(drv);
+>>>  	spin_unlock(&cpuidle_driver_lock);
+>>> =20
+>>> +	if (!ret)
+>>> +		ret =3D register_cpu_notifier(&cpuidle_hotplug_notifier);
+>>> +
+>>>  	return ret;
+>>>  }
+>>>  EXPORT_SYMBOL_GPL(cpuidle_register_driver);
+>>> @@ -276,6 +322,8 @@ EXPORT_SYMBOL_GPL(cpuidle_register_driver);
+>>>   */
+>>>  void cpuidle_unregister_driver(struct cpuidle_driver *drv)
+>>>  {
+>>> +	unregister_cpu_notifier(&cpuidle_hotplug_notifier);
+>>> +
+>>>  	spin_lock(&cpuidle_driver_lock);
+>>>  	__cpuidle_unregister_driver(drv);
+>>>  	spin_unlock(&cpuidle_driver_lock);
+>>>
+>>
+>>
+>>
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
