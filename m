@@ -1,173 +1,157 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu
- nodes
-Date: Tue, 06 Aug 2013 10:25:13 +0200
-Message-ID: <5200B2E9.8090009@free-electrons.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <51FA3064.9080502@arm.com> <20130801120256.GW5882@titan.lakedaemon.net>
- <51FFD2B1.70509@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] cpuidle: add hotplug support to initialize the timer
+ broadcast
+Date: Tue, 06 Aug 2013 10:36:21 +0200
+Message-ID: <5200B585.8040800@linaro.org>
+References: <1375192468-2255-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <51FFD2B1.70509@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, Olof Johansson <olof@lixom.net>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f48.google.com ([74.125.82.48]:57069 "EHLO
+	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526Ab3HFIgS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 04:36:18 -0400
+Received: by mail-wg0-f48.google.com with SMTP id f12so92495wgh.15
+        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2013 01:36:15 -0700 (PDT)
+In-Reply-To: <1375192468-2255-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "rjw@sisk.pl" <rjw@sisk.pl>, lenb@kernel.org
+Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 05/08/2013 18:28, Sudeep KarkadaNagesha wrote:
-> On 01/08/13 13:02, Jason Cooper wrote:
->> Sudeep,
->>
->> On Thu, Aug 01, 2013 at 10:54:44AM +0100, Sudeep KarkadaNagesha wrote:
->>> On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
->>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>
->>>> Currently set_secondary_cpus_clock assume the CPU logical ordering
->>>> and the MPDIR in DT are same, which is incorrect.
->>>>
->>>> Since the CPU device nodes can be retrieved in the logical ordering
->>>> using the DT helper, we can remove the devices tree parsing.
->>>>
->>>> This patch removes DT parsing by making use of of_get_cpu_node.
->>>>
->>>> Cc: Gregory Clement <gregory.clement@free-electrons.com>
->>>> Cc: Andrew Lunn <andrew@lunn.ch>
->>>> Cc: Jason Cooper <jason@lakedaemon.net>
->>>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>
->>> Hi Gregory/Andrew/Jason,
->>>
->>> Does this change look fine for mvebu?
->>> If yes, can I have your ACKs ?
->>
->> Gregory is the one best suited to review/Ack this.  He'll be back on
->> Monday.
->>
-> Hi Gregory,
-> 
-> Can you please review this patch ?
+On 07/30/2013 03:54 PM, Daniel Lezcano wrote:
+> Commit 89878baa73f0f1c679355006bd8632e5d78f96c2 introduced the flag
+> CPUIDLE_FLAG_TIMER_STOP where we specify a specific idle state stops =
+the local
+> timer.
+>=20
+> Commit a06df062a189a8d5588babb8bf0bb78672497798 introduced the initia=
+lization
+> of the timer broadcast framework depending of the flag presence.
+>=20
+> If a system is booted with some cpus offline, by setting for example,=
+ maxcpus=3D1
+> in the kernel command line, and then they are set online, the timer b=
+roadcast
+> won't be setup automatically.
+>=20
+> Fix this by adding the cpu hotplug notifier and enable/disable the ti=
+mer
+> broadcast automatically. So no need to handle that at the arch specif=
+ic driver
+> level like eg. intel_idle does.
+>=20
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
 
-Your patch is a nice improvement, I reviewed it and I also tested it on the
-Armada XP DB board.
+Len, Rafael,
 
-You can add my:
-Acked-by: Gregory Clement <gregory.clement@free-electrons.com>
+any comment on these two patches ?
 
-> 
-> Regards,
-> Sudeep
->>>> ---
->>>>  arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
->>>>  1 file changed, 24 insertions(+), 28 deletions(-)
->>>>
->>>> diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
->>>> index ce81d30..001dd42 100644
->>>> --- a/arch/arm/mach-mvebu/platsmp.c
->>>> +++ b/arch/arm/mach-mvebu/platsmp.c
->>>> @@ -23,51 +23,47 @@
->>>>  #include <linux/of.h>
->>>>  #include <linux/mbus.h>
->>>>  #include <asm/cacheflush.h>
->>>> +#include <asm/prom.h>
->>>>  #include <asm/smp_plat.h>
->>>>  #include "common.h"
->>>>  #include "armada-370-xp.h"
->>>>  #include "pmsu.h"
->>>>  #include "coherency.h"
->>>>  
->>>> +static struct clk *__init get_cpu_clk(int cpu)
->>>> +{
->>>> +	struct clk *cpu_clk;
->>>> +	struct device_node *np = of_get_cpu_node(cpu);
->>>> +
->>>> +	if (WARN(!np, "missing cpu node\n"))
->>>> +		return NULL;
->>>> +	cpu_clk = of_clk_get(np, 0);
->>>> +	if (WARN_ON(IS_ERR(cpu_clk)))
->>>> +		return NULL;
->>>> +	return cpu_clk;
->>>> +}
->>>> +
->>>>  void __init set_secondary_cpus_clock(void)
->>>>  {
->>>> -	int thiscpu;
->>>> +	int thiscpu, cpu;
->>>>  	unsigned long rate;
->>>> -	struct clk *cpu_clk = NULL;
->>>> -	struct device_node *np = NULL;
->>>> +	struct clk *cpu_clk;
->>>>  
->>>>  	thiscpu = smp_processor_id();
->>>> -	for_each_node_by_type(np, "cpu") {
->>>> -		int err;
->>>> -		int cpu;
->>>> -
->>>> -		err = of_property_read_u32(np, "reg", &cpu);
->>>> -		if (WARN_ON(err))
->>>> -			return;
->>>> -
->>>> -		if (cpu == thiscpu) {
->>>> -			cpu_clk = of_clk_get(np, 0);
->>>> -			break;
->>>> -		}
->>>> -	}
->>>> -	if (WARN_ON(IS_ERR(cpu_clk)))
->>>> +	cpu_clk = get_cpu_clk(thiscpu);
->>>> +	if (!cpu_clk)
->>>>  		return;
->>>>  	clk_prepare_enable(cpu_clk);
->>>>  	rate = clk_get_rate(cpu_clk);
->>>>  
->>>>  	/* set all the other CPU clk to the same rate than the boot CPU */
->>>> -	for_each_node_by_type(np, "cpu") {
->>>> -		int err;
->>>> -		int cpu;
->>>> -
->>>> -		err = of_property_read_u32(np, "reg", &cpu);
->>>> -		if (WARN_ON(err))
->>>> +	for_each_possible_cpu(cpu) {
->>>> +		if (cpu == thiscpu)
->>>> +			continue;
->>>> +		cpu_clk = get_cpu_clk(cpu);
->>>> +		if (!cpu_clk)
->>>>  			return;
->>>> -
->>>> -		if (cpu != thiscpu) {
->>>> -			cpu_clk = of_clk_get(np, 0);
->>>> -			clk_set_rate(cpu_clk, rate);
->>>> -		}
->>>> +		clk_set_rate(cpu_clk, rate);
->>>>  	}
->>>>  }
->>>>  
->>>>
->>>
->>>
->>
-> 
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+Thanks
+  -- Daniel
 
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+>  drivers/cpuidle/driver.c |   48 ++++++++++++++++++++++++++++++++++++=
+++++++++++
+>  1 file changed, 48 insertions(+)
+>=20
+> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+> index 3ac499d..e976994 100644
+> --- a/drivers/cpuidle/driver.c
+> +++ b/drivers/cpuidle/driver.c
+> @@ -10,6 +10,7 @@
+> =20
+>  #include <linux/mutex.h>
+>  #include <linux/module.h>
+> +#include <linux/cpu.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/cpumask.h>
+>  #include <linux/clockchips.h>
+> @@ -147,6 +148,48 @@ static void cpuidle_setup_broadcast_timer(void *=
+arg)
+>  }
+> =20
+>  /**
+> + * cpuidle_hotplug_notify: notifier callback when a cpu is onlined/o=
+fflined
+> + * @n: the notifier block
+> + * @action: an unsigned long giving the event related to the notific=
+ation
+> + * @hcpu: a void pointer but used as the cpu number which the event =
+is related
+> + *
+> + * The kernel can boot with some cpus offline, we have to init the t=
+imer
+> + * broadcast for these cpus when they are onlined. Also we have to d=
+isable
+> + * the timer broadcast when the cpu is down.
+> + *
+> + * Returns NOTIFY_OK
+> + */
+> +static int cpuidle_hotplug_notify(struct notifier_block *n,
+> +				  unsigned long action, void *hcpu)
+> +{
+> +	int cpu =3D (unsigned long)hcpu;
+> +	struct cpuidle_driver *drv;
+> +
+> +	drv =3D __cpuidle_get_cpu_driver(cpu);
+> +	if (!drv || !drv->bctimer)
+> +		goto out;
+> +
+> +	switch (action & 0xf) {
+> +	case CPU_ONLINE:
+> +		smp_call_function_single(cpu, cpuidle_setup_broadcast_timer,
+> +					 (void *)CLOCK_EVT_NOTIFY_BROADCAST_ON,
+> +					 1);
+> +		break;
+> +	case CPU_DEAD:
+> +		smp_call_function_single(cpu, cpuidle_setup_broadcast_timer,
+> +					 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF,
+> +					 1);
+> +		break;
+> +	}
+> +out:
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block cpuidle_hotplug_notifier =3D {
+> +	.notifier_call =3D cpuidle_hotplug_notify,
+> +};
+> +
+> +/**
+>   * __cpuidle_driver_init - initialize the driver's internal data
+>   * @drv: a valid pointer to a struct cpuidle_driver
+>   *
+> @@ -262,6 +305,9 @@ int cpuidle_register_driver(struct cpuidle_driver=
+ *drv)
+>  	ret =3D __cpuidle_register_driver(drv);
+>  	spin_unlock(&cpuidle_driver_lock);
+> =20
+> +	if (!ret)
+> +		ret =3D register_cpu_notifier(&cpuidle_hotplug_notifier);
+> +
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(cpuidle_register_driver);
+> @@ -276,6 +322,8 @@ EXPORT_SYMBOL_GPL(cpuidle_register_driver);
+>   */
+>  void cpuidle_unregister_driver(struct cpuidle_driver *drv)
+>  {
+> +	unregister_cpu_notifier(&cpuidle_hotplug_notifier);
+> +
+>  	spin_lock(&cpuidle_driver_lock);
+>  	__cpuidle_unregister_driver(drv);
+>  	spin_unlock(&cpuidle_driver_lock);
+>=20
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
