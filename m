@@ -1,66 +1,56 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu
- nodes
-Date: Tue, 06 Aug 2013 10:02:50 +0100
-Message-ID: <5200BBBA.7020303@arm.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51FA3064.9080502@arm.com> <20130801120256.GW5882@titan.lakedaemon.net> <51FFD2B1.70509@arm.com> <5200B2E9.8090009@free-electrons.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [RFC PATCH v2 0/3] ARM: TC2 big.LITTLE CPU idle driver
+Date: Tue, 6 Aug 2013 10:32:29 +0100
+Message-ID: <20130806093229.GB18810@e102568-lin.cambridge.arm.com>
+References: <1375709982-27148-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <5200A1FD.6050709@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:57172 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:50237 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754864Ab3HFJCm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 05:02:42 -0400
-In-Reply-To: <5200B2E9.8090009@free-electrons.com>
+	with ESMTP id S1755367Ab3HFJce convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 05:32:34 -0400
+In-Reply-To: <5200A1FD.6050709@linaro.org>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Andrew Lunn <andrew@lunn.ch>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Olof Johansson <olof@lixom.net>, Amit Kucheria <amit.kucheria@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-On 06/08/13 09:25, Gregory CLEMENT wrote:
-> On 05/08/2013 18:28, Sudeep KarkadaNagesha wrote:
->> On 01/08/13 13:02, Jason Cooper wrote:
->>> Sudeep,
->>>
->>> On Thu, Aug 01, 2013 at 10:54:44AM +0100, Sudeep KarkadaNagesha wrote:
->>>> On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
->>>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>>
->>>>> Currently set_secondary_cpus_clock assume the CPU logical ordering
->>>>> and the MPDIR in DT are same, which is incorrect.
->>>>>
->>>>> Since the CPU device nodes can be retrieved in the logical ordering
->>>>> using the DT helper, we can remove the devices tree parsing.
->>>>>
->>>>> This patch removes DT parsing by making use of of_get_cpu_node.
->>>>>
->>>>> Cc: Gregory Clement <gregory.clement@free-electrons.com>
->>>>> Cc: Andrew Lunn <andrew@lunn.ch>
->>>>> Cc: Jason Cooper <jason@lakedaemon.net>
->>>>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>
->>>> Hi Gregory/Andrew/Jason,
->>>>
->>>> Does this change look fine for mvebu?
->>>> If yes, can I have your ACKs ?
->>>
->>> Gregory is the one best suited to review/Ack this.  He'll be back on
->>> Monday.
->>>
->> Hi Gregory,
->>
->> Can you please review this patch ?
+On Tue, Aug 06, 2013 at 08:13:01AM +0100, Daniel Lezcano wrote:
+> On 08/05/2013 03:39 PM, Lorenzo Pieralisi wrote:
+> > This patch is v2 of a previous posting:
+> > 
+> > http://lists.infradead.org/pipermail/linux-arm-kernel/2013-July/186352.html
+> > 
+> > v2 changes:
+> > 
+> > - removed duplicated idle statistics and irq enabling
+> > - use MPIDR masks to compute cluster and cpu ids
 > 
-> Your patch is a nice improvement, I reviewed it and I also tested it on the
-> Armada XP DB board.
+> Hi Lorenzo,
 > 
-> You can add my:
-> Acked-by: Gregory Clement <gregory.clement@free-electrons.com>
+> I don't think this patch is still in RFC but ready for merging if nobody
+> complains :)
 
-Thanks Gregory.
+Yes, you are right, I should have dropped RFC by now. Just one last
+doubt I have and it is not really related to this patch but to the MCPM API.
+I think that:
 
-Regards,
-Sudeep
+void mcpm_cpu_suspend()
+void mcpm_cpu_power_down()
 
+should fail gracefully with a return value instead of hitting a BUG_ON if the
+platform_ops pointer is not initialized (ie likely to be a missing SCC node in
+DT for TC2).
+
+It is just a heads-up, thoughts appreciated, I really really do not want to
+make this driver dependent on the vexpress SCC compatible string (or better on
+the presence of an SCC DT node in the dts file), the compatible string we
+are using should be correct.
+
+Thanks,
+Lorenzo
 
