@@ -1,42 +1,86 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V2 5/6] cpuidle/powerpc: Backend-powerpc idle driver for
- powernv and pseries.
-Date: Tue, 6 Aug 2013 18:41:11 -0500
-Message-ID: <1375832471.5600.41.camel@snotra.buserror.net>
-References: <20130731025840.19448.24468.stgit@deepthi>
-	 <20130731025934.19448.16658.stgit@deepthi>
-	 <1375830520.5600.23.camel@snotra.buserror.net>
-	 <1375831851.12557.74.camel@pasglop>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex AVS drivers
+Date: Tue, 06 Aug 2013 16:57:14 -0700
+Message-ID: <87mwoufk4l.fsf@linaro.org>
+References: <1375720177-20063-1-git-send-email-khilman@linaro.org>
+	<20130806015147.GA16668@teo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:46777 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752352Ab3HFXlR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 19:41:17 -0400
-In-Reply-To: <1375831851.12557.74.camel@pasglop>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:36417 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755635Ab3HFX5S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 19:57:18 -0400
+Received: by mail-pa0-f45.google.com with SMTP id bg4so1424022pad.4
+        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2013 16:57:17 -0700 (PDT)
+In-Reply-To: <20130806015147.GA16668@teo> (Anton Vorontsov's message of "Mon,
+	5 Aug 2013 18:51:48 -0700")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org, michael@ellerman.id.au, srivatsa.bhat@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, rjw@sisk.pl, dongsheng.wang@freescale.com, linux-pm@vger.kernel.org
+To: Anton Vorontsov <anton@enomsg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Nishanth Menon <nm@ti.com>
 
-On Wed, 2013-08-07 at 09:30 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-08-06 at 18:08 -0500, Scott Wood wrote:
-> > Here's another example.  get_lppaca() will only build on book3s -- and
-> > yet we get requests for e500 code to use this file.
-> 
-> Indeed, Besides there is already accessors afaik for lppaca that compile
-> to nothing on E (and if not they would be trivial to add).
+Anton Vorontsov <anton@enomsg.org> writes:
 
-I don't see such an accessor, but if there were, what would happen when
-the caller goes on to dereference that nothing?
+> On Mon, Aug 05, 2013 at 09:29:37AM -0700, Kevin Hilman wrote:
+>> The SmartReflex AVS driver evolved out of the OMAP kernel and now
+>> lives under drivers/power/avs.
+>> 
+>> I've historically been maintainer of this but Nishanth Menon is doing
+>> most of the heavy lifting now.  Add us both as co-maintainers.
+>> 
+> ...
+>> +M:	Kevin Hilman <khilman@kernel.org>
+>> +M:	Nishanth Menon <nm@ti.com>
+>> +S:	Maintained
+>> +F:	drivers/power/avs/smartreflex.c
+>> +F:      include/linux/power/smartreflex.h
+>
+> This line is borken (whitespaces).
 
-There is an accessor for shared_proc specifically (in the spinlock code)
--- not that it would be much help on booke to just compile away that
-check and always select one of the pseries state tables over the other.
-
--Scott
+doh, here's a fixed version.
 
 
+>From 4032435bb07f92993a8c70d64337d8513f88565c Mon Sep 17 00:00:00 2001
+From: Kevin Hilman <khilman@linaro.org>
+Date: Mon, 5 Aug 2013 09:19:34 -0700
+Subject: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex AVS
+ drivers
+
+The SmartReflex AVS driver evolved out of the OMAP kernel and now
+lives under drivers/power/avs.
+
+I've historically been maintainer of this but Nishanth Menon is doing
+most of the heavy lifting now.  Add us both as co-maintainers.
+
+Cc: Anton Vorontsov <anton@enomsg.org>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Nishanth Menon <nm@ti.com>
+Signed-off-by: Kevin Hilman <khilman@linaro.org>
+---
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index defc053..93e9ba0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6450,6 +6450,14 @@ S:	Maintained
+ F:	include/linux/power_supply.h
+ F:	drivers/power/
+ 
++SMARTREFLEX DRIVERS FOR ADAPTIVE VOLTAGE SCALING (AVS)
++M:	Kevin Hilman <khilman@kernel.org>
++M:	Nishanth Menon <nm@ti.com>
++S:	Maintained
++F:	drivers/power/avs/smartreflex.c
++F:	include/linux/power/smartreflex.h
++L:	linux-pm@vger.kernel.org
++
+ PNP SUPPORT
+ M:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+ M:	Bjorn Helgaas <bhelgaas@google.com>
+-- 
+1.8.3
 
