@@ -1,64 +1,164 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex AVS drivers
-Date: Wed, 07 Aug 2013 00:54:43 +0200
-Message-ID: <2468244.h36esXYJ6h@vostro.rjw.lan>
-References: <1375720159-13684-1-git-send-email-khilman@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: [PATCH] thermal: new asus driver
+Date: Tue,  6 Aug 2013 17:48:20 -0500
+Message-ID: <1375829300-14081-1-git-send-email-felipe.contreras@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:58504 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756728Ab3HFWo0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 6 Aug 2013 18:44:26 -0400
-In-Reply-To: <1375720159-13684-1-git-send-email-khilman@linaro.org>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:57389 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756693Ab3HFWwD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 18:52:03 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Anton Vorontsov <anton@enomsg.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Nishanth Menon <nm@ti.com>
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-kernel@vger.kernel.org, Felipe Contreras <felipe.contreras@gmail.com>
 
-On Monday, August 05, 2013 09:29:19 AM Kevin Hilman wrote:
-> The SmartReflex AVS driver evolved out of the OMAP kernel and now
-> lives under drivers/power/avs.
-> 
-> I've historically been maintainer of this but Nishanth Menon is doing
-> most of the heavy lifting now.  Add us both as co-maintainers.
-> 
-> Cc: Anton Vorontsov <anton@enomsg.org>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+Simple driver to enable control of the fan in ASUS laptops. So far this
+has only been tested in ASUS Zenbook Prime UX31A, but according to some
+online reference [1], it should work in other models as well.
 
-Who's supposed to take this patch?
+Another source was a patch acpi4asus-user's mailing list [2].
 
-Rafael
+[1]
+http://forum.notebookreview.com/asus/705656-fan-control-asus-prime-ux31-ux31a-ux32a-ux32vd.html
+[2]
+http://www.mail-archive.com/acpi4asus-user@lists.sourceforge.net/msg00065.html
 
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+---
 
-> ---
->  MAINTAINERS | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index defc053..466ca61 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6450,6 +6450,14 @@ S:	Maintained
->  F:	include/linux/power_supply.h
->  F:	drivers/power/
->  
-> +SMARTREFLEX DRIVERS FOR ADAPTIVE VOLTAGE SCALING (AVS)
-> +M:	Kevin Hilman <khilman@kernel.org>
-> +M:	Nishanth Menon <nm@ti.com>
-> +S:	Maintained
-> +F:	drivers/power/avs/smartreflex.c
-> +F:      include/linux/power/smartreflex.h
-> +L:	linux-pm@vger.kernel.org
-> +
->  PNP SUPPORT
->  M:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->  M:	Bjorn Helgaas <bhelgaas@google.com>
-> 
+I've never implemented a driver like this, so I've no idea if this is the right way to do it.
+
+ drivers/thermal/Kconfig        |  7 ++++
+ drivers/thermal/Makefile       |  1 +
+ drivers/thermal/asus_thermal.c | 94 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 102 insertions(+)
+ create mode 100644 drivers/thermal/asus_thermal.c
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index e988c81..0c5b624 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -184,4 +184,11 @@ menu "Texas Instruments thermal drivers"
+ source "drivers/thermal/ti-soc-thermal/Kconfig"
+ endmenu
+ 
++config ASUS_THERMAL
++	tristate "ASUS thermal driver"
++	depends on THERMAL
++	depends on X86
++	help
++	  Enables control of the fan in ASUS laptops.
++
+ endif
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 67184a2..ab4ea6f 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -25,3 +25,4 @@ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+ obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
++obj-$(CONFIG_ASUS_THERMAL)	+= asus_thermal.o
+diff --git a/drivers/thermal/asus_thermal.c b/drivers/thermal/asus_thermal.c
+new file mode 100644
+index 0000000..eceeee3
+--- /dev/null
++++ b/drivers/thermal/asus_thermal.c
+@@ -0,0 +1,94 @@
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/acpi.h>
++#include <linux/thermal.h>
++#include <linux/dmi.h>
++
++MODULE_AUTHOR("Felipe Contreras <felipe.contreras@gmail.com>");
++MODULE_DESCRIPTION("ASUS fan driver");
++MODULE_LICENSE("GPL");
++
++static struct thermal_cooling_device *cdev;
++
++static int fan_get_max_state(struct thermal_cooling_device *cdev,
++		unsigned long *state)
++{
++	*state = 0xff;
++	return 0;
++}
++
++static int fan_get_cur_state(struct thermal_cooling_device *cdev,
++		unsigned long *state)
++{
++	struct acpi_object_list params;
++	union acpi_object in_objs[1];
++	unsigned long long value;
++	acpi_status r;
++
++	params.count = ARRAY_SIZE(in_objs);
++	params.pointer = in_objs;
++	in_objs[0].type = ACPI_TYPE_INTEGER;
++	in_objs[0].integer.value = 0;
++
++	r = acpi_evaluate_integer(NULL, "\\_TZ.RFAN", &params, &value);
++	if (r != AE_OK)
++		return r;
++
++	*state = value;
++
++	return 0;
++}
++
++static int fan_set(struct thermal_cooling_device *cdev, int fan, int speed)
++{
++	struct acpi_object_list params;
++	union acpi_object in_objs[2];
++	unsigned long long value;
++
++	params.count = ARRAY_SIZE(in_objs);
++	params.pointer = in_objs;
++	in_objs[0].type = ACPI_TYPE_INTEGER;
++	in_objs[0].integer.value = fan;
++	in_objs[1].type = ACPI_TYPE_INTEGER;
++	in_objs[1].integer.value = speed;
++
++	return acpi_evaluate_integer(NULL, "\\_SB.PCI0.LPCB.EC0.SFNV", &params, &value);
++}
++
++static int fan_set_cur_state(struct thermal_cooling_device *cdev,
++		unsigned long state)
++{
++	return fan_set(cdev, 1, state);
++}
++
++static int fan_set_auto(struct thermal_cooling_device *cdev)
++{
++	return fan_set(cdev, 0, 0);
++}
++
++static const struct thermal_cooling_device_ops fan_cooling_ops = {
++	.get_max_state = fan_get_max_state,
++	.get_cur_state = fan_get_cur_state,
++	.set_cur_state = fan_set_cur_state,
++};
++
++static int __init fan_init(void)
++{
++	if (strcmp(dmi_get_system_info(DMI_SYS_VENDOR), "ASUSTeK COMPUTER INC."))
++		return -ENODEV;
++	cdev = thermal_cooling_device_register("Fan", NULL, &fan_cooling_ops);
++	if (IS_ERR(cdev))
++		return PTR_ERR(cdev);
++	fan_set_auto(cdev);
++	return 0;
++}
++
++static void __exit fan_exit(void)
++{
++	fan_set_auto(cdev);
++	thermal_cooling_device_unregister(cdev);
++}
++
++module_init(fan_init);
++module_exit(fan_exit);
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.3.267.gbb4989f
+
