@@ -1,68 +1,87 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
- another node for OPP
-Date: Tue, 6 Aug 2013 08:29:57 -0500
-Message-ID: <20130806132956.GA6603@kahuna>
-References: <51F826A0.2000109@ti.com>
- <51F8F17B.1020304@arm.com>
- <51F9234A.6010501@ti.com>
- <20130731152925.GP29859@e106331-lin.cambridge.arm.com>
- <51F9341E.60102@ti.com>
- <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
- <51F93AFB.1030104@ti.com>
- <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
- <51FA917D.4060408@wwwdotorg.org>
- <51FBB788.7040209@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 03/10] cpufreq: Give consistent names for struct
+ cpufreq_policy *
+Date: Tue, 6 Aug 2013 19:08:24 +0530
+Message-ID: <CAKohpon5mUOTt+4Mh5V4+abq0dJQH0MQyc2dAR4kKMjbuytRvw@mail.gmail.com>
+References: <cover.1375530162.git.viresh.kumar@linaro.org>
+	<fce918e3511ffbe508dd95d77e943b9e30b711ee.1375530162.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <51FBB788.7040209@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:42940 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542Ab3HFNiZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 09:38:25 -0400
+Received: by mail-ob0-f174.google.com with SMTP id wd6so840195obb.33
+        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2013 06:38:24 -0700 (PDT)
+In-Reply-To: <fce918e3511ffbe508dd95d77e943b9e30b711ee.1375530162.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 14:43-20130802, Sudeep KarkadaNagesha wrote:
-> On 01/08/13 17:49, Stephen Warren wrote:
-> > On 08/01/2013 07:54 AM, Mark Rutland wrote:
-> > ...
-> >> We seem to be going over two cases, which both feel wrong to me:
-> >>
-> >> * One SoC used in multiple boards, where on some boards an OPP cannot be
-> >>   used because some requirement is not met. In this case, the board's
-> >>   dts (by including the SoC's dtsi) describes something that's not
-> >>   necessarily usable, and we seem to have no way to describe in the OPP
-> >>   table that the OPP is not usable for that board.
-> > 
-> > There are probably a lot of examples of this already. For example, for
-> > pinctrl, people often want the SoC .dtsi file to include "pin
-> > configuration nodes" (see
-> > Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt) for many
-> > common pinmux configurations in the SoC .dtsi file, so that board files
-> > can simply refer to the already-existing nodes rather than having to
-> > write everything from scratch. Obviously, not all common configurations
-> > are used by every board.
-> > 
-> > ...
-> Agreed, but I am not convinced with the comparison(pinmux and OPPs).
-> The main concern I have is that if some developer wants to experiment
-> with various configurations provided by SoC(e.g. I have seen some SoC
-> where the pinmux have multiple functions and you can chose one of them)
-> But that's not true with OPPs, if someone experiments with wrong OPP
-> profile, then it might damage the board permanently.
+On 3 August 2013 17:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> They are named as policy, cur_policy, new_policy, data, etc.. Just name them
+> poicy wherever possible.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c          | 200 ++++++++++++++++++-------------------
+>  drivers/cpufreq/cpufreq_governor.h |   2 +-
+>  drivers/cpufreq/cpufreq_ondemand.c |  10 +-
+>  drivers/cpufreq/cpufreq_stats.c    |  14 +--
+>  include/linux/cpufreq.h            |   2 +-
+>  5 files changed, 111 insertions(+), 117 deletions(-)
 
-Even today, nothing prevents folks from "adding custom OPPs" at their
-own personal risk here - We have seen folks do this as part of board
-files - Now, for that matter, there is nothing that prevents folks
-linking the wrong LDO or setting wrong LDO voltage and damaging the
-board either.
+Another Fixup :)
 
-I mean, at the level where we "describe" the hardware and it's
-operation, you cannot be idiot or experimenter-proof - If these were
-to be considered paramount and prevent us from choosing the right
-concept that is needed for as many SoCs as possible, it'd be a shame.
+@Rafael: Apart from that I found things to be pretty stable now and
+so I can go ahead with the V2 of this patchset.. And then maybe we
+can get in linux-next so it receives some testing before 3.12.
 
--- 
-Regards,
-Nishanth Menon
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 1e630d0..7461a88 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -194,7 +194,7 @@ static int cpufreq_stats_create_table(struct
+cpufreq_policy *policy,
+ {
+        unsigned int i, j, count = 0, ret = 0;
+        struct cpufreq_stats *stat;
+-       struct cpufreq_policy *data;
++       struct cpufreq_policy *current_policy;
+        unsigned int alloc_size;
+        unsigned int cpu = policy->cpu;
+        if (per_cpu(cpufreq_stats_table, cpu))
+@@ -203,13 +203,13 @@ static int cpufreq_stats_create_table(struct
+cpufreq_policy *policy,
+        if ((stat) == NULL)
+                return -ENOMEM;
+
+-       data = cpufreq_cpu_get(cpu);
+-       if (data == NULL) {
++       current_policy = cpufreq_cpu_get(cpu);
++       if (current_policy == NULL) {
+                ret = -EINVAL;
+                goto error_get_fail;
+        }
+
+-       ret = sysfs_create_group(&data->kobj, &stats_attr_group);
++       ret = sysfs_create_group(&current_policy->kobj, &stats_attr_group);
+        if (ret)
+                goto error_out;
+
+@@ -252,10 +252,10 @@ static int cpufreq_stats_create_table(struct
+cpufreq_policy *policy,
+        stat->last_time = get_jiffies_64();
+        stat->last_index = freq_table_get_index(stat, policy->cur);
+        spin_unlock(&cpufreq_stats_lock);
+-       cpufreq_cpu_put(data);
++       cpufreq_cpu_put(current_policy);
+        return 0;
+ error_out:
+-       cpufreq_cpu_put(data);
++       cpufreq_cpu_put(current_policy);
+ error_get_fail:
+        kfree(stat);
+        per_cpu(cpufreq_stats_table, cpu) = NULL;
