@@ -1,90 +1,141 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 03/10] cpufreq: Give consistent names for struct cpufreq_policy *
-Date: Tue, 06 Aug 2013 16:02:37 +0200
-Message-ID: <2873799.lFo4PWMlur@vostro.rjw.lan>
-References: <cover.1375530162.git.viresh.kumar@linaro.org> <fce918e3511ffbe508dd95d77e943b9e30b711ee.1375530162.git.viresh.kumar@linaro.org> <CAKohpon5mUOTt+4Mh5V4+abq0dJQH0MQyc2dAR4kKMjbuytRvw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] cpuidle: add hotplug support to initialize the timer broadcast
+Date: Tue, 06 Aug 2013 16:10:34 +0200
+Message-ID: <3064063.5AHNzeThpF@vostro.rjw.lan>
+References: <1375192468-2255-1-git-send-email-daniel.lezcano@linaro.org> <5200B585.8040800@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon5mUOTt+4Mh5V4+abq0dJQH0MQyc2dAR4kKMjbuytRvw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:57988 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754308Ab3HFOAR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 6 Aug 2013 10:00:17 -0400
+In-Reply-To: <5200B585.8040800@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: lenb@kernel.org, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org
 
-On Tuesday, August 06, 2013 07:08:24 PM Viresh Kumar wrote:
-> On 3 August 2013 17:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > They are named as policy, cur_policy, new_policy, data, etc.. Just name them
-> > poicy wherever possible.
-> >
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Tuesday, August 06, 2013 10:36:21 AM Daniel Lezcano wrote:
+> On 07/30/2013 03:54 PM, Daniel Lezcano wrote:
+> > Commit 89878baa73f0f1c679355006bd8632e5d78f96c2 introduced the flag
+> > CPUIDLE_FLAG_TIMER_STOP where we specify a specific idle state stops the local
+> > timer.
+> > 
+> > Commit a06df062a189a8d5588babb8bf0bb78672497798 introduced the initialization
+> > of the timer broadcast framework depending of the flag presence.
+> > 
+> > If a system is booted with some cpus offline, by setting for example, maxcpus=1
+> > in the kernel command line, and then they are set online, the timer broadcast
+> > won't be setup automatically.
+> > 
+> > Fix this by adding the cpu hotplug notifier and enable/disable the timer
+> > broadcast automatically. So no need to handle that at the arch specific driver
+> > level like eg. intel_idle does.
+> > 
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > > ---
-> >  drivers/cpufreq/cpufreq.c          | 200 ++++++++++++++++++-------------------
-> >  drivers/cpufreq/cpufreq_governor.h |   2 +-
-> >  drivers/cpufreq/cpufreq_ondemand.c |  10 +-
-> >  drivers/cpufreq/cpufreq_stats.c    |  14 +--
-> >  include/linux/cpufreq.h            |   2 +-
-> >  5 files changed, 111 insertions(+), 117 deletions(-)
 > 
-> Another Fixup :)
+> Len, Rafael,
 > 
-> @Rafael: Apart from that I found things to be pretty stable now and
-> so I can go ahead with the V2 of this patchset.. And then maybe we
-> can get in linux-next so it receives some testing before 3.12.
+> any comment on these two patches ?
 
-Yes, please submit.
+Honestly, I didn't have the time to look into that and Len is on vacation.
+
+It's on my todo list, however.
 
 Thanks,
 Rafael
 
 
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index 1e630d0..7461a88 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -194,7 +194,7 @@ static int cpufreq_stats_create_table(struct
-> cpufreq_policy *policy,
->  {
->         unsigned int i, j, count = 0, ret = 0;
->         struct cpufreq_stats *stat;
-> -       struct cpufreq_policy *data;
-> +       struct cpufreq_policy *current_policy;
->         unsigned int alloc_size;
->         unsigned int cpu = policy->cpu;
->         if (per_cpu(cpufreq_stats_table, cpu))
-> @@ -203,13 +203,13 @@ static int cpufreq_stats_create_table(struct
-> cpufreq_policy *policy,
->         if ((stat) == NULL)
->                 return -ENOMEM;
+> >  drivers/cpuidle/driver.c |   48 ++++++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 48 insertions(+)
+> > 
+> > diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+> > index 3ac499d..e976994 100644
+> > --- a/drivers/cpuidle/driver.c
+> > +++ b/drivers/cpuidle/driver.c
+> > @@ -10,6 +10,7 @@
+> >  
+> >  #include <linux/mutex.h>
+> >  #include <linux/module.h>
+> > +#include <linux/cpu.h>
+> >  #include <linux/cpuidle.h>
+> >  #include <linux/cpumask.h>
+> >  #include <linux/clockchips.h>
+> > @@ -147,6 +148,48 @@ static void cpuidle_setup_broadcast_timer(void *arg)
+> >  }
+> >  
+> >  /**
+> > + * cpuidle_hotplug_notify: notifier callback when a cpu is onlined/offlined
+> > + * @n: the notifier block
+> > + * @action: an unsigned long giving the event related to the notification
+> > + * @hcpu: a void pointer but used as the cpu number which the event is related
+> > + *
+> > + * The kernel can boot with some cpus offline, we have to init the timer
+> > + * broadcast for these cpus when they are onlined. Also we have to disable
+> > + * the timer broadcast when the cpu is down.
+> > + *
+> > + * Returns NOTIFY_OK
+> > + */
+> > +static int cpuidle_hotplug_notify(struct notifier_block *n,
+> > +				  unsigned long action, void *hcpu)
+> > +{
+> > +	int cpu = (unsigned long)hcpu;
+> > +	struct cpuidle_driver *drv;
+> > +
+> > +	drv = __cpuidle_get_cpu_driver(cpu);
+> > +	if (!drv || !drv->bctimer)
+> > +		goto out;
+> > +
+> > +	switch (action & 0xf) {
+> > +	case CPU_ONLINE:
+> > +		smp_call_function_single(cpu, cpuidle_setup_broadcast_timer,
+> > +					 (void *)CLOCK_EVT_NOTIFY_BROADCAST_ON,
+> > +					 1);
+> > +		break;
+> > +	case CPU_DEAD:
+> > +		smp_call_function_single(cpu, cpuidle_setup_broadcast_timer,
+> > +					 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF,
+> > +					 1);
+> > +		break;
+> > +	}
+> > +out:
+> > +	return NOTIFY_OK;
+> > +}
+> > +
+> > +static struct notifier_block cpuidle_hotplug_notifier = {
+> > +	.notifier_call = cpuidle_hotplug_notify,
+> > +};
+> > +
+> > +/**
+> >   * __cpuidle_driver_init - initialize the driver's internal data
+> >   * @drv: a valid pointer to a struct cpuidle_driver
+> >   *
+> > @@ -262,6 +305,9 @@ int cpuidle_register_driver(struct cpuidle_driver *drv)
+> >  	ret = __cpuidle_register_driver(drv);
+> >  	spin_unlock(&cpuidle_driver_lock);
+> >  
+> > +	if (!ret)
+> > +		ret = register_cpu_notifier(&cpuidle_hotplug_notifier);
+> > +
+> >  	return ret;
+> >  }
+> >  EXPORT_SYMBOL_GPL(cpuidle_register_driver);
+> > @@ -276,6 +322,8 @@ EXPORT_SYMBOL_GPL(cpuidle_register_driver);
+> >   */
+> >  void cpuidle_unregister_driver(struct cpuidle_driver *drv)
+> >  {
+> > +	unregister_cpu_notifier(&cpuidle_hotplug_notifier);
+> > +
+> >  	spin_lock(&cpuidle_driver_lock);
+> >  	__cpuidle_unregister_driver(drv);
+> >  	spin_unlock(&cpuidle_driver_lock);
+> > 
 > 
-> -       data = cpufreq_cpu_get(cpu);
-> -       if (data == NULL) {
-> +       current_policy = cpufreq_cpu_get(cpu);
-> +       if (current_policy == NULL) {
->                 ret = -EINVAL;
->                 goto error_get_fail;
->         }
 > 
-> -       ret = sysfs_create_group(&data->kobj, &stats_attr_group);
-> +       ret = sysfs_create_group(&current_policy->kobj, &stats_attr_group);
->         if (ret)
->                 goto error_out;
 > 
-> @@ -252,10 +252,10 @@ static int cpufreq_stats_create_table(struct
-> cpufreq_policy *policy,
->         stat->last_time = get_jiffies_64();
->         stat->last_index = freq_table_get_index(stat, policy->cur);
->         spin_unlock(&cpufreq_stats_lock);
-> -       cpufreq_cpu_put(data);
-> +       cpufreq_cpu_put(current_policy);
->         return 0;
->  error_out:
-> -       cpufreq_cpu_put(data);
-> +       cpufreq_cpu_put(current_policy);
->  error_get_fail:
->         kfree(stat);
->         per_cpu(cpufreq_stats_table, cpu) = NULL;
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
