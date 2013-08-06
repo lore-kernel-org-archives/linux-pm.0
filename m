@@ -1,87 +1,106 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 03/10] cpufreq: Give consistent names for struct
- cpufreq_policy *
-Date: Tue, 6 Aug 2013 19:08:24 +0530
-Message-ID: <CAKohpon5mUOTt+4Mh5V4+abq0dJQH0MQyc2dAR4kKMjbuytRvw@mail.gmail.com>
-References: <cover.1375530162.git.viresh.kumar@linaro.org>
-	<fce918e3511ffbe508dd95d77e943b9e30b711ee.1375530162.git.viresh.kumar@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
+ another node for OPP
+Date: Tue, 6 Aug 2013 08:45:34 -0500
+Message-ID: <20130806134534.GB6603@kahuna>
+References: <51F826A0.2000109@ti.com>
+ <51F8F17B.1020304@arm.com>
+ <51F9234A.6010501@ti.com>
+ <20130731152925.GP29859@e106331-lin.cambridge.arm.com>
+ <51F9341E.60102@ti.com>
+ <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+ <51F93AFB.1030104@ti.com>
+ <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
+ <51FA8BE2.9000309@ti.com>
+ <20130802131541.GN2884@e106331-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:42940 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542Ab3HFNiZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 09:38:25 -0400
-Received: by mail-ob0-f174.google.com with SMTP id wd6so840195obb.33
-        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2013 06:38:24 -0700 (PDT)
-In-Reply-To: <fce918e3511ffbe508dd95d77e943b9e30b711ee.1375530162.git.viresh.kumar@linaro.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:45533 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751779Ab3HFNpn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 6 Aug 2013 09:45:43 -0400
+Content-Disposition: inline
+In-Reply-To: <20130802131541.GN2884@e106331-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 3 August 2013 17:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> They are named as policy, cur_policy, new_policy, data, etc.. Just name them
-> poicy wherever possible.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c          | 200 ++++++++++++++++++-------------------
->  drivers/cpufreq/cpufreq_governor.h |   2 +-
->  drivers/cpufreq/cpufreq_ondemand.c |  10 +-
->  drivers/cpufreq/cpufreq_stats.c    |  14 +--
->  include/linux/cpufreq.h            |   2 +-
->  5 files changed, 111 insertions(+), 117 deletions(-)
+On 14:15-20130802, Mark Rutland wrote:
+> On Thu, Aug 01, 2013 at 05:25:06PM +0100, Nishanth Menon wrote:
+> > On 08/01/2013 08:54 AM, Mark Rutland wrote:
+> > > On Wed, Jul 31, 2013 at 05:27:39PM +0100, Nishanth Menon wrote:
+> > >> On 07/31/2013 11:11 AM, Mark Rutland wrote:
+> > >>> On Wed, Jul 31, 2013 at 04:58:22PM +0100, Nishanth Menon wrote:
+> > >>>> On 07/31/2013 10:29 AM, Mark Rutland wrote:
+> > >>>>> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
+> > >>>>>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
+> > >>>>>>> On 30/07/13 21:48, Nishanth Menon wrote:
+> > >>>>>>>> On 07/30/2013 01:34 PM, Stephen Warren wrote:
+> > >>>>>>>>> On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
+[...]
+> > 
+> > >
+> > > * Performance profiles, in which you have a set of OPP tables for
+> > >    "performance, "low-power", and whatever else. This arbitrary split
+> > >    seems like a configuration decision rather than a hardware description
+> > >    unless there is some hard limit that cannot be detected (e.g. the
+> > >    processor can function at some arbitrary high speed, but becomes hot
+> > >    enough to melt something, and there's no temperature sensor to handle
+> > >    this case dynamically).
+> > 
+> > precisely -> I think I point this out in this thread:
+> > http://marc.info/?l=devicetree&m=137535932402560&w=2
+> 
+> The one thing I don't like is the arbitrary grouping into profiles, as
+> the division is entirely a configuration decision. The operating points
+> themselves are a hardware capability, and it may make sense to describe
+> the feasible points for a device in the dt, but I don't want to have
+> different profiles exported because it straddles the line of the dt
+> telling us how to use the hardware rather than what the hardware is, and
+> will come back to bite us later if we want to handle cpu frequency
+> decisions differently.
 
-Another Fixup :)
+I can understand why it seems to wrongly indicate *how* to use the
+hardware, rather than *what the hardware is* - Lets try it this way:
+- if Bit X is set in efuse, one cannot use high performance mode
+- If PDN (Power Distribution Network) guidelines are not met, one cannot
+use high performance mode.
 
-@Rafael: Apart from that I found things to be pretty stable now and
-so I can go ahead with the V2 of this patchset.. And then maybe we
-can get in linux-next so it receives some testing before 3.12.
+These constrain *hardware capability* you can do on that SoC+Board
+combination - that is exactly what we have been struggling to describe
+here. These are not *how to use hardware* profiles, but *hardware
+capability* profiles whose selection is upto to the System in
+discussion - example - SoC x will decide on bit based decision and
+forbid Board file overrides while an SoC y family might choose another
+path.. Framework and dts should not dictate policy and we dont try to
+do that here.
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 1e630d0..7461a88 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -194,7 +194,7 @@ static int cpufreq_stats_create_table(struct
-cpufreq_policy *policy,
- {
-        unsigned int i, j, count = 0, ret = 0;
-        struct cpufreq_stats *stat;
--       struct cpufreq_policy *data;
-+       struct cpufreq_policy *current_policy;
-        unsigned int alloc_size;
-        unsigned int cpu = policy->cpu;
-        if (per_cpu(cpufreq_stats_table, cpu))
-@@ -203,13 +203,13 @@ static int cpufreq_stats_create_table(struct
-cpufreq_policy *policy,
-        if ((stat) == NULL)
-                return -ENOMEM;
+How to use the hardware within the *capability costraints* is upto
+drivers, there is no attempt to define that in my proposal.
 
--       data = cpufreq_cpu_get(cpu);
--       if (data == NULL) {
-+       current_policy = cpufreq_cpu_get(cpu);
-+       if (current_policy == NULL) {
-                ret = -EINVAL;
-                goto error_get_fail;
-        }
+> I also have a suspicion that this will end up having a subset of sane
+> values, and Linux won't necessarily be able to do any interpolation of
+> values without additional platform knowledge.
 
--       ret = sysfs_create_group(&data->kobj, &stats_attr_group);
-+       ret = sysfs_create_group(&current_policy->kobj, &stats_attr_group);
-        if (ret)
-                goto error_out;
+These may be SoC dependent. An fixed regulator might be acceptable on
+SoC x, but not on y (as leakage angle might make it infeasible).
 
-@@ -252,10 +252,10 @@ static int cpufreq_stats_create_table(struct
-cpufreq_policy *policy,
-        stat->last_time = get_jiffies_64();
-        stat->last_index = freq_table_get_index(stat, policy->cur);
-        spin_unlock(&cpufreq_stats_lock);
--       cpufreq_cpu_put(data);
-+       cpufreq_cpu_put(current_policy);
-        return 0;
- error_out:
--       cpufreq_cpu_put(data);
-+       cpufreq_cpu_put(current_policy);
- error_get_fail:
-        kfree(stat);
-        per_cpu(cpufreq_stats_table, cpu) = NULL;
+[...]
+> > I did make a proposal here: 
+> > http://marc.info/?l=devicetree&m=137530056230441&w=2
+> > 
+> > Do you see it making sense, If yes, I can help flesh out the idea with code.
+> 
+> I can see one of the example mechanisms working for describing OPPs
+> being usable, but I'm still concerned about the division into profiles.
+Above.
+
+Does this make sense? I understand and share the concern about potential
+misuse, but I am all open ears of how we'd like to ensure data is
+completely separated out from kernel source.
+
+-- 
+Regards,
+Nishanth Menon
