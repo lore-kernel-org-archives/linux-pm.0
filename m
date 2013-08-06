@@ -1,49 +1,46 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC PATCH v2 0/3] ARM: TC2 big.LITTLE CPU idle driver
-Date: Tue, 06 Aug 2013 09:13:01 +0200
-Message-ID: <5200A1FD.6050709@linaro.org>
-References: <1375709982-27148-1-git-send-email-lorenzo.pieralisi@arm.com>
+From: Martin von Gagern <Martin.vGagern@gmx.net>
+Subject: Re: ignore_nice vs. ignore_nice_load
+Date: Tue, 06 Aug 2013 09:40:13 +0200
+Message-ID: <5200A85D.8000602@gmx.net>
+References: <51FC1935.5030702@gmx.net> <CAOh2x=kriqCRp9x+f5f5onDVoyfxVHSPDF5HrM_sFSsQ1ucktw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:57986 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754453Ab3HFHNB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2013 03:13:01 -0400
-Received: by mail-wi0-f172.google.com with SMTP id hj13so2306756wib.11
-        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2013 00:13:00 -0700 (PDT)
-In-Reply-To: <1375709982-27148-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=kriqCRp9x+f5f5onDVoyfxVHSPDF5HrM_sFSsQ1ucktw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Olof Johansson <olof@lixom.net>, Amit Kucheria <amit.kucheria@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-On 08/05/2013 03:39 PM, Lorenzo Pieralisi wrote:
-> This patch is v2 of a previous posting:
->=20
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2013-July/18635=
-2.html
->=20
-> v2 changes:
->=20
-> - removed duplicated idle statistics and irq enabling
-> - use MPIDR masks to compute cluster and cpu ids
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi Lorenzo,
+On 05.08.2013 09:01, Viresh Kumar wrote:
+> Please try following patch (attached for applying).
+> [0001-cpufreq-rename-ignore_nice-as-ignore_nice_load.patch]
 
-I don't think this patch is still in RFC but ready for merging if nobod=
-y
-complains :)
+Looks good here.
 
-Thanks
-  -- Daniel
+Thanks,
+ Martin
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+--nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlIAqGQACgkQRhp6o4m9dFsgWgCdGuuD1HLpwVb7VlFiV6n1UOhk
+Y8cAoINAayYsXCn7gNCEZx0Q/BPGT6KU
+=2i4F
+-----END PGP SIGNATURE-----
+
+--nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4--
