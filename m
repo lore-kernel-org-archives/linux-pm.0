@@ -1,123 +1,188 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2 00/11] CPUFreq: Fixes & Cleanups for 3.12
-Date: Wed, 07 Aug 2013 02:21:12 +0200
-Message-ID: <1627831.GMXVKIrL9l@vostro.rjw.lan>
-References: <cover.1375809311.git.viresh.kumar@linaro.org>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH v2] thermal: exynos: Handle the misplaced TRIMINFO register
+Date: Wed, 7 Aug 2013 12:06:38 +0530
+Message-ID: <CADGdYn5ZFE8QLy2XHn+NNxK3bb+wNZzv3JLQ6+baBhQUQVat9Q@mail.gmail.com>
+References: <1375336979-14747-1-git-send-email-ch.naveen@samsung.com>
+	<1375353367-20346-1-git-send-email-ch.naveen@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:58570 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756044Ab3HGAKz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 6 Aug 2013 20:10:55 -0400
-In-Reply-To: <cover.1375809311.git.viresh.kumar@linaro.org>
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:38784 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757121Ab3HGGgj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Aug 2013 02:36:39 -0400
+In-Reply-To: <1375353367-20346-1-git-send-email-ch.naveen@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
+To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, kgene.kim@samsung.com, naveenkrishna.ch@gmail.com
 
-On Tuesday, August 06, 2013 10:53:02 PM Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> This is V2 of the patch series which was posted here earlier:
-> 
-> http://www.gossamer-threads.com/lists/linux/kernel/1759514
-> 
-> This patchset tries to fix & cleanup many existing cpufreq core issues. First
-> four patches tries to cleanup basic problems in cpufreq core. Its first patch
-> was earlier sent separately but now is part of this series.
-> 
-> Fifth patch was also sent earlier as reply to your patches and was reviewed by
-> Srivatsa. Sixth patch was picked from Lukasz's patchset on introducing software
-> "boost" feature in core. It will be used by this patchset.
-> 
-> And 7-10 are are the most significant part of this set. They try to make many
-> things simple and robust.
-> 
-> Last patch in the series is new and wasn't part of V1.
-> 
-> This is rebased of your bleeding-edge branch + two patches from you:
-> 18a6b03 cpufreq: Avoid double kobject_put() for the same kobject in error code path
-> d0cde63 cpufreq: Do not hold driver module references for additional policy CPUs
-> abe513f Merge branch 'acpi-sleep-next' into linux-next
-> 
-> They are also pushed in my cpufreq-next branch.
-> 
-> They are tested fairly well on ARM Vexpress TC2 board (big LITTLE).
-> 
-> Lukasz Majewski (1):
->   cpufreq: Store cpufreq policies in a list
-> 
-> Viresh Kumar (10):
->   cpufreq: Cleanup header files included in core
->   cpufreq: Re-arrange declarations in cpufreq.h
->   cpufreq: Give consistent names for struct cpufreq_policy *
->   cpufreq: Use sizeof(*ptr) form for finding size of a struct
->   cpufreq: Pass policy to cpufreq_add_policy_cpu()
->   cpufreq: Use cpufreq_policy_list for iterating over policies
->   cpufreq: Fix broken usage of governor->owner's refcount
->   cpufreq: Don't use cpufreq_driver->owner's refcount to protect
->     critical sections
->   cpufreq: Remove struct cpufreq_driver's owner field
->   cpufreq: improve error checking on return values of
->     __cpufreq_governor()
+Hi Naveen,
 
-Applied to bleeding-edge except for patch [05/11] that I've applied already
-earlier.
-
->  Documentation/cpu-freq/cpu-drivers.txt |   2 -
->  drivers/cpufreq/acpi-cpufreq.c         |   5 +-
->  drivers/cpufreq/at32ap-cpufreq.c       |   1 -
->  drivers/cpufreq/blackfin-cpufreq.c     |   1 -
->  drivers/cpufreq/cpufreq-nforce2.c      |   1 -
->  drivers/cpufreq/cpufreq.c              | 426 ++++++++++++++++-----------------
->  drivers/cpufreq/cpufreq_conservative.c |  14 +-
->  drivers/cpufreq/cpufreq_governor.c     |   6 -
->  drivers/cpufreq/cpufreq_governor.h     |   7 +-
->  drivers/cpufreq/cpufreq_ondemand.c     |  24 +-
->  drivers/cpufreq/cpufreq_performance.c  |   3 +-
->  drivers/cpufreq/cpufreq_powersave.c    |   3 +-
->  drivers/cpufreq/cpufreq_stats.c        |  23 +-
->  drivers/cpufreq/cris-artpec3-cpufreq.c |   1 -
->  drivers/cpufreq/cris-etraxfs-cpufreq.c |   1 -
->  drivers/cpufreq/e_powersaver.c         |   5 +-
->  drivers/cpufreq/elanfreq.c             |   1 -
->  drivers/cpufreq/exynos-cpufreq.c       |   2 +-
->  drivers/cpufreq/freq_table.c           |   4 +-
->  drivers/cpufreq/gx-suspmod.c           |   3 +-
->  drivers/cpufreq/ia64-acpi-cpufreq.c    |   5 +-
->  drivers/cpufreq/intel_pstate.c         |   1 -
->  drivers/cpufreq/kirkwood-cpufreq.c     |   1 -
->  drivers/cpufreq/longhaul.c             |   1 -
->  drivers/cpufreq/longrun.c              |   1 -
->  drivers/cpufreq/loongson2_cpufreq.c    |   1 -
->  drivers/cpufreq/maple-cpufreq.c        |   1 -
->  drivers/cpufreq/p4-clockmod.c          |   1 -
->  drivers/cpufreq/pasemi-cpufreq.c       |   1 -
->  drivers/cpufreq/pcc-cpufreq.c          |   1 -
->  drivers/cpufreq/pmac32-cpufreq.c       |   1 -
->  drivers/cpufreq/pmac64-cpufreq.c       |   6 +-
->  drivers/cpufreq/powernow-k6.c          |   1 -
->  drivers/cpufreq/powernow-k7.c          |  14 +-
->  drivers/cpufreq/powernow-k8.c          |   7 +-
->  drivers/cpufreq/ppc-corenet-cpufreq.c  |   1 -
->  drivers/cpufreq/ppc_cbe_cpufreq.c      |   1 -
->  drivers/cpufreq/s3c2416-cpufreq.c      |   1 -
->  drivers/cpufreq/s3c24xx-cpufreq.c      |   6 +-
->  drivers/cpufreq/s3c64xx-cpufreq.c      |   1 -
->  drivers/cpufreq/sc520_freq.c           |   1 -
->  drivers/cpufreq/sh-cpufreq.c           |   1 -
->  drivers/cpufreq/sparc-us2e-cpufreq.c   |   6 +-
->  drivers/cpufreq/sparc-us3-cpufreq.c    |   6 +-
->  drivers/cpufreq/speedstep-centrino.c   |   1 -
->  drivers/cpufreq/speedstep-ich.c        |   1 -
->  drivers/cpufreq/speedstep-smi.c        |   1 -
->  include/linux/cpufreq.h                | 386 ++++++++++++++---------------
->  48 files changed, 442 insertions(+), 547 deletions(-)
-
-I like these statistics. :-)
+On Thu, Aug 1, 2013 at 4:06 PM, Naveen Krishna Chatradhi
+<ch.naveen@samsung.com> wrote:
+> This patch adds code to handle the misplaced TRIMINFO register
+> incase of Exynos5420.
+>
+> On Exynos5420 we have a TRIMINFO register being misplaced for
+> TMU channels 2, 3 and 4
+>
+> TRIMINFO at 0x1006c000 contains data for TMU channel 3
+> TRIMINFO at 0x100a0000 contains data for TMU channel 4
+> TRIMINFO at 0x10068000 contains data for TMU channel 2
+>
+> The misplaced register address is passed through devicetree and
+> map it seperately during probe.
+> Also, adds the documentation under devicetree/bindings/thermal/
+>
+> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+> Reviewed-by: Doug Anderson <dianders@chromium.org>
+> ---
+> Changes since v1:
+> Rebased on http://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+Is it rebased against next branch?
+>
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |   48 ++++++++++++++++++++
+>  drivers/thermal/exynos_thermal.c                   |   26 ++++++++++-
+In the new directory structure this file is renamed as
+drivers/thermal/samsung/exynos_tmu.c.
 
 Thanks,
-Rafael
-
+Amit Daniel
+>  2 files changed, 72 insertions(+), 2 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> new file mode 100644
+> index 0000000..1db279e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> @@ -0,0 +1,48 @@
+> +* Exynos Thermal
+> +
+> +Required properties:
+> +- compatible: should be one of the following.
+> +    * "samsung,exynos4210-tmu" - for controllers compatible with exynos4210 tmu.
+> +    * "samsung,exynos5250-tmu" - for controllers compatible with exynos5250 tmu.
+> +    * "samsung,exynos5420-tmu" - for controllers compatible with exynos5420 tmu.
+> +
+> +- reg: physical base address of the controller and length of
+> +  memory mapped region.
+> +
+> +    ** NOTE FOR EXYNOS5420 **
+> +    TRIMINFO register is being misplaced for TMU channels 2, 3 and 4
+> +
+> +    TERMINFO for TMU channel 2 is present in address space of TMU channel 3
+> +    TERMINFO for TMU channel 3 is present in address space of TMU channel 4
+> +    TERMINFO for TMU channel 4 is present in address space of TMU channel 2
+> +
+> +    * In such cases the reg property contains the misplaced register address and
+> +      range as the second parameter.
+> +
+> +- interrupts : interrupt number to the cpu.
+> +- clocks : Clock number as per common clock framework for the cpu.
+> +- clock-names : clock name to be used in the driver
+> +
+> +Example:
+> +
+> +       /* tmu for CPU0 */
+> +       tmu@10060000 {
+> +               compatible = "samsung,exynos5420-tmu";
+> +               reg = <0x10060000 0x100>;
+> +               interrupts = <0 65 0>;
+> +               clocks = <&clock 318>;
+> +               clock-names = "tmu_apbif";
+> +       };
+> +
+> +Example: In case of Exynos5420 TMU channel 3
+> +
+> +       /* tmu for CPU3 */
+> +       tmu@1006c000 {
+> +               compatible = "samsung,exynos5420-tmu";
+> +               /* 2nd reg is for the misplaced TRIMINFO register */
+> +               reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
+> +               interrupts = <0 185 0>;
+> +               clocks = <&clock 318>;
+> +               clock-names = "tmu_apbif";
+> +       };
+> +
+> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+> index d20ce9e..1ad9005 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -38,6 +38,7 @@
+>  #include <linux/cpufreq.h>
+>  #include <linux/cpu_cooling.h>
+>  #include <linux/of.h>
+> +#include <linux/of_address.h>
+>
+>  /* Exynos generic registers */
+>  #define EXYNOS_TMU_REG_TRIMINFO                0x0
+> @@ -120,7 +121,7 @@
+>  struct exynos_tmu_data {
+>         struct exynos_tmu_platform_data *pdata;
+>         struct resource *mem;
+> -       void __iomem *base;
+> +       void __iomem *base, *triminfo_base;
+>         int irq;
+>         enum soc_type soc;
+>         struct work_struct irq_work;
+> @@ -593,8 +594,14 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>                 __raw_writel(EXYNOS_TRIMINFO_RELOAD,
+>                                 data->base + EXYNOS_TMU_TRIMINFO_CON);
+>         }
+> +
+>         /* Save trimming info in order to perform calibration */
+> -       trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
+> +       if (data->triminfo_base)
+> +               /* On exynos5420 TRIMINFO is misplaced for some channels */
+> +               trim_info = readl(data->triminfo_base);
+> +       else
+> +               trim_info = readl(data->base + EXYNOS_TMU_REG_TRIMINFO);
+> +
+>         data->temp_error1 = trim_info & EXYNOS_TMU_TRIM_TEMP_MASK;
+>         data->temp_error2 = ((trim_info >> 8) & EXYNOS_TMU_TRIM_TEMP_MASK);
+>
+> @@ -941,6 +948,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>                 return ret;
+>         }
+>
+> +       /* For Exynos5420 The misplaced TERMINFO register address will be
+> +        * passed from device tree node.
+> +        *
+> +        * We cannot use devm_request_and_ioremap, as the base address
+> +        * over laps with the address space of the other TMU channel.
+> +        * Check Documentation for details
+> +        */
+> +       data->triminfo_base = of_iomap(pdev->dev.of_node, 1);
+> +
+>         data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
+>         if (IS_ERR(data->clk)) {
+>                 dev_err(&pdev->dev, "Failed to get clock\n");
+> @@ -1001,6 +1017,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>
+>         return 0;
+>  err_clk:
+> +       if (data->triminfo_base)
+> +               iounmap(data->triminfo_base);
+> +
+>         platform_set_drvdata(pdev, NULL);
+>         clk_unprepare(data->clk);
+>         return ret;
+> @@ -1014,6 +1033,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+>
+>         exynos_unregister_thermal();
+>
+> +       if (data->triminfo_base)
+> +               iounmap(data->triminfo_base);
+> +
+>         clk_unprepare(data->clk);
+>
+>         platform_set_drvdata(pdev, NULL);
+> --
+> 1.7.9.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
