@@ -1,81 +1,55 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v3 1/3] drivers: irq-chip: irq-gic: introduce gic_cpu_if_down()
-Date: Wed,  7 Aug 2013 12:43:31 +0100
-Message-ID: <1375875813-13358-2-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1375875813-13358-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:33146 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756710Ab3HGLnm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Aug 2013 07:43:42 -0400
-In-Reply-To: <1375875813-13358-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/6] Tegra: Use cpufreq-cpu0 driver
+Date: Wed,  7 Aug 2013 20:16:42 +0530
+Message-ID: <cover.1375886595.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, swarren@nvidia.com
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Nicolas Pitre <nico@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Kevin Hilman <khilman@linaro.org>, Olof Johansson <olof@lixom.net>, Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Hi Stephen,
 
-When processors are about to hit low power states, the assertion of
-standbywfi signal, triggered by the wfi instruction, is essential to
-entering low power modes. If an IRQ is pending on the processor at the
-time wfi is issued, the wfi instruction completes and the processor
-restarts execution without asserting the standbywfi signal. Depending
-on the platform power controller HW this behaviour can be acceptable or
-not; if this behaviour must be prevented software should be provided
-with a way to disable the routing of interrupts to the core IRQ pins.
+This is the first attempt to get rid of tegra-cpufreq driver. This patchset
+tries to add supporting infrastructure for tegra to use cpufreq-cpu0 driver.
 
-On systems where raw GIC distributor interrupts are connected to the power
-controller as wake-up events (hence the power controller still senses
-IRQs and can wake up cores upon IRQ pending), the GIC CPU interface can
-be disabled on power down, so that the GIC CPU IF output is gated and wfi
-cannot complete, thereby preventing the standbywfi issue.
+I don't have hardware to test it and so is compiled tested only.. Few bits may
+be missing as I couldn't think of all aspects and so may need your help getting
+them fixed.
 
-This patch adds a simple function to the GIC driver that allows to
-disable the GIC CPU IF from power down procedures.
+Once this is tested by you, I would like to take it through my ARM cpufreq tree
+if nobody else has a problem with it.
 
-Signed-off-by: Nicolas Pitre <nico@linaro.org>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-[rewrote commit log]
----
- drivers/irqchip/irq-gic.c       | 6 ++++++
- include/linux/irqchip/arm-gic.h | 1 +
- 2 files changed, 7 insertions(+)
+Thanks
 
-diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
-index ee7c503..d0e9480 100644
---- a/drivers/irqchip/irq-gic.c
-+++ b/drivers/irqchip/irq-gic.c
-@@ -453,6 +453,12 @@ static void gic_cpu_init(struct gic_chip_data *gic)
- =09writel_relaxed(1, base + GIC_CPU_CTRL);
- }
-=20
-+void gic_cpu_if_down(void)
-+{
-+=09void __iomem *cpu_base =3D gic_data_cpu_base(&gic_data[0]);
-+=09writel_relaxed(0, cpu_base + GIC_CPU_CTRL);
-+}
-+
- #ifdef CONFIG_CPU_PM
- /*
-  * Saves the GIC distributor registers during suspend or idle.  Must be ca=
-lled
-diff --git a/include/linux/irqchip/arm-gic.h b/include/linux/irqchip/arm-gi=
-c.h
-index 3e203eb..0e5d9ec 100644
---- a/include/linux/irqchip/arm-gic.h
-+++ b/include/linux/irqchip/arm-gic.h
-@@ -66,6 +66,7 @@ extern struct irq_chip gic_arch_extn;
- void gic_init_bases(unsigned int, int, void __iomem *, void __iomem *,
- =09=09    u32 offset, struct device_node *);
- void gic_cascade_irq(unsigned int gic_nr, unsigned int irq);
-+void gic_cpu_if_down(void);
-=20
- static inline void gic_init(unsigned int nr, int start,
- =09=09=09    void __iomem *dist , void __iomem *cpu)
---=20
-1.8.2.2
+--
+Viresh.
 
+Viresh Kumar (6):
+  clk: Tegra: Add CPU0 clock driver
+  ARM: Tegra: Add CPU's OPPs for using cpufreq-cpu0 driver
+  ARM: Tegra: Enable OPP library
+  ARM: Tegra: defconfig: select cpufreq-cpu0 driver
+  ARM: Tegra: start using cpufreq-cpu0 driver
+  cpufreq: Tegra: Remove tegra-cpufreq driver
+
+ arch/arm/boot/dts/tegra114.dtsi  |  12 ++
+ arch/arm/boot/dts/tegra20.dtsi   |  12 ++
+ arch/arm/boot/dts/tegra30.dtsi   |  12 ++
+ arch/arm/configs/tegra_defconfig |   1 +
+ arch/arm/mach-tegra/Kconfig      |   2 +
+ arch/arm/mach-tegra/tegra.c      |   2 +
+ drivers/clk/tegra/Makefile       |   1 +
+ drivers/clk/tegra/clk-cpu.c      | 164 ++++++++++++++++++++++
+ drivers/clk/tegra/clk-tegra30.c  |   4 +
+ drivers/cpufreq/Kconfig.arm      |   8 --
+ drivers/cpufreq/Makefile         |   1 -
+ drivers/cpufreq/tegra-cpufreq.c  | 291 ---------------------------------------
+ include/linux/clk/tegra.h        |   1 +
+ 13 files changed, 211 insertions(+), 300 deletions(-)
+ create mode 100644 drivers/clk/tegra/clk-cpu.c
+ delete mode 100644 drivers/cpufreq/tegra-cpufreq.c
+
+-- 
+1.7.12.rc2.18.g61b472e
 
