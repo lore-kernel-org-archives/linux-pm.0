@@ -1,36 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4/6] ARM: Tegra: defconfig: select cpufreq-cpu0 driver
-Date: Wed,  7 Aug 2013 20:16:46 +0530
-Message-ID: <4b07346ff53328e93939d03e5eac0ce4c3b3d176.1375886595.git.viresh.kumar@linaro.org>
-References: <cover.1375886595.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1375886595.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1375886595.git.viresh.kumar@linaro.org>
-References: <cover.1375886595.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl, swarren@nvidia.com
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: OPP: rename functions? (was [PATCH] OPP: Export opp_add())
+Date: Wed, 7 Aug 2013 10:48:54 -0500
+Message-ID: <52026C66.2080509@ti.com>
+References: <58acb4a8a4e98089078de3ed71999730b6d97b4b.1375521724.git.viresh.kumar@linaro.org> <5200F1B4.6050004@infradead.org> <20130806130820.GA6035@kahuna> <1611420.5h2rr9N0mt@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:59909 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753797Ab3HGPtE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Aug 2013 11:49:04 -0400
+In-Reply-To: <1611420.5h2rr9N0mt@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Tegra requires cpufreq-cpu0 driver to be compiled in and hence we select it from
-the defconfig.
+Rafael,
+offline question:
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- arch/arm/configs/tegra_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+On 08/06/2013 09:15 AM, Rafael J. Wysocki wrote:
+> On Tuesday, August 06, 2013 08:08:20 AM Nishanth Menon wrote:
+>> change in subject to reflect new discussion.
+>>
+>> On 05:53-20130806, Randy Dunlap wrote:
+>>> On 08/03/2013 02:25 AM, Viresh Kumar wrote:
 
-diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
-index 1effb43..3fcec8f 100644
---- a/arch/arm/configs/tegra_defconfig
-+++ b/arch/arm/configs/tegra_defconfig
-@@ -38,6 +38,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
- CONFIG_KEXEC=y
- CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-+CONFIG_GENERIC_CPUFREQ_CPU0=y
- CONFIG_CPU_IDLE=y
- CONFIG_VFP=y
- CONFIG_PM_RUNTIME=y
+>>>> +EXPORT_SYMBOL_GPL(opp_add);
+>>>
+>>> Could it be renamed to pm_opp_add() or power_opp_add() ?
+>>> The name is a bit too unspecific IMO.
+>> Though this has nothing specific with this patch, an interesting point.
+>>
+>> git grep -w opp . showed drivers/tty/n_tty.c,
+>> drivers/sbus/char/openprom.c and arch/powerpc/kvm/mpic.c using
+>> variables named opp to mean what ever they had in context. rest(around
+>> 40 odd files) seem to use opp as in Documentation/power/opp.txt..
+>>
+>> We could go with a pm_ prefix or even dev_pm_opp_ prefix to be more
+>> specific, though I prefer just pm_. If Rafael and others are ok, I can
+>> post a series out.
+>
+> Yup, that would be useful.  I'm for dev_pm_opp_ if that matters.
+
+Given that there would be quiet a few conflicts, do you have a 
+suggestion around what baseline I should submit this?
+
+
 -- 
-1.7.12.rc2.18.g61b472e
+Regards,
+Nishanth Menon
