@@ -1,129 +1,33 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [GIT PULL 3/3] soc-thermal: refactoring exynos thermal driver
- (for 3.12)
-Date: Wed, 7 Aug 2013 12:16:36 +0530
-Message-ID: <CADGdYn7J43DB8-Y3QVWuyzuMR9hHr0TddzEJRsCpsN7qhWprJw@mail.gmail.com>
-References: <1373296673-19295-1-git-send-email-eduardo.valentin@ti.com>
-	<1373296673-19295-3-git-send-email-eduardo.valentin@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:51365 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932085Ab3HGGqh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Aug 2013 02:46:37 -0400
-Received: by mail-oa0-f44.google.com with SMTP id l20so2632249oag.17
-        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2013 23:46:36 -0700 (PDT)
-In-Reply-To: <1373296673-19295-3-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Subject: [PATCH] thermal: exynos_tmu: fix wrong error check for mapped memory
+Date: Wed, 07 Aug 2013 14:01:09 +0530
+Message-ID: <1375864269-9197-1-git-send-email-ch.naveen@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com
+Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
 
-Hi Eduardo/Rui,
+The error check is checking for a "base" mapped memory base
+instead of "base_common". Fixing the same.
 
-I cannot find this pull request in Rui's tree. I guess it is good to
-have these patches in linux-next tree as some people are sending
-exynos tmu patches based on old way(https://lkml.org/lkml/2013/8/1/38)
-and not using the re-structured tmu driver.
+Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Amit Daniel
-
-On Mon, Jul 8, 2013 at 8:47 PM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> Rui,
->
-> Please pull the following changes for 3.12. This is a major rework of the
-> Exynos thermal driver by Amit D. Kachhap. We have been working on this
-> for a while and the code has really improved. Thanks Amit for this.
->
-> The changelog is as it follows:
->
-> . Several fixes on Exynos thermal driver.
-> . Refactoring Exynos thermal driver to split code and data.
-> . Support for multiple thermal instances on Exynos thermal driver.
-> . Add thermal support for Exynos 5440 TMU sensor.
-> . Updated documentation of Exynos thermal driver.
->
-> Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
->
-> This pull request contains obviously only the part that touches the thermal area.
-> Platform code changes were already submitted to the corresponding trees.
->
-> The following changes since commit 9d1968fdabc69981ea98ea82082de1cc12a60385:
->
->   Merge branch 'cpu-package-thermal' of .git into next (2013-06-18 07:26:49 +0800)
->
-> are available in the git repository at:
->
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git for_3.12/exynos
->
-> for you to fetch changes up to 72a23f5881b4cf073ebc96869e6c38f4619ec3c9:
->
->   Documentation: thermal: Explain the exynos thermal driver model (2013-07-08 11:06:52 -0400)
->
-> ----------------------------------------------------------------
-> Amit Daniel Kachhap (28):
->       thermal: exynos: Moving exynos thermal files into samsung directory
->       thermal: exynos: Use ARCH_HAS_BANDGAP config to know the supported soc's
->       thermal: exynos: Remove un-necessary CPU_THERMAL dependency
->       thermal: exynos: Bifurcate exynos thermal common and tmu controller code
->       thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
->       thermal: exynos: Move exynos_thermal.h from include/* to driver/* folder
->       thermal: exynos: Bifurcate exynos tmu driver and configuration data
->       thermal: exynos: Add missing definations and code cleanup
->       thermal: exynos: Add extra entries in the tmu platform data
->       thermal: exynos: Move register definitions from driver to data file
->       thermal: exynos: Support thermal tripping
->       thermal: exynos: Fix to clear only the generated interrupts
->       thermal: exynos: Add support for instance based register/unregister
->       thermal: exynos: Modify private_data to appropriate name driver_data
->       thermal: exynos: Return success even if no cooling data supplied
->       thermal: exynos: Make the zone handling use trip information
->       thermal: exynos: Remove non DT based support
->       thermal: exynos: Add support to handle many instances of TMU
->       thermal: exynos: Add TMU features to check instead of using SOC type
->       thermal: exynos: use device resource management infrastructure
->       thermal: exynos: Add support to access common register for multistance
->       thermal: exynos: Add driver support for exynos5440 TMU sensor
->       thermal: exynos: Add thermal configuration data for exynos5440 TMU sensor
->       thermal: exynos: Fix to set the second point correction value
->       thermal: exynos: Add hardware mode thermal calibration support
->       thermal: exynos: Support for TMU regulator defined at device tree
->       ARM: dts: thermal: exynos: Add documentation for Exynos SoC thermal bindings
->       Documentation: thermal: Explain the exynos thermal driver model
->
->  .../devicetree/bindings/thermal/exynos-thermal.txt |   55 +
->  Documentation/thermal/exynos_thermal               |   43 +-
->  drivers/thermal/Kconfig                            |   13 +-
->  drivers/thermal/Makefile                           |    2 +-
->  drivers/thermal/exynos_thermal.c                   | 1058 --------------------
->  drivers/thermal/samsung/Kconfig                    |   18 +
->  drivers/thermal/samsung/Makefile                   |    7 +
->  drivers/thermal/samsung/exynos_thermal_common.c    |  432 ++++++++
->  drivers/thermal/samsung/exynos_thermal_common.h    |  107 ++
->  drivers/thermal/samsung/exynos_tmu.c               |  752 ++++++++++++++
->  drivers/thermal/samsung/exynos_tmu.h               |  309 ++++++
->  drivers/thermal/samsung/exynos_tmu_data.c          |  250 +++++
->  drivers/thermal/samsung/exynos_tmu_data.h          |  155 +++
->  include/linux/platform_data/exynos_thermal.h       |  119 ---
->  14 files changed, 2125 insertions(+), 1195 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->  delete mode 100644 drivers/thermal/exynos_thermal.c
->  create mode 100644 drivers/thermal/samsung/Kconfig
->  create mode 100644 drivers/thermal/samsung/Makefile
->  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
->  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
->  create mode 100644 drivers/thermal/samsung/exynos_tmu.c
->  create mode 100644 drivers/thermal/samsung/exynos_tmu.h
->  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
->  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
->  delete mode 100644 include/linux/platform_data/exynos_thermal.h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index ec01dfe..a033dbb 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -592,7 +592,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 
+ 	data->base_common = devm_ioremap(&pdev->dev, res.start,
+ 					resource_size(&res));
+-	if (!data->base) {
++	if (!data->base_common) {
+ 		dev_err(&pdev->dev, "Failed to ioremap memory\n");
+ 		return -ENOMEM;
+ 	}
+-- 
+1.7.9.5
