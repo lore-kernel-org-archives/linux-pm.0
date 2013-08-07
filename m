@@ -1,60 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/6] clk: Tegra: Add CPU0 clock driver
-Date: Wed, 7 Aug 2013 23:24:45 +0530
-Message-ID: <CAKohpokK7F7tYJnisVjF=NCRb9zUjQNzrFdXs+QsPSb4oqyytA@mail.gmail.com>
+Subject: Re: [PATCH 5/6] ARM: Tegra: start using cpufreq-cpu0 driver
+Date: Wed, 7 Aug 2013 23:29:10 +0530
+Message-ID: <CAKohpom3o1y+xXof3iKCn6SWxYKNAE=aBGO2P3JF+Y0Ce4GmQQ@mail.gmail.com>
 References: <cover.1375886595.git.viresh.kumar@linaro.org>
-	<8d192a13cb7e088943da40689d62bc6353bd8604.1375886595.git.viresh.kumar@linaro.org>
-	<52028620.6000608@wwwdotorg.org>
-	<CAKohpokVgcMfmKmjkxc9Dr3z6mBKad23uUdB4ydN_xzGHdfedQ@mail.gmail.com>
-	<52028859.20008@wwwdotorg.org>
+	<6610c86618b781b00eba446ca19035e077d99691.1375886595.git.viresh.kumar@linaro.org>
+	<520287EA.5060508@wwwdotorg.org>
+	<CAKohpokOn4-RZE5mfoM+2p8jszWoGfOErrLShZmv86OgCMv+JA@mail.gmail.com>
+	<5202898A.6050006@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52028859.20008@wwwdotorg.org>
+In-Reply-To: <5202898A.6050006@wwwdotorg.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: Stephen Warren <swarren@wwwdotorg.org>
 Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 7 August 2013 23:18, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 08/07/2013 11:45 AM, Viresh Kumar wrote:
->> On 7 August 2013 23:08, Stephen Warren <swarren@wwwdotorg.org> wrote:
->>> On 08/07/2013 08:46 AM, Viresh Kumar wrote:
->>>> This patch adds CPU0's clk driver for Tegra. It will be used by the generic
->>>> cpufreq-cpu0 driver to get/set cpu clk.
->>>>
->>>> Most of the platform specific bits are picked from tegra-cpufreq.c.
->>>
->>> Hmmm. I'm not sure if it makes sense to represent this as a clock
->>> object; isn't this more of a virtual construct that manages the rate of
->>> the clock, rather than an actual clock? The actual clock already exists
->>> as "cpu".
->>
->> I see it as this: There is a clock in system for cpu, call it "cpu". Now we
->> must be able to provide get/set routines for it. A set should set the
->> frequency to whatever is asked for and should really worry about how
->> that is being set. This part is internal to "cpu" clk.
+On 7 August 2013 23:23, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> That link only describes why we shouldn't have a dedicated compatible
+> value for cpufreq. I certainly agree with that. However, I think it's
+> reasonable that whatever code binds to:
 >
-> Sure.
+>         compatible = "arm,cortex-a9";
 >
->> This is what cpufreq-cpu0 driver should expect and does. Current "cpu"
->> clock implemented doesn't provide this facility ? And so this wrapper
->> made sense to me.
->
-> But the additional management logic on top of the raw clock is exactly
-> what the cpufreq driver is for. This patch series is basically moving
-> the cpufreq driver code inside the clock code instead.
+> ... should instantiate any virtual devices that relate to the CPU.
 
-Above "sure" didn't go very well with what you wrote here :)
+But how would we know here if platform really wants us to probe
+cpufreq-cpu0 driver? On multiplatform kernel there can be multiple
+cpufreq drivers available and there has to be some sort of code
+in DT or platform code that reflects which driver we want to use.
 
-The additional management that we are required to do isn't cpufreq
-driver specific but cpu or platform specific. cpufreq shouldn't care
-about how CPU's clock is set to a particular frequency, its headache
-of CPU's clk driver instead. cpu is yet another device and so
-clk_set_rate() must be enough to set its frequency....
+We never required a device node for cpufreq, platform device was
+added just to solve this issue.
 
-There might be other frameworks that need to set frequency of this
-device later on and surely we don't want to replicate such piece of
-code to every user..
+> Doing so would be similar to how the Tegra I2S driver instantiates the
+> internal struct device that ASoC needs for the PCM/DMA device, rather
+> than having board-dt-tegra20.c do it, like it would have done in
+> board-file days.
 
-Does it make sense to you?
+I haven't gone through it yet though :)
