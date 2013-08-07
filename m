@@ -1,58 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: OPP: rename functions? (was [PATCH] OPP: Export opp_add())
-Date: Thu, 08 Aug 2013 00:53:46 +0200
-Message-ID: <1999730.6oshSp9AC9@vostro.rjw.lan>
-References: <58acb4a8a4e98089078de3ed71999730b6d97b4b.1375521724.git.viresh.kumar@linaro.org> <1611420.5h2rr9N0mt@vostro.rjw.lan> <52026C66.2080509@ti.com>
+Subject: Re: [PATCH] cpufreq: exynos5440: Fix to skip when new frequency same as current
+Date: Thu, 08 Aug 2013 01:25:08 +0200
+Message-ID: <2331427.ybQdfvflPh@vostro.rjw.lan>
+References: <1375874171-16951-1-git-send-email-amit.daniel@samsung.com> <52022FC2.2010109@arm.com> <CAKohpom0gPk9BXRP2eEuX_HBXDut=wynrZfvOH1tcEQY6CMLNQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:59770 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:59814 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933252Ab3HGWn2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Aug 2013 18:43:28 -0400
-In-Reply-To: <52026C66.2080509@ti.com>
+	id S933540Ab3HGXOt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Aug 2013 19:14:49 -0400
+In-Reply-To: <CAKohpom0gPk9BXRP2eEuX_HBXDut=wynrZfvOH1tcEQY6CMLNQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On Wednesday, August 07, 2013 10:48:54 AM Nishanth Menon wrote:
-> Rafael,
-> offline question:
-
-Not really offline. :-)
-
-> On 08/06/2013 09:15 AM, Rafael J. Wysocki wrote:
-> > On Tuesday, August 06, 2013 08:08:20 AM Nishanth Menon wrote:
-> >> change in subject to reflect new discussion.
-> >>
-> >> On 05:53-20130806, Randy Dunlap wrote:
-> >>> On 08/03/2013 02:25 AM, Viresh Kumar wrote:
-> 
-> >>>> +EXPORT_SYMBOL_GPL(opp_add);
-> >>>
-> >>> Could it be renamed to pm_opp_add() or power_opp_add() ?
-> >>> The name is a bit too unspecific IMO.
-> >> Though this has nothing specific with this patch, an interesting point.
-> >>
-> >> git grep -w opp . showed drivers/tty/n_tty.c,
-> >> drivers/sbus/char/openprom.c and arch/powerpc/kvm/mpic.c using
-> >> variables named opp to mean what ever they had in context. rest(around
-> >> 40 odd files) seem to use opp as in Documentation/power/opp.txt..
-> >>
-> >> We could go with a pm_ prefix or even dev_pm_opp_ prefix to be more
-> >> specific, though I prefer just pm_. If Rafael and others are ok, I can
-> >> post a series out.
+On Wednesday, August 07, 2013 05:03:59 PM Viresh Kumar wrote:
+> On 7 August 2013 17:00, Sudeep KarkadaNagesha
+> <Sudeep.KarkadaNagesha@arm.com> wrote:
+> > Any particular reason we need this check in all drivers after your
+> > commit: 5a1c0228 "cpufreq: Avoid calling cpufreq driver's target()
+> > routine if target_freq == policy->cur"
 > >
-> > Yup, that would be useful.  I'm for dev_pm_opp_ if that matters.
+> > I think it can removed from all drivers, am I missing something ?
 > 
-> Given that there would be quiet a few conflicts, do you have a 
-> suggestion around what baseline I should submit this?
+> Yeah.. Just a bit though :)
+> 
+> So, cpufreq core checks this when we call target for any frequency.
+> Now, cpufreq driver actually does a cpufreq_frequency_table_target()
+> and so the frequency may vary than what is requested, in case
+> requested frequency isn't picked from the table.
+> 
+> In such cases we check it again to be sure that we aren't at this
+> frequency already..
+> 
+> Earlier I thought of calling cpufreq_frequency_table_target() in the
+> core before calling target but dropped the idea as I wasn't sure of
+> the side effects.
+> 
+> @Rafael: Do you see why we shouldn't/can't call
+> cpufreq_frequency_table_target() from the core itself and so drivers
+> never need to do it?
 
-Well, ideally, on top of 3.12-rc1 when it's out and put it into linux-next
-right after that.
+It looks like it would require us to redefine .target() to take next_state
+instead of target_freq (at least in the acpi-cpufreq case), wouldn't it?
 
-Thanks,
 Rafael
 
