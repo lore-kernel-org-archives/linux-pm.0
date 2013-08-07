@@ -1,53 +1,93 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: OPP: rename functions? (was [PATCH] OPP: Export opp_add())
-Date: Wed, 7 Aug 2013 10:48:54 -0500
-Message-ID: <52026C66.2080509@ti.com>
-References: <58acb4a8a4e98089078de3ed71999730b6d97b4b.1375521724.git.viresh.kumar@linaro.org> <5200F1B4.6050004@infradead.org> <20130806130820.GA6035@kahuna> <1611420.5h2rr9N0mt@vostro.rjw.lan>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
+ another node for OPP
+Date: Wed, 7 Aug 2013 17:17:22 +0100
+Message-ID: <20130807161722.GJ28558@e106331-lin.cambridge.arm.com>
+References: <51F8F17B.1020304@arm.com>
+ <51F9234A.6010501@ti.com>
+ <20130731152925.GP29859@e106331-lin.cambridge.arm.com>
+ <51F9341E.60102@ti.com>
+ <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+ <51F93AFB.1030104@ti.com>
+ <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
+ <51FA8BE2.9000309@ti.com>
+ <20130802131541.GN2884@e106331-lin.cambridge.arm.com>
+ <20130806134534.GB6603@kahuna>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:59909 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753797Ab3HGPtE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Aug 2013 11:49:04 -0400
-In-Reply-To: <1611420.5h2rr9N0mt@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130806134534.GB6603@kahuna>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Rafael,
-offline question:
+On Tue, Aug 06, 2013 at 02:45:34PM +0100, Nishanth Menon wrote:
+> On 14:15-20130802, Mark Rutland wrote:
+> > On Thu, Aug 01, 2013 at 05:25:06PM +0100, Nishanth Menon wrote:
+> > > On 08/01/2013 08:54 AM, Mark Rutland wrote:
+> > > > On Wed, Jul 31, 2013 at 05:27:39PM +0100, Nishanth Menon wrote:
+> > > >> On 07/31/2013 11:11 AM, Mark Rutland wrote:
+> > > >>> On Wed, Jul 31, 2013 at 04:58:22PM +0100, Nishanth Menon wrote:
+> > > >>>> On 07/31/2013 10:29 AM, Mark Rutland wrote:
+> > > >>>>> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
+> > > >>>>>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
+> > > >>>>>>> On 30/07/13 21:48, Nishanth Menon wrote:
+> > > >>>>>>>> On 07/30/2013 01:34 PM, Stephen Warren wrote:
+> > > >>>>>>>>> On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
+> [...]
+> > > 
+> > > >
+> > > > * Performance profiles, in which you have a set of OPP tables for
+> > > >    "performance, "low-power", and whatever else. This arbitrary split
+> > > >    seems like a configuration decision rather than a hardware description
+> > > >    unless there is some hard limit that cannot be detected (e.g. the
+> > > >    processor can function at some arbitrary high speed, but becomes hot
+> > > >    enough to melt something, and there's no temperature sensor to handle
+> > > >    this case dynamically).
+> > > 
+> > > precisely -> I think I point this out in this thread:
+> > > http://marc.info/?l=devicetree&m=137535932402560&w=2
+> > 
+> > The one thing I don't like is the arbitrary grouping into profiles, as
+> > the division is entirely a configuration decision. The operating points
+> > themselves are a hardware capability, and it may make sense to describe
+> > the feasible points for a device in the dt, but I don't want to have
+> > different profiles exported because it straddles the line of the dt
+> > telling us how to use the hardware rather than what the hardware is, and
+> > will come back to bite us later if we want to handle cpu frequency
+> > decisions differently.
+> 
+> I can understand why it seems to wrongly indicate *how* to use the
+> hardware, rather than *what the hardware is* - Lets try it this way:
+> - if Bit X is set in efuse, one cannot use high performance mode
+> - If PDN (Power Distribution Network) guidelines are not met, one cannot
+> use high performance mode.
+> 
+> These constrain *hardware capability* you can do on that SoC+Board
+> combination - that is exactly what we have been struggling to describe
+> here. These are not *how to use hardware* profiles, but *hardware
+> capability* profiles whose selection is upto to the System in
+> discussion - example - SoC x will decide on bit based decision and
+> forbid Board file overrides while an SoC y family might choose another
+> path.. Framework and dts should not dictate policy and we dont try to
+> do that here.
+> 
+> How to use the hardware within the *capability costraints* is upto
+> drivers, there is no attempt to define that in my proposal.
 
-On 08/06/2013 09:15 AM, Rafael J. Wysocki wrote:
-> On Tuesday, August 06, 2013 08:08:20 AM Nishanth Menon wrote:
->> change in subject to reflect new discussion.
->>
->> On 05:53-20130806, Randy Dunlap wrote:
->>> On 08/03/2013 02:25 AM, Viresh Kumar wrote:
+I'm happy to have the OPPs, as your arguments certainly make sense. My
+only concern is that if we have them grouped in some fashion in dt (e.g.
+profiles), people will use this as configuration, treating the groups of
+OPPs differnetly (prefering a 'performance' or 'low-power' profile). I'd
+prefer that any decision on how to use the provided OPP values were done
+in the kernel dynamically.
 
->>>> +EXPORT_SYMBOL_GPL(opp_add);
->>>
->>> Could it be renamed to pm_opp_add() or power_opp_add() ?
->>> The name is a bit too unspecific IMO.
->> Though this has nothing specific with this patch, an interesting point.
->>
->> git grep -w opp . showed drivers/tty/n_tty.c,
->> drivers/sbus/char/openprom.c and arch/powerpc/kvm/mpic.c using
->> variables named opp to mean what ever they had in context. rest(around
->> 40 odd files) seem to use opp as in Documentation/power/opp.txt..
->>
->> We could go with a pm_ prefix or even dev_pm_opp_ prefix to be more
->> specific, though I prefer just pm_. If Rafael and others are ok, I can
->> post a series out.
->
-> Yup, that would be useful.  I'm for dev_pm_opp_ if that matters.
+I suspect even if we remove profile names, people will attempt to read
+some semantics into the groupings. For that reason, I'd prefer to have a
+single OPP table for any device (though this table could be shared by
+devices).
 
-Given that there would be quiet a few conflicts, do you have a 
-suggestion around what baseline I should submit this?
-
-
--- 
-Regards,
-Nishanth Menon
+Thanks,
+Mark.
