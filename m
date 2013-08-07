@@ -1,32 +1,68 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 5/6] ARM: Tegra: start using cpufreq-cpu0 driver
-Date: Wed, 07 Aug 2013 12:51:34 -0600
-Message-ID: <52029736.8040007@wwwdotorg.org>
-References: <cover.1375886595.git.viresh.kumar@linaro.org> <6610c86618b781b00eba446ca19035e077d99691.1375886595.git.viresh.kumar@linaro.org> <520287EA.5060508@wwwdotorg.org> <CAKohpokOn4-RZE5mfoM+2p8jszWoGfOErrLShZmv86OgCMv+JA@mail.gmail.com> <5202898A.6050006@wwwdotorg.org> <CAKohpom3o1y+xXof3iKCn6SWxYKNAE=aBGO2P3JF+Y0Ce4GmQQ@mail.gmail.com>
+Subject: Re: [PATCH 2/6] ARM: Tegra: Add CPU's OPPs for using cpufreq-cpu0
+ driver
+Date: Wed, 07 Aug 2013 12:55:13 -0600
+Message-ID: <52029811.9080704@wwwdotorg.org>
+References: <cover.1375886595.git.viresh.kumar@linaro.org> <d4cd498d9b63d761039b025216e65278dc8e0e37.1375886595.git.viresh.kumar@linaro.org> <52028719.8070908@wwwdotorg.org> <CAKohpo=MpOyMGFTGeZWmoCRwmZ7+nQtP_yCGokPanEVYL0xbMw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom3o1y+xXof3iKCn6SWxYKNAE=aBGO2P3JF+Y0Ce4GmQQ@mail.gmail.com>
+In-Reply-To: <CAKohpo=MpOyMGFTGeZWmoCRwmZ7+nQtP_yCGokPanEVYL0xbMw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ian.campbell@citrix.com>, Mark Rutland <Mark.Rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <rob.herring@calxeda.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/07/2013 11:59 AM, Viresh Kumar wrote:
-> On 7 August 2013 23:23, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> That link only describes why we shouldn't have a dedicated compatible
->> value for cpufreq. I certainly agree with that. However, I think it's
->> reasonable that whatever code binds to:
+On 08/07/2013 12:06 PM, Viresh Kumar wrote:
+> On 7 August 2013 23:12, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> On 08/07/2013 08:46 AM, Viresh Kumar wrote:
+>>> cpufreq-cpu0 driver needs OPPs to be present in DT which can be probed by it to
+>>> get frequency table. This patch adds OPPs and clock-latency to tegra cpu0 node
+>>> for multiple SoCs.
+>>>
+>>> Voltage levels aren't used until now for tegra and so a flat value which would
+>>> eventually be ignored is used to represent voltage.
 >>
->>         compatible = "arm,cortex-a9";
->>
->> ... should instantiate any virtual devices that relate to the CPU.
+>> This patch is problematic w.r.t. DT being an ABI.
 > 
-> But how would we know here if platform really wants us to probe
-> cpufreq-cpu0 driver? On multiplatform kernel there can be multiple
-> cpufreq drivers available and there has to be some sort of code
-> in DT or platform code that reflects which driver we want to use.
+> :(
+> 
+>> We can certainly add new optional properties to a DT binding that enable
+>> new features. However, a new version of a binding can't require new
+>> properties to exist that didn't before, since that means that old DTs
+>> won't work with new kernels that require the new properties.
+> 
+> To be honest I didn't get it completely. You meant operating-points
+> wasn't present before? Its here:
+> 
+> Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> Documentation/devicetree/bindings/power/opp.txt
+> 
+> Or you meant, Tegra never required voltage levels and we are getting
+> them in here.
 
-Presumably the code would look at the top-level DT node's compatible
-value (e.g. "nvidia,tegra20").
+The current Tegra *.dts files do not contain this property. The current
+Tegra *.dts files must continue to work without modification in future
+kernels.
+
+>> As such, I believe we do need some Tegra-specific piece of code that
+>> defines these OPP tables in the kernel, so that the operating-points
+>> property is not needed.
+> 
+> Generic cpufreq driver depends on OPP library and so somebody has
+> to provide them. Now you can do it by calling opp_add() for each OPP
+> you have or otherwise.
+
+Sure. That's what the Tegra-specific cpufreq driver should do. It should
+be the top-level cpufreq driver. If parts of the code can be implemented
+by library functions or a core parameterizable driver, then presumably
+the Tegra driver would simply exist to provide those parameters and/or
+callback functions to the generic driver.
+
+> Btw, you must have some specific voltage level for each freq, we can
+> get them here..
+
+Yes, I'm sure we do, but I have no idea what they are:-( It may even be
+board-specific or SoC-SKU-specific. I think we should defer this aspect
+for now.
