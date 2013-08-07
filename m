@@ -1,29 +1,72 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 1/6] clk: Tegra: Add CPU0 clock driver
-Date: Wed, 07 Aug 2013 11:38:40 -0600
-Message-ID: <52028620.6000608@wwwdotorg.org>
-References: <cover.1375886595.git.viresh.kumar@linaro.org> <8d192a13cb7e088943da40689d62bc6353bd8604.1375886595.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/6] ARM: Tegra: Add CPU's OPPs for using cpufreq-cpu0
+ driver
+Date: Wed, 07 Aug 2013 11:42:49 -0600
+Message-ID: <52028719.8070908@wwwdotorg.org>
+References: <cover.1375886595.git.viresh.kumar@linaro.org> <d4cd498d9b63d761039b025216e65278dc8e0e37.1375886595.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:56696 "EHLO
+Received: from avon.wwwdotorg.org ([70.85.31.133]:53837 "EHLO
 	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756757Ab3HGRio (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Aug 2013 13:38:44 -0400
-In-Reply-To: <8d192a13cb7e088943da40689d62bc6353bd8604.1375886595.git.viresh.kumar@linaro.org>
+	with ESMTP id S932071Ab3HGRmy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Aug 2013 13:42:54 -0400
+In-Reply-To: <d4cd498d9b63d761039b025216e65278dc8e0e37.1375886595.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ian.campbell@citrix.com>, Mark Rutland <Mark.Rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <rob.herring@calxeda.com>
 
 On 08/07/2013 08:46 AM, Viresh Kumar wrote:
-> This patch adds CPU0's clk driver for Tegra. It will be used by the generic
-> cpufreq-cpu0 driver to get/set cpu clk.
+> cpufreq-cpu0 driver needs OPPs to be present in DT which can be probed by it to
+> get frequency table. This patch adds OPPs and clock-latency to tegra cpu0 node
+> for multiple SoCs.
 > 
-> Most of the platform specific bits are picked from tegra-cpufreq.c.
+> Voltage levels aren't used until now for tegra and so a flat value which would
+> eventually be ignored is used to represent voltage.
 
-Hmmm. I'm not sure if it makes sense to represent this as a clock
-object; isn't this more of a virtual construct that manages the rate of
-the clock, rather than an actual clock? The actual clock already exists
-as "cpu".
+This patch is problematic w.r.t. DT being an ABI.
+
+We can certainly add new optional properties to a DT binding that enable
+new features. However, a new version of a binding can't require new
+properties to exist that didn't before, since that means that old DTs
+won't work with new kernels that require the new properties.
+
+As such, I believe we do need some Tegra-specific piece of code that
+defines these OPP tables in the kernel, so that the operating-points
+property is not needed.
+
+Similarly, we can't put invalid voltages into the DT, since if a later
+kernel version starts actually using that field, the HW will no longer
+work correctly. Unless perhaps we put 0 into the DT and make the binding
+define that 0 means "you can't change the voltage at all away from the
+boot value"?
+
+Is the operating-points property documented in
+Documentation/devicetree/bindings/ somewhere?
+
+(Also Cc'ing the DT mailing list and maintainers)
+
+> diff --git a/arch/arm/boot/dts/tegra114.dtsi b/arch/arm/boot/dts/tegra114.dtsi
+> index abf6c40..730e0d9 100644
+> --- a/arch/arm/boot/dts/tegra114.dtsi
+> +++ b/arch/arm/boot/dts/tegra114.dtsi
+> @@ -438,6 +438,18 @@
+>  			device_type = "cpu";
+>  			compatible = "arm,cortex-a15";
+>  			reg = <0>;
+> +			operating-points = <
+> +				/* kHz    ignored */
+> +				 216000   1000000
+> +				 312000   1000000
+> +				 456000   1000000
+> +				 608000   1000000
+> +				 760000   1000000
+> +				 816000   1000000
+> +				 912000   1000000
+> +				 1000000  1000000
+> +			>;
+> +			clock-latency = <300000>;
+>  		};
+
