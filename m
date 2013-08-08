@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 26/35] cpufreq: ppc: use cpufreq_table_validate_and_show()
-Date: Thu,  8 Aug 2013 19:18:28 +0530
-Message-ID: <f230ab3e64a1323b7e06d67df77b9d489f134d00.1375964117.git.viresh.kumar@linaro.org>
+Subject: [PATCH 28/35] cpufreq: s3cx4xx: use cpufreq_table_validate_and_show()
+Date: Thu,  8 Aug 2013 19:18:30 +0530
+Message-ID: <327031ccaa47008946fabc17bba13645456cdf66.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
@@ -9,55 +9,75 @@ In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/ppc-corenet-cpufreq.c | 3 +--
- drivers/cpufreq/ppc_cbe_cpufreq.c     | 4 +---
- 2 files changed, 2 insertions(+), 5 deletions(-)
+ drivers/cpufreq/s3c2416-cpufreq.c | 4 +---
+ drivers/cpufreq/s3c24xx-cpufreq.c | 6 ++----
+ drivers/cpufreq/s3c64xx-cpufreq.c | 5 +----
+ 3 files changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-index 60e81d5..5716b44 100644
---- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -202,7 +202,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	table[i].frequency = CPUFREQ_TABLE_END;
+diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
+index 22dcb81..a7a4c61 100644
+--- a/drivers/cpufreq/s3c2416-cpufreq.c
++++ b/drivers/cpufreq/s3c2416-cpufreq.c
+@@ -494,12 +494,10 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = (500 * 1000) +
+ 					     s3c_freq->regulator_latency;
  
- 	/* set the min and max frequency properly */
--	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	ret = cpufreq_table_validate_and_show(policy, table);
- 	if (ret) {
- 		pr_err("invalid frequency table: %d\n", ret);
- 		goto err_nomem1;
-@@ -219,7 +219,6 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
- 	policy->cur = corenet_cpufreq_get_speed(policy->cpu);
+-	ret = cpufreq_frequency_table_cpuinfo(policy, s3c_freq->freq_table);
++	ret = cpufreq_table_validate_and_show(policy, s3c_freq->freq_table);
+ 	if (ret)
+ 		goto err_freq_table;
  
--	cpufreq_frequency_table_get_attr(table, cpu);
- 	of_node_put(np);
+-	cpufreq_frequency_table_get_attr(s3c_freq->freq_table, 0);
+-
+ 	register_reboot_notifier(&s3c2416_cpufreq_reboot_notifier);
  
  	return 0;
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 2e448f0..6c5be63 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -123,11 +123,9 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	cpumask_copy(policy->cpus, cpu_sibling_mask(policy->cpu));
- #endif
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index 8843454..39c1d3e 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -386,10 +386,8 @@ static int s3c_cpufreq_init(struct cpufreq_policy *policy)
+ 	/* feed the latency information from the cpu driver */
+ 	policy->cpuinfo.transition_latency = cpu_cur.info->latency;
  
--	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
--
- 	/* this ensures that policy->cpuinfo_min
- 	 * and policy->cpuinfo_max are set correctly */
--	return cpufreq_frequency_table_cpuinfo(policy, cbe_freqs);
-+	return cpufreq_table_validate_and_show(policy, cbe_freqs);
+-	if (ftab) {
+-		cpufreq_frequency_table_cpuinfo(policy, ftab);
+-		cpufreq_frequency_table_get_attr(ftab, policy->cpu);
+-	}
++	if (ftab)
++		return cpufreq_table_validate_and_show(policy, ftab);
+ 
+ 	return 0;
  }
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index 9024043..872f74d 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -251,15 +251,12 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 	 */
+ 	policy->cpuinfo.transition_latency = (500 * 1000) + regulator_latency;
  
- static int cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+-	ret = cpufreq_frequency_table_cpuinfo(policy, s3c64xx_freq_table);
++	ret = cpufreq_table_validate_and_show(policy, s3c64xx_freq_table);
+ 	if (ret != 0) {
+ 		pr_err("Failed to configure frequency table: %d\n",
+ 		       ret);
+ 		regulator_put(vddarm);
+ 		clk_put(armclk);
+-	} else {
+-		cpufreq_frequency_table_get_attr(s3c64xx_freq_table,
+-				policy->cpu);
+ 	}
+ 
+ 	return ret;
 -- 
 1.7.12.rc2.18.g61b472e
