@@ -1,28 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: exynos5440: Fix to skip when new frequency same
- as current
-Date: Thu, 8 Aug 2013 08:03:33 +0530
-Message-ID: <CAKohpokdvJxcWjbOgDLAzjcW_vN6hdZz_OWjFSBSLrFTccCmJg@mail.gmail.com>
-References: <1375874171-16951-1-git-send-email-amit.daniel@samsung.com>
-	<52022FC2.2010109@arm.com>
-	<CAKohpom0gPk9BXRP2eEuX_HBXDut=wynrZfvOH1tcEQY6CMLNQ@mail.gmail.com>
-	<2331427.ybQdfvflPh@vostro.rjw.lan>
+Subject: Re: [PATCH 1/6] clk: Tegra: Add CPU0 clock driver
+Date: Thu, 8 Aug 2013 08:12:48 +0530
+Message-ID: <CAKohpoky9-E2XoxAQy_oQ3sMxvAv5ZfBdDQPd6zUxcSwyKmzXg@mail.gmail.com>
+References: <cover.1375886595.git.viresh.kumar@linaro.org>
+	<8d192a13cb7e088943da40689d62bc6353bd8604.1375886595.git.viresh.kumar@linaro.org>
+	<52028620.6000608@wwwdotorg.org>
+	<CAKohpokVgcMfmKmjkxc9Dr3z6mBKad23uUdB4ydN_xzGHdfedQ@mail.gmail.com>
+	<52028859.20008@wwwdotorg.org>
+	<CAKohpokK7F7tYJnisVjF=NCRb9zUjQNzrFdXs+QsPSb4oqyytA@mail.gmail.com>
+	<52029713.5070808@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <2331427.ybQdfvflPh@vostro.rjw.lan>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52029713.5070808@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 8 August 2013 04:55, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> It looks like it would require us to redefine .target() to take next_state
-> instead of target_freq (at least in the acpi-cpufreq case), wouldn't it?
+On 8 August 2013 00:20, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> Right, and that's *exactly* what having a cpufreq driver is for; to
+> implement the details of CPU clock management.
 
-If we don't do it, then atleast for few drivers, like acpi-cpufreq, which
-use index more than just for frequency, we may end up calling
-cpufreq_frequency_table_target() twice. Once in the core and then
-in driver.
+cpufreq drivers used to keep such information since a long time,
+probably because there wasn't another place to keep them and
+provide generic API's (like generic clock framework).. And so this
+replication started to get in place which we are trying to get rid of
+now.
 
-I believe this is doable and will post a patch soon.
+All cpufreq drivers share a lot of common code which can go
+away and so cpufreq-cpu0 was introduced..
+
+With this patchset this replication goes away for tegra atleast at
+the cost of a platform specific clk-cpu driver.. I think that's a good
+deal, isn't it?
+
+And that's the only way you can use these generic drivers that we
+have...
