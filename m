@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/35] cpufreq: pxa: call cpufreq_frequency_table_get_attr()
-Date: Thu,  8 Aug 2013 19:18:04 +0530
-Message-ID: <9b7c9159120d0423a65365414448ceed38621d29.1375964117.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/35] cpufreq: s3cx4xx: call cpufreq_frequency_table_get_attr()
+Date: Thu,  8 Aug 2013 19:18:05 +0530
+Message-ID: <4af1a6a5a2d952f0a2ca641109ba185b346dfe5d.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
@@ -9,65 +9,49 @@ In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Eric Miao <eric.y.miao@gmail.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 This exposes frequency table of driver to cpufreq core and is required for core
 to guess what the index for a target frequency is, when it calls
 cpufreq_frequency_table_target(). And so this driver needs to expose it.
 
-Cc: Eric Miao <eric.y.miao@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pxa2xx-cpufreq.c | 6 +++++-
- drivers/cpufreq/pxa3xx-cpufreq.c | 8 ++++++--
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/cpufreq/s3c24xx-cpufreq.c | 4 +++-
+ drivers/cpufreq/s3c64xx-cpufreq.c | 3 +++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-index fb3981a..c7ea005 100644
---- a/drivers/cpufreq/pxa2xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-@@ -453,10 +453,14 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
- 		find_freq_tables(&pxa255_freq_table, &pxa255_freqs);
- 		pr_info("PXA255 cpufreq using %s frequency table\n",
- 			pxa255_turbo_table ? "turbo" : "run");
-+
- 		cpufreq_frequency_table_cpuinfo(policy, pxa255_freq_table);
-+		cpufreq_frequency_table_get_attr(pxa255_freq_table, policy->cpu);
- 	}
--	else if (cpu_is_pxa27x())
-+	else if (cpu_is_pxa27x()) {
- 		cpufreq_frequency_table_cpuinfo(policy, pxa27x_freq_table);
-+		cpufreq_frequency_table_get_attr(pxa27x_freq_table, policy->cpu);
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index f169ee5..8843454 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -386,8 +386,10 @@ static int s3c_cpufreq_init(struct cpufreq_policy *policy)
+ 	/* feed the latency information from the cpu driver */
+ 	policy->cpuinfo.transition_latency = cpu_cur.info->latency;
+ 
+-	if (ftab)
++	if (ftab) {
+ 		cpufreq_frequency_table_cpuinfo(policy, ftab);
++		cpufreq_frequency_table_get_attr(ftab, policy->cpu);
 +	}
  
- 	printk(KERN_INFO "PXA CPU frequency change support initialized\n");
- 
-diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
-index 9c92ef0..f53f28d6 100644
---- a/drivers/cpufreq/pxa3xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa3xx-cpufreq.c
-@@ -91,7 +91,7 @@ static int setup_freqs_table(struct cpufreq_policy *policy,
- 			     struct pxa3xx_freq_info *freqs, int num)
- {
- 	struct cpufreq_frequency_table *table;
--	int i;
-+	int i, ret;
- 
- 	table = kzalloc((num + 1) * sizeof(*table), GFP_KERNEL);
- 	if (table == NULL)
-@@ -108,7 +108,11 @@ static int setup_freqs_table(struct cpufreq_policy *policy,
- 	pxa3xx_freqs_num = num;
- 	pxa3xx_freqs_table = table;
- 
--	return cpufreq_frequency_table_cpuinfo(policy, table);
-+	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	if (!ret)
-+		cpufreq_frequency_table_get_attr(table, policy->cpu);
-+
-+	return ret;
+ 	return 0;
  }
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index 8a72b0c..9024043 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -257,6 +257,9 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 		       ret);
+ 		regulator_put(vddarm);
+ 		clk_put(armclk);
++	} else {
++		cpufreq_frequency_table_get_attr(s3c64xx_freq_table,
++				policy->cpu);
+ 	}
  
- static void __update_core_freq(struct pxa3xx_freq_info *info)
+ 	return ret;
 -- 
 1.7.12.rc2.18.g61b472e
