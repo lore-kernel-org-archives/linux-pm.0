@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 22/35] cpufreq: p4-clockmod: use cpufreq_table_validate_and_show()
-Date: Thu,  8 Aug 2013 19:18:24 +0530
-Message-ID: <76facebc0442f1b7c5041168a0dd87bd0080e06b.1375964117.git.viresh.kumar@linaro.org>
+Subject: [PATCH 24/35] cpufreq: pmac: use cpufreq_table_validate_and_show()
+Date: Thu,  8 Aug 2013 19:18:26 +0530
+Message-ID: <5543f97ceba9becba711bd29e57d781a19c1ad26.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
@@ -9,36 +9,45 @@ In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/p4-clockmod.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/cpufreq/pmac32-cpufreq.c | 3 +--
+ drivers/cpufreq/pmac64-cpufreq.c | 4 +---
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
-index 2f0a2a6..03478bf 100644
---- a/drivers/cpufreq/p4-clockmod.c
-+++ b/drivers/cpufreq/p4-clockmod.c
-@@ -230,7 +230,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- 		else
- 			p4clockmod_table[i].frequency = (stock_freq * i)/8;
- 	}
--	cpufreq_frequency_table_get_attr(p4clockmod_table, policy->cpu);
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 38cdc63..0b3efdb 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -407,8 +407,7 @@ static int pmac_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency	= transition_latency;
+ 	policy->cur = cur_freq;
  
- 	/* cpuinfo and default policy values */
+-	cpufreq_frequency_table_get_attr(pmac_cpu_freqs, policy->cpu);
+-	return cpufreq_frequency_table_cpuinfo(policy, pmac_cpu_freqs);
++	return cpufreq_table_validate_and_show(policy, pmac_cpu_freqs);
+ }
  
-@@ -239,7 +238,7 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 10000001;
- 	policy->cur = stock_freq;
+ static u32 read_gpio(struct device_node *np)
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index b6850d9..366be61 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -362,10 +362,8 @@ static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	 * cpufreq core if in the secondary policy we tell it that
+ 	 * it actually must be one policy together with all others. */
+ 	cpumask_copy(policy->cpus, cpu_online_mask);
+-	cpufreq_frequency_table_get_attr(g5_cpu_freqs, policy->cpu);
  
--	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
-+	return cpufreq_table_validate_and_show(policy, &p4clockmod_table[0]);
+-	return cpufreq_frequency_table_cpuinfo(policy,
+-		g5_cpu_freqs);
++	return cpufreq_table_validate_and_show(policy, g5_cpu_freqs);
  }
  
  
