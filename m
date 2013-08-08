@@ -1,43 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 23/35] cpufreq: pasemi: use cpufreq_table_validate_and_show()
-Date: Thu,  8 Aug 2013 19:18:25 +0530
-Message-ID: <b8ba08315a80d680f71bfe7cdde8d1c7b39f875b.1375964117.git.viresh.kumar@linaro.org>
+Subject: [PATCH 22/35] cpufreq: p4-clockmod: use cpufreq_table_validate_and_show()
+Date: Thu,  8 Aug 2013 19:18:24 +0530
+Message-ID: <76facebc0442f1b7c5041168a0dd87bd0080e06b.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
+Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pasemi-cpufreq.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/cpufreq/p4-clockmod.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 534e43a..23bc8a82 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -219,12 +219,10 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
+index 2f0a2a6..03478bf 100644
+--- a/drivers/cpufreq/p4-clockmod.c
++++ b/drivers/cpufreq/p4-clockmod.c
+@@ -230,7 +230,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ 		else
+ 			p4clockmod_table[i].frequency = (stock_freq * i)/8;
+ 	}
+-	cpufreq_frequency_table_get_attr(p4clockmod_table, policy->cpu);
  
- 	ppc_proc_freq = policy->cur * 1000ul;
+ 	/* cpuinfo and default policy values */
  
--	cpufreq_frequency_table_get_attr(pas_freqs, policy->cpu);
--
- 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max
- 	 * are set correctly
- 	 */
--	return cpufreq_frequency_table_cpuinfo(policy, pas_freqs);
-+	return cpufreq_table_validate_and_show(policy, pas_freqs);
+@@ -239,7 +238,7 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = 10000001;
+ 	policy->cur = stock_freq;
  
- out_unmap_sdcpwr:
- 	iounmap(sdcpwr_mapbase);
+-	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
++	return cpufreq_table_validate_and_show(policy, &p4clockmod_table[0]);
+ }
+ 
+ 
 -- 
 1.7.12.rc2.18.g61b472e
-
