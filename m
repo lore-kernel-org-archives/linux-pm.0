@@ -1,51 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: exynos5440: Fix to skip when new frequency same as current
-Date: Thu, 08 Aug 2013 01:25:08 +0200
-Message-ID: <2331427.ybQdfvflPh@vostro.rjw.lan>
-References: <1375874171-16951-1-git-send-email-amit.daniel@samsung.com> <52022FC2.2010109@arm.com> <CAKohpom0gPk9BXRP2eEuX_HBXDut=wynrZfvOH1tcEQY6CMLNQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: exynos5440: Fix to skip when new frequency same
+ as current
+Date: Thu, 8 Aug 2013 08:03:33 +0530
+Message-ID: <CAKohpokdvJxcWjbOgDLAzjcW_vN6hdZz_OWjFSBSLrFTccCmJg@mail.gmail.com>
+References: <1375874171-16951-1-git-send-email-amit.daniel@samsung.com>
+	<52022FC2.2010109@arm.com>
+	<CAKohpom0gPk9BXRP2eEuX_HBXDut=wynrZfvOH1tcEQY6CMLNQ@mail.gmail.com>
+	<2331427.ybQdfvflPh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:59814 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933540Ab3HGXOt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Aug 2013 19:14:49 -0400
-In-Reply-To: <CAKohpom0gPk9BXRP2eEuX_HBXDut=wynrZfvOH1tcEQY6CMLNQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <2331427.ybQdfvflPh@vostro.rjw.lan>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, August 07, 2013 05:03:59 PM Viresh Kumar wrote:
-> On 7 August 2013 17:00, Sudeep KarkadaNagesha
-> <Sudeep.KarkadaNagesha@arm.com> wrote:
-> > Any particular reason we need this check in all drivers after your
-> > commit: 5a1c0228 "cpufreq: Avoid calling cpufreq driver's target()
-> > routine if target_freq == policy->cur"
-> >
-> > I think it can removed from all drivers, am I missing something ?
-> 
-> Yeah.. Just a bit though :)
-> 
-> So, cpufreq core checks this when we call target for any frequency.
-> Now, cpufreq driver actually does a cpufreq_frequency_table_target()
-> and so the frequency may vary than what is requested, in case
-> requested frequency isn't picked from the table.
-> 
-> In such cases we check it again to be sure that we aren't at this
-> frequency already..
-> 
-> Earlier I thought of calling cpufreq_frequency_table_target() in the
-> core before calling target but dropped the idea as I wasn't sure of
-> the side effects.
-> 
-> @Rafael: Do you see why we shouldn't/can't call
-> cpufreq_frequency_table_target() from the core itself and so drivers
-> never need to do it?
+On 8 August 2013 04:55, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> It looks like it would require us to redefine .target() to take next_state
+> instead of target_freq (at least in the acpi-cpufreq case), wouldn't it?
 
-It looks like it would require us to redefine .target() to take next_state
-instead of target_freq (at least in the acpi-cpufreq case), wouldn't it?
+If we don't do it, then atleast for few drivers, like acpi-cpufreq, which
+use index more than just for frequency, we may end up calling
+cpufreq_frequency_table_target() twice. Once in the core and then
+in driver.
 
-Rafael
-
+I believe this is doable and will post a patch soon.
