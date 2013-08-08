@@ -1,60 +1,120 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 2/6] ARM: Tegra: Add CPU's OPPs for using cpufreq-cpu0
- driver
-Date: Thu, 8 Aug 2013 10:52:57 -0500
-Message-ID: <CAGo_u6oArfcA3Ek_zKaWgkJm9G8U1NNGvhHSBU8Dg3L00NpGiQ@mail.gmail.com>
-References: <cover.1375886595.git.viresh.kumar@linaro.org>
- <d4cd498d9b63d761039b025216e65278dc8e0e37.1375886595.git.viresh.kumar@linaro.org>
- <52028719.8070908@wwwdotorg.org>
- <CAKohpo=MpOyMGFTGeZWmoCRwmZ7+nQtP_yCGokPanEVYL0xbMw@mail.gmail.com>
- <52029811.9080704@wwwdotorg.org>
- <1375970318.4276.52.camel@weser.hi.pengutronix.de>
- <CAKohpon=GGn5-8ucTrrf6TyPMn3+1Oh6Sd5bAj_ztpVDONZ3QA@mail.gmail.com>
- <1375971749.4276.61.camel@weser.hi.pengutronix.de>
- <CAKohpo=zYBVha_L7D+FWUEO=a6byeiuGtNBmh-CRhSmfkT=QrQ@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 3/3] cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver
+Date: Thu, 08 Aug 2013 18:00:24 +0200
+Message-ID: <5203C098.9000701@linaro.org>
+References: <1375875813-13358-1-git-send-email-lorenzo.pieralisi@arm.com> <1375875813-13358-4-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAKohpo=zYBVha_L7D+FWUEO=a6byeiuGtNBmh-CRhSmfkT=QrQ@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linaro-kernel@lists.linaro.org, swarren@nvidia.com, Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, Rob Herring <rob.herring@calxeda.com>, patches@linaro.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, Lucas Stach <l.stach@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f51.google.com ([74.125.82.51]:34570 "EHLO
+	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314Ab3HHQAT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2013 12:00:19 -0400
+Received: by mail-wg0-f51.google.com with SMTP id a12so2767065wgh.30
+        for <linux-pm@vger.kernel.org>; Thu, 08 Aug 2013 09:00:17 -0700 (PDT)
+In-Reply-To: <1375875813-13358-4-git-send-email-lorenzo.pieralisi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Olof Johansson <olof@lixom.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-On Thu, Aug 8, 2013 at 9:37 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 8 August 2013 19:52, Lucas Stach <l.stach@pengutronix.de> wrote:
->> You can certainly define the mapping table in DT where a specialized
->> Tegra cpufreq driver could read it in and then map frequency to voltage.
->> But that's a runtime decision, as Speedo and process ID are fuse values
->> and can not be represented in DT.
->
->> The problem with this is that the hardware description now associates
->> voltages with certain frequencies and even if they are not used by the
->> Linux driver they are plain wrong.
->
-> Hmm. I understand.
-> Then we probably need mach-tegra/opp.c to call opp_add() for all such
-> OPPs.. Neither DT nor cpufreq driver are the right place for this.
+On 08/07/2013 01:43 PM, Lorenzo Pieralisi wrote:
+> The big.LITTLE architecture is composed of two clusters of cpus. One =
+cluster
+> contains less powerful but more energy efficient processors and the o=
+ther
+> cluster groups the powerful but energy-intensive cpus.
+>=20
+> The TC2 testchip implements two clusters of CPUs (A7 and A15 clusters=
+ in
+> a big.LITTLE configuration) connected through a CCI interconnect that=
+ manages
+> coherency of their respective L2 caches and intercluster distributed
+> virtual memory messages (DVM).
+>=20
+> TC2 testchip integrates a power controller that manages cores resets,=
+ wake-up
+> IRQs and cluster low-power states. Power states are managed at cluste=
+r
+> level, which means that voltage is removed from a cluster iff all cor=
+es
+> in a cluster are in a wfi state. Single cores can enter a reset state
+> which is identical to wfi in terms of power consumption but simplifie=
+s the
+> way cluster states are entered.
+>=20
+> This patch provides a multiple driver CPU idle implementation for TC2
+> which paves the way for a generic big.LITTLE idle driver for all
+> upcoming big.LITTLE based systems on chip.
+>=20
+> The driver relies on the MCPM infrastructure to coordinate and manage
+> core power states; in particular MCPM allows to suspend specific core=
+s
+> and hides the CPUs coordination required to shut-down clusters of CPU=
+s.
+>=20
+> Power down sequences for the respective clusters are implemented in t=
+he
+> MCPM TC2 backend, with all code needed to clean caches and exit coher=
+ency.
+>=20
+> The multiple driver CPU idle infrastructure allows to define differen=
+t
+> C-states for big and little cores, determined at boot by checking the
+> part id of the possible CPUs and initializing the respective logical
+> masks in the big and little drivers.
+>=20
+> Current big.little systems are composed of A7 and A15 clusters, as
+> implemented in TC2, but in the future that may change and the driver
+> will have evolve to retrieve what is a 'big' cpu and what is a 'littl=
+e'
+> cpu in order to build the correct topology.
+>=20
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Amit Kucheria <amit.kucheria@linaro.org>
+> Cc: Olof Johansson <olof@lixom.net>
+> Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> ---
 
-This is similar to what I suspected might be the case on other
-platforms (in addition to known iMx and OMAP). Could you see/comment
-on [1] to see if it meets your needs.
+A nit below :/
 
-We should like to avoid dealing custom SoC specific OPP, if we are
-able to generalize the need.  ofcourse, I am yet to submit a official
-proposal, but more SoCs the current proposal can handle, the better it
-will be for all of us.
+[ ... ]
 
-[1] http://marc.info/?l=linux-pm&m=137589225305971&w=2
---
-Regards,
-Nishanth Menon
+> +
+> +static struct cpuidle_driver bl_idle_big_driver =3D {
+> +	.name =3D "big_idle",
+> +	.owner =3D THIS_MODULE,
+> +	.states[0] =3D ARM_CPUIDLE_WFI_STATE,
+> +	.states[1] =3D {
+> +		.enter			=3D bl_enter_powerdown,
+> +
+> +		.exit_latency		=3D 500,
+
+Extra line between enter and exit_latency.
+
+> +		.target_residency	=3D 2000,
+> +		.flags			=3D CPUIDLE_FLAG_TIME_VALID |
+> +					  CPUIDLE_FLAG_TIMER_STOP,
+> +		.name			=3D "C1",
+> +		.desc			=3D "ARM big-cluster power down",
+> +	},
+> +	.state_count =3D 2,
+> +};
+
+Thanks
+  -- Daniel
+
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
