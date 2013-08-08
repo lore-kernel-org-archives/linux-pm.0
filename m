@@ -1,38 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/6] ARM: Tegra: Add CPU's OPPs for using cpufreq-cpu0 driver
-Date: Thu, 8 Aug 2013 19:41:13 +0530
-Message-ID: <CAKohpon=GGn5-8ucTrrf6TyPMn3+1Oh6Sd5bAj_ztpVDONZ3QA@mail.gmail.com>
-References: <cover.1375886595.git.viresh.kumar@linaro.org>
-	<d4cd498d9b63d761039b025216e65278dc8e0e37.1375886595.git.viresh.kumar@linaro.org>
-	<52028719.8070908@wwwdotorg.org>
-	<CAKohpo=MpOyMGFTGeZWmoCRwmZ7+nQtP_yCGokPanEVYL0xbMw@mail.gmail.com>
-	<52029811.9080704@wwwdotorg.org>
-	<1375970318.4276.52.camel@weser.hi.pengutronix.de>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH 17/35] cpufreq: kirkwood: use
+ cpufreq_table_validate_and_show()
+Date: Thu, 8 Aug 2013 16:16:31 +0200
+Message-ID: <20130808141631.GG29815@lunn.ch>
+References: <cover.1375964117.git.viresh.kumar@linaro.org>
+ <8b7f30f52b99c21697168d77f1fae298dad50226.1375964117.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1375970318.4276.52.camel@weser.hi.pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linaro-kernel@lists.linaro.org, swarren@nvidia.com, Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, Rob Herring <rob.herring@calxeda.com>, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <8b7f30f52b99c21697168d77f1fae298dad50226.1375964117.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>
 List-Id: linux-pm@vger.kernel.org
 
-On 8 August 2013 19:28, Lucas Stach <l.stach@pengutronix.de> wrote:
-> From what I learned those voltage levels are dependent on both the
-> Speedo and the process ID of the specific Tegra processor. So you really
-> get a two dimensional mapping table instead of a single OPP.
-> Also you can not scale the CPU voltage on it's own, but have to make
-> sure the core voltage isn't too far away from. Then core voltage also
-> depends on the operating states of engines like GR2D or even display.
+On Thu, Aug 08, 2013 at 07:18:19PM +0530, Viresh Kumar wrote:
+> Lets use cpufreq_table_validate_and_show() instead of calling
+> cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
+> 
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/kirkwood-cpufreq.c | 10 +---------
+>  1 file changed, 1 insertion(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> index 45e4d7f..336f171 100644
+> --- a/drivers/cpufreq/kirkwood-cpufreq.c
+> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
+> @@ -125,19 +125,11 @@ static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
+>  /* Module init and exit code */
+>  static int kirkwood_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  {
+> -	int result;
+> -
+>  	/* cpuinfo and default policy values */
+>  	policy->cpuinfo.transition_latency = 5000; /* 5uS */
+>  	policy->cur = kirkwood_cpufreq_get_cpu_frequency(0);
+>  
+> -	result = cpufreq_frequency_table_cpuinfo(policy, kirkwood_freq_table);
+> -	if (result)
+> -		return result;
+> -
+> -	cpufreq_frequency_table_get_attr(kirkwood_freq_table, policy->cpu);
+> -
+> -	return 0;
+> +	return cpufreq_table_validate_and_show(policy, kirkwood_freq_table);
+>  }
+>  
+>  static int kirkwood_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+> -- 
+> 1.7.12.rc2.18.g61b472e
 
-So if they depend on a certain type of SoC, which they should, then we
-can get these initialized from that SoC's dts/dtsi file instead of a common
-file.. And so that would resolve the issue you just reported.
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
-Now I haven't proposed in the patch that we will change these voltage
-levels at all.. This is regulator specific code and would come into play
-only when regulators are registered for cpu.. Otherwise we will just
-play with frequency..
-
-Passing OPP instead of just list of frequencies is the generic way this
-is done now a days..
+Thanks
+	Andrew 
