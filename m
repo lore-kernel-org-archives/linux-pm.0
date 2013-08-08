@@ -1,101 +1,138 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 2/6] ARM: Tegra: Add CPU's OPPs for using cpufreq-cpu0
- driver
-Date: Thu, 08 Aug 2013 12:55:30 -0600
-Message-ID: <5203E9A2.4080500@wwwdotorg.org>
-References: <cover.1375886595.git.viresh.kumar@linaro.org> <d4cd498d9b63d761039b025216e65278dc8e0e37.1375886595.git.viresh.kumar@linaro.org> <52028719.8070908@wwwdotorg.org> <CAKohpo=MpOyMGFTGeZWmoCRwmZ7+nQtP_yCGokPanEVYL0xbMw@mail.gmail.com> <52029811.9080704@wwwdotorg.org> <CAKohpom658XKf5qPb3Wekb_uRfBEGHSxE=T06tEi30UTQ4K=Sg@mail.gmail.com>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Subject: [PATCH 1/2] time: allow changing the timekeeper clock frequency
+Date: Thu, 8 Aug 2013 15:34:38 -0400
+Message-ID: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom658XKf5qPb3Wekb_uRfBEGHSxE=T06tEi30UTQ4K=Sg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ian.campbell@citrix.com>, Mark Rutland <Mark.Rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <rob.herring@calxeda.com>
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/07/2013 08:57 PM, Viresh Kumar wrote:
-> On 8 August 2013 00:25, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> On 08/07/2013 12:06 PM, Viresh Kumar wrote:
->>> On 7 August 2013 23:12, Stephen Warren <swarren@wwwdotorg.org> wrote:
->>>> On 08/07/2013 08:46 AM, Viresh Kumar wrote:
->>>>> cpufreq-cpu0 driver needs OPPs to be present in DT which can be probed by it to
->>>>> get frequency table. This patch adds OPPs and clock-latency to tegra cpu0 node
->>>>> for multiple SoCs.
->>>>>
->>>>> Voltage levels aren't used until now for tegra and so a flat value which would
->>>>> eventually be ignored is used to represent voltage.
->>>>
->>>> This patch is problematic w.r.t. DT being an ABI.
->>>
->>> :(
->>>
->>>> We can certainly add new optional properties to a DT binding that enable
->>>> new features. However, a new version of a binding can't require new
->>>> properties to exist that didn't before, since that means that old DTs
->>>> won't work with new kernels that require the new properties.
->>>
->>> To be honest I didn't get it completely. You meant operating-points
->>> wasn't present before? Its here:
->>>
->>> Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->>> Documentation/devicetree/bindings/power/opp.txt
->>>
->>> Or you meant, Tegra never required voltage levels and we are getting
->>> them in here.
->>
->> The current Tegra *.dts files do not contain this property. The current
->> Tegra *.dts files must continue to work without modification in future
->> kernels.
-> 
-> But that can't be true always.. Specially when we are moving things to
-> DT...
+On the tile architecture, we use the processor clock tick as the time
+source.  However, when we perform dynamic frequency adjustment and
+modify the clock rate of the core, we have to update the timekeeper
+state to account for the new frequency, as well as for the time it took
+to actually modify the frequency across the chip as a whole.
 
-It has to be, or DT isn't an ABI.
+This change introduces two new functions, timekeeping_chfreq(), which
+changes the frequency, plus timekeeping_chfreq_prep(), used to put the
+timekeeping system in a state that is ready for a frequency change.
+More information is in the comments for the new functions.
 
-Since DT is defined as being an ABI, it has to be true.
+Signed-off-by: Chris Metcalf <cmetcalf@tilera.com>
+---
+If these patches are OK, I can push them as part of the tile tree.
+Otherwise, they should probably be pushed through a single tree either
+by the timekeeping folks or (more likely?) the cpu frequency driver folks.
+Let me know what makes the most sense; for now they are in tile-next.
 
-The solution here that allows DT to be an ABI is to be the data into the
-drivers (or core SoC support code) rather than DT.
+ include/linux/clocksource.h |  5 +++
+ kernel/time/timekeeping.c   | 78 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 83 insertions(+)
 
-> For example, we are moving your DMA driver to DT and hence in the
-> platform code, we are making a new DT node + removing static
-> platform device.
-> 
-> Now, old DT can't work with new kernel... That is just not possible.
-> That statement might be true for cases where we are just upgrading
-> existing DT support (but I doubt it there as well :) )..
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index dbbf8aa..423cb82 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -327,6 +327,11 @@ static inline void __clocksource_updatefreq_khz(struct clocksource *cs, u32 khz)
+ 
+ extern int timekeeping_notify(struct clocksource *clock);
+ 
++extern int timekeeping_chfreq_prep(struct clocksource *clock, cycle_t
++				   *start_cycle);
++extern void timekeeping_chfreq(unsigned int freq, cycle_t end_cycle,
++			       u64 delta_ns);
++
+ extern cycle_t clocksource_mmio_readl_up(struct clocksource *);
+ extern cycle_t clocksource_mmio_readl_down(struct clocksource *);
+ extern cycle_t clocksource_mmio_readw_up(struct clocksource *);
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 48b9fff..9703627 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -1737,3 +1737,81 @@ void xtime_update(unsigned long ticks)
+ 	do_timer(ticks);
+ 	write_sequnlock(&jiffies_lock);
+ }
++
++/**
++ * timekeeping_chfreq_prep() - prepare to change the frequency of the
++ *    clocksource being used for timekeeping
++ * @clock:		Pointer to the clock source whose frequency will be
++ *			changed.  If this is not the clocksource being used
++ *			or timekeeping, the routine does nothing and
++ *			returns nonzero; otherwise, it prepares for the
++ *			frequency change and returns zero.
++ * @start_cycle:	Pointer to a value which will be set to the current
++ *			cycle count for @clock, in the old clock domain.
++ *
++ * This routine is used when changing processor speed on a system whose
++ * clocksource is dependent upon that speed.  The normal calling sequence
++ * is:
++ *
++ * - Call timekeeping_chfreq_prep(), to get ready for the change and to
++ *   ensure that the current clocksource is what you think it is.
++ *
++ * - Change the actual processor speed.
++ *
++ * - Call timkeeping_chfreq() to change the clocksource frequency and
++ *   adjust the timekeeping parameters to account for the time spent
++ *   doing the frequency change.
++ *
++ * Any timekeeping operations performed while this is happening are likely
++ * to cause problems.  The best way to prevent this from happening is to
++ * perform all of those steps in a routine run via stop_machine().
++ */
++int timekeeping_chfreq_prep(struct clocksource *clock, cycle_t *start_cycle)
++{
++	if (timekeeper.clock != clock)
++		return 1;
++
++	timekeeping_forward_now(&timekeeper);
++	*start_cycle = timekeeper.clock->cycle_last;
++
++	return 0;
++}
++
++/**
++ * timekeeping_chfreq() - change the frequency of the clocksource being
++ *   used for timekeeping, and then recompute the internal timekeeping
++ *   parameters which depend upon that
++ * @freq:		New frequency for the clocksource, in hertz.
++ * @end_cycle:		Cycle count, in the new clock domain.
++ * @delta_ns:		Time delta in ns between start_cycle (as returned
++ *			from timekeeping_chfreq_prep()) and end_cycle.
++ *
++ * See the timekeeping_chfreq_prep() description for how this routine is
++ * used.
++ */
++void timekeeping_chfreq(unsigned int freq, cycle_t end_cycle, u64 delta_ns)
++{
++	struct clocksource *clock = timekeeper.clock;
++
++	write_seqlock(&jiffies_lock);
++	__clocksource_updatefreq_hz(clock, freq);
++	tk_setup_internals(&timekeeper, clock);
++
++	/*
++	 * The timekeeping_forward_now() done in timekeeping_chfreq_prep()
++	 * made xtime consistent with the timesource as of a cycle count
++	 * which was provided to the caller as *start_cycle.  Then, we
++	 * spent a bunch of time actually changing the processor frequency.
++	 * Finally, timekeeper_setup_internals() updated cycle_last in the
++	 * clocksource to match the current cycle count, but didn't update
++	 * xtime.  Thus, the current time is now wrong by the time we spent
++	 * doing the frequency change.  To fix this, we need to backdate
++	 * the clocksource's cycle_last so that it is again consistent with
++	 * xtime.
++	 */
++	clock->cycle_last = end_cycle - (delta_ns * freq) / 1000000000;
++
++	write_sequnlock(&jiffies_lock);
++
++	tick_clock_notify();
++}
+-- 
+1.8.3.1
 
-Well yes, converting existing platforms to DT piece-meal was probably a
-mistake in retrospect. What we should have done is added parallel DT and
-non-DT support, and only allow features to be enabled when booting DT if
-they were triggered by DT nodes, and never allowed additional drivers to
-be registered by board files.
-
-Your point is indeed why suddenly deciding that DT is an ABI when it
-wasn't being enforced before is painful.
-
->>>> As such, I believe we do need some Tegra-specific piece of code that
->>>> defines these OPP tables in the kernel, so that the operating-points
->>>> property is not needed.
->>>
->>> Generic cpufreq driver depends on OPP library and so somebody has
->>> to provide them. Now you can do it by calling opp_add() for each OPP
->>> you have or otherwise.
->>
->> Sure. That's what the Tegra-specific cpufreq driver should do. It should
->> be the top-level cpufreq driver. If parts of the code can be implemented
->> by library functions or a core parameterizable driver, then presumably
->> the Tegra driver would simply exist to provide those parameters and/or
->> callback functions to the generic driver.
-> 
-> That would be something similar to what we are discussing on other
-> thread about new platform device...
-> 
-> You are asking me to go back to platform specific code instead of DT.
-> When there exists a generic enough way of providing this information
-> via DT, why should we put this in a driver?
-
-I think that drivers should include all data that doesn't need to vary;
-there's no point putting data into DT just to parse it out into the same
-tables that the driver could have embedded itself from the start.
