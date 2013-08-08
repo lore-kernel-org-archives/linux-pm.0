@@ -1,59 +1,32 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 17/35] cpufreq: kirkwood: use
- cpufreq_table_validate_and_show()
-Date: Thu, 8 Aug 2013 16:16:31 +0200
-Message-ID: <20130808141631.GG29815@lunn.ch>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 21/35] cpufreq: omap: use cpufreq_table_validate_and_show()
+Date: Thu, 8 Aug 2013 10:19:05 -0400
+Message-ID: <5203A8D9.6080901@ti.com>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
- <8b7f30f52b99c21697168d77f1fae298dad50226.1375964117.git.viresh.kumar@linaro.org>
+ <0cc200b71d5c1584c80845a1384aef1919fd779b.1375964117.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <8b7f30f52b99c21697168d77f1fae298dad50226.1375964117.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <0cc200b71d5c1584c80845a1384aef1919fd779b.1375964117.git.viresh.kumar@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 08, 2013 at 07:18:19PM +0530, Viresh Kumar wrote:
+On Thursday 08 August 2013 09:48 AM, Viresh Kumar wrote:
 > Lets use cpufreq_table_validate_and_show() instead of calling
 > cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 > 
-> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/cpufreq/kirkwood-cpufreq.c | 10 +---------
->  1 file changed, 1 insertion(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-> index 45e4d7f..336f171 100644
-> --- a/drivers/cpufreq/kirkwood-cpufreq.c
-> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
-> @@ -125,19 +125,11 @@ static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
->  /* Module init and exit code */
->  static int kirkwood_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  {
-> -	int result;
-> -
->  	/* cpuinfo and default policy values */
->  	policy->cpuinfo.transition_latency = 5000; /* 5uS */
->  	policy->cur = kirkwood_cpufreq_get_cpu_frequency(0);
->  
-> -	result = cpufreq_frequency_table_cpuinfo(policy, kirkwood_freq_table);
-> -	if (result)
-> -		return result;
-> -
-> -	cpufreq_frequency_table_get_attr(kirkwood_freq_table, policy->cpu);
-> -
-> -	return 0;
-> +	return cpufreq_table_validate_and_show(policy, kirkwood_freq_table);
->  }
->  
->  static int kirkwood_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> -- 
-> 1.7.12.rc2.18.g61b472e
-
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-
-Thanks
-	Andrew 
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
