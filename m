@@ -1,95 +1,49 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 3/3] cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver
-Date: Thu, 8 Aug 2013 17:18:27 +0100
-Message-ID: <20130808161826.GB3742@e102568-lin.cambridge.arm.com>
-References: <1375875813-13358-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1375875813-13358-4-git-send-email-lorenzo.pieralisi@arm.com>
- <5203C098.9000701@linaro.org>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 1/6] clk: Tegra: Add CPU0 clock driver
+Date: Thu, 08 Aug 2013 12:50:28 -0600
+Message-ID: <5203E874.7070907@wwwdotorg.org>
+References: <cover.1375886595.git.viresh.kumar@linaro.org> <8d192a13cb7e088943da40689d62bc6353bd8604.1375886595.git.viresh.kumar@linaro.org> <52028620.6000608@wwwdotorg.org> <CAKohpokVgcMfmKmjkxc9Dr3z6mBKad23uUdB4ydN_xzGHdfedQ@mail.gmail.com> <52028859.20008@wwwdotorg.org> <CAKohpokK7F7tYJnisVjF=NCRb9zUjQNzrFdXs+QsPSb4oqyytA@mail.gmail.com> <52029713.5070808@wwwdotorg.org> <CAKohpoky9-E2XoxAQy_oQ3sMxvAv5ZfBdDQPd6zUxcSwyKmzXg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59477 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234Ab3HHQSc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2013 12:18:32 -0400
-In-Reply-To: <5203C098.9000701@linaro.org>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpoky9-E2XoxAQy_oQ3sMxvAv5ZfBdDQPd6zUxcSwyKmzXg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Olof Johansson <olof@lixom.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-On Thu, Aug 08, 2013 at 05:00:24PM +0100, Daniel Lezcano wrote:
-> On 08/07/2013 01:43 PM, Lorenzo Pieralisi wrote:
-> > The big.LITTLE architecture is composed of two clusters of cpus. One cluster
-> > contains less powerful but more energy efficient processors and the other
-> > cluster groups the powerful but energy-intensive cpus.
-> > 
-> > The TC2 testchip implements two clusters of CPUs (A7 and A15 clusters in
-> > a big.LITTLE configuration) connected through a CCI interconnect that manages
-> > coherency of their respective L2 caches and intercluster distributed
-> > virtual memory messages (DVM).
-> > 
-> > TC2 testchip integrates a power controller that manages cores resets, wake-up
-> > IRQs and cluster low-power states. Power states are managed at cluster
-> > level, which means that voltage is removed from a cluster iff all cores
-> > in a cluster are in a wfi state. Single cores can enter a reset state
-> > which is identical to wfi in terms of power consumption but simplifies the
-> > way cluster states are entered.
-> > 
-> > This patch provides a multiple driver CPU idle implementation for TC2
-> > which paves the way for a generic big.LITTLE idle driver for all
-> > upcoming big.LITTLE based systems on chip.
-> > 
-> > The driver relies on the MCPM infrastructure to coordinate and manage
-> > core power states; in particular MCPM allows to suspend specific cores
-> > and hides the CPUs coordination required to shut-down clusters of CPUs.
-> > 
-> > Power down sequences for the respective clusters are implemented in the
-> > MCPM TC2 backend, with all code needed to clean caches and exit coherency.
-> > 
-> > The multiple driver CPU idle infrastructure allows to define different
-> > C-states for big and little cores, determined at boot by checking the
-> > part id of the possible CPUs and initializing the respective logical
-> > masks in the big and little drivers.
-> > 
-> > Current big.little systems are composed of A7 and A15 clusters, as
-> > implemented in TC2, but in the future that may change and the driver
-> > will have evolve to retrieve what is a 'big' cpu and what is a 'little'
-> > cpu in order to build the correct topology.
-> > 
-> > Cc: Kevin Hilman <khilman@linaro.org>
-> > Cc: Amit Kucheria <amit.kucheria@linaro.org>
-> > Cc: Olof Johansson <olof@lixom.net>
-> > Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > ---
+On 08/07/2013 08:42 PM, Viresh Kumar wrote:
+> On 8 August 2013 00:20, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> Right, and that's *exactly* what having a cpufreq driver is for; to
+>> implement the details of CPU clock management.
 > 
-> A nit below :/
+> cpufreq drivers used to keep such information since a long time,
+> probably because there wasn't another place to keep them and
+> provide generic API's (like generic clock framework).. And so this
+> replication started to get in place which we are trying to get rid of
+> now.
 > 
-> [ ... ]
+> All cpufreq drivers share a lot of common code which can go
+> away and so cpufreq-cpu0 was introduced..
 > 
-> > +
-> > +static struct cpuidle_driver bl_idle_big_driver = {
-> > +	.name = "big_idle",
-> > +	.owner = THIS_MODULE,
-> > +	.states[0] = ARM_CPUIDLE_WFI_STATE,
-> > +	.states[1] = {
-> > +		.enter			= bl_enter_powerdown,
-> > +
-> > +		.exit_latency		= 500,
-> 
-> Extra line between enter and exit_latency.
+> With this patchset this replication goes away for tegra atleast at
+> the cost of a platform specific clk-cpu driver.. I think that's a good
+> deal, isn't it?
 
-Gah, not anymore :)
+I think this patch series is simply moving the custom per-SoC code
+somewhere else (clock driver) so that the cpufreq drivers can be
+simpler. However, the clock drivers are more complex, and now represent
+concepts that aren't really clocks.
 
-Other than that, is it ready to go ? If nobody complains I have planned
-to send a pull request early next week, as soon as a stable branch for
-TC2 MCPM gets in arm-soc.
+So, no I'm not sure it's good.
 
-Thanks,
-Lorenzo
+> And that's the only way you can use these generic drivers that we
+> have...
 
+I don't think so. I think it's reasonable to have a per-SoC cpufreq
+driver whose primary content is the parameterization data and/or custom
+hooks for a unified core cpufreq driver. The duplicate parts of each
+cpufreq driver can be moved into the core cpufreq driver, but the
+non-duplicate parts remain. That's how many other subsystems work (MMC,
+USB, ASoC spring to mind).
