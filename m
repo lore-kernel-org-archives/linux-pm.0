@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 06/35] cpufreq: arm_big_little: use cpufreq_table_validate_and_show()
-Date: Thu,  8 Aug 2013 19:18:08 +0530
-Message-ID: <d7a79034d750bee261bbd83a9a5991da473afafe.1375964117.git.viresh.kumar@linaro.org>
+Subject: [PATCH 07/35] cpufreq: blackfin: use cpufreq_table_validate_and_show()
+Date: Thu,  8 Aug 2013 19:18:09 +0530
+Message-ID: <fb770a8203838709148d692427c2d3ca55327405.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
@@ -9,38 +9,31 @@ In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Steven Miao <realmz6@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
+Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/arm_big_little.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/cpufreq/blackfin-cpufreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 3549f07..5070273 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -165,7 +165,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 	if (ret)
- 		return ret;
+diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+index ef05978..54c0a0c 100644
+--- a/drivers/cpufreq/blackfin-cpufreq.c
++++ b/drivers/cpufreq/blackfin-cpufreq.c
+@@ -210,8 +210,7 @@ static int __bfin_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = 50000; /* 50us assumed */
  
--	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table[cur_cluster]);
-+	ret = cpufreq_table_validate_and_show(policy, freq_table[cur_cluster]);
- 	if (ret) {
- 		dev_err(cpu_dev, "CPU %d, cluster: %d invalid freq table\n",
- 				policy->cpu, cur_cluster);
-@@ -173,8 +173,6 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 		return ret;
- 	}
+ 	policy->cur = cclk;
+-	cpufreq_frequency_table_get_attr(bfin_freq_table, policy->cpu);
+-	return cpufreq_frequency_table_cpuinfo(policy, bfin_freq_table);
++	return cpufreq_table_validate_and_show(policy, bfin_freq_table);
+ }
  
--	cpufreq_frequency_table_get_attr(freq_table[cur_cluster], policy->cpu);
--
- 	if (arm_bL_ops->get_transition_latency)
- 		policy->cpuinfo.transition_latency =
- 			arm_bL_ops->get_transition_latency(cpu_dev);
+ static struct freq_attr *bfin_freq_attr[] = {
 -- 
 1.7.12.rc2.18.g61b472e
