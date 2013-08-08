@@ -1,1401 +1,1426 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC v02 5/5] Introduce Intel RAPL power capping driver
-Date: Thu,  8 Aug 2013 08:23:50 -0700
-Message-ID: <1375975430-9202-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [RFC v02 2/5] PowerCap: Add class driver
+Date: Thu,  8 Aug 2013 08:23:47 -0700
+Message-ID: <1375975430-9202-3-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1375975430-9202-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:13194 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:40656 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965933Ab3HHPZR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S965931Ab3HHPZR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Thu, 8 Aug 2013 11:25:17 -0400
 In-Reply-To: <1375975430-9202-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>
 
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Added power cap class driver, which provides an API for client drivers
+to use and provide a consistant sysfs interface to user mode.
+=46or details on API refer to PowerCappingFramework.txt under
+Documentation/powercap.
 
-RAPL(Running Average Power Limit) interface provides platform software
-with the ability to monitor, control, and get notifications on SOC
-power consumptions. Since its first appearance on Sandy Bridge, more
-features have being added to extend its usage. In RAPL, platforms are
-divided into domains for fine grained control. These domains include
-package, DRAM controller, CPU core (Power Plane 0), graphics uncore
-(power plane 1), etc.
-
-The purpose of this driver is to expose RAPL for userspace
-consumption. Overall, RAPL fits in the new powercap class driver in
-that platform level power capping controls are exposed via this
-generic interface.
-
-Zhang, Rui's initial RAPL driver was used as a reference and starting
-point. Many thanks.
-https://lkml.org/lkml/2011/5/26/93
-
-Unlike the patch above, which is mainly for monitoring, this driver
-focus on the control and usability by user applications.
-
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com=
+>
 Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- drivers/powercap/Kconfig      |    8 +
- drivers/powercap/Makefile     |    1 +
- drivers/powercap/intel_rapl.c | 1319 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 1328 insertions(+)
- create mode 100644 drivers/powercap/intel_rapl.c
+ drivers/powercap/Kconfig        |  16 +
+ drivers/powercap/Makefile       |   5 +
+ drivers/powercap/powercap_sys.c | 995 ++++++++++++++++++++++++++++++++=
+++++++++
+ include/linux/powercap.h        | 300 ++++++++++++
+ 4 files changed, 1316 insertions(+)
+ create mode 100644 drivers/powercap/Kconfig
+ create mode 100644 drivers/powercap/Makefile
+ create mode 100644 drivers/powercap/powercap_sys.c
+ create mode 100644 include/linux/powercap.h
 
 diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-index f70b7b9..7fd9d48 100644
---- a/drivers/powercap/Kconfig
-+++ b/drivers/powercap/Kconfig
-@@ -13,4 +13,12 @@ menuconfig POWERCAP_SUPPORT
- if POWERCAP_SUPPORT
- # Add client driver config here.
- 
-+config INTEL_RAPL
-+	tristate "Intel RAPL Support"
-+	default n
-+	---help---
-+	  RAPL (Running Average Power Limit) provides mechanisms to enforce
-+	  and monitor power limits of supported Intel CPUs. Limits can be
-+	  set by RAPL domains such as package, core, graphics, etc.
-+
- endif
-diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
-index f2acfed..a08b8b0 100644
---- a/drivers/powercap/Makefile
-+++ b/drivers/powercap/Makefile
-@@ -3,3 +3,4 @@
- #
- 
- obj-$(CONFIG_POWERCAP_SUPPORT)	+= powercap_sys.o
-+obj-$(CONFIG_INTEL_RAPL)       += intel_rapl.o
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
 new file mode 100644
-index 0000000..46642b8
+index 0000000..f70b7b9
 --- /dev/null
-+++ b/drivers/powercap/intel_rapl.c
-@@ -0,0 +1,1319 @@
++++ b/drivers/powercap/Kconfig
+@@ -0,0 +1,16 @@
++#
++# Generic powercap sysfs drivers configuration
++#
++
++menuconfig POWERCAP_SUPPORT
++	tristate "Generic powercap sysfs driver"
++	help
++	  A Power Capping Sysfs driver offers a generic mechanism for
++	  power capping. Usually it's made up of one or more controllers,
++	  power zones and constraints.
++	  If you want this support, you should say Y or M here.
++
++if POWERCAP_SUPPORT
++# Add client driver config here.
++
++endif
+diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
+new file mode 100644
+index 0000000..f2acfed
+--- /dev/null
++++ b/drivers/powercap/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for powercap drivers
++#
++
++obj-$(CONFIG_POWERCAP_SUPPORT)	+=3D powercap_sys.o
+diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powerca=
+p_sys.c
+new file mode 100644
+index 0000000..c15c8d4
+--- /dev/null
++++ b/drivers/powercap/powercap_sys.c
+@@ -0,0 +1,995 @@
 +/*
-+ * Intel Running Average Power Limit (RAPL) Driver
++ * powercap sysfs class driver
 + * Copyright (c) 2013, Intel Corporation.
 + *
-+ * This program is free software; you can redistribute it and/or modify it
++ * This program is free software; you can redistribute it and/or modif=
+y it
 + * under the terms and conditions of the GNU General Public License,
 + * version 2, as published by the Free Software Foundation.
 + *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * This program is distributed in the hope it will be useful, but WITH=
+OUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY =
+or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licen=
+se for
 + * more details.
 + *
-+ * You should have received a copy of the GNU General Public License along with
++ * You should have received a copy of the GNU General Public License a=
+long with
 + * this program; if not, write to the Free Software Foundation, Inc.
 + *
 + */
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/list.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
 +#include <linux/device.h>
-+#include <linux/thermal.h>
++#include <linux/err.h>
 +#include <linux/slab.h>
-+#include <linux/log2.h>
-+#include <linux/bitmap.h>
-+#include <linux/delay.h>
-+#include <linux/sysfs.h>
-+#include <linux/cpu.h>
 +#include <linux/powercap.h>
 +
-+#include <asm/processor.h>
-+#include <asm/cpu_device_id.h>
++#define POWERCAP_CONSTRAINT_NAME_LEN		20
++#define POWERCAP_ZONE_CONSTRAINT_DEV_NAME_LEN	30
 +
-+
-+/* bitmasks for RAPL MSRs, used by primitive access functions */
-+#define ENERGY_STATUS_MASK      0xffffffff
-+
-+#define POWER_LIMIT1_MASK       0x7FFF
-+#define POWER_LIMIT1_ENABLE     BIT(15)
-+#define POWER_LIMIT1_CLAMP      BIT(16)
-+
-+#define POWER_LIMIT2_MASK       (0x7FFFULL<<32)
-+#define POWER_LIMIT2_ENABLE     (0x1ULL<<47)
-+#define POWER_LIMIT2_CLAMP      (0x1ULL<<48)
-+#define POWER_PKG_LOCK          (0x1ULL<<63)
-+#define POWER_PP_LOCK           BIT(31)
-+
-+#define TIME_WINDOW1_MASK       (0x7F<<17)
-+#define TIME_WINDOW2_MASK       (0x7FULL<<49)
-+
-+#define POWER_UNIT_OFFSET	0
-+#define POWER_UNIT_MASK		0x0F
-+
-+#define ENERGY_UNIT_OFFSET	0x08
-+#define ENERGY_UNIT_MASK	0x1F00
-+
-+#define TIME_UNIT_OFFSET	0x10
-+#define TIME_UNIT_MASK		0xF0000
-+
-+#define POWER_INFO_MAX_MASK     (0x7fffULL<<32)
-+#define POWER_INFO_MIN_MASK     (0x7fffULL<<16)
-+#define POWER_INFO_MAX_TIME_WIN_MASK     (0x3fULL<<48)
-+#define POWER_INFO_THERMAL_SPEC_MASK     0x7fff
-+
-+#define PERF_STATUS_THROTTLE_TIME_MASK 0xffffffff
-+#define PP_POLICY_MASK         0x1F
-+
-+/* Non HW constants */
-+#define RAPL_PRIMITIVE_DERIVED       BIT(1) /* not from raw data */
-+#define RAPL_PRIMITIVE_DUMMY         BIT(2)
-+
-+/* scale RAPL units to avoid floating point math inside kernel */
-+#define POWER_UNIT_SCALE     (1000000)
-+#define ENERGY_UNIT_SCALE    (1000000)
-+#define TIME_UNIT_SCALE      (1000000)
-+
-+#define TIME_WINDOW_MAX_MSEC 40000
-+#define TIME_WINDOW_MIN_MSEC 250
-+
-+enum unit_type {
-+	NA_UNIT, /* no translation */
-+	POWER_UNIT,
-+	ENERGY_UNIT,
-+	TIME_UNIT,
-+};
-+
-+enum rapl_domain_type {
-+	RAPL_DOMAIN_PKG, /* entire package/socket */
-+	RAPL_DOMAIN_PP0, /* core power plane */
-+	RAPL_DOMAIN_PP1, /* graphics uncore */
-+	RAPL_DOMAIN_DRAM,/* DRAM controller */
-+	RAPL_DOMAIN_MAX,
-+};
-+
-+enum rapl_domain_msr_id {
-+	RAPL_DOMAIN_MSR_LIMIT,
-+	RAPL_DOMAIN_MSR_STATUS,
-+	RAPL_DOMAIN_MSR_PERF,
-+	RAPL_DOMAIN_MSR_POLICY,
-+	RAPL_DOMAIN_MSR_INFO,
-+	RAPL_DOMAIN_MSR_MAX,
-+};
-+
-+/* per domain data, some are optional */
-+enum rapl_primitives {
-+	energy,
-+	power_limit1,
-+	power_limit2,
-+	lock,
-+
-+	pl1_enable,
-+	pl1_clamp,
-+	pl2_enable,
-+	pl2_clamp,
-+
-+	time_window1,
-+	time_window2,
-+	thermal_spec_power,
-+	max_power,
-+
-+	min_power,
-+	max_window,
-+	throttle_time,
-+	prio_level,
-+
-+	/* below are not raw primitive data */
-+	average_power,
-+	nr_rapl_primitives,
-+};
-+
-+#define NR_RAW_PRIMITIVES (nr_rapl_primitives - 2)
-+
-+/* Can be expanded to include events, etc.*/
-+struct rapl_domain_data {
-+	u64 primitives[nr_rapl_primitives];
-+	unsigned long timestamp;
-+};
-+
-+
-+#define	DOMAIN_STATE_INACTIVE           BIT(0)
-+#define	DOMAIN_STATE_POWER_LIMIT_SET    BIT(1)
-+#define DOMAIN_STATE_BIOS_LOCKED        BIT(2)
-+
-+#define NR_POWER_LIMITS (2)
-+struct rapl_power_limit {
-+	struct powercap_zone_constraint *constraint;
-+	int prim_id; /* primitive ID used to enable */
-+	struct rapl_domain *domain;
-+	const char *name;
-+};
-+
-+static const char pl1_name[] = "long_term";
-+static const char pl2_name[] = "short_term";
-+
-+struct rapl_domain {
-+	const char *name;
-+	enum rapl_domain_type id;
-+	int msrs[RAPL_DOMAIN_MSR_MAX];
-+	struct powercap_zone_device *pzone;
-+	struct powercap_zone_ops *ops;
-+	struct rapl_domain_data rdd;
-+	struct rapl_power_limit rpl[NR_POWER_LIMITS];
-+	u64 attr_map; /* track capabilities */
-+	unsigned int state;
-+	int pkg_id;
-+};
-+
-+/* Each physical package contains multiple domains, these are the common
-+ * data across RAPL domains within a package.
++/**
++ * struct powercap_zone_node- Defines a node containing power zones
++ * @next:		Pointer to sibling
++ * @children_count:	Number of children for this node
++ * @child:		Pointer to first child
++ * @parent:		Pointer to the parent
++ * @pcd_dev:		pointer to power zone device in this node
++ *
++ * A power zone node to be part of a tree.
 + */
-+struct rapl_pkg {
-+	unsigned int id; /* physical package/socket id */
-+	unsigned int nr_domains;
-+	unsigned long domain_map; /* bit map of active domains */
-+	unsigned int power_unit_divisor;
-+	unsigned int energy_unit_divisor;
-+	unsigned int time_unit_divisor;
-+	struct rapl_domain *domains;
-+	struct powercap_zone_device *pzone; /* keep track of parent zone */
-+	int nr_cpus; /* active cpus on the pkg, topology info is lost during
-+		      * cpu hotplug. so we have to track ourselves.
-+		      */
-+	unsigned long power_limit_irq; /* keep track of pkg power limit
-+					* notify interrupt enable status.
-+					*/
-+	struct list_head plist;
++struct powercap_zone_node {
++	struct powercap_zone_node *next;
++	int children_count;
++	struct powercap_zone_node *child;
++	struct powercap_zone_node *parent;
++	struct powercap_zone_device *pcd_dev;
 +};
-+#define PACKAGE_PLN_INT_SAVED   BIT(0)
-+#define MAX_PRIM_NAME (32)
 +
-+/* per domain data. used to describe individual knobs such that access function
-+ * can be consolidated into one instead of many inline functions.
++/**
++ * struct powercap_zone_constraint_attrs - Define constraint attribute
++ * @name:		Constraint attribute name.
++ * @attr:		Device attribute
++ *
++ * Define each attribute, with a name, based on the constraint id.
 + */
-+struct rapl_primitive_info {
-+	const char *name;
-+	u64 mask;
-+	int shift;
-+	enum rapl_domain_msr_id id;
-+	enum unit_type unit;
-+	u32 flag;
++struct powercap_constraint_attr {
++	char name[POWERCAP_ZONE_CONSTRAINT_DEV_NAME_LEN + 1];
++	struct device_attribute attr;
 +};
 +
-+#define PRIMITIVE_INFO_INIT(p, m, s, i, u, f) {	\
-+		.name = #p,			\
-+		.mask = m,			\
-+		.shift = s,			\
-+		.id = i,			\
-+		.unit = u,			\
-+		.flag = f			\
-+	}
-+
-+static void rapl_init_domains(struct rapl_pkg *rp);
-+static int rapl_read_data_raw(struct rapl_domain *rd,
-+			enum rapl_primitives prim,
-+			bool xlate, u64 *data);
-+static int rapl_write_data_raw(struct rapl_domain *rd,
-+			enum rapl_primitives prim,
-+			unsigned long long value);
-+static u64 rapl_unit_xlate(int pkg, enum unit_type type, u64 value, int to_raw);
-+static void pkg_power_limit_irq_save(int pkg_id);
-+
-+static LIST_HEAD(rpkgs); /* guarded by CPU hotplug lock */
-+
-+static const char * const rapl_domain_names[] = {
-+	"package",
-+	"core",
-+	"uncore",
-+	"dram",
++/**
++ * struct powercap_zone_constraint- Defines instance of a constraint
++ * @id:			Instance Id of this constraint.
++ * @pcd_dev:		Pointer to the power zone for this constraint.
++ * @ops:		Pointer to the constraint callbacks.
++ * @priv_data:		Constaint private data
++ * @list:		Link to other constraints for this power zone.
++ *
++ * This defines a constraint instance.
++ */
++struct powercap_zone_constraint {
++	int id;
++	struct powercap_zone_device *pcd_dev;
++	struct powercap_zone_constraint_ops *ops;
++	struct powercap_constraint_attr power_limit_attr;
++	struct powercap_constraint_attr time_window_attr;
++	struct powercap_constraint_attr max_power_attr;
++	struct powercap_constraint_attr min_power_attr;
++	struct powercap_constraint_attr max_time_window_attr;
++	struct powercap_constraint_attr min_time_window_attr;
++	struct powercap_constraint_attr name_attr;
++	struct list_head list;
 +};
 +
-+static struct powercap_controller *pccr; /* PowerCap Controller */
++/* A list of powercap controllers */
++static LIST_HEAD(powercap_cntrl_list);
++/* Mutex to protect list of powercap controllers */
++static DEFINE_MUTEX(powercap_cntrl_list_lock);
 +
-+/* caller to ensure CPU hotplug lock is held */
-+static struct rapl_pkg *find_package_by_id(int id)
-+{
-+	struct rapl_pkg *rp;
++/*
++ * Power Zone attributes: Each power zone registered with this framewo=
+rk
++ * contains two types of attributes:
++ * One with fixed name: E.g. energy_uj
++ * One with variable name: E.g. constraint_0_power_limit_uw
++ * Using two attribute groups, which will be used during device_regist=
+er.
++ * The fixed name attributes are using static DEVICE_ATTR.
++ * For variable name device_attribute fields are initialized by assign=
+ing
++ * name (constraint_X_power_limit_uw, here X can be 0 to max integer).
++ */
 +
-+	list_for_each_entry(rp, &rpkgs, plist) {
-+		if (rp->id == id)
-+			return rp;
-+	}
++/* Power zone ro attributes define */
++#define powercap_attr_ro(_name)		\
++	static DEVICE_ATTR(_name, 0444, show_##_name, NULL)
 +
-+	return NULL;
++/* Power zone rw attributes define */
++#define powercap_attr_rw(_name)		\
++	static DEVICE_ATTR(_name, 0644, show_##_name, store_##_name)
++
++/* constraint attributes define rw */
++#define powercap_const_attr_rw(_name)		\
++	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, \
++				store_constraint_##_name)
++/* constraint attributes define ro */
++#define powercap_const_attr_ro(_name)		\
++	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, NULL)
++
++/* Power zone show function */
++#define define_device_show(_attr)		\
++static ssize_t show_##_attr(struct device *dev, \
++					struct device_attribute *dev_attr,\
++					char *buf) \
++{ \
++	u64 value; \
++	ssize_t len =3D -EINVAL; \
++	struct powercap_zone_device *pcd_dev =3D dev_get_drvdata(dev); \
++	\
++	if (pcd_dev && pcd_dev->ops && pcd_dev->ops->get_##_attr) { \
++		mutex_lock(&pcd_dev->lock); \
++		if (!pcd_dev->ops->get_##_attr(pcd_dev, &value)) \
++			len =3D sprintf(buf, "%lld\n", value); \
++		mutex_unlock(&pcd_dev->lock); \
++	} \
++	\
++	return len; \
 +}
 +
-+/* caller to ensure CPU hotplug lock is held */
-+static int find_active_cpu_on_pkg(int pkg_id)
-+{
-+	int i;
-+
-+	for_each_online_cpu(i) {
-+		if (topology_physical_package_id(i) == pkg_id)
-+			return i;
-+	}
-+	/* all CPUs on this package are offline */
-+
-+	return -ENODEV;
++/* Power zone store function; only reset is possible */
++#define define_device_store(_attr)		\
++static ssize_t store_##_attr(struct device *dev,\
++				struct device_attribute *dev_attr, \
++				const char *buf, size_t count) \
++{ \
++	int err; \
++	struct powercap_zone_device *pcd_dev =3D dev_get_drvdata(dev); \
++	u64 value; \
++	\
++	err =3D kstrtoull(buf, 10, &value); \
++	if (err) \
++		return -EINVAL; \
++	if (value) \
++		return -EINVAL; \
++	if (pcd_dev && pcd_dev->ops && pcd_dev->ops->reset_##_attr) { \
++		mutex_lock(&pcd_dev->lock); \
++		if (!pcd_dev->ops->reset_##_attr(pcd_dev)) { \
++			mutex_unlock(&pcd_dev->lock); \
++			return count; \
++		} \
++		mutex_unlock(&pcd_dev->lock); \
++	} \
++	\
++	return -EINVAL; \
 +}
 +
-+/* caller must hold cpu hotplug lock */
-+static void rapl_cleanup_data(void)
++/* Find constraint pointer from an ID */
++static struct powercap_zone_constraint *find_constraint(
++			struct powercap_zone_device *pcd_dev, int id)
 +{
-+	struct rapl_pkg *p, *tmp;
++	struct powercap_zone_constraint *pconst =3D NULL;
 +
-+	if (list_empty(&rpkgs))
-+		return;
-+	list_for_each_entry_safe(p, tmp, &rpkgs, plist) {
-+		kfree(p->domains);
-+		list_del(&p->plist);
++	list_for_each_entry(pconst, &pcd_dev->constraint_list, list) {
++		if (pconst->id =3D=3D id) {
++			return pconst;
++			break;
++		}
++	}
++
++	return pconst;
++}
++
++/* Power zone constraint show function */
++#define define_device_constraint_show(_attr) \
++static ssize_t show_constraint_##_attr(struct device *dev, \
++				struct device_attribute *dev_attr,\
++				char *buf) \
++{ \
++	u64 value; \
++	ssize_t len =3D -ENODATA; \
++	struct powercap_zone_device *pcd_dev =3D dev_get_drvdata(dev); \
++	int id; \
++	struct powercap_zone_constraint *pconst;\
++	\
++	if (!pcd_dev) \
++		return -EINVAL; \
++	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id)) \
++		return -EINVAL; \
++	mutex_lock(&pcd_dev->lock); \
++	pconst =3D find_constraint(pcd_dev, id); \
++	if (pconst && pconst->ops && pconst->ops->get_##_attr) { \
++		if (!pconst->ops->get_##_attr(pcd_dev, id, &value)) \
++			len =3D sprintf(buf, "%lld\n", value); \
++	} \
++	mutex_unlock(&pcd_dev->lock); \
++	\
++	return len; \
++}
++
++/* Power zone constraint store function */
++#define define_device_constraint_store(_attr) \
++static ssize_t store_constraint_##_attr(struct device *dev,\
++				struct device_attribute *dev_attr, \
++				const char *buf, size_t count) \
++{ \
++	int err; \
++	u64 value; \
++	struct powercap_zone_device *pcd_dev =3D dev_get_drvdata(dev); \
++	int id; \
++	struct powercap_zone_constraint *pconst;\
++	\
++	if (!pcd_dev) \
++		return -EINVAL; \
++	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id)) \
++		return -EINVAL; \
++	err =3D kstrtoull(buf, 10, &value); \
++	if (err) \
++		return -EINVAL; \
++	mutex_lock(&pcd_dev->lock); \
++	pconst =3D find_constraint(pcd_dev, id); \
++	if (pconst && pconst->ops && pconst->ops->set_##_attr) { \
++		if (!pconst->ops->set_##_attr(pcd_dev, id, value)) { \
++			mutex_unlock(&pcd_dev->lock); \
++			return count; \
++		} \
++	} \
++	mutex_unlock(&pcd_dev->lock); \
++	\
++	return -ENODATA; \
++}
++
++/* Power zone information callbacks */
++define_device_show(power_uw);
++define_device_store(power_uw);
++define_device_show(max_power_range_uw);
++define_device_show(energy_uj);
++define_device_store(energy_uj);
++define_device_show(max_energy_range_uj);
++
++/* Power zone attributes */
++powercap_attr_ro(max_power_range_uw);
++powercap_attr_rw(power_uw);
++powercap_attr_ro(max_energy_range_uj);
++powercap_attr_rw(energy_uj);
++
++/* Power zone constraint attributes callbacks */
++define_device_constraint_show(power_limit_uw);
++define_device_constraint_store(power_limit_uw);
++define_device_constraint_show(time_window_us);
++define_device_constraint_store(time_window_us);
++define_device_constraint_show(max_power_uw);
++define_device_constraint_show(min_power_uw);
++define_device_constraint_show(max_time_window_us);
++define_device_constraint_show(min_time_window_us);
++
++static ssize_t show_constraint_name(struct device *dev,
++				struct device_attribute *dev_attr,
++				char *buf)
++{
++	const char *name;
++	struct powercap_zone_device *pcd_dev =3D dev_get_drvdata(dev);
++	int id;
++	ssize_t len =3D -ENODATA;
++	struct powercap_zone_constraint *pconst;
++
++	if (!pcd_dev)
++		return -EINVAL;
++	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id))
++		return -EINVAL;
++	mutex_lock(&pcd_dev->lock);
++	pconst =3D find_constraint(pcd_dev, id);
++	if (pconst && pconst->ops && pconst->ops->get_name) {
++		name =3D pconst->ops->get_name(pcd_dev, id);
++		if (name) {
++			snprintf(buf, POWERCAP_CONSTRAINT_NAME_LEN,
++								"%s\n", name);
++			buf[POWERCAP_CONSTRAINT_NAME_LEN] =3D '\0';
++			len =3D strlen(buf);
++		}
++	}
++	mutex_unlock(&pcd_dev->lock);
++
++	return len;
++}
++
++static void create_constraint_attribute(struct powercap_zone_constrain=
+t *pconst,
++				const char *name,
++				int mode,
++				struct powercap_constraint_attr *attr,
++				ssize_t (*show)(struct device *,
++					struct device_attribute *, char *),
++				ssize_t (*store)(struct device *,
++					struct device_attribute *,
++				const char *, size_t)
++				)
++{
++	snprintf(attr->name, POWERCAP_ZONE_CONSTRAINT_DEV_NAME_LEN,
++					"constraint_%d_%s", pconst->id, name);
++	attr->name[POWERCAP_ZONE_CONSTRAINT_DEV_NAME_LEN] =3D '\0';
++	attr->attr.attr.name =3D attr->name;
++	attr->attr.attr.mode =3D mode;
++	attr->attr.show =3D show;
++	attr->attr.store =3D store;
++}
++
++/* Create a constraint attribute, if it has required call backs */
++static int create_constraints(struct powercap_zone_constraint *pconst)
++{
++	int count;
++	struct powercap_zone_device *pcd_dev;
++
++	if (!pconst->ops)
++		return -EINVAL;
++	if (!pconst->ops->get_power_limit_uw ||
++		!pconst->ops->set_power_limit_uw ||
++		!pconst->ops->get_time_window_us ||
++		!pconst->ops->set_time_window_us) {
++		return -EINVAL;
++	}
++	pcd_dev =3D pconst->pcd_dev;
++	count =3D pcd_dev->attrs.const_attr_count;
++	if (count >=3D
++		(POWERCAP_CONSTRAINTS_MAX_ATTRS - POWERCAP_CONSTRAINTS_ATTRS))
++		return -EINVAL;
++
++	create_constraint_attribute(pconst, "power_limit_uw",
++					S_IWUSR | S_IRUGO,
++					&pconst->power_limit_attr,
++					show_constraint_power_limit_uw,
++					store_constraint_power_limit_uw);
++	pcd_dev->attrs.const_dev_attrs[count++] =3D
++				&pconst->power_limit_attr.attr.attr;
++
++	create_constraint_attribute(pconst, "time_window_us",
++					S_IWUSR | S_IRUGO,
++					&pconst->time_window_attr,
++					show_constraint_time_window_us,
++					store_constraint_time_window_us);
++	pcd_dev->attrs.const_dev_attrs[count++] =3D
++				&pconst->time_window_attr.attr.attr;
++
++	if (pconst->ops->get_name) {
++		create_constraint_attribute(pconst, "name", S_IRUGO,
++				&pconst->name_attr,
++				show_constraint_name,
++				NULL);
++		pcd_dev->attrs.const_dev_attrs[count++] =3D
++				&pconst->name_attr.attr.attr;
++	}
++	if (pconst->ops->get_max_power_uw) {
++		create_constraint_attribute(pconst, "max_power_uw", S_IRUGO,
++					&pconst->max_power_attr,
++					show_constraint_max_power_uw,
++					NULL);
++		pcd_dev->attrs.const_dev_attrs[count++] =3D
++					&pconst->max_power_attr.attr.attr;
++	}
++	if (pconst->ops->get_min_power_uw) {
++		create_constraint_attribute(pconst, "min_power_uw", S_IRUGO,
++					&pconst->min_power_attr,
++					show_constraint_min_power_uw,
++					NULL);
++		pcd_dev->attrs.const_dev_attrs[count++] =3D
++					&pconst->min_power_attr.attr.attr;
++	}
++	if (pconst->ops->get_max_time_window_us) {
++		create_constraint_attribute(pconst, "max_time_window_us",
++					S_IRUGO,
++					&pconst->max_time_window_attr,
++					show_constraint_max_time_window_us,
++					NULL);
++		pcd_dev->attrs.const_dev_attrs[count++] =3D
++				&pconst->max_time_window_attr.attr.attr;
++	}
++	if (pconst->ops->get_min_time_window_us) {
++		create_constraint_attribute(pconst, "min_time_window_us",
++					S_IRUGO,
++					&pconst->min_time_window_attr,
++					show_constraint_min_time_window_us,
++					NULL);
++		pcd_dev->attrs.const_dev_attrs[count++] =3D
++				&pconst->min_time_window_attr.attr.attr;
++	}
++
++	pcd_dev->attrs.const_attr_count =3D count;
++
++	return 0;
++}
++
++struct powercap_zone_constraint *powercap_zone_add_constraint(
++				struct powercap_zone_device *pcd_dev,
++				struct powercap_zone_constraint_ops *ops)
++{
++	struct powercap_zone_constraint *pconst;
++	int result;
++
++	if (!pcd_dev)
++		return ERR_PTR(-EINVAL);
++
++	pconst =3D kzalloc(sizeof(*pconst), GFP_KERNEL);
++	if (!pconst)
++		return ERR_PTR(-ENOMEM);
++	/*
++	 * No need to hold locks as this is called when device
++	 * is not created or power zone is not in existance
++	 */
++	pconst->pcd_dev =3D pcd_dev;
++	pconst->ops =3D ops;
++	pconst->id =3D pcd_dev->const_id_cnt;
++	result =3D create_constraints(pconst);
++	if (result) {
++		kfree(pconst);
++		return ERR_PTR(result);
++	}
++	pcd_dev->const_id_cnt++;
++	list_add_tail(&pconst->list, &pcd_dev->constraint_list);
++
++	return pconst;
++}
++
++static void delete_constraints(struct powercap_zone_device *pcd_dev)
++{
++	struct powercap_zone_constraint *p, *n;
++
++	/*
++	 * No need to hold locks as this is called either when device
++	 * is not created or from device_release callback
++	 */
++	list_for_each_entry_safe(p, n, &pcd_dev->constraint_list, list) {
++		list_del(&p->list);
 +		kfree(p);
 +	}
 +}
 +
-+
-+int get_energy_counter(struct powercap_zone_device *pzdev, u64 *energy_raw)
-+{
-+	struct rapl_domain *rd;
-+	u64 energy_now;
-+
-+	get_online_cpus();
-+	rd = (struct rapl_domain *)powercap_get_zone_data(pzdev);
-+	if (!rd)
-+		return -ENODEV;
-+
-+	if (!rapl_read_data_raw(rd, energy, true, &energy_now)) {
-+		*energy_raw = energy_now;
-+		put_online_cpus();
-+
-+		return 0;
-+	}
-+	put_online_cpus();
-+
-+	return -EIO;
-+}
-+
-+int get_max_power_counter(struct powercap_zone_device *pzdev, u64 *pwr)
-+{
-+	struct rapl_domain *rd;
-+	u64 val64;
-+
-+	get_online_cpus();
-+	rd = (struct rapl_domain *)powercap_get_zone_data(pzdev);
-+	if (!rd)
-+		return -ENODEV;
-+
-+	if (!rapl_read_data_raw(rd, thermal_spec_power, true, &val64)) {
-+		*pwr = val64;
-+		put_online_cpus();
-+		return 0;
-+	}
-+	put_online_cpus();
-+	return -EIO;
-+}
-+
-+int get_max_energy_counter(struct powercap_zone_device *pcd_dev, u64 *energy)
-+{
-+	*energy = rapl_unit_xlate(0, ENERGY_UNIT, ENERGY_STATUS_MASK, 0);
-+	return 0;
-+}
-+
-+
-+static struct powercap_zone_ops zone_ops_pkg = {
-+	.get_energy_uj = get_energy_counter,
-+	.get_max_power_range_uw = get_max_power_counter,
-+	.get_max_energy_range_uj = get_max_energy_counter,
-+};
-+
-+static struct powercap_zone_ops zone_ops_pp0 = {
-+	.get_energy_uj = get_energy_counter,
-+	.get_max_energy_range_uj = get_max_energy_counter,
-+};
-+
-+static struct powercap_zone_ops zone_ops_pp1 = {
-+	.get_energy_uj = get_energy_counter,
-+	.get_max_energy_range_uj = get_max_energy_counter,
-+
-+};
-+static struct powercap_zone_ops zone_ops_dram = {
-+	.get_energy_uj = get_energy_counter,
-+	.get_max_energy_range_uj = get_max_energy_counter,
-+};
-+
-+static int set_power_limit(struct powercap_zone_device *pzdev, int id,
-+			u64 power_limit)
-+{
-+	struct rapl_domain *rd;
-+	struct rapl_pkg *rp;
-+	int ret = 0;
-+
-+	get_online_cpus();
-+
-+	rd = (struct rapl_domain *)powercap_get_zone_data(pzdev);
-+	if (!rd)
-+		return -ENODEV;
-+	rp = find_package_by_id(rd->pkg_id);
-+	if (!rp) {
-+		ret = -ENODEV;
-+		goto set_exit;
-+	}
-+
-+	if (rd->state & DOMAIN_STATE_BIOS_LOCKED) {
-+		dev_warn(&pzdev->device, "%s locked by BIOS, monitoring only\n",
-+			rd->name);
-+		ret = -EACCES;
-+		goto set_exit;
-+	}
-+
-+	switch (rd->rpl[id].prim_id) {
-+	case pl1_enable:
-+		rapl_write_data_raw(rd, pl1_enable, 1);
-+		rapl_write_data_raw(rd, pl1_clamp, 1);
-+		rapl_write_data_raw(rd, power_limit1, power_limit);
-+		break;
-+	case pl2_enable:
-+		rapl_write_data_raw(rd, pl2_enable, 1);
-+		rapl_write_data_raw(rd, pl2_clamp, 1);
-+		rapl_write_data_raw(rd, power_limit2, power_limit);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+	if (!ret)
-+		pkg_power_limit_irq_save(rd->pkg_id);
-+set_exit:
-+	put_online_cpus();
-+	return ret;
-+}
-+
-+static int get_current_power_limit(struct powercap_zone_device *pzdev, int id,
-+					u64 *data)
-+{
-+	struct rapl_domain *rd;
-+	u64 val;
-+	int prim;
-+	int ret = 0;
-+
-+	get_online_cpus();
-+	rd = (struct rapl_domain *)powercap_get_zone_data(pzdev);
-+	if (!rd)
-+		return -ENODEV;
-+
-+	switch (rd->rpl[id].prim_id) {
-+	case pl1_enable:
-+		prim = power_limit1;
-+		break;
-+	case pl2_enable:
-+		prim = power_limit2;
-+		break;
-+	default:
-+		put_online_cpus();
-+		return -EINVAL;
-+	}
-+	if (rapl_read_data_raw(rd, prim, true, &val))
-+		ret = -EIO;
-+	else
-+		*data = val;
-+
-+	put_online_cpus();
-+
-+	return ret;
-+}
-+
-+static int set_time_window(struct powercap_zone_device *pzdev, int id,
-+								u64 window)
-+{
-+	struct rapl_domain *rd;
-+	int ret = 0;
-+
-+	get_online_cpus();
-+	rd = (struct rapl_domain *)powercap_get_zone_data(pzdev);
-+	if (!rd)
-+		return -ENODEV;
-+
-+	switch (rd->rpl[id].prim_id) {
-+	case pl1_enable:
-+		rapl_write_data_raw(rd, time_window1, window);
-+		break;
-+	case pl2_enable:
-+		rapl_write_data_raw(rd, time_window2, window);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+	put_online_cpus();
-+	return ret;
-+}
-+
-+int get_time_window(struct powercap_zone_device *pzdev, int id, u64 *data)
-+{
-+	struct rapl_domain *rd;
-+	u64 val;
-+	int ret = 0;
-+
-+	get_online_cpus();
-+	rd = (struct rapl_domain *)powercap_get_zone_data(pzdev);
-+	if (!rd)
-+		return -ENODEV;
-+
-+	switch (rd->rpl[id].prim_id) {
-+	case pl1_enable:
-+		ret = rapl_read_data_raw(rd, time_window1, true, &val);
-+		break;
-+	case pl2_enable:
-+		ret = rapl_read_data_raw(rd, time_window2, true, &val);
-+		break;
-+	default:
-+		put_online_cpus();
-+		return -EINVAL;
-+	}
-+	if (!ret)
-+		*data = val;
-+	put_online_cpus();
-+
-+	return ret;
-+}
-+
-+const char *get_constraint_name(struct powercap_zone_device *pzdev, int id)
-+{
-+	struct rapl_power_limit *rpl;
-+	struct rapl_domain *rd;
-+
-+	rd = (struct rapl_domain *)powercap_get_zone_data(pzdev);
-+	if (!rd)
-+		return NULL;
-+
-+	rpl = (struct rapl_power_limit *) &rd->rpl[id];
-+
-+	return rpl->name;
-+}
-+
-+struct powercap_zone_constraint_ops const_ops = {
-+	.set_power_limit_uw = set_power_limit,
-+	.get_power_limit_uw = get_current_power_limit,
-+	.set_time_window_us = set_time_window,
-+	.get_time_window_us = get_time_window,
-+	.get_name = get_constraint_name,
-+};
-+
-+static int find_nr_power_limit(struct rapl_domain *rd)
++static int create_constraint_attributes(struct powercap_zone_device *p=
+cd_dev,
++				int nr_constraints,
++				struct powercap_zone_constraint_ops *const_ops)
 +{
 +	int i;
++	int ret =3D 0;
 +
-+	for (i = 0; i < NR_POWER_LIMITS; i++) {
-+		if (rd->rpl[i].name == NULL)
-+			break;
-+	}
-+
-+	return i;
-+}
-+
-+/* called after domain detection and package level data are set */
-+static void rapl_init_domains(struct rapl_pkg *rp)
-+{
-+	int i;
-+	struct rapl_domain *rd = rp->domains;
-+
-+	for (i = 0; i < RAPL_DOMAIN_MAX; i++) {
-+		unsigned int mask = rp->domain_map & (1 << i);
-+		switch (mask) {
-+		case 1 << RAPL_DOMAIN_PKG:
-+			rd->name = rapl_domain_names[RAPL_DOMAIN_PKG];
-+			rd->id = RAPL_DOMAIN_PKG;
-+			rd->msrs[0] = MSR_PKG_POWER_LIMIT;
-+			rd->msrs[1] = MSR_PKG_ENERGY_STATUS;
-+			rd->msrs[2] = MSR_PKG_PERF_STATUS;
-+			rd->msrs[3] = 0;
-+			rd->msrs[4] = MSR_PKG_POWER_INFO;
-+			rd->ops = &zone_ops_pkg;
-+			rd->rpl[0].prim_id = pl1_enable;
-+			rd->rpl[0].name = pl1_name;
-+			rd->rpl[1].prim_id = pl2_enable;
-+			rd->rpl[1].name = pl2_name;
-+			break;
-+		case 1 << RAPL_DOMAIN_PP0:
-+			rd->name = rapl_domain_names[RAPL_DOMAIN_PP0];
-+			rd->id = RAPL_DOMAIN_PP0;
-+			rd->msrs[0] = MSR_PP0_POWER_LIMIT;
-+			rd->msrs[1] = MSR_PP0_ENERGY_STATUS;
-+			rd->msrs[2] = 0;
-+			rd->msrs[3] = MSR_PP0_POLICY;
-+			rd->msrs[4] = 0;
-+			rd->ops = &zone_ops_pp0;
-+			rd->rpl[0].prim_id = pl1_enable;
-+			rd->rpl[0].name = pl1_name;
-+			break;
-+		case 1 << RAPL_DOMAIN_PP1:
-+			rd->name = rapl_domain_names[RAPL_DOMAIN_PP1];
-+			rd->id = RAPL_DOMAIN_PP1;
-+			rd->msrs[0] = MSR_PP1_POWER_LIMIT;
-+			rd->msrs[1] = MSR_PP1_ENERGY_STATUS;
-+			rd->msrs[2] = 0;
-+			rd->msrs[3] = MSR_PP1_POLICY;
-+			rd->msrs[4] = 0;
-+			rd->ops = &zone_ops_pp1;
-+			rd->rpl[0].prim_id = pl1_enable;
-+			rd->rpl[0].name = pl1_name;
-+			break;
-+		case 1 << RAPL_DOMAIN_DRAM:
-+			rd->name = rapl_domain_names[RAPL_DOMAIN_DRAM];
-+			rd->id = RAPL_DOMAIN_DRAM;
-+			rd->msrs[0] = MSR_DRAM_POWER_LIMIT;
-+			rd->msrs[1] = MSR_DRAM_ENERGY_STATUS;
-+			rd->msrs[2] = MSR_DRAM_PERF_STATUS;
-+			rd->msrs[3] = 0;
-+			rd->msrs[4] = MSR_DRAM_POWER_INFO;
-+			rd->ops = &zone_ops_dram;
-+			rd->rpl[0].prim_id = pl1_enable;
-+			rd->rpl[0].name = pl1_name;
-+			break;
-+		}
-+		if (mask) {
-+			rd->pkg_id = rp->id;
-+			rd++;
-+		}
-+	}
-+}
-+
-+static u64 rapl_unit_xlate(int pkg, enum unit_type type, u64 value, int to_raw)
-+{
-+	u64 divisor = 1;
-+	int scale = 1; /* scale to user friendly data without floating point */
-+	u64 f, y; /* fraction and exp. used for time unit */
-+	struct rapl_pkg *rp;
-+
-+	rp = find_package_by_id(pkg);
-+	if (!rp)
-+		return value;
-+
-+	switch (type) {
-+	case POWER_UNIT:
-+		divisor = rp->power_unit_divisor;
-+		scale = POWER_UNIT_SCALE;
-+		break;
-+	case ENERGY_UNIT:
-+		scale = ENERGY_UNIT_SCALE;
-+		divisor = rp->energy_unit_divisor;
-+		break;
-+	case TIME_UNIT:
-+		divisor = rp->time_unit_divisor;
-+		scale = TIME_UNIT_SCALE;
-+		/* special processing based on 2^Y*(1+F)/4 = val/divisor */
-+		if (!to_raw) {
-+			f = (value & 0x60) >> 5;
-+			y = value & 0x1f;
-+			value = (1<<y)*(4+f)*scale/4;
-+			return div64_u64(value, divisor);
-+		} else {
-+			do_div(value, scale);
-+			value *= divisor;
-+			y = ilog2(value);
-+			f = div64_u64(4 * (value-(1<<y)), 1<<y);
-+			value = (y & 0x1f) | ((f&0x3)<<5);
-+			return value;
-+		}
-+		break;
-+	case NA_UNIT:
-+	default:
-+		return value;
-+	};
-+
-+	if (to_raw)
-+		return div64_u64(value * divisor, scale);
-+	else
-+		return div64_u64(value * scale, divisor);
-+}
-+
-+/* in the order of enum rapl_primitives */
-+static struct rapl_primitive_info rpi[] = {
-+	/* name, mask, shift, msr index, unit divisor */
-+	PRIMITIVE_INFO_INIT(energy, ENERGY_STATUS_MASK, 0,
-+				RAPL_DOMAIN_MSR_STATUS, ENERGY_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(power_limit1, POWER_LIMIT1_MASK, 0,
-+				RAPL_DOMAIN_MSR_LIMIT, POWER_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(power_limit2, POWER_LIMIT2_MASK, 32,
-+				RAPL_DOMAIN_MSR_LIMIT, POWER_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(lock, POWER_PP_LOCK, 31,
-+				RAPL_DOMAIN_MSR_LIMIT, NA_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(pl1_enable, POWER_LIMIT1_ENABLE, 15,
-+				RAPL_DOMAIN_MSR_LIMIT, NA_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(pl1_clamp, POWER_LIMIT1_CLAMP, 16,
-+				RAPL_DOMAIN_MSR_LIMIT, NA_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(pl2_enable, POWER_LIMIT2_ENABLE, 47,
-+				RAPL_DOMAIN_MSR_LIMIT, NA_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(pl2_clamp, POWER_LIMIT2_CLAMP, 48,
-+				RAPL_DOMAIN_MSR_LIMIT, NA_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(time_window1, TIME_WINDOW1_MASK, 17,
-+				RAPL_DOMAIN_MSR_LIMIT, TIME_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(time_window2, TIME_WINDOW2_MASK, 49,
-+				RAPL_DOMAIN_MSR_LIMIT, TIME_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(thermal_spec_power, POWER_INFO_THERMAL_SPEC_MASK,
-+				0, RAPL_DOMAIN_MSR_INFO, POWER_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(max_power, POWER_INFO_MAX_MASK, 32,
-+				RAPL_DOMAIN_MSR_INFO, POWER_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(min_power, POWER_INFO_MIN_MASK, 16,
-+				RAPL_DOMAIN_MSR_INFO, POWER_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(max_window, POWER_INFO_MAX_TIME_WIN_MASK, 48,
-+				RAPL_DOMAIN_MSR_INFO, TIME_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(throttle_time, PERF_STATUS_THROTTLE_TIME_MASK, 0,
-+				RAPL_DOMAIN_MSR_PERF, TIME_UNIT, 0),
-+	PRIMITIVE_INFO_INIT(prio_level, PP_POLICY_MASK, 0,
-+				RAPL_DOMAIN_MSR_POLICY, NA_UNIT, 0),
-+	/* non-hardware */
-+	PRIMITIVE_INFO_INIT(average_power, 0, 0, 0, POWER_UNIT,
-+				RAPL_PRIMITIVE_DERIVED),
-+	{NULL, 0, 0, 0},
-+};
-+
-+/* Read primitive data based on its related struct rapl_primitive_info.
-+ * if xlate flag is set, return translated data based on data units, i.e.
-+ * time, energy, and power.
-+ * RAPL MSRs are non-architectual and are laided out not consistantly across
-+ * domains. Here we use primitive info to allow writing consolidated access
-+ * functions.
-+ * For a given primitive, it is processed by MSR mask and shift. Unit conversion
-+ * is pre-assigned based on RAPL unit MSRs read at init time.
-+ * 63-------------------------- 31--------------------------- 0
-+ * |                           xxxxx (mask)                   |
-+ * |                                |<- shift ----------------|
-+ * 63-------------------------- 31--------------------------- 0
-+ */
-+static int rapl_read_data_raw(struct rapl_domain *rd,
-+			enum rapl_primitives prim,
-+			bool xlate, u64 *data)
-+{
-+	u64 value, final;
-+	u32 msr;
-+	struct rapl_primitive_info *rp = &rpi[prim];
-+	int cpu;
-+
-+	if (!rp->name || rp->flag & RAPL_PRIMITIVE_DUMMY)
-+		return -EINVAL;
-+
-+	msr = rd->msrs[rp->id];
-+	if (!msr)
-+		return -EINVAL;
-+	/* use physical package id to look up active cpus */
-+	cpu = find_active_cpu_on_pkg(rd->pkg_id);
-+	if (cpu < 0)
-+		return cpu;
-+
-+	/* special-case pkg lock bit since pkg domain uses a different bit */
-+	if (prim == lock && rd->id == RAPL_DOMAIN_PKG) {
-+		rp->mask = POWER_PKG_LOCK;
-+		rp->shift = 63;
-+	}
-+	/* non-hardware data are collected by the polling thread */
-+	if (rp->flag & RAPL_PRIMITIVE_DERIVED) {
-+		*data = rd->rdd.primitives[prim];
-+		return 0;
-+	}
-+
-+	if (rdmsrl_safe_on_cpu(cpu, msr, &value)) {
-+		pr_debug("failed to read msr 0x%x on cpu %d\n", msr, cpu);
-+		return -EIO;
-+	}
-+
-+	final = value & rp->mask;
-+	final = final >> rp->shift;
-+	if (xlate)
-+		*data = rapl_unit_xlate(rd->pkg_id, rp->unit, final, 0);
-+	else
-+		*data = final;
-+
-+	return 0;
-+}
-+
-+/* Similar use of primitive info in the read counterpart */
-+static int rapl_write_data_raw(struct rapl_domain *rd,
-+			enum rapl_primitives prim,
-+			unsigned long long value)
-+{
-+	u64 msr_val;
-+	u32 msr;
-+	struct rapl_primitive_info *rp = &rpi[prim];
-+	int cpu;
-+
-+	cpu = find_active_cpu_on_pkg(rd->pkg_id);
-+	if (cpu < 0)
-+		return cpu;
-+	msr = rd->msrs[rp->id];
-+	if (rdmsrl_safe_on_cpu(cpu, msr, &msr_val)) {
-+		dev_dbg(&rd->pzone->device,
-+			"failed to read msr 0x%x on cpu %d\n", msr, cpu);
-+		return -EIO;
-+	}
-+	value = rapl_unit_xlate(rd->pkg_id, rp->unit, value, 1);
-+	msr_val &= ~rp->mask;
-+	msr_val |= value << rp->shift;
-+	if (wrmsrl_safe_on_cpu(cpu, msr, msr_val)) {
-+		dev_dbg(&rd->pzone->device,
-+			"failed to write msr 0x%x on cpu %d\n", msr, cpu);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+/* Raw RAPL data stored in MSRs are in certain scales. We need to
-+ * convert them into standard units based on the divisors reported in
-+ * the RAPL unit MSRs.
-+ */
-+static int rapl_check_unit(struct rapl_pkg *rp, int cpu)
-+{
-+	u64 msr_val;
-+	u32 value;
-+
-+	if (rdmsrl_safe_on_cpu(cpu, MSR_RAPL_POWER_UNIT, &msr_val)) {
-+		pr_err("Failed to read power unit MSR 0x%x on CPU %d, exit.\n",
-+			MSR_RAPL_POWER_UNIT, cpu);
-+		return -ENODEV;
-+	}
-+
-+	/* energy unit: 1/enery_unit_divisor Joules */
-+	value = (msr_val & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
-+	rp->energy_unit_divisor = 1 << value;
-+
-+	/* power unit: 1/power_unit_divisor Watts */
-+	value = (msr_val & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
-+	rp->power_unit_divisor = 1 << value;
-+
-+	/* time unit: 1/time_unit_divisor Seconds */
-+	value = (msr_val & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
-+	rp->time_unit_divisor = 1 << value;
-+
-+	pr_debug("Physical package %d units: energy=%d, time=%d, power=%d\n",
-+		rp->id,
-+		rp->energy_unit_divisor,
-+		rp->time_unit_divisor,
-+		rp->power_unit_divisor);
-+
-+	return 0;
-+}
-+
-+/* REVISIT:
-+ * When package power limit is set artificially low by RAPL, LVT
-+ * thermal interrupt for package power limit should be ignored
-+ * since we are not really exceeding the real limit. The intention
-+ * is to avoid excessive interrupts while we are trying to save power.
-+ * A useful feature might be routing the pkg_power_limit interrupt
-+ * to userspace via eventfd. once we have a usecase, this is simple
-+ * to do by adding an atomic notifier.
-+ */
-+
-+/* disable and save the original per package power limit interrupt state */
-+static void pkg_power_limit_irq_save(int pkg_id)
-+{
-+	u32 l, h = 0;
-+	int cpu;
-+	struct rapl_pkg *rp;
-+
-+	rp = find_package_by_id(pkg_id);
-+	if (!rp)
-+		return;
-+
-+	if (!boot_cpu_has(X86_FEATURE_PTS) || !boot_cpu_has(X86_FEATURE_PLN))
-+		return;
-+
-+	cpu = find_active_cpu_on_pkg(pkg_id);
-+	if (cpu < 0)
-+		return;
-+	/* save the state of PLN irq mask bit before disabling it */
-+	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
-+	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
-+		rp->power_limit_irq = l & PACKAGE_THERM_INT_PLN_ENABLE;
-+		rp->power_limit_irq |= PACKAGE_PLN_INT_SAVED;
-+	}
-+	l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
-+	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
-+}
-+
-+/* restore per package power limit interrupt enable state */
-+static void pkg_power_limit_irq_restore(int pkg_id)
-+{
-+	u32 l, h;
-+	int cpu;
-+	struct rapl_pkg *rp;
-+
-+	rp = find_package_by_id(pkg_id);
-+	if (!rp)
-+		return;
-+
-+	if (!boot_cpu_has(X86_FEATURE_PTS) || !boot_cpu_has(X86_FEATURE_PLN))
-+		return;
-+
-+	cpu = find_active_cpu_on_pkg(pkg_id);
-+	if (cpu < 0)
-+		return;
-+
-+	/* irq enable state not saved, nothing to restore */
-+	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED))
-+		return;
-+	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
-+
-+	if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
-+		l |= PACKAGE_THERM_INT_PLN_ENABLE;
-+	else
-+		l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
-+
-+	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
-+}
-+
-+static const struct x86_cpu_id rapl_ids[] = {
-+	{ X86_VENDOR_INTEL, 6, 0x2a},/* SNB */
-+	{ X86_VENDOR_INTEL, 6, 0x2d},/* SNB EP */
-+	{ X86_VENDOR_INTEL, 6, 0x3a},/* IVB */
-+	{ X86_VENDOR_INTEL, 6, 0x45},/* HSW */
-+	/* TODO: Add more CPU IDs after testing */
-+	{}
-+};
-+MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-+
-+/* read once for all raw primitive data for all pkgs, domains */
-+static void rapl_update_domain_data(void)
-+{
-+	int dmn, prim;
-+	u64 val;
-+	struct rapl_pkg *rp;
-+
-+	list_for_each_entry(rp, &rpkgs, plist) {
-+		for (dmn = 0; dmn < rp->nr_domains; dmn++) {
-+			pr_debug("update pkg %d domain %s data\n", rp->id,
-+				rp->domains[dmn].name);
-+			/* exclude non-raw primitives */
-+			for (prim = 0; prim < NR_RAW_PRIMITIVES; prim++)
-+				if (!rapl_read_data_raw(&rp->domains[dmn], prim,
-+								rpi[prim].unit,
-+								&val))
-+					rp->domains[dmn].rdd.primitives[prim] =
-+									val;
-+		}
-+	}
-+
-+}
-+
-+/* unregister all active rapl pkgs from the thermal layer, hotplug lock held */
-+static int rapl_unregister_powercap(void)
-+{
-+	int i;
-+	struct rapl_pkg *rp;
-+	struct rapl_domain *rd, *rd_pkg = NULL;
-+
-+	list_for_each_entry(rp, &rpkgs, plist) {
-+		pkg_power_limit_irq_restore(rp->id);
-+		/* might only need to delete parent */
-+		for (i = 0; i < rp->nr_domains; i++) {
-+			rd = &rp->domains[i];
-+
-+			pr_debug("remove pkg %d, %s domain, undo power limit\n",
-+				rp->id, rd->name);
-+			rapl_write_data_raw(rd, pl1_enable, 0);
-+			rapl_write_data_raw(rd, pl2_enable, 0);
-+			rapl_write_data_raw(rd, pl1_clamp, 0);
-+			rapl_write_data_raw(rd, pl2_clamp, 0);
-+			if (rd->id == RAPL_DOMAIN_PKG) {
-+				rd_pkg = rd;
-+				continue;
-+			}
-+			powercap_zone_unregister(pccr, rd->pzone);
-+		}
-+		/* do the package zone last */
-+		if (rd_pkg)
-+			powercap_zone_unregister(pccr, rd_pkg->pzone);
-+	}
-+	powercap_deallocate_controller(pccr);
-+
-+	return 0;
-+}
-+
-+static int rapl_pkg_register_powercap(struct rapl_pkg *rp)
-+{
-+	int i;
-+	struct rapl_domain *rd;
-+	int ret = 0;
-+	char dev_name[POWERCAP_ZONE_NAME_LENGTH];
-+	struct powercap_zone_device *pzdev = NULL;
-+	int nr_pl;
-+
-+	/* first we register package domain as the parent zone*/
-+	for (i = 0; i < rp->nr_domains; i++) {
-+		rd = &rp->domains[i];
-+		if (rd->id == RAPL_DOMAIN_PKG) {
-+			nr_pl = find_nr_power_limit(rd);
-+			pr_debug("register socket %d pkg domain %d\n",
-+				rp->id, i);
-+			memset(dev_name, 0, sizeof(dev_name));
-+			snprintf(dev_name, sizeof(dev_name), "%s-%d",
-+				rd->name, rp->id);
-+			pzdev = powercap_zone_register(pccr, dev_name,
-+						NULL, rd->ops, nr_pl, &const_ops);
-+			if (IS_ERR(pzdev)) {
-+				pr_debug("failed to register pkg, %d\n",
-+					rp->id);
-+				ret = PTR_ERR(pzdev);
-+				goto exit_pkg;
-+			}
-+			powercap_set_zone_data(pzdev, rd);
-+			rd->pzone = pzdev;
-+			rp->pzone = pzdev;
-+			/* done, only one package domain per socket */
-+			break;
-+		}
-+	}
-+	if (!pzdev) {
-+		pr_err("no package domain found, unknown topology!\n");
-+		ret = -ENODEV;
-+		goto exit_pkg;
-+	}
-+	/* now register domains as children of the socket/package*/
-+	for (i = 0; i < rp->nr_domains; i++) {
-+		rd = &rp->domains[i];
-+		if (rd->id == RAPL_DOMAIN_PKG)
-+			continue;
-+		/* number of power limits per domain varies */
-+		nr_pl = find_nr_power_limit(rd);
-+		pzdev = powercap_zone_register(pccr, rd->name,
-+					rp->pzone, rd->ops, nr_pl, &const_ops);
-+
-+		if (IS_ERR(pzdev)) {
-+			pr_debug("failed to register pzdev, %d:%s:%s\n",
-+				rp->id, rd->name, dev_name);
-+			ret = PTR_ERR(pzdev);
-+			goto err_cleanup;
-+		}
-+		powercap_set_zone_data(pzdev, rd);
-+		rd->pzone = pzdev;
-+	}
-+
-+exit_pkg:
-+	return ret;
-+err_cleanup:
-+	/* clean up previously initialized domains within the package if we
-+	 * failed after the first domain setup.
-+	 */
-+	while (--i >= 0) {
-+		pr_debug("unregister zone/pkg %d domain %d\n", rp->id, i);
-+		rd = &rp->domains[i];
-+		powercap_zone_unregister(pccr, rd->pzone);
-+	}
-+
-+	return ret;
-+}
-+
-+static int rapl_register_powercap(void)
-+{
-+	int i = 0;
-+	struct rapl_domain *rd;
-+	int ret = 0;
-+	struct rapl_pkg *rp;
-+
-+	pccr = powercap_allocate_controller("intel-rapl");
-+	if (IS_ERR(pccr)) {
-+		pr_debug("failed to register powercap controller.\n");
-+		return PTR_ERR(pccr);
-+	}
-+	/* read the initial data */
-+	rapl_update_domain_data();
-+	list_for_each_entry(rp, &rpkgs, plist)
-+		if (rapl_pkg_register_powercap(rp))
-+			goto err_cleanup_pkg;
-+	return ret;
-+
-+err_cleanup_pkg:
-+	/* clean up previously initialized pkgs */
-+	list_for_each_entry_continue_reverse(rp, &rpkgs, plist) {
-+		for (i = 0; i < rp->nr_domains; i++) {
-+			rd = &rp->domains[i];
-+			pr_debug("unregister zone/pkg %d, %s domain\n",
-+				rp->id, rd->name);
-+			powercap_zone_unregister(pccr, rd->pzone);
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+static int rapl_check_domain(int cpu, int domain)
-+{
-+	unsigned msr;
-+	u64 val1, val2 = 0;
-+	int retry = 0;
-+
-+	switch (domain) {
-+	case RAPL_DOMAIN_PKG:
-+		msr = MSR_PKG_ENERGY_STATUS;
-+		break;
-+	case RAPL_DOMAIN_PP0:
-+		msr = MSR_PP0_ENERGY_STATUS;
-+		break;
-+	case RAPL_DOMAIN_PP1:
-+		msr = MSR_PP1_ENERGY_STATUS;
-+		break;
-+	case RAPL_DOMAIN_DRAM:
-+		msr = MSR_DRAM_ENERGY_STATUS;
-+		break;
-+	default:
-+		pr_err("invalid domain id %d\n", domain);
-+		return -EINVAL;
-+	}
-+	if (rdmsrl_safe_on_cpu(cpu, msr, &val1))
-+		return -ENODEV;
-+
-+	/* energy counters roll slowly on some domains */
-+	while (++retry < 10) {
-+		usleep_range(10000, 15000);
-+		rdmsrl_safe_on_cpu(cpu, msr, &val2);
-+		if ((val1 & ENERGY_STATUS_MASK) != (val2 & ENERGY_STATUS_MASK))
-+			return 0;
-+	}
-+	/* if energy counter does not change, report as bad domain */
-+	pr_info("domain %s energy ctr %llu:%llu not working, skip\n",
-+		rapl_domain_names[domain], val1, val2);
-+
-+	return -ENODEV;
-+}
-+
-+/* Detect active and valid domains for the given CPU, caller must
-+ * ensure the CPU belongs to the targeted package and CPU hotlug is disabled.
-+ */
-+static int rapl_detect_domains(struct rapl_pkg *rp, int cpu)
-+{
-+	int i;
-+	int ret = 0;
-+	struct rapl_domain *rd;
-+	u64 locked;
-+
-+	for (i = 0; i < RAPL_DOMAIN_MAX; i++) {
-+		/* use physical package id to read counters */
-+		if (!rapl_check_domain(cpu, i))
-+			rp->domain_map |= 1 << i;
-+	}
-+	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
-+	if (!rp->nr_domains) {
-+		pr_err("no valid rapl domains found in pkg %d\n", rp->id);
-+		ret = -ENODEV;
-+		goto done;
-+	}
-+	pr_debug("found %d domains on package %d\n", rp->nr_domains, rp->id);
-+
-+	rp->domains = kcalloc(rp->nr_domains + 1, sizeof(struct rapl_domain),
-+			GFP_KERNEL);
-+	if (!rp->domains) {
-+		ret = -ENOMEM;
-+		goto done;
-+	}
-+	rapl_init_domains(rp);
-+
-+	for (i = 0; i < rp->nr_domains; i++) {
-+		rd = &rp->domains[i];
-+		/* check if the domain is locked by BIOS */
-+		if (rapl_read_data_raw(rd, lock, false, &locked)) {
-+			pr_info("RAPL pkg %d domain %s locked by BIOS\n",
-+				rp->id, rd->name);
-+				rd->state |= DOMAIN_STATE_BIOS_LOCKED;
-+		}
-+	}
-+
-+
-+done:
-+	return ret;
-+}
-+
-+static bool is_package_new(int pkg)
-+{
-+	struct rapl_pkg *rp;
-+
-+	/* caller prevents cpu hotplug, there will be no new packages added
-+	 * or deleted while traversing the package list, no need for locking.
-+	 */
-+	list_for_each_entry(rp, &rpkgs, plist) {
-+		if (pkg == rp->id)
-+			return false;
-+	}
-+
-+	return true;
-+}
-+
-+/* RAPL interface can be made of a two-level hierarchy: package level and domain
-+ * level. We first detect the number of packages then domains of each package.
-+ * We have to consider the possiblity of CPU online/offline due to hotplug and
-+ * other scenarios.
-+ */
-+static int rapl_detect_topology(void)
-+{
-+	int i;
-+	int phy_pkg_id;
-+	struct rapl_pkg *new_pkg, *rp;
-+
-+	for_each_online_cpu(i) {
-+		phy_pkg_id = topology_physical_package_id(i);
-+		if (is_package_new(phy_pkg_id)) {
-+			new_pkg = kzalloc(sizeof(struct rapl_pkg), GFP_KERNEL);
-+			if (!new_pkg) {
-+				rapl_cleanup_data();
-+				return -ENOMEM;
-+			}
-+			/* add the new package to the list */
-+			new_pkg->id = phy_pkg_id;
-+			new_pkg->nr_cpus = 1;
-+
-+			/* check if the package contains valid domains */
-+			if (rapl_detect_domains(new_pkg, i) ||
-+				rapl_check_unit(new_pkg, i)) {
-+				kfree(new_pkg->domains);
-+				kfree(new_pkg);
-+				/* free up the pkgs already initialized */
-+				rapl_cleanup_data();
-+				return -ENODEV;
-+			}
-+			INIT_LIST_HEAD(&new_pkg->plist);
-+			list_add(&new_pkg->plist, &rpkgs);
-+		} else {
-+			rp = find_package_by_id(phy_pkg_id);
-+			if (rp)
-+				++rp->nr_cpus;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/* called from CPU hotplug notifier, hotplug lock held */
-+static void rapl_remove_pkg(struct rapl_pkg *rp)
-+{
-+	struct rapl_domain *rd;
-+	int i;
-+
-+	for (i = 0; i < rp->nr_domains; i++) {
-+		rd = &rp->domains[i];
-+		pr_debug("remove pkg %d, %s domain\n", rp->id, rd->name);
-+		powercap_zone_unregister(pccr, rd->pzone);
-+	}
-+	kfree(rp->domains);
-+	list_del(&rp->plist);
-+	kfree(rp);
-+}
-+
-+/* called from CPU hotplug notifier, hotplug lock held */
-+static int rapl_add_pkg(int cpu)
-+{
-+	int ret = 0;
-+	int phy_pkg_id;
-+	struct rapl_pkg *rp;
-+
-+	phy_pkg_id = topology_physical_package_id(cpu);
-+	rp = kzalloc(sizeof(struct rapl_pkg), GFP_KERNEL);
-+	if (!rp)
++	if (pcd_dev->attrs.attr_grp_cnt >=3D POWERCAP_MAX_ATTR_GROUPS)
 +		return -ENOMEM;
 +
-+	/* add the new package to the list */
-+	rp->id = phy_pkg_id;
-+	rp->nr_cpus = 1;
-+	/* check if the package contains valid domains */
-+	if (rapl_detect_domains(rp, cpu) ||
-+		rapl_check_unit(rp, cpu)) {
-+		ret = -ENODEV;
-+		goto err_free_pkg;
++	for (i =3D 0; i < nr_constraints; ++i) {
++		if (!powercap_zone_add_constraint(pcd_dev, const_ops)) {
++			ret =3D -ENOMEM;
++			break;
++		}
 +	}
-+	if (!rapl_pkg_register_powercap(rp)) {
-+		INIT_LIST_HEAD(&rp->plist);
-+		list_add(&rp->plist, &rpkgs);
++	if (ret) {
++		delete_constraints(pcd_dev);
 +		return ret;
 +	}
++	pcd_dev->attrs.const_dev_attrs[pcd_dev->attrs.const_attr_count] =3D N=
+ULL;
++	pcd_dev->attrs.dev_const_attr_group.attrs =3D
++						pcd_dev->attrs.const_dev_attrs;
++	pcd_dev->attrs.dev_attr_groups[pcd_dev->attrs.attr_grp_cnt] =3D
++					&pcd_dev->attrs.dev_const_attr_group;
 +
-+err_free_pkg:
-+	kfree(rp->domains);
-+	kfree(rp);
++	pcd_dev->attrs.attr_grp_cnt++;
 +
 +	return ret;
 +}
 +
-+/* Handles CPU hotplug on multi-socket systems.
-+ * If a CPU goes online as the first CPU of the physical package
-+ * we add the RAPL package to the system. Similarly, when the last
-+ * CPU of the package is removed, we remove the RAPL package and its
-+ * associated domains. Cooling devices are handled accordingly at
-+ * per-domain level.
-+ */
-+static int rapl_cpu_callback(struct notifier_block *nfb,
-+				unsigned long action, void *hcpu)
++/* Allocate a node of a tree */
++static struct powercap_zone_node *create_node(
++					struct powercap_zone_device *pcd_dev)
 +{
-+	unsigned long cpu = (unsigned long)hcpu;
-+	int phy_pkg_id;
-+	struct rapl_pkg *rp;
++	struct powercap_zone_node *node;
 +
-+	phy_pkg_id = topology_physical_package_id(cpu);
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+	case CPU_DOWN_FAILED:
-+	case CPU_DOWN_FAILED_FROZEN:
-+		rp = find_package_by_id(phy_pkg_id);
-+		if (rp)
-+			++rp->nr_cpus;
-+		else
-+			rapl_add_pkg(cpu);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
-+		rp = find_package_by_id(phy_pkg_id);
-+		if (!rp)
-+			break;
-+		if (--rp->nr_cpus == 0)
-+			rapl_remove_pkg(rp);
-+	}
++	node =3D kzalloc(sizeof(*node), GFP_KERNEL);
++	if (!node)
++		return NULL;
 +
-+	return NOTIFY_OK;
++	node->pcd_dev =3D pcd_dev;
++
++	return node;
 +}
 +
-+static struct notifier_block rapl_cpu_notifier = {
-+	.notifier_call = rapl_cpu_callback,
++/* Insert a node into a tree */
++static void insert_node(struct powercap_controller *ctrl,
++				struct powercap_zone_node *elem,
++				struct powercap_zone_node *parent)
++{
++	struct powercap_zone_node *node;
++
++	mutex_lock(&ctrl->node_lock);
++	if (!ctrl->root_node) {
++		ctrl->root_node =3D elem;
++		mutex_unlock(&ctrl->node_lock);
++		return;
++	}
++	if (!parent)
++		parent =3D ctrl->root_node;
++	elem->parent =3D parent;
++	if (!parent->child)
++		parent->child =3D elem;
++	else {
++		/* Not a first child */
++		node =3D parent->child;
++		while (node->next)
++			node =3D node->next;
++		node->next =3D elem;
++	}
++	parent->children_count++;
++	mutex_unlock(&ctrl->node_lock);
++}
++
++/*
++ * Delete a node, once node is deleted, its children nodes will be del=
+eted.
++ * This is only deleting node, not freeing any memory for the zone.
++ * For each zone, del_callback is called, which unregister the device
++ * for the power zone. The memory is freed in the device release callb=
+ack.
++ */
++static void delete_node(struct powercap_controller *ctrl,
++			struct powercap_zone_node *node,
++			void (*del_callback)(struct powercap_zone_device *))
++{
++	struct powercap_zone_node *node_store;
++	struct powercap_zone_node *node_limit =3D node;
++	bool root_node_delete =3D false;
++
++
++	mutex_lock(&ctrl->node_lock);
++
++	if (node =3D=3D ctrl->root_node)
++		root_node_delete =3D true;
++
++	while (node) {
++		node_store =3D node;
++		if (node->child) {
++			node =3D node->child;
++		} else {
++			/* reached leaf node */
++			struct powercap_zone_node *_tnode;
++			if (node_store->pcd_dev) {
++				dev_dbg(&node_store->pcd_dev->device,
++				"Delete child %s of parent %s\n",
++				node_store->pcd_dev->name,
++				node_store->parent ?
++				node_store->parent->pcd_dev->name : "ROOT");
++			}
++			/* Point node to next sibling */
++			node =3D node_store->next;
++			if (!node)
++				node =3D node_store->parent; /* back to root */
++			/*
++			 *Before the leaf is deleted, remove references from
++			 *parent and siblings
++			 */
++			_tnode =3D node_store->parent;
++			if (_tnode) {
++				_tnode->children_count--;
++				if (_tnode->child =3D=3D node_store) {
++					/*very first child*/
++					_tnode->child =3D node_store->next;
++				} else {
++					/*Not a first child*/
++					struct powercap_zone_node *_node =3D
++								_tnode->child;
++					struct powercap_zone_node *_pnode =3D
++								_node;
++
++					while (_node !=3D node_store) {
++						_pnode =3D _node;
++						_node =3D _node->next;
++					}
++					_pnode->next =3D node_store->next;
++				}
++			}
++			if (node_store->pcd_dev) {
++				/* Ready to delete */
++				(*del_callback)(node_store->pcd_dev);
++			}
++			if (node_store =3D=3D node_limit) {
++				kfree(node_store);
++				break;
++			}
++			kfree(node_store); /* Leaf node is freed */
++			/* zone memory is freed in the device_release */
++		}
++	}
++	/*
++	 * If the request was for root node,
++	 * then whole tree is deleted
++	 */
++	if (root_node_delete)
++		ctrl->root_node =3D NULL;
++
++	mutex_unlock(&ctrl->node_lock);
++}
++
++/* Search a tree for a controller for a zone instance */
++static bool search_node(struct powercap_controller *ctrl,
++			struct powercap_zone_device *pcd_dev)
++{
++	bool valid =3D true;
++	bool found =3D false;
++	struct powercap_zone_node *node;
++
++	mutex_lock(&ctrl->node_lock);
++
++	node =3D ctrl->root_node;
++
++	while (node) {
++		if (valid) {
++			if (node->pcd_dev =3D=3D pcd_dev) {
++				found =3D true;
++				break;
++			}
++		}
++		/* First check if is node has children, then siblings */
++		if (node->child && valid) {
++			node =3D node->child;
++			valid =3D true;
++		} else if (node->next) {
++			node =3D node->next;
++			valid =3D true;
++		} else {
++			/* Reached leaf, go back to parent and traverse */
++			node =3D node->parent;
++			valid =3D false;
++		}
++	}
++	mutex_unlock(&ctrl->node_lock);
++
++	return found;
++}
++
++/* Check the presence of a controller in the controller list */
++static bool check_controller_validity(void *controller)
++{
++	struct powercap_controller *pos =3D NULL;
++	bool found =3D false;
++
++	mutex_lock(&powercap_cntrl_list_lock);
++
++	list_for_each_entry(pos, &powercap_cntrl_list, ctrl_inst) {
++		if (pos =3D=3D controller) {
++			found =3D true;
++			break;
++		}
++	}
++	mutex_unlock(&powercap_cntrl_list_lock);
++
++	return found;
++}
++
++static ssize_t show_name(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
++{
++	struct powercap_zone_device *pcd_dev =3D dev_get_drvdata(dev);
++
++	return sprintf(buf, "%s\n", pcd_dev->name);
++}
++
++static DEVICE_ATTR(name, 0444, show_name, NULL);
++
++/* Create zone and attributes in sysfs */
++static int create_power_zone_attributes(struct powercap_zone_device *p=
+cd_dev)
++{
++
++	int count =3D 0;
++
++	pcd_dev->attrs.attr_grp_cnt =3D 0;
++	/**
++	* Limit is POWERCAP_ZONE_MAX_ATTRS =3D 10, Only adding 5 attrs.
++	* So not checking range after each addition
++	*/
++	pcd_dev->attrs.zone_dev_attrs[count++] =3D &dev_attr_name.attr;
++	if (pcd_dev->ops->get_max_energy_range_uj)
++		pcd_dev->attrs.zone_dev_attrs[count++] =3D
++					&dev_attr_max_energy_range_uj.attr;
++	if (pcd_dev->ops->get_energy_uj)
++		pcd_dev->attrs.zone_dev_attrs[count++] =3D
++					&dev_attr_energy_uj.attr;
++	if (pcd_dev->ops->get_power_uw)
++		pcd_dev->attrs.zone_dev_attrs[count++] =3D
++					&dev_attr_power_uw.attr;
++	if (pcd_dev->ops->get_max_power_range_uw)
++		pcd_dev->attrs.zone_dev_attrs[count++] =3D
++					&dev_attr_max_power_range_uw.attr;
++	pcd_dev->attrs.zone_dev_attrs[count] =3D NULL;
++	pcd_dev->attrs.zone_attr_count =3D count;
++	pcd_dev->attrs.dev_zone_attr_group.attrs =3D
++					pcd_dev->attrs.zone_dev_attrs;
++	pcd_dev->attrs.dev_attr_groups[0] =3D
++					&pcd_dev->attrs.dev_zone_attr_group;
++	pcd_dev->attrs.attr_grp_cnt++;
++
++	return 0;
++}
++
++static void delete_zone(struct powercap_zone_device *pcd_dev)
++{
++	struct powercap_zone_constraint *p;
++
++	dev_dbg(&pcd_dev->device, "deleting %s\n", pcd_dev->name);
++	mutex_lock(&pcd_dev->lock);
++
++	list_for_each_entry(p, &pcd_dev->constraint_list, list) {
++		if (p->ops->cleanup)
++			p->ops->cleanup(pcd_dev, p->id);
++	}
++	if (pcd_dev->ops->cleanup)
++		pcd_dev->ops->cleanup(pcd_dev);
++
++	mutex_unlock(&pcd_dev->lock);
++
++	device_unregister(&pcd_dev->device);
++}
++
++static void powercap_release(struct device *dev)
++{
++	if (dev->parent) {
++		struct powercap_zone_device *pcd_dev =3D dev_get_drvdata(dev);
++
++		dev_dbg(dev, "powercap_release zone %s\n", pcd_dev->name);
++
++		delete_constraints(pcd_dev);
++		/* Remove id from parent idr struct */
++		idr_remove(pcd_dev->par_idr, pcd_dev->id);
++		/* Destroy idrs allocated for this zone */
++		idr_destroy(&pcd_dev->idr);
++		kfree(pcd_dev->zone_dev_name);
++		mutex_destroy(&pcd_dev->lock);
++		kfree(pcd_dev);
++	} else {
++		struct powercap_controller *instance =3D dev_get_drvdata(dev);
++
++		dev_dbg(dev, "powercap_release controller %s\n",
++							instance->name);
++		idr_destroy(&instance->idr);
++		mutex_destroy(&instance->node_lock);
++		kfree(instance);
++	}
++}
++
++static ssize_t type_show(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
++{
++	if (dev->parent)
++		strcpy(buf, "power-zone\n");
++	else
++		strcpy(buf, "controller\n");
++
++	return strlen(buf);
++}
++
++static struct device_attribute powercap_def_attrs[] =3D {
++		__ATTR_RO(type),
++		__ATTR_NULL
 +};
 +
-+static int __init rapl_init(void)
++static struct class powercap_class =3D {
++	.name =3D "power_cap",
++	.dev_release =3D powercap_release,
++	.dev_attrs =3D powercap_def_attrs,
++};
++
++struct powercap_zone_device *powercap_zone_register(
++				struct powercap_controller *controller,
++				const char *name,
++				struct powercap_zone_device *parent,
++				const struct powercap_zone_ops *ops,
++				int nr_constraints,
++				struct powercap_zone_constraint_ops *const_ops)
 +{
-+	int ret = 0;
++	int result;
++	struct powercap_zone_device *pcd_dev;
++	struct device *dev_ptr;
++	struct idr *idr_ptr;
++	char *parent_name;
++	int name_sz;
 +
-+	if (!x86_match_cpu(rapl_ids)) {
-+		pr_err("driver does not support CPU family %d model %d\n",
-+			boot_cpu_data.x86, boot_cpu_data.x86_model);
++	if (!name || !controller)
++		return ERR_PTR(-EINVAL);
++	if (strlen(name) > POWERCAP_ZONE_NAME_LENGTH)
++		return ERR_PTR(-EINVAL);
++	if (!ops)
++		return ERR_PTR(-EINVAL);
++	if (!ops->get_energy_uj && !ops->get_power_uw)
++		return ERR_PTR(-EINVAL);
++	if (!check_controller_validity(controller))
++		return ERR_PTR(-EINVAL);
++	if (parent && !search_node(controller, parent))
++		return ERR_PTR(-EINVAL);
++	pcd_dev =3D kzalloc(sizeof(*pcd_dev), GFP_KERNEL);
++	if (!pcd_dev)
++		return ERR_PTR(-ENOMEM);
 +
-+		return -ENODEV;
++	INIT_LIST_HEAD(&pcd_dev->constraint_list);
++	mutex_init(&pcd_dev->lock);
++	pcd_dev->ops =3D ops;
++	pcd_dev->controller_inst =3D controller;
++	strncpy(pcd_dev->name, name, POWERCAP_ZONE_NAME_LENGTH);
++	pcd_dev->name[POWERCAP_ZONE_NAME_LENGTH] =3D '\0';
++	if (!parent) {
++		dev_ptr =3D &controller->device;
++		idr_ptr =3D &controller->idr;
++		parent_name =3D controller->name;
++	} else {
++		dev_ptr =3D &parent->device;
++		idr_ptr =3D &parent->idr;
++		parent_name =3D parent->zone_dev_name;
 +	}
-+	/* prevent CPU hotplug during detection */
-+	get_online_cpus();
-+	ret = rapl_detect_topology();
-+	if (ret)
-+		goto done;
++	pcd_dev->par_idr =3D idr_ptr;
++	pcd_dev->device.class =3D &powercap_class;
 +
-+	if (rapl_register_powercap()) {
-+		rapl_cleanup_data();
-+		ret = -ENODEV;
-+		goto done;
++	/* allocate enough which can accommodate parent + ":" + int value */
++	name_sz =3D strlen(parent_name) +	sizeof(int)*2 + 2;
++	pcd_dev->zone_dev_name =3D  kmalloc(name_sz + 1, GFP_KERNEL);
++	if (!pcd_dev->zone_dev_name) {
++		result =3D -ENOMEM;
++		goto err_name_alloc;
 +	}
-+	register_hotcpu_notifier(&rapl_cpu_notifier);
-+done:
-+	put_online_cpus();
++	mutex_lock(&controller->node_lock);
++	/* Using idr to get the unique id */
++	result =3D idr_alloc(pcd_dev->par_idr, NULL, 0, 0, GFP_KERNEL);
++	if (result < 0) {
++		mutex_unlock(&controller->node_lock);
++		goto err_idr_alloc;
++	}
++	pcd_dev->id =3D result;
++	idr_init(&pcd_dev->idr);
 +
-+	return ret;
++	snprintf(pcd_dev->zone_dev_name, name_sz - 1, "%s:%x",
++						parent_name, pcd_dev->id);
++	pcd_dev->zone_dev_name[name_sz] =3D '\0';
++	dev_set_name(&pcd_dev->device, pcd_dev->zone_dev_name);
++	pcd_dev->device.parent =3D dev_ptr;
++
++	create_power_zone_attributes(pcd_dev);
++	result =3D create_constraint_attributes(pcd_dev, nr_constraints,
++								const_ops);
++	if (result) {
++		idr_remove(pcd_dev->par_idr, pcd_dev->id);
++		mutex_unlock(&controller->node_lock);
++		goto err_dev_reg;
++	}
++	pcd_dev->attrs.dev_attr_groups[pcd_dev->attrs.attr_grp_cnt] =3D NULL;
++	pcd_dev->device.groups =3D pcd_dev->attrs.dev_attr_groups;
++
++	result =3D device_register(&pcd_dev->device);
++	if (result) {
++		delete_constraints(pcd_dev);
++		idr_remove(pcd_dev->par_idr, pcd_dev->id);
++		mutex_unlock(&controller->node_lock);
++		goto err_dev_reg;
++	}
++	mutex_unlock(&controller->node_lock);
++
++	dev_set_drvdata(&pcd_dev->device, pcd_dev);
++	pcd_dev->node =3D create_node(pcd_dev);
++	if (!pcd_dev->node) {
++		result =3D -ENOMEM;
++		goto err_dev_reg_done;
++	}
++	if (parent)
++		insert_node(controller, pcd_dev->node, parent->node);
++	else
++		insert_node(controller, pcd_dev->node, NULL);
++
++	return pcd_dev;
++
++err_dev_reg:
++	idr_destroy(&pcd_dev->idr);
++err_idr_alloc:
++	kfree(pcd_dev->zone_dev_name);
++err_name_alloc:
++	mutex_destroy(&pcd_dev->lock);
++	kfree(pcd_dev);
++	return ERR_PTR(result);
++
++err_dev_reg_done:
++	device_unregister(&pcd_dev->device);
++	return ERR_PTR(result);
++}
++EXPORT_SYMBOL_GPL(powercap_zone_register);
++
++int powercap_zone_unregister(struct powercap_controller *controller,
++				struct powercap_zone_device *pcd_dev)
++{
++	if (!pcd_dev || !controller)
++		return -EINVAL;
++
++	if (!search_node(controller, pcd_dev))
++		return -EINVAL;
++
++	delete_node(controller, pcd_dev->node, delete_zone);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(powercap_zone_unregister);
++
++struct powercap_controller *powercap_allocate_controller(
++					const char *controller_name)
++{
++	struct powercap_controller *cntrl;
++	int result;
++
++	if (!controller_name)
++		return ERR_PTR(-EINVAL);
++
++	if (strlen(controller_name) > POWERCAP_CTRL_NAME_LENGTH)
++		return ERR_PTR(-EINVAL);
++
++	cntrl =3D kzalloc(sizeof(struct powercap_controller), GFP_KERNEL);
++	if (!cntrl)
++		return ERR_PTR(-ENOMEM);
++
++	mutex_init(&cntrl->node_lock);
++	INIT_LIST_HEAD(&cntrl->ctrl_inst);
++	strncpy(cntrl->name, controller_name, POWERCAP_CTRL_NAME_LENGTH);
++	cntrl->name[POWERCAP_CTRL_NAME_LENGTH] =3D '\0';
++	cntrl->device.class =3D &powercap_class;
++	dev_set_name(&cntrl->device, cntrl->name);
++	result =3D device_register(&cntrl->device);
++	if (result) {
++		kfree(cntrl);
++		return ERR_PTR(result);
++	}
++	dev_set_drvdata(&cntrl->device, cntrl);
++
++	cntrl->root_node =3D create_node(NULL);
++	if (!cntrl->root_node) {
++		result =3D -ENOMEM;
++		goto unregister;
++	}
++	idr_init(&cntrl->idr);
++	mutex_lock(&powercap_cntrl_list_lock);
++	list_add_tail(&cntrl->ctrl_inst, &powercap_cntrl_list);
++	mutex_unlock(&powercap_cntrl_list_lock);
++
++	return cntrl;
++
++unregister:
++	device_unregister(&cntrl->device);
++	return ERR_PTR(result);
++}
++EXPORT_SYMBOL_GPL(powercap_allocate_controller);
++
++void powercap_deallocate_controller(struct powercap_controller *instan=
+ce)
++{
++	struct powercap_controller *pos =3D NULL;
++
++	mutex_lock(&powercap_cntrl_list_lock);
++
++	list_for_each_entry(pos, &powercap_cntrl_list, ctrl_inst) {
++		if (pos =3D=3D instance)
++			break;
++	}
++	if (pos !=3D instance) {
++		/* instance not found */
++		mutex_unlock(&powercap_cntrl_list_lock);
++		return;
++	}
++	list_del(&instance->ctrl_inst);
++	delete_node(instance, instance->root_node, delete_zone);
++
++	mutex_unlock(&powercap_cntrl_list_lock);
++
++	device_unregister(&instance->device);
++}
++EXPORT_SYMBOL_GPL(powercap_deallocate_controller);
++
++static int __init powercap_init(void)
++{
++	int result =3D 0;
++
++	result =3D class_register(&powercap_class);
++	if (result)
++		return result;
++
++	return result;
 +}
 +
-+static void __exit rapl_exit(void)
++static void __exit powercap_exit(void)
 +{
-+	get_online_cpus();
-+	unregister_hotcpu_notifier(&rapl_cpu_notifier);
-+	rapl_unregister_powercap();
-+	rapl_cleanup_data();
-+	put_online_cpus();
++	class_unregister(&powercap_class);
 +}
 +
-+module_init(rapl_init);
-+module_exit(rapl_exit);
++fs_initcall(powercap_init);
++module_exit(powercap_exit);
 +
-+MODULE_DESCRIPTION("Driver for Intel RAPL (Running Average Power Limit)");
-+MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com>");
++MODULE_DESCRIPTION("PowerCap sysfs Driver");
++MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.co=
+m>");
 +MODULE_LICENSE("GPL v2");
--- 
+diff --git a/include/linux/powercap.h b/include/linux/powercap.h
+new file mode 100644
+index 0000000..9967bd0
+--- /dev/null
++++ b/include/linux/powercap.h
+@@ -0,0 +1,300 @@
++/*
++ * powercap.h : Exports all power class sysfs interface
++ * Copyright (c) 2013, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modif=
+y it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITH=
+OUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY =
+or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licen=
+se for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License a=
+long with
++ * this program; if not, write to the Free Software Foundation, Inc.
++ *
++ */
++
++#ifndef __POWERCAP_H__
++#define __POWERCAP_H__
++
++#include <linux/device.h>
++#include <linux/idr.h>
++
++/*
++ * A power cap class device can contain multiple powercap controllers.
++ * Each controller can have multiple power zones, which can be indepen=
+dently
++ * controlled. Each power zone can have one or more constraints.
++ */
++
++#define POWERCAP_CTRL_NAME_LENGTH			30
++#define POWERCAP_ZONE_NAME_LENGTH			30
++
++struct powercap_zone_device;
++struct powercap_zone_constraint;
++
++/**
++ * struct powercap_zone_constraint_ops - Define constraint callbacks
++ * @set_power_limit_uw:		Set power limit in micro-watts.
++ * @get_power_limit_uw:		Get power limit in micro-watts.
++ * @set_time_window_us:		Set time window in micro-seconds.
++ * @get_time_window_us:		Get time window in micro-seconds.
++ * @get_max_power_uw:		Get max power allowed in micro-watts.
++ * @get_min_power_uw:		Get min power allowed in micro-watts.
++ * @get_max_time_window_us:	Get max time window allowed in micro-secon=
+ds.
++ * @get_min_time_window_us:	Get min time window allowed in micro-secon=
+ds.
++ * @get_name:			Get the name of constraint
++ * @cleanup:			Do any clean up before the constraint is freed
++ * This structure is used to define the constraint callbacks for the c=
+lient
++ * drivers. The following callbacks are mandatory and can't be NULL:
++ *  set_power_limit_uw
++ *  get_power_limit_uw
++ *  set_time_window_us
++ *  get_time_window_us
++ *  get_name
++ */
++struct powercap_zone_constraint_ops {
++	int (*set_power_limit_uw)
++			(struct powercap_zone_device *, int, u64);
++	int (*get_power_limit_uw)
++			(struct powercap_zone_device *, int, u64 *);
++
++	int (*set_time_window_us)
++			(struct powercap_zone_device *, int, u64);
++	int (*get_time_window_us)
++			(struct powercap_zone_device *, int, u64 *);
++
++	int (*get_max_power_uw)
++			(struct powercap_zone_device *, int, u64 *);
++	int (*get_min_power_uw)
++			(struct powercap_zone_device *, int, u64 *);
++
++	int (*get_max_time_window_us)
++			(struct powercap_zone_device *, int, u64 *);
++	int (*get_min_time_window_us)
++			(struct powercap_zone_device *, int, u64 *);
++	const char *(*get_name) (struct powercap_zone_device *, int);
++	void (*cleanup) (struct powercap_zone_device *, int);
++};
++
++/**
++ * struct powercap_controller- Defines a powercap controller
++ * @name:		name of controller
++ * @device:		device for this controller
++ * @idr	:		idr to have unique id for its child
++ * @root_node:		Root holding power zones for this controller
++ * @node_lock:		mutex for node
++ * @ctrl_inst:		link to the controller list
++ *
++ * Defines powercap controller instance
++ */
++struct powercap_controller {
++	char name[POWERCAP_CTRL_NAME_LENGTH + 1];
++	struct device device;
++	struct idr idr;
++	void *root_node;
++	struct mutex node_lock;
++	struct list_head ctrl_inst;
++};
++
++/**
++ * struct powercap_zone_ops - Define power zone callbacks
++ * @get_max_energy_range_uj:	Get maximum range of energy counter in
++ *				micro-joules.
++ * @get_energy_uj:		Get current energy counter in micro-joules.
++ * @reset_energy_uj:		Reset micro-joules energy counter.
++ * @get_max_power_range_uw:	Get maximum range of power counter in
++ *				micro-watts.
++ * @get_power_uw:		Get current power counter in micro-watts.
++ * @reset_power_uw:		Reset micro-watts power counter.
++ * @cleanup:			Do any clean up before the zone is freed
++ *
++ * This structure defines zone callbacks to be implemented by client d=
+rivers.
++ * Client drives can define both energy and power related callbacks. B=
+ut at
++ * the least one type (either power or energy) is mandatory.
++ */
++struct powercap_zone_ops {
++	int (*get_max_energy_range_uj)
++			(struct powercap_zone_device *, u64 *);
++	int (*get_energy_uj)
++			(struct powercap_zone_device *, u64 *);
++	int (*reset_energy_uj)
++			(struct powercap_zone_device *);
++
++	int (*get_max_power_range_uw)
++			(struct powercap_zone_device *, u64 *);
++	int (*get_power_uw)
++			(struct powercap_zone_device *, u64 *);
++	int (*reset_power_uw) (struct powercap_zone_device *);
++
++	void (*cleanup) (struct powercap_zone_device *);
++};
++
++#define	POWERCAP_ZONE_MAX_ATTRS		10 /* Currently only max 5 */
++#define	POWERCAP_CONSTRAINTS_ATTRS	8  /*  5 attrs/constraints */
++#define	POWERCAP_CONSTRAINTS_MAX_ATTRS	10 * POWERCAP_CONSTRAINTS_ATTRS
++					/* For 10 constraints per zone */
++#define POWERCAP_MAX_ATTR_GROUPS	2 /* One for zone and constraint */
++/**
++ * struct powercap_zone_attr- Defines a per zone attribute group
++ * @zone_dev_attrs:	Device attribute list for power zone.
++ * @zone_attr_count:	Number of power zone attributes.
++ * @const_dev_attrs:	Constraint attributes.
++ * @const_attr_count:	Number of constraint related attributes
++ * @dev_zone_attr_group: Attribute group for power zone attributes
++ * @dev_const_attr_group: Attribute group for constraints
++ * @attr_grp_cnt:	Number of attribute groups
++ * @dev_attr_groups:	Used to assign to dev->group
++ *
++ * Used to add an attribute group unique to a zone based on registry.
++ */
++struct powercap_zone_attr {
++	struct attribute *zone_dev_attrs[POWERCAP_ZONE_MAX_ATTRS];
++	int zone_attr_count;
++	struct attribute *const_dev_attrs[POWERCAP_CONSTRAINTS_MAX_ATTRS];
++	int const_attr_count;
++	struct attribute_group dev_zone_attr_group;
++	struct attribute_group dev_const_attr_group;
++	int attr_grp_cnt;
++	const struct attribute_group
++			*dev_attr_groups[POWERCAP_MAX_ATTR_GROUPS + 1];
++};
++
++/**
++ * struct powercap_zone_device- Defines instance of a power cap zone
++ * @id:			Unique id
++ * @zone_dev_name:	Zone device sysfs node name
++ * @name:		Power zone name.
++ * @controller_inst:	Controller instance for this zone
++ * @ops:		Pointer to the zone operation structure.
++ * @device:		Instance of a device.
++ * @attrs:		Attributes associated with this device
++ * @node:		Node pointer to insert to a tree data structure.
++ * @const_id_cnt:	Constraint id count
++ * @lock:		Mutex to protect zone related operations.
++ * @idr:		Instance to an idr entry for children zones.
++ * @par_idr:		To remove reference from the parent idr
++ * @drv_data:		Driver private data
++ * @constraint_list:	Link to the next power zone for this controller.
++ *
++ * This defines a power zone instance. The fields of this structure ar=
+e
++ * private, and should not be used by client drivers.
++ */
++struct powercap_zone_device {
++	int id;
++	char *zone_dev_name;
++	char name[POWERCAP_ZONE_NAME_LENGTH + 1];
++	void *controller_inst;
++	const struct powercap_zone_ops *ops;
++	struct device device;
++	struct powercap_zone_attr attrs;
++	void *node;
++	int const_id_cnt;
++	struct mutex lock;
++	struct idr idr;
++	struct idr *par_idr;
++	void *drv_data;
++	struct list_head constraint_list;
++};
++
++/* For clients to get their device pointer, may be used for dev_dbgs *=
+/
++#define POWERCAP_GET_DEV(p_zone)	(&pzone->device)
++
++/**
++* powercap_set_zone_data() - Set private data for a zone
++* @pcd_dev:	A pointer to the valid zone instance.
++* @pdata:	A pointer to the user private data.
++*
++* Allows client drivers to associate some private data to zone instanc=
+e.
++*/
++static inline void powercap_set_zone_data(struct powercap_zone_device =
+*pcd_dev,
++						void *pdata)
++{
++	if (pcd_dev)
++		pcd_dev->drv_data =3D pdata;
++}
++
++/**
++* powercap_get_zone_data() - Get private data for a zone
++* @pcd_dev:	A pointer to the valid zone instance.
++*
++* Allows client drivers to get private data associate with a zone,
++* using call to powercap_set_zone_data.
++*/
++static inline void *powercap_get_zone_data(struct powercap_zone_device=
+ *pcd_dev)
++{
++	if (pcd_dev)
++		return pcd_dev->drv_data;
++	return NULL;
++}
++
++/* Controller allocate/deallocate API */
++
++/**
++* powercap_allocate_controller() - Allocates a controller
++* @controller_name:	The Name of this controller, which will be shown
++*			in the sysfs Interface.
++*
++* Used to create a controller with the power capping class. Here contr=
+oller
++* can represent a type of technology, which can control a range of pow=
+er zones.
++* For example a controller can be RAPL (Running Average Power Limit)
++* Intel=C2=AE 64 and IA-32 Processor Architectures. The name can be an=
+y string
++* which must be unique, otherwise this function returns NULL.
++* On successful allocation, this API returns a pointer to the
++* controller instance.
++*/
++struct powercap_controller *powercap_allocate_controller(
++						const char *controller_name);
++
++/**
++* powercap_deallocate_controller() - Deallocates a controller
++* @instance:	A pointer to the valid controller instance.
++*
++* Used to deallocate a controller with the power capping class. This
++* takes only one argument, which is the pointer to the instance return=
+ed
++* by a call to powercap_allocate_controller.
++* When a controller is deallocated, all zones and associated constrain=
+ts
++* are freed.
++*/
++void powercap_deallocate_controller(struct powercap_controller *instan=
+ce);
++
++/* Zone register/unregister API */
++
++/**
++* powercap_zone_register() - Register a power zone
++* @controller:	A controller instance under which this zone operates.
++* @name:	A name for this zone.
++* @parent:	A pointer to the parent power zone instance if any or NULL
++* @ops:		Pointer to zone operation callback structure.
++* @no_constraints: Number of constraints for this zone
++* @const_ops:	Pointer to constraint callback structure
++*
++* Used to register a power zone for a controller. Zones are organized =
+in
++* a tree like structure in sysfs under a controller.
++* A power zone must a register a pointer to a structure representing z=
+one
++* callbacks.
++* A power zone can have a some other power zone as a parent or it can =
+be
++* NULL to appear as a direct descendant of a controller.
++* Each power zone can have number of constraints. Constraints appears
++* under zones as attributes with unique id.
++*/
++struct powercap_zone_device *powercap_zone_register(
++			struct powercap_controller *controller,
++			const char *name,
++			struct powercap_zone_device *parent,
++			const struct powercap_zone_ops *ops,
++			int no_constraints,
++			struct powercap_zone_constraint_ops *const_ops);
++/**
++* powercap_zone_unregister() - Unregister a zone device
++* @controller:	A pointer to the valid instance of a controller.
++* @pcd_dev:	A pointer to the valid zone instance for a controller
++*
++* Used to unregister a zone device for a controller. Once a zone is
++* unregistered then all its children and associated constraints are fr=
+eed.
++*/
++int powercap_zone_unregister(struct powercap_controller *controller,
++				struct powercap_zone_device *pcd_dev);
++
++#endif
+--=20
 1.8.3.1
 
