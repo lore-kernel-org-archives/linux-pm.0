@@ -1,35 +1,35 @@
-From: Vikram Narayanan <vikram186@gmail.com>
-Subject: Ti-st suspend/resume hooks
-Date: Fri, 09 Aug 2013 15:14:11 +0530
-Message-ID: <5204B9EB.4020809@gmail.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH 2/2] cpuidle: kirkwood: Staticize local symbol
+Date: Fri, 9 Aug 2013 07:37:59 -0400
+Message-ID: <20130809113759.GP8204@titan.lakedaemon.net>
+References: <000601ce94cf$ae4f0b40$0aed21c0$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:61222 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965382Ab3HIJoT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 05:44:19 -0400
+Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:33895 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754606Ab3HILiF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 07:38:05 -0400
+Content-Disposition: inline
+In-Reply-To: <000601ce94cf$ae4f0b40$0aed21c0$@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-omap@vger.kernel.org, Pavan Savoy <pavan_savoy@ti.com>
-Cc: LAK <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, 'Silviu-Mihai Popescu' <silviupopescu1990@gmail.com>
 
-Hi,
+On Fri, Aug 09, 2013 at 04:11:34PM +0900, Jingoo Han wrote:
+> This local symbol is used only in this file.
+> Fix the following sparse warnings:
+> 
+> drivers/cpuidle/cpuidle-kirkwood.c:73:5: warning: symbol 'kirkwood_cpuidle_remove' was not declared. Should it be static?
+> 
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> ---
+>  drivers/cpuidle/cpuidle-kirkwood.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Our i.Mx6 based platform has a wl12xx chip and the ti-st driver is in 
-use. When the system goes to suspend, the st_kim module fails to suspend 
-giving out -EOPNOTSUPP [1], which is quite evident from the the missing 
-suspend/resume hooks in the wilink_platform_data. [2]
+Acked-by: Jason Cooper <jason@lakedaemon.net>
 
-Are there any ways to make this ti-st driver suspend/resume aware?
+thx,
 
-Thanks,
-Vikram
-
-[1] http://lxr.linux.no/linux+v3.10.5/drivers/misc/ti-st/st_kim.c#L833
-
-[2] 
-http://lxr.linux.no/linux+v3.10.5/arch/arm/mach-omap2/board-omap4panda.c#L58
-
-P.S: I'm not subscribed to the list. Please keep me Cc'd.
+Jason.
