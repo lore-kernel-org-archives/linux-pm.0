@@ -1,41 +1,35 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Subject: [PATCH] cpufreq: unicore2: Staticize local symbol
-Date: Fri, 09 Aug 2013 16:14:51 +0900
-Message-ID: <000701ce94d0$240949e0$6c1bdda0$@samsung.com>
+From: Vikram Narayanan <vikram186@gmail.com>
+Subject: Ti-st suspend/resume hooks
+Date: Fri, 09 Aug 2013 15:14:11 +0530
+Message-ID: <5204B9EB.4020809@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-language: ko
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>, Jingoo Han <jg1.han@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:61222 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965382Ab3HIJoT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 05:44:19 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-omap@vger.kernel.org, Pavan Savoy <pavan_savoy@ti.com>
+Cc: LAK <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-This local symbol is used only in this file.
-Fix the following sparse warnings:
+Hi,
 
-drivers/cpufreq/unicore2-cpufreq.c:27:5: warning: symbol 'ucv2_verify_speed' was not declared. Should it be static?
+Our i.Mx6 based platform has a wl12xx chip and the ti-st driver is in 
+use. When the system goes to suspend, the st_kim module fails to suspend 
+giving out -EOPNOTSUPP [1], which is quite evident from the the missing 
+suspend/resume hooks in the wilink_platform_data. [2]
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/cpufreq/unicore2-cpufreq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Are there any ways to make this ti-st driver suspend/resume aware?
 
-diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unicore2-cpufreq.c
-index 12fc904..b225f04 100644
---- a/drivers/cpufreq/unicore2-cpufreq.c
-+++ b/drivers/cpufreq/unicore2-cpufreq.c
-@@ -24,7 +24,7 @@ static struct cpufreq_driver ucv2_driver;
- /* make sure that only the "userspace" governor is run
-  * -- anything else wouldn't make sense on this platform, anyway.
-  */
--int ucv2_verify_speed(struct cpufreq_policy *policy)
-+static int ucv2_verify_speed(struct cpufreq_policy *policy)
- {
- 	if (policy->cpu)
- 		return -EINVAL;
--- 
-1.7.10.4
+Thanks,
+Vikram
 
+[1] http://lxr.linux.no/linux+v3.10.5/drivers/misc/ti-st/st_kim.c#L833
 
+[2] 
+http://lxr.linux.no/linux+v3.10.5/arch/arm/mach-omap2/board-omap4panda.c#L58
+
+P.S: I'm not subscribed to the list. Please keep me Cc'd.
