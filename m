@@ -1,73 +1,146 @@
-From: Anton Vorontsov <anton@enomsg.org>
-Subject: Re: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex
- AVS drivers
-Date: Fri, 9 Aug 2013 11:44:10 -0700
-Message-ID: <20130809184410.GA979@lizard.mcd26095.sjc.wayport.net>
-References: <1375720177-20063-1-git-send-email-khilman@linaro.org>
- <20130806015147.GA16668@teo>
- <87mwoufk4l.fsf@linaro.org>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Subject: [PATCH v2 1/2] time: allow changing the timekeeper clock frequency
+Date: Fri, 9 Aug 2013 15:34:38 -0400
+Message-ID: <377cf030524ac2530f7651699ca812aa6e53978c.1376080997.git.cmetcalf@tilera.com>
+References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:35955 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030353Ab3HISsr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 14:48:47 -0400
-Received: by mail-pd0-f172.google.com with SMTP id z10so892186pdj.31
-        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2013 11:48:46 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <87mwoufk4l.fsf@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Nishanth Menon <nm@ti.com>
 
-On Tue, Aug 06, 2013 at 04:57:14PM -0700, Kevin Hilman wrote:
-> Subject: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex AVS
->  drivers
-> 
-> The SmartReflex AVS driver evolved out of the OMAP kernel and now
-> lives under drivers/power/avs.
-> 
-> I've historically been maintainer of this but Nishanth Menon is doing
-> most of the heavy lifting now.  Add us both as co-maintainers.
-> 
-> Cc: Anton Vorontsov <anton@enomsg.org>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
-> ---
->  MAINTAINERS | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index defc053..93e9ba0 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6450,6 +6450,14 @@ S:	Maintained
->  F:	include/linux/power_supply.h
->  F:	drivers/power/
->  
-> +SMARTREFLEX DRIVERS FOR ADAPTIVE VOLTAGE SCALING (AVS)
-> +M:	Kevin Hilman <khilman@kernel.org>
-> +M:	Nishanth Menon <nm@ti.com>
-> +S:	Maintained
-> +F:	drivers/power/avs/smartreflex.c
-> +F:	include/linux/power/smartreflex.h
-> +L:	linux-pm@vger.kernel.org
-> +
+On the tile architecture, we use the processor clock tick as the time
+source.  However, when we perform dynamic frequency adjustment and
+modify the clock rate of the core, we have to update the timekeeper
+state to account for the new frequency, as well as for the time it took
+to actually modify the frequency across the chip as a whole.
 
-The file should be alphabetically sorted... I fixed it up and applied the
-patch.
+This change introduces two new functions, timekeeping_chfreq(), which
+changes the frequency, plus timekeeping_chfreq_prep(), used to put the
+timekeeping system in a state that is ready for a frequency change.
+More information is in the comments for the new functions.
 
-Thanks!
+Signed-off-by: Chris Metcalf <cmetcalf@tilera.com>
+---
+v1: If these patches are OK, I can push them as part of the tile tree.
+Otherwise, they should probably be pushed through a single tree either
+by the timekeeping folks or (more likely?) the cpu frequency driver folks.
+Let me know what makes the most sense; for now they are in tile-next.
 
-Anton
+v2: use do_div() in timekeeping_chfreq() to avoid build failures on i386
+(no change to patch 2/2, the cpufreq driver)
 
->  PNP SUPPORT
->  M:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->  M:	Bjorn Helgaas <bhelgaas@google.com>
-> -- 
-> 1.8.3
-> 
+ include/linux/clocksource.h |  5 +++
+ kernel/time/timekeeping.c   | 81 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 86 insertions(+)
+
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index dbbf8aa..423cb82 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -327,6 +327,11 @@ static inline void __clocksource_updatefreq_khz(struct clocksource *cs, u32 khz)
+ 
+ extern int timekeeping_notify(struct clocksource *clock);
+ 
++extern int timekeeping_chfreq_prep(struct clocksource *clock, cycle_t
++				   *start_cycle);
++extern void timekeeping_chfreq(unsigned int freq, cycle_t end_cycle,
++			       u64 delta_ns);
++
+ extern cycle_t clocksource_mmio_readl_up(struct clocksource *);
+ extern cycle_t clocksource_mmio_readl_down(struct clocksource *);
+ extern cycle_t clocksource_mmio_readw_up(struct clocksource *);
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 48b9fff..03a14bf 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -1737,3 +1737,84 @@ void xtime_update(unsigned long ticks)
+ 	do_timer(ticks);
+ 	write_sequnlock(&jiffies_lock);
+ }
++
++/**
++ * timekeeping_chfreq_prep() - prepare to change the frequency of the
++ *    clocksource being used for timekeeping
++ * @clock:		Pointer to the clock source whose frequency will be
++ *			changed.  If this is not the clocksource being used
++ *			or timekeeping, the routine does nothing and
++ *			returns nonzero; otherwise, it prepares for the
++ *			frequency change and returns zero.
++ * @start_cycle:	Pointer to a value which will be set to the current
++ *			cycle count for @clock, in the old clock domain.
++ *
++ * This routine is used when changing processor speed on a system whose
++ * clocksource is dependent upon that speed.  The normal calling sequence
++ * is:
++ *
++ * - Call timekeeping_chfreq_prep(), to get ready for the change and to
++ *   ensure that the current clocksource is what you think it is.
++ *
++ * - Change the actual processor speed.
++ *
++ * - Call timkeeping_chfreq() to change the clocksource frequency and
++ *   adjust the timekeeping parameters to account for the time spent
++ *   doing the frequency change.
++ *
++ * Any timekeeping operations performed while this is happening are likely
++ * to cause problems.  The best way to prevent this from happening is to
++ * perform all of those steps in a routine run via stop_machine().
++ */
++int timekeeping_chfreq_prep(struct clocksource *clock, cycle_t *start_cycle)
++{
++	if (timekeeper.clock != clock)
++		return 1;
++
++	timekeeping_forward_now(&timekeeper);
++	*start_cycle = timekeeper.clock->cycle_last;
++
++	return 0;
++}
++
++/**
++ * timekeeping_chfreq() - change the frequency of the clocksource being
++ *   used for timekeeping, and then recompute the internal timekeeping
++ *   parameters which depend upon that
++ * @freq:		New frequency for the clocksource, in hertz.
++ * @end_cycle:		Cycle count, in the new clock domain.
++ * @delta_ns:		Time delta in ns between start_cycle (as returned
++ *			from timekeeping_chfreq_prep()) and end_cycle.
++ *
++ * See the timekeeping_chfreq_prep() description for how this routine is
++ * used.
++ */
++void timekeeping_chfreq(unsigned int freq, cycle_t end_cycle, u64 delta_ns)
++{
++	struct clocksource *clock = timekeeper.clock;
++	cycle_t delta_cycles;
++
++	write_seqlock(&jiffies_lock);
++	__clocksource_updatefreq_hz(clock, freq);
++	tk_setup_internals(&timekeeper, clock);
++
++	/*
++	 * The timekeeping_forward_now() done in timekeeping_chfreq_prep()
++	 * made xtime consistent with the timesource as of a cycle count
++	 * which was provided to the caller as *start_cycle.  Then, we
++	 * spent a bunch of time actually changing the processor frequency.
++	 * Finally, timekeeper_setup_internals() updated cycle_last in the
++	 * clocksource to match the current cycle count, but didn't update
++	 * xtime.  Thus, the current time is now wrong by the time we spent
++	 * doing the frequency change.  To fix this, we need to backdate
++	 * the clocksource's cycle_last so that it is again consistent with
++	 * xtime.
++	 */
++	delta_cycles = delta_ns * freq;
++	do_div(delta_cycles, 1000000000);
++	clock->cycle_last = end_cycle - delta_cycles;
++
++	write_sequnlock(&jiffies_lock);
++
++	tick_clock_notify();
++}
+-- 
+1.8.3.1
+
