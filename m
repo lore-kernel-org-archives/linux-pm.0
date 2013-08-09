@@ -1,78 +1,154 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC PATCH] cpuidle: fix device->state_count handling
-Date: Fri, 09 Aug 2013 13:59:27 +0200
-Message-ID: <8500767.uCb7Y0sjbx@amdc1032>
+Subject: [PATCH] cpufreq: fix EXYNOS drivers selection
+Date: Fri, 09 Aug 2013 14:04:55 +0200
+Message-ID: <2522264.d7vsK7QKUi@amdc1032>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:16254 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965820Ab3HIL74 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 07:59:56 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Use device->state_count instead of driver->state_count in
-cpuidle_play_dead(), ladder_select_state() and menu_select().
+* remove superfluous pr_debug() call from exynos_cpufreq_init()
+  (init errors are always logged anyway)
+* add dummy per-SoC type init functions to exynos-cpufreq.h
+* make per-SoC type cpufreq config options selectable
+* make CONFIG_ARM_EXYNOS_CPUFREQ config option invisible to user and
+  automatically enable it when needed
 
-This allows cpuidle drivers to override maximum allowable
-state number for a given device, which is what some cpuidle
-drivers would like to do (i.e. EXYNOS cpuidle driver).
+This patch fixes following issues:
+* EXYNOS per-SoC type cpufreq support (i.e. exynos4210-cpufreq.c) being
+  always built if given SoC support was enabled (i.e. CPU_EXYNOS4210),
+  even if common EXYNOS cpufreq support was disabled
+* inability to select cpufreq for each SoC type separately (it could
+  be only enabled/disabled for all SoCs for which support was enabled)
+* EXYNOS5440 cpufreq support was always enabled when EXYNOS5440
+  support was enabled and couldn't be disabled
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
-Alternatively, we can make EXYNOS cpuidle driver work without
-device->state_count (at a some tiny performance cost?). This
-would allow us to remove device->state_count completely as it
-is not needed by any other cpuidle driver currently (AFAICS).
+ drivers/cpufreq/Kconfig.arm      |   36 ++++++++++++++++++++++++------------
+ drivers/cpufreq/exynos-cpufreq.c |    1 -
+ drivers/cpufreq/exynos-cpufreq.h |   21 +++++++++++++++++++++
+ 3 files changed, 45 insertions(+), 13 deletions(-)
 
- drivers/cpuidle/cpuidle.c          |    2 +-
- drivers/cpuidle/governors/ladder.c |    2 +-
- drivers/cpuidle/governors/menu.c   |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: b/drivers/cpuidle/cpuidle.c
+Index: b/drivers/cpufreq/Kconfig.arm
 ===================================================================
---- a/drivers/cpuidle/cpuidle.c	2013-08-08 14:36:09.611488750 +0200
-+++ b/drivers/cpuidle/cpuidle.c	2013-08-08 14:39:02.291486116 +0200
-@@ -57,7 +57,7 @@ int cpuidle_play_dead(void)
- 		return -ENODEV;
+--- a/drivers/cpufreq/Kconfig.arm	2013-08-08 14:36:09.000000000 +0200
++++ b/drivers/cpufreq/Kconfig.arm	2013-08-08 15:50:58.099420242 +0200
+@@ -17,37 +17,47 @@ config ARM_DT_BL_CPUFREQ
+ 	  big.LITTLE platform. This gets frequency tables from DT.
  
- 	/* Find lowest-power state that supports long-term idle */
--	for (i = drv->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
-+	for (i = dev->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
- 		if (drv->states[i].enter_dead)
- 			return drv->states[i].enter_dead(dev, i);
+ config ARM_EXYNOS_CPUFREQ
+-	bool "SAMSUNG EXYNOS SoCs"
+-	depends on ARCH_EXYNOS
++	bool
+ 	select CPU_FREQ_TABLE
+-	default y
+-	help
+-	  This adds the CPUFreq driver common part for Samsung
+-	  EXYNOS SoCs.
+-
+-	  If in doubt, say N.
  
-Index: b/drivers/cpuidle/governors/ladder.c
+ config ARM_EXYNOS4210_CPUFREQ
+-	def_bool CPU_EXYNOS4210
++	bool "SAMSUNG EXYNOS4210"
++	depends on CPU_EXYNOS4210
++	default y
++	select ARM_EXYNOS_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for Samsung EXYNOS4210
+ 	  SoC (S5PV310 or S5PC210).
+ 
++	  If in doubt, say N.
++
+ config ARM_EXYNOS4X12_CPUFREQ
+-	def_bool (SOC_EXYNOS4212 || SOC_EXYNOS4412)
++	bool "SAMSUNG EXYNOS4x12"
++	depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412)
++	default y
++	select ARM_EXYNOS_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for Samsung EXYNOS4X12
+ 	  SoC (EXYNOS4212 or EXYNOS4412).
+ 
++	  If in doubt, say N.
++
+ config ARM_EXYNOS5250_CPUFREQ
+-	def_bool SOC_EXYNOS5250
++	bool "SAMSUNG EXYNOS5250"
++	depends on SOC_EXYNOS5250
++	default y
++	select ARM_EXYNOS_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for Samsung EXYNOS5250
+ 	  SoC.
+ 
++	  If in doubt, say N.
++
+ config ARM_EXYNOS5440_CPUFREQ
+-	def_bool SOC_EXYNOS5440
++	bool "SAMSUNG EXYNOS5440"
++	depends on SOC_EXYNOS5440
+ 	depends on HAVE_CLK && PM_OPP && OF
++	default y
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  This adds the CPUFreq driver for Samsung EXYNOS5440
+@@ -55,6 +65,8 @@ config ARM_EXYNOS5440_CPUFREQ
+ 	  different than previous exynos controllers so not using
+ 	  the common exynos framework.
+ 
++	  If in doubt, say N.
++
+ config ARM_HIGHBANK_CPUFREQ
+ 	tristate "Calxeda Highbank-based"
+ 	depends on ARCH_HIGHBANK
+Index: b/drivers/cpufreq/exynos-cpufreq.c
 ===================================================================
---- a/drivers/cpuidle/governors/ladder.c	2013-08-08 14:36:09.611488750 +0200
-+++ b/drivers/cpuidle/governors/ladder.c	2013-08-08 14:39:02.299486116 +0200
-@@ -87,7 +87,7 @@ static int ladder_select_state(struct cp
- 		last_residency = last_state->threshold.promotion_time + 1;
- 
- 	/* consider promotion */
--	if (last_idx < drv->state_count - 1 &&
-+	if (last_idx < dev->state_count - 1 &&
- 	    !drv->states[last_idx + 1].disabled &&
- 	    !dev->states_usage[last_idx + 1].disable &&
- 	    last_residency > last_state->threshold.promotion_time &&
-Index: b/drivers/cpuidle/governors/menu.c
+--- a/drivers/cpufreq/exynos-cpufreq.c	2013-08-08 14:36:09.000000000 +0200
++++ b/drivers/cpufreq/exynos-cpufreq.c	2013-08-08 15:47:39.619423270 +0200
+@@ -332,7 +332,6 @@ err_cpufreq:
+ 	regulator_put(arm_regulator);
+ err_vdd_arm:
+ 	kfree(exynos_info);
+-	pr_debug("%s: failed initialization\n", __func__);
+ 	return -EINVAL;
+ }
+ late_initcall(exynos_cpufreq_init);
+Index: b/drivers/cpufreq/exynos-cpufreq.h
 ===================================================================
---- a/drivers/cpuidle/governors/menu.c	2013-08-08 14:36:09.611488750 +0200
-+++ b/drivers/cpuidle/governors/menu.c	2013-08-08 14:39:02.299486116 +0200
-@@ -312,7 +312,7 @@ static int menu_select(struct cpuidle_dr
- 	 * Find the idle state with the lowest power while satisfying
- 	 * our constraints.
- 	 */
--	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
-+	for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
- 		struct cpuidle_state *s = &drv->states[i];
- 		struct cpuidle_state_usage *su = &dev->states_usage[i];
+--- a/drivers/cpufreq/exynos-cpufreq.h	2013-08-08 14:28:57.000000000 +0200
++++ b/drivers/cpufreq/exynos-cpufreq.h	2013-08-08 15:47:39.619423270 +0200
+@@ -43,6 +43,27 @@ struct exynos_dvfs_info {
+ 	bool (*need_apll_change)(unsigned int, unsigned int);
+ };
  
-
++#ifdef CONFIG_ARM_EXYNOS4210_CPUFREQ
+ extern int exynos4210_cpufreq_init(struct exynos_dvfs_info *);
++#else
++static inline int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
++{
++	return -EOPNOTSUPP;
++}
++#endif
++#ifdef CONFIG_ARM_EXYNOS4X12_CPUFREQ
+ extern int exynos4x12_cpufreq_init(struct exynos_dvfs_info *);
++#else
++static inline int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
++{
++	return -EOPNOTSUPP;
++}
++#endif
++#ifdef CONFIG_ARM_EXYNOS5250_CPUFREQ
+ extern int exynos5250_cpufreq_init(struct exynos_dvfs_info *);
++#else
++static inline int exynos5250_cpufreq_init(struct exynos_dvfs_info *info)
++{
++	return -EOPNOTSUPP;
++}
++#endif
