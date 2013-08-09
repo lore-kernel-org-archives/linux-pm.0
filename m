@@ -1,129 +1,123 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 3/3] cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver
-Date: Fri, 09 Aug 2013 15:45:50 +0200
-Message-ID: <5204F28E.1050204@linaro.org>
-References: <1375875813-13358-1-git-send-email-lorenzo.pieralisi@arm.com> <1375875813-13358-4-git-send-email-lorenzo.pieralisi@arm.com> <5203C098.9000701@linaro.org> <20130808161826.GB3742@e102568-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] ACPI and power management fixes for v3.11-rc5
+Date: Fri, 09 Aug 2013 17:06:04 +0200
+Message-ID: <4211268.BVlRV6dqfO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f51.google.com ([74.125.82.51]:59186 "EHLO
-	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967741Ab3HINpo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 09:45:44 -0400
-Received: by mail-wg0-f51.google.com with SMTP id a12so3618488wgh.30
-        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2013 06:45:42 -0700 (PDT)
-In-Reply-To: <20130808161826.GB3742@e102568-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Olof Johansson <olof@lixom.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-On 08/08/2013 06:18 PM, Lorenzo Pieralisi wrote:
-> On Thu, Aug 08, 2013 at 05:00:24PM +0100, Daniel Lezcano wrote:
->> On 08/07/2013 01:43 PM, Lorenzo Pieralisi wrote:
->>> The big.LITTLE architecture is composed of two clusters of cpus. On=
-e cluster
->>> contains less powerful but more energy efficient processors and the=
- other
->>> cluster groups the powerful but energy-intensive cpus.
->>>
->>> The TC2 testchip implements two clusters of CPUs (A7 and A15 cluste=
-rs in
->>> a big.LITTLE configuration) connected through a CCI interconnect th=
-at manages
->>> coherency of their respective L2 caches and intercluster distribute=
-d
->>> virtual memory messages (DVM).
->>>
->>> TC2 testchip integrates a power controller that manages cores reset=
-s, wake-up
->>> IRQs and cluster low-power states. Power states are managed at clus=
-ter
->>> level, which means that voltage is removed from a cluster iff all c=
-ores
->>> in a cluster are in a wfi state. Single cores can enter a reset sta=
-te
->>> which is identical to wfi in terms of power consumption but simplif=
-ies the
->>> way cluster states are entered.
->>>
->>> This patch provides a multiple driver CPU idle implementation for T=
-C2
->>> which paves the way for a generic big.LITTLE idle driver for all
->>> upcoming big.LITTLE based systems on chip.
->>>
->>> The driver relies on the MCPM infrastructure to coordinate and mana=
-ge
->>> core power states; in particular MCPM allows to suspend specific co=
-res
->>> and hides the CPUs coordination required to shut-down clusters of C=
-PUs.
->>>
->>> Power down sequences for the respective clusters are implemented in=
- the
->>> MCPM TC2 backend, with all code needed to clean caches and exit coh=
-erency.
->>>
->>> The multiple driver CPU idle infrastructure allows to define differ=
-ent
->>> C-states for big and little cores, determined at boot by checking t=
-he
->>> part id of the possible CPUs and initializing the respective logica=
-l
->>> masks in the big and little drivers.
->>>
->>> Current big.little systems are composed of A7 and A15 clusters, as
->>> implemented in TC2, but in the future that may change and the drive=
-r
->>> will have evolve to retrieve what is a 'big' cpu and what is a 'lit=
-tle'
->>> cpu in order to build the correct topology.
->>>
->>> Cc: Kevin Hilman <khilman@linaro.org>
->>> Cc: Amit Kucheria <amit.kucheria@linaro.org>
->>> Cc: Olof Johansson <olof@lixom.net>
->>> Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
->>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->>> ---
->>
->> A nit below :/
->>
->> [ ... ]
->>
->>> +
->>> +static struct cpuidle_driver bl_idle_big_driver =3D {
->>> +	.name =3D "big_idle",
->>> +	.owner =3D THIS_MODULE,
->>> +	.states[0] =3D ARM_CPUIDLE_WFI_STATE,
->>> +	.states[1] =3D {
->>> +		.enter			=3D bl_enter_powerdown,
->>> +
->>> +		.exit_latency		=3D 500,
->>
->> Extra line between enter and exit_latency.
->=20
-> Gah, not anymore :)
->=20
-> Other than that, is it ready to go ? If nobody complains I have plann=
-ed
-> to send a pull request early next week, as soon as a stable branch fo=
-r
-> TC2 MCPM gets in arm-soc.
+Hi Linus,
+
+Please pull from the git repository at
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.11-rc5
+
+to receive ACPI and power management fixes for v3.11-rc5 with
+top-most commit 69fdadfd2200e0bf3d10a7a7925db8e9fc5a46fd
+
+  Merge branch 'pm-fixes'
+
+on top of commit c095ba7224d8edc71dcef0d655911399a8bd4a3f
+
+  Linux 3.11-rc4
+
+These fix a couple of recent regressions introduced during this cycle,
+a few regressions introduced in 3.9 and 3.10 and one locking bug
+that's always been there.
+ 
+Specifics:
+
+- ACPI-based memory hotplug stopped working after a recent change,
+  because it's not possible to associate sufficiently many "physical"
+  devices with one ACPI device object due to an artificial limit.
+  Fix from yours truly removes that limit and makes memory hotplug
+  work again.
+
+- A change made in 3.9 uncovered a bug in the ACPI processor driver
+  preventing NUMA nodes from being put offline due to an ordering
+  issue.  Fix from Yasuaki Ishimatsu changes the ordering to make
+  things work again.
+
+- One of the recent ACPI video commits (that hasn't been reverted
+  so far) uncovered a bug in the code handling quirky BIOSes that
+  caused some Asus machines to boot with backlight completely off
+  which made it quite difficult to use them afterward.  Fix from
+  Felipe Contreras improves the quirk to cover this particular
+  case correctly.
+
+- A cpufreq user space interface change made in 3.10 inadvertently
+  renamed ignore_nice_load to ignore_nice which resulted in some
+  confusion.  Fix from Viresh Kumar changes the name back to
+  ignore_nice_load.
+
+- An initialization ordering change made in 3.9 broke cpufreq on
+  loongson2 boards.  Fix from Aaro Koskinen restores the correct
+  initialization ordering there.
+
+- Another chapter from "ACPI Horror Stories".  Some BIOS writers
+  apparently expect us to always be able to handle the unbelievable
+  garbage they put into their ACPI tables.  Well, we do our best,
+  but sometimes we break one of these cases when we try to address
+  another one.
+
+  In this particular case the breakage resulted from a mistake made
+  in 3.9 and caused the detection of some graphics adapters (that were
+  detected successfully before) to fail.  It turned out that there
+  were two objects representing the same PCIe port in the ACPI tables
+  of the affected systems.  Both appeared as "enabled" and we were
+  expected to guess which one to use.  We used to choose the right one
+  before by pure luck, but when we tried to address another similar
+  corner case, the luck went away.  This time we try to make our
+  guessing a bit more educated which is reported to work on those
+  systems.
+
+- The /proc/acpi/wakeup interface code is missing some locking
+  which may lead to breakage if that file is written or read during
+  hotplug of wakeup devices.  That should be rare but still possible,
+  so it's better to start using the appropriate locking there.
+
+Thanks!
 
 
-It sounds good to me.
+---------------
 
+Aaro Koskinen (1):
+      cpufreq: loongson2: fix regression related to clock management
 
+Felipe Contreras (1):
+      ACPI / video: improve quirk check in acpi_video_bqc_quirk()
 
+Rafael J. Wysocki (3):
+      ACPI / PM: Walk physical_node_list under physical_node_lock
+      ACPI: Drop physical_node_id_bitmap from struct acpi_device
+      ACPI: Try harder to resolve _ADR collisions for bridges
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Viresh Kumar (1):
+      cpufreq: rename ignore_nice as ignore_nice_load
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Yasuaki Ishimatsu (1):
+      ACPI / processor: move try_offline_node() after acpi_unmap_lsapic()
 
+---------------
+
+ drivers/acpi/acpi_processor.c          |    3 +-
+ drivers/acpi/glue.c                    |  133 ++++++++++++++++++++++++--------
+ drivers/acpi/proc.c                    |    8 ++
+ drivers/acpi/video.c                   |    2 +-
+ drivers/cpufreq/cpufreq_conservative.c |   20 ++---
+ drivers/cpufreq/cpufreq_governor.c     |    8 +-
+ drivers/cpufreq/cpufreq_governor.h     |    4 +-
+ drivers/cpufreq/cpufreq_ondemand.c     |   20 ++---
+ drivers/cpufreq/loongson2_cpufreq.c    |   11 +--
+ drivers/pci/pci-acpi.c                 |   15 +++-
+ include/acpi/acpi_bus.h                |   14 ++--
+ 11 files changed, 162 insertions(+), 76 deletions(-)
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
