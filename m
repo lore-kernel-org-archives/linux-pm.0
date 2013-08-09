@@ -1,154 +1,129 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] cpufreq: fix EXYNOS drivers selection
-Date: Fri, 09 Aug 2013 14:04:55 +0200
-Message-ID: <2522264.d7vsK7QKUi@amdc1032>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 3/3] cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver
+Date: Fri, 09 Aug 2013 15:45:50 +0200
+Message-ID: <5204F28E.1050204@linaro.org>
+References: <1375875813-13358-1-git-send-email-lorenzo.pieralisi@arm.com> <1375875813-13358-4-git-send-email-lorenzo.pieralisi@arm.com> <5203C098.9000701@linaro.org> <20130808161826.GB3742@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f51.google.com ([74.125.82.51]:59186 "EHLO
+	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967741Ab3HINpo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 09:45:44 -0400
+Received: by mail-wg0-f51.google.com with SMTP id a12so3618488wgh.30
+        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2013 06:45:42 -0700 (PDT)
+In-Reply-To: <20130808161826.GB3742@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Olof Johansson <olof@lixom.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jon Medhurst <tixy@linaro.org>
 
-* remove superfluous pr_debug() call from exynos_cpufreq_init()
-  (init errors are always logged anyway)
-* add dummy per-SoC type init functions to exynos-cpufreq.h
-* make per-SoC type cpufreq config options selectable
-* make CONFIG_ARM_EXYNOS_CPUFREQ config option invisible to user and
-  automatically enable it when needed
+On 08/08/2013 06:18 PM, Lorenzo Pieralisi wrote:
+> On Thu, Aug 08, 2013 at 05:00:24PM +0100, Daniel Lezcano wrote:
+>> On 08/07/2013 01:43 PM, Lorenzo Pieralisi wrote:
+>>> The big.LITTLE architecture is composed of two clusters of cpus. On=
+e cluster
+>>> contains less powerful but more energy efficient processors and the=
+ other
+>>> cluster groups the powerful but energy-intensive cpus.
+>>>
+>>> The TC2 testchip implements two clusters of CPUs (A7 and A15 cluste=
+rs in
+>>> a big.LITTLE configuration) connected through a CCI interconnect th=
+at manages
+>>> coherency of their respective L2 caches and intercluster distribute=
+d
+>>> virtual memory messages (DVM).
+>>>
+>>> TC2 testchip integrates a power controller that manages cores reset=
+s, wake-up
+>>> IRQs and cluster low-power states. Power states are managed at clus=
+ter
+>>> level, which means that voltage is removed from a cluster iff all c=
+ores
+>>> in a cluster are in a wfi state. Single cores can enter a reset sta=
+te
+>>> which is identical to wfi in terms of power consumption but simplif=
+ies the
+>>> way cluster states are entered.
+>>>
+>>> This patch provides a multiple driver CPU idle implementation for T=
+C2
+>>> which paves the way for a generic big.LITTLE idle driver for all
+>>> upcoming big.LITTLE based systems on chip.
+>>>
+>>> The driver relies on the MCPM infrastructure to coordinate and mana=
+ge
+>>> core power states; in particular MCPM allows to suspend specific co=
+res
+>>> and hides the CPUs coordination required to shut-down clusters of C=
+PUs.
+>>>
+>>> Power down sequences for the respective clusters are implemented in=
+ the
+>>> MCPM TC2 backend, with all code needed to clean caches and exit coh=
+erency.
+>>>
+>>> The multiple driver CPU idle infrastructure allows to define differ=
+ent
+>>> C-states for big and little cores, determined at boot by checking t=
+he
+>>> part id of the possible CPUs and initializing the respective logica=
+l
+>>> masks in the big and little drivers.
+>>>
+>>> Current big.little systems are composed of A7 and A15 clusters, as
+>>> implemented in TC2, but in the future that may change and the drive=
+r
+>>> will have evolve to retrieve what is a 'big' cpu and what is a 'lit=
+tle'
+>>> cpu in order to build the correct topology.
+>>>
+>>> Cc: Kevin Hilman <khilman@linaro.org>
+>>> Cc: Amit Kucheria <amit.kucheria@linaro.org>
+>>> Cc: Olof Johansson <olof@lixom.net>
+>>> Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
+>>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>>> ---
+>>
+>> A nit below :/
+>>
+>> [ ... ]
+>>
+>>> +
+>>> +static struct cpuidle_driver bl_idle_big_driver =3D {
+>>> +	.name =3D "big_idle",
+>>> +	.owner =3D THIS_MODULE,
+>>> +	.states[0] =3D ARM_CPUIDLE_WFI_STATE,
+>>> +	.states[1] =3D {
+>>> +		.enter			=3D bl_enter_powerdown,
+>>> +
+>>> +		.exit_latency		=3D 500,
+>>
+>> Extra line between enter and exit_latency.
+>=20
+> Gah, not anymore :)
+>=20
+> Other than that, is it ready to go ? If nobody complains I have plann=
+ed
+> to send a pull request early next week, as soon as a stable branch fo=
+r
+> TC2 MCPM gets in arm-soc.
 
-This patch fixes following issues:
-* EXYNOS per-SoC type cpufreq support (i.e. exynos4210-cpufreq.c) being
-  always built if given SoC support was enabled (i.e. CPU_EXYNOS4210),
-  even if common EXYNOS cpufreq support was disabled
-* inability to select cpufreq for each SoC type separately (it could
-  be only enabled/disabled for all SoCs for which support was enabled)
-* EXYNOS5440 cpufreq support was always enabled when EXYNOS5440
-  support was enabled and couldn't be disabled
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/cpufreq/Kconfig.arm      |   36 ++++++++++++++++++++++++------------
- drivers/cpufreq/exynos-cpufreq.c |    1 -
- drivers/cpufreq/exynos-cpufreq.h |   21 +++++++++++++++++++++
- 3 files changed, 45 insertions(+), 13 deletions(-)
+It sounds good to me.
 
-Index: b/drivers/cpufreq/Kconfig.arm
-===================================================================
---- a/drivers/cpufreq/Kconfig.arm	2013-08-08 14:36:09.000000000 +0200
-+++ b/drivers/cpufreq/Kconfig.arm	2013-08-08 15:50:58.099420242 +0200
-@@ -17,37 +17,47 @@ config ARM_DT_BL_CPUFREQ
- 	  big.LITTLE platform. This gets frequency tables from DT.
- 
- config ARM_EXYNOS_CPUFREQ
--	bool "SAMSUNG EXYNOS SoCs"
--	depends on ARCH_EXYNOS
-+	bool
- 	select CPU_FREQ_TABLE
--	default y
--	help
--	  This adds the CPUFreq driver common part for Samsung
--	  EXYNOS SoCs.
--
--	  If in doubt, say N.
- 
- config ARM_EXYNOS4210_CPUFREQ
--	def_bool CPU_EXYNOS4210
-+	bool "SAMSUNG EXYNOS4210"
-+	depends on CPU_EXYNOS4210
-+	default y
-+	select ARM_EXYNOS_CPUFREQ
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS4210
- 	  SoC (S5PV310 or S5PC210).
- 
-+	  If in doubt, say N.
-+
- config ARM_EXYNOS4X12_CPUFREQ
--	def_bool (SOC_EXYNOS4212 || SOC_EXYNOS4412)
-+	bool "SAMSUNG EXYNOS4x12"
-+	depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412)
-+	default y
-+	select ARM_EXYNOS_CPUFREQ
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS4X12
- 	  SoC (EXYNOS4212 or EXYNOS4412).
- 
-+	  If in doubt, say N.
-+
- config ARM_EXYNOS5250_CPUFREQ
--	def_bool SOC_EXYNOS5250
-+	bool "SAMSUNG EXYNOS5250"
-+	depends on SOC_EXYNOS5250
-+	default y
-+	select ARM_EXYNOS_CPUFREQ
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS5250
- 	  SoC.
- 
-+	  If in doubt, say N.
-+
- config ARM_EXYNOS5440_CPUFREQ
--	def_bool SOC_EXYNOS5440
-+	bool "SAMSUNG EXYNOS5440"
-+	depends on SOC_EXYNOS5440
- 	depends on HAVE_CLK && PM_OPP && OF
-+	default y
- 	select CPU_FREQ_TABLE
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS5440
-@@ -55,6 +65,8 @@ config ARM_EXYNOS5440_CPUFREQ
- 	  different than previous exynos controllers so not using
- 	  the common exynos framework.
- 
-+	  If in doubt, say N.
-+
- config ARM_HIGHBANK_CPUFREQ
- 	tristate "Calxeda Highbank-based"
- 	depends on ARCH_HIGHBANK
-Index: b/drivers/cpufreq/exynos-cpufreq.c
-===================================================================
---- a/drivers/cpufreq/exynos-cpufreq.c	2013-08-08 14:36:09.000000000 +0200
-+++ b/drivers/cpufreq/exynos-cpufreq.c	2013-08-08 15:47:39.619423270 +0200
-@@ -332,7 +332,6 @@ err_cpufreq:
- 	regulator_put(arm_regulator);
- err_vdd_arm:
- 	kfree(exynos_info);
--	pr_debug("%s: failed initialization\n", __func__);
- 	return -EINVAL;
- }
- late_initcall(exynos_cpufreq_init);
-Index: b/drivers/cpufreq/exynos-cpufreq.h
-===================================================================
---- a/drivers/cpufreq/exynos-cpufreq.h	2013-08-08 14:28:57.000000000 +0200
-+++ b/drivers/cpufreq/exynos-cpufreq.h	2013-08-08 15:47:39.619423270 +0200
-@@ -43,6 +43,27 @@ struct exynos_dvfs_info {
- 	bool (*need_apll_change)(unsigned int, unsigned int);
- };
- 
-+#ifdef CONFIG_ARM_EXYNOS4210_CPUFREQ
- extern int exynos4210_cpufreq_init(struct exynos_dvfs_info *);
-+#else
-+static inline int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
-+{
-+	return -EOPNOTSUPP;
-+}
-+#endif
-+#ifdef CONFIG_ARM_EXYNOS4X12_CPUFREQ
- extern int exynos4x12_cpufreq_init(struct exynos_dvfs_info *);
-+#else
-+static inline int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
-+{
-+	return -EOPNOTSUPP;
-+}
-+#endif
-+#ifdef CONFIG_ARM_EXYNOS5250_CPUFREQ
- extern int exynos5250_cpufreq_init(struct exynos_dvfs_info *);
-+#else
-+static inline int exynos5250_cpufreq_init(struct exynos_dvfs_info *info)
-+{
-+	return -EOPNOTSUPP;
-+}
-+#endif
+
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
