@@ -1,44 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 35/35] cpufreq: tegra: use cpufreq_table_validate_and_show()
-Date: Fri, 9 Aug 2013 22:39:42 +0530
-Message-ID: <CAKohponQDAqHiRD7Aw5Wk6fEE-d8H=Svg0oBRyb9SKGdqYxGhw@mail.gmail.com>
-References: <cover.1375964117.git.viresh.kumar@linaro.org>
-	<568f3dbd414b050bb2319d960fb5044a5aed8ee3.1375964117.git.viresh.kumar@linaro.org>
-	<5203BCDD.40809@wwwdotorg.org>
-	<CAKohpomr8kwDitAFD7FKvHo3zNWz8qT5bkd3yOVEnC_k16o=Dw@mail.gmail.com>
-	<CAKohpo=Gy7D2LYmdFU1p+eL-nMoPE18YXWvE2M8t-fb-a5HBgg@mail.gmail.com>
-	<5205167F.1070906@wwwdotorg.org>
+From: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex
+ AVS drivers
+Date: Fri, 9 Aug 2013 11:44:10 -0700
+Message-ID: <20130809184410.GA979@lizard.mcd26095.sjc.wayport.net>
+References: <1375720177-20063-1-git-send-email-khilman@linaro.org>
+ <20130806015147.GA16668@teo>
+ <87mwoufk4l.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f52.google.com ([209.85.219.52]:36415 "EHLO
-	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752225Ab3HIRJn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 13:09:43 -0400
-Received: by mail-oa0-f52.google.com with SMTP id n12so7066266oag.39
-        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2013 10:09:42 -0700 (PDT)
-In-Reply-To: <5205167F.1070906@wwwdotorg.org>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:35955 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030353Ab3HISsr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 14:48:47 -0400
+Received: by mail-pd0-f172.google.com with SMTP id z10so892186pdj.31
+        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2013 11:48:46 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <87mwoufk4l.fsf@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Nishanth Menon <nm@ti.com>
 
-On 9 August 2013 21:49, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 08/08/2013 10:04 PM, Viresh Kumar wrote:
->> On 8 August 2013 21:37, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> Its useless and the correct routine isn't called at all :) .. I will add that
->>> additional patch and send it to you and will get this change out of this
->>> commit.
->>
->> The two commits look like this now attached too in case you want
->> to test:
->
-> I'd be happy to test, but those changes cause build failures on top of
-> next-20130809. Which other patches do I need to apply first?
+On Tue, Aug 06, 2013 at 04:57:14PM -0700, Kevin Hilman wrote:
+> Subject: [PATCH] MAINTAINERS: drivers/power: add entry for SmartReflex AVS
+>  drivers
+> 
+> The SmartReflex AVS driver evolved out of the OMAP kernel and now
+> lives under drivers/power/avs.
+> 
+> I've historically been maintainer of this but Nishanth Menon is doing
+> most of the heavy lifting now.  Add us both as co-maintainers.
+> 
+> Cc: Anton Vorontsov <anton@enomsg.org>
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+> ---
+>  MAINTAINERS | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index defc053..93e9ba0 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -6450,6 +6450,14 @@ S:	Maintained
+>  F:	include/linux/power_supply.h
+>  F:	drivers/power/
+>  
+> +SMARTREFLEX DRIVERS FOR ADAPTIVE VOLTAGE SCALING (AVS)
+> +M:	Kevin Hilman <khilman@kernel.org>
+> +M:	Nishanth Menon <nm@ti.com>
+> +S:	Maintained
+> +F:	drivers/power/avs/smartreflex.c
+> +F:	include/linux/power/smartreflex.h
+> +L:	linux-pm@vger.kernel.org
+> +
 
-None.. You applied all three attached patches? I have given it a try
-on my side now and it worked without any issues..
+The file should be alphabetically sorted... I fixed it up and applied the
+patch.
 
-Just pushed out a branch for you as well:
+Thanks!
 
-https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/tegra-test
+Anton
+
+>  PNP SUPPORT
+>  M:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>  M:	Bjorn Helgaas <bhelgaas@google.com>
+> -- 
+> 1.8.3
+> 
