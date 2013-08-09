@@ -1,123 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.11-rc5
-Date: Fri, 09 Aug 2013 17:06:04 +0200
-Message-ID: <4211268.BVlRV6dqfO@vostro.rjw.lan>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [RFC PATCH] cpuidle: fix device->state_count handling
+Date: Fri, 09 Aug 2013 17:47:52 +0200
+Message-ID: <22200721.zOZJVq5p47@amdc1227>
+References: <8500767.uCb7Y0sjbx@amdc1032>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <8500767.uCb7Y0sjbx@amdc1032>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Hi Bart,
 
-Please pull from the git repository at
+On Friday 09 of August 2013 13:59:27 Bartlomiej Zolnierkiewicz wrote:
+> Use device->state_count instead of driver->state_count in
+> cpuidle_play_dead(), ladder_select_state() and menu_select().
+> 
+> This allows cpuidle drivers to override maximum allowable
+> state number for a given device, which is what some cpuidle
+> drivers would like to do (i.e. EXYNOS cpuidle driver).
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+> Alternatively, we can make EXYNOS cpuidle driver work without
+> device->state_count (at a some tiny performance cost?). This
+> would allow us to remove device->state_count completely as it
+> is not needed by any other cpuidle driver currently (AFAICS).
+> 
+>  drivers/cpuidle/cpuidle.c          |    2 +-
+>  drivers/cpuidle/governors/ladder.c |    2 +-
+>  drivers/cpuidle/governors/menu.c   |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> Index: b/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- a/drivers/cpuidle/cpuidle.c	2013-08-08 14:36:09.611488750 +0200
+> +++ b/drivers/cpuidle/cpuidle.c	2013-08-08 14:39:02.291486116 +0200
+> @@ -57,7 +57,7 @@ int cpuidle_play_dead(void)
+>  		return -ENODEV;
+> 
+>  	/* Find lowest-power state that supports long-term idle */
+> -	for (i = drv->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
+> +	for (i = dev->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
+>  		if (drv->states[i].enter_dead)
+>  			return drv->states[i].enter_dead(dev, i);
+> 
+> Index: b/drivers/cpuidle/governors/ladder.c
+> ===================================================================
+> --- a/drivers/cpuidle/governors/ladder.c	2013-08-08 14:36:09.611488750
+> +0200 +++ b/drivers/cpuidle/governors/ladder.c	2013-08-08
+> 14:39:02.299486116 +0200 @@ -87,7 +87,7 @@ static int
+> ladder_select_state(struct cp
+>  		last_residency = last_state->threshold.promotion_time + 1;
+> 
+>  	/* consider promotion */
+> -	if (last_idx < drv->state_count - 1 &&
+> +	if (last_idx < dev->state_count - 1 &&
+>  	    !drv->states[last_idx + 1].disabled &&
+>  	    !dev->states_usage[last_idx + 1].disable &&
+>  	    last_residency > last_state->threshold.promotion_time &&
+> Index: b/drivers/cpuidle/governors/menu.c
+> ===================================================================
+> --- a/drivers/cpuidle/governors/menu.c	2013-08-08 14:36:09.611488750
+> +0200 +++ b/drivers/cpuidle/governors/menu.c	2013-08-08
+> 14:39:02.299486116 +0200 @@ -312,7 +312,7 @@ static int
+> menu_select(struct cpuidle_dr
+>  	 * Find the idle state with the lowest power while satisfying
+>  	 * our constraints.
+>  	 */
+> -	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> +	for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
+>  		struct cpuidle_state *s = &drv->states[i];
+>  		struct cpuidle_state_usage *su = &dev->states_usage[i];
+> 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.11-rc5
+Looks good to me. Have my
 
-to receive ACPI and power management fixes for v3.11-rc5 with
-top-most commit 69fdadfd2200e0bf3d10a7a7925db8e9fc5a46fd
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 
-  Merge branch 'pm-fixes'
-
-on top of commit c095ba7224d8edc71dcef0d655911399a8bd4a3f
-
-  Linux 3.11-rc4
-
-These fix a couple of recent regressions introduced during this cycle,
-a few regressions introduced in 3.9 and 3.10 and one locking bug
-that's always been there.
- 
-Specifics:
-
-- ACPI-based memory hotplug stopped working after a recent change,
-  because it's not possible to associate sufficiently many "physical"
-  devices with one ACPI device object due to an artificial limit.
-  Fix from yours truly removes that limit and makes memory hotplug
-  work again.
-
-- A change made in 3.9 uncovered a bug in the ACPI processor driver
-  preventing NUMA nodes from being put offline due to an ordering
-  issue.  Fix from Yasuaki Ishimatsu changes the ordering to make
-  things work again.
-
-- One of the recent ACPI video commits (that hasn't been reverted
-  so far) uncovered a bug in the code handling quirky BIOSes that
-  caused some Asus machines to boot with backlight completely off
-  which made it quite difficult to use them afterward.  Fix from
-  Felipe Contreras improves the quirk to cover this particular
-  case correctly.
-
-- A cpufreq user space interface change made in 3.10 inadvertently
-  renamed ignore_nice_load to ignore_nice which resulted in some
-  confusion.  Fix from Viresh Kumar changes the name back to
-  ignore_nice_load.
-
-- An initialization ordering change made in 3.9 broke cpufreq on
-  loongson2 boards.  Fix from Aaro Koskinen restores the correct
-  initialization ordering there.
-
-- Another chapter from "ACPI Horror Stories".  Some BIOS writers
-  apparently expect us to always be able to handle the unbelievable
-  garbage they put into their ACPI tables.  Well, we do our best,
-  but sometimes we break one of these cases when we try to address
-  another one.
-
-  In this particular case the breakage resulted from a mistake made
-  in 3.9 and caused the detection of some graphics adapters (that were
-  detected successfully before) to fail.  It turned out that there
-  were two objects representing the same PCIe port in the ACPI tables
-  of the affected systems.  Both appeared as "enabled" and we were
-  expected to guess which one to use.  We used to choose the right one
-  before by pure luck, but when we tried to address another similar
-  corner case, the luck went away.  This time we try to make our
-  guessing a bit more educated which is reported to work on those
-  systems.
-
-- The /proc/acpi/wakeup interface code is missing some locking
-  which may lead to breakage if that file is written or read during
-  hotplug of wakeup devices.  That should be rare but still possible,
-  so it's better to start using the appropriate locking there.
-
-Thanks!
-
-
----------------
-
-Aaro Koskinen (1):
-      cpufreq: loongson2: fix regression related to clock management
-
-Felipe Contreras (1):
-      ACPI / video: improve quirk check in acpi_video_bqc_quirk()
-
-Rafael J. Wysocki (3):
-      ACPI / PM: Walk physical_node_list under physical_node_lock
-      ACPI: Drop physical_node_id_bitmap from struct acpi_device
-      ACPI: Try harder to resolve _ADR collisions for bridges
-
-Viresh Kumar (1):
-      cpufreq: rename ignore_nice as ignore_nice_load
-
-Yasuaki Ishimatsu (1):
-      ACPI / processor: move try_offline_node() after acpi_unmap_lsapic()
-
----------------
-
- drivers/acpi/acpi_processor.c          |    3 +-
- drivers/acpi/glue.c                    |  133 ++++++++++++++++++++++++--------
- drivers/acpi/proc.c                    |    8 ++
- drivers/acpi/video.c                   |    2 +-
- drivers/cpufreq/cpufreq_conservative.c |   20 ++---
- drivers/cpufreq/cpufreq_governor.c     |    8 +-
- drivers/cpufreq/cpufreq_governor.h     |    4 +-
- drivers/cpufreq/cpufreq_ondemand.c     |   20 ++---
- drivers/cpufreq/loongson2_cpufreq.c    |   11 +--
- drivers/pci/pci-acpi.c                 |   15 +++-
- include/acpi/acpi_bus.h                |   14 ++--
- 11 files changed, 162 insertions(+), 76 deletions(-)
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Best regards,
+Tomasz
