@@ -1,46 +1,94 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 35/35] cpufreq: tegra: use cpufreq_table_validate_and_show()
-Date: Fri, 09 Aug 2013 16:08:02 -0600
-Message-ID: <52056842.8060109@wwwdotorg.org>
-References: <cover.1375964117.git.viresh.kumar@linaro.org> <568f3dbd414b050bb2319d960fb5044a5aed8ee3.1375964117.git.viresh.kumar@linaro.org> <5203BCDD.40809@wwwdotorg.org> <CAKohpomr8kwDitAFD7FKvHo3zNWz8qT5bkd3yOVEnC_k16o=Dw@mail.gmail.com> <CAKohpo=Gy7D2LYmdFU1p+eL-nMoPE18YXWvE2M8t-fb-a5HBgg@mail.gmail.com> <5205167F.1070906@wwwdotorg.org> <CAKohponQDAqHiRD7Aw5Wk6fEE-d8H=Svg0oBRyb9SKGdqYxGhw@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC v02 0/5] Power Capping Framework and RAPL Driver
+Date: Fri, 09 Aug 2013 17:39:10 -0700
+Message-ID: <52058BAE.30703@linux.intel.com>
+References: <1375891965-6921-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:49315 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031243Ab3HIWIH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2013 18:08:07 -0400
-In-Reply-To: <CAKohponQDAqHiRD7Aw5Wk6fEE-d8H=Svg0oBRyb9SKGdqYxGhw@mail.gmail.com>
+Received: from mga02.intel.com ([134.134.136.20]:7398 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968043Ab3HJAcK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 9 Aug 2013 20:32:10 -0400
+In-Reply-To: <1375891965-6921-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, rjw@sisk.pl, arjan@linux.intel.com, len.brown@intel.com, jacob.jun.pan@linux.intel.com, corbet@lwn.net, joe@perches.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 08/09/2013 11:09 AM, Viresh Kumar wrote:
-> On 9 August 2013 21:49, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> On 08/08/2013 10:04 PM, Viresh Kumar wrote:
->>> On 8 August 2013 21:37, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>>> Its useless and the correct routine isn't called at all :) .. I will add that
->>>> additional patch and send it to you and will get this change out of this
->>>> commit.
->>>
->>> The two commits look like this now attached too in case you want
->>> to test:
->>
->> I'd be happy to test, but those changes cause build failures on top of
->> next-20130809. Which other patches do I need to apply first?
-> 
-> None.. You applied all three attached patches? I have given it a try
-> on my side now and it worked without any issues..
-> 
-> Just pushed out a branch for you as well:
-> 
-> https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/tegra-test
+On 08/07/2013 09:12 AM, Srinivas Pandruvada wrote:
+> Overview
+> With the evolution of technologies, which enables power monitoring and limiting,
+> more and more devices are able to constrain their power consumption under certain
+> limits. There are several use cases for such technologies:
+> - Power monitoring: Each device can report its power consumption.
+> - Power Limiting: Setting power limits on the devices allows users to guard against
+> platform reaching max system power level.
+> - Maximize performance: While staying below a power limit, it allows devices to
+> automatically adjust performance to meet demands
+> - Dynamic control and re-budgeting: If each device can be constrained to some power,
+> extra power can redistributed to other devices, which needs additional performance.
+>
+> One such example of technology is RAPL (Running Average Power Limit) mechanism
+> available in the latest Intel Processors. Intel is slowly adding many devices under
+> RAPL control. Also there are other technologies available, for power capping various
+> devices. Soon it is very likely that other vendors are also adding or considering
+> such implementation.
+>
+> Power Capping framework is an effort to have a uniform interface available to Linux
+> drivers, which will enable
+> - A uniform sysfs interface for all devices which can offer power capping
+> - A common API for drivers, which will avoid code duplication and easy
+> implementation of client drivers.
+>
+> Also submitting Intel RAPL driver using power capping framework.
+>
+>
+> Revisions:
+Thanks for everyone for review. I have received enough negative 
+comments, which will require another version.
+So please hold off your reviews till next version.
 
-Well, I don't see any issues running this, although the cpufreq sysfs
-files seem to have disappeared on Tegra, even without your changes, so
-I'm not sure how to really verify cpufreq.
+> v02:
+> Sign-offs and reviewed-by tags
+> Stylistic issues suggested by Joe Perches
+> Removed "counter" from power_uw documentation as pointed by Jonathan Corbet
+> Submitting Intel RAPL driver using power capping framework
+>
+> v01:
+> Use device model only to register zones and controllers.
+>
+> v00:
+> Presented options
+>
+> Jacob Pan (2):
+>    x86/msr: add 64bit _on_cpu access functions
+>    Introduce Intel RAPL power capping driver
+>
+> Srinivas Pandruvada (3):
+>    PowerCap: Documentation
+>    PowerCap: Add class driver
+>    PowerCap: Added to drivers build
+>
+>   Documentation/ABI/testing/sysfs-class-powercap   |  165 +++
+>   Documentation/powercap/PowerCappingFramework.txt |  686 ++++++++++++
+>   arch/x86/include/asm/msr.h                       |   22 +
+>   arch/x86/lib/msr-smp.c                           |   62 +
+>   drivers/Kconfig                                  |    2 +
+>   drivers/Makefile                                 |    1 +
+>   drivers/powercap/Kconfig                         |   24 +
+>   drivers/powercap/Makefile                        |    6 +
+>   drivers/powercap/intel_rapl.c                    | 1305 ++++++++++++++++++++++
+>   drivers/powercap/powercap_sys.c                  |  995 +++++++++++++++++
+>   include/linux/powercap.h                         |  300 +++++
+>   11 files changed, 3568 insertions(+)
+>   create mode 100644 Documentation/ABI/testing/sysfs-class-powercap
+>   create mode 100644 Documentation/powercap/PowerCappingFramework.txt
+>   create mode 100644 drivers/powercap/Kconfig
+>   create mode 100644 drivers/powercap/Makefile
+>   create mode 100644 drivers/powercap/intel_rapl.c
+>   create mode 100644 drivers/powercap/powercap_sys.c
+>   create mode 100644 include/linux/powercap.h
+>
 
-Did the sysfs files go away, or do I need to investigate why/when the
-disappeared?
