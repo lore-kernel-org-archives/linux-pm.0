@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 12/44] cpufreq: blackfin: Use generic cpufreq routines
-Date: Sat, 10 Aug 2013 12:14:08 +0530
-Message-ID: <31c535b3b686faf04ca231c365a212032938cd97.1376116345.git.viresh.kumar@linaro.org>
+Subject: [PATCH 11/44] cpufreq: at32ap: Use generic cpufreq routines
+Date: Sat, 10 Aug 2013 12:14:07 +0530
+Message-ID: <c70729588f2f21d10fa5d53e5189890af4248a93.1376116345.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Steven Miao <realmz6@gmail.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Hans-Christian Egtvedt <egtvedt@samfundet.no>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
@@ -18,56 +18,41 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
-Cc: Steven Miao <realmz6@gmail.com>
+Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/blackfin-cpufreq.c | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+ drivers/cpufreq/at32ap-cpufreq.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
-index 84d446a..48888cf 100644
---- a/drivers/cpufreq/blackfin-cpufreq.c
-+++ b/drivers/cpufreq/blackfin-cpufreq.c
-@@ -191,11 +191,6 @@ static int bfin_target(struct cpufreq_policy *policy,
- 	return ret;
- }
+diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
+index e0c38d9..b27f750 100644
+--- a/drivers/cpufreq/at32ap-cpufreq.c
++++ b/drivers/cpufreq/at32ap-cpufreq.c
+@@ -22,16 +22,6 @@
  
--static int bfin_verify_speed(struct cpufreq_policy *policy)
+ static struct clk *cpuclk;
+ 
+-static int at32_verify_speed(struct cpufreq_policy *policy)
 -{
--	return cpufreq_frequency_table_verify(policy, bfin_freq_table);
+-	if (policy->cpu != 0)
+-		return -EINVAL;
+-
+-	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+-			policy->cpuinfo.max_freq);
+-	return 0;
 -}
 -
- static int __bfin_cpu_init(struct cpufreq_policy *policy)
+ static unsigned int at32_get_speed(unsigned int cpu)
  {
- 
-@@ -213,25 +208,14 @@ static int __bfin_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, bfin_freq_table);
- }
- 
--static int __bfin_cpu_exit(struct cpufreq_policy *policy)
--{
--
--	cpufreq_frequency_table_put_attr(policy->cpu);
--}
--
--static struct freq_attr *bfin_freq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static struct cpufreq_driver bfin_driver = {
--	.verify = bfin_verify_speed,
-+	.verify = cpufreq_generic_frequency_table_verify,
- 	.target = bfin_target,
- 	.get = bfin_getfreq_khz,
- 	.init = __bfin_cpu_init,
--	.exit = __bfin_cpu_exit,
-+	.exit = cpufreq_generic_exit,
- 	.name = "bfin cpufreq",
--	.attr = bfin_freq_attr,
-+	.attr = cpufreq_generic_attr,
- };
- 
- static int __init bfin_cpu_init(void)
+ 	/* No SMP support */
+@@ -109,7 +99,7 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
+ static struct cpufreq_driver at32_driver = {
+ 	.name		= "at32ap",
+ 	.init		= at32_cpufreq_driver_init,
+-	.verify		= at32_verify_speed,
++	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target		= at32_set_target,
+ 	.get		= at32_get_speed,
+ 	.flags		= CPUFREQ_STICKY,
 -- 
 1.7.12.rc2.18.g61b472e
