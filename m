@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 23/44] cpufreq: longhaul: Use generic cpufreq routines
-Date: Sat, 10 Aug 2013 12:14:19 +0530
-Message-ID: <e7315e19e7b58c7eec619f6cf3334194f6a87e9a.1376116345.git.viresh.kumar@linaro.org>
+Subject: [PATCH 21/44] cpufreq: imx6q: Use generic cpufreq routines
+Date: Sat, 10 Aug 2013 12:14:17 +0530
+Message-ID: <6d7504823a31aea1e4773998f60720494fb0e6b6.1376116345.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
@@ -18,56 +18,56 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
+Cc: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/longhaul.c | 23 +++--------------------
- 1 file changed, 3 insertions(+), 20 deletions(-)
+ drivers/cpufreq/imx6q-cpufreq.c | 22 +++-------------------
+ 1 file changed, 3 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index 70b66fd..57d7b02 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -625,12 +625,6 @@ static void longhaul_setup_voltagescaling(void)
- }
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index e6f40fa..81d1727 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -34,11 +34,6 @@ static struct device *cpu_dev;
+ static struct cpufreq_frequency_table *freq_table;
+ static unsigned int transition_latency;
  
- 
--static int longhaul_verify(struct cpufreq_policy *policy)
+-static int imx6q_verify_speed(struct cpufreq_policy *policy)
 -{
--	return cpufreq_frequency_table_verify(policy, longhaul_table);
+-	return cpufreq_frequency_table_verify(policy, freq_table);
 -}
 -
--
- static int longhaul_target(struct cpufreq_policy *policy,
- 			    unsigned int target_freq, unsigned int relation)
+ static unsigned int imx6q_get_speed(unsigned int cpu)
  {
-@@ -924,25 +918,14 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, longhaul_table);
+ 	return clk_get_rate(arm_clk) / 1000;
+@@ -190,25 +185,14 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ 	return 0;
  }
  
--static int longhaul_cpu_exit(struct cpufreq_policy *policy)
+-static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
 -{
 -	cpufreq_frequency_table_put_attr(policy->cpu);
 -	return 0;
 -}
 -
--static struct freq_attr *longhaul_attr[] = {
+-static struct freq_attr *imx6q_cpufreq_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
- static struct cpufreq_driver longhaul_driver = {
--	.verify	= longhaul_verify,
-+	.verify	= cpufreq_generic_frequency_table_verify,
- 	.target	= longhaul_target,
- 	.get	= longhaul_get,
- 	.init	= longhaul_cpu_init,
--	.exit	= longhaul_cpu_exit,
-+	.exit	= cpufreq_generic_exit,
- 	.name	= "longhaul",
--	.attr	= longhaul_attr,
-+	.attr	= cpufreq_generic_attr,
+ static struct cpufreq_driver imx6q_cpufreq_driver = {
+-	.verify = imx6q_verify_speed,
++	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target = imx6q_set_target,
+ 	.get = imx6q_get_speed,
+ 	.init = imx6q_cpufreq_init,
+-	.exit = imx6q_cpufreq_exit,
++	.exit = cpufreq_generic_exit,
+ 	.name = "imx6q-cpufreq",
+-	.attr = imx6q_cpufreq_attr,
++	.attr = cpufreq_generic_attr,
  };
  
- static const struct x86_cpu_id longhaul_id[] = {
+ static int imx6q_cpufreq_probe(struct platform_device *pdev)
 -- 
 1.7.12.rc2.18.g61b472e
