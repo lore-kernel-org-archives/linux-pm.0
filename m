@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 34/44] cpufreq: pxa: Use generic cpufreq routines
-Date: Sat, 10 Aug 2013 12:14:30 +0530
-Message-ID: <0f9db0a191b809194e0dc928ce2ff7976766dccd.1376116345.git.viresh.kumar@linaro.org>
+Subject: [PATCH 37/44] cpufreq: sc520: Use generic cpufreq routines
+Date: Sat, 10 Aug 2013 12:14:33 +0530
+Message-ID: <f371508bdaa68e836972ded377bcdc0626efd20f.1376116345.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eric Miao <eric.y.miao@gmail.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
@@ -18,94 +18,57 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
-Cc: Eric Miao <eric.y.miao@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pxa2xx-cpufreq.c | 26 ++------------------------
- drivers/cpufreq/pxa3xx-cpufreq.c | 14 ++------------
- 2 files changed, 4 insertions(+), 36 deletions(-)
+ drivers/cpufreq/sc520_freq.c | 24 +++---------------------
+ 1 file changed, 3 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-index 06af29c..5a72bf3 100644
---- a/drivers/cpufreq/pxa2xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-@@ -262,23 +262,6 @@ static u32 mdrefr_dri(unsigned int freq)
- 	return (interval - (cpu_is_pxa27x() ? 31 : 0)) / 32;
- }
+diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
+index bb9c0de..8556225 100644
+--- a/drivers/cpufreq/sc520_freq.c
++++ b/drivers/cpufreq/sc520_freq.c
+@@ -78,11 +78,6 @@ static void sc520_freq_set_cpu_state(struct cpufreq_policy *policy,
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ };
  
--/* find a valid frequency point */
--static int pxa_verify_policy(struct cpufreq_policy *policy)
+-static int sc520_freq_verify(struct cpufreq_policy *policy)
 -{
--	struct cpufreq_frequency_table *pxa_freqs_table;
--	pxa_freqs_t *pxa_freqs;
--	int ret;
--
--	find_freq_tables(&pxa_freqs_table, &pxa_freqs);
--	ret = cpufreq_frequency_table_verify(policy, pxa_freqs_table);
--
--	if (freq_debug)
--		pr_debug("Verified CPU policy: %dKhz min to %dKhz max\n",
--			 policy->min, policy->max);
--
--	return ret;
+-	return cpufreq_frequency_table_verify(policy, &sc520_freq_table[0]);
 -}
 -
- static unsigned int pxa_cpufreq_get(unsigned int cpu)
- {
- 	return get_clk_frequency_khz(0);
-@@ -465,16 +448,11 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
- 	return 0;
+ static int sc520_freq_target(struct cpufreq_policy *policy,
+ 			    unsigned int target_freq,
+ 			    unsigned int relation)
+@@ -120,27 +115,14 @@ static int sc520_freq_cpu_init(struct cpufreq_policy *policy)
  }
  
--static int pxa_cpufreq_exit(struct cpufreq_policy *policy)
+ 
+-static int sc520_freq_cpu_exit(struct cpufreq_policy *policy)
 -{
 -	cpufreq_frequency_table_put_attr(policy->cpu);
+-	return 0;
 -}
 -
- static struct cpufreq_driver pxa_cpufreq_driver = {
--	.verify	= pxa_verify_policy,
+-
+-static struct freq_attr *sc520_freq_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
+-};
+-
+-
+ static struct cpufreq_driver sc520_freq_driver = {
+ 	.get	= sc520_freq_get_cpu_frequency,
+-	.verify	= sc520_freq_verify,
 +	.verify	= cpufreq_generic_frequency_table_verify,
- 	.target	= pxa_set_target,
- 	.init	= pxa_cpufreq_init,
--	.exit	= pxa_cpufreq_exit,
+ 	.target	= sc520_freq_target,
+ 	.init	= sc520_freq_cpu_init,
+-	.exit	= sc520_freq_cpu_exit,
 +	.exit	= cpufreq_generic_exit,
- 	.get	= pxa_cpufreq_get,
- 	.name	= "PXA2xx",
+ 	.name	= "sc520_freq",
+-	.attr	= sc520_freq_attr,
++	.attr	= cpufreq_generic_attr,
  };
-diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
-index 1cc145a..2837fd6 100644
---- a/drivers/cpufreq/pxa3xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa3xx-cpufreq.c
-@@ -150,11 +150,6 @@ static void __update_bus_freq(struct pxa3xx_freq_info *info)
- 		cpu_relax();
- }
  
--static int pxa3xx_cpufreq_verify(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, pxa3xx_freqs_table);
--}
--
- static unsigned int pxa3xx_cpufreq_get(unsigned int cpu)
- {
- 	return pxa3xx_get_clk_frequency_khz(0);
-@@ -227,16 +222,11 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int pxa3xx_cpufreq_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--}
--
- static struct cpufreq_driver pxa3xx_cpufreq_driver = {
--	.verify		= pxa3xx_cpufreq_verify,
-+	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= pxa3xx_cpufreq_set,
- 	.init		= pxa3xx_cpufreq_init,
--	.exit		= pxa3xx_cpufreq_exit,
-+	.exit		= cpufreq_generic_exit,
- 	.get		= pxa3xx_cpufreq_get,
- 	.name		= "pxa3xx-cpufreq",
- };
+ static const struct x86_cpu_id sc520_ids[] = {
 -- 
 1.7.12.rc2.18.g61b472e
