@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 08/44] cpufreq: define generic .attr, .exit() and .verify() routines
-Date: Sat, 10 Aug 2013 12:14:04 +0530
-Message-ID: <180b46ed83c4e51375c5c011110ce4f1bf9c963d.1376116345.git.viresh.kumar@linaro.org>
+Subject: [PATCH 10/44] cpufreq: arm_big_little: Use generic cpufreq routines
+Date: Sat, 10 Aug 2013 12:14:06 +0530
+Message-ID: <1ee0af3a4739da8db8af8918fb6459943abc8bda.1376116345.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
@@ -9,110 +9,63 @@ In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Eric Miao <eric.y.miao@gmail.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, John Crispin <blogic@openwrt.org>, Kukjin Kim <kgene.kim@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-cris-kernel@axis.com, linux-sh@vger.kernel.org, Mikael Starvik <starvik@axis.com>, Paul Mundt <lethal@linux-sh.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Sekhar Nori <nsekhar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, sparclinux@vger.kernel.org, spear-devel@list.st.com, Stephen Warren <swarren@nv>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
 and .attr. So its better if we have generic routines for them which can be used
 by cpufreq drivers then.
 
-This patch introduces generic .attr, .exit() and .verify() cpufreq drivers.
+This patch uses these generic routines for this driver.
 
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>
-Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>
-Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: John Crispin <blogic@openwrt.org>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-cris-kernel@axis.com
-Cc: linux-sh@vger.kernel.org
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Sekhar Nori <nsekhar@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Cc: sparclinux@vger.kernel.org
-Cc: spear-devel@list.st.com
-Cc: Stephen Warren <swarren@nvidia.com>
-Cc: Steven Miao <realmz6@gmail.com>
-Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/freq_table.c | 20 ++++++++++++++++++++
- include/linux/cpufreq.h      |  8 ++++++++
- 2 files changed, 28 insertions(+)
+ drivers/cpufreq/arm_big_little.c | 18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 11f6fa9..b198458 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -87,6 +87,20 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 9acfb82..7e92586 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -47,14 +47,6 @@ static unsigned int bL_cpufreq_get(unsigned int cpu)
+ 	return clk_get_rate(clk[cur_cluster]) / 1000;
  }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_verify);
  
-+/*
-+ * Generic routine to verify policy & frequency table, requires driver to call
-+ * cpufreq_frequency_table_get_attr() prior to it.
-+ */
-+int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *table =
-+		cpufreq_frequency_get_table(policy->cpu);
-+	if (!table)
-+		return -ENODEV;
-+
-+	return cpufreq_frequency_table_verify(policy, table);
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_generic_frequency_table_verify);
+-/* Validate policy frequency range */
+-static int bL_cpufreq_verify_policy(struct cpufreq_policy *policy)
+-{
+-	u32 cur_cluster = cpu_to_cluster(policy->cpu);
+-
+-	return cpufreq_frequency_table_verify(policy, freq_table[cur_cluster]);
+-}
+-
+ /* Set clock frequency */
+ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
+ 		unsigned int target_freq, unsigned int relation)
+@@ -205,22 +197,16 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
+ 	return 0;
+ }
  
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table,
-@@ -200,6 +214,12 @@ struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
+-/* Export freq_table to sysfs */
+-static struct freq_attr *bL_cpufreq_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
+-};
+-
+ static struct cpufreq_driver bL_cpufreq_driver = {
+ 	.name			= "arm-big-little",
+ 	.flags			= CPUFREQ_STICKY,
+-	.verify			= bL_cpufreq_verify_policy,
++	.verify			= cpufreq_generic_frequency_table_verify,
+ 	.target			= bL_cpufreq_set_target,
+ 	.get			= bL_cpufreq_get,
+ 	.init			= bL_cpufreq_init,
+ 	.exit			= bL_cpufreq_exit,
+ 	.have_governor_per_policy = true,
+-	.attr			= bL_cpufreq_attr,
++	.attr			= cpufreq_generic_attr,
  };
- EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_available_freqs);
  
-+struct freq_attr *cpufreq_generic_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+EXPORT_SYMBOL_GPL(cpufreq_generic_attr);
-+
- /*
-  * if you use these, you must assure that the frequency table is valid
-  * all the time between get_attr and put_attr!
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index c0297a6..4907eb2 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -393,6 +393,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
- 
- int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table);
-+int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy);
- 
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table,
-@@ -408,10 +409,17 @@ struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
- 
- /* the following are really really optional */
- extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
-+extern struct freq_attr *cpufreq_generic_attr[];
- void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
- 				      unsigned int cpu);
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
- int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
- 				      struct cpufreq_frequency_table *table);
- 
-+static inline int cpufreq_generic_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+	return 0;
-+}
-+
- #endif /* _LINUX_CPUFREQ_H */
+ int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
 -- 
 1.7.12.rc2.18.g61b472e
