@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 19/44] cpufreq: exynos: Use generic cpufreq routines
-Date: Sat, 10 Aug 2013 12:14:15 +0530
-Message-ID: <d71c900c5af2378da4e4024150d9f22f4a97e9db.1376116345.git.viresh.kumar@linaro.org>
+Subject: [PATCH 23/44] cpufreq: longhaul: Use generic cpufreq routines
+Date: Sat, 10 Aug 2013 12:14:19 +0530
+Message-ID: <e7315e19e7b58c7eec619f6cf3334194f6a87e9a.1376116345.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
@@ -18,97 +18,56 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/exynos-cpufreq.c     | 23 +++--------------------
- drivers/cpufreq/exynos5440-cpufreq.c | 15 ++-------------
- 2 files changed, 5 insertions(+), 33 deletions(-)
+ drivers/cpufreq/longhaul.c | 23 +++--------------------
+ 1 file changed, 3 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 71c4926..7663a96 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -31,12 +31,6 @@ static unsigned int locking_frequency;
- static bool frequency_locked;
- static DEFINE_MUTEX(cpufreq_lock);
- 
--static int exynos_verify_speed(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy,
--					      exynos_info->freq_table);
--}
--
- static unsigned int exynos_getspeed(unsigned int cpu)
- {
- 	return clk_get_rate(exynos_info->cpu_clk) / 1000;
-@@ -257,26 +251,15 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, exynos_info->freq_table);
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index 70b66fd..57d7b02 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -625,12 +625,6 @@ static void longhaul_setup_voltagescaling(void)
  }
  
--static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ 
+-static int longhaul_verify(struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy, longhaul_table);
+-}
+-
+-
+ static int longhaul_target(struct cpufreq_policy *policy,
+ 			    unsigned int target_freq, unsigned int relation)
+ {
+@@ -924,25 +918,14 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
+ 	return cpufreq_table_validate_and_show(policy, longhaul_table);
+ }
+ 
+-static int longhaul_cpu_exit(struct cpufreq_policy *policy)
 -{
 -	cpufreq_frequency_table_put_attr(policy->cpu);
 -	return 0;
 -}
 -
--static struct freq_attr *exynos_cpufreq_attr[] = {
+-static struct freq_attr *longhaul_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
- static struct cpufreq_driver exynos_driver = {
- 	.flags		= CPUFREQ_STICKY,
--	.verify		= exynos_verify_speed,
-+	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= exynos_target,
- 	.get		= exynos_getspeed,
- 	.init		= exynos_cpufreq_cpu_init,
--	.exit		= exynos_cpufreq_cpu_exit,
-+	.exit		= cpufreq_generic_exit,
- 	.name		= "exynos_cpufreq",
--	.attr		= exynos_cpufreq_attr,
-+	.attr		= cpufreq_generic_attr,
- #ifdef CONFIG_PM
- 	.suspend	= exynos_cpufreq_suspend,
- 	.resume		= exynos_cpufreq_resume,
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index b9dfc91..f139b3b 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -209,12 +209,6 @@ static void exynos_enable_dvfs(void)
- 				dvfs_info->base + XMU_DVFS_CTRL);
- }
- 
--static int exynos_verify_speed(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy,
--					      dvfs_info->freq_table);
--}
--
- static unsigned int exynos_getspeed(unsigned int cpu)
- {
- 	return dvfs_info->cur_frequency;
-@@ -336,18 +330,13 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--}
--
- static struct cpufreq_driver exynos_driver = {
- 	.flags		= CPUFREQ_STICKY,
--	.verify		= exynos_verify_speed,
-+	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= exynos_target,
- 	.get		= exynos_getspeed,
- 	.init		= exynos_cpufreq_cpu_init,
--	.exit		= exynos_cpufreq_cpu_exit,
-+	.exit		= cpufreq_generic_exit,
- 	.name		= CPUFREQ_NAME,
+ static struct cpufreq_driver longhaul_driver = {
+-	.verify	= longhaul_verify,
++	.verify	= cpufreq_generic_frequency_table_verify,
+ 	.target	= longhaul_target,
+ 	.get	= longhaul_get,
+ 	.init	= longhaul_cpu_init,
+-	.exit	= longhaul_cpu_exit,
++	.exit	= cpufreq_generic_exit,
+ 	.name	= "longhaul",
+-	.attr	= longhaul_attr,
++	.attr	= cpufreq_generic_attr,
  };
  
+ static const struct x86_cpu_id longhaul_id[] = {
 -- 
 1.7.12.rc2.18.g61b472e
