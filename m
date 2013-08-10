@@ -1,16 +1,22 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 30/44] cpufreq: pmac: Use generic cpufreq routines
-Date: Sat, 10 Aug 2013 12:14:26 +0530
-Message-ID: <d063b45bd52ce7b3e164d712555e39c00f16269f.1376116345.git.viresh.kumar@linaro.org>
+Subject: [PATCH 29/44] cpufreq: pcc: Use generic cpufreq routines
+Date: Sat, 10 Aug 2013 12:14:25 +0530
+Message-ID: <707070e59966ed3982ee52b367991e0b175e0319.1376116345.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:33219 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968432Ab3HJGvW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 10 Aug 2013 02:51:22 -0400
+Received: by mail-pa0-f43.google.com with SMTP id hz10so5677138pad.30
+        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2013 23:51:21 -0700 (PDT)
 In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376116344.git.viresh.kumar@linaro.org>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
 and .attr. So its better if we have generic routines for them which can be used
@@ -20,95 +26,36 @@ This patch uses these generic routines for this driver.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 14 ++------------
- drivers/cpufreq/pmac64-cpufreq.c | 14 ++------------
- 2 files changed, 4 insertions(+), 24 deletions(-)
+ drivers/cpufreq/pcc-cpufreq.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index 0b3efdb..3f8efd2 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -85,11 +85,6 @@ static struct cpufreq_frequency_table pmac_cpu_freqs[] = {
- 	{0,			CPUFREQ_TABLE_END},
- };
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index d81c4e5..90aa385 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -109,13 +109,6 @@ struct pcc_cpu {
  
--static struct freq_attr* pmac_cpu_freqs_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static inline void local_delay(unsigned long ms)
- {
- 	if (no_schedule)
-@@ -377,11 +372,6 @@ static unsigned int pmac_cpufreq_get_speed(unsigned int cpu)
- 	return cur_freq;
- }
+ static struct pcc_cpu __percpu *pcc_cpu_info;
  
--static int pmac_cpufreq_verify(struct cpufreq_policy *policy)
+-static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
 -{
--	return cpufreq_frequency_table_verify(policy, pmac_cpu_freqs);
+-	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+-				     policy->cpuinfo.max_freq);
+-	return 0;
 -}
 -
- static int pmac_cpufreq_target(	struct cpufreq_policy *policy,
- 					unsigned int target_freq,
- 					unsigned int relation)
-@@ -467,14 +457,14 @@ static int pmac_cpufreq_resume(struct cpufreq_policy *policy)
- }
- 
- static struct cpufreq_driver pmac_cpufreq_driver = {
--	.verify 	= pmac_cpufreq_verify,
-+	.verify 	= cpufreq_generic_frequency_table_verify,
- 	.target 	= pmac_cpufreq_target,
- 	.get		= pmac_cpufreq_get_speed,
- 	.init		= pmac_cpufreq_cpu_init,
- 	.suspend	= pmac_cpufreq_suspend,
- 	.resume		= pmac_cpufreq_resume,
- 	.flags		= CPUFREQ_PM_NO_WARN,
--	.attr		= pmac_cpu_freqs_attr,
-+	.attr		= cpufreq_generic_attr,
- 	.name		= "powermac",
- };
- 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 366be61..0eb9313 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -69,11 +69,6 @@ static struct cpufreq_frequency_table g5_cpu_freqs[] = {
- 	{0,			CPUFREQ_TABLE_END},
- };
- 
--static struct freq_attr* g5_cpu_freqs_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- /* Power mode data is an array of the 32 bits PCR values to use for
-  * the various frequencies, retrieved from the device-tree
-  */
-@@ -316,11 +311,6 @@ static int g5_pfunc_query_freq(void)
-  * Common interface to the cpufreq core
-  */
- 
--static int g5_cpufreq_verify(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, g5_cpu_freqs);
--}
--
- static int g5_cpufreq_target(struct cpufreq_policy *policy,
- 	unsigned int target_freq, unsigned int relation)
+ static inline void pcc_cmd(void)
  {
-@@ -371,10 +361,10 @@ static struct cpufreq_driver g5_cpufreq_driver = {
- 	.name		= "powermac",
- 	.flags		= CPUFREQ_CONST_LOOPS,
- 	.init		= g5_cpufreq_cpu_init,
--	.verify		= g5_cpufreq_verify,
-+	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= g5_cpufreq_target,
- 	.get		= g5_cpufreq_get_speed,
--	.attr 		= g5_cpu_freqs_attr,
-+	.attr 		= cpufreq_generic_attr,
- };
- 
- 
+ 	u64 doorbell_value;
+@@ -582,7 +575,7 @@ static int pcc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ static struct cpufreq_driver pcc_cpufreq_driver = {
+ 	.flags = CPUFREQ_CONST_LOOPS,
+ 	.get = pcc_get_freq,
+-	.verify = pcc_cpufreq_verify,
++	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target = pcc_cpufreq_target,
+ 	.init = pcc_cpufreq_cpu_init,
+ 	.exit = pcc_cpufreq_cpu_exit,
 -- 
 1.7.12.rc2.18.g61b472e
+
