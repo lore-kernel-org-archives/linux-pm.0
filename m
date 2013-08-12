@@ -1,37 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference
- at (null)
-Date: Mon, 12 Aug 2013 10:29:45 +0530
-Message-ID: <CAOh2x=nZhUujAKe-NRnfu7GwkPC3U-Po7qpD8xiWHGktF1kXKQ@mail.gmail.com>
-References: <20130811055322.GA28118@localhost>
+Subject: Re: [PATCH 12/16] drivers/cpufreq/pxa3xx-cpufreq.c: Avoid using
+ ARRAY_AND_SIZE(e) as a function argument
+Date: Mon, 12 Aug 2013 10:56:21 +0530
+Message-ID: <CAKohpo=MfrUTYQKvJHP1Gns3kUfjqG6r9T8+7ZZ98-8yb0BZXw@mail.gmail.com>
+References: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr>
+	<1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130811055322.GA28118@localhost>
-Sender: cpufreq-owner@vger.kernel.org
-To: Fengguang Wu <fengguang.wu@intel.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+In-Reply-To: <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel-janitors@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 11, 2013 at 11:23 AM, Fengguang Wu <fengguang.wu@intel.com> wrote:
-> Greetings,
+On 11 August 2013 22:21, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 >
-> I got the below dmesg and the first bad commit is
->
-> commit 01e3e82efc6742d5cf7ba14fb7a9bea318b386d8
-> Author: Lukasz Majewski <l.majewski@samsung.com>
-> Date:   Tue Aug 6 22:53:08 2013 +0530
->
->     cpufreq: Store cpufreq policies in a list
->
->     Policies available in the cpufreq framework are now linked together.
->     They are accessible via cpufreq_policy_list defined in the cpufreq
->     core.
->
->     Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->     Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
->     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Replace ARRAY_AND_SIZE(e) in function argument position to avoid hiding the
+> arity of the called function.
 
-Its already fixed by: c88a1f8b96e7384627b918dfabbfc0c615a4a914 in Rafael's
-bleeding-edge branch.. Thanks for reporting.
+Makes sense.
+
+> The semantic match that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+
+What is this doing here?
+
+> // <smpl>
+> @@
+> expression e,f;
+> @@
+>
+> f(...,
+> - ARRAY_AND_SIZE(e)
+> + e,ARRAY_SIZE(e)
+>   ,...)
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+>
+> ---
+> Not compiled.
+>
+>  drivers/cpufreq/pxa3xx-cpufreq.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
