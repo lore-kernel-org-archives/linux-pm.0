@@ -1,69 +1,32 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [GIT PULL] ARM: TC2: CPU idle big.LITTLE driver
-Date: Mon, 12 Aug 2013 16:34:22 +0100
-Message-ID: <20130812153422.GA6426@e102568-lin.cambridge.arm.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 35/35] cpufreq: tegra: use cpufreq_table_validate_and_show()
+Date: Mon, 12 Aug 2013 10:33:43 -0600
+Message-ID: <52090E67.1080703@wwwdotorg.org>
+References: <cover.1375964117.git.viresh.kumar@linaro.org> <568f3dbd414b050bb2319d960fb5044a5aed8ee3.1375964117.git.viresh.kumar@linaro.org> <5203BCDD.40809@wwwdotorg.org> <CAKohpomr8kwDitAFD7FKvHo3zNWz8qT5bkd3yOVEnC_k16o=Dw@mail.gmail.com> <CAKohpo=Gy7D2LYmdFU1p+eL-nMoPE18YXWvE2M8t-fb-a5HBgg@mail.gmail.com> <5205167F.1070906@wwwdotorg.org> <CAKohponQDAqHiRD7Aw5Wk6fEE-d8H=Svg0oBRyb9SKGdqYxGhw@mail.gmail.com> <52056842.8060109@wwwdotorg.org> <CAKohpon=j=NANLQzYuBdoFVLxQzETy5JDu2vORaAgK3NuEpeAg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54502 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757105Ab3HLPe2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2013 11:34:28 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon=j=NANLQzYuBdoFVLxQzETy5JDu2vORaAgK3NuEpeAg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: olof@lixom.net, khilman@linaro.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org
 
-Hi Olof, Kevin,
+On 08/09/2013 08:53 PM, Viresh Kumar wrote:
+> On 10 August 2013 03:38, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> Well, I don't see any issues running this, although the cpufreq sysfs
+>> files seem to have disappeared on Tegra, even without your changes, so
+>> I'm not sure how to really verify cpufreq.
+>>
+>> Did the sysfs files go away, or do I need to investigate why/when the
+>> disappeared?
+> 
+> It wasn't enabled by default in your defconfig... So enable it first with
+> your menuconfig.
 
-please pull this patch series that provides a CPU idle driver for the vexpress
-TC2 testchip, and it is a stepping stone towards an ARM unified CPU idle driver
-based on the MCPM framework.
-
-Series is based against this pull request from Pawel which is a strict
-dependency and they must be merged in order:
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2013-August/190067.html
-
-Thanks !!
-Lorenzo
-
-The following changes since commit 2d6746c48076fd56619f11cdd5c74656ea8cde48:
-
-  ARM: vexpress/TC2: implement PM suspend method (2013-08-12 10:59:13 +0100)
-
-are available in the git repository at:
-
-  git://linux-arm.org/linux-2.6-lp.git tags/cpuidle-bL
-
-for you to fetch changes up to 04c40064928d3a1eb50e4ea3883765b9cfcb0f73:
-
-  cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver (2013-08-12 10:59:14 +0100)
-
-----------------------------------------------------------------
-This patch series contains:
-
-- GIC driver update to add a method to disable the GIC CPU IF
-- TC2 MCPM update to add GIC CPU disabling to suspend method
-- TC2 CPU idle big.LITTLE driver
-
-----------------------------------------------------------------
-Lorenzo Pieralisi (2):
-      ARM: vexpress: tc2: disable GIC CPU IF in tc2_pm_suspend
-      cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver
-
-Nicolas Pitre (1):
-      drivers: irq-chip: irq-gic: introduce gic_cpu_if_down()
-
- MAINTAINERS                          |   9 ++
- arch/arm/mach-vexpress/tc2_pm.c      |   2 +
- drivers/cpuidle/Kconfig              |  10 ++
- drivers/cpuidle/Makefile             |   1 +
- drivers/cpuidle/cpuidle-big_little.c | 209 +++++++++++++++++++++++++++++++++++
- drivers/irqchip/irq-gic.c            |   6 +
- include/linux/irqchip/arm-gic.h      |   1 +
- 7 files changed, 238 insertions(+)
- create mode 100644 drivers/cpuidle/cpuidle-big_little.c
+It's in defconfig OK; I think the driver simply isn't initializing since
+some of the clocks it requests don't exist. I'll have our clock driver
+author look into it. In the meantime, I assume that your change is
+likely fine.
 
