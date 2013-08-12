@@ -1,73 +1,77 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 5/8] cpufreq:boost:Kconfig: Provide support for software
- managed BOOST
-Date: Mon, 12 Aug 2013 12:50:12 +0200
-Message-ID: <20130812125012.193608da@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-6-git-send-email-l.majewski@samsung.com>
- <CAKohpokL57mXSQooX=4LZKtjMxJoXAB4uuzj13fgr3Gs7Wcf0A@mail.gmail.com>
- <20130726132120.5b9cf32f@amdc308.digital.local>
- <CAKohponvOXuHSS+-+m5PR9tPkAqkrYtjA3FJaNh9NJXrhQ9wmw@mail.gmail.com>
- <20130812122614.0d4d31a3@amdc308.digital.local>
- <CAKohponDoGhAdGOyK5f2Pxreq5-ZazxmkdZWfbU3OwtOMKbiHA@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
+Date: Mon, 12 Aug 2013 14:27:47 +0100
+Message-ID: <5208E2D3.7060005@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:53658 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755737Ab3HLKu1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2013 06:50:27 -0400
-In-reply-to: <CAKohponDoGhAdGOyK5f2Pxreq5-ZazxmkdZWfbU3OwtOMKbiHA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Olof Johansson <olof@lixom.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, durgadoss.r@intel.com
 
-On Mon, 12 Aug 2013 15:58:12 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 12 August 2013 15:56, Lukasz Majewski <l.majewski@samsung.com>
-> wrote:
-> > 1. at ./drivers/cpufreq/Kconfig:
-> >
-> > +config CPU_FREQ_BOOST_SW
-> > +       bool
-> > +       depends on THERMAL
-> >
-> > 2. at ./drivers/cpufreq/Kconfig.arm:
-> >
-> > +config ARM_EXYNOS_CPU_FREQ_BOOST_SW
-> > +       bool "EXYNOS Frequency Overclocking - Software"
-> > +       depends on ARM_EXYNOS_CPUFREQ
-> > +       select CPU_FREQ_BOOST_SW
-> > +       select EXYNOS_THERMAL
-> > +       default n
-	    ^^^^^^^^^^^^^^^^ I will also remove this line.
+The following changes since commit d4e4ab86bcba5a72779c43dc1459f71fea3d89c8:
 
-> > +       help
-> > +         This driver supports software managed overclocking
-> > (BOOST).
-> > +         It allows usage of special frequencies for Samsung Exynos
-> > +         processors if thermal conditions are appropriate.
-> > +
-> > +         It reguires, for safe operation, thermal framework with
-> >   properly
-> > +         defined trip points.
-> > +
-> > +         If in doubt, say N.
-> > +
-> >
-> > Shall I split this patch to two (1. and 2.) or leave it as a single
-> > one?
-> 
-> Looks fine.. Keep it in a single patch.
+  Linux 3.11-rc5 (2013-08-11 18:04:20 -0700)
 
-Ok. 
+are available in the git repository at:
 
--- 
-Best regards,
+  git://linux-arm.org/linux-skn.git cpu_of_node
 
-Lukasz Majewski
+for you to fetch changes up to 9e9e26dde91f22635c87d0e45f3938b5ded96f0d:
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+  cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+(2013-08-12 10:22:29 +0100)
+
+----------------------------------------------------------------
+Sudeep KarkadaNagesha (16):
+  of: add support for retrieving cpu node for a given logical cpu index
+  ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
+  driver/core: cpu: initialize of_node in cpu's device struture
+  of/device: add helper to get cpu device node from logical cpu index
+  ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
+  ARM: mvebu: remove device tree parsing for cpu nodes
+  drivers/bus: arm-cci: avoid parsing DT for cpu device nodes
+  cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
+  cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: arm_big_little: remove device tree parsing for cpu nodes
+  cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+
+ arch/arm/kernel/devtree.c           |  5 +++++
+ arch/arm/kernel/topology.c          | 61
++++++++++++++++++++------------------------------------------
+ arch/arm/mach-imx/mach-imx6q.c      |  3 +--
+ arch/arm/mach-mvebu/platsmp.c       | 52
+++++++++++++++++++++++++----------------------------
+ drivers/base/cpu.c                  |  2 ++
+ drivers/bus/arm-cci.c               | 28 +++++++---------------------
+ drivers/cpufreq/arm_big_little_dt.c | 40
+++++++++++++++--------------------------
+ drivers/cpufreq/cpufreq-cpu0.c      | 23 ++++-------------------
+ drivers/cpufreq/highbank-cpufreq.c  | 18 ++++++------------
+ drivers/cpufreq/imx6q-cpufreq.c     |  4 +---
+ drivers/cpufreq/kirkwood-cpufreq.c  |  8 +++++---
+ drivers/cpufreq/maple-cpufreq.c     | 23 +++--------------------
+ drivers/cpufreq/pmac32-cpufreq.c    |  5 +++--
+ drivers/cpufreq/pmac64-cpufreq.c    | 47
++++++++++++------------------------------------
+ drivers/cpufreq/spear-cpufreq.c     |  4 ++--
+ drivers/of/base.c                   | 73
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpu.h                 |  1 +
+ include/linux/of.h                  |  6 ++++++
+ include/linux/of_device.h           | 15 +++++++++++++++
+ 19 files changed, 202 insertions(+), 216 deletions(-)
+
+
+PS: This patch series is reviewed and acknowledged @
+
+v1: https://lkml.org/lkml/2013/7/15/128
+v2: https://lkml.org/lkml/2013/7/17/341
+v3: https://lkml.org/lkml/2013/7/22/219
