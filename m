@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 22/31] cpufreq: pmac32: Covert to light weight ->target() routine
-Date: Mon, 12 Aug 2013 23:18:58 +0530
-Message-ID: <6747649dc9f672e20a782d15fbf55e2bdaa2ef05.1376329128.git.viresh.kumar@linaro.org>
+Subject: [PATCH 24/31] cpufreq: ppc: Covert to light weight ->target() routine
+Date: Mon, 12 Aug 2013 23:19:00 +0530
+Message-ID: <7711bf09ff1684c68d019084befe6d46a54c5258.1376329128.git.viresh.kumar@linaro.org>
 References: <cover.1376329128.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
@@ -20,86 +20,86 @@ routine and will pass index to it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 12 +++---------
- drivers/cpufreq/pmac64-cpufreq.c | 17 ++++-------------
- 2 files changed, 7 insertions(+), 22 deletions(-)
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 15 ++++-----------
+ drivers/cpufreq/ppc_cbe_cpufreq.c     | 12 ++----------
+ 2 files changed, 6 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index b465c0c..1032d5d 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -373,17 +373,11 @@ static unsigned int pmac_cpufreq_get_speed(unsigned int cpu)
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index 0d174f5..2a991e9 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -253,27 +253,20 @@ static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *policy)
  }
  
- static int pmac_cpufreq_target(	struct cpufreq_policy *policy,
--					unsigned int target_freq,
--					unsigned int relation)
-+					unsigned int index)
+ static int corenet_cpufreq_target(struct cpufreq_policy *policy,
+-		unsigned int target_freq, unsigned int relation)
++		unsigned int index)
  {
--	unsigned int    newstate = 0;
- 	int		rc;
- 
--	if (cpufreq_frequency_table_target(policy, pmac_cpu_freqs,
--			target_freq, relation, &newstate))
--		return -EINVAL;
--
--	rc = do_set_cpu_speed(policy, newstate, 1);
-+	rc = do_set_cpu_speed(policy, index, 1);
- 
- 	ppc_proc_freq = cur_freq * 1000ul;
- 	return rc;
-@@ -458,7 +452,7 @@ static int pmac_cpufreq_resume(struct cpufreq_policy *policy)
- 
- static struct cpufreq_driver pmac_cpufreq_driver = {
- 	.verify 	= cpufreq_generic_frequency_table_verify,
--	.target_old 	= pmac_cpufreq_target,
-+	.target 	= pmac_cpufreq_target,
- 	.get		= pmac_cpufreq_get_speed,
- 	.init		= pmac_cpufreq_cpu_init,
- 	.suspend	= pmac_cpufreq_suspend,
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 52d5d13..7d4ddac 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -311,27 +311,18 @@ static int g5_pfunc_query_freq(void)
-  * Common interface to the cpufreq core
-  */
- 
--static int g5_cpufreq_target(struct cpufreq_policy *policy,
--	unsigned int target_freq, unsigned int relation)
-+static int g5_cpufreq_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	unsigned int newstate = 0;
  	struct cpufreq_freqs freqs;
- 	int rc;
+-	unsigned int new;
+ 	struct clk *parent;
+ 	int ret;
+ 	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
  
--	if (cpufreq_frequency_table_target(policy, g5_cpu_freqs,
--			target_freq, relation, &newstate))
--		return -EINVAL;
+-	cpufreq_frequency_table_target(policy, data->table,
+-			target_freq, relation, &new);
 -
--	if (g5_pmode_cur == newstate)
+-	if (policy->cur == data->table[new].frequency)
 -		return 0;
 -
- 	mutex_lock(&g5_switch_mutex);
+ 	freqs.old = policy->cur;
+-	freqs.new = data->table[new].frequency;
++	freqs.new = data->table[index].frequency;
  
- 	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
--	freqs.new = g5_cpu_freqs[newstate].frequency;
-+	freqs.new = g5_cpu_freqs[index].frequency;
- 
+ 	mutex_lock(&cpufreq_lock);
  	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--	rc = g5_switch_freq(newstate);
-+	rc = g5_switch_freq(index);
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
  
- 	mutex_unlock(&g5_switch_mutex);
-@@ -362,7 +353,7 @@ static struct cpufreq_driver g5_cpufreq_driver = {
- 	.flags		= CPUFREQ_CONST_LOOPS,
- 	.init		= g5_cpufreq_cpu_init,
+-	parent = of_clk_get(data->parent, data->table[new].driver_data);
++	parent = of_clk_get(data->parent, data->table[index].driver_data);
+ 	ret = clk_set_parent(data->clk, parent);
+ 	if (ret)
+ 		freqs.new = freqs.old;
+@@ -290,7 +283,7 @@ static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
+ 	.init		= corenet_cpufreq_cpu_init,
+ 	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
  	.verify		= cpufreq_generic_frequency_table_verify,
--	.target_old	= g5_cpufreq_target,
-+	.target		= g5_cpufreq_target,
- 	.get		= g5_cpufreq_get_speed,
- 	.attr 		= cpufreq_generic_attr,
+-	.target_old	= corenet_cpufreq_target,
++	.target		= corenet_cpufreq_target,
+ 	.get		= corenet_cpufreq_get_speed,
+ 	.attr		= cpufreq_generic_attr,
  };
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
+index f3783af..50161d5 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
+@@ -129,18 +129,10 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ }
+ 
+ static int cbe_cpufreq_target(struct cpufreq_policy *policy,
+-			      unsigned int target_freq,
+-			      unsigned int relation)
++			      unsigned int cbe_pmode_new)
+ {
+ 	int rc;
+ 	struct cpufreq_freqs freqs;
+-	unsigned int cbe_pmode_new;
+-
+-	cpufreq_frequency_table_target(policy,
+-				       cbe_freqs,
+-				       target_freq,
+-				       relation,
+-				       &cbe_pmode_new);
+ 
+ 	freqs.old = policy->cur;
+ 	freqs.new = cbe_freqs[cbe_pmode_new].frequency;
+@@ -164,7 +156,7 @@ static int cbe_cpufreq_target(struct cpufreq_policy *policy,
+ 
+ static struct cpufreq_driver cbe_cpufreq_driver = {
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target_old	= cbe_cpufreq_target,
++	.target		= cbe_cpufreq_target,
+ 	.init		= cbe_cpufreq_cpu_init,
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= "cbe-cpufreq",
 -- 
 1.7.12.rc2.18.g61b472e
