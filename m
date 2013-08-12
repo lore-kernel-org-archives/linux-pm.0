@@ -1,45 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: fix EXYNOS drivers selection
-Date: Mon, 12 Aug 2013 11:09:51 +0530
-Message-ID: <CAKohpomiafT1nYx0O4fvEr1qyo6Zd81a+1W+-FsQRgQOEKya+w@mail.gmail.com>
-References: <2522264.d7vsK7QKUi@amdc1032>
-	<76454119.W9pKpoo1U1@amdc1227>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH 12/16] drivers/cpufreq/pxa3xx-cpufreq.c: Avoid using
+ ARRAY_AND_SIZE(e) as a function argument
+Date: Mon, 12 Aug 2013 07:45:26 +0200 (CEST)
+Message-ID: <alpine.DEB.2.02.1308120743030.2038@localhost6.localdomain6>
+References: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr> <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr> <CAKohpo=MfrUTYQKvJHP1Gns3kUfjqG6r9T8+7ZZ98-8yb0BZXw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <76454119.W9pKpoo1U1@amdc1227>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=MfrUTYQKvJHP1Gns3kUfjqG6r9T8+7ZZ98-8yb0BZXw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel-janitors@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 9 August 2013 21:20, Tomasz Figa <t.figa@samsung.com> wrote:
-> On Friday 09 of August 2013 14:04:55 Bartlomiej Zolnierkiewicz wrote:
->> * remove superfluous pr_debug() call from exynos_cpufreq_init()
->>   (init errors are always logged anyway)
->> * add dummy per-SoC type init functions to exynos-cpufreq.h
->> * make per-SoC type cpufreq config options selectable
->> * make CONFIG_ARM_EXYNOS_CPUFREQ config option invisible to user and
->>   automatically enable it when needed
->>
->> This patch fixes following issues:
->> * EXYNOS per-SoC type cpufreq support (i.e. exynos4210-cpufreq.c) being
->>   always built if given SoC support was enabled (i.e. CPU_EXYNOS4210),
->>   even if common EXYNOS cpufreq support was disabled
->> * inability to select cpufreq for each SoC type separately (it could
->>   be only enabled/disabled for all SoCs for which support was enabled)
->> * EXYNOS5440 cpufreq support was always enabled when EXYNOS5440
->>   support was enabled and couldn't be disabled
->>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->> ---
->>  drivers/cpufreq/Kconfig.arm      |   36
->> ++++++++++++++++++++++++------------ drivers/cpufreq/exynos-cpufreq.c |
->>   1 -
->>  drivers/cpufreq/exynos-cpufreq.h |   21 +++++++++++++++++++++
->>  3 files changed, 45 insertions(+), 13 deletions(-)
 
-> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 
-Applied. Thanks!!
+On Mon, 12 Aug 2013, Viresh Kumar wrote:
+
+> On 11 August 2013 22:21, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
+> > From: Julia Lawall <Julia.Lawall@lip6.fr>
+> >
+> > Replace ARRAY_AND_SIZE(e) in function argument position to avoid hiding the
+> > arity of the called function.
+> 
+> Makes sense.
+> 
+> > The semantic match that makes this change is as follows:
+> > (http://coccinelle.lip6.fr/)
+> 
+> What is this doing here?
+
+I'm not sure to understand the sense of the question.  The semantic patch 
+explains exactly what considerations were used when making the 
+transformation.  That is, any function call, having a call to 
+ARRAY_AND_SIZE as an argument is rewritten to replace the call to 
+ARRAY_AND_SIZE with the correspondingtwo arguments.  The transformation 
+was performed entirely automatically, although in a lot of cases it was 
+necessary to add newlines afterwards.
+
+julia
+
+> > // <smpl>
+> > @@
+> > expression e,f;
+> > @@
+> >
+> > f(...,
+> > - ARRAY_AND_SIZE(e)
+> > + e,ARRAY_SIZE(e)
+> >   ,...)
+> > // </smpl>
+> >
+> > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> >
+> > ---
+> > Not compiled.
+> >
+> >  drivers/cpufreq/pxa3xx-cpufreq.c |    6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
