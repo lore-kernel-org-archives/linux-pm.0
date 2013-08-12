@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 06/31] cpufreq: cpu0: Covert to light weight ->target() routine
-Date: Mon, 12 Aug 2013 23:18:42 +0530
-Message-ID: <95102d862a31eaa0c2dd41ed424ace84e8669b42.1376329128.git.viresh.kumar@linaro.org>
+Subject: [PATCH 04/31] cpufreq: arm_big_little: Covert to light weight ->target() routine
+Date: Mon, 12 Aug 2013 23:18:40 +0530
+Message-ID: <59b8871929a96284d7e74c3a11b4df55740562ef.1376329128.git.viresh.kumar@linaro.org>
 References: <cover.1376329128.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
 References: <cover.1376329128.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target_old() to newly defined light weight
@@ -18,61 +18,57 @@ This patch converts existing .target_old() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-cpu0.c | 17 ++---------------
- 1 file changed, 2 insertions(+), 15 deletions(-)
+ drivers/cpufreq/arm_big_little.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index b4c25cce..f90cd8c 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -34,24 +34,14 @@ static unsigned int cpu0_get_speed(unsigned int cpu)
- 	return clk_get_rate(cpu_clk) / 1000;
- }
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 324bdb3..d916730 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -49,28 +49,21 @@ static unsigned int bL_cpufreq_get(unsigned int cpu)
  
--static int cpu0_set_target(struct cpufreq_policy *policy,
--			   unsigned int target_freq, unsigned int relation)
-+static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ /* Set clock frequency */
+ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
+-		unsigned int target_freq, unsigned int relation)
++		unsigned int index)
  {
  	struct cpufreq_freqs freqs;
- 	struct opp *opp;
- 	unsigned long volt = 0, volt_old = 0, tol = 0;
- 	long freq_Hz, freq_exact;
--	unsigned int index;
- 	int ret;
+-	u32 cpu = policy->cpu, freq_tab_idx, cur_cluster;
++	u32 cpu = policy->cpu, cur_cluster;
+ 	int ret = 0;
  
--	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
--					     relation, &index);
--	if (ret) {
--		pr_err("failed to match target freqency %d: %d\n",
--		       target_freq, ret);
--		return ret;
--	}
+ 	cur_cluster = cpu_to_cluster(policy->cpu);
+ 
+ 	freqs.old = bL_cpufreq_get(policy->cpu);
 -
- 	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
- 	if (freq_Hz < 0)
- 		freq_Hz = freq_table[index].frequency * 1000;
-@@ -59,9 +49,6 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 	freqs.new = freq_Hz / 1000;
- 	freqs.old = clk_get_rate(cpu_clk) / 1000;
+-	/* Determine valid target frequency using freq_table */
+-	cpufreq_frequency_table_target(policy, freq_table[cur_cluster],
+-			target_freq, relation, &freq_tab_idx);
+-	freqs.new = freq_table[cur_cluster][freq_tab_idx].frequency;
++	freqs.new = freq_table[cur_cluster][index].frequency;
+ 
+ 	pr_debug("%s: cpu: %d, cluster: %d, oldfreq: %d, target freq: %d, new freq: %d\n",
+-			__func__, cpu, cur_cluster, freqs.old, target_freq,
++			__func__, cpu, cur_cluster, freqs.old, freqs.new,
+ 			freqs.new);
  
 -	if (freqs.old == freqs.new)
 -		return 0;
 -
  	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
  
- 	if (cpu_reg) {
-@@ -145,7 +132,7 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver cpu0_cpufreq_driver = {
- 	.flags = CPUFREQ_STICKY,
- 	.verify = cpufreq_generic_frequency_table_verify,
--	.target_old = cpu0_set_target,
-+	.target = cpu0_set_target,
- 	.get = cpu0_get_speed,
- 	.init = cpu0_cpufreq_init,
- 	.exit = cpufreq_generic_exit,
+ 	ret = clk_set_rate(clk[cur_cluster], freqs.new * 1000);
+@@ -201,7 +194,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
+ 	.name			= "arm-big-little",
+ 	.flags			= CPUFREQ_STICKY,
+ 	.verify			= cpufreq_generic_frequency_table_verify,
+-	.target_old		= bL_cpufreq_set_target,
++	.target			= bL_cpufreq_set_target,
+ 	.get			= bL_cpufreq_get,
+ 	.init			= bL_cpufreq_init,
+ 	.exit			= bL_cpufreq_exit,
 -- 
 1.7.12.rc2.18.g61b472e
 
