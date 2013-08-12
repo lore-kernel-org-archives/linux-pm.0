@@ -1,67 +1,73 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [GIT-PULL] cpuidle fixes for 3.12
-Date: Mon, 12 Aug 2013 11:41:29 +0200
-Message-ID: <5208ADC9.2050309@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v6 6/8] cpufreq:exynos:Extend Exynos cpufreq driver to
+ support boost framework
+Date: Mon, 12 Aug 2013 11:52:05 +0200
+Message-ID: <20130812115205.6fb12667@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+ <1374770011-22171-7-git-send-email-l.majewski@samsung.com>
+ <CAKohponC=S=3=mrTpWvPvejqSeqfndVOwb2GDkQ0jKxXXa0TOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f174.google.com ([74.125.82.174]:37693 "EHLO
-	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755382Ab3HLJle (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2013 05:41:34 -0400
-Received: by mail-we0-f174.google.com with SMTP id q54so5330135wes.33
-        for <linux-pm@vger.kernel.org>; Mon, 12 Aug 2013 02:41:32 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <CAKohponC=S=3=mrTpWvPvejqSeqfndVOwb2GDkQ0jKxXXa0TOQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jingoo Han <jg1.han@samsung.com>, Rob Herring <rob.herring@calxeda.com>, "jason@lakedaemon.net" <jason@lakedaemon.net>
 
-The following changes since commit d4e4ab86bcba5a72779c43dc1459f71fea3d=
-89c8:
+On Fri, 26 Jul 2013 15:56:53 +0530 Viresh Kumar viresh.kumar@linaro.org
+wrote,
+> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> 
+> > diff --git a/drivers/cpufreq/exynos-cpufreq.c
+> > b/drivers/cpufreq/exynos-cpufreq.c index 9ae1871..175172d9 100644
+> > --- a/drivers/cpufreq/exynos-cpufreq.c
+> > +++ b/drivers/cpufreq/exynos-cpufreq.c
+> > @@ -270,6 +270,9 @@ static int exynos_cpufreq_cpu_exit(struct
+> > cpufreq_policy *policy)
+> >
+> >  static struct freq_attr *exynos_cpufreq_attr[] = {
+> >         &cpufreq_freq_attr_scaling_available_freqs,
+> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> 
+> Use ARM_EXYNOS_CPU_FREQ_BOOST_SW instead.
 
-Linux 3.11-rc5 (2013-08-11 18:04:20 -0700)
+Ok, the ARM_EXYNOS_CPU_FREQ_BOOST_SW looks more appropriate here.
 
-are available in the git repository at:
+> 
+> > +       &cpufreq_freq_attr_scaling_boost_freqs,
+> > +#endif
+> >         NULL,
+> >  };
+> >
+> > @@ -332,6 +335,9 @@ static int __init exynos_cpufreq_probe(struct
+> > platform_device *pdev)
+> >
+> >         locking_frequency = exynos_getspeed(0);
+> >
+> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> > +       exynos_driver.boost_supported = true;
+> > +#endif
+> 
+> So, why here and not in the definition of exynos_driver?
 
-git://git.linaro.org/people/dlezcano/linux.git cpuidle/arm-next
+Ok, I will move the above code to struct cpufreq_driver exynos_driver
 
-for you to fetch changes up to 75d6137da195a1e059e1c814cb95635e168f85c0=
-:
-
-cpuidle: kirkwood: Make kirkwood_cpuidle_remove function static
-(2013-08-12 11:28:50 +0200)
-
-This series fixes some compilation issues:
-
-* for SH, a parameter is missing for the cpuidle_register function
-* for Calxeda, an _iomem annotation is missing for scu_base_addr variab=
-le
-* for kirkwood, a static declaration is missing for the
-kirkwood_cpuidle_remove function
-
-Thanks
--- Daniel
-
-----------------------------------------------------------------
-Geert Uytterhoeven (1):
-SH: cpuidle: Add missing parameter for cpuidle_register()
-
-Jingoo Han (2):
-cpuidle: calxeda: Add missing __iomem annotation
-cpuidle: kirkwood: Make kirkwood_cpuidle_remove function static
-
-arch/sh/kernel/cpu/shmobile/cpuidle.c | 4 +---
-drivers/cpuidle/cpuidle-calxeda.c | 2 +-
-drivers/cpuidle/cpuidle-kirkwood.c | 2 +-
-3 files changed, 3 insertions(+), 5 deletions(-)
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> 
+> >         register_pm_notifier(&exynos_cpufreq_nb);
+> >
+> >         if (cpufreq_register_driver(&exynos_driver)) {
+> > --
+> > 1.7.10.4
+> >
 
 
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
