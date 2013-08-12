@@ -1,33 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 12/16] drivers/cpufreq/pxa3xx-cpufreq.c: Avoid using
- ARRAY_AND_SIZE(e) as a function argument
-Date: Mon, 12 Aug 2013 11:20:00 +0530
-Message-ID: <CAKohpo=WntEtOccwghkERM9XD5wiiKsBbtX04UCsCtZF4O7AJw@mail.gmail.com>
-References: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr>
-	<1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
-	<CAKohpo=MfrUTYQKvJHP1Gns3kUfjqG6r9T8+7ZZ98-8yb0BZXw@mail.gmail.com>
-	<alpine.DEB.2.02.1308120743030.2038@localhost6.localdomain6>
-	<CAKohponwknS=XaOXD7B+1J+YMSXgug7LXOz0ZgL5fVNetfqDfA@mail.gmail.com>
-	<alpine.DEB.2.02.1308120748300.2038@localhost6.localdomain6>
+Subject: Re: [PATCH 11/44] cpufreq: at32ap: Use generic cpufreq routines
+Date: Mon, 12 Aug 2013 11:37:45 +0530
+Message-ID: <CAKohpon63d40c8eGKqY9EHZhb18ipKHhvBffo=buLLpP=CP0rA@mail.gmail.com>
+References: <cover.1376116344.git.viresh.kumar@linaro.org>
+	<c70729588f2f21d10fa5d53e5189890af4248a93.1376116345.git.viresh.kumar@linaro.org>
+	<20130810082333.GA27640@samfundet.no>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.02.1308120748300.2038@localhost6.localdomain6>
-Sender: cpufreq-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel-janitors@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130810082333.GA27640@samfundet.no>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12 August 2013 11:18, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> On Mon, 12 Aug 2013, Viresh Kumar wrote:
->
->> On 12 August 2013 11:15, Julia Lawall <julia.lawall@lip6.fr> wrote:
->> > I'm not sure to understand the sense of the question.
+On 10 August 2013 13:53, Hans-Christian Egtvedt <egtvedt@samfundet.no> wrote:
+> Around Sat 10 Aug 2013 12:14:07 +0530 or thereabout, Viresh Kumar wrote:
+>> Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
+>> and .attr. So its better if we have generic routines for them which can be used
+>> by cpufreq drivers then.
 >>
->> I was talking about this :)
->>
->> (http://coccinelle.lip6.fr/)
+>> This patch uses these generic routines for this driver.
 >
-> The URL of the tool if you can't figure out all the funny notation below.
+> Nice, thanks for cleaning up (-:
+>
+>> Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 
-Okay ;)
+Thanks for your Ack but I have to NACK it :)
+
+My patch was wrong.. It was based on the assumption that everybody who
+had implemented a .target() also implements a frequency table and exposes
+it.. And the generic routines I have exposed depend on that frequency table.
+And this cpufreq driver doesn't expose that freq table...
+
+And so this patch is dropped :(
+
+--
+viresh
