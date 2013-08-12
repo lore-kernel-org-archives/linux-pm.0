@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 07/31] cpufreq: cris: Covert to light weight ->target() routine
-Date: Mon, 12 Aug 2013 23:18:43 +0530
-Message-ID: <4a274cb4afbf12640b2ee36dc2304575b18ba13e.1376329128.git.viresh.kumar@linaro.org>
+Subject: [PATCH 11/31] cpufreq: elanfreq: Covert to light weight ->target() routine
+Date: Mon, 12 Aug 2013 23:18:47 +0530
+Message-ID: <cdec5c1bb673c7951718e9fa691d08a8e58cf175.1376329128.git.viresh.kumar@linaro.org>
 References: <cover.1376329128.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
 References: <cover.1376329128.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel@axis.com
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target_old() to newly defined light weight
@@ -18,99 +18,72 @@ This patch converts existing .target_old() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: linux-cris-kernel@axis.com
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cris-artpec3-cpufreq.c | 18 ++----------------
- drivers/cpufreq/cris-etraxfs-cpufreq.c | 17 ++---------------
- 2 files changed, 4 insertions(+), 31 deletions(-)
+ drivers/cpufreq/elanfreq.c | 34 +++-------------------------------
+ 1 file changed, 3 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/cpufreq/cris-artpec3-cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
-index e205939..2d722e2 100644
---- a/drivers/cpufreq/cris-artpec3-cpufreq.c
-+++ b/drivers/cpufreq/cris-artpec3-cpufreq.c
-@@ -27,8 +27,7 @@ static unsigned int cris_freq_get_cpu_frequency(unsigned int cpu)
- 	return clk_ctrl.pll ? 200000 : 6000;
+diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
+index cf73815..58f5669 100644
+--- a/drivers/cpufreq/elanfreq.c
++++ b/drivers/cpufreq/elanfreq.c
+@@ -105,20 +105,8 @@ static unsigned int elanfreq_get_cpu_frequency(unsigned int cpu)
  }
  
--static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
+ 
+-/**
+- *	elanfreq_set_cpu_frequency: Change the CPU core frequency
+- *	@cpu: cpu number
+- *	@freq: frequency in kHz
+- *
+- *	This function takes a frequency value and changes the CPU frequency
+- *	according to this. Note that the frequency has to be checked by
+- *	elanfreq_validatespeed() for correctness!
+- *
+- *	There is no return value.
+- */
+-
+-static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
 -		unsigned int state)
-+static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
++static int elanfreq_target(struct cpufreq_policy *policy,
++			    unsigned int state)
  {
- 	struct cpufreq_freqs freqs;
- 	reg_clkgen_rw_clk_ctrl clk_ctrl;
-@@ -52,19 +51,6 @@ static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
+ 	struct cpufreq_freqs    freqs;
+ 
+@@ -162,25 +150,9 @@ static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
  	local_irq_enable();
  
  	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 -};
 -
--static int cris_freq_target(struct cpufreq_policy *policy,
+-
+-static int elanfreq_target(struct cpufreq_policy *policy,
 -			    unsigned int target_freq,
 -			    unsigned int relation)
 -{
 -	unsigned int newstate = 0;
 -
--	if (cpufreq_frequency_table_target(policy, cris_freq_table,
--			target_freq, relation, &newstate))
+-	if (cpufreq_frequency_table_target(policy, &elanfreq_table[0],
+-				target_freq, relation, &newstate))
 -		return -EINVAL;
 -
--	cris_freq_set_cpu_state(policy, newstate);
+-	elanfreq_set_cpu_state(policy, newstate);
  
  	return 0;
  }
-@@ -82,7 +68,7 @@ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver cris_freq_driver = {
- 	.get	= cris_freq_get_cpu_frequency,
- 	.verify	= cpufreq_generic_frequency_table_verify,
--	.target_old = cris_freq_target,
-+	.target	= cris_freq_target,
- 	.init	= cris_freq_cpu_init,
- 	.exit	= cpufreq_generic_exit,
- 	.name	= "cris_freq",
-diff --git a/drivers/cpufreq/cris-etraxfs-cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-index 32e9faf..0243951 100644
---- a/drivers/cpufreq/cris-etraxfs-cpufreq.c
-+++ b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-@@ -27,8 +27,7 @@ static unsigned int cris_freq_get_cpu_frequency(unsigned int cpu)
- 	return clk_ctrl.pll ? 200000 : 6000;
- }
- 
--static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
--		unsigned int state)
-+static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
- {
- 	struct cpufreq_freqs freqs;
- 	reg_config_rw_clk_ctrl clk_ctrl;
-@@ -52,18 +51,6 @@ static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
- 	local_irq_enable();
- 
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--};
 -
--static int cris_freq_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq, unsigned int relation)
--{
--	unsigned int newstate = 0;
 -
--	if (cpufreq_frequency_table_target
--	    (policy, cris_freq_table, target_freq, relation, &newstate))
--		return -EINVAL;
--
--	cris_freq_set_cpu_state(policy, newstate);
- 
- 	return 0;
- }
-@@ -80,7 +67,7 @@ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver cris_freq_driver = {
- 	.get = cris_freq_get_cpu_frequency,
- 	.verify = cpufreq_generic_frequency_table_verify,
--	.target_old = cris_freq_target,
-+	.target = cris_freq_target,
- 	.init = cris_freq_cpu_init,
- 	.exit = cpufreq_generic_exit,
- 	.name = "cris_freq",
+ /*
+  *	Module init and exit code
+  */
+@@ -238,7 +210,7 @@ __setup("elanfreq=", elanfreq_setup);
+ static struct cpufreq_driver elanfreq_driver = {
+ 	.get		= elanfreq_get_cpu_frequency,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target_old	= elanfreq_target,
++	.target		= elanfreq_target,
+ 	.init		= elanfreq_cpu_init,
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= "elanfreq",
 -- 
 1.7.12.rc2.18.g61b472e
