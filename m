@@ -1,81 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: AMD FX-4130 part only runs at 2.6/3.4GHz
-Date: Mon, 12 Aug 2013 11:05:26 +0530
-Message-ID: <CAKohpomAaeR_=J9mJLqdhm89WayePQRAGVw+rDJUayDzXDiT5A@mail.gmail.com>
-References: <20130809214255.GA5893@amd.pavel.ucw.cz>
+Subject: Re: [PATCH] cpufreq: fix EXYNOS drivers selection
+Date: Mon, 12 Aug 2013 11:09:51 +0530
+Message-ID: <CAKohpomiafT1nYx0O4fvEr1qyo6Zd81a+1W+-FsQRgQOEKya+w@mail.gmail.com>
+References: <2522264.d7vsK7QKUi@amdc1032>
+	<76454119.W9pKpoo1U1@amdc1227>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130809214255.GA5893@amd.pavel.ucw.cz>
-Sender: cpufreq-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, andreas.herrmann3@amd.com
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <76454119.W9pKpoo1U1@amdc1227>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10 August 2013 03:12, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> I have
->
-> DMI: Gigabyte Technology Co., Ltd. GA-78LMT-S2P/GA-78LMT-S2P, BIOS F3 10/18/2012
->
-> mainboard and AMD FX-4130 processor.
->
-> processor : 3
-> vendor_id : AuthenticAMD
-> cpu family  : 21
-> model         : 1
-> model name    : AMD FX(tm)-4130 Quad-Core Processor
-> stepping      : 2
-> microcode     : 0x6000629
-> cpu MHz         : 1400.000
-> cache size      : 2048 KB
->
-> ...but it seems to run slower than it should. According to box, stock
-> frequency should be 3.8GHz, with 3.9GHz turbo, but it only goes to
-> 3.4GHz (and seems to only go there in "turbo" mode -- not all cores at
-> once.)
->
-> Kernel is:
->
-> Linux version 3.11.0-rc2 (pavel@Elf) (gcc version 4.4.5 (Debian
-> 4.4.5-8) ) #320 SMP Fri Aug 9 23:22:58 CEST 2013
->
-> cpufreq says:
->
-> pavel@Elf:~$ cat
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-> 3400000 2800000 2600000 1800000 1400000
+On 9 August 2013 21:20, Tomasz Figa <t.figa@samsung.com> wrote:
+> On Friday 09 of August 2013 14:04:55 Bartlomiej Zolnierkiewicz wrote:
+>> * remove superfluous pr_debug() call from exynos_cpufreq_init()
+>>   (init errors are always logged anyway)
+>> * add dummy per-SoC type init functions to exynos-cpufreq.h
+>> * make per-SoC type cpufreq config options selectable
+>> * make CONFIG_ARM_EXYNOS_CPUFREQ config option invisible to user and
+>>   automatically enable it when needed
+>>
+>> This patch fixes following issues:
+>> * EXYNOS per-SoC type cpufreq support (i.e. exynos4210-cpufreq.c) being
+>>   always built if given SoC support was enabled (i.e. CPU_EXYNOS4210),
+>>   even if common EXYNOS cpufreq support was disabled
+>> * inability to select cpufreq for each SoC type separately (it could
+>>   be only enabled/disabled for all SoCs for which support was enabled)
+>> * EXYNOS5440 cpufreq support was always enabled when EXYNOS5440
+>>   support was enabled and couldn't be disabled
+>>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>> ---
+>>  drivers/cpufreq/Kconfig.arm      |   36
+>> ++++++++++++++++++++++++------------ drivers/cpufreq/exynos-cpufreq.c |
+>>   1 -
+>>  drivers/cpufreq/exynos-cpufreq.h |   21 +++++++++++++++++++++
+>>  3 files changed, 45 insertions(+), 13 deletions(-)
 
-So, cpufreq doesn't have this frequency to set..
+> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 
-Which cpufreq driver are you using?
-
-> pavel@Elf:~$
->
-> Suspicious dmesg:
->
-> ACPI Warning: \_PR_.C000._PSS: SubPackage[0,1] - suspicious power
-> dissipation values (20130517/nsrepair2-710)
-> acpi-cpufreq: overriding BIOS provided _PSD data
-> ACPI Warning: \_PR_.C001._PSS: SubPackage[0,1] - suspicious power
-> dissipation values (20130517/nsrepair2-710)
-> ACPI Warning: \_PR_.C002._PSS: SubPackage[0,1] - suspicious power
-> dissipation values (20130517/nsrepair2-710)
-> ACPI Warning: \_PR_.C003._PSS: SubPackage[0,1] - suspicious power
-> dissipation values (20130517/nsrepair2-710)
-> ALSA device list:
->   #0: HDA ATI SB at 0xfe024000 irq 16
->   #1: HD-Audio Generic at 0xfdffc000 irq 19
->
-> I can manually tweak multiplier in the BIOS to get to 3812 (or so)
-> MHz, but the machine does not seem stable in that setting.
->
-> Any idea what is going on?
->
-> Thanks,
->                                                                         Pavel
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Applied. Thanks!!
