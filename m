@@ -1,124 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 44/44] cpufreq: pass suitable index instead of freq to cpufreq_driver->target()
-Date: Mon, 12 Aug 2013 12:20:06 +0530
-Message-ID: <CAKohpomw7bamkJ3jyK0WNtduoowmMzq2FzwMPeOJYXzWWP5RbQ@mail.gmail.com>
+From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Subject: Re: [PATCH 11/44] cpufreq: at32ap: Use generic cpufreq routines
+Date: Mon, 12 Aug 2013 09:10:42 +0200
+Message-ID: <20130812071042.GA30670@samfundet.no>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
-	<149222df041360bac7bb58a9f9baa5f5b8277445.1376116345.git.viresh.kumar@linaro.org>
+ <c70729588f2f21d10fa5d53e5189890af4248a93.1376116345.git.viresh.kumar@linaro.org>
+ <20130810082333.GA27640@samfundet.no>
+ <CAKohpon63d40c8eGKqY9EHZhb18ipKHhvBffo=buLLpP=CP0rA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <149222df041360bac7bb58a9f9baa5f5b8277445.1376116345.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cassarossa.samfundet.no ([193.35.52.29]:42577 "EHLO
+	cassarossa.samfundet.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471Ab3HLHKs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2013 03:10:48 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpon63d40c8eGKqY9EHZhb18ipKHhvBffo=buLLpP=CP0rA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10 August 2013 12:14, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> This tries to remove code redundancy from cpufreq driver by moving some common
-> part of them to the core. Each driver calls cpufreq_frequency_table_target() to
-> get a suitable index for a target frequency and then works on it. Its better to
-> do this at core level before calling cpufreq driver and hence passing "index"
-> instead of "target_freq and relation" to cpufreq_driver->target() routine.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+Around Mon 12 Aug 2013 11:37:45 +0530 or thereabout, Viresh Kumar wrote:
+> On 10 August 2013 13:53, Hans-Christian Egtvedt <egtvedt@samfundet.no> wrote:
+>> Around Sat 10 Aug 2013 12:14:07 +0530 or thereabout, Viresh Kumar wrote:
+>>> Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
+>>> and .attr. So its better if we have generic routines for them which can be used
+>>> by cpufreq drivers then.
+>>>
+>>> This patch uses these generic routines for this driver.
+>>
+>> Nice, thanks for cleaning up (-:
+>>
+>>> Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> 
+> Thanks for your Ack but I have to NACK it :)
+> 
+> My patch was wrong.. It was based on the assumption that everybody who
+> had implemented a .target() also implements a frequency table and exposes
+> it.. And the generic routines I have exposed depend on that frequency table.
+> And this cpufreq driver doesn't expose that freq table...
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 06f8671..4bf023d 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1628,7 +1628,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
->                             unsigned int target_freq,
->                             unsigned int relation)
->  {
-> -       int retval = -EINVAL;
-> +       int retval = -EINVAL, index;
->         unsigned int old_target_freq = target_freq;
->
->         if (cpufreq_disabled())
-> @@ -1645,11 +1645,35 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
->         pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
->                         policy->cpu, target_freq, relation, old_target_freq);
->
-> +       /*
-> +        * This might look like a redundant call as we are checking it again
-> +        * after finding index. But it is left intentionally for cases where
-> +        * same freq is called again and so we can save on few function calls.
-> +        */
->         if (target_freq == policy->cur)
->                 return 0;
->
-> -       if (cpufreq_driver->target)
-> -               retval = cpufreq_driver->target(policy, target_freq, relation);
-> +       if (cpufreq_driver->target) {
-> +               struct cpufreq_frequency_table *freq_table;
-> +
-> +               freq_table = cpufreq_frequency_get_table(policy->cpu);
-> +               if (unlikely(!freq_table)) {
-> +                       pr_err("%s: Unable to find freq_table\n", __func__);
-> +                       return retval;
-> +               }
-> +
-> +               retval = cpufreq_frequency_table_target(policy, freq_table,
-> +                               target_freq, relation, &index);
-> +               if (unlikely(retval)) {
-> +                       pr_err("%s: Unable to find matching freq\n", __func__);
-> +                       return retval;
-> +               }
-> +
-> +               if (freq_table[index].frequency == policy->cur)
-> +                       return 0;
-> +
-> +               retval = cpufreq_driver->target(policy, index, relation);
-> +       }
->
->         return retval;
->  }
+Right, my bad, I just looked at the code flow and saw that the generic path
+did pretty much the same as the AVR32 implementation. Didn't consider the
+table part as missing.
 
-Hi Rafael,
+> And so this patch is dropped :(
+> 
 
-This was sent earlier by mistake but lets take advantage of that mistake
-now :)
+Ok, AVR32 driver should expose a frequency table then, which is quite simple.
 
-I wanted to discuss what's the right way to get this patch in..
-
-Idea: was to simplify ->target() routines of drivers by finding the right index
-prior to calling ->target().. And so the parameters would be changed to:
-
-        int     (*target)       (struct cpufreq_policy *policy,
--                                unsigned int target_freq,
--                                unsigned int relation);
-+                                unsigned int index)
-
-Problem: Some drivers that implement ->target() doesn't have a freq table
-with them and so they never call cpufreq_frequency_table_target to get
-index and so passing Index for them is irrelevant.
-
-What can we do here?
-Solution 1: Define two types of ->target() one with above mentioned
-prototype and other with the older style, And so drivers can initialize
-one of them..
-
-Issues: Two pointers for same work, doesn't look clean enough
-
-Solution 2: Change prototype to something like this:
-        int     (*target)       (struct cpufreq_policy *policy,
-                                 unsigned int target_freq,
-+                                unsigned int index,
-                                 unsigned int relation);
-
-Here,
-  - target_freq: will have the freq requested (not the freq from table)
-  - index: index of table suitable for this freq (for drivers exposing
-freq_table)
-    and will be -1 for others, like: at32, pcc, unicore2..
-  - relation will stay as it is..
-
-Issues: Not all parameters are useful for everybody.. Most of the drivers
-wouldn't use target_freq or relation..
-
-
-Which one do you like?
-
---
-viresh
+-- 
+mvh
+Hans-Christian Egtvedt
