@@ -1,22 +1,16 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 13/31] cpufreq: ia64: Covert to light weight ->target() routine
-Date: Mon, 12 Aug 2013 23:18:49 +0530
-Message-ID: <03b7ed274047ab208476f92b927ff2d1a9f7653b.1376329128.git.viresh.kumar@linaro.org>
+Subject: [PATCH 17/31] cpufreq: loongson2: Covert to light weight ->target() routine
+Date: Mon, 12 Aug 2013 23:18:53 +0530
+Message-ID: <531a63246cdcba02ec21378d06891fc9a8fe587c.1376329128.git.viresh.kumar@linaro.org>
 References: <cover.1376329128.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:37870 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753738Ab3HLRvF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2013 13:51:05 -0400
-Received: by mail-pd0-f181.google.com with SMTP id g10so3734651pdj.26
-        for <linux-pm@vger.kernel.org>; Mon, 12 Aug 2013 10:51:05 -0700 (PDT)
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
 References: <cover.1376329128.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Luck <tony.luck@intel.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, John Crispin <blogic@openwrt.org>
+List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target_old() to newly defined light weight
 .target() routine for this driver.
@@ -24,54 +18,68 @@ This patch converts existing .target_old() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Tony Luck <tony.luck@intel.com>
+Cc: John Crispin <blogic@openwrt.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/ia64-acpi-cpufreq.c | 21 +++------------------
- 1 file changed, 3 insertions(+), 18 deletions(-)
+ drivers/cpufreq/loongson2_cpufreq.c | 21 +++++----------------
+ 1 file changed, 5 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-index 02bd69b..bb81f37 100644
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -227,26 +227,11 @@ acpi_cpufreq_get (
- static int
- acpi_cpufreq_target (
- 	struct cpufreq_policy   *policy,
--	unsigned int target_freq,
--	unsigned int relation)
-+	unsigned int index)
+diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+index afdece4..a9e6e35 100644
+--- a/drivers/cpufreq/loongson2_cpufreq.c
++++ b/drivers/cpufreq/loongson2_cpufreq.c
+@@ -53,11 +53,9 @@ static unsigned int loongson2_cpufreq_get(unsigned int cpu)
+  * Here we notify other drivers of the proposed change and the final change.
+  */
+ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+-				     unsigned int target_freq,
+-				     unsigned int relation)
++				     unsigned int index)
  {
--	struct cpufreq_acpi_io *data = acpi_io_data[policy->cpu];
--	unsigned int next_state = 0;
--	unsigned int result = 0;
--
--	pr_debug("acpi_cpufreq_setpolicy\n");
--
--	result = cpufreq_frequency_table_target(policy,
--			data->freq_table, target_freq, relation, &next_state);
--	if (result)
--		return (result);
--
--	result = processor_set_freq(data, policy, next_state);
--
--	return (result);
-+	return processor_set_freq(acpi_io_data[policy->cpu], policy, index);
- }
+ 	unsigned int cpu = policy->cpu;
+-	unsigned int newstate = 0;
+ 	cpumask_t cpus_allowed;
+ 	struct cpufreq_freqs freqs;
+ 	unsigned int freq;
+@@ -65,26 +63,17 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+ 	cpus_allowed = current->cpus_allowed;
+ 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
  
+-	if (cpufreq_frequency_table_target
+-	    (policy, &loongson2_clockmod_table[0], target_freq, relation,
+-	     &newstate))
+-		return -EINVAL;
 -
- static int
- acpi_cpufreq_cpu_init (
- 	struct cpufreq_policy   *policy)
-@@ -380,7 +365,7 @@ acpi_cpufreq_cpu_exit (
+ 	freq =
+ 	    ((cpu_clock_freq / 1000) *
+-	     loongson2_clockmod_table[newstate].driver_data) / 8;
+-	if (freq < policy->min || freq > policy->max)
+-		return -EINVAL;
++	     loongson2_clockmod_table[index].driver_data) / 8;
  
- static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.verify 	= cpufreq_generic_frequency_table_verify,
--	.target_old	= acpi_cpufreq_target,
-+	.target 	= acpi_cpufreq_target,
- 	.get 		= acpi_cpufreq_get,
- 	.init		= acpi_cpufreq_cpu_init,
- 	.exit		= acpi_cpufreq_cpu_exit,
+-	pr_debug("cpufreq: requested frequency %u Hz\n", target_freq * 1000);
++	pr_debug("cpufreq: requested frequency %u Hz\n",
++			loongson2_clockmod_table[index].frequency * 1000);
+ 
+ 	freqs.old = loongson2_cpufreq_get(cpu);
+ 	freqs.new = freq;
+ 	freqs.flags = 0;
+ 
+-	if (freqs.new == freqs.old)
+-		return 0;
+-
+ 	/* notifiers */
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+@@ -148,7 +137,7 @@ static struct cpufreq_driver loongson2_cpufreq_driver = {
+ 	.name = "loongson2",
+ 	.init = loongson2_cpufreq_cpu_init,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+-	.target_old = loongson2_cpufreq_target,
++	.target = loongson2_cpufreq_target,
+ 	.get = loongson2_cpufreq_get,
+ 	.exit = loongson2_cpufreq_exit,
+ 	.attr = cpufreq_generic_attr,
 -- 
 1.7.12.rc2.18.g61b472e
 
