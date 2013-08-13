@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 17/35] cpufreq: longhaul: Covert to light weight ->target_index() routine
-Date: Tue, 13 Aug 2013 19:02:30 +0530
-Message-ID: <65691d6e5ef6f37f54774a5f33c30cbe43bed042.1376392602.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 19/35] cpufreq: maple: Covert to light weight ->target_index() routine
+Date: Tue, 13 Aug 2013 19:02:32 +0530
+Message-ID: <f7026588cd632255fc713cbba66bd8328467246f.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,46 +18,54 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/longhaul.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ drivers/cpufreq/maple-cpufreq.c | 16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index 57d7b02..e566776 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -626,21 +626,12 @@ static void longhaul_setup_voltagescaling(void)
+diff --git a/drivers/cpufreq/maple-cpufreq.c b/drivers/cpufreq/maple-cpufreq.c
+index 7720670..1c24219 100644
+--- a/drivers/cpufreq/maple-cpufreq.c
++++ b/drivers/cpufreq/maple-cpufreq.c
+@@ -131,26 +131,18 @@ static int maple_scom_query_freq(void)
+  */
  
- 
- static int longhaul_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq, unsigned int relation)
-+			    unsigned int table_index)
+ static int maple_cpufreq_target(struct cpufreq_policy *policy,
+-	unsigned int target_freq, unsigned int relation)
++	unsigned int index)
  {
--	unsigned int table_index = 0;
- 	unsigned int i;
- 	unsigned int dir = 0;
- 	u8 vid, current_vid;
+-	unsigned int newstate = 0;
+ 	struct cpufreq_freqs freqs;
+ 	int rc;
  
--	if (cpufreq_frequency_table_target(policy, longhaul_table, target_freq,
--				relation, &table_index))
+-	if (cpufreq_frequency_table_target(policy, maple_cpu_freqs,
+-			target_freq, relation, &newstate))
 -		return -EINVAL;
 -
--	/* Don't set same frequency again */
--	if (longhaul_index == table_index)
+-	if (maple_pmode_cur == newstate)
 -		return 0;
 -
- 	if (!can_scale_voltage)
- 		longhaul_setstate(policy, table_index);
- 	else {
-@@ -920,7 +911,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
+ 	mutex_lock(&maple_switch_mutex);
  
- static struct cpufreq_driver longhaul_driver = {
- 	.verify	= cpufreq_generic_frequency_table_verify,
--	.target	= longhaul_target,
-+	.target_index = longhaul_target,
- 	.get	= longhaul_get,
- 	.init	= longhaul_cpu_init,
- 	.exit	= cpufreq_generic_exit,
+ 	freqs.old = maple_cpu_freqs[maple_pmode_cur].frequency;
+-	freqs.new = maple_cpu_freqs[newstate].frequency;
++	freqs.new = maple_cpu_freqs[index].frequency;
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+-	rc = maple_scom_switch_freq(newstate);
++	rc = maple_scom_switch_freq(index);
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 
+ 	mutex_unlock(&maple_switch_mutex);
+@@ -181,7 +173,7 @@ static struct cpufreq_driver maple_cpufreq_driver = {
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+ 	.init		= maple_cpufreq_cpu_init,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target		= maple_cpufreq_target,
++	.target_index	= maple_cpufreq_target,
+ 	.get		= maple_cpufreq_get_speed,
+ 	.attr		= cpufreq_generic_attr,
+ };
 -- 
 1.7.12.rc2.18.g61b472e
