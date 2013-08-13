@@ -1,15 +1,15 @@
 From: Hanjun Guo <hanjun.guo@linaro.org>
-Subject: [PATCH 2/3] cpufreq / pxa2xx: Fix __init attribute locations
-Date: Tue, 13 Aug 2013 18:20:09 +0800
-Message-ID: <1376389210-11470-2-git-send-email-hanjun.guo@linaro.org>
+Subject: [PATCH 3/3] cpufreq / s3c24xx: Fix __init attribute locations
+Date: Tue, 13 Aug 2013 18:20:10 +0800
+Message-ID: <1376389210-11470-3-git-send-email-hanjun.guo@linaro.org>
 References: <1376389210-11470-1-git-send-email-hanjun.guo@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:58429 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753615Ab3HMKWt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2013 06:22:49 -0400
-Received: by mail-pd0-f176.google.com with SMTP id q10so4685883pdj.35
-        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2013 03:22:49 -0700 (PDT)
+Received: from mail-pb0-f52.google.com ([209.85.160.52]:37368 "EHLO
+	mail-pb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756Ab3HMKXr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2013 06:23:47 -0400
+Received: by mail-pb0-f52.google.com with SMTP id wz12so4505813pbc.11
+        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2013 03:23:46 -0700 (PDT)
 In-Reply-To: <1376389210-11470-1-git-send-email-hanjun.guo@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,31 +20,22 @@ __init belongs after the return type on functions, not before it.
 
 Signed-off-by: Hanjun Guo <hanjun.guo@linaro.org>
 ---
- drivers/cpufreq/pxa2xx-cpufreq.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/s3c24xx-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-index fb3981a..8749eaf 100644
---- a/drivers/cpufreq/pxa2xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-@@ -191,7 +191,7 @@ static int pxa_cpufreq_change_voltage(pxa_freqs_t *pxa_freq)
- 	return ret;
- }
- 
--static __init void pxa_cpufreq_init_voltages(void)
-+static void __init pxa_cpufreq_init_voltages(void)
- {
- 	vcc_core = regulator_get(NULL, "vcc_core");
- 	if (IS_ERR(vcc_core)) {
-@@ -207,7 +207,7 @@ static int pxa_cpufreq_change_voltage(pxa_freqs_t *pxa_freq)
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index 87781eb..3d927d6 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -392,7 +392,7 @@ static int s3c_cpufreq_init(struct cpufreq_policy *policy)
  	return 0;
  }
  
--static __init void pxa_cpufreq_init_voltages(void) { }
-+static void __init pxa_cpufreq_init_voltages(void) { }
- #endif
- 
- static void find_freq_tables(struct cpufreq_frequency_table **freq_table,
+-static __init int s3c_cpufreq_initclks(void)
++static int __init s3c_cpufreq_initclks(void)
+ {
+ 	_clk_mpll = s3c_cpufreq_clk_get(NULL, "mpll");
+ 	_clk_xtal = s3c_cpufreq_clk_get(NULL, "xtal");
 -- 
 1.7.9.5
 
