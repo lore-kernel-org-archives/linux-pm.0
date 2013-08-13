@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 16/35] cpufreq: kirkwood: Covert to light weight ->target_index() routine
-Date: Tue, 13 Aug 2013 19:02:29 +0530
-Message-ID: <9dd618d939eccf2588a2cc0f1d161c6fb1e2d6f1.1376392602.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 20/35] cpufreq: omap: Covert to light weight ->target_index() routine
+Date: Tue, 13 Aug 2013 19:02:33 +0530
+Message-ID: <a82b707c2329408eee93683ebab2386df16f6d7f.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,55 +18,68 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/kirkwood-cpufreq.c | 19 +++----------------
- 1 file changed, 3 insertions(+), 16 deletions(-)
+ drivers/cpufreq/omap-cpufreq.c | 31 +++----------------------------
+ 1 file changed, 3 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-index 9018c4d..d0d107a 100644
---- a/drivers/cpufreq/kirkwood-cpufreq.c
-+++ b/drivers/cpufreq/kirkwood-cpufreq.c
-@@ -55,8 +55,8 @@ static unsigned int kirkwood_cpufreq_get_cpu_frequency(unsigned int cpu)
- 	return kirkwood_freq_table[0].frequency;
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index 48020b5..69bf7d8 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -51,40 +51,15 @@ static unsigned int omap_getspeed(unsigned int cpu)
+ 	return rate;
  }
  
--static void kirkwood_cpufreq_set_cpu_state(struct cpufreq_policy *policy,
--		unsigned int index)
-+static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
-+			    unsigned int index)
+-static int omap_target(struct cpufreq_policy *policy,
+-		       unsigned int target_freq,
+-		       unsigned int relation)
++static int omap_target(struct cpufreq_policy *policy, unsigned int index)
  {
+-	unsigned int i;
+ 	int r, ret = 0;
  	struct cpufreq_freqs freqs;
- 	unsigned int state = kirkwood_freq_table[index].driver_data;
-@@ -100,19 +100,6 @@ static void kirkwood_cpufreq_set_cpu_state(struct cpufreq_policy *policy,
- 		local_irq_enable();
- 	}
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--};
--
--static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq,
--			    unsigned int relation)
--{
--	unsigned int index = 0;
--
--	if (cpufreq_frequency_table_target(policy, kirkwood_freq_table,
--				target_freq, relation, &index))
--		return -EINVAL;
--
--	kirkwood_cpufreq_set_cpu_state(policy, index);
+ 	struct opp *opp;
+ 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
  
- 	return 0;
- }
-@@ -130,7 +117,7 @@ static int kirkwood_cpufreq_cpu_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver kirkwood_cpufreq_driver = {
- 	.get	= kirkwood_cpufreq_get_cpu_frequency,
- 	.verify	= cpufreq_generic_frequency_table_verify,
--	.target	= kirkwood_cpufreq_target,
-+	.target_index = kirkwood_cpufreq_target,
- 	.init	= kirkwood_cpufreq_cpu_init,
- 	.exit	= cpufreq_generic_exit,
- 	.name	= "kirkwood-cpufreq",
+-	if (!freq_table) {
+-		dev_err(mpu_dev, "%s: cpu%d: no freq table!\n", __func__,
+-				policy->cpu);
+-		return -EINVAL;
+-	}
+-
+-	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
+-			relation, &i);
+-	if (ret) {
+-		dev_dbg(mpu_dev, "%s: cpu%d: no freq match for %d(ret=%d)\n",
+-			__func__, policy->cpu, target_freq, ret);
+-		return ret;
+-	}
+-	freqs.new = freq_table[i].frequency;
+-	if (!freqs.new) {
+-		dev_err(mpu_dev, "%s: cpu%d: no match for freq %d\n", __func__,
+-			policy->cpu, target_freq);
+-		return -EINVAL;
+-	}
+-
+ 	freqs.old = omap_getspeed(policy->cpu);
+-
+-	if (freqs.old == freqs.new && policy->cur == freqs.new)
+-		return ret;
++	freqs.new = freq_table[index].frequency;
+ 
+ 	freq = freqs.new * 1000;
+ 	ret = clk_round_rate(mpu_clk, freq);
+@@ -223,7 +198,7 @@ static int omap_cpu_exit(struct cpufreq_policy *policy)
+ static struct cpufreq_driver omap_driver = {
+ 	.flags		= CPUFREQ_STICKY,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target		= omap_target,
++	.target_index	= omap_target,
+ 	.get		= omap_getspeed,
+ 	.init		= omap_cpu_init,
+ 	.exit		= omap_cpu_exit,
 -- 
 1.7.12.rc2.18.g61b472e
+
