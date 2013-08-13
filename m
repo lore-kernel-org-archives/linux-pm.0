@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 20/35] cpufreq: omap: Covert to light weight ->target_index() routine
-Date: Tue, 13 Aug 2013 19:02:33 +0530
-Message-ID: <a82b707c2329408eee93683ebab2386df16f6d7f.1376392602.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 17/35] cpufreq: longhaul: Covert to light weight ->target_index() routine
+Date: Tue, 13 Aug 2013 19:02:30 +0530
+Message-ID: <65691d6e5ef6f37f54774a5f33c30cbe43bed042.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,68 +18,46 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/omap-cpufreq.c | 31 +++----------------------------
- 1 file changed, 3 insertions(+), 28 deletions(-)
+ drivers/cpufreq/longhaul.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index 48020b5..69bf7d8 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -51,40 +51,15 @@ static unsigned int omap_getspeed(unsigned int cpu)
- 	return rate;
- }
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index 57d7b02..e566776 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -626,21 +626,12 @@ static void longhaul_setup_voltagescaling(void)
  
--static int omap_target(struct cpufreq_policy *policy,
--		       unsigned int target_freq,
--		       unsigned int relation)
-+static int omap_target(struct cpufreq_policy *policy, unsigned int index)
+ 
+ static int longhaul_target(struct cpufreq_policy *policy,
+-			    unsigned int target_freq, unsigned int relation)
++			    unsigned int table_index)
  {
--	unsigned int i;
- 	int r, ret = 0;
- 	struct cpufreq_freqs freqs;
- 	struct opp *opp;
- 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
+-	unsigned int table_index = 0;
+ 	unsigned int i;
+ 	unsigned int dir = 0;
+ 	u8 vid, current_vid;
  
--	if (!freq_table) {
--		dev_err(mpu_dev, "%s: cpu%d: no freq table!\n", __func__,
--				policy->cpu);
+-	if (cpufreq_frequency_table_target(policy, longhaul_table, target_freq,
+-				relation, &table_index))
 -		return -EINVAL;
--	}
 -
--	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
--			relation, &i);
--	if (ret) {
--		dev_dbg(mpu_dev, "%s: cpu%d: no freq match for %d(ret=%d)\n",
--			__func__, policy->cpu, target_freq, ret);
--		return ret;
--	}
--	freqs.new = freq_table[i].frequency;
--	if (!freqs.new) {
--		dev_err(mpu_dev, "%s: cpu%d: no match for freq %d\n", __func__,
--			policy->cpu, target_freq);
--		return -EINVAL;
--	}
+-	/* Don't set same frequency again */
+-	if (longhaul_index == table_index)
+-		return 0;
 -
- 	freqs.old = omap_getspeed(policy->cpu);
--
--	if (freqs.old == freqs.new && policy->cur == freqs.new)
--		return ret;
-+	freqs.new = freq_table[index].frequency;
+ 	if (!can_scale_voltage)
+ 		longhaul_setstate(policy, table_index);
+ 	else {
+@@ -920,7 +911,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
  
- 	freq = freqs.new * 1000;
- 	ret = clk_round_rate(mpu_clk, freq);
-@@ -223,7 +198,7 @@ static int omap_cpu_exit(struct cpufreq_policy *policy)
- static struct cpufreq_driver omap_driver = {
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= omap_target,
-+	.target_index	= omap_target,
- 	.get		= omap_getspeed,
- 	.init		= omap_cpu_init,
- 	.exit		= omap_cpu_exit,
+ static struct cpufreq_driver longhaul_driver = {
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+-	.target	= longhaul_target,
++	.target_index = longhaul_target,
+ 	.get	= longhaul_get,
+ 	.init	= longhaul_cpu_init,
+ 	.exit	= cpufreq_generic_exit,
 -- 
 1.7.12.rc2.18.g61b472e
-
