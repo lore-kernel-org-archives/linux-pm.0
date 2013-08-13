@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 12/35] cpufreq: elanfreq: Covert to light weight ->target_index() routine
-Date: Tue, 13 Aug 2013 19:02:25 +0530
-Message-ID: <0a825b2230fe4609d1d50b9e18515ab983867232.1376392602.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 14/35] cpufreq: ia64: Covert to light weight ->target_index() routine
+Date: Tue, 13 Aug 2013 19:02:27 +0530
+Message-ID: <68f0e910b21a30610a0b3823c469922962ef187c.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Luck <tony.luck@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,72 +18,53 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
+Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/elanfreq.c | 34 +++-------------------------------
- 1 file changed, 3 insertions(+), 31 deletions(-)
+ drivers/cpufreq/ia64-acpi-cpufreq.c | 21 +++------------------
+ 1 file changed, 3 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
-index fe7053c..0d133a7 100644
---- a/drivers/cpufreq/elanfreq.c
-+++ b/drivers/cpufreq/elanfreq.c
-@@ -105,20 +105,8 @@ static unsigned int elanfreq_get_cpu_frequency(unsigned int cpu)
- }
- 
- 
--/**
-- *	elanfreq_set_cpu_frequency: Change the CPU core frequency
-- *	@cpu: cpu number
-- *	@freq: frequency in kHz
-- *
-- *	This function takes a frequency value and changes the CPU frequency
-- *	according to this. Note that the frequency has to be checked by
-- *	elanfreq_validatespeed() for correctness!
-- *
-- *	There is no return value.
-- */
--
--static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
--		unsigned int state)
-+static int elanfreq_target(struct cpufreq_policy *policy,
-+			    unsigned int state)
+diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+index b958bdb..371c63d 100644
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -227,26 +227,11 @@ acpi_cpufreq_get (
+ static int
+ acpi_cpufreq_target (
+ 	struct cpufreq_policy   *policy,
+-	unsigned int target_freq,
+-	unsigned int relation)
++	unsigned int index)
  {
- 	struct cpufreq_freqs    freqs;
- 
-@@ -162,25 +150,9 @@ static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
- 	local_irq_enable();
- 
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--};
+-	struct cpufreq_acpi_io *data = acpi_io_data[policy->cpu];
+-	unsigned int next_state = 0;
+-	unsigned int result = 0;
 -
+-	pr_debug("acpi_cpufreq_setpolicy\n");
 -
--static int elanfreq_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq,
--			    unsigned int relation)
--{
--	unsigned int newstate = 0;
+-	result = cpufreq_frequency_table_target(policy,
+-			data->freq_table, target_freq, relation, &next_state);
+-	if (result)
+-		return (result);
 -
--	if (cpufreq_frequency_table_target(policy, &elanfreq_table[0],
--				target_freq, relation, &newstate))
--		return -EINVAL;
+-	result = processor_set_freq(data, policy, next_state);
 -
--	elanfreq_set_cpu_state(policy, newstate);
- 
- 	return 0;
+-	return (result);
++	return processor_set_freq(acpi_io_data[policy->cpu], policy, index);
  }
+ 
 -
--
- /*
-  *	Module init and exit code
-  */
-@@ -238,7 +210,7 @@ __setup("elanfreq=", elanfreq_setup);
- static struct cpufreq_driver elanfreq_driver = {
- 	.get		= elanfreq_get_cpu_frequency,
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= elanfreq_target,
-+	.target_index	= elanfreq_target,
- 	.init		= elanfreq_cpu_init,
- 	.exit		= cpufreq_generic_exit,
- 	.name		= "elanfreq",
+ static int
+ acpi_cpufreq_cpu_init (
+ 	struct cpufreq_policy   *policy)
+@@ -380,7 +365,7 @@ acpi_cpufreq_cpu_exit (
+ 
+ static struct cpufreq_driver acpi_cpufreq_driver = {
+ 	.verify 	= cpufreq_generic_frequency_table_verify,
+-	.target 	= acpi_cpufreq_target,
++	.target_index	= acpi_cpufreq_target,
+ 	.get 		= acpi_cpufreq_get,
+ 	.init		= acpi_cpufreq_cpu_init,
+ 	.exit		= acpi_cpufreq_cpu_exit,
 -- 
 1.7.12.rc2.18.g61b472e
