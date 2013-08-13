@@ -1,47 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: add frequency table to at32ap driver
-Date: Tue, 13 Aug 2013 12:28:04 +0530
-Message-ID: <CAKohponXSvxQwyx7YJYbcQHD8X2F=EuFpFd31DR5HY3JjvS+rQ@mail.gmail.com>
-References: <1376334657-23578-1-git-send-email-egtvedt@samfundet.no>
-	<CAKohpokCsCLS=8FNZpUBgEVi7YropyR4UoLC9XNN+rs5xuigMw@mail.gmail.com>
-	<CAKohponh4tW8j3qk7eP9YnfXufutNkK-+iCQRvqSUC2=GwvqeA@mail.gmail.com>
-	<20130813065208.GB7055@samfundet.no>
+From: Xiaoguang Chen <chenxg@marvell.com>
+Subject: [PATCH 1/2] cpufreq: Add governor operation ongoing flag
+Date: Tue, 13 Aug 2013 15:09:25 +0800
+Message-ID: <1376377766-2594-1-git-send-email-chenxg@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130813065208.GB7055@samfundet.no>
 Sender: cpufreq-owner@vger.kernel.org
-To: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@sisk.pl, chenxg.marvell@gmail.com, chenxg@marvell.com
 List-Id: linux-pm@vger.kernel.org
 
-On 13 August 2013 12:22, Hans-Christian Egtvedt <egtvedt@samfundet.no> wrote:
-> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
->
-> Thanks for cleaning up (-:
+__cpufreq_governor operation needs to be executed one by one.
+If one operation is ongoing, the other operation can't be executed.
+If the order is not guaranteed, there may be unexpected behavior.
 
-No problem..
+ For example, governor is in enable state, and one process
+tries to stop the goveror, but it is scheduled out before policy->
+governor->governor() is executed, but the governor enable flag is
+set to false already. Then one other process tries to start governor,
+It finds enable flag is false, and it can process down to do governor
+start operation, So the governor is started twice.
 
-Actually there is more to it.. We have got a freq table but neither .verify()
-nor .target() uses it :) and so we need to fix those two also to fix it up..
+Add the governor_ops_ongoing flag to check whether there is governor
+operation ongoing, if so, return -EAGAIN.
 
-.verify() looks to be pretty straight forward and so can be replaced by
-the generic routine I wrote for that..
+Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+---
+ drivers/cpufreq/cpufreq.c | 9 +++++++++
+ include/linux/cpufreq.h   | 1 +
+ 2 files changed, 10 insertions(+)
 
-But .target() does some calculations which aren't very straight forward
-to replace..
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index f0a5e2b..dfe0b86 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1652,6 +1652,11 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 		mutex_unlock(&cpufreq_governor_lock);
+ 		return -EBUSY;
+ 	}
++	if (policy->governor_ops_ongoing) {
++		mutex_unlock(&cpufreq_governor_lock);
++		return -EAGAIN;
++	}
++	policy->governor_ops_ongoing = true;
+ 
+ 	if (event == CPUFREQ_GOV_STOP)
+ 		policy->governor_enabled = false;
+@@ -1684,6 +1689,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 	if ((event == CPUFREQ_GOV_STOP) && !ret)
+ 		module_put(policy->governor->owner);
+ 
++	mutex_lock(&cpufreq_governor_lock);
++	policy->governor_ops_ongoing = false;
++	mutex_unlock(&cpufreq_governor_lock);
++
+ 	return ret;
+ }
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 90d5a15..8d3eac2 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -111,6 +111,7 @@ struct cpufreq_policy {
+ 	struct cpufreq_governor	*governor; /* see below */
+ 	void			*governor_data;
+ 	bool			governor_enabled; /* governor start/stop flag */
++	bool			governor_ops_ongoing;
+ 
+ 	struct work_struct	update; /* if update_policy() needs to be
+ 					 * called, but you're in IRQ context */
+-- 
+1.8.0
 
-I believe I can remove all below code and simply get the frequency
-as suggested by cpufreq-core ??
-
-	/* Convert target_freq from kHz to Hz */
-	freq = clk_round_rate(cpuclk, target_freq * 1000);
-
-	/* Check if policy->min <= new_freq <= policy->max */
-	if(freq < (policy->min * 1000) || freq > (policy->max * 1000))
-		return -EINVAL;
-
-	pr_debug("cpufreq: requested frequency %u Hz\n", target_freq * 1000);
-
-	freqs.new = (freq + 500) / 1000;
-	freqs.flags = 0;
