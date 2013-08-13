@@ -1,16 +1,22 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 14/35] cpufreq: ia64: Covert to light weight ->target_index() routine
-Date: Tue, 13 Aug 2013 19:02:27 +0530
-Message-ID: <68f0e910b21a30610a0b3823c469922962ef187c.1376392602.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 10/35] cpufreq: dbx500: Covert to light weight ->target_index() routine
+Date: Tue, 13 Aug 2013 19:02:23 +0530
+Message-ID: <79809d6e1f6f78cec69aa44103c09a81839301e8.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f52.google.com ([209.85.160.52]:60687 "EHLO
+	mail-pb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758282Ab3HMNeX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2013 09:34:23 -0400
+Received: by mail-pb0-f52.google.com with SMTP id wz12so4658806pbc.11
+        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2013 06:34:22 -0700 (PDT)
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Luck <tony.luck@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Linus Walleij <linus.walleij@linaro.org>
 
 This patch converts existing .target() to newly defined light weight
 .target_index() routine for this driver.
@@ -18,53 +24,51 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Tony Luck <tony.luck@intel.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/ia64-acpi-cpufreq.c | 21 +++------------------
- 1 file changed, 3 insertions(+), 18 deletions(-)
+ drivers/cpufreq/dbx500-cpufreq.c | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-index b958bdb..371c63d 100644
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -227,26 +227,11 @@ acpi_cpufreq_get (
- static int
- acpi_cpufreq_target (
- 	struct cpufreq_policy   *policy,
--	unsigned int target_freq,
--	unsigned int relation)
-+	unsigned int index)
+diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
+index 7e2f9c0..28deaf0 100644
+--- a/drivers/cpufreq/dbx500-cpufreq.c
++++ b/drivers/cpufreq/dbx500-cpufreq.c
+@@ -20,23 +20,13 @@ static struct cpufreq_frequency_table *freq_table;
+ static struct clk *armss_clk;
+ 
+ static int dbx500_cpufreq_target(struct cpufreq_policy *policy,
+-				unsigned int target_freq,
+-				unsigned int relation)
++				unsigned int index)
  {
--	struct cpufreq_acpi_io *data = acpi_io_data[policy->cpu];
--	unsigned int next_state = 0;
--	unsigned int result = 0;
--
--	pr_debug("acpi_cpufreq_setpolicy\n");
--
--	result = cpufreq_frequency_table_target(policy,
--			data->freq_table, target_freq, relation, &next_state);
--	if (result)
--		return (result);
--
--	result = processor_set_freq(data, policy, next_state);
--
--	return (result);
-+	return processor_set_freq(acpi_io_data[policy->cpu], policy, index);
- }
+ 	struct cpufreq_freqs freqs;
+-	unsigned int idx;
+ 	int ret;
  
+-	/* Lookup the next frequency */
+-	if (cpufreq_frequency_table_target(policy, freq_table, target_freq,
+-					relation, &idx))
+-		return -EINVAL;
 -
- static int
- acpi_cpufreq_cpu_init (
- 	struct cpufreq_policy   *policy)
-@@ -380,7 +365,7 @@ acpi_cpufreq_cpu_exit (
+ 	freqs.old = policy->cur;
+-	freqs.new = freq_table[idx].frequency;
+-
+-	if (freqs.old == freqs.new)
+-		return 0;
++	freqs.new = freq_table[index].frequency;
  
- static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.verify 	= cpufreq_generic_frequency_table_verify,
--	.target 	= acpi_cpufreq_target,
-+	.target_index	= acpi_cpufreq_target,
- 	.get 		= acpi_cpufreq_get,
- 	.init		= acpi_cpufreq_cpu_init,
- 	.exit		= acpi_cpufreq_cpu_exit,
+ 	/* pre-change notification */
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+@@ -104,7 +94,7 @@ static int dbx500_cpufreq_init(struct cpufreq_policy *policy)
+ static struct cpufreq_driver dbx500_cpufreq_driver = {
+ 	.flags  = CPUFREQ_STICKY | CPUFREQ_CONST_LOOPS,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+-	.target = dbx500_cpufreq_target,
++	.target_index = dbx500_cpufreq_target,
+ 	.get    = dbx500_cpufreq_getspeed,
+ 	.init   = dbx500_cpufreq_init,
+ 	.name   = "DBX500",
 -- 
 1.7.12.rc2.18.g61b472e
+
