@@ -1,51 +1,76 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] cpufreq / gx: Fix __init attribute locations
-Date: Tue, 13 Aug 2013 15:19:40 +0200
-Message-ID: <3142844.ubsh56jNy7@vostro.rjw.lan>
-References: <1376389210-11470-1-git-send-email-hanjun.guo@linaro.org>
+Subject: Re: [PATCH 12/16] drivers/cpufreq/pxa3xx-cpufreq.c: Avoid using ARRAY_AND_SIZE(e) as a function argument
+Date: Tue, 13 Aug 2013 15:22:09 +0200
+Message-ID: <2461013.EC2pHmIZ5g@vostro.rjw.lan>
+References: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr> <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:41052 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757857Ab3HMNJP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Aug 2013 09:09:15 -0400
-In-Reply-To: <1376389210-11470-1-git-send-email-hanjun.guo@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hanjun Guo <hanjun.guo@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linaro-acpi@lists.linaro.org
 
-On Tuesday, August 13, 2013 06:20:08 PM Hanjun Guo wrote:
->  __init belongs after the return type on functions, not before it.
+On Sunday, August 11, 2013 06:51:53 PM Julia Lawall wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 > 
-> Signed-off-by: Hanjun Guo <hanjun.guo@linaro.org>
+> Replace ARRAY_AND_SIZE(e) in function argument position to avoid hiding the
+> arity of the called function.
+> 
+> The semantic match that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression e,f;
+> @@
+> 
+> f(...,
+> - ARRAY_AND_SIZE(e)
+> + e,ARRAY_SIZE(e)
+>   ,...)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-All 3 patches in the series queued up for 3.12.
+Queued up for 3.12.
 
 Thanks,
 Rafael
 
 
 > ---
->  drivers/cpufreq/gx-suspmod.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Not compiled.
 > 
-> diff --git a/drivers/cpufreq/gx-suspmod.c b/drivers/cpufreq/gx-suspmod.c
-> index 3dfc99b..e30fd16 100644
-> --- a/drivers/cpufreq/gx-suspmod.c
-> +++ b/drivers/cpufreq/gx-suspmod.c
-> @@ -183,7 +183,7 @@ static void gx_write_byte(int reg, int value)
->   * gx_detect_chipset:
->   *
->   **/
-> -static __init struct pci_dev *gx_detect_chipset(void)
-> +static struct pci_dev * __init gx_detect_chipset(void)
->  {
->  	struct pci_dev *gx_pci = NULL;
+>  drivers/cpufreq/pxa3xx-cpufreq.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
+> index 9c92ef0..d26306f 100644
+> --- a/drivers/cpufreq/pxa3xx-cpufreq.c
+> +++ b/drivers/cpufreq/pxa3xx-cpufreq.c
+> @@ -213,10 +213,12 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
+>  	policy->cur = policy->min = policy->max;
 >  
+>  	if (cpu_is_pxa300() || cpu_is_pxa310())
+> -		ret = setup_freqs_table(policy, ARRAY_AND_SIZE(pxa300_freqs));
+> +		ret = setup_freqs_table(policy, pxa300_freqs,
+> +					ARRAY_SIZE(pxa300_freqs));
+>  
+>  	if (cpu_is_pxa320())
+> -		ret = setup_freqs_table(policy, ARRAY_AND_SIZE(pxa320_freqs));
+> +		ret = setup_freqs_table(policy, pxa320_freqs,
+> +					ARRAY_SIZE(pxa320_freqs));
+>  
+>  	if (ret) {
+>  		pr_err("failed to setup frequency table\n");
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
