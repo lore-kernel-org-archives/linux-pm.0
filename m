@@ -1,117 +1,67 @@
-From: Xiaoguang Chen <chenxg@marvell.com>
-Subject: [PATCH 2/2] cpufreq: Only do governor start after successful stop
-Date: Tue, 13 Aug 2013 15:09:26 +0800
-Message-ID: <1376377766-2594-2-git-send-email-chenxg@marvell.com>
-References: <1376377766-2594-1-git-send-email-chenxg@marvell.com>
+From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Subject: Re: [PATCH] cpufreq: add frequency table to at32ap driver
+Date: Tue, 13 Aug 2013 11:06:13 +0200
+Message-ID: <20130813090613.GA1850@samfundet.no>
+References: <1376334657-23578-1-git-send-email-egtvedt@samfundet.no>
+ <CAKohpokCsCLS=8FNZpUBgEVi7YropyR4UoLC9XNN+rs5xuigMw@mail.gmail.com>
+ <CAKohponh4tW8j3qk7eP9YnfXufutNkK-+iCQRvqSUC2=GwvqeA@mail.gmail.com>
+ <20130813065208.GB7055@samfundet.no>
+ <CAKohponXSvxQwyx7YJYbcQHD8X2F=EuFpFd31DR5HY3JjvS+rQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1376377766-2594-1-git-send-email-chenxg@marvell.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@sisk.pl, chenxg.marvell@gmail.com, chenxg@marvell.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohponXSvxQwyx7YJYbcQHD8X2F=EuFpFd31DR5HY3JjvS+rQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-cpufreq_add_policy_cpu, __cpufreq_remove_dev and __cpufreq_set_policy
-have operations for governor stop and start.
-Only do the start operation when the previous stop operation succeeds.
+Around Tue 13 Aug 2013 12:28:04 +0530 or thereabout, Viresh Kumar wrote:
+> On 13 August 2013 12:22, Hans-Christian Egtvedt <egtvedt@samfundet.no> wrote:
+>> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+>>
+>> Thanks for cleaning up (-:
+> 
+> No problem..
+> 
+> Actually there is more to it.. We have got a freq table but neither .verify()
+> nor .target() uses it :) and so we need to fix those two also to fix it up..
+> 
+> .verify() looks to be pretty straight forward and so can be replaced by
+> the generic routine I wrote for that..
 
-Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
----
- drivers/cpufreq/cpufreq.c | 25 +++++++++++++++----------
- 1 file changed, 15 insertions(+), 10 deletions(-)
+I though you already had a patch to swap verify, hence the need to cleanup
+the cpufreq driver first to provide a frequency table?
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index dfe0b86..2e0b17f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -916,7 +916,7 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
- 	WARN_ON(!policy);
- 
- 	if (has_target)
--		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
- 
- 	lock_policy_rwsem_write(sibling);
- 
-@@ -930,7 +930,8 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
- 	unlock_policy_rwsem_write(sibling);
- 
- 	if (has_target) {
--		__cpufreq_governor(policy, CPUFREQ_GOV_START);
-+		if (!ret)
-+			__cpufreq_governor(policy, CPUFREQ_GOV_START);
- 		__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
- 	}
- 
-@@ -1109,7 +1110,7 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
- static int __cpufreq_remove_dev(struct device *dev,
- 		struct subsys_interface *sif)
- {
--	unsigned int cpu = dev->id, ret, cpus;
-+	unsigned int cpu = dev->id, ret, opsret = 0, cpus;
- 	unsigned long flags;
- 	struct cpufreq_policy *data;
- 	struct kobject *kobj;
-@@ -1131,7 +1132,7 @@ static int __cpufreq_remove_dev(struct device *dev,
- 	}
- 
- 	if (cpufreq_driver->target)
--		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
-+		opsret = __cpufreq_governor(data, CPUFREQ_GOV_STOP);
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 	if (!cpufreq_driver->setpolicy)
-@@ -1206,7 +1207,8 @@ static int __cpufreq_remove_dev(struct device *dev,
- 		pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
- 		cpufreq_cpu_put(data);
- 		if (cpufreq_driver->target) {
--			__cpufreq_governor(data, CPUFREQ_GOV_START);
-+			if (!opsret)
-+				__cpufreq_governor(data, CPUFREQ_GOV_START);
- 			__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
- 		}
- 	}
-@@ -1784,7 +1786,7 @@ EXPORT_SYMBOL(cpufreq_get_policy);
- static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 				struct cpufreq_policy *policy)
- {
--	int ret = 0, failed = 1;
-+	int ret = 0, failed = 1, opsret = 0;
- 
- 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", policy->cpu,
- 		policy->min, policy->max);
-@@ -1841,7 +1843,8 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 
- 			/* end old governor */
- 			if (data->governor) {
--				__cpufreq_governor(data, CPUFREQ_GOV_STOP);
-+				opsret = __cpufreq_governor(data,
-+							    CPUFREQ_GOV_STOP);
- 				unlock_policy_rwsem_write(policy->cpu);
- 				__cpufreq_governor(data,
- 						CPUFREQ_GOV_POLICY_EXIT);
-@@ -1851,7 +1854,8 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 			/* start new governor */
- 			data->governor = policy->governor;
- 			if (!__cpufreq_governor(data, CPUFREQ_GOV_POLICY_INIT)) {
--				if (!__cpufreq_governor(data, CPUFREQ_GOV_START)) {
-+				if (!opsret && !__cpufreq_governor(
-+					data, CPUFREQ_GOV_START)) {
- 					failed = 0;
- 				} else {
- 					unlock_policy_rwsem_write(policy->cpu);
-@@ -1869,8 +1873,9 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 					data->governor = old_gov;
- 					__cpufreq_governor(data,
- 							CPUFREQ_GOV_POLICY_INIT);
--					__cpufreq_governor(data,
--							   CPUFREQ_GOV_START);
-+					if (!opsret)
-+						__cpufreq_governor(data,
-+							CPUFREQ_GOV_START);
- 				}
- 				ret = -EINVAL;
- 				goto error_out;
+> But .target() does some calculations which aren't very straight forward
+> to replace..
+> 
+> I believe I can remove all below code and simply get the frequency
+> as suggested by cpufreq-core ??
+> 
+> 	/* Convert target_freq from kHz to Hz */
+> 	freq = clk_round_rate(cpuclk, target_freq * 1000);
+> 
+> 	/* Check if policy->min <= new_freq <= policy->max */
+> 	if(freq < (policy->min * 1000) || freq > (policy->max * 1000))
+> 		return -EINVAL;
+
+This sanity checks that the frequency the system clock can generate is within
+the policy limits. It is initially feed the target_freq frequency.
+
+These values are already calculated during init and added to the table, so
+one shouldn't need to perform the clk_round_rate() call anymore.
+
+> 	pr_debug("cpufreq: requested frequency %u Hz\n", target_freq * 1000);
+> 
+> 	freqs.new = (freq + 500) / 1000;
+> 	freqs.flags = 0;
+
+I don't know the details of how the cpufreq-core suggests frequencies. If it
+looks up in the frequency table, then we don't need this sanity check in
+.target().
+
 -- 
-1.8.0
+mvh
+Hans-Christian Egtvedt
