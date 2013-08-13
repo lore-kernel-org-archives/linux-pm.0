@@ -1,72 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: add frequency table to at32ap driver
-Date: Tue, 13 Aug 2013 14:39:45 +0530
-Message-ID: <CAKohpokqMt2L_r3WR=vTPyW0kUS5wZ8FxS3ii=B=H=Yizuu=ig@mail.gmail.com>
-References: <1376334657-23578-1-git-send-email-egtvedt@samfundet.no>
-	<CAKohpokCsCLS=8FNZpUBgEVi7YropyR4UoLC9XNN+rs5xuigMw@mail.gmail.com>
-	<CAKohponh4tW8j3qk7eP9YnfXufutNkK-+iCQRvqSUC2=GwvqeA@mail.gmail.com>
-	<20130813065208.GB7055@samfundet.no>
-	<CAKohponXSvxQwyx7YJYbcQHD8X2F=EuFpFd31DR5HY3JjvS+rQ@mail.gmail.com>
-	<20130813090613.GA1850@samfundet.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:60607 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755404Ab3HMJJp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2013 05:09:45 -0400
-Received: by mail-ob0-f179.google.com with SMTP id fb19so9959872obc.24
-        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2013 02:09:45 -0700 (PDT)
-In-Reply-To: <20130813090613.GA1850@samfundet.no>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
+Date: Tue, 13 Aug 2013 12:08:18 +0200
+Message-ID: <1376388505-30233-1-git-send-email-l.majewski@samsung.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 13 August 2013 14:36, Hans-Christian Egtvedt <egtvedt@samfundet.no> wrote:
-> Around Tue 13 Aug 2013 12:28:04 +0530 or thereabout, Viresh Kumar wrote:
+This patch series introduces support for CPU overclocking technique
+called Boost.
 
->> .verify() looks to be pretty straight forward and so can be replaced by
->> the generic routine I wrote for that..
->
-> I though you already had a patch to swap verify, hence the need to cleanup
-> the cpufreq driver first to provide a frequency table?
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
-Yes, that's what.. That generic routine can be used instead of your .verify()..
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to include
+common code.
 
->> But .target() does some calculations which aren't very straight forward
->> to replace..
->>
->> I believe I can remove all below code and simply get the frequency
->> as suggested by cpufreq-core ??
->>
->>       /* Convert target_freq from kHz to Hz */
->>       freq = clk_round_rate(cpuclk, target_freq * 1000);
->>
->>       /* Check if policy->min <= new_freq <= policy->max */
->>       if(freq < (policy->min * 1000) || freq > (policy->max * 1000))
->>               return -EINVAL;
->
-> This sanity checks that the frequency the system clock can generate is within
-> the policy limits. It is initially feed the target_freq frequency.
+Important design decisions:
+- Boost related code is compiled-in unconditionally to cpufreq core and
+  disabled by default. The cpufreq_driver is responsibile for setting
+  boost_supported flag and providing set_boost callback(if HW support
+  is needed). For software managed boost, special Kconfig flag -
+  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+  when a target platform has thermal framework properly configured.
 
-This is already done in core.
+- struct cpufreq_driver has been extended with boost related fields:
+        -- boost_supported - when driver supports boosting
+        -- boost_enabled - boost state
+        -- set_boost - callback to function, which is necessary to
+           enable/disable boost
 
-> These values are already calculated during init and added to the table, so
-> one shouldn't need to perform the clk_round_rate() call anymore.
+- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+  _only_ when cpufreq driver supports Boost.
 
-good.
+- No special spin_lock for Boost was created. The one from cpufreq core
+  was reused.
 
->>       pr_debug("cpufreq: requested frequency %u Hz\n", target_freq * 1000);
->>
->>       freqs.new = (freq + 500) / 1000;
->>       freqs.flags = 0;
->
-> I don't know the details of how the cpufreq-core suggests frequencies. If it
-> looks up in the frequency table, then we don't need this sanity check in
-> .target().
+- The Boost code doesn't rely on any policy. When boost state is changed,
+  then the policy list is iterated and proper adjustements are done.
 
-Yes, it just picks the best match from freq table, though here is the actual
-implementation..
+- To improve safety level, the thermal framework is also extended to disable
+  software boosting, when thermal trip point is reached. Then it starts
+  monitoring target temperature to evaluate if boost can be enabled
+  again. This emulates behaviour similar to HW managed boost (like x86)
 
-https://lkml.org/lkml/2013/8/12/404
+Tested at HW:
+       Exynos 4412 3.11-rc4 Linux
+       Intel Core i7-3770 3.11-rc4 Linux
+
+Above patches were posted on top of linux_pm/linux-next with following
+patches applied:
+
+cpufreq: exynos5440: Fix to skip when new frequency same as current
+cpufreq: fix EXYNOS drivers selection
+
+Lukasz Majewski (7):
+  cpufreq: Add boost frequency support in core
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  thermal:boost: Automatic enable/disable of BOOST feature
+  cpufreq:boost:Kconfig: Provide support for software managed BOOST
+  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+    framework
+  Documentation:cpufreq:boost: Update BOOST documentation
+  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+
+ Documentation/cpu-freq/boost.txt     |   26 ++++----
+ drivers/cpufreq/Kconfig              |    4 ++
+ drivers/cpufreq/Kconfig.arm          |   15 +++++
+ drivers/cpufreq/acpi-cpufreq.c       |   86 +++++++++----------------
+ drivers/cpufreq/cpufreq.c            |  115 +++++++++++++++++++++++++++++++++-
+ drivers/cpufreq/exynos-cpufreq.c     |    6 ++
+ drivers/cpufreq/exynos4x12-cpufreq.c |    2 +-
+ drivers/cpufreq/freq_table.c         |   53 +++++++++++++---
+ drivers/thermal/thermal_core.c       |   55 ++++++++++++++++
+ include/linux/cpufreq.h              |   26 +++++++-
+ include/linux/thermal.h              |    2 +
+ 11 files changed, 310 insertions(+), 80 deletions(-)
+
+-- 
+1.7.10.4
+
