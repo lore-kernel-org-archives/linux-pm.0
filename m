@@ -1,64 +1,33 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 33/35] cpufreq: SPEAr: Covert to light weight ->target_index() routine
-Date: Tue, 13 Aug 2013 19:02:46 +0530
-Message-ID: <cd34e048df81f3bf5487d64ceecc6994ebcf469a.1376392602.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 00/35] CPUFreq: Implement light weight ->target(): for 3.13
+Date: Tue, 13 Aug 2013 19:16:00 +0530
+Message-ID: <CAKohpo=-PWt23aLiVW3MxU6gZ-_Db=QKYaaKO-f+e+u8hirpJQ@mail.gmail.com>
 References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <sparclinux-owner@vger.kernel.org>
 In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
-References: <cover.1376392602.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: sparclinux-owner@vger.kernel.org
+To: rjw@sisk.pl, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Eric Miao <eric.y.miao@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, John Crispin <blogic@openwrt.org>, Kukjin Kim <kgene.kim@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-cris-kernel@axis.com, Mikael Starvik <starvik@axis.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Sekhar Nori <nsekhar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, sparclinux@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Steven Miao <realmz6@gmail.com>, Tony Luck <tony.luck@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch converts existing .target() to newly defined light weight
-.target_index() routine for this driver.
+On 13 August 2013 19:02, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Currently prototype of cpufreq_drivers target routines is:
+>
+> int target(struct cpufreq_policy *policy, unsigned int target_freq,
+>         unsigned int relation);
+>
+> And most of the drivers call cpufreq_frequency_table_target() to get a valid
+> index of their frequency table which is closest to the target_freq. And they
+> don't use target_freq and relation after it.
 
-CPUFreq core will call cpufreq_frequency_table_target() before calling this
-routine and will pass index to it.
+I just came to know from a friend that I have written "covert" instead of
+"convert" in subjects of all the patches.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/spear-cpufreq.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+Will fix it in my repo for now.
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index d31accc..88aa5cf 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -105,20 +105,16 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
- }
- 
- static int spear_cpufreq_target(struct cpufreq_policy *policy,
--		unsigned int target_freq, unsigned int relation)
-+		unsigned int index)
- {
- 	struct cpufreq_freqs freqs;
- 	unsigned long newfreq;
- 	struct clk *srcclk;
--	int index, ret, mult = 1;
--
--	if (cpufreq_frequency_table_target(policy, spear_cpufreq.freq_tbl,
--				target_freq, relation, &index))
--		return -EINVAL;
-+	int ret, mult = 1;
- 
- 	freqs.old = spear_cpufreq_get(0);
--
- 	newfreq = spear_cpufreq.freq_tbl[index].frequency * 1000;
-+
- 	if (of_machine_is_compatible("st,spear1340")) {
- 		/*
- 		 * SPEAr1340 is special in the sense that due to the possibility
-@@ -191,7 +187,7 @@ static struct cpufreq_driver spear_cpufreq_driver = {
- 	.name		= "cpufreq-spear",
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= spear_cpufreq_target,
-+	.target_index	= spear_cpufreq_target,
- 	.get		= spear_cpufreq_get,
- 	.init		= spear_cpufreq_init,
- 	.exit		= cpufreq_generic_exit,
--- 
-1.7.12.rc2.18.g61b472e
+Thanks Sudeep :)
+
+--
+viresh
