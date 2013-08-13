@@ -1,76 +1,38 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 12/16] drivers/cpufreq/pxa3xx-cpufreq.c: Avoid using ARRAY_AND_SIZE(e) as a function argument
-Date: Tue, 13 Aug 2013 15:22:09 +0200
-Message-ID: <2461013.EC2pHmIZ5g@vostro.rjw.lan>
-References: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr> <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
+Subject: Re: [PATCH] cpufreq: unicore2: Staticize local symbol
+Date: Tue, 13 Aug 2013 15:23:05 +0200
+Message-ID: <1498761.g2kRkhGIXC@vostro.rjw.lan>
+References: <000701ce94d0$240949e0$6c1bdda0$@samsung.com> <CAOh2x=nOToVvWVm9=ZF9p4J_HOEJXJZWz--WdH+tKpk2voVsAA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:41061 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757529Ab3HMNMl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Aug 2013 09:12:41 -0400
+In-Reply-To: <CAOh2x=nOToVvWVm9=ZF9p4J_HOEJXJZWz--WdH+tKpk2voVsAA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Jingoo Han <jg1.han@samsung.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Guan Xuetao <gxt@mprc.pku.edu.cn>
 
-On Sunday, August 11, 2013 06:51:53 PM Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
+On Friday, August 09, 2013 10:14:08 PM Viresh Kumar wrote:
+> On Fri, Aug 9, 2013 at 12:44 PM, Jingoo Han <jg1.han@samsung.com> wrote:
+> > This local symbol is used only in this file.
+> > Fix the following sparse warnings:
+> >
+> > drivers/cpufreq/unicore2-cpufreq.c:27:5: warning: symbol 'ucv2_verify_speed' was not declared. Should it be static?
+> >
+> > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> > ---
+> >  drivers/cpufreq/unicore2-cpufreq.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Replace ARRAY_AND_SIZE(e) in function argument position to avoid hiding the
-> arity of the called function.
-> 
-> The semantic match that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @@
-> expression e,f;
-> @@
-> 
-> f(...,
-> - ARRAY_AND_SIZE(e)
-> + e,ARRAY_SIZE(e)
->   ,...)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Queued up for 3.12.
 
 Thanks,
 Rafael
 
-
-> ---
-> Not compiled.
-> 
->  drivers/cpufreq/pxa3xx-cpufreq.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
-> index 9c92ef0..d26306f 100644
-> --- a/drivers/cpufreq/pxa3xx-cpufreq.c
-> +++ b/drivers/cpufreq/pxa3xx-cpufreq.c
-> @@ -213,10 +213,12 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
->  	policy->cur = policy->min = policy->max;
->  
->  	if (cpu_is_pxa300() || cpu_is_pxa310())
-> -		ret = setup_freqs_table(policy, ARRAY_AND_SIZE(pxa300_freqs));
-> +		ret = setup_freqs_table(policy, pxa300_freqs,
-> +					ARRAY_SIZE(pxa300_freqs));
->  
->  	if (cpu_is_pxa320())
-> -		ret = setup_freqs_table(policy, ARRAY_AND_SIZE(pxa320_freqs));
-> +		ret = setup_freqs_table(policy, pxa320_freqs,
-> +					ARRAY_SIZE(pxa320_freqs));
->  
->  	if (ret) {
->  		pr_err("failed to setup frequency table\n");
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
