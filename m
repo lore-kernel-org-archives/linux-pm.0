@@ -1,34 +1,34 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-Date: Wed, 14 Aug 2013 07:09:29 +1000
-Message-ID: <1376428169.4255.16.camel@pasglop>
-References: <5208E2D3.7060005@arm.com> <520A536C.3030600@arm.com>
- <CAL_JsqJdGXuTmb2kgBwgmRYGs9f92-dsawDXSXjmJW8cwjFVQQ@mail.gmail.com>
- <1974929.8mIZF44QnT@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Hewlett-Packard HP Compaq nx6325 (EY349EA#AKD)] suspend/resume failure
+Date: Wed, 14 Aug 2013 00:42:33 +0200
+Message-ID: <3916887.XVsMrcXZta@vostro.rjw.lan>
+References: <520A2358.6090804@prokonto.pl> <2413831.lgLFglVszz@vostro.rjw.lan> <520A34CB.9040809@prokonto.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1974929.8mIZF44QnT@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:41606 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759357Ab3HMWcI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Aug 2013 18:32:08 -0400
+In-Reply-To: <520A34CB.9040809@prokonto.pl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tobiasz 'dotnokato' Jarczyk <dotnokato@prokonto.pl>
+Cc: linux-pm@vger.kernel.org, 1175504@bugs.launchpad.net
 
-On Tue, 2013-08-13 at 21:45 +0200, Rafael J. Wysocki wrote:
-> 
-> I'd go for 1 above personally.
+On Tuesday, August 13, 2013 03:29:47 PM Tobiasz 'dotnokato' Jarczyk wrote:
+> Hi,
+> I have tested it with the most recent kernel (3.11.rc5) and I am still 
+> experiencing this issue.
 
-Yuck no. Two functions with roughly the same name and the same purpose
-differing only by an underscore just because one can't take 5mn to
-reconcile the new one with the old one ? No way.
+Well, for me suspend with 3.11-rc5 breaks on that box too, but with 3.10.6 it
+actually works up to a VT switch that doesn't (it resumes to a black screen,
+but switching to VT1 and back to X helps).  A couple of other things don't
+work on it with 3.10.6, sadly.
 
-Ben.
+I have openSUSE 12.3 installed on it.
+
+Thanks,
+Rafael
+
