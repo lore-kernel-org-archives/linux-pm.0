@@ -1,62 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] cpufreq: sa11x0: cleanups for 3.13
-Date: Tue, 13 Aug 2013 22:01:17 +0200
-Message-ID: <1437762.edDpfxPldn@vostro.rjw.lan>
-References: <cover.1376392060.git.viresh.kumar@linaro.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
+Date: Wed, 14 Aug 2013 07:03:59 +1000
+Message-ID: <1376427839.4255.10.camel@pasglop>
+References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
+ <520A536C.3030600@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1376392060.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <520A536C.3030600@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 13, 2013 07:01:04 PM Viresh Kumar wrote:
-> Hi Rafael/Russell,
+On Tue, 2013-08-13 at 16:40 +0100, Sudeep KarkadaNagesha wrote:
+> There seems to be conflict in the new function "of_get_cpu_node" added.
+> PowerPC also defines the same function name. Further microblaze and
+> openrisc declares it(can be removed) but doesn't define it.
+> To fix this:
+> 1. I can rename the newly added function to something different like
+>    `of_get_cpunode` or
+> 2. If of_* namespace should be used by only OF/FDT and not by any
+>    architecture specific code, then the arch specific version can be
+>    renamed to some thing like arch_of_get_cpu_node.
+>    Also most of the calls to arch specific function can be moved to
+>    generic code.
 > 
-> These patches would be part of this patchset finally, sending it separately as I
-> didn't wanted to send other patches in that series..
-> 
-> https://lkml.org/lkml/2013/8/10/48
-> 
-> (Above series was rebased over https://lkml.org/lkml/2013/8/8/263 and hence this
-> patchset too)..
-> 
-> These first exposes frequency table and then uses cpufreq generic routines
-> (which uses exposed table) instead of its own .verify() routine.
-> 
-> Later I will send another patch that would be part of this series:
-> 
-> http://lkml.org/lkml/2013/8/12/406
-> 
-> (I need to send that series again today and so not sending that patch twice,
-> once here and then in that series)..
-> 
-> All these patches are pushed here with all dependencies:
-> 
-> https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-v3.13
+> Let me know your thoughts.
 
-Are the three patches in this series prerequisite for the big target_index
-one?  If so, I think they can go into 3.12 actually, if they are ACKed by the
-appropriate platform maintainers.
+What is your new function about ? Does it perform the same job as the
+one in powerpc ? If yes, make sure you have the same signature and
+either copy the powerpc one over to a generic place or make the generic
+one weak if you don't want the powerpc thread counting logic.
 
-> Viresh Kumar (3):
->   cpufreq: sa11x0: Expose frequency table
->   cpufreq: sa11x0: let cpufreq core initialize struct policy fields
->   cpufreq: sa11x0: Use generic cpufreq routines
-> 
->  arch/arm/mach-sa1100/generic.c   | 65 +++++++++++++---------------------------
->  arch/arm/mach-sa1100/generic.h   |  2 +-
->  drivers/cpufreq/sa1100-cpufreq.c |  9 +++---
->  drivers/cpufreq/sa1110-cpufreq.c |  9 +++---
->  4 files changed, 30 insertions(+), 55 deletions(-)
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Cheers,
+Ben.
