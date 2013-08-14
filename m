@@ -1,73 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 8/29] drivers/cpuidle/cpuidle-kirkwood.c: simplify use of devm_ioremap_resource
-Date: Wed, 14 Aug 2013 15:09:29 +0200
-Message-ID: <10943702.UYfHQJBDot@vostro.rjw.lan>
-References: <1376471493-22215-1-git-send-email-Julia.Lawall@lip6.fr> <1376471493-22215-9-git-send-email-Julia.Lawall@lip6.fr>
+Subject: Re: [PATCH 0/3] cpufreq: sa11x0: cleanups for 3.13
+Date: Wed, 14 Aug 2013 15:14:06 +0200
+Message-ID: <1472734.1FogUomyWU@vostro.rjw.lan>
+References: <cover.1376392060.git.viresh.kumar@linaro.org> <1437762.edDpfxPldn@vostro.rjw.lan> <CAKohpokOmv+CcL61dzkMgTNxY5rKb4A863CUAX_Jav4KyHF3DA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:42430 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:42437 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932369Ab3HNM7H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Aug 2013 08:59:07 -0400
-In-Reply-To: <1376471493-22215-9-git-send-email-Julia.Lawall@lip6.fr>
+	id S932350Ab3HNNDk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Aug 2013 09:03:40 -0400
+In-Reply-To: <CAKohpokOmv+CcL61dzkMgTNxY5rKb4A863CUAX_Jav4KyHF3DA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wednesday, August 14, 2013 11:11:12 AM Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
+On Wednesday, August 14, 2013 07:56:44 AM Viresh Kumar wrote:
+> On 14 August 2013 01:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday, August 13, 2013 07:01:04 PM Viresh Kumar wrote:
 > 
-> Remove unneeded error handling on the result of a call to
-> platform_get_resource when the value is passed to devm_ioremap_resource.
+> > Are the three patches in this series prerequisite for the big target_index
+> > one?  If so, I think they can go into 3.12 actually, if they are ACKed by the
+> > appropriate platform maintainers.
 > 
-> A simplified version of the semantic patch that makes this change is as
-> follows: (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @@
-> expression pdev,res,n,e,e1;
-> expression ret != 0;
-> identifier l;
-> @@
-> 
-> - res = platform_get_resource(pdev, IORESOURCE_MEM, n);
->   ... when != res
-> - if (res == NULL) { ... \(goto l;\|return ret;\) }
->   ... when != res
-> + res = platform_get_resource(pdev, IORESOURCE_MEM, n);
->   e = devm_ioremap_resource(e1, res);
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> Yes, but they depend on cpufreq_table_validate_and_show() which
+> will also go in 3.13 and so these will be made part of that series in
+> future..
 
-Queued up for 3.12.
+OK
 
-Thanks,
-Rafael
-
-
-> ---
->  drivers/cpuidle/cpuidle-kirkwood.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-> index 521b0a7..2237135 100644
-> --- a/drivers/cpuidle/cpuidle-kirkwood.c
-> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
-> @@ -60,9 +60,6 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
->  	struct resource *res;
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (res == NULL)
-> -		return -EINVAL;
-> -
->  	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
->  	if (IS_ERR(ddr_operation_base))
->  		return PTR_ERR(ddr_operation_base);
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
