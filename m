@@ -1,45 +1,51 @@
-From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-Subject: Re: [PATCH 04/37] cpufreq: at32ap: don't initialize part of policy
- that is set by core too
-Date: Wed, 14 Aug 2013 16:44:49 +0200
-Message-ID: <20130814144449.GA9485@samfundet.no>
-References: <cover.1376486713.git.viresh.kumar@linaro.org>
- <6fe9b31a6e199052e0a91b38c8f6d110e9f57b28.1376486713.git.viresh.kumar@linaro.org>
- <20130814143535.GB3263@samfundet.no>
- <CAKohpo=n9o+EKkboc1hw7ms_NkNwbsJ4VvEA2cB0R7gUi-U94A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: tuukka.tikkanen@linaro.org
+Subject: [PATCH 1/8] Cpuidle: Ignore interval prediction result when timer is shorter
+Date: Wed, 14 Aug 2013 19:02:34 +0300
+Message-ID: <e0958b6ce8d2e115444dd95e6d047e6f217ae252.1376493949.git.tuukka.tikkanen@linaro.org>
+References: <cover.1376487596.git.tuukka.tikkanen@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cassarossa.samfundet.no ([193.35.52.29]:34797 "EHLO
-	cassarossa.samfundet.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932499Ab3HNOow (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2013 10:44:52 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=n9o+EKkboc1hw7ms_NkNwbsJ4VvEA2cB0R7gUi-U94A@mail.gmail.com>
+Received: from mx.mmd.net ([80.83.0.3]:57311 "EHLO mx.mmd.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759962Ab3HNQRm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Aug 2013 12:17:42 -0400
+In-Reply-To: <cover.1376487596.git.tuukka.tikkanen@linaro.org>
+In-Reply-To: <cover.1376493949.git.tuukka.tikkanen@linaro.org>
+References: <cover.1376493949.git.tuukka.tikkanen@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: rjw@sisk.pl, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
+Cc: private-pmwg@linaro.org, linux-kernel@vger.kernel.org, Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 
-Around Wed 14 Aug 2013 20:07:44 +0530 or thereabout, Viresh Kumar wrote:
-> On 14 August 2013 20:05, Hans-Christian Egtvedt <egtvedt@samfundet.no> wrote:
->> Around Wed 14 Aug 2013 19:01:53 +0530 or thereabout, Viresh Kumar wrote:
->>> Many common initializations of struct policy are moved to core now and hence
->>> this driver doesn't need to do it. This patch removes such code.
->>>
->>> Most recent of those changes is to call ->get() in the core after calling
->>> ->init().
->>
->> It would be easier to review if you add me to CC on the new APIs you
->> implement as well. Now I had to look up what the ->get() call did.
-> 
-> I know my track record hasn't been impressive on this subject but I am
-> sure I am following this since sometime now :)
-> 
-> https://lkml.org/lkml/2013/8/14/285
+From: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 
-Sorry, my bad, I actually had gotten it, it was just so too short to notice.
+This patch prevents cpuidle menu governor from using repeating interval
+prediction result if the idle period predicted is longer than the one
+allowed by shortest running timer.
 
+Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+---
+ drivers/cpuidle/governors/menu.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index bc580b6..c8ab1c5 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -238,10 +238,13 @@ again:
+ 	 *
+ 	 * The typical interval is obtained when standard deviation is small
+ 	 * or standard deviation is small compared to the average interval.
++	 *
++	 * Use this result only if there is no timer to wake us up sooner.
+ 	 */
+ 	if (((avg > stddev * 6) && (divisor * 4 >= INTERVALS * 3))
+ 							|| stddev <= 20) {
+-		data->predicted_us = avg;
++		if (data->expected_us > avg)
++			data->predicted_us = avg;
+ 		return;
+ 
+ 	} else if ((divisor * 4) > INTERVALS * 3) {
 -- 
-mvh
-Hans-Christian Egtvedt
+1.7.9.5
+
