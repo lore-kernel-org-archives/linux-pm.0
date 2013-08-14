@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/37] cpufreq: acpi: don't initialize part of policy that is set by core too
-Date: Wed, 14 Aug 2013 19:01:51 +0530
-Message-ID: <19546da27c902ea7f2b376acace9c08be84f3ac5.1376486713.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/37] cpufreq: arm_big_little: don't initialize part of policy that is set by core too
+Date: Wed, 14 Aug 2013 19:01:52 +0530
+Message-ID: <164053c9d49336d2482ea27f5f8b88e416f8b1ae.1376486713.git.viresh.kumar@linaro.org>
 References: <cover.1376486713.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376486713.git.viresh.kumar@linaro.org>
@@ -20,20 +20,21 @@ Most recent of those changes is to call ->get() in the core after calling
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/cpufreq/arm_big_little.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 324e061..7536e7d 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -833,7 +833,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		break;
- 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
- 		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
--		policy->cur = get_cur_freq_on_cpu(cpu);
- 		break;
- 	default:
- 		break;
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 4bba5ad..daf4423 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -164,8 +164,6 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 	else
+ 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 
+-	policy->cur = bL_cpufreq_get(policy->cpu);
+-
+ 	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
+ 
+ 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
 -- 
 1.7.12.rc2.18.g61b472e
