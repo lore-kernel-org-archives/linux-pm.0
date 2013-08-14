@@ -1,55 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 00/35] CPUFreq: Implement light weight ->target(): for
- 3.13
-Date: Wed, 14 Aug 2013 10:59:22 +0530
-Message-ID: <CAKohpo=Kg9+68_aOpt-=YgNUvT_Srvgpd9t629X7DenrngNrKQ@mail.gmail.com>
-References: <cover.1376392602.git.viresh.kumar@linaro.org>
+From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Subject: Re: [PATCH] cpufreq: add frequency table to at32ap driver
+Date: Wed, 14 Aug 2013 08:07:18 +0200
+Message-ID: <20130814060718.GA6539@samfundet.no>
+References: <1376334657-23578-1-git-send-email-egtvedt@samfundet.no>
+ <CAKohpokCsCLS=8FNZpUBgEVi7YropyR4UoLC9XNN+rs5xuigMw@mail.gmail.com>
+ <CAKohponh4tW8j3qk7eP9YnfXufutNkK-+iCQRvqSUC2=GwvqeA@mail.gmail.com>
+ <20130813065208.GB7055@samfundet.no>
+ <CAKohponXSvxQwyx7YJYbcQHD8X2F=EuFpFd31DR5HY3JjvS+rQ@mail.gmail.com>
+ <20130813090613.GA1850@samfundet.no>
+ <CAKohpokqMt2L_r3WR=vTPyW0kUS5wZ8FxS3ii=B=H=Yizuu=ig@mail.gmail.com>
+ <CAKohpomya5EcqRabz7k=eT_vMdb5yuMCbk0vJuY7fLwpCZbc-A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Lunn <andrew@lunn.ch>, Steven Miao <realmz6@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mikael Starvik <starvik@axis.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, John Crispin <blogic@openwrt.org>, Tony Luck <tony.luck@intel.com>, Eric Miao <eric.y.miao@gmail.com>, linux-cris-kernel@axis.com, Linux
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpomya5EcqRabz7k=eT_vMdb5yuMCbk0vJuY7fLwpCZbc-A@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 13 August 2013 19:02, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Currently prototype of cpufreq_drivers target routines is:
->
-> int target(struct cpufreq_policy *policy, unsigned int target_freq,
->         unsigned int relation);
->
-> And most of the drivers call cpufreq_frequency_table_target() to get a valid
-> index of their frequency table which is closest to the target_freq. And they
-> don't use target_freq and relation after it.
->
-> So, it makes sense to just do this work in cpufreq core before calling
-> cpufreq_frequency_table_target() and simply pass index instead. But this can be
-> done only with drivers which expose their frequency table with cpufreq core. For
-> others we need to stick with the old prototype of target() until those drivers
-> are converted to expose frequency tables.
->
-> There are 7 drivers after this patchset which still use the heavy weight
-> version, i.e. target() and 44 drivers have adopted this new approach, i.e.
-> target_index().
->
-> Once those 7 drivers are also moved to use .target_index(), .target() will be
-> removed completely.
+Around Tue 13 Aug 2013 19:00:22 +0530 or thereabout, Viresh Kumar wrote:
+> On 13 August 2013 14:39, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> Yes, that's what.. That generic routine can be used instead of your .verify()..
+> 
+> So here is a patch for that which I will include in my original series. It uses
+> functions from this patch:
+> 
+> http://www.kernelhub.org/?msg=309940&p=2
 
-At a quick look at the status of drivers using target_index() it looks there is
-scope of more optimizations around that part..
+Great. Is there anything left for the at32ap cpufreq driver?
 
-We can actually get rid of cpufreq_notify_transition() from those cpufreq
-drivers and do that in core.. And that would cut down size of ->target_index()
-routines even more :)
+> -----------x-------------------x---------------------
+> 
+> commit e02892f73f8f669b265310e51a677c7253e32389
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Fri Aug 9 12:05:56 2013 +0530
+> 
+>     cpufreq: at32ap: Use generic cpufreq routines
+> 
+>     Most of the CPUFreq drivers do similar things in .exit() and
+> .verify() routines
+>     and .attr. So its better if we have generic routines for them
+> which can be used
+>     by cpufreq drivers then.
+> 
+>     This patch uses these generic routines for this driver.
+> 
+>     Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+>     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I will give it a try soon.
+Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+
+> ---
+>  drivers/cpufreq/at32ap-cpufreq.c | 12 +-----------
+>  1 file changed, 1 insertion(+), 11 deletions(-)
+
+<snipp diff>
+
+-- 
+mvh
+Hans-Christian Egtvedt
