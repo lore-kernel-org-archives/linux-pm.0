@@ -1,34 +1,31 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Hewlett-Packard HP Compaq nx6325 (EY349EA#AKD)] suspend/resume failure
-Date: Wed, 14 Aug 2013 00:42:33 +0200
-Message-ID: <3916887.XVsMrcXZta@vostro.rjw.lan>
-References: <520A2358.6090804@prokonto.pl> <2413831.lgLFglVszz@vostro.rjw.lan> <520A34CB.9040809@prokonto.pl>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/3] cpufreq: sa11x0: cleanups for 3.13
+Date: Wed, 14 Aug 2013 07:56:44 +0530
+Message-ID: <CAKohpokOmv+CcL61dzkMgTNxY5rKb4A863CUAX_Jav4KyHF3DA@mail.gmail.com>
+References: <cover.1376392060.git.viresh.kumar@linaro.org>
+	<1437762.edDpfxPldn@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:41606 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759357Ab3HMWcI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Aug 2013 18:32:08 -0400
-In-Reply-To: <520A34CB.9040809@prokonto.pl>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:33564 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758878Ab3HNC0p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2013 22:26:45 -0400
+Received: by mail-ob0-f178.google.com with SMTP id ef5so11178555obb.23
+        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2013 19:26:44 -0700 (PDT)
+In-Reply-To: <1437762.edDpfxPldn@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tobiasz 'dotnokato' Jarczyk <dotnokato@prokonto.pl>
-Cc: linux-pm@vger.kernel.org, 1175504@bugs.launchpad.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tuesday, August 13, 2013 03:29:47 PM Tobiasz 'dotnokato' Jarczyk wrote:
-> Hi,
-> I have tested it with the most recent kernel (3.11.rc5) and I am still 
-> experiencing this issue.
+On 14 August 2013 01:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, August 13, 2013 07:01:04 PM Viresh Kumar wrote:
 
-Well, for me suspend with 3.11-rc5 breaks on that box too, but with 3.10.6 it
-actually works up to a VT switch that doesn't (it resumes to a black screen,
-but switching to VT1 and back to X helps).  A couple of other things don't
-work on it with 3.10.6, sadly.
+> Are the three patches in this series prerequisite for the big target_index
+> one?  If so, I think they can go into 3.12 actually, if they are ACKed by the
+> appropriate platform maintainers.
 
-I have openSUSE 12.3 installed on it.
-
-Thanks,
-Rafael
-
+Yes, but they depend on cpufreq_table_validate_and_show() which
+will also go in 3.13 and so these will be made part of that series in
+future..
