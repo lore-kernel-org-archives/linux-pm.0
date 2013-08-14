@@ -1,27 +1,83 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 11/35] cpufreq: dbx500: use cpufreq_table_validate_and_show()
-Date: Wed, 14 Aug 2013 21:36:40 +0200
-Message-ID: <CACRpkda29WcHePh00w_7N3B1OtGh=-i=1_PyB4MNhy=YJ-nxyg@mail.gmail.com>
-References: <cover.1375964117.git.viresh.kumar@linaro.org>
-	<e343e827df7be24f11ecdaf849f2874bf1ba4b24.1375964117.git.viresh.kumar@linaro.org>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
+Date: Wed, 14 Aug 2013 17:30:20 -0400
+Message-ID: <520BF6EC.8070006@tilera.com>
+References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <e343e827df7be24f11ecdaf849f2874bf1ba4b24.1375964117.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usmamail.tilera.com ([12.216.194.151]:18521 "EHLO
+	USMAMAIL.TILERA.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933126Ab3HNVaX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2013 17:30:23 -0400
+In-Reply-To: <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: John Stultz <john.stultz@linaro.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, Aug 8, 2013 at 3:48 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On 8/14/2013 2:17 PM, John Stultz wrote:
+> So a long while back we had tried to adapt for clock frequency changes
+> on things like the TSC, but it resulting in *terrible* timekeeping as
+> the latency between the frequency change and the handling of the
+> notifications caused lots of clock drift, making it impossible for NTP
+> or other synchronization methods to work properly.
 
-> Lets use cpufreq_table_validate_and_show() instead of calling
-> cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
+We've done quite a bit of testing to show that our current implementation
+doesn't have any clock drift over time.  Basically, we take a machine
+running some workload, sync its time via ntpdate, and then run a script
+that changes the CPU speed up or down continually, with a delay of a couple
+seconds in between so we run for some decent amount of time at each speed.
+Every 5 minutes or so, the script runs ntpdate -q to see what the offset
+from real time is.  The skew we see doing that for a couple of days is
+identical to that seen when we _aren't_ changing the CPU frequency.
+
+A key part of making this work, as noted in the comments at the head of
+timekeeping_chfreq_prep(), is the fact that we do the frequency change
+under stop_machine() to make sure that no CPU gets an opportunity to
+sample the clock while it's being changed.
+
+However, I'm wondering whether you're talking about some other sort of
+much more local clock skew or other frequency effect that perhaps we
+haven't tested for.  (For instance, we haven't actually run this code
+on an NTP server.)  Can you give a bit more detail on exactly what sorts
+of bad behavior you saw with the previous implementation, and things one
+might do to detect them?
+
+
+> So early on we made
+> a requirement that all clocksources have a constant frequency and
+> provided a way to disqualify any clocksources that change frequency.
 >
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> So I'd be very hesitant to try to add any such behavior into the
+> timekeeping core. You may want to try to add some logic in the
+> clocksource driver itself to allow for the variable freq clocksource
+> to output what seems to be a fixed freq,
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+So, just to be clear, you're suggesting that we claim our clocksource
+runs at some lower virtual speed (say, 1 MHz), and that internally to
+our clocksource drver we divide down the real frequency to the virtual
+one?
 
-Yours,
-Linus Walleij
+
+> and if we get some time on it
+> to prove that it can be made to work well, then we can see about
+> making it more generic.
+>
+> Does that sound ok?
+
+That seems possible, although it would seem to make the whole process
+a bit less efficient (e.g., our clocksource will have to maintain its
+own multiplier and offset to convert from real ticks to virtual ticks,
+and then the core code will do the same operation again to convert to
+wall-clock time).  Obviously, we're not really anxious to re-test/re-qualify
+a new implementation of this, but if our current version is or might be
+incompatible with other code in the kernel perhaps that's a safer approach.
+
+What sort of eventual more-generic support were you thinking of?
+
+-- 
+Chris Metcalf, Tilera Corp.
+http://www.tilera.com
+
