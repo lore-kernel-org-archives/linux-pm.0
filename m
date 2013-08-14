@@ -1,31 +1,33 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/3] cpufreq: sa11x0: cleanups for 3.13
-Date: Wed, 14 Aug 2013 07:56:44 +0530
-Message-ID: <CAKohpokOmv+CcL61dzkMgTNxY5rKb4A863CUAX_Jav4KyHF3DA@mail.gmail.com>
-References: <cover.1376392060.git.viresh.kumar@linaro.org>
-	<1437762.edDpfxPldn@vostro.rjw.lan>
+Subject: Re: [PATCH 1/2] cpufreq: Add governor operation ongoing flag
+Date: Wed, 14 Aug 2013 10:51:47 +0530
+Message-ID: <CAKohpo=QKPvqUcQVsbbSQdWOOi5L-P2CBFzcfMsobs8uGpLkVw@mail.gmail.com>
+References: <1376377766-2594-1-git-send-email-chenxg@marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:33564 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758878Ab3HNC0p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2013 22:26:45 -0400
-Received: by mail-ob0-f178.google.com with SMTP id ef5so11178555obb.23
-        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2013 19:26:44 -0700 (PDT)
-In-Reply-To: <1437762.edDpfxPldn@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1376377766-2594-1-git-send-email-chenxg@marvell.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Xiaoguang Chen <chenxg@marvell.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Xiaoguang Chen <chenxg.marvell@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 14 August 2013 01:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, August 13, 2013 07:01:04 PM Viresh Kumar wrote:
+On 13 August 2013 12:39, Xiaoguang Chen <chenxg@marvell.com> wrote:
+> __cpufreq_governor operation needs to be executed one by one.
+> If one operation is ongoing, the other operation can't be executed.
+> If the order is not guaranteed, there may be unexpected behavior.
 
-> Are the three patches in this series prerequisite for the big target_index
-> one?  If so, I think they can go into 3.12 actually, if they are ACKed by the
-> appropriate platform maintainers.
+What order??
 
-Yes, but they depend on cpufreq_table_validate_and_show() which
-will also go in 3.13 and so these will be made part of that series in
-future..
+>  For example, governor is in enable state, and one process
+> tries to stop the goveror, but it is scheduled out before policy->
+> governor->governor() is executed, but the governor enable flag is
+> set to false already. Then one other process tries to start governor,
+> It finds enable flag is false, and it can process down to do governor
+> start operation, So the governor is started twice.
+
+That's not possible. A process will not and should not call START
+before calling STOP. And so the order of calling these routines must
+be forced.
+
+Hence, we may not need your patch.
