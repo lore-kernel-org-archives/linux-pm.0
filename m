@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 19/37] cpufreq: longhaul: don't initialize part of policy that is set by core too
-Date: Wed, 14 Aug 2013 19:02:08 +0530
-Message-ID: <04c2fe3a595a11096e89a886b5271951bbe28f47.1376486713.git.viresh.kumar@linaro.org>
+Subject: [PATCH 22/37] cpufreq: omap: don't initialize part of policy that is set by core too
+Date: Wed, 14 Aug 2013 19:02:11 +0530
+Message-ID: <d6018ce6b131eb0a56c1df5710c9e4324aa51774.1376486713.git.viresh.kumar@linaro.org>
 References: <cover.1376486713.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1376486713.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376486713.git.viresh.kumar@linaro.org>
 References: <cover.1376486713.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
 Many common initializations of struct policy are moved to core now and hence
@@ -18,22 +18,34 @@ this driver doesn't need to do it. This patch removes such code.
 Most recent of those changes is to call ->get() in the core after calling
 ->init().
 
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/longhaul.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/cpufreq/omap-cpufreq.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index e566776..45bafdd 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -904,7 +904,6 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
- 		longhaul_setup_voltagescaling();
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index 69bf7d8..92d45e6 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -146,8 +146,6 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
+ 		goto fail_ck;
+ 	}
  
- 	policy->cpuinfo.transition_latency = 200000;	/* nsec */
--	policy->cur = calc_speed(longhaul_get_cpu_mult());
+-	policy->cur = omap_getspeed(policy->cpu);
+-
+ 	if (!freq_table)
+ 		result = opp_init_cpufreq_table(mpu_dev, &freq_table);
  
- 	return cpufreq_table_validate_and_show(policy, longhaul_table);
- }
+@@ -163,8 +161,6 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
+ 	if (result)
+ 		goto fail_table;
+ 
+-	policy->cur = omap_getspeed(policy->cpu);
+-
+ 	/*
+ 	 * On OMAP SMP configuartion, both processors share the voltage
+ 	 * and clock. So both CPUs needs to be scaled together and hence
 -- 
 1.7.12.rc2.18.g61b472e
+
