@@ -1,44 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Add governor operation ongoing flag
-Date: Wed, 14 Aug 2013 13:18:05 +0530
-Message-ID: <CAKohponD2LdDsJy=UJCf-1yANjyPjmAyokV5a4HOSJn_DMJVhA@mail.gmail.com>
-References: <1376377766-2594-1-git-send-email-chenxg@marvell.com>
-	<CAKohpo=QKPvqUcQVsbbSQdWOOi5L-P2CBFzcfMsobs8uGpLkVw@mail.gmail.com>
-	<CAFgnuDes_F7Q5CHbXKC=ndrn9Gr3PJfGj0QvDXA-FuGcq41CHQ@mail.gmail.com>
+From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Subject: Re: [PATCH V2 05/35] cpufreq: at32ap: Covert to light weight
+ ->target_index() routine
+Date: Wed, 14 Aug 2013 10:00:33 +0200
+Message-ID: <20130814080033.GA8540@samfundet.no>
+References: <cover.1376392602.git.viresh.kumar@linaro.org>
+ <1e8023313384685c4f5488b5249423b066e8c133.1376392602.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAFgnuDes_F7Q5CHbXKC=ndrn9Gr3PJfGj0QvDXA-FuGcq41CHQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1e8023313384685c4f5488b5249423b066e8c133.1376392602.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-I am still not sure if I got what you are trying to say, sorry :(
+Around Tue 13 Aug 2013 19:02:18 +0530 or thereabout, Viresh Kumar wrote:
+> This patch converts existing .target() to newly defined light weight
+> .target_index() routine for this driver.
+> 
+> CPUFreq core will call cpufreq_frequency_table_target() before calling this
+> routine and will pass index to it.
+> 
+> Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-On 14 August 2013 13:06, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
-> Please see below code in __cpufreq_governor function
->
-> mutex_lock(&cpufreq_governor_lock);
-> if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
->                             //////////// <1> Here one process A tries
-> to stop governor, it finds governor is enabled, so it will pass down.
->    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
->                           /////////////<3> Process B tries to start
-> governor, it finds enable flag is false, so it can also pass down.
+Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 
-Processes aren't allowed to call START/STOP in random manner. They
-must do a STOP first, if it succeeds do a START.
+> ---
+>  drivers/cpufreq/at32ap-cpufreq.c | 23 +++++------------------
+>  1 file changed, 5 insertions(+), 18 deletions(-)
 
-So lets see it this way:
+<snipp diff>
 
-Process A                            Process B
-STOP
-                                            STOP
-                                            START (If STOP passed)
-START (If STOP passed)
-
-So, Process B tries to STOP/START after governor is Stopped by A.
-Now call to STOP for process B will fail as we are already stopped..
-
-Can you explain with this example the problem you are trying to solve?
+-- 
+mvh
+Hans-Christian Egtvedt
