@@ -1,83 +1,45 @@
-From: Chris Metcalf <cmetcalf@tilera.com>
-Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
-Date: Wed, 14 Aug 2013 17:30:20 -0400
-Message-ID: <520BF6EC.8070006@tilera.com>
-References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
+Date: Thu, 15 Aug 2013 08:57:30 +1000
+Message-ID: <1376521050.4255.82.camel@pasglop>
+References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
+ <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
+ <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
+ <1376480227.4255.66.camel@pasglop> <520B8468.7050307@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usmamail.tilera.com ([12.216.194.151]:18521 "EHLO
-	USMAMAIL.TILERA.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933126Ab3HNVaX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2013 17:30:23 -0400
-In-Reply-To: <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <520B8468.7050307@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 8/14/2013 2:17 PM, John Stultz wrote:
-> So a long while back we had tried to adapt for clock frequency changes
-> on things like the TSC, but it resulting in *terrible* timekeeping as
-> the latency between the frequency change and the handling of the
-> notifications caused lots of clock drift, making it impossible for NTP
-> or other synchronization methods to work properly.
+On Wed, 2013-08-14 at 14:21 +0100, Sudeep KarkadaNagesha wrote:
+> IMO moving of handling ibm,ppc-interrupt-server#s to generic code
+> under
+> #ifdef CONFIG_PPC seems to be cleaner approach than weak definitation.
+> 
+> As per my understanding each thread is a different logical cpu.
+> Each logical cpu is mapped to unique physical id(either present in reg
+> field or legacy ibm,ppc-interrupt-server#s field). So given a logical
+> cpu id we can get the cpu node corresponding to it.
+> Looking @ smp_setup_cpu_maps in arch/powerpc/kernel/setup-common.c
+> and the comment in the same file: "This implementation only supports
+> power of 2 number of threads.." the thread id id is implicit in the
+> logical cpu id. Do we need to fetch that from DT ?
 
-We've done quite a bit of testing to show that our current implementation
-doesn't have any clock drift over time.  Basically, we take a machine
-running some workload, sync its time via ntpdate, and then run a script
-that changes the CPU speed up or down continually, with a delay of a couple
-seconds in between so we run for some decent amount of time at each speed.
-Every 5 minutes or so, the script runs ntpdate -q to see what the offset
-from real time is.  The skew we see doing that for a couple of days is
-identical to that seen when we _aren't_ changing the CPU frequency.
+I don't want those parsing routines to make those assumptions. We have
+changed our logical numbering in the past and may again.
 
-A key part of making this work, as noted in the comments at the head of
-timekeeping_chfreq_prep(), is the fact that we do the frequency change
-under stop_machine() to make sure that no CPU gets an opportunity to
-sample the clock while it's being changed.
-
-However, I'm wondering whether you're talking about some other sort of
-much more local clock skew or other frequency effect that perhaps we
-haven't tested for.  (For instance, we haven't actually run this code
-on an NTP server.)  Can you give a bit more detail on exactly what sorts
-of bad behavior you saw with the previous implementation, and things one
-might do to detect them?
-
-
-> So early on we made
-> a requirement that all clocksources have a constant frequency and
-> provided a way to disqualify any clocksources that change frequency.
->
-> So I'd be very hesitant to try to add any such behavior into the
-> timekeeping core. You may want to try to add some logic in the
-> clocksource driver itself to allow for the variable freq clocksource
-> to output what seems to be a fixed freq,
-
-So, just to be clear, you're suggesting that we claim our clocksource
-runs at some lower virtual speed (say, 1 MHz), and that internally to
-our clocksource drver we divide down the real frequency to the virtual
-one?
-
-
-> and if we get some time on it
-> to prove that it can be made to work well, then we can see about
-> making it more generic.
->
-> Does that sound ok?
-
-That seems possible, although it would seem to make the whole process
-a bit less efficient (e.g., our clocksource will have to maintain its
-own multiplier and offset to convert from real ticks to virtual ticks,
-and then the core code will do the same operation again to convert to
-wall-clock time).  Obviously, we're not really anxious to re-test/re-qualify
-a new implementation of this, but if our current version is or might be
-incompatible with other code in the kernel perhaps that's a safer approach.
-
-What sort of eventual more-generic support were you thinking of?
-
--- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
-
+Cheers,
+Ben.
