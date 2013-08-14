@@ -1,33 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] cpufreq: sa11x0: cleanups for 3.13
-Date: Wed, 14 Aug 2013 15:14:06 +0200
-Message-ID: <1472734.1FogUomyWU@vostro.rjw.lan>
-References: <cover.1376392060.git.viresh.kumar@linaro.org> <1437762.edDpfxPldn@vostro.rjw.lan> <CAKohpokOmv+CcL61dzkMgTNxY5rKb4A863CUAX_Jav4KyHF3DA@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
+Date: Wed, 14 Aug 2013 14:21:44 +0100
+Message-ID: <520B8468.7050307@arm.com>
+References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>  <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>  <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com> <1376480227.4255.66.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:42437 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932350Ab3HNNDk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Aug 2013 09:03:40 -0400
-In-Reply-To: <CAKohpokOmv+CcL61dzkMgTNxY5rKb4A863CUAX_Jav4KyHF3DA@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:58425 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932364Ab3HNNVp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2013 09:21:45 -0400
+In-Reply-To: <1376480227.4255.66.camel@pasglop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, Olof Johansson <olof@lixom.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Wednesday, August 14, 2013 07:56:44 AM Viresh Kumar wrote:
-> On 14 August 2013 01:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, August 13, 2013 07:01:04 PM Viresh Kumar wrote:
+On 14/08/13 12:37, Benjamin Herrenschmidt wrote:
+> On Wed, 2013-08-14 at 11:01 +0100, Sudeep KarkadaNagesha wrote:
+>> Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s",
+>> for
+>> which we can have PPC specific wrapper above the generic one i.e. get
+>> the cpu node and then parse for thread id under custom property.
 > 
-> > Are the three patches in this series prerequisite for the big target_index
-> > one?  If so, I think they can go into 3.12 actually, if they are ACKed by the
-> > appropriate platform maintainers.
-> 
-> Yes, but they depend on cpufreq_table_validate_and_show() which
-> will also go in 3.13 and so these will be made part of that series in
-> future..
+> A wrapper is wrong. I don't want to have to have all ppc callers to use
+> a different function.
+Ok.
 
-OK
+On the side note the main intention of this patch series[1] is to avoid
+calling of_get_cpu_node function once CPU devices are registered. It
+initialises the of_node in all the cpu devices using this function when
+registering the CPU device. It can be retrieved from cpu_dev->of_node.
+So direct users of of_get_cpu_node can be reduced to avoid unnecessary
+parsing of DT to find cpu node.
+
+> 
+> As I said, just make a generic one that returns a thread ID, ie, same
+> signature as the powerpc one. Make it weak, we can override it in
+> powerpc-land,
+IMO, making generic definition which adhere to the ePAPR specification
+as weak is not so clean.
+
+> or we can move the ibm,ppc-interrupt-server#s handling
+> into the generic one, it won't hurt, but leave the thread_id return
+> there, it doesn't hurt it will come in handy in a few cases without
+> causing code duplication.
+> 
+
+IMO moving of handling ibm,ppc-interrupt-server#s to generic code under
+#ifdef CONFIG_PPC seems to be cleaner approach than weak definitation.
+
+As per my understanding each thread is a different logical cpu.
+Each logical cpu is mapped to unique physical id(either present in reg
+field or legacy ibm,ppc-interrupt-server#s field). So given a logical
+cpu id we can get the cpu node corresponding to it.
+Looking @ smp_setup_cpu_maps in arch/powerpc/kernel/setup-common.c
+and the comment in the same file: "This implementation only supports
+power of 2 number of threads.." the thread id id is implicit in the
+logical cpu id. Do we need to fetch that from DT ?
+
+Regards,
+Sudeep
+
+[1] https://lkml.org/lkml/2013/7/22/219
 
