@@ -1,146 +1,73 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-Date: Wed, 14 Aug 2013 07:53:02 -0500
-Message-ID: <520B7DAE.3060501@gmail.com>
-References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>  <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com> <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 8/29] drivers/cpuidle/cpuidle-kirkwood.c: simplify use of devm_ioremap_resource
+Date: Wed, 14 Aug 2013 15:09:29 +0200
+Message-ID: <10943702.UYfHQJBDot@vostro.rjw.lan>
+References: <1376471493-22215-1-git-send-email-Julia.Lawall@lip6.fr> <1376471493-22215-9-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <520B5584.7030608@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Olof Johansson <olof@lixom.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:42430 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932369Ab3HNM7H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Aug 2013 08:59:07 -0400
+In-Reply-To: <1376471493-22215-9-git-send-email-Julia.Lawall@lip6.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 08/14/2013 05:01 AM, Sudeep KarkadaNagesha wrote:
-> On 13/08/13 22:07, Benjamin Herrenschmidt wrote:
->> On Tue, 2013-08-13 at 19:29 +0100, Sudeep KarkadaNagesha wrote:
->>> I don't understand completely the use of ibm,ppc-interrupt-server#s and
->>> its implications on generic of_get_cpu_node implementation.
->>> I see the PPC specific definition of of_get_cpu_node uses thread id only
->>> in 2 instances. Based on that, I have tried to move all the other
->>> instances to use generic definition.
->>>
->>> Let me know if the idea is correct.
->>
->> No. The device-tree historically only represents cores, not HW threads, so
->> it makes sense to retrieve also the thread number corresponding to the CPU.
->>
-> Ok
+On Wednesday, August 14, 2013 11:11:12 AM Julia Lawall wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 > 
->> However, the mechanism to represent HW threads in the device-tree is currently
->> somewhat platform specific (the ibm,ppc-interrupt-server#s).
-> I see most of the callers pass NULL to thread id argument except 2
-> instances in entire tree. If that's the case why can't we move to use
-> generic of_get_cpu_node in most of those cases and have PPC specific
-> implementation for the ones using thread id.
+> Remove unneeded error handling on the result of a call to
+> platform_get_resource when the value is passed to devm_ioremap_resource.
 > 
->>
->> So what you could do for now is:
->>
->>  - Have a generic version that always returns 0 as the thread, which is weak
-> I would prefer to move to generic of_get_cpu_node where ever possible
-> and rename the function that takes thread id rather than making generic
-> one weak.
+> A simplified version of the semantic patch that makes this change is as
+> follows: (http://coccinelle.lip6.fr/)
 > 
->>
->>  - powerpc keeps its own implementation
-> How about only in cases where it needs thread_id.
+> // <smpl>
+> @@
+> expression pdev,res,n,e,e1;
+> expression ret != 0;
+> identifier l;
+> @@
 > 
->>
->>  - Start a discussion on the bindings (if not already there) to define threads
->> in a better way at which point the generic function can be updated.
->>
-> I am not sure if we need to define any new bindings. Excerpts from ePAPR
-> (v1.1):
-> "3.7.1 General Properties of CPU nodes
-> The value of "reg" is a <prop-encoded-array> that defines a unique
-> CPU/thread id for the CPU/threads represented by the CPU node.
-> If a CPU supports more than one thread (i.e. multiple streams of
-> execution) the reg property is an array with 1 element per thread. The
-> #address-cells on the /cpus node specifies how many cells each element
-> of the array takes. Software can determine the number of threads by
-> dividing the size of reg by the parent node's #address-cells."
+> - res = platform_get_resource(pdev, IORESOURCE_MEM, n);
+>   ... when != res
+> - if (res == NULL) { ... \(goto l;\|return ret;\) }
+>   ... when != res
+> + res = platform_get_resource(pdev, IORESOURCE_MEM, n);
+>   e = devm_ioremap_resource(e1, res);
+> // </smpl>
 > 
-> And this is exactly in agreement to what's implemented in the generic
-> of_get_cpu_node:
-> 
-> for_each_child_of_node(cpus, cpun) {
->         if (of_node_cmp(cpun->type, "cpu"))
->                 continue;
->         cell = of_get_property(cpun, "reg", &prop_len);
->         if (!cell) {
->                 pr_warn("%s: missing reg property\n", cpun->full_name);
->                 continue;
->         }
->         prop_len /= sizeof(*cell);
->         while (prop_len) {
->                 hwid = of_read_number(cell, ac);
->                 prop_len -= ac;
->                 if (arch_match_cpu_phys_id(cpu, hwid))
->                         return cpun;
->         }
-> }
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-How about something like this:
+Queued up for 3.12.
 
-for_each_child_of_node(cpus, cpun) {
-        if (of_node_cmp(cpun->type, "cpu"))
-                continue;
+Thanks,
+Rafael
 
-	if (arch_of_get_cpu_node(cpun, thread))
-		return cpun;
 
-        cell = of_get_property(cpun, "reg", &prop_len);
-        if (!cell) {
-                pr_warn("%s: missing reg property\n", cpun->full_name);
-                continue;
-        }
-        prop_len /= sizeof(*cell);
-        while (prop_len) {
-                hwid = of_read_number(cell, ac);
-                prop_len -= ac;
-                if (arch_match_cpu_phys_id(cpu, hwid))
-       	                return cpun;
-        }
-}
-
-For PPC:
-
-arch_of_get_cpu_node()
-{
-        const u32 *intserv;
-        unsigned int plen, t;
-
-        /* Check for ibm,ppc-interrupt-server#s. */
-        intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
-                                &plen);
-        if (!intserv)
-		return false;
-
-	hardid = get_hard_smp_processor_id(cpu);
-
-        plen /= sizeof(u32);
-        for (t = 0; t < plen; t++) {
-                 if (hardid == intserv[t]) {
-                         if (thread)
-                                  *thread = t;
-                         return true;
-                 }
-        }
-	return false;
-}
-
+> ---
+>  drivers/cpuidle/cpuidle-kirkwood.c |    3 ---
+>  1 file changed, 3 deletions(-)
 > 
-> Yes this doesn't cover the historical "ibm,ppc-interrupt-server#s", for
-> which we can have PPC specific wrapper above the generic one i.e. get
-> the cpu node and then parse for thread id under custom property.
+> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> index 521b0a7..2237135 100644
+> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> @@ -60,9 +60,6 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+>  	struct resource *res;
+>  
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (res == NULL)
+> -		return -EINVAL;
+> -
+>  	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
+>  	if (IS_ERR(ddr_operation_base))
+>  		return PTR_ERR(ddr_operation_base);
 > 
-> Let me know your thoughts.
-> 
-> Regards,
-> Sudeep
-> 
-> 
-> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
