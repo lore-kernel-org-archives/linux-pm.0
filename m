@@ -1,54 +1,51 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 0/29] simplify use of devm_ioremap_resource
-Date: Wed, 14 Aug 2013 11:11:04 +0200
-Message-ID: <1376471493-22215-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Tobiasz 'dotnokato' Jarczyk <dotnokato@prokonto.pl>
+Subject: Re: [Hewlett-Packard HP Compaq nx6325 (EY349EA#AKD)] suspend/resume
+ failure
+Date: Wed, 14 Aug 2013 11:20:21 +0200
+Message-ID: <520B4BD5.80706@prokonto.pl>
+References: <520A2358.6090804@prokonto.pl> <2413831.lgLFglVszz@vostro.rjw.lan> <520A34CB.9040809@prokonto.pl> <3916887.XVsMrcXZta@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <alsa-devel-bounces@alsa-project.org>
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: dri-devel@lists.freedesktop.org
-Cc: alsa-devel@alsa-project.org, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from moh1-ve1.go2.pl ([193.17.41.131]:49317 "EHLO moh1-ve1.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024Ab3HNJU2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Aug 2013 05:20:28 -0400
+Received: from moh1-ve1.go2.pl (unknown [10.0.0.131])
+	by moh1-ve1.go2.pl (Postfix) with ESMTP id 69D1491C88C
+	for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2013 11:20:24 +0200 (CEST)
+Received: from unknown (unknown [10.0.0.108])
+	by moh1-ve1.go2.pl (Postfix) with SMTP
+	for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2013 11:20:24 +0200 (CEST)
+In-Reply-To: <3916887.XVsMrcXZta@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, 1175504@bugs.launchpad.net
 
-devm_ioremap_resource often uses the result of a call to
-platform_get_resource as its last argument.  devm_ioremap_resource does
-appropriate error handling on this argument, so error handling can be
-removed from the call site.  To make the connection between the call to
-platform_get_resource and the call to devm_ioremap_resource more clear, the
-former is also moved down to be adjacent to the latter.
+W dniu 14.08.2013 00:42, Rafael J. Wysocki pisze:
+> On Tuesday, August 13, 2013 03:29:47 PM Tobiasz 'dotnokato' Jarczyk wrote:
+>> Hi,
+>> I have tested it with the most recent kernel (3.11.rc5) and I am still
+>> experiencing this issue.
+> Well, for me suspend with 3.11-rc5 breaks on that box too, but with 3.10.6 it
+> actually works up to a VT switch that doesn't (it resumes to a black screen,
+> but switching to VT1 and back to X helps).  A couple of other things don't
+> work on it with 3.10.6, sadly.
+>
+> I have openSUSE 12.3 installed on it.
+>
+> Thanks,
+> Rafael
+>
+I get the same behavior when using 3.10.6 and 3.11.rc5. The system fails 
+to suspend for the second time (first time always works fine).
+When waking from the first suspend I get screen flickering and just like 
+you wrote, switching to VT1 and back to X helps.
 
-In many cases, this patch changes the specific error value that is
-returned on failure of platform_get_resource.
+I have Ubuntu Gnome 13.10.
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+Pozdrawiam / Regards
+Tobiasz "dotnokato" Jarczyk
 
-// <smpl>
-@@
-expression pdev,res,n,e,e1;
-expression ret != 0;
-identifier l;
-@@
-
-(
-  res = platform_get_resource(pdev, IORESOURCE_MEM, n);
-- if (res == NULL) { ... \(goto l;\|return ret;\) }
-  e = devm_ioremap_resource(e1, res);
-|
-- res = platform_get_resource(pdev, IORESOURCE_MEM, n);
-  ... when != res
-- if (res == NULL) { ... \(goto l;\|return ret;\) }
-  ... when != res
-+ res = platform_get_resource(pdev, IORESOURCE_MEM, n);
-  e = devm_ioremap_resource(e1, res);
-)
-// </smpl>
