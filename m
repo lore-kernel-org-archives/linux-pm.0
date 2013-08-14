@@ -1,83 +1,40 @@
-From: tuukka.tikkanen@linaro.org
-Subject: [PATCH 6/8] Cpuidle: Fix variable domains in get_typical_interval()
-Date: Wed, 14 Aug 2013 19:02:39 +0300
-Message-ID: <c4145504e535ac343251cc7690807eee2005af28.1376493949.git.tuukka.tikkanen@linaro.org>
-References: <cover.1376487596.git.tuukka.tikkanen@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 04/15] cpufreq: dbx500: initialize .owner field with THIS_MODULE
+Date: Wed, 14 Aug 2013 18:43:57 +0200
+Message-ID: <CACRpkdZ47M3VHFgWwHeDF-SptCMdvjFotFtV65VrGNewFCbNhw@mail.gmail.com>
+References: <cover.1375279948.git.viresh.kumar@linaro.org>
+	<538b0cb147d3bd4a5e21b49c507f725f7fb7feb9.1375279948.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx.mmd.net ([80.83.0.3]:57315 "EHLO mx.mmd.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760023Ab3HNQRm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Aug 2013 12:17:42 -0400
-In-Reply-To: <cover.1376487596.git.tuukka.tikkanen@linaro.org>
-In-Reply-To: <cover.1376493949.git.tuukka.tikkanen@linaro.org>
-References: <cover.1376493949.git.tuukka.tikkanen@linaro.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:39938 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932447Ab3HNQn6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2013 12:43:58 -0400
+Received: by mail-ob0-f175.google.com with SMTP id xn12so10478728obc.20
+        for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2013 09:43:57 -0700 (PDT)
+In-Reply-To: <538b0cb147d3bd4a5e21b49c507f725f7fb7feb9.1375279948.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
-Cc: private-pmwg@linaro.org, linux-kernel@vger.kernel.org, Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
 
-From: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+On Wed, Jul 31, 2013 at 4:19 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-The menu governor uses a static function get_typical_interval() to
-try to detect a repeating pattern of wakeups. The previous interval
-durations are stored as an array of unsigned ints, but the arithmetic
-in the function is performed exclusively as 64 bit values, even when
-the value stored in a variable is known not to exceed unsigned int,
-which may be smaller and more efficient on some platforms.
+> CPUFreq core does following at multiple places:
+> module_{get|put}(cpufreq_driver->owner)).
+>
+> This is done to make sure module doesn't get unloaded if it is currently in use.
+> This will work only if the .owner field of cpufreq driver is initialized with a
+> valid pointer.
+>
+> This field wasn't initialized for this driver, lets initialize it with
+> THIS_MODULE.
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-This patch changes the types of varibles used to store some
-intermediates, the maximum and and the cutoff threshold to unsigned
-ints. Average and standard deviation are still treated as 64 bit values,
-even when the values are known to be within the domain of unsigned int,
-to avoid casts to ensure correct integer promotion for arithmetic
-operations.
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
----
- drivers/cpuidle/governors/menu.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 0b37ee4..96fd10d 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -200,18 +200,19 @@ static u64 div_round64(u64 dividend, u32 divisor)
- static void get_typical_interval(struct menu_device *data)
- {
- 	int i, divisor;
--	uint64_t max, avg, stddev;
--	int64_t thresh = LLONG_MAX; /* Discard outliers above this value. */
-+	unsigned int max, thresh;
-+	uint64_t avg, stddev;
-+
-+	thresh = ULONG_MAX; /* Discard outliers above this value */
- 
- again:
- 
--	/* first calculate average and standard deviation of the past */
-+	/* First calculate the average of past intervals */
- 	max = 0;
- 	avg = 0;
- 	divisor = 0;
--	stddev = 0;
- 	for (i = 0; i < INTERVALS; i++) {
--		int64_t value = data->intervals[i];
-+		unsigned int value = data->intervals[i];
- 		if (value <= thresh) {
- 			avg += value;
- 			divisor++;
-@@ -221,8 +222,10 @@ again:
- 	}
- 	do_div(avg, divisor);
- 
-+	/* Then try to determine standard deviation */
-+	stddev = 0;
- 	for (i = 0; i < INTERVALS; i++) {
--		int64_t value = data->intervals[i];
-+		unsigned int value = data->intervals[i];
- 		if (value <= thresh) {
- 			int64_t diff = value - avg;
- 			stddev += diff * diff;
--- 
-1.7.9.5
-
+Yours,
+Linus Walleij
