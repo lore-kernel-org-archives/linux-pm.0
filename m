@@ -1,34 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: Only do governor start after successful stop
-Date: Wed, 14 Aug 2013 10:53:48 +0530
-Message-ID: <CAKohponW5GwnrL8EktnWb-U5V=eOFQQkbZrx=QgUpfuci3v-0w@mail.gmail.com>
-References: <1376377766-2594-1-git-send-email-chenxg@marvell.com>
-	<1376377766-2594-2-git-send-email-chenxg@marvell.com>
+Subject: Re: [PATCH V2 00/35] CPUFreq: Implement light weight ->target(): for
+ 3.13
+Date: Wed, 14 Aug 2013 10:59:22 +0530
+Message-ID: <CAKohpo=Kg9+68_aOpt-=YgNUvT_Srvgpd9t629X7DenrngNrKQ@mail.gmail.com>
+References: <cover.1376392602.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:61437 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488Ab3HNFXs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2013 01:23:48 -0400
-Received: by mail-oa0-f48.google.com with SMTP id o17so12698709oag.35
-        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2013 22:23:48 -0700 (PDT)
-In-Reply-To: <1376377766-2594-2-git-send-email-chenxg@marvell.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Lunn <andrew@lunn.ch>, Steven Miao <realmz6@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mikael Starvik <starvik@axis.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, John Crispin <blogic@openwrt.org>, Tony Luck <tony.luck@intel.com>, Eric Miao <eric.y.miao@gmail.com>, linux-cris-kernel@axis.com, Linux
 List-Id: linux-pm@vger.kernel.org
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Xiaoguang Chen <chenxg.marvell@gmail.com>
 
-On 13 August 2013 12:39, Xiaoguang Chen <chenxg@marvell.com> wrote:
-> cpufreq_add_policy_cpu, __cpufreq_remove_dev and __cpufreq_set_policy
-> have operations for governor stop and start.
-> Only do the start operation when the previous stop operation succeeds.
+On 13 August 2013 19:02, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Currently prototype of cpufreq_drivers target routines is:
 >
-> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 25 +++++++++++++++----------
->  1 file changed, 15 insertions(+), 10 deletions(-)
+> int target(struct cpufreq_policy *policy, unsigned int target_freq,
+>         unsigned int relation);
+>
+> And most of the drivers call cpufreq_frequency_table_target() to get a valid
+> index of their frequency table which is closest to the target_freq. And they
+> don't use target_freq and relation after it.
+>
+> So, it makes sense to just do this work in cpufreq core before calling
+> cpufreq_frequency_table_target() and simply pass index instead. But this can be
+> done only with drivers which expose their frequency table with cpufreq core. For
+> others we need to stick with the old prototype of target() until those drivers
+> are converted to expose frequency tables.
+>
+> There are 7 drivers after this patchset which still use the heavy weight
+> version, i.e. target() and 44 drivers have adopted this new approach, i.e.
+> target_index().
+>
+> Once those 7 drivers are also moved to use .target_index(), .target() will be
+> removed completely.
 
-I hope you have seen this patch, which is already in Rafael's tree?
+At a quick look at the status of drivers using target_index() it looks there is
+scope of more optimizations around that part..
 
-https://lkml.org/lkml/2013/8/6/357
+We can actually get rid of cpufreq_notify_transition() from those cpufreq
+drivers and do that in core.. And that would cut down size of ->target_index()
+routines even more :)
+
+I will give it a try soon.
