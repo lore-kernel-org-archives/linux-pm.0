@@ -1,8 +1,12 @@
 From: tuukka.tikkanen@linaro.org
-Subject: [PATCH 0/8] Cpuidle: Menu governor fixes
-Date: Wed, 14 Aug 2013 19:02:33 +0300
-Message-ID: <cover.1376487596.git.tuukka.tikkanen@linaro.org>
+Subject: [PATCH 4/8] Cpuidle: CodingStyle: Break up multiple assignments on single line
+Date: Wed, 14 Aug 2013 19:02:37 +0300
+Message-ID: <3708965718cc4397b9364dab26161192828c7a1e.1376493949.git.tuukka.tikkanen@linaro.org>
+References: <cover.1376487596.git.tuukka.tikkanen@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1376487596.git.tuukka.tikkanen@linaro.org>
+In-Reply-To: <cover.1376493949.git.tuukka.tikkanen@linaro.org>
+References: <cover.1376493949.git.tuukka.tikkanen@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
 Cc: private-pmwg@linaro.org, linux-kernel@vger.kernel.org, Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
@@ -10,24 +14,43 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 
-This series of patches fixes some bugs, style issues and wild use of
-variable types in cpuidle menu governor. One of the bugs is a logic
-flaw where a detected previously recurring pattern is given priority
-over known guaranteed earlier wakeup. The others involve value
-overflows.
+The function get_typical_interval() initializes a number of variables
+that are immediately after declarations assigned constant values.
+In addition, there are multiple assignments on a single line, which
+is explicitly forbidden by Documentation/CodingStyle.
 
-Tuukka Tikkanen (8):
-  Cpuidle: Ignore interval prediction result when timer is shorter
-  Cpuidle: Rearrange code and comments in get_typical_interval()
-  Cpuidle: Check called function parameter in get_typical_interval()
-  Cpuidle: CodingStyle: Break up multiple assignments on single line
-  Cpuidle: Fix menu_device->intervals type
-  Cpuidle: Fix variable domains in get_typical_interval()
-  Cpuidle: Add a comment warning about possible overflow
-  Cpuidle: Change struct menu_device field types
+This patch removes redundant initial values for the variables and
+breaks up the multiple assignment line.
 
- drivers/cpuidle/governors/menu.c |   96 ++++++++++++++++++++++++++------------
- 1 file changed, 65 insertions(+), 31 deletions(-)
+Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+---
+ drivers/cpuidle/governors/menu.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index c24b10b..fe2dd04 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -199,14 +199,17 @@ static u64 div_round64(u64 dividend, u32 divisor)
+  */
+ static void get_typical_interval(struct menu_device *data)
+ {
+-	int i = 0, divisor = 0;
+-	uint64_t max = 0, avg = 0, stddev = 0;
++	int i, divisor;
++	uint64_t max, avg, stddev;
+ 	int64_t thresh = LLONG_MAX; /* Discard outliers above this value. */
+ 
+ again:
+ 
+ 	/* first calculate average and standard deviation of the past */
+-	max = avg = divisor = stddev = 0;
++	max = 0;
++	avg = 0;
++	divisor = 0;
++	stddev = 0;
+ 	for (i = 0; i < INTERVALS; i++) {
+ 		int64_t value = data->intervals[i];
+ 		if (value <= thresh) {
 -- 
 1.7.9.5
