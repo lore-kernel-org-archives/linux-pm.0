@@ -1,63 +1,141 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [RFC PATCH 0/4] DT: move of_get_cpu_node from PPC to DT core
-Date: Thu, 15 Aug 2013 18:09:36 +0100
-Message-ID: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH 3/4] powerpc: refactor of_get_cpu_node to support other architectures
+Date: Thu, 15 Aug 2013 18:09:39 +0100
+Message-ID: <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:47423 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758302Ab3HORKD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Aug 2013 13:10:03 -0400
-In-Reply-To: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au, linux@lists.openrisc.net, linuxppc-dev@lists.ozlabs.org
 Cc: Sudeep.KarkadaNagesha@arm.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Hi,
+Currently different drivers requiring to access cpu device node are
+parsing the device tree themselves. Since the ordering in the DT need
+not match the logical cpu ordering, the parsing logic needs to consider
+that. However, this has resulted in lots of code duplication and in some
+cases even incorrect logic.
 
-This series needs to be prepended with the original series[1][2][3]
-Except the first patch in the original series(which is merged into this
-as last patch), there is no other change(apart from function signature)
-I am posting only this part for feedback separately for review as the
-original series is already reviewed. Once this part is review and aknowledg=
-ed
-I will combine the complete series and post it.
+It's better to consolidate them by adding support for getting cpu
+device node for a given logical cpu index in DT core library. However
+logical to physical index mapping can be architecture specific.
 
-Hi Rob,
+PowerPC has it's own implementation to get the cpu node for a given
+logical index.
 
-Since the compatible 'ibm,ppc-interrupt-server#s' is one-off and for
-historical reasons, if future architectures are adhering to ePAPR,
-IMO having a weak definition of arch_of_cpu_get_node as you suggested
-could lead to it's misuse in future. So I didn't take that approach.
+This patch refactors the current implementation of of_get_cpu_node.
+This in preparation to move the implementation to DT core library.
+It separates out the logical to physical mapping so that a default
+matching of the physical id to the logical cpu index can be added
+when moved to common code. Architecture specific code can override it.
 
-Regards,
-Sudeep
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+---
+ arch/powerpc/kernel/prom.c | 70 ++++++++++++++++++++++++++++--------------=
+----
+ 1 file changed, 43 insertions(+), 27 deletions(-)
 
-Sudeep KarkadaNagesha (4):
-  microblaze: remove undefined of_get_cpu_node declaration
-  openrisc: remove undefined of_get_cpu_node declaration
-  powerpc: refactor of_get_cpu_node to support other architectures
-  of: move of_get_cpu_node implementation to DT core library
-
- arch/microblaze/include/asm/prom.h |  3 --
- arch/openrisc/include/asm/prom.h   |  3 --
- arch/powerpc/include/asm/prom.h    |  3 --
- arch/powerpc/kernel/prom.c         | 43 +----------------
- drivers/of/base.c                  | 94 ++++++++++++++++++++++++++++++++++=
-++++
- include/linux/cpu.h                |  1 +
- include/linux/of.h                 |  7 +++
- 7 files changed, 104 insertions(+), 50 deletions(-)
-
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index eb23ac9..594c9f9 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -865,45 +865,61 @@ static int __init prom_reconfig_setup(void)
+ __initcall(prom_reconfig_setup);
+ #endif
+=20
++bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
++{
++=09return (int)phys_id =3D=3D get_hard_smp_processor_id(cpu);
++}
++
++static bool __of_find_n_match_cpu_property(struct device_node *cpun,
++=09=09=09const char *prop_name, int cpu, unsigned int *thread)
++{
++=09const __be32 *cell;
++=09int ac, prop_len, tid;
++=09u64 hwid;
++
++=09ac =3D of_n_addr_cells(cpun);
++=09cell =3D of_get_property(cpun, prop_name, &prop_len);
++=09if (!cell)
++=09=09return false;
++=09prop_len /=3D sizeof(*cell);
++=09for (tid =3D 0; tid < prop_len; tid++) {
++=09=09hwid =3D of_read_number(cell, ac);
++=09=09if (arch_match_cpu_phys_id(cpu, hwid)) {
++=09=09=09if (thread)
++=09=09=09=09*thread =3D tid;
++=09=09=09return true;
++=09=09}
++=09}
++=09return false;
++}
++
+ /* Find the device node for a given logical cpu number, also returns the c=
+pu
+  * local thread number (index in ibm,interrupt-server#s) if relevant and
+  * asked for (non NULL)
+  */
+ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+ {
+-=09int hardid;
+-=09struct device_node *np;
++=09struct device_node *cpun, *cpus;
+=20
+-=09hardid =3D get_hard_smp_processor_id(cpu);
++=09cpus =3D of_find_node_by_path("/cpus");
++=09if (!cpus) {
++=09=09pr_warn("Missing cpus node, bailing out\n");
++=09=09return NULL;
++=09}
+=20
+-=09for_each_node_by_type(np, "cpu") {
+-=09=09const u32 *intserv;
+-=09=09unsigned int plen, t;
++=09for_each_child_of_node(cpus, cpun) {
++=09=09if (of_node_cmp(cpun->type, "cpu"))
++=09=09=09continue;
+=20
+ =09=09/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
+ =09=09 * fallback to "reg" property and assume no threads
+ =09=09 */
+-=09=09intserv =3D of_get_property(np, "ibm,ppc-interrupt-server#s",
+-=09=09=09=09&plen);
+-=09=09if (intserv =3D=3D NULL) {
+-=09=09=09const u32 *reg =3D of_get_property(np, "reg", NULL);
+-=09=09=09if (reg =3D=3D NULL)
+-=09=09=09=09continue;
+-=09=09=09if (*reg =3D=3D hardid) {
+-=09=09=09=09if (thread)
+-=09=09=09=09=09*thread =3D 0;
+-=09=09=09=09return np;
+-=09=09=09}
+-=09=09} else {
+-=09=09=09plen /=3D sizeof(u32);
+-=09=09=09for (t =3D 0; t < plen; t++) {
+-=09=09=09=09if (hardid =3D=3D intserv[t]) {
+-=09=09=09=09=09if (thread)
+-=09=09=09=09=09=09*thread =3D t;
+-=09=09=09=09=09return np;
+-=09=09=09=09}
+-=09=09=09}
+-=09=09}
++=09=09if (__of_find_n_match_cpu_property(cpun,
++=09=09=09=09"ibm,ppc-interrupt-server#s", cpu, thread))
++=09=09=09return cpun;
++
++=09=09if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
++=09=09=09return cpun;
+ =09}
+ =09return NULL;
+ }
 --=20
 1.8.1.2
-
-[1] https://lkml.org/lkml/2013/7/15/128
-[2] https://lkml.org/lkml/2013/7/17/341
-[3] https://lkml.org/lkml/2013/7/22/219
-
