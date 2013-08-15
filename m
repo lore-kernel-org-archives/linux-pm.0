@@ -1,45 +1,99 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [GIT PULL] DT/core: cpu_ofnode updates for v3.12
-Date: Thu, 15 Aug 2013 08:57:30 +1000
-Message-ID: <1376521050.4255.82.camel@pasglop>
-References: <5208E2D3.7060005@arm.com> <3356439.a21MloFP7n@vostro.rjw.lan>
- <520A536C.3030600@arm.com> <520A7B00.8060405@arm.com>
- <1376428024.4255.14.camel@pasglop> <520B5584.7030608@arm.com>
- <1376480227.4255.66.camel@pasglop> <520B8468.7050307@arm.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RFC PATCH 1/4] thermal: hwmon: move hwmon support to single
+ file
+Date: Thu, 15 Aug 2013 14:21:06 +0800
+Message-ID: <1376547666.2335.104.camel@rzhang-lenovo>
+References: <1373378414-28086-1-git-send-email-eduardo.valentin@ti.com>
+	 <1373378414-28086-2-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <520B8468.7050307@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:3650 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753331Ab3HOGUC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Aug 2013 02:20:02 -0400
+In-Reply-To: <1373378414-28086-2-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, durgadoss.r@intel.com, amit.daniel@samsung.com, linux-kernel@vger.kernel.org
 
-On Wed, 2013-08-14 at 14:21 +0100, Sudeep KarkadaNagesha wrote:
-> IMO moving of handling ibm,ppc-interrupt-server#s to generic code
-> under
-> #ifdef CONFIG_PPC seems to be cleaner approach than weak definitation.
-> 
-> As per my understanding each thread is a different logical cpu.
-> Each logical cpu is mapped to unique physical id(either present in reg
-> field or legacy ibm,ppc-interrupt-server#s field). So given a logical
-> cpu id we can get the cpu node corresponding to it.
-> Looking @ smp_setup_cpu_maps in arch/powerpc/kernel/setup-common.c
-> and the comment in the same file: "This implementation only supports
-> power of 2 number of threads.." the thread id id is implicit in the
-> logical cpu id. Do we need to fetch that from DT ?
+Hi, Eduardo,
 
-I don't want those parsing routines to make those assumptions. We have
-changed our logical numbering in the past and may again.
+thanks for the patch, just one minor comments.
 
-Cheers,
-Ben.
+On =E4=BA=8C, 2013-07-09 at 10:00 -0400, Eduardo Valentin wrote:
+> diff --git a/drivers/thermal/thermal_hwmon.h b/drivers/thermal/therma=
+l_hwmon.h
+> new file mode 100644
+> index 0000000..c798fdb
+> --- /dev/null
+> +++ b/drivers/thermal/thermal_hwmon.h
+> @@ -0,0 +1,49 @@
+> +/*
+> + *  thermal_hwmon.h - Generic Thermal Management hwmon support.
+> + *
+> + *  Code based on Intel thermal_core.c. Copyrights of the original c=
+ode:
+> + *  Copyright (C) 2008 Intel Corp
+> + *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
+> + *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
+> + *
+> + *  Copyright (C) 2013 Texas Instruments
+> + *  Copyright (C) 2013 Eduardo Valentin <eduardo.valentin@ti.com>
+> + *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
+~~~~~~~~~~
+> + *
+> + *  This program is free software; you can redistribute it and/or mo=
+dify
+> + *  it under the terms of the GNU General Public License as publishe=
+d by
+> + *  the Free Software Foundation; version 2 of the License.
+> + *
+> + *  This program is distributed in the hope that it will be useful, =
+but
+> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GN=
+U
+> + *  General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public Licens=
+e along
+> + *  with this program; if not, write to the Free Software Foundation=
+, Inc.,
+> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> + *
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
+~~~~~~~~~
+> + */
+> +#ifndef __THERMAL_HWMON_H__
+> +#define __THERMAL_HWMON_H__
+> +
+> +#include <linux/thermal.h>
+> +
+> +#ifdef CONFIG_THERMAL_HWMON
+> +int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz);
+> +void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz);
+> +#else
+> +static int
+> +thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+> +{
+> +	return 0;
+> +}
+> +
+> +static void
+> +thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+> +{
+> +}
+> +#endif
+> +
+
+I'd prefer use "inline" here.
+
+thanks,
+rui
+
+> +#endif /* __THERMAL_HWMON_H__ */
+
+
