@@ -1,16 +1,16 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Sat, 17 Aug 2013 08:13:06 +1000
-Message-ID: <1376691186.25016.4.camel@pasglop>
+Subject: Re: [RFC PATCH v2 4/4] of: move of_get_cpu_node implementation to
+ DT core library
+Date: Sat, 17 Aug 2013 08:14:33 +1000
+Message-ID: <1376691273.25016.5.camel@pasglop>
 References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,37 +25,17 @@ Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org, Michal Simek <m
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
-> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
-> +                       const char *prop_name, int cpu, unsigned int
-> *thread)
-> +{
-> +       const __be32 *cell;
-> +       int ac, prop_len, tid;
-> +       u64 hwid;
-> +
-> +       ac = of_n_addr_cells(cpun);
-> +       cell = of_get_property(cpun, prop_name, &prop_len);
-> +       if (!cell)
-> +               return false;
-> +       prop_len /= sizeof(*cell);
-> +       for (tid = 0; tid < prop_len; tid++) {
-> +               hwid = of_read_number(cell, ac);
-> +               if (arch_match_cpu_phys_id(cpu, hwid)) {
-> +                       if (thread)
-> +                               *thread = tid;
-> +                       return true;
-> +               }
-> +               cell += ac;
-> +       }
-> +       return false;
-> +}
+> +#ifdef CONFIG_PPC
+> +               /* Check for historical "ibm,ppc-interrupt-server#s" property
+> +                * for thread ids on PowerPC. If it doesn't exist fallback to
+> +                * standard "reg" property.
+> +                */
+> +               if (__of_find_n_match_cpu_property(cpun,
+> +                               "ibm,ppc-interrupt-server#s", cpu, thread))
+> +                       return cpun;
+> +#endif
 
-The only problem I can see here is if "ac" is not 1, that will not work
-for the ibm,ppc-interrupt-server#s case. IE. The latter is always 1 cell
-per entry, only "reg" depends on #address-cells.
-
-However that's only a theorical problem since on ppc #address-cells of
-/cpus is always 1...
+It's not "historical". It's still very much in use and well defined in PAPR :-)
 
 Cheers,
 Ben.
