@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/34] cpufreq: acpi: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:54:59 +0530
-Message-ID: <333bf5868dfbfb6de474f060dc216fa6d33848e2.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 05/34] cpufreq: blackfin: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:02 +0530
+Message-ID: <f2d1c020e86a1b95fa38eab1d127bb9645e01b3c.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Steven Miao <realmz6@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,55 +32,68 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
+Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ drivers/cpufreq/blackfin-cpufreq.c | 22 +++++++---------------
+ 1 file changed, 7 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 7536e7d..6b00cd8 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -428,14 +428,10 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- {
- 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
- 	struct acpi_processor_performance *perf;
+diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+index 12528b2..e9e63fc 100644
+--- a/drivers/cpufreq/blackfin-cpufreq.c
++++ b/drivers/cpufreq/blackfin-cpufreq.c
+@@ -132,27 +132,23 @@ static int bfin_target(struct cpufreq_policy *policy, unsigned int index)
+ #ifndef CONFIG_BF60x
+ 	unsigned int plldiv;
+ #endif
 -	struct cpufreq_freqs freqs;
- 	struct drv_cmd cmd;
- 	unsigned int next_perf_state = 0; /* Index into perf table */
- 	int result = 0;
+ 	static unsigned long lpj_ref;
+ 	static unsigned int  lpj_ref_freq;
++	unsigned int old_freq, new_freq;
+ 	int ret = 0;
  
--	pr_debug("acpi_cpufreq_target %d (%d)\n",
--			data->freq_table[index].frequency, policy->cpu);
+ #if defined(CONFIG_CYCLES_CLOCKSOURCE)
+ 	cycles_t cycles;
+ #endif
+ 
+-	freqs.old = bfin_getfreq_khz(0);
+-	freqs.new = bfin_freq_table[index].frequency;
++	old_freq = bfin_getfreq_khz(0);
++	new_freq = bfin_freq_table[index].frequency;
+ 
+-	pr_debug("cpufreq: changing cclk to %lu; target = %u, oldfreq = %u\n",
+-			freqs.new, freqs.new, freqs.old);
 -
- 	if (unlikely(data == NULL ||
- 	     data->acpi_data == NULL || data->freq_table == NULL)) {
- 		return -ENODEV;
-@@ -483,23 +479,17 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 	else
- 		cmd.mask = cpumask_of(policy->cpu);
- 
--	freqs.old = perf->states[perf->state].core_frequency * 1000;
--	freqs.new = data->freq_table[index].frequency;
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--
- 	drv_write(&cmd);
- 
- 	if (acpi_pstate_strict) {
--		if (!check_freqs(cmd.mask, freqs.new, data)) {
-+		if (!check_freqs(cmd.mask, data->freq_table[index].frequency,
-+					data)) {
- 			pr_debug("acpi_cpufreq_target failed (%d)\n",
- 				policy->cpu);
- 			result = -EAGAIN;
--			freqs.new = freqs.old;
- 		}
+ #ifndef CONFIG_BF60x
+ 	plldiv = (bfin_read_PLL_DIV() & SSEL) | dpm_state_table[index].csel;
+ 	bfin_write_PLL_DIV(plldiv);
+ #else
+-	ret = cpu_set_cclk(policy->cpu, freqs.new * 1000);
++	ret = cpu_set_cclk(policy->cpu, new_freq * 1000);
+ 	if (ret != 0) {
+ 		WARN_ONCE(ret, "cpufreq set freq failed %d\n", ret);
+ 		return ret;
+@@ -168,17 +164,13 @@ static int bfin_target(struct cpufreq_policy *policy, unsigned int index)
+ #endif
+ 	if (!lpj_ref_freq) {
+ 		lpj_ref = loops_per_jiffy;
+-		lpj_ref_freq = freqs.old;
++		lpj_ref_freq = old_freq;
+ 	}
+-	if (freqs.new != freqs.old) {
++	if (new_freq != old_freq) {
+ 		loops_per_jiffy = cpufreq_scale(lpj_ref,
+-				lpj_ref_freq, freqs.new);
++				lpj_ref_freq, new_freq);
  	}
  
+-	/* TODO: just test case for cycles clock source, remove later */
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 -
- 	if (!result)
- 		perf->state = next_perf_state;
+-	pr_debug("cpufreq: done\n");
+ 	return ret;
+ }
  
 -- 
 1.7.12.rc2.18.g61b472e
