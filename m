@@ -1,16 +1,22 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 22/34] cpufreq: pasemi: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:19 +0530
-Message-ID: <dfbad8b084e7b64ab383fcd50ee458bbe717c5c5.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 23/34] cpufreq: pmac: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:20 +0530
+Message-ID: <673811dacec594f14dd42197450f4a5b62e9b20c.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:65351 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755062Ab3HPC2n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Aug 2013 22:28:43 -0400
+Received: by mail-pa0-f43.google.com with SMTP id hz10so1338239pad.30
+        for <linux-pm@vger.kernel.org>; Thu, 15 Aug 2013 19:28:43 -0700 (PDT)
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
 
@@ -34,50 +40,109 @@ Some related minor cleanups are also done along with it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pasemi-cpufreq.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+ drivers/cpufreq/pmac32-cpufreq.c | 20 ++++----------------
+ drivers/cpufreq/pmac64-cpufreq.c | 18 +-----------------
+ 2 files changed, 5 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index aaee5fa..4d69958 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -51,8 +51,6 @@
- static void __iomem *sdcpwr_mapbase;
- static void __iomem *sdcasr_mapbase;
- 
--static DEFINE_MUTEX(pas_switch_mutex);
--
- /* Current astate, is used when waking up from power savings on
-  * one core, in case the other core has switched states during
-  * the idle time.
-@@ -249,15 +247,8 @@ static int pas_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- static int pas_cpufreq_target(struct cpufreq_policy *policy,
- 			      unsigned int pas_astate_new)
- {
--	struct cpufreq_freqs freqs;
- 	int i;
- 
--	freqs.old = policy->cur;
--	freqs.new = pas_freqs[pas_astate_new].frequency;
--
--	mutex_lock(&pas_switch_mutex);
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--
- 	pr_debug("setting frequency for cpu %d to %d kHz, 1/%d of max frequency\n",
- 		 policy->cpu,
- 		 pas_freqs[pas_astate_new].frequency,
-@@ -268,10 +259,7 @@ static int pas_cpufreq_target(struct cpufreq_policy *policy,
- 	for_each_online_cpu(i)
- 		set_astate(i, pas_astate_new);
- 
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--	mutex_unlock(&pas_switch_mutex);
--
--	ppc_proc_freq = freqs.new * 1000ul;
-+	ppc_proc_freq = pas_freqs[pas_astate_new].frequency * 1000ul;
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 47c227c..c8f5d2c 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -330,21 +330,11 @@ static int pmu_set_cpu_speed(int low_speed)
  	return 0;
  }
  
+-static int do_set_cpu_speed(struct cpufreq_policy *policy, int speed_mode,
+-		int notify)
++static int do_set_cpu_speed(struct cpufreq_policy *policy, int speed_mode)
+ {
+-	struct cpufreq_freqs freqs;
+ 	unsigned long l3cr;
+ 	static unsigned long prev_l3cr;
+ 
+-	freqs.old = cur_freq;
+-	freqs.new = (speed_mode == CPUFREQ_HIGH) ? hi_freq : low_freq;
+-
+-	if (freqs.old == freqs.new)
+-		return 0;
+-
+-	if (notify)
+-		cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 	if (speed_mode == CPUFREQ_LOW &&
+ 	    cpu_has_feature(CPU_FTR_L3CR)) {
+ 		l3cr = _get_L3CR();
+@@ -360,8 +350,6 @@ static int do_set_cpu_speed(struct cpufreq_policy *policy, int speed_mode,
+ 		if ((prev_l3cr & L3CR_L3E) && l3cr != prev_l3cr)
+ 			_set_L3CR(prev_l3cr);
+ 	}
+-	if (notify)
+-		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 	cur_freq = (speed_mode == CPUFREQ_HIGH) ? hi_freq : low_freq;
+ 
+ 	return 0;
+@@ -377,7 +365,7 @@ static int pmac_cpufreq_target(	struct cpufreq_policy *policy,
+ {
+ 	int		rc;
+ 
+-	rc = do_set_cpu_speed(policy, index, 1);
++	rc = do_set_cpu_speed(policy, index);
+ 
+ 	ppc_proc_freq = cur_freq * 1000ul;
+ 	return rc;
+@@ -424,7 +412,7 @@ static int pmac_cpufreq_suspend(struct cpufreq_policy *policy)
+ 	no_schedule = 1;
+ 	sleep_freq = cur_freq;
+ 	if (cur_freq == low_freq && !is_pmu_based)
+-		do_set_cpu_speed(policy, CPUFREQ_HIGH, 0);
++		do_set_cpu_speed(policy, CPUFREQ_HIGH);
+ 	return 0;
+ }
+ 
+@@ -441,7 +429,7 @@ static int pmac_cpufreq_resume(struct cpufreq_policy *policy)
+ 	 * probably high speed due to our suspend() routine
+ 	 */
+ 	do_set_cpu_speed(policy, sleep_freq == low_freq ?
+-			 CPUFREQ_LOW : CPUFREQ_HIGH, 0);
++			 CPUFREQ_LOW : CPUFREQ_HIGH);
+ 
+ 	ppc_proc_freq = cur_freq * 1000ul;
+ 
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index 63f9642..2557f16 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -78,8 +78,6 @@ static void (*g5_switch_volt)(int speed_mode);
+ static int (*g5_switch_freq)(int speed_mode);
+ static int (*g5_query_freq)(void);
+ 
+-static DEFINE_MUTEX(g5_switch_mutex);
+-
+ static unsigned long transition_latency;
+ 
+ #ifdef CONFIG_PMAC_SMU
+@@ -313,21 +311,7 @@ static int g5_pfunc_query_freq(void)
+ 
+ static int g5_cpufreq_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+-	struct cpufreq_freqs freqs;
+-	int rc;
+-
+-	mutex_lock(&g5_switch_mutex);
+-
+-	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
+-	freqs.new = g5_cpu_freqs[index].frequency;
+-
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+-	rc = g5_switch_freq(index);
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-
+-	mutex_unlock(&g5_switch_mutex);
+-
+-	return rc;
++	return g5_switch_freq(index);
+ }
+ 
+ static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
 -- 
 1.7.12.rc2.18.g61b472e
 
