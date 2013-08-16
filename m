@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 34/34] cpufreq: tegra: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:31 +0530
-Message-ID: <ed605b862dbdea6f40edcd104c88ab909be1381f.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 10/34] cpufreq: e_powersaver: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:07 +0530
+Message-ID: <ae5da4075c10279e33559999bed0fcf9b922c72c.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,55 +32,72 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 25 +++++--------------------
- 1 file changed, 5 insertions(+), 20 deletions(-)
+ drivers/cpufreq/e_powersaver.c | 23 +++--------------------
+ 1 file changed, 3 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index 3c2b12b..b376b67 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -102,12 +102,8 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 		unsigned long rate)
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index b39c4ef..9012b8b 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -107,15 +107,9 @@ static int eps_set_state(struct eps_cpu_data *centaur,
+ 			 struct cpufreq_policy *policy,
+ 			 u32 dest_state)
  {
- 	int ret = 0;
 -	struct cpufreq_freqs freqs;
+ 	u32 lo, hi;
+-	int err = 0;
+ 	int i;
  
--	freqs.old = tegra_getspeed(0);
--	freqs.new = rate;
--
--	if (freqs.old == freqs.new)
-+	if (tegra_getspeed(0) == rate)
- 		return ret;
- 
- 	/*
-@@ -121,21 +117,10 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 	else
- 		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
- 
+-	freqs.old = eps_get(policy->cpu);
+-	freqs.new = centaur->fsb * ((dest_state >> 8) & 0xff);
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 -
--#ifdef CONFIG_CPU_FREQ_DEBUG
--	printk(KERN_DEBUG "cpufreq-tegra: transition: %u --> %u\n",
--	       freqs.old, freqs.new);
--#endif
+ 	/* Wait while CPU is busy */
+ 	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
+ 	i = 0;
+@@ -124,8 +118,7 @@ static int eps_set_state(struct eps_cpu_data *centaur,
+ 		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
+ 		i++;
+ 		if (unlikely(i > 64)) {
+-			err = -ENODEV;
+-			goto postchange;
++			return -ENODEV;
+ 		}
+ 	}
+ 	/* Set new multiplier and voltage */
+@@ -137,16 +130,10 @@ static int eps_set_state(struct eps_cpu_data *centaur,
+ 		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
+ 		i++;
+ 		if (unlikely(i > 64)) {
+-			err = -ENODEV;
+-			goto postchange;
++			return -ENODEV;
+ 		}
+ 	} while (lo & ((1 << 16) | (1 << 17)));
+ 
+-	/* Return current frequency */
+-postchange:
+-	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
+-	freqs.new = centaur->fsb * ((lo >> 8) & 0xff);
 -
--	ret = tegra_cpu_clk_set_rate(freqs.new * 1000);
--	if (ret) {
--		pr_err("cpu-tegra: Failed to set cpu frequency to %d kHz\n",
--			freqs.new);
+ #ifdef DEBUG
+ 	{
+ 	u8 current_multiplier, current_voltage;
+@@ -161,11 +148,7 @@ postchange:
+ 		current_multiplier);
+ 	}
+ #endif
+-	if (err)
 -		freqs.new = freqs.old;
--	}
 -
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-+	ret = tegra_cpu_clk_set_rate(rate * 1000);
-+	if (ret)
-+		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
-+			rate);
- 
- 	return ret;
+-	return err;
++	return 0;
  }
+ 
+ static int eps_target(struct cpufreq_policy *policy, unsigned int index)
 -- 
 1.7.12.rc2.18.g61b472e
+
