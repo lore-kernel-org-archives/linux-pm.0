@@ -1,16 +1,22 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 04/34] cpufreq: at32ap: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:01 +0530
-Message-ID: <1507bf552f7f9f61197c599236be870e739b337c.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 06/34] cpufreq: cpu0: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:03 +0530
+Message-ID: <c3ce6b7d589113f149f8e1aaac82a6e6ce857a70.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:54416 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754267Ab3HPC0g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Aug 2013 22:26:36 -0400
+Received: by mail-pd0-f180.google.com with SMTP id y10so1581757pdj.39
+        for <linux-pm@vger.kernel.org>; Thu, 15 Aug 2013 19:26:35 -0700 (PDT)
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
 
 Most of the drivers do following in their ->target_index() routines:
 
@@ -32,53 +38,100 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Cc: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/at32ap-cpufreq.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 33 ++++++++++++---------------------
+ 1 file changed, 12 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-index 81d0752..856ad80 100644
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ b/drivers/cpufreq/at32ap-cpufreq.c
-@@ -37,27 +37,23 @@ static unsigned long	loops_per_jiffy_ref;
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 4014925..ddd9010 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -36,20 +36,19 @@ static unsigned int cpu0_get_speed(unsigned int cpu)
  
- static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
  {
 -	struct cpufreq_freqs freqs;
+ 	struct opp *opp;
+ 	unsigned long volt = 0, volt_old = 0, tol = 0;
 +	unsigned int old_freq, new_freq;
+ 	long freq_Hz, freq_exact;
+ 	int ret;
  
--	freqs.old = at32_get_speed(0);
--	freqs.new = freq_table[index].frequency;
-+	old_freq = at32_get_speed(0);
-+	new_freq = freq_table[index].frequency;
- 
- 	if (!ref_freq) {
--		ref_freq = freqs.old;
-+		ref_freq = old_freq;
- 		loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
- 	}
+ 	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
+ 	if (freq_Hz < 0)
+ 		freq_Hz = freq_table[index].frequency * 1000;
+-	freq_exact = freq_Hz;
+-	freqs.new = freq_Hz / 1000;
+-	freqs.old = clk_get_rate(cpu_clk) / 1000;
  
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--	if (freqs.old < freqs.new)
-+	if (old_freq < new_freq)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
--				loops_per_jiffy_ref, ref_freq, freqs.new);
--	clk_set_rate(cpuclk, freqs.new * 1000);
--	if (freqs.new < freqs.old)
-+				loops_per_jiffy_ref, ref_freq, new_freq);
-+	clk_set_rate(cpuclk, new_freq * 1000);
-+	if (new_freq < old_freq)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
--				loops_per_jiffy_ref, ref_freq, freqs.new);
++	freq_exact = freq_Hz;
++	new_freq = freq_Hz / 1000;
++	old_freq = clk_get_rate(cpu_clk) / 1000;
+ 
+ 	if (!IS_ERR(cpu_reg)) {
+ 		rcu_read_lock();
+@@ -57,9 +56,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 		if (IS_ERR(opp)) {
+ 			rcu_read_unlock();
+ 			pr_err("failed to find OPP for %ld\n", freq_Hz);
+-			freqs.new = freqs.old;
+-			ret = PTR_ERR(opp);
+-			goto post_notify;
++			return PTR_ERR(opp);
+ 		}
+ 		volt = opp_get_voltage(opp);
+ 		rcu_read_unlock();
+@@ -68,16 +65,15 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	}
+ 
+ 	pr_debug("%u MHz, %ld mV --> %u MHz, %ld mV\n",
+-		 freqs.old / 1000, volt_old ? volt_old / 1000 : -1,
+-		 freqs.new / 1000, volt ? volt / 1000 : -1);
++		 old_freq / 1000, volt_old ? volt_old / 1000 : -1,
++		 new_freq / 1000, volt ? volt / 1000 : -1);
+ 
+ 	/* scaling up?  scale voltage before frequency */
+-	if (!IS_ERR(cpu_reg) && freqs.new > freqs.old) {
++	if (!IS_ERR(cpu_reg) && new_freq > old_freq) {
+ 		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+ 		if (ret) {
+ 			pr_err("failed to scale voltage up: %d\n", ret);
+-			freqs.new = freqs.old;
+-			goto post_notify;
++			return ret;
+ 		}
+ 	}
+ 
+@@ -86,23 +82,18 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 		pr_err("failed to set clock rate: %d\n", ret);
+ 		if (!IS_ERR(cpu_reg))
+ 			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
+-		freqs.new = freqs.old;
+-		goto post_notify;
++		return ret;
+ 	}
+ 
+ 	/* scaling down?  scale voltage after frequency */
+-	if (!IS_ERR(cpu_reg) && freqs.new < freqs.old) {
++	if (!IS_ERR(cpu_reg) && new_freq < old_freq) {
+ 		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+ 		if (ret) {
+ 			pr_err("failed to scale voltage down: %d\n", ret);
+-			clk_set_rate(cpu_clk, freqs.old * 1000);
+-			freqs.new = freqs.old;
++			clk_set_rate(cpu_clk, old_freq * 1000);
+ 		}
+ 	}
+ 
+-post_notify:
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 -
--	pr_debug("cpufreq: set frequency %u Hz\n", freqs.new * 1000);
-+				loops_per_jiffy_ref, ref_freq, new_freq);
- 
- 	return 0;
+ 	return ret;
  }
+ 
 -- 
 1.7.12.rc2.18.g61b472e
 
