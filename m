@@ -1,48 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management fix for v3.11-rc6
-Date: Fri, 16 Aug 2013 15:53:17 +0200
-Message-ID: <4954983.4OnybMElUM@vostro.rjw.lan>
+From: "Roussel, Daniel" <droussel@olhcc.edu>
+Subject: It is Private
+Date: Fri, 16 Aug 2013 13:44:41 +0000
+Message-ID: <5F01BFF2D455C0448CD3A8E018CC7FAFB47E8224__2343.84137806973$1376661048$gmane$org@VSP-3.hcc.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:45432 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330Ab3HPNms (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 16 Aug 2013 09:42:48 -0400
+Received: from mailman.olhcc.edu ([66.210.239.126]:42583 "EHLO
+	mailman.olhcc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751737Ab3HPNuL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 09:50:11 -0400
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Linus,
+It is Private
 
-Please pull from the git repository at
+I am George Daniels, a Banker and credit system programmer (HSBC bank).
+I saw your email address while browsing through  the bank D.T.C Screen in my office yesterday so I decided to use this very chance to know you. I believe we should use every opportunity to know each other better. However, I am contacting you for obvious reason which you will understand.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-3.11-rc6
+I am sending this mail just to know if this email address is OK,
+reply me back so that I will send  more details to you.
+I have a very important thing to discuss with you, I look forward to receiving your response at
+georgedaniels@postino.net<mailto:georgedaniels@postino.net>. Have a pleasant day.
 
-to receive one power management fix for v3.11-rc6 as
-commit 40fea92ffb5fa0ef26d10ae0fe5688bc8e61c791
-
-  PM / QoS: Fix workqueue deadlock when using pm_qos_update_request_timeout()
-
-on top of commit d4e4ab86bcba5a72779c43dc1459f71fea3d89c8
-
-  Linux 3.11-rc5
-
-This fixes a deadlock introduced by the removal of delayed_work_pending()
-checks from kernel/power/qos.c in 3.9, so it is stable material.
-
-Thanks!
-
-
----------------
-
-Stephen Boyd (1):
-      PM / QoS: Fix workqueue deadlock when using pm_qos_update_request_timeout()
-
----------------
-
- kernel/power/qos.c |   20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
-
+George Daniels
