@@ -1,35 +1,67 @@
-From: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: System suspend states and device driver suspend() callback
-Date: Fri, 16 Aug 2013 17:13:42 +0000
-Message-ID: <02318724-F4F7-4D53-9926-872E9417F672@freescale.com>
-References: <CADRPPNSD+uj_t5+qbNW29y7SuJkB_vMck-DGFJFV4A0AmPC6pQ@mail.gmail.com>,<17024788.0xFN8jEV59@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH v2 0/4] DT: move of_get_cpu_node from PPC to DT core
+Date: Fri, 16 Aug 2013 18:39:49 +0100
+Message-ID: <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db9lp0249.outbound.messaging.microsoft.com ([213.199.154.249]:28557
-	"EHLO db9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752125Ab3HPRNr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 13:13:47 -0400
-In-Reply-To: <17024788.0xFN8jEV59@vostro.rjw.lan>
-Content-Language: zh-CN
+Received: from service87.mimecast.com ([91.220.42.44]:38201 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754177Ab3HPRju (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 13:39:50 -0400
+In-Reply-To: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Sudeep.KarkadaNagesha@arm.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-DQoNCtTaIDIwMTMtOC0xNqOsz8LO5zc6MjKjrCJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0BzaXNr
-LnBsPiDQtLXAo7oNCg0KPiBPbiBGcmlkYXksIEF1Z3VzdCAxNiwgMjAxMyAwNDowNjoyNiBQTSBM
-aSBZYW5nIHdyb3RlOg0KPj4gSGkgR3V5cywNCj4+IA0KPj4gSXMgdGhlcmUgYSBzdGFuZGFyZCB3
-YXkgZm9yIHRoZSBkZXZpY2UgZHJpdmVycyB0byBrbm93IGlmIHRoZSBzeXN0ZW0NCj4+IGlzIGdv
-aW5nIHRvIKGwc3RhbmRieaGxIG1vZGUgb3IgobBtZW2hsSBtb2RlIHdoZW4gdGhlIHN1c3BlbmQo
-KSBjYWxsYmFja3MNCj4+IGFyZSBjYWxsZWQ/DQo+IA0KPiBObywgdGhlcmUncyBub25lLg0KPiAN
-Cj4gV2hhdCBkbyB5b3UgbmVlZCB0aGF0IGZvcj8NCg0KU29tZSBjaGlwcyBsaWtlIG91cnMgYXJl
-IHB1dHRpbmcgdGhlIG9uLWNoaXAgZGV2aWNlcyBpbnRvIGRpZmZlcmVudCBsb3cgcG93ZXIgc3Rh
-dGVzIHdoZW4gZW50ZXJpbmcgZGlmZmVyZW50IHN5c3RlbSBsb3cgcG93ZXIgc3RhdGVzLiAgV2hl
-biB3ZSBlbnRlciBzeXN0ZW0gc3RhbmRieSwgb24tY2hpcCBkZXZpY2VzIGFyZSBjbG9jayBnYXRl
-ZC4gIFdoaWxlIGVudGVyaW5nIHN1c3BlbmQgdG8gcmFtLCBvbi1jaGlwIGRldmljZXMgYXJlIHBv
-d2VyIGdhdGVkLiAgV2Ugd2FudCB0byBkcml2ZXIgdG8gYWN0IGRpZmZlcmVudGx5IHRvbyB3aGVu
-IGVudGVyaW5nIGRpZmZlcmVudCBzdXNwZW5kIHN0YXRlcy4NCg0KLSBMZW8NCg0KPiANCj4gUmFm
-YWVsDQo+IA0KPiANCg==
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+
+Hi,
+
+This series needs to be prepended with the original series[1][2][3]
+Except the first patch in the original series(which is merged into this
+as last patch), there is no other change(apart from function signature)
+I am posting only this part for feedback separately for review as the
+original series is already reviewed and acked.
+
+v1->v2:
+- Fixed an issue - updating cell pointer
+- Documentated in arch_match_cpu_phys_id that phys_id are values read
+  from the device tree only in the weak definition
+
+[Since first 2 patches have not changed, microblaze and openrisc lists are
+bouncing for non-members, I am not resending them again. Michal(for
+microblaze) has acked when it was first pointed. I am waiting for response
+from Jonas(for openrisc)]
+
+Rob, Ben,
+
+If you are OK with these patches and ACK, I can combine and post the comple=
+te
+series.
+
+Regards,
+Sudeep
+
+Sudeep KarkadaNagesha (4):
+  microblaze: remove undefined of_get_cpu_node declaration
+  openrisc: remove undefined of_get_cpu_node declaration
+  powerpc: refactor of_get_cpu_node to support other architectures
+  of: move of_get_cpu_node implementation to DT core library
+
+ arch/microblaze/include/asm/prom.h |  3 --
+ arch/openrisc/include/asm/prom.h   |  3 --
+ arch/powerpc/include/asm/prom.h    |  3 --
+ arch/powerpc/kernel/prom.c         | 43 +----------------
+ drivers/of/base.c                  | 96 ++++++++++++++++++++++++++++++++++=
+++++
+ include/linux/cpu.h                |  1 +
+ include/linux/of.h                 |  7 +++
+ 7 files changed, 106 insertions(+), 50 deletions(-)
+
+--=20
+1.8.1.2
+
 
