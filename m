@@ -1,151 +1,61 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support other architectures
-Date: Fri, 16 Aug 2013 18:39:50 +0100
-Message-ID: <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Sat, 17 Aug 2013 08:13:06 +1000
+Message-ID: <1376691186.25016.4.camel@pasglop>
 References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:38189 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381Ab3HPRju (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 13:39:50 -0400
-In-Reply-To: <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+ <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org, Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
+> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
+> +                       const char *prop_name, int cpu, unsigned int
+> *thread)
+> +{
+> +       const __be32 *cell;
+> +       int ac, prop_len, tid;
+> +       u64 hwid;
+> +
+> +       ac = of_n_addr_cells(cpun);
+> +       cell = of_get_property(cpun, prop_name, &prop_len);
+> +       if (!cell)
+> +               return false;
+> +       prop_len /= sizeof(*cell);
+> +       for (tid = 0; tid < prop_len; tid++) {
+> +               hwid = of_read_number(cell, ac);
+> +               if (arch_match_cpu_phys_id(cpu, hwid)) {
+> +                       if (thread)
+> +                               *thread = tid;
+> +                       return true;
+> +               }
+> +               cell += ac;
+> +       }
+> +       return false;
+> +}
 
-Currently different drivers requiring to access cpu device node are
-parsing the device tree themselves. Since the ordering in the DT need
-not match the logical cpu ordering, the parsing logic needs to consider
-that. However, this has resulted in lots of code duplication and in some
-cases even incorrect logic.
+The only problem I can see here is if "ac" is not 1, that will not work
+for the ibm,ppc-interrupt-server#s case. IE. The latter is always 1 cell
+per entry, only "reg" depends on #address-cells.
 
-It's better to consolidate them by adding support for getting cpu
-device node for a given logical cpu index in DT core library. However
-logical to physical index mapping can be architecture specific.
+However that's only a theorical problem since on ppc #address-cells of
+/cpus is always 1...
 
-PowerPC has it's own implementation to get the cpu node for a given
-logical index.
-
-This patch refactors the current implementation of of_get_cpu_node.
-This in preparation to move the implementation to DT core library.
-It separates out the logical to physical mapping so that a default
-matching of the physical id to the logical cpu index can be added
-when moved to common code. Architecture specific code can override it.
-
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- arch/powerpc/kernel/prom.c | 76 ++++++++++++++++++++++++++++--------------=
-----
- 1 file changed, 47 insertions(+), 29 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index eb23ac9..fb12be6 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
- __initcall(prom_reconfig_setup);
- #endif
-=20
-+bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-+{
-+=09return (int)phys_id =3D=3D get_hard_smp_processor_id(cpu);
-+}
-+
-+static bool __of_find_n_match_cpu_property(struct device_node *cpun,
-+=09=09=09const char *prop_name, int cpu, unsigned int *thread)
-+{
-+=09const __be32 *cell;
-+=09int ac, prop_len, tid;
-+=09u64 hwid;
-+
-+=09ac =3D of_n_addr_cells(cpun);
-+=09cell =3D of_get_property(cpun, prop_name, &prop_len);
-+=09if (!cell)
-+=09=09return false;
-+=09prop_len /=3D sizeof(*cell);
-+=09for (tid =3D 0; tid < prop_len; tid++) {
-+=09=09hwid =3D of_read_number(cell, ac);
-+=09=09if (arch_match_cpu_phys_id(cpu, hwid)) {
-+=09=09=09if (thread)
-+=09=09=09=09*thread =3D tid;
-+=09=09=09return true;
-+=09=09}
-+=09=09cell +=3D ac;
-+=09}
-+=09return false;
-+}
-+
- /* Find the device node for a given logical cpu number, also returns the c=
-pu
-  * local thread number (index in ibm,interrupt-server#s) if relevant and
-  * asked for (non NULL)
-  */
- struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
- {
--=09int hardid;
--=09struct device_node *np;
-+=09struct device_node *cpun, *cpus;
-=20
--=09hardid =3D get_hard_smp_processor_id(cpu);
-+=09cpus =3D of_find_node_by_path("/cpus");
-+=09if (!cpus) {
-+=09=09pr_warn("Missing cpus node, bailing out\n");
-+=09=09return NULL;
-+=09}
-=20
--=09for_each_node_by_type(np, "cpu") {
--=09=09const u32 *intserv;
--=09=09unsigned int plen, t;
-+=09for_each_child_of_node(cpus, cpun) {
-+=09=09if (of_node_cmp(cpun->type, "cpu"))
-+=09=09=09continue;
-=20
--=09=09/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
--=09=09 * fallback to "reg" property and assume no threads
-+=09=09/* Check for historical "ibm,ppc-interrupt-server#s" property
-+=09=09 * for thread ids on PowerPC. If it doesn't exist fallback to
-+=09=09 * standard "reg" property.
- =09=09 */
--=09=09intserv =3D of_get_property(np, "ibm,ppc-interrupt-server#s",
--=09=09=09=09&plen);
--=09=09if (intserv =3D=3D NULL) {
--=09=09=09const u32 *reg =3D of_get_property(np, "reg", NULL);
--=09=09=09if (reg =3D=3D NULL)
--=09=09=09=09continue;
--=09=09=09if (*reg =3D=3D hardid) {
--=09=09=09=09if (thread)
--=09=09=09=09=09*thread =3D 0;
--=09=09=09=09return np;
--=09=09=09}
--=09=09} else {
--=09=09=09plen /=3D sizeof(u32);
--=09=09=09for (t =3D 0; t < plen; t++) {
--=09=09=09=09if (hardid =3D=3D intserv[t]) {
--=09=09=09=09=09if (thread)
--=09=09=09=09=09=09*thread =3D t;
--=09=09=09=09=09return np;
--=09=09=09=09}
--=09=09=09}
--=09=09}
-+=09=09if (__of_find_n_match_cpu_property(cpun,
-+=09=09=09=09"ibm,ppc-interrupt-server#s", cpu, thread))
-+=09=09=09return cpun;
-+
-+=09=09if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
-+=09=09=09return cpun;
- =09}
- =09return NULL;
- }
---=20
-1.8.1.2
-
-
+Cheers,
+Ben.
