@@ -1,62 +1,35 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
-Subject: Re: [PATCH 02/34] cpufreq: acpi: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 23:30:56 +0800
-Message-ID: <CAOLK0py25j2g+X0rCzDjxvFac1ZZcOS0y_sehTFYYwkz8FrUHg@mail.gmail.com>
-References: <cover.1376619363.git.viresh.kumar@linaro.org>
-	<333bf5868dfbfb6de474f060dc216fa6d33848e2.1376619363.git.viresh.kumar@linaro.org>
-	<CAOLK0pz7e8nQVnZY0a-j_Fd_kFOqF8ZS4tRfYw1S+25Lv8GoFQ@mail.gmail.com>
-	<CAOLK0pyVDSc6x1u8Ro6ng1dH8ELqc3P9jPHamgiXBn6sWDgm8w@mail.gmail.com>
-	<CAKohpom7yk3Zq5JABZ6T+Z_AcMn5G1hoswZK8T=viYv0fp0mcg@mail.gmail.com>
+From: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: System suspend states and device driver suspend() callback
+Date: Fri, 16 Aug 2013 17:13:42 +0000
+Message-ID: <02318724-F4F7-4D53-9926-872E9417F672@freescale.com>
+References: <CADRPPNSD+uj_t5+qbNW29y7SuJkB_vMck-DGFJFV4A0AmPC6pQ@mail.gmail.com>,<17024788.0xFN8jEV59@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f42.google.com ([209.85.216.42]:49134 "EHLO
-	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527Ab3HPPa5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 11:30:57 -0400
-In-Reply-To: <CAKohpom7yk3Zq5JABZ6T+Z_AcMn5G1hoswZK8T=viYv0fp0mcg@mail.gmail.com>
+Received: from mail-db9lp0249.outbound.messaging.microsoft.com ([213.199.154.249]:28557
+	"EHLO db9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752125Ab3HPRNr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 13:13:47 -0400
+In-Reply-To: <17024788.0xFN8jEV59@vostro.rjw.lan>
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger kernel org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 
-2013/8/16 Viresh Kumar <viresh.kumar@linaro.org>:
-> On 16 August 2013 13:24, Lan Tianyu <lantianyu1986@gmail.com> wrote:
->> Sorry for misoperation.
->
-> No Problem...
->
->>                 One concern. Target() callback may return before changing
->> cpufreq actually due to some check failures. After this change, prechange
->> event will be triggered when these check failures take place. I am not sure
->> whether this should be took into account.
->
-> Yes, if you see the first patch of this series, it takes this into
-> account.. In case
-> target() failed and returned an error, we simply notify the POST CHANGE
-> notification with old frequencies instead of new ones. I believe that would be
-> enough..
+DQoNCtTaIDIwMTMtOC0xNqOsz8LO5zc6MjKjrCJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0BzaXNr
+LnBsPiDQtLXAo7oNCg0KPiBPbiBGcmlkYXksIEF1Z3VzdCAxNiwgMjAxMyAwNDowNjoyNiBQTSBM
+aSBZYW5nIHdyb3RlOg0KPj4gSGkgR3V5cywNCj4+IA0KPj4gSXMgdGhlcmUgYSBzdGFuZGFyZCB3
+YXkgZm9yIHRoZSBkZXZpY2UgZHJpdmVycyB0byBrbm93IGlmIHRoZSBzeXN0ZW0NCj4+IGlzIGdv
+aW5nIHRvIKGwc3RhbmRieaGxIG1vZGUgb3IgobBtZW2hsSBtb2RlIHdoZW4gdGhlIHN1c3BlbmQo
+KSBjYWxsYmFja3MNCj4+IGFyZSBjYWxsZWQ/DQo+IA0KPiBObywgdGhlcmUncyBub25lLg0KPiAN
+Cj4gV2hhdCBkbyB5b3UgbmVlZCB0aGF0IGZvcj8NCg0KU29tZSBjaGlwcyBsaWtlIG91cnMgYXJl
+IHB1dHRpbmcgdGhlIG9uLWNoaXAgZGV2aWNlcyBpbnRvIGRpZmZlcmVudCBsb3cgcG93ZXIgc3Rh
+dGVzIHdoZW4gZW50ZXJpbmcgZGlmZmVyZW50IHN5c3RlbSBsb3cgcG93ZXIgc3RhdGVzLiAgV2hl
+biB3ZSBlbnRlciBzeXN0ZW0gc3RhbmRieSwgb24tY2hpcCBkZXZpY2VzIGFyZSBjbG9jayBnYXRl
+ZC4gIFdoaWxlIGVudGVyaW5nIHN1c3BlbmQgdG8gcmFtLCBvbi1jaGlwIGRldmljZXMgYXJlIHBv
+d2VyIGdhdGVkLiAgV2Ugd2FudCB0byBkcml2ZXIgdG8gYWN0IGRpZmZlcmVudGx5IHRvbyB3aGVu
+IGVudGVyaW5nIGRpZmZlcmVudCBzdXNwZW5kIHN0YXRlcy4NCg0KLSBMZW8NCg0KPiANCj4gUmFm
+YWVsDQo+IA0KPiANCg==
 
-Yes, I have seen it but I missed the following two patches because they
-are not in the linux-pm tree. You moved the cpufreq_frequency_table_target()
-to cpufreq core and before notifying PRE CHANGE notification. The major
-check has been done. Now I think it's ok. Thanks for explanation.
-
-http://www.spinics.net/lists/cpufreq/msg06970.html
-http://www.spinics.net/lists/cpufreq/msg06896.html
-
-Reviewed-by: Lan Tianyu <tianyu.lan@intel.com>
-
->
-> This is exactly what acpi-cpufreq and others are doing currently.
->
-> Hope I answered your question well?
->
-> --
-> viresh
-
-
-
--- 
-Best regards
-Tianyu Lan
