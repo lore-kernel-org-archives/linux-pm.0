@@ -1,39 +1,27 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 02/34] cpufreq: acpi: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 13:29:58 +0530
-Message-ID: <CAKohpom7yk3Zq5JABZ6T+Z_AcMn5G1hoswZK8T=viYv0fp0mcg@mail.gmail.com>
-References: <cover.1376619363.git.viresh.kumar@linaro.org>
-	<333bf5868dfbfb6de474f060dc216fa6d33848e2.1376619363.git.viresh.kumar@linaro.org>
-	<CAOLK0pz7e8nQVnZY0a-j_Fd_kFOqF8ZS4tRfYw1S+25Lv8GoFQ@mail.gmail.com>
-	<CAOLK0pyVDSc6x1u8Ro6ng1dH8ELqc3P9jPHamgiXBn6sWDgm8w@mail.gmail.com>
+From: Li Yang <leoli@freescale.com>
+Subject: System suspend states and device driver suspend() callback
+Date: Fri, 16 Aug 2013 16:06:26 +0800
+Message-ID: <CADRPPNSD+uj_t5+qbNW29y7SuJkB_vMck-DGFJFV4A0AmPC6pQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOLK0pyVDSc6x1u8Ro6ng1dH8ELqc3P9jPHamgiXBn6sWDgm8w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lan Tianyu <lantianyu1986@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger kernel org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f46.google.com ([209.85.215.46]:50955 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011Ab3HPIG3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 04:06:29 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 16 August 2013 13:24, Lan Tianyu <lantianyu1986@gmail.com> wrote:
-> Sorry for misoperation.
+Hi Guys,
 
-No Problem...
+Is there a standard way for the device drivers to know if the system
+is going to =E2=80=9Cstandby=E2=80=9D mode or =E2=80=9Cmem=E2=80=9D mod=
+e when the suspend() callbacks
+are called?
 
->                 One concern. Target() callback may return before changing
-> cpufreq actually due to some check failures. After this change, prechange
-> event will be triggered when these check failures take place. I am not sure
-> whether this should be took into account.
+Regards,
 
-Yes, if you see the first patch of this series, it takes this into
-account.. In case
-target() failed and returned an error, we simply notify the POST CHANGE
-notification with old frequencies instead of new ones. I believe that would be
-enough..
-
-This is exactly what acpi-cpufreq and others are doing currently.
-
-Hope I answered your question well?
-
---
-viresh
+Leo
