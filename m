@@ -1,103 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 10/34] cpufreq: e_powersaver: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:07 +0530
-Message-ID: <ae5da4075c10279e33559999bed0fcf9b922c72c.1376619363.git.viresh.kumar@linaro.org>
-References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
-References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Fri, 16 Aug 2013 14:50:01 +1000
+Message-ID: <1376628601.4255.138.camel@pasglop>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1376586580-5409-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org, Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au, linux@openrisc.net, linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Most of the drivers do following in their ->target_index() routines:
+On Thu, 2013-08-15 at 18:09 +0100, Sudeep KarkadaNagesha wrote:
+>                /* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
+>                  * fallback to "reg" property and assume no threads
+>                  */
+> -
 
-	struct cpufreq_freqs freqs;
-	freqs.old = old freq...
-	freqs.new = new freq...
+Oh and I forgot ... that comment is now wrong, since your code handles
+threads in the "reg" case...
 
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-
-	/* Change rate here */
-
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-
-This is replicated over all cpufreq drivers today and there doesn't exists a
-good enough reason why this shouldn't be moved to cpufreq core instead.
-
-Earlier patches have added support in cpufreq core to do cpufreq notification on
-frequency change, this one removes it from this driver.
-
-Some related minor cleanups are also done along with it.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/e_powersaver.c | 23 +++--------------------
- 1 file changed, 3 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
-index b39c4ef..9012b8b 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -107,15 +107,9 @@ static int eps_set_state(struct eps_cpu_data *centaur,
- 			 struct cpufreq_policy *policy,
- 			 u32 dest_state)
- {
--	struct cpufreq_freqs freqs;
- 	u32 lo, hi;
--	int err = 0;
- 	int i;
- 
--	freqs.old = eps_get(policy->cpu);
--	freqs.new = centaur->fsb * ((dest_state >> 8) & 0xff);
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--
- 	/* Wait while CPU is busy */
- 	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
- 	i = 0;
-@@ -124,8 +118,7 @@ static int eps_set_state(struct eps_cpu_data *centaur,
- 		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
- 		i++;
- 		if (unlikely(i > 64)) {
--			err = -ENODEV;
--			goto postchange;
-+			return -ENODEV;
- 		}
- 	}
- 	/* Set new multiplier and voltage */
-@@ -137,16 +130,10 @@ static int eps_set_state(struct eps_cpu_data *centaur,
- 		rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
- 		i++;
- 		if (unlikely(i > 64)) {
--			err = -ENODEV;
--			goto postchange;
-+			return -ENODEV;
- 		}
- 	} while (lo & ((1 << 16) | (1 << 17)));
- 
--	/* Return current frequency */
--postchange:
--	rdmsr(MSR_IA32_PERF_STATUS, lo, hi);
--	freqs.new = centaur->fsb * ((lo >> 8) & 0xff);
--
- #ifdef DEBUG
- 	{
- 	u8 current_multiplier, current_voltage;
-@@ -161,11 +148,7 @@ postchange:
- 		current_multiplier);
- 	}
- #endif
--	if (err)
--		freqs.new = freqs.old;
--
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--	return err;
-+	return 0;
- }
- 
- static int eps_target(struct cpufreq_policy *policy, unsigned int index)
--- 
-1.7.12.rc2.18.g61b472e
-
+Cheers,
+Ben.
