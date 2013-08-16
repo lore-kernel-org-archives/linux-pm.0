@@ -1,22 +1,16 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 29/34] cpufreq: sa11x0: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:26 +0530
-Message-ID: <d5201184e4b090e3be5fc55917b1c7565df4c878.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 28/34] cpufreq: s5pv210: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:25 +0530
+Message-ID: <18ddada60c1c5b96c6771eb6047a4d5703d3a136.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:61669 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755294Ab3HPC33 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Aug 2013 22:29:29 -0400
-Received: by mail-pd0-f177.google.com with SMTP id y10so1590282pdj.36
-        for <linux-pm@vger.kernel.org>; Thu, 15 Aug 2013 19:29:28 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
 
@@ -38,87 +32,76 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sa1100-cpufreq.c | 17 ++++++-----------
- drivers/cpufreq/sa1110-cpufreq.c | 12 ++----------
- 2 files changed, 8 insertions(+), 21 deletions(-)
+ drivers/cpufreq/s5pv210-cpufreq.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/sa1100-cpufreq.c b/drivers/cpufreq/sa1100-cpufreq.c
-index aa49a08..a89c47b 100644
---- a/drivers/cpufreq/sa1100-cpufreq.c
-+++ b/drivers/cpufreq/sa1100-cpufreq.c
-@@ -180,22 +180,17 @@ static void sa1100_update_dram_timings(int current_speed, int new_speed)
- static int sa1100_target(struct cpufreq_policy *policy, unsigned int ppcr)
- {
- 	unsigned int cur = sa11x0_getspeed(0);
--	struct cpufreq_freqs freqs;
-+	unsigned int new_freq;
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index 76a4177..efa1080 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -26,7 +26,6 @@
+ static struct clk *cpu_clk;
+ static struct clk *dmc0_clk;
+ static struct clk *dmc1_clk;
+-static struct cpufreq_freqs freqs;
+ static DEFINE_MUTEX(set_freq_lock);
  
--	freqs.old = cur;
--	freqs.new = sa11x0_freq_table[ppcr].frequency;
-+	new_freq = sa11x0_freq_table[ppcr].frequency;
+ /* APLL M,P,S values for 1G/800Mhz */
+@@ -179,6 +178,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 	unsigned int priv_index;
+ 	unsigned int pll_changing = 0;
+ 	unsigned int bus_speed_changing = 0;
++	unsigned int old_freq, new_freq;
+ 	int arm_volt, int_volt;
+ 	int ret = 0;
  
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--
--	if (freqs.new > cur)
--		sa1100_update_dram_timings(cur, freqs.new);
-+	if (new_freq > cur)
-+		sa1100_update_dram_timings(cur, new_freq);
+@@ -193,12 +193,12 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 		goto exit;
+ 	}
  
- 	PPCR = ppcr;
+-	freqs.old = s5pv210_getspeed(0);
+-	freqs.new = s5pv210_freq_table[index].frequency;
++	old_freq = s5pv210_getspeed(0);
++	new_freq = s5pv210_freq_table[index].frequency;
  
--	if (freqs.new < cur)
--		sa1100_update_dram_timings(cur, freqs.new);
--
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-+	if (new_freq < cur)
-+		sa1100_update_dram_timings(cur, new_freq);
+ 	/* Finding current running level index */
+ 	if (cpufreq_frequency_table_target(policy, s5pv210_freq_table,
+-					   freqs.old, CPUFREQ_RELATION_H,
++					   old_freq, CPUFREQ_RELATION_H,
+ 					   &priv_index)) {
+ 		ret = -EINVAL;
+ 		goto exit;
+@@ -207,7 +207,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 	arm_volt = dvs_conf[index].arm_volt;
+ 	int_volt = dvs_conf[index].int_volt;
  
- 	return 0;
- }
-diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
-index c00cf2b..0e52e80 100644
---- a/drivers/cpufreq/sa1110-cpufreq.c
-+++ b/drivers/cpufreq/sa1110-cpufreq.c
-@@ -232,15 +232,11 @@ sdram_update_refresh(u_int cpu_khz, struct sdram_params *sdram)
- static int sa1110_target(struct cpufreq_policy *policy, unsigned int ppcr)
- {
- 	struct sdram_params *sdram = &sdram_params;
--	struct cpufreq_freqs freqs;
- 	struct sdram_info sd;
- 	unsigned long flags;
- 	unsigned int unused;
- 
--	freqs.old = sa11x0_getspeed(0);
--	freqs.new = sa11x0_freq_table[ppcr].frequency;
--
--	sdram_calculate_timing(&sd, freqs.new, sdram);
-+	sdram_calculate_timing(&sd, sa11x0_freq_table[ppcr].frequency, sdram);
- 
- #if 0
- 	/*
-@@ -259,8 +255,6 @@ static int sa1110_target(struct cpufreq_policy *policy, unsigned int ppcr)
- 	sd.mdcas[2] = 0xaaaaaaaa;
- #endif
+-	if (freqs.new > freqs.old) {
++	if (new_freq > old_freq) {
+ 		ret = regulator_set_voltage(arm_regulator,
+ 				arm_volt, arm_volt_max);
+ 		if (ret)
+@@ -219,8 +219,6 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 			goto exit;
+ 	}
  
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 -
- 	/*
- 	 * The clock could be going away for some time.  Set the SDRAMs
- 	 * to refresh rapidly (every 64 memory clock cycles).  To get
-@@ -305,9 +299,7 @@ static int sa1110_target(struct cpufreq_policy *policy, unsigned int ppcr)
- 	/*
- 	 * Now, return the SDRAM refresh back to normal.
- 	 */
--	sdram_update_refresh(freqs.new, sdram);
--
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-+	sdram_update_refresh(sa11x0_freq_table[ppcr].frequency, sdram);
+ 	/* Check if there need to change PLL */
+ 	if ((index == L0) || (priv_index == L0))
+ 		pll_changing = 1;
+@@ -431,9 +429,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 		}
+ 	}
  
- 	return 0;
- }
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-
+-	if (freqs.new < freqs.old) {
++	if (new_freq < old_freq) {
+ 		regulator_set_voltage(int_regulator,
+ 				int_volt, int_volt_max);
+ 
 -- 
 1.7.12.rc2.18.g61b472e
-
