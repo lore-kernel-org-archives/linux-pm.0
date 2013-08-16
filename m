@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 31/34] cpufreq: sparc: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:28 +0530
-Message-ID: <a1899648402480a75183174ad084fb21fea78065.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 32/34] cpufreq: SPEAr: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:29 +0530
+Message-ID: <8ce6bd268bfae0bba7b6e5f7fa0914c2d1810cb9.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, spear-devel@list.st.com
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,71 +32,54 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: David S. Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
+Cc: spear-devel@list.st.com
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sparc-us2e-cpufreq.c | 7 -------
- drivers/cpufreq/sparc-us3-cpufreq.c  | 7 -------
- 2 files changed, 14 deletions(-)
+ drivers/cpufreq/spear-cpufreq.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/sparc-us2e-cpufreq.c b/drivers/cpufreq/sparc-us2e-cpufreq.c
-index 3bf5b8f..62aa23e 100644
---- a/drivers/cpufreq/sparc-us2e-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
-@@ -251,7 +251,6 @@ static int us2e_freq_target(struct cpufreq_policy *policy, unsigned int index)
- 	unsigned long new_bits, new_freq;
- 	unsigned long clock_tick, divisor, old_divisor, estar;
- 	cpumask_t cpus_allowed;
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index efacfa1..4ad35a5 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -107,12 +107,10 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
+ static int spear_cpufreq_target(struct cpufreq_policy *policy,
+ 		unsigned int index)
+ {
 -	struct cpufreq_freqs freqs;
+ 	unsigned long newfreq;
+ 	struct clk *srcclk;
+ 	int ret, mult = 1;
  
- 	cpumask_copy(&cpus_allowed, tsk_cpus_allowed(current));
- 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
-@@ -265,16 +264,10 @@ static int us2e_freq_target(struct cpufreq_policy *policy, unsigned int index)
+-	freqs.old = spear_cpufreq_get(0);
+ 	newfreq = spear_cpufreq.freq_tbl[index].frequency * 1000;
  
- 	old_divisor = estar_to_divisor(estar);
+ 	if (of_machine_is_compatible("st,spear1340")) {
+@@ -145,23 +143,14 @@ static int spear_cpufreq_target(struct cpufreq_policy *policy,
+ 		return newfreq;
+ 	}
  
--	freqs.old = clock_tick / old_divisor;
--	freqs.new = new_freq;
+-	freqs.new = newfreq / 1000;
+-	freqs.new /= mult;
+-
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 -
- 	if (old_divisor != divisor)
- 		us2e_transition(estar, new_bits, clock_tick * 1000,
- 				old_divisor, divisor);
+ 	if (mult == 2)
+ 		ret = spear1340_set_cpu_rate(srcclk, newfreq);
+ 	else
+ 		ret = clk_set_rate(spear_cpufreq.clk, newfreq);
+ 
+-	/* Get current rate after clk_set_rate, in case of failure */
+-	if (ret) {
++	if (ret)
+ 		pr_err("CPU Freq: cpu clk_set_rate failed: %d\n", ret);
+-		freqs.new = clk_get_rate(spear_cpufreq.clk) / 1000;
+-	}
  
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--
- 	set_cpus_allowed_ptr(current, &cpus_allowed);
+ 	return ret;
+ }
  
- 	return 0;
-diff --git a/drivers/cpufreq/sparc-us3-cpufreq.c b/drivers/cpufreq/sparc-us3-cpufreq.c
-index 2e54d55..724ffbd 100644
---- a/drivers/cpufreq/sparc-us3-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us3-cpufreq.c
-@@ -98,7 +98,6 @@ static int us3_freq_target(struct cpufreq_policy *policy, unsigned int index)
- 	unsigned int cpu = policy->cpu;
- 	unsigned long new_bits, new_freq, reg;
- 	cpumask_t cpus_allowed;
--	struct cpufreq_freqs freqs;
- 
- 	cpumask_copy(&cpus_allowed, tsk_cpus_allowed(current));
- 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
-@@ -124,16 +123,10 @@ static int us3_freq_target(struct cpufreq_policy *policy, unsigned int index)
- 
- 	reg = read_safari_cfg();
- 
--	freqs.old = get_current_freq(cpu, reg);
--	freqs.new = new_freq;
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--
- 	reg &= ~SAFARI_CFG_DIV_MASK;
- 	reg |= new_bits;
- 	write_safari_cfg(reg);
- 
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--
- 	set_cpus_allowed_ptr(current, &cpus_allowed);
- 
- 	return 0;
 -- 
 1.7.12.rc2.18.g61b472e
+
