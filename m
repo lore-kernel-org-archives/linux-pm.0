@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 28/34] cpufreq: s5pv210: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:25 +0530
-Message-ID: <18ddada60c1c5b96c6771eb6047a4d5703d3a136.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 30/34] cpufreq: sc520: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:27 +0530
+Message-ID: <f4529e4aed377bdcded17cd01e6a447c430bf460.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,76 +32,41 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/s5pv210-cpufreq.c | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
+ drivers/cpufreq/sc520_freq.c | 11 -----------
+ 1 file changed, 11 deletions(-)
 
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index 76a4177..efa1080 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -26,7 +26,6 @@
- static struct clk *cpu_clk;
- static struct clk *dmc0_clk;
- static struct clk *dmc1_clk;
--static struct cpufreq_freqs freqs;
- static DEFINE_MUTEX(set_freq_lock);
+diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
+index 6c86452..6adb354 100644
+--- a/drivers/cpufreq/sc520_freq.c
++++ b/drivers/cpufreq/sc520_freq.c
+@@ -56,17 +56,8 @@ static unsigned int sc520_freq_get_cpu_frequency(unsigned int cpu)
+ static int sc520_freq_target(struct cpufreq_policy *policy, unsigned int state)
+ {
  
- /* APLL M,P,S values for 1G/800Mhz */
-@@ -179,6 +178,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 	unsigned int priv_index;
- 	unsigned int pll_changing = 0;
- 	unsigned int bus_speed_changing = 0;
-+	unsigned int old_freq, new_freq;
- 	int arm_volt, int_volt;
- 	int ret = 0;
+-	struct cpufreq_freqs	freqs;
+ 	u8 clockspeed_reg;
  
-@@ -193,12 +193,12 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 		goto exit;
- 	}
- 
--	freqs.old = s5pv210_getspeed(0);
--	freqs.new = s5pv210_freq_table[index].frequency;
-+	old_freq = s5pv210_getspeed(0);
-+	new_freq = s5pv210_freq_table[index].frequency;
- 
- 	/* Finding current running level index */
- 	if (cpufreq_frequency_table_target(policy, s5pv210_freq_table,
--					   freqs.old, CPUFREQ_RELATION_H,
-+					   old_freq, CPUFREQ_RELATION_H,
- 					   &priv_index)) {
- 		ret = -EINVAL;
- 		goto exit;
-@@ -207,7 +207,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 	arm_volt = dvs_conf[index].arm_volt;
- 	int_volt = dvs_conf[index].int_volt;
- 
--	if (freqs.new > freqs.old) {
-+	if (new_freq > old_freq) {
- 		ret = regulator_set_voltage(arm_regulator,
- 				arm_volt, arm_volt_max);
- 		if (ret)
-@@ -219,8 +219,6 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 			goto exit;
- 	}
- 
+-	freqs.old = sc520_freq_get_cpu_frequency(0);
+-	freqs.new = sc520_freq_table[state].frequency;
+-
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 -
- 	/* Check if there need to change PLL */
- 	if ((index == L0) || (priv_index == L0))
- 		pll_changing = 1;
-@@ -431,9 +429,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 		}
- 	}
+-	pr_debug("attempting to set frequency to %i kHz\n",
+-			sc520_freq_table[state].frequency);
+-
+ 	local_irq_disable();
+ 
+ 	clockspeed_reg = *cpuctl & ~0x03;
+@@ -74,8 +65,6 @@ static int sc520_freq_target(struct cpufreq_policy *policy, unsigned int state)
+ 
+ 	local_irq_enable();
  
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 -
--	if (freqs.new < freqs.old) {
-+	if (new_freq < old_freq) {
- 		regulator_set_voltage(int_regulator,
- 				int_volt, int_volt_max);
+ 	return 0;
+ }
  
 -- 
 1.7.12.rc2.18.g61b472e
