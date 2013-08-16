@@ -1,27 +1,62 @@
-From: "Roussel, Daniel" <droussel@olhcc.edu>
-Subject: It is Private
-Date: Fri, 16 Aug 2013 13:44:41 +0000
-Message-ID: <5F01BFF2D455C0448CD3A8E018CC7FAFB47E8224__2343.84137806973$1376661048$gmane$org@VSP-3.hcc.local>
+From: Lan Tianyu <lantianyu1986@gmail.com>
+Subject: Re: [PATCH 02/34] cpufreq: acpi: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 23:30:56 +0800
+Message-ID: <CAOLK0py25j2g+X0rCzDjxvFac1ZZcOS0y_sehTFYYwkz8FrUHg@mail.gmail.com>
+References: <cover.1376619363.git.viresh.kumar@linaro.org>
+	<333bf5868dfbfb6de474f060dc216fa6d33848e2.1376619363.git.viresh.kumar@linaro.org>
+	<CAOLK0pz7e8nQVnZY0a-j_Fd_kFOqF8ZS4tRfYw1S+25Lv8GoFQ@mail.gmail.com>
+	<CAOLK0pyVDSc6x1u8Ro6ng1dH8ELqc3P9jPHamgiXBn6sWDgm8w@mail.gmail.com>
+	<CAKohpom7yk3Zq5JABZ6T+Z_AcMn5G1hoswZK8T=viYv0fp0mcg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailman.olhcc.edu ([66.210.239.126]:42583 "EHLO
-	mailman.olhcc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737Ab3HPNuL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 09:50:11 -0400
-Content-Language: en-US
+Received: from mail-qa0-f42.google.com ([209.85.216.42]:49134 "EHLO
+	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527Ab3HPPa5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2013 11:30:57 -0400
+In-Reply-To: <CAKohpom7yk3Zq5JABZ6T+Z_AcMn5G1hoswZK8T=viYv0fp0mcg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger kernel org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-It is Private
+2013/8/16 Viresh Kumar <viresh.kumar@linaro.org>:
+> On 16 August 2013 13:24, Lan Tianyu <lantianyu1986@gmail.com> wrote:
+>> Sorry for misoperation.
+>
+> No Problem...
+>
+>>                 One concern. Target() callback may return before changing
+>> cpufreq actually due to some check failures. After this change, prechange
+>> event will be triggered when these check failures take place. I am not sure
+>> whether this should be took into account.
+>
+> Yes, if you see the first patch of this series, it takes this into
+> account.. In case
+> target() failed and returned an error, we simply notify the POST CHANGE
+> notification with old frequencies instead of new ones. I believe that would be
+> enough..
 
-I am George Daniels, a Banker and credit system programmer (HSBC bank).
-I saw your email address while browsing through  the bank D.T.C Screen in my office yesterday so I decided to use this very chance to know you. I believe we should use every opportunity to know each other better. However, I am contacting you for obvious reason which you will understand.
+Yes, I have seen it but I missed the following two patches because they
+are not in the linux-pm tree. You moved the cpufreq_frequency_table_target()
+to cpufreq core and before notifying PRE CHANGE notification. The major
+check has been done. Now I think it's ok. Thanks for explanation.
 
-I am sending this mail just to know if this email address is OK,
-reply me back so that I will send  more details to you.
-I have a very important thing to discuss with you, I look forward to receiving your response at
-georgedaniels@postino.net<mailto:georgedaniels@postino.net>. Have a pleasant day.
+http://www.spinics.net/lists/cpufreq/msg06970.html
+http://www.spinics.net/lists/cpufreq/msg06896.html
 
-George Daniels
+Reviewed-by: Lan Tianyu <tianyu.lan@intel.com>
+
+>
+> This is exactly what acpi-cpufreq and others are doing currently.
+>
+> Hope I answered your question well?
+>
+> --
+> viresh
+
+
+
+-- 
+Best regards
+Tianyu Lan
