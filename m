@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 20/34] cpufreq: omap: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 07:55:17 +0530
-Message-ID: <f739f242fa9af3309bb454e2a885dd6dd3f80380.1376619363.git.viresh.kumar@linaro.org>
+Subject: [PATCH 19/34] cpufreq: maple: remove calls to cpufreq_notify_transition()
+Date: Fri, 16 Aug 2013 07:55:16 +0530
+Message-ID: <f25256fa5fc04dd5ddf585d1fea4d2ce7e196b56.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1376619363.git.viresh.kumar@linaro.org>
 References: <cover.1376619363.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,97 +32,47 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/omap-cpufreq.c | 39 ++++++++++++++-------------------------
- 1 file changed, 14 insertions(+), 25 deletions(-)
+ drivers/cpufreq/maple-cpufreq.c | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index 92d45e6..97610a3 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -53,15 +53,15 @@ static unsigned int omap_getspeed(unsigned int cpu)
+diff --git a/drivers/cpufreq/maple-cpufreq.c b/drivers/cpufreq/maple-cpufreq.c
+index b508147..45db7a2 100644
+--- a/drivers/cpufreq/maple-cpufreq.c
++++ b/drivers/cpufreq/maple-cpufreq.c
+@@ -69,8 +69,6 @@ static struct cpufreq_frequency_table maple_cpu_freqs[] = {
+  */
+ static int maple_pmode_cur;
  
- static int omap_target(struct cpufreq_policy *policy, unsigned int index)
+-static DEFINE_MUTEX(maple_switch_mutex);
+-
+ static const u32 *maple_pmode_data;
+ static int maple_pmode_max;
+ 
+@@ -133,21 +131,7 @@ static int maple_scom_query_freq(void)
+ static int maple_cpufreq_target(struct cpufreq_policy *policy,
+ 	unsigned int index)
  {
--	int r, ret = 0;
 -	struct cpufreq_freqs freqs;
-+	int r, ret;
- 	struct opp *opp;
- 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
-+	unsigned int old_freq, new_freq;
- 
--	freqs.old = omap_getspeed(policy->cpu);
--	freqs.new = freq_table[index].frequency;
-+	old_freq = omap_getspeed(policy->cpu);
-+	new_freq = freq_table[index].frequency;
- 
--	freq = freqs.new * 1000;
-+	freq = new_freq * 1000;
- 	ret = clk_round_rate(mpu_clk, freq);
- 	if (IS_ERR_VALUE(ret)) {
- 		dev_warn(mpu_dev,
-@@ -77,7 +77,7 @@ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
- 		if (IS_ERR(opp)) {
- 			rcu_read_unlock();
- 			dev_err(mpu_dev, "%s: unable to find MPU OPP for %d\n",
--				__func__, freqs.new);
-+				__func__, new_freq);
- 			return -EINVAL;
- 		}
- 		volt = opp_get_voltage(opp);
-@@ -87,43 +87,32 @@ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
- 	}
- 
- 	dev_dbg(mpu_dev, "cpufreq-omap: %u MHz, %ld mV --> %u MHz, %ld mV\n", 
--		freqs.old / 1000, volt_old ? volt_old / 1000 : -1,
--		freqs.new / 1000, volt ? volt / 1000 : -1);
+-	int rc;
 -
--	/* notifiers */
+-	mutex_lock(&maple_switch_mutex);
+-
+-	freqs.old = maple_cpu_freqs[maple_pmode_cur].frequency;
+-	freqs.new = maple_cpu_freqs[index].frequency;
+-
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-+		old_freq / 1000, volt_old ? volt_old / 1000 : -1,
-+		new_freq / 1000, volt ? volt / 1000 : -1);
- 
- 	/* scaling up?  scale voltage before frequency */
--	if (mpu_reg && (freqs.new > freqs.old)) {
-+	if (mpu_reg && (new_freq > old_freq)) {
- 		r = regulator_set_voltage(mpu_reg, volt - tol, volt + tol);
- 		if (r < 0) {
- 			dev_warn(mpu_dev, "%s: unable to scale voltage up.\n",
- 				 __func__);
--			freqs.new = freqs.old;
--			goto done;
-+			return r;
- 		}
- 	}
- 
--	ret = clk_set_rate(mpu_clk, freqs.new * 1000);
-+	ret = clk_set_rate(mpu_clk, new_freq * 1000);
- 
- 	/* scaling down?  scale voltage after frequency */
--	if (mpu_reg && (freqs.new < freqs.old)) {
-+	if (mpu_reg && (new_freq < old_freq)) {
- 		r = regulator_set_voltage(mpu_reg, volt - tol, volt + tol);
- 		if (r < 0) {
- 			dev_warn(mpu_dev, "%s: unable to scale voltage down.\n",
- 				 __func__);
--			ret = clk_set_rate(mpu_clk, freqs.old * 1000);
--			freqs.new = freqs.old;
--			goto done;
-+			clk_set_rate(mpu_clk, old_freq * 1000);
-+			return r;
- 		}
- 	}
- 
--	freqs.new = omap_getspeed(policy->cpu);
--
--done:
--	/* notifiers */
+-	rc = maple_scom_switch_freq(index);
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 -
- 	return ret;
+-	mutex_unlock(&maple_switch_mutex);
+-
+-	return rc;
++	return maple_scom_switch_freq(index);
  }
  
+ static unsigned int maple_cpufreq_get_speed(unsigned int cpu)
 -- 
 1.7.12.rc2.18.g61b472e
