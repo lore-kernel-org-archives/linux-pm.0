@@ -1,48 +1,89 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: System suspend states and device driver suspend() callback
-Date: Sat, 17 Aug 2013 01:53:36 +0200
-Message-ID: <35306580.ZCUI1aZasW@vostro.rjw.lan>
-References: <CADRPPNSD+uj_t5+qbNW29y7SuJkB_vMck-DGFJFV4A0AmPC6pQ@mail.gmail.com> <17024788.0xFN8jEV59@vostro.rjw.lan> <02318724-F4F7-4D53-9926-872E9417F672@freescale.com>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support other architectures
+Date: Sat, 17 Aug 2013 12:50:07 +0200
+Message-ID: <2032060.4bgTKOdEX2@flatron>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <02318724-F4F7-4D53-9926-872E9417F672@freescale.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Li Yang-R58472 <r58472@freescale.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f45.google.com ([209.85.214.45]:54953 "EHLO
+	mail-bk0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380Ab3HQKuN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 Aug 2013 06:50:13 -0400
+In-Reply-To: <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>
 
-On Friday, August 16, 2013 05:13:42 PM Li Yang-R58472 wrote:
->=20
-> =E5=9C=A8 2013-8-16=EF=BC=8C=E4=B8=8B=E5=8D=887:22=EF=BC=8C"Rafael J.=
- Wysocki" <rjw@sisk.pl> =E5=86=99=E9=81=93=EF=BC=9A
->=20
-> > On Friday, August 16, 2013 04:06:26 PM Li Yang wrote:
-> >> Hi Guys,
-> >>=20
-> >> Is there a standard way for the device drivers to know if the syst=
-em
-> >> is going to =E2=80=9Cstandby=E2=80=9D mode or =E2=80=9Cmem=E2=80=9D=
- mode when the suspend() callbacks
-> >> are called?
-> >=20
-> > No, there's none.
-> >=20
-> > What do you need that for?
->=20
-> Some chips like ours are putting the on-chip devices into different l=
-ow
-> power states when entering different system low power states.  When w=
-e enter
-> system standby, on-chip devices are clock gated.  While entering susp=
-end to
-> ram, on-chip devices are power gated.  We want to driver to act diffe=
-rently
-> too when entering different suspend states.
+Hi Sudeep,
 
-Can you possibly use platform suspend operations to implement that (in =
-analogy
-with ACPI suspend operations)?
+This looks good to me overall, but I have one more question inline.
 
-Rafael
+On Friday 16 of August 2013 18:39:50 Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Currently different drivers requiring to access cpu device node are
+> parsing the device tree themselves. Since the ordering in the DT need
+> not match the logical cpu ordering, the parsing logic needs to consider
+> that. However, this has resulted in lots of code duplication and in some
+> cases even incorrect logic.
+> 
+> It's better to consolidate them by adding support for getting cpu
+> device node for a given logical cpu index in DT core library. However
+> logical to physical index mapping can be architecture specific.
+> 
+> PowerPC has it's own implementation to get the cpu node for a given
+> logical index.
+> 
+> This patch refactors the current implementation of of_get_cpu_node.
+> This in preparation to move the implementation to DT core library.
+> It separates out the logical to physical mapping so that a default
+> matching of the physical id to the logical cpu index can be added
+> when moved to common code. Architecture specific code can override it.
+> 
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> ---
+>  arch/powerpc/kernel/prom.c | 76
+> ++++++++++++++++++++++++++++------------------ 1 file changed, 47
+> insertions(+), 29 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index eb23ac9..fb12be6 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
+>  __initcall(prom_reconfig_setup);
+>  #endif
+> 
+> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
+> +{
+> +	return (int)phys_id == get_hard_smp_processor_id(cpu);
+> +}
+> +
+> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
+> +			const char *prop_name, int cpu, unsigned int 
+*thread)
+> +{
+> +	const __be32 *cell;
+> +	int ac, prop_len, tid;
+> +	u64 hwid;
+> +
+> +	ac = of_n_addr_cells(cpun);
+> +	cell = of_get_property(cpun, prop_name, &prop_len);
+> +	if (!cell)
+> +		return false;
+
+I wonder how would this handle uniprocessor ARM (pre-v7) cores, for which 
+the updated bindings[1] define #address-cells = <0> and so no reg 
+property.
+
+[1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+
+Best regards,
+Tomasz
+
