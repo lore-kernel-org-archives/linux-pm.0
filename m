@@ -1,89 +1,109 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support other architectures
-Date: Sat, 17 Aug 2013 12:50:07 +0200
-Message-ID: <2032060.4bgTKOdEX2@flatron>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Ilari Stenroth <ilari.stenroth@gmail.com>
+Subject: Intel_powerclamp on Xeon E3v3 Haswell?
+Date: Sat, 17 Aug 2013 18:58:00 +0300
+Message-ID: <520F9D88.2050500@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f45.google.com ([209.85.214.45]:54953 "EHLO
-	mail-bk0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380Ab3HQKuN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 Aug 2013 06:50:13 -0400
-In-Reply-To: <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Received: from plane.gmane.org ([80.91.229.3]:42342 "EHLO plane.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753625Ab3HQQAF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 17 Aug 2013 12:00:05 -0400
+Received: from list by plane.gmane.org with local (Exim 4.69)
+	(envelope-from <gll-linux-pm2@m.gmane.org>)
+	id 1VAiv5-0004Kj-KW
+	for linux-pm@vger.kernel.org; Sat, 17 Aug 2013 18:00:03 +0200
+Received: from gw.stenroth.fi ([188.127.202.98])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Sat, 17 Aug 2013 18:00:03 +0200
+Received: from ilari.stenroth by gw.stenroth.fi with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Sat, 17 Aug 2013 18:00:03 +0200
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: Arjan Van De Ven <arjan.van.de.ven@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Hi Sudeep,
+Hi,
 
-This looks good to me overall, but I have one more question inline.
+Does somebody know why intel_powerclamp driver doesn't work on
+a Xeon E3v3 CPU? Tried it on E3-1265L v3 but the driver gave out errors:
+[  632.399837] intel_powerclamp: Start idle injection to reduce power
+[  632.400068] intel_powerclamp: pkg cstate counter not functional, abort
 
-On Friday 16 of August 2013 18:39:50 Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> Currently different drivers requiring to access cpu device node are
-> parsing the device tree themselves. Since the ordering in the DT need
-> not match the logical cpu ordering, the parsing logic needs to consider
-> that. However, this has resulted in lots of code duplication and in some
-> cases even incorrect logic.
-> 
-> It's better to consolidate them by adding support for getting cpu
-> device node for a given logical cpu index in DT core library. However
-> logical to physical index mapping can be architecture specific.
-> 
-> PowerPC has it's own implementation to get the cpu node for a given
-> logical index.
-> 
-> This patch refactors the current implementation of of_get_cpu_node.
-> This in preparation to move the implementation to DT core library.
-> It separates out the logical to physical mapping so that a default
-> matching of the physical id to the logical cpu index can be added
-> when moved to common code. Architecture specific code can override it.
-> 
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> ---
->  arch/powerpc/kernel/prom.c | 76
-> ++++++++++++++++++++++++++++------------------ 1 file changed, 47
-> insertions(+), 29 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index eb23ac9..fb12be6 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
->  __initcall(prom_reconfig_setup);
->  #endif
-> 
-> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-> +{
-> +	return (int)phys_id == get_hard_smp_processor_id(cpu);
-> +}
-> +
-> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
-> +			const char *prop_name, int cpu, unsigned int 
-*thread)
-> +{
-> +	const __be32 *cell;
-> +	int ac, prop_len, tid;
-> +	u64 hwid;
-> +
-> +	ac = of_n_addr_cells(cpun);
-> +	cell = of_get_property(cpun, prop_name, &prop_len);
-> +	if (!cell)
-> +		return false;
+cat /sys/kernel/debug/intel_powerclamp/powerclamp_calib 
+controlling cpu: 0
+pct confidence steady dynamic (compensation)
+0	0	0	0
+1	0	0	0
+2	0	0	0
+3	0	0	0
+4	0	0	0
+5	0	0	0
+6	0	0	0
+7	0	0	0
+8	0	0	0
+9	0	0	0
+10	0	0	0
+11	0	0	0
+12	0	0	0
+13	0	0	0
+14	0	0	0
+15	0	0	0
+16	0	0	0
+17	0	0	0
+18	0	0	0
+19	0	0	0
+20	0	0	0
+21	0	0	0
+22	0	0	0
+23	0	0	0
+24	0	0	0
+25	0	0	0
+26	0	0	0
+27	0	0	0
+28	0	0	0
+29	0	0	0
+30	0	0	0
+31	0	0	0
+32	0	0	0
+33	0	0	0
+34	0	0	0
+35	0	0	0
+36	0	0	0
+37	0	0	0
+38	0	0	0
+39	0	0	0
+40	0	0	0
+41	0	0	0
+42	0	0	0
+43	0	0	0
+44	0	0	0
+45	0	0	0
+46	0	0	0
+47	0	0	0
+48	0	0	0
+49	0	0	0
 
-I wonder how would this handle uniprocessor ARM (pre-v7) cores, for which 
-the updated bindings[1] define #address-cells = <0> and so no reg 
-property.
+I've applied a simple patch to make intel_powerclamp detect a CPU
+family 0x06 model 0x3c:
 
-[1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index b40b37c..bac481f 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -675,6 +675,7 @@ static const struct x86_cpu_id intel_powerclamp_ids[] = {
+        { X86_VENDOR_INTEL, 6, 0x2e},
+        { X86_VENDOR_INTEL, 6, 0x2f},
+        { X86_VENDOR_INTEL, 6, 0x3a},
++       { X86_VENDOR_INTEL, 6, 0x3c},
+        {}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
 
-Best regards,
-Tomasz
+
+--
+Ilari Stenroth
 
