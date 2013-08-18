@@ -1,46 +1,33 @@
 From: Kukjin Kim <kgene@kernel.org>
-Subject: RE: [PATCH 13/34] cpufreq: exynos5440: set CPUFREQ_NO_NOTIFICATION flag
-Date: Mon, 19 Aug 2013 06:57:27 +0900
-Message-ID: <15ca01ce9c5d$ed957650$c8c062f0$@org>
-References: <cover.1376619363.git.viresh.kumar@linaro.org>
- <14993d27bdc6a91eced0af5eb96bdb5ca6546cbf.1376619363.git.viresh.kumar@linaro.org>
- <CADGdYn6TKURuO8jxL=tjvSLbmpUoUwoa08MZhsBAiEF91FM-cA@mail.gmail.com>
+Subject: RE: [PATCH 13/37] cpufreq: exynos: don't initialize part of policy
+ that is set by core too
+Date: Mon, 19 Aug 2013 06:58:31 +0900
+Message-ID: <15fc01ce9c5e$13e53390$3baf9ab0$@org>
+References: <cover.1376486713.git.viresh.kumar@linaro.org>
+ <b3ef5357898c06aaccb2fcbaee4ef91a3d0fd7bb.1376486713.git.viresh.kumar@linaro.org>
+ <CADGdYn5nPCOb=mqoJPXzbZzgnbfrhFX6+nsUO5h+PTc-M=2NFA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CADGdYn6TKURuO8jxL=tjvSLbmpUoUwoa08MZhsBAiEF91FM-cA@mail.gmail.com>
+In-reply-to: <CADGdYn5nPCOb=mqoJPXzbZzgnbfrhFX6+nsUO5h+PTc-M=2NFA@mail.gmail.com>
 Content-language: ko
 Sender: cpufreq-owner@vger.kernel.org
 To: 'amit daniel kachhap' <amit.daniel@samsung.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>
-Cc: "'Rafael J. Wysocki'" <rjw@sisk.pl>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'LAK' <linux-arm-kernel@lists.infradead.org>
+Cc: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'linaro-kernel' <linaro-kernel@lists.linaro.org>, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 amit daniel kachhap wrote:
 > 
-> On Fri, Aug 16, 2013 at 7:55 AM, Viresh Kumar <viresh.kumar@linaro.org>
+> On Wed, Aug 14, 2013 at 7:02 PM, Viresh Kumar <viresh.kumar@linaro.org>
 > wrote:
-> > Most of the drivers do following in their ->target_index() routines:
+> > Many common initializations of struct policy are moved to core now and
+> hence
+> > this driver doesn't need to do it. This patch removes such code.
 > >
-> >         struct cpufreq_freqs freqs;
-> >         freqs.old = old freq...
-> >         freqs.new = new freq...
-> >
-> >         cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-> >
-> >         /* Change rate here */
-> >
-> >         cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-> >
-> > This is replicated over all cpufreq drivers today and there doesn't
-> exists a
-> > good enough reason why this shouldn't be moved to cpufreq core instead.
-> >
-> > Earlier patches have added support in cpufreq core to do cpufreq
-> notification on
-> > frequency change, but this drivers needs to do this notification itself
-> and so
-> > it sets its CPUFREQ_NO_NOTIFICATION flag.
+> > Most recent of those changes is to call ->get() in the core after
+> calling
+> > ->init().
 > >
 > > Cc: Kukjin Kim <kgene.kim@samsung.com>
 
@@ -50,30 +37,46 @@ Thanks,
 Kukjin
 
 > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> The code change looks fine,
+> This consolidation work looks fine,
 > Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
 > 
-> Thanks
-> Amit Daniel
+> Thanks,
+> Amit
 > > ---
-> >  drivers/cpufreq/exynos5440-cpufreq.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >  drivers/cpufreq/exynos-cpufreq.c     | 2 --
+> >  drivers/cpufreq/exynos5440-cpufreq.c | 1 -
+> >  2 files changed, 3 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-
+> cpufreq.c
+> > index 79b869b..b1db082 100644
+> > --- a/drivers/cpufreq/exynos-cpufreq.c
+> > +++ b/drivers/cpufreq/exynos-cpufreq.c
+> > @@ -226,8 +226,6 @@ static struct notifier_block exynos_cpufreq_nb = {
+> >
+> >  static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> >  {
+> > -       policy->cur = policy->min = policy->max =
+exynos_getspeed(policy-
+> >cpu);
+> > -
+> >         /* set the transition latency value */
+> >         policy->cpuinfo.transition_latency = 100000;
 > >
 > > diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
 > b/drivers/cpufreq/exynos5440-cpufreq.c
-> > index 91a64d6..8fb6183 100644
+> > index 9a5ed485..91a64d6 100644
 > > --- a/drivers/cpufreq/exynos5440-cpufreq.c
 > > +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> > @@ -323,7 +323,7 @@ static int exynos_cpufreq_cpu_init(struct
+> > @@ -316,7 +316,6 @@ static int exynos_cpufreq_cpu_init(struct
 > cpufreq_policy *policy)
-> >  }
+> >                 return ret;
+> >         }
 > >
-> >  static struct cpufreq_driver exynos_driver = {
-> > -       .flags          = CPUFREQ_STICKY,
-> > +       .flags          = CPUFREQ_STICKY | CPUFREQ_NO_NOTIFICATION,
-> >         .verify         = cpufreq_generic_frequency_table_verify,
-> >         .target_index   = exynos_target,
-> >         .get            = exynos_getspeed,
+> > -       policy->cur = dvfs_info->cur_frequency;
+> >         policy->cpuinfo.transition_latency = dvfs_info->latency;
+> >         cpumask_setall(policy->cpus);
+> >
 > > --
 > > 1.7.12.rc2.18.g61b472e
 
