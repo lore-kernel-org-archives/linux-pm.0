@@ -1,78 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2 07/11] cpufreq: Use cpufreq_policy_list for iterating over policies
-Date: Sun, 18 Aug 2013 16:06:55 +0200
-Message-ID: <1582060.zfvsylJcxu@vostro.rjw.lan>
-References: <cover.1375809311.git.viresh.kumar@linaro.org> <e54ce908bb964d643a2bbb945ed4a8dcb3ea00bf.1375809311.git.viresh.kumar@linaro.org>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: RE: [PATCH 13/34] cpufreq: exynos5440: set CPUFREQ_NO_NOTIFICATION flag
+Date: Mon, 19 Aug 2013 06:57:27 +0900
+Message-ID: <15ca01ce9c5d$ed957650$c8c062f0$@org>
+References: <cover.1376619363.git.viresh.kumar@linaro.org>
+ <14993d27bdc6a91eced0af5eb96bdb5ca6546cbf.1376619363.git.viresh.kumar@linaro.org>
+ <CADGdYn6TKURuO8jxL=tjvSLbmpUoUwoa08MZhsBAiEF91FM-cA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <e54ce908bb964d643a2bbb945ed4a8dcb3ea00bf.1375809311.git.viresh.kumar@linaro.org>
+In-reply-to: <CADGdYn6TKURuO8jxL=tjvSLbmpUoUwoa08MZhsBAiEF91FM-cA@mail.gmail.com>
+Content-language: ko
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
+To: 'amit daniel kachhap' <amit.daniel@samsung.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>
+Cc: "'Rafael J. Wysocki'" <rjw@sisk.pl>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'LAK' <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 06, 2013 10:53:09 PM Viresh Kumar wrote:
-> For iterating over all policies currently we are iterating over all CPUs and
-> then finding their policies. Lets use the newly created infrastructure
-> cpufreq_policy_list.
+amit daniel kachhap wrote:
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> On Fri, Aug 16, 2013 at 7:55 AM, Viresh Kumar <viresh.kumar@linaro.org>
+> wrote:
+> > Most of the drivers do following in their ->target_index() routines:
+> >
+> >         struct cpufreq_freqs freqs;
+> >         freqs.old = old freq...
+> >         freqs.new = new freq...
+> >
+> >         cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+> >
+> >         /* Change rate here */
+> >
+> >         cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+> >
+> > This is replicated over all cpufreq drivers today and there doesn't
+> exists a
+> > good enough reason why this shouldn't be moved to cpufreq core instead.
+> >
+> > Earlier patches have added support in cpufreq core to do cpufreq
+> notification on
+> > frequency change, but this drivers needs to do this notification itself
+> and so
+> > it sets its CPUFREQ_NO_NOTIFICATION flag.
+> >
+> > Cc: Kukjin Kim <kgene.kim@samsung.com>
 
-I noticed that the current linux-next branch of linux-pm.git caused the
-BUG_ON() in lock_policy_rwsem_##mode() to trigger when user space tried to
-access cpufreq sysfs attributes before system suspend and after system
-resume.
-
-I tried to debug that and it turned out that this patch caused resume
-to block indefinitely on one of my test machines and after reverting it the
-BUG_ON() stopped triggering, so I've just reverted it in my tree (it is not an
-important change).
-
-I don't have the time to figure out why this change breaks things and I would
-appreciate it if you tested stuff like suspend/resume on an x86 laptop or
-similar with your patches applied before posting them for merging.
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 
 Thanks,
-Rafael
+Kukjin
 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> The code change looks fine,
+> Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> 
+> Thanks
+> Amit Daniel
+> > ---
+> >  drivers/cpufreq/exynos5440-cpufreq.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
+> b/drivers/cpufreq/exynos5440-cpufreq.c
+> > index 91a64d6..8fb6183 100644
+> > --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> > +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> > @@ -323,7 +323,7 @@ static int exynos_cpufreq_cpu_init(struct
+> cpufreq_policy *policy)
+> >  }
+> >
+> >  static struct cpufreq_driver exynos_driver = {
+> > -       .flags          = CPUFREQ_STICKY,
+> > +       .flags          = CPUFREQ_STICKY | CPUFREQ_NO_NOTIFICATION,
+> >         .verify         = cpufreq_generic_frequency_table_verify,
+> >         .target_index   = exynos_target,
+> >         .get            = exynos_getspeed,
+> > --
+> > 1.7.12.rc2.18.g61b472e
 
-> ---
->  drivers/cpufreq/cpufreq.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index f5999c4..fe04b79 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -984,8 +984,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->  	struct cpufreq_policy *policy;
->  	unsigned long flags;
->  #ifdef CONFIG_HOTPLUG_CPU
-> +	struct cpufreq_policy *tpolicy;
->  	struct cpufreq_governor *gov;
-> -	int sibling;
->  #endif
->  
->  	if (cpu_is_offline(cpu))
-> @@ -1005,11 +1005,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->  #ifdef CONFIG_HOTPLUG_CPU
->  	/* Check if this cpu was hot-unplugged earlier and has siblings */
->  	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> -	for_each_online_cpu(sibling) {
-> -		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
-> -		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
-> +	list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list) {
-> +		if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
->  			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> -			return cpufreq_add_policy_cpu(cp, cpu, dev, frozen);
-> +			return cpufreq_add_policy_cpu(tpolicy, cpu, dev,
-> +					frozen);
->  		}
->  	}
->  	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
