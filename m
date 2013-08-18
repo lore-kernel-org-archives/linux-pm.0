@@ -1,45 +1,111 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support other architectures
-Date: Sun, 18 Aug 2013 00:22:43 +0200
-Message-ID: <6043373.ZgY5Yo1tNM@flatron>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH 03/44] cpufreq: exynos: call cpufreq_frequency_table_put_attr()
+Date: Sun, 18 Aug 2013 15:30:50 +0530
+Message-ID: <CADGdYn79B4d3joAF53E5MoeNB10RWm5fnQCs30-MbM38Jq2uhg@mail.gmail.com>
+References: <cover.1376116344.git.viresh.kumar@linaro.org>
+	<c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f50.google.com ([209.85.214.50]:38240 "EHLO
-	mail-bk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754695Ab3HQWWt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 Aug 2013 18:22:49 -0400
-In-Reply-To: <1376777376.25016.11.camel@pasglop>
+Received: from mail-la0-f41.google.com ([209.85.215.41]:35236 "EHLO
+	mail-la0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754165Ab3HRKAw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Aug 2013 06:00:52 -0400
+In-Reply-To: <c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-arm-kernel@lists.infradead.org, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel@lists.linaro.org, "patches@linaro.org" <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-On Sunday 18 of August 2013 08:09:36 Benjamin Herrenschmidt wrote:
-> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> > I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> > which
-> > the updated bindings[1] define #address-cells = <0> and so no reg
-> > property.
-> > 
-> > [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
-> 
-> Why did you do that in the binding ? That sounds like looking to create
-> problems ...
+On Sat, Aug 10, 2013 at 12:13 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Drivers which have an exit path must call cpufreq_frequency_table_put_attr() if
+> they have called cpufreq_frequency_table_get_attr() in their init path.
+>
+> This driver was missing this part and is fixed with this patch.
+>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+The changes looks fine, please free to add
+Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-[Copying Lorenzo...]
+Thanks.
+Amit Daniel
 
-I'm not the author of the change. I was just passing by, while the 
-question showed up in my mind. ;)
 
-> Traditionally, UP setups just used "0" as the "reg" property on other
-> architectures, why do differently ?
+> ---
+>  drivers/cpufreq/exynos5440-cpufreq.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> index 1ac93e0..b9dfc91 100644
+> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> @@ -336,12 +336,18 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         return 0;
+>  }
+>
+> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +       cpufreq_frequency_table_put_attr(policy->cpu);
+> +}
+> +
+>  static struct cpufreq_driver exynos_driver = {
+>         .flags          = CPUFREQ_STICKY,
+>         .verify         = exynos_verify_speed,
+>         .target         = exynos_target,
+>         .get            = exynos_getspeed,
+>         .init           = exynos_cpufreq_cpu_init,
+> +       .exit           = exynos_cpufreq_cpu_exit,
+>         .name           = CPUFREQ_NAME,
+>  };
+>
+> --
+> 1.7.12.rc2.18.g61b472e
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Right, especially since the ARM DT topology parsing code still considers a 
-device tree without reg property in cpu node invalid.
-
-Best regards,
-Tomasz
-
+On Sat, Aug 10, 2013 at 12:13 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Drivers which have an exit path must call cpufreq_frequency_table_put_attr() if
+> they have called cpufreq_frequency_table_get_attr() in their init path.
+>
+> This driver was missing this part and is fixed with this patch.
+>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/exynos5440-cpufreq.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> index 1ac93e0..b9dfc91 100644
+> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> @@ -336,12 +336,18 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         return 0;
+>  }
+>
+> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +       cpufreq_frequency_table_put_attr(policy->cpu);
+> +}
+> +
+>  static struct cpufreq_driver exynos_driver = {
+>         .flags          = CPUFREQ_STICKY,
+>         .verify         = exynos_verify_speed,
+>         .target         = exynos_target,
+>         .get            = exynos_getspeed,
+>         .init           = exynos_cpufreq_cpu_init,
+> +       .exit           = exynos_cpufreq_cpu_exit,
+>         .name           = CPUFREQ_NAME,
+>  };
+>
+> --
+> 1.7.12.rc2.18.g61b472e
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
