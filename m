@@ -1,52 +1,44 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to
- support other architectures
-Date: Mon, 19 Aug 2013 11:19:22 +0100
-Message-ID: <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH v2 4/4] of: move of_get_cpu_node implementation to
+ DT core library
+Date: Mon, 19 Aug 2013 11:21:39 +0100
+Message-ID: <5211F1B3.4080206@arm.com>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>  <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>  <1376674791-28244-3-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376691273.25016.5.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1376777376.25016.11.camel@pasglop>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1376691273.25016.5.camel@pasglop>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Tomasz Figa <tomasz.figa@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
-> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> > I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> > which 
-> > the updated bindings[1] define #address-cells = <0> and so no reg 
-> > property.
-> > 
-> > [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+On 16/08/13 23:14, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
+>> +#ifdef CONFIG_PPC
+>> +               /* Check for historical "ibm,ppc-interrupt-server#s" property
+>> +                * for thread ids on PowerPC. If it doesn't exist fallback to
+>> +                * standard "reg" property.
+>> +                */
+>> +               if (__of_find_n_match_cpu_property(cpun,
+>> +                               "ibm,ppc-interrupt-server#s", cpu, thread))
+>> +                       return cpun;
+>> +#endif
 > 
-> Why did you do that in the binding ? That sounds like looking to create
-> problems ... 
+> It's not "historical". It's still very much in use and well defined in PAPR :-)
 > 
-> Traditionally, UP setups just used "0" as the "reg" property on other
-> architectures, why do differently ?
+By historical, I meant it should not be used in future bindings.
 
-The decision was taken because we defined our reg property to refer to
-the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-there's no MPIDR register at all. Given there can only be a single CPU
-in that case, describing a register that wasn't present didn't seem
-necessary or helpful.
+Ah, sorry missed it in ePAPR, because its not under CPU node section.
+What's more interesting is that ePAPR has it as an example for
+non-standard property names :)
 
-Thanks,
-Mark.
+Can I mark it as custom/non-standard instead ? I mainly want to indicate
+that we need to use 'reg' property and not introduce any more custom
+properties for thread ids.
+
+Can I add your ACK with this comment fixed ?
+
+Regards,
+Sudeep
