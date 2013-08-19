@@ -1,41 +1,121 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 01/35] cpufreq: Implement light weight ->target_index()
- routine
-Date: Mon, 19 Aug 2013 12:19:03 +0530
-Message-ID: <CAKohpok2m-jwrCL7L3eteBx_Ra+P88e04Xab53bnn-2-5DopNA@mail.gmail.com>
-References: <cover.1376392602.git.viresh.kumar@linaro.org>
- <eb988fc9e72b90b7ba99f16405f5dcb072da7840.1376392602.git.viresh.kumar@linaro.org>
- <CADGdYn4=si46x7b5Qa0EJ1vUDKrP3maXBqWwQ6s7gkep-8MxFg@mail.gmail.com>
- <CAKohpokeJZq5Y9PpQCiEqVFqZq0U266rqLEQeEh4ZszWEM6_XA@mail.gmail.com>
- <CADGdYn4LoFEfZTd2bT=iGKRb5M=7CfpG-suxf3L-V5HXH7QuPQ@mail.gmail.com>
- <CAKohpo=HvR9_6DvhhPV0JcBnkmF5bc0pbCQrF7sk=FKOayhcRA@mail.gmail.com>
- <CADGdYn4q+13xkkF-TeFJ2-H27o9ArQETmgVNEoV_o9YzA0ebDw@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
+Date: Mon, 19 Aug 2013 08:50:37 +0200
+Message-ID: <20130819085037.11e95c06@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1376388505-30233-1-git-send-email-l.majewski@samsung.com>
+ <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CADGdYn4q+13xkkF-TeFJ2-H27o9ArQETmgVNEoV_o9YzA0ebDw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Linus Walleij <linus.walleij@linaro.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Steven Miao <realmz6@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, LAK <linux-arm-kernel@lists.infradead.org>, John Crispin <blogic@openwrt.org>, Mikael Starvik <starvik@axis.com>, Tony Luck <tony.luck@intel.com>, Eric Miao <eric.y.miao@gmail.com>, linux-cris-kernel@axis.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.or>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 August 2013 12:16, amit daniel kachhap <amit.daniel@samsung.com> wrote:
-> Actually target index will still be re-calculated if the platform
-> target driver wants to retrieve the index from the valid frequency or
-> directly set the valid frequency in the clock controller. So I wanted
-> a simpler/quicker cpufreq_frequency_table_target which just returns
-> the matching index from the valid frequency.
+On Mon, 19 Aug 2013 12:08:26 +0530 Viresh Kumar viresh.kumar@linaro.org
+wrote,
+> On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com>
+> wrote:
+> > This patch series introduces support for CPU overclocking technique
+> > called Boost.
+> >
+> > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > component:
+> > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> >
+> > Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> > software oriented one (like the one done at Exynos).
+> > For this reason cpufreq/freq_table code has been reorganized to
+> > include common code.
+> >
+> > Important design decisions:
+> > - Boost related code is compiled-in unconditionally to cpufreq core
+> > and disabled by default. The cpufreq_driver is responsibile for
+> > setting boost_supported flag and providing set_boost callback(if HW
+> > support is needed). For software managed boost, special Kconfig
+> > flag - CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be
+> > selected only when a target platform has thermal framework properly
+> > configured.
+> >
+> > - struct cpufreq_driver has been extended with boost related fields:
+> >         -- boost_supported - when driver supports boosting
+> >         -- boost_enabled - boost state
+> >         -- set_boost - callback to function, which is necessary to
+> >            enable/disable boost
+> >
+> > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
+> > visible _only_ when cpufreq driver supports Boost.
+> >
+> > - No special spin_lock for Boost was created. The one from cpufreq
+> > core was reused.
+> >
+> > - The Boost code doesn't rely on any policy. When boost state is
+> > changed, then the policy list is iterated and proper adjustements
+> > are done.
+> >
+> > - To improve safety level, the thermal framework is also extended
+> > to disable software boosting, when thermal trip point is reached.
+> > Then it starts monitoring target temperature to evaluate if boost
+> > can be enabled again. This emulates behaviour similar to HW managed
+> > boost (like x86)
+> >
+> > Tested at HW:
+> >        Exynos 4412 3.11-rc4 Linux
+> >        Intel Core i7-3770 3.11-rc4 Linux
+> >
+> > Above patches were posted on top of linux_pm/linux-next with
+> > following patches applied:
+> >
+> > cpufreq: exynos5440: Fix to skip when new frequency same as current
+> > cpufreq: fix EXYNOS drivers selection
+> >
+> > Lukasz Majewski (7):
+> >   cpufreq: Add boost frequency support in core
+> >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
+> > common boost solution
+> >   thermal:boost: Automatic enable/disable of BOOST feature
+> >   cpufreq:boost:Kconfig: Provide support for software managed BOOST
+> >   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+> >     framework
+> >   Documentation:cpufreq:boost: Update BOOST documentation
+> >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+> 
+> Hi Lukasz,
+> 
 
-I am so sorry but I am still missing your point.
+Hi Viresh,
 
-Index isn't required to be calculated by platform drivers anymore, it will be
-done by cpufreq core before calling target_index()..
+> I haven't found time yet to go through this series.. 
+
+I've just started wondering if I had send those patches correctly :-).
+
+> I want to do a
+> deep/careful review this time as these are almost the final patches.
+
+Ok.
+
+> 
+> Will try to get over them by the end of this week..
+
+Ok, I understand.
+
+> 
+> --
+> viresh
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
