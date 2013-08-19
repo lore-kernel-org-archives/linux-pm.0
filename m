@@ -1,143 +1,80 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: RE: [PATCH 19/44] cpufreq: exynos: Use generic cpufreq routines
-Date: Mon, 19 Aug 2013 07:00:45 +0900
-Message-ID: <15fe01ce9c5e$6411a560$2c34f020$@org>
-References: <cover.1376116344.git.viresh.kumar@linaro.org>
- <d71c900c5af2378da4e4024150d9f22f4a97e9db.1376116345.git.viresh.kumar@linaro.org>
- <CADGdYn5xkUN8bO19Hbf2S-WcCNUe_TFOONkqyxNUF8QRAnnVzA@mail.gmail.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH 13/34] cpufreq: exynos5440: set CPUFREQ_NO_NOTIFICATION flag
+Date: Mon, 19 Aug 2013 09:12:16 +0530
+Message-ID: <CADGdYn4frwbpjn94XE_G7pz0D=dcMG8_9zyqUsvKrVtQnphM5Q@mail.gmail.com>
+References: <cover.1376619363.git.viresh.kumar@linaro.org>
+	<14993d27bdc6a91eced0af5eb96bdb5ca6546cbf.1376619363.git.viresh.kumar@linaro.org>
+	<CADGdYn6TKURuO8jxL=tjvSLbmpUoUwoa08MZhsBAiEF91FM-cA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CADGdYn5xkUN8bO19Hbf2S-WcCNUe_TFOONkqyxNUF8QRAnnVzA@mail.gmail.com>
-Content-language: ko
-Sender: cpufreq-owner@vger.kernel.org
-To: 'amit daniel kachhap' <amit.daniel@samsung.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>
-Cc: "'Rafael J. Wysocki'" <rjw@sisk.pl>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f180.google.com ([209.85.217.180]:52291 "EHLO
+	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721Ab3HSDmS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Aug 2013 23:42:18 -0400
+In-Reply-To: <CADGdYn6TKURuO8jxL=tjvSLbmpUoUwoa08MZhsBAiEF91FM-cA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-amit daniel kachhap wrote:
-> 
-> On Sat, Aug 10, 2013 at 12:14 PM, Viresh Kumar <viresh.kumar@linaro.org>
-> wrote:
-> > Most of the CPUFreq drivers do similar things in .exit() and .verify()
-> routines
-> > and .attr. So its better if we have generic routines for them which can
-> be used
-> > by cpufreq drivers then.
-> >
-> > This patch uses these generic routines for this driver.
-> >
-> > Cc: Kukjin Kim <kgene.kim@samsung.com>
-
-Looks good.
-
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+On Sun, Aug 18, 2013 at 4:24 PM, amit daniel kachhap
+<amit.daniel@samsung.com> wrote:
+> On Fri, Aug 16, 2013 at 7:55 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> Most of the drivers do following in their ->target_index() routines:
+>>
+>>         struct cpufreq_freqs freqs;
+>>         freqs.old = old freq...
+>>         freqs.new = new freq...
+>>
+>>         cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+>>
+>>         /* Change rate here */
+>>
+>>         cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+>>
+>> This is replicated over all cpufreq drivers today and there doesn't exists a
+>> good enough reason why this shouldn't be moved to cpufreq core instead.
+>>
+>> Earlier patches have added support in cpufreq core to do cpufreq notification on
+>> frequency change, but this drivers needs to do this notification itself and so
+>> it sets its CPUFREQ_NO_NOTIFICATION flag.
+>>
+>> Cc: Kukjin Kim <kgene.kim@samsung.com>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> The code change looks fine,
+> Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>
+> Thanks
+> Amit Daniel
+>> ---
+>>  drivers/cpufreq/exynos5440-cpufreq.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+>> index 91a64d6..8fb6183 100644
+>> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+>> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+>> @@ -323,7 +323,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>  }
+>>
+>>  static struct cpufreq_driver exynos_driver = {
+>> -       .flags          = CPUFREQ_STICKY,
+>> +       .flags          = CPUFREQ_STICKY | CPUFREQ_NO_NOTIFICATION,
+How about naming the flag as CPUFREQ_ASYNC_NOTIFICATION? For platforms
+not defining this flag, the notifiers can be called synchronously from
+the core driver.
 
 Thanks,
-Kukjin
-
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> The consolidation code looks fine,
-> Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> 
-> Thanks,
-> Amit Daniel
-> > ---
-> >  drivers/cpufreq/exynos-cpufreq.c     | 23 +++--------------------
-> >  drivers/cpufreq/exynos5440-cpufreq.c | 15 ++-------------
-> >  2 files changed, 5 insertions(+), 33 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-
-> cpufreq.c
-> > index 71c4926..7663a96 100644
-> > --- a/drivers/cpufreq/exynos-cpufreq.c
-> > +++ b/drivers/cpufreq/exynos-cpufreq.c
-> > @@ -31,12 +31,6 @@ static unsigned int locking_frequency;
-> >  static bool frequency_locked;
-> >  static DEFINE_MUTEX(cpufreq_lock);
-> >
-> > -static int exynos_verify_speed(struct cpufreq_policy *policy)
-> > -{
-> > -       return cpufreq_frequency_table_verify(policy,
-> > -                                             exynos_info->freq_table);
-> > -}
-> > -
-> >  static unsigned int exynos_getspeed(unsigned int cpu)
-> >  {
-> >         return clk_get_rate(exynos_info->cpu_clk) / 1000;
-> > @@ -257,26 +251,15 @@ static int exynos_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
-> >         return cpufreq_table_validate_and_show(policy, exynos_info-
-> >freq_table);
-> >  }
-> >
-> > -static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> > -{
-> > -       cpufreq_frequency_table_put_attr(policy->cpu);
-> > -       return 0;
-> > -}
-> > -
-> > -static struct freq_attr *exynos_cpufreq_attr[] = {
-> > -       &cpufreq_freq_attr_scaling_available_freqs,
-> > -       NULL,
-> > -};
-> > -
-> >  static struct cpufreq_driver exynos_driver = {
-> >         .flags          = CPUFREQ_STICKY,
-> > -       .verify         = exynos_verify_speed,
-> > +       .verify         = cpufreq_generic_frequency_table_verify,
-> >         .target         = exynos_target,
-> >         .get            = exynos_getspeed,
-> >         .init           = exynos_cpufreq_cpu_init,
-> > -       .exit           = exynos_cpufreq_cpu_exit,
-> > +       .exit           = cpufreq_generic_exit,
-> >         .name           = "exynos_cpufreq",
-> > -       .attr           = exynos_cpufreq_attr,
-> > +       .attr           = cpufreq_generic_attr,
-> >  #ifdef CONFIG_PM
-> >         .suspend        = exynos_cpufreq_suspend,
-> >         .resume         = exynos_cpufreq_resume,
-> > diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
-> b/drivers/cpufreq/exynos5440-cpufreq.c
-> > index b9dfc91..f139b3b 100644
-> > --- a/drivers/cpufreq/exynos5440-cpufreq.c
-> > +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> > @@ -209,12 +209,6 @@ static void exynos_enable_dvfs(void)
-> >                                 dvfs_info->base + XMU_DVFS_CTRL);
-> >  }
-> >
-> > -static int exynos_verify_speed(struct cpufreq_policy *policy)
-> > -{
-> > -       return cpufreq_frequency_table_verify(policy,
-> > -                                             dvfs_info->freq_table);
-> > -}
-> > -
-> >  static unsigned int exynos_getspeed(unsigned int cpu)
-> >  {
-> >         return dvfs_info->cur_frequency;
-> > @@ -336,18 +330,13 @@ static int exynos_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
-> >         return 0;
-> >  }
-> >
-> > -static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> > -{
-> > -       cpufreq_frequency_table_put_attr(policy->cpu);
-> > -}
-> > -
-> >  static struct cpufreq_driver exynos_driver = {
-> >         .flags          = CPUFREQ_STICKY,
-> > -       .verify         = exynos_verify_speed,
-> > +       .verify         = cpufreq_generic_frequency_table_verify,
-> >         .target         = exynos_target,
-> >         .get            = exynos_getspeed,
-> >         .init           = exynos_cpufreq_cpu_init,
-> > -       .exit           = exynos_cpufreq_cpu_exit,
-> > +       .exit           = cpufreq_generic_exit,
-> >         .name           = CPUFREQ_NAME,
-> >  };
-> >
-> > --
-> > 1.7.12.rc2.18.g61b472e
-
+Amit Daniel
+>>         .verify         = cpufreq_generic_frequency_table_verify,
+>>         .target_index   = exynos_target,
+>>         .get            = exynos_getspeed,
+>> --
+>> 1.7.12.rc2.18.g61b472e
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
