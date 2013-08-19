@@ -1,91 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
-Date: Mon, 19 Aug 2013 12:08:26 +0530
-Message-ID: <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1376388505-30233-1-git-send-email-l.majewski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/3] thermal: exynos: Fix typos in Kconfig
+Date: Mon, 19 Aug 2013 11:58:41 +0530
+Message-ID: <1376893723-22138-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:44656 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885Ab3HSGi1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Aug 2013 02:38:27 -0400
-Received: by mail-oa0-f44.google.com with SMTP id l20so5286963oag.31
-        for <linux-pm@vger.kernel.org>; Sun, 18 Aug 2013 23:38:26 -0700 (PDT)
-In-Reply-To: <1376388505-30233-1-git-send-email-l.majewski@samsung.com>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:56774 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967Ab3HSGp5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Aug 2013 02:45:57 -0400
+Received: by mail-pd0-f177.google.com with SMTP id y10so4697568pdj.22
+        for <linux-pm@vger.kernel.org>; Sun, 18 Aug 2013 23:45:56 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: jonghwa3.lee@samsung.com, eduardo.valentin@ti.com, rui.zhang@intel.com, amit.daniel@samsung.com, sachin.kamat@linaro.org, patches@linaro.org
 
-On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> This patch series introduces support for CPU overclocking technique
-> called Boost.
->
-> It is a follow up of a LAB governor proposal. Boost is a LAB component:
-> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
->
-> Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> software oriented one (like the one done at Exynos).
-> For this reason cpufreq/freq_table code has been reorganized to include
-> common code.
->
-> Important design decisions:
-> - Boost related code is compiled-in unconditionally to cpufreq core and
->   disabled by default. The cpufreq_driver is responsibile for setting
->   boost_supported flag and providing set_boost callback(if HW support
->   is needed). For software managed boost, special Kconfig flag -
->   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
->   when a target platform has thermal framework properly configured.
->
-> - struct cpufreq_driver has been extended with boost related fields:
->         -- boost_supported - when driver supports boosting
->         -- boost_enabled - boost state
->         -- set_boost - callback to function, which is necessary to
->            enable/disable boost
->
-> - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
->   _only_ when cpufreq driver supports Boost.
->
-> - No special spin_lock for Boost was created. The one from cpufreq core
->   was reused.
->
-> - The Boost code doesn't rely on any policy. When boost state is changed,
->   then the policy list is iterated and proper adjustements are done.
->
-> - To improve safety level, the thermal framework is also extended to disable
->   software boosting, when thermal trip point is reached. Then it starts
->   monitoring target temperature to evaluate if boost can be enabled
->   again. This emulates behaviour similar to HW managed boost (like x86)
->
-> Tested at HW:
->        Exynos 4412 3.11-rc4 Linux
->        Intel Core i7-3770 3.11-rc4 Linux
->
-> Above patches were posted on top of linux_pm/linux-next with following
-> patches applied:
->
-> cpufreq: exynos5440: Fix to skip when new frequency same as current
-> cpufreq: fix EXYNOS drivers selection
->
-> Lukasz Majewski (7):
->   cpufreq: Add boost frequency support in core
->   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
->     boost solution
->   thermal:boost: Automatic enable/disable of BOOST feature
->   cpufreq:boost:Kconfig: Provide support for software managed BOOST
->   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
->     framework
->   Documentation:cpufreq:boost: Update BOOST documentation
->   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+Fixes some trivial typos.
 
-Hi Lukasz,
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+This series is based on next branch of below tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
 
-I haven't found time yet to go through this series.. I want to do a deep/careful
-review this time as these are almost the final patches.
+This is tested on Exynos4210 and 5250 based boards.
+---
+ drivers/thermal/samsung/Kconfig |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Will try to get over them by the end of this week..
+diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
+index b653f15..92492e4 100644
+--- a/drivers/thermal/samsung/Kconfig
++++ b/drivers/thermal/samsung/Kconfig
+@@ -3,16 +3,16 @@ config EXYNOS_THERMAL
+ 	depends on ARCH_HAS_BANDGAP
+ 	help
+ 	  If you say yes here you get support for the TMU (Thermal Management
+-	  Unit) driver for SAMSUNG EXYNOS series of soc. This driver initialises
++	  Unit) driver for SAMSUNG EXYNOS series of SoCs. This driver initialises
+ 	  the TMU, reports temperature and handles cooling action if defined.
+-	  This driver uses the exynos core thermal API's and TMU configuration
+-	  data from the supported soc's.
++	  This driver uses the Exynos core thermal APIs and TMU configuration
++	  data from the supported SoCs.
+ 
+ config EXYNOS_THERMAL_CORE
+-	bool "Core thermal framework support for EXYNOS SOC's"
++	bool "Core thermal framework support for EXYNOS SOCs"
+ 	depends on EXYNOS_THERMAL
+ 	help
+ 	  If you say yes here you get support for EXYNOS TMU
+ 	  (Thermal Management Unit) common registration/unregistration
+ 	  functions to the core thermal layer and also to use the generic
+-	  cpu cooling API's.
++	  CPU cooling APIs.
+-- 
+1.7.9.5
 
---
-viresh
