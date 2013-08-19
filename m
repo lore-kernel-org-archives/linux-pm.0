@@ -1,111 +1,55 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 3/3] thermal: exynos: Clean up non-DT remnants
-Date: Mon, 19 Aug 2013 11:58:43 +0530
-Message-ID: <1376893723-22138-3-git-send-email-sachin.kamat@linaro.org>
-References: <1376893723-22138-1-git-send-email-sachin.kamat@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f52.google.com ([209.85.160.52]:38400 "EHLO
-	mail-pb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006Ab3HSGqE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Aug 2013 02:46:04 -0400
-Received: by mail-pb0-f52.google.com with SMTP id wz12so4591156pbc.39
-        for <linux-pm@vger.kernel.org>; Sun, 18 Aug 2013 23:46:04 -0700 (PDT)
-In-Reply-To: <1376893723-22138-1-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH V2 01/35] cpufreq: Implement light weight ->target_index()
+ routine
+Date: Mon, 19 Aug 2013 12:16:45 +0530
+Message-ID: <CADGdYn4q+13xkkF-TeFJ2-H27o9ArQETmgVNEoV_o9YzA0ebDw@mail.gmail.com>
+References: <cover.1376392602.git.viresh.kumar@linaro.org>
+ <eb988fc9e72b90b7ba99f16405f5dcb072da7840.1376392602.git.viresh.kumar@linaro.org>
+ <CADGdYn4=si46x7b5Qa0EJ1vUDKrP3maXBqWwQ6s7gkep-8MxFg@mail.gmail.com>
+ <CAKohpokeJZq5Y9PpQCiEqVFqZq0U266rqLEQeEh4ZszWEM6_XA@mail.gmail.com>
+ <CADGdYn4LoFEfZTd2bT=iGKRb5M=7CfpG-suxf3L-V5HXH7QuPQ@mail.gmail.com>
+ <CAKohpo=HvR9_6DvhhPV0JcBnkmF5bc0pbCQrF7sk=FKOayhcRA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAKohpo=HvR9_6DvhhPV0JcBnkmF5bc0pbCQrF7sk=FKOayhcRA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Linus Walleij <linus.walleij@linaro.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Steven Miao <realmz6@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, LAK <linux-arm-kernel@lists.infradead.org>, John Crispin <blogic@openwrt.org>, Mikael Starvik <starvik@axis.com>, Tony Luck <tony.luck@intel.com>, Eric Miao <eric.y.miao@gmail.com>, linux-cris-kernel@axis.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.or>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: jonghwa3.lee@samsung.com, eduardo.valentin@ti.com, rui.zhang@intel.com, amit.daniel@samsung.com, sachin.kamat@linaro.org, patches@linaro.org
 
-Commit 1cd1ecb6 ("thermal: exynos: Remove non DT based support")
-cleaned up some non-DT code. However, there were few more things
-needed for complete cleanup to make this driver DT only.
+On Mon, Aug 19, 2013 at 11:49 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 19 August 2013 11:46, amit daniel kachhap <amit.daniel@samsung.com> wrote:
+>> I meant that something like 2 policies can be registered SCALE_DIRECT/STEPS.
+>> if SCALE_DIRECT is registered than target will be called with exact
+>> frequency. SCALE_STEPS will behave as currently happening. This way
+>> target_index api may not be needed. But looks like Rafael and others
+>> are fine with your approach so you can ignore this :)
+>
+>
+>  Why wouldn't we need target_index in case of SCALE_DIRECT? All
+> target_index is doing now is changing platform specific registers to configure
+> an exact frequency reported by index..
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/thermal/samsung/Kconfig      |    2 +-
- drivers/thermal/samsung/exynos_tmu.c |   30 ++++++++++++------------------
- 2 files changed, 13 insertions(+), 19 deletions(-)
+Actually target index will still be re-calculated if the platform
+target driver wants to retrieve the index from the valid frequency or
+directly set the valid frequency in the clock controller. So I wanted
+a simpler/quicker cpufreq_frequency_table_target which just returns
+the matching index from the valid frequency.
 
-diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
-index 92492e4..f760389 100644
---- a/drivers/thermal/samsung/Kconfig
-+++ b/drivers/thermal/samsung/Kconfig
-@@ -1,6 +1,6 @@
- config EXYNOS_THERMAL
- 	tristate "Exynos thermal management unit driver"
--	depends on ARCH_HAS_BANDGAP
-+	depends on ARCH_HAS_BANDGAP && OF
- 	help
- 	  If you say yes here you get support for the TMU (Thermal Management
- 	  Unit) driver for SAMSUNG EXYNOS series of SoCs. This driver initialises
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index a033dbb..b43afda 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -481,7 +481,6 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
- 	return IRQ_HANDLED;
- }
- 
--#ifdef CONFIG_OF
- static const struct of_device_id exynos_tmu_match[] = {
- 	{
- 		.compatible = "samsung,exynos4210-tmu",
-@@ -502,27 +501,22 @@ static const struct of_device_id exynos_tmu_match[] = {
- 	{},
- };
- MODULE_DEVICE_TABLE(of, exynos_tmu_match);
--#endif
- 
- static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
- 			struct platform_device *pdev, int id)
- {
--#ifdef CONFIG_OF
- 	struct  exynos_tmu_init_data *data_table;
- 	struct exynos_tmu_platform_data *tmu_data;
--	if (pdev->dev.of_node) {
--		const struct of_device_id *match;
--		match = of_match_node(exynos_tmu_match, pdev->dev.of_node);
--		if (!match)
--			return NULL;
--		data_table = (struct exynos_tmu_init_data *) match->data;
--		if (!data_table || id >= data_table->tmu_count)
--			return NULL;
--		tmu_data = data_table->tmu_data;
--		return (struct exynos_tmu_platform_data *) (tmu_data + id);
--	}
--#endif
--	return NULL;
-+	const struct of_device_id *match;
-+
-+	match = of_match_node(exynos_tmu_match, pdev->dev.of_node);
-+	if (!match)
-+		return NULL;
-+	data_table = (struct exynos_tmu_init_data *) match->data;
-+	if (!data_table || id >= data_table->tmu_count)
-+		return NULL;
-+	tmu_data = data_table->tmu_data;
-+	return (struct exynos_tmu_platform_data *) (tmu_data + id);
- }
- 
- static int exynos_map_dt_data(struct platform_device *pdev)
-@@ -532,7 +526,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 	struct resource res;
- 	int ret;
- 
--	if (!data)
-+	if (!data || !pdev->dev.of_node)
- 		return -ENODEV;
- 
- 	/*
-@@ -754,7 +748,7 @@ static struct platform_driver exynos_tmu_driver = {
- 		.name   = "exynos-tmu",
- 		.owner  = THIS_MODULE,
- 		.pm     = EXYNOS_TMU_PM,
--		.of_match_table = of_match_ptr(exynos_tmu_match),
-+		.of_match_table = exynos_tmu_match,
- 	},
- 	.probe = exynos_tmu_probe,
- 	.remove	= exynos_tmu_remove,
--- 
-1.7.9.5
 
+
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
