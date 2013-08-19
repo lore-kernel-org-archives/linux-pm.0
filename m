@@ -1,39 +1,91 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 01/35] cpufreq: Implement light weight ->target_index()
- routine
-Date: Mon, 19 Aug 2013 11:49:44 +0530
-Message-ID: <CAKohpo=HvR9_6DvhhPV0JcBnkmF5bc0pbCQrF7sk=FKOayhcRA@mail.gmail.com>
-References: <cover.1376392602.git.viresh.kumar@linaro.org>
- <eb988fc9e72b90b7ba99f16405f5dcb072da7840.1376392602.git.viresh.kumar@linaro.org>
- <CADGdYn4=si46x7b5Qa0EJ1vUDKrP3maXBqWwQ6s7gkep-8MxFg@mail.gmail.com>
- <CAKohpokeJZq5Y9PpQCiEqVFqZq0U266rqLEQeEh4ZszWEM6_XA@mail.gmail.com>
- <CADGdYn4LoFEfZTd2bT=iGKRb5M=7CfpG-suxf3L-V5HXH7QuPQ@mail.gmail.com>
+Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
+Date: Mon, 19 Aug 2013 12:08:26 +0530
+Message-ID: <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1376388505-30233-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CADGdYn4LoFEfZTd2bT=iGKRb5M=7CfpG-suxf3L-V5HXH7QuPQ@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Linus Walleij <linus.walleij@linaro.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Steven Miao <realmz6@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LAK <linux-arm-kernel@lists.infradead.org>, John Crispin <blogic@openwrt.org>, Mikael Starvik <starvik@axis.com>, Tony Luck <tony.luck@intel.com>, Eric Miao <eric.y.miao@gmail.com>, linux-cris-kernel@axis.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.or>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f44.google.com ([209.85.219.44]:44656 "EHLO
+	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885Ab3HSGi1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Aug 2013 02:38:27 -0400
+Received: by mail-oa0-f44.google.com with SMTP id l20so5286963oag.31
+        for <linux-pm@vger.kernel.org>; Sun, 18 Aug 2013 23:38:26 -0700 (PDT)
+In-Reply-To: <1376388505-30233-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
 
-On 19 August 2013 11:46, amit daniel kachhap <amit.daniel@samsung.com> wrote:
-> I meant that something like 2 policies can be registered SCALE_DIRECT/STEPS.
-> if SCALE_DIRECT is registered than target will be called with exact
-> frequency. SCALE_STEPS will behave as currently happening. This way
-> target_index api may not be needed. But looks like Rafael and others
-> are fine with your approach so you can ignore this :)
+On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> This patch series introduces support for CPU overclocking technique
+> called Boost.
+>
+> It is a follow up of a LAB governor proposal. Boost is a LAB component:
+> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+>
+> Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> software oriented one (like the one done at Exynos).
+> For this reason cpufreq/freq_table code has been reorganized to include
+> common code.
+>
+> Important design decisions:
+> - Boost related code is compiled-in unconditionally to cpufreq core and
+>   disabled by default. The cpufreq_driver is responsibile for setting
+>   boost_supported flag and providing set_boost callback(if HW support
+>   is needed). For software managed boost, special Kconfig flag -
+>   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+>   when a target platform has thermal framework properly configured.
+>
+> - struct cpufreq_driver has been extended with boost related fields:
+>         -- boost_supported - when driver supports boosting
+>         -- boost_enabled - boost state
+>         -- set_boost - callback to function, which is necessary to
+>            enable/disable boost
+>
+> - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+>   _only_ when cpufreq driver supports Boost.
+>
+> - No special spin_lock for Boost was created. The one from cpufreq core
+>   was reused.
+>
+> - The Boost code doesn't rely on any policy. When boost state is changed,
+>   then the policy list is iterated and proper adjustements are done.
+>
+> - To improve safety level, the thermal framework is also extended to disable
+>   software boosting, when thermal trip point is reached. Then it starts
+>   monitoring target temperature to evaluate if boost can be enabled
+>   again. This emulates behaviour similar to HW managed boost (like x86)
+>
+> Tested at HW:
+>        Exynos 4412 3.11-rc4 Linux
+>        Intel Core i7-3770 3.11-rc4 Linux
+>
+> Above patches were posted on top of linux_pm/linux-next with following
+> patches applied:
+>
+> cpufreq: exynos5440: Fix to skip when new frequency same as current
+> cpufreq: fix EXYNOS drivers selection
+>
+> Lukasz Majewski (7):
+>   cpufreq: Add boost frequency support in core
+>   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+>     boost solution
+>   thermal:boost: Automatic enable/disable of BOOST feature
+>   cpufreq:boost:Kconfig: Provide support for software managed BOOST
+>   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+>     framework
+>   Documentation:cpufreq:boost: Update BOOST documentation
+>   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
 
+Hi Lukasz,
 
- Why wouldn't we need target_index in case of SCALE_DIRECT? All
-target_index is doing now is changing platform specific registers to configure
-an exact frequency reported by index..
+I haven't found time yet to go through this series.. I want to do a deep/careful
+review this time as these are almost the final patches.
+
+Will try to get over them by the end of this week..
+
+--
+viresh
