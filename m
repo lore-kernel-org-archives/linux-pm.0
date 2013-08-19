@@ -1,121 +1,63 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
-Date: Mon, 19 Aug 2013 08:50:37 +0200
-Message-ID: <20130819085037.11e95c06@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1376388505-30233-1-git-send-email-l.majewski@samsung.com>
- <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Mon, 19 Aug 2013 11:13:27 +0100
+Message-ID: <5211EFC7.9090800@arm.com>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>  <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>  <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376691186.25016.4.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:32773 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198Ab3HSKNM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Aug 2013 06:13:12 -0400
+In-Reply-To: <1376691186.25016.4.camel@pasglop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>
 
-On Mon, 19 Aug 2013 12:08:26 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com>
-> wrote:
-> > This patch series introduces support for CPU overclocking technique
-> > called Boost.
-> >
-> > It is a follow up of a LAB governor proposal. Boost is a LAB
-> > component:
-> > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> >
-> > Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> > software oriented one (like the one done at Exynos).
-> > For this reason cpufreq/freq_table code has been reorganized to
-> > include common code.
-> >
-> > Important design decisions:
-> > - Boost related code is compiled-in unconditionally to cpufreq core
-> > and disabled by default. The cpufreq_driver is responsibile for
-> > setting boost_supported flag and providing set_boost callback(if HW
-> > support is needed). For software managed boost, special Kconfig
-> > flag - CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be
-> > selected only when a target platform has thermal framework properly
-> > configured.
-> >
-> > - struct cpufreq_driver has been extended with boost related fields:
-> >         -- boost_supported - when driver supports boosting
-> >         -- boost_enabled - boost state
-> >         -- set_boost - callback to function, which is necessary to
-> >            enable/disable boost
-> >
-> > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
-> > visible _only_ when cpufreq driver supports Boost.
-> >
-> > - No special spin_lock for Boost was created. The one from cpufreq
-> > core was reused.
-> >
-> > - The Boost code doesn't rely on any policy. When boost state is
-> > changed, then the policy list is iterated and proper adjustements
-> > are done.
-> >
-> > - To improve safety level, the thermal framework is also extended
-> > to disable software boosting, when thermal trip point is reached.
-> > Then it starts monitoring target temperature to evaluate if boost
-> > can be enabled again. This emulates behaviour similar to HW managed
-> > boost (like x86)
-> >
-> > Tested at HW:
-> >        Exynos 4412 3.11-rc4 Linux
-> >        Intel Core i7-3770 3.11-rc4 Linux
-> >
-> > Above patches were posted on top of linux_pm/linux-next with
-> > following patches applied:
-> >
-> > cpufreq: exynos5440: Fix to skip when new frequency same as current
-> > cpufreq: fix EXYNOS drivers selection
-> >
-> > Lukasz Majewski (7):
-> >   cpufreq: Add boost frequency support in core
-> >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
-> > common boost solution
-> >   thermal:boost: Automatic enable/disable of BOOST feature
-> >   cpufreq:boost:Kconfig: Provide support for software managed BOOST
-> >   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-> >     framework
-> >   Documentation:cpufreq:boost: Update BOOST documentation
-> >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+On 16/08/13 23:13, Benjamin Herrenschmidt wrote:
+> On Fri, 2013-08-16 at 18:39 +0100, Sudeep KarkadaNagesha wrote:
+>> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
+>> +                       const char *prop_name, int cpu, unsigned int
+>> *thread)
+>> +{
+>> +       const __be32 *cell;
+>> +       int ac, prop_len, tid;
+>> +       u64 hwid;
+>> +
+>> +       ac = of_n_addr_cells(cpun);
+>> +       cell = of_get_property(cpun, prop_name, &prop_len);
+>> +       if (!cell)
+>> +               return false;
+>> +       prop_len /= sizeof(*cell);
+>> +       for (tid = 0; tid < prop_len; tid++) {
+>> +               hwid = of_read_number(cell, ac);
+>> +               if (arch_match_cpu_phys_id(cpu, hwid)) {
+>> +                       if (thread)
+>> +                               *thread = tid;
+>> +                       return true;
+>> +               }
+>> +               cell += ac;
+>> +       }
+>> +       return false;
+>> +}
 > 
-> Hi Lukasz,
+> The only problem I can see here is if "ac" is not 1, that will not work
+> for the ibm,ppc-interrupt-server#s case. IE. The latter is always 1 cell
+> per entry, only "reg" depends on #address-cells.
 > 
-
-Hi Viresh,
-
-> I haven't found time yet to go through this series.. 
-
-I've just started wondering if I had send those patches correctly :-).
-
-> I want to do a
-> deep/careful review this time as these are almost the final patches.
-
-Ok.
-
+> However that's only a theorical problem since on ppc #address-cells of
+> /cpus is always 1...
 > 
-> Will try to get over them by the end of this week..
+Ok agreed, but I assume in future if thread ids need 2 ac, it would use
+standard 'reg' instead of 'ibm,ppc-interrupt-server#' property.
 
-Ok, I understand.
+So I assume the above function is generic and need not be modified to
+handle non '1' ac case  with non standard 'ibm,ppc-interrupt-server#'.
 
-> 
-> --
-> viresh
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Regards,
+Sudeep
 
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
