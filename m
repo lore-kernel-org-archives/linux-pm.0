@@ -1,107 +1,119 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
-Date: Tue, 20 Aug 2013 01:29:20 +0200
-Message-ID: <2325996.izOUC9kIz1@vostro.rjw.lan>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com> <20130819085037.11e95c06@amdc308.digital.local>
+Subject: [PATCH] ACPI / PM: Hold acpi_scan_lock over system PM transitions
+Date: Tue, 20 Aug 2013 01:47:57 +0200
+Message-ID: <2852781.TfChGuuEkJ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130819085037.11e95c06@amdc308.digital.local>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 19, 2013 08:50:37 AM Lukasz Majewski wrote:
-> On Mon, 19 Aug 2013 12:08:26 +0530 Viresh Kumar viresh.kumar@linaro.org
-> wrote,
-> > On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com>
-> > wrote:
-> > > This patch series introduces support for CPU overclocking technique
-> > > called Boost.
-> > >
-> > > It is a follow up of a LAB governor proposal. Boost is a LAB
-> > > component:
-> > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> > >
-> > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> > > software oriented one (like the one done at Exynos).
-> > > For this reason cpufreq/freq_table code has been reorganized to
-> > > include common code.
-> > >
-> > > Important design decisions:
-> > > - Boost related code is compiled-in unconditionally to cpufreq core
-> > > and disabled by default. The cpufreq_driver is responsibile for
-> > > setting boost_supported flag and providing set_boost callback(if HW
-> > > support is needed). For software managed boost, special Kconfig
-> > > flag - CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be
-> > > selected only when a target platform has thermal framework properly
-> > > configured.
-> > >
-> > > - struct cpufreq_driver has been extended with boost related fields:
-> > >         -- boost_supported - when driver supports boosting
-> > >         -- boost_enabled - boost state
-> > >         -- set_boost - callback to function, which is necessary to
-> > >            enable/disable boost
-> > >
-> > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
-> > > visible _only_ when cpufreq driver supports Boost.
-> > >
-> > > - No special spin_lock for Boost was created. The one from cpufreq
-> > > core was reused.
-> > >
-> > > - The Boost code doesn't rely on any policy. When boost state is
-> > > changed, then the policy list is iterated and proper adjustements
-> > > are done.
-> > >
-> > > - To improve safety level, the thermal framework is also extended
-> > > to disable software boosting, when thermal trip point is reached.
-> > > Then it starts monitoring target temperature to evaluate if boost
-> > > can be enabled again. This emulates behaviour similar to HW managed
-> > > boost (like x86)
-> > >
-> > > Tested at HW:
-> > >        Exynos 4412 3.11-rc4 Linux
-> > >        Intel Core i7-3770 3.11-rc4 Linux
-> > >
-> > > Above patches were posted on top of linux_pm/linux-next with
-> > > following patches applied:
-> > >
-> > > cpufreq: exynos5440: Fix to skip when new frequency same as current
-> > > cpufreq: fix EXYNOS drivers selection
-> > >
-> > > Lukasz Majewski (7):
-> > >   cpufreq: Add boost frequency support in core
-> > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
-> > > common boost solution
-> > >   thermal:boost: Automatic enable/disable of BOOST feature
-> > >   cpufreq:boost:Kconfig: Provide support for software managed BOOST
-> > >   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-> > >     framework
-> > >   Documentation:cpufreq:boost: Update BOOST documentation
-> > >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
-> > 
-> > Hi Lukasz,
-> > 
-> 
-> Hi Viresh,
-> 
-> > I haven't found time yet to go through this series.. 
-> 
-> I've just started wondering if I had send those patches correctly :-).
-> 
-> > I want to do a
-> > deep/careful review this time as these are almost the final patches.
-> 
-> Ok.
-> 
-> > 
-> > Will try to get over them by the end of this week..
-> 
-> Ok, I understand.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Do I assume correctly that this stuff has been tested on ACPI-compatible x86
-with acpi-cpufreq and everything has worked correctly there?
+Bad things happen if ACPI hotplug events are handled during system
+PM transitions, especially if devices are removed as a result.
+To prevent those bad things from happening, acquire acpi_scan_lock
+when a transition is started and release it when that transition
+is complete or has been aborted.
 
+This fixes resume lockup on my test-bed Acer Aspire S5 that happens
+when Thunderbolt devices are disconnected from the machine while
+suspended.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+Applies on top of the linux-next branch of the linux-pm.git tree.
+
+Thanks,
 Rafael
+
+---
+ drivers/acpi/sleep.c |   39 ++++++++++++++++++++++++---------------
+ 1 file changed, 24 insertions(+), 15 deletions(-)
+
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -420,10 +420,21 @@ static void acpi_pm_finish(void)
+ }
+ 
+ /**
+- *	acpi_pm_end - Finish up suspend sequence.
++ * acpi_pm_start - Start system PM transition.
++ */
++static void acpi_pm_start(u32 acpi_state)
++{
++	acpi_target_sleep_state = acpi_state;
++	acpi_sleep_tts_switch(acpi_target_sleep_state);
++	acpi_scan_lock_acquire();
++}
++
++/**
++ * acpi_pm_end - Finish up system PM transition.
+  */
+ static void acpi_pm_end(void)
+ {
++	acpi_scan_lock_release();
+ 	/*
+ 	 * This is necessary in case acpi_pm_finish() is not called during a
+ 	 * failing transition to a sleep state.
+@@ -451,21 +462,19 @@ static u32 acpi_suspend_states[] = {
+ static int acpi_suspend_begin(suspend_state_t pm_state)
+ {
+ 	u32 acpi_state = acpi_suspend_states[pm_state];
+-	int error = 0;
++	int error;
+ 
+ 	error = (nvs_nosave || nvs_nosave_s3) ? 0 : suspend_nvs_alloc();
+ 	if (error)
+ 		return error;
+ 
+-	if (sleep_states[acpi_state]) {
+-		acpi_target_sleep_state = acpi_state;
+-		acpi_sleep_tts_switch(acpi_target_sleep_state);
+-	} else {
+-		printk(KERN_ERR "ACPI does not support this state: %d\n",
+-			pm_state);
+-		error = -ENOSYS;
++	if (!sleep_states[acpi_state]) {
++		pr_err("ACPI does not support sleep state S%u\n", acpi_state);
++		return -ENOSYS;
+ 	}
+-	return error;
++
++	acpi_pm_start(acpi_state);
++	return 0;
+ }
+ 
+ /**
+@@ -631,10 +640,8 @@ static int acpi_hibernation_begin(void)
+ 	int error;
+ 
+ 	error = nvs_nosave ? 0 : suspend_nvs_alloc();
+-	if (!error) {
+-		acpi_target_sleep_state = ACPI_STATE_S4;
+-		acpi_sleep_tts_switch(acpi_target_sleep_state);
+-	}
++	if (!error)
++		acpi_pm_start(ACPI_STATE_S4);
+ 
+ 	return error;
+ }
+@@ -713,8 +720,10 @@ static int acpi_hibernation_begin_old(vo
+ 	if (!error) {
+ 		if (!nvs_nosave)
+ 			error = suspend_nvs_alloc();
+-		if (!error)
++		if (!error) {
+ 			acpi_target_sleep_state = ACPI_STATE_S4;
++			acpi_scan_lock_acquire();
++		}
+ 	}
+ 	return error;
+ }
+
