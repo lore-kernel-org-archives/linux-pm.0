@@ -1,61 +1,67 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v4 19/19] cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
-Date: Tue, 20 Aug 2013 10:30:21 +0100
-Message-ID: <1376991021-12160-20-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 13/19] cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
+Date: Tue, 20 Aug 2013 10:30:15 +0100
+Message-ID: <1376991021-12160-14-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:35470 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472Ab3HTJa0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Aug 2013 05:30:26 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
 Now that the cpu device registration initialises the of_node(if available)
 appropriately for all the cpus, parsing here is redundant.
 
-This patch removes DT parsing and uses cpu->of_node instead.
+This patch removes all DT parsing and uses cpu->of_node instead.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/cpufreq/highbank-cpufreq.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpuf=
-req.c
-index 3104fad..56bfb6f 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -25,6 +25,7 @@
- #include <linux/init.h>
- #include <linux/device.h>
- #include <linux/hardirq.h>
-+#include <linux/of_device.h>
- #include <asm/prom.h>
- #include <asm/machdep.h>
- #include <asm/irq.h>
-@@ -649,8 +650,8 @@ static int __init pmac_cpufreq_setup(void)
- =09if (strstr(cmd_line, "nocpufreq"))
- =09=09return 0;
+diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-=
+cpufreq.c
+index b61b5a3..794123f 100644
+--- a/drivers/cpufreq/highbank-cpufreq.c
++++ b/drivers/cpufreq/highbank-cpufreq.c
+@@ -69,23 +69,17 @@ static int hb_cpufreq_driver_init(void)
+ =09if (!of_machine_is_compatible("calxeda,highbank"))
+ =09=09return -ENODEV;
 =20
--=09/* Assume only one CPU */
--=09cpunode =3D of_find_node_by_type(NULL, "cpu");
-+=09/* Get first CPU node */
-+=09cpunode =3D of_cpu_device_node_get(0);
- =09if (!cpunode)
- =09=09goto out;
+-=09for_each_child_of_node(of_find_node_by_path("/cpus"), np)
+-=09=09if (of_get_property(np, "operating-points", NULL))
+-=09=09=09break;
+-
+-=09if (!np) {
+-=09=09pr_err("failed to find highbank cpufreq node\n");
+-=09=09return -ENOENT;
+-=09}
+-
+ =09cpu_dev =3D get_cpu_device(0);
+ =09if (!cpu_dev) {
+ =09=09pr_err("failed to get highbank cpufreq device\n");
+-=09=09ret =3D -ENODEV;
+-=09=09goto out_put_node;
++=09=09return -ENODEV;
+ =09}
 =20
+-=09cpu_dev->of_node =3D np;
++=09np =3D of_node_get(cpu_dev->of_node);
++=09if (!np) {
++=09=09pr_err("failed to find highbank cpufreq node\n");
++=09=09return -ENOENT;
++=09}
+=20
+ =09cpu_clk =3D clk_get(cpu_dev, NULL);
+ =09if (IS_ERR(cpu_clk)) {
 --=20
 1.8.1.2
-
-
