@@ -1,36 +1,29 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V2 07/11] cpufreq: Use cpufreq_policy_list for iterating
  over policies
-Date: Tue, 20 Aug 2013 12:02:12 +0530
-Message-ID: <CAKohpo=5u7ecGLQseyHEe3bFgNLBVexnGwEV3jTs=qcSsndQLA@mail.gmail.com>
+Date: Tue, 20 Aug 2013 12:03:17 +0530
+Message-ID: <CAKohpo=cnq_heq7RtPqbA5sSB_OWiNcFnXA_E4VfZn-6Ur=ThA@mail.gmail.com>
 References: <cover.1375809311.git.viresh.kumar@linaro.org>
-	<e54ce908bb964d643a2bbb945ed4a8dcb3ea00bf.1375809311.git.viresh.kumar@linaro.org>
 	<1582060.zfvsylJcxu@vostro.rjw.lan>
 	<CAKohponkLac2GzZ5-PRoTzdx8EhuCWT-eafRtYhkJ6cN_WrXSA@mail.gmail.com>
-	<CAP245DXKpDBetXHY_C0hSu0UHbeiFkhQ3r7V_3HOjQ+RkuabsQ@mail.gmail.com>
+	<6607838.UAT3ZUDseh@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:62916 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941Ab3HTGcN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Aug 2013 02:32:13 -0400
-Received: by mail-oa0-f53.google.com with SMTP id k18so11688oag.40
-        for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2013 23:32:13 -0700 (PDT)
-In-Reply-To: <CAP245DXKpDBetXHY_C0hSu0UHbeiFkhQ3r7V_3HOjQ+RkuabsQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <6607838.UAT3ZUDseh@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Andy Whitcroft <apw@canonical.com>
 
-On 19 August 2013 17:15, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> Why do you create .deb packages to test development kernels? It _is_ slow.
->
-> Instead I'd just add a new grub menu entry to /boot/grub/grub.cfg and
-> point it to /boot/MyzImage. After a 'make install; make
-> modules_install' just link /boot/MyzImage to the installed kernel in
-> /boot. And then generate a new initramfs using 'update-initramfs -c -k
-> <ver>'
+On 20 August 2013 04:52, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From my experience, however, it is good to figure out what needs to be included
+> into your test kernel and configure away everything else.  Also, I'd recommend
+> to build as much as possible into the kernel image and avoid compiling too many
+> modules, because installing modules takes time too (ideally, if you can get
+> away without any modules at all, that's the best option timing-wise).  Just
+> select only the drivers that you're going to use and unset all of the options
+> that don't apply to your test machine.
 
-initramfs was fixed automatically for me with make install.. Thanks it saved
-lots of my time :)
+I haven't done this exercise yet but I have a workable solution with default
+.config as suggested by Amit :)
