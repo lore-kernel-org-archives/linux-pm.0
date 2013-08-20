@@ -1,95 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpuidle: coupled: fix dead loop corner case
-Date: Tue, 20 Aug 2013 14:36:42 +0200
-Message-ID: <26502976.vPDNddhvVv@vostro.rjw.lan>
-References: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC PATCH] freezer: allow killing of frozen tasks
+Date: Tue, 20 Aug 2013 08:27:27 -0400
+Message-ID: <20130820122727.GC3926@htj.dyndns.org>
+References: <5917186.DMyAa9ofOj@amdc1032>
+ <37238430.gCktWD5jr4@vostro.rjw.lan>
+ <20130820122200.GB3926@htj.dyndns.org>
+ <7346644.tueXegsfXu@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:51373 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750918Ab3HTM0L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 20 Aug 2013 08:26:11 -0400
-In-Reply-To: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
+Received: from mail-qc0-f180.google.com ([209.85.216.180]:47087 "EHLO
+	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366Ab3HTM1b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Aug 2013 08:27:31 -0400
+Content-Disposition: inline
+In-Reply-To: <7346644.tueXegsfXu@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Neil Zhang <zhangwm@marvell.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Colin Cross <ccross@android.com>
 
-On Tuesday, August 20, 2013 01:17:44 PM Neil Zhang wrote:
-> There is a corener case when no peripheral irqs route to secondary
-> cores.
-> Let's take dual core system for example, the sequence is as following:
+On Tue, Aug 20, 2013 at 02:34:14PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, August 20, 2013 08:22:00 AM Tejun Heo wrote:
+> > On Tue, Aug 20, 2013 at 02:30:18PM +0200, Rafael J. Wysocki wrote:
+> > > > So, I don't think we can simply turn TASK_UNITERRUPTIBLE to
+> > > > TASK_KILLABLE at this point.  We really need to strictly define where
+> > > > a task can freeze before being able to do anything like this.
+> > > 
+> > > But we could do that for user space tasks I suppose?
+> > 
+> > Even for userland tasks, we don't know where the task is stuck at.  I
+> > think there are enough freeze points in the kernel which are in the
+> > middle of something which can be used by userland tasks excuting some
+> > syscall.  We need to collect all those sites into well defined trap
+> > points before doing this.
 > 
-> 		Core 0			        Core1
-> 1.			           set waiting bit and enter waiting loop
-> 2. set waiting bit and poke core1
-> 3. 				   clear poke in irq and enter safe state
-> 4. set ready bit and enter ready loop
-> 
-> Since there is no peripheral irq route to core 1, so it will stay in
-> safe state forever, and core 0 will dead loop in the following code.
-> 	while (!cpuidle_coupled_cpus_ready(coupled)) {
-> 		/* Check if any other cpus bailed out of idle. */
-> 		if (!cpuidle_coupled_cpus_waiting(coupled))
-> 	}
-> 
-> The solution is don't let secondary core enter safe state when it has
-> already handled the poke interrupt.
-> 
-> Signed-off-by: Neil Zhang <zhangwm@marvell.com>
-> Reviewed-by: Fangsuo Wu <fswu@marvell.com>
+> OK, thanks!
 
-Daniel, can you please have a look at this?
+I scanned through try_to_freeze() users and it seems like we don't
+have that many which can be hit by userland tasks.  I think it should
+be doable to audit all the users, remove the ones which can be invoked
+by userland and make try_to_freeze() whine loudly if it's running off
+a userland task except from well-defined spots.  Anyways, we need to
+ensure that userland task doesn't get stuck deep in the kernel before
+allowing this.
 
-Rafael
+Thanks.
 
-
-> ---
->  drivers/cpuidle/coupled.c |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-> index 2a297f8..a37c718 100644
-> --- a/drivers/cpuidle/coupled.c
-> +++ b/drivers/cpuidle/coupled.c
-> @@ -119,6 +119,7 @@ struct cpuidle_coupled {
->  #define CPUIDLE_COUPLED_NOT_IDLE	(-1)
->  
->  static DEFINE_MUTEX(cpuidle_coupled_lock);
-> +static DEFINE_PER_CPU(bool, poke_sync);
->  static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
->  
->  /*
-> @@ -295,6 +296,7 @@ static void cpuidle_coupled_poked(void *info)
->  {
->  	int cpu = (unsigned long)info;
->  	cpumask_clear_cpu(cpu, &cpuidle_coupled_poked_mask);
-> +	__this_cpu_write(poke_sync, true);
->  }
->  
->  /**
-> @@ -473,6 +475,7 @@ retry:
->  	 * allowed for a single cpu.
->  	 */
->  	while (!cpuidle_coupled_cpus_waiting(coupled)) {
-> +		__this_cpu_write(poke_sync, false);
->  		if (cpuidle_coupled_clear_pokes(dev->cpu)) {
->  			cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
->  			goto out;
-> @@ -483,6 +486,10 @@ retry:
->  			goto out;
->  		}
->  
-> +		if (cpuidle_coupled_cpus_waiting(coupled)
-> +			&& __this_cpu_read(poke_sync))
-> +			break;
-> +
->  		entered_state = cpuidle_enter_state(dev, drv,
->  			dev->safe_state_index);
->  	}
-> 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+tejun
