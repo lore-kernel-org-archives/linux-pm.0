@@ -1,53 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] freezer: allow killing of frozen tasks
-Date: Tue, 20 Aug 2013 14:41:26 +0200
-Message-ID: <7588112.eXrFpITlCh@vostro.rjw.lan>
-References: <5917186.DMyAa9ofOj@amdc1032> <7346644.tueXegsfXu@vostro.rjw.lan> <20130820122727.GC3926@htj.dyndns.org>
+Subject: Re: [PATCH 0/5] cpufreq: Fixes for 3.12
+Date: Tue, 20 Aug 2013 14:43:42 +0200
+Message-ID: <4207583.84U9qMI9uv@vostro.rjw.lan>
+References: <cover.1376979090.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:51383 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923Ab3HTMaw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 20 Aug 2013 08:30:52 -0400
-In-Reply-To: <20130820122727.GC3926@htj.dyndns.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1376979090.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Colin Cross <ccross@android.com>
 
-On Tuesday, August 20, 2013 08:27:27 AM Tejun Heo wrote:
-> On Tue, Aug 20, 2013 at 02:34:14PM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, August 20, 2013 08:22:00 AM Tejun Heo wrote:
-> > > On Tue, Aug 20, 2013 at 02:30:18PM +0200, Rafael J. Wysocki wrote:
-> > > > > So, I don't think we can simply turn TASK_UNITERRUPTIBLE to
-> > > > > TASK_KILLABLE at this point.  We really need to strictly define where
-> > > > > a task can freeze before being able to do anything like this.
-> > > > 
-> > > > But we could do that for user space tasks I suppose?
-> > > 
-> > > Even for userland tasks, we don't know where the task is stuck at.  I
-> > > think there are enough freeze points in the kernel which are in the
-> > > middle of something which can be used by userland tasks excuting some
-> > > syscall.  We need to collect all those sites into well defined trap
-> > > points before doing this.
-> > 
-> > OK, thanks!
+On Tuesday, August 20, 2013 12:08:21 PM Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> I scanned through try_to_freeze() users and it seems like we don't
-> have that many which can be hit by userland tasks.  I think it should
-> be doable to audit all the users, remove the ones which can be invoked
-> by userland and make try_to_freeze() whine loudly if it's running off
-> a userland task except from well-defined spots.
+> You recently did this:
+> 
+> commit 878f6e074e9a7784a6e351512eace4ccb3542eef
+> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Date:   Sun Aug 18 15:35:59 2013 +0200
+> 
+>     Revert "cpufreq: Use cpufreq_policy_list for iterating over policies"
+>     
+>     Revert commit eb60852 (cpufreq: Use cpufreq_policy_list for iterating
+>     over policies), because it breaks system suspend/resume on multiple
+>     machines.
+>     
+>     It either causes resume to block indefinitely or causes the BUG_ON()
+>     in lock_policy_rwsem_##mode() to trigger on sysfs accesses to cpufreq
+>     attributes.
+>     
+> ------x------------x---------------
+> 
+> This patchset gets the reverted patch back along with few supporting patches.
+> Cause of the initial problem you observed was this:
+> 
+> - At suspend all CPUs are removed leaving boot cpu. At this time policies aren't
+>   freed and also aren't removed from cpufreq_policy_list. And per-cpu variable
+>   cpufreq_cpu_data is marked as NULL.
+> - At resume CPUs other than boot cpu called __cpufreq_add_dev(). The tricky
+>   change that was introduced by my patch was: We iterate over list of policies
+>   instead of CPUs, where we used to get policy structure associated with
+>   CPUs using per-cpu variable. Which used to be NULL for first CPU of a policy
+>   that turned up. For the first cpu we don't want to call
+>   cpufreq_add_policy_cpu() but want __cpufreq_add_add() to continue.
+> 
+>   When we called cpufreq_add_policy_cpu() it tried to stop the governor (which
+>   was already stopped) and hence errors leading into unstable state.
+> 
+> This patchset fixes these issues and is tested with suspend-resume over my
+> thinkpad with ubuntu. Apart from minor cleanups it removes policy from
+> cpufreq_policy_list in case of suspend/resume as well and hence we will never
+> call cpufreq_add_policy_cpu() for first cpu of a policy.
 
-Which might be worth doing anyway to be sure we know what's going on.
+Well, this looks good, but do we really need it in 3.12?  It doesn't look
+like 3.12 will be missing these changes a lot?
 
-> Anyways, we need to ensure that userland task doesn't get stuck deep in the
-> kernel before allowing this.
-
-Agreed.
-
-Thanks,
 Rafael
 
