@@ -1,48 +1,76 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Tue, 20 Aug 2013 17:07:01 +0100
-Message-ID: <52139425.1000709@arm.com>
-References: <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA8BE2.9000309@ti.com> <20130802131541.GN2884@e106331-lin.cambridge.arm.com> <20130806134534.GB6603@kahuna> <20130807161722.GJ28558@e106331-lin.cambridge.arm.com> <52133E26.1000801@arm.com> <5213769D.9020804@ti.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Change to scale off of max P-state
+Date: Tue, 20 Aug 2013 11:37:41 -0700
+Message-ID: <5213B775.6090008@gmail.com>
+References: <1374162523-2777-1-git-send-email-dirk.j.brandewie@gmail.com> <loom.20130801T194134-745@post.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:43383 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206Ab3HTQGm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Aug 2013 12:06:42 -0400
-In-Reply-To: <5213769D.9020804@ti.com>
+Received: from mail-pb0-f44.google.com ([209.85.160.44]:49759 "EHLO
+	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931Ab3HTSho (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Aug 2013 14:37:44 -0400
+Received: by mail-pb0-f44.google.com with SMTP id xa7so723992pbc.17
+        for <linux-pm@vger.kernel.org>; Tue, 20 Aug 2013 11:37:44 -0700 (PDT)
+In-Reply-To: <loom.20130801T194134-745@post.gmane.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Guilherme Salazar <gmesalazar@gmail.com>
+Cc: linux-pm@vger.kernel.org, dirk.brandewie@gmail.com
 
-On 20/08/13 15:01, Nishanth Menon wrote:
-> On 08/20/2013 05:00 AM, Sudeep KarkadaNagesha wrote:
-[...]
->> Until we get more feedback and agreement on new proposal can we have
->> this simple amendment in this patch to the existing binding ? Since the
->> new proposal[1] is backward compatible(this patch adding support for
->> option#5 to existing option#1), we will have to add support for other
->> binding options in [1] later.
+On 08/01/2013 10:56 AM, Guilherme Salazar wrote:
+>   <dirk.brandewie <at> gmail.com> writes:
+>
 >>
->> This is needed to support shared OPPs with simple/single OPP profile
->> and also to fix the broken and unused binding
->> @Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+>> From: Dirk Brandewie <dirk.j.brandewie <at> intel.com>
 >>
->> Regards,
->> Sudeep
+>> Change to using max P-state instead of max turbo P-state.  This change
+>> resolves two issues.
 >>
->> [1] http://www.spinics.net/lists/cpufreq/msg06563.html
-> 
-> 
-> Could you post a non-RFC version of this series? As I had mentioned
-> earlier in the thread, I dont mind having this pulled in as stage 1 of
-> the transition to a more elaborate solution.
-> 
-Thanks Nishanth. I would wait till Mark and Stephen agree for this approach.
+>> On a quiet system intel_pstate can fail to respond to a load change.
+>>     https://bugzilla.kernel.org/show_bug.cgi?id=59481
+>>
+>> On CPU SKUs that have a limited number of P-states and no turbo range
+>> intel_pstate fails to select the highest available P-state.
+>>
+>> This change is suitable for stable v3.9+
+>>
+>> Reported-by: arjan <at> linux.intel.com
+>> Reported-by: dsmythies <at> telus.net
+>> Tested-by: arjan <at> linux.intel.com
+>> Tested-by: dsmythies <at> telus.net
+>>
+>> CC: stable <at> vger.kernel.org
+>> CC: dsmythies <at> telus.net
+>> Signed-off-by: Dirk Brandewie <dirk.j.brandewie <at> intel.com>
+>
+> Hi,
+>
+> I've just tested the patch and, even though it works (the frequency now sits
+> around 1.3-1.5 GHz), I noticed that if I suspend the laptop and then resume
+> it, the abnormal behavior (frequency sitting above 2 GHz) returns.
+>
+There is a separate bug against the suspend resume behaviour. It is coming
+from a bug in the cpufreq core.
 
-Regards,
-Sudeep
+https://bugzilla.kernel.org/show_bug.cgi?id=59781
+
+The fix is disscussed in https://lkml.org/lkml/2013/7/29/692 and is queue for 3.12
+
+> Before suspending, the value in
+> /sys/devices/system/cpu/intel_pstate/min_perf_pct was 37; afterwards, 100.
+>
+> cpuinfo: http://pastebin.com/C6zR90HC
+>
+> I'd be glad to give any further details.
+>
+> Best,
+> Guilherme
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
