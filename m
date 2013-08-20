@@ -1,79 +1,36 @@
-From: Neil Zhang <zhangwm@marvell.com>
-Subject: [PATCH] cpuidle: coupled: fix dead loop corner case
-Date: Tue, 20 Aug 2013 13:17:44 +0800
-Message-ID: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 07/11] cpufreq: Use cpufreq_policy_list for iterating
+ over policies
+Date: Tue, 20 Aug 2013 12:02:12 +0530
+Message-ID: <CAKohpo=5u7ecGLQseyHEe3bFgNLBVexnGwEV3jTs=qcSsndQLA@mail.gmail.com>
+References: <cover.1375809311.git.viresh.kumar@linaro.org>
+	<e54ce908bb964d643a2bbb945ed4a8dcb3ea00bf.1375809311.git.viresh.kumar@linaro.org>
+	<1582060.zfvsylJcxu@vostro.rjw.lan>
+	<CAKohponkLac2GzZ5-PRoTzdx8EhuCWT-eafRtYhkJ6cN_WrXSA@mail.gmail.com>
+	<CAP245DXKpDBetXHY_C0hSu0UHbeiFkhQ3r7V_3HOjQ+RkuabsQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl, daniel.lezcano@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Neil Zhang <zhangwm@marvell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f53.google.com ([209.85.219.53]:62916 "EHLO
+	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941Ab3HTGcN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Aug 2013 02:32:13 -0400
+Received: by mail-oa0-f53.google.com with SMTP id k18so11688oag.40
+        for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2013 23:32:13 -0700 (PDT)
+In-Reply-To: <CAP245DXKpDBetXHY_C0hSu0UHbeiFkhQ3r7V_3HOjQ+RkuabsQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Andy Whitcroft <apw@canonical.com>
 
-There is a corener case when no peripheral irqs route to secondary
-cores.
-Let's take dual core system for example, the sequence is as following:
+On 19 August 2013 17:15, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> Why do you create .deb packages to test development kernels? It _is_ slow.
+>
+> Instead I'd just add a new grub menu entry to /boot/grub/grub.cfg and
+> point it to /boot/MyzImage. After a 'make install; make
+> modules_install' just link /boot/MyzImage to the installed kernel in
+> /boot. And then generate a new initramfs using 'update-initramfs -c -k
+> <ver>'
 
-		Core 0			        Core1
-1.			           set waiting bit and enter waiting loop
-2. set waiting bit and poke core1
-3. 				   clear poke in irq and enter safe state
-4. set ready bit and enter ready loop
-
-Since there is no peripheral irq route to core 1, so it will stay in
-safe state forever, and core 0 will dead loop in the following code.
-	while (!cpuidle_coupled_cpus_ready(coupled)) {
-		/* Check if any other cpus bailed out of idle. */
-		if (!cpuidle_coupled_cpus_waiting(coupled))
-	}
-
-The solution is don't let secondary core enter safe state when it has
-already handled the poke interrupt.
-
-Signed-off-by: Neil Zhang <zhangwm@marvell.com>
-Reviewed-by: Fangsuo Wu <fswu@marvell.com>
----
- drivers/cpuidle/coupled.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index 2a297f8..a37c718 100644
---- a/drivers/cpuidle/coupled.c
-+++ b/drivers/cpuidle/coupled.c
-@@ -119,6 +119,7 @@ struct cpuidle_coupled {
- #define CPUIDLE_COUPLED_NOT_IDLE	(-1)
- 
- static DEFINE_MUTEX(cpuidle_coupled_lock);
-+static DEFINE_PER_CPU(bool, poke_sync);
- static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
- 
- /*
-@@ -295,6 +296,7 @@ static void cpuidle_coupled_poked(void *info)
- {
- 	int cpu = (unsigned long)info;
- 	cpumask_clear_cpu(cpu, &cpuidle_coupled_poked_mask);
-+	__this_cpu_write(poke_sync, true);
- }
- 
- /**
-@@ -473,6 +475,7 @@ retry:
- 	 * allowed for a single cpu.
- 	 */
- 	while (!cpuidle_coupled_cpus_waiting(coupled)) {
-+		__this_cpu_write(poke_sync, false);
- 		if (cpuidle_coupled_clear_pokes(dev->cpu)) {
- 			cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
- 			goto out;
-@@ -483,6 +486,10 @@ retry:
- 			goto out;
- 		}
- 
-+		if (cpuidle_coupled_cpus_waiting(coupled)
-+			&& __this_cpu_read(poke_sync))
-+			break;
-+
- 		entered_state = cpuidle_enter_state(dev, drv,
- 			dev->safe_state_index);
- 	}
--- 
-1.7.4.1
+initramfs was fixed automatically for me with make install.. Thanks it saved
+lots of my time :)
