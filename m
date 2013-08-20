@@ -1,55 +1,165 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 5/5] cpufreq: Use cpufreq_policy_list for iterating over policies
-Date: Tue, 20 Aug 2013 12:08:26 +0530
-Message-ID: <41cb4f97aed084ff3f851c820f23283a02a02d42.1376979090.git.viresh.kumar@linaro.org>
-References: <cover.1376979090.git.viresh.kumar@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
+Date: Tue, 20 Aug 2013 10:11:47 +0200
+Message-ID: <20130820101147.5a7c2efa@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
+ <20130819085037.11e95c06@amdc308.digital.local>
+ <2325996.izOUC9kIz1@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1376979090.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1376979090.git.viresh.kumar@linaro.org>
-References: <cover.1376979090.git.viresh.kumar@linaro.org>
+In-reply-to: <2325996.izOUC9kIz1@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-To iterate over all policies we currently iterate over all CPUs and
-then get the policy for each of them.  Let's use the newly created
-cpufreq_policy_list for this purpose.
+On Tue, 20 Aug 2013 01:29:20 +0200 Rafael J. Wysocki rjw@sisk.pl wrote,
+> On Monday, August 19, 2013 08:50:37 AM Lukasz Majewski wrote:
+> > On Mon, 19 Aug 2013 12:08:26 +0530 Viresh Kumar
+> > viresh.kumar@linaro.org wrote,
+> > > On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com>
+> > > wrote:
+> > > > This patch series introduces support for CPU overclocking
+> > > > technique called Boost.
+> > > >
+> > > > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > > > component:
+> > > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> > > >
+> > > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> > > > software oriented one (like the one done at Exynos).
+> > > > For this reason cpufreq/freq_table code has been reorganized to
+> > > > include common code.
+> > > >
+> > > > Important design decisions:
+> > > > - Boost related code is compiled-in unconditionally to cpufreq
+> > > > core and disabled by default. The cpufreq_driver is
+> > > > responsibile for setting boost_supported flag and providing
+> > > > set_boost callback(if HW support is needed). For software
+> > > > managed boost, special Kconfig flag - CONFIG_CPU_FREQ_BOOST_SW
+> > > > has been defined. It will be selected only when a target
+> > > > platform has thermal framework properly configured.
+> > > >
+> > > > - struct cpufreq_driver has been extended with boost related
+> > > > fields: -- boost_supported - when driver supports boosting
+> > > >         -- boost_enabled - boost state
+> > > >         -- set_boost - callback to function, which is necessary
+> > > > to enable/disable boost
+> > > >
+> > > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost)
+> > > > is visible _only_ when cpufreq driver supports Boost.
+> > > >
+> > > > - No special spin_lock for Boost was created. The one from
+> > > > cpufreq core was reused.
+> > > >
+> > > > - The Boost code doesn't rely on any policy. When boost state is
+> > > > changed, then the policy list is iterated and proper
+> > > > adjustements are done.
+> > > >
+> > > > - To improve safety level, the thermal framework is also
+> > > > extended to disable software boosting, when thermal trip point
+> > > > is reached. Then it starts monitoring target temperature to
+> > > > evaluate if boost can be enabled again. This emulates behaviour
+> > > > similar to HW managed boost (like x86)
+> > > >
+> > > > Tested at HW:
+> > > >        Exynos 4412 3.11-rc4 Linux
+> > > >        Intel Core i7-3770 3.11-rc4 Linux
+> > > >
+> > > > Above patches were posted on top of linux_pm/linux-next with
+> > > > following patches applied:
+> > > >
+> > > > cpufreq: exynos5440: Fix to skip when new frequency same as
+> > > > current cpufreq: fix EXYNOS drivers selection
+> > > >
+> > > > Lukasz Majewski (7):
+> > > >   cpufreq: Add boost frequency support in core
+> > > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
+> > > > common boost solution
+> > > >   thermal:boost: Automatic enable/disable of BOOST feature
+> > > >   cpufreq:boost:Kconfig: Provide support for software managed
+> > > > BOOST cpufreq:exynos:Extend Exynos cpufreq driver to support
+> > > > boost framework
+> > > >   Documentation:cpufreq:boost: Update BOOST documentation
+> > > >   cpufreq:exynos4x12: Change L0 driver data to
+> > > > CPUFREQ_BOOST_FREQ
+> > > 
+> > > Hi Lukasz,
+> > > 
+> > 
+> > Hi Viresh,
+> > 
+> > > I haven't found time yet to go through this series.. 
+> > 
+> > I've just started wondering if I had send those patches
+> > correctly :-).
+> > 
+> > > I want to do a
+> > > deep/careful review this time as these are almost the final
+> > > patches.
+> > 
+> > Ok.
+> > 
+> > > 
+> > > Will try to get over them by the end of this week..
+> > 
+> > Ok, I understand.
+> 
+> Do I assume correctly that this stuff has been tested on
+> ACPI-compatible x86 with acpi-cpufreq and everything has worked
+> correctly there?
+> 
+> Rafael
+> 
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+Hi Rafael,
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0586bd2..81ceea6 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -961,8 +961,8 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	struct cpufreq_policy *policy;
- 	unsigned long flags;
- #ifdef CONFIG_HOTPLUG_CPU
-+	struct cpufreq_policy *tpolicy;
- 	struct cpufreq_governor *gov;
--	int sibling;
- #endif
- 
- 	if (cpu_is_offline(cpu))
-@@ -985,11 +985,10 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- #ifdef CONFIG_HOTPLUG_CPU
- 	/* Check if this cpu was hot-unplugged earlier and has siblings */
- 	read_lock_irqsave(&cpufreq_driver_lock, flags);
--	for_each_online_cpu(sibling) {
--		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
--		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
-+	list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list) {
-+		if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
- 			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
--			ret = cpufreq_add_policy_cpu(cp, cpu, dev, frozen);
-+			ret = cpufreq_add_policy_cpu(tpolicy, cpu, dev, frozen);
- 			up_read(&cpufreq_rwsem);
- 			return ret;
- 		}
+Following test configuration/test case (x86):
+
+- DELL OptiPlex 9010 Intel Core i7-3770
+- Linux repo: [kernel_pm_http/bleeding-edge] [kernel_pm_http/linux-next]
+	SHA1: a238ea5e20be7bea2b1fc951a024ecce770306b5 
+	with v7 applied on top
+
+- Linux version: 3.11-rc4 (patches v7) and 3.11-rc1 (v6)
+
+- Ubuntu 11.10 (make bzImage + make all when module was needed)
+- config_ubuntu_3_11 (the default one for ubuntu)
+- KConfig:
+	1. Disabled intel_pstate driver
+	2. Enabled ACPI-Prosessor P state driver
+	3. Legacy cpb sysfs knob support for AMD CPUs ON/OFF (which is a
+	part of acpi-cpufreq.c driver).
+	
+- acpi-cpufreq driver was build as a module or was embedded in kernel
+  (tested with modprobe -i / -r => no dmesg error|warning output)
+
+- I was able to read/write (echo 0/1
+  > /sys/devices/system/cpu/cpufreq/boost) => no output at dmesg -
+  system was working stable.
+
+Toolchain: gcc version 4.6.1 (Ubuntu/Linaro 4.6.1-9ubuntu3)
+
+Since I'm mostly working with ARM (exynos4412) and major work was done
+with cpufreq core (and x86 related work was to move common code to
+cpufreq core) tests mostly have been performed on ARM.
+
+Tests on ARM:
+- Stress tests with up to 4 scripts running to enable/disable boost
+  sysfs attribute with random time interval (gzip < /dev/urandom
+  > /dev/null). 
+- Test to overheat the ARM target and look if boost+thermal cools down
+  the device and enables boost again.
+- LAB governor (which was already posted to ML) to boost when power
+  envelope allows it.
+
+
 -- 
-1.7.12.rc2.18.g61b472e
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
