@@ -1,119 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Hold acpi_scan_lock over system PM transitions
-Date: Tue, 20 Aug 2013 01:47:57 +0200
-Message-ID: <2852781.TfChGuuEkJ@vostro.rjw.lan>
+From: Neil Zhang <zhangwm@marvell.com>
+Subject: [PATCH] cpuidle: coupled: fix dead loop corner case
+Date: Tue, 20 Aug 2013 13:17:44 +0800
+Message-ID: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@sisk.pl, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Neil Zhang <zhangwm@marvell.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+There is a corener case when no peripheral irqs route to secondary
+cores.
+Let's take dual core system for example, the sequence is as following:
 
-Bad things happen if ACPI hotplug events are handled during system
-PM transitions, especially if devices are removed as a result.
-To prevent those bad things from happening, acquire acpi_scan_lock
-when a transition is started and release it when that transition
-is complete or has been aborted.
+		Core 0			        Core1
+1.			           set waiting bit and enter waiting loop
+2. set waiting bit and poke core1
+3. 				   clear poke in irq and enter safe state
+4. set ready bit and enter ready loop
 
-This fixes resume lockup on my test-bed Acer Aspire S5 that happens
-when Thunderbolt devices are disconnected from the machine while
-suspended.
+Since there is no peripheral irq route to core 1, so it will stay in
+safe state forever, and core 0 will dead loop in the following code.
+	while (!cpuidle_coupled_cpus_ready(coupled)) {
+		/* Check if any other cpus bailed out of idle. */
+		if (!cpuidle_coupled_cpus_waiting(coupled))
+	}
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The solution is don't let secondary core enter safe state when it has
+already handled the poke interrupt.
+
+Signed-off-by: Neil Zhang <zhangwm@marvell.com>
+Reviewed-by: Fangsuo Wu <fswu@marvell.com>
 ---
+ drivers/cpuidle/coupled.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Applies on top of the linux-next branch of the linux-pm.git tree.
-
-Thanks,
-Rafael
-
----
- drivers/acpi/sleep.c |   39 ++++++++++++++++++++++++---------------
- 1 file changed, 24 insertions(+), 15 deletions(-)
-
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -420,10 +420,21 @@ static void acpi_pm_finish(void)
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index 2a297f8..a37c718 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -119,6 +119,7 @@ struct cpuidle_coupled {
+ #define CPUIDLE_COUPLED_NOT_IDLE	(-1)
+ 
+ static DEFINE_MUTEX(cpuidle_coupled_lock);
++static DEFINE_PER_CPU(bool, poke_sync);
+ static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
+ 
+ /*
+@@ -295,6 +296,7 @@ static void cpuidle_coupled_poked(void *info)
+ {
+ 	int cpu = (unsigned long)info;
+ 	cpumask_clear_cpu(cpu, &cpuidle_coupled_poked_mask);
++	__this_cpu_write(poke_sync, true);
  }
  
  /**
-- *	acpi_pm_end - Finish up suspend sequence.
-+ * acpi_pm_start - Start system PM transition.
-+ */
-+static void acpi_pm_start(u32 acpi_state)
-+{
-+	acpi_target_sleep_state = acpi_state;
-+	acpi_sleep_tts_switch(acpi_target_sleep_state);
-+	acpi_scan_lock_acquire();
-+}
+@@ -473,6 +475,7 @@ retry:
+ 	 * allowed for a single cpu.
+ 	 */
+ 	while (!cpuidle_coupled_cpus_waiting(coupled)) {
++		__this_cpu_write(poke_sync, false);
+ 		if (cpuidle_coupled_clear_pokes(dev->cpu)) {
+ 			cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
+ 			goto out;
+@@ -483,6 +486,10 @@ retry:
+ 			goto out;
+ 		}
+ 
++		if (cpuidle_coupled_cpus_waiting(coupled)
++			&& __this_cpu_read(poke_sync))
++			break;
 +
-+/**
-+ * acpi_pm_end - Finish up system PM transition.
-  */
- static void acpi_pm_end(void)
- {
-+	acpi_scan_lock_release();
- 	/*
- 	 * This is necessary in case acpi_pm_finish() is not called during a
- 	 * failing transition to a sleep state.
-@@ -451,21 +462,19 @@ static u32 acpi_suspend_states[] = {
- static int acpi_suspend_begin(suspend_state_t pm_state)
- {
- 	u32 acpi_state = acpi_suspend_states[pm_state];
--	int error = 0;
-+	int error;
- 
- 	error = (nvs_nosave || nvs_nosave_s3) ? 0 : suspend_nvs_alloc();
- 	if (error)
- 		return error;
- 
--	if (sleep_states[acpi_state]) {
--		acpi_target_sleep_state = acpi_state;
--		acpi_sleep_tts_switch(acpi_target_sleep_state);
--	} else {
--		printk(KERN_ERR "ACPI does not support this state: %d\n",
--			pm_state);
--		error = -ENOSYS;
-+	if (!sleep_states[acpi_state]) {
-+		pr_err("ACPI does not support sleep state S%u\n", acpi_state);
-+		return -ENOSYS;
+ 		entered_state = cpuidle_enter_state(dev, drv,
+ 			dev->safe_state_index);
  	}
--	return error;
-+
-+	acpi_pm_start(acpi_state);
-+	return 0;
- }
- 
- /**
-@@ -631,10 +640,8 @@ static int acpi_hibernation_begin(void)
- 	int error;
- 
- 	error = nvs_nosave ? 0 : suspend_nvs_alloc();
--	if (!error) {
--		acpi_target_sleep_state = ACPI_STATE_S4;
--		acpi_sleep_tts_switch(acpi_target_sleep_state);
--	}
-+	if (!error)
-+		acpi_pm_start(ACPI_STATE_S4);
- 
- 	return error;
- }
-@@ -713,8 +720,10 @@ static int acpi_hibernation_begin_old(vo
- 	if (!error) {
- 		if (!nvs_nosave)
- 			error = suspend_nvs_alloc();
--		if (!error)
-+		if (!error) {
- 			acpi_target_sleep_state = ACPI_STATE_S4;
-+			acpi_scan_lock_acquire();
-+		}
- 	}
- 	return error;
- }
-
+-- 
+1.7.4.1
