@@ -1,62 +1,154 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v4 05/19] ARM: DT/kernel: define ARM specific
- arch_match_cpu_phys_id
-Date: Tue, 20 Aug 2013 10:30:07 +0100
-Message-ID: <1376991021-12160-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support other
+ architectures
+Date: Tue, 20 Aug 2013 10:30:05 +0100
+Message-ID: <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>
+Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-OF/DT core library now provides architecture specific hook to match the
-logical cpu index with the corresponding physical identifier. Most of the
-cpu DT node parsing and initialisation is contained in devtree.c. So it's
-better to define ARM specific arch_match_cpu_phys_id there.
+Currently different drivers requiring to access cpu device node are
+parsing the device tree themselves. Since the ordering in the DT need
+not match the logical cpu ordering, the parsing logic needs to consider
+that. However, this has resulted in lots of code duplication and in some
+cases even incorrect logic.
 
-This mainly helps to avoid replication of the code doing CPU node parsing
-and physical(MPIDR) to logical mapping.
+It's better to consolidate them by adding support for getting cpu
+device node for a given logical cpu index in DT core library. However
+logical to physical index mapping can be architecture specific.
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Acked-by: Rob Herring <rob.herring@calxeda.com>
-Acked-by: Nicolas Pitre <nico@linaro.org>
+PowerPC has it's own implementation to get the cpu node for a given
+logical index.
+
+This patch refactors the current implementation of of_get_cpu_node.
+This in preparation to move the implementation to DT core library.
+It separates out the logical to physical mapping so that a default
+matching of the physical id to the logical cpu index can be added
+when moved to common code. Architecture specific code can override it.
+
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- arch/arm/kernel/devtree.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/kernel/prom.c | 76 ++++++++++++++++++++++++++++------------------
+ 1 file changed, 47 insertions(+), 29 deletions(-)
 
-diff --git a/arch/arm/kernel/devtree.c b/arch/arm/kernel/devtree.c
-index 5859c8b..2ee8a17 100644
---- a/arch/arm/kernel/devtree.c
-+++ b/arch/arm/kernel/devtree.c
-@@ -169,6 +169,11 @@ void __init arm_dt_init_cpu_maps(void)
- 	}
- }
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index eb23ac9..f7b8c0b 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
+ __initcall(prom_reconfig_setup);
+ #endif
  
 +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
 +{
-+	return (phys_id & MPIDR_HWID_BITMASK) == cpu_logical_map(cpu);
++	return (int)phys_id == get_hard_smp_processor_id(cpu);
 +}
 +
- /**
-  * setup_machine_fdt - Machine setup when an dtb was passed to the kernel
-  * @dt_phys: physical address of dt blob
++static bool __of_find_n_match_cpu_property(struct device_node *cpun,
++			const char *prop_name, int cpu, unsigned int *thread)
++{
++	const __be32 *cell;
++	int ac, prop_len, tid;
++	u64 hwid;
++
++	ac = of_n_addr_cells(cpun);
++	cell = of_get_property(cpun, prop_name, &prop_len);
++	if (!cell)
++		return false;
++	prop_len /= sizeof(*cell);
++	for (tid = 0; tid < prop_len; tid++) {
++		hwid = of_read_number(cell, ac);
++		if (arch_match_cpu_phys_id(cpu, hwid)) {
++			if (thread)
++				*thread = tid;
++			return true;
++		}
++		cell += ac;
++	}
++	return false;
++}
++
+ /* Find the device node for a given logical cpu number, also returns the cpu
+  * local thread number (index in ibm,interrupt-server#s) if relevant and
+  * asked for (non NULL)
+  */
+ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+ {
+-	int hardid;
+-	struct device_node *np;
++	struct device_node *cpun, *cpus;
+ 
+-	hardid = get_hard_smp_processor_id(cpu);
++	cpus = of_find_node_by_path("/cpus");
++	if (!cpus) {
++		pr_warn("Missing cpus node, bailing out\n");
++		return NULL;
++	}
+ 
+-	for_each_node_by_type(np, "cpu") {
+-		const u32 *intserv;
+-		unsigned int plen, t;
++	for_each_child_of_node(cpus, cpun) {
++		if (of_node_cmp(cpun->type, "cpu"))
++			continue;
+ 
+-		/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
+-		 * fallback to "reg" property and assume no threads
++		/* Check for non-standard "ibm,ppc-interrupt-server#s" property
++		 * for thread ids on PowerPC. If it doesn't exist fallback to
++		 * standard "reg" property.
+ 		 */
+-		intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
+-				&plen);
+-		if (intserv == NULL) {
+-			const u32 *reg = of_get_property(np, "reg", NULL);
+-			if (reg == NULL)
+-				continue;
+-			if (*reg == hardid) {
+-				if (thread)
+-					*thread = 0;
+-				return np;
+-			}
+-		} else {
+-			plen /= sizeof(u32);
+-			for (t = 0; t < plen; t++) {
+-				if (hardid == intserv[t]) {
+-					if (thread)
+-						*thread = t;
+-					return np;
+-				}
+-			}
+-		}
++		if (__of_find_n_match_cpu_property(cpun,
++				"ibm,ppc-interrupt-server#s", cpu, thread))
++			return cpun;
++
++		if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
++			return cpun;
+ 	}
+ 	return NULL;
+ }
 -- 
 1.8.1.2
