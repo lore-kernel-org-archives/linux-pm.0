@@ -1,172 +1,100 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v4 08/19] ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
-Date: Tue, 20 Aug 2013 10:30:10 +0100
-Message-ID: <1376991021-12160-9-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Tue, 20 Aug 2013 11:00:06 +0100
+Message-ID: <52133E26.1000801@arm.com>
+References: <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA8BE2.9000309@ti.com> <20130802131541.GN2884@e106331-lin.cambridge.arm.com> <20130806134534.GB6603@kahuna> <20130807161722.GJ28558@e106331-lin.cambridge.arm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130807161722.GJ28558@e106331-lin.cambridge.arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 07/08/13 17:17, Mark Rutland wrote:
+> On Tue, Aug 06, 2013 at 02:45:34PM +0100, Nishanth Menon wrote:
+>> On 14:15-20130802, Mark Rutland wrote:
+>>> On Thu, Aug 01, 2013 at 05:25:06PM +0100, Nishanth Menon wrote:
+>>>> On 08/01/2013 08:54 AM, Mark Rutland wrote:
+>>>>> On Wed, Jul 31, 2013 at 05:27:39PM +0100, Nishanth Menon wrote:
+>>>>>> On 07/31/2013 11:11 AM, Mark Rutland wrote:
+>>>>>>> On Wed, Jul 31, 2013 at 04:58:22PM +0100, Nishanth Menon wrote:
+>>>>>>>> On 07/31/2013 10:29 AM, Mark Rutland wrote:
+>>>>>>>>> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
+>>>>>>>>>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
+>>>>>>>>>>> On 30/07/13 21:48, Nishanth Menon wrote:
+>>>>>>>>>>>> On 07/30/2013 01:34 PM, Stephen Warren wrote:
+>>>>>>>>>>>>> On 07/30/2013 12:00 PM, Sudeep KarkadaNagesha wrote:
+>> [...]
+>>>>
+>>>>>
+>>>>> * Performance profiles, in which you have a set of OPP tables for
+>>>>>    "performance, "low-power", and whatever else. This arbitrary split
+>>>>>    seems like a configuration decision rather than a hardware description
+>>>>>    unless there is some hard limit that cannot be detected (e.g. the
+>>>>>    processor can function at some arbitrary high speed, but becomes hot
+>>>>>    enough to melt something, and there's no temperature sensor to handle
+>>>>>    this case dynamically).
+>>>>
+>>>> precisely -> I think I point this out in this thread:
+>>>> http://marc.info/?l=devicetree&m=137535932402560&w=2
+>>>
+>>> The one thing I don't like is the arbitrary grouping into profiles, as
+>>> the division is entirely a configuration decision. The operating points
+>>> themselves are a hardware capability, and it may make sense to describe
+>>> the feasible points for a device in the dt, but I don't want to have
+>>> different profiles exported because it straddles the line of the dt
+>>> telling us how to use the hardware rather than what the hardware is, and
+>>> will come back to bite us later if we want to handle cpu frequency
+>>> decisions differently.
+>>
+>> I can understand why it seems to wrongly indicate *how* to use the
+>> hardware, rather than *what the hardware is* - Lets try it this way:
+>> - if Bit X is set in efuse, one cannot use high performance mode
+>> - If PDN (Power Distribution Network) guidelines are not met, one cannot
+>> use high performance mode.
+>>
+>> These constrain *hardware capability* you can do on that SoC+Board
+>> combination - that is exactly what we have been struggling to describe
+>> here. These are not *how to use hardware* profiles, but *hardware
+>> capability* profiles whose selection is upto to the System in
+>> discussion - example - SoC x will decide on bit based decision and
+>> forbid Board file overrides while an SoC y family might choose another
+>> path.. Framework and dts should not dictate policy and we dont try to
+>> do that here.
+>>
+>> How to use the hardware within the *capability costraints* is upto
+>> drivers, there is no attempt to define that in my proposal.
+> 
+> I'm happy to have the OPPs, as your arguments certainly make sense. My
+> only concern is that if we have them grouped in some fashion in dt (e.g.
+> profiles), people will use this as configuration, treating the groups of
+> OPPs differnetly (prefering a 'performance' or 'low-power' profile). I'd
+> prefer that any decision on how to use the provided OPP values were done
+> in the kernel dynamically.
+> 
+> I suspect even if we remove profile names, people will attempt to read
+> some semantics into the groupings. For that reason, I'd prefer to have a
+> single OPP table for any device (though this table could be shared by
+> devices).
+> 
 
-Currently the topology code computes cpu capacity and stores it in
-the list along with hwid(which is MPIDR) as it parses the CPU nodes
-in the device tree. This is required as it needs to be mapped to the
-logical CPU later.
+Until we get more feedback and agreement on new proposal can we have
+this simple amendment in this patch to the existing binding ? Since the
+new proposal[1] is backward compatible(this patch adding support for
+option#5 to existing option#1), we will have to add support for other
+binding options in [1] later.
 
-Since the CPU device nodes can be retrieved in the logical ordering
-using DT/OF helpers, its possible to store cpu_capacity also in logical
-ordering and avoid storing hwid for each entry.
+This is needed to support shared OPPs with simple/single OPP profile
+and also to fix the broken and unused binding
+@Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
 
-This patch removes hwid by making use of of_get_cpu_node.
+Regards,
+Sudeep
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Acked-by: Rob Herring <rob.herring@calxeda.com>
-Acked-by: Nicolas Pitre <nico@linaro.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- arch/arm/kernel/topology.c | 61 +++++++++++++++---------------------------=
-----
- 1 file changed, 19 insertions(+), 42 deletions(-)
+[1] http://www.spinics.net/lists/cpufreq/msg06563.html
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index c5a5954..85a8737 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -74,12 +74,8 @@ struct cpu_efficiency table_efficiency[] =3D {
- =09{NULL, },
- };
-=20
--struct cpu_capacity {
--=09unsigned long hwid;
--=09unsigned long capacity;
--};
--
--struct cpu_capacity *cpu_capacity;
-+unsigned long *__cpu_capacity;
-+#define cpu_capacity(cpu)=09__cpu_capacity[cpu]
-=20
- unsigned long middle_capacity =3D 1;
-=20
-@@ -100,15 +96,19 @@ static void __init parse_dt_topology(void)
- =09unsigned long capacity =3D 0;
- =09int alloc_size, cpu =3D 0;
-=20
--=09alloc_size =3D nr_cpu_ids * sizeof(struct cpu_capacity);
--=09cpu_capacity =3D kzalloc(alloc_size, GFP_NOWAIT);
-+=09alloc_size =3D nr_cpu_ids * sizeof(*__cpu_capacity);
-+=09__cpu_capacity =3D kzalloc(alloc_size, GFP_NOWAIT);
-=20
--=09while ((cn =3D of_find_node_by_type(cn, "cpu"))) {
--=09=09const u32 *rate, *reg;
-+=09for_each_possible_cpu(cpu) {
-+=09=09const u32 *rate;
- =09=09int len;
-=20
--=09=09if (cpu >=3D num_possible_cpus())
--=09=09=09break;
-+=09=09/* too early to use cpu->of_node */
-+=09=09cn =3D of_get_cpu_node(cpu, NULL);
-+=09=09if (!cn) {
-+=09=09=09pr_err("missing device node for CPU %d\n", cpu);
-+=09=09=09continue;
-+=09=09}
-=20
- =09=09for (cpu_eff =3D table_efficiency; cpu_eff->compatible; cpu_eff++)
- =09=09=09if (of_device_is_compatible(cn, cpu_eff->compatible))
-@@ -124,12 +124,6 @@ static void __init parse_dt_topology(void)
- =09=09=09continue;
- =09=09}
-=20
--=09=09reg =3D of_get_property(cn, "reg", &len);
--=09=09if (!reg || len !=3D 4) {
--=09=09=09pr_err("%s missing reg property\n", cn->full_name);
--=09=09=09continue;
--=09=09}
--
- =09=09capacity =3D ((be32_to_cpup(rate)) >> 20) * cpu_eff->efficiency;
-=20
- =09=09/* Save min capacity of the system */
-@@ -140,13 +134,9 @@ static void __init parse_dt_topology(void)
- =09=09if (capacity > max_capacity)
- =09=09=09max_capacity =3D capacity;
-=20
--=09=09cpu_capacity[cpu].capacity =3D capacity;
--=09=09cpu_capacity[cpu++].hwid =3D be32_to_cpup(reg);
-+=09=09cpu_capacity(cpu) =3D capacity;
- =09}
-=20
--=09if (cpu < num_possible_cpus())
--=09=09cpu_capacity[cpu].hwid =3D (unsigned long)(-1);
--
- =09/* If min and max capacities are equals, we bypass the update of the
- =09 * cpu_scale because all CPUs have the same capacity. Otherwise, we
- =09 * compute a middle_capacity factor that will ensure that the capacity
-@@ -154,9 +144,7 @@ static void __init parse_dt_topology(void)
- =09 * SCHED_POWER_SCALE, which is the default value, but with the
- =09 * constraint explained near table_efficiency[].
- =09 */
--=09if (min_capacity =3D=3D max_capacity)
--=09=09cpu_capacity[0].hwid =3D (unsigned long)(-1);
--=09else if (4*max_capacity < (3*(max_capacity + min_capacity)))
-+=09if (4*max_capacity < (3*(max_capacity + min_capacity)))
- =09=09middle_capacity =3D (min_capacity + max_capacity)
- =09=09=09=09>> (SCHED_POWER_SHIFT+1);
- =09else
-@@ -170,23 +158,12 @@ static void __init parse_dt_topology(void)
-  * boot. The update of all CPUs is in O(n^2) for heteregeneous system but =
-the
-  * function returns directly for SMP system.
-  */
--void update_cpu_power(unsigned int cpu, unsigned long hwid)
-+void update_cpu_power(unsigned int cpu)
- {
--=09unsigned int idx =3D 0;
--
--=09/* look for the cpu's hwid in the cpu capacity table */
--=09for (idx =3D 0; idx < num_possible_cpus(); idx++) {
--=09=09if (cpu_capacity[idx].hwid =3D=3D hwid)
--=09=09=09break;
--
--=09=09if (cpu_capacity[idx].hwid =3D=3D -1)
--=09=09=09return;
--=09}
--
--=09if (idx =3D=3D num_possible_cpus())
-+=09if (!cpu_capacity(cpu))
- =09=09return;
-=20
--=09set_power_scale(cpu, cpu_capacity[idx].capacity / middle_capacity);
-+=09set_power_scale(cpu, cpu_capacity(cpu) / middle_capacity);
-=20
- =09printk(KERN_INFO "CPU%u: update cpu_power %lu\n",
- =09=09cpu, arch_scale_freq_power(NULL, cpu));
-@@ -194,7 +171,7 @@ void update_cpu_power(unsigned int cpu, unsigned long h=
-wid)
-=20
- #else
- static inline void parse_dt_topology(void) {}
--static inline void update_cpu_power(unsigned int cpuid, unsigned int mpidr=
-) {}
-+static inline void update_cpu_power(unsigned int cpuid) {}
- #endif
-=20
-  /*
-@@ -281,7 +258,7 @@ void store_cpu_topology(unsigned int cpuid)
-=20
- =09update_siblings_masks(cpuid);
-=20
--=09update_cpu_power(cpuid, mpidr & MPIDR_HWID_BITMASK);
-+=09update_cpu_power(cpuid);
-=20
- =09printk(KERN_INFO "CPU%u: thread %d, cpu %d, socket %d, mpidr %x\n",
- =09=09cpuid, cpu_topology[cpuid].thread_id,
---=20
-1.8.1.2
+
