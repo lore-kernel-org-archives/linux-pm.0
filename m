@@ -1,165 +1,109 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
-Date: Tue, 20 Aug 2013 10:11:47 +0200
-Message-ID: <20130820101147.5a7c2efa@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
- <20130819085037.11e95c06@amdc308.digital.local>
- <2325996.izOUC9kIz1@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <2325996.izOUC9kIz1@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 09/19] ARM: mvebu: remove device tree parsing for cpu nodes
+Date: Tue, 20 Aug 2013 10:30:11 +0100
+Message-ID: <1376991021-12160-10-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 20 Aug 2013 01:29:20 +0200 Rafael J. Wysocki rjw@sisk.pl wrote,
-> On Monday, August 19, 2013 08:50:37 AM Lukasz Majewski wrote:
-> > On Mon, 19 Aug 2013 12:08:26 +0530 Viresh Kumar
-> > viresh.kumar@linaro.org wrote,
-> > > On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com>
-> > > wrote:
-> > > > This patch series introduces support for CPU overclocking
-> > > > technique called Boost.
-> > > >
-> > > > It is a follow up of a LAB governor proposal. Boost is a LAB
-> > > > component:
-> > > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> > > >
-> > > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> > > > software oriented one (like the one done at Exynos).
-> > > > For this reason cpufreq/freq_table code has been reorganized to
-> > > > include common code.
-> > > >
-> > > > Important design decisions:
-> > > > - Boost related code is compiled-in unconditionally to cpufreq
-> > > > core and disabled by default. The cpufreq_driver is
-> > > > responsibile for setting boost_supported flag and providing
-> > > > set_boost callback(if HW support is needed). For software
-> > > > managed boost, special Kconfig flag - CONFIG_CPU_FREQ_BOOST_SW
-> > > > has been defined. It will be selected only when a target
-> > > > platform has thermal framework properly configured.
-> > > >
-> > > > - struct cpufreq_driver has been extended with boost related
-> > > > fields: -- boost_supported - when driver supports boosting
-> > > >         -- boost_enabled - boost state
-> > > >         -- set_boost - callback to function, which is necessary
-> > > > to enable/disable boost
-> > > >
-> > > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost)
-> > > > is visible _only_ when cpufreq driver supports Boost.
-> > > >
-> > > > - No special spin_lock for Boost was created. The one from
-> > > > cpufreq core was reused.
-> > > >
-> > > > - The Boost code doesn't rely on any policy. When boost state is
-> > > > changed, then the policy list is iterated and proper
-> > > > adjustements are done.
-> > > >
-> > > > - To improve safety level, the thermal framework is also
-> > > > extended to disable software boosting, when thermal trip point
-> > > > is reached. Then it starts monitoring target temperature to
-> > > > evaluate if boost can be enabled again. This emulates behaviour
-> > > > similar to HW managed boost (like x86)
-> > > >
-> > > > Tested at HW:
-> > > >        Exynos 4412 3.11-rc4 Linux
-> > > >        Intel Core i7-3770 3.11-rc4 Linux
-> > > >
-> > > > Above patches were posted on top of linux_pm/linux-next with
-> > > > following patches applied:
-> > > >
-> > > > cpufreq: exynos5440: Fix to skip when new frequency same as
-> > > > current cpufreq: fix EXYNOS drivers selection
-> > > >
-> > > > Lukasz Majewski (7):
-> > > >   cpufreq: Add boost frequency support in core
-> > > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
-> > > > common boost solution
-> > > >   thermal:boost: Automatic enable/disable of BOOST feature
-> > > >   cpufreq:boost:Kconfig: Provide support for software managed
-> > > > BOOST cpufreq:exynos:Extend Exynos cpufreq driver to support
-> > > > boost framework
-> > > >   Documentation:cpufreq:boost: Update BOOST documentation
-> > > >   cpufreq:exynos4x12: Change L0 driver data to
-> > > > CPUFREQ_BOOST_FREQ
-> > > 
-> > > Hi Lukasz,
-> > > 
-> > 
-> > Hi Viresh,
-> > 
-> > > I haven't found time yet to go through this series.. 
-> > 
-> > I've just started wondering if I had send those patches
-> > correctly :-).
-> > 
-> > > I want to do a
-> > > deep/careful review this time as these are almost the final
-> > > patches.
-> > 
-> > Ok.
-> > 
-> > > 
-> > > Will try to get over them by the end of this week..
-> > 
-> > Ok, I understand.
-> 
-> Do I assume correctly that this stuff has been tested on
-> ACPI-compatible x86 with acpi-cpufreq and everything has worked
-> correctly there?
-> 
-> Rafael
-> 
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Hi Rafael,
+Currently set_secondary_cpus_clock assume the CPU logical ordering
+and the MPDIR in DT are same, which is incorrect.
 
-Following test configuration/test case (x86):
+Since the CPU device nodes can be retrieved in the logical ordering
+using the DT helper, we can remove the devices tree parsing.
 
-- DELL OptiPlex 9010 Intel Core i7-3770
-- Linux repo: [kernel_pm_http/bleeding-edge] [kernel_pm_http/linux-next]
-	SHA1: a238ea5e20be7bea2b1fc951a024ecce770306b5 
-	with v7 applied on top
+This patch removes DT parsing by making use of of_get_cpu_node.
 
-- Linux version: 3.11-rc4 (patches v7) and 3.11-rc1 (v6)
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>
+Acked-by: Gregory Clement <gregory.clement@free-electrons.com>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+---
+ arch/arm/mach-mvebu/platsmp.c | 51 +++++++++++++++++++--------------------=
+----
+ 1 file changed, 23 insertions(+), 28 deletions(-)
 
-- Ubuntu 11.10 (make bzImage + make all when module was needed)
-- config_ubuntu_3_11 (the default one for ubuntu)
-- KConfig:
-	1. Disabled intel_pstate driver
-	2. Enabled ACPI-Prosessor P state driver
-	3. Legacy cpb sysfs knob support for AMD CPUs ON/OFF (which is a
-	part of acpi-cpufreq.c driver).
-	
-- acpi-cpufreq driver was build as a module or was embedded in kernel
-  (tested with modprobe -i / -r => no dmesg error|warning output)
-
-- I was able to read/write (echo 0/1
-  > /sys/devices/system/cpu/cpufreq/boost) => no output at dmesg -
-  system was working stable.
-
-Toolchain: gcc version 4.6.1 (Ubuntu/Linaro 4.6.1-9ubuntu3)
-
-Since I'm mostly working with ARM (exynos4412) and major work was done
-with cpufreq core (and x86 related work was to move common code to
-cpufreq core) tests mostly have been performed on ARM.
-
-Tests on ARM:
-- Stress tests with up to 4 scripts running to enable/disable boost
-  sysfs attribute with random time interval (gzip < /dev/urandom
-  > /dev/null). 
-- Test to overheat the ARM target and look if boost+thermal cools down
-  the device and enables boost again.
-- LAB governor (which was already posted to ML) to boost when power
-  envelope allows it.
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
+index ce81d30..594b63d 100644
+--- a/arch/arm/mach-mvebu/platsmp.c
++++ b/arch/arm/mach-mvebu/platsmp.c
+@@ -29,45 +29,40 @@
+ #include "pmsu.h"
+ #include "coherency.h"
+=20
++static struct clk *__init get_cpu_clk(int cpu)
++{
++=09struct clk *cpu_clk;
++=09struct device_node *np =3D of_get_cpu_node(cpu, NULL);
++
++=09if (WARN(!np, "missing cpu node\n"))
++=09=09return NULL;
++=09cpu_clk =3D of_clk_get(np, 0);
++=09if (WARN_ON(IS_ERR(cpu_clk)))
++=09=09return NULL;
++=09return cpu_clk;
++}
++
+ void __init set_secondary_cpus_clock(void)
+ {
+-=09int thiscpu;
++=09int thiscpu, cpu;
+ =09unsigned long rate;
+-=09struct clk *cpu_clk =3D NULL;
+-=09struct device_node *np =3D NULL;
++=09struct clk *cpu_clk;
+=20
+ =09thiscpu =3D smp_processor_id();
+-=09for_each_node_by_type(np, "cpu") {
+-=09=09int err;
+-=09=09int cpu;
+-
+-=09=09err =3D of_property_read_u32(np, "reg", &cpu);
+-=09=09if (WARN_ON(err))
+-=09=09=09return;
+-
+-=09=09if (cpu =3D=3D thiscpu) {
+-=09=09=09cpu_clk =3D of_clk_get(np, 0);
+-=09=09=09break;
+-=09=09}
+-=09}
+-=09if (WARN_ON(IS_ERR(cpu_clk)))
++=09cpu_clk =3D get_cpu_clk(thiscpu);
++=09if (!cpu_clk)
+ =09=09return;
+ =09clk_prepare_enable(cpu_clk);
+ =09rate =3D clk_get_rate(cpu_clk);
+=20
+ =09/* set all the other CPU clk to the same rate than the boot CPU */
+-=09for_each_node_by_type(np, "cpu") {
+-=09=09int err;
+-=09=09int cpu;
+-
+-=09=09err =3D of_property_read_u32(np, "reg", &cpu);
+-=09=09if (WARN_ON(err))
++=09for_each_possible_cpu(cpu) {
++=09=09if (cpu =3D=3D thiscpu)
++=09=09=09continue;
++=09=09cpu_clk =3D get_cpu_clk(cpu);
++=09=09if (!cpu_clk)
+ =09=09=09return;
+-
+-=09=09if (cpu !=3D thiscpu) {
+-=09=09=09cpu_clk =3D of_clk_get(np, 0);
+-=09=09=09clk_set_rate(cpu_clk, rate);
+-=09=09}
++=09=09clk_set_rate(cpu_clk, rate);
+ =09}
+ }
+=20
+--=20
+1.8.1.2
