@@ -1,76 +1,40 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] cpufreq/intel_pstate: Change to scale off of max P-state
-Date: Tue, 20 Aug 2013 11:37:41 -0700
-Message-ID: <5213B775.6090008@gmail.com>
-References: <1374162523-2777-1-git-send-email-dirk.j.brandewie@gmail.com> <loom.20130801T194134-745@post.gmane.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Wed, 21 Aug 2013 07:48:29 +1000
+Message-ID: <1377035309.25016.167.camel@pasglop>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <3703987.W8AZjrDbn0@vostro.rjw.lan> <52135F86.9020401@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f44.google.com ([209.85.160.44]:49759 "EHLO
-	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931Ab3HTSho (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Aug 2013 14:37:44 -0400
-Received: by mail-pb0-f44.google.com with SMTP id xa7so723992pbc.17
-        for <linux-pm@vger.kernel.org>; Tue, 20 Aug 2013 11:37:44 -0700 (PDT)
-In-Reply-To: <loom.20130801T194134-745@post.gmane.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <52135F86.9020401@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guilherme Salazar <gmesalazar@gmail.com>
-Cc: linux-pm@vger.kernel.org, dirk.brandewie@gmail.com
 
-On 08/01/2013 10:56 AM, Guilherme Salazar wrote:
->   <dirk.brandewie <at> gmail.com> writes:
->
->>
->> From: Dirk Brandewie <dirk.j.brandewie <at> intel.com>
->>
->> Change to using max P-state instead of max turbo P-state.  This change
->> resolves two issues.
->>
->> On a quiet system intel_pstate can fail to respond to a load change.
->>     https://bugzilla.kernel.org/show_bug.cgi?id=59481
->>
->> On CPU SKUs that have a limited number of P-states and no turbo range
->> intel_pstate fails to select the highest available P-state.
->>
->> This change is suitable for stable v3.9+
->>
->> Reported-by: arjan <at> linux.intel.com
->> Reported-by: dsmythies <at> telus.net
->> Tested-by: arjan <at> linux.intel.com
->> Tested-by: dsmythies <at> telus.net
->>
->> CC: stable <at> vger.kernel.org
->> CC: dsmythies <at> telus.net
->> Signed-off-by: Dirk Brandewie <dirk.j.brandewie <at> intel.com>
->
-> Hi,
->
-> I've just tested the patch and, even though it works (the frequency now sits
-> around 1.3-1.5 GHz), I noticed that if I suspend the laptop and then resume
-> it, the abnormal behavior (frequency sitting above 2 GHz) returns.
->
-There is a separate bug against the suspend resume behaviour. It is coming
-from a bug in the cpufreq core.
+On Tue, 2013-08-20 at 13:22 +0100, Sudeep KarkadaNagesha wrote:
+> Correct, he has reviewed but I am waiting for his ACK before I could
+> sent you pull request. Hopefully I should be able to send pull request
+> tomorrow with his ACK.
+> 
+> Hi Ben,
+> 
+> If this is patch is fine, can I have your ACK ?
 
-https://bugzilla.kernel.org/show_bug.cgi?id=59781
+I just want to test it (just in case...), will give an Ack then.
 
-The fix is disscussed in https://lkml.org/lkml/2013/7/29/692 and is queue for 3.12
-
-> Before suspending, the value in
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct was 37; afterwards, 100.
->
-> cpuinfo: http://pastebin.com/C6zR90HC
->
-> I'd be glad to give any further details.
->
-> Best,
-> Guilherme
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
+Cheers,
+Ben.
