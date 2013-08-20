@@ -1,61 +1,62 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v4 15/19] cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
-Date: Tue, 20 Aug 2013 10:30:17 +0100
-Message-ID: <1376991021-12160-16-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 05/19] ARM: DT/kernel: define ARM specific
+ arch_match_cpu_phys_id
+Date: Tue, 20 Aug 2013 10:30:07 +0100
+Message-ID: <1376991021-12160-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Jason Cooper <jason@lakedaemon.net>
+Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Now that the cpu device registration initialises the of_node(if available)
-appropriately for all the cpus, parsing here is redundant.
+OF/DT core library now provides architecture specific hook to match the
+logical cpu index with the corresponding physical identifier. Most of the
+cpu DT node parsing and initialisation is contained in devtree.c. So it's
+better to define ARM specific arch_match_cpu_phys_id there.
 
-This patch removes all DT parsing and uses cpu->of_node instead.
+This mainly helps to avoid replication of the code doing CPU node parsing
+and physical(MPIDR) to logical mapping.
 
-Cc: Jason Cooper <jason@lakedaemon.net>
-Acked-by: Andrew Lunn <andrew@lunn.ch>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Acked-by: Rob Herring <rob.herring@calxeda.com>
+Acked-by: Nicolas Pitre <nico@linaro.org>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/cpufreq/kirkwood-cpufreq.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/arm/kernel/devtree.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-=
-cpufreq.c
-index c233ea6..25ac2cb 100644
---- a/drivers/cpufreq/kirkwood-cpufreq.c
-+++ b/drivers/cpufreq/kirkwood-cpufreq.c
-@@ -14,7 +14,7 @@
- #include <linux/clk.h>
- #include <linux/clk-provider.h>
- #include <linux/cpufreq.h>
--#include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
- #include <asm/proc-fns.h>
-@@ -175,9 +175,11 @@ static int kirkwood_cpufreq_probe(struct platform_devi=
-ce *pdev)
- =09if (IS_ERR(priv.base))
- =09=09return PTR_ERR(priv.base);
-=20
--=09np =3D of_find_node_by_path("/cpus/cpu@0");
--=09if (!np)
-+=09np =3D of_cpu_device_node_get(0);
-+=09if (!np) {
-+=09=09dev_err(&pdev->dev, "failed to get cpu device node\n");
- =09=09return -ENODEV;
-+=09}
-=20
- =09priv.cpu_clk =3D of_clk_get_by_name(np, "cpu_clk");
- =09if (IS_ERR(priv.cpu_clk)) {
---=20
+diff --git a/arch/arm/kernel/devtree.c b/arch/arm/kernel/devtree.c
+index 5859c8b..2ee8a17 100644
+--- a/arch/arm/kernel/devtree.c
++++ b/arch/arm/kernel/devtree.c
+@@ -169,6 +169,11 @@ void __init arm_dt_init_cpu_maps(void)
+ 	}
+ }
+ 
++bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
++{
++	return (phys_id & MPIDR_HWID_BITMASK) == cpu_logical_map(cpu);
++}
++
+ /**
+  * setup_machine_fdt - Machine setup when an dtb was passed to the kernel
+  * @dt_phys: physical address of dt blob
+-- 
 1.8.1.2
