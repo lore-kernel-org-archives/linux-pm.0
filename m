@@ -1,40 +1,39 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Wed, 21 Aug 2013 07:48:29 +1000
-Message-ID: <1377035309.25016.167.camel@pasglop>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <3703987.W8AZjrDbn0@vostro.rjw.lan> <52135F86.9020401@arm.com>
+From: Toshi Kani <toshi.kani@hp.com>
+Subject: Re: [PATCH] ACPI / PM: Hold acpi_scan_lock over system PM
+ transitions
+Date: Tue, 20 Aug 2013 16:02:03 -0600
+Message-ID: <1377036123.10300.475.camel@misato.fc.hp.com>
+References: <2852781.TfChGuuEkJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <52135F86.9020401@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2852781.TfChGuuEkJ@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2013-08-20 at 13:22 +0100, Sudeep KarkadaNagesha wrote:
-> Correct, he has reviewed but I am waiting for his ACK before I could
-> sent you pull request. Hopefully I should be able to send pull request
-> tomorrow with his ACK.
+On Tue, 2013-08-20 at 01:47 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Hi Ben,
+> Bad things happen if ACPI hotplug events are handled during system
+> PM transitions, especially if devices are removed as a result.
+> To prevent those bad things from happening, acquire acpi_scan_lock
+> when a transition is started and release it when that transition
+> is complete or has been aborted.
 > 
-> If this is patch is fine, can I have your ACK ?
+> This fixes resume lockup on my test-bed Acer Aspire S5 that happens
+> when Thunderbolt devices are disconnected from the machine while
+> suspended.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I just want to test it (just in case...), will give an Ack then.
+The change looks good to me.
 
-Cheers,
-Ben.
+Acked-by: Toshi Kani <toshi.kani@hp.com>
+
+Thanks,
+-Toshi
+
+
