@@ -1,56 +1,72 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v4 02/19] openrisc: remove undefined of_get_cpu_node
- declaration
-Date: Tue, 20 Aug 2013 10:30:04 +0100
-Message-ID: <1376991021-12160-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v4 06/19] driver/core: cpu: initialize of_node in cpu's device
+ struture
+Date: Tue, 20 Aug 2013 10:30:08 +0100
+Message-ID: <1376991021-12160-7-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>
+Cc: Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-This patch removes the declaration of the function 'of_get_cpu_node'
-which is not defined for openrisc. This is in preparation to move
-it's definition from PPC to DT common code.
+CPUs are also registered as devices but the of_node in these cpu
+devices are not initialized. Currently different drivers requiring
+to access cpu device node are parsing the nodes themselves and
+initialising the of_node in cpu device.
 
-Again it could be there as it was originally copied from powerpc.
+The of_node in all the cpu devices needs to be initialized properly
+and at one place. The best place to update this is CPU subsystem
+driver when registering the cpu devices.
 
-Cc: Jonas Bonn <jonas@southpole.se>
+The OF/DT core library now provides of_get_cpu_node to retrieve a cpu
+device node for a given logical index by abstracting the architecture
+specific details.
+
+This patch uses of_get_cpu_node to assign of_node when registering the
+cpu devices.
+
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- arch/openrisc/include/asm/prom.h | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/base/cpu.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/openrisc/include/asm/prom.h b/arch/openrisc/include/asm/prom.h
-index bbb34e5..eb59bfe 100644
---- a/arch/openrisc/include/asm/prom.h
-+++ b/arch/openrisc/include/asm/prom.h
-@@ -44,9 +44,6 @@ void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 4c358bc..4cf0717 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -14,6 +14,7 @@
+ #include <linux/slab.h>
+ #include <linux/percpu.h>
+ #include <linux/acpi.h>
++#include <linux/of.h>
  
- extern void kdump_move_device_tree(void);
+ #include "base.h"
  
--/* CPU OF node matching */
--struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
--
- /* Get the MAC address */
- extern const void *of_get_mac_address(struct device_node *np);
- 
+@@ -289,6 +290,7 @@ int register_cpu(struct cpu *cpu, int num)
+ 	cpu->dev.release = cpu_device_release;
+ 	cpu->dev.offline_disabled = !cpu->hotpluggable;
+ 	cpu->dev.offline = !cpu_online(num);
++	cpu->dev.of_node = of_get_cpu_node(num, NULL);
+ #ifdef CONFIG_ARCH_HAS_CPU_AUTOPROBE
+ 	cpu->dev.bus->uevent = arch_cpu_uevent;
+ #endif
 -- 
 1.8.1.2
