@@ -1,46 +1,33 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Wed, 21 Aug 2013 16:48:12 -0600
-Message-ID: <521543AC.4020709@wwwdotorg.org>
-References: <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA8BE2.9000309@ti.com> <20130802131541.GN2884@e106331-lin.cambridge.arm.com> <20130806134534.GB6603@kahuna> <20130807161722.GJ28558@e106331-lin.cambridge.arm.com> <52133E26.1000801@arm.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 03/14] cpufreq: dbx500: use cpufreq_generic_init() routine
+Date: Thu, 22 Aug 2013 01:00:59 +0200
+Message-ID: <CACRpkdY33h7GC1Q2hQZzBYJiQM9qvSGYBFabaaMJg8wBZG1=TQ@mail.gmail.com>
+References: <cover.1377093938.git.viresh.kumar@linaro.org>
+	<580c144ac4a85899ddc3d6350e50761c9d69b1fe.1377093938.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52133E26.1000801@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:46527 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753218Ab3HUXBA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2013 19:01:00 -0400
+Received: by mail-oa0-f42.google.com with SMTP id i18so2199666oag.29
+        for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2013 16:00:59 -0700 (PDT)
+In-Reply-To: <580c144ac4a85899ddc3d6350e50761c9d69b1fe.1377093938.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 08/20/2013 04:00 AM, Sudeep KarkadaNagesha wrote:
-...
-> Until we get more feedback and agreement on new proposal can we have
-> this simple amendment in this patch to the existing binding ? Since the
-> new proposal[1] is backward compatible(this patch adding support for
-> option#5 to existing option#1), we will have to add support for other
-> binding options in [1] later.
-> 
-> This is needed to support shared OPPs with simple/single OPP profile
-> and also to fix the broken and unused binding
-> @Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
-> 
-> Regards,
-> Sudeep
-> 
-> [1] http://www.spinics.net/lists/cpufreq/msg06563.html
+On Wed, Aug 21, 2013 at 4:42 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Presumably the desire for cpu1's node to say "go look at cpu0's node for
-OPP" is because they share OPPs. Don't they share OPPs because they are
-parts of the same device - that device being the CPU complex. As such,
-why not define the OPPs in /cpus rather than in each of /cpus/cpuN?
+> Use generic cpufreq_generic_init() routine instead of replicating the same code
+> here.
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Of course, that doesn't help if there are separate CPU and GPU nodes
-that just happen to have the same set of OPPs and you want to share them
-to save DT space. Is that at all likely?
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-I'd suggest/bike-shed that operating-points-device is not the correct
-property name; it somehow implies that the other device actively defines
-the OPPs for this device, rather than just happening to have the same
-OPPs. Perhaps "operating-points-identical-to"?
+Yours,
+Linus Walleij
