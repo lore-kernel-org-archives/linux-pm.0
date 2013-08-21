@@ -1,66 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 14/14] cpufreq: tegra: use cpufreq_generic_init() routine
-Date: Wed, 21 Aug 2013 20:12:33 +0530
-Message-ID: <45979df742e182f28704d3a05b4d011aeae4ef3c.1377093938.git.viresh.kumar@linaro.org>
-References: <cover.1377093938.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1377093938.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1377093938.git.viresh.kumar@linaro.org>
-References: <cover.1377093938.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
+From: Jens Frederich <jfrederich@gmail.com>
+Subject: [PATCH] power: Documentation: Update s2ram link
+Date: Wed, 21 Aug 2013 21:40:46 +0200
+Message-ID: <1377114046-10441-1-git-send-email-jfrederich@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f53.google.com ([209.85.214.53]:36389 "EHLO
+	mail-bk0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751969Ab3HUTlD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2013 15:41:03 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rob@landley.net
+Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jens Frederich <jfrederich@gmail.com>
 
-Use generic cpufreq_generic_init() routine instead of replicating the same code
-here.
+The s2ram link is broken because there is a new OpenSuse wiki online.
+The page does no longer exist, it was merged in the Suspend_to_RAM
+page.
 
-Along with that we are disabling clks in error cases and ->exit() routine.
+Signed-off-by: Jens Frederich <jfrederich@gmail.com>
 
-Cc: Stephen Warren <swarren@nvidia.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/tegra-cpufreq.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index 3f25ab6..bc7c2a1 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -161,18 +161,21 @@ static struct notifier_block tegra_cpu_pm_notifier = {
+diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
+index 262acf5..e9b54de8 100644
+--- a/Documentation/power/basic-pm-debugging.txt
++++ b/Documentation/power/basic-pm-debugging.txt
+@@ -179,7 +179,7 @@ use the PM_TRACE mechanism documented in Documentation/power/s2ram.txt .
  
- static int tegra_cpu_init(struct cpufreq_policy *policy)
- {
-+	int ret;
-+
- 	if (policy->cpu >= NUM_CPUS)
- 		return -EINVAL;
+ To verify that the STR works, it is generally more convenient to use the s2ram
+ tool available from http://suspend.sf.net and documented at
+-http://en.opensuse.org/SDB:Suspend_to_RAM.
++http://en.opensuse.org/SDB:Suspend_to_RAM (S2RAM_LINK).
  
- 	clk_prepare_enable(emc_clk);
- 	clk_prepare_enable(cpu_clk);
+ Namely, after writing "freezer", "devices", "platform", "processors", or "core"
+ into /sys/power/pm_test (available if the kernel is compiled with
+@@ -194,10 +194,10 @@ Among other things, the testing with the help of /sys/power/pm_test may allow
+ you to identify drivers that fail to suspend or resume their devices.  They
+ should be unloaded every time before an STR transition.
  
--	cpufreq_table_validate_and_show(policy, freq_table);
--
- 	/* FIXME: what's the actual transition time? */
--	policy->cpuinfo.transition_latency = 300 * 1000;
--
--	cpumask_copy(policy->cpus, cpu_possible_mask);
-+	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
-+	if (ret) {
-+		clk_disable_unprepare(cpu_clk);
-+		clk_disable_unprepare(emc_clk);
-+		return ret;
-+	}
- 
- 	if (policy->cpu == 0)
- 		register_pm_notifier(&tegra_cpu_pm_notifier);
-@@ -183,6 +186,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- static int tegra_cpu_exit(struct cpufreq_policy *policy)
- {
- 	cpufreq_frequency_table_put_attr(policy->cpu);
-+	clk_disable_unprepare(cpu_clk);
- 	clk_disable_unprepare(emc_clk);
- 	return 0;
- }
+-Next, you can follow the instructions at http://en.opensuse.org/s2ram to test
+-the system, but if it does not work "out of the box", you may need to boot it
+-with "init=/bin/bash" and test s2ram in the minimal configuration.  In that
+-case, you may be able to search for failing drivers by following the procedure
++Next, you can follow the instructions at S2RAM_LINK to test the system, but if
++it does not work "out of the box", you may need to boot it with
++"init=/bin/bash" and test s2ram in the minimal configuration.  In that case,
++you may be able to search for failing drivers by following the procedure
+ analogous to the one described in section 1.  If you find some failing drivers,
+ you will have to unload them every time before an STR transition (ie. before
+ you run s2ram), and please report the problems with them.
 -- 
-1.7.12.rc2.18.g61b472e
+1.7.9.5
+
