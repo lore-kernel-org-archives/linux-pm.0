@@ -1,33 +1,49 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 03/14] cpufreq: dbx500: use cpufreq_generic_init() routine
-Date: Thu, 22 Aug 2013 01:00:59 +0200
-Message-ID: <CACRpkdY33h7GC1Q2hQZzBYJiQM9qvSGYBFabaaMJg8wBZG1=TQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 00/14] cpufreq: create & use cpufreq_generic_init() routine
+Date: Thu, 22 Aug 2013 01:20:34 +0200
+Message-ID: <1493410.kWm56FEZ0a@vostro.rjw.lan>
 References: <cover.1377093938.git.viresh.kumar@linaro.org>
-	<580c144ac4a85899ddc3d6350e50761c9d69b1fe.1377093938.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:46527 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218Ab3HUXBA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2013 19:01:00 -0400
-Received: by mail-oa0-f42.google.com with SMTP id i18so2199666oag.29
-        for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2013 16:00:59 -0700 (PDT)
-In-Reply-To: <580c144ac4a85899ddc3d6350e50761c9d69b1fe.1377093938.git.viresh.kumar@linaro.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:54061 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752589Ab3HUXJ5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 21 Aug 2013 19:09:57 -0400
+In-Reply-To: <cover.1377093938.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Aug 21, 2013 at 4:42 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Wednesday, August 21, 2013 08:12:19 PM Viresh Kumar wrote:
+> Many CPUFreq drivers for SMP system (where all cores share same clock lines), do
+> similar stuff in their ->init() part.
+> 
+> This patch creates a generic routine in cpufreq core which can be used by these
+> so that we can remove some redundant code. And later part of patchset makes
+> other drivers use this infrastructure.
+> 
+> Many drivers which weren't setting policy->cpus haven't been updated as they
+> might have separate clocks for CPUs and setting all CPUs in policy->cpus may
+> corrupt them..
+> 
+> This is Sixth part of my cleanup work for CPUFreq, first five are (And
+> obviously its rebased over them):
 
-> Use generic cpufreq_generic_init() routine instead of replicating the same code
-> here.
->
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+OK, so the plan for merging this will be that we'll put 1 into linux-next
+and add 2 to it after a few days etc. to give people a chance to test one
+set of changes before going to the next one.
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> 1: cpufreq: Introduce cpufreq_table_validate_and_show()
+> https://lkml.org/lkml/2013/8/8/263
 
-Yours,
-Linus Walleij
+So perhaps we can *try* to push the above for 3.12 if it doesn't breaks
+stuff left and right.
+
+Can you please resend it with all of the ACKs collected so far?
+
+Thanks,
+Rafael
+
