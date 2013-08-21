@@ -1,66 +1,48 @@
-From: sebastian.capella@linaro.org
-Subject: (unknown)
-Date: Wed, 21 Aug 2013 13:09:27 -0700
-Message-ID: <20130821200927.9309.26821@capellas-linux>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH] cpufreq: Tegra: remove target_cpu_speed[] array
+Date: Wed, 21 Aug 2013 16:27:15 -0600
+Message-ID: <52153EC3.1030204@wwwdotorg.org>
+References: <896370a3ad0db9e85f8776d923fcd5129d4e4d56.1377080903.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f41.google.com ([209.85.160.41]:58816 "EHLO
-	mail-pb0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116Ab3HUUJa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2013 16:09:30 -0400
-Received: by mail-pb0-f41.google.com with SMTP id rp2so840563pbb.14
-        for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2013 13:09:29 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <896370a3ad0db9e85f8776d923fcd5129d4e4d56.1377080903.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-doc@vger.kernel.org
-Cc: rob@landley.net, len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.orgrob@landley.netrob@landley.net
 
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH RFC 2/2] PM / Hibernate: add section for resume options
+On 08/21/2013 04:31 AM, Viresh Kumar wrote:
+> Tegra's cpufreq driver was maintaining requested target frequencies in an array:
+> target_cpu_speed. And then finally setting the highest requested freq in the
+> core. This was probably done because both cores share clock line and logically
+> we want to set both cores to the max frequency requested..
+> 
+> But this wasn't required to be done in individual CPUFreq drivers, its already
+> taken care of by CPUFreq governors. They evaluate load for all CPUs and finally
+> call target only for the frequency corresponding to max load.
+> 
+> So, get rid of this stuff from Tegra's cpufreq driver.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Hi Stephen,
+> 
+> Its only build tested and depends on lots of stuff that I have already sent for
+> cpufreq core and its drivers. All of that is pushed here:
+> https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-v3.13
+> 
+> And only Tegra+cpufreq-core patches are pushed here (only 13 patches):
+> https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-next-tegra
+> 
+> You can probably try cpufreq-next-tegra branch for testing on some real
+> hardware.
 
-Expand the existing documentation to explicitly list the options for
-resuming a hibernation image, including the manual resume option which
-can be used from the initrd or initramfs and the kernel init resume.
+Acked-by: Stephen Warren <swarren@nvidia.com>
 
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
----
- Documentation/power/swsusp.txt |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-index 0b4b63e..079160e 100644
---- a/Documentation/power/swsusp.txt
-+++ b/Documentation/power/swsusp.txt
-@@ -50,6 +50,19 @@ echo N > /sys/power/image_size
- 
- before suspend (it is limited to 500 MB by default).
- 
-+. The resume process checks for the presence of the resume device,
-+if found, it then checks the contents for the hibernation image signature.
-+If both are found, it resumes the hibernation image.
-+
-+. The resume process may be triggered in two ways:
-+  1) During lateinit:  If resume=/dev/your_swap_partition is specified on
-+     the kernel command line, lateinit runs the resume process.  If the
-+     resume device has not been probed yet, the resume process fails and
-+     bootup continues.
-+  2) Manually from an initrd or initramfs:  May be run from
-+     the init script by using the /sys/power/resume file.  It is vital
-+     that this be done prior to remounting any filesystems (even as
-+     read-only) otherwise data may be corrupted.
- 
- Article about goals and implementation of Software Suspend for Linux
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@@ -326,7 +339,7 @@ Q: How can distributions ship a swsusp-supporting kernel with modular
- disk drivers (especially SATA)?
- 
- A: Well, it can be done, load the drivers, then do echo into
--/sys/power/disk/resume file from initrd. Be sure not to mount
-+/sys/power/resume file from initrd. Be sure not to mount
- anything, not even read-only mount, or you are going to lose your
- data.
- 
--- 
-1.7.9.5
+I did test your branch on a Tegra20 and Tegra30 board without issues.
+But recall that our cpufreq driver doesn't actually get initialized
+since the conversion of Tegra to the common clock framework, so I
+haven't really tested the cpufreq changes, except to ensure that nothing
+in those branches breaks other basic functionality.
