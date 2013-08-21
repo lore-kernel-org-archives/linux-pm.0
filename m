@@ -1,51 +1,52 @@
-From: Jens Frederich <jfrederich@gmail.com>
-Subject: [PATCH] power: Documentation: Update s2ram link
-Date: Wed, 21 Aug 2013 21:40:46 +0200
-Message-ID: <1377114046-10441-1-git-send-email-jfrederich@gmail.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH RFC 0/2] PM / Hibernate: sysfs resume
+Date: Wed, 21 Aug 2013 12:46:51 -0700
+Message-ID: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f53.google.com ([209.85.214.53]:36389 "EHLO
-	mail-bk0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969Ab3HUTlD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2013 15:41:03 -0400
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:36841 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836Ab3HUTq5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2013 15:46:57 -0400
+Received: by mail-pa0-f54.google.com with SMTP id kx10so1190207pab.13
+        for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2013 12:46:57 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rob@landley.net
-Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jens Frederich <jfrederich@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org
+Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl
 
-The s2ram link is broken because there is a new OpenSuse wiki online.
-The page does no longer exist, it was merged in the Suspend_to_RAM
-page.
+Patchset related to hibernation resume: one enhancement to make the use
+of an existing file more general and one documentation update.
 
-Signed-off-by: Jens Frederich <jfrederich@gmail.com>
+Both patches are based on the 3.11-rc6 tag.  This was tested on a
+Pandaboard with partial hibernation support, and compiled on x86.
 
-diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
-index 262acf5..e9b54de8 100644
---- a/Documentation/power/basic-pm-debugging.txt
-+++ b/Documentation/power/basic-pm-debugging.txt
-@@ -179,7 +179,7 @@ use the PM_TRACE mechanism documented in Documentation/power/s2ram.txt .
- 
- To verify that the STR works, it is generally more convenient to use the s2ram
- tool available from http://suspend.sf.net and documented at
--http://en.opensuse.org/SDB:Suspend_to_RAM.
-+http://en.opensuse.org/SDB:Suspend_to_RAM (S2RAM_LINK).
- 
- Namely, after writing "freezer", "devices", "platform", "processors", or "core"
- into /sys/power/pm_test (available if the kernel is compiled with
-@@ -194,10 +194,10 @@ Among other things, the testing with the help of /sys/power/pm_test may allow
- you to identify drivers that fail to suspend or resume their devices.  They
- should be unloaded every time before an STR transition.
- 
--Next, you can follow the instructions at http://en.opensuse.org/s2ram to test
--the system, but if it does not work "out of the box", you may need to boot it
--with "init=/bin/bash" and test s2ram in the minimal configuration.  In that
--case, you may be able to search for failing drivers by following the procedure
-+Next, you can follow the instructions at S2RAM_LINK to test the system, but if
-+it does not work "out of the box", you may need to boot it with
-+"init=/bin/bash" and test s2ram in the minimal configuration.  In that case,
-+you may be able to search for failing drivers by following the procedure
- analogous to the one described in section 1.  If you find some failing drivers,
- you will have to unload them every time before an STR transition (ie. before
- you run s2ram), and please report the problems with them.
--- 
-1.7.9.5
+Further testing is needed on other platforms.  Please let me know if
+you're able to verify this on any other systems.
 
+[PATCH RFC 1/2] PM / Hibernate: use name_to_dev_t to parse resume
+  Use name_to_dev_t to parse the /sys/power/resume file making the
+  syntax more flexible.  It supports the previous use syntax
+  and additionally can support other formats such as
+  /dev/devicenode and UUID= formats.
+
+  By changing /sys/debug/resume to accept the same syntax as
+  the resume=device parameter, we can parse the resume=device
+  in the initrd init script and use the resume device directly
+  from the kernel command line.
+
+  kernel/power/hibernate.c |   14 +++++++++-----
+  1 file changed, 9 insertions(+), 5 deletions(-)
+
+[PATCH RFC 2/2] PM / Hibernate: add section for resume options
+  This adds a small section to the swsusp.txt file to address the
+  options for resuming.  This comments on the manual resume
+  option which is used when resorting to an initrd or initramfs
+  for resuming.  Resuming from late init is discussed later in
+  the document, but it seemed appropriate to list them together.
+
+  Documentation/power/swsusp.txt |   15 ++++++++++++++-
+  1 file changed, 14 insertions(+), 1 deletion(-)
+
+Thanks,
+
+Sebastian
