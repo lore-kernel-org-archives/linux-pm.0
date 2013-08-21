@@ -1,64 +1,101 @@
-From: Jonas Bonn <jonas@southpole.se>
-Subject: Re: [RFC PATCH 2/4] openrisc: remove undefined of_get_cpu_node declaration
-Date: Wed, 21 Aug 2013 07:10:33 +0200
-Message-ID: <52144BC9.9030007@southpole.se>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376586580-5409-3-git-send-email-Sudeep.KarkadaNagesha@arm.com> <520DF3BD.2070904@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH next]cpufreq: fix bad unlock balance on !CONFIG_SMP
+Date: Wed, 21 Aug 2013 10:56:25 +0530
+Message-ID: <CAKohpo=DXmw4Mvd=xvQqDh4VQXWt0Xrg0TA_D1qHXVAf4ikNmw@mail.gmail.com>
+References: <1376975510.3788.9.camel@ThinkPad-T5421>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <520DF3BD.2070904@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <1376975510.3788.9.camel@ThinkPad-T5421>
+Sender: linux-next-owner@vger.kernel.org
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Cc: linux-next list <linux-next@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fengguang Wu <fengguang.wu@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/16/13 11:41, Sudeep KarkadaNagesha wrote:
-> On 15/08/13 18:09, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> This patch removes the declaration of the function 'of_get_cpu_node'
->> which is not defined for openrisc. This is in preparation to move
->> it's definition from PPC to DT common code.
->>
->> Again it could be there as it was originally copied from powerpc.
->>
->> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->> Cc: Jonas Bonn <jonas@southpole.se>
-> Hi Jonas,
+On 20 August 2013 10:41, Li Zhong <zhong@linux.vnet.ibm.com> wrote:
+> This patch tries to fix lockdep complaint attached below.
 >
-> Since both microblaze and openrisc have moderated lists which I am not
-> member of, these patches were blocked. Michal Simek agreed to remove
-> this for microblaze. Do you see any concern with this patch for openrisc
-> ? Can I have you ACK if it looks fine ?
+> It seems that we should always read acquire the cpufreq_rwsem, whether
+> CONFIG_SMP is enabled or not. And CONFIG_HOTPLUG_CPU depends on
+> CONFIG_SMP, so it seems we don't need CONFIG_SMP for the code enabled by
+> CONFIG_HOTPLUG_CPU.
 
-Hi Sudeep,
-Yes, thanks, the patch looks good.
+I just figured out you haven't sent this mail to correct lists, added
+them now..
 
-Acked-by: Jonas Bonn <jonas@southpole.se>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-/Jonas
+--
+viresh
 
+> [    0.504191] =====================================
+> [    0.504627] [ BUG: bad unlock balance detected! ]
+> [    0.504627] 3.11.0-rc6-next-20130819 #1 Not tainted
+> [    0.504627] -------------------------------------
+> [    0.504627] swapper/1 is trying to release lock (cpufreq_rwsem) at:
+> [    0.504627] [<ffffffff813d927a>] cpufreq_add_dev+0x13a/0x3e0
+> [    0.504627] but there are no more locks to release!
+> [    0.504627]
+> [    0.504627] other info that might help us debug this:
+> [    0.504627] 1 lock held by swapper/1:
+> [    0.504627]  #0:  (subsys mutex#4){+.+.+.}, at: [<ffffffff8134a7bf>] subsys_interface_register+0x4f/0xe0
+> [    0.504627]
+> [    0.504627] stack backtrace:
+> [    0.504627] CPU: 0 PID: 1 Comm: swapper Not tainted 3.11.0-rc6-next-20130819 #1
+> [    0.504627] Hardware name: Bochs Bochs, BIOS Bochs 01/01/2007
+> [    0.504627]  ffffffff813d927a ffff88007f847c98 ffffffff814c062b ffff88007f847cc8
+> [    0.504627]  ffffffff81098bce ffff88007f847cf8 ffffffff81aadc30 ffffffff813d927a
+> [    0.504627]  00000000ffffffff ffff88007f847d68 ffffffff8109d0be 0000000000000006
+> [    0.504627] Call Trace:
+> [    0.504627]  [<ffffffff813d927a>] ? cpufreq_add_dev+0x13a/0x3e0
+> [    0.504627]  [<ffffffff814c062b>] dump_stack+0x19/0x1b
+> [    0.504627]  [<ffffffff81098bce>] print_unlock_imbalance_bug+0xfe/0x110
+> [    0.504627]  [<ffffffff813d927a>] ? cpufreq_add_dev+0x13a/0x3e0
+> [    0.504627]  [<ffffffff8109d0be>] lock_release_non_nested+0x1ee/0x310
+> [    0.504627]  [<ffffffff81099d0e>] ? mark_held_locks+0xae/0x120
+> [    0.504627]  [<ffffffff811510cb>] ? kfree+0xcb/0x1d0
+> [    0.504627]  [<ffffffff813d77ea>] ? cpufreq_policy_free+0x4a/0x60
+> [    0.504627]  [<ffffffff813d927a>] ? cpufreq_add_dev+0x13a/0x3e0
+> [    0.504627]  [<ffffffff8109d2a4>] lock_release+0xc4/0x250
+> [    0.504627]  [<ffffffff8106c9f3>] up_read+0x23/0x40
+> [    0.504627]  [<ffffffff813d927a>] cpufreq_add_dev+0x13a/0x3e0
+> [    0.504627]  [<ffffffff8134a809>] subsys_interface_register+0x99/0xe0
+> [    0.504627]  [<ffffffff81b19f3b>] ? cpufreq_gov_dbs_init+0x12/0x12
+> [    0.504627]  [<ffffffff813d7f0d>] cpufreq_register_driver+0x9d/0x1d0
+> [    0.504627]  [<ffffffff81b19f3b>] ? cpufreq_gov_dbs_init+0x12/0x12
+> [    0.504627]  [<ffffffff81b1a039>] acpi_cpufreq_init+0xfe/0x1f8
+> [    0.504627]  [<ffffffff810002ba>] do_one_initcall+0xda/0x180
+> [    0.504627]  [<ffffffff81ae301e>] kernel_init_freeable+0x12c/0x1bb
+> [    0.504627]  [<ffffffff81ae2841>] ? do_early_param+0x8c/0x8c
+> [    0.504627]  [<ffffffff814b4dd0>] ? rest_init+0x140/0x140
+> [    0.504627]  [<ffffffff814b4dde>] kernel_init+0xe/0xf0
+> [    0.504627]  [<ffffffff814d029a>] ret_from_fork+0x7a/0xb0
+> [    0.504627]  [<ffffffff814b4dd0>] ? rest_init+0x140/0x140
 >
-> Regards,
-> Sudeep
->> ---
->>   arch/openrisc/include/asm/prom.h | 3 ---
->>   1 file changed, 3 deletions(-)
->>
->> diff --git a/arch/openrisc/include/asm/prom.h b/arch/openrisc/include/asm/prom.h
->> index bbb34e5..eb59bfe 100644
->> --- a/arch/openrisc/include/asm/prom.h
->> +++ b/arch/openrisc/include/asm/prom.h
->> @@ -44,9 +44,6 @@ void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
->>   
->>   extern void kdump_move_device_tree(void);
->>   
->> -/* CPU OF node matching */
->> -struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
->> -
->>   /* Get the MAC address */
->>   extern const void *of_get_mac_address(struct device_node *np);
->>   
->>
+> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index c0ef84d..8408957 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -986,6 +986,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>                 cpufreq_cpu_put(policy);
+>                 return 0;
+>         }
+> +#endif
+>
+>         if (!down_read_trylock(&cpufreq_rwsem))
+>                 return 0;
+> @@ -1004,7 +1005,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>         }
+>         read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>  #endif
+> -#endif
+>
+>         if (frozen)
+>                 /* Restore the saved policy when doing light-weight init */
+>
 >
