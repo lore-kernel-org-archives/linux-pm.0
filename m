@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 05/14] cpufreq: imx6q: use cpufreq_generic_init() routine
-Date: Wed, 21 Aug 2013 20:12:24 +0530
-Message-ID: <0394a2f6338e937f5b29cdca883d22e04ee0cce4.1377093938.git.viresh.kumar@linaro.org>
+Subject: [PATCH 06/14] cpufreq: kirkwood: use cpufreq_generic_init() routine
+Date: Wed, 21 Aug 2013 20:12:25 +0530
+Message-ID: <22ecc3ec7bebf7d9e643dc10787798cfefa12280.1377093938.git.viresh.kumar@linaro.org>
 References: <cover.1377093938.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1377093938.git.viresh.kumar@linaro.org>
@@ -9,41 +9,33 @@ In-Reply-To: <cover.1377093938.git.viresh.kumar@linaro.org>
 References: <cover.1377093938.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>
 List-Id: linux-pm@vger.kernel.org
 
 Use generic cpufreq_generic_init() routine instead of replicating the same code
 here.
 
-Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+ drivers/cpufreq/kirkwood-cpufreq.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index f35c674..5efd9b7 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -150,18 +150,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
- 
- static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+index fcf461e..7de4412 100644
+--- a/drivers/cpufreq/kirkwood-cpufreq.c
++++ b/drivers/cpufreq/kirkwood-cpufreq.c
+@@ -93,10 +93,7 @@ static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
+ /* Module init and exit code */
+ static int kirkwood_cpufreq_cpu_init(struct cpufreq_policy *policy)
  {
--	int ret;
+-	/* cpuinfo and default policy values */
+-	policy->cpuinfo.transition_latency = 5000; /* 5uS */
 -
--	ret = cpufreq_table_validate_and_show(policy, freq_table);
--	if (ret) {
--		dev_err(cpu_dev, "invalid frequency table: %d\n", ret);
--		return ret;
--	}
--
--	policy->cpuinfo.transition_latency = transition_latency;
--	cpumask_setall(policy->cpus);
--
--	return 0;
-+	return cpufreq_generic_init(policy, freq_table, transition_latency);
+-	return cpufreq_table_validate_and_show(policy, kirkwood_freq_table);
++	return cpufreq_generic_init(policy, kirkwood_freq_table, 5000);
  }
  
- static struct cpufreq_driver imx6q_cpufreq_driver = {
+ static struct cpufreq_driver kirkwood_cpufreq_driver = {
 -- 
 1.7.12.rc2.18.g61b472e
