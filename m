@@ -1,48 +1,46 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH] cpufreq: Tegra: remove target_cpu_speed[] array
-Date: Wed, 21 Aug 2013 16:27:15 -0600
-Message-ID: <52153EC3.1030204@wwwdotorg.org>
-References: <896370a3ad0db9e85f8776d923fcd5129d4e4d56.1377080903.git.viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Wed, 21 Aug 2013 16:48:12 -0600
+Message-ID: <521543AC.4020709@wwwdotorg.org>
+References: <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA8BE2.9000309@ti.com> <20130802131541.GN2884@e106331-lin.cambridge.arm.com> <20130806134534.GB6603@kahuna> <20130807161722.GJ28558@e106331-lin.cambridge.arm.com> <52133E26.1000801@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <896370a3ad0db9e85f8776d923fcd5129d4e4d56.1377080903.git.viresh.kumar@linaro.org>
+In-Reply-To: <52133E26.1000801@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/21/2013 04:31 AM, Viresh Kumar wrote:
-> Tegra's cpufreq driver was maintaining requested target frequencies in an array:
-> target_cpu_speed. And then finally setting the highest requested freq in the
-> core. This was probably done because both cores share clock line and logically
-> we want to set both cores to the max frequency requested..
+On 08/20/2013 04:00 AM, Sudeep KarkadaNagesha wrote:
+...
+> Until we get more feedback and agreement on new proposal can we have
+> this simple amendment in this patch to the existing binding ? Since the
+> new proposal[1] is backward compatible(this patch adding support for
+> option#5 to existing option#1), we will have to add support for other
+> binding options in [1] later.
 > 
-> But this wasn't required to be done in individual CPUFreq drivers, its already
-> taken care of by CPUFreq governors. They evaluate load for all CPUs and finally
-> call target only for the frequency corresponding to max load.
+> This is needed to support shared OPPs with simple/single OPP profile
+> and also to fix the broken and unused binding
+> @Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
 > 
-> So, get rid of this stuff from Tegra's cpufreq driver.
+> Regards,
+> Sudeep
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Hi Stephen,
-> 
-> Its only build tested and depends on lots of stuff that I have already sent for
-> cpufreq core and its drivers. All of that is pushed here:
-> https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-v3.13
-> 
-> And only Tegra+cpufreq-core patches are pushed here (only 13 patches):
-> https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-next-tegra
-> 
-> You can probably try cpufreq-next-tegra branch for testing on some real
-> hardware.
+> [1] http://www.spinics.net/lists/cpufreq/msg06563.html
 
-Acked-by: Stephen Warren <swarren@nvidia.com>
+Presumably the desire for cpu1's node to say "go look at cpu0's node for
+OPP" is because they share OPPs. Don't they share OPPs because they are
+parts of the same device - that device being the CPU complex. As such,
+why not define the OPPs in /cpus rather than in each of /cpus/cpuN?
 
-I did test your branch on a Tegra20 and Tegra30 board without issues.
-But recall that our cpufreq driver doesn't actually get initialized
-since the conversion of Tegra to the common clock framework, so I
-haven't really tested the cpufreq changes, except to ensure that nothing
-in those branches breaks other basic functionality.
+Of course, that doesn't help if there are separate CPU and GPU nodes
+that just happen to have the same set of OPPs and you want to share them
+to save DT space. Is that at all likely?
+
+I'd suggest/bike-shed that operating-points-device is not the correct
+property name; it somehow implies that the other device actively defines
+the OPPs for this device, rather than just happening to have the same
+OPPs. Perhaps "operating-points-identical-to"?
