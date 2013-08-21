@@ -1,127 +1,82 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Tegra: remove target_cpu_speed[] array
-Date: Wed, 21 Aug 2013 16:01:52 +0530
-Message-ID: <896370a3ad0db9e85f8776d923fcd5129d4e4d56.1377080903.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:50449 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751679Ab3HUKdm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2013 06:33:42 -0400
-Received: by mail-pd0-f170.google.com with SMTP id x10so279395pdj.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2013 03:33:41 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, swarren@nvidia.com
+Subject: [PATCH 00/14] cpufreq: create & use cpufreq_generic_init() routine
+Date: Wed, 21 Aug 2013 20:12:19 +0530
+Message-ID: <cover.1377093938.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Tegra's cpufreq driver was maintaining requested target frequencies in an array:
-target_cpu_speed. And then finally setting the highest requested freq in the
-core. This was probably done because both cores share clock line and logically
-we want to set both cores to the max frequency requested..
+Many CPUFreq drivers for SMP system (where all cores share same clock lines), do
+similar stuff in their ->init() part.
 
-But this wasn't required to be done in individual CPUFreq drivers, its already
-taken care of by CPUFreq governors. They evaluate load for all CPUs and finally
-call target only for the frequency corresponding to max load.
+This patch creates a generic routine in cpufreq core which can be used by these
+so that we can remove some redundant code. And later part of patchset makes
+other drivers use this infrastructure.
 
-So, get rid of this stuff from Tegra's cpufreq driver.
+Many drivers which weren't setting policy->cpus haven't been updated as they
+might have separate clocks for CPUs and setting all CPUs in policy->cpus may
+corrupt them..
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Stephen,
+This is Sixth part of my cleanup work for CPUFreq, first five are (And
+obviously its rebased over them):
 
-Its only build tested and depends on lots of stuff that I have already sent for
-cpufreq core and its drivers. All of that is pushed here:
+1: cpufreq: Introduce cpufreq_table_validate_and_show()
+https://lkml.org/lkml/2013/8/8/263
+
+2: cpufreq: define generic routines for cpufreq drivers
+https://lkml.org/lkml/2013/8/10/48
+
+3. CPUFreq: Implement light weight ->target(): for 3.13
+https://lkml.org/lkml/2013/8/13/349
+
+4. CPUFreq: set policy->cur in cpufreq core instead of drivers
+https://lkml.org/lkml/2013/8/14/288
+
+5. CPUFreq: Move freq change notifications out of drivers
+https://lkml.org/lkml/2013/8/15/506
+
+All these are pushed here:
 https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-v3.13
 
-And only Tegra+cpufreq-core patches are pushed here (only 13 patches):
-https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-next-tegra
+Viresh Kumar (14):
+  cpufreq: create cpufreq_generic_init() routine
+  cpufreq: cpu0: use cpufreq_generic_init() routine
+  cpufreq: dbx500: use cpufreq_generic_init() routine
+  cpufreq: exynos: use cpufreq_generic_init() routine
+  cpufreq: imx6q: use cpufreq_generic_init() routine
+  cpufreq: kirkwood: use cpufreq_generic_init() routine
+  cpufreq: maple: use cpufreq_generic_init() routine
+  cpufreq: pasemi: use cpufreq_generic_init() routine
+  cpufreq: pmac64: use cpufreq_generic_init() routine
+  cpufreq: s3c: use cpufreq_generic_init() routine
+  cpufreq: s5pv210: use cpufreq_generic_init() routine
+  cpufreq: sa11x0: use cpufreq_generic_init() routine
+  cpufreq: spear: use cpufreq_generic_init() routine
+  cpufreq: tegra: use cpufreq_generic_init() routine
 
-You can probably try cpufreq-next-tegra branch for testing on some real
-hardware.
+ drivers/cpufreq/cpufreq-cpu0.c       | 19 +------------------
+ drivers/cpufreq/cpufreq.c            | 31 +++++++++++++++++++++++++++++++
+ drivers/cpufreq/dbx500-cpufreq.c     | 21 +--------------------
+ drivers/cpufreq/exynos-cpufreq.c     |  7 +------
+ drivers/cpufreq/exynos5440-cpufreq.c | 14 ++------------
+ drivers/cpufreq/imx6q-cpufreq.c      | 13 +------------
+ drivers/cpufreq/kirkwood-cpufreq.c   |  5 +----
+ drivers/cpufreq/maple-cpufreq.c      |  9 +--------
+ drivers/cpufreq/pasemi-cpufreq.c     |  9 +--------
+ drivers/cpufreq/pmac64-cpufreq.c     |  9 +--------
+ drivers/cpufreq/s3c2416-cpufreq.c    |  6 ++----
+ drivers/cpufreq/s3c24xx-cpufreq.c    | 13 +------------
+ drivers/cpufreq/s3c64xx-cpufreq.c    |  5 ++---
+ drivers/cpufreq/s5pv210-cpufreq.c    |  4 +---
+ drivers/cpufreq/sa1100-cpufreq.c     |  6 +-----
+ drivers/cpufreq/sa1110-cpufreq.c     |  6 +-----
+ drivers/cpufreq/spear-cpufreq.c      | 14 ++------------
+ drivers/cpufreq/tegra-cpufreq.c      | 14 +++++++++-----
+ include/linux/cpufreq.h              |  3 +++
+ 19 files changed, 63 insertions(+), 145 deletions(-)
 
- drivers/cpufreq/tegra-cpufreq.c | 35 ++++++-----------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index b376b67..3f25ab6 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -47,7 +47,6 @@ static struct clk *pll_x_clk;
- static struct clk *pll_p_clk;
- static struct clk *emc_clk;
- 
--static unsigned long target_cpu_speed[NUM_CPUS];
- static DEFINE_MUTEX(tegra_cpu_lock);
- static bool is_suspended;
- 
-@@ -103,9 +102,6 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- {
- 	int ret = 0;
- 
--	if (tegra_getspeed(0) == rate)
--		return ret;
--
- 	/*
- 	 * Vote on memory bus frequency based on cpu frequency
- 	 * This sets the minimum frequency, display or avp may request higher
-@@ -125,35 +121,16 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 	return ret;
- }
- 
--static unsigned long tegra_cpu_highest_speed(void)
--{
--	unsigned long rate = 0;
--	int i;
--
--	for_each_online_cpu(i)
--		rate = max(rate, target_cpu_speed[i]);
--	return rate;
--}
--
- static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	unsigned int freq;
--	int ret = 0;
-+	int ret = -EBUSY;
- 
- 	mutex_lock(&tegra_cpu_lock);
- 
--	if (is_suspended) {
--		ret = -EBUSY;
--		goto out;
--	}
--
--	freq = freq_table[index].frequency;
-+	if (!is_suspended)
-+		ret = tegra_update_cpu_speed(policy,
-+				freq_table[index].frequency);
- 
--	target_cpu_speed[policy->cpu] = freq;
--
--	ret = tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
--
--out:
- 	mutex_unlock(&tegra_cpu_lock);
- 	return ret;
- }
-@@ -167,7 +144,8 @@ static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
- 		is_suspended = true;
- 		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
- 			freq_table[0].frequency);
--		tegra_update_cpu_speed(policy, freq_table[0].frequency);
-+		if (tegra_getspeed(0) != freq_table[0].frequency)
-+			tegra_update_cpu_speed(policy, freq_table[0].frequency);
- 		cpufreq_cpu_put(policy);
- 	} else if (event == PM_POST_SUSPEND) {
- 		is_suspended = false;
-@@ -190,7 +168,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- 	clk_prepare_enable(cpu_clk);
- 
- 	cpufreq_table_validate_and_show(policy, freq_table);
--	target_cpu_speed[policy->cpu] = tegra_getspeed(policy->cpu);
- 
- 	/* FIXME: what's the actual transition time? */
- 	policy->cpuinfo.transition_latency = 300 * 1000;
 -- 
 1.7.12.rc2.18.g61b472e
 
