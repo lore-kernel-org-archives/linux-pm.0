@@ -1,96 +1,162 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [RFC V2 PATCH 2/6] powerpc: Implement broadcast timer interrupt
- as an IPI message
-Date: Thu, 22 Aug 2013 11:19:42 +0530
-Message-ID: <5215A676.6040504@linux.vnet.ibm.com>
-References: <20130814115311.5193.32212.stgit@preeti.in.ibm.com> <20130814115602.5193.60835.stgit@preeti.in.ibm.com> <1377141057.25016.265.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Thu, 22 Aug 2013 16:15:43 +1000
+Message-ID: <1377152143.25016.289.camel@pasglop>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:38880 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160Ab3HVFwQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 01:52:16 -0400
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 22 Aug 2013 11:12:05 +0530
-In-Reply-To: <1377141057.25016.265.camel@pasglop>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org, Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, michael@ellerman.id.au, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-Hi Ben
-
-On 08/22/2013 08:40 AM, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-08-14 at 17:26 +0530, Preeti U Murthy wrote:
->> -static irqreturn_t unused_action(int irq, void *data)
->> +static irqreturn_t timer_action(int irq, void *data)
->>  {
->> -       /* This slot is unused and hence available for use, if needed
->> */
->> +       timer_interrupt();
->>         return IRQ_HANDLED;
->>  }
->>  
+On Tue, 2013-08-20 at 10:30 +0100, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> That means we'll do irq_enter/irq_exit twice no ? And things like
-> may_hard_irq_enable() are also already done by do_IRQ so you
-> don't need timer_interrupt() to do it again.
+> Currently different drivers requiring to access cpu device node are
+> parsing the device tree themselves. Since the ordering in the DT need
+> not match the logical cpu ordering, the parsing logic needs to consider
+> that. However, this has resulted in lots of code duplication and in some
+> cases even incorrect logic.
 > 
-> We probably are better off breaking timer_interrupt in two:
+> It's better to consolidate them by adding support for getting cpu
+> device node for a given logical cpu index in DT core library. However
+> logical to physical index mapping can be architecture specific.
 > 
-> void __timer_interrupt(struct pt_regs * regs)
+> PowerPC has it's own implementation to get the cpu node for a given
+> logical index.
 > 
-> Does the current stuff between irq_enter and irq_exit, timer_interrupt
-> does the remaining around it and calls __timer_interrupt.
+> This patch refactors the current implementation of of_get_cpu_node.
+> This in preparation to move the implementation to DT core library.
+> It separates out the logical to physical mapping so that a default
+> matching of the physical id to the logical cpu index can be added
+> when moved to common code. Architecture specific code can override it.
+
+So the patch unfortunately collides with other changes in powerpc -next,
+though it's not a huge deal and not hard to fixup, but expect Linus
+to tick unless we sort it out some other way.
+
+Appart from that, it's fine, builds on all my test configs and doesn't
+seem to negatively impact things as far as I can tell so far...
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> ---
+>  arch/powerpc/kernel/prom.c | 76 ++++++++++++++++++++++++++++------------------
+>  1 file changed, 47 insertions(+), 29 deletions(-)
 > 
-> Then from timer_action, you call __timer_interrupt()
-
-We actually tried out this approach. The implementation was have a
-set_dec(0) in the timer_action(). This would ensure that we actually do
-get a timer interrupt.
-
-But the problem with either this approach or the one that you
-suggest,i.e. calling __timer_interrupt is in the following flow.
-
-do_IRQ() -> irq_exit() -> tick_irq_exit() -> tick_nohz_irq_exit()
--> tick_nohz_stop_sched_tick()
-
-The problem lies in the function tick_nohz_stop_sched_tick(). This
-function checks for the next timer interrupt pending on this cpu, and
-programs the decrementer_next_event to the time of the next event, which
-is of course > now.
-
-As a result when in the timer_action() above, we do call
-__timer_interrupt() or try to trigger a timer interrupt through
-set_dec(0), the condition  if(now >= *next_tb) in timer_interrupt() or
-__timer_interrupt() will fail, and will not call the timer interrupt
-event handler.
-
----> if (now >= *next_tb) {
-             *next_tb = ~(u64)0;
-             if (evt->event_handler)
-                evt->event_handler(evt);
-      } else {
-
-The broadcast IPI , is meant to make the target CPU of this IPI believe
-that it woke up from a timer interrupt, and not from an IPI. (The reason
-for this I will explain in the reply to the next patch). The target CPU
-should then ideally do what it would have done had it received a real
-timer interrupt, call the timer interrupt event handler.
-
-But due to the above code flow this does  not happen.
-Hence as the next patch PATCH 3/6 shows, we simply call the event
-handler of a timer interrupt without this explicit now >= *next_tb check.
-
-This problem arises only in the implementation of this patchset, because
-a timer interrupt is pseudo triggered from an IPI. So the effects of the
-IPI handler will be felt on the timer interrupt handler triggered from
-this IPI, like above.
-
-Regards
-Preeti U Murthy
-
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index eb23ac9..f7b8c0b 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
+>  __initcall(prom_reconfig_setup);
+>  #endif
+>  
+> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
+> +{
+> +	return (int)phys_id == get_hard_smp_processor_id(cpu);
+> +}
+> +
+> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
+> +			const char *prop_name, int cpu, unsigned int *thread)
+> +{
+> +	const __be32 *cell;
+> +	int ac, prop_len, tid;
+> +	u64 hwid;
+> +
+> +	ac = of_n_addr_cells(cpun);
+> +	cell = of_get_property(cpun, prop_name, &prop_len);
+> +	if (!cell)
+> +		return false;
+> +	prop_len /= sizeof(*cell);
+> +	for (tid = 0; tid < prop_len; tid++) {
+> +		hwid = of_read_number(cell, ac);
+> +		if (arch_match_cpu_phys_id(cpu, hwid)) {
+> +			if (thread)
+> +				*thread = tid;
+> +			return true;
+> +		}
+> +		cell += ac;
+> +	}
+> +	return false;
+> +}
+> +
+>  /* Find the device node for a given logical cpu number, also returns the cpu
+>   * local thread number (index in ibm,interrupt-server#s) if relevant and
+>   * asked for (non NULL)
+>   */
+>  struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
+>  {
+> -	int hardid;
+> -	struct device_node *np;
+> +	struct device_node *cpun, *cpus;
+>  
+> -	hardid = get_hard_smp_processor_id(cpu);
+> +	cpus = of_find_node_by_path("/cpus");
+> +	if (!cpus) {
+> +		pr_warn("Missing cpus node, bailing out\n");
+> +		return NULL;
+> +	}
+>  
+> -	for_each_node_by_type(np, "cpu") {
+> -		const u32 *intserv;
+> -		unsigned int plen, t;
+> +	for_each_child_of_node(cpus, cpun) {
+> +		if (of_node_cmp(cpun->type, "cpu"))
+> +			continue;
+>  
+> -		/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
+> -		 * fallback to "reg" property and assume no threads
+> +		/* Check for non-standard "ibm,ppc-interrupt-server#s" property
+> +		 * for thread ids on PowerPC. If it doesn't exist fallback to
+> +		 * standard "reg" property.
+>  		 */
+> -		intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
+> -				&plen);
+> -		if (intserv == NULL) {
+> -			const u32 *reg = of_get_property(np, "reg", NULL);
+> -			if (reg == NULL)
+> -				continue;
+> -			if (*reg == hardid) {
+> -				if (thread)
+> -					*thread = 0;
+> -				return np;
+> -			}
+> -		} else {
+> -			plen /= sizeof(u32);
+> -			for (t = 0; t < plen; t++) {
+> -				if (hardid == intserv[t]) {
+> -					if (thread)
+> -						*thread = t;
+> -					return np;
+> -				}
+> -			}
+> -		}
+> +		if (__of_find_n_match_cpu_property(cpun,
+> +				"ibm,ppc-interrupt-server#s", cpu, thread))
+> +			return cpun;
+> +
+> +		if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
+> +			return cpun;
+>  	}
+>  	return NULL;
+>  }
