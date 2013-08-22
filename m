@@ -1,162 +1,314 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Thu, 22 Aug 2013 16:15:43 +1000
-Message-ID: <1377152143.25016.289.camel@pasglop>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [RFC V2 PATCH 3/6] cpuidle/ppc: Add timer offload framework to
+ support deep idle states
+Date: Thu, 22 Aug 2013 14:33:06 +0530
+Message-ID: <5215D3CA.60402@linux.vnet.ibm.com>
+References: <20130814115311.5193.32212.stgit@preeti.in.ibm.com> <20130814115613.5193.43161.stgit@preeti.in.ibm.com> <1377142037.25016.272.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Jonas Bonn <jonas@southpole.se>, devicetree@vger.kernel.org, Michal Simek <monstr@monstr.eu>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1377142037.25016.272.camel@pasglop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, michael@ellerman.id.au, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2013-08-20 at 10:30 +0100, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> Currently different drivers requiring to access cpu device node are
-> parsing the device tree themselves. Since the ordering in the DT need
-> not match the logical cpu ordering, the parsing logic needs to consider
-> that. However, this has resulted in lots of code duplication and in some
-> cases even incorrect logic.
-> 
-> It's better to consolidate them by adding support for getting cpu
-> device node for a given logical cpu index in DT core library. However
-> logical to physical index mapping can be architecture specific.
-> 
-> PowerPC has it's own implementation to get the cpu node for a given
-> logical index.
-> 
-> This patch refactors the current implementation of of_get_cpu_node.
-> This in preparation to move the implementation to DT core library.
-> It separates out the logical to physical mapping so that a default
-> matching of the physical id to the logical cpu index can be added
-> when moved to common code. Architecture specific code can override it.
+Hi Ben,
 
-So the patch unfortunately collides with other changes in powerpc -next,
-though it's not a huge deal and not hard to fixup, but expect Linus
-to tick unless we sort it out some other way.
-
-Appart from that, it's fine, builds on all my test configs and doesn't
-seem to negatively impact things as far as I can tell so far...
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> ---
->  arch/powerpc/kernel/prom.c | 76 ++++++++++++++++++++++++++++------------------
->  1 file changed, 47 insertions(+), 29 deletions(-)
+On 08/22/2013 08:57 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2013-08-14 at 17:26 +0530, Preeti U Murthy wrote:
 > 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index eb23ac9..f7b8c0b 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -865,45 +865,63 @@ static int __init prom_reconfig_setup(void)
->  __initcall(prom_reconfig_setup);
->  #endif
->  
-> +bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-> +{
-> +	return (int)phys_id == get_hard_smp_processor_id(cpu);
-> +}
-> +
-> +static bool __of_find_n_match_cpu_property(struct device_node *cpun,
-> +			const char *prop_name, int cpu, unsigned int *thread)
-> +{
-> +	const __be32 *cell;
-> +	int ac, prop_len, tid;
-> +	u64 hwid;
-> +
-> +	ac = of_n_addr_cells(cpun);
-> +	cell = of_get_property(cpun, prop_name, &prop_len);
-> +	if (!cell)
-> +		return false;
-> +	prop_len /= sizeof(*cell);
-> +	for (tid = 0; tid < prop_len; tid++) {
-> +		hwid = of_read_number(cell, ac);
-> +		if (arch_match_cpu_phys_id(cpu, hwid)) {
-> +			if (thread)
-> +				*thread = tid;
-> +			return true;
-> +		}
-> +		cell += ac;
-> +	}
-> +	return false;
-> +}
-> +
->  /* Find the device node for a given logical cpu number, also returns the cpu
->   * local thread number (index in ibm,interrupt-server#s) if relevant and
->   * asked for (non NULL)
->   */
->  struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
->  {
-> -	int hardid;
-> -	struct device_node *np;
-> +	struct device_node *cpun, *cpus;
->  
-> -	hardid = get_hard_smp_processor_id(cpu);
-> +	cpus = of_find_node_by_path("/cpus");
-> +	if (!cpus) {
-> +		pr_warn("Missing cpus node, bailing out\n");
-> +		return NULL;
-> +	}
->  
-> -	for_each_node_by_type(np, "cpu") {
-> -		const u32 *intserv;
-> -		unsigned int plen, t;
-> +	for_each_child_of_node(cpus, cpun) {
-> +		if (of_node_cmp(cpun->type, "cpu"))
-> +			continue;
->  
-> -		/* Check for ibm,ppc-interrupt-server#s. If it doesn't exist
-> -		 * fallback to "reg" property and assume no threads
-> +		/* Check for non-standard "ibm,ppc-interrupt-server#s" property
-> +		 * for thread ids on PowerPC. If it doesn't exist fallback to
-> +		 * standard "reg" property.
->  		 */
-> -		intserv = of_get_property(np, "ibm,ppc-interrupt-server#s",
-> -				&plen);
-> -		if (intserv == NULL) {
-> -			const u32 *reg = of_get_property(np, "reg", NULL);
-> -			if (reg == NULL)
-> -				continue;
-> -			if (*reg == hardid) {
-> -				if (thread)
-> -					*thread = 0;
-> -				return np;
-> -			}
-> -		} else {
-> -			plen /= sizeof(u32);
-> -			for (t = 0; t < plen; t++) {
-> -				if (hardid == intserv[t]) {
-> -					if (thread)
-> -						*thread = t;
-> -					return np;
-> -				}
-> -			}
-> -		}
-> +		if (__of_find_n_match_cpu_property(cpun,
-> +				"ibm,ppc-interrupt-server#s", cpu, thread))
-> +			return cpun;
-> +
-> +		if (__of_find_n_match_cpu_property(cpun, "reg", cpu, thread))
-> +			return cpun;
->  	}
->  	return NULL;
->  }
+>>  static irqreturn_t timer_action(int irq, void *data)
+>>  {
+>> -	timer_interrupt();
+>> +	decrementer_timer_interrupt();
+>>  	return IRQ_HANDLED;
+>>  }
+> 
+> I don't completely understand what you are doing here, but ...
+> 
+>> @@ -223,7 +223,7 @@ irqreturn_t smp_ipi_demux(void)
+>>  
+>>  #ifdef __BIG_ENDIAN
+>>  		if (all & (1 << (24 - 8 * PPC_MSG_TIMER)))
+>> -			timer_interrupt();
+>> +			decrementer_timer_interrupt();
+> 
+> Why call this decrementer_* since it's specifically *not* the
+> decrementer ?
+>
+> Makes more sense to be called broadcast_timer_interrupt() no ?
+
+A broadcast IPI is meant to trigger timer interrupt handling on the
+target CPUs. In deep idle states, even though the local timers of CPUs
+become non-functional, it should not make a difference to them because
+of the broadcast framework's help.
+
+The broadcast framework is meant to hide the fact that the CPUs in deep
+idle states require external help to wakeup on their expired timer
+events. So the CPUs should wake up to find themselves handling the
+timers under such a scenario, although they woke up from an IPI.
+
+This whole idea gets conveyed by naming the handler of the broadcast IPI
+to decrementer_timer_interrupt().
+
+That said, ideally it should have been called timer_interrupt(). But
+since we already have the timer interrupt handler with the same name,
+and also we cannot call it directly for reasons mentioned in the reply
+to your review on PATCH 2/6, I named it decrementer_timer_interrupt() to
+come close to conveying the idea. This calls only the timer interrupt
+handler there.
+
+> 
+>>  		if (all & (1 << (24 - 8 * PPC_MSG_RESCHEDULE)))
+>>  			scheduler_ipi();
+>>  		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNC_SINGLE)))
+>> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+>> index 65ab9e9..7e858e1 100644
+>> --- a/arch/powerpc/kernel/time.c
+>> +++ b/arch/powerpc/kernel/time.c
+>> @@ -42,6 +42,7 @@
+>>  #include <linux/timex.h>
+>>  #include <linux/kernel_stat.h>
+>>  #include <linux/time.h>
+>> +#include <linux/timer.h>
+>>  #include <linux/init.h>
+>>  #include <linux/profile.h>
+>>  #include <linux/cpu.h>
+>> @@ -97,8 +98,11 @@ static struct clocksource clocksource_timebase = {
+>>  
+>>  static int decrementer_set_next_event(unsigned long evt,
+>>  				      struct clock_event_device *dev);
+>> +static int broadcast_set_next_event(unsigned long evt,
+>> +				      struct clock_event_device *dev);
+>>  static void decrementer_set_mode(enum clock_event_mode mode,
+>>  				 struct clock_event_device *dev);
+>> +static void decrementer_timer_broadcast(const struct cpumask *mask);
+>>  
+>>  struct clock_event_device decrementer_clockevent = {
+>>  	.name           = "decrementer",
+>> @@ -106,13 +110,26 @@ struct clock_event_device decrementer_clockevent = {
+>>  	.irq            = 0,
+>>  	.set_next_event = decrementer_set_next_event,
+>>  	.set_mode       = decrementer_set_mode,
+>> -	.features       = CLOCK_EVT_FEAT_ONESHOT,
+>> +	.broadcast	= decrementer_timer_broadcast,
+>> +	.features       = CLOCK_EVT_FEAT_C3STOP | CLOCK_EVT_FEAT_ONESHOT,
+>>  };
+>>  EXPORT_SYMBOL(decrementer_clockevent);
+>>  
+>> +struct clock_event_device broadcast_clockevent = {
+>> +	.name           = "broadcast",
+>> +	.rating         = 200,
+>> +	.irq            = 0,
+>> +	.set_next_event = broadcast_set_next_event,
+>> +	.set_mode       = decrementer_set_mode,
+> 
+> Same here, why "decrementer" ? This event device is *not* the
+> decrementer right ?
+
+You are right. In this case it should have been broadcast_set_mode. This
+is because this function is associated with the sender(the broadcast cpu).
+
+> 
+> Also, pardon my ignorance, by why do we need a separate
+> clock_event_device ? Ie what does that do ? I am not familiar with the
+> broadcast scheme and what .broadcast do in the "decrementer" one, so
+> you need to provide me at least with better explanations.
+
+The answer in short to why we need an additional clock event device is
+that, in this patchset, we try to integrate the support for deep sleep
+states in power, with the broadcast framework existent today in the
+kernel without any changes to this broadcast framework and trying our
+best to adapt to it. Let me now elaborate.
+
+The broadcast framework kicks in if there is a broadcast clock event
+device. We can double up the local timer/decrementer of a CPU as the
+broadcast clock event device itself. But the broadcast framework
+considers a clock event device an eligible candidate for broadcast, if
+the feature CLOCK_EVT_FEAT_C3STOP is not associated with it. This
+feature says that the clock event device stops in deep idle states. The
+broadcast framework expects the clock event device which takes up the
+responsibility of doing broadcast to be available and on at all points
+in time.
+  The decrementer clock event device however is susceptible to
+non-availability in deep idle states.
+
+Now the next question of why does a broadcast framework require a clock
+event device? This clock event device is the equivalent of the local
+timer of a CPU, except that this behaves like the global timer for all
+CPUs whose local timers are non-functional. Of course this timer can
+wakeup only one CPU on expiry. So the CPU chosen for this purpose will
+effectively have two devices, the local clock event device and the
+broadcast clock event device targeting their interrupts to it. When the
+broadcast clock event device interrupts the CPU, the CPU sends an IPI to
+those of the idling CPUs whose local timers have stopped, if required,
+with an intention of waking them up to handle their local timer events.
+
+The job of the broadcast framework is to find out which CPU, that has
+its local timers switched off has to be woken up next. The important
+thing to note here is that the local timers are not expected to be
+switched off only in deep idle states. They can be non functional due to
+whatever reason, at which time they come to broadcast framework seeking
+help; to wake them up at their local timer events.
+
+The broadcast framework puts the CPUs under such a category, into a mask
+and each time a new CPU enters such a mask, it reprograms the broadcast
+clock event device to the earliest of the new wakeup and the old. If the
+local timer of a CPU was also used for this purpose, its original local
+wakeup event would be overwritten.
+
+On powerpc, since we do not have a physical clock event device
+additionally to the local clock event devices, we need to have a pseudo
+device so that we can activate the broadcast framework.
+
+I will explain what the .broadcast in decrementer clock event device
+does further down in the mail.
+
+> 
+>> +	.features       = CLOCK_EVT_FEAT_ONESHOT,
+>> +};
+>> +EXPORT_SYMBOL(broadcast_clockevent);
+>> +
+>>  DEFINE_PER_CPU(u64, decrementers_next_tb);
+>>  static DEFINE_PER_CPU(struct clock_event_device, decrementers);
+>> +static DEFINE_PER_CPU(struct clock_event_device, bc_timer);
+> 
+> Do we really need an additional per CPU here ? What does the bc_timer
+> actually represent ? The sender (broadcaster) or receiver ? In the
+> latter case, why does it have to differ from the decrementer ?
+
+No we dont really need this to be per cpu. The PATCH 4/6 removes this
+per_cpu instance, instead has one clock event device. The bc_timer is
+the broadcast clock event device that is described above. So to answer
+the above question it is associated with the sender. It needs to be
+different from the decrementer for the reasons mentioned above.
+
+> 
+>> +int bc_cpu;
+> 
+> A global with that name ? Exported ? That's gross...
+
+Sorry about this, ill take care of the implementation of this in the
+next version by adding accessor functions to set/unset it.
+
+> 
+>>  #define XSEC_PER_SEC (1024*1024)
+>>  
+>>  #ifdef CONFIG_PPC64
+>> @@ -487,6 +504,8 @@ void timer_interrupt(struct pt_regs * regs)
+>>  	struct pt_regs *old_regs;
+>>  	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+>>  	struct clock_event_device *evt = &__get_cpu_var(decrementers);
+>> +	struct clock_event_device *bc_evt = &__get_cpu_var(bc_timer);
+>> +	int cpu = smp_processor_id();
+>>  	u64 now;
+>>  
+>>  	/* Ensure a positive value is written to the decrementer, or else
+>> @@ -532,6 +551,10 @@ void timer_interrupt(struct pt_regs * regs)
+>>  		*next_tb = ~(u64)0;
+>>  		if (evt->event_handler)
+>>  			evt->event_handler(evt);
+>> +		if (cpu == bc_cpu && bc_evt->event_handler) {
+>> +			bc_evt->event_handler(bc_evt);
+>> +		}
+>> +
+> 
+> So here, on a CPU that happens to be "bc_cpu", we call an additional
+> "event_handler" on every timer interrupt ? What does that handler
+> actually do ? How does it relate to the "broadcast" field in the
+> original clock source ?
+
+This handler is in charge of finding out which of the CPUs whose local
+timers have been switched off, need to be woken up to enable them to
+handle their expired timer events. The bc_cpu sends an IPI to such
+sleeping CPUs.
+
+The broadcast framework currently uses the *broadcast* function to send
+IPIs to the CPUs in deep idle states. This function needs to be
+associated with the local timers of the CPUs according to the current
+design of the broadcast framework.
+
+So the event handler of the broadcast clock event device, uses the
+broadcast function to send IPIs to the CPUs required, in addition to
+finding out who to send the IPIs and when the next wakeup of idling CPUs
+should be handled.
+
+> 
+>>  	} else {
+>>  		now = *next_tb - now;
+>>  		if (now <= DECREMENTER_MAX)
+>> @@ -806,6 +829,20 @@ static int decrementer_set_next_event(unsigned long evt,
+>>  	return 0;
+>>  }
+>>  
+>> +/*
+>> + * We cannot program the decrementer of a remote CPU. Hence CPUs going into
+>> + * deep idle states need to send IPIs to the broadcast CPU to program its
+>> + * decrementer for their next local event so as to receive a broadcast IPI
+>> + * for the same. In order to avoid the overhead of multiple CPUs from sending
+>> + * IPIs, this function is a nop. Instead the broadcast CPU will handle the
+>> + * wakeup of CPUs in deep idle states in each of its local timer interrupts.
+>> + */
+>> +static int broadcast_set_next_event(unsigned long evt,
+>> +					struct clock_event_device *dev)
+>> +{
+>> +	return 0;
+>> +}
+>> +
+>>  static void decrementer_set_mode(enum clock_event_mode mode,
+>>  				 struct clock_event_device *dev)
+>>  {
+>> @@ -813,6 +850,20 @@ static void decrementer_set_mode(enum clock_event_mode mode,
+>>  		decrementer_set_next_event(DECREMENTER_MAX, dev);
+>>  }
+>>  
+>> +void decrementer_timer_interrupt(void)
+>> +{
+>> +	struct clock_event_device *evt;
+>> +	evt = &per_cpu(decrementers, smp_processor_id());
+>> +
+>> +	if (evt->event_handler)
+>> +		evt->event_handler(evt);
+>> +}
+> 
+> So that's what happens when we receive the broadcast... it might need
+> some stats ... and it's using the normal "decrementer" clock source,
+> so I still have a problem understanding why you need another one.
+
+So this is the receiver part of the broadcast. The sender needs to call
+the event handler of the broadcast clock event device while the receiver
+has to invoke the event handler of the decrementer clock event device so
+as to handle its local timer events.
+  But you are right, we are missing stats accumulation by doing the
+above. I need to take care of this.
+
+> 
+>> +static void decrementer_timer_broadcast(const struct cpumask *mask)
+>> +{
+>> +	arch_send_tick_broadcast(mask);
+>> +}
+> 
+> Ok, so far so good. But that's also hooked into the normal clock
+> source...
+
+This broadcast function has to be associated with the normal clock
+source according to the implementation of the broadcast framework. I am
+not too sure about the reason behind this.
+
+So the current implementation has the broadcast event handler associated
+with the broadcast clock event device(where cpus that have to be woken
+up are selected and the broadcast clock event device reprogrammed), and
+the actual job of broadcasting is associated with the normal clock
+source(sending an IPI), i.e. the .broadcast fn.
+
+And the broadcast IPI handler on the target CPUs has to invoke the timer
+handler of the nromal clock source.
+
+So only the broadcast event handler(tick_handle_oneshot_broadcast() and
+tick_handle_periodic_broadcast()) is associated with the broadcast clock
+source.
+
+Regards
+Preeti U Murthy
