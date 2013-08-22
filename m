@@ -1,126 +1,71 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC V2 PATCH 4/6] cpuidle/ppc: Add longnap state to the idle
- states on powernv
-Date: Thu, 22 Aug 2013 13:28:50 +1000
-Message-ID: <1377142130.25016.273.camel@pasglop>
-References: <20130814115311.5193.32212.stgit@preeti.in.ibm.com>
-	 <20130814115623.5193.36974.stgit@preeti.in.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/14] cpufreq: create & use cpufreq_generic_init() routine
+Date: Thu, 22 Aug 2013 10:17:07 +0530
+Message-ID: <CAKohponcPiN9br+K76ky1ROtKM0TS-WFNkL2FtAQTf-yaq8jJg@mail.gmail.com>
+References: <cover.1377093938.git.viresh.kumar@linaro.org>
+	<1493410.kWm56FEZ0a@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130814115623.5193.36974.stgit@preeti.in.ibm.com>
+In-Reply-To: <1493410.kWm56FEZ0a@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, michael@ellerman.id.au, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2013-08-14 at 17:26 +0530, Preeti U Murthy wrote:
-> This patch hooks into the existing broadcast framework along with the support
-> that this patchset introduces for ppc, and the cpuidle driver backend
-> for powernv(posted out by Deepthi Dharwar:https://lkml.org/lkml/2013/7/23/128)
-> to add sleep state as one of the deep idle states, in which the decrementer
-> is switched off.
-> 
-> However in this patch, we only emulate sleep by going into a state which does
-> a nap with the decrementer interrupts disabled, termed as longnap. This enables
-> focus on the timer broadcast framework for ppc in this series of patches ,
-> which is required as a first step to enable sleep on ppc.
+On 22 August 2013 04:50, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> OK, so the plan for merging this will be that we'll put 1 into linux-next
+> and add 2 to it after a few days etc. to give people a chance to test one
+> set of changes before going to the next one.
+>
+>> 1: cpufreq: Introduce cpufreq_table_validate_and_show()
+>> https://lkml.org/lkml/2013/8/8/263
+>
+> So perhaps we can *try* to push the above for 3.12 if it doesn't breaks
+> stuff left and right.
+>
+> Can you please resend it with all of the ACKs collected so far?
 
-This is only for debug / proof of concept right ? We should use a real
-sleep here.
+Sure..
 
-If we need to know whether the FW supports it (PORE etc...) we shall add
-a device-tree property from the FW to indicate that fact.
+But I believe we can reduce our work to some extent.. Probably instead
+of sending all again separately, we can bind them together logically..
 
-Cheers,
-Ben.
+So, I would like to divide these six patchsets into two and we can get the
+first one in 3.12 now..
 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> 
->  arch/powerpc/platforms/powernv/processor_idle.c |   48 +++++++++++++++++++++++
->  1 file changed, 47 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/processor_idle.c b/arch/powerpc/platforms/powernv/processor_idle.c
-> index f43ad91a..9aca502 100644
-> --- a/arch/powerpc/platforms/powernv/processor_idle.c
-> +++ b/arch/powerpc/platforms/powernv/processor_idle.c
-> @@ -9,16 +9,18 @@
->  #include <linux/cpuidle.h>
->  #include <linux/cpu.h>
->  #include <linux/notifier.h>
-> +#include <linux/clockchips.h>
->  
->  #include <asm/machdep.h>
->  #include <asm/runlatch.h>
-> +#include <asm/time.h>
->  
->  struct cpuidle_driver powernv_idle_driver = {
->  	.name =		"powernv_idle",
->  	.owner =	THIS_MODULE,
->  };
->  
-> -#define MAX_IDLE_STATE_COUNT	2
-> +#define MAX_IDLE_STATE_COUNT	3
->  
->  static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
->  static struct cpuidle_device __percpu *powernv_cpuidle_devices;
-> @@ -54,6 +56,43 @@ static int nap_loop(struct cpuidle_device *dev,
->  	return index;
->  }
->  
-> +/* Emulate sleep, with long nap.
-> + * During sleep, the core does not receive decrementer interrupts.
-> + * Emulate sleep using long nap with decrementers interrupts disabled.
-> + * This is an initial prototype to test the timer offload framework for ppc.
-> + * We will eventually introduce the sleep state once the timer offload framework
-> + * for ppc is stable.
-> + */
-> +static int longnap_loop(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv,
-> +				int index)
-> +{
-> +	int cpu = dev->cpu;
-> +
-> +	unsigned long lpcr = mfspr(SPRN_LPCR);
-> +
-> +	lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
-> +
-> +	/* exit powersave upon external interrupt, but not decrementer
-> +	 * interrupt, Emulate sleep.
-> +	 */
-> +	lpcr |= LPCR_PECE0;
-> +
-> +	if (cpu != bc_cpu) {
-> +		mtspr(SPRN_LPCR, lpcr);
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-> +		power7_nap();
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-> +	} else {
-> +		/* Wakeup on a decrementer interrupt, Do a nap */
-> +		lpcr |= LPCR_PECE1;
-> +		mtspr(SPRN_LPCR, lpcr);
-> +		power7_nap();
-> +	}
-> +
-> +	return index;
-> +}
-> +
->  /*
->   * States for dedicated partition case.
->   */
-> @@ -72,6 +111,13 @@ static struct cpuidle_state powernv_states[MAX_IDLE_STATE_COUNT] = {
->  		.exit_latency = 10,
->  		.target_residency = 100,
->  		.enter = &nap_loop },
-> +	 { /* LongNap */
-> +		.name = "LongNap",
-> +		.desc = "LongNap",
-> +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> +		.exit_latency = 10,
-> +		.target_residency = 100,
-> +		.enter = &longnap_loop },
->  };
->  
->  static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
+This is how I would bind them:
+
+Set I: CPUFreq: Introduce helper functions to remove code redundancy
+<132 Patches>
+
+1: cpufreq: Introduce cpufreq_table_validate_and_show()
+https://lkml.org/lkml/2013/8/8/263
+
+2: cpufreq: define generic routines for cpufreq drivers
+https://lkml.org/lkml/2013/8/10/48
+
+4. CPUFreq: set policy->cur in cpufreq core instead of drivers
+https://lkml.org/lkml/2013/8/14/288
+
+6. cpufreq: create & use cpufreq_generic_init() routine
+<This series>
+
+Set II: CPUFreq: Make ->target lightweight()
+<70 Patches>
+
+3. CPUFreq: Implement light weight ->target(): for 3.13
+https://lkml.org/lkml/2013/8/13/349
+
+5. CPUFreq: Move freq change notifications out of drivers
+https://lkml.org/lkml/2013/8/15/506
+
+
+What do you say? I will wait for your reply before actually spamming
+LKML with so many patches :)
+
+I have updated commits with all the Acks and pushed them to my
+for-v3.13 branch..
+
+--
+viresh
