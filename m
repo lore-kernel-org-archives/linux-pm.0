@@ -1,56 +1,90 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v4 03/19] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Thu, 22 Aug 2013 14:29:41 +0100
-Message-ID: <52161245.3080404@arm.com>
-References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>  <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>  <1376991021-12160-4-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1377152143.25016.289.camel@pasglop>
+Subject: [GIT PULL v2] DT/core: cpu_ofnode updates for v3.12
+Date: Thu, 22 Aug 2013 14:57:56 +0100
+Message-ID: <521618E4.4020007@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1377152143.25016.289.camel@pasglop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:46528 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439Ab3HVN5b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 09:57:31 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sudeep.KarkadaNagesha@arm.com, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jonas Bonn <jonas@southpole.se>, "monstr@monstr.eu" <monstr@monstr.eu>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "arm@kernel.org" <arm@kernel.org>
 
-On 22/08/13 07:15, Benjamin Herrenschmidt wrote:
-> On Tue, 2013-08-20 at 10:30 +0100, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> Currently different drivers requiring to access cpu device node are
->> parsing the device tree themselves. Since the ordering in the DT need
->> not match the logical cpu ordering, the parsing logic needs to consider
->> that. However, this has resulted in lots of code duplication and in some
->> cases even incorrect logic.
->>
->> It's better to consolidate them by adding support for getting cpu
->> device node for a given logical cpu index in DT core library. However
->> logical to physical index mapping can be architecture specific.
->>
->> PowerPC has it's own implementation to get the cpu node for a given
->> logical index.
->>
->> This patch refactors the current implementation of of_get_cpu_node.
->> This in preparation to move the implementation to DT core library.
->> It separates out the logical to physical mapping so that a default
->> matching of the physical id to the logical cpu index can be added
->> when moved to common code. Architecture specific code can override it.
-> 
-> So the patch unfortunately collides with other changes in powerpc -next,
-> though it's not a huge deal and not hard to fixup, but expect Linus
-> to tick unless we sort it out some other way.
-> 
-> Appart from that, it's fine, builds on all my test configs and doesn't
-> seem to negatively impact things as far as I can tell so far...
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
+Hi Rafael,
 
-Hi Ben,
-
-Thanks a lot for testing and ACK.
-I will check with Rafael about these (trivial) conflicts.
+Here is the v2 of the pull request for cpu of_node updates for v3.12
+It includes ACK for all the new changes since v1(mainly from Ben for
+PPC). Currently there's trivial conflict with today's linux-next in 3
+files. Let me know if you need me to rebase this on any particular
+branch if needed.
 
 Regards,
 Sudeep
+
+The following changes since commit b36f4be3de1b123d8601de062e7dbfc904f305fb:
+
+  Linux 3.11-rc6 (2013-08-18 14:36:53 -0700)
+
+are available in the git repository at:
+
+  git://linux-arm.org/linux-skn.git cpu_of_node
+
+for you to fetch changes up to 1037b2752345cc5666e90b711a913ab2ae6c5920:
+
+  cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+(2013-08-21 10:29:56 +0100)
+
+----------------------------------------------------------------
+Sudeep KarkadaNagesha (19):
+   microblaze: remove undefined of_get_cpu_node declaration
+   openrisc: remove undefined of_get_cpu_node declaration
+   powerpc: refactor of_get_cpu_node to support other architectures
+   of: move of_get_cpu_node implementation to DT core library
+   ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
+   driver/core: cpu: initialize of_node in cpu's device struture
+   of/device: add helper to get cpu device node from logical cpu index
+   ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
+   ARM: mvebu: remove device tree parsing for cpu nodes
+   drivers/bus: arm-cci: avoid parsing DT for cpu device nodes
+   cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
+   cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: arm_big_little: remove device tree parsing for cpu nodes
+   cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
+   cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+
+ arch/arm/kernel/devtree.c           |  5 ++
+ arch/arm/kernel/topology.c          | 61 +++++-----------
+ arch/arm/mach-imx/mach-imx6q.c      |  3 +-
+ arch/arm/mach-mvebu/platsmp.c       | 51 ++++++-------
+ arch/microblaze/include/asm/prom.h  |  3 -
+ arch/openrisc/include/asm/prom.h    |  3 -
+ arch/powerpc/include/asm/prom.h     |  3 -
+ arch/powerpc/kernel/prom.c          | 43 +-----------
+ drivers/base/cpu.c                  |  2 +
+ drivers/bus/arm-cci.c               | 28 ++------
+ drivers/cpufreq/arm_big_little_dt.c | 40 ++++-------
+ drivers/cpufreq/cpufreq-cpu0.c      | 23 +-----
+ drivers/cpufreq/highbank-cpufreq.c  | 18 ++---
+ drivers/cpufreq/imx6q-cpufreq.c     |  4 +-
+ drivers/cpufreq/kirkwood-cpufreq.c  |  8 ++-
+ drivers/cpufreq/maple-cpufreq.c     | 23 +-----
+ drivers/cpufreq/pmac32-cpufreq.c    |  5 +-
+ drivers/cpufreq/pmac64-cpufreq.c    | 47 +++---------
+ drivers/cpufreq/spear-cpufreq.c     |  4 +-
+ drivers/of/base.c                   | 95 ++++++++++++++++++++++++
+ include/linux/cpu.h                 |  1 +
+ include/linux/of.h                  |  7 ++
+ include/linux/of_device.h           | 15 ++++
+ 23 files changed, 226 insertions(+), 266 deletions(-)
+
+
+
