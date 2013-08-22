@@ -1,69 +1,87 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to
- support other architectures
-Date: Thu, 22 Aug 2013 14:59:30 +0100
-Message-ID: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron>
- <1376777376.25016.11.camel@pasglop>
- <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
- <5212177C.8000709@gmail.com>
- <521223FA.5050903@arm.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Thu, 22 Aug 2013 16:32:10 +0100
+Message-ID: <52162EFA.2070108@arm.com>
+References: <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA8BE2.9000309@ti.com> <20130802131541.GN2884@e106331-lin.cambridge.arm.com> <20130806134534.GB6603@kahuna> <20130807161722.GJ28558@e106331-lin.cambridge.arm.com> <52133E26.1000801@arm.com> <521543AC.4020709@wwwdotorg.org> <20130822115957.GC9799@e106331-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:41707 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752470Ab3HVN7c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 09:59:32 -0400
-Content-Disposition: inline
-In-Reply-To: <521223FA.5050903@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130822115957.GC9799@e106331-lin.cambridge.arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Rob Herring <robherring2@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
-> On 19/08/13 14:02, Rob Herring wrote:
-> > On 08/19/2013 05:19 AM, Mark Rutland wrote:
-> >> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
-> >>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> >>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> >>>> which 
-> >>>> the updated bindings[1] define #address-cells = <0> and so no reg 
-> >>>> property.
-> >>>>
-> >>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
-> >>>
-> >>> Why did you do that in the binding ? That sounds like looking to create
-> >>> problems ... 
-> >>>
-> >>> Traditionally, UP setups just used "0" as the "reg" property on other
-> >>> architectures, why do differently ?
-> >>
-> >> The decision was taken because we defined our reg property to refer to
-> >> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-> >> there's no MPIDR register at all. Given there can only be a single CPU
-> >> in that case, describing a register that wasn't present didn't seem
-> >> necessary or helpful.
-> > 
-> > What exactly reg represents is up to the binding definition, but it
-> > still should be present IMO. I don't see any issue with it being
-> > different for pre-v7.
-> > 
-> Yes it's better to have 'reg' with value 0 than not having it.
-> Otherwise this generic of_get_cpu_node implementation would need some
-> _hack_ to handle that case.
+On 22/08/13 12:59, Mark Rutland wrote:
+> On Wed, Aug 21, 2013 at 11:48:12PM +0100, Stephen Warren wrote:
+>> On 08/20/2013 04:00 AM, Sudeep KarkadaNagesha wrote:
+>> ...
+>>> Until we get more feedback and agreement on new proposal can we have
+>>> this simple amendment in this patch to the existing binding ? Since the
+>>> new proposal[1] is backward compatible(this patch adding support for
+>>> option#5 to existing option#1), we will have to add support for other
+>>> binding options in [1] later.
+>>>
+>>> This is needed to support shared OPPs with simple/single OPP profile
+>>> and also to fix the broken and unused binding
+>>> @Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+>>>
+>>> Regards,
+>>> Sudeep
+>>>
+>>> [1] http://www.spinics.net/lists/cpufreq/msg06563.html
+>>
+>> Presumably the desire for cpu1's node to say "go look at cpu0's node for
+>> OPP" is because they share OPPs. Don't they share OPPs because they are
+>> parts of the same device - that device being the CPU complex. As such,
+>> why not define the OPPs in /cpus rather than in each of /cpus/cpuN?
+> 
+> I'd very much like for it to be possible to factor out common properties
+> into the /cpus node, but it should follow the ePAPR recommendation fo
+> being treated as a fallback if not present in a particular /cpus/cpu@N
+> node -- that way we can handle clusters with differing OPPs. The
+> property might just be a phandle to a table node, but it should be
+> possible to make it common.
+> 
+Yes we can have this fallback mechanism, but only from cpu devices(OPP
+library handles non-cpu devices too).
 
-I'm not sure that having some code to handle a difference in standard
-between two architectures is a hack. If anything, I'd argue encoding a
-reg of 0 that corresponds to a nonexistent MPIDR value (given that's
-what the reg property is defined to map to on ARM) is more of a hack ;)
+Referring the table node, I have a generic question on DT nodes.
+Does each DT node have to represent a unique device ? If so having a
+property common to one/more devices in a separate node doesn't sound
+correct.
 
-I'm not averse to having a reg value of 0 for this case, but given that
-there are existing devicetrees without it, requiring a reg property will
-break compatibility with them.
+>>
+>> Of course, that doesn't help if there are separate CPU and GPU nodes
+>> that just happen to have the same set of OPPs and you want to share them
+>> to save DT space. Is that at all likely?
+> 
+> I suspect that the OPPs for CPUs and GPUs are likely to be quite
+> distict, and they are logically separate regardless. I'm not averse to
+> sharing of tables if we can handle them in a standard fashion.
+> 
+IMO sharing OPPs just for saving DT space might lead to confusions(no
+strong opinion though).
 
-Mark.
+>>
+>> I'd suggest/bike-shed that operating-points-device is not the correct
+>> property name; it somehow implies that the other device actively defines
+>> the OPPs for this device, rather than just happening to have the same
+>> OPPs. Perhaps "operating-points-identical-to"?
+>>
+> 
+> I'd rather not have properties that point elsewhere and say "treat me
+> the same as this node". I'd rather we have common properties as
+> described above.
+> 
+Agreed, but for platforms with multiple CPU clusters, since we have only
+one /cpus node, we ned to have table node which is arguable if node has
+represent a device(as mentioned above)
+
+Regards,
+Sudeep
+
+
+
