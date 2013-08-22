@@ -1,77 +1,76 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Thu, 22 Aug 2013 17:28:10 +0100
-Message-ID: <52163C1A.4040707@arm.com>
-References: <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA8BE2.9000309@ti.com> <20130802131541.GN2884@e106331-lin.cambridge.arm.com> <20130806134534.GB6603@kahuna> <20130807161722.GJ28558@e106331-lin.cambridge.arm.com> <52133E26.1000801@arm.com> <521543AC.4020709@wwwdotorg.org> <20130822115957.GC9799@e106331-lin.cambridge.arm.com> <52162EFA.2070108@arm.com> <20130822155000.GF23152@e106331-lin.cambridge.arm.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Thu, 22 Aug 2013 17:51:50 +0100
+Message-ID: <521641A6.2070503@arm.com>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop> <20130819101922.GI3719@e106331-lin.cambridge.arm.com> <5212177C.8000709@gmail.com> <521223FA.5050903@arm.com> <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130822155000.GF23152@e106331-lin.cambridge.arm.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Mark Rutland <mark.rutland@arm.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Rob Herring <robherring2@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 22/08/13 16:50, Mark Rutland wrote:
-> On Thu, Aug 22, 2013 at 04:32:10PM +0100, Sudeep KarkadaNagesha wrote:
->> On 22/08/13 12:59, Mark Rutland wrote:
->>> On Wed, Aug 21, 2013 at 11:48:12PM +0100, Stephen Warren wrote:
-[...]
+On 22/08/13 14:59, Mark Rutland wrote:
+> On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
+>> On 19/08/13 14:02, Rob Herring wrote:
+>>> On 08/19/2013 05:19 AM, Mark Rutland wrote:
+>>>> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
+>>>>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
+>>>>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
+>>>>>> which 
+>>>>>> the updated bindings[1] define #address-cells = <0> and so no reg 
+>>>>>> property.
+>>>>>>
+>>>>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+>>>>>
+>>>>> Why did you do that in the binding ? That sounds like looking to create
+>>>>> problems ... 
+>>>>>
+>>>>> Traditionally, UP setups just used "0" as the "reg" property on other
+>>>>> architectures, why do differently ?
 >>>>
->>>> I'd suggest/bike-shed that operating-points-device is not the correct
->>>> property name; it somehow implies that the other device actively defines
->>>> the OPPs for this device, rather than just happening to have the same
->>>> OPPs. Perhaps "operating-points-identical-to"?
->>>>
+>>>> The decision was taken because we defined our reg property to refer to
+>>>> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
+>>>> there's no MPIDR register at all. Given there can only be a single CPU
+>>>> in that case, describing a register that wasn't present didn't seem
+>>>> necessary or helpful.
 >>>
->>> I'd rather not have properties that point elsewhere and say "treat me
->>> the same as this node". I'd rather we have common properties as
->>> described above.
+>>> What exactly reg represents is up to the binding definition, but it
+>>> still should be present IMO. I don't see any issue with it being
+>>> different for pre-v7.
 >>>
->> Agreed, but for platforms with multiple CPU clusters, since we have only
->> one /cpus node, we ned to have table node which is arguable if node has
->> represent a device(as mentioned above)
+>> Yes it's better to have 'reg' with value 0 than not having it.
+>> Otherwise this generic of_get_cpu_node implementation would need some
+>> _hack_ to handle that case.
 > 
-> I agree that this seems wasteful of space, but I really don't think that
-> pointing at another device you want the OPPs of is the best way of
-> describing the linkage, and I suspect we'll get all sorts of stupid bugs
-> resulting from that style of binding.
+> I'm not sure that having some code to handle a difference in standard
+> between two architectures is a hack. If anything, I'd argue encoding a
+> reg of 0 that corresponds to a nonexistent MPIDR value (given that's
+> what the reg property is defined to map to on ARM) is more of a hack ;)
 > 
-> Consider the following (properties trimmed for brevity): 
-> 
-> cpus {
-> 	cpu0: cpu@0 {
-> 		operating-points-identical-to = <&cpu1>;
-> 	};
-> 	cpu1: cpu@1 {
-> 		operating-points = <0 100>,
-> 				   <23 47>,
-> 				   <62 970>;
-> 	}
-> };
-> 
-> If we boot a UP kernel on the above, I assume we won't read the info for
-> cpu1, and thus we won't get operating points info for cpu0. Worse, what
-> if cpu1 has status="disabled"? Does that make its OPP table invalid?
-> What if the bootloader drops cpu1?
-> 
-Another question :), does status property dictate the validity of the
-other properties in the node(not specific to above example, in general)?
+Agreed. But I am more confused.
 
-But I agree that this indirect linkage is broken as boot-loaders can
-drop the cpu node holding OPP.
+1. This raises another question as how much do we follow from ePAPR
+standard. ePAPR marks the reg property in /cpu as required.
+Does that mean we must have all the properties marked as required to be
+present in DT ? On the contrary timebase/clock-frequency is some thing
+that can be found dynamically and need not be present but they are
+marked as required too.
 
-IMO fallback method would be reasonable(and much cleaner compared to a
-separate node) if it can even accommodate multiple cpu clusters.
-
-> I really don't like indirecting linkage to a property through an
-> arbitrary node, simply because it happened to have the same property. It
-> creates an artificial depdendency that will lead to problems.
+> I'm not averse to having a reg value of 0 for this case, but given that
+> there are existing devicetrees without it, requiring a reg property will
+> break compatibility with them.
 > 
-I totally agree on this.
+
+2. What exactly does backward compatibility has to cover ? This can't be
+considered as breaking of the binding definition. In continuation to the
+above argument that reg property is required, do we need to cover this
+as it's clearly a case of missing required property(this holds only if
+reg is required always).
 
 Regards,
 Sudeep
-
