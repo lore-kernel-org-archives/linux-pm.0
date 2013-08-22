@@ -1,71 +1,75 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/14] cpufreq: create & use cpufreq_generic_init() routine
-Date: Thu, 22 Aug 2013 10:17:07 +0530
-Message-ID: <CAKohponcPiN9br+K76ky1ROtKM0TS-WFNkL2FtAQTf-yaq8jJg@mail.gmail.com>
-References: <cover.1377093938.git.viresh.kumar@linaro.org>
-	<1493410.kWm56FEZ0a@vostro.rjw.lan>
+Subject: Re: PROBLEM: cpufreq ondemand governor problem
+Date: Thu, 22 Aug 2013 10:45:00 +0530
+Message-ID: <CAOh2x=kYKV3Eqwe-16oQ6r3tGMCqd_P=oP+n_GZqa6rSu=vJKQ@mail.gmail.com>
+References: <52010083.5020005@yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1493410.kWm56FEZ0a@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52010083.5020005@yahoo.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Jim Hochschild <illini_80@yahoo.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, 1136700@bugs.launchpad.net, Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 August 2013 04:50, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> OK, so the plan for merging this will be that we'll put 1 into linux-next
-> and add 2 to it after a few days etc. to give people a chance to test one
-> set of changes before going to the next one.
+On Tue, Aug 6, 2013 at 7:26 PM, Jim Hochschild <illini_80@yahoo.com> wrote:
+> [1.] One line summary of the problem:
 >
->> 1: cpufreq: Introduce cpufreq_table_validate_and_show()
->> https://lkml.org/lkml/2013/8/8/263
->
-> So perhaps we can *try* to push the above for 3.12 if it doesn't breaks
-> stuff left and right.
->
-> Can you please resend it with all of the ACKs collected so far?
+> cpufreq ondemand governor problem
 
-Sure..
+Sorry for being too late brother.. I went through your mail when you sent it
+for the first time and thought I will look into it and then got busy, though it
+was on my todo list :)
 
-But I believe we can reduce our work to some extent.. Probably instead
-of sending all again separately, we can bind them together logically..
+Finally came back to this.. I understand and accept the problem you faced.
+Yes that's a issue.
 
-So, I would like to divide these six patchsets into two and we can get the
-first one in 3.12 now..
+I am sure you want to have a look at this:
 
-This is how I would bind them:
+commit cffe4e0e7413eb29fb8bd035c8b12b33a4b8522a
+Author: Stratos Karafotis <stratosk@semaphore.gr>
+Date:   Wed Jun 5 19:01:50 2013 +0300
 
-Set I: CPUFreq: Introduce helper functions to remove code redundancy
-<132 Patches>
+    cpufreq: Remove unused function __cpufreq_driver_getavg()
 
-1: cpufreq: Introduce cpufreq_table_validate_and_show()
-https://lkml.org/lkml/2013/8/8/263
+    The target frequency calculation method in the ondemand governor has
+    changed and it is now independent of the measured average frequency.
+    Consequently, the __cpufreq_driver_getavg() function and getavg
+    member of struct cpufreq_driver are not used any more, so drop them.
 
-2: cpufreq: define generic routines for cpufreq drivers
-https://lkml.org/lkml/2013/8/10/48
+    [rjw: Changelog]
+    Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-4. CPUFreq: set policy->cur in cpufreq core instead of drivers
-https://lkml.org/lkml/2013/8/14/288
+ drivers/cpufreq/cpufreq.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-6. cpufreq: create & use cpufreq_generic_init() routine
-<This series>
+commit 61c63e5ed3b9c472899d7152e961f2ffaafcf5a0
+Author: Stratos Karafotis <stratosk@semaphore.gr>
+Date:   Wed Jun 5 19:01:42 2013 +0300
 
-Set II: CPUFreq: Make ->target lightweight()
-<70 Patches>
+    cpufreq: Remove unused APERF/MPERF support
 
-3. CPUFreq: Implement light weight ->target(): for 3.13
-https://lkml.org/lkml/2013/8/13/349
+    The target frequency calculation method in the ondemand governor has
+    changed and it is now independent of the measured average frequency.
+    Consequently, the APERF/MPERF support in cpufreq is not used any
+    more, so drop it.
 
-5. CPUFreq: Move freq change notifications out of drivers
-https://lkml.org/lkml/2013/8/15/506
+    [rjw: Changelog]
+    Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+ drivers/cpufreq/Makefile       |  2 +-
+ drivers/cpufreq/acpi-cpufreq.c |  5 -----
+ drivers/cpufreq/mperf.c        | 51
+---------------------------------------------------
+ drivers/cpufreq/mperf.h        |  9 ---------
+ 4 files changed, 1 insertion(+), 66 deletions(-)
 
 
-What do you say? I will wait for your reply before actually spamming
-LKML with so many patches :)
+And so your problem will go away from 3.12 (Its already queued for
+next kernel release.)..
 
-I have updated commits with all the Acks and pushed them to my
-for-v3.13 branch..
-
---
-viresh
+Thanks for reporting this issue.
