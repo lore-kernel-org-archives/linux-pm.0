@@ -1,76 +1,248 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Thu, 22 Aug 2013 17:51:50 +0100
-Message-ID: <521641A6.2070503@arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop> <20130819101922.GI3719@e106331-lin.cambridge.arm.com> <5212177C.8000709@gmail.com> <521223FA.5050903@arm.com> <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup
+ and log event in pstore.
+Date: Thu, 22 Aug 2013 10:16:59 -0700
+Message-ID: <CAME+o4=uNFDjz8yFJEQR8P4dwki4U0iBv-FrixTA_TFxWctDSA@mail.gmail.com>
+References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Rob Herring <robherring2@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:63015 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752746Ab3HVRRA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 13:17:00 -0400
+Received: by mail-ob0-f173.google.com with SMTP id ta17so4121001obb.4
+        for <linux-pm@vger.kernel.org>; Thu, 22 Aug 2013 10:16:59 -0700 (PDT)
+In-Reply-To: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>
 
-On 22/08/13 14:59, Mark Rutland wrote:
-> On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
->> On 19/08/13 14:02, Rob Herring wrote:
->>> On 08/19/2013 05:19 AM, Mark Rutland wrote:
->>>> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
->>>>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
->>>>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
->>>>>> which 
->>>>>> the updated bindings[1] define #address-cells = <0> and so no reg 
->>>>>> property.
->>>>>>
->>>>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
->>>>>
->>>>> Why did you do that in the binding ? That sounds like looking to create
->>>>> problems ... 
->>>>>
->>>>> Traditionally, UP setups just used "0" as the "reg" property on other
->>>>> architectures, why do differently ?
->>>>
->>>> The decision was taken because we defined our reg property to refer to
->>>> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
->>>> there's no MPIDR register at all. Given there can only be a single CPU
->>>> in that case, describing a register that wasn't present didn't seem
->>>> necessary or helpful.
->>>
->>> What exactly reg represents is up to the binding definition, but it
->>> still should be present IMO. I don't see any issue with it being
->>> different for pre-v7.
->>>
->> Yes it's better to have 'reg' with value 0 than not having it.
->> Otherwise this generic of_get_cpu_node implementation would need some
->> _hack_ to handle that case.
-> 
-> I'm not sure that having some code to handle a difference in standard
-> between two architectures is a hack. If anything, I'd argue encoding a
-> reg of 0 that corresponds to a nonexistent MPIDR value (given that's
-> what the reg property is defined to map to on ARM) is more of a hack ;)
-> 
-Agreed. But I am more confused.
+Rafael,
+I haven't seen any other proposals/alternatives on how to do this. Is
+there anything else we should do to get this upstream? I believe this
+is a valuable debug feature for Android and it now explicitly depends
+on pstore...
+Thanks,
+Zoran
 
-1. This raises another question as how much do we follow from ePAPR
-standard. ePAPR marks the reg property in /cpu as required.
-Does that mean we must have all the properties marked as required to be
-present in DT ? On the contrary timebase/clock-frequency is some thing
-that can be found dynamically and need not be present but they are
-marked as required too.
-
-> I'm not averse to having a reg value of 0 for this case, but given that
-> there are existing devicetrees without it, requiring a reg property will
-> break compatibility with them.
-> 
-
-2. What exactly does backward compatibility has to cover ? This can't be
-considered as breaking of the binding definition. In continuation to the
-above argument that reg property is required, do we need to cover this
-as it's clearly a case of missing required property(this holds only if
-reg is required always).
-
-Regards,
-Sudeep
+On 30 July 2013 13:38, Zoran Markovic <zoran.markovic@linaro.org> wrote:
+> From: Benoit Goby <benoit@android.com>
+>
+> Rather than hard-lock the kernel, dump the suspend/resume thread stack and
+> panic() to capture a message in pstore when a driver takes too long to
+> suspend/resume. Default suspend/resume watchdog timeout is set to 12
+> seconds to be longer than the usbhid 10 second timeout, but could be
+> changed at compile time.
+>
+> Exclude from the watchdog the time spent waiting for children that
+> are resumed asynchronously and time every device, whether or not they
+> resumed synchronously.
+>
+> This patch is targeted for mobile devices where a suspend/resume lockup
+> could cause a system reboot. Information about failing device can be
+> retrieved in subsequent boot session by mounting pstore and inspecting
+> the log.
+>
+> The hardware watchdog timer is likely suspended during this time and
+> couldn't be relied upon. The soft-lockup detector would eventually tell
+> that tasks are not scheduled, but would provide little context as to why.
+> The patch hence uses system timer and assumes it is still active while the
+> devices are suspended/resumed.
+>
+> This feature can be enabled/disabled during kernel configuration.
+>
+> Cc: Android Kernel Team <kernel-team@android.com>
+> Cc: Colin Cross <ccross@android.com>
+> Cc: Todd Poynor <toddpoynor@google.com>
+> Cc: San Mehat <san@google.com>
+> Cc: Benoit Goby <benoit@android.com>
+> Cc: John Stultz <john.stultz@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Original-author: San Mehat <san@google.com>
+> Signed-off-by: Benoit Goby <benoit@android.com>
+> [zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
+> tweaked commit message. Minor changes to add compile-time inclusion of
+> the feature.]
+> Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
+> ---
+> v3:
+> * Added explicit dependency on pstore
+> * Collapsed recovery options to system panic only
+> * Logged driver string in panic message
+>
+>  drivers/base/power/main.c |   70 +++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/power/Kconfig      |   16 +++++++++++
+>  2 files changed, 86 insertions(+)
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 5a9b656..c19aec0 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -29,6 +29,8 @@
+>  #include <linux/async.h>
+>  #include <linux/suspend.h>
+>  #include <linux/cpuidle.h>
+> +#include <linux/timer.h>
+> +
+>  #include "../base.h"
+>  #include "power.h"
+>
+> @@ -54,6 +56,12 @@ struct suspend_stats suspend_stats;
+>  static DEFINE_MUTEX(dpm_list_mtx);
+>  static pm_message_t pm_transition;
+>
+> +struct dpm_watchdog {
+> +       struct device           *dev;
+> +       struct task_struct      *tsk;
+> +       struct timer_list       timer;
+> +};
+> +
+>  static int async_error;
+>
+>  /**
+> @@ -384,6 +392,60 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+>         return error;
+>  }
+>
+> +#ifdef CONFIG_DPM_WD
+> +/**
+> + * dpm_wd_handler - Driver suspend / resume watchdog handler.
+> + *
+> + * Called when a driver has timed out suspending or resuming.
+> + * There's not much we can do here to recover so panic() to
+> + * capture a crash-dump in pstore.
+> + */
+> +static void dpm_wd_handler(unsigned long data)
+> +{
+> +       struct dpm_watchdog *wd = (void *)data;
+> +
+> +       dev_emerg(wd->dev, "**** DPM device timeout ****\n");
+> +       show_stack(wd->tsk, NULL);
+> +       panic("%s %s: unrecoverable failure\n",
+> +               dev_driver_string(wd->dev), dev_name(wd->dev));
+> +}
+> +
+> +/**
+> + * dpm_wd_set - Enable pm watchdog for given device.
+> + * @wd: Watchdog. Must be allocated on the stack.
+> + * @dev: Device to handle.
+> + */
+> +static void dpm_wd_set(struct dpm_watchdog *wd, struct device *dev)
+> +{
+> +       struct timer_list *timer = &wd->timer;
+> +
+> +       wd->dev = dev;
+> +       wd->tsk = get_current();
+> +
+> +       init_timer_on_stack(timer);
+> +       /* use same timeout value for both suspend and resume */
+> +       timer->expires = jiffies + HZ * CONFIG_DPM_WD_TIMEOUT;
+> +       timer->function = dpm_wd_handler;
+> +       timer->data = (unsigned long)wd;
+> +       add_timer(timer);
+> +}
+> +
+> +/**
+> + * dpm_wd_clear - Disable suspend/resume watchdog.
+> + * @wd: Watchdog to disable.
+> + */
+> +static void dpm_wd_clear(struct dpm_watchdog *wd)
+> +{
+> +       struct timer_list *timer = &wd->timer;
+> +
+> +       del_timer_sync(timer);
+> +       destroy_timer_on_stack(timer);
+> +}
+> +#else
+> +#define dpm_wd_set(x, y)
+> +#define dpm_wd_clear(x)
+> +#endif
+> +
+>  /*------------------------- Resume routines -------------------------*/
+>
+>  /**
+> @@ -570,6 +632,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+>         pm_callback_t callback = NULL;
+>         char *info = NULL;
+>         int error = 0;
+> +       struct dpm_watchdog wd;
+>
+>         TRACE_DEVICE(dev);
+>         TRACE_RESUME(0);
+> @@ -585,6 +648,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+>          * a resumed device, even if the device hasn't been completed yet.
+>          */
+>         dev->power.is_prepared = false;
+> +       dpm_wd_set(&wd, dev);
+>
+>         if (!dev->power.is_suspended)
+>                 goto Unlock;
+> @@ -636,6 +700,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+>
+>   Unlock:
+>         device_unlock(dev);
+> +       dpm_wd_clear(&wd);
+>
+>   Complete:
+>         complete_all(&dev->power.completion);
+> @@ -1053,6 +1118,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>         pm_callback_t callback = NULL;
+>         char *info = NULL;
+>         int error = 0;
+> +       struct dpm_watchdog wd;
+>
+>         dpm_wait_for_children(dev, async);
+>
+> @@ -1076,6 +1142,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>         if (dev->power.syscore)
+>                 goto Complete;
+>
+> +       dpm_wd_set(&wd, dev);
+> +
+>         device_lock(dev);
+>
+>         if (dev->pm_domain) {
+> @@ -1131,6 +1199,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>
+>         device_unlock(dev);
+>
+> +       dpm_wd_clear(&wd);
+> +
+>   Complete:
+>         complete_all(&dev->power.completion);
+>         if (error)
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index d444c4e..6a6b763 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -178,6 +178,22 @@ config PM_SLEEP_DEBUG
+>         def_bool y
+>         depends on PM_DEBUG && PM_SLEEP
+>
+> +config DPM_WD
+> +       bool "Device suspend/resume watchdog"
+> +       depends on PM_DEBUG && PSTORE
+> +       ---help---
+> +         Sets up a watchdog timer to capture drivers that are
+> +         locked up attempting to suspend/resume a device.
+> +         A detected lockup causes system panic with message
+> +         captured in pstore device for inspection in subsequent
+> +         boot session.
+> +
+> +config DPM_WD_TIMEOUT
+> +       int "Watchdog timeout in seconds"
+> +       range 1 120
+> +       default 12
+> +       depends on DPM_WD
+> +
+>  config PM_TRACE
+>         bool
+>         help
+> --
+> 1.7.9.5
+>
