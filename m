@@ -1,73 +1,236 @@
-From: Neil Zhang <zhangwm@marvell.com>
-Subject: RE: [PATCH] cpuidle: coupled: fix dead loop corner case
-Date: Thu, 22 Aug 2013 03:11:04 -0700
-Message-ID: <175CCF5F49938B4D99B2E3EF7F558EBE3DBD2B9800@SC-VEXCH4.marvell.com>
-References: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
- <26502976.vPDNddhvVv@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Subject: [PATCH 00/18 v3] Signature verification of hibernate snapshot
+Date: Thu, 22 Aug 2013 19:00:25 +0800
+Message-ID: <1377169243-5875-1-git-send-email-jlee@suse.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from na3sys009aog104.obsmtp.com ([74.125.149.73]:53982 "EHLO
-	na3sys009aog104.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752123Ab3HVKME (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 06:12:04 -0400
-In-Reply-To: <26502976.vPDNddhvVv@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:39472 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752767Ab3HVLBy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 07:01:54 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, "ccross@android.com" <ccross@android.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>, "Lee, Chun-Yi" <jlee@suse.com>
 
-RGFuaWVsICYgQ29saW4sDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
-UmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAc2lzay5wbF0NCj4gU2VudDogMjAxM+W5tDjm
-nIgyMOaXpSAyMDozNw0KPiBUbzogTmVpbCBaaGFuZzsgRGFuaWVsIExlemNhbm8NCj4gQ2M6IGxp
-bnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBT
-dWJqZWN0OiBSZTogW1BBVENIXSBjcHVpZGxlOiBjb3VwbGVkOiBmaXggZGVhZCBsb29wIGNvcm5l
-ciBjYXNlDQo+IA0KPiBPbiBUdWVzZGF5LCBBdWd1c3QgMjAsIDIwMTMgMDE6MTc6NDQgUE0gTmVp
-bCBaaGFuZyB3cm90ZToNCj4gPiBUaGVyZSBpcyBhIGNvcmVuZXIgY2FzZSB3aGVuIG5vIHBlcmlw
-aGVyYWwgaXJxcyByb3V0ZSB0byBzZWNvbmRhcnkNCj4gPiBjb3Jlcy4NCj4gPiBMZXQncyB0YWtl
-IGR1YWwgY29yZSBzeXN0ZW0gZm9yIGV4YW1wbGUsIHRoZSBzZXF1ZW5jZSBpcyBhcyBmb2xsb3dp
-bmc6DQo+ID4NCj4gPiAJCUNvcmUgMAkJCSAgICAgICAgQ29yZTENCj4gPiAxLgkJCSAgICAgICAg
-ICAgc2V0IHdhaXRpbmcgYml0IGFuZCBlbnRlciB3YWl0aW5nIGxvb3ANCj4gPiAyLiBzZXQgd2Fp
-dGluZyBiaXQgYW5kIHBva2UgY29yZTENCj4gPiAzLiAJCQkJICAgY2xlYXIgcG9rZSBpbiBpcnEg
-YW5kIGVudGVyIHNhZmUgc3RhdGUNCj4gPiA0LiBzZXQgcmVhZHkgYml0IGFuZCBlbnRlciByZWFk
-eSBsb29wDQo+ID4NCj4gPiBTaW5jZSB0aGVyZSBpcyBubyBwZXJpcGhlcmFsIGlycSByb3V0ZSB0
-byBjb3JlIDEsIHNvIGl0IHdpbGwgc3RheSBpbg0KPiA+IHNhZmUgc3RhdGUgZm9yZXZlciwgYW5k
-IGNvcmUgMCB3aWxsIGRlYWQgbG9vcCBpbiB0aGUgZm9sbG93aW5nIGNvZGUuDQo+ID4gCXdoaWxl
-ICghY3B1aWRsZV9jb3VwbGVkX2NwdXNfcmVhZHkoY291cGxlZCkpIHsNCj4gPiAJCS8qIENoZWNr
-IGlmIGFueSBvdGhlciBjcHVzIGJhaWxlZCBvdXQgb2YgaWRsZS4gKi8NCj4gPiAJCWlmICghY3B1
-aWRsZV9jb3VwbGVkX2NwdXNfd2FpdGluZyhjb3VwbGVkKSkNCj4gPiAJfQ0KPiA+DQo+ID4gVGhl
-IHNvbHV0aW9uIGlzIGRvbid0IGxldCBzZWNvbmRhcnkgY29yZSBlbnRlciBzYWZlIHN0YXRlIHdo
-ZW4gaXQgaGFzDQo+ID4gYWxyZWFkeSBoYW5kbGVkIHRoZSBwb2tlIGludGVycnVwdC4NCj4gPg0K
-PiA+IFNpZ25lZC1vZmYtYnk6IE5laWwgWmhhbmcgPHpoYW5nd21AbWFydmVsbC5jb20+DQo+ID4g
-UmV2aWV3ZWQtYnk6IEZhbmdzdW8gV3UgPGZzd3VAbWFydmVsbC5jb20+DQo+IA0KPiBEYW5pZWws
-IGNhbiB5b3UgcGxlYXNlIGhhdmUgYSBsb29rIGF0IHRoaXM/DQo+IA0KPiBSYWZhZWwNCj4gDQoN
-CldoYXQncyB5b3VyIG9waW5pb24/DQpUaGFua3MuDQoNCj4gDQo+ID4gLS0tDQo+ID4gIGRyaXZl
-cnMvY3B1aWRsZS9jb3VwbGVkLmMgfCAgICA3ICsrKysrKysNCj4gPiAgMSBmaWxlcyBjaGFuZ2Vk
-LCA3IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9jcHVpZGxlL2NvdXBsZWQuYyBiL2RyaXZlcnMvY3B1aWRsZS9jb3VwbGVkLmMNCj4g
-PiBpbmRleCAyYTI5N2Y4Li5hMzdjNzE4IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvY3B1aWRs
-ZS9jb3VwbGVkLmMNCj4gPiArKysgYi9kcml2ZXJzL2NwdWlkbGUvY291cGxlZC5jDQo+ID4gQEAg
-LTExOSw2ICsxMTksNyBAQCBzdHJ1Y3QgY3B1aWRsZV9jb3VwbGVkIHsNCj4gPiAgI2RlZmluZSBD
-UFVJRExFX0NPVVBMRURfTk9UX0lETEUJKC0xKQ0KPiA+DQo+ID4gIHN0YXRpYyBERUZJTkVfTVVU
-RVgoY3B1aWRsZV9jb3VwbGVkX2xvY2spOw0KPiA+ICtzdGF0aWMgREVGSU5FX1BFUl9DUFUoYm9v
-bCwgcG9rZV9zeW5jKTsNCj4gPiAgc3RhdGljIERFRklORV9QRVJfQ1BVKHN0cnVjdCBjYWxsX3Np
-bmdsZV9kYXRhLA0KPiA+IGNwdWlkbGVfY291cGxlZF9wb2tlX2NiKTsNCj4gPg0KPiA+ICAvKg0K
-PiA+IEBAIC0yOTUsNiArMjk2LDcgQEAgc3RhdGljIHZvaWQgY3B1aWRsZV9jb3VwbGVkX3Bva2Vk
-KHZvaWQgKmluZm8pICB7DQo+ID4gIAlpbnQgY3B1ID0gKHVuc2lnbmVkIGxvbmcpaW5mbzsNCj4g
-PiAgCWNwdW1hc2tfY2xlYXJfY3B1KGNwdSwgJmNwdWlkbGVfY291cGxlZF9wb2tlZF9tYXNrKTsN
-Cj4gPiArCV9fdGhpc19jcHVfd3JpdGUocG9rZV9zeW5jLCB0cnVlKTsNCj4gPiAgfQ0KPiA+DQo+
-ID4gIC8qKg0KPiA+IEBAIC00NzMsNiArNDc1LDcgQEAgcmV0cnk6DQo+ID4gIAkgKiBhbGxvd2Vk
-IGZvciBhIHNpbmdsZSBjcHUuDQo+ID4gIAkgKi8NCj4gPiAgCXdoaWxlICghY3B1aWRsZV9jb3Vw
-bGVkX2NwdXNfd2FpdGluZyhjb3VwbGVkKSkgew0KPiA+ICsJCV9fdGhpc19jcHVfd3JpdGUocG9r
-ZV9zeW5jLCBmYWxzZSk7DQo+ID4gIAkJaWYgKGNwdWlkbGVfY291cGxlZF9jbGVhcl9wb2tlcyhk
-ZXYtPmNwdSkpIHsNCj4gPiAgCQkJY3B1aWRsZV9jb3VwbGVkX3NldF9ub3Rfd2FpdGluZyhkZXYt
-PmNwdSwgY291cGxlZCk7DQo+ID4gIAkJCWdvdG8gb3V0Ow0KPiA+IEBAIC00ODMsNiArNDg2LDEw
-IEBAIHJldHJ5Og0KPiA+ICAJCQlnb3RvIG91dDsNCj4gPiAgCQl9DQo+ID4NCj4gPiArCQlpZiAo
-Y3B1aWRsZV9jb3VwbGVkX2NwdXNfd2FpdGluZyhjb3VwbGVkKQ0KPiA+ICsJCQkmJiBfX3RoaXNf
-Y3B1X3JlYWQocG9rZV9zeW5jKSkNCj4gPiArCQkJYnJlYWs7DQo+ID4gKw0KPiA+ICAJCWVudGVy
-ZWRfc3RhdGUgPSBjcHVpZGxlX2VudGVyX3N0YXRlKGRldiwgZHJ2LA0KPiA+ICAJCQlkZXYtPnNh
-ZmVfc3RhdGVfaW5kZXgpOw0KPiA+ICAJfQ0KPiA+DQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3Ig
-bXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9n
-eSBDZW50ZXIuDQoNCkJlc3QgUmVnYXJkcywNCk5laWwgWmhhbmcNCg==
+Hi experts,
+
+This patchset is the implementation for signature verification of hibernate
+snapshot image. The origin idea is from Jiri Kosina: Let EFI bootloader
+generate key-pair in UEFI secure boot environment, then pass it to kernel
+for sign/verify S4 image.
+
+Due to there have potential threat from the S4 image hacked, it may causes
+kernel lost the trust in UEFI secure boot. Hacker attack the S4 snapshot
+image in swap partition through whatever exploit from another trusted OS,
+and the exploit may don't need physical access machine.
+
+So, this patchset give the ability to kernel for parsing the RSA private key
+from EFI bootloader, then using the private key to generate the signature
+of S4 snapshot image. Kernel put the signature to snapshot header, and
+verify the signature when kernel try to recover snapshot image to memory.
+
+==============
+How To Enable
+==============
+
+Set enable the CONFIG_SNAPSHOT_VERIFICATION kernel config. And you can also
+choice which hash algorithm should snapshot be signed with. Then rebuild
+kernel.
+
+Please note this function need UEFI bootloader's support to generate key-pair
+in UEFI secure boot environment, e.g. shim. Current shim implementation by
+Gary Lin:
+
+Git:
+     https://github.com/lcp/shim/tree/s4-key-upstream
+RPM:
+     https://build.opensuse.org/package/show/home:gary_lin:UEFI/shim
+
+Please use the shim from above URL if you want to try. Please remember add
+the hash of shim to db in UEFI BIOS because it didn't sign by Microsoft or
+any OSV key.
+
+=========
+Behavior
+=========
+
+The RSA key-pair are generated by EFI bootloader(e.g. shim) in UEFI secure
+boot environment, so this function binding with EFI secure boot enabled.
+The kernel behavior is:
+
+ + UEFI Secure Boot ON. Kernel found private key from shim:
+   Kernel will run the signature check when S4.
+
+ + UEFI Secure Boot ON. Kernel didn't find key from shim:
+   Kernel will lock down S4 function.
+
+ + UEFI Secure Boot OFF
+   Kernel will disable S4 signature check, and ignore any keys
+   from EFI bootloader. Unconditional allow hibernate launch.
+
+On EFI bootloader side, the behavior as following:
+
+ + First, kernel will check the following 2 EFI variable:
+   S4SignKey-fe141863-c070-478e-b8a3-878a5dc9ef21    [BootService]
+   S4WakeKey-fe141863-c070-478e-b8a3-878a5dc9ef21    [Runtime][Volatile]
+
+   S4SignKey and S4WakeKey is a RSA key-pair:
+    - S4SignKey is a private key that's used to generate signature of S4
+      snapshot.
+      The blob format of S4SignKey is PKCS#8 uncompressed format, it should
+      packaged a RSA private key that's followed PKCS#1.
+
+    - S4WakeKey is a public key that's used to verify signature of S4
+      snapshot.
+      The blob format of S4WakeKey is X.509 format, it should packaged a RSA
+      public key that's followed PKCS#1.
+
+ + EFI bootloader must generate RSA key-pair when system boot:
+   - Bootloader store the public key to EFI boottime variable by itself
+   - Bootloader put The private key to S4SignKey EFI variable for forward to
+     kernel.
+
+ + EFI stub kernel will load the S4SignKey blob to RAM before ExitBootServices,
+   then copy to a memory page to maintain by hibernate_key.c. This private key
+   will used to sign snapshot when S4.
+
+ + When machine resume from hibernate:
+   - EFI bootloader should copy the public key from boottime variable to
+     S4WakeKey EFI variable.
+   - Bootloader need generates a new key-pair for next round S4 usage.
+     It should put new private key to S4SignKey variable.
+
+ + EFI bootlaoder need check the following EFI runtime variable for regenerate
+   new key-pair:
+   GenS4Key-fe141863-c070-478e-b8a3-878a5dc9ef21
+
+   The size of GenS4Key is 1 byte, OS(kernel or userland tool) will set it to
+   "1" for notify efi bootloader regenerate key-pair.
+
+==============
+Implementation
+==============
+
+Whole implementation including 3 parts: shim, asymmetric keys and hibernate:
+
+ + shim:
+   Current solution implemented by Gary Lin:
+     https://github.com/lcp/shim/tree/s4-key-upstream
+
+   Please use shim from the above URL if you want to try. Please remember add
+   this shim to db because it didn't sign by Microsoft or any OSV key.
+
+ + Asymmetric keys:
+   This patchset implemented uncompressed PKCS#8 and RSA private key parser,
+   it also implement the signature generation operation of RSASSA-PKCS1-v_5
+   in PKCS#1 spec. [RFC3447 sec 8.2.2]
+   Set CONFIG_PKCS8_PRIVATE_KEY_INFO_PARSER=y will give kernel the abilities
+   to parsing private key in uncompressed PKCS#8 blob and generate signature.
+
+ + Hibernate:
+   Set CONFIG_SNAPSHOT_VERIFICATION=y will enable the function of snapshot
+   signature generation and verification. I reserved 512 byes size in snapshot
+   header for store the signature that's generated from the digest with SHA
+   algorithms.
+
+For adapt S4 signature check to secure boot, I have porting 3 patches from
+Fedora kernel, authors are Josh Boyer and Matthew Garrett. I also add Cc. to
+them.
+
+Please help review this RFC patchset! Appreciate for any comments!
+
+
+v3:
+ - Load S4 sign key before ExitBootServices in efi stub.
+ - In Makefile, moved hibernate_keys.o before hibernate.o for load S4 sign
+   key before check hibernate image. It makes sure the new sign key will be
+   transfer to resume target kernel.
+ - Set "depends on EFI_STUB" in Kconfig. 
+
+v2:
+ - Moved SNAPSHOT_VERIFICATION kernel config to earlier patch.
+ - Add dummy functions to simplify the ifdef check. 
+ - Sent to opensuse-kernel@opensuse.org for review:
+   http://lists.opensuse.org/opensuse-kernel/2013-08/msg00025.html
+
+v1:
+ - Internal review
+ - github:
+   https://github.com/joeyli/linux-s4sign/commits/devel-s4sign
+
+
+Josh Boyer (1):
+  Secure boot: Add a dummy kernel parameter that will switch on Secure
+    Boot mode
+
+Lee, Chun-Yi (15):
+  asymmetric keys: add interface and skeleton for implement signature
+    generation
+  asymmetric keys: implement EMSA_PKCS1-v1_5-ENCODE in rsa
+  asymmetric keys: separate the length checking of octet string from
+    RSA_I2OSP
+  asymmetric keys: implement OS2IP in rsa
+  asymmetric keys: implement RSASP1
+  asymmetric keys: support parsing PKCS #8 private key information
+  asymmetric keys: explicitly add the leading zero byte to encoded
+    message
+  Hibernate: introduced RSA key-pair to verify signature of snapshot
+  Hibernate: generate and verify signature of snapshot
+  Hibernate: Avoid S4 sign key data included in snapshot image
+  Hibernate: applied SNAPSHOT_VERIFICATION config to switch signature
+    check
+  Hibernate: adapt to UEFI secure boot with signature check
+  Hibernate: show the verification time for monitor performance
+  Hibernate: introduced SNAPSHOT_SIG_HASH config for select hash
+    algorithm
+  Hibernate: notify bootloader regenerate key-pair for snapshot
+    verification
+
+Matthew Garrett (2):
+  Secure boot: Add new capability
+  efi: Enable secure boot lockdown automatically when enabled in
+    firmware
+
+ Documentation/kernel-parameters.txt        |    7 +
+ Documentation/x86/zero-page.txt            |    2 +
+ arch/x86/boot/compressed/eboot.c           |  121 ++++++++++
+ arch/x86/include/asm/bootparam_utils.h     |    8 +-
+ arch/x86/include/asm/efi.h                 |    9 +
+ arch/x86/include/uapi/asm/bootparam.h      |    4 +-
+ arch/x86/kernel/setup.c                    |    7 +
+ arch/x86/platform/efi/efi.c                |   68 ++++++
+ crypto/asymmetric_keys/Kconfig             |   11 +
+ crypto/asymmetric_keys/Makefile            |   16 ++
+ crypto/asymmetric_keys/pkcs8.asn1          |   19 ++
+ crypto/asymmetric_keys/pkcs8_info_parser.c |  152 ++++++++++++
+ crypto/asymmetric_keys/pkcs8_parser.h      |   23 ++
+ crypto/asymmetric_keys/pkcs8_private_key.c |  148 ++++++++++++
+ crypto/asymmetric_keys/pkcs8_rsakey.asn1   |   29 +++
+ crypto/asymmetric_keys/private_key.h       |   29 +++
+ crypto/asymmetric_keys/public_key.c        |   32 +++
+ crypto/asymmetric_keys/rsa.c               |  283 ++++++++++++++++++++++-
+ crypto/asymmetric_keys/signature.c         |   28 +++
+ include/crypto/public_key.h                |   28 +++
+ include/keys/asymmetric-subtype.h          |    6 +
+ include/linux/cred.h                       |    2 +
+ include/linux/efi.h                        |   18 ++
+ include/uapi/linux/capability.h            |    6 +-
+ kernel/cred.c                              |   17 ++
+ kernel/power/Kconfig                       |   77 ++++++-
+ kernel/power/Makefile                      |    1 +
+ kernel/power/hibernate.c                   |   37 +++
+ kernel/power/hibernate_keys.c              |  329 ++++++++++++++++++++++++++
+ kernel/power/main.c                        |   11 +-
+ kernel/power/power.h                       |   35 +++
+ kernel/power/snapshot.c                    |  345 +++++++++++++++++++++++++++-
+ kernel/power/swap.c                        |   22 ++
+ kernel/power/user.c                        |   22 ++
+ 34 files changed, 1925 insertions(+), 27 deletions(-)
+ create mode 100644 crypto/asymmetric_keys/pkcs8.asn1
+ create mode 100644 crypto/asymmetric_keys/pkcs8_info_parser.c
+ create mode 100644 crypto/asymmetric_keys/pkcs8_parser.h
+ create mode 100644 crypto/asymmetric_keys/pkcs8_private_key.c
+ create mode 100644 crypto/asymmetric_keys/pkcs8_rsakey.asn1
+ create mode 100644 crypto/asymmetric_keys/private_key.h
+ create mode 100644 kernel/power/hibernate_keys.c
+
