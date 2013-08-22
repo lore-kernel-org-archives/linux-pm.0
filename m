@@ -1,101 +1,36 @@
-From: Colin Cross <ccross@google.com>
-Subject: Re: [PATCH] cpuidle: coupled: fix dead loop corner case
-Date: Thu, 22 Aug 2013 14:08:09 -0700
-Message-ID: <CAMbhsRT8S8CU589Ku1L9zWFKqR0quszQHwo3a2jeFZxN7Tc-UQ@mail.gmail.com>
-References: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup and log event in pstore.
+Date: Fri, 23 Aug 2013 00:04:02 +0200
+Message-ID: <3196266.rMZQj4Yosc@vostro.rjw.lan>
+References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org> <CAME+o4=uNFDjz8yFJEQR8P4dwki4U0iBv-FrixTA_TFxWctDSA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:40911 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754342Ab3HVVIJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 17:08:09 -0400
-Received: by mail-oa0-f42.google.com with SMTP id i18so4650260oag.1
-        for <linux-pm@vger.kernel.org>; Thu, 22 Aug 2013 14:08:09 -0700 (PDT)
-In-Reply-To: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:55849 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754105Ab3HVVxZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 22 Aug 2013 17:53:25 -0400
+In-Reply-To: <CAME+o4=uNFDjz8yFJEQR8P4dwki4U0iBv-FrixTA_TFxWctDSA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Neil Zhang <zhangwm@marvell.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+To: Zoran Markovic <zoran.markovic@linaro.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Mon, Aug 19, 2013 at 10:17 PM, Neil Zhang <zhangwm@marvell.com> wrote:
-> There is a corener case when no peripheral irqs route to secondary
-> cores.
-> Let's take dual core system for example, the sequence is as following:
->
->                 Core 0                          Core1
-> 1.                                 set waiting bit and enter waiting loop
-> 2. set waiting bit and poke core1
-> 3.                                 clear poke in irq and enter safe state
-> 4. set ready bit and enter ready loop
->
-> Since there is no peripheral irq route to core 1, so it will stay in
-> safe state forever, and core 0 will dead loop in the following code.
->         while (!cpuidle_coupled_cpus_ready(coupled)) {
->                 /* Check if any other cpus bailed out of idle. */
->                 if (!cpuidle_coupled_cpus_waiting(coupled))
->         }
->
-> The solution is don't let secondary core enter safe state when it has
-> already handled the poke interrupt.
->
-> Signed-off-by: Neil Zhang <zhangwm@marvell.com>
-> Reviewed-by: Fangsuo Wu <fswu@marvell.com>
-> ---
->  drivers/cpuidle/coupled.c |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-> index 2a297f8..a37c718 100644
-> --- a/drivers/cpuidle/coupled.c
-> +++ b/drivers/cpuidle/coupled.c
-> @@ -119,6 +119,7 @@ struct cpuidle_coupled {
->  #define CPUIDLE_COUPLED_NOT_IDLE       (-1)
->
->  static DEFINE_MUTEX(cpuidle_coupled_lock);
-> +static DEFINE_PER_CPU(bool, poke_sync);
->  static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
->
->  /*
-> @@ -295,6 +296,7 @@ static void cpuidle_coupled_poked(void *info)
->  {
->         int cpu = (unsigned long)info;
->         cpumask_clear_cpu(cpu, &cpuidle_coupled_poked_mask);
-> +       __this_cpu_write(poke_sync, true);
->  }
->
->  /**
-> @@ -473,6 +475,7 @@ retry:
->          * allowed for a single cpu.
->          */
->         while (!cpuidle_coupled_cpus_waiting(coupled)) {
-> +               __this_cpu_write(poke_sync, false);
->                 if (cpuidle_coupled_clear_pokes(dev->cpu)) {
->                         cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
->                         goto out;
-> @@ -483,6 +486,10 @@ retry:
->                         goto out;
->                 }
->
-> +               if (cpuidle_coupled_cpus_waiting(coupled)
-> +                       && __this_cpu_read(poke_sync))
-> +                       break;
-> +
->                 entered_state = cpuidle_enter_state(dev, drv,
->                         dev->safe_state_index);
->         }
-> --
-> 1.7.4.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+On Thursday, August 22, 2013 10:16:59 AM Zoran Markovic wrote:
+> Rafael,
+> I haven't seen any other proposals/alternatives on how to do this. Is
+> there anything else we should do to get this upstream? I believe this
+> is a valuable debug feature for Android and it now explicitly depends
+> on pstore...
 
-I have a similar patch that avoids adding another check for
-cpuidle_coupled_cpus_waiting, and uses the return value from
-cpuidle_coupled_clear_pokes instead of adding a percpu bool.  I will
-post it shortly.
+I haven't had a lot of time to look at this recently, sorry.
 
-Do you have a test case that can reproduce this easily?
+It doesn't look too bad from a quick look, but there's a couple of things
+I don't like in it still (relatively minor).
+
+I'll have a deeper look at it over the weekend (if nothing distracts me).
+
+Thanks,
+Rafael
+
