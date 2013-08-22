@@ -1,165 +1,77 @@
-From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
-Subject: [PATCH 18/18] Hibernate: notify bootloader regenerate key-pair for snapshot verification
-Date: Thu, 22 Aug 2013 19:01:57 +0800
-Message-ID: <1377169317-5959-19-git-send-email-jlee@suse.com>
-References: <1377169317-5959-1-git-send-email-jlee@suse.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1377169317-5959-1-git-send-email-jlee@suse.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>, "Lee, Chun-Yi" <jlee@suse.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
+ another node for OPP
+Date: Thu, 22 Aug 2013 12:59:57 +0100
+Message-ID: <20130822115957.GC9799@e106331-lin.cambridge.arm.com>
+References: <51F9341E.60102@ti.com>
+ <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+ <51F93AFB.1030104@ti.com>
+ <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
+ <51FA8BE2.9000309@ti.com>
+ <20130802131541.GN2884@e106331-lin.cambridge.arm.com>
+ <20130806134534.GB6603@kahuna>
+ <20130807161722.GJ28558@e106331-lin.cambridge.arm.com>
+ <52133E26.1000801@arm.com>
+ <521543AC.4020709@wwwdotorg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <521543AC.4020709@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-This patch introduced SNAPSHOT_REGEN_KEYS kernel config, enable this
-option let kernel notify booloader (e.g. shim) to regenerate key-pair of
-snapshot verification for each hibernate.
+On Wed, Aug 21, 2013 at 11:48:12PM +0100, Stephen Warren wrote:
+> On 08/20/2013 04:00 AM, Sudeep KarkadaNagesha wrote:
+> ...
+> > Until we get more feedback and agreement on new proposal can we have
+> > this simple amendment in this patch to the existing binding ? Since the
+> > new proposal[1] is backward compatible(this patch adding support for
+> > option#5 to existing option#1), we will have to add support for other
+> > binding options in [1] later.
+> > 
+> > This is needed to support shared OPPs with simple/single OPP profile
+> > and also to fix the broken and unused binding
+> > @Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+> > 
+> > Regards,
+> > Sudeep
+> > 
+> > [1] http://www.spinics.net/lists/cpufreq/msg06563.html
+> 
+> Presumably the desire for cpu1's node to say "go look at cpu0's node for
+> OPP" is because they share OPPs. Don't they share OPPs because they are
+> parts of the same device - that device being the CPU complex. As such,
+> why not define the OPPs in /cpus rather than in each of /cpus/cpuN?
 
-Kernel loaded S4 sign key in efi stub, so the private key forward from
-efi bootloader to kernel in UEFI secure environment. Regenerate key-pair
-for each hibernate will gain more security but it hurt the lifetime of
-EFI flash memory.
+I'd very much like for it to be possible to factor out common properties
+into the /cpus node, but it should follow the ePAPR recommendation fo
+being treated as a fallback if not present in a particular /cpus/cpu@N
+node -- that way we can handle clusters with differing OPPs. The
+property might just be a phandle to a table node, but it should be
+possible to make it common.
 
-Kernel write an non-volatile runtime efi variable, the name is
-GenS4Key-fe141863-c070-478e-b8a3-878a5dc9ef21, to notify efi bootloader
-regenerate key-pair for next hibernate cycle.
+> 
+> Of course, that doesn't help if there are separate CPU and GPU nodes
+> that just happen to have the same set of OPPs and you want to share them
+> to save DT space. Is that at all likely?
 
-Userland hibernate tool can write GenS4Key at runtime, kernel will
-respect the value but not overwrite it when S4. This mechanism let
-userland tool can also notify bootloader to regenerate key-pair through
-GenS4Key flag.
+I suspect that the OPPs for CPUs and GPUs are likely to be quite
+distict, and they are logically separate regardless. I'm not averse to
+sharing of tables if we can handle them in a standard fashion.
 
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
----
- kernel/power/Kconfig          |   15 +++++++++++++++
- kernel/power/hibernate_keys.c |   39 +++++++++++++++++++++++++++++++++++++++
- kernel/power/power.h          |    2 ++
- kernel/power/snapshot.c       |    3 +++
- 4 files changed, 59 insertions(+), 0 deletions(-)
+> 
+> I'd suggest/bike-shed that operating-points-device is not the correct
+> property name; it somehow implies that the other device actively defines
+> the OPPs for this device, rather than just happening to have the same
+> OPPs. Perhaps "operating-points-identical-to"?
+> 
 
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 79b34fa..63bda98 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -78,6 +78,21 @@ config SNAPSHOT_VERIFICATION
- 	  dependent on UEFI environment. EFI bootloader should generate the
- 	  key-pair.
- 
-+config SNAPSHOT_REGEN_KEYS
-+	bool "Regenerate key-pair for each snapshot verification"
-+        depends on SNAPSHOT_VERIFICATION
-+	help
-+	  Enabled this option let kernel notify booloader (e.g. shim) to
-+	  regenerate key-pair of snapshot verification for each hibernate.
-+	  Linux kernel write an non-volatile runtime EFI variable, the name
-+	  is GenS4Key-fe141863-c070-478e-b8a3-878a5dc9ef21, to notify EFI
-+	  bootloader regenerate key-pair for next hibernate cycle.
-+
-+	  Userland hibernate tool can write GenS4Key at runtime then kernel
-+	  will respect the value but not overwrite it when S4. This mechanism
-+	  let userland tool can also notify bootloader to regenerate key-pair
-+	  through GenS4Key flag.
-+
- choice
- 	prompt "Which hash algorithm should snapshot be signed with?"
-         depends on SNAPSHOT_VERIFICATION
-diff --git a/kernel/power/hibernate_keys.c b/kernel/power/hibernate_keys.c
-index 1bc5976..60d3e73 100644
---- a/kernel/power/hibernate_keys.c
-+++ b/kernel/power/hibernate_keys.c
-@@ -7,6 +7,8 @@
- 
- #include "power.h"
- 
-+static efi_char16_t efi_gens4key_name[9] = { 'G', 'e', 'n', 'S', '4', 'K', 'e', 'y', 0 };
-+
- static void *skey_data;
- static void *skey_data_buf;
- static unsigned long skey_dsize;
-@@ -273,6 +275,42 @@ size_t get_key_length(const struct key *key)
- 	return len;
- }
- 
-+void set_key_regen_flag(void)
-+{
-+#ifdef CONFIG_SNAPSHOT_REGEN_KEYS
-+	unsigned long datasize;
-+	u8 gens4key;
-+	efi_status_t status;
-+
-+	/* existing flag may set by userland, respect but not overwrite it */
-+	datasize = 0;
-+	status = efi.get_variable(efi_gens4key_name, &EFI_HIBERNATE_GUID,
-+				  NULL, &datasize, NULL);
-+	if (status == EFI_BUFFER_TOO_SMALL)
-+		return;
-+
-+	/* set flag of key-pair regeneration */
-+	gens4key = 1;
-+	status = efi.set_variable(efi_gens4key_name, &EFI_HIBERNATE_GUID,
-+				  EFI_VARIABLE_NON_VOLATILE |
-+				  EFI_VARIABLE_BOOTSERVICE_ACCESS |
-+				  EFI_VARIABLE_RUNTIME_ACCESS,
-+				  1, (void *)&gens4key);
-+	if (status)
-+		pr_err("PM: Set GenS4Key flag fail: 0x%lx\n", status);
-+#endif
-+}
-+
-+static void clean_key_regen_flag(void)
-+{
-+	/* clean flag of key-pair regeneration */
-+	efi.set_variable(efi_gens4key_name, &EFI_HIBERNATE_GUID,
-+			 EFI_VARIABLE_NON_VOLATILE |
-+			 EFI_VARIABLE_BOOTSERVICE_ACCESS |
-+			 EFI_VARIABLE_RUNTIME_ACCESS,
-+			 0, NULL);
-+}
-+
- static int __init init_sign_key_data(void)
- {
- 	skey_data = (void *)get_zeroed_page(GFP_KERNEL);
-@@ -283,6 +321,7 @@ static int __init init_sign_key_data(void)
- 		efi_erase_s4_skey_data();
- 		pr_info("PM: Load s4 sign key from EFI\n");
- 	}
-+	clean_key_regen_flag();
- 
- 	return 0;
- }
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 84e0b06..3fcde36 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -181,6 +181,7 @@ extern void restore_sign_key_data(void);
- extern bool swsusp_page_is_sign_key(struct page *page);
- extern unsigned long get_skey_data_buf_pfn(void);
- extern void clone_skey_data(void *page_addr);
-+extern void set_key_regen_flag(void);
- #else /* !CONFIG_SUSPEND */
- static inline void restore_sign_key_data(void) {}
- static inline bool swsusp_page_is_sign_key(struct page *page)
-@@ -191,6 +192,7 @@ static inline unsigned long get_skey_data_buf_pfn(void)
- {
- 	return 0;
- }
-+static inline void set_key_regen_flag(void) {}
- #endif /* !CONFIG_SNAPSHOT_VERIFICATION */
- 
- /* kernel/power/block_io.c */
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index f02e351..12174ff 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1769,6 +1769,9 @@ asmlinkage int swsusp_save(void)
- 	printk(KERN_INFO "PM: Hibernation image created (%d pages copied)\n",
- 		nr_pages);
- 
-+	/* set regenerate key flag */
-+	set_key_regen_flag();
-+
- 	return 0;
- }
- 
--- 
-1.6.4.2
+I'd rather not have properties that point elsewhere and say "treat me
+the same as this node". I'd rather we have common properties as
+described above.
+
+Thanks,
+Mark.
