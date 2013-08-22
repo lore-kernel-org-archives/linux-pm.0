@@ -1,43 +1,73 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [RFC V2 PATCH 4/6] cpuidle/ppc: Add longnap state to the idle
- states on powernv
-Date: Thu, 22 Aug 2013 14:39:20 +0530
-Message-ID: <5215D540.9020309@linux.vnet.ibm.com>
-References: <20130814115311.5193.32212.stgit@preeti.in.ibm.com> <20130814115623.5193.36974.stgit@preeti.in.ibm.com> <1377142130.25016.273.camel@pasglop>
+From: Neil Zhang <zhangwm@marvell.com>
+Subject: RE: [PATCH] cpuidle: coupled: fix dead loop corner case
+Date: Thu, 22 Aug 2013 03:11:04 -0700
+Message-ID: <175CCF5F49938B4D99B2E3EF7F558EBE3DBD2B9800@SC-VEXCH4.marvell.com>
+References: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
+ <26502976.vPDNddhvVv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1377142130.25016.273.camel@pasglop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, galak@kernel.crashing.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, rjw@sisk.pl, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, michael@ellerman.id.au, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from na3sys009aog104.obsmtp.com ([74.125.149.73]:53982 "EHLO
+	na3sys009aog104.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752123Ab3HVKME (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 06:12:04 -0400
+In-Reply-To: <26502976.vPDNddhvVv@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, "ccross@android.com" <ccross@android.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Ben,
-
-On 08/22/2013 08:58 AM, Benjamin Herrenschmidt wrote:
-> On Wed, 2013-08-14 at 17:26 +0530, Preeti U Murthy wrote:
->> This patch hooks into the existing broadcast framework along with the support
->> that this patchset introduces for ppc, and the cpuidle driver backend
->> for powernv(posted out by Deepthi Dharwar:https://lkml.org/lkml/2013/7/23/128)
->> to add sleep state as one of the deep idle states, in which the decrementer
->> is switched off.
->>
->> However in this patch, we only emulate sleep by going into a state which does
->> a nap with the decrementer interrupts disabled, termed as longnap. This enables
->> focus on the timer broadcast framework for ppc in this series of patches ,
->> which is required as a first step to enable sleep on ppc.
-> 
-> This is only for debug / proof of concept right ? We should use a real
-> sleep here.
-> 
-> If we need to know whether the FW supports it (PORE etc...) we shall add
-> a device-tree property from the FW to indicate that fact.
-
-We also need the sleep support right? The context management, I mean.
-Yes it is a debug patch, so as to first ensure that we have the hook up
-to the broadcast framework done right.
-
-Regards
-Preeti U Murthy
+RGFuaWVsICYgQ29saW4sDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
+UmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAc2lzay5wbF0NCj4gU2VudDogMjAxM+W5tDjm
+nIgyMOaXpSAyMDozNw0KPiBUbzogTmVpbCBaaGFuZzsgRGFuaWVsIExlemNhbm8NCj4gQ2M6IGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBT
+dWJqZWN0OiBSZTogW1BBVENIXSBjcHVpZGxlOiBjb3VwbGVkOiBmaXggZGVhZCBsb29wIGNvcm5l
+ciBjYXNlDQo+IA0KPiBPbiBUdWVzZGF5LCBBdWd1c3QgMjAsIDIwMTMgMDE6MTc6NDQgUE0gTmVp
+bCBaaGFuZyB3cm90ZToNCj4gPiBUaGVyZSBpcyBhIGNvcmVuZXIgY2FzZSB3aGVuIG5vIHBlcmlw
+aGVyYWwgaXJxcyByb3V0ZSB0byBzZWNvbmRhcnkNCj4gPiBjb3Jlcy4NCj4gPiBMZXQncyB0YWtl
+IGR1YWwgY29yZSBzeXN0ZW0gZm9yIGV4YW1wbGUsIHRoZSBzZXF1ZW5jZSBpcyBhcyBmb2xsb3dp
+bmc6DQo+ID4NCj4gPiAJCUNvcmUgMAkJCSAgICAgICAgQ29yZTENCj4gPiAxLgkJCSAgICAgICAg
+ICAgc2V0IHdhaXRpbmcgYml0IGFuZCBlbnRlciB3YWl0aW5nIGxvb3ANCj4gPiAyLiBzZXQgd2Fp
+dGluZyBiaXQgYW5kIHBva2UgY29yZTENCj4gPiAzLiAJCQkJICAgY2xlYXIgcG9rZSBpbiBpcnEg
+YW5kIGVudGVyIHNhZmUgc3RhdGUNCj4gPiA0LiBzZXQgcmVhZHkgYml0IGFuZCBlbnRlciByZWFk
+eSBsb29wDQo+ID4NCj4gPiBTaW5jZSB0aGVyZSBpcyBubyBwZXJpcGhlcmFsIGlycSByb3V0ZSB0
+byBjb3JlIDEsIHNvIGl0IHdpbGwgc3RheSBpbg0KPiA+IHNhZmUgc3RhdGUgZm9yZXZlciwgYW5k
+IGNvcmUgMCB3aWxsIGRlYWQgbG9vcCBpbiB0aGUgZm9sbG93aW5nIGNvZGUuDQo+ID4gCXdoaWxl
+ICghY3B1aWRsZV9jb3VwbGVkX2NwdXNfcmVhZHkoY291cGxlZCkpIHsNCj4gPiAJCS8qIENoZWNr
+IGlmIGFueSBvdGhlciBjcHVzIGJhaWxlZCBvdXQgb2YgaWRsZS4gKi8NCj4gPiAJCWlmICghY3B1
+aWRsZV9jb3VwbGVkX2NwdXNfd2FpdGluZyhjb3VwbGVkKSkNCj4gPiAJfQ0KPiA+DQo+ID4gVGhl
+IHNvbHV0aW9uIGlzIGRvbid0IGxldCBzZWNvbmRhcnkgY29yZSBlbnRlciBzYWZlIHN0YXRlIHdo
+ZW4gaXQgaGFzDQo+ID4gYWxyZWFkeSBoYW5kbGVkIHRoZSBwb2tlIGludGVycnVwdC4NCj4gPg0K
+PiA+IFNpZ25lZC1vZmYtYnk6IE5laWwgWmhhbmcgPHpoYW5nd21AbWFydmVsbC5jb20+DQo+ID4g
+UmV2aWV3ZWQtYnk6IEZhbmdzdW8gV3UgPGZzd3VAbWFydmVsbC5jb20+DQo+IA0KPiBEYW5pZWws
+IGNhbiB5b3UgcGxlYXNlIGhhdmUgYSBsb29rIGF0IHRoaXM/DQo+IA0KPiBSYWZhZWwNCj4gDQoN
+CldoYXQncyB5b3VyIG9waW5pb24/DQpUaGFua3MuDQoNCj4gDQo+ID4gLS0tDQo+ID4gIGRyaXZl
+cnMvY3B1aWRsZS9jb3VwbGVkLmMgfCAgICA3ICsrKysrKysNCj4gPiAgMSBmaWxlcyBjaGFuZ2Vk
+LCA3IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9jcHVpZGxlL2NvdXBsZWQuYyBiL2RyaXZlcnMvY3B1aWRsZS9jb3VwbGVkLmMNCj4g
+PiBpbmRleCAyYTI5N2Y4Li5hMzdjNzE4IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvY3B1aWRs
+ZS9jb3VwbGVkLmMNCj4gPiArKysgYi9kcml2ZXJzL2NwdWlkbGUvY291cGxlZC5jDQo+ID4gQEAg
+LTExOSw2ICsxMTksNyBAQCBzdHJ1Y3QgY3B1aWRsZV9jb3VwbGVkIHsNCj4gPiAgI2RlZmluZSBD
+UFVJRExFX0NPVVBMRURfTk9UX0lETEUJKC0xKQ0KPiA+DQo+ID4gIHN0YXRpYyBERUZJTkVfTVVU
+RVgoY3B1aWRsZV9jb3VwbGVkX2xvY2spOw0KPiA+ICtzdGF0aWMgREVGSU5FX1BFUl9DUFUoYm9v
+bCwgcG9rZV9zeW5jKTsNCj4gPiAgc3RhdGljIERFRklORV9QRVJfQ1BVKHN0cnVjdCBjYWxsX3Np
+bmdsZV9kYXRhLA0KPiA+IGNwdWlkbGVfY291cGxlZF9wb2tlX2NiKTsNCj4gPg0KPiA+ICAvKg0K
+PiA+IEBAIC0yOTUsNiArMjk2LDcgQEAgc3RhdGljIHZvaWQgY3B1aWRsZV9jb3VwbGVkX3Bva2Vk
+KHZvaWQgKmluZm8pICB7DQo+ID4gIAlpbnQgY3B1ID0gKHVuc2lnbmVkIGxvbmcpaW5mbzsNCj4g
+PiAgCWNwdW1hc2tfY2xlYXJfY3B1KGNwdSwgJmNwdWlkbGVfY291cGxlZF9wb2tlZF9tYXNrKTsN
+Cj4gPiArCV9fdGhpc19jcHVfd3JpdGUocG9rZV9zeW5jLCB0cnVlKTsNCj4gPiAgfQ0KPiA+DQo+
+ID4gIC8qKg0KPiA+IEBAIC00NzMsNiArNDc1LDcgQEAgcmV0cnk6DQo+ID4gIAkgKiBhbGxvd2Vk
+IGZvciBhIHNpbmdsZSBjcHUuDQo+ID4gIAkgKi8NCj4gPiAgCXdoaWxlICghY3B1aWRsZV9jb3Vw
+bGVkX2NwdXNfd2FpdGluZyhjb3VwbGVkKSkgew0KPiA+ICsJCV9fdGhpc19jcHVfd3JpdGUocG9r
+ZV9zeW5jLCBmYWxzZSk7DQo+ID4gIAkJaWYgKGNwdWlkbGVfY291cGxlZF9jbGVhcl9wb2tlcyhk
+ZXYtPmNwdSkpIHsNCj4gPiAgCQkJY3B1aWRsZV9jb3VwbGVkX3NldF9ub3Rfd2FpdGluZyhkZXYt
+PmNwdSwgY291cGxlZCk7DQo+ID4gIAkJCWdvdG8gb3V0Ow0KPiA+IEBAIC00ODMsNiArNDg2LDEw
+IEBAIHJldHJ5Og0KPiA+ICAJCQlnb3RvIG91dDsNCj4gPiAgCQl9DQo+ID4NCj4gPiArCQlpZiAo
+Y3B1aWRsZV9jb3VwbGVkX2NwdXNfd2FpdGluZyhjb3VwbGVkKQ0KPiA+ICsJCQkmJiBfX3RoaXNf
+Y3B1X3JlYWQocG9rZV9zeW5jKSkNCj4gPiArCQkJYnJlYWs7DQo+ID4gKw0KPiA+ICAJCWVudGVy
+ZWRfc3RhdGUgPSBjcHVpZGxlX2VudGVyX3N0YXRlKGRldiwgZHJ2LA0KPiA+ICAJCQlkZXYtPnNh
+ZmVfc3RhdGVfaW5kZXgpOw0KPiA+ICAJfQ0KPiA+DQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3Ig
+bXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9n
+eSBDZW50ZXIuDQoNCkJlc3QgUmVnYXJkcywNCk5laWwgWmhhbmcNCg==
