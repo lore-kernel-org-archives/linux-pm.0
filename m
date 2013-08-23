@@ -1,133 +1,69 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH 03/12] ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
-Date: Fri, 23 Aug 2013 08:53:08 +0200
-Message-ID: <1377240797-4047-4-git-send-email-gregory.clement@free-electrons.com>
+Subject: Re: [PATCH 11/12] cpuidle: mvebu: Add initial cpu idle support for
+ Armada 370/XP SoC
+Date: Fri, 23 Aug 2013 10:41:53 +0200
+Message-ID: <52172051.2030505@free-electrons.com>
 References: <1377240797-4047-1-git-send-email-gregory.clement@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:47827 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754853Ab3HWGxg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2013 02:53:36 -0400
-In-Reply-To: <1377240797-4047-1-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+ <1377240797-4047-12-git-send-email-gregory.clement@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1377240797-4047-12-git-send-email-gregory.clement@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazz>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Chris Van Hoof <vanhoof@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Atsushi Yamagata <yamagata@plathome.co.jp>, Hironobu Shibata <h-shibata@plathome.co.jp>, Tomonori Kimura <kimura@plathome.co.jp>
 
-ll_set_cpu_coherent is always used on the current CPU, so instead of
-passing the CPU id as argument, ll_set_cpu_coherent() can find it by
-itself.
+On 23/08/2013 08:53, Gregory CLEMENT wrote:
+> Add wfi/cpu idle/cpu deep idle power states support for Armada XP SoC.
+> 
+> All the latencies and the power consumption values used at the
+> "armada_370_xp_idle_driver" structure are preliminary and will be
+> modified in the future after running some measurements and analysis.
+> 
+> Based on the work of Nadav Haklai.
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
----
- arch/arm/mach-mvebu/coherency.c    | 10 +++++-----
- arch/arm/mach-mvebu/coherency.h    |  2 +-
- arch/arm/mach-mvebu/coherency_ll.S |  7 ++++---
- arch/arm/mach-mvebu/headsmp.S      |  4 ----
- arch/arm/mach-mvebu/platsmp.c      |  2 +-
- 5 files changed, 11 insertions(+), 14 deletions(-)
+Atsushi Yamagata reported me an kernel crash when pm_support=off.
+Indeed I have lost a small chunk of code during my code reshaping.
+The following code will fix the issue. I will add it in the next
+version of this series.
 
-diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
-index 8e9f7b7..e48518e 100644
---- a/arch/arm/mach-mvebu/coherency.c
-+++ b/arch/arm/mach-mvebu/coherency.c
-@@ -43,17 +43,17 @@ static struct of_device_id of_coherency_table[] = {
- };
- 
- /* Function defined in coherency_ll.S */
--int ll_set_cpu_coherent(bool use_virt_addr, unsigned int hw_cpu_id);
-+int ll_set_cpu_coherent(bool use_virt_addr);
- 
--int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
-+int set_cpu_coherent(int smp_group_id)
- {
- 	if (!coherency_base) {
--		pr_warn("Can't make CPU %d cache coherent.\n", hw_cpu_id);
-+		pr_warn("Can't make current CPU cache coherent.\n");
- 		pr_warn("Coherency fabric is not initialized\n");
- 		return 1;
- 	}
- 
--	return ll_set_cpu_coherent(true, hw_cpu_id);
-+	return ll_set_cpu_coherent(true);
- }
- 
- static inline void mvebu_hwcc_sync_io_barrier(void)
-@@ -139,7 +139,7 @@ int __init coherency_init(void)
- 		sync_cache_w(&coherency_phys_base);
- 		coherency_base = of_iomap(np, 0);
- 		coherency_cpu_base = of_iomap(np, 1);
--		set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
-+		set_cpu_coherent(0);
- 	}
- 
- 	return 0;
-diff --git a/arch/arm/mach-mvebu/coherency.h b/arch/arm/mach-mvebu/coherency.h
-index df33ad8..d4bc067 100644
---- a/arch/arm/mach-mvebu/coherency.h
-+++ b/arch/arm/mach-mvebu/coherency.h
-@@ -14,7 +14,7 @@
- #ifndef __MACH_370_XP_COHERENCY_H
- #define __MACH_370_XP_COHERENCY_H
- 
--int set_cpu_coherent(int cpu_id, int smp_group_id);
-+int set_cpu_coherent(int smp_group_id);
- int coherency_init(void);
- 
- #endif	/* __MACH_370_XP_COHERENCY_H */
-diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-index 8d4e22f..fc2e6f7 100644
---- a/arch/arm/mach-mvebu/coherency_ll.S
-+++ b/arch/arm/mach-mvebu/coherency_ll.S
-@@ -23,7 +23,6 @@
- 	.text
- /*
-  * r0: if r0==0 => physical addres, else virtual address
-- * r1: HW CPU id
-  */
- ENTRY(ll_set_cpu_coherent)
- 	cmp	r0, #0
-@@ -39,8 +38,10 @@ ENTRY(ll_set_cpu_coherent)
- 	ldr	r0, [r0]
- 2:
- 	/* Create bit by cpu index */
--	mov	r3, #(1 << 24)
--	lsl	r1, r3, r1
-+	mrc	15, 0, r1, cr0, cr0, 5
-+	and	r1, r1, #15
-+	mov	r2, #(1 << 24)
-+	lsl	r1, r2, r1
- 
- 	/* Add CPU to SMP group - Atomic */
- 	add	r3, r0, #ARMADA_XP_CFB_CTL_REG_OFFSET
-diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
-index bffaabc..b2c6e95 100644
---- a/arch/arm/mach-mvebu/headsmp.S
-+++ b/arch/arm/mach-mvebu/headsmp.S
-@@ -30,10 +30,6 @@ ENTRY(armada_xp_secondary_startup)
- 	/* Use physical addrss */
- 	mov	r0, #0
- 
--	/* Read CPU id */
--	mrc     p15, 0, r1, c0, c0, 5
--	and     r1, r1, #0xF
--
- 	/* Add CPU to coherency fabric */
- 	bl	ll_set_cpu_coherent
- 	b	secondary_startup
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index ce81d30..455f7cb 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -116,7 +116,7 @@ void __init armada_xp_smp_prepare_cpus(unsigned int max_cpus)
- {
- 	set_secondary_cpus_clock();
- 	flush_cache_all();
--	set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
-+	set_cpu_coherent(0);
- 	mvebu_mbus_add_window("bootrom", 0xfff00000, SZ_1M);
- }
- 
+[...]
+> +
+> +	if (pm_support == WFI)
+> +		pr_info(" (WFI)\n");
+> +	else if (pm_support == MV_CPU_IDLE)
+> +		pr_info(" (CPU_IDLE)\n");
+> +	else if (pm_support == MV_CPU_DEEP_IDLE)
+> +		pr_info(" (CPU_DEEP_IDLE)\n");
+
+
+> +	else
+> +		pr_info(" (DISABLED)\n");
+Will be replaced by
++       else {
++                       pr_info(" (DISABLED)\n");
++                       return; /* do not register the cpuidle device */
++       }
+
+> +
+> +	armada_370_xp_idle_driver.state_count = pm_support + 1;
+> +
+> +	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
+> +}
+> +
+
 -- 
-1.8.1.2
-
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
