@@ -1,302 +1,133 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH 11/12] cpuidle: mvebu: Add initial cpu idle support for Armada 370/XP SoC
-Date: Fri, 23 Aug 2013 08:53:16 +0200
-Message-ID: <1377240797-4047-12-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH 03/12] ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
+Date: Fri, 23 Aug 2013 08:53:08 +0200
+Message-ID: <1377240797-4047-4-git-send-email-gregory.clement@free-electrons.com>
 References: <1377240797-4047-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:47927 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:47827 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754871Ab3HWGxr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2013 02:53:47 -0400
+	with ESMTP id S1754853Ab3HWGxg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2013 02:53:36 -0400
 In-Reply-To: <1377240797-4047-1-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Chris Van Hoof <vanhoof@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Atsushi Yamagata <yamagata@plathome.co.jp>, Hironobu Shibata <h-shibata@plathome.co.jp>, Tomonori Kimura <kimura@plathome.co.jp>
 
-Add wfi/cpu idle/cpu deep idle power states support for Armada XP SoC.
+ll_set_cpu_coherent is always used on the current CPU, so instead of
+passing the CPU id as argument, ll_set_cpu_coherent() can find it by
+itself.
 
-All the latencies and the power consumption values used at the
-"armada_370_xp_idle_driver" structure are preliminary and will be
-modified in the future after running some measurements and analysis.
-
-Based on the work of Nadav Haklai.
-
-Signed-off-by: Nadav Haklai <nadavh@marvell.com>
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- drivers/cpuidle/Kconfig                 |   6 ++
- drivers/cpuidle/Makefile                |   1 +
- drivers/cpuidle/cpuidle-armada-370-xp.c | 132 ++++++++++++++++++++++++++++++++
- drivers/cpuidle/suspend-armada-370-xp.S |  91 ++++++++++++++++++++++
- 4 files changed, 230 insertions(+)
- create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
- create mode 100644 drivers/cpuidle/suspend-armada-370-xp.S
+ arch/arm/mach-mvebu/coherency.c    | 10 +++++-----
+ arch/arm/mach-mvebu/coherency.h    |  2 +-
+ arch/arm/mach-mvebu/coherency_ll.S |  7 ++++---
+ arch/arm/mach-mvebu/headsmp.S      |  4 ----
+ arch/arm/mach-mvebu/platsmp.c      |  2 +-
+ 5 files changed, 11 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 0e2cd5c..d979a2e 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -42,6 +42,12 @@ config CPU_IDLE_ZYNQ
- 	help
- 	  Select this to enable cpuidle on Xilinx Zynq processors.
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index 8e9f7b7..e48518e 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -43,17 +43,17 @@ static struct of_device_id of_coherency_table[] = {
+ };
  
-+config CPU_IDLE_ARMADA_370_XP
-+	bool "CPU Idle Driver for Armada 370/XP family processors"
-+	depends on ARCH_MVEBU
-+	help
-+	  Select this to enable cpuidle on Armada 370/XP processors.
-+
- endif
+ /* Function defined in coherency_ll.S */
+-int ll_set_cpu_coherent(bool use_virt_addr, unsigned int hw_cpu_id);
++int ll_set_cpu_coherent(bool use_virt_addr);
  
- config ARCH_NEEDS_CPU_IDLE_COUPLED
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index 8767a7b..2e7cd98 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -5,6 +5,7 @@
- obj-y += cpuidle.o driver.o governor.o sysfs.o governors/
- obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
+-int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
++int set_cpu_coherent(int smp_group_id)
+ {
+ 	if (!coherency_base) {
+-		pr_warn("Can't make CPU %d cache coherent.\n", hw_cpu_id);
++		pr_warn("Can't make current CPU cache coherent.\n");
+ 		pr_warn("Coherency fabric is not initialized\n");
+ 		return 1;
+ 	}
  
-+obj-$(CONFIG_CPU_IDLE_ARMADA_370_XP) += cpuidle-armada-370-xp.o suspend-armada-370-xp.o
- obj-$(CONFIG_CPU_IDLE_CALXEDA) += cpuidle-calxeda.o
- obj-$(CONFIG_ARCH_KIRKWOOD) += cpuidle-kirkwood.o
- obj-$(CONFIG_CPU_IDLE_ZYNQ) += cpuidle-zynq.o
-diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidle/cpuidle-armada-370-xp.c
-new file mode 100644
-index 0000000..98ef9be
---- /dev/null
-+++ b/drivers/cpuidle/cpuidle-armada-370-xp.c
-@@ -0,0 +1,132 @@
-+/*
-+ * Marvell Armada 370 and Armada XP SoC cpuidle driver
-+ *
-+ * Copyright (C) 2013 Marvell
-+ *
-+ * Nadav Haklai <nadavh@marvell.com>
-+ * Gregory CLEMENT <gregory.clement@free-electrons.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ *
-+ * Maintainer: Gregory CLEMENT <gregory.clement@free-electrons.com>
-+ */
-+
-+#include <linux/cpuidle.h>
-+#include <linux/module.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/suspend.h>
-+#include <asm/suspend.h>
-+#include <linux/smp.h>
-+#include <asm/cpuidle.h>
-+#include <asm/smp_plat.h>
-+#include <linux/armada-370-xp-pmsu.h>
-+
-+#define ARMADA_370_XP_MAX_STATES	3
-+
-+enum mv_pm_states {
-+	WFI = 0,
-+	MV_CPU_IDLE,
-+	MV_CPU_DEEP_IDLE,
-+	DISABLED,
-+};
-+
-+extern void v7_flush_dcache_all(void);
-+
-+/* Functions defined in suspend-armada-370-xp.S */
-+int armada_370_xp_cpu_resume(unsigned long);
-+int armada_370_xp_cpu_suspend(unsigned long);
-+
-+int pm_support = WFI;
-+static int __init pm_enable_setup(char *str)
-+{
-+	if (!strncmp(str, "wfi", 3))
-+		pm_support = WFI;
-+	else if (!strncmp(str, "idle", 4))
-+		pm_support = MV_CPU_IDLE;
-+	else if (!strncmp(str, "deepidle", 6))
-+		pm_support = MV_CPU_DEEP_IDLE;
-+	else if (!strncmp(str, "off", 3))
-+		pm_support = DISABLED;
-+
-+	return 1;
-+}
-+__setup("pm_level=", pm_enable_setup);
-+
-+
-+static int armada_370_xp_enter_idle(struct cpuidle_device *dev,
-+				struct cpuidle_driver *drv,
-+				int index)
-+{
-+	bool deepidle = false;
-+	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
-+
-+	armada_370_xp_pmsu_set_start_addr(armada_370_xp_cpu_resume, hw_cpu);
-+
-+	if (index == MV_CPU_DEEP_IDLE)
-+		deepidle = true;
-+
-+	cpu_suspend(deepidle, armada_370_xp_cpu_suspend);
-+
-+	cpu_init();
-+
-+	armada_370_xp_pmsu_idle_restore();
-+
-+	return index;
-+}
-+
-+static struct cpuidle_driver armada_370_xp_idle_driver = {
-+	.name			= "armada_370_xp_idle",
-+	.states[0]		= ARM_CPUIDLE_WFI_STATE,
-+	.states[1]		= {
-+		.enter			= armada_370_xp_enter_idle,
-+		.exit_latency		= 10,
-+		.power_usage		= 50,
-+		.target_residency	= 100,
-+		.flags			= CPUIDLE_FLAG_TIME_VALID,
-+		.name			= "MV CPU IDLE",
-+		.desc			= "CPU power down",
-+	},
-+	.states[2]		= {
-+		.enter			= armada_370_xp_enter_idle,
-+		.exit_latency		= 100,
-+		.power_usage		= 5,
-+		.target_residency	= 1000,
-+		.flags			= CPUIDLE_FLAG_TIME_VALID,
-+		.name			= "MV CPU DEEP IDLE",
-+		.desc			= "CPU and L2 Fabric power down",
-+	},
-+	.state_count = ARMADA_370_XP_MAX_STATES,
-+};
-+
-+static int __init armada_370_xp_cpuidle_init(void)
-+{
-+	if (!of_find_compatible_node(NULL, NULL, "marvell,armada-370-xp-pmsu"))
-+		return -ENODEV;
-+
-+	if (!of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric"))
-+		return -ENODEV;
-+
-+	pr_info("Initializing Armada-XP CPU power management ");
-+
-+	armada_370_xp_pmsu_enable_l2_powerdown_onidle();
-+
-+	if (pm_support == WFI)
-+		pr_info(" (WFI)\n");
-+	else if (pm_support == MV_CPU_IDLE)
-+		pr_info(" (CPU_IDLE)\n");
-+	else if (pm_support == MV_CPU_DEEP_IDLE)
-+		pr_info(" (CPU_DEEP_IDLE)\n");
-+	else
-+		pr_info(" (DISABLED)\n");
-+
-+	armada_370_xp_idle_driver.state_count = pm_support + 1;
-+
-+	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
-+}
-+
-+module_init(armada_370_xp_cpuidle_init);
-+
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/cpuidle/suspend-armada-370-xp.S b/drivers/cpuidle/suspend-armada-370-xp.S
-new file mode 100644
-index 0000000..490bb9b
---- /dev/null
-+++ b/drivers/cpuidle/suspend-armada-370-xp.S
-@@ -0,0 +1,91 @@
-+/*
-+ * CPU idle low level implementation for Marvell Armada 370 and Armada XP SoCs
-+ *
-+ * Copyright (C) 2013 Marvell
-+ *
-+ * Nadav Haklai <nadavh@marvell.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ *
-+ */
-+#include <linux/linkage.h>
-+
-+
-+/*
-+* armadaxp_cpu_suspend: enter cpu deepIdle state
-+* input:
-+*/
-+ENTRY(armada_370_xp_cpu_suspend)
-+/* Save ARM registers */
-+	stmfd	sp!, {r4 - r11, lr}	@ save registers on stack
-+
-+	bl armada_370_xp_pmsu_idle_prepare
-+	/*
-+	 * Invalidate L1 data cache. Even though only invalidate is
-+	 * necessary exported flush API is used here. Doing clean
-+	 * on already clean cache would be almost NOP.
-+	 */
-+	bl v7_flush_dcache_all
-+
-+	/*
-+	 * Clear the SCTLR.C bit to prevent further data cache
-+	 * allocation. Clearing SCTLR.C would make all the data accesses
-+	 * strongly ordered and would not hit the cache.
-+	 */
-+	mrc	p15, 0, r0, c1, c0, 0
-+	bic	r0, r0, #(1 << 2)	@ Disable the C bit
-+	mcr	p15, 0, r0, c1, c0, 0
-+	isb
-+
-+	bl v7_flush_dcache_all
-+
-+	/* Data memory barrier and Data sync barrier */
-+	dsb
-+	dmb
-+
-+	bl armada_370_xp_disable_snoop_ena
-+
-+	dsb				@ Data Synchronization Barrier
-+
-+/*
-+ * ===================================
-+ * == WFI instruction => Enter idle ==
-+ * ===================================
-+ */
-+
-+	wfi				@ wait for interrupt
-+/*
-+ * ===================================
-+ * == Resume path for non-OFF modes ==
-+ * ===================================
-+ */
-+
-+/* Enable SnoopEna - Exclusive */
-+	mov	r0, #1			@ r0!=0 means use virtual address
-+	mov	r1, #0			@ Do not add CPU to SMP group
-+	bl ll_set_cpu_coherent
-+
-+/* Re-enable C-bit if needed */
-+	mrc	p15, 0, r0, c1, c0, 0
-+	tst	r0, #(1 << 2)		@ Check C bit enabled?
-+	orreq	r0, r0, #(1 << 2)	@ Enable the C bit if cleared
-+	mcreq	p15, 0, r0, c1, c0, 0
-+	isb
-+
-+	ldmfd	sp!, {r4 - r11, pc}	@ restore regs and return
-+ENDPROC(armada_370_xp_cpu_suspend)
-+
-+/*
-+* armada_370_xp_cpu_resume: exit cpu deepIdle state
-+*/
-+ENTRY(armada_370_xp_cpu_resume)
-+	mov	r0, #0			@ r0==0 means use physical address
-+	mov	r1, #1			@ Add CPU to SMP group
-+	bl ll_set_cpu_coherent
-+
-+	/* Now branch to the common CPU resume function */
-+	b	cpu_resume
-+
-+ENDPROC(armada_370_xp_cpu_resume)
+-	return ll_set_cpu_coherent(true, hw_cpu_id);
++	return ll_set_cpu_coherent(true);
+ }
+ 
+ static inline void mvebu_hwcc_sync_io_barrier(void)
+@@ -139,7 +139,7 @@ int __init coherency_init(void)
+ 		sync_cache_w(&coherency_phys_base);
+ 		coherency_base = of_iomap(np, 0);
+ 		coherency_cpu_base = of_iomap(np, 1);
+-		set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
++		set_cpu_coherent(0);
+ 	}
+ 
+ 	return 0;
+diff --git a/arch/arm/mach-mvebu/coherency.h b/arch/arm/mach-mvebu/coherency.h
+index df33ad8..d4bc067 100644
+--- a/arch/arm/mach-mvebu/coherency.h
++++ b/arch/arm/mach-mvebu/coherency.h
+@@ -14,7 +14,7 @@
+ #ifndef __MACH_370_XP_COHERENCY_H
+ #define __MACH_370_XP_COHERENCY_H
+ 
+-int set_cpu_coherent(int cpu_id, int smp_group_id);
++int set_cpu_coherent(int smp_group_id);
+ int coherency_init(void);
+ 
+ #endif	/* __MACH_370_XP_COHERENCY_H */
+diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
+index 8d4e22f..fc2e6f7 100644
+--- a/arch/arm/mach-mvebu/coherency_ll.S
++++ b/arch/arm/mach-mvebu/coherency_ll.S
+@@ -23,7 +23,6 @@
+ 	.text
+ /*
+  * r0: if r0==0 => physical addres, else virtual address
+- * r1: HW CPU id
+  */
+ ENTRY(ll_set_cpu_coherent)
+ 	cmp	r0, #0
+@@ -39,8 +38,10 @@ ENTRY(ll_set_cpu_coherent)
+ 	ldr	r0, [r0]
+ 2:
+ 	/* Create bit by cpu index */
+-	mov	r3, #(1 << 24)
+-	lsl	r1, r3, r1
++	mrc	15, 0, r1, cr0, cr0, 5
++	and	r1, r1, #15
++	mov	r2, #(1 << 24)
++	lsl	r1, r2, r1
+ 
+ 	/* Add CPU to SMP group - Atomic */
+ 	add	r3, r0, #ARMADA_XP_CFB_CTL_REG_OFFSET
+diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
+index bffaabc..b2c6e95 100644
+--- a/arch/arm/mach-mvebu/headsmp.S
++++ b/arch/arm/mach-mvebu/headsmp.S
+@@ -30,10 +30,6 @@ ENTRY(armada_xp_secondary_startup)
+ 	/* Use physical addrss */
+ 	mov	r0, #0
+ 
+-	/* Read CPU id */
+-	mrc     p15, 0, r1, c0, c0, 5
+-	and     r1, r1, #0xF
+-
+ 	/* Add CPU to coherency fabric */
+ 	bl	ll_set_cpu_coherent
+ 	b	secondary_startup
+diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
+index ce81d30..455f7cb 100644
+--- a/arch/arm/mach-mvebu/platsmp.c
++++ b/arch/arm/mach-mvebu/platsmp.c
+@@ -116,7 +116,7 @@ void __init armada_xp_smp_prepare_cpus(unsigned int max_cpus)
+ {
+ 	set_secondary_cpus_clock();
+ 	flush_cache_all();
+-	set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
++	set_cpu_coherent(0);
+ 	mvebu_mbus_add_window("bootrom", 0xfff00000, SZ_1M);
+ }
+ 
 -- 
 1.8.1.2
 
