@@ -1,98 +1,67 @@
-From: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH 3/3] cpuidle: coupled: fix race condition between pokes and safe state
-Date: Fri, 23 Aug 2013 12:45:12 -0700
-Message-ID: <1377287112-12018-3-git-send-email-ccross@android.com>
-References: <1377287112-12018-1-git-send-email-ccross@android.com>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1377287112-12018-1-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Zhang <zhangwm-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>, stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 0/5] drivers: thermal: several fixes
+Date: Fri, 23 Aug 2013 18:03:11 -0400
+Message-ID: <1377295396-17289-1-git-send-email-eduardo.valentin@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:32885 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986Ab3HWWDZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2013 18:03:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, rui.zhang@intel.com
+Cc: linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-The coupled cpuidle waiting loop clears pending pokes before
-entering the safe state.  If a poke arrives just before the
-pokes are cleared, but after the while loop condition checks,
-the poke will be lost and the cpu will stay in the safe state
-until another interrupt arrives.  This may cause the cpu that
-sent the poke to spin in the ready loop with interrupts off
-until another cpu receives an interrupt, and if no other cpus
-have interrupts routed to them it can spin forever.
+Hello all,
 
-Change the return value of cpuidle_coupled_clear_pokes to
-return if a poke was cleared, and move the need_resched()
-checks into the callers.  In the waiting loop, if
-a poke was cleared restart the loop to repeat the while
-condition checks.
+This is simple patch set with fixes on core thermal framework.
+These fixes are a set of changes that I find needed that I
+found during the process of attempting to describe thermal
+data using device tree.
 
-Reported-by: Neil Zhang <zhangwm-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
-CC: stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
----
- drivers/cpuidle/coupled.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+These patches touch several drivers, as there is an API change.
+I have only compiled tested on other drivers. I have done
+a runtime test on OMAP and DRA devices though.
 
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index bbc4ba5..c91230b 100644
---- a/drivers/cpuidle/coupled.c
-+++ b/drivers/cpuidle/coupled.c
-@@ -408,19 +408,22 @@ static void cpuidle_coupled_set_done(int cpu, struct cpuidle_coupled *coupled)
-  * been processed and the poke bit has been cleared.
-  *
-  * Other interrupts may also be processed while interrupts are enabled, so
-- * need_resched() must be tested after turning interrupts off again to make sure
-+ * need_resched() must be tested after this function returns to make sure
-  * the interrupt didn't schedule work that should take the cpu out of idle.
-  *
-- * Returns 0 if need_resched was false, -EINTR if need_resched was true.
-+ * Returns 0 if no poke was pending, 1 if a poke was cleared.
-  */
- static int cpuidle_coupled_clear_pokes(int cpu)
- {
-+	if (!cpumask_test_cpu(cpu, &cpuidle_coupled_poke_pending))
-+		return 0;
-+
- 	local_irq_enable();
- 	while (cpumask_test_cpu(cpu, &cpuidle_coupled_poke_pending))
- 		cpu_relax();
- 	local_irq_disable();
- 
--	return need_resched() ? -EINTR : 0;
-+	return 1;
- }
- 
- static bool cpuidle_coupled_any_pokes_pending(struct cpuidle_coupled *coupled)
-@@ -464,7 +467,8 @@ int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
- 		return -EINVAL;
- 
- 	while (coupled->prevent) {
--		if (cpuidle_coupled_clear_pokes(dev->cpu)) {
-+		cpuidle_coupled_clear_pokes(dev->cpu);
-+		if (need_resched()) {
- 			local_irq_enable();
- 			return entered_state;
- 		}
-@@ -503,7 +507,10 @@ retry:
- 	 */
- 	while (!cpuidle_coupled_cpus_waiting(coupled) ||
- 			!cpumask_test_cpu(dev->cpu, &cpuidle_coupled_poked)) {
--		if (cpuidle_coupled_clear_pokes(dev->cpu)) {
-+		if (cpuidle_coupled_clear_pokes(dev->cpu))
-+			continue;
-+
-+		if (need_resched()) {
- 			cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
- 			goto out;
- 		}
-@@ -518,7 +525,8 @@ retry:
- 		local_irq_disable();
- 	}
- 
--	if (cpuidle_coupled_clear_pokes(dev->cpu)) {
-+	cpuidle_coupled_clear_pokes(dev->cpu);
-+	if (need_resched()) {
- 		cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
- 		goto out;
- 	}
+Please feel free to perform your own test and report issues
+if you find some.
+
+All best,
+
+Eduardo Valentin (5):
+  thermal: hwmon: move hwmon support to single file
+  drivers: thermal: parent virtual hwmon with thermal zone
+  drivers: thermal: make usage of CONFIG_THERMAL_HWMON optional
+  thermal: thermal_core: allow binding with limits on bind_params
+  drivers: thermal: add check when unregistering cpu cooling
+
+ Documentation/thermal/sysfs-api.txt                |  11 +-
+ drivers/acpi/thermal.c                             |   6 +-
+ drivers/platform/x86/acerhdf.c                     |   3 +-
+ drivers/platform/x86/intel_mid_thermal.c           |   2 +-
+ drivers/power/power_supply_core.c                  |   2 +-
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   3 +
+ drivers/thermal/armada_thermal.c                   |   2 +-
+ drivers/thermal/cpu_cooling.c                      |   6 +-
+ drivers/thermal/db8500_thermal.c                   |   2 +-
+ drivers/thermal/dove_thermal.c                     |   2 +-
+ drivers/thermal/exynos_thermal.c                   |   2 +-
+ drivers/thermal/kirkwood_thermal.c                 |   2 +-
+ drivers/thermal/rcar_thermal.c                     |   2 +-
+ drivers/thermal/spear_thermal.c                    |   2 +-
+ drivers/thermal/thermal_core.c                     | 287 ++-------------------
+ drivers/thermal/thermal_hwmon.c                    | 269 +++++++++++++++++++
+ drivers/thermal/thermal_hwmon.h                    |  49 ++++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   2 +-
+ drivers/thermal/x86_pkg_temp_thermal.c             |   2 +-
+ include/linux/thermal.h                            |  12 +-
+ 21 files changed, 398 insertions(+), 279 deletions(-)
+ create mode 100644 drivers/thermal/thermal_hwmon.c
+ create mode 100644 drivers/thermal/thermal_hwmon.h
+
 -- 
-1.8.3
+1.8.2.1.342.gfa7285d
+
