@@ -1,46 +1,87 @@
-From: Joseph Lo <josephl@nvidia.com>
-Subject: [PATCH] cpufreq: tegra: fix the wrong clock name
-Date: Fri, 23 Aug 2013 09:43:58 +0800
-Message-ID: <1377222238-9439-1-git-send-email-josephl@nvidia.com>
+From: Neil Zhang <zhangwm@marvell.com>
+Subject: RE: [PATCH] cpuidle: coupled: fix dead loop corner case
+Date: Thu, 22 Aug 2013 20:17:26 -0700
+Message-ID: <175CCF5F49938B4D99B2E3EF7F558EBE3DBD2B993C@SC-VEXCH4.marvell.com>
+References: <1376975864-31487-1-git-send-email-zhangwm@marvell.com>
+ <CAMbhsRT8S8CU589Ku1L9zWFKqR0quszQHwo3a2jeFZxN7Tc-UQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Joseph Lo <josephl@nvidia.com>
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from na3sys009aog103.obsmtp.com ([74.125.149.71]:49581 "EHLO
+	na3sys009aog103.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752814Ab3HWDUz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2013 23:20:55 -0400
+In-Reply-To: <CAMbhsRT8S8CU589Ku1L9zWFKqR0quszQHwo3a2jeFZxN7Tc-UQ@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Colin Cross <ccross@google.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 
-The "cpu" and "pclk_p_cclk" was a virtual clock name that was used in
-the legacy Tegra clock framework. It was not used after converting to
-CCF. Fix it as the correct clock name that we are using.
-
-Signed-off-by: Joseph Lo <josephl@nvidia.com>
----
- drivers/cpufreq/tegra-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index cd66b85..a7b876f 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -255,7 +255,7 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
- 
- static int __init tegra_cpufreq_init(void)
- {
--	cpu_clk = clk_get_sys(NULL, "cpu");
-+	cpu_clk = clk_get_sys(NULL, "cclk");
- 	if (IS_ERR(cpu_clk))
- 		return PTR_ERR(cpu_clk);
- 
-@@ -263,7 +263,7 @@ static int __init tegra_cpufreq_init(void)
- 	if (IS_ERR(pll_x_clk))
- 		return PTR_ERR(pll_x_clk);
- 
--	pll_p_clk = clk_get_sys(NULL, "pll_p_cclk");
-+	pll_p_clk = clk_get_sys(NULL, "pll_p");
- 	if (IS_ERR(pll_p_clk))
- 		return PTR_ERR(pll_p_clk);
- 
--- 
-1.8.3.4
-
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IENvbGluIENyb3NzIFttYWls
+dG86Y2Nyb3NzQGdvb2dsZS5jb21dDQo+IFNlbnQ6IDIwMTPE6jjUwjIzyNUgNTowOA0KPiBUbzog
+TmVpbCBaaGFuZw0KPiBDYzogUmFmYWVsIEouIFd5c29ja2k7IERhbmllbCBMZXpjYW5vOyBMaW51
+eCBQTSBsaXN0OyBsa21sDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWlkbGU6IGNvdXBsZWQ6
+IGZpeCBkZWFkIGxvb3AgY29ybmVyIGNhc2UNCj4gDQo+IE9uIE1vbiwgQXVnIDE5LCAyMDEzIGF0
+IDEwOjE3IFBNLCBOZWlsIFpoYW5nIDx6aGFuZ3dtQG1hcnZlbGwuY29tPg0KPiB3cm90ZToNCj4g
+PiBUaGVyZSBpcyBhIGNvcmVuZXIgY2FzZSB3aGVuIG5vIHBlcmlwaGVyYWwgaXJxcyByb3V0ZSB0
+byBzZWNvbmRhcnkNCj4gPiBjb3Jlcy4NCj4gPiBMZXQncyB0YWtlIGR1YWwgY29yZSBzeXN0ZW0g
+Zm9yIGV4YW1wbGUsIHRoZSBzZXF1ZW5jZSBpcyBhcyBmb2xsb3dpbmc6DQo+ID4NCj4gPiAgICAg
+ICAgICAgICAgICAgQ29yZSAwICAgICAgICAgICAgICAgICAgICAgICAgICBDb3JlMQ0KPiA+IDEu
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2V0IHdhaXRpbmcgYml0IGFuZCBlbnRl
+ciB3YWl0aW5nDQo+IGxvb3ANCj4gPiAyLiBzZXQgd2FpdGluZyBiaXQgYW5kIHBva2UgY29yZTEN
+Cj4gPiAzLiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNsZWFyIHBva2UgaW4gaXJx
+IGFuZCBlbnRlciBzYWZlDQo+IHN0YXRlDQo+ID4gNC4gc2V0IHJlYWR5IGJpdCBhbmQgZW50ZXIg
+cmVhZHkgbG9vcA0KPiA+DQo+ID4gU2luY2UgdGhlcmUgaXMgbm8gcGVyaXBoZXJhbCBpcnEgcm91
+dGUgdG8gY29yZSAxLCBzbyBpdCB3aWxsIHN0YXkgaW4NCj4gPiBzYWZlIHN0YXRlIGZvcmV2ZXIs
+IGFuZCBjb3JlIDAgd2lsbCBkZWFkIGxvb3AgaW4gdGhlIGZvbGxvd2luZyBjb2RlLg0KPiA+ICAg
+ICAgICAgd2hpbGUgKCFjcHVpZGxlX2NvdXBsZWRfY3B1c19yZWFkeShjb3VwbGVkKSkgew0KPiA+
+ICAgICAgICAgICAgICAgICAvKiBDaGVjayBpZiBhbnkgb3RoZXIgY3B1cyBiYWlsZWQgb3V0IG9m
+IGlkbGUuICovDQo+ID4gICAgICAgICAgICAgICAgIGlmICghY3B1aWRsZV9jb3VwbGVkX2NwdXNf
+d2FpdGluZyhjb3VwbGVkKSkNCj4gPiAgICAgICAgIH0NCj4gPg0KPiA+IFRoZSBzb2x1dGlvbiBp
+cyBkb24ndCBsZXQgc2Vjb25kYXJ5IGNvcmUgZW50ZXIgc2FmZSBzdGF0ZSB3aGVuIGl0IGhhcw0K
+PiA+IGFscmVhZHkgaGFuZGxlZCB0aGUgcG9rZSBpbnRlcnJ1cHQuDQo+ID4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBOZWlsIFpoYW5nIDx6aGFuZ3dtQG1hcnZlbGwuY29tPg0KPiA+IFJldmlld2VkLWJ5
+OiBGYW5nc3VvIFd1IDxmc3d1QG1hcnZlbGwuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL2Nw
+dWlkbGUvY291cGxlZC5jIHwgICAgNyArKysrKysrDQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgNyBp
+bnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvY3B1aWRsZS9jb3VwbGVkLmMgYi9kcml2ZXJzL2NwdWlkbGUvY291cGxlZC5jDQo+ID4gaW5k
+ZXggMmEyOTdmOC4uYTM3YzcxOCAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUvY291
+cGxlZC5jDQo+ID4gKysrIGIvZHJpdmVycy9jcHVpZGxlL2NvdXBsZWQuYw0KPiA+IEBAIC0xMTks
+NiArMTE5LDcgQEAgc3RydWN0IGNwdWlkbGVfY291cGxlZCB7DQo+ID4gICNkZWZpbmUgQ1BVSURM
+RV9DT1VQTEVEX05PVF9JRExFICAgICAgICgtMSkNCj4gPg0KPiA+ICBzdGF0aWMgREVGSU5FX01V
+VEVYKGNwdWlkbGVfY291cGxlZF9sb2NrKTsNCj4gPiArc3RhdGljIERFRklORV9QRVJfQ1BVKGJv
+b2wsIHBva2Vfc3luYyk7DQo+ID4gIHN0YXRpYyBERUZJTkVfUEVSX0NQVShzdHJ1Y3QgY2FsbF9z
+aW5nbGVfZGF0YSwNCj4gPiBjcHVpZGxlX2NvdXBsZWRfcG9rZV9jYik7DQo+ID4NCj4gPiAgLyoN
+Cj4gPiBAQCAtMjk1LDYgKzI5Niw3IEBAIHN0YXRpYyB2b2lkIGNwdWlkbGVfY291cGxlZF9wb2tl
+ZCh2b2lkICppbmZvKSAgew0KPiA+ICAgICAgICAgaW50IGNwdSA9ICh1bnNpZ25lZCBsb25nKWlu
+Zm87DQo+ID4gICAgICAgICBjcHVtYXNrX2NsZWFyX2NwdShjcHUsICZjcHVpZGxlX2NvdXBsZWRf
+cG9rZWRfbWFzayk7DQo+ID4gKyAgICAgICBfX3RoaXNfY3B1X3dyaXRlKHBva2Vfc3luYywgdHJ1
+ZSk7DQo+ID4gIH0NCj4gPg0KPiA+ICAvKioNCj4gPiBAQCAtNDczLDYgKzQ3NSw3IEBAIHJldHJ5
+Og0KPiA+ICAgICAgICAgICogYWxsb3dlZCBmb3IgYSBzaW5nbGUgY3B1Lg0KPiA+ICAgICAgICAg
+ICovDQo+ID4gICAgICAgICB3aGlsZSAoIWNwdWlkbGVfY291cGxlZF9jcHVzX3dhaXRpbmcoY291
+cGxlZCkpIHsNCj4gPiArICAgICAgICAgICAgICAgX190aGlzX2NwdV93cml0ZShwb2tlX3N5bmMs
+IGZhbHNlKTsNCj4gPiAgICAgICAgICAgICAgICAgaWYgKGNwdWlkbGVfY291cGxlZF9jbGVhcl9w
+b2tlcyhkZXYtPmNwdSkpIHsNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICBjcHVpZGxlX2Nv
+dXBsZWRfc2V0X25vdF93YWl0aW5nKGRldi0+Y3B1LA0KPiBjb3VwbGVkKTsNCj4gPiAgICAgICAg
+ICAgICAgICAgICAgICAgICBnb3RvIG91dDsNCj4gPiBAQCAtNDgzLDYgKzQ4NiwxMCBAQCByZXRy
+eToNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICBnb3RvIG91dDsNCj4gPiAgICAgICAgICAg
+ICAgICAgfQ0KPiA+DQo+ID4gKyAgICAgICAgICAgICAgIGlmIChjcHVpZGxlX2NvdXBsZWRfY3B1
+c193YWl0aW5nKGNvdXBsZWQpDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgJiYgX190aGlz
+X2NwdV9yZWFkKHBva2Vfc3luYykpDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgYnJlYWs7
+DQo+ID4gKw0KPiA+ICAgICAgICAgICAgICAgICBlbnRlcmVkX3N0YXRlID0gY3B1aWRsZV9lbnRl
+cl9zdGF0ZShkZXYsIGRydiwNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICBkZXYtPnNhZmVf
+c3RhdGVfaW5kZXgpOw0KPiA+ICAgICAgICAgfQ0KPiA+IC0tDQo+ID4gMS43LjQuMQ0KPiA+DQo+
+ID4gLS0NCj4gPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAi
+dW5zdWJzY3JpYmUNCj4gPiBsaW51eC1rZXJuZWwiIGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0
+byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnDQo+ID4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAg
+aHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQo+ID4gUGxlYXNlIHJl
+YWQgdGhlIEZBUSBhdCAgaHR0cDovL3d3dy50dXgub3JnL2xrbWwvDQo+IA0KPiBJIGhhdmUgYSBz
+aW1pbGFyIHBhdGNoIHRoYXQgYXZvaWRzIGFkZGluZyBhbm90aGVyIGNoZWNrIGZvcg0KPiBjcHVp
+ZGxlX2NvdXBsZWRfY3B1c193YWl0aW5nLCBhbmQgdXNlcyB0aGUgcmV0dXJuIHZhbHVlIGZyb20N
+Cj4gY3B1aWRsZV9jb3VwbGVkX2NsZWFyX3Bva2VzIGluc3RlYWQgb2YgYWRkaW5nIGEgcGVyY3B1
+IGJvb2wuICBJIHdpbGwgcG9zdCBpdA0KPiBzaG9ydGx5Lg0KPiANCj4gRG8geW91IGhhdmUgYSB0
+ZXN0IGNhc2UgdGhhdCBjYW4gcmVwcm9kdWNlIHRoaXMgZWFzaWx5Pw0KDQpJdCdzIG5vdCBlYXN5
+IHRvIHJlcHJvZHVjZS4NCldlIG9ubHkgY2F0Y2ggb25lIHRpbWUgdGlsbCBub3cuDQoNCkJlc3Qg
+UmVnYXJkcywNCk5laWwgWmhhbmcNCg==
