@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 04/16] cpufreq: cpu0: use cpufreq_generic_get() routine
-Date: Fri, 23 Aug 2013 21:20:39 +0530
-Message-ID: <6ae0de783646c5356717d761903502f354abfe84.1377272740.git.viresh.kumar@linaro.org>
+Subject: [PATCH 05/16] cpufreq: davinci: use cpufreq_generic_get() routine
+Date: Fri, 23 Aug 2013 21:20:40 +0530
+Message-ID: <a40b7efacf85362c8d6714b5449d1dd2f130ecbb.1377272740.git.viresh.kumar@linaro.org>
 References: <cover.1377272740.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1377272740.git.viresh.kumar@linaro.org>
@@ -9,50 +9,62 @@ In-Reply-To: <cover.1377272740.git.viresh.kumar@linaro.org>
 References: <cover.1377272740.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Sekhar Nori <nsekhar@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-cpu0.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/cpufreq/davinci-cpufreq.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 7273bfc..62e52e3 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -29,11 +29,6 @@ static struct clk *cpu_clk;
- static struct regulator *cpu_reg;
- static struct cpufreq_frequency_table *freq_table;
- 
--static unsigned int cpu0_get_speed(unsigned int cpu)
--{
--	return clk_get_rate(cpu_clk) / 1000;
--}
--
- static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
- {
- 	struct opp *opp;
-@@ -99,6 +94,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
- 
- static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- {
-+	policy->clk = cpu_clk;
- 	return cpufreq_generic_init(policy, freq_table, transition_latency);
+diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
+index 7fcae0c..c07883f 100644
+--- a/drivers/cpufreq/davinci-cpufreq.c
++++ b/drivers/cpufreq/davinci-cpufreq.c
+@@ -60,14 +60,6 @@ static int davinci_verify_speed(struct cpufreq_policy *policy)
+ 	return 0;
  }
  
-@@ -106,7 +102,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
- 	.flags = CPUFREQ_STICKY,
- 	.verify = cpufreq_generic_frequency_table_verify,
- 	.target_index = cpu0_set_target,
--	.get = cpu0_get_speed,
-+	.get = cpufreq_generic_get,
- 	.init = cpu0_cpufreq_init,
- 	.exit = cpufreq_generic_exit,
- 	.name = "generic_cpu0",
+-static unsigned int davinci_getspeed(unsigned int cpu)
+-{
+-	if (cpu)
+-		return 0;
+-
+-	return clk_get_rate(cpufreq.armclk) / 1000;
+-}
+-
+ static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
+ {
+ 	struct davinci_cpufreq_config *pdata = cpufreq.dev->platform_data;
+@@ -75,7 +67,7 @@ static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
+ 	unsigned int old_freq, new_freq;
+ 	int ret = 0;
+ 
+-	old_freq = davinci_getspeed(0);
++	old_freq = policy->cur;
+ 	new_freq = pdata->freq_table[idx].frequency;
+ 
+ 	/* if moving to higher frequency, up the voltage beforehand */
+@@ -132,6 +124,7 @@ static int davinci_cpu_init(struct cpufreq_policy *policy)
+ 	 * to pre/post change notification list.
+ 	 */
+ 	policy->cpuinfo.transition_latency = 2000 * 1000;
++	policy->clk = cpufreq.armclk;
+ 	return 0;
+ }
+ 
+@@ -139,7 +132,7 @@ static struct cpufreq_driver davinci_driver = {
+ 	.flags		= CPUFREQ_STICKY,
+ 	.verify		= davinci_verify_speed,
+ 	.target_index	= davinci_target,
+-	.get		= davinci_getspeed,
++	.get		= cpufreq_generic_get,
+ 	.init		= davinci_cpu_init,
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= "davinci",
 -- 
 1.7.12.rc2.18.g61b472e
