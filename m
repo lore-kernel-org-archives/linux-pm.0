@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/16] cpufreq: arm_big_little: use cpufreq_generic_get() routine
-Date: Fri, 23 Aug 2013 21:20:37 +0530
-Message-ID: <82b4537e5d949f81c565057e7738068ecb819b43.1377272740.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/16] cpufreq: at32ap: use cpufreq_generic_get() routine
+Date: Fri, 23 Aug 2013 21:20:38 +0530
+Message-ID: <25c1ed14adc7fff2b2fbac993c829997fc7eea12.1377272740.git.viresh.kumar@linaro.org>
 References: <cover.1377272740.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1377272740.git.viresh.kumar@linaro.org>
@@ -9,51 +9,82 @@ In-Reply-To: <cover.1377272740.git.viresh.kumar@linaro.org>
 References: <cover.1377272740.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Hans-Christian Egtvedt <egtvedt@samfundet.no>
 List-Id: linux-pm@vger.kernel.org
 
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
+Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/arm_big_little.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/cpufreq/at32ap-cpufreq.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index e3e8f25..f48430b 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -40,13 +40,6 @@ static struct clk *clk[MAX_CLUSTERS];
- static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS];
- static atomic_t cluster_usage[MAX_CLUSTERS] = {ATOMIC_INIT(0), ATOMIC_INIT(0)};
+diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
+index 856ad80..869c0b5 100644
+--- a/drivers/cpufreq/at32ap-cpufreq.c
++++ b/drivers/cpufreq/at32ap-cpufreq.c
+@@ -21,17 +21,8 @@
+ #include <linux/export.h>
+ #include <linux/slab.h>
  
--static unsigned int bL_cpufreq_get(unsigned int cpu)
+-static struct clk *cpuclk;
+ static struct cpufreq_frequency_table *freq_table;
+ 
+-static unsigned int at32_get_speed(unsigned int cpu)
 -{
--	u32 cur_cluster = cpu_to_cluster(cpu);
--
--	return clk_get_rate(clk[cur_cluster]) / 1000;
+-	/* No SMP support */
+-	if (cpu)
+-		return 0;
+-	return (unsigned int)((clk_get_rate(cpuclk) + 500) / 1000);
 -}
 -
- /* Set clock frequency */
- static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 		unsigned int index)
-@@ -145,6 +138,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 	else
- 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ static unsigned int	ref_freq;
+ static unsigned long	loops_per_jiffy_ref;
  
-+	policy->clk = clk[cur_cluster];
- 	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
+@@ -39,7 +30,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+ 	unsigned int old_freq, new_freq;
  
- 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
-@@ -174,7 +168,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
- 	.flags			= CPUFREQ_STICKY,
- 	.verify			= cpufreq_generic_frequency_table_verify,
- 	.target_index		= bL_cpufreq_set_target,
--	.get			= bL_cpufreq_get,
-+	.get			= cpufreq_generic_get,
- 	.init			= bL_cpufreq_init,
- 	.exit			= bL_cpufreq_exit,
- 	.have_governor_per_policy = true,
+-	old_freq = at32_get_speed(0);
++	old_freq = policy->cur;
+ 	new_freq = freq_table[index].frequency;
+ 
+ 	if (!ref_freq) {
+@@ -50,7 +41,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	if (old_freq < new_freq)
+ 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
+ 				loops_per_jiffy_ref, ref_freq, new_freq);
+-	clk_set_rate(cpuclk, new_freq * 1000);
++	clk_set_rate(policy->clk, new_freq * 1000);
+ 	if (new_freq < old_freq)
+ 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
+ 				loops_per_jiffy_ref, ref_freq, new_freq);
+@@ -61,6 +52,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned int frequency, rate, min_freq;
++	static struct clk *cpuclk;
+ 	int retval, steps, i;
+ 
+ 	if (policy->cpu != 0)
+@@ -103,6 +95,7 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 		frequency /= 2;
+ 	}
+ 
++	policy->clk = cpuclk;
+ 	freq_table[steps - 1].frequency = CPUFREQ_TABLE_END;
+ 
+ 	retval = cpufreq_table_validate_and_show(policy, freq_table);
+@@ -123,7 +116,7 @@ static struct cpufreq_driver at32_driver = {
+ 	.init		= at32_cpufreq_driver_init,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= at32_set_target,
+-	.get		= at32_get_speed,
++	.get		= cpufreq_generic_get,
+ 	.flags		= CPUFREQ_STICKY,
+ };
+ 
 -- 
 1.7.12.rc2.18.g61b472e
