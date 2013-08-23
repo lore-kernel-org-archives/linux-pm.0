@@ -1,88 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL v2] DT/core: cpu_ofnode updates for v3.12
-Date: Fri, 23 Aug 2013 01:12:21 +0200
-Message-ID: <1412169.c5GhTMvGoJ@vostro.rjw.lan>
-References: <521618E4.4020007@arm.com>
+From: Joseph Lo <josephl@nvidia.com>
+Subject: [PATCH] cpufreq: tegra: fix the wrong clock name
+Date: Fri, 23 Aug 2013 09:43:58 +0800
+Message-ID: <1377222238-9439-1-git-send-email-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <521618E4.4020007@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jonas Bonn <jonas@southpole.se>, "monstr@monstr.eu" <monstr@monstr.eu>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "arm@kernel.org" <arm@kernel.org>
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Joseph Lo <josephl@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 22, 2013 02:57:56 PM Sudeep KarkadaNagesha wrote:
-> Hi Rafael,
-> 
-> Here is the v2 of the pull request for cpu of_node updates for v3.12
-> It includes ACK for all the new changes since v1(mainly from Ben for
-> PPC). Currently there's trivial conflict with today's linux-next in 3
-> files. Let me know if you need me to rebase this on any particular
-> branch if needed.
-> 
-> Regards,
-> Sudeep
-> 
-> The following changes since commit b36f4be3de1b123d8601de062e7dbfc904f305fb:
-> 
->   Linux 3.11-rc6 (2013-08-18 14:36:53 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://linux-arm.org/linux-skn.git cpu_of_node
-> 
-> for you to fetch changes up to 1037b2752345cc5666e90b711a913ab2ae6c5920:
-> 
->   cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
-> (2013-08-21 10:29:56 +0100)
-> 
-> ----------------------------------------------------------------
-> Sudeep KarkadaNagesha (19):
->    microblaze: remove undefined of_get_cpu_node declaration
->    openrisc: remove undefined of_get_cpu_node declaration
->    powerpc: refactor of_get_cpu_node to support other architectures
->    of: move of_get_cpu_node implementation to DT core library
->    ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
->    driver/core: cpu: initialize of_node in cpu's device struture
->    of/device: add helper to get cpu device node from logical cpu index
->    ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
->    ARM: mvebu: remove device tree parsing for cpu nodes
->    drivers/bus: arm-cci: avoid parsing DT for cpu device nodes
->    cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
->    cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
->    cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
->    cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
->    cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
->    cpufreq: arm_big_little: remove device tree parsing for cpu nodes
->    cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
->    cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
->    cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
-> 
->  arch/arm/kernel/devtree.c           |  5 ++
->  arch/arm/kernel/topology.c          | 61 +++++-----------
->  arch/arm/mach-imx/mach-imx6q.c      |  3 +-
->  arch/arm/mach-mvebu/platsmp.c       | 51 ++++++-------
->  arch/microblaze/include/asm/prom.h  |  3 -
->  arch/openrisc/include/asm/prom.h    |  3 -
->  arch/powerpc/include/asm/prom.h     |  3 -
->  arch/powerpc/kernel/prom.c          | 43 +-----------
->  drivers/base/cpu.c                  |  2 +
->  drivers/bus/arm-cci.c               | 28 ++------
->  drivers/cpufreq/arm_big_little_dt.c | 40 ++++-------
->  drivers/cpufreq/cpufreq-cpu0.c      | 23 +-----
->  drivers/cpufreq/highbank-cpufreq.c  | 18 ++---
->  drivers/cpufreq/imx6q-cpufreq.c     |  4 +-
->  drivers/cpufreq/kirkwood-cpufreq.c  |  8 ++-
->  drivers/cpufreq/maple-cpufreq.c     | 23 +-----
->  drivers/cpufreq/pmac32-cpufreq.c    |  5 +-
->  drivers/cpufreq/pmac64-cpufreq.c    | 47 +++---------
->  drivers/cpufreq/spear-cpufreq.c     |  4 +-
->  drivers/of/base.c                   | 95 ++++++++++++++++++++++++
->  include/linux/cpu.h                 |  1 +
->  include/linux/of.h                  |  7 ++
->  include/linux/of_device.h           | 15 ++++
->  23 files changed, 226 insertions(+), 266 deletions(-)
+The "cpu" and "pclk_p_cclk" was a virtual clock name that was used in
+the legacy Tegra clock framework. It was not used after converting to
+CCF. Fix it as the correct clock name that we are using.
 
-Pulled, thanks!
+Signed-off-by: Joseph Lo <josephl@nvidia.com>
+---
+ drivers/cpufreq/tegra-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index cd66b85..a7b876f 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -255,7 +255,7 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
+ 
+ static int __init tegra_cpufreq_init(void)
+ {
+-	cpu_clk = clk_get_sys(NULL, "cpu");
++	cpu_clk = clk_get_sys(NULL, "cclk");
+ 	if (IS_ERR(cpu_clk))
+ 		return PTR_ERR(cpu_clk);
+ 
+@@ -263,7 +263,7 @@ static int __init tegra_cpufreq_init(void)
+ 	if (IS_ERR(pll_x_clk))
+ 		return PTR_ERR(pll_x_clk);
+ 
+-	pll_p_clk = clk_get_sys(NULL, "pll_p_cclk");
++	pll_p_clk = clk_get_sys(NULL, "pll_p");
+ 	if (IS_ERR(pll_p_clk))
+ 		return PTR_ERR(pll_p_clk);
+ 
+-- 
+1.8.3.4
+
