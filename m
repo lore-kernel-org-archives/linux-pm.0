@@ -1,25 +1,77 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] cpufreq: tegra: fix the wrong clock name
-Date: Fri, 23 Aug 2013 10:23:21 +0530
-Message-ID: <CAKohpoki3wG=S8AU4v2LTk7NTLNS+BU_Yz5O+LTQTcdehciUbg@mail.gmail.com>
-References: <1377222238-9439-1-git-send-email-josephl@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1377222238-9439-1-git-send-email-josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: [PATCH 00/12] CPU idle for Armada XP
+Date: Fri, 23 Aug 2013 08:53:05 +0200
+Message-ID: <1377240797-4047-1-git-send-email-gregory.clement@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:47774 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754757Ab3HWGxc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2013 02:53:32 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Chris Van Hoof <vanhoof@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Atsushi Yamagata <yamagata@plathome.co.jp>, Hironobu Shibata <h-shibata@plathome.co.jp>, Tomonori Kimura <kimura@plathome.co.jp>
 
-On 23 August 2013 07:13, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> The "cpu" and "pclk_p_cclk" was a virtual clock name that was used in
-> the legacy Tegra clock framework. It was not used after converting to
-> CCF. Fix it as the correct clock name that we are using.
->
-> Signed-off-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
->  drivers/cpufreq/tegra-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Hello,
 
-Applied to cpufreq-fixes. Thanks.
+This patch set adds the CPU idle support for Armada XP and prepares
+the support for Armada 370. This was based on the work of Nadav
+Haklai.
+
+Most of the patches modify the mvebu code in order to prepare the
+support for CPU idle, hence the patches 2 to 10 should go to mvebu
+subsystem (and then arm-soc).
+
+The first patch should go through ARM subsystem and should be taken
+by Russell King.
+
+The 11th patch 'cpuidle: mvebu: Add initial cpu idle support for
+Armada 370/XP SoC' is the only one who should go to the cpuidle
+subsystem. But of course I would like that Daniel Lezcano or Rafael
+J. Wysocki have a look on the whole series.
+
+The last patch should also go to mvebu subsystem (and then arm-soc)
+but with an Acked-by from on of the device tree maintainer.
+
+The whole series is also available in the branch CPU-idle-ArmadaXP at
+https://github.com/MISL-EBU-System-SW/mainline-public.git
+
+Thanks,
+
+Gregory CLEMENT (12):
+  ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
+  ARM: mvebu: ll_set_cpu_coherent no more uses the coherency address as
+    parameter
+  ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
+  ARM: mvebu: Remove the unused argument of set_cpu_coherent()
+  ARM: mvebu: Makes ll_set_cpu_coherent() more configurable
+  ARM: mvebu: Low level functions to disbale cache snooping
+  ARM: mvebu: Add a new set of registers for pmsu
+  ARM: mvebu: Allow to power down L2 cache controller in idle mode
+  ARM: mvebu: Add the PMSU related part of the cpu idle functions
+  ARM: mvebu: Set the start address of a CPU in a separate function
+  cpuidle: mvebu: Add initial cpu idle support for Armada 370/XP SoC
+  ARM: dts: mvebu: Add a new set of registers to the PMSU node
+
+ .../devicetree/bindings/arm/armada-370-xp-pmsu.txt |  12 +-
+ arch/arm/boot/dts/armada-xp.dtsi                   |   2 +-
+ arch/arm/mach-mvebu/coherency.c                    |  12 +-
+ arch/arm/mach-mvebu/coherency.h                    |   2 +-
+ arch/arm/mach-mvebu/coherency_ll.S                 |  69 +++++++++--
+ arch/arm/mach-mvebu/headsmp.S                      |  15 +--
+ arch/arm/mach-mvebu/platsmp.c                      |   2 +-
+ arch/arm/mach-mvebu/pmsu.c                         |  99 +++++++++++++++-
+ arch/arm/mm/proc-v7.S                              |  64 +++++++++-
+ drivers/cpuidle/Kconfig                            |   6 +
+ drivers/cpuidle/Makefile                           |   1 +
+ drivers/cpuidle/cpuidle-armada-370-xp.c            | 132 +++++++++++++++++++++
+ drivers/cpuidle/suspend-armada-370-xp.S            |  91 ++++++++++++++
+ include/linux/armada-370-xp-pmsu.h                 |  19 +++
+ 14 files changed, 484 insertions(+), 42 deletions(-)
+ create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
+ create mode 100644 drivers/cpuidle/suspend-armada-370-xp.S
+ create mode 100644 include/linux/armada-370-xp-pmsu.h
+
+-- 
+1.8.1.2
+
