@@ -1,128 +1,38 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC PATCH 03/14] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Fri, 23 Aug 2013 16:50:49 -0700
-Message-ID: <20130823235049.GB14810@roeck-us.net>
-References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com>
- <1377299755-5134-4-git-send-email-eduardo.valentin@ti.com>
+From: Colin Cross <ccross@android.com>
+Subject: Re: [PATCH 1/3] cpuidle: coupled: disable interrupts after entering
+ safe state
+Date: Fri, 23 Aug 2013 17:22:29 -0700
+Message-ID: <CAMbhsRQzmyftujGhD+b7WwdXWP9b+=R0D7SavgKSjWKuFNLejQ@mail.gmail.com>
+References: <1377287112-12018-1-git-send-email-ccross@android.com>
+	<5217EB9A.5050206@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f50.google.com ([209.85.160.50]:42003 "EHLO
-	mail-pb0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044Ab3HWXux (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2013 19:50:53 -0400
-Content-Disposition: inline
-In-Reply-To: <1377299755-5134-4-git-send-email-eduardo.valentin@ti.com>
+Received: from mail-oa0-f41.google.com ([209.85.219.41]:60559 "EHLO
+	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754492Ab3HXAWa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2013 20:22:30 -0400
+Received: by mail-oa0-f41.google.com with SMTP id j6so1545010oag.0
+        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2013 17:22:30 -0700 (PDT)
+In-Reply-To: <5217EB9A.5050206@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, grant.likely@linaro.org, rob.herring@calxeda.com, rui.zhang@intel.com, wni@nvidia.com, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Neil Zhang <zhangwm@marvell.com>, Joseph Lo <josephl@nvidia.com>, linux-tegra <linux-tegra@vger.kernel.org>, stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Fri, Aug 23, 2013 at 07:15:44PM -0400, Eduardo Valentin wrote:
-> This patch adds to lm75 temperature sensor the possibility
-> to expose itself as thermal zone device, registered on the
-> thermal framework.
-> 
-> The thermal zone is built only if a device tree node
-> describing a thermal zone for this sensor is present
-> inside the lm75 DT node. Otherwise, the driver behavior
-> will be the same.
-> 
-> Cc: Jean Delvare <khali@linux-fr.org>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: lm-sensors@lm-sensors.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  drivers/hwmon/lm75.c | 31 +++++++++++++++++++++++++++++++
->  1 file changed, 31 insertions(+)
-> 
-> diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
-> index c03b490..dc55908 100644
-> --- a/drivers/hwmon/lm75.c
-> +++ b/drivers/hwmon/lm75.c
-> @@ -27,6 +27,8 @@
->  #include <linux/hwmon-sysfs.h>
->  #include <linux/err.h>
->  #include <linux/mutex.h>
-> +#include <linux/thermal.h>
-> +#include <linux/of.h>
->  #include "lm75.h"
->  
->  
-> @@ -70,6 +72,7 @@ static const u8 LM75_REG_TEMP[3] = {
->  /* Each client has this additional data */
->  struct lm75_data {
->  	struct device		*hwmon_dev;
-> +	struct thermal_zone_device	*tz;
->  	struct mutex		update_lock;
->  	u8			orig_conf;
->  	u8			resolution;	/* In bits, between 9 and 12 */
-> @@ -92,6 +95,19 @@ static struct lm75_data *lm75_update_device(struct device *dev);
->  
->  /* sysfs attributes for hwmon */
->  
-> +static int lm75_read_temp(void *dev, unsigned long *temp)
-> +{
-> +	struct lm75_data *data = lm75_update_device(dev);
-> +
-> +	if (IS_ERR(data))
-> +		return PTR_ERR(data);
-> +
-> +	*temp = ((data->temp[0] >> (16 - data->resolution)) * 1000) >>
-> +			(data->resolution - 8);
-> +
-The reported temperature can be negative, which would result in reporting a very
-high temperature (note this applies to the tmp102 driver patch as well).
+On Fri, Aug 23, 2013 at 4:09 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> On 08/23/2013 01:45 PM, Colin Cross wrote:
+>> Calling cpuidle_enter_state is expected to return with interrupts
+>> enabled, but interrupts must be disabled before starting the
+>> ready loop synchronization stage.  Call local_irq_disable after
+>> each call to cpuidle_enter_state for the safe state.
+>
+> Tested-by: Stephen Warren <swarren@nvidia.com>
+>
+> Note: I tested the current Tegra cpuidle code that's in next-20130819.
+> IIRC, Joseph reported the issue when trying to enable some additional
+> feature in Tegra30 cpuidle. I didn't actually try to enable whatever
+> that was; I just briefly tested for regressions in the existing code
+> configuration.
 
-The computation is quite complex and matches the computation done in show_temp().
-Given that, it would make sense to declare an inline function to convert the
-register value to the temperature. This function can take the register value
-and the resolution as argument.
-
-Guenter
-
-> +	return 0;
-> +}
-> +
->  static ssize_t show_temp(struct device *dev, struct device_attribute *da,
->  			 char *buf)
->  {
-> @@ -271,11 +287,25 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
->  		goto exit_remove;
->  	}
->  
-> +	if (of_find_property(client->dev.of_node, "monitored-zones", NULL)) {
-> +		data->tz = thermal_zone_of_device_register(&client->dev,
-> +							   0,
-> +							   false, /* -hwmon */
-> +							   &client->dev,
-> +							   lm75_read_temp);
-> +		if (IS_ERR(data->tz)) {
-> +			status = PTR_ERR(data->tz);
-> +			goto exit_hwmon;
-> +		}
-> +	}
-> +
->  	dev_info(&client->dev, "%s: sensor '%s'\n",
->  		 dev_name(data->hwmon_dev), client->name);
->  
->  	return 0;
->  
-> +exit_hwmon:
-> +	hwmon_device_unregister(data->hwmon_dev);
->  exit_remove:
->  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
->  	return status;
-> @@ -285,6 +315,7 @@ static int lm75_remove(struct i2c_client *client)
->  {
->  	struct lm75_data *data = i2c_get_clientdata(client);
->  
-> +	thermal_zone_device_unregister(data->tz);
->  	hwmon_device_unregister(data->hwmon_dev);
->  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
->  	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
-> -- 
-> 1.8.2.1.342.gfa7285d
-> 
-> 
+Is that for the series or just this patch?
