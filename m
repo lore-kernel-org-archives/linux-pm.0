@@ -1,80 +1,65 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [GIT PULL] ARM: TC2: CPU idle big.LITTLE driver
-Date: Sun, 25 Aug 2013 10:08:48 +0100
-Message-ID: <20130825090848.GA12256@e102568-lin.cambridge.arm.com>
-References: <20130812153422.GA6426@e102568-lin.cambridge.arm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH RFC 1/2] PM / Hibernate: use name_to_dev_t to parse
+ resume
+Date: Sun, 25 Aug 2013 17:38:11 +0200
+Message-ID: <20130825153811.GA4795@amd.pavel.ucw.cz>
+References: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
+ <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:45973 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755257Ab3HYJIz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Aug 2013 05:08:55 -0400
-In-Reply-To: <20130812153422.GA6426@e102568-lin.cambridge.arm.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36836 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756494Ab3HYPiM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Aug 2013 11:38:12 -0400
 Content-Disposition: inline
+In-Reply-To: <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: olof@lixom.net, khilman@linaro.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, len.brown@intel.com, rjw@sisk.pl
 
-Hi Olof, Kevin,
+Hi!
 
-On Mon, Aug 12, 2013 at 04:34:22PM +0100, Lorenzo Pieralisi wrote:
-> Hi Olof, Kevin,
+> Use the name_to_dev_t call to parse the device name echo'd to
+> to /sys/power/resume.  This imitates the method used in hibernate.c
+> in software_resume, and allows the resume partition to be specified
+> using other equivalent device formats as well.  By allowing
+> /sys/debug/resume to accept the same syntax as the resume=device
+> parameter, we can parse the resume=device in the init script and
+> use the resume device directly from the kernel command line.
 > 
-> please pull this patch series that provides a CPU idle driver for the vexpress
-> TC2 testchip, and it is a stepping stone towards an ARM unified CPU idle driver
-> based on the MCPM framework.
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> ---
+>  kernel/power/hibernate.c |   14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
 > 
-> Series is based against this pull request from Pawel which is a strict
-> dependency and they must be merged in order:
-> 
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2013-August/190067.html
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index b26f5f1..51d4c29 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -971,15 +971,19 @@ static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
+>  static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
+>  			    const char *buf, size_t n)
+>  {
+> -	unsigned int maj, min;
+>  	dev_t res;
+>  	int ret = -EINVAL;
+> +	int len = n;
+> +	char *devcpy;
+>  
+> -	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
+> -		goto out;
+> +	if (buf[len-1] == '\n')
+> +		len--;
+> +
+> +	devcpy = kstrndup(buf, len, GFP_KERNEL);
+> +	res = name_to_dev_t(devcpy);
+> +	kfree(devcpy);
 
-May I ask you please the status of this pull request ? It is to know if
-it is ok as it is or I have to do something on my side, thanks.
-
-Thank you,
-Lorenzo
-
-> Thanks !!
-> Lorenzo
-> 
-> The following changes since commit 2d6746c48076fd56619f11cdd5c74656ea8cde48:
-> 
->   ARM: vexpress/TC2: implement PM suspend method (2013-08-12 10:59:13 +0100)
-> 
-> are available in the git repository at:
-> 
->   git://linux-arm.org/linux-2.6-lp.git tags/cpuidle-bL
-> 
-> for you to fetch changes up to 04c40064928d3a1eb50e4ea3883765b9cfcb0f73:
-> 
->   cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver (2013-08-12 10:59:14 +0100)
-> 
-> ----------------------------------------------------------------
-> This patch series contains:
-> 
-> - GIC driver update to add a method to disable the GIC CPU IF
-> - TC2 MCPM update to add GIC CPU disabling to suspend method
-> - TC2 CPU idle big.LITTLE driver
-> 
-> ----------------------------------------------------------------
-> Lorenzo Pieralisi (2):
->       ARM: vexpress: tc2: disable GIC CPU IF in tc2_pm_suspend
->       cpuidle: big.LITTLE: vexpress-TC2 CPU idle driver
-> 
-> Nicolas Pitre (1):
->       drivers: irq-chip: irq-gic: introduce gic_cpu_if_down()
-> 
->  MAINTAINERS                          |   9 ++
->  arch/arm/mach-vexpress/tc2_pm.c      |   2 +
->  drivers/cpuidle/Kconfig              |  10 ++
->  drivers/cpuidle/Makefile             |   1 +
->  drivers/cpuidle/cpuidle-big_little.c | 209 +++++++++++++++++++++++++++++++++++
->  drivers/irqchip/irq-gic.c            |   6 +
->  include/linux/irqchip/arm-gic.h      |   1 +
->  7 files changed, 238 insertions(+)
->  create mode 100644 drivers/cpuidle/cpuidle-big_little.c
-
+Is the allocation actually neccessary? At the very least this should
+test for NULL...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
