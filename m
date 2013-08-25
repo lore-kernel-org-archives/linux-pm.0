@@ -1,65 +1,66 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH RFC 1/2] PM / Hibernate: use name_to_dev_t to parse
- resume
-Date: Sun, 25 Aug 2013 17:38:11 +0200
-Message-ID: <20130825153811.GA4795@amd.pavel.ucw.cz>
-References: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
- <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Subject: Re: [PATCH 02/18] asymmetric keys: implement
+ EMSA_PKCS1-v1_5-ENCODE in rsa
+Date: Sun, 25 Aug 2013 17:53:09 +0200
+Message-ID: <20130825155309.GA5171@amd.pavel.ucw.cz>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+ <1377169317-5959-3-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36836 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756494Ab3HYPiM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Aug 2013 11:38:12 -0400
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1377169317-5959-3-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, len.brown@intel.com, rjw@sisk.pl
 
-Hi!
+On Thu 2013-08-22 19:01:41, Lee, Chun-Yi wrote:
+> Implement EMSA_PKCS1-v1_5-ENCODE [RFC3447 sec 9.2] in rsa.c. It's the
+> first step of signature generation operation
+> (RSASSA-PKCS1-v1_5-SIGN).
 
-> Use the name_to_dev_t call to parse the device name echo'd to
-> to /sys/power/resume.  This imitates the method used in hibernate.c
-> in software_resume, and allows the resume partition to be specified
-> using other equivalent device formats as well.  By allowing
-> /sys/debug/resume to accept the same syntax as the resume=device
-> parameter, we can parse the resume=device in the init script and
-> use the resume device directly from the kernel command line.
-> 
-> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-> ---
->  kernel/power/hibernate.c |   14 +++++++++-----
->  1 file changed, 9 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index b26f5f1..51d4c29 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -971,15 +971,19 @@ static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
->  static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
->  			    const char *buf, size_t n)
->  {
-> -	unsigned int maj, min;
->  	dev_t res;
->  	int ret = -EINVAL;
-> +	int len = n;
-> +	char *devcpy;
->  
-> -	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
-> -		goto out;
-> +	if (buf[len-1] == '\n')
-> +		len--;
+Is this your own code, or did you copy it from somewhere?
+
+> +	if (!T)
+> +		goto error_T;
 > +
-> +	devcpy = kstrndup(buf, len, GFP_KERNEL);
-> +	res = name_to_dev_t(devcpy);
-> +	kfree(devcpy);
+> +	memcpy(T, RSA_ASN1_templates[hash_algo].data, RSA_ASN1_templates[hash_algo].size);
+> +	memcpy(T + RSA_ASN1_templates[hash_algo].size, pks->digest, pks->digest_size);
+> +
+> +	/* 3) check If emLen < tLen + 11, output "intended encoded message length too short" */
+> +	if (emLen < tLen + 11) {
+> +		ret = EINVAL;
+> +		goto error_emLen;
+> +	}
 
-Is the allocation actually neccessary? At the very least this should
-test for NULL...
-									Pavel
+Normal kernel calling convention is 0 / -EINVAL.
+
+> +	memcpy(EM + 2, PS, emLen - tLen - 3);
+> +	EM[2 + emLen - tLen - 3] = 0x00;
+> +	memcpy(EM + 2 + emLen - tLen - 3 + 1, T, tLen);
+
+ThisDoesNotLookLikeKernelCode, NoCamelCase, please.
+
+> +	*_EM = EM;
+
+And we don't usually use _ prefix like this.
+
+
+> --- a/include/crypto/public_key.h
+> +++ b/include/crypto/public_key.h
+> @@ -110,6 +110,8 @@ extern void public_key_destroy(void *payload);
+>  struct public_key_signature {
+>  	u8 *digest;
+>  	u8 digest_size;			/* Number of bytes in digest */
+> +	u8 *S;				/* signature S of length k octets */
+
+u8 *signature?
+
+> +	size_t k;			/* length k of signature S */
+
+u8 *signature_length.
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
