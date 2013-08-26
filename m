@@ -1,64 +1,152 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [RFC PATCH 01/14] cpufreq: cpufreq-cpu0: add dt node parsing
- for 'cooling-zones'
-Date: Mon, 26 Aug 2013 08:13:26 -0400
-Message-ID: <521B4666.3050509@ti.com>
-References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com> <1377299755-5134-2-git-send-email-eduardo.valentin@ti.com> <CAKohpomuFWyH6ss4_L-0j9WyXtsZEygWrFLYXE6Oj_AD-DJUjA@mail.gmail.com>
+Subject: Re: [RFC PATCH 03/14] hwmon: lm75: expose to thermal fw via DT nodes
+Date: Mon, 26 Aug 2013 08:15:48 -0400
+Message-ID: <521B46F4.7080507@ti.com>
+References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com> <1377299755-5134-4-git-send-email-eduardo.valentin@ti.com> <20130823235049.GB14810@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomuFWyH6ss4_L-0j9WyXtsZEygWrFLYXE6Oj_AD-DJUjA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Zhang Rui <rui.zhang@intel.com>, wni@nvidia.com, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, lm-sensors@lm-sensors.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
+	boundary="hHcUpEbjGd9gJcRXvHj1dmn4V3UXS2TEE"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:38321 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752636Ab3HZMRJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 26 Aug 2013 08:17:09 -0400
+In-Reply-To: <20130823235049.GB14810@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, grant.likely@linaro.org, rob.herring@calxeda.com, rui.zhang@intel.com, wni@nvidia.com, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
 
---ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7
+--hHcUpEbjGd9gJcRXvHj1dmn4V3UXS2TEE
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 26-08-2013 00:42, Viresh Kumar wrote:
-> On 24 August 2013 04:45, Eduardo Valentin <eduardo.valentin@ti.com> wro=
-te:
->> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-=
-cpu0.c
->> index ad1fde2..ede6487 100644
->> --- a/drivers/cpufreq/cpufreq-cpu0.c
->> +++ b/drivers/cpufreq/cpufreq-cpu0.c
->> @@ -20,6 +20,9 @@
->>  #include <linux/platform_device.h>
->>  #include <linux/regulator/consumer.h>
->>  #include <linux/slab.h>
->> +#include <linux/thermal.h>
->> +#include <linux/cpu_cooling.h>
->> +#include <linux/cpumask.h>
->=20
-> In alphabetical order please..
->=20
-
-OK.
-
->> @@ -268,6 +272,13 @@ static int cpu0_cpufreq_probe(struct platform_dev=
-ice *pdev)
->>                 goto out_free_table;
->>         }
+On 23-08-2013 19:50, Guenter Roeck wrote:
+> On Fri, Aug 23, 2013 at 07:15:44PM -0400, Eduardo Valentin wrote:
+>> This patch adds to lm75 temperature sensor the possibility
+>> to expose itself as thermal zone device, registered on the
+>> thermal framework.
 >>
->> +       /*
->> +        * For now, just loading the cooling device;
->> +        * thermal DT code takes care of matching them.
->> +        */
->> +       if (of_find_property(np, "cooling-zones", NULL))
->> +               cdev =3D cpufreq_cooling_register(cpu_present_mask);
->=20
-> Should we check if it passed or failed? And if failed Atleast flag an
-> appropriate message?
+>> The thermal zone is built only if a device tree node
+>> describing a thermal zone for this sensor is present
+>> inside the lm75 DT node. Otherwise, the driver behavior
+>> will be the same.
+>>
+>> Cc: Jean Delvare <khali@linux-fr.org>
+>> Cc: Guenter Roeck <linux@roeck-us.net>
+>> Cc: lm-sensors@lm-sensors.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>  drivers/hwmon/lm75.c | 31 +++++++++++++++++++++++++++++++
+>>  1 file changed, 31 insertions(+)
+>>
+>> diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
+>> index c03b490..dc55908 100644
+>> --- a/drivers/hwmon/lm75.c
+>> +++ b/drivers/hwmon/lm75.c
+>> @@ -27,6 +27,8 @@
+>>  #include <linux/hwmon-sysfs.h>
+>>  #include <linux/err.h>
+>>  #include <linux/mutex.h>
+>> +#include <linux/thermal.h>
+>> +#include <linux/of.h>
+>>  #include "lm75.h"
+>> =20
+>> =20
+>> @@ -70,6 +72,7 @@ static const u8 LM75_REG_TEMP[3] =3D {
+>>  /* Each client has this additional data */
+>>  struct lm75_data {
+>>  	struct device		*hwmon_dev;
+>> +	struct thermal_zone_device	*tz;
+>>  	struct mutex		update_lock;
+>>  	u8			orig_conf;
+>>  	u8			resolution;	/* In bits, between 9 and 12 */
+>> @@ -92,6 +95,19 @@ static struct lm75_data *lm75_update_device(struct =
+device *dev);
+>> =20
+>>  /* sysfs attributes for hwmon */
+>> =20
+>> +static int lm75_read_temp(void *dev, unsigned long *temp)
+>> +{
+>> +	struct lm75_data *data =3D lm75_update_device(dev);
+>> +
+>> +	if (IS_ERR(data))
+>> +		return PTR_ERR(data);
+>> +
+>> +	*temp =3D ((data->temp[0] >> (16 - data->resolution)) * 1000) >>
+>> +			(data->resolution - 8);
+>> +
+> The reported temperature can be negative, which would result in reporti=
+ng a very
+> high temperature (note this applies to the tmp102 driver patch as well)=
+=2E
 >=20
 
-Yes, we need error checking code. I will add in next version. Thanks Kuma=
-r.
+Good point.
 
+> The computation is quite complex and matches the computation done in sh=
+ow_temp().
+> Given that, it would make sense to declare an inline function to conver=
+t the
+> register value to the temperature. This function can take the register =
+value
+> and the resolution as argument.
+
+Sounds reasonable. Modifying accordingly in next version.
+
+>=20
+> Guenter
+>=20
+>> +	return 0;
+>> +}
+>> +
+>>  static ssize_t show_temp(struct device *dev, struct device_attribute =
+*da,
+>>  			 char *buf)
+>>  {
+>> @@ -271,11 +287,25 @@ lm75_probe(struct i2c_client *client, const stru=
+ct i2c_device_id *id)
+>>  		goto exit_remove;
+>>  	}
+>> =20
+>> +	if (of_find_property(client->dev.of_node, "monitored-zones", NULL)) =
+{
+>> +		data->tz =3D thermal_zone_of_device_register(&client->dev,
+>> +							   0,
+>> +							   false, /* -hwmon */
+>> +							   &client->dev,
+>> +							   lm75_read_temp);
+>> +		if (IS_ERR(data->tz)) {
+>> +			status =3D PTR_ERR(data->tz);
+>> +			goto exit_hwmon;
+>> +		}
+>> +	}
+>> +
+>>  	dev_info(&client->dev, "%s: sensor '%s'\n",
+>>  		 dev_name(data->hwmon_dev), client->name);
+>> =20
+>>  	return 0;
+>> =20
+>> +exit_hwmon:
+>> +	hwmon_device_unregister(data->hwmon_dev);
+>>  exit_remove:
+>>  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
+>>  	return status;
+>> @@ -285,6 +315,7 @@ static int lm75_remove(struct i2c_client *client)
+>>  {
+>>  	struct lm75_data *data =3D i2c_get_clientdata(client);
+>> =20
+>> +	thermal_zone_device_unregister(data->tz);
+>>  	hwmon_device_unregister(data->hwmon_dev);
+>>  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
+>>  	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
+>> --=20
+>> 1.8.2.1.342.gfa7285d
+>>
+>>
+>=20
 >=20
 
 
@@ -68,7 +156,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7
+--hHcUpEbjGd9gJcRXvHj1dmn4V3UXS2TEE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -77,9 +165,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlIbRm0ACgkQCXcVR3XQvP2ItQD9FMwdPTChGTJS8wyntuj0OUYy
-w1BiN+rFVWkcVLtDTGEA/3Tp9oX3NNQ8QvOACJmCKPSxfLtd7xgT/kGOOJzWdjbf
-=YWgD
+iF4EAREIAAYFAlIbRvQACgkQCXcVR3XQvP2uNwD+PyexTyWQze8fjI1aByceQ2ex
+7LRBNuAXvuG86GkP6RoA/0xTQ6J/pCNxnYjTe9vHNmclH8wbXxxC6qJLEyMeCKOb
+=U8XP
 -----END PGP SIGNATURE-----
 
---ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7--
+--hHcUpEbjGd9gJcRXvHj1dmn4V3UXS2TEE--
