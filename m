@@ -1,41 +1,63 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC 1/2] PM / Hibernate: use name_to_dev_t to parse resume
-Date: Mon, 26 Aug 2013 10:40:50 -0700
-Message-ID: <20130826174050.16429.7419@capellas-linux>
-References: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
- <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
- <20130825153811.GA4795@amd.pavel.ucw.cz>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: governors: Remove duplicate check of target freq
+ in supported range
+Date: Mon, 26 Aug 2013 21:37:28 +0300
+Message-ID: <521BA068.8030003@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20130825153811.GA4795@amd.pavel.ucw.cz>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: len.brown@intel.com, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Apologies for my previous top post reply...
+Function __cpufreq_driver_target checks if target_freq is within
+policy->min and policy->max range. generic_powersave_bias_target also
+checks if target_freq is valid through cpufreq_frequency_table_target
+call. So, drop the unnecessary duplicate check in *_check_cpu functions.
 
-Quoting Pavel Machek (2013-08-25 08:38:11)
-> Is the allocation actually neccessary? At the very least this should
-> test for NULL...
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/cpufreq_conservative.c | 4 ----
+ drivers/cpufreq/cpufreq_ondemand.c     | 3 ---
+ 2 files changed, 7 deletions(-)
 
-
-Thanks Pavel!  I'll add the check for NULL.
-
-name_to_dev_t expects a non-const name, but the buffer passed in
-is const.  I also am removing the '\n' if found at the end of the
-string which would violate the const.
-
-Thanks!
-
-Sebastian
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 7f67a75..f62d822 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -67,8 +67,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 			return;
+ 
+ 		dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
+-		if (dbs_info->requested_freq > policy->max)
+-			dbs_info->requested_freq = policy->max;
+ 
+ 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
+ 			CPUFREQ_RELATION_H);
+@@ -89,8 +87,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 			return;
+ 
+ 		dbs_info->requested_freq -= get_freq_target(cs_tuners, policy);
+-		if (dbs_info->requested_freq < policy->min)
+-			dbs_info->requested_freq = policy->min;
+ 
+ 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
+ 				CPUFREQ_RELATION_L);
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 87f3305..32f26f6 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -177,9 +177,6 @@ static void od_check_cpu(int cpu, unsigned int load)
+ 		/* No longer fully busy, reset rate_mult */
+ 		dbs_info->rate_mult = 1;
+ 
+-		if (freq_next < policy->min)
+-			freq_next = policy->min;
+-
+ 		if (!od_tuners->powersave_bias) {
+ 			__cpufreq_driver_target(policy, freq_next,
+ 					CPUFREQ_RELATION_L);
+-- 
+1.8.3.1
