@@ -1,8 +1,7 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH] cpufreq: governors: Remove duplicate check of target freq
- in supported range
-Date: Mon, 26 Aug 2013 21:37:28 +0300
-Message-ID: <521BA068.8030003@semaphore.gr>
+Subject: [PATCH] cpufreq: governor: Fix typos in comments
+Date: Mon, 26 Aug 2013 21:42:21 +0300
+Message-ID: <521BA18D.70706@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -12,52 +11,74 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Function __cpufreq_driver_target checks if target_freq is within
-policy->min and policy->max range. generic_powersave_bias_target also
-checks if target_freq is valid through cpufreq_frequency_table_target
-call. So, drop the unnecessary duplicate check in *_check_cpu functions.
+- 'Governer' should be 'Governor'
+- 'S' is used for Siemens (electrical conductance) in SI units.
+Use small 's' for seconds.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
- drivers/cpufreq/cpufreq_conservative.c | 4 ----
- drivers/cpufreq/cpufreq_ondemand.c     | 3 ---
- 2 files changed, 7 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c |  2 +-
+ drivers/cpufreq/cpufreq_governor.h | 12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 7f67a75..f62d822 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -67,8 +67,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 			return;
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 8742736..fea104a 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -230,7 +230,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
  
- 		dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
--		if (dbs_info->requested_freq > policy->max)
--			dbs_info->requested_freq = policy->max;
+ 		policy->governor_data = dbs_data;
  
- 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
- 			CPUFREQ_RELATION_H);
-@@ -89,8 +87,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 			return;
+-		/* policy latency is in nS. Convert it to uS first */
++		/* policy latency is in ns. Convert it to us first */
+ 		latency = policy->cpuinfo.transition_latency / 1000;
+ 		if (latency == 0)
+ 			latency = 1;
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index a02d78b..88cd39f 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -25,11 +25,11 @@
+ /*
+  * The polling frequency depends on the capability of the processor. Default
+  * polling frequency is 1000 times the transition latency of the processor. The
+- * governor will work on any processor with transition latency <= 10mS, using
++ * governor will work on any processor with transition latency <= 10ms, using
+  * appropriate sampling rate.
+  *
+- * For CPUs with transition latency > 10mS (mostly drivers with CPUFREQ_ETERNAL)
+- * this governor will not work. All times here are in uS.
++ * For CPUs with transition latency > 10ms (mostly drivers with CPUFREQ_ETERNAL)
++ * this governor will not work. All times here are in us (micro seconds).
+  */
+ #define MIN_SAMPLING_RATE_RATIO			(2)
+ #define LATENCY_MULTIPLIER			(1000)
+@@ -162,7 +162,7 @@ struct cs_cpu_dbs_info_s {
+ 	unsigned int enable:1;
+ };
  
- 		dbs_info->requested_freq -= get_freq_target(cs_tuners, policy);
--		if (dbs_info->requested_freq < policy->min)
--			dbs_info->requested_freq = policy->min;
+-/* Per policy Governers sysfs tunables */
++/* Per policy Governors sysfs tunables */
+ struct od_dbs_tuners {
+ 	unsigned int ignore_nice_load;
+ 	unsigned int sampling_rate;
+@@ -181,7 +181,7 @@ struct cs_dbs_tuners {
+ 	unsigned int freq_step;
+ };
  
- 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
- 				CPUFREQ_RELATION_L);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 87f3305..32f26f6 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -177,9 +177,6 @@ static void od_check_cpu(int cpu, unsigned int load)
- 		/* No longer fully busy, reset rate_mult */
- 		dbs_info->rate_mult = 1;
+-/* Common Governer data across policies */
++/* Common Governor data across policies */
+ struct dbs_data;
+ struct common_dbs_data {
+ 	/* Common across governors */
+@@ -205,7 +205,7 @@ struct common_dbs_data {
+ 	void *gov_ops;
+ };
  
--		if (freq_next < policy->min)
--			freq_next = policy->min;
--
- 		if (!od_tuners->powersave_bias) {
- 			__cpufreq_driver_target(policy, freq_next,
- 					CPUFREQ_RELATION_L);
+-/* Governer Per policy data */
++/* Governor Per policy data */
+ struct dbs_data {
+ 	struct common_dbs_data *cdata;
+ 	unsigned int min_sampling_rate;
 -- 
 1.8.3.1
