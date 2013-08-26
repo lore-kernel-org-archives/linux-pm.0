@@ -1,61 +1,99 @@
-From: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 2/3] cpuidle: coupled: abort idle if pokes are pending
-Date: Mon, 26 Aug 2013 17:10:21 +0800
-Message-ID: <1377508221.16229.34.camel@jlo-ubuntu-64.nvidia.com>
-References: <1377287112-12018-1-git-send-email-ccross@android.com>
-	 <1377287112-12018-2-git-send-email-ccross@android.com>
+From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
+Subject: Re: [PATCH 02/18] asymmetric keys: implement
+ EMSA_PKCS1-v1_5-ENCODE in rsa
+Date: Mon, 26 Aug 2013 18:17:49 +0800
+Message-ID: <1377512269.27967.29.camel__46818.319152999$1377512372$gmane$org@linux-s257.site>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+	 <1377169317-5959-3-git-send-email-jlee@suse.com>
+	 <20130825155309.GA5171@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1377287112-12018-2-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Neil Zhang <zhangwm-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20130825155309.GA5171-tWAi6jLit6GreWDznjuHag@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2013-08-24 at 03:45 +0800, Colin Cross wrote:
-> Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> reported a lockup on Tegra3 caused
-> by a race condition in coupled cpuidle.  When two or more cpus
-Actually this issue can be reproduced on both Tegra20/30 platforms. And
-I suggest using Tegra20 to replace Tegra3 here, we only apply coupled
-CPU idle function on Tegra20 in the mainline right now.
-> enter idle at the same time, the first cpus to arrive may go to the
-> ready loop without processing pending pokes from the last cpu to
-> arrive.
-> 
-> This patch adds a check for pending pokes once all cpus have been
-> synchronized in the ready loop and resets the coupled state and
-> retries if any cpus failed to handle their pending poke.
-> 
-> Retrying on all cpus may trigger the same issue again, so this patch
-> also adds a check to ensure that each cpu has received at least one
-> poke between when it enters the waiting loop and when it moves on to
-> the ready loop.
-> 
-> Reported-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> CC: stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-> ---
->  drivers/cpuidle/coupled.c | 107 +++++++++++++++++++++++++++++++++++-----------
->  1 file changed, 82 insertions(+), 25 deletions(-)
-> 
-[snip]
-> +/*
-> + * The cpuidle_coupled_poke_pending mask is used to ensure that each cpu has
-s/cpuidle_coupled_poke_pending/cpuidle_coupled_poked/? :)
-> + * been poked once to minimize entering the ready loop with a poke pending,
-> + * which would require aborting and retrying.
-> + */
-> +static cpumask_t cpuidle_coupled_poked;
-> 
-I fixed this issue by checking if there is a pending SGI, then abort the
-coupled state on Tegra20. It still can be reproduced easily if I remove
-the checking code. So I tested the case with this patch, the result is
-good. This patch can fix the issue indeed.
+Hi Pavel,=20
 
-I also tested with the other two patches. It didn't cause any
-regression.
+=46irst, thanks for your review!
 
-So this series:
-Tested-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+=E6=96=BC =E6=97=A5=EF=BC=8C2013-08-25 =E6=96=BC 17:53 +0200=EF=BC=8CPa=
+vel Machek =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Thu 2013-08-22 19:01:41, Lee, Chun-Yi wrote:
+> > Implement EMSA_PKCS1-v1_5-ENCODE [RFC3447 sec 9.2] in rsa.c. It's t=
+he
+> > first step of signature generation operation
+> > (RSASSA-PKCS1-v1_5-SIGN).
+>=20
+> Is this your own code, or did you copy it from somewhere?
+>=20
+
+It's my own code, development base on RSA PKCS#1 spec. So the naming of
+variables are match with PKCS#1 spec.
+
+> > +	if (!T)
+> > +		goto error_T;
+> > +
+> > +	memcpy(T, RSA_ASN1_templates[hash_algo].data, RSA_ASN1_templates[=
+hash_algo].size);
+> > +	memcpy(T + RSA_ASN1_templates[hash_algo].size, pks->digest, pks->=
+digest_size);
+> > +
+> > +	/* 3) check If emLen < tLen + 11, output "intended encoded messag=
+e length too short" */
+> > +	if (emLen < tLen + 11) {
+> > +		ret =3D EINVAL;
+> > +		goto error_emLen;
+> > +	}
+>=20
+> Normal kernel calling convention is 0 / -EINVAL.
+
+Yes, here is my mistake, I will modify it.
+
+>=20
+> > +	memcpy(EM + 2, PS, emLen - tLen - 3);
+> > +	EM[2 + emLen - tLen - 3] =3D 0x00;
+> > +	memcpy(EM + 2 + emLen - tLen - 3 + 1, T, tLen);
+>=20
+> ThisDoesNotLookLikeKernelCode, NoCamelCase, please.
+>=20
+
+Thanks for you point out, I will change it.
+
+> > +	*_EM =3D EM;
+>=20
+> And we don't usually use _ prefix like this.
+>=20
+
+Thanks! I will change it.
+
+>=20
+> > --- a/include/crypto/public_key.h
+> > +++ b/include/crypto/public_key.h
+> > @@ -110,6 +110,8 @@ extern void public_key_destroy(void *payload);
+> >  struct public_key_signature {
+> >  	u8 *digest;
+> >  	u8 digest_size;			/* Number of bytes in digest */
+> > +	u8 *S;				/* signature S of length k octets */
+>=20
+> u8 *signature?
+
+Yes, this 'S' is signature. I put the naming full match with spec for
+development, I will change it to match kernel rule. e.g. signature_S
+
+>=20
+> > +	size_t k;			/* length k of signature S */
+>=20
+> u8 *signature_length.
+>=20
+
+I will use signature_leng_k to also match with PKCS#1 spec, I think it'=
+s
+better for review source code with the spec for debugging.
+
+
+Thanks a lot!
+Joey Lee
