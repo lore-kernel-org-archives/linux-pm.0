@@ -1,43 +1,74 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 01/14] cpufreq: cpufreq-cpu0: add dt node parsing for 'cooling-zones'
-Date: Mon, 26 Aug 2013 10:12:33 +0530
-Message-ID: <CAKohpomuFWyH6ss4_L-0j9WyXtsZEygWrFLYXE6Oj_AD-DJUjA@mail.gmail.com>
-References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com>
-	<1377299755-5134-2-git-send-email-eduardo.valentin@ti.com>
+Subject: Re: [PATCH v7 1/7] cpufreq: Add boost frequency support in core
+Date: Mon, 26 Aug 2013 10:58:53 +0530
+Message-ID: <CAKohpo=m=smN-qk45dSdq8SOwAyqtE1xLV-Y85GaCbVhBDsmjQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1376388505-30233-1-git-send-email-l.majewski@samsung.com>
+	<1376388505-30233-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1377299755-5134-2-git-send-email-eduardo.valentin@ti.com>
+In-Reply-To: <1376388505-30233-2-git-send-email-l.majewski@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Zhang Rui <rui.zhang@intel.com>, wni@nvidia.com, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, lm-sensors@lm-sensors.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 August 2013 04:45, Eduardo Valentin <eduardo.valentin@ti.com> wrote:
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index ad1fde2..ede6487 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -20,6 +20,9 @@
->  #include <linux/platform_device.h>
->  #include <linux/regulator/consumer.h>
->  #include <linux/slab.h>
-> +#include <linux/thermal.h>
-> +#include <linux/cpu_cooling.h>
-> +#include <linux/cpumask.h>
+Some minor nitpicking, nothing much :)
 
-In alphabetical order please..
+On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> +static int cpufreq_boost_set_sw(int state)
+> +{
+> +       struct cpufreq_frequency_table *freq_table;
+> +       struct cpufreq_policy *policy;
+> +       int ret = -EINVAL;
+> +
+> +       list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
+> +               freq_table = cpufreq_frequency_get_table(policy->cpu);
+> +               if (freq_table) {
+> +                       ret = cpufreq_frequency_table_cpuinfo(policy,
+> +                                                       freq_table);
+> +                       if (!ret) {
+> +                               policy->user_policy.max = policy->max;
+> +                               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> +                       }
 
-> @@ -268,6 +272,13 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->                 goto out_free_table;
->         }
->
-> +       /*
-> +        * For now, just loading the cooling device;
-> +        * thermal DT code takes care of matching them.
-> +        */
-> +       if (of_find_property(np, "cooling-zones", NULL))
-> +               cdev = cpufreq_cooling_register(cpu_present_mask);
+In case ret wasn't 0 (i.e. we failed), we should print an error
+message and break
+our loop ?
 
-Should we check if it passed or failed? And if failed Atleast flag an
-appropriate message?
+> +               }
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +int cpufreq_boost_trigger_state(int state)
+> +{
+> +       unsigned long flags;
+> +       int ret = 0;
+> +
+> +       if (cpufreq_driver->boost_enabled == state)
+> +               return 0;
+> +
+> +       write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +       cpufreq_driver->boost_enabled = state;
+> +       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +       ret = cpufreq_driver->set_boost(state);
+> +       if (ret) {
+> +               write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +               cpufreq_driver->boost_enabled = !state;
+> +               write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +               pr_err("%s: Cannot %s BOOST\n", __func__,
+> +                      state ? "enabled" : "disabled");
+
+s/enabled/enable and s/disabled/disable
+
+> +       }
+> +
+> +       return ret;
+> +}
+> +
