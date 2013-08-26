@@ -1,24 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/16] cpufreq: create & use cpufreq_generic_get() routine
-Date: Mon, 26 Aug 2013 10:00:25 +0530
-Message-ID: <CAKohpomzUNg8xHgjTdGkdsMOXGY1nZo7B1Sg_e1m9UtSTDeipQ@mail.gmail.com>
-References: <cover.1377272740.git.viresh.kumar@linaro.org>
-	<2330969.4ermKsDahJ@vostro.rjw.lan>
-	<CAKohpokQkwYJBp=Bf7jOVk3MU-ziWtUCSyiX_f-JNzkt0F+-Dw@mail.gmail.com>
-	<3157592.DnWQ5yyNjd@vostro.rjw.lan>
+Subject: Re: [RFC PATCH 01/14] cpufreq: cpufreq-cpu0: add dt node parsing for 'cooling-zones'
+Date: Mon, 26 Aug 2013 10:12:33 +0530
+Message-ID: <CAKohpomuFWyH6ss4_L-0j9WyXtsZEygWrFLYXE6Oj_AD-DJUjA@mail.gmail.com>
+References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com>
+	<1377299755-5134-2-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3157592.DnWQ5yyNjd@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1377299755-5134-2-git-send-email-eduardo.valentin@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Zhang Rui <rui.zhang@intel.com>, wni@nvidia.com, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, lm-sensors@lm-sensors.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 August 2013 20:20, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> OK, let me rephrase that more directly: Please, slow down.  Allow your previous
-> changes to be integrated before you throw more of them at people.
+On 24 August 2013 04:45, Eduardo Valentin <eduardo.valentin@ti.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index ad1fde2..ede6487 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -20,6 +20,9 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/regulator/consumer.h>
+>  #include <linux/slab.h>
+> +#include <linux/thermal.h>
+> +#include <linux/cpu_cooling.h>
+> +#include <linux/cpumask.h>
 
-Okay, I will try :)
+In alphabetical order please..
 
-Btw, Are you going to take any of my patches for 3.12?
+> @@ -268,6 +272,13 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>                 goto out_free_table;
+>         }
+>
+> +       /*
+> +        * For now, just loading the cooling device;
+> +        * thermal DT code takes care of matching them.
+> +        */
+> +       if (of_find_property(np, "cooling-zones", NULL))
+> +               cdev = cpufreq_cooling_register(cpu_present_mask);
+
+Should we check if it passed or failed? And if failed Atleast flag an
+appropriate message?
