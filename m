@@ -1,60 +1,61 @@
-From: Li Yang <leoli@freescale.com>
-Subject: Re: System suspend states and device driver suspend() callback
-Date: Mon, 26 Aug 2013 16:50:53 +0800
-Message-ID: <CADRPPNRyJW8N0NCpi0C0dpx5QudLu5V_BeT+XW=mjaa4HnU6Lg@mail.gmail.com>
-References: <CADRPPNSD+uj_t5+qbNW29y7SuJkB_vMck-DGFJFV4A0AmPC6pQ@mail.gmail.com>
-	<17024788.0xFN8jEV59@vostro.rjw.lan>
-	<02318724-F4F7-4D53-9926-872E9417F672@freescale.com>
-	<35306580.ZCUI1aZasW@vostro.rjw.lan>
+From: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH 2/3] cpuidle: coupled: abort idle if pokes are pending
+Date: Mon, 26 Aug 2013 17:10:21 +0800
+Message-ID: <1377508221.16229.34.camel@jlo-ubuntu-64.nvidia.com>
+References: <1377287112-12018-1-git-send-email-ccross@android.com>
+	 <1377287112-12018-2-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <35306580.ZCUI1aZasW@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Li Yang-R58472 <r58472@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1377287112-12018-2-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Neil Zhang <zhangwm-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 17, 2013 at 7:53 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, August 16, 2013 05:13:42 PM Li Yang-R58472 wrote:
->>
->> =E5=9C=A8 2013-8-16=EF=BC=8C=E4=B8=8B=E5=8D=887:22=EF=BC=8C"Rafael J=
-=2E Wysocki" <rjw@sisk.pl> =E5=86=99=E9=81=93=EF=BC=9A
->>
->> > On Friday, August 16, 2013 04:06:26 PM Li Yang wrote:
->> >> Hi Guys,
->> >>
->> >> Is there a standard way for the device drivers to know if the sys=
-tem
->> >> is going to =E2=80=9Cstandby=E2=80=9D mode or =E2=80=9Cmem=E2=80=9D=
- mode when the suspend() callbacks
->> >> are called?
->> >
->> > No, there's none.
->> >
->> > What do you need that for?
->>
->> Some chips like ours are putting the on-chip devices into different =
-low
->> power states when entering different system low power states.  When =
-we enter
->> system standby, on-chip devices are clock gated.  While entering sus=
-pend to
->> ram, on-chip devices are power gated.  We want to driver to act diff=
-erently
->> too when entering different suspend states.
->
-> Can you possibly use platform suspend operations to implement that (i=
-n analogy
-> with ACPI suspend operations)?
+On Sat, 2013-08-24 at 03:45 +0800, Colin Cross wrote:
+> Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> reported a lockup on Tegra3 caused
+> by a race condition in coupled cpuidle.  When two or more cpus
+Actually this issue can be reproduced on both Tegra20/30 platforms. And
+I suggest using Tegra20 to replace Tegra3 here, we only apply coupled
+CPU idle function on Tegra20 in the mainline right now.
+> enter idle at the same time, the first cpus to arrive may go to the
+> ready loop without processing pending pokes from the last cpu to
+> arrive.
+> 
+> This patch adds a check for pending pokes once all cpus have been
+> synchronized in the ready loop and resets the coupled state and
+> retries if any cpus failed to handle their pending poke.
+> 
+> Retrying on all cpus may trigger the same issue again, so this patch
+> also adds a check to ensure that each cpu has received at least one
+> poke between when it enters the waiting loop and when it moves on to
+> the ready loop.
+> 
+> Reported-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> CC: stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  drivers/cpuidle/coupled.c | 107 +++++++++++++++++++++++++++++++++++-----------
+>  1 file changed, 82 insertions(+), 25 deletions(-)
+> 
+[snip]
+> +/*
+> + * The cpuidle_coupled_poke_pending mask is used to ensure that each cpu has
+s/cpuidle_coupled_poke_pending/cpuidle_coupled_poked/? :)
+> + * been poked once to minimize entering the ready loop with a poke pending,
+> + * which would require aborting and retrying.
+> + */
+> +static cpumask_t cpuidle_coupled_poked;
+> 
+I fixed this issue by checking if there is a pending SGI, then abort the
+coupled state on Tegra20. It still can be reproduced easily if I remove
+the checking code. So I tested the case with this patch, the result is
+good. This patch can fix the issue indeed.
 
-I agree it's best to get the state that the device will be in during
-suspend from the platform code.  Will it be better to have a standard
-interface to pass this information?  Given the fact that a single
-device can be used by different platforms even different architecture
-nowadays.  How about exposing some new callbacks from the
-platform_suspend_ops for the driver to use?
+I also tested with the other two patches. It didn't cause any
+regression.
 
-Regards,
-Leo
+So this series:
+Tested-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
