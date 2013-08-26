@@ -1,53 +1,57 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v7 1/7] cpufreq: Add boost frequency support in core
-Date: Mon, 26 Aug 2013 16:46:39 +0200
-Message-ID: <20130826164639.490ecc82@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <CAKohpondC1BuODMauBsBKZtL=9sSDUSB6nXFKSoLWJG_xgO+iw@mail.gmail.com>
- <20130826091114.78ea4f61@amdc308.digital.local>
- <2003732.zyaEDD5Bdr@vostro.rjw.lan>
- <CAKohpo=h9rW+FVrsmqee0oY_KK+h9x8o40b7LvAGzX1s4KsZNA@mail.gmail.com>
+From: Lan Tianyu <lantianyu1986@gmail.com>
+Subject: Re: [Query] CPUFreq: Why do we need policy->user_policy?
+Date: Mon, 26 Aug 2013 23:23:03 +0800
+Message-ID: <CAOLK0pzg5VwDBLbUFU8J8wujxUazPgFC-+C4+Z6AMLYv7KcOtw@mail.gmail.com>
+References: <CAKohponkO6oZrvrsUGVK0uUbAM5wse7eHd7udtWkab7y2aatGA@mail.gmail.com>
+	<20581731.mdSQ720dHi@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=h9rW+FVrsmqee0oY_KK+h9x8o40b7LvAGzX1s4KsZNA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f181.google.com ([209.85.216.181]:43035 "EHLO
+	mail-qc0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751933Ab3HZPXF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Aug 2013 11:23:05 -0400
+In-Reply-To: <20581731.mdSQ720dHi@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Mon, 26 Aug 2013 19:30:07 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 26 August 2013 18:42, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, August 26, 2013 09:11:14 AM Lukasz Majewski wrote:
-> >> On Mon, 26 Aug 2013 12:36:47 +0530 Viresh Kumar
-> >> viresh.kumar@linaro.org wrote,
-> >> > On 26 August 2013 12:32, Lukasz Majewski <l.majewski@samsung.com>
-> >> > wrote:
-> >> > > On Mon, 26 Aug 2013 10:58:53 +0530 Viresh Kumar
-> >> > > viresh.kumar@linaro.org wrote,
-> >> > >> Some minor nitpicking, nothing much :)
-> >> > >
-> >> > > Is there any chance to pull those corrected patches to v3.12?
-> >> >
-> >> > Only Rafael can decide :)
-> >>
-> >> :-)
-> >
-> > Well, 3.11 is a week away and the 3.12 merge window will open then.
-> >
-> > Honestly, I'd prefer this stuff to spend a couple of weeks in
-> > linux-next before pushing it to Linus, so this means 3.13 I'm
-> > afraid.
-> 
-> +1
+2013/8/26 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Monday, August 26, 2013 08:00:52 PM Viresh Kumar wrote:
+>> Hi Rafael,
+>
+> Hi,
+>
+>> I am almost done with cleanup of drivers and am back at cpufreq core=
+=2E. :)
+>> I got to this structure: struct cpufreq_real_policy;
+>>
+>> And I am not able to understand what's the need for this structure?
+>> Can you let me know? Before I try to get rid of it :)
+>
+> Honestly, I don't remember from the top of my head.
 
-Ok. I understand. 
+So far as I know, it stores some user's config and cpufreq_update_polic=
+y()
+bases on the data in the struct to start a new policy. Cpu thermal driv=
+er
+=A3=A8/driver/thermal/cpu_cooling.c=A3=A9also will its value to update =
+freq policy
+when receive a cpufreq policy adjust notification.
 
--- 
-Best regards,
+>
+> Thanks,
+> Rafael
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Lukasz Majewski
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+
+--=20
+Best regards
+Tianyu Lan
