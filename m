@@ -1,39 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 1/7] cpufreq: Add boost frequency support in core
-Date: Mon, 26 Aug 2013 19:30:07 +0530
-Message-ID: <CAKohpo=h9rW+FVrsmqee0oY_KK+h9x8o40b7LvAGzX1s4KsZNA@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<CAKohpondC1BuODMauBsBKZtL=9sSDUSB6nXFKSoLWJG_xgO+iw@mail.gmail.com>
-	<20130826091114.78ea4f61@amdc308.digital.local>
-	<2003732.zyaEDD5Bdr@vostro.rjw.lan>
+Subject: Re: [GIT PULL]: CPUFreq: ARM Fixes for 3.12
+Date: Mon, 26 Aug 2013 19:36:56 +0530
+Message-ID: <CAKohpo=2msHhAWqqe==yLCszE5U6ccSti31E82eovkb4emJd5A@mail.gmail.com>
+References: <CAKohpoksNiGT+r3JTY6KFwnDFA5OYE-vQe8W_9GT-fN21UMrfQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2003732.zyaEDD5Bdr@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f53.google.com ([209.85.219.53]:52831 "EHLO
+	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002Ab3HZOG5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Aug 2013 10:06:57 -0400
+Received: by mail-oa0-f53.google.com with SMTP id k18so3599220oag.12
+        for <linux-pm@vger.kernel.org>; Mon, 26 Aug 2013 07:06:56 -0700 (PDT)
+In-Reply-To: <CAKohpoksNiGT+r3JTY6KFwnDFA5OYE-vQe8W_9GT-fN21UMrfQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Joseph Lo <josephl@nvidia.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Stephen Warren <swarren@nvidia.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-On 26 August 2013 18:42, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, August 26, 2013 09:11:14 AM Lukasz Majewski wrote:
->> On Mon, 26 Aug 2013 12:36:47 +0530 Viresh Kumar viresh.kumar@linaro.org
->> wrote,
->> > On 26 August 2013 12:32, Lukasz Majewski <l.majewski@samsung.com>
->> > wrote:
->> > > On Mon, 26 Aug 2013 10:58:53 +0530 Viresh Kumar
->> > > viresh.kumar@linaro.org wrote,
->> > >> Some minor nitpicking, nothing much :)
->> > >
->> > > Is there any chance to pull those corrected patches to v3.12?
->> >
->> > Only Rafael can decide :)
->>
->> :-)
+On 26 August 2013 11:48, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Hi Rafael,
 >
-> Well, 3.11 is a week away and the 3.12 merge window will open then.
->
-> Honestly, I'd prefer this stuff to spend a couple of weeks in linux-next
-> before pushing it to Linus, so this means 3.13 I'm afraid.
+> Hopefully this is the last patch for 3.12 for ARM CPUFreq subsystem.
 
-+1
+Another last minute patch from Sascha..
+
+-----------x------------------x------------------
+
+The following changes since commit b36f4be3de1b123d8601de062e7dbfc904f305fb:
+
+  Linux 3.11-rc6 (2013-08-18 14:36:53 -0700)
+
+are available in the git repository at:
+
+  git://git.linaro.org/people/vireshk/linux.git cpufreq-fixes
+
+for you to fetch changes up to fae19b84724ff93c1ac59ce1eecc1411f8269d9e:
+
+  cpufreq: imx6q: Fix clock enable balance (2013-08-26 19:34:07 +0530)
+
+----------------------------------------------------------------
+Joseph Lo (1):
+      cpufreq: tegra: fix the wrong clock name
+
+Sascha Hauer (1):
+      cpufreq: imx6q: Fix clock enable balance
+
+ drivers/cpufreq/imx6q-cpufreq.c | 17 -----------------
+ drivers/cpufreq/tegra-cpufreq.c |  4 ++--
+ 2 files changed, 2 insertions(+), 19 deletions(-)
