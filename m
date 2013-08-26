@@ -1,84 +1,112 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH] cpufreq: governor: Fix typos in comments
-Date: Mon, 26 Aug 2013 21:42:21 +0300
-Message-ID: <521BA18D.70706@semaphore.gr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: [PATCH] cpufreq: Fix timer/workqueue corruption due to double queueing
+Date: Mon, 26 Aug 2013 15:45:37 -0700
+Message-ID: <1377557137-1157-1-git-send-email-sboyd@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:44633 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835Ab3HZWpl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Aug 2013 18:45:41 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-- 'Governer' should be 'Governor'
-- 'S' is used for Siemens (electrical conductance) in SI units.
-Use small 's' for seconds.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+When a CPU is hot removed we'll cancel all the delayed work items
+via gov_cancel_work(). Normally this will just cancel a delayed
+timer on each CPU that the policy is managing and the work won't
+run, but if the work is already running the workqueue code will
+wait for the work to finish before continuing to prevent the
+work items from re-queuing themselves like they normally do. This
+scheme will work most of the time, except for the case where the
+work function determines that it should adjust the delay for all
+other CPUs that the policy is managing. If this scenario occurs,
+the canceling CPU will cancel its own work but queue up the other
+CPUs works to run. For example:
+
+ CPU0                                        CPU1
+ ----                                        ----
+ cpu_down()
+  ...
+  __cpufreq_remove_dev()
+   cpufreq_governor_dbs()
+    case CPUFREQ_GOV_STOP:
+     gov_cancel_work(dbs_data, policy);
+      cpu0 work is canceled
+       timer is canceled
+       cpu1 work is canceled                    <work runs>
+       <waits for cpu1>                         od_dbs_timer()
+                                                 gov_queue_work(*, *, true);
+ 						  cpu0 work queued
+ 						  cpu1 work queued
+						  cpu2 work queued
+						  ...
+       cpu1 work is canceled
+       cpu2 work is canceled
+       ...
+
+At the end of the GOV_STOP case cpu0 still has a work queued to
+run although the code is expecting all of the works to be
+canceled. __cpufreq_remove_dev() will then proceed to
+re-initialize all the other CPUs works except for the CPU that is
+going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
+will trample over the queued work and debugobjects will spit out
+a warning:
+
+WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
+ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x10
+Modules linked in:
+CPU: 0 PID: 1491 Comm: sh Tainted: G        W    3.10.0 #19
+[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
+[<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)
+[<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)
+[<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c0388a7c>] (debug_print_object+0x94/0xbc)
+[<c0388a7c>] (debug_print_object+0x94/0xbc) from [<c0388e34>] (__debug_object_init+0x2d0/0x340)
+[<c0388e34>] (__debug_object_init+0x2d0/0x340) from [<c019e3b0>] (init_timer_key+0x14/0xb0)
+[<c019e3b0>] (init_timer_key+0x14/0xb0) from [<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8)
+[<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8) from [<c06325a0>] (__cpufreq_governor+0xdc/0x1a4)
+[<c06325a0>] (__cpufreq_governor+0xdc/0x1a4) from [<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434)
+[<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434) from [<c08989f4>] (cpufreq_cpu_callback+0x60/0x80)
+[<c08989f4>] (cpufreq_cpu_callback+0x60/0x80) from [<c08a43c0>] (notifier_call_chain+0x38/0x68)
+[<c08a43c0>] (notifier_call_chain+0x38/0x68) from [<c01938e0>] (__cpu_notify+0x28/0x40)
+[<c01938e0>] (__cpu_notify+0x28/0x40) from [<c0892ad4>] (_cpu_down+0x7c/0x2c0)
+[<c0892ad4>] (_cpu_down+0x7c/0x2c0) from [<c0892d3c>] (cpu_down+0x24/0x40)
+[<c0892d3c>] (cpu_down+0x24/0x40) from [<c0893ea8>] (store_online+0x2c/0x74)
+[<c0893ea8>] (store_online+0x2c/0x74) from [<c04519d8>] (dev_attr_store+0x18/0x24)
+[<c04519d8>] (dev_attr_store+0x18/0x24) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
+[<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
+[<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)
+[<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
+
+The simplest fix is to check and see if the governor is being
+stopped and ignore the all_cpus flag so that only the work that's
+being canceled has the chance to re-queue itself.
+
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/cpufreq/cpufreq_governor.c |  2 +-
- drivers/cpufreq/cpufreq_governor.h | 12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
+
+This should probably go to stable. I think this all started happening 
+in commit 031299b3be30f3ec (cpufreq: governors: Avoid unnecessary per cpu
+timer interrupts, 2013-02-27).
+
+ drivers/cpufreq/cpufreq_governor.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 8742736..fea104a 100644
+index 7b839a8..0375a3c 100644
 --- a/drivers/cpufreq/cpufreq_governor.c
 +++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -230,7 +230,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+@@ -133,7 +133,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+ {
+ 	int i;
  
- 		policy->governor_data = dbs_data;
- 
--		/* policy latency is in nS. Convert it to uS first */
-+		/* policy latency is in ns. Convert it to us first */
- 		latency = policy->cpuinfo.transition_latency / 1000;
- 		if (latency == 0)
- 			latency = 1;
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index a02d78b..88cd39f 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -25,11 +25,11 @@
- /*
-  * The polling frequency depends on the capability of the processor. Default
-  * polling frequency is 1000 times the transition latency of the processor. The
-- * governor will work on any processor with transition latency <= 10mS, using
-+ * governor will work on any processor with transition latency <= 10ms, using
-  * appropriate sampling rate.
-  *
-- * For CPUs with transition latency > 10mS (mostly drivers with CPUFREQ_ETERNAL)
-- * this governor will not work. All times here are in uS.
-+ * For CPUs with transition latency > 10ms (mostly drivers with CPUFREQ_ETERNAL)
-+ * this governor will not work. All times here are in us (micro seconds).
-  */
- #define MIN_SAMPLING_RATE_RATIO			(2)
- #define LATENCY_MULTIPLIER			(1000)
-@@ -162,7 +162,7 @@ struct cs_cpu_dbs_info_s {
- 	unsigned int enable:1;
- };
- 
--/* Per policy Governers sysfs tunables */
-+/* Per policy Governors sysfs tunables */
- struct od_dbs_tuners {
- 	unsigned int ignore_nice_load;
- 	unsigned int sampling_rate;
-@@ -181,7 +181,7 @@ struct cs_dbs_tuners {
- 	unsigned int freq_step;
- };
- 
--/* Common Governer data across policies */
-+/* Common Governor data across policies */
- struct dbs_data;
- struct common_dbs_data {
- 	/* Common across governors */
-@@ -205,7 +205,7 @@ struct common_dbs_data {
- 	void *gov_ops;
- };
- 
--/* Governer Per policy data */
-+/* Governor Per policy data */
- struct dbs_data {
- 	struct common_dbs_data *cdata;
- 	unsigned int min_sampling_rate;
+-	if (!all_cpus) {
++	if (!all_cpus || !policy->governor_enabled) {
+ 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
+ 	} else {
+ 		for_each_cpu(i, policy->cpus)
 -- 
-1.8.3.1
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
+
