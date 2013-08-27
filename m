@@ -1,122 +1,57 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH] cpufreq: Fix timer/workqueue corruption due to double queueing
-Date: Tue, 27 Aug 2013 11:47:29 -0700
-Message-ID: <1377629249-1177-1-git-send-email-sboyd@codeaurora.org>
-References: <CAKohpoktPNtSMRn0dEVjcEW5_62E+_UEgySOBJ-hG+r=NU3V2w@mail.gmail.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpoktPNtSMRn0dEVjcEW5_62E+_UEgySOBJ-hG+r=NU3V2w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3/5] drivers: thermal: make usage of CONFIG_THERMAL_HWMON optional
+Date: Tue, 27 Aug 2013 23:17:38 +0200
+Message-ID: <8131326.8QGX41MW6c@vostro.rjw.lan>
+References: <1377295396-17289-1-git-send-email-eduardo.valentin@ti.com> <4832825.8PCMQe7StP@vostro.rjw.lan> <521CEF61.6040504@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <521CEF61.6040504@ti.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, linux-kernel@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, David Woodhouse <dwmw2@infradead.org>, devicetree@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Matthew Garrett <matthew.garrett@nebula.com>, Peter Feuerer <peter@piie.net>, platform-driver-x86@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>
 List-Id: linux-pm@vger.kernel.org
 
-When a CPU is hot removed we'll cancel all the delayed work items
-via gov_cancel_work(). Normally this will just cancel a delayed
-timer on each CPU that the policy is managing and the work won't
-run, but if the work is already running the workqueue code will
-wait for the work to finish before continuing to prevent the
-work items from re-queuing themselves like they normally do. This
-scheme will work most of the time, except for the case where the
-work function determines that it should adjust the delay for all
-other CPUs that the policy is managing. If this scenario occurs,
-the canceling CPU will cancel its own work but queue up the other
-CPUs works to run. For example:
-
- CPU0                                        CPU1
- ----                                        ----
- cpu_down()
-  ...
-  __cpufreq_remove_dev()
-   cpufreq_governor_dbs()
-    case CPUFREQ_GOV_STOP:
-     gov_cancel_work(dbs_data, policy);
-      cpu0 work is canceled
-       timer is canceled
-       cpu1 work is canceled                    <work runs>
-       <waits for cpu1>                         od_dbs_timer()
-                                                 gov_queue_work(*, *, true);
- 						  cpu0 work queued
- 						  cpu1 work queued
-						  cpu2 work queued
-						  ...
-       cpu1 work is canceled
-       cpu2 work is canceled
-       ...
-
-At the end of the GOV_STOP case cpu0 still has a work queued to
-run although the code is expecting all of the works to be
-canceled. __cpufreq_remove_dev() will then proceed to
-re-initialize all the other CPUs works except for the CPU that is
-going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
-will trample over the queued work and debugobjects will spit out
-a warning:
-
-WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
-ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x10
-Modules linked in:
-CPU: 0 PID: 1491 Comm: sh Tainted: G        W    3.10.0 #19
-[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
-[<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)
-[<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)
-[<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c0388a7c>] (debug_print_object+0x94/0xbc)
-[<c0388a7c>] (debug_print_object+0x94/0xbc) from [<c0388e34>] (__debug_object_init+0x2d0/0x340)
-[<c0388e34>] (__debug_object_init+0x2d0/0x340) from [<c019e3b0>] (init_timer_key+0x14/0xb0)
-[<c019e3b0>] (init_timer_key+0x14/0xb0) from [<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8)
-[<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8) from [<c06325a0>] (__cpufreq_governor+0xdc/0x1a4)
-[<c06325a0>] (__cpufreq_governor+0xdc/0x1a4) from [<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434)
-[<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434) from [<c08989f4>] (cpufreq_cpu_callback+0x60/0x80)
-[<c08989f4>] (cpufreq_cpu_callback+0x60/0x80) from [<c08a43c0>] (notifier_call_chain+0x38/0x68)
-[<c08a43c0>] (notifier_call_chain+0x38/0x68) from [<c01938e0>] (__cpu_notify+0x28/0x40)
-[<c01938e0>] (__cpu_notify+0x28/0x40) from [<c0892ad4>] (_cpu_down+0x7c/0x2c0)
-[<c0892ad4>] (_cpu_down+0x7c/0x2c0) from [<c0892d3c>] (cpu_down+0x24/0x40)
-[<c0892d3c>] (cpu_down+0x24/0x40) from [<c0893ea8>] (store_online+0x2c/0x74)
-[<c0893ea8>] (store_online+0x2c/0x74) from [<c04519d8>] (dev_attr_store+0x18/0x24)
-[<c04519d8>] (dev_attr_store+0x18/0x24) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
-[<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
-[<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)
-[<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
-
-On 08/27, Viresh Kumar wrote:
-> On 27 August 2013 04:15, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> > +++ b/drivers/cpufreq/cpufreq_governor.c
-> > @@ -133,7 +133,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-> >  {
-> >         int i;
-> >
-> > -       if (!all_cpus) {
-> > +       if (!all_cpus || !policy->governor_enabled) {
-> >                 __gov_queue_work(smp_processor_id(), dbs_data, delay);
-> >         } else {
-> >                 for_each_cpu(i, policy->cpus)
+On Tuesday, August 27, 2013 02:26:41 PM Eduardo Valentin wrote:
+> On 23-08-2013 19:08, Rafael J. Wysocki wrote:
+> > On Friday, August 23, 2013 06:03:14 PM Eduardo Valentin wrote:
+> >> When registering a new thermal_device, the thermal framework
+> >> will always add a hwmon sysfs interface.
+> >>
+> >> This patch adds a flag to make this behavior optional. Now
+> >> when registering a new thermal device, the caller needs
+> >> to say if the hwmon interface is required.
+> >>
+> >> In order to keep same behavior as of today, all current
+> >> calls will by default create the hwmon interface.
+> > 
+> > Well, instead of modifying all of the callers this way, why don't
+> > you add new versions taking the additional argument as, for example,
+> > 
+> > thermal_zone_device_register_full()
+> > 
+> > and redefine the old ones as static inline wrappers, for example
+> > 
+> > static inline struct thermal_zone_device *thermal_zone_device_register(args)
+> > {
+> > 	return thermal_zone_device_register_full(args, true);
+> > }
+> > 
+> > ?
 > 
-> Shouldn't we simply do this instead at the top of this function?
+> Yeah, that is another way to go and I thought of doing it like that. I
+> just could not come out with a good API naming:
 > 
-> > +       if (!policy->governor_enabled)
-> > +              return;
+> thermal_zone_device_register_full(all args)
+> 
+> thermal_zone_device_register(args) /* on hwmon == true */
+> thermal_zone_device_register_no_hwmon(args) /* on hwmon == false */
+> 
+> Would this sound reasonable naming?
 
-Sure that works just as well. Here's a patch.
+Yeah, sounds good to me.
 
- drivers/cpufreq/cpufreq_governor.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 7b839a8..b9b20fd 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -133,6 +133,9 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- {
- 	int i;
- 
-+	if (!policy->governor_enabled)
-+		return;
-+
- 	if (!all_cpus) {
- 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
- 	} else {
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+Thanks,
+Rafael
 
