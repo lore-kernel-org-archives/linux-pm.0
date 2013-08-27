@@ -1,85 +1,134 @@
-From: Neil Zhang <zhangwm-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH 3/3] cpuidle: coupled: fix race condition between pokes
- and safe state
-Date: Tue, 27 Aug 2013 01:57:43 -0700
-Message-ID: <175CCF5F49938B4D99B2E3EF7F558EBE3DBD2B9E21@SC-VEXCH4.marvell.com>
-References: <1377287112-12018-1-git-send-email-ccross@android.com>
- <1377287112-12018-3-git-send-email-ccross@android.com>
+From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
+Subject: Re: [PATCH 11/18] Hibernate: introduced RSA key-pair to verify
+ signature of snapshot
+Date: Tue, 27 Aug 2013 17:04:43 +0800
+Message-ID: <1377594283.20140.3.camel__6164.97614323652$1377594384$gmane$org@linux-s257.site>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+	 <1377169317-5959-12-git-send-email-jlee@suse.com>
+	 <20130825162554.GH5171@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1377287112-12018-3-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Content-Language: en-US
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20130825162554.GH5171-tWAi6jLit6GreWDznjuHag@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Takashi Iwai <tiwai-l3A5Bk7waGM@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBDb2xpbiBDcm9zcyBbbWFpbHRv
-OmNjcm9zc0BhbmRyb2lkLmNvbV0NCj4gU2VudDogMjAxM8TqONTCMjTI1SAzOjQ1DQo+IFRvOiBs
-aW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5v
-cmc7IE5laWwgWmhhbmc7IEpvc2VwaCBMbzsNCj4gbGludXgtdGVncmFAdmdlci5rZXJuZWwub3Jn
-OyBDb2xpbiBDcm9zczsgc3RhYmxlQHZnZXIua2VybmVsLm9yZzsgUmFmYWVsIEouDQo+IFd5c29j
-a2k7IERhbmllbCBMZXpjYW5vDQo+IFN1YmplY3Q6IFtQQVRDSCAzLzNdIGNwdWlkbGU6IGNvdXBs
-ZWQ6IGZpeCByYWNlIGNvbmRpdGlvbiBiZXR3ZWVuIHBva2VzIGFuZCBzYWZlDQo+IHN0YXRlDQo+
-IA0KPiBUaGUgY291cGxlZCBjcHVpZGxlIHdhaXRpbmcgbG9vcCBjbGVhcnMgcGVuZGluZyBwb2tl
-cyBiZWZvcmUgZW50ZXJpbmcgdGhlIHNhZmUNCj4gc3RhdGUuICBJZiBhIHBva2UgYXJyaXZlcyBq
-dXN0IGJlZm9yZSB0aGUgcG9rZXMgYXJlIGNsZWFyZWQsIGJ1dCBhZnRlciB0aGUgd2hpbGUNCj4g
-bG9vcCBjb25kaXRpb24gY2hlY2tzLCB0aGUgcG9rZSB3aWxsIGJlIGxvc3QgYW5kIHRoZSBjcHUg
-d2lsbCBzdGF5IGluIHRoZSBzYWZlIHN0YXRlDQo+IHVudGlsIGFub3RoZXIgaW50ZXJydXB0IGFy
-cml2ZXMuICBUaGlzIG1heSBjYXVzZSB0aGUgY3B1IHRoYXQgc2VudCB0aGUgcG9rZSB0bw0KPiBz
-cGluIGluIHRoZSByZWFkeSBsb29wIHdpdGggaW50ZXJydXB0cyBvZmYgdW50aWwgYW5vdGhlciBj
-cHUgcmVjZWl2ZXMgYW4gaW50ZXJydXB0LA0KPiBhbmQgaWYgbm8gb3RoZXIgY3B1cyBoYXZlIGlu
-dGVycnVwdHMgcm91dGVkIHRvIHRoZW0gaXQgY2FuIHNwaW4gZm9yZXZlci4NCj4gDQo+IENoYW5n
-ZSB0aGUgcmV0dXJuIHZhbHVlIG9mIGNwdWlkbGVfY291cGxlZF9jbGVhcl9wb2tlcyB0byByZXR1
-cm4gaWYgYSBwb2tlIHdhcw0KPiBjbGVhcmVkLCBhbmQgbW92ZSB0aGUgbmVlZF9yZXNjaGVkKCkg
-Y2hlY2tzIGludG8gdGhlIGNhbGxlcnMuICBJbiB0aGUgd2FpdGluZw0KPiBsb29wLCBpZiBhIHBv
-a2Ugd2FzIGNsZWFyZWQgcmVzdGFydCB0aGUgbG9vcCB0byByZXBlYXQgdGhlIHdoaWxlIGNvbmRp
-dGlvbiBjaGVja3MuDQo+IA0KPiBSZXBvcnRlZC1ieTogTmVpbCBaaGFuZyA8emhhbmd3bUBtYXJ2
-ZWxsLmNvbT4NCj4gQ0M6IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcNCj4gU2lnbmVkLW9mZi1ieTog
-Q29saW4gQ3Jvc3MgPGNjcm9zc0BhbmRyb2lkLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2NwdWlk
-bGUvY291cGxlZC5jIHwgMjAgKysrKysrKysrKysrKystLS0tLS0NCj4gIDEgZmlsZSBjaGFuZ2Vk
-LCAxNCBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvY3B1aWRsZS9jb3VwbGVkLmMgYi9kcml2ZXJzL2NwdWlkbGUvY291cGxlZC5jIGluZGV4
-DQo+IGJiYzRiYTUuLmM5MTIzMGIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvY3B1aWRsZS9jb3Vw
-bGVkLmMNCj4gKysrIGIvZHJpdmVycy9jcHVpZGxlL2NvdXBsZWQuYw0KPiBAQCAtNDA4LDE5ICs0
-MDgsMjIgQEAgc3RhdGljIHZvaWQgY3B1aWRsZV9jb3VwbGVkX3NldF9kb25lKGludCBjcHUsIHN0
-cnVjdA0KPiBjcHVpZGxlX2NvdXBsZWQgKmNvdXBsZWQpDQo+ICAgKiBiZWVuIHByb2Nlc3NlZCBh
-bmQgdGhlIHBva2UgYml0IGhhcyBiZWVuIGNsZWFyZWQuDQo+ICAgKg0KPiAgICogT3RoZXIgaW50
-ZXJydXB0cyBtYXkgYWxzbyBiZSBwcm9jZXNzZWQgd2hpbGUgaW50ZXJydXB0cyBhcmUgZW5hYmxl
-ZCwgc28NCj4gLSAqIG5lZWRfcmVzY2hlZCgpIG11c3QgYmUgdGVzdGVkIGFmdGVyIHR1cm5pbmcg
-aW50ZXJydXB0cyBvZmYgYWdhaW4gdG8gbWFrZSBzdXJlDQo+ICsgKiBuZWVkX3Jlc2NoZWQoKSBt
-dXN0IGJlIHRlc3RlZCBhZnRlciB0aGlzIGZ1bmN0aW9uIHJldHVybnMgdG8gbWFrZQ0KPiArIHN1
-cmUNCj4gICAqIHRoZSBpbnRlcnJ1cHQgZGlkbid0IHNjaGVkdWxlIHdvcmsgdGhhdCBzaG91bGQg
-dGFrZSB0aGUgY3B1IG91dCBvZiBpZGxlLg0KPiAgICoNCj4gLSAqIFJldHVybnMgMCBpZiBuZWVk
-X3Jlc2NoZWQgd2FzIGZhbHNlLCAtRUlOVFIgaWYgbmVlZF9yZXNjaGVkIHdhcyB0cnVlLg0KPiAr
-ICogUmV0dXJucyAwIGlmIG5vIHBva2Ugd2FzIHBlbmRpbmcsIDEgaWYgYSBwb2tlIHdhcyBjbGVh
-cmVkLg0KPiAgICovDQo+ICBzdGF0aWMgaW50IGNwdWlkbGVfY291cGxlZF9jbGVhcl9wb2tlcyhp
-bnQgY3B1KSAgew0KPiArCWlmICghY3B1bWFza190ZXN0X2NwdShjcHUsICZjcHVpZGxlX2NvdXBs
-ZWRfcG9rZV9wZW5kaW5nKSkNCj4gKwkJcmV0dXJuIDA7DQo+ICsNCj4gIAlsb2NhbF9pcnFfZW5h
-YmxlKCk7DQo+ICAJd2hpbGUgKGNwdW1hc2tfdGVzdF9jcHUoY3B1LCAmY3B1aWRsZV9jb3VwbGVk
-X3Bva2VfcGVuZGluZykpDQo+ICAJCWNwdV9yZWxheCgpOw0KPiAgCWxvY2FsX2lycV9kaXNhYmxl
-KCk7DQo+IA0KPiAtCXJldHVybiBuZWVkX3Jlc2NoZWQoKSA/IC1FSU5UUiA6IDA7DQo+ICsJcmV0
-dXJuIDE7DQo+ICB9DQo+IA0KPiAgc3RhdGljIGJvb2wgY3B1aWRsZV9jb3VwbGVkX2FueV9wb2tl
-c19wZW5kaW5nKHN0cnVjdCBjcHVpZGxlX2NvdXBsZWQNCj4gKmNvdXBsZWQpIEBAIC00NjQsNyAr
-NDY3LDggQEAgaW50IGNwdWlkbGVfZW50ZXJfc3RhdGVfY291cGxlZChzdHJ1Y3QNCj4gY3B1aWRs
-ZV9kZXZpY2UgKmRldiwNCj4gIAkJcmV0dXJuIC1FSU5WQUw7DQo+IA0KPiAgCXdoaWxlIChjb3Vw
-bGVkLT5wcmV2ZW50KSB7DQo+IC0JCWlmIChjcHVpZGxlX2NvdXBsZWRfY2xlYXJfcG9rZXMoZGV2
-LT5jcHUpKSB7DQo+ICsJCWNwdWlkbGVfY291cGxlZF9jbGVhcl9wb2tlcyhkZXYtPmNwdSk7DQo+
-ICsJCWlmIChuZWVkX3Jlc2NoZWQoKSkgew0KPiAgCQkJbG9jYWxfaXJxX2VuYWJsZSgpOw0KPiAg
-CQkJcmV0dXJuIGVudGVyZWRfc3RhdGU7DQo+ICAJCX0NCj4gQEAgLTUwMyw3ICs1MDcsMTAgQEAg
-cmV0cnk6DQo+ICAJICovDQo+ICAJd2hpbGUgKCFjcHVpZGxlX2NvdXBsZWRfY3B1c193YWl0aW5n
-KGNvdXBsZWQpIHx8DQo+ICAJCQkhY3B1bWFza190ZXN0X2NwdShkZXYtPmNwdSwgJmNwdWlkbGVf
-Y291cGxlZF9wb2tlZCkpIHsNCj4gLQkJaWYgKGNwdWlkbGVfY291cGxlZF9jbGVhcl9wb2tlcyhk
-ZXYtPmNwdSkpIHsNCj4gKwkJaWYgKGNwdWlkbGVfY291cGxlZF9jbGVhcl9wb2tlcyhkZXYtPmNw
-dSkpDQo+ICsJCQljb250aW51ZTsNCj4gKw0KPiArCQlpZiAobmVlZF9yZXNjaGVkKCkpIHsNCj4g
-IAkJCWNwdWlkbGVfY291cGxlZF9zZXRfbm90X3dhaXRpbmcoZGV2LT5jcHUsIGNvdXBsZWQpOw0K
-PiAgCQkJZ290byBvdXQ7DQo+ICAJCX0NCj4gQEAgLTUxOCw3ICs1MjUsOCBAQCByZXRyeToNCj4g
-IAkJbG9jYWxfaXJxX2Rpc2FibGUoKTsNCj4gIAl9DQo+IA0KPiAtCWlmIChjcHVpZGxlX2NvdXBs
-ZWRfY2xlYXJfcG9rZXMoZGV2LT5jcHUpKSB7DQo+ICsJY3B1aWRsZV9jb3VwbGVkX2NsZWFyX3Bv
-a2VzKGRldi0+Y3B1KTsNCj4gKwlpZiAobmVlZF9yZXNjaGVkKCkpIHsNCj4gIAkJY3B1aWRsZV9j
-b3VwbGVkX3NldF9ub3Rfd2FpdGluZyhkZXYtPmNwdSwgY291cGxlZCk7DQo+ICAJCWdvdG8gb3V0
-Ow0KPiAgCX0NCj4gLS0NCj4gMS44LjMNCg0KSSB0aGluayB0aGlzIHBhdGNoIHNob3VsZCBhbHNv
-IGJlIHdvcmthYmxlLg0KVGhhbmtzLg0KDQpSZXZpZXdlZC1ieTogTmVpbCBaaGFuZyA8emhhbmd3
-bUBtYXJ2ZWxsLmNvbT4NCg0KQmVzdCBSZWdhcmRzLA0KTmVpbCBaaGFuZw0K
+Hi Pavel,=20
+
+=E6=96=BC =E6=97=A5=EF=BC=8C2013-08-25 =E6=96=BC 18:25 +0200=EF=BC=8CPa=
+vel Machek =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Thu 2013-08-22 19:01:50, Lee, Chun-Yi wrote:
+> > Introduced a hibernate_key.c file to query the key pair from EFI va=
+riables
+> > and maintain key pair for check signature of S4 snapshot image. We
+> > loaded the private key when snapshot image stored success.
+> >=20
+> > This patch introduced 2 EFI variables for store the key to sign S4 =
+image and
+> > verify signature when S4 wake up. The names and GUID are:
+> >   S4SignKey-fe141863-c070-478e-b8a3-878a5dc9ef21
+> >   S4WakeKey-fe141863-c070-478e-b8a3-878a5dc9ef21
+> >=20
+> > S4SignKey is used by EFI bootloader to pass the RSA private key tha=
+t packaged
+> > by PKCS#8 format, kernel will read and parser it when system boot a=
+nd reload
+> > it when S4 resume. EFI bootloader need gnerate a new private key wh=
+en every
+> > time system boot.
+> >=20
+> > S4WakeKey is used to pass the RSA public key that packaged by X.509
+> > certificate, kernel will read and parser it for check the signature=
+ of
+> > S4 snapshot image when S4 resume.
+> >=20
+> > The follow-up patch will remove S4SignKey and S4WakeKey after load =
+them
+> > to kernel for avoid anyone can access it through efivarfs.
+> >=20
+> > v3:
+> > - Load S4 sign key before ExitBootServices.
+> >   Load private key before ExitBootServices() then bootloader doesn'=
+t need
+> >   generate key-pair for each booting:
+> >    + Add setup_s4_keys() to eboot.c to load S4 sign key before Exit=
+BootServices.
+> >    + Reserve the memory block of sign key data blob in efi.c
+> > - In Makefile, moved hibernate_keys.o before hibernate.o for load S=
+4 sign
+> >   key before check hibernate image. It makes sure the new sign key =
+will be
+> >   transfer to resume target kernel.
+> > - Set "depends on EFI_STUB" in Kconfig
+> >=20
+> > v2:
+> > Add CONFIG_SNAPSHOT_VERIFICATION for build of hibernate_keys.c depe=
+nd on
+> > Kconfig.
+> >=20
+> > Cc: Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>
+> > Cc: Takashi Iwai <tiwai-l3A5Bk7waGM@public.gmane.org>
+> > Reviewed-by: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
+> > Signed-off-by: Lee, Chun-Yi <jlee-IBi9RG/b67k@public.gmane.org>
+>=20
+>=20
+> > --- a/arch/x86/boot/compressed/eboot.c
+> > +++ b/arch/x86/boot/compressed/eboot.c
+> > @@ -368,6 +368,91 @@ free_handle:
+> >  	return status;
+> >  }
+> > =20
+> > +#ifdef CONFIG_SNAPSHOT_VERIFICATION
+> > +static efi_status_t setup_s4_keys(struct boot_params *params)
+> > +{
+> > +	struct setup_data *data;
+> > +	unsigned long datasize;
+> > +	u32 attr;
+> > +	struct efi_s4_key *s4key;
+> > +	efi_status_t status;
+> > +
+> > +	data =3D (struct setup_data *)(unsigned long)params->hdr.setup_da=
+ta;
+>=20
+> A bit too many casts.
+
+Thanks.
+Yes, here is my mistake, I will remove "unsigned long" cast.
+
+>=20
+> > @@ -1205,6 +1290,10 @@ struct boot_params *efi_main(void *handle, e=
+fi_system_table_t *_table,
+> > =20
+> >  	setup_efi_pci(boot_params);
+> > =20
+> > +#ifdef CONFIG_SNAPSHOT_VERIFICATION
+> > +	setup_s4_keys(boot_params);
+> > +#endif
+> > +
+>=20
+> Move ifdef inside the function?
+
+OK, I will define a dummy function for non-verification situation.
+
+>=20
+> > @@ -729,6 +792,11 @@ void __init efi_init(void)
+> > =20
+> >  	set_bit(EFI_SYSTEM_TABLES, &x86_efi_facility);
+> > =20
+> > +#ifdef CONFIG_SNAPSHOT_VERIFICATION
+> > +	/* keep s4 key from setup_data */
+> > +	efi_reserve_s4_skey_data();
+> > +#endif
+> > +
+>=20
+> Here too.
+>=20
+
+I will also use dummy function here.=20
+
+
+Thanks
+Joey Lee
