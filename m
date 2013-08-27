@@ -1,64 +1,137 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH 11/12] cpuidle: mvebu: Add initial cpu idle support for
- Armada 370/XP SoC
-Date: Mon, 26 Aug 2013 20:28:01 -0700
-Message-ID: <87d2oz7qym.fsf@linaro.org>
-References: <1377240797-4047-1-git-send-email-gregory.clement@free-electrons.com>
- <1377240797-4047-12-git-send-email-gregory.clement@free-electrons.com>
+From: Andrew Savchenko <bircoph@gmail.com>
+Subject: Re: [BUG] 3.7-rc regression bisected: s2disk fails to resume image:
+ Processes could not be frozen, cannot continue resuming
+Date: Tue, 27 Aug 2013 07:48:43 +0400
+Message-ID: <20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
+References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1377240797-4047-12-git-send-email-gregory.clement@free-electrons.com>
- (Gregory CLEMENT's message of "Fri, 23 Aug 2013 08:53:16 +0200")
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazz>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__27_Aug_2013_07_48_43_+0400_CL.jnCuWb39YUep0"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f42.google.com ([209.85.215.42]:47879 "EHLO
+	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752939Ab3H0DtT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Aug 2013 23:49:19 -0400
+In-Reply-To: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, viro@zeniv.linux.org.uk, suspend-devel@lists.sourceforge.net
 
-Hi Gregory,
+--Signature=_Tue__27_Aug_2013_07_48_43_+0400_CL.jnCuWb39YUep0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Gregory CLEMENT <gregory.clement@free-electrons.com> writes:
+Hello,
 
-> Add wfi/cpu idle/cpu deep idle power states support for Armada XP SoC.
->
-> All the latencies and the power consumption values used at the
-> "armada_370_xp_idle_driver" structure are preliminary and will be
-> modified in the future after running some measurements and analysis.
->
-> Based on the work of Nadav Haklai.
->
-> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+On Mon, 12 Aug 2013 23:44:15 +0400 Andrew Savchenko wrote:
+> after a kernel update from 3.5.7 to the latest stable I found that
+> user-space resume (from suspend-1.0 aka uswsusp) no longer works.
+> Kernel-space suspend and resume work fine (e.g. echo disk
+> > /sys/power/state), problem is with user-space support. (I need
+> user-space version because it supports image encryption.)
+>=20
+> After resume (essentially linuxrc) application loads image it fails
+> to apply it:
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+> Processes could not be frozen, cannot continue resuming.
+> Error 11: Resource temporarily unavailable
+>=20
+> You can now boot the system and lose the saved state
+> or reboot and try again.
+>=20
+> [Notice that if you decide to reboot, you MUST NOT mount
+> any filesystems before a successful resume.
+> Resuming after some filesystems have been mounted
+> will badly damage these filesystems.]
+>=20
+> Do you want to continue booting (Y/n)?
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+>=20
+> Error code wasn't originally showed, I added it to suspend tool to
+> aid debugging. Essentially freeze ioctl on /dev/snapshot fails with
+> this error.
+>=20
+> I bisected a commit which introduces this bug:
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+> commit ba4df2808a86f8b103c4db0b8807649383e9bd13=20
+> Author: Al Viro <viro@zeniv.linux.org.uk>=20
+> Date:   Tue Oct 2 15:29:10 2012 -0400=20
+>=20
+>     don't bother with kernel_thread/kernel_execve for launching
+> linuxrc=20
+>     exec_usermodehelper_fns() will do just fine...=20
+>    =20
+>     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+>=20
+> In fact this commit induced/triggered at least two bugs: the first one
+> I'm facing now and the second one was fixed in commit
+> f0de17c0babe7f29381892def6b37e9181a53410:
+> make sure that /linuxrc has std{in,out,err}.
+>=20
+> As a temporarily workaround for this issue I reverted all changes for
+> init/do_mounts_initrd.c up to the latest working commit
+> cb450766bcafc7bd7d40e9a5a0050745e8c68b3e considering the kernel API
+> changes (kernel_execve -> sys_execve). See linuxrc-workaround.patch.
+> I understand this isn't a proper solution, I just want to show what
+> code works for me.
+>=20
+> I also found an interesting LKML discussion about s2disk and freezer
+> issue: http://www.spinics.net/lists/linux-nfs/msg38160.html
+> Maybe it is related to this bug, but patch proposed there doesn't in
+> my case.
+>=20
+> Kernel config which fails with
+> ba4df2808a86f8b103c4db0b8807649383e9bd13 and works with
+> f0de17c0babe7f29381892def6b37e9181a53410 is also attached.
+>=20
+> As this issue maybe hardware related, the system is 32-bit EEE PC
+> 1000H with Atom N270, 2GB RAM, 750 GB SATA drive.
+>=20
+> Additional (but probably useless) information on this bug may be found
+> here: https://forums.gentoo.org/viewtopic-p-7371120.html
 
-[...]
+This bug is still here with 3.11-rc7 and 3.10.9.
+I opened a kernel bug 60802 for this issue:
+https://bugzilla.kernel.org/show_bug.cgi?id=3D60802
 
-> +int pm_support = WFI;
-> +static int __init pm_enable_setup(char *str)
-> +{
-> +	if (!strncmp(str, "wfi", 3))
-> +		pm_support = WFI;
-> +	else if (!strncmp(str, "idle", 4))
-> +		pm_support = MV_CPU_IDLE;
-> +	else if (!strncmp(str, "deepidle", 6))
-> +		pm_support = MV_CPU_DEEP_IDLE;
-> +	else if (!strncmp(str, "off", 3))
-> +		pm_support = DISABLED;
-> +
-> +	return 1;
-> +}
-> +__setup("pm_level=", pm_enable_setup);
+Any ideas?
 
-Why is this new (but undocumented) kernel commandline needed when there
-is already a way to configure the deepest C state from userspace?
-(c.f. the 'disable' file under /sys/devices/system/cpu/cpuX/cpuidle/stateY)
+Best regards,
+Andrew Savchenko
 
-Kevin
+--Signature=_Tue__27_Aug_2013_07_48_43_+0400_CL.jnCuWb39YUep0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSHCG1AAoJEFZZU7lTcnVsIuMP+gO5gi9xzulMwXr+aVpVCP6B
+gHn2QGE7MiX+KNuq+seG0fTbfdkXwJTFmHYGm0BnH8y5DMavMil0IFE+JtpTzW0U
+CJ7/HxqA23cs7eDz6v+93rqAnhGy0q0MaUZ4+77A+lazy7kP9DdWuicxVaxTDBZq
+ok/6dm675Emo2XuPSKWkyhcRnxkg0bgBpq7abayyyBlGZjIbf6F066xQ4sfR6KmX
+Nl7+9lzkGKVo41loI1GVVVm3hzrVla2VuhfuD+NxZ93yicdTtUiqDLZ2JQzhMfmj
+xQSJghcQsec1x87uedFr1QLg4m44+dBgnL6XKFTIo1YnDo/ABFQ7EV7W9Xc9B5zL
+t6O4Ym941+d+XyZ2U6+YWwLyh2CEvvci5eVUQ03+EEn3p3BRdub79+Styc1yYVah
+ru9bLnFrgywmH3W+vJtXSkz0gEHKObJo/NJKZaXCbw76IeTHK3SzFP1KJ8HUAq5n
+Aqin2Sb4udbIckve2sS1iS+kg8zzqOkLsFVzjaJky8rwCyYTSIFGJig+BRkMsEc6
+pGmrkmJTcCYIL0twuiDNpN8QI5aCfnmujtrrGfvFQhrhwcMoEs6kNanE3rgBF999
+Vpz1kvPN/XKbFNB74gJuPhIa/2w4LuEEzaCdVKeilVDh9qJrXH0ex/SEq1harb9f
+hLJp03ZXNyJjrYN1sBHA
+=yoXa
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__27_Aug_2013_07_48_43_+0400_CL.jnCuWb39YUep0--
