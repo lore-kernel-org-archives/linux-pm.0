@@ -2,19 +2,23 @@ From: joeyli <jlee@suse.com>
 Subject: Re: [PATCH 12/18] Hibernate: generate and verify signature of
  snapshot
 Date: Tue, 27 Aug 2013 11:22:28 +0800
-Message-ID: <1377573748.27967.60.camel__42178.3093399883$1377573864$gmane$org@linux-s257.site>
+Message-ID: <1377573748.27967.60.camel__47159.4966169961$1377573866$gmane$org@linux-s257.site>
 References: <1377169317-5959-1-git-send-email-jlee@suse.com>
 	 <1377169317-5959-13-git-send-email-jlee@suse.com>
 	 <20130825163648.GI5171@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-security-module-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:36705 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048Ab3H0DX4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Aug 2013 23:23:56 -0400
 In-Reply-To: <20130825163648.GI5171@amd.pavel.ucw.cz>
-Sender: linux-security-module-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
-List-Id: linux-pm@vger.kernel.org
 
 Hi Pavel,=20
 
@@ -189,8 +193,3 @@ Yes, here also duplicate, I will remove.
 Thanks a lot!
 Joey Lee
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-securit=
-y-module" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
