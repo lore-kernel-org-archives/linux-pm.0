@@ -1,36 +1,72 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix timer/workqueue corruption due to double queueing
-Date: Tue, 27 Aug 2013 12:01:03 +0530
-Message-ID: <CAKohpoktPNtSMRn0dEVjcEW5_62E+_UEgySOBJ-hG+r=NU3V2w@mail.gmail.com>
-References: <1377557137-1157-1-git-send-email-sboyd@codeaurora.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 13/18] Hibernate: Avoid S4 sign key data included in
+ snapshot image
+Date: Tue, 27 Aug 2013 16:33:52 +0800
+Message-ID: <1377592432.27967.80.camel__36345.4500482932$1377592534$gmane$org@linux-s257.site>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+	 <1377169317-5959-14-git-send-email-jlee@suse.com>
+	 <20130825163931.GJ5171@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:41638 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441Ab3H0GbF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Aug 2013 02:31:05 -0400
-Received: by mail-oa0-f45.google.com with SMTP id m1so1824697oag.32
-        for <linux-pm@vger.kernel.org>; Mon, 26 Aug 2013 23:31:04 -0700 (PDT)
-In-Reply-To: <1377557137-1157-1-git-send-email-sboyd@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-security-module-owner@vger.kernel.org>
+In-Reply-To: <20130825163931.GJ5171@amd.pavel.ucw.cz>
+Sender: linux-security-module-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 27 August 2013 04:15, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -133,7 +133,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
->  {
->         int i;
->
-> -       if (!all_cpus) {
-> +       if (!all_cpus || !policy->governor_enabled) {
->                 __gov_queue_work(smp_processor_id(), dbs_data, delay);
->         } else {
->                 for_each_cpu(i, policy->cpus)
+=E6=96=BC =E6=97=A5=EF=BC=8C2013-08-25 =E6=96=BC 18:39 +0200=EF=BC=8CPa=
+vel Machek =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Thu 2013-08-22 19:01:52, Lee, Chun-Yi wrote:
+> > This patch add swsusp_page_is_sign_key() method to hibernate_key.c =
+and
+> > check the page is S4 sign key data when collect saveable page in
+> > snapshot.c to avoid sign key data included in snapshot image.
+> >=20
+> > Reviewed-by: Jiri Kosina <jkosina@suse.cz>
+> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> > ---
+> >  kernel/power/snapshot.c |    6 ++++++
+> >  1 files changed, 6 insertions(+), 0 deletions(-)
+> >=20
+> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> > index 72e2911..9e4c94b 100644
+> > --- a/kernel/power/snapshot.c
+> > +++ b/kernel/power/snapshot.c
+> > @@ -860,6 +860,9 @@ static struct page *saveable_highmem_page(struc=
+t zone *zone, unsigned long pfn)
+> > =20
+> >  	BUG_ON(!PageHighMem(page));
+> > =20
+> > +	if (swsusp_page_is_sign_key(page))
+> > +		return NULL;
+> > +
+> >  	if (swsusp_page_is_forbidden(page) ||  swsusp_page_is_free(page) =
+||
+> >  	    PageReserved(page))
+> >  		return NULL;
+>=20
+> Just do set_page_forbidden() on your page?
 
-Shouldn't we simply do this instead at the top of this function?
+Before call swsusp_unset_page_forbidden(), we need make sure the
+create_basic_memory_bitmaps() function already called to initial
+forbidden_pages_map. That means need careful the timing, otherwise the
+page of private key will not register to forbidden pages map.
 
-> +       if (!policy->governor_enabled)
-> +              return;
+So, I choice to refuse the page of private key when snapshot finding
+which page is saveable. It has clearer code and we don't need worry the
+future change of hibernate.c or user.c for when they call
+create_basic_memory_bitmaps() and when the code clear forbidden pages
+map.
+
+
+Thanks a lot!
+Joey Lee
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-securit=
+y-module" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
