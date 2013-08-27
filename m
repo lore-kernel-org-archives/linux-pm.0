@@ -1,112 +1,50 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH] cpufreq: Fix timer/workqueue corruption due to double queueing
-Date: Mon, 26 Aug 2013 15:45:37 -0700
-Message-ID: <1377557137-1157-1-git-send-email-sboyd@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL]: CPUFreq: ARM Fixes for 3.12
+Date: Tue, 27 Aug 2013 02:52:10 +0200
+Message-ID: <1633112.3VJ8iVoDW6@vostro.rjw.lan>
+References: <CAKohpoksNiGT+r3JTY6KFwnDFA5OYE-vQe8W_9GT-fN21UMrfQ@mail.gmail.com> <CAKohpo=2msHhAWqqe==yLCszE5U6ccSti31E82eovkb4emJd5A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:44633 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835Ab3HZWpl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Aug 2013 18:45:41 -0400
+Received: from hydra.sisk.pl ([212.160.235.94]:35850 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189Ab3H0Alb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 26 Aug 2013 20:41:31 -0400
+In-Reply-To: <CAKohpo=2msHhAWqqe==yLCszE5U6ccSti31E82eovkb4emJd5A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Joseph Lo <josephl@nvidia.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Stephen Warren <swarren@nvidia.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
+On Monday, August 26, 2013 07:36:56 PM Viresh Kumar wrote:
+> On 26 August 2013 11:48, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Hi Rafael,
+> >
+> > Hopefully this is the last patch for 3.12 for ARM CPUFreq subsystem.
+> 
+> Another last minute patch from Sascha..
+> 
+> -----------x------------------x------------------
+> 
+> The following changes since commit b36f4be3de1b123d8601de062e7dbfc904f305fb:
+> 
+>   Linux 3.11-rc6 (2013-08-18 14:36:53 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.linaro.org/people/vireshk/linux.git cpufreq-fixes
+> 
+> for you to fetch changes up to fae19b84724ff93c1ac59ce1eecc1411f8269d9e:
+> 
+>   cpufreq: imx6q: Fix clock enable balance (2013-08-26 19:34:07 +0530)
+> 
+> ----------------------------------------------------------------
+> Joseph Lo (1):
+>       cpufreq: tegra: fix the wrong clock name
+> 
+> Sascha Hauer (1):
+>       cpufreq: imx6q: Fix clock enable balance
 
-When a CPU is hot removed we'll cancel all the delayed work items
-via gov_cancel_work(). Normally this will just cancel a delayed
-timer on each CPU that the policy is managing and the work won't
-run, but if the work is already running the workqueue code will
-wait for the work to finish before continuing to prevent the
-work items from re-queuing themselves like they normally do. This
-scheme will work most of the time, except for the case where the
-work function determines that it should adjust the delay for all
-other CPUs that the policy is managing. If this scenario occurs,
-the canceling CPU will cancel its own work but queue up the other
-CPUs works to run. For example:
-
- CPU0                                        CPU1
- ----                                        ----
- cpu_down()
-  ...
-  __cpufreq_remove_dev()
-   cpufreq_governor_dbs()
-    case CPUFREQ_GOV_STOP:
-     gov_cancel_work(dbs_data, policy);
-      cpu0 work is canceled
-       timer is canceled
-       cpu1 work is canceled                    <work runs>
-       <waits for cpu1>                         od_dbs_timer()
-                                                 gov_queue_work(*, *, true);
- 						  cpu0 work queued
- 						  cpu1 work queued
-						  cpu2 work queued
-						  ...
-       cpu1 work is canceled
-       cpu2 work is canceled
-       ...
-
-At the end of the GOV_STOP case cpu0 still has a work queued to
-run although the code is expecting all of the works to be
-canceled. __cpufreq_remove_dev() will then proceed to
-re-initialize all the other CPUs works except for the CPU that is
-going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
-will trample over the queued work and debugobjects will spit out
-a warning:
-
-WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
-ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x10
-Modules linked in:
-CPU: 0 PID: 1491 Comm: sh Tainted: G        W    3.10.0 #19
-[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
-[<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)
-[<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)
-[<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c0388a7c>] (debug_print_object+0x94/0xbc)
-[<c0388a7c>] (debug_print_object+0x94/0xbc) from [<c0388e34>] (__debug_object_init+0x2d0/0x340)
-[<c0388e34>] (__debug_object_init+0x2d0/0x340) from [<c019e3b0>] (init_timer_key+0x14/0xb0)
-[<c019e3b0>] (init_timer_key+0x14/0xb0) from [<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8)
-[<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8) from [<c06325a0>] (__cpufreq_governor+0xdc/0x1a4)
-[<c06325a0>] (__cpufreq_governor+0xdc/0x1a4) from [<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434)
-[<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434) from [<c08989f4>] (cpufreq_cpu_callback+0x60/0x80)
-[<c08989f4>] (cpufreq_cpu_callback+0x60/0x80) from [<c08a43c0>] (notifier_call_chain+0x38/0x68)
-[<c08a43c0>] (notifier_call_chain+0x38/0x68) from [<c01938e0>] (__cpu_notify+0x28/0x40)
-[<c01938e0>] (__cpu_notify+0x28/0x40) from [<c0892ad4>] (_cpu_down+0x7c/0x2c0)
-[<c0892ad4>] (_cpu_down+0x7c/0x2c0) from [<c0892d3c>] (cpu_down+0x24/0x40)
-[<c0892d3c>] (cpu_down+0x24/0x40) from [<c0893ea8>] (store_online+0x2c/0x74)
-[<c0893ea8>] (store_online+0x2c/0x74) from [<c04519d8>] (dev_attr_store+0x18/0x24)
-[<c04519d8>] (dev_attr_store+0x18/0x24) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
-[<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
-[<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)
-[<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
-
-The simplest fix is to check and see if the governor is being
-stopped and ignore the all_cpus flag so that only the work that's
-being canceled has the chance to re-queue itself.
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
-
-This should probably go to stable. I think this all started happening 
-in commit 031299b3be30f3ec (cpufreq: governors: Avoid unnecessary per cpu
-timer interrupts, 2013-02-27).
-
- drivers/cpufreq/cpufreq_governor.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 7b839a8..0375a3c 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -133,7 +133,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- {
- 	int i;
- 
--	if (!all_cpus) {
-+	if (!all_cpus || !policy->governor_enabled) {
- 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
- 	} else {
- 		for_each_cpu(i, policy->cpus)
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+Pulled, thanks Viresh!
 
