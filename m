@@ -1,32 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [Query-CPUIdle]: Not much activity in C0 state
-Date: Tue, 27 Aug 2013 15:53:01 +0530
-Message-ID: <CAKohpo=OuYK7vhoG6a4REd-XuGMP63NTKhd8TWJmKo1R6rDp7g@mail.gmail.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 17/18] Hibernate: introduced SNAPSHOT_SIG_HASH config
+ for select hash algorithm
+Date: Tue, 27 Aug 2013 18:22:17 +0800
+Message-ID: <1377598937.20140.12.camel__2877.66184560514$1377599038$gmane$org@linux-s257.site>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+	 <1377169317-5959-18-git-send-email-jlee@suse.com>
+	 <20130825164329.GL5171@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:41890 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753191Ab3H0KXD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Aug 2013 06:23:03 -0400
-Received: by mail-oa0-f48.google.com with SMTP id o17so5047058oag.35
-        for <linux-pm@vger.kernel.org>; Tue, 27 Aug 2013 03:23:02 -0700 (PDT)
+Received: from smtp.nue.novell.com ([195.135.221.5]:51377 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752909Ab3H0KXo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Aug 2013 06:23:44 -0400
+In-Reply-To: <20130825164329.GL5171@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Suresh.Srinivasan@arm.com, Amit Kucheria <amit.kucheria@linaro.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
 
-Hi Guys,
+=E6=96=BC =E6=97=A5=EF=BC=8C2013-08-25 =E6=96=BC 18:43 +0200=EF=BC=8CPa=
+vel Machek =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Thu 2013-08-22 19:01:56, Lee, Chun-Yi wrote:
+> > This patch introduced SNAPSHOT_SIG_HASH config for user to select w=
+hich
+> > hash algorithm will be used during signature generation of snapshot=
+=2E
+> >=20
+> > v2:
+> > Add define check of oCONFIG_SNAPSHOT_VERIFICATION in snapshot.c bef=
+ore
+> > declare pkey_hash().
+> >=20
+> > Reviewed-by: Jiri Kosina <jkosina@suse.cz>
+> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> > ---
+> >  kernel/power/Kconfig    |   46 +++++++++++++++++++++++++++++++++++=
++++++++++++
+> >  kernel/power/snapshot.c |   27 ++++++++++++++++++++++-----
+> >  2 files changed, 68 insertions(+), 5 deletions(-)
+> >=20
+> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> > index b592d88..79b34fa 100644
+> > --- a/kernel/power/Kconfig
+> > +++ b/kernel/power/Kconfig
+> > @@ -78,6 +78,52 @@ config SNAPSHOT_VERIFICATION
+> >  	  dependent on UEFI environment. EFI bootloader should generate t=
+he
+> >  	  key-pair.
+> > =20
+> > +choice
+> > +	prompt "Which hash algorithm should snapshot be signed with?"
+> > +        depends on SNAPSHOT_VERIFICATION
+> > +        help
+> > +          This determines which sort of hashing algorithm will be =
+used during
+> > +          signature generation of snapshot. This algorithm _must_ =
+be built into
+> > +	  the kernel directly so that signature verification can take pla=
+ce.
+> > +	  It is not possible to load a signed snapshot containing the alg=
+orithm
+> > +	  to check the signature on that module.
+>=20
+> Like if 1000 ifdefs you already added to the code are not enough, you
+> make some new ones?
+> 									Pavel
+>=20
 
-I was trying to run following on my thinkpad:
+This SNAPSHOT_SIG_HASH kernel config is to select which SHA algorithms
+used for generate digest of snapshot. The configuration will captured b=
+y
+a const char* in code:
 
-watch -n1 cat /sys/devices/system/cpu/cpu*/cpuidle/state*/usage
++static const char *snapshot_hash =3D CONFIG_SNAPSHOT_SIG_HASH;
++
++static int pkey_hash(void)
 
-I can see lots of activities on State 1-4, but not much on state 0..
-I thought we should enter this state as soon as we come out to
-non-idle state.. And so this count must be changing quite rapidly.
+So, there doesn't have any ifdef block derived from this new config.
 
-Is this a bug?
 
---
-viresh
+Thanks a lot!
+Joey Lee
+
