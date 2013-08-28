@@ -1,59 +1,94 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2: 3/3] thermal: samsung: Add TMU support for Exynos5420
- SoCs
-Date: Wed, 28 Aug 2013 12:38:31 +0200
-Message-ID: <2432994.TkQmThmFSA@amdc1032>
-References: <1375336979-14747-1-git-send-email-ch.naveen@samsung.com>
- <1377681409-18166-1-git-send-email-ch.naveen@samsung.com>
- <1377681409-18166-3-git-send-email-ch.naveen@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1377681409-18166-3-git-send-email-ch.naveen@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, naveenkrishna.ch@gmail.com, devicetree@vger.kernel.org
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [RFC PATCH 07/14] arm64: kernel: implement fpsimd CPU PM notifier
+Date: Wed, 28 Aug 2013 12:35:59 +0100
+Message-ID: <1377689766-17642-8-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:38776 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755035Ab3H1LgI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 07:36:08 -0400
+In-Reply-To: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>
+
+When a CPU enters a low power state, its FP register content is lost.
+This patch adds a notifier to save the FP context on CPU shutdown
+and restore it on CPU resume. The context is saved and restored only
+if the suspending thread is not a kernel thread, mirroring the current
+context switch behaviour.
+
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ arch/arm64/kernel/fpsimd.c | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/arch/arm64/kernel/fpsimd.c b/arch/arm64/kernel/fpsimd.c
+index e8b8357..b5b94f6 100644
+--- a/arch/arm64/kernel/fpsimd.c
++++ b/arch/arm64/kernel/fpsimd.c
+@@ -17,6 +17,7 @@
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+=20
++#include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/sched.h>
+@@ -83,6 +84,39 @@ void fpsimd_flush_thread(void)
+ =09fpsimd_load_state(&current->thread.fpsimd_state);
+ }
+=20
++#ifdef CONFIG_CPU_PM
++static int fpsimd_cpu_pm_notifier(struct notifier_block *self,
++=09=09=09=09  unsigned long cmd, void *v)
++{
++=09switch (cmd) {
++=09case CPU_PM_ENTER:
++=09=09if (current->mm)
++=09=09=09fpsimd_save_state(&current->thread.fpsimd_state);
++=09=09break;
++=09case CPU_PM_EXIT:
++=09=09if (current->mm)
++=09=09=09fpsimd_load_state(&current->thread.fpsimd_state);
++=09=09break;
++=09case CPU_PM_ENTER_FAILED:
++=09default:
++=09=09return NOTIFY_DONE;
++=09}
++=09return NOTIFY_OK;
++}
++
++static struct notifier_block fpsimd_cpu_pm_notifier_block =3D {
++=09.notifier_call =3D fpsimd_cpu_pm_notifier,
++};
++
++static void fpsimd_pm_init(void)
++{
++=09cpu_pm_register_notifier(&fpsimd_cpu_pm_notifier_block);
++}
++
++#else
++static inline void fpsimd_pm_init(void) { }
++#endif /* CONFIG_CPU_PM */
++
+ /*
+  * FP/SIMD support code initialisation.
+  */
+@@ -101,6 +135,8 @@ static int __init fpsimd_init(void)
+ =09else
+ =09=09elf_hwcap |=3D HWCAP_ASIMD;
+=20
++=09fpsimd_pm_init();
++
+ =09return 0;
+ }
+ late_initcall(fpsimd_init);
+--=20
+1.8.3.4
 
 
-Hi,
-
-On Wednesday, August 28, 2013 02:46:49 PM Naveen Krishna Chatradhi wrote:
-> This patch adds the neccessary register changes and arch information
-> to support Exynos5420 SoCs
-> Exynos5420 has 5 TMU channels one for each CPU 0, 1, 2 and 3 and GPU
-> 
-> Note: The platform data structure will be handled properly once the driver
->  moves to complete device driver solution.
-> 
-> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-
-OK, this is also an acceptable solution (though it seems to be worse
-in terms of simplicity and long term maintainance). Anyway please ignore
-my comments to v1, just remember to rename this flag (as already pointed
-by out by Amit). TMU_SUPPORT_SHARED_MEMORY documentation in exynos_tmu.h
-also requires an update.
-
-> ---
-> Changes since v1:
-> 1. modified the platform data structure in order to pass SHARED flag
->    for channels that need sharing of address space.
-> 2. https://lkml.org/lkml/2013/8/1/38 is merged into this patch.
->    As the changes are minimum and can be added here.
-
-Documentation/devicetree/bindings/thermal/exynos-thermal.txt update got
-lost and it is quite important now as second address servers multiple
-purposes. Please fix it.
-
->  drivers/thermal/samsung/exynos_tmu.c      |   14 +++-
->  drivers/thermal/samsung/exynos_tmu.h      |    1 +
->  drivers/thermal/samsung/exynos_tmu_data.c |  130 +++++++++++++++++++++++++++++
->  drivers/thermal/samsung/exynos_tmu_data.h |    7 ++
->  4 files changed, 150 insertions(+), 2 deletions(-)
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
