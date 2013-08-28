@@ -1,79 +1,83 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH] cpufreq: Don't use smp_processor_id() in preemptible context
-Date: Tue, 27 Aug 2013 15:01:24 -0700
-Message-ID: <1377640884-16827-1-git-send-email-sboyd@codeaurora.org>
-References: <1377629249-1177-1-git-send-email-sboyd@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:43023 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753261Ab3H0WB2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Aug 2013 18:01:28 -0400
-In-Reply-To: <1377629249-1177-1-git-send-email-sboyd@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 3/5] drivers: thermal: make usage of
+ CONFIG_THERMAL_HWMON optional
+Date: Wed, 28 Aug 2013 08:13:56 +0800
+Message-ID: <1377648836.2335.252.camel@rzhang-lenovo>
+References: <1377295396-17289-1-git-send-email-eduardo.valentin@ti.com>
+	 <4832825.8PCMQe7StP@vostro.rjw.lan> <521CEF61.6040504@ti.com>
+	 <8131326.8QGX41MW6c@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <8131326.8QGX41MW6c@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, David Woodhouse <dwmw2@infradead.org>, devicetree@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Matthew Garrett <matthew.garrett@nebula.com>, Peter Feuerer <peter@piie.net>, platform-driver-x86@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Lan Tianyu <tianyu.lan@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@sisk.pl>
 
-Workqueues are preemptible even if works are queued on them with
-queue_work_on(). Let's just use the policy->cpu argument here
-instead of using smp_processor_id() to silence the warning.
+On =E4=BA=8C, 2013-08-27 at 23:17 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, August 27, 2013 02:26:41 PM Eduardo Valentin wrote:
+> > On 23-08-2013 19:08, Rafael J. Wysocki wrote:
+> > > On Friday, August 23, 2013 06:03:14 PM Eduardo Valentin wrote:
+> > >> When registering a new thermal_device, the thermal framework
+> > >> will always add a hwmon sysfs interface.
+> > >>
+> > >> This patch adds a flag to make this behavior optional. Now
+> > >> when registering a new thermal device, the caller needs
+> > >> to say if the hwmon interface is required.
+> > >>
+> > >> In order to keep same behavior as of today, all current
+> > >> calls will by default create the hwmon interface.
+> > >=20
+> > > Well, instead of modifying all of the callers this way, why don't
+> > > you add new versions taking the additional argument as, for examp=
+le,
+> > >=20
+> > > thermal_zone_device_register_full()
+> > >=20
+> > > and redefine the old ones as static inline wrappers, for example
+> > >=20
+> > > static inline struct thermal_zone_device *thermal_zone_device_reg=
+ister(args)
+> > > {
+> > > 	return thermal_zone_device_register_full(args, true);
+> > > }
+> > >=20
+> > > ?
+> >=20
+> > Yeah, that is another way to go and I thought of doing it like that=
+=2E I
+> > just could not come out with a good API naming:
+> >=20
+> > thermal_zone_device_register_full(all args)
+> >=20
+> > thermal_zone_device_register(args) /* on hwmon =3D=3D true */
+> > thermal_zone_device_register_no_hwmon(args) /* on hwmon =3D=3D fals=
+e */
+> >=20
+> > Would this sound reasonable naming?
+>=20
+> Yeah, sounds good to me.
+>=20
+Well, actually, Tianyu is working on a patch set to move all the
+thermal_zone_device_register() parameters to struct thermal_zone_params=
+=2E
 
-BUG: using smp_processor_id() in preemptible [00000000] code: kworker/3:2/674
-caller is gov_queue_work+0x28/0xb0
-CPU: 0 PID: 674 Comm: kworker/3:2 Tainted: G        W    3.10.0 #30
-Workqueue: events od_dbs_timer
-[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
-[<c0109dec>] (show_stack+0x10/0x14) from [<c03885a4>] (debug_smp_processor_id+0xbc/0xf0)
-[<c03885a4>] (debug_smp_processor_id+0xbc/0xf0) from [<c0635864>] (gov_queue_work+0x28/0xb0)
-[<c0635864>] (gov_queue_work+0x28/0xb0) from [<c0635618>] (od_dbs_timer+0x108/0x134)
-[<c0635618>] (od_dbs_timer+0x108/0x134) from [<c01aa8f8>] (process_one_work+0x25c/0x444)
-[<c01aa8f8>] (process_one_work+0x25c/0x444) from [<c01aaf88>] (worker_thread+0x200/0x344)
-[<c01aaf88>] (worker_thread+0x200/0x344) from [<c01b03bc>] (kthread+0xa0/0xb0)
-[<c01b03bc>] (kthread+0xa0/0xb0) from [<c01061b8>] (ret_from_fork+0x14/0x3c)
+But with that patch set done, what you need to do next is just to
+introduce a new field in struct thermal_zone_params and make sure 0
+means registering hwmon sysfs I/F.
 
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
+thanks,
+rui
 
-Also found this one. I'm tracking down a pretty bad hotplug/sysfs
-race on 3.10. I've applied all the stable patches but I'm seeing this
-still. I'll start another thread on this
+> Thanks,
+> Rafael
+>=20
 
-WARNING: at kernel/mutex.c:341 __mutex_lock_slowpath+0x14c/0x410()
-DEBUG_LOCKS_WARN_ON(l->magic != l)
-Modules linked in:
-CPU: 0 PID: 1960 Comm: sh Tainted: G        W    3.10.0 #32
-[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
-[<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)
-[<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)
-[<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410)
-[<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410) from [<c08a0618>] (mutex_lock+0x20/0x3c)
-[<c08a0618>] (mutex_lock+0x20/0x3c) from [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8)
-[<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8) from [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4)
-[<c06325b0>] (__cpufreq_governor+0xdc/0x1a4) from [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0)
-[<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0) from [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c)
-[<c0632ea0>] (store_scaling_min_freq+0x80/0x9c) from [<c0633ae4>] (store+0x58/0x90)
-[<c0633ae4>] (store+0x58/0x90) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
-[<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
-[<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)
-[<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
 
- drivers/cpufreq/cpufreq_governor.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index b9b20fd..523af48 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -137,7 +137,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- 		return;
- 
- 	if (!all_cpus) {
--		__gov_queue_work(smp_processor_id(), dbs_data, delay);
-+		__gov_queue_work(policy->cpu, dbs_data, delay);
- 	} else {
- 		for_each_cpu(i, policy->cpus)
- 			__gov_queue_work(i, dbs_data, delay);
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
-
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
