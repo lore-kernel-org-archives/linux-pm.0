@@ -1,60 +1,142 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v2 RFT 2/2] PM / Hibernate: add section for resume options
-Date: Tue, 27 Aug 2013 18:13:57 -0700
-Message-ID: <1377652437-2379-3-git-send-email-sebastian.capella@linaro.org>
-References: <1377652437-2379-1-git-send-email-sebastian.capella@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1377652437-2379-1-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@lists.infradead.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Rob Landley <rob@landley.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: mutex warning in cpufreq + RFC patch
+Date: Tue, 27 Aug 2013 19:57:21 -0700
+Message-ID: <20130828025721.GA19754@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Expand the existing documentation to explicitly list the options for
-resuming a hibernation image, including the manual resume option which
-can be used from the initrd or initramfs and the kernel init resume.
+I'm running this simple test code in a shell on my 3.10 kernel and running
+into this warning rather quickly.
 
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Rob Landley <rob@landley.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
----
- Documentation/power/swsusp.txt |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+	cd /sys/devices/system/cpu/cpu1
+	while true
+	do
+	echo 0 > online
+	echo 1 > online
+	done &
+	while true
+	do
+	echo 300000 > cpufreq/scaling_min_freq
+	echo 1000000 > cpufreq/scaling_min_freq
+	done
 
-diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-index 0b4b63e..079160e 100644
---- a/Documentation/power/swsusp.txt
-+++ b/Documentation/power/swsusp.txt
-@@ -50,6 +50,19 @@ echo N > /sys/power/image_size
+(Note you should place valid values for min/max freq in the example
+above.)
+
+WARNING: at kernel/mutex.c:341 __mutex_lock_slowpath+0x14c/0x410()              DEBUG_LOCKS_WARN_ON(l->magic != l)
+Modules linked in:                                                              CPU: 0 PID: 1960 Comm: sh Tainted: G        W    3.10.0 #32                     [<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)                                                                              [<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)                                                                          [<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)                                                                   [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410)                                                                
+ [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410) from [<c08a0618>] (mutex_lock+0x20/0x3c)                                                                       [<c08a0618>] (mutex_lock+0x20/0x3c) from [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8)                                                                        [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8) from [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4)                                                               [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4) from [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0)                                                               [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0) from [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c)                                                          
+   [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c) from [<c0633ae4>] (store+0x58/0x90)                                                                             [<c0633ae4>] (store+0x58/0x90) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
+[<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
+[<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)     [<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
+
+This is happening because the governor is stopped via hotplug and
+while we're in the middle of touching the scaling_min_freq file.
+When the governor is stopped we destroy the timer_mutex that the
+scaling_min_freq thread is just about to acquire. From what I can
+tell, we shouldn't be stopping the governor until after the
+kobjects go away or we should start and stop the governor while
+holding the policy semaphore otherwise userspace can come in and
+use uninitialized things. I have this hack which seems to mostly
+work. Thoughts?
+
+----8<----
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index cbfe3c1..134004b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -823,11 +823,11 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ 	policy = cpufreq_cpu_get(sibling);
+ 	WARN_ON(!policy);
  
- before suspend (it is limited to 500 MB by default).
- 
-+. The resume process checks for the presence of the resume device,
-+if found, it then checks the contents for the hibernation image signature.
-+If both are found, it resumes the hibernation image.
++	lock_policy_rwsem_write(sibling);
 +
-+. The resume process may be triggered in two ways:
-+  1) During lateinit:  If resume=/dev/your_swap_partition is specified on
-+     the kernel command line, lateinit runs the resume process.  If the
-+     resume device has not been probed yet, the resume process fails and
-+     bootup continues.
-+  2) Manually from an initrd or initramfs:  May be run from
-+     the init script by using the /sys/power/resume file.  It is vital
-+     that this be done prior to remounting any filesystems (even as
-+     read-only) otherwise data may be corrupted.
+ 	if (has_target)
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
  
- Article about goals and implementation of Software Suspend for Linux
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@@ -326,7 +339,7 @@ Q: How can distributions ship a swsusp-supporting kernel with modular
- disk drivers (especially SATA)?
+-	lock_policy_rwsem_write(sibling);
+-
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
  
- A: Well, it can be done, load the drivers, then do echo into
--/sys/power/disk/resume file from initrd. Be sure not to mount
-+/sys/power/resume file from initrd. Be sure not to mount
- anything, not even read-only mount, or you are going to lose your
- data.
+ 	cpumask_set_cpu(cpu, policy->cpus);
+@@ -835,12 +835,11 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+ 	per_cpu(cpufreq_cpu_data, cpu) = policy;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
  
+-	unlock_policy_rwsem_write(sibling);
+-
+ 	if (has_target) {
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 	}
++	unlock_policy_rwsem_write(sibling);
+ 
+ 	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+ 	if (ret) {
+@@ -1037,9 +1036,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 		return -EINVAL;
+ 	}
+ 
+-	if (cpufreq_driver->target)
+-		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+-
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	if (!cpufreq_driver->setpolicy)
+ 		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
+@@ -1048,9 +1044,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 
+ 	WARN_ON(lock_policy_rwsem_write(cpu));
+ 	cpus = cpumask_weight(data->cpus);
+-
+-	if (cpus > 1)
+-		cpumask_clear_cpu(cpu, data->cpus);
+ 	unlock_policy_rwsem_write(cpu);
+ 
+ 	if (cpu != data->cpu) {
+@@ -1086,9 +1079,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 
+ 	/* If cpu is last user of policy, free policy */
+ 	if (cpus == 1) {
+-		if (cpufreq_driver->target)
+-			__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+-
+ 		lock_policy_rwsem_read(cpu);
+ 		kobj = &data->kobj;
+ 		cmp = &data->kobj_unregister;
+@@ -1103,6 +1093,11 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 		wait_for_completion(cmp);
+ 		pr_debug("wait complete\n");
+ 
++		if (cpufreq_driver->target) {
++			__cpufreq_governor(data, CPUFREQ_GOV_STOP);
++			__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
++		}
++
+ 		if (cpufreq_driver->exit)
+ 			cpufreq_driver->exit(data);
+ 
+@@ -1113,8 +1108,13 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 		pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+ 		cpufreq_cpu_put(data);
+ 		if (cpufreq_driver->target) {
++			WARN_ON(lock_policy_rwsem_write(cpu));
++			__cpufreq_governor(data, CPUFREQ_GOV_STOP);
++			if (cpus > 1)
++				cpumask_clear_cpu(cpu, data->cpus);
+ 			__cpufreq_governor(data, CPUFREQ_GOV_START);
+ 			__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
++			unlock_policy_rwsem_write(cpu);
+ 		}
+ 	}
+ 
+
 -- 
-1.7.9.5
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
