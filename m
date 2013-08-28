@@ -1,48 +1,36 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [RFC PATCH 14/14] arm64: add CPU power management menu/entries
-Date: Wed, 28 Aug 2013 12:36:06 +0100
-Message-ID: <1377689766-17642-15-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 06/16] cpufreq: dbx500: use cpufreq_generic_get() routine
+Date: Wed, 28 Aug 2013 14:14:27 +0200
+Message-ID: <CACRpkdZjtP8Fv0-wkqo-TFU+iwrm2w3WQ14sHy-n07XZMPdcHQ@mail.gmail.com>
+References: <cover.1377272740.git.viresh.kumar@linaro.org>
+	<5f8581601947988a49c36f465e36028758539cc0.1377272740.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:39255 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755107Ab3H1LgP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 07:36:15 -0400
-In-Reply-To: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mail-oa0-f49.google.com ([209.85.219.49]:38035 "EHLO
+	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754033Ab3H1MO2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 08:14:28 -0400
+Received: by mail-oa0-f49.google.com with SMTP id n12so4449292oag.22
+        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2013 05:14:27 -0700 (PDT)
+In-Reply-To: <5f8581601947988a49c36f465e36028758539cc0.1377272740.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-This patch provides a menu for CPU power management options in the
-arm64 Kconfig and adds an entry to enable the generic CPU idle configuratio=
-n.
+On Fri, Aug 23, 2013 at 5:50 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- arch/arm64/Kconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+> We have common infrastructure available with us for getting a CPUs clk rate.
+> Lets use it for this driver.
+>
+> We don't have to find closest frequency in platform specific ->get() routine
+> wihch dbx500 driver was doing and hence it can be removed as well.
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 827d95e..da71e40 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -284,6 +284,12 @@ config ARM_CPU_SUSPEND
-=20
- endmenu
-=20
-+menu "CPU Power Management"
-+
-+source "drivers/cpuidle/Kconfig"
-+
-+endmenu
-+
- source "net/Kconfig"
-=20
- source "drivers/Kconfig"
---=20
-1.8.3.4
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-
+Yours,
+Linus Walleij
