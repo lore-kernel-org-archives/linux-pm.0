@@ -1,79 +1,74 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH 11/12] cpuidle: mvebu: Add initial cpu idle support for
- Armada 370/XP SoC
-Date: Wed, 28 Aug 2013 08:37:30 +0200
-Message-ID: <521D9AAA.1090408@free-electrons.com>
-References: <1377240797-4047-1-git-send-email-gregory.clement@free-electrons.com>
- <1377240797-4047-12-git-send-email-gregory.clement@free-electrons.com>
- <87d2oz7qym.fsf@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: mutex warning in cpufreq + RFC patch
+Date: Wed, 28 Aug 2013 12:28:03 +0530
+Message-ID: <CAKohpomLL0rCYngM81iaTV37TTsrYE+f3ouGuT2D6TRE5E4W5A@mail.gmail.com>
+References: <20130828025721.GA19754@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <87d2oz7qym.fsf@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazz>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130828025721.GA19754@codeaurora.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Kevin,
+Hi Stephen,
 
-On 27/08/2013 05:28, Kevin Hilman wrote:
-> Hi Gregory,
-> 
-> Gregory CLEMENT <gregory.clement@free-electrons.com> writes:
-> 
->> Add wfi/cpu idle/cpu deep idle power states support for Armada XP SoC.
->>
->> All the latencies and the power consumption values used at the
->> "armada_370_xp_idle_driver" structure are preliminary and will be
->> modified in the future after running some measurements and analysis.
->>
->> Based on the work of Nadav Haklai.
->>
->> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
->> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> 
-> [...]
-> 
->> +int pm_support = WFI;
->> +static int __init pm_enable_setup(char *str)
->> +{
->> +	if (!strncmp(str, "wfi", 3))
->> +		pm_support = WFI;
->> +	else if (!strncmp(str, "idle", 4))
->> +		pm_support = MV_CPU_IDLE;
->> +	else if (!strncmp(str, "deepidle", 6))
->> +		pm_support = MV_CPU_DEEP_IDLE;
->> +	else if (!strncmp(str, "off", 3))
->> +		pm_support = DISABLED;
->> +
->> +	return 1;
->> +}
->> +__setup("pm_level=", pm_enable_setup);
-> 
-> Why is this new (but undocumented) kernel commandline needed when there
-> is already a way to configure the deepest C state from userspace?
-> (c.f. the 'disable' file under /sys/devices/system/cpu/cpuX/cpuidle/stateY)
+On 28 August 2013 08:27, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> I'm running this simple test code in a shell on my 3.10 kernel and running
+> into this warning rather quickly.
+>
+>         cd /sys/devices/system/cpu/cpu1
+>         while true
+>         do
+>         echo 0 > online
+>         echo 1 > online
+>         done &
+>         while true
+>         do
+>         echo 300000 > cpufreq/scaling_min_freq
+>         echo 1000000 > cpufreq/scaling_min_freq
+>         done
+>
+> (Note you should place valid values for min/max freq in the example
+> above.)
+>
+> WARNING: at kernel/mutex.c:341 __mutex_lock_slowpath+0x14c/0x410()              DEBUG_LOCKS_WARN_ON(l->magic != l)
+> Modules linked in:                                                              CPU: 0 PID: 1960 Comm: sh Tainted: G        W    3.10.0 #32                     [<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)                                                                              [<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)                                                                          [<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)                                                                   [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410)                                                              
+   [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410) from [<c08a0618>] (mutex_lock+0x20/0x3c)                                                                       [<c08a0618>] (mutex_lock+0x20/0x3c) from [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8)                                                                        [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8) from [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4)                                                               [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4) from [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0)                                                               [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0) from [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c)                                                        
+     [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c) from [<c0633ae4>] (store+0x58/0x90)                                                                             [<c0633ae4>] (store+0x58/0x90) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
+> [<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
+> [<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)     [<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
+>
+> This is happening because the governor is stopped via hotplug and
+> while we're in the middle of touching the scaling_min_freq file.
+> When the governor is stopped we destroy the timer_mutex that the
+> scaling_min_freq thread is just about to acquire. From what I can
+> tell, we shouldn't be stopping the governor until after the
+> kobjects go away or we should start and stop the governor while
+> holding the policy semaphore otherwise userspace can come in and
+> use uninitialized things. I have this hack which seems to mostly
+> work. Thoughts?
 
-You're right I should remove this. I wanted look see if we really need it the first
-time I started to work on this series and then I forgot!
+I haven't gone through the hack yet, but I am trying to understand the
+problem first.. There had been some work in the past around this
+kind of scenarios..
 
-Thanks,
+commit 95731ebb114c5f0c028459388560fc2a72fe5049
+Author: Xiaoguang Chen <chenxg@marvell.com>
+Date:   Wed Jun 19 15:00:07 2013 +0800
 
-Gregory
+    cpufreq: Fix governor start/stop race condition
 
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+The problem probably is poor error checking which is still present at
+few places, in __cpufreq_set_policy() routine..
+
+Can you try after fixing them? Something similar has to be done..
+
+commit 3de9bdeb28638e164d1f0eb38dd68e3f5d2ac95c
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Tue Aug 6 22:53:13 2013 +0530
+
+    cpufreq: improve error checking on return values of __cpufreq_governor()
