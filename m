@@ -1,93 +1,98 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [RFC PATCH 07/14] arm64: kernel: implement fpsimd CPU PM notifier
-Date: Wed, 28 Aug 2013 12:35:59 +0100
-Message-ID: <1377689766-17642-8-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [RFC PATCH 09/14] arm64: kernel: implement debug monitors CPU PM notifiers
+Date: Wed, 28 Aug 2013 12:36:01 +0100
+Message-ID: <1377689766-17642-10-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:38776 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:39002 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035Ab3H1LgI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 07:36:08 -0400
+	with ESMTP id S1753718Ab3H1LgM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 07:36:12 -0400
 In-Reply-To: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>
 
-When a CPU enters a low power state, its FP register content is lost.
-This patch adds a notifier to save the FP context on CPU shutdown
-and restore it on CPU resume. The context is saved and restored only
-if the suspending thread is not a kernel thread, mirroring the current
-context switch behaviour.
+When a CPU is shutdown either through CPU idle or suspend to RAM, the
+content of debug monitor registers must be reset or restored to proper
+values when CPU resume from low power states. This patch implements a
+CPU PM notifier that allows to restore the content of debug monitor
+registers to allow proper suspend/resume operations.
 
 Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- arch/arm64/kernel/fpsimd.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ arch/arm64/kernel/debug-monitors.c | 38 ++++++++++++++++++++++++++++++++++=
+++++
+ 1 file changed, 38 insertions(+)
 
-diff --git a/arch/arm64/kernel/fpsimd.c b/arch/arm64/kernel/fpsimd.c
-index e8b8357..b5b94f6 100644
---- a/arch/arm64/kernel/fpsimd.c
-+++ b/arch/arm64/kernel/fpsimd.c
-@@ -17,6 +17,7 @@
-  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+diff --git a/arch/arm64/kernel/debug-monitors.c b/arch/arm64/kernel/debug-m=
+onitors.c
+index cbfacf7..f78148f 100644
+--- a/arch/arm64/kernel/debug-monitors.c
++++ b/arch/arm64/kernel/debug-monitors.c
+@@ -19,6 +19,7 @@
   */
 =20
+ #include <linux/cpu.h>
 +#include <linux/cpu_pm.h>
- #include <linux/kernel.h>
+ #include <linux/debugfs.h>
+ #include <linux/hardirq.h>
  #include <linux/init.h>
- #include <linux/sched.h>
-@@ -83,6 +84,39 @@ void fpsimd_flush_thread(void)
- =09fpsimd_load_state(&current->thread.fpsimd_state);
- }
+@@ -154,6 +155,42 @@ static struct notifier_block os_lock_nb =3D {
+ =09.notifier_call =3D os_lock_notify,
+ };
 =20
 +#ifdef CONFIG_CPU_PM
-+static int fpsimd_cpu_pm_notifier(struct notifier_block *self,
-+=09=09=09=09  unsigned long cmd, void *v)
++static DEFINE_PER_CPU(u32, mdscr);
++
++static int dm_cpu_pm_notify(struct notifier_block *self, unsigned long act=
+ion,
++=09=09=09     void *v)
 +{
-+=09switch (cmd) {
++=09switch (action) {
 +=09case CPU_PM_ENTER:
-+=09=09if (current->mm)
-+=09=09=09fpsimd_save_state(&current->thread.fpsimd_state);
++=09=09__get_cpu_var(mdscr) =3D mdscr_read();
 +=09=09break;
 +=09case CPU_PM_EXIT:
-+=09=09if (current->mm)
-+=09=09=09fpsimd_load_state(&current->thread.fpsimd_state);
++=09=09clear_os_lock(NULL);
++=09=09mdscr_write(__get_cpu_var(mdscr));
 +=09=09break;
 +=09case CPU_PM_ENTER_FAILED:
 +=09default:
 +=09=09return NOTIFY_DONE;
 +=09}
++
 +=09return NOTIFY_OK;
 +}
 +
-+static struct notifier_block fpsimd_cpu_pm_notifier_block =3D {
-+=09.notifier_call =3D fpsimd_cpu_pm_notifier,
++static struct notifier_block dm_cpu_pm_nb =3D {
++=09.notifier_call =3D dm_cpu_pm_notify,
 +};
 +
-+static void fpsimd_pm_init(void)
++static void __init debug_monitors_pm_init(void)
 +{
-+=09cpu_pm_register_notifier(&fpsimd_cpu_pm_notifier_block);
++=09cpu_pm_register_notifier(&dm_cpu_pm_nb);
 +}
-+
 +#else
-+static inline void fpsimd_pm_init(void) { }
-+#endif /* CONFIG_CPU_PM */
++static inline void debug_monitors_pm_init(void)
++{
++}
++#endif
 +
- /*
-  * FP/SIMD support code initialisation.
-  */
-@@ -101,6 +135,8 @@ static int __init fpsimd_init(void)
- =09else
- =09=09elf_hwcap |=3D HWCAP_ASIMD;
+ static int debug_monitors_init(void)
+ {
+ =09/* Clear the OS lock. */
+@@ -162,6 +199,7 @@ static int debug_monitors_init(void)
 =20
-+=09fpsimd_pm_init();
-+
+ =09/* Register hotplug handler. */
+ =09register_cpu_notifier(&os_lock_nb);
++=09debug_monitors_pm_init();
  =09return 0;
  }
- late_initcall(fpsimd_init);
+ postcore_initcall(debug_monitors_init);
 --=20
 1.8.3.4
 
