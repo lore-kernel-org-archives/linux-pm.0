@@ -1,37 +1,62 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix timer/workqueue corruption due to double queueing
-Date: Wed, 28 Aug 2013 11:07:39 +0530
-Message-ID: <CAKohpomMqTjLXaJ9RA8DEXk=8xzJ2g0zVBujat6ComLX4kMobg@mail.gmail.com>
-References: <CAKohpoktPNtSMRn0dEVjcEW5_62E+_UEgySOBJ-hG+r=NU3V2w@mail.gmail.com>
-	<1377629249-1177-1-git-send-email-sboyd@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: governors: Remove duplicate check of target freq
+ in supported range
+Date: Wed, 28 Aug 2013 11:05:19 +0530
+Message-ID: <CAKohpokg3xqKRmDgzeL+dZc07x1KUZ=hKdx_YrVoDbi572N_sg@mail.gmail.com>
+References: <521BA068.8030003@semaphore.gr>
+	<CAKohpo=xBmpEv=oN1qEnq9RKhfjtc4wZayVYyVzjWOU8BnwVJQ@mail.gmail.com>
+	<521CC9B8.2020801@semaphore.gr>
+	<CAKohpo=XhHtRfsVrUZr0DQCK5L5zU_6DB4PBOA4QrJBvvcbe0Q@mail.gmail.com>
+	<521CE317.20908@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1377629249-1177-1-git-send-email-sboyd@codeaurora.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@sisk.pl>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <521CE317.20908@semaphore.gr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 28 August 2013 00:17, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> Sure that works just as well. Here's a patch.
->
->  drivers/cpufreq/cpufreq_governor.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 7b839a8..b9b20fd 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -133,6 +133,9 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
->  {
->         int i;
->
-> +       if (!policy->governor_enabled)
-> +               return;
-> +
->         if (!all_cpus) {
->                 __gov_queue_work(smp_processor_id(), dbs_data, delay);
->         } else {
+ 27 August 2013 23:04, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> I'm sorry. Let me try to explain this better.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Don't be :)
+
+> With my patch, dbs_info->requested_freq will not be capped within
+> policy->min and policy->max in cs_check_cpu.
+> So, temporarily it may have a value greater than policy->max
+> or lower that policy->min.
+> When we call __cpufreq_driver_target, the correct frequency will be selected
+> because __cpufreq_driver_target takes care to adjust the
+> target frequency within policy range.
+> But, eventually, dbs_cpufreq_notifier will adjust dbs_info->requested
+> within policy range, if needed.
+>
+> If we remove
+>
+>         if (dbs_info->requested_freq == policy->max)
+>                 return;
+> and
+>
+>         if (policy->cur == policy->min)
+>                 return;
+>
+> request_freq will keep increasing or decreasing in each iteration and
+> finally will overflow or underflow.
+>
+> Consider, for example, that in a CPU with policy->max = 1000MHz
+> the current frequency is 950MHz. With a constant load above
+> up_threshold, the requested_freq in first iteration will be 1000MHz
+> and __cpufreq_driver_target will select 1000MHz freq.
+>
+> In second iteration, requested_freq will be 1050MHz, and
+> __cpufreq_driver_target will select 1000MHz. dbs_cpufreq_notifier
+> will adjust requested_freq back to 1000MHz.
+>
+> In next iterations, dbs_cpufreq_notifier will not be called, so we
+> need the above check (dbs_info->requested_freq == policy->max) to
+> prevent requested_freq to grow arbitrary.
+>
+> I hope my explanation was better now. :)
+
+Yes, your initial patch is fine.
