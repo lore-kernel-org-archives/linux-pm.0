@@ -1,74 +1,449 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: mutex warning in cpufreq + RFC patch
-Date: Wed, 28 Aug 2013 12:28:03 +0530
-Message-ID: <CAKohpomLL0rCYngM81iaTV37TTsrYE+f3ouGuT2D6TRE5E4W5A@mail.gmail.com>
-References: <20130828025721.GA19754@codeaurora.org>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH 3/3] thermal: exynos: Handle the misplaced TRIMINFO register
+Date: Wed, 28 Aug 2013 14:13:16 +0530
+Message-ID: <CADGdYn4jCdaKm6s+-MHE-C98LYm8=c7=e6mv3svK=y=_-B7QFA@mail.gmail.com>
+References: <1375336979-14747-1-git-send-email-ch.naveen@samsung.com>
+	<1377668719-8602-1-git-send-email-ch.naveen@samsung.com>
+	<1377668719-8602-4-git-send-email-ch.naveen@samsung.com>
+	<CADGdYn5fykqperPUJtGbh-E9sECFP4J8xSyjB3YA4_KzO3ZwNA@mail.gmail.com>
+	<CAHfPSqBubNwj7ASY8dfU3q2-O1xhr+6xXC+TcRbRiPhVVRsJ7Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130828025721.GA19754@codeaurora.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAHfPSqBubNwj7ASY8dfU3q2-O1xhr+6xXC+TcRbRiPhVVRsJ7Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
+Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Stephen,
+Hi Naveen,
 
-On 28 August 2013 08:27, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> I'm running this simple test code in a shell on my 3.10 kernel and running
-> into this warning rather quickly.
+On Wed, Aug 28, 2013 at 11:49 AM, Naveen Krishna Ch
+<naveenkrishna.ch@gmail.com> wrote:
+> On 28 August 2013 11:33, amit daniel kachhap <amit.daniel@samsung.com> wrote:
+>> Hi Naveen
+>>
+>> On Wed, Aug 28, 2013 at 11:15 AM, Naveen Krishna Chatradhi
+>> <ch.naveen@samsung.com> wrote:
+>>> This patch adds code to handle the misplaced TRIMINFO register
+>>> incase of Exynos5420.
+>>>
+>>> On Exynos5420 we have a TRIMINFO register being misplaced for
+>>> TMU channels 2, 3 and 4
+>>>
+>>> TRIMINFO at 0x1006c000 contains data for TMU channel 3
+>>> TRIMINFO at 0x100a0000 contains data for TMU channel 4
+>>> TRIMINFO at 0x10068000 contains data for TMU channel 2
+>>>
+>>> The misplaced register address is passed through devicetree and
+>>> map it seperately during probe.
+>>> Also, adds the documentation under devicetree/bindings/thermal/
+>>>
+>>> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+>>> ---
+>>>  .../devicetree/bindings/thermal/exynos-thermal.txt |   21 +++++++++++++
+>>>  drivers/thermal/samsung/exynos_tmu.c               |   32 +++++++++++++++++---
+>>>  2 files changed, 49 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>>> index 284f530..e818473 100644
+>>> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>>> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>>> @@ -7,12 +7,21 @@
+>>>                "samsung,exynos4210-tmu"
+>>>                "samsung,exynos5250-tmu"
+>>>                "samsung,exynos5440-tmu"
+>>> +              "samsung,exynos5420-tmu"
+>>>  - interrupt-parent : The phandle for the interrupt controller
+>>>  - reg : Address range of the thermal registers. For soc's which has multiple
+>>>         instances of TMU and some registers are shared across all TMU's like
+>>>         interrupt related then 2 set of register has to supplied. First set
+>>>         belongs to each instance of TMU and second set belongs to common TMU
+>>>         registers.
+>>> +
+>>> + ** NOTE FOR EXYNOS5420 **
+>>> +    TRIMINFO register is being misplaced for TMU channels 2, 3 and 4
+>>> +
+>>> +    TERMINFO for TMU channel 2 is present in address space of TMU channel 3
+>>> +    TERMINFO for TMU channel 3 is present in address space of TMU channel 4
+>>> +    TERMINFO for TMU channel 4 is present in address space of TMU channel 2
+>>> +
+>>>  - interrupts : Should contain interrupt for thermal system
+>>>  - clocks : The main clock for TMU device
+>>>  - clock-names : Thermal system clock name
+>>> @@ -43,6 +52,18 @@ Example 2):
+>>>                 clock-names = "tmu_apbif";
+>>>         };
+>>>
+>>> +Example 3): In case of Exynos5420 TMU channel 3
+>>> +
+>>> +       /* tmu for CPU3 */
+>>> +       tmu@1006c000 {
+>>> +               compatible = "samsung,exynos5420-tmu";
+>>> +               /* 2nd reg is for the misplaced TRIMINFO register */
+>>> +               reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
+>>> +               interrupts = <0 185 0>;
+>>> +               clocks = <&clock 318>;
+>>> +               clock-names = "tmu_apbif";
+>>> +       };
+>>> +
+>>>  Note: For multi-instance tmu each instance should have an alias correctly
+>>>  numbered in "aliases" node.
+>>>
+>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>>> index bfdfbd6..f95844e 100644
+>>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>>> @@ -42,6 +42,7 @@
+>>>   * @pdata: pointer to the tmu platform/configuration data
+>>>   * @base: base address of the single instance of the TMU controller.
+>>>   * @base_common: base address of the common registers of the TMU controller.
+>>> + * @triminfo_base: misplaced register base for TRIMINFO on Exynos5420 only
+>>
+>> Instead of creating this new field you can re-use base_common for
+>> accessing the second set of register for misplaced triminfo address.
+>> Also you can rename this variable as base_second.
 >
->         cd /sys/devices/system/cpu/cpu1
->         while true
->         do
->         echo 0 > online
->         echo 1 > online
->         done &
->         while true
->         do
->         echo 300000 > cpufreq/scaling_min_freq
->         echo 1000000 > cpufreq/scaling_min_freq
->         done
+> The purpose and the meaning of the fields are entirely different.
+> The triminfo is a hardware bug present only in Exynos5420
+My point is that for a bug a new field does not seem good as driver is
+common across many Socs. Even In case of 5440 the common base can be
+generalized and considered as second base address and documentation
+can be updated accordingly. Also change the flag SHARED_MEMORY to
+ADDRESS_TWO.
+> and the common registers are available only on Exynos5440 i guess.
 >
-> (Note you should place valid values for min/max freq in the example
-> above.)
+> IMHO, reusing is not a nice idea.
+> I'm willing to modify the code if there is a better idea.
+>>
+>>>   * @irq: irq number of the TMU controller.
+>>>   * @soc: id of the SOC type.
+>>>   * @irq_work: pointer to the irq work structure.
+>>> @@ -57,6 +58,7 @@ struct exynos_tmu_data {
+>>>         struct exynos_tmu_platform_data *pdata;
+>>>         void __iomem *base;
+>>>         void __iomem *base_common;
+>>> +       void __iomem *triminfo_base;            /* Needed only Exynos5420 */
+>>>         int irq;
+>>>         enum soc_type soc;
+>>>         struct work_struct irq_work;
+>>> @@ -186,7 +188,12 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>>                         EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+>>>                 }
+>>>         } else {
+>>> -               trim_info = readl(data->base + reg->triminfo_data);
+>>> +               /* On exynos5420 TRIMINFO is misplaced for some channels */
+>>> +               if (data->triminfo_base)
+>>> +                       trim_info = readl(data->triminfo_base +
+>>> +                                               reg->triminfo_data);
+>>> +               else
+>>> +                       trim_info = readl(data->base + reg->triminfo_data);
+>>>         }
+>>>         data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
+>>>         data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
+>>> @@ -586,8 +593,17 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+>>>          * Check if the TMU shares some registers and then try to map the
+>>>          * memory of common registers.
+>>>          */
+>>> -       if (!TMU_SUPPORTS(pdata, SHARED_MEMORY))
+>>> +       if (!TMU_SUPPORTS(pdata, SHARED_MEMORY)) {
+>>> +               /* For Exynos5420 The misplaced TERMINFO register address will
+>>> +                * be passed from device tree node.
+>>> +                *
+>>> +                * We cannot use devm_request_and_ioremap, as the base address
+>>> +                * over laps with the address space of the other TMU channel.
+>>> +                * Check Documentation for details
+>>> +                */
+>>> +               data->triminfo_base = of_iomap(pdev->dev.of_node, 1);
+>>>                 return 0;
+>>> +       }
+>> In the below code, remove the request resource API for common_base and
+>> use simple of_iomap API.
 >
-> WARNING: at kernel/mutex.c:341 __mutex_lock_slowpath+0x14c/0x410()              DEBUG_LOCKS_WARN_ON(l->magic != l)
-> Modules linked in:                                                              CPU: 0 PID: 1960 Comm: sh Tainted: G        W    3.10.0 #32                     [<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)                                                                              [<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)                                                                          [<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)                                                                   [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410)                                                              
-   [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410) from [<c08a0618>] (mutex_lock+0x20/0x3c)                                                                       [<c08a0618>] (mutex_lock+0x20/0x3c) from [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8)                                                                        [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8) from [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4)                                                               [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4) from [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0)                                                               [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0) from [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c)                                                        
-     [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c) from [<c0633ae4>] (store+0x58/0x90)                                                                             [<c0633ae4>] (store+0x58/0x90) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
-> [<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
-> [<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)     [<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
+> That will be a separate fix patch. Will submit separately,
+> This patchset is to add exynos5420 support
+
+Sorry for my earlier comment. Actually my suggested change is not
+needed as the APIs used don't bind resources. Just enable the
+SHARED_MEMORY flag and it should be fine.
+
+
 >
-> This is happening because the governor is stopped via hotplug and
-> while we're in the middle of touching the scaling_min_freq file.
-> When the governor is stopped we destroy the timer_mutex that the
-> scaling_min_freq thread is just about to acquire. From what I can
-> tell, we shouldn't be stopping the governor until after the
-> kobjects go away or we should start and stop the governor while
-> holding the policy semaphore otherwise userspace can come in and
-> use uninitialized things. I have this hack which seems to mostly
-> work. Thoughts?
+> Is the res_size for the common registers fixed ?
+Yes in 5440 it is same.
 
-I haven't gone through the hack yet, but I am trying to understand the
-problem first.. There had been some work in the past around this
-kind of scenarios..
+Thanks,
+Amit Daniel
 
-commit 95731ebb114c5f0c028459388560fc2a72fe5049
-Author: Xiaoguang Chen <chenxg@marvell.com>
-Date:   Wed Jun 19 15:00:07 2013 +0800
+>
+>>
+>> Thanks,
+>> Amit Daniel
+>>>
+>>>         if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
+>>>                 dev_err(&pdev->dev, "failed to get Resource 1\n");
+>>> @@ -632,12 +648,13 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>>         data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
+>>>         if (IS_ERR(data->clk)) {
+>>>                 dev_err(&pdev->dev, "Failed to get clock\n");
+>>> -               return  PTR_ERR(data->clk);
+>>> +               ret = PTR_ERR(data->clk);
+>>> +               goto err_triminfo_base;
+>>>         }
+>>>
+>>>         ret = clk_prepare(data->clk);
+>>>         if (ret)
+>>> -               return ret;
+>>> +               goto err_triminfo_base;
+>>>
+>>>         if (pdata->type == SOC_ARCH_EXYNOS ||
+>>>                 pdata->type == SOC_ARCH_EXYNOS4210 ||
+>>> @@ -707,9 +724,13 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>>         }
+>>>
+>>>         return 0;
+>>> +
+>>>  err_clk:
+>>>         clk_unprepare(data->clk);
+>>>         return ret;
+>>> +err_triminfo_base:
+>>> +       if (data->triminfo_base)
+>>> +               iounmap(data->triminfo_base);
+>>>  }
+>>>
+>>>  static int exynos_tmu_remove(struct platform_device *pdev)
+>>> @@ -720,6 +741,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+>>>
+>>>         exynos_unregister_thermal(data->reg_conf);
+>>>
+>>> +       if (data->triminfo_base)
+>>> +               iounmap(data->triminfo_base);
+>>> +
+>>>         clk_unprepare(data->clk);
+>>>
+>>>         if (!IS_ERR(data->regulator))
+>>> --
+>>> 1.7.9.5
+>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>
+> --
+> Shine bright,
+> (: Nav :)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-    cpufreq: Fix governor start/stop race condition
-
-
-The problem probably is poor error checking which is still present at
-few places, in __cpufreq_set_policy() routine..
-
-Can you try after fixing them? Something similar has to be done..
-
-commit 3de9bdeb28638e164d1f0eb38dd68e3f5d2ac95c
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Tue Aug 6 22:53:13 2013 +0530
-
-    cpufreq: improve error checking on return values of __cpufreq_governor()
+On Wed, Aug 28, 2013 at 11:49 AM, Naveen Krishna Ch
+<naveenkrishna.ch@gmail.com> wrote:
+> On 28 August 2013 11:33, amit daniel kachhap <amit.daniel@samsung.com> wrote:
+>> Hi Naveen
+>>
+>> On Wed, Aug 28, 2013 at 11:15 AM, Naveen Krishna Chatradhi
+>> <ch.naveen@samsung.com> wrote:
+>>> This patch adds code to handle the misplaced TRIMINFO register
+>>> incase of Exynos5420.
+>>>
+>>> On Exynos5420 we have a TRIMINFO register being misplaced for
+>>> TMU channels 2, 3 and 4
+>>>
+>>> TRIMINFO at 0x1006c000 contains data for TMU channel 3
+>>> TRIMINFO at 0x100a0000 contains data for TMU channel 4
+>>> TRIMINFO at 0x10068000 contains data for TMU channel 2
+>>>
+>>> The misplaced register address is passed through devicetree and
+>>> map it seperately during probe.
+>>> Also, adds the documentation under devicetree/bindings/thermal/
+>>>
+>>> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+>>> ---
+>>>  .../devicetree/bindings/thermal/exynos-thermal.txt |   21 +++++++++++++
+>>>  drivers/thermal/samsung/exynos_tmu.c               |   32 +++++++++++++++++---
+>>>  2 files changed, 49 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>>> index 284f530..e818473 100644
+>>> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>>> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>>> @@ -7,12 +7,21 @@
+>>>                "samsung,exynos4210-tmu"
+>>>                "samsung,exynos5250-tmu"
+>>>                "samsung,exynos5440-tmu"
+>>> +              "samsung,exynos5420-tmu"
+>>>  - interrupt-parent : The phandle for the interrupt controller
+>>>  - reg : Address range of the thermal registers. For soc's which has multiple
+>>>         instances of TMU and some registers are shared across all TMU's like
+>>>         interrupt related then 2 set of register has to supplied. First set
+>>>         belongs to each instance of TMU and second set belongs to common TMU
+>>>         registers.
+>>> +
+>>> + ** NOTE FOR EXYNOS5420 **
+>>> +    TRIMINFO register is being misplaced for TMU channels 2, 3 and 4
+>>> +
+>>> +    TERMINFO for TMU channel 2 is present in address space of TMU channel 3
+>>> +    TERMINFO for TMU channel 3 is present in address space of TMU channel 4
+>>> +    TERMINFO for TMU channel 4 is present in address space of TMU channel 2
+>>> +
+>>>  - interrupts : Should contain interrupt for thermal system
+>>>  - clocks : The main clock for TMU device
+>>>  - clock-names : Thermal system clock name
+>>> @@ -43,6 +52,18 @@ Example 2):
+>>>                 clock-names = "tmu_apbif";
+>>>         };
+>>>
+>>> +Example 3): In case of Exynos5420 TMU channel 3
+>>> +
+>>> +       /* tmu for CPU3 */
+>>> +       tmu@1006c000 {
+>>> +               compatible = "samsung,exynos5420-tmu";
+>>> +               /* 2nd reg is for the misplaced TRIMINFO register */
+>>> +               reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
+>>> +               interrupts = <0 185 0>;
+>>> +               clocks = <&clock 318>;
+>>> +               clock-names = "tmu_apbif";
+>>> +       };
+>>> +
+>>>  Note: For multi-instance tmu each instance should have an alias correctly
+>>>  numbered in "aliases" node.
+>>>
+>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>>> index bfdfbd6..f95844e 100644
+>>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>>> @@ -42,6 +42,7 @@
+>>>   * @pdata: pointer to the tmu platform/configuration data
+>>>   * @base: base address of the single instance of the TMU controller.
+>>>   * @base_common: base address of the common registers of the TMU controller.
+>>> + * @triminfo_base: misplaced register base for TRIMINFO on Exynos5420 only
+>>
+>> Instead of creating this new field you can re-use base_common for
+>> accessing the second set of register for misplaced triminfo address.
+>> Also you can rename this variable as base_second.
+>
+> The purpose and the meaning of the fields are entirely different.
+> The triminfo is a hardware bug present only in Exynos5420
+> and the common registers are available only on Exynos5440 i guess.
+>
+> IMHO, reusing is not a nice idea.
+> I'm willing to modify the code if there is a better idea.
+>>
+>>>   * @irq: irq number of the TMU controller.
+>>>   * @soc: id of the SOC type.
+>>>   * @irq_work: pointer to the irq work structure.
+>>> @@ -57,6 +58,7 @@ struct exynos_tmu_data {
+>>>         struct exynos_tmu_platform_data *pdata;
+>>>         void __iomem *base;
+>>>         void __iomem *base_common;
+>>> +       void __iomem *triminfo_base;            /* Needed only Exynos5420 */
+>>>         int irq;
+>>>         enum soc_type soc;
+>>>         struct work_struct irq_work;
+>>> @@ -186,7 +188,12 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>>                         EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+>>>                 }
+>>>         } else {
+>>> -               trim_info = readl(data->base + reg->triminfo_data);
+>>> +               /* On exynos5420 TRIMINFO is misplaced for some channels */
+>>> +               if (data->triminfo_base)
+>>> +                       trim_info = readl(data->triminfo_base +
+>>> +                                               reg->triminfo_data);
+>>> +               else
+>>> +                       trim_info = readl(data->base + reg->triminfo_data);
+>>>         }
+>>>         data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
+>>>         data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
+>>> @@ -586,8 +593,17 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+>>>          * Check if the TMU shares some registers and then try to map the
+>>>          * memory of common registers.
+>>>          */
+>>> -       if (!TMU_SUPPORTS(pdata, SHARED_MEMORY))
+>>> +       if (!TMU_SUPPORTS(pdata, SHARED_MEMORY)) {
+>>> +               /* For Exynos5420 The misplaced TERMINFO register address will
+>>> +                * be passed from device tree node.
+>>> +                *
+>>> +                * We cannot use devm_request_and_ioremap, as the base address
+>>> +                * over laps with the address space of the other TMU channel.
+>>> +                * Check Documentation for details
+>>> +                */
+>>> +               data->triminfo_base = of_iomap(pdev->dev.of_node, 1);
+>>>                 return 0;
+>>> +       }
+>> In the below code, remove the request resource API for common_base and
+>> use simple of_iomap API.
+>
+> That will be a separate fix patch. Will submit separately,
+> This patchset is to add exynos5420 support
+>
+> Is the res_size for the common registers fixed ?
+>
+>>
+>> Thanks,
+>> Amit Daniel
+>>>
+>>>         if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
+>>>                 dev_err(&pdev->dev, "failed to get Resource 1\n");
+>>> @@ -632,12 +648,13 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>>         data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
+>>>         if (IS_ERR(data->clk)) {
+>>>                 dev_err(&pdev->dev, "Failed to get clock\n");
+>>> -               return  PTR_ERR(data->clk);
+>>> +               ret = PTR_ERR(data->clk);
+>>> +               goto err_triminfo_base;
+>>>         }
+>>>
+>>>         ret = clk_prepare(data->clk);
+>>>         if (ret)
+>>> -               return ret;
+>>> +               goto err_triminfo_base;
+>>>
+>>>         if (pdata->type == SOC_ARCH_EXYNOS ||
+>>>                 pdata->type == SOC_ARCH_EXYNOS4210 ||
+>>> @@ -707,9 +724,13 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>>         }
+>>>
+>>>         return 0;
+>>> +
+>>>  err_clk:
+>>>         clk_unprepare(data->clk);
+>>>         return ret;
+>>> +err_triminfo_base:
+>>> +       if (data->triminfo_base)
+>>> +               iounmap(data->triminfo_base);
+>>>  }
+>>>
+>>>  static int exynos_tmu_remove(struct platform_device *pdev)
+>>> @@ -720,6 +741,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+>>>
+>>>         exynos_unregister_thermal(data->reg_conf);
+>>>
+>>> +       if (data->triminfo_base)
+>>> +               iounmap(data->triminfo_base);
+>>> +
+>>>         clk_unprepare(data->clk);
+>>>
+>>>         if (!IS_ERR(data->regulator))
+>>> --
+>>> 1.7.9.5
+>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>
+> --
+> Shine bright,
+> (: Nav :)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
