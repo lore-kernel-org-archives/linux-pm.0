@@ -1,35 +1,29 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [PATCH 1/3] cpuidle: coupled: disable interrupts after entering
- safe state
-Date: Wed, 28 Aug 2013 15:00:58 -0700
-Message-ID: <CAMbhsRQ4DtMUs7HJz_t4reWaehjqEN=Xg2EaFKBgdPUO_ZtNCA@mail.gmail.com>
-References: <1377287112-12018-1-git-send-email-ccross@android.com>
-	<16805669.URyPi50bbV@vostro.rjw.lan>
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup
+ and log event in pstore.
+Date: Wed, 28 Aug 2013 15:06:31 -0700
+Message-ID: <CAME+o4mKnbF+PzEC=JWLE+Tm=4p-1pegcnaKGYTcT07URzCPGQ@mail.gmail.com>
+References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org>
+	<3196266.rMZQj4Yosc@vostro.rjw.lan>
+	<CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com>
+	<1761440.cq52yMKNRv@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <16805669.URyPi50bbV@vostro.rjw.lan>
-Sender: stable-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Neil Zhang <zhangwm@marvell.com>, Joseph Lo <josephl@nvidia.com>, linux-tegra <linux-tegra@vger.kernel.org>, stable@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:57540 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753067Ab3H1WGb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 18:06:31 -0400
+Received: by mail-ob0-f169.google.com with SMTP id es8so3741665obc.28
+        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2013 15:06:31 -0700 (PDT)
+In-Reply-To: <1761440.cq52yMKNRv@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Wed, Aug 28, 2013 at 2:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, August 23, 2013 12:45:10 PM Colin Cross wrote:
->> Calling cpuidle_enter_state is expected to return with interrupts
->> enabled, but interrupts must be disabled before starting the
->> ready loop synchronization stage.  Call local_irq_disable after
->> each call to cpuidle_enter_state for the safe state.
->>
->> CC: stable@vger.kernel.org
->> Signed-off-by: Colin Cross <ccross@android.com>
->
-> I've queued up all thress for 3.12, but I wonder what stable versions they
-> should be included into?  All of them or just a subset?
+> Is there any practical reason why it should go into the next release?
 
-The patches apply cleanly back to v3.6.
+Android folks find this useful, albeit a debug feature.
 
-Joseph Lo had 2 minor comments on patch 2 (changing Tegra3 to Tegra20
-in the commit message, replacing cpuidle_coupled_poke_pending with
-cpuidle_coupled_poked in the comment above cpuidle_coupled_poked), do
-you want to fix those up locally or should I resend the series?
+Zoran
