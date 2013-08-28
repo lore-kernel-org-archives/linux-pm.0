@@ -1,52 +1,54 @@
-From: John Stultz <john.stultz@linaro.org>
+From: Colin Cross <ccross@android.com>
 Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup
  and log event in pstore.
-Date: Wed, 28 Aug 2013 15:36:58 -0700
-Message-ID: <521E7B8A.6060203@linaro.org>
-References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org> <3196266.rMZQj4Yosc@vostro.rjw.lan> <CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com> <1761440.cq52yMKNRv@vostro.rjw.lan>
+Date: Wed, 28 Aug 2013 15:43:42 -0700
+Message-ID: <CAMbhsRSqSC1Ni4QsZ_0sTrvaW3_feXFyGawZbWc34wuhA2BNeg@mail.gmail.com>
+References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org>
+	<3196266.rMZQj4Yosc@vostro.rjw.lan>
+	<CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com>
+	<1761440.cq52yMKNRv@vostro.rjw.lan>
+	<521E7B8A.6060203@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:49051 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210Ab3H1WhC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 18:37:02 -0400
-Received: by mail-pa0-f42.google.com with SMTP id lj1so55440pab.29
-        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2013 15:37:01 -0700 (PDT)
-In-Reply-To: <1761440.cq52yMKNRv@vostro.rjw.lan>
+Received: from mail-ob0-f180.google.com ([209.85.214.180]:60958 "EHLO
+	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754789Ab3H1Wnm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 18:43:42 -0400
+Received: by mail-ob0-f180.google.com with SMTP id v19so7245687obq.25
+        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2013 15:43:42 -0700 (PDT)
+In-Reply-To: <521E7B8A.6060203@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: John Stultz <john.stultz@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 08/28/2013 01:52 PM, Rafael J. Wysocki wrote:
-> On Wednesday, August 28, 2013 10:45:45 AM Zoran Markovic wrote:
->> Hi Rafael,
->>> It doesn't look too bad from a quick look, but there's a couple of things
->>> I don't like in it still (relatively minor).
->> If there are things you would like changed in this patch, please let
->> me know. It would be nice to catch the 3.12 merge window.
-> Well, it's not in my queue to be honest.
+On Wed, Aug 28, 2013 at 3:36 PM, John Stultz <john.stultz@linaro.org> wrote:
+> On 08/28/2013 01:52 PM, Rafael J. Wysocki wrote:
+>> On Wednesday, August 28, 2013 10:45:45 AM Zoran Markovic wrote:
+>>> Hi Rafael,
+>>>> It doesn't look too bad from a quick look, but there's a couple of things
+>>>> I don't like in it still (relatively minor).
+>>> If there are things you would like changed in this patch, please let
+>>> me know. It would be nice to catch the 3.12 merge window.
+>> Well, it's not in my queue to be honest.
+>>
+>> Is there any practical reason why it should go into the next release?
 >
-> Is there any practical reason why it should go into the next release?
+> I wouldn't say its critical for the next release, but I feel like this
+> was the same response last cycle. Zoran's since investigated the various
+> alternative approaches you've suggested, and continues to be interested
+> in resolving your remaining objections.
+>
+> Its a useful feature the Android devs use, which could also help
+> non-android developers debug suspend issues on their systems.
+>
+> If you really just feel its something best left out of tree, that's hard
+> to argue against. Its just a debug tool and the android guys don't have
+> an issue carrying their own tree, after all. But the cost of leaving it
+> out is just the potential of others having to re-implement similar hacks
+> on their own instead of collaborating on shared infrastructure.
 
-I wouldn't say its critical for the next release, but I feel like this
-was the same response last cycle. Zoran's since investigated the various
-alternative approaches you've suggested, and continues to be interested
-in resolving your remaining objections.
-
-Its a useful feature the Android devs use, which could also help
-non-android developers debug suspend issues on their systems.
-
-If you really just feel its something best left out of tree, that's hard
-to argue against. Its just a debug tool and the android guys don't have
-an issue carrying their own tree, after all. But the cost of leaving it
-out is just the potential of others having to re-implement similar hacks
-on their own instead of collaborating on shared infrastructure.
-
-thanks
--john
-
-
-
+And the benefit is that you are more likely to get bugreports that
+have a stack trace of the offending suspend callback instead of "my
+laptop doesn't suspend any more".
