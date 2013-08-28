@@ -1,62 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] cpuidle: coupled: disable interrupts after entering safe state
-Date: Wed, 28 Aug 2013 23:28:33 +0200
-Message-ID: <16805669.URyPi50bbV@vostro.rjw.lan>
-References: <1377287112-12018-1-git-send-email-ccross@android.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:40182 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754834Ab3H1VRt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 Aug 2013 17:17:49 -0400
-In-Reply-To: <1377287112-12018-1-git-send-email-ccross@android.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: [PATCH v2] cpufreq: Don't use smp_processor_id() in preemptible context
+Date: Wed, 28 Aug 2013 14:24:45 -0700
+Message-ID: <1377725085-16798-1-git-send-email-sboyd@codeaurora.org>
+References: <521E24CE.9090407@codeaurora.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <521E24CE.9090407@codeaurora.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Neil Zhang <zhangwm@marvell.com>, Joseph Lo <josephl@nvidia.com>, linux-tegra@vger.kernel.org, stable@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Friday, August 23, 2013 12:45:10 PM Colin Cross wrote:
-> Calling cpuidle_enter_state is expected to return with interrupts
-> enabled, but interrupts must be disabled before starting the
-> ready loop synchronization stage.  Call local_irq_disable after
-> each call to cpuidle_enter_state for the safe state.
-> 
-> CC: stable@vger.kernel.org
-> Signed-off-by: Colin Cross <ccross@android.com>
+Workqueues are preemptible even if works are queued on them with
+queue_work_on(). Let's use raw_smp_processor_id() here to silence
+the warning.
 
-I've queued up all thress for 3.12, but I wonder what stable versions they
-should be included into?  All of them or just a subset?
+BUG: using smp_processor_id() in preemptible [00000000] code: kworker/3:2/674
+caller is gov_queue_work+0x28/0xb0
+CPU: 0 PID: 674 Comm: kworker/3:2 Tainted: G        W    3.10.0 #30
+Workqueue: events od_dbs_timer
+[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
+[<c0109dec>] (show_stack+0x10/0x14) from [<c03885a4>] (debug_smp_processor_id+0xbc/0xf0)
+[<c03885a4>] (debug_smp_processor_id+0xbc/0xf0) from [<c0635864>] (gov_queue_work+0x28/0xb0)
+[<c0635864>] (gov_queue_work+0x28/0xb0) from [<c0635618>] (od_dbs_timer+0x108/0x134)
+[<c0635618>] (od_dbs_timer+0x108/0x134) from [<c01aa8f8>] (process_one_work+0x25c/0x444)
+[<c01aa8f8>] (process_one_work+0x25c/0x444) from [<c01aaf88>] (worker_thread+0x200/0x344)
+[<c01aaf88>] (worker_thread+0x200/0x344) from [<c01b03bc>] (kthread+0xa0/0xb0)
+[<c01b03bc>] (kthread+0xa0/0xb0) from [<c01061b8>] (ret_from_fork+0x14/0x3c)
 
-Rafael
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+ drivers/cpufreq/cpufreq_governor.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-
-> ---
->  drivers/cpuidle/coupled.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-> index 2a297f8..db92bcb 100644
-> --- a/drivers/cpuidle/coupled.c
-> +++ b/drivers/cpuidle/coupled.c
-> @@ -460,6 +460,7 @@ int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
->  		}
->  		entered_state = cpuidle_enter_state(dev, drv,
->  			dev->safe_state_index);
-> +		local_irq_disable();
->  	}
->  
->  	/* Read barrier ensures online_count is read after prevent is cleared */
-> @@ -485,6 +486,7 @@ retry:
->  
->  		entered_state = cpuidle_enter_state(dev, drv,
->  			dev->safe_state_index);
-> +		local_irq_disable();
->  	}
->  
->  	if (cpuidle_coupled_clear_pokes(dev->cpu)) {
-> 
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index b9b20fd..bfbcf9a 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -137,7 +137,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+ 		return;
+ 
+ 	if (!all_cpus) {
+-		__gov_queue_work(smp_processor_id(), dbs_data, delay);
++		/*
++		 * Use raw_smp_processor_id() to avoid preemptible warnings.
++		 * We know that this is only called with all_cpus == false from
++		 * works that have been queued with *_work_on() functions and
++		 * those works are canceled during CPU_DOWN_PREPARE so they
++		 * can't possibly run on any other CPU.
++		 */
++		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay);
+ 	} else {
+ 		for_each_cpu(i, policy->cpus)
+ 			__gov_queue_work(i, dbs_data, delay);
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
+
