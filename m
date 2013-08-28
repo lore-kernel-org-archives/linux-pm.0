@@ -1,33 +1,25 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup and log event in pstore.
-Date: Wed, 28 Aug 2013 22:52:13 +0200
-Message-ID: <1761440.cq52yMKNRv@vostro.rjw.lan>
-References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org> <3196266.rMZQj4Yosc@vostro.rjw.lan> <CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com>
+From: Christoph Lameter <cl@linux.com>
+Subject: Re: [gcv v3 15/35] drivers/cpuidle: Replace __get_cpu_var uses
+Date: Wed, 28 Aug 2013 20:52:29 +0000
+Message-ID: <00000140c6b2ee60-b82c6fb6-8078-409c-a675-53124a3ac13b-000000@email.amazonses.com>
+References: <20130828193457.140443630@linux.com> <00000140c688e916-ddb57313-75d3-4200-8529-3e8f72c8c1bf-000000@email.amazonses.com> <1883708.lq04OnoOJh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:40122 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751381Ab3H1Ul3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 Aug 2013 16:41:29 -0400
-In-Reply-To: <CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com>
+Received: from a10-51.smtp-out.amazonses.com ([54.240.10.51]:33822 "EHLO
+	a10-51.smtp-out.amazonses.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755523Ab3H1Uwb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 16:52:31 -0400
+In-Reply-To: <1883708.lq04OnoOJh@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zoran Markovic <zoran.markovic@linaro.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Tejun Heo <tj@kernel.org>, akpm@linuxfoundation.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-On Wednesday, August 28, 2013 10:45:45 AM Zoran Markovic wrote:
-> Hi Rafael,
-> > It doesn't look too bad from a quick look, but there's a couple of things
-> > I don't like in it still (relatively minor).
-> 
-> If there are things you would like changed in this patch, please let
-> me know. It would be nice to catch the 3.12 merge window.
+On Wed, 28 Aug 2013, Rafael J. Wysocki wrote:
 
-Well, it's not in my queue to be honest.
+> > Signed-off-by: Christoph Lameter <cl@linux.com>
+>
+> No objections from me.
 
-Is there any practical reason why it should go into the next release?
-
-Rafael
-
+Ack?
