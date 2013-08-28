@@ -1,29 +1,52 @@
-From: Zoran Markovic <zoran.markovic@linaro.org>
+From: John Stultz <john.stultz@linaro.org>
 Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup
  and log event in pstore.
-Date: Wed, 28 Aug 2013 15:06:31 -0700
-Message-ID: <CAME+o4mKnbF+PzEC=JWLE+Tm=4p-1pegcnaKGYTcT07URzCPGQ@mail.gmail.com>
-References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org>
-	<3196266.rMZQj4Yosc@vostro.rjw.lan>
-	<CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com>
-	<1761440.cq52yMKNRv@vostro.rjw.lan>
+Date: Wed, 28 Aug 2013 15:36:58 -0700
+Message-ID: <521E7B8A.6060203@linaro.org>
+References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org> <3196266.rMZQj4Yosc@vostro.rjw.lan> <CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com> <1761440.cq52yMKNRv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:57540 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753067Ab3H1WGb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 18:06:31 -0400
-Received: by mail-ob0-f169.google.com with SMTP id es8so3741665obc.28
-        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2013 15:06:31 -0700 (PDT)
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:49051 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752210Ab3H1WhC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 18:37:02 -0400
+Received: by mail-pa0-f42.google.com with SMTP id lj1so55440pab.29
+        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2013 15:37:01 -0700 (PDT)
 In-Reply-To: <1761440.cq52yMKNRv@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
+On 08/28/2013 01:52 PM, Rafael J. Wysocki wrote:
+> On Wednesday, August 28, 2013 10:45:45 AM Zoran Markovic wrote:
+>> Hi Rafael,
+>>> It doesn't look too bad from a quick look, but there's a couple of things
+>>> I don't like in it still (relatively minor).
+>> If there are things you would like changed in this patch, please let
+>> me know. It would be nice to catch the 3.12 merge window.
+> Well, it's not in my queue to be honest.
+>
 > Is there any practical reason why it should go into the next release?
 
-Android folks find this useful, albeit a debug feature.
+I wouldn't say its critical for the next release, but I feel like this
+was the same response last cycle. Zoran's since investigated the various
+alternative approaches you've suggested, and continues to be interested
+in resolving your remaining objections.
 
-Zoran
+Its a useful feature the Android devs use, which could also help
+non-android developers debug suspend issues on their systems.
+
+If you really just feel its something best left out of tree, that's hard
+to argue against. Its just a debug tool and the android guys don't have
+an issue carrying their own tree, after all. But the cost of leaving it
+out is just the potential of others having to re-implement similar hacks
+on their own instead of collaborating on shared infrastructure.
+
+thanks
+-john
+
+
+
