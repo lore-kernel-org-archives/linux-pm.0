@@ -1,66 +1,165 @@
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support other architectures
-Date: Wed, 28 Aug 2013 20:46:38 +0100
-Message-ID: <20130828194638.AB78E3E0A6F@localhost>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <2032060.4bgTKOdEX2@flatron> <1376777376.25016.11.camel@pasglop> <20130819101922.GI3719@e106331-lin.cambridge.arm.com> <5212177C.8000709@gmail.com> <521223FA.5050903@arm.com> <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f52.google.com ([74.125.82.52]:47175 "EHLO
-	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754076Ab3H1Tqg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 15:46:36 -0400
-Received: by mail-wg0-f52.google.com with SMTP id l18so5032401wgh.19
-        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2013 12:46:35 -0700 (PDT)
-In-Reply-To: <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Christoph Lameter <cl@linux.com>
+Subject: [gcv v3 15/35] drivers/cpuidle: Replace __get_cpu_var uses
+Date: Wed, 28 Aug 2013 20:06:37 +0000
+Message-ID: <00000140c688e916-ddb57313-75d3-4200-8529-3e8f72c8c1bf-000000@email.amazonses.com>
+References: <20130828193457.140443630@linux.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: akpm@linuxfoundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, Steven Rostedt <srostedt@redhat.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Rob Herring <robherring2@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On Thu, 22 Aug 2013 14:59:30 +0100, Mark Rutland <mark.rutland@arm.com> wrote:
-> On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
-> > On 19/08/13 14:02, Rob Herring wrote:
-> > > On 08/19/2013 05:19 AM, Mark Rutland wrote:
-> > >> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
-> > >>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> > >>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> > >>>> which 
-> > >>>> the updated bindings[1] define #address-cells = <0> and so no reg 
-> > >>>> property.
-> > >>>>
-> > >>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
-> > >>>
-> > >>> Why did you do that in the binding ? That sounds like looking to create
-> > >>> problems ... 
-> > >>>
-> > >>> Traditionally, UP setups just used "0" as the "reg" property on other
-> > >>> architectures, why do differently ?
-> > >>
-> > >> The decision was taken because we defined our reg property to refer to
-> > >> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-> > >> there's no MPIDR register at all. Given there can only be a single CPU
-> > >> in that case, describing a register that wasn't present didn't seem
-> > >> necessary or helpful.
-> > > 
-> > > What exactly reg represents is up to the binding definition, but it
-> > > still should be present IMO. I don't see any issue with it being
-> > > different for pre-v7.
-> > > 
-> > Yes it's better to have 'reg' with value 0 than not having it.
-> > Otherwise this generic of_get_cpu_node implementation would need some
-> > _hack_ to handle that case.
-> 
-> I'm not sure that having some code to handle a difference in standard
-> between two architectures is a hack. If anything, I'd argue encoding a
-> reg of 0 that corresponds to a nonexistent MPIDR value (given that's
-> what the reg property is defined to map to on ARM) is more of a hack ;)
-> 
-> I'm not averse to having a reg value of 0 for this case, but given that
-> there are existing devicetrees without it, requiring a reg property will
-> break compatibility with them.
 
-Then special cases those device trees, but you changing existing
-convention really needs to be avoided. The referenced documentation
-change is brand new, so we're not stuck with it.
+__get_cpu_var() is used for multiple purposes in the kernel source. One of them is
+address calculation via the form &__get_cpu_var(x). This calculates the address for
+the instance of the percpu variable of the current processor based on an offset.
 
-g.
+Other use cases are for storing and retrieving data from the current processors percpu area.
+__get_cpu_var() can be used as an lvalue when writing data or on the right side of an assignment.
 
+__get_cpu_var() is defined as :
+
+
+#define __get_cpu_var(var) (*this_cpu_ptr(&(var)))
+
+
+
+__get_cpu_var() always only does an address determination. However, store and retrieve operations
+could use a segment prefix (or global register on other platforms) to avoid the address calculation.
+
+this_cpu_write() and this_cpu_read() can directly take an offset into a percpu area and use
+optimized assembly code to read and write per cpu variables.
+
+
+This patch converts __get_cpu_var into either an explicit address calculation using this_cpu_ptr()
+or into a use of this_cpu operations that use the offset. Thereby address calcualtions are avoided
+and less registers are used when code is generated.
+
+At the end of the patchset all uses of __get_cpu_var have been removed so the macro is removed too.
+
+The patchset includes passes over all arches as well. Once these operations are used throughout then
+specialized macros can be defined in non -x86 arches as well in order to optimize per cpu access by
+f.e. using a global register that may be set to the per cpu base.
+
+
+
+
+Transformations done to __get_cpu_var()
+
+
+1. Determine the address of the percpu instance of the current processor.
+
+	DEFINE_PER_CPU(int, y);
+	int *x = &__get_cpu_var(y);
+
+    Converts to
+
+	int *x = this_cpu_ptr(&y);
+
+
+2. Same as #1 but this time an array structure is involved.
+
+	DEFINE_PER_CPU(int, y[20]);
+	int *x = __get_cpu_var(y);
+
+    Converts to
+
+	int *x = this_cpu_ptr(y);
+
+
+3. Retrieve the content of the current processors instance of a per cpu variable.
+
+	DEFINE_PER_CPU(int, u);
+	int x = __get_cpu_var(y)
+
+   Converts to
+
+	int x = __this_cpu_read(y);
+
+
+4. Retrieve the content of a percpu struct
+
+	DEFINE_PER_CPU(struct mystruct, y);
+	struct mystruct x = __get_cpu_var(y);
+
+   Converts to
+
+	memcpy(this_cpu_ptr(&x), y, sizeof(x));
+
+
+5. Assignment to a per cpu variable
+
+	DEFINE_PER_CPU(int, y)
+	__get_cpu_var(y) = x;
+
+   Converts to
+
+	this_cpu_write(y, x);
+
+
+6. Increment/Decrement etc of a per cpu variable
+
+	DEFINE_PER_CPU(int, y);
+	__get_cpu_var(y)++
+
+   Converts to
+
+	this_cpu_inc(y)
+
+
+
+Signed-off-by: Christoph Lameter <cl@linux.com>
+
+Index: linux/drivers/cpuidle/governors/ladder.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/ladder.c	2013-08-27 14:31:00.000000000 -0500
++++ linux/drivers/cpuidle/governors/ladder.c	2013-08-27 14:34:26.170362548 -0500
+@@ -66,7 +66,7 @@ static inline void ladder_do_selection(s
+ static int ladder_select_state(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	struct ladder_device_state *last_state;
+ 	int last_residency, last_idx = ldev->last_state_idx;
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+@@ -170,7 +170,7 @@ static int ladder_enable_device(struct c
+  */
+ static void ladder_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	if (index > 0)
+ 		ldev->last_state_idx = index;
+ }
+Index: linux/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/menu.c	2013-08-27 14:31:00.000000000 -0500
++++ linux/drivers/cpuidle/governors/menu.c	2013-08-27 14:34:26.170362548 -0500
+@@ -258,7 +258,7 @@ again:
+  */
+ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
+ 	int multiplier;
+@@ -342,7 +342,7 @@ static int menu_select(struct cpuidle_dr
+  */
+ static void menu_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	data->last_state_idx = index;
+ 	if (index >= 0)
+ 		data->needs_update = 1;
+@@ -355,7 +355,7 @@ static void menu_reflect(struct cpuidle_
+  */
+ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int last_idx = data->last_state_idx;
+ 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
+ 	struct cpuidle_state *target = &drv->states[last_idx];
