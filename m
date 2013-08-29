@@ -1,80 +1,94 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [GIT PULL] ARM: TC2: CPU idle big.LITTLE driver
-Date: Thu, 29 Aug 2013 11:13:42 +0200
-Message-ID: <521F10C6.3000409@linaro.org>
-References: <20130812153422.GA6426@e102568-lin.cambridge.arm.com> <20130825090848.GA12256@e102568-lin.cambridge.arm.com> <20130828183624.GH8607@quad.lixom.net>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
+ other architectures
+Date: Thu, 29 Aug 2013 10:50:23 +0100
+Message-ID: <20130829095023.GB2878@e102568-lin.cambridge.arm.com>
+References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <2032060.4bgTKOdEX2@flatron>
+ <1376777376.25016.11.camel@pasglop>
+ <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
+ <5212177C.8000709@gmail.com>
+ <521223FA.5050903@arm.com>
+ <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
+ <20130828194638.AB78E3E0A6F@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f50.google.com ([209.85.214.50]:53466 "EHLO
-	mail-bk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752488Ab3H2JNv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 05:13:51 -0400
-Received: by mail-bk0-f50.google.com with SMTP id mz11so54935bkb.9
-        for <linux-pm@vger.kernel.org>; Thu, 29 Aug 2013 02:13:50 -0700 (PDT)
-In-Reply-To: <20130828183624.GH8607@quad.lixom.net>
+Received: from service87.mimecast.com ([91.220.42.44]:40190 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753134Ab3H2Jua convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 05:50:30 -0400
+In-Reply-To: <20130828194638.AB78E3E0A6F@localhost>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Olof Johansson <olof@lixom.net>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, khilman@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, nicolas.pitre@linaro.org
+To: Grant Likely <grant.likely@linaro.org>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Rob Herring <robherring2@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 08/28/2013 08:36 PM, Olof Johansson wrote:
-> On Sun, Aug 25, 2013 at 10:08:48AM +0100, Lorenzo Pieralisi wrote:
->> Hi Olof, Kevin,
->>
->> On Mon, Aug 12, 2013 at 04:34:22PM +0100, Lorenzo Pieralisi wrote:
->>> Hi Olof, Kevin,
->>>
->>> please pull this patch series that provides a CPU idle driver for t=
-he vexpress
->>> TC2 testchip, and it is a stepping stone towards an ARM unified CPU=
- idle driver
->>> based on the MCPM framework.
->>>
->>> Series is based against this pull request from Pawel which is a str=
-ict
->>> dependency and they must be merged in order:
->>>
->>> http://lists.infradead.org/pipermail/linux-arm-kernel/2013-August/1=
-90067.html
->>
->> May I ask you please the status of this pull request ? It is to know=
- if
->> it is ok as it is or I have to do something on my side, thanks.
->=20
-> This needed a rebase on top of the latest version of the mcpm backend=
- branch,
-> since it's based on an older version.
->=20
-> I also don't see an ack from any of the cpuidle maintainers, if you w=
-ant to
-> take it through arm-soc you need to get them to ack it for that purpo=
-se. I see
-> that you got an informal "It sounds good to me" in
-> http://www.spinics.net/lists/arm-kernel/msg266442.html, but please be=
- diligent
-> in collecting these in the future.
+On Wed, Aug 28, 2013 at 08:46:38PM +0100, Grant Likely wrote:
+> On Thu, 22 Aug 2013 14:59:30 +0100, Mark Rutland <mark.rutland@arm.com> wrote:
+> > On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
+> > > On 19/08/13 14:02, Rob Herring wrote:
+> > > > On 08/19/2013 05:19 AM, Mark Rutland wrote:
+> > > >> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
+> > > >>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
+> > > >>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
+> > > >>>> which 
+> > > >>>> the updated bindings[1] define #address-cells = <0> and so no reg 
+> > > >>>> property.
+> > > >>>>
+> > > >>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
+> > > >>>
+> > > >>> Why did you do that in the binding ? That sounds like looking to create
+> > > >>> problems ... 
+> > > >>>
+> > > >>> Traditionally, UP setups just used "0" as the "reg" property on other
+> > > >>> architectures, why do differently ?
+> > > >>
+> > > >> The decision was taken because we defined our reg property to refer to
+> > > >> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
+> > > >> there's no MPIDR register at all. Given there can only be a single CPU
+> > > >> in that case, describing a register that wasn't present didn't seem
+> > > >> necessary or helpful.
+> > > > 
+> > > > What exactly reg represents is up to the binding definition, but it
+> > > > still should be present IMO. I don't see any issue with it being
+> > > > different for pre-v7.
+> > > > 
+> > > Yes it's better to have 'reg' with value 0 than not having it.
+> > > Otherwise this generic of_get_cpu_node implementation would need some
+> > > _hack_ to handle that case.
+> > 
+> > I'm not sure that having some code to handle a difference in standard
+> > between two architectures is a hack. If anything, I'd argue encoding a
+> > reg of 0 that corresponds to a nonexistent MPIDR value (given that's
+> > what the reg property is defined to map to on ARM) is more of a hack ;)
+> > 
+> > I'm not averse to having a reg value of 0 for this case, but given that
+> > there are existing devicetrees without it, requiring a reg property will
+> > break compatibility with them.
+> 
+> Then special cases those device trees, but you changing existing
+> convention really needs to be avoided. The referenced documentation
+> change is brand new, so we're not stuck with it.
 
-Hi Olof,
+I have no problem with changing the bindings and forcing:
 
-there is my signed-off for the cpuidle patch because I wrote part of it
-and Lorenzo finished it. This is why I thought it was not necessary to
-add my acked-by.
+#address-cells = <1>;
+reg = <0>;
 
-> So, I've essentially applied the topmost 3 patches in a new branch th=
-at's based
-> on our version of vexpress/mcpm, and merged that in.
+for UP predating v7, my big worry is related to in-kernel dts that we
+already patched to follow the #address-cells = <0> rule (and we had to
+do it since we got asked that question multiple times on the public
+lists).
 
-Cool thanks !
+What do you mean by "special case those device trees" ? I have not
+planned to patch them again, unless we really consider that a necessary
+evil.
 
-  -- Daniel
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Lorenzo
 
