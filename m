@@ -1,46 +1,44 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [PATCH v2] cpuidle: coupled: abort idle if pokes are pending
-Date: Thu, 29 Aug 2013 14:23:10 -0700
-Message-ID: <CAMbhsRTnMKMVXBav+FwJxw3+Ochk-wfs8WU3oWAExzYMfm4RRw@mail.gmail.com>
-References: <1377740508-22134-1-git-send-email-ccross@android.com>
-	<7272744.lhUaaLc3cm@vostro.rjw.lan>
+From: Pavel Machek <pavel-ynQEQJNshbs@public.gmane.org>
+Subject: Re: [RFC PATCH 00/18 v3] Signature verification of hibernate
+ snapshot
+Date: Thu, 29 Aug 2013 23:32:50 +0200
+Message-ID: <20130829213249.GA25940@amd.pavel.ucw.cz>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+ <87eh9dzg00.fsf@mid.deneb.enyo.de>
+ <1377734505.19568.39.camel@linux-s257.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:60728 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844Ab3H2VXM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 17:23:12 -0400
-Received: by mail-ob0-f172.google.com with SMTP id er7so1100446obc.31
-        for <linux-pm@vger.kernel.org>; Thu, 29 Aug 2013 14:23:11 -0700 (PDT)
-In-Reply-To: <7272744.lhUaaLc3cm@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1377734505.19568.39.camel-ONCj+Eqt86TasUa73XJKwA@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
+Cc: Florian Weimer <fw-d32yF4oPJVt0XxTmqZlbVQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Neil Zhang <zhangwm@marvell.com>, Joseph Lo <josephl@nvidia.com>, linux-tegra <linux-tegra@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Jon Medhurst <tixy@linaro.org>, Sivaram Nair <sivaramn@nvidia.com>
 
-On Thu, Aug 29, 2013 at 1:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, August 28, 2013 06:41:47 PM Colin Cross wrote:
->> Joseph Lo <josephl@nvidia.com> reported a lockup on Tegra20 caused
->> by a race condition in coupled cpuidle.  When two or more cpus
->> enter idle at the same time, the first cpus to arrive may go to the
->> ready loop without processing pending pokes from the last cpu to
->> arrive.
->>
->> This patch adds a check for pending pokes once all cpus have been
->> synchronized in the ready loop and resets the coupled state and
->> retries if any cpus failed to handle their pending poke.
->>
->> Retrying on all cpus may trigger the same issue again, so this patch
->> also adds a check to ensure that each cpu has received at least one
->> poke between when it enters the waiting loop and when it moves on to
->> the ready loop.
->>
->> Reported-by: Joseph Lo <josephl@nvidia.com>
->> Tested-by: Stephen Warren <swarren@nvidia.com>
->> Tested-by: Joseph Lo <josephl@nvidia.com>
->> Signed-off-by: Colin Cross <ccross@android.com>
->
-> Still stable material I suppose?
+Hi!
 
-Yes please
+> > >    - Bootloader store the public key to EFI boottime variable by itself
+> > >    - Bootloader put The private key to S4SignKey EFI variable for forward to
+> > >      kernel.
+> > 
+> > Is the UEFI NVRAM really suited for such regular updates?
+> > 
+> 
+> Yes, Matthew raised this concern at before. I modified patch to load
+> private key in efi stub kernel, before ExitBootServices(), that means we
+> don't need generate key-pair at every system boot. So, the above
+> procedure of efi bootloader will only run one time. 
+> 
+> User can enable SNAPSHOT_REGEN_KEYS kernel config to notify efi
+> booloader regenerate key-pair for every S4 to improve security if he
+> want. So, the key-pair re-generate procedure will only launched when S4
+> resume, not every system boot.
+
+How many writes can UEFI NVRAM survive? (Is it NOR?)
+
+"every S4 resume" may be approximately "every boot" for some users...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
