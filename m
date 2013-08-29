@@ -1,94 +1,50 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH v2 3/4] powerpc: refactor of_get_cpu_node to support
- other architectures
-Date: Thu, 29 Aug 2013 10:50:23 +0100
-Message-ID: <20130829095023.GB2878@e102568-lin.cambridge.arm.com>
-References: <1376586580-5409-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1376674791-28244-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <2032060.4bgTKOdEX2@flatron>
- <1376777376.25016.11.camel@pasglop>
- <20130819101922.GI3719@e106331-lin.cambridge.arm.com>
- <5212177C.8000709@gmail.com>
- <521223FA.5050903@arm.com>
- <20130822135930.GC23152@e106331-lin.cambridge.arm.com>
- <20130828194638.AB78E3E0A6F@localhost>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [Query] CPUFreq: Does these machines have separate clock domains for CPUs?
+Date: Thu, 29 Aug 2013 15:45:58 +0530
+Message-ID: <CAKohponWn-RN7-6sdhghd6RGCOd357G+TKLsxHfqnSCuMD7xxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:40190 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753134Ab3H2Jua convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 05:50:30 -0400
-In-Reply-To: <20130828194638.AB78E3E0A6F@localhost>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <sparclinux-owner@vger.kernel.org>
+Sender: sparclinux-owner@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Miller <davem@davemloft.net>, Eric Miao <eric.y.miao@gmail.com>, Jesper Nilsson <jesper.nilsson@axis.com>, John Crispin <blogic@openwrt.org>, linux-cris-kernel@axis.com, linux-sh@vger.kernel.org, Mikael Starvik <starvik@axis.com>, Paul Mundt <lethal@linux-sh.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Miao Steven <realmz6@gmail.com>, Dave Jones <davej@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Grant Likely <grant.likely@linaro.org>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Rob Herring <robherring2@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Aug 28, 2013 at 08:46:38PM +0100, Grant Likely wrote:
-> On Thu, 22 Aug 2013 14:59:30 +0100, Mark Rutland <mark.rutland@arm.com> wrote:
-> > On Mon, Aug 19, 2013 at 02:56:10PM +0100, Sudeep KarkadaNagesha wrote:
-> > > On 19/08/13 14:02, Rob Herring wrote:
-> > > > On 08/19/2013 05:19 AM, Mark Rutland wrote:
-> > > >> On Sat, Aug 17, 2013 at 11:09:36PM +0100, Benjamin Herrenschmidt wrote:
-> > > >>> On Sat, 2013-08-17 at 12:50 +0200, Tomasz Figa wrote:
-> > > >>>> I wonder how would this handle uniprocessor ARM (pre-v7) cores, for
-> > > >>>> which 
-> > > >>>> the updated bindings[1] define #address-cells = <0> and so no reg 
-> > > >>>> property.
-> > > >>>>
-> > > >>>> [1] - http://thread.gmane.org/gmane.linux.ports.arm.kernel/260795
-> > > >>>
-> > > >>> Why did you do that in the binding ? That sounds like looking to create
-> > > >>> problems ... 
-> > > >>>
-> > > >>> Traditionally, UP setups just used "0" as the "reg" property on other
-> > > >>> architectures, why do differently ?
-> > > >>
-> > > >> The decision was taken because we defined our reg property to refer to
-> > > >> the MPIDR register's Aff{2,1,0} bitfields, and on UP cores before v7
-> > > >> there's no MPIDR register at all. Given there can only be a single CPU
-> > > >> in that case, describing a register that wasn't present didn't seem
-> > > >> necessary or helpful.
-> > > > 
-> > > > What exactly reg represents is up to the binding definition, but it
-> > > > still should be present IMO. I don't see any issue with it being
-> > > > different for pre-v7.
-> > > > 
-> > > Yes it's better to have 'reg' with value 0 than not having it.
-> > > Otherwise this generic of_get_cpu_node implementation would need some
-> > > _hack_ to handle that case.
-> > 
-> > I'm not sure that having some code to handle a difference in standard
-> > between two architectures is a hack. If anything, I'd argue encoding a
-> > reg of 0 that corresponds to a nonexistent MPIDR value (given that's
-> > what the reg property is defined to map to on ARM) is more of a hack ;)
-> > 
-> > I'm not averse to having a reg value of 0 for this case, but given that
-> > there are existing devicetrees without it, requiring a reg property will
-> > break compatibility with them.
-> 
-> Then special cases those device trees, but you changing existing
-> convention really needs to be avoided. The referenced documentation
-> change is brand new, so we're not stuck with it.
+Hi,
 
-I have no problem with changing the bindings and forcing:
+I have been doing some CPUFreq cleanup work and
+wanted to know if the below mentioned machines have separate
+clock domains for their CPUs or all share the same domain?
 
-#address-cells = <1>;
-reg = <0>;
+So, that we can use some generic routines for these drivers which
+would eventually do:
 
-for UP predating v7, my big worry is related to in-kernel dts that we
-already patched to follow the #address-cells = <0> rule (and we had to
-do it since we got asked that question multiple times on the public
-lists).
+cpumask_setall(policy->cpus);
 
-What do you mean by "special case those device trees" ? I have not
-planned to patch them again, unless we really consider that a necessary
-evil.
+And I wanted to make sure that this doesn't break them.. :)
 
-Thanks,
-Lorenzo
+......
 
+The drivers are:
+
+drivers/cpufreq/at32ap-cpufreq.c
+drivers/cpufreq/blackfin-cpufreq.c
+drivers/cpufreq/cris-artpec3-cpufreq.c
+drivers/cpufreq/cris-etraxfs-cpufreq.c
+drivers/cpufreq/davinci-cpufreq.c
+drivers/cpufreq/e_powersaver.c
+drivers/cpufreq/elanfreq.c
+drivers/cpufreq/longhaul.c
+drivers/cpufreq/loongson2_cpufreq.c
+drivers/cpufreq/pmac32-cpufreq.c
+drivers/cpufreq/powernow-k6.c
+drivers/cpufreq/powernow-k7.c
+drivers/cpufreq/pxa2xx-cpufreq.c
+drivers/cpufreq/pxa3xx-cpufreq.c
+drivers/cpufreq/sc520_freq.c
+drivers/cpufreq/sh-cpufreq.c
+drivers/cpufreq/sparc-us2e-cpufreq.c
+drivers/cpufreq/sparc-us3-cpufreq.c
+
+--
+Viresh
