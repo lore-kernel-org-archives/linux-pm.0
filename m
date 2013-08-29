@@ -1,113 +1,43 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv2 3/5] drivers: thermal: make usage of CONFIG_THERMAL_HWMON optional
-Date: Thu, 29 Aug 2013 16:12:47 -0400
-Message-ID: <1377807167-12206-1-git-send-email-eduardo.valentin@ti.com>
-References: <1377648836.2335.252.camel@rzhang-lenovo>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH v2] cpuidle: coupled: abort idle if pokes are pending
+Date: Thu, 29 Aug 2013 22:28:28 +0200
+Message-ID: <7272744.lhUaaLc3cm@vostro.rjw.lan>
+References: <1377740508-22134-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:51317 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757082Ab3H2UNV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 16:13:21 -0400
-In-Reply-To: <1377648836.2335.252.camel@rzhang-lenovo>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1377740508-22134-1-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Zhang <zhangwm-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Jon Medhurst <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sivaram Nair <sivaramn-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, rjw@sisk.pl
-Cc: wni@nvidia.com, Eduardo Valentin <eduardo.valentin@ti.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-When registering a new thermal_device, the thermal framework
-will always add a hwmon sysfs interface.
+On Wednesday, August 28, 2013 06:41:47 PM Colin Cross wrote:
+> Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> reported a lockup on Tegra20 caused
+> by a race condition in coupled cpuidle.  When two or more cpus
+> enter idle at the same time, the first cpus to arrive may go to the
+> ready loop without processing pending pokes from the last cpu to
+> arrive.
+> 
+> This patch adds a check for pending pokes once all cpus have been
+> synchronized in the ready loop and resets the coupled state and
+> retries if any cpus failed to handle their pending poke.
+> 
+> Retrying on all cpus may trigger the same issue again, so this patch
+> also adds a check to ensure that each cpu has received at least one
+> poke between when it enters the waiting loop and when it moves on to
+> the ready loop.
+> 
+> Reported-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Tested-by: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Tested-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
 
-This patch adds a flag to make this behavior optional. Now
-when registering a new thermal device, the caller can
-optionally inform if hwmon interface is desirable. This can
-be done by means of passing a thermal_zone_params.no_hwmon == true.
+Still stable material I suppose?
 
-In order to keep same behavior as of today, all current
-calls will by default create the hwmon interface.
+Queued up for 3.12, thanks!
 
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>
-Suggested-by: Wei Ni <wni@nvidia.com>
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- Documentation/thermal/sysfs-api.txt | 5 +++++
- drivers/thermal/thermal_core.c      | 8 +++++---
- include/linux/thermal.h             | 8 ++++++++
- 3 files changed, 18 insertions(+), 3 deletions(-)
----
-
-Hello all,
-
-So, here is then a different way of implementing same feature.
-As requested by Rui, now the flag goes via thermal_zone_params,
-because this seams to be the preferred way, at least in near future.
-
-Using this method the amount of subsystems involved is reduced to 1:
-thermal, as requested by Raphael. I just made is a negative flag
-in order to keep the same behavior of the existing drivers, without
-changing them. The flag is documented though.
-
-All best,
-
-
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index a71bd5b..37c5486 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -142,6 +142,11 @@ temperature) and throttle appropriate devices.
-     This is an optional feature where some platforms can choose not to
-     provide this data.
-     .governor_name: Name of the thermal governor used for this zone
-+    .no_hwmon: a boolean to indicate if the thermal to hwmon sysfs interface
-+               is required. when no_hwmon == false, a hwmon sysfs interface
-+               will be created. when no_hwmon == true, nothing will be done.
-+               In case the thermal_zone_params is NULL, the hwmon interface
-+               will be created (for backward compatibility).
-     .num_tbps: Number of thermal_bind_params entries for this zone
-     .tbp: thermal_bind_params entries
- 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 247528b..51648bf 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1462,9 +1462,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 
- 	mutex_unlock(&thermal_governor_lock);
- 
--	result = thermal_add_hwmon_sysfs(tz);
--	if (result)
--		goto unregister;
-+	if (!tz->tzp || !tz->tzp->no_hwmon) {
-+		result = thermal_add_hwmon_sysfs(tz);
-+		if (result)
-+			goto unregister;
-+	}
- 
- 	mutex_lock(&thermal_list_lock);
- 	list_add_tail(&tz->node, &thermal_tz_list);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index a386a1c..b4a975f 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -214,6 +214,14 @@ struct thermal_bind_params {
- /* Structure to define Thermal Zone parameters */
- struct thermal_zone_params {
- 	char governor_name[THERMAL_NAME_LENGTH];
-+
-+	/*
-+	 * a boolean to indicate if the thermal to hwmon sysfs interface
-+	 * is required. when no_hwmon == false, a hwmon sysfs interface
-+	 * will be created. when no_hwmon == true, nothing will be done
-+	 */
-+	bool no_hwmon;
-+
- 	int num_tbps;	/* Number of tbp entries */
- 	struct thermal_bind_params *tbp;
- };
 -- 
-1.8.2.1.342.gfa7285d
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
