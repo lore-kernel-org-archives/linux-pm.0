@@ -1,51 +1,159 @@
 From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup
- and log event in pstore.
-Date: Thu, 29 Aug 2013 11:43:33 -0700
-Message-ID: <521F9655.60400@linaro.org>
-References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org> <3196266.rMZQj4Yosc@vostro.rjw.lan> <CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com> <1761440.cq52yMKNRv@vostro.rjw.lan> <521E7B8A.6060203@linaro.org> <CAMbhsRSqSC1Ni4QsZ_0sTrvaW3_feXFyGawZbWc34wuhA2BNeg@mail.gmail.com> <20130829182315.GA23346@amd.pavel.ucw.cz>
+Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
+Date: Thu, 29 Aug 2013 12:30:07 -0700
+Message-ID: <521FA13F.5040204@linaro.org>
+References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com> <521F95BB.2060600@tilera.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130829182315.GA23346@amd.pavel.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Colin Cross <ccross@android.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:34988 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755594Ab3H2TaK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 15:30:10 -0400
+Received: by mail-pb0-f46.google.com with SMTP id rq2so867961pbb.5
+        for <linux-pm@vger.kernel.org>; Thu, 29 Aug 2013 12:30:10 -0700 (PDT)
+In-Reply-To: <521F95BB.2060600@tilera.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chris Metcalf <cmetcalf@tilera.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 08/29/2013 11:23 AM, Pavel Machek wrote:
-> On Wed 2013-08-28 15:43:42, Colin Cross wrote:
->> On Wed, Aug 28, 2013 at 3:36 PM, John Stultz <john.stultz@linaro.org> wrote:
->>> On 08/28/2013 01:52 PM, Rafael J. Wysocki wrote:
->>>> On Wednesday, August 28, 2013 10:45:45 AM Zoran Markovic wrote:
->>>>> Hi Rafael,
->>>>>> It doesn't look too bad from a quick look, but there's a couple of things
->>>>>> I don't like in it still (relatively minor).
->>>>> If there are things you would like changed in this patch, please let
->>>>> me know. It would be nice to catch the 3.12 merge window.
->>>> Well, it's not in my queue to be honest.
->>>>
->>>> Is there any practical reason why it should go into the next release?
->>> I wouldn't say its critical for the next release, but I feel like this
->>> was the same response last cycle. Zoran's since investigated the various
->>> alternative approaches you've suggested, and continues to be interested
->>> in resolving your remaining objections.
->>>
->>> Its a useful feature the Android devs use, which could also help
->>> non-android developers debug suspend issues on their systems.
->>>
->>> If you really just feel its something best left out of tree, that's hard
->>> to argue against. Its just a debug tool and the android guys don't have
->>> an issue carrying their own tree, after all. But the cost of leaving it
->>> out is just the potential of others having to re-implement similar hacks
->>> on their own instead of collaborating on shared infrastructure.
->> And the benefit is that you are more likely to get bugreports that
->> have a stack trace of the offending suspend callback instead of "my
->> laptop doesn't suspend any more".
-> Laptops do not have persistent store for dmesg. So... are you sure?
+On 08/29/2013 11:40 AM, Chris Metcalf wrote:
+> Ping!  I have this work queued up to push as part of the linux-tile tree for the
+> merge window.  Is that acceptable to the timekeeping/clocksource folks?
+> Should I hold it back pending further review?  Or does it make sense to
+> push it as-is and think about further improvements, if any, for a later release?
+>
+> https://lkml.org/lkml/2013/8/9/497
+> https://lkml.org/lkml/2013/8/9/499
 
-I pstore has support for EFI, so some laptops do.
+Oh right! Sorry for the slow response here! I originally replied while I
+was on vacation and didn't flag the thread to follow up on.
+
+Few comments below.
+
+
+> On 8/14/2013 5:30 PM, Chris Metcalf wrote:
+>> On 8/14/2013 2:17 PM, John Stultz wrote:
+>>> So a long while back we had tried to adapt for clock frequency changes
+>>> on things like the TSC, but it resulting in *terrible* timekeeping as
+>>> the latency between the frequency change and the handling of the
+>>> notifications caused lots of clock drift, making it impossible for NTP
+>>> or other synchronization methods to work properly.
+>> We've done quite a bit of testing to show that our current implementation
+>> doesn't have any clock drift over time.  Basically, we take a machine
+>> running some workload, sync its time via ntpdate, and then run a script
+>> that changes the CPU speed up or down continually, with a delay of a couple
+>> seconds in between so we run for some decent amount of time at each speed.
+Is this delay randomized? If its too perfect back and forth, you may be
+undoing any skew caused by slowing the clock.
+
+
+>> Every 5 minutes or so, the script runs ntpdate -q to see what the offset
+>> from real time is.  The skew we see doing that for a couple of days is
+>> identical to that seen when we _aren't_ changing the CPU frequency.
+>>
+>> A key part of making this work, as noted in the comments at the head of
+>> timekeeping_chfreq_prep(), is the fact that we do the frequency change
+>> under stop_machine() to make sure that no CPU gets an opportunity to
+>> sample the clock while it's being changed.
+>>
+>> However, I'm wondering whether you're talking about some other sort of
+>> much more local clock skew or other frequency effect that perhaps we
+>> haven't tested for.  (For instance, we haven't actually run this code
+>> on an NTP server.)  Can you give a bit more detail on exactly what sorts
+>> of bad behavior you saw with the previous implementation, and things one
+>> might do to detect them?
+
+What I'm concerned about is how the system time reacts when its being
+corrected by ntp while these frequency changes are going on. Basically
+given some drift, can NTP drive the system time it to converge if the
+underlying clock frequency is changing around on it.
+
+This seems unlikely with the current patch, as every time
+tk_setup_internals is called, the ntp_error is cleared (but its not
+clearing the ntp state machine).
+
+Whats more problematic at a fundamental level is that the drift NTP is
+correcting for may not be the same at the different clock frequency
+levels. So there's no sane way for to actually calculate a accurate
+frequency correction.
+
+If the freq changes were rare enough, we could clear the ntp state
+machine each change, letting NTP know it needs to sort things out again.
+But I suspect freq changes are likely to be more often then every 5
+minutes or so.
+
+You might want to try to collect some ntp convergence graphs (using a
+local ntp server, also prob good to use minpoll 4 maxpoll 4 to see how
+tightly you can follow the server) to see how fixed freq vs this dynamic
+freq manipulations effect ntp behavior. Maybe the noise and error from
+the freq changes is really small enough in the larger scope that its not
+something I should fret over? But I'm still a bit skeptical. There's
+some plot generating tips at the bottom of this link:
+http://www.ntp.org/ntpfaq/NTP-s-trouble.htm
+
+
+Also looking closer at the actual patch:
+
+> +int timekeeping_chfreq_prep(struct clocksource *clock, cycle_t *start_cycle)
+> +{
+> +	if (timekeeper.clock != clock)
+> +		return 1;
+> +
+> +	timekeeping_forward_now(&timekeeper);
+> +	*start_cycle = timekeeper.clock->cycle_last;
+> +
+> +	return 0;
+> +}
+
+I don't see any locking here at all.
+
+
+
+> +
+> +/**
+> + * timekeeping_chfreq() - change the frequency of the clocksource being
+> + *   used for timekeeping, and then recompute the internal timekeeping
+> + *   parameters which depend upon that
+> + * @freq:		New frequency for the clocksource, in hertz.
+> + * @end_cycle:		Cycle count, in the new clock domain.
+> + * @delta_ns:		Time delta in ns between start_cycle (as returned
+> + *			from timekeeping_chfreq_prep()) and end_cycle.
+> + *
+> + * See the timekeeping_chfreq_prep() description for how this routine is
+> + * used.
+> + */
+> +void timekeeping_chfreq(unsigned int freq, cycle_t end_cycle, u64 delta_ns)
+> +{
+> +	struct clocksource *clock = timekeeper.clock;
+> +
+> +	write_seqlock(&jiffies_lock);
+
+Why are you taking the jiffies_lock here instead of the timekeeper_lock?
+
+Note also the timekeeping locking is a bit more complex, so writers need
+to take both timekeeper_lock and the timekeeper_seq. Check out other
+callers of tk_setup_internals for examples.
+
+
+> +	__clocksource_updatefreq_hz(clock, freq);
+> +	tk_setup_internals(&timekeeper, clock);
+> +
+
+So tk_setup_internals is probably overly heavyweight here, and isn't
+really designed handle the same clock being passed in.
+
+For instance, if the shift value chagnes in
+__clocksource_updatefreq_hz(), you'll not end up doing the right
+conversion of the xtime_nsec value. It might not matter since you
+accumulated everything w/ forward_now, but still looks off and is likely
+to confuse.
+
+So outside of my larger suspicion that this isn't actually going to
+work, this doesn't look like 3.12 material yet to me.
 
 thanks
 -john
+
