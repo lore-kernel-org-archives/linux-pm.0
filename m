@@ -1,50 +1,115 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] cpufreq: Don't use smp_processor_id() in preemptible context
-Date: Thu, 29 Aug 2013 22:31:19 +0200
-Message-ID: <3563046.VrjExr8Wi1@vostro.rjw.lan>
-References: <521E24CE.9090407@codeaurora.org> <1377725085-16798-1-git-send-email-sboyd@codeaurora.org> <CAKohpo=VEiA11aaJPBi5NiAoq+GwTx2dkmpEa=DVE=zcuufGGA@mail.gmail.com>
+Subject: [PATCH 3/3] PM / hibernate / memory hotplug: Rework mutual exclusion
+Date: Thu, 29 Aug 2013 23:18:49 +0200
+Message-ID: <1562298.ZjRvhqQzT7@vostro.rjw.lan>
+References: <9589253.Co8jZpnWdd@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:42920 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753680Ab3H2UUd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 29 Aug 2013 16:20:33 -0400
-In-Reply-To: <CAKohpo=VEiA11aaJPBi5NiAoq+GwTx2dkmpEa=DVE=zcuufGGA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <9589253.Co8jZpnWdd@vostro.rjw.lan>
+Sender: owner-linux-mm@kvack.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Toshi Kani <toshi.kani@hp.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thursday, August 29, 2013 09:50:22 AM Viresh Kumar wrote:
-> On 29 August 2013 02:54, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> > Workqueues are preemptible even if works are queued on them with
-> > queue_work_on(). Let's use raw_smp_processor_id() here to silence
-> > the warning.
-> >
-> > BUG: using smp_processor_id() in preemptible [00000000] code: kworker/3:2/674
-> > caller is gov_queue_work+0x28/0xb0
-> > CPU: 0 PID: 674 Comm: kworker/3:2 Tainted: G        W    3.10.0 #30
-> > Workqueue: events od_dbs_timer
-> > [<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
-> > [<c0109dec>] (show_stack+0x10/0x14) from [<c03885a4>] (debug_smp_processor_id+0xbc/0xf0)
-> > [<c03885a4>] (debug_smp_processor_id+0xbc/0xf0) from [<c0635864>] (gov_queue_work+0x28/0xb0)
-> > [<c0635864>] (gov_queue_work+0x28/0xb0) from [<c0635618>] (od_dbs_timer+0x108/0x134)
-> > [<c0635618>] (od_dbs_timer+0x108/0x134) from [<c01aa8f8>] (process_one_work+0x25c/0x444)
-> > [<c01aa8f8>] (process_one_work+0x25c/0x444) from [<c01aaf88>] (worker_thread+0x200/0x344)
-> > [<c01aaf88>] (worker_thread+0x200/0x344) from [<c01b03bc>] (kthread+0xa0/0xb0)
-> > [<c01b03bc>] (kthread+0xa0/0xb0) from [<c01061b8>] (ret_from_fork+0x14/0x3c)
-> >
-> > Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-> > ---
-> >  drivers/cpufreq/cpufreq_governor.c | 9 ++++++++-
-> >  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Queued up for 3.12, thanks!
+Since all of the memory hotplug operations have to be carried out
+under device_hotplug_lock, they won't need to acquire pm_mutex if
+device_hotplug_lock is held around hibernation.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+For this reason, make the hibernation code acquire
+device_hotplug_lock after freezing user space processes and
+release it before thawing them.  At the same tim drop the
+lock_system_sleep() and unlock_system_sleep() calls from
+lock_memory_hotplug() and unlock_memory_hotplug(), respectively.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/hibernate.c |    4 ++++
+ kernel/power/user.c      |    2 ++
+ mm/memory_hotplug.c      |    4 ----
+ 3 files changed, 6 insertions(+), 4 deletions(-)
+
+Index: linux-pm/kernel/power/hibernate.c
+===================================================================
+--- linux-pm.orig/kernel/power/hibernate.c
++++ linux-pm/kernel/power/hibernate.c
+@@ -652,6 +652,7 @@ int hibernate(void)
+ 	if (error)
+ 		goto Exit;
+ 
++	lock_device_hotplug();
+ 	/* Allocate memory management structures */
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+@@ -685,6 +686,7 @@ int hibernate(void)
+  Free_bitmaps:
+ 	free_basic_memory_bitmaps();
+  Thaw:
++	unlock_device_hotplug();
+ 	thaw_processes();
+ 
+ 	/* Don't bother checking whether freezer_test_done is true */
+@@ -814,6 +816,7 @@ static int software_resume(void)
+ 
+ 	pr_debug("PM: Loading hibernation image.\n");
+ 
++	lock_device_hotplug();
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+ 		goto Thaw;
+@@ -827,6 +830,7 @@ static int software_resume(void)
+ 	swsusp_free();
+ 	free_basic_memory_bitmaps();
+  Thaw:
++	unlock_device_hotplug();
+ 	thaw_processes();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_RESTORE);
+Index: linux-pm/kernel/power/user.c
+===================================================================
+--- linux-pm.orig/kernel/power/user.c
++++ linux-pm/kernel/power/user.c
+@@ -201,6 +201,7 @@ static long snapshot_ioctl(struct file *
+ 	if (!mutex_trylock(&pm_mutex))
+ 		return -EBUSY;
+ 
++	lock_device_hotplug();
+ 	data = filp->private_data;
+ 
+ 	switch (cmd) {
+@@ -373,6 +374,7 @@ static long snapshot_ioctl(struct file *
+ 
+ 	}
+ 
++	unlock_device_hotplug();
+ 	mutex_unlock(&pm_mutex);
+ 
+ 	return error;
+Index: linux-pm/mm/memory_hotplug.c
+===================================================================
+--- linux-pm.orig/mm/memory_hotplug.c
++++ linux-pm/mm/memory_hotplug.c
+@@ -51,14 +51,10 @@ DEFINE_MUTEX(mem_hotplug_mutex);
+ void lock_memory_hotplug(void)
+ {
+ 	mutex_lock(&mem_hotplug_mutex);
+-
+-	/* for exclusive hibernation if CONFIG_HIBERNATION=y */
+-	lock_system_sleep();
+ }
+ 
+ void unlock_memory_hotplug(void)
+ {
+-	unlock_system_sleep();
+ 	mutex_unlock(&mem_hotplug_mutex);
+ }
+ 
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
