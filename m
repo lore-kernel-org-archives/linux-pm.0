@@ -1,67 +1,61 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 04/16] cpufreq: cpu0: use cpufreq_generic_get() routine
-Date: Thu, 29 Aug 2013 21:07:27 +0800
-Message-ID: <20130829130725.GL18729@S2101-09.ap.freescale.net>
-References: <cover.1377272740.git.viresh.kumar@linaro.org>
- <6ae0de783646c5356717d761903502f354abfe84.1377272740.git.viresh.kumar@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume
+ lockup and log event in pstore.
+Date: Thu, 29 Aug 2013 20:23:15 +0200
+Message-ID: <20130829182315.GA23346@amd.pavel.ucw.cz>
+References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org>
+ <3196266.rMZQj4Yosc@vostro.rjw.lan>
+ <CAME+o4n8HqvGtAGX0wO+Zs_pdanKuhai6T3jg2V1Q4nWzxKk9A@mail.gmail.com>
+ <1761440.cq52yMKNRv@vostro.rjw.lan>
+ <521E7B8A.6060203@linaro.org>
+ <CAMbhsRSqSC1Ni4QsZ_0sTrvaW3_feXFyGawZbWc34wuhA2BNeg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52460 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557Ab3H2SXQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 14:23:16 -0400
 Content-Disposition: inline
-In-Reply-To: <6ae0de783646c5356717d761903502f354abfe84.1377272740.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <CAMbhsRSqSC1Ni4QsZ_0sTrvaW3_feXFyGawZbWc34wuhA2BNeg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: John Stultz <john.stultz@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Fri, Aug 23, 2013 at 09:20:39PM +0530, Viresh Kumar wrote:
-> We have common infrastructure available with us for getting a CPUs clk rate.
-> Lets use it for this driver.
+On Wed 2013-08-28 15:43:42, Colin Cross wrote:
+> On Wed, Aug 28, 2013 at 3:36 PM, John Stultz <john.stultz@linaro.org> wrote:
+> > On 08/28/2013 01:52 PM, Rafael J. Wysocki wrote:
+> >> On Wednesday, August 28, 2013 10:45:45 AM Zoran Markovic wrote:
+> >>> Hi Rafael,
+> >>>> It doesn't look too bad from a quick look, but there's a couple of things
+> >>>> I don't like in it still (relatively minor).
+> >>> If there are things you would like changed in this patch, please let
+> >>> me know. It would be nice to catch the 3.12 merge window.
+> >> Well, it's not in my queue to be honest.
+> >>
+> >> Is there any practical reason why it should go into the next release?
+> >
+> > I wouldn't say its critical for the next release, but I feel like this
+> > was the same response last cycle. Zoran's since investigated the various
+> > alternative approaches you've suggested, and continues to be interested
+> > in resolving your remaining objections.
+> >
+> > Its a useful feature the Android devs use, which could also help
+> > non-android developers debug suspend issues on their systems.
+> >
+> > If you really just feel its something best left out of tree, that's hard
+> > to argue against. Its just a debug tool and the android guys don't have
+> > an issue carrying their own tree, after all. But the cost of leaving it
+> > out is just the potential of others having to re-implement similar hacks
+> > on their own instead of collaborating on shared infrastructure.
 > 
-> Cc: Shawn Guo <shawn.guo@linaro.org>
+> And the benefit is that you are more likely to get bugreports that
+> have a stack trace of the offending suspend callback instead of "my
+> laptop doesn't suspend any more".
 
-Both this and imx6q one,
-
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq-cpu0.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index 7273bfc..62e52e3 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -29,11 +29,6 @@ static struct clk *cpu_clk;
->  static struct regulator *cpu_reg;
->  static struct cpufreq_frequency_table *freq_table;
->  
-> -static unsigned int cpu0_get_speed(unsigned int cpu)
-> -{
-> -	return clk_get_rate(cpu_clk) / 1000;
-> -}
-> -
->  static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->  {
->  	struct opp *opp;
-> @@ -99,6 +94,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->  
->  static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
->  {
-> +	policy->clk = cpu_clk;
->  	return cpufreq_generic_init(policy, freq_table, transition_latency);
->  }
->  
-> @@ -106,7 +102,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
->  	.flags = CPUFREQ_STICKY,
->  	.verify = cpufreq_generic_frequency_table_verify,
->  	.target_index = cpu0_set_target,
-> -	.get = cpu0_get_speed,
-> +	.get = cpufreq_generic_get,
->  	.init = cpu0_cpufreq_init,
->  	.exit = cpufreq_generic_exit,
->  	.name = "generic_cpu0",
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
+Laptops do not have persistent store for dmesg. So... are you sure?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
