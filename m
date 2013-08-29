@@ -1,61 +1,98 @@
-From: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 1/3] cpuidle: coupled: disable interrupts after entering
- safe state
-Date: Thu, 29 Aug 2013 00:12:17 -0700
-Message-ID: <CAMbhsRSTv9ivMY1=-4YPxPV0tCTcJnHwWOEvr_F5exg9A2Z1Mw@mail.gmail.com>
-References: <1377287112-12018-1-git-send-email-ccross@android.com>
-	<521EEF26.80803@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: mutex warning in cpufreq + RFC patch
+Date: Thu, 29 Aug 2013 14:07:44 +0530
+Message-ID: <CAKohpoke5BHypqKcLjPK5eHHvvfRTjCz36FMQNT1OGTVnueRkw@mail.gmail.com>
+References: <20130828025721.GA19754@codeaurora.org>
+	<CAKohpomLL0rCYngM81iaTV37TTsrYE+f3ouGuT2D6TRE5E4W5A@mail.gmail.com>
+	<521E2ADE.4070401@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <521EEF26.80803-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Neil Zhang <zhangwm-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <521E2ADE.4070401@codeaurora.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 28, 2013 at 11:50 PM, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> On Saturday 24 August 2013 01:15 AM, Colin Cross wrote:
+On 28 August 2013 22:22, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> On 08/27/13 23:58, Viresh Kumar wrote:
+>> I haven't gone through the hack yet, but I am trying to understand the
+>> problem first.. There had been some work in the past around this
+>> kind of scenarios..
 >>
->> Calling cpuidle_enter_state is expected to return with interrupts
->> enabled, but interrupts must be disabled before starting the
->> ready loop synchronization stage.  Call local_irq_disable after
->> each call to cpuidle_enter_state for the safe state.
+>> commit 95731ebb114c5f0c028459388560fc2a72fe5049
+>> Author: Xiaoguang Chen <chenxg@marvell.com>
+>> Date:   Wed Jun 19 15:00:07 2013 +0800
 >>
->> CC: stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
->> ---
->>   drivers/cpuidle/coupled.c | 2 ++
->>   1 file changed, 2 insertions(+)
+>>     cpufreq: Fix governor start/stop race condition
 >>
->> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
->> index 2a297f8..db92bcb 100644
->> --- a/drivers/cpuidle/coupled.c
->> +++ b/drivers/cpuidle/coupled.c
->> @@ -460,6 +460,7 @@ int cpuidle_enter_state_coupled(struct cpuidle_device
->> *dev,
->>                 }
->>                 entered_state = cpuidle_enter_state(dev, drv,
->>                         dev->safe_state_index);
->> +               local_irq_disable();
+>>
+>> The problem probably is poor error checking which is still present at
+>> few places, in __cpufreq_set_policy() routine..
+>>
+>> Can you try after fixing them? Something similar has to be done..
+>>
+>> commit 3de9bdeb28638e164d1f0eb38dd68e3f5d2ac95c
+>> Author: Viresh Kumar <viresh.kumar@linaro.org>
+>> Date:   Tue Aug 6 22:53:13 2013 +0530
+>>
+>>     cpufreq: improve error checking on return values of __cpufreq_governor()
+>
+> No the problem isn't poor error checking. The problem is between
+> gov_stop and gov_start userspace can come in and write scaling_min_freq
+> which will try to acquire the mutex (sorry the copy paste of the error
+> got messed up so I've repasted it).
+>
+> WARNING: at kernel/mutex.c:341 __mutex_lock_slowpath+0x14c/0x410()
+> DEBUG_LOCKS_WARN_ON(l->magic != l)
+> Modules linked in:                                                              CPU: 0 PID: 1960 Comm: sh Tainted: G        W    3.10.0 #32
+> [<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
+> [<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)
+> [<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)
+> [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410)
+> [<c08a0334>] (__mutex_lock_slowpath+0x14c/0x410) from [<c08a0618>] (mutex_lock+0x20/0x3c)
+> [<c08a0618>] (mutex_lock+0x20/0x3c) from [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8)
+> [<c0636114>] (cpufreq_governor_dbs+0x568/0x5f8) from [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4)
+> [<c06325b0>] (__cpufreq_governor+0xdc/0x1a4) from [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0)
+> [<c06328f0>] (__cpufreq_set_policy+0x278/0x2c0) from [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c)
+> [<c0632ea0>] (store_scaling_min_freq+0x80/0x9c) from [<c0633ae4>] (store+0x58/0x90)
+> [<c0633ae4>] (store+0x58/0x90) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
+> [<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
+> [<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)
+> [<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
 >
 >
-> Colin,
+> I've applied these patches on top of v3.10
 >
-> There is still some window where irq remains enabled after exiting safe
-> state. It may introduce some corner case.
-> Instead of this can we pass a parameter to cpuidle_enter_state indicating
-> that irq has to be enabled or not after exit from idle state, which would be
-> false when entering safe state from coupled idle.
+> f51e1eb63d9c28cec188337ee656a13be6980cfd (cpufreq: Fix cpufreq regression after suspend/resume
+> aae760ed21cd690fe8a6db9f3a177ad55d7e12ab (cpufreq: Revert commit a66b2e to fix suspend/resume regression)
+> e8d05276f236ee6435e78411f62be9714e0b9377 (cpufreq: Revert commit 2f7021a8 to fix CPU hotplug regression)
+> 2a99859932281ed6c2ecdd988855f8f6838f6743 (cpufreq: Fix cpufreq driver module refcount balance after suspend/resume)
+> 419e172145cf6c51d436a8bf4afcd17511f0ff79 (cpufreq: don't leave stale policy pointer in cdbs->cur_policy)
+> 95731ebb114c5f0c028459388560fc2a72fe5049 (cpufreq: Fix governor start/stop race condition)
+>
+> That second to last one causes a NULL pointer exception after the mutex
+> warning above because the limits case does
+>
+>     if (policy->max < cpu_cdbs->cur_policy->cur)
+>
+> and that dereferences a NULL cur_policy pointer.
 
-It's fine for irqs to be enabled when exiting the safe state, in fact
-on further inspection this patch isn't strictly necessary at all - we
-always enable interrupts inside cpuidle_coupled_clear_pokes soon after
-cpuidle_enter_state returns, and then disable them again.  It's
-probably better to disable interrupts right after cpuidle_enter_state,
-it makes sure interrupts are consistently disabled when calling
-cpuidle_coupled_set_waiting, cpuidle_coupled_cpus_waiting and
-cpuidle_coupled_clear_pokes, although that doesn't matter in the
-current implementation.
+I have seen something similar and the error checking patch that
+I mentioned earlier came as solution to that only..
 
-Rafael, feel free to drop the stable annotation from this patch.
+> Are there any fixes that I'm missing? I see that some things are
+> changing in linux-next but they don't look like fixes, more like
+> optimizations.
+
+Getting patches over 3.10 would be tricky.. You are two kernel
+version back and that's not going to help much.. There are too many
+patches in between linux-next and 3.10..
+
+I really can't tell you which specific ones to include, as I am lost in them :)
+
+probably try to get all of them in ? i.e. All patches touching drivers/cpufreq
+and include/linux/cpufreq.h..
+
+I have got Arndale (Samsung-exnos) board where offlining CPUs is broken
+@Kukjin: Can you please try to get it fixed?? It leads to crashes..
