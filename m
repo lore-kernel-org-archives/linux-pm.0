@@ -1,124 +1,67 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 1/3] thermal: ti-soc-thermal: Initialize counter_delay
- field for TI DRA752 sensors
-Date: Thu, 29 Aug 2013 08:19:21 -0400
-Message-ID: <521F3C49.3020402@ti.com>
-References: <1377274103-27770-1-git-send-email-ranganath@ti.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 04/16] cpufreq: cpu0: use cpufreq_generic_get() routine
+Date: Thu, 29 Aug 2013 21:07:27 +0800
+Message-ID: <20130829130725.GL18729@S2101-09.ap.freescale.net>
+References: <cover.1377272740.git.viresh.kumar@linaro.org>
+ <6ae0de783646c5356717d761903502f354abfe84.1377272740.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="gSUgGo1o2Fn21xvQJLIwbpNnjfhNQcUL1"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:52240 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715Ab3H2MTa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2013 08:19:30 -0400
-Received: from dlelxv90.itg.ti.com ([172.17.2.17])
-	by devils.ext.ti.com (8.13.7/8.13.7) with ESMTP id r7TCJUJs010599
-	for <linux-pm@vger.kernel.org>; Thu, 29 Aug 2013 07:19:30 -0500
-Received: from DLEE70.ent.ti.com (dlee70.ent.ti.com [157.170.170.113])
-	by dlelxv90.itg.ti.com (8.14.3/8.13.8) with ESMTP id r7TCJU43004213
-	for <linux-pm@vger.kernel.org>; Thu, 29 Aug 2013 07:19:30 -0500
-In-Reply-To: <1377274103-27770-1-git-send-email-ranganath@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6ae0de783646c5356717d761903502f354abfe84.1377272740.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ranganath Krishnan <ranganath@ti.com>
-Cc: linux-pm@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Praneeth Bajjuri <praneeth@ti.com>
 
---gSUgGo1o2Fn21xvQJLIwbpNnjfhNQcUL1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, Aug 23, 2013 at 09:20:39PM +0530, Viresh Kumar wrote:
+> We have common infrastructure available with us for getting a CPUs clk rate.
+> Lets use it for this driver.
+> 
+> Cc: Shawn Guo <shawn.guo@linaro.org>
 
-On 23-08-2013 12:08, Ranganath Krishnan wrote:
-> Initialize MPU, GPU, CORE, DSPEVE and IVA thermal sensors of DRA752 ban=
-dgap
-> with the counter delay mask.
->=20
-> Signed-off-by: Ranganath Krishnan <ranganath@ti.com>
+Both this and imx6q one,
 
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
-
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  .../thermal/ti-soc-thermal/dra752-thermal-data.c   |    5 +++++
->  1 file changed, 5 insertions(+)
->=20
-> diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/dri=
-vers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> index e5d8326..a492927 100644
-> --- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> +++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> @@ -42,6 +42,7 @@ dra752_core_temp_sensor_registers =3D {
->  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_1_MASK_HOT_CORE_MASK,
->  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_1_MASK_COLD_CORE_MASK,
->  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
-> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MASK=
-,
->  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_1_FREEZE_CORE_MASK,
->  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_CORE_MASK,
->  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_ACCUM_CORE_MAS=
-K,
-> @@ -77,6 +78,7 @@ dra752_iva_temp_sensor_registers =3D {
->  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_2_MASK_HOT_IVA_MASK,
->  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_2_MASK_COLD_IVA_MASK,
->  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
-> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MASK=
-,
->  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_2_FREEZE_IVA_MASK,
->  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_IVA_MASK,
->  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_ACCUM_IVA_MASK=
-,
-> @@ -112,6 +114,7 @@ dra752_mpu_temp_sensor_registers =3D {
->  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_1_MASK_HOT_MPU_MASK,
->  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_1_MASK_COLD_MPU_MASK,
->  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
-> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MASK=
-,
->  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_1_FREEZE_MPU_MASK,
->  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_MPU_MASK,
->  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_ACCUM_MPU_MASK=
-,
-> @@ -147,6 +150,7 @@ dra752_dspeve_temp_sensor_registers =3D {
->  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_2_MASK_HOT_DSPEVE_MASK,
->  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_2_MASK_COLD_DSPEVE_MASK,
->  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
-> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MASK=
-,
->  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_2_FREEZE_DSPEVE_MASK,
->  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_DSPEVE_MASK,
->  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_ACCUM_DSPEVE_M=
-ASK,
-> @@ -182,6 +186,7 @@ dra752_gpu_temp_sensor_registers =3D {
->  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_1_MASK_HOT_GPU_MASK,
->  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_1_MASK_COLD_GPU_MASK,
->  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
-> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MASK=
-,
->  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_1_FREEZE_GPU_MASK,
->  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_GPU_MASK,
->  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_ACCUM_GPU_MASK=
-,
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---gSUgGo1o2Fn21xvQJLIwbpNnjfhNQcUL1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlIfPEwACgkQCXcVR3XQvP3+ugEAv5BMsOnsOO4rrMYRCu+2yHgO
-wB85BYrajNkUvfwGVN4A/0vmG/JCJXFi7PBkJh1e7XklvpZrEl2hpuBGTezuDCTh
-=HUW3
------END PGP SIGNATURE-----
-
---gSUgGo1o2Fn21xvQJLIwbpNnjfhNQcUL1--
+>  drivers/cpufreq/cpufreq-cpu0.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index 7273bfc..62e52e3 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -29,11 +29,6 @@ static struct clk *cpu_clk;
+>  static struct regulator *cpu_reg;
+>  static struct cpufreq_frequency_table *freq_table;
+>  
+> -static unsigned int cpu0_get_speed(unsigned int cpu)
+> -{
+> -	return clk_get_rate(cpu_clk) / 1000;
+> -}
+> -
+>  static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  {
+>  	struct opp *opp;
+> @@ -99,6 +94,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  
+>  static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+>  {
+> +	policy->clk = cpu_clk;
+>  	return cpufreq_generic_init(policy, freq_table, transition_latency);
+>  }
+>  
+> @@ -106,7 +102,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+>  	.flags = CPUFREQ_STICKY,
+>  	.verify = cpufreq_generic_frequency_table_verify,
+>  	.target_index = cpu0_set_target,
+> -	.get = cpu0_get_speed,
+> +	.get = cpufreq_generic_get,
+>  	.init = cpu0_cpufreq_init,
+>  	.exit = cpufreq_generic_exit,
+>  	.name = "generic_cpu0",
+> -- 
+> 1.7.12.rc2.18.g61b472e
+> 
