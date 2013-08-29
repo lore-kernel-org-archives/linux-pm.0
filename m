@@ -1,28 +1,230 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: Re: [Query] CPUFreq: Does these machines have separate clock domains
- for CPUs?
-Date: Fri, 30 Aug 2013 01:41:28 +0300
-Message-ID: <20130829224127.GA15841@blackmetal.musicnaut.iki.fi>
-References: <CAKohponWn-RN7-6sdhghd6RGCOd357G+TKLsxHfqnSCuMD7xxw@mail.gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH 02/14] drivers: thermal: introduce device tree parser
+Date: Thu, 29 Aug 2013 19:19:43 -0400
+Message-ID: <521FD70F.7080104@ti.com>
+References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com> <1377299755-5134-3-git-send-email-eduardo.valentin@ti.com> <20130827102205.GC19893@e106331-lin.cambridge.arm.com> <521CAD48.2030306@ti.com> <20130827162309.GR19893@e106331-lin.cambridge.arm.com> <521CED34.2090008@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <sparclinux-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohponWn-RN7-6sdhghd6RGCOd357G+TKLsxHfqnSCuMD7xxw@mail.gmail.com>
-Sender: sparclinux-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Miller <davem@davemloft.net>, Eric Miao <eric.y.miao@gmail.com>, Jesper Nilsson <jesper.nilsson@axis.com>, John Crispin <blogic@openwrt.org>, linux-cris-kernel@axis.com, linux-sh@vger.kernel.org, Mikael Starvik <starvik@axis.com>, Paul Mundt <lethal@linux-sh.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Miao Steven <realmz6@gmail.com>, Dave Jones <davej@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="hljwOBES33n2sROuwafPdDiSwA6IftoXC"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:52188 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752400Ab3H2XU4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 29 Aug 2013 19:20:56 -0400
+In-Reply-To: <521CED34.2090008@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "wni@nvidia.com" <wni@nvidia.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi,
+--hljwOBES33n2sROuwafPdDiSwA6IftoXC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Aug 29, 2013 at 03:45:58PM +0530, Viresh Kumar wrote:
-> I have been doing some CPUFreq cleanup work and
-> wanted to know if the below mentioned machines have separate
-> clock domains for their CPUs or all share the same domain?
-[...]
-> drivers/cpufreq/loongson2_cpufreq.c
+Mark, Pawel and Stephen,
 
-Loongson2 is UP only.
 
-A.
+On 27-08-2013 14:17, Eduardo Valentin wrote:
+> On 27-08-2013 12:23, Mark Rutland wrote:
+>> On Tue, Aug 27, 2013 at 02:44:40PM +0100, Eduardo Valentin wrote:
+>>> Hello Mark,
+
+<cut>
+
+I believe now we need to align on thermal bindings, before I propose
+next version of this series. So, following the discussions on this
+thread, I believe a typical CPU thermal zone would look like the followin=
+g:
++ #include <dt-bindings/thermal/thermal.h>
++
++ cpu_thermal: cpu_thermal {
++         passive-delay =3D <250>; /* milliseconds */
++         polling-delay =3D <1000>; /* milliseconds */
++                 /*
++                  * sensor       ID
++                  */
++         sensors =3D <&bandgap0     0>;
++                         /*
++                          * cooling
++                          * device       Usage   Trip            lower
+bound             upper bound
++                          */
++         cooling-devices =3D <&cpu0        100     &cpu-alert
+THERMAL_NO_LIMITS        THERMAL_NO_LIMITS>;
++         trips {
++                 cpu-alert: cpu-alert {
++                         temperature =3D <100000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_PASSIVE>;
++                 };
++                 cpu-crit: cpu-crit {
++                         temperature =3D <125000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_CRITICAL>;
++                 };
++         };
++ };
+
+*Note: THERMAL_NO_LIMIT means, it will be using the cooling device
+minimum and maximum limits.
+
+Couple of comments.
+1. I am keeping the pooling intervals. A possible alternative way to
+describe that would be specifying the maximum dT/dt. Essentially because
+I am still convinced that this is part of hw specs.
+
+2. The above follows your suggestion to use consumer pointing to
+producers. Although, I still need to figure out how this could be
+implemented for Linux. But I think that is another story, at least for
+now. We need to first align on the DT binding itself.
+
+3. The link from cooling device specification to trip points, from my
+perspective, should be enough, and thus we shall not need the thermal
+cells and size for trip points, as you proposed. Let me know what you thi=
+nk.
+
+Below is another example, on a more complex scenario, board specific
+case (hypothetical, just for exemplification):
+
++ #include <dt-bindings/thermal/thermal.h>
++
++ board_thermal: board_thermal {
++         passive-delay =3D <1000>; /* milliseconds */
++         polling-delay =3D <2500>; /* milliseconds */
++                 /*
++                  * sensor       ID
++                  */
++         sensors =3D <&adc-dummy     0>,
++		    <&adc-dummy     1>,
++		    <&adc-dymmy     2>;
++                         /*
++                          * cooling
++                          * device       Usage   Trip		lower	upper
++                          */
++         cooling-devices =3D <&cpu0       75     &cpu-trip	0      2>,
++			    <&gpu0       40     &gpu-trip	0      2>;
++			    <&lcd0       25     &lcd-trip	5      10>;
++         trips {
++                 cpu-trip: cpu-trip {
++                         temperature =3D <60000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_PASSIVE>;
++                 };
++                 gpu-trip: gpu-trip {
++                         temperature =3D <55000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_PASSIVE>;
++                 }
++                 lcd-trip: lcp-trip {
++                         temperature =3D <53000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_PASSIVE>;
++                 };
++                 crit-trip: crit-trip {
++                         temperature =3D <68000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_CRITICAL>;
++                 };
++         };
++ };
+
+Now writing the above example, one might want to have a way to say the
+sensor correlation equation.
+
+Another example:
++ #include <dt-bindings/thermal/thermal.h>
++
++ dsp_thermal: dsp_thermal {
++         passive-delay =3D <250>; /* milliseconds */
++         polling-delay =3D <1000>; /* milliseconds */
++                 /*
++                  * sensor       ID
++                  */
++         sensors =3D <&bandgap0     1>;
++                         /*
++                          * cooling
++                          * device       Usage   Trip            lower
+bound             upper bound
++                          */
++         cooling-devices =3D <&dsp0        100     &dsp-alert
+THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
++         trips {
++                 dsp-alert: dsp-alert {
++                         temperature =3D <100000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_PASSIVE>;
++                 };
++                 dsp-crit: cdsp-crit {
++                         temperature =3D <125000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_CRITICAL>;
++                 };
++         };
++ };
++
++ gpu_thermal: gpu_thermal {
++         passive-delay =3D <500>; /* milliseconds */
++         polling-delay =3D <1000>; /* milliseconds */
++                 /*
++                  * sensor       ID
++                  */
++         sensors =3D <&bandgap0     2>;
++                         /*
++                          * cooling
++                          * device       Usage   Trip            lower
+bound             upper bound
++                          */
++         cooling-devices =3D <&gpu0        100     &gpu-alert
+THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
++         trips {
++                 gpu-alert: gpu-alert {
++                         temperature =3D <100000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_PASSIVE>;
++                 };
++                 gpu-crit: gpu-crit {
++                         temperature =3D <125000>; /* milliCelsius */
++                         hysteresis =3D <2000>; /* milliCelsius */
++                         type =3D <THERMAL_TRIP_CRITICAL>;
++                 };
++         };
++ };
+
+
+Wei, I think the above would cover for the IPs with multiple internal
+sensors cases you were looking for, right?
+
+Durga, please also check if I am missing something to cover for your
+plans to, in case you will be using DT to describe your HW.
+
+Anyways, Mark and Pawel, let me know if I missed something from our
+discussion. I believe the above bindings would look more like regular
+standard DT bindings. And also they should be now slim enough, without
+Linux implementation details and also without policies.
+
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--hljwOBES33n2sROuwafPdDiSwA6IftoXC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlIf1xIACgkQCXcVR3XQvP2GQwD/adYTkBZgQ/rHFRrfL2rSMWi3
+F/TMKNfJ3na5F9QotQQA/22Kyle8mcbARnn+ADSh8sWahzcNTF8tilLOnYoRvQB0
+=o1Oi
+-----END PGP SIGNATURE-----
+
+--hljwOBES33n2sROuwafPdDiSwA6IftoXC--
