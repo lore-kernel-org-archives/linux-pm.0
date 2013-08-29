@@ -1,61 +1,60 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [RFC PATCH 00/18 v3] Signature verification of hibernate
- snapshot
-Date: Thu, 29 Aug 2013 08:01:45 +0800
-Message-ID: <1377734505.19568.39.camel__15208.1150249161$1377734638$gmane$org@linux-s257.site>
-References: <1377169317-5959-1-git-send-email-jlee@suse.com>
-	 <87eh9dzg00.fsf@mid.deneb.enyo.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCHv3] drivers: power: Detect device suspend/resume lockup and log event in pstore.
+Date: Thu, 29 Aug 2013 02:49:52 +0200
+Message-ID: <4407544.jBAtuozAkk@vostro.rjw.lan>
+References: <1375216733-6740-1-git-send-email-zoran.markovic@linaro.org> <521E7B8A.6060203@linaro.org> <CAMbhsRSqSC1Ni4QsZ_0sTrvaW3_feXFyGawZbWc34wuhA2BNeg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:58774 "EHLO
-	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917Ab3H2ADZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2013 20:03:25 -0400
-In-Reply-To: <87eh9dzg00.fsf@mid.deneb.enyo.de>
+Received: from hydra.sisk.pl ([212.160.235.94]:40583 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752853Ab3H2AjI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 28 Aug 2013 20:39:08 -0400
+In-Reply-To: <CAMbhsRSqSC1Ni4QsZ_0sTrvaW3_feXFyGawZbWc34wuhA2BNeg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Florian Weimer <fw@deneb.enyo.de>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
+To: Colin Cross <ccross@android.com>, John Stultz <john.stultz@linaro.org>
+Cc: Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Hi Florian,=20
+On Wednesday, August 28, 2013 03:43:42 PM Colin Cross wrote:
+> On Wed, Aug 28, 2013 at 3:36 PM, John Stultz <john.stultz@linaro.org> wrote:
+> > On 08/28/2013 01:52 PM, Rafael J. Wysocki wrote:
+> >> On Wednesday, August 28, 2013 10:45:45 AM Zoran Markovic wrote:
+> >>> Hi Rafael,
+> >>>> It doesn't look too bad from a quick look, but there's a couple of things
+> >>>> I don't like in it still (relatively minor).
+> >>> If there are things you would like changed in this patch, please let
+> >>> me know. It would be nice to catch the 3.12 merge window.
+> >> Well, it's not in my queue to be honest.
+> >>
+> >> Is there any practical reason why it should go into the next release?
+> >
+> > I wouldn't say its critical for the next release, but I feel like this
+> > was the same response last cycle. Zoran's since investigated the various
+> > alternative approaches you've suggested, and continues to be interested
+> > in resolving your remaining objections.
+> >
+> > Its a useful feature the Android devs use, which could also help
+> > non-android developers debug suspend issues on their systems.
+> >
+> > If you really just feel its something best left out of tree, that's hard
+> > to argue against. Its just a debug tool and the android guys don't have
+> > an issue carrying their own tree, after all. But the cost of leaving it
+> > out is just the potential of others having to re-implement similar hacks
+> > on their own instead of collaborating on shared infrastructure.
 
-Thanks for your response.
+Well, let's just say it had a bad luck timing-wise this time.
 
-=E6=96=BC =E4=B8=89=EF=BC=8C2013-08-28 =E6=96=BC 23:01 +0200=EF=BC=8CFl=
-orian Weimer =E6=8F=90=E5=88=B0=EF=BC=9A
-> * Chun-Yi Lee:
->=20
-> >  + EFI bootloader must generate RSA key-pair when system boot:
+It's still there in my todo list and I'll take care of it eventually, but not
+today and not tomorrow, which basically is what you're asking for.
 
-I should add more information on this sentence for mention need GenS4Ke=
-y
-runtime variable then re-generate key-pair.
+> And the benefit is that you are more likely to get bugreports that
+> have a stack trace of the offending suspend callback instead of "my
+> laptop doesn't suspend any more".
 
-Thanks!
+Yes, I understand that.
 
-> >    - Bootloader store the public key to EFI boottime variable by it=
-self
-> >    - Bootloader put The private key to S4SignKey EFI variable for f=
-orward to
-> >      kernel.
->=20
-> Is the UEFI NVRAM really suited for such regular updates?
->=20
-
-Yes, Matthew raised this concern at before. I modified patch to load
-private key in efi stub kernel, before ExitBootServices(), that means w=
-e
-don't need generate key-pair at every system boot. So, the above
-procedure of efi bootloader will only run one time.=20
-
-User can enable SNAPSHOT_REGEN_KEYS kernel config to notify efi
-booloader regenerate key-pair for every S4 to improve security if he
-want. So, the key-pair re-generate procedure will only launched when S4
-resume, not every system boot.
-
-
-Thanks a lot!
-Joey Lee
+Thanks,
+Rafael
 
