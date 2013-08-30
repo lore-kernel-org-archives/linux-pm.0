@@ -1,94 +1,79 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 1/3] intel_idle: shrink states tables
-Date: Fri, 30 Aug 2013 12:25:10 +0200
-Message-ID: <2945985.mxvmQoz8DY@amdc1032>
+Subject: [PATCH 2/3] intel_idle: mark states tables with __initdata tag
+Date: Fri, 30 Aug 2013 12:26:42 +0200
+Message-ID: <3627555.yC4BdJJnVe@amdc1032>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:13037 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753455Ab3H3KZ3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 06:25:29 -0400
+Received: from mailout4.samsung.com ([203.254.224.34]:52617 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882Ab3H3K0t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 06:26:49 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Len Brown <lenb@kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-There is no reason to define CPUIDLE_STATE_MAX (currently 10) entries
-in states tables if the driver always stops iterating over table when
-it encounters first .enter == NULL entry.
-
-$ size drivers/idle/intel_idle.o.*
-   text    data     bss     dec     hex filename
-   2886    5440      32    8358    20a6 drivers/idle/intel_idle.o.before
-   2886    3752      32    6670    1a0e drivers/idle/intel_idle.o.after
+States tables are only accessed during driver initialization so they
+can be marked with __initdata tag.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Cc: Len Brown <lenb@kernel.org>
 ---
- drivers/idle/intel_idle.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/idle/intel_idle.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index fa6964d..9c97fbb42 100644
+index 9c97fbb42..53b24f1 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
 @@ -123,7 +123,7 @@ static struct cpuidle_state *cpuidle_state_table;
   * which is also the index into the MWAIT hint array.
   * Thus C0 is a dummy.
   */
--static struct cpuidle_state nehalem_cstates[CPUIDLE_STATE_MAX] = {
-+static struct cpuidle_state nehalem_cstates[] = {
+-static struct cpuidle_state nehalem_cstates[] = {
++static struct cpuidle_state nehalem_cstates[] __initdata = {
  	{
  		.name = "C1-NHM",
  		.desc = "MWAIT 0x00",
-@@ -156,7 +156,7 @@ static struct cpuidle_state nehalem_cstates[CPUIDLE_STATE_MAX] = {
+@@ -156,7 +156,7 @@ static struct cpuidle_state nehalem_cstates[] = {
  		.enter = NULL }
  };
  
--static struct cpuidle_state snb_cstates[CPUIDLE_STATE_MAX] = {
-+static struct cpuidle_state snb_cstates[] = {
+-static struct cpuidle_state snb_cstates[] = {
++static struct cpuidle_state snb_cstates[] __initdata = {
  	{
  		.name = "C1-SNB",
  		.desc = "MWAIT 0x00",
-@@ -196,7 +196,7 @@ static struct cpuidle_state snb_cstates[CPUIDLE_STATE_MAX] = {
+@@ -196,7 +196,7 @@ static struct cpuidle_state snb_cstates[] = {
  		.enter = NULL }
  };
  
--static struct cpuidle_state ivb_cstates[CPUIDLE_STATE_MAX] = {
-+static struct cpuidle_state ivb_cstates[] = {
+-static struct cpuidle_state ivb_cstates[] = {
++static struct cpuidle_state ivb_cstates[] __initdata = {
  	{
  		.name = "C1-IVB",
  		.desc = "MWAIT 0x00",
-@@ -236,7 +236,7 @@ static struct cpuidle_state ivb_cstates[CPUIDLE_STATE_MAX] = {
+@@ -236,7 +236,7 @@ static struct cpuidle_state ivb_cstates[] = {
  		.enter = NULL }
  };
  
--static struct cpuidle_state hsw_cstates[CPUIDLE_STATE_MAX] = {
-+static struct cpuidle_state hsw_cstates[] = {
+-static struct cpuidle_state hsw_cstates[] = {
++static struct cpuidle_state hsw_cstates[] __initdata = {
  	{
  		.name = "C1-HSW",
  		.desc = "MWAIT 0x00",
-@@ -297,7 +297,7 @@ static struct cpuidle_state hsw_cstates[CPUIDLE_STATE_MAX] = {
+@@ -297,7 +297,7 @@ static struct cpuidle_state hsw_cstates[] = {
  		.enter = NULL }
  };
  
--static struct cpuidle_state atom_cstates[CPUIDLE_STATE_MAX] = {
-+static struct cpuidle_state atom_cstates[] = {
+-static struct cpuidle_state atom_cstates[] = {
++static struct cpuidle_state atom_cstates[] __initdata = {
  	{
  		.name = "C1E-ATM",
  		.desc = "MWAIT 0x00",
-@@ -628,7 +628,7 @@ static int intel_idle_cpu_init(int cpu)
- 		int num_substates, mwait_hint, mwait_cstate, mwait_substate;
- 
- 		if (cpuidle_state_table[cstate].enter == NULL)
--			continue;
-+			break;
- 
- 		if (cstate + 1 > max_cstate) {
- 			printk(PREFIX "max_cstate %d reached\n", max_cstate);
 -- 
 1.8.2.3
 
