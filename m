@@ -1,44 +1,39 @@
-From: Chris Metcalf <cmetcalf@tilera.com>
-Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
-Date: Fri, 30 Aug 2013 10:40:49 -0400
-Message-ID: <5220AEF1.7080808@tilera.com>
-References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com> <521F95BB.2060600@tilera.com> <521FA13F.5040204@linaro.org>
+From: Dave Hansen <dave@sr71.net>
+Subject: Re: [RESEND RFC PATCH v3 00/35] mm: Memory Power Management
+Date: Fri, 30 Aug 2013 08:27:32 -0700
+Message-ID: <5220B9E4.3040306@sr71.net>
+References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <521FA13F.5040204@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com>
+Sender: owner-linux-mm@kvack.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 8/29/2013 3:30 PM, John Stultz wrote:
-> On 08/29/2013 11:40 AM, Chris Metcalf wrote:
->> Ping!  I have this work queued up to push as part of the linux-tile tree for the
->> merge window.  Is that acceptable to the timekeeping/clocksource folks?
->> Should I hold it back pending further review?  Or does it make sense to
->> push it as-is and think about further improvements, if any, for a later release?
->>
->> https://lkml.org/lkml/2013/8/9/497
->> https://lkml.org/lkml/2013/8/9/499
-> Oh right! Sorry for the slow response here! I originally replied while I
-> was on vacation and didn't flag the thread to follow up on.
->
-> Few comments below.
+On 08/30/2013 06:13 AM, Srivatsa S. Bhat wrote:
+> Overview of Memory Power Management and its implications to the Linux MM
+> ========================================================================
+> 
+> Today, we are increasingly seeing computer systems sporting larger and larger
+> amounts of RAM, in order to meet workload demands. However, memory consumes a
+> significant amount of power, potentially upto more than a third of total system
+> power on server systems[4]. So naturally, memory becomes the next big target
+> for power management - on embedded systems and smartphones, and all the way
+> upto large server systems.
 
-Thanks for the feedback. It does sound like too much to take on before
-the 3.12 merge window opens, so we will plan to look into this as time
-permits over the next little while. I've filed a bug internally to
-track this for us.
+Srivatsa, you're sending a huge patch set to a very long cc list of
+people, but you're leading the description with text that most of us
+have already read a bunch of times.  Why?
 
-It sounds like the most straightforward thing for us to do may be to adopt
-your original approach of making our clocksource driver internally convert
-the variable frequency clocksource to a fixed frequency; the overhead
-shouldn't be too bad and it seems like it should moot all the other
-concerns you raised in your email.
+What changed in this patch from the last round?  Where would you like
+reviewers to concentrate their time amongst the thousand lines of code?
+ What barriers do _you_ see as remaining before this gets merged?
 
--- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
-
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
