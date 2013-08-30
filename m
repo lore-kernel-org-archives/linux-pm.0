@@ -1,99 +1,66 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RESEND RFC PATCH v3 00/35] mm: Memory Power Management
-Date: Fri, 30 Aug 2013 23:20:21 +0530
-Message-ID: <5220DB5D.9030905@linux.vnet.ibm.com>
-References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <5220B9E4.3040306@sr71.net>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC 1/2] PM / Hibernate: use name_to_dev_t to parse resume
+Date: Fri, 30 Aug 2013 11:42:30 -0700
+Message-ID: <20130830184230.28518.71814@capellas-linux>
+References: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
+ <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
+ <20130825153811.GA4795@amd.pavel.ucw.cz>
+ <20130826174050.16429.7419@capellas-linux>
+ <20130830113533.GA7226@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:42929 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756154Ab3H3RyV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 13:54:21 -0400
-Received: from /spool/local
-	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 30 Aug 2013 23:14:26 +0530
-In-Reply-To: <5220B9E4.3040306@sr71.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20130830113533.GA7226@amd.pavel.ucw.cz>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: len.brown@intel.com, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Hansen <dave@sr71.net>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 
-On 08/30/2013 08:57 PM, Dave Hansen wrote:
-> On 08/30/2013 06:13 AM, Srivatsa S. Bhat wrote:
->> Overview of Memory Power Management and its implications to the Linux MM
->> ========================================================================
->>
->> Today, we are increasingly seeing computer systems sporting larger and larger
->> amounts of RAM, in order to meet workload demands. However, memory consumes a
->> significant amount of power, potentially upto more than a third of total system
->> power on server systems[4]. So naturally, memory becomes the next big target
->> for power management - on embedded systems and smartphones, and all the way
->> upto large server systems.
+Quoting Pavel Machek (2013-08-30 04:35:33)
+> On Mon 2013-08-26 10:40:50, Sebastian Capella wrote:
+> > Quoting Pavel Machek (2013-08-25 08:38:11)
+> > > Is the allocation actually neccessary? At the very least this should
+> > > test for NULL...
+> > 
+> > name_to_dev_t expects a non-const name, but the buffer passed in
+> > is const.  I also am removing the '\n' if found at the end of the
+> > string which would violate the const.
 > 
-> Srivatsa, you're sending a huge patch set to a very long cc list of
-> people, but you're leading the description with text that most of us
-> have already read a bunch of times.  Why?
+> Fix name_to_dev_t, then. No need to do memory allocation just to work
+> around const.
 > 
+Hi Pavel,
 
-Well, I had got the impression that with each posting, a fresh set of
-reviewers were taking a look at the patchset for the first time. So I retained
-the leading description. But since you have been familiar with this patchset
-right from the very first posting, I think you found it repetitive and useless.
-Thanks for the tip, I'll curtail the leading text in future versions and
-instead give links to earlier patchsets as reference, for new reviewers.
+The issue is really Removing the \n from the user space input.  The
+flow is:
+const input buf -> copy to work buffer, remove newline -> name_to_dev_t
 
-> What changed in this patch from the last round?
+  ssize_t resume_store(..., const char *buf, size_t n)
+  // copy buf, strip off trailing newline, pass to name_to_dev_t
+  dev_t name_to_dev_t(char *name)
 
-The fundamental change in this version is the splitting up of the memory
-allocator into a front-end (page-allocator) and a back-end (region-allocator).
-The corresponding code is in patches 18 to 32. Patches 33-35 are some policy
-changes on top of that infrastructure that help further improve the consolidation.
-Overall, this design change has caused considerable improvements in the
-consolidation ratio achieved by the patchset.
+The const in the restore_store buffer comes from the function type of the
+store member of the kobj_attribute.  I don't believe this should be changed.
 
-Minor changes include augmenting /proc/pagetypeinfo to print the statistics
-on a per-region basis, which turns out to be very useful in visualizing the
-fragmentation.
+Currently, name_to_dev_t will fail in some cases if a trailing \n is present.
+Is it more appropriate to handle stripping the newline in the store
+function rather than modifying name_to_dev_t to clean it up?
 
-And in this version, the experimental results section (which I posted as a
-reply to the cover-letter) has some pretty noticeable numbers. The previous
-postings didn't really have enough numbers/data to prove that the patchset
-actually was much better than mainline. This version addresses that issue,
-from a functional point-of-view.
+It seems logical for name_to_dev_t to take a const name parameter as
+there should be no reason to modify the name buffer passed to it.
+I'll be happy to make a patch to do this, but without hardening
+name_to_dev_t against trailing newlines, it would not be neccesary for
+this problem.
 
->  Where would you like
-> reviewers to concentrate their time amongst the thousand lines of code?
+Thanks for your time and comments!
 
-I would be grateful if reviewers could comment on the new split-allocator
-design and let me know if they notice any blatant design issues. Some of
-the changes are very bold IMHO, so I'd really appreciate if reviewers could
-let me know if I'm going totally off-track or whether the numbers/data
-justify the huge design changes sufficiently (atleast to know whether to
-continue in that direction or not).
-
->  What barriers do _you_ see as remaining before this gets merged?
-> 
-
-I believe that I have showcased all the major design changes that I had
-in mind, in this version and the previous versions. (This version includes
-all of them, except the targeted compaction support (dropped temporarily),
-which was introduced in the last version). What remains is the routine work:
-making this code work with various MM config options etc, and reduce the
-overhead in the hotpaths.
-
-So, if the design changes are agreed upon, I can go ahead and address the
-remaining rough edges and make it merge-ready. I assume it would be good
-to add a config option and keep it under Kernel Hacking or such, so that
-people who know their platform characteristics can try it out by giving
-the region-boundaries via kernel command line etc. I think that would be
-a good way to upstream this feature, since it allows the flexibility for
-people to try it out with various usecases on different platforms. (Also,
-that way, we need not wait for firmware support such as ACPI 5.0 to be
-available in order to merge this code).
-
-Regards,
-Srivatsa S. Bhat
-
+Sebastian
