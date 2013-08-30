@@ -1,91 +1,47 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] ACPI / cpuidle: remove superfluous pr == NULL checks
-Date: Fri, 30 Aug 2013 12:30:51 +0200
-Message-ID: <5858980.cRdNx0rNzu@amdc1032>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH RFC 1/2] PM / Hibernate: use name_to_dev_t to parse
+ resume
+Date: Fri, 30 Aug 2013 13:35:33 +0200
+Message-ID: <20130830113533.GA7226@amd.pavel.ucw.cz>
+References: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
+ <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
+ <20130825153811.GA4795@amd.pavel.ucw.cz>
+ <20130826174050.16429.7419@capellas-linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43850 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754129Ab3H3Lff (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 07:35:35 -0400
+Content-Disposition: inline
+In-Reply-To: <20130826174050.16429.7419@capellas-linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, len.brown@intel.com, rjw@sisk.pl
 
-The only acpi_processor_get_power_info_fadt() user
-(acpi_processor_get_power_info()) dereferences pr before calling
-the function.
+On Mon 2013-08-26 10:40:50, Sebastian Capella wrote:
+> Apologies for my previous top post reply...
+> 
+> Quoting Pavel Machek (2013-08-25 08:38:11)
+> > Is the allocation actually neccessary? At the very least this should
+> > test for NULL...
+> 
+> 
+> Thanks Pavel!  I'll add the check for NULL.
+> 
+> name_to_dev_t expects a non-const name, but the buffer passed in
+> is const.  I also am removing the '\n' if found at the end of the
+> string which would violate the const.
 
-The only acpi_processor_hotplug() user (acpi_cpu_soft_notify())
-checks for pr == NULL before calling the function.
+Fix name_to_dev_t, then. No need to do memory allocation just to work
+around const.
 
-The only acpi_processor_cst_has_changed() user (acpi_processor_notify())
-checks for pr == NULL before calling the function.
+[You can also take a look why it is const in the first place. I don't
+think it needs to be.]
 
-The only acpi_processor_power_init() user (__acpi_processor_start())
-dereferences pr before calling the function.
-
-Thus remove superfluous pr == NULL checks from affected functions.
-
-Also:
-
-While at it remove redundant brackets from acpi_processor_hotplug().
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Len Brown <lenb@kernel.org>
----
- drivers/acpi/processor_idle.c | 15 +--------------
- 1 file changed, 1 insertion(+), 14 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index f98dd00..35c8f2b 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -272,9 +272,6 @@ static void tsc_check_state(int state) { return; }
- static int acpi_processor_get_power_info_fadt(struct acpi_processor *pr)
- {
- 
--	if (!pr)
--		return -EINVAL;
--
- 	if (!pr->pblk)
- 		return -ENODEV;
- 
-@@ -1076,12 +1073,8 @@ int acpi_processor_hotplug(struct acpi_processor *pr)
- 	if (disabled_by_idle_boot_param())
- 		return 0;
- 
--	if (!pr)
--		return -EINVAL;
--
--	if (nocst) {
-+	if (nocst)
- 		return -ENODEV;
--	}
- 
- 	if (!pr->flags.power_setup_done)
- 		return -ENODEV;
-@@ -1108,9 +1101,6 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
- 	if (disabled_by_idle_boot_param())
- 		return 0;
- 
--	if (!pr)
--		return -EINVAL;
--
- 	if (nocst)
- 		return -ENODEV;
- 
-@@ -1183,9 +1173,6 @@ int acpi_processor_power_init(struct acpi_processor *pr)
- 		first_run++;
- 	}
- 
--	if (!pr)
--		return -EINVAL;
--
- 	if (acpi_gbl_FADT.cst_control && !nocst) {
- 		status =
- 		    acpi_os_write_port(acpi_gbl_FADT.smi_command, acpi_gbl_FADT.cst_control, 8);
+									Pavel
 -- 
-1.8.2.3
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
