@@ -1,166 +1,187 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCHv3 0/8] Thermal Framework Enhancements
-Date: Fri, 30 Aug 2013 13:21:06 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59D4DA0E@BGSMSX101.gar.corp.intel.com>
-References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
- <521FA335.2060309@ti.com>
- <4D68720C2E767A4AA6A8796D42C8EB59D4D3F8@BGSMSX101.gar.corp.intel.com>
- <5220914A.3070107@ti.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [RFC PATCH v3 11/35] mm: Add an optimized version of
+ del_from_freelist to keep page allocation fast
+Date: Fri, 30 Aug 2013 18:47:13 +0530
+Message-ID: <20130830131710.4947.14283.stgit@srivatsabhat.in.ibm.com>
+References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5220914A.3070107@ti.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com>
+Sender: owner-linux-mm@kvack.org
+To: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl
+Cc: gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> Sent: Friday, August 30, 2013 6:04 PM
-> To: R, Durgadoss
-> Cc: Eduardo Valentin; Zhang, Rui; linux-pm@vger.kernel.org; linux-
-> kernel@vger.kernel.org; hongbo.zhang@linaro.org; wni@nvidia.com
-> Subject: Re: [PATCHv3 0/8] Thermal Framework Enhancements
-> 
-> On 30-08-2013 05:20, R, Durgadoss wrote:
-> > Hi Eduardo,
-> >
-> >> -----Original Message-----
-> >> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
-> >> Sent: Friday, August 30, 2013 1:08 AM
-> >> To: R, Durgadoss
-> >> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
-> >> eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
-> >> Subject: Re: [PATCHv3 0/8] Thermal Framework Enhancements
-> >>
-> >> Durga,
-> >>
-> >> On 05-02-2013 06:46, Durgadoss R wrote:
-> >>> This patch set is a v3 of the previous versions submitted here:
-> >>> [v2]: http://lwn.net/Articles/531720/
-> >>> [v1]: https://lkml.org/lkml/2012/12/18/108
-> >>> [RFC]:https://patchwork.kernel.org/patch/1758921/
-> >>>
-> >>
-> >> Long time this work is not moving forward. While writing the device tree
-> >
-> > I am trying my best to get to this,
-> > Will try to refresh in a couple of weeks.
-> >
-> >> parser, I thought of using your work as baseline to see how the multiple
-> >> sensor per zone would look like (also in DT).
-> >>
-> >> But while checking your code again, I realized that you are actually
-> >> creating a new API, that is probably why you named it sysfs-api2. While
-> >> I understand the motivation (they are pretty different), I believe this
-> >> is not a good thing to do. I would suggest making so that we have a
-> >> single API.
-> >
-> > As in the sensor APIs ? or the zone level APIs ?
-> > The sensor level APIs are anyway new; the zone level ones
-> > we have to work out a way for them.
-> >
-> > Is this what you are referring to ? Could you confirm/explain a bit more ?
-> 
-> OK. Let's assume that maybe I didn't quite get your proposal then. Let
-> me step back and ask you what is the relation between existing
-> thermal_zone_device and thermal_zone? Would existing drivers be
+One of the main advantages of this design of memory regions is that page
+allocations can potentially be extremely fast - almost with no extra
+overhead from memory regions.
 
-The existing thermal_zone_device would be a new thermal zone
-with one sensor in it.
+To exploit that, introduce an optimized version of del_from_freelist(), which
+utilizes the fact that we always delete items from the head of the list
+during page allocation.
 
-> complaint with new API?
+Basically, we want to keep a note of the region from which we are allocating
+in a given freelist, to avoid having to compute the page-to-zone-region for
+every page allocation. So introduce a 'next_region' pointer in every freelist
+to achieve that, and use it to keep the fastpath of page allocation almost as
+fast as it would have been without memory regions.
 
-Okay got it. This is what myself & Rui discussed a while ago to address
-this.
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
 
-When these patches are merged, they will co-exist for some time.
-Rui had an idea to write a wrapper on top of these, which will
-make the existing drivers complaint with new API. 
-This wrapper can be a Kconfig option, to select on what we need;
-new/existing APIs.
+ include/linux/mm.h     |   14 +++++++++++
+ include/linux/mmzone.h |    6 +++++
+ mm/page_alloc.c        |   62 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 81 insertions(+), 1 deletion(-)
 
-Thanks,
-Durga
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 52329d1..156d7db 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -747,6 +747,20 @@ static inline int page_zone_region_id(const struct page *page)
+ 	return pgdat->node_regions[node_region_idx].zone_region_idx[z_num];
+ }
+ 
++static inline void set_next_region_in_freelist(struct free_list *free_list)
++{
++	struct page *page;
++	int region_id;
++
++	if (unlikely(list_empty(&free_list->list))) {
++		free_list->next_region = NULL;
++	} else {
++		page = list_entry(free_list->list.next, struct page, lru);
++		region_id = page_zone_region_id(page);
++		free_list->next_region = &free_list->mr_list[region_id];
++	}
++}
++
+ #ifdef SECTION_IN_PAGE_FLAGS
+ static inline void set_page_section(struct page *page, unsigned long section)
+ {
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 201ab42..932e71f 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -92,6 +92,12 @@ struct free_list {
+ 	struct list_head	list;
+ 
+ 	/*
++	 * Pointer to the region from which the next allocation will be
++	 * satisfied. (Same as the freelist's first pageblock's region.)
++	 */
++	struct mem_region_list	*next_region; /* for fast page allocation */
++
++	/*
+ 	 * Demarcates pageblocks belonging to different regions within
+ 	 * this freelist.
+ 	 */
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 07ac019..52b6655 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -548,6 +548,15 @@ static void add_to_freelist(struct page *page, struct free_list *free_list)
+ 	/* This is the first region, so add to the head of the list */
+ 	prev_region_list = &free_list->list;
+ 
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	WARN((list_empty(&free_list->list) && free_list->next_region != NULL),
++					"%s: next_region not NULL\n", __func__);
++#endif
++	/*
++	 * Set 'next_region' to this region, since this is the first region now
++	 */
++	free_list->next_region = region;
++
+ out:
+ 	list_add(lru, prev_region_list);
+ 
+@@ -555,6 +564,47 @@ out:
+ 	region->page_block = lru;
+ }
+ 
++/**
++ * __rmqueue_smallest() *always* deletes elements from the head of the
++ * list. Use this knowledge to keep page allocation fast, despite being
++ * region-aware.
++ *
++ * Do *NOT* call this function if you are deleting from somewhere deep
++ * inside the freelist.
++ */
++static void rmqueue_del_from_freelist(struct page *page,
++				      struct free_list *free_list)
++{
++	struct list_head *lru = &page->lru;
++
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	WARN((free_list->list.next != lru),
++				"%s: page not at head of list", __func__);
++#endif
++
++	list_del(lru);
++
++	/* Fastpath */
++	if (--(free_list->next_region->nr_free)) {
++
++#ifdef CONFIG_DEBUG_PAGEALLOC
++		WARN(free_list->next_region->nr_free < 0,
++				"%s: nr_free is negative\n", __func__);
++#endif
++		return;
++	}
++
++	/*
++	 * Slowpath, when this is the last pageblock of this region
++	 * in this freelist.
++	 */
++	free_list->next_region->page_block = NULL;
++
++	/* Set 'next_region' to the new first region in the freelist. */
++	set_next_region_in_freelist(free_list);
++}
++
++/* Generic delete function for region-aware buddy allocator. */
+ static void del_from_freelist(struct page *page, struct free_list *free_list)
+ {
+ 	struct list_head *prev_page_lru, *lru, *p;
+@@ -562,6 +612,11 @@ static void del_from_freelist(struct page *page, struct free_list *free_list)
+ 	int region_id;
+ 
+ 	lru = &page->lru;
++
++	/* Try to fastpath, if deleting from the head of the list */
++	if (lru == free_list->list.next)
++		return rmqueue_del_from_freelist(page, free_list);
++
+ 	region_id = page_zone_region_id(page);
+ 	region = &free_list->mr_list[region_id];
+ 	region->nr_free--;
+@@ -597,6 +652,11 @@ page_found:
+ 	prev_page_lru = lru->prev;
+ 	list_del(lru);
+ 
++	/*
++	 * Since we are not deleting from the head of the freelist, the
++	 * 'next_region' pointer doesn't have to change.
++	 */
++
+ 	if (region->nr_free == 0) {
+ 		region->page_block = NULL;
+ 	} else {
+@@ -1022,7 +1082,7 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
+ 
+ 		page = list_entry(area->free_list[migratetype].list.next,
+ 							struct page, lru);
+-		del_from_freelist(page, &area->free_list[migratetype]);
++		rmqueue_del_from_freelist(page, &area->free_list[migratetype]);
+ 		rmv_page_order(page);
+ 		area->nr_free--;
+ 		expand(zone, page, order, current_order, area, migratetype);
 
-> >
-> >>
-> >>> This patch set is based on Rui's -next tree, and is
-> >>> tested on a Core-i5 and an Atom netbook.
-> >>>
-> >>> Changes since v2:
-> >>>  * Reworked the map sysfs attributes in patch [5/8]
-> >>>  * Dropped configuration for maximum sensors and
-> >>>    cooling devices, through Kconfig.
-> >>>  * Added __remove_trip_attr method
-> >>>  * Renamed __clean_map_entry to __remove_map_entry
-> >>>    for consistency in naming.
-> >>> Changes Since v1:
-> >>>  * Removed kobject creation for thermal_trip and thermal_map
-> >>>    nodes as per Greg-KH's comments.
-> >>>  * Added ABI Documentation under 'testing'.
-> >>>  * Modified the GET_INDEX macro to be more linux-like, thanks
-> >>>    to Joe Perches.
-> >>>  * Added get_[sensor/cdev]_by_name APIs to thermal.h
-> >>>
-> >>> This series contains 8 patches:
-> >>> Patch 1/8: Creates new sensor level APIs
-> >>> Patch 2/8: Creates new zone level APIs. The existing tzd structure is
-> >>>            kept as such for clarity and compatibility purposes.
-> >>> Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The
-> >>>            existing tcd structure need not be modified.
-> >>> Patch 4/8: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
-> >>> 	   under /sys/class/thermal/zoneY/. This exposes various trip
-> >>>            points for sensorX present in zoneY.
-> >>> Patch 5/8: Adds mapY_* sysfs node. These attributes represent
-> >>>            the binding relationship between a sensor and a cdev,
-> >>>            within a zone.
-> >>> Patch 6/8: Creates Documentation for the new APIs. A new file is
-> >>>            created for clarity. Final goal is to merge with the existing
-> >>>            file or refactor the files, as whatever seems appropriate.
-> >>> Patch 7/8: Add ABI documentation for sysfs interfaces introduced in this
-> patch.
-> >>> Patch 8/8: A dummy driver that can be used for testing. This is not for merge.
-> >>>
-> >>> Durgadoss R (8):
-> >>>   Thermal: Create sensor level APIs
-> >>>   Thermal: Create zone level APIs
-> >>>   Thermal: Add APIs to bind cdev to new zone structure
-> >>>   Thermal: Add trip point sysfs nodes for sensor
-> >>>   Thermal: Create Thermal map sysfs attributes for a zone
-> >>>   Thermal: Add Documentation to new APIs
-> >>>   Thermal: Add ABI Documentation for sysfs interfaces
-> >>>   Thermal: Dummy driver used for testing
-> >>>
-> >>>  Documentation/ABI/testing/sysfs-class-thermal |  137 ++++
-> >>>  Documentation/thermal/sysfs-api2.txt          |  247 ++++++
-> >>>  drivers/thermal/Kconfig                       |    5 +
-> >>>  drivers/thermal/Makefile                      |    2 +
-> >>>  drivers/thermal/thermal_sys.c                 |  994
-> +++++++++++++++++++++++++
-> >>>  drivers/thermal/thermal_test.c                |  324 ++++++++
-> >>>  include/linux/thermal.h                       |  123 ++-
-> >>>  7 files changed, 1831 insertions(+), 1 deletion(-)
-> >>>  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
-> >>>  create mode 100644 Documentation/thermal/sysfs-api2.txt
-> >>>  create mode 100644 drivers/thermal/thermal_test.c
-> >>>
-> >>
-> >>
-> >> --
-> >> You have got to be excited about what you are doing. (L. Lamport)
-> >>
-> >> Eduardo Valentin
-> >
-> >
-> >
-> 
-> 
-> --
-> You have got to be excited about what you are doing. (L. Lamport)
-> 
-> Eduardo Valentin
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
