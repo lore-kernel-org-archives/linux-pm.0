@@ -1,74 +1,44 @@
-From: Daniel Fu <danifu@nvidia.com>
-Subject: RE: [PATCH] cpuidle: Check cpuidle driver before add refcount
-Date: Fri, 30 Aug 2013 21:39:27 +0800
-Message-ID: <D9A2FA38A1E15B4E832469E5FE40C7ABFB583335A4@HKMAIL01.nvidia.com>
-References: <1377863302-22465-1-git-send-email-danifu@nvidia.com>
- <2041584.4YznqfT0Od@vostro.rjw.lan>
- <D9A2FA38A1E15B4E832469E5FE40C7ABFB5833359F@HKMAIL01.nvidia.com>
- <1725801.dn2z0gQifB@vostro.rjw.lan>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
+Date: Fri, 30 Aug 2013 10:40:49 -0400
+Message-ID: <5220AEF1.7080808@tilera.com>
+References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com> <521F95BB.2060600@tilera.com> <521FA13F.5040204@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:11066 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754885Ab3H3NkM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 09:40:12 -0400
-In-Reply-To: <1725801.dn2z0gQifB@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <521FA13F.5040204@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: John Stultz <john.stultz@linaro.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Johnny Qiu <joqiu@nvidia.com>
 
-WWVzLCBJIHNhdyBpdC4gDQpUaGFua3MuIGZvdW5kIG9uZSBjYXNlIHdoZW4gIEZpbmQgUE0gZG9t
-YWluIGFuZCBjb25uZWN0IGNwdWlkbGUgdG8gaXQgLCBpbiB3aGVuIEtlcm5lbCBib290aW5nICxv
-cGVuaW5nIGVhcmx5IHByaW5rIHRlc3RpbmcNCnBtX2dlbnBkX25hbWVfYXR0YWNoX2NwdWlkbGUo
-KS0+Y3B1aWRsZV9kcml2ZXJfcmVmKCkuDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpG
-cm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0BzaXNrLnBsXSANClNlbnQ6IDIwMTPl
-ubQ45pyIMzDml6UgMjE6MjYNClRvOiBEYW5pZWwgRnUNCkNjOiBkYW5pZWwubGV6Y2Fub0BsaW5h
-cm8ub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5l
-bC5vcmc7IEpvaG5ueSBRaXUNClN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWlkbGU6IENoZWNrIGNw
-dWlkbGUgZHJpdmVyIGJlZm9yZSBhZGQgcmVmY291bnQNCg0KT24gRnJpZGF5LCBBdWd1c3QgMzAs
-IDIwMTMgMDg6MjY6MzQgUE0gRGFuaWVsIEZ1IHdyb3RlOg0KPiBYLU5WQ29uZmlkZW50aWFsaXR5
-OiBwdWJsaWMNCj4gDQo+IEluIFNNUCwgV2hlbiBkb2luZyB0aGUgY3B1aWRsZSBkcml2ZXIgcmVn
-aXN0cmF0aW9uLiBUaGVyZSBtYXliZSBvbmx5IDEgDQo+IGNwdSBoYXZlIHJlZ2lzdGVyIGNwdWlk
-bGUoQ1BVMCksIGJ1dCBJbiB0aGUgcHJvY2VzcyBvZiByZWdpc3RyYXRpb24gDQo+IGNwdWlkbGUg
-ZHJpdmVyLCB0aGUgc2NoZWR1bGVyIG1heWJlIHNjaGVkdWxlIHRoZSBwcm9jZXNzIHRvIHRoZSBv
-dGhlciANCj4gQ1BVIChlZy4gQ1BVMCBoYXZlIGhlYXkgbG9hZCwgbWlncmF0ZSB0byBDUFUxKQ0K
-PiBjcHVpZGxlX2dldF9kcml2ZXIoKSAtLT4gZ2V0X2NwdSgpICwgd2lsbCBnZXQgQ1BVMSwgaWYg
-Q1BVMSBkaWRuJ3QgcmVnaXN0ZXIgY3B1aWRsZSBkcml2ZXIsIFdpbGwgZ2V0IE5VTEwuDQo+IA0K
-PiBJIGtub3cgd2Ugc2hvdWxkIHByZXZlbnQgdGhlIHJlZ2lzdHJhdGlvbiBtaWdyYXRlIHRvIHRo
-ZSBvdGhlciBDUFUsIGJ1dCB3ZSBzaG91bGQgY2hlY2sgZHJ2IGJlZm9yZSBhZGQgcmVmY291bnQg
-dG8gcHJldmVudCBrZXJuZWwgcGFuaWMgYXQgbGVhc3QsIFJpZ2h0Pw0KDQpXZWxsLCBjcHVpZGxl
-X2RyaXZlcl9yZWYoKSBoYXMgb25seSBvbmUgY2FsbGVyLCB3aGljaCBpcyBub3QgdGhlIHJlZ2lz
-dHJhdGlvbi4NCg0KSG93ZXZlciwgdGhlIGNhbGxlciBhcHBhcmVudGx5IGFzc3VtZXMgdGhhdCB0
-aGF0IGZ1bmN0aW9uIG1heSByZXR1cm4gTlVMTCBhbmQNCmNwdWlkbGVfZHJpdmVyX3VucmVmKCkg
-Y2hlY2sgZHJ2IGFnYWluc3QgTlVMTCB0b28sIHNvIGNwdWlkbGVfZHJpdmVyX3JlZigpIHNob3Vs
-ZCBkbyB0aGF0IGVpdGhlci4NCg0KRGlkIHlvdSBzZWUgdGhhdCBwcm9ibGVtIGluIHRlc3Rpbmcg
-b3IganVzdCB0aHJvdWdoIGNvZGUgaW5zcGVjdGlvbj8NCg0KUmFmYWVsDQoNCg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJq
-d0BzaXNrLnBsXQ0KPiBTZW50OiAyMDEz5bm0OOaciDMw5pelIDIwOjAxDQo+IFRvOiBEYW5pZWwg
-RnUNCj4gQ2M6IGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVs
-Lm9yZzsgDQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEpvaG5ueSBRaXUNCj4gU3Vi
-amVjdDogUmU6IFtQQVRDSF0gY3B1aWRsZTogQ2hlY2sgY3B1aWRsZSBkcml2ZXIgYmVmb3JlIGFk
-ZCByZWZjb3VudA0KPiANCj4gT24gRnJpZGF5LCBBdWd1c3QgMzAsIDIwMTMgMDc6NDg6MjIgUE0g
-RGFuaWVsIEZ1IHdyb3RlOg0KPiA+IElmIHRoZSBjdXJyZW50IENQVSBoYXMgbm8gY3B1aWRsZSBk
-cml2ZXIsIGRydiB3aWxsIGJlIE5VTEwuDQo+ID4gQ2hlY2sgaWYgd2UgZ2V0IGRydiBzdWNjZXNz
-ZnVsbHkgYmVmb3JlIGFkZCByZWZvdW50IHRvIHByZXZlbnQgDQo+ID4gS2VybmVsIHBhbmljLg0K
-PiANCj4gV2hhdCBpcyB0aGUgYWN0dWFsIHNjZW5hcmlvIHRoYXQgbWF5IGxlYWQgdG8gdGhpcyBw
-YW5pYz8NCj4gDQo+IFJhZmFlbA0KPiANCj4gDQo+ID4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIEZ1
-IDxkYW5pZnVAbnZpZGlhLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9jcHVpZGxlL2RyaXZl
-ci5jIHwgMyArKy0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMSBkZWxl
-dGlvbigtKQ0KPiA+IA0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvZHJpdmVyLmMg
-Yi9kcml2ZXJzL2NwdWlkbGUvZHJpdmVyLmMgDQo+ID4gaW5kZXgNCj4gPiAzYWM0OTlkLi42ZTEx
-NzAxIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYw0KPiA+ICsrKyBi
-L2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYw0KPiA+IEBAIC0zMzEsNyArMzMxLDggQEAgc3RydWN0
-IGNwdWlkbGVfZHJpdmVyICpjcHVpZGxlX2RyaXZlcl9yZWYodm9pZCkNCj4gPiAgCXNwaW5fbG9j
-aygmY3B1aWRsZV9kcml2ZXJfbG9jayk7DQo+ID4gIA0KPiA+ICAJZHJ2ID0gY3B1aWRsZV9nZXRf
-ZHJpdmVyKCk7DQo+ID4gLQlkcnYtPnJlZmNudCsrOw0KPiA+ICsJaWYgKGRydikNCj4gPiArCQlk
-cnYtPnJlZmNudCsrOw0KPiA+ICANCj4gPiAgCXNwaW5fdW5sb2NrKCZjcHVpZGxlX2RyaXZlcl9s
-b2NrKTsNCj4gPiAgCXJldHVybiBkcnY7DQo+ID4gDQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3Ig
-bXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9n
-eSBDZW50ZXIuDQo+IA0KLS0NCkkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KUmFmYWVsIEouIFd5
-c29ja2ksIEludGVsIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudGVyLg0K
+On 8/29/2013 3:30 PM, John Stultz wrote:
+> On 08/29/2013 11:40 AM, Chris Metcalf wrote:
+>> Ping!  I have this work queued up to push as part of the linux-tile tree for the
+>> merge window.  Is that acceptable to the timekeeping/clocksource folks?
+>> Should I hold it back pending further review?  Or does it make sense to
+>> push it as-is and think about further improvements, if any, for a later release?
+>>
+>> https://lkml.org/lkml/2013/8/9/497
+>> https://lkml.org/lkml/2013/8/9/499
+> Oh right! Sorry for the slow response here! I originally replied while I
+> was on vacation and didn't flag the thread to follow up on.
+>
+> Few comments below.
+
+Thanks for the feedback. It does sound like too much to take on before
+the 3.12 merge window opens, so we will plan to look into this as time
+permits over the next little while. I've filed a bug internally to
+track this for us.
+
+It sounds like the most straightforward thing for us to do may be to adopt
+your original approach of making our clocksource driver internally convert
+the variable frequency clocksource to a fixed frequency; the overhead
+shouldn't be too bad and it seems like it should moot all the other
+concerns you raised in your email.
+
+-- 
+Chris Metcalf, Tilera Corp.
+http://www.tilera.com
+
