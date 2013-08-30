@@ -1,54 +1,178 @@
-From: Daniel Fu <danifu@nvidia.com>
-Subject: RE: [PATCH] cpuidle: Check cpuidle driver before add refcount
-Date: Fri, 30 Aug 2013 20:26:34 +0800
-Message-ID: <D9A2FA38A1E15B4E832469E5FE40C7ABFB5833359F@HKMAIL01.nvidia.com>
-References: <1377863302-22465-1-git-send-email-danifu@nvidia.com>
- <2041584.4YznqfT0Od@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv3 0/8] Thermal Framework Enhancements
+Date: Fri, 30 Aug 2013 08:34:18 -0400
+Message-ID: <5220914A.3070107@ti.com>
+References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com> <521FA335.2060309@ti.com> <4D68720C2E767A4AA6A8796D42C8EB59D4D3F8@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="ofeRa4dfAw9PR8oof7p9qau77gxdQqiVq"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:3602 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754909Ab3H3M1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 08:27:19 -0400
-In-Reply-To: <2041584.4YznqfT0Od@vostro.rjw.lan>
-Content-Language: en-US
+Received: from bear.ext.ti.com ([192.94.94.41]:42804 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754264Ab3H3Me0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 30 Aug 2013 08:34:26 -0400
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59D4D3F8@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Johnny Qiu <joqiu@nvidia.com>
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-WC1OVkNvbmZpZGVudGlhbGl0eTogcHVibGljDQoNCkluIFNNUCwgV2hlbiBkb2luZyB0aGUgY3B1
-aWRsZSBkcml2ZXIgcmVnaXN0cmF0aW9uLiBUaGVyZSBtYXliZSBvbmx5IDEgY3B1IGhhdmUgcmVn
-aXN0ZXIgY3B1aWRsZShDUFUwKSwgDQpidXQgSW4gdGhlIHByb2Nlc3Mgb2YgcmVnaXN0cmF0aW9u
-IGNwdWlkbGUgZHJpdmVyLCB0aGUgc2NoZWR1bGVyIG1heWJlIHNjaGVkdWxlIHRoZSBwcm9jZXNz
-IHRvIHRoZSBvdGhlciBDUFUgKGVnLiBDUFUwIGhhdmUgaGVheSBsb2FkLCBtaWdyYXRlIHRvIENQ
-VTEpIA0KY3B1aWRsZV9nZXRfZHJpdmVyKCkgLS0+IGdldF9jcHUoKSAsIHdpbGwgZ2V0IENQVTEs
-IGlmIENQVTEgZGlkbid0IHJlZ2lzdGVyIGNwdWlkbGUgZHJpdmVyLCBXaWxsIGdldCBOVUxMLg0K
-DQpJIGtub3cgd2Ugc2hvdWxkIHByZXZlbnQgdGhlIHJlZ2lzdHJhdGlvbiBtaWdyYXRlIHRvIHRo
-ZSBvdGhlciBDUFUsIGJ1dCB3ZSBzaG91bGQgY2hlY2sgZHJ2IGJlZm9yZSBhZGQgcmVmY291bnQg
-dG8gcHJldmVudCBrZXJuZWwgcGFuaWMgYXQgbGVhc3QsIFJpZ2h0Pw0KDQpCZXN0IFJlZ2FyZHMs
-DQpEYW5pZWwNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFJhZmFlbCBKLiBX
-eXNvY2tpIFttYWlsdG86cmp3QHNpc2sucGxdIA0KU2VudDogMjAxM+W5tDjmnIgzMOaXpSAyMDow
-MQ0KVG86IERhbmllbCBGdQ0KQ2M6IGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc7IGxpbnV4LXBt
-QHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgSm9obm55IFFp
-dQ0KU3ViamVjdDogUmU6IFtQQVRDSF0gY3B1aWRsZTogQ2hlY2sgY3B1aWRsZSBkcml2ZXIgYmVm
-b3JlIGFkZCByZWZjb3VudA0KDQpPbiBGcmlkYXksIEF1Z3VzdCAzMCwgMjAxMyAwNzo0ODoyMiBQ
-TSBEYW5pZWwgRnUgd3JvdGU6DQo+IElmIHRoZSBjdXJyZW50IENQVSBoYXMgbm8gY3B1aWRsZSBk
-cml2ZXIsIGRydiB3aWxsIGJlIE5VTEwuDQo+IENoZWNrIGlmIHdlIGdldCBkcnYgc3VjY2Vzc2Z1
-bGx5IGJlZm9yZSBhZGQgcmVmb3VudCB0byBwcmV2ZW50IEtlcm5lbCANCj4gcGFuaWMuDQoNCldo
-YXQgaXMgdGhlIGFjdHVhbCBzY2VuYXJpbyB0aGF0IG1heSBsZWFkIHRvIHRoaXMgcGFuaWM/DQoN
-ClJhZmFlbA0KDQoNCj4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIEZ1IDxkYW5pZnVAbnZpZGlhLmNv
-bT4NCj4gLS0tDQo+ICBkcml2ZXJzL2NwdWlkbGUvZHJpdmVyLmMgfCAzICsrLQ0KPiAgMSBmaWxl
-IGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYyBiL2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYyBp
-bmRleCANCj4gM2FjNDk5ZC4uNmUxMTcwMSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9jcHVpZGxl
-L2RyaXZlci5jDQo+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYw0KPiBAQCAtMzMxLDcg
-KzMzMSw4IEBAIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqY3B1aWRsZV9kcml2ZXJfcmVmKHZvaWQp
-DQo+ICAJc3Bpbl9sb2NrKCZjcHVpZGxlX2RyaXZlcl9sb2NrKTsNCj4gIA0KPiAgCWRydiA9IGNw
-dWlkbGVfZ2V0X2RyaXZlcigpOw0KPiAtCWRydi0+cmVmY250Kys7DQo+ICsJaWYgKGRydikNCj4g
-KwkJZHJ2LT5yZWZjbnQrKzsNCj4gIA0KPiAgCXNwaW5fdW5sb2NrKCZjcHVpZGxlX2RyaXZlcl9s
-b2NrKTsNCj4gIAlyZXR1cm4gZHJ2Ow0KPiANCi0tDQpJIHNwZWFrIG9ubHkgZm9yIG15c2VsZi4N
-ClJhZmFlbCBKLiBXeXNvY2tpLCBJbnRlbCBPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlci4N
-Cg==
+--ofeRa4dfAw9PR8oof7p9qau77gxdQqiVq
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 30-08-2013 05:20, R, Durgadoss wrote:
+> Hi Eduardo,
+>=20
+>> -----Original Message-----
+>> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
+>> Sent: Friday, August 30, 2013 1:08 AM
+>> To: R, Durgadoss
+>> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org=
+;
+>> eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
+>> Subject: Re: [PATCHv3 0/8] Thermal Framework Enhancements
+>>
+>> Durga,
+>>
+>> On 05-02-2013 06:46, Durgadoss R wrote:
+>>> This patch set is a v3 of the previous versions submitted here:
+>>> [v2]: http://lwn.net/Articles/531720/
+>>> [v1]: https://lkml.org/lkml/2012/12/18/108
+>>> [RFC]:https://patchwork.kernel.org/patch/1758921/
+>>>
+>>
+>> Long time this work is not moving forward. While writing the device tr=
+ee
+>=20
+> I am trying my best to get to this,
+> Will try to refresh in a couple of weeks.
+>=20
+>> parser, I thought of using your work as baseline to see how the multip=
+le
+>> sensor per zone would look like (also in DT).
+>>
+>> But while checking your code again, I realized that you are actually
+>> creating a new API, that is probably why you named it sysfs-api2. Whil=
+e
+>> I understand the motivation (they are pretty different), I believe thi=
+s
+>> is not a good thing to do. I would suggest making so that we have a
+>> single API.
+>=20
+> As in the sensor APIs ? or the zone level APIs ?
+> The sensor level APIs are anyway new; the zone level ones
+> we have to work out a way for them.
+>=20
+> Is this what you are referring to ? Could you confirm/explain a bit mor=
+e ?
+
+OK. Let's assume that maybe I didn't quite get your proposal then. Let
+me step back and ask you what is the relation between existing
+thermal_zone_device and thermal_zone? Would existing drivers be
+complaint with new API?
+
+>=20
+> Thanks,
+> Durga
+>=20
+>>
+>>> This patch set is based on Rui's -next tree, and is
+>>> tested on a Core-i5 and an Atom netbook.
+>>>
+>>> Changes since v2:
+>>>  * Reworked the map sysfs attributes in patch [5/8]
+>>>  * Dropped configuration for maximum sensors and
+>>>    cooling devices, through Kconfig.
+>>>  * Added __remove_trip_attr method
+>>>  * Renamed __clean_map_entry to __remove_map_entry
+>>>    for consistency in naming.
+>>> Changes Since v1:
+>>>  * Removed kobject creation for thermal_trip and thermal_map
+>>>    nodes as per Greg-KH's comments.
+>>>  * Added ABI Documentation under 'testing'.
+>>>  * Modified the GET_INDEX macro to be more linux-like, thanks
+>>>    to Joe Perches.
+>>>  * Added get_[sensor/cdev]_by_name APIs to thermal.h
+>>>
+>>> This series contains 8 patches:
+>>> Patch 1/8: Creates new sensor level APIs
+>>> Patch 2/8: Creates new zone level APIs. The existing tzd structure is=
+
+>>>            kept as such for clarity and compatibility purposes.
+>>> Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The=
+
+>>>            existing tcd structure need not be modified.
+>>> Patch 4/8: Adds sensorX_trip_[active/passive/hot/critical] sysfs node=
+s,
+>>> 	   under /sys/class/thermal/zoneY/. This exposes various trip
+>>>            points for sensorX present in zoneY.
+>>> Patch 5/8: Adds mapY_* sysfs node. These attributes represent
+>>>            the binding relationship between a sensor and a cdev,
+>>>            within a zone.
+>>> Patch 6/8: Creates Documentation for the new APIs. A new file is
+>>>            created for clarity. Final goal is to merge with the exist=
+ing
+>>>            file or refactor the files, as whatever seems appropriate.=
+
+>>> Patch 7/8: Add ABI documentation for sysfs interfaces introduced in t=
+his patch.
+>>> Patch 8/8: A dummy driver that can be used for testing. This is not f=
+or merge.
+>>>
+>>> Durgadoss R (8):
+>>>   Thermal: Create sensor level APIs
+>>>   Thermal: Create zone level APIs
+>>>   Thermal: Add APIs to bind cdev to new zone structure
+>>>   Thermal: Add trip point sysfs nodes for sensor
+>>>   Thermal: Create Thermal map sysfs attributes for a zone
+>>>   Thermal: Add Documentation to new APIs
+>>>   Thermal: Add ABI Documentation for sysfs interfaces
+>>>   Thermal: Dummy driver used for testing
+>>>
+>>>  Documentation/ABI/testing/sysfs-class-thermal |  137 ++++
+>>>  Documentation/thermal/sysfs-api2.txt          |  247 ++++++
+>>>  drivers/thermal/Kconfig                       |    5 +
+>>>  drivers/thermal/Makefile                      |    2 +
+>>>  drivers/thermal/thermal_sys.c                 |  994 +++++++++++++++=
+++++++++++
+>>>  drivers/thermal/thermal_test.c                |  324 ++++++++
+>>>  include/linux/thermal.h                       |  123 ++-
+>>>  7 files changed, 1831 insertions(+), 1 deletion(-)
+>>>  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
+>>>  create mode 100644 Documentation/thermal/sysfs-api2.txt
+>>>  create mode 100644 drivers/thermal/thermal_test.c
+>>>
+>>
+>>
+>> --
+>> You have got to be excited about what you are doing. (L. Lamport)
+>>
+>> Eduardo Valentin
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--ofeRa4dfAw9PR8oof7p9qau77gxdQqiVq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlIgkUoACgkQCXcVR3XQvP3zOQEA3OrMujeYyEyNRWppdOMojIRm
+iOQW0624OLEUrOH+zaMA/2F+qkwxjQn09hh8VABOcmLIxZROyBVc3Wvo641QIAPW
+=PYP2
+-----END PGP SIGNATURE-----
+
+--ofeRa4dfAw9PR8oof7p9qau77gxdQqiVq--
