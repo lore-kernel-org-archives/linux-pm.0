@@ -1,109 +1,89 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 1/3] thermal: ti-soc-thermal: Initialize counter_delay
- field for TI DRA752 sensors
-Date: Fri, 30 Aug 2013 08:35:16 -0400
-Message-ID: <52209184.9090706@ti.com>
-References: <1377274103-27770-1-git-send-email-ranganath@ti.com>  <521F3C49.3020402@ti.com> <1377852125.2652.3.camel@rzhang-lenovo>
+Subject: Re: [PATCH 1/3] thermal: exynos: Fix typos in Kconfig
+Date: Fri, 30 Aug 2013 08:36:17 -0400
+Message-ID: <522091C1.5010507@ti.com>
+References: <1376893723-22138-1-git-send-email-sachin.kamat@linaro.org>  <521F3BEE.5020608@ti.com> <1377851701.2652.1.camel@rzhang-lenovo>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="AIuLIGcQJeTWLOjCm8w5CIMQroEFHiDXA"
+	boundary="omiw6V8Jgl3lq5pVdUsSDhCaQAXE0e2cP"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:34430 "EHLO arroyo.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:42919 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753200Ab3H3MfY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 30 Aug 2013 08:35:24 -0400
-In-Reply-To: <1377852125.2652.3.camel@rzhang-lenovo>
+	id S1753200Ab3H3Mg1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 30 Aug 2013 08:36:27 -0400
+In-Reply-To: <1377851701.2652.1.camel@rzhang-lenovo>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Ranganath Krishnan <ranganath@ti.com>, linux-pm@vger.kernel.org, Praneeth Bajjuri <praneeth@ti.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Sachin Kamat <sachin.kamat@linaro.org>, linux-pm@vger.kernel.org, jonghwa3.lee@samsung.com, amit.daniel@samsung.com, patches@linaro.org
 
---AIuLIGcQJeTWLOjCm8w5CIMQroEFHiDXA
+--omiw6V8Jgl3lq5pVdUsSDhCaQAXE0e2cP
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 30-08-2013 04:42, Zhang Rui wrote:
-> On =E5=9B=9B, 2013-08-29 at 08:19 -0400, Eduardo Valentin wrote:
->> On 23-08-2013 12:08, Ranganath Krishnan wrote:
->>> Initialize MPU, GPU, CORE, DSPEVE and IVA thermal sensors of DRA752 b=
-andgap
->>> with the counter delay mask.
+On 30-08-2013 04:35, Zhang Rui wrote:
+> On =E5=9B=9B, 2013-08-29 at 08:17 -0400, Eduardo Valentin wrote:
+>> On 19-08-2013 02:28, Sachin Kamat wrote:
+>>> Fixes some trivial typos.
 >>>
->>> Signed-off-by: Ranganath Krishnan <ranganath@ti.com>
+>>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 >>
 >>
 >> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 >>
-> are you going to take this patch series?
-
-Yes, I applied them on my next branch.
-
-
-I will be sending you a pull request when I finish testing.
-
+> so are you going to take this patch series?
 >=20
+
+Yeah. already applied them in my next branch.
+
+I will send a pull request with this one and ti-soc-thermal fixes when I
+am done testing.
+
 > thanks,
 > rui
 >>> ---
->>>  .../thermal/ti-soc-thermal/dra752-thermal-data.c   |    5 +++++
->>>  1 file changed, 5 insertions(+)
+>>> This series is based on next branch of below tree:
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
 >>>
->>> diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/d=
-rivers/thermal/ti-soc-thermal/dra752-thermal-data.c
->>> index e5d8326..a492927 100644
->>> --- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
->>> +++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
->>> @@ -42,6 +42,7 @@ dra752_core_temp_sensor_registers =3D {
->>>  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_1_MASK_HOT_CORE_MASK,
->>>  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_1_MASK_COLD_CORE_MASK,
->>>  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
->>> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MA=
-SK,
->>>  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_1_FREEZE_CORE_MASK,
->>>  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_CORE_MASK,
->>>  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_ACCUM_CORE_M=
-ASK,
->>> @@ -77,6 +78,7 @@ dra752_iva_temp_sensor_registers =3D {
->>>  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_2_MASK_HOT_IVA_MASK,
->>>  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_2_MASK_COLD_IVA_MASK,
->>>  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
->>> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MA=
-SK,
->>>  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_2_FREEZE_IVA_MASK,
->>>  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_IVA_MASK,
->>>  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_ACCUM_IVA_MA=
-SK,
->>> @@ -112,6 +114,7 @@ dra752_mpu_temp_sensor_registers =3D {
->>>  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_1_MASK_HOT_MPU_MASK,
->>>  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_1_MASK_COLD_MPU_MASK,
->>>  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
->>> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MA=
-SK,
->>>  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_1_FREEZE_MPU_MASK,
->>>  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_MPU_MASK,
->>>  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_ACCUM_MPU_MA=
-SK,
->>> @@ -147,6 +150,7 @@ dra752_dspeve_temp_sensor_registers =3D {
->>>  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_2_MASK_HOT_DSPEVE_MASK,
->>>  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_2_MASK_COLD_DSPEVE_MASK,
->>>  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
->>> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MA=
-SK,
->>>  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_2_FREEZE_DSPEVE_MASK,
->>>  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_DSPEVE_MASK,
->>>  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_2_CLEAR_ACCUM_DSPEVE=
-_MASK,
->>> @@ -182,6 +186,7 @@ dra752_gpu_temp_sensor_registers =3D {
->>>  	.mask_hot_mask =3D DRA752_BANDGAP_CTRL_1_MASK_HOT_GPU_MASK,
->>>  	.mask_cold_mask =3D DRA752_BANDGAP_CTRL_1_MASK_COLD_GPU_MASK,
->>>  	.mask_sidlemode_mask =3D DRA752_BANDGAP_CTRL_1_SIDLEMODE_MASK,
->>> +	.mask_counter_delay_mask =3D DRA752_BANDGAP_CTRL_1_COUNTER_DELAY_MA=
-SK,
->>>  	.mask_freeze_mask =3D DRA752_BANDGAP_CTRL_1_FREEZE_GPU_MASK,
->>>  	.mask_clear_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_GPU_MASK,
->>>  	.mask_clear_accum_mask =3D DRA752_BANDGAP_CTRL_1_CLEAR_ACCUM_GPU_MA=
-SK,
+>>> This is tested on Exynos4210 and 5250 based boards.
+>>> ---
+>>>  drivers/thermal/samsung/Kconfig |   10 +++++-----
+>>>  1 file changed, 5 insertions(+), 5 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsun=
+g/Kconfig
+>>> index b653f15..92492e4 100644
+>>> --- a/drivers/thermal/samsung/Kconfig
+>>> +++ b/drivers/thermal/samsung/Kconfig
+>>> @@ -3,16 +3,16 @@ config EXYNOS_THERMAL
+>>>  	depends on ARCH_HAS_BANDGAP
+>>>  	help
+>>>  	  If you say yes here you get support for the TMU (Thermal Manageme=
+nt
+>>> -	  Unit) driver for SAMSUNG EXYNOS series of soc. This driver initia=
+lises
+>>> +	  Unit) driver for SAMSUNG EXYNOS series of SoCs. This driver initi=
+alises
+>>>  	  the TMU, reports temperature and handles cooling action if define=
+d.
+>>> -	  This driver uses the exynos core thermal API's and TMU configurat=
+ion
+>>> -	  data from the supported soc's.
+>>> +	  This driver uses the Exynos core thermal APIs and TMU configurati=
+on
+>>> +	  data from the supported SoCs.
+>>> =20
+>>>  config EXYNOS_THERMAL_CORE
+>>> -	bool "Core thermal framework support for EXYNOS SOC's"
+>>> +	bool "Core thermal framework support for EXYNOS SOCs"
+>>>  	depends on EXYNOS_THERMAL
+>>>  	help
+>>>  	  If you say yes here you get support for EXYNOS TMU
+>>>  	  (Thermal Management Unit) common registration/unregistration
+>>>  	  functions to the core thermal layer and also to use the generic
+>>> -	  cpu cooling API's.
+>>> +	  CPU cooling APIs.
 >>>
 >>
 >>
@@ -119,7 +99,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---AIuLIGcQJeTWLOjCm8w5CIMQroEFHiDXA
+--omiw6V8Jgl3lq5pVdUsSDhCaQAXE0e2cP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -128,9 +108,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlIgkYQACgkQCXcVR3XQvP2pDAD/X6s4Zz+v9+jm95MFsXreuBn1
-VTch3KmeBzenuWS27AAA/ieXsSPE8k0ukLTma5HwOwwLanXFDqK/IW1btemkdft8
-=GI3D
+iF4EAREIAAYFAlIgkcEACgkQCXcVR3XQvP10jgEAga7KWGcpZLnpIyNHwOW/z4/r
+1X601Heyt0/UnsyryFYBAJ3Av4gcW2Oo+HlDy3wViTYA0/CmmepNg4uMW7aCMw8D
+=EFt+
 -----END PGP SIGNATURE-----
 
---AIuLIGcQJeTWLOjCm8w5CIMQroEFHiDXA--
+--omiw6V8Jgl3lq5pVdUsSDhCaQAXE0e2cP--
