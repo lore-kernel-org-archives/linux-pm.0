@@ -1,129 +1,136 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCHv3 0/8] Thermal Framework Enhancements
-Date: Fri, 30 Aug 2013 09:20:29 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59D4D3F8@BGSMSX101.gar.corp.intel.com>
-References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
- <521FA335.2060309@ti.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 1/2] ARM: EXYNOS: convert cpuidle driver to be a platform driver
+Date: Fri, 30 Aug 2013 12:15:04 +0200
+Message-ID: <86136702.IKrZfWSsO8@amdc1032>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:63088 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694Ab3H3JUj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 05:20:39 -0400
-In-Reply-To: <521FA335.2060309@ti.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tomasz Figa <t.figa@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-Hi Eduardo,
+ARM EXYNOS cpuidle driver is currently not multiplatform support ready
+(as it uses device_initcall() for initialization and doesn't check on
+what platform it is running). Fix it by converting the driver to be
+a platform driver and registering exynos_cpuidle platform device from
+exynos[4,5]_dt_machine_init().
 
-> -----Original Message-----
-> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
-> Sent: Friday, August 30, 2013 1:08 AM
-> To: R, Durgadoss
-> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
-> eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
-> Subject: Re: [PATCHv3 0/8] Thermal Framework Enhancements
-> 
-> Durga,
-> 
-> On 05-02-2013 06:46, Durgadoss R wrote:
-> > This patch set is a v3 of the previous versions submitted here:
-> > [v2]: http://lwn.net/Articles/531720/
-> > [v1]: https://lkml.org/lkml/2012/12/18/108
-> > [RFC]:https://patchwork.kernel.org/patch/1758921/
-> >
-> 
-> Long time this work is not moving forward. While writing the device tree
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ arch/arm/mach-exynos/common.c          | 11 +++++++++++
+ arch/arm/mach-exynos/common.h          |  1 +
+ arch/arm/mach-exynos/cpuidle.c         | 14 ++++++++++++--
+ arch/arm/mach-exynos/mach-exynos4-dt.c |  2 ++
+ arch/arm/mach-exynos/mach-exynos5-dt.c |  2 ++
+ 5 files changed, 28 insertions(+), 2 deletions(-)
 
-I am trying my best to get to this,
-Will try to refresh in a couple of weeks.
-
-> parser, I thought of using your work as baseline to see how the multiple
-> sensor per zone would look like (also in DT).
-> 
-> But while checking your code again, I realized that you are actually
-> creating a new API, that is probably why you named it sysfs-api2. While
-> I understand the motivation (they are pretty different), I believe this
-> is not a good thing to do. I would suggest making so that we have a
-> single API.
-
-As in the sensor APIs ? or the zone level APIs ?
-The sensor level APIs are anyway new; the zone level ones
-we have to work out a way for them.
-
-Is this what you are referring to ? Could you confirm/explain a bit more ?
-
-Thanks,
-Durga
-
-> 
-> > This patch set is based on Rui's -next tree, and is
-> > tested on a Core-i5 and an Atom netbook.
-> >
-> > Changes since v2:
-> >  * Reworked the map sysfs attributes in patch [5/8]
-> >  * Dropped configuration for maximum sensors and
-> >    cooling devices, through Kconfig.
-> >  * Added __remove_trip_attr method
-> >  * Renamed __clean_map_entry to __remove_map_entry
-> >    for consistency in naming.
-> > Changes Since v1:
-> >  * Removed kobject creation for thermal_trip and thermal_map
-> >    nodes as per Greg-KH's comments.
-> >  * Added ABI Documentation under 'testing'.
-> >  * Modified the GET_INDEX macro to be more linux-like, thanks
-> >    to Joe Perches.
-> >  * Added get_[sensor/cdev]_by_name APIs to thermal.h
-> >
-> > This series contains 8 patches:
-> > Patch 1/8: Creates new sensor level APIs
-> > Patch 2/8: Creates new zone level APIs. The existing tzd structure is
-> >            kept as such for clarity and compatibility purposes.
-> > Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The
-> >            existing tcd structure need not be modified.
-> > Patch 4/8: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
-> > 	   under /sys/class/thermal/zoneY/. This exposes various trip
-> >            points for sensorX present in zoneY.
-> > Patch 5/8: Adds mapY_* sysfs node. These attributes represent
-> >            the binding relationship between a sensor and a cdev,
-> >            within a zone.
-> > Patch 6/8: Creates Documentation for the new APIs. A new file is
-> >            created for clarity. Final goal is to merge with the existing
-> >            file or refactor the files, as whatever seems appropriate.
-> > Patch 7/8: Add ABI documentation for sysfs interfaces introduced in this patch.
-> > Patch 8/8: A dummy driver that can be used for testing. This is not for merge.
-> >
-> > Durgadoss R (8):
-> >   Thermal: Create sensor level APIs
-> >   Thermal: Create zone level APIs
-> >   Thermal: Add APIs to bind cdev to new zone structure
-> >   Thermal: Add trip point sysfs nodes for sensor
-> >   Thermal: Create Thermal map sysfs attributes for a zone
-> >   Thermal: Add Documentation to new APIs
-> >   Thermal: Add ABI Documentation for sysfs interfaces
-> >   Thermal: Dummy driver used for testing
-> >
-> >  Documentation/ABI/testing/sysfs-class-thermal |  137 ++++
-> >  Documentation/thermal/sysfs-api2.txt          |  247 ++++++
-> >  drivers/thermal/Kconfig                       |    5 +
-> >  drivers/thermal/Makefile                      |    2 +
-> >  drivers/thermal/thermal_sys.c                 |  994 +++++++++++++++++++++++++
-> >  drivers/thermal/thermal_test.c                |  324 ++++++++
-> >  include/linux/thermal.h                       |  123 ++-
-> >  7 files changed, 1831 insertions(+), 1 deletion(-)
-> >  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
-> >  create mode 100644 Documentation/thermal/sysfs-api2.txt
-> >  create mode 100644 drivers/thermal/thermal_test.c
-> >
-> 
-> 
-> --
-> You have got to be excited about what you are doing. (L. Lamport)
-> 
-> Eduardo Valentin
-
+diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
+index ba95e5d..c17407b 100644
+--- a/arch/arm/mach-exynos/common.c
++++ b/arch/arm/mach-exynos/common.c
+@@ -30,6 +30,7 @@
+ #include <linux/clk-provider.h>
+ #include <linux/irqchip/arm-gic.h>
+ #include <linux/irqchip/chained_irq.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/proc-fns.h>
+ #include <asm/exception.h>
+@@ -294,6 +295,16 @@ void exynos5_restart(enum reboot_mode mode, const char *cmd)
+ 	__raw_writel(val, addr);
+ }
+ 
++static struct platform_device exynos_cpuidle = {
++	.name		= "exynos_cpuidle",
++	.id		= -1,
++};
++
++void __init exynos_cpuidle_init(void)
++{
++	platform_device_register(&exynos_cpuidle);
++}
++
+ void __init exynos_init_late(void)
+ {
+ 	if (of_machine_is_compatible("samsung,exynos5440"))
+diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+index 8646a14..b2ac188 100644
+--- a/arch/arm/mach-exynos/common.h
++++ b/arch/arm/mach-exynos/common.h
+@@ -22,6 +22,7 @@ struct map_desc;
+ void exynos_init_io(void);
+ void exynos4_restart(enum reboot_mode mode, const char *cmd);
+ void exynos5_restart(enum reboot_mode mode, const char *cmd);
++void exynos_cpuidle_init(void);
+ void exynos_init_late(void);
+ 
+ void exynos_firmware_init(void);
+diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
+index 225ee84..8e881e0 100644
+--- a/arch/arm/mach-exynos/cpuidle.c
++++ b/arch/arm/mach-exynos/cpuidle.c
+@@ -15,6 +15,7 @@
+ #include <linux/io.h>
+ #include <linux/export.h>
+ #include <linux/time.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/proc-fns.h>
+ #include <asm/smp_scu.h>
+@@ -192,7 +193,7 @@ static void __init exynos5_core_down_clk(void)
+ 	__raw_writel(tmp, EXYNOS5_PWR_CTRL2);
+ }
+ 
+-static int __init exynos4_init_cpuidle(void)
++static int __init exynos_cpuidle_probe(struct platform_device *pdev)
+ {
+ 	int cpu_id, ret;
+ 	struct cpuidle_device *device;
+@@ -223,4 +224,13 @@ static int __init exynos4_init_cpuidle(void)
+ 
+ 	return 0;
+ }
+-device_initcall(exynos4_init_cpuidle);
++
++static struct platform_driver exynos_cpuidle_driver = {
++	.probe	= exynos_cpuidle_probe,
++	.driver = {
++		.name = "exynos_cpuidle",
++		.owner = THIS_MODULE,
++	},
++};
++
++module_platform_driver(exynos_cpuidle_driver);
+diff --git a/arch/arm/mach-exynos/mach-exynos4-dt.c b/arch/arm/mach-exynos/mach-exynos4-dt.c
+index 0099c6c..53a3dc3 100644
+--- a/arch/arm/mach-exynos/mach-exynos4-dt.c
++++ b/arch/arm/mach-exynos/mach-exynos4-dt.c
+@@ -25,6 +25,8 @@
+ 
+ static void __init exynos4_dt_machine_init(void)
+ {
++	exynos_cpuidle_init();
++
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+ 
+diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
+index f874b77..c9f7dd1 100644
+--- a/arch/arm/mach-exynos/mach-exynos5-dt.c
++++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
+@@ -47,6 +47,8 @@ static void __init exynos5_dt_machine_init(void)
+ 		}
+ 	}
+ 
++	exynos_cpuidle_init();
++
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+ 
+-- 
+1.8.2.3
