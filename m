@@ -1,102 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] intel_idle: shrink states tables
-Date: Fri, 30 Aug 2013 14:03:38 +0200
-Message-ID: <6073210.Ddg7QEoeOl@vostro.rjw.lan>
-References: <2945985.mxvmQoz8DY@amdc1032>
+From: Daniel Fu <danifu@nvidia.com>
+Subject: RE: [PATCH] cpuidle: Check cpuidle driver before add refcount
+Date: Fri, 30 Aug 2013 20:26:34 +0800
+Message-ID: <D9A2FA38A1E15B4E832469E5FE40C7ABFB5833359F@HKMAIL01.nvidia.com>
+References: <1377863302-22465-1-git-send-email-danifu@nvidia.com>
+ <2041584.4YznqfT0Od@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:44640 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754438Ab3H3Lww (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 30 Aug 2013 07:52:52 -0400
-In-Reply-To: <2945985.mxvmQoz8DY@amdc1032>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:3602 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754909Ab3H3M1T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Aug 2013 08:27:19 -0400
+In-Reply-To: <2041584.4YznqfT0Od@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Len Brown <lenb@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Johnny Qiu <joqiu@nvidia.com>
 
-On Friday, August 30, 2013 12:25:10 PM Bartlomiej Zolnierkiewicz wrote:
-> There is no reason to define CPUIDLE_STATE_MAX (currently 10) entries
-> in states tables if the driver always stops iterating over table when
-> it encounters first .enter == NULL entry.
-> 
-> $ size drivers/idle/intel_idle.o.*
->    text    data     bss     dec     hex filename
->    2886    5440      32    8358    20a6 drivers/idle/intel_idle.o.before
->    2886    3752      32    6670    1a0e drivers/idle/intel_idle.o.after
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: Len Brown <lenb@kernel.org>
-
-Thanks, I'll queue this series up for 3.13.
-
-
-> ---
->  drivers/idle/intel_idle.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index fa6964d..9c97fbb42 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -123,7 +123,7 @@ static struct cpuidle_state *cpuidle_state_table;
->   * which is also the index into the MWAIT hint array.
->   * Thus C0 is a dummy.
->   */
-> -static struct cpuidle_state nehalem_cstates[CPUIDLE_STATE_MAX] = {
-> +static struct cpuidle_state nehalem_cstates[] = {
->  	{
->  		.name = "C1-NHM",
->  		.desc = "MWAIT 0x00",
-> @@ -156,7 +156,7 @@ static struct cpuidle_state nehalem_cstates[CPUIDLE_STATE_MAX] = {
->  		.enter = NULL }
->  };
->  
-> -static struct cpuidle_state snb_cstates[CPUIDLE_STATE_MAX] = {
-> +static struct cpuidle_state snb_cstates[] = {
->  	{
->  		.name = "C1-SNB",
->  		.desc = "MWAIT 0x00",
-> @@ -196,7 +196,7 @@ static struct cpuidle_state snb_cstates[CPUIDLE_STATE_MAX] = {
->  		.enter = NULL }
->  };
->  
-> -static struct cpuidle_state ivb_cstates[CPUIDLE_STATE_MAX] = {
-> +static struct cpuidle_state ivb_cstates[] = {
->  	{
->  		.name = "C1-IVB",
->  		.desc = "MWAIT 0x00",
-> @@ -236,7 +236,7 @@ static struct cpuidle_state ivb_cstates[CPUIDLE_STATE_MAX] = {
->  		.enter = NULL }
->  };
->  
-> -static struct cpuidle_state hsw_cstates[CPUIDLE_STATE_MAX] = {
-> +static struct cpuidle_state hsw_cstates[] = {
->  	{
->  		.name = "C1-HSW",
->  		.desc = "MWAIT 0x00",
-> @@ -297,7 +297,7 @@ static struct cpuidle_state hsw_cstates[CPUIDLE_STATE_MAX] = {
->  		.enter = NULL }
->  };
->  
-> -static struct cpuidle_state atom_cstates[CPUIDLE_STATE_MAX] = {
-> +static struct cpuidle_state atom_cstates[] = {
->  	{
->  		.name = "C1E-ATM",
->  		.desc = "MWAIT 0x00",
-> @@ -628,7 +628,7 @@ static int intel_idle_cpu_init(int cpu)
->  		int num_substates, mwait_hint, mwait_cstate, mwait_substate;
->  
->  		if (cpuidle_state_table[cstate].enter == NULL)
-> -			continue;
-> +			break;
->  
->  		if (cstate + 1 > max_cstate) {
->  			printk(PREFIX "max_cstate %d reached\n", max_cstate);
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+WC1OVkNvbmZpZGVudGlhbGl0eTogcHVibGljDQoNCkluIFNNUCwgV2hlbiBkb2luZyB0aGUgY3B1
+aWRsZSBkcml2ZXIgcmVnaXN0cmF0aW9uLiBUaGVyZSBtYXliZSBvbmx5IDEgY3B1IGhhdmUgcmVn
+aXN0ZXIgY3B1aWRsZShDUFUwKSwgDQpidXQgSW4gdGhlIHByb2Nlc3Mgb2YgcmVnaXN0cmF0aW9u
+IGNwdWlkbGUgZHJpdmVyLCB0aGUgc2NoZWR1bGVyIG1heWJlIHNjaGVkdWxlIHRoZSBwcm9jZXNz
+IHRvIHRoZSBvdGhlciBDUFUgKGVnLiBDUFUwIGhhdmUgaGVheSBsb2FkLCBtaWdyYXRlIHRvIENQ
+VTEpIA0KY3B1aWRsZV9nZXRfZHJpdmVyKCkgLS0+IGdldF9jcHUoKSAsIHdpbGwgZ2V0IENQVTEs
+IGlmIENQVTEgZGlkbid0IHJlZ2lzdGVyIGNwdWlkbGUgZHJpdmVyLCBXaWxsIGdldCBOVUxMLg0K
+DQpJIGtub3cgd2Ugc2hvdWxkIHByZXZlbnQgdGhlIHJlZ2lzdHJhdGlvbiBtaWdyYXRlIHRvIHRo
+ZSBvdGhlciBDUFUsIGJ1dCB3ZSBzaG91bGQgY2hlY2sgZHJ2IGJlZm9yZSBhZGQgcmVmY291bnQg
+dG8gcHJldmVudCBrZXJuZWwgcGFuaWMgYXQgbGVhc3QsIFJpZ2h0Pw0KDQpCZXN0IFJlZ2FyZHMs
+DQpEYW5pZWwNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFJhZmFlbCBKLiBX
+eXNvY2tpIFttYWlsdG86cmp3QHNpc2sucGxdIA0KU2VudDogMjAxM+W5tDjmnIgzMOaXpSAyMDow
+MQ0KVG86IERhbmllbCBGdQ0KQ2M6IGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc7IGxpbnV4LXBt
+QHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgSm9obm55IFFp
+dQ0KU3ViamVjdDogUmU6IFtQQVRDSF0gY3B1aWRsZTogQ2hlY2sgY3B1aWRsZSBkcml2ZXIgYmVm
+b3JlIGFkZCByZWZjb3VudA0KDQpPbiBGcmlkYXksIEF1Z3VzdCAzMCwgMjAxMyAwNzo0ODoyMiBQ
+TSBEYW5pZWwgRnUgd3JvdGU6DQo+IElmIHRoZSBjdXJyZW50IENQVSBoYXMgbm8gY3B1aWRsZSBk
+cml2ZXIsIGRydiB3aWxsIGJlIE5VTEwuDQo+IENoZWNrIGlmIHdlIGdldCBkcnYgc3VjY2Vzc2Z1
+bGx5IGJlZm9yZSBhZGQgcmVmb3VudCB0byBwcmV2ZW50IEtlcm5lbCANCj4gcGFuaWMuDQoNCldo
+YXQgaXMgdGhlIGFjdHVhbCBzY2VuYXJpbyB0aGF0IG1heSBsZWFkIHRvIHRoaXMgcGFuaWM/DQoN
+ClJhZmFlbA0KDQoNCj4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIEZ1IDxkYW5pZnVAbnZpZGlhLmNv
+bT4NCj4gLS0tDQo+ICBkcml2ZXJzL2NwdWlkbGUvZHJpdmVyLmMgfCAzICsrLQ0KPiAgMSBmaWxl
+IGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYyBiL2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYyBp
+bmRleCANCj4gM2FjNDk5ZC4uNmUxMTcwMSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9jcHVpZGxl
+L2RyaXZlci5jDQo+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9kcml2ZXIuYw0KPiBAQCAtMzMxLDcg
+KzMzMSw4IEBAIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqY3B1aWRsZV9kcml2ZXJfcmVmKHZvaWQp
+DQo+ICAJc3Bpbl9sb2NrKCZjcHVpZGxlX2RyaXZlcl9sb2NrKTsNCj4gIA0KPiAgCWRydiA9IGNw
+dWlkbGVfZ2V0X2RyaXZlcigpOw0KPiAtCWRydi0+cmVmY250Kys7DQo+ICsJaWYgKGRydikNCj4g
+KwkJZHJ2LT5yZWZjbnQrKzsNCj4gIA0KPiAgCXNwaW5fdW5sb2NrKCZjcHVpZGxlX2RyaXZlcl9s
+b2NrKTsNCj4gIAlyZXR1cm4gZHJ2Ow0KPiANCi0tDQpJIHNwZWFrIG9ubHkgZm9yIG15c2VsZi4N
+ClJhZmFlbCBKLiBXeXNvY2tpLCBJbnRlbCBPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlci4N
+Cg==
