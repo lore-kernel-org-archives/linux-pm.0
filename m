@@ -1,8 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v3 19/35] mm: Add a mechanism to add pages to buddy
- freelists in bulk
-Date: Fri, 30 Aug 2013 18:49:45 +0530
-Message-ID: <20130830131941.4947.33856.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v3 20/35] mm: Provide a mechanism to delete pages from
+ buddy freelists in bulk
+Date: Fri, 30 Aug 2013 18:50:01 +0530
+Message-ID: <20130830131959.4947.91045.stgit@srivatsabhat.in.ibm.com>
 References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,75 +14,85 @@ To: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@in
 Cc: gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When the buddy page allocator requests the region allocator for memory,
-it gets all the freepages belonging to an entire region at once. So, in
-order to make it efficient, we need a way to add all those pages to the
-buddy freelists in one shot. Add this support, and also take care to
-update the nr-free statistics properly.
+When the buddy allocator releases excess free memory to the region
+allocator, it does it at a region granularity - that is, it releases
+all the freepages of that region to the region allocator, at once.
+So, in order to make this efficient, we need a way to delete all those
+pages from the buddy freelists in one shot. Add this support, and also
+take care to update the nr-free statistics properly.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- mm/page_alloc.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ mm/page_alloc.c |   55 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 905360c..b66ddff 100644
+index b66ddff..5227ac3 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -692,6 +692,52 @@ out:
- 	set_region_bit(region_id, free_list);
+@@ -853,6 +853,61 @@ page_found:
+ 	}
  }
  
 +/*
-+ * Add all the freepages contained in 'list' to the buddy freelist
-+ * 'free_list'. Using suitable list-manipulation tricks, we move the
-+ * pages between the lists in one shot.
++ * Delete all freepages belonging to the region 'region_id' from 'free_list'
++ * and move them to 'list'. Using suitable list-manipulation tricks, we move
++ * the pages between the lists in one shot.
 + */
-+static void add_to_freelist_bulk(struct list_head *list,
-+				 struct free_list *free_list, int order,
-+				 int region_id)
++static void del_from_freelist_bulk(struct list_head *list,
++				   struct free_list *free_list, int order,
++				   int region_id)
 +{
-+	struct list_head *cur, *position;
-+	struct mem_region_list *region;
++	struct mem_region_list *region, *prev_region;
 +	unsigned long nr_pages = 0;
 +	struct free_area *area;
++	struct list_head *cur;
 +	struct page *page;
++	int prev_region_id;
 +
-+	if (list_empty(list))
-+		return;
-+
-+	page = list_first_entry(list, struct page, lru);
-+	list_del(&page->lru);
++	region = &free_list->mr_list[region_id];
 +
 +	/*
-+	 * Add one page using add_to_freelist() so that it sets up the
-+	 * region related data-structures of the freelist properly.
++	 * Perform bulk movement of all pages of the region to the new list,
++	 * except the page pointed to by region->pageblock.
 +	 */
-+	add_to_freelist(page, free_list, order);
++	prev_region_id = find_prev_region(region_id, free_list);
++	if (prev_region_id < 0) {
++		/* This is the first region on the list */
++		list_cut_position(list, &free_list->list,
++				  region->page_block->prev);
++	} else {
++		prev_region = &free_list->mr_list[prev_region_id];
++		list_cut_position(list, prev_region->page_block,
++				  region->page_block->prev);
++	}
 +
-+	/* Now add the rest of the pages in bulk */
 +	list_for_each(cur, list)
 +		nr_pages++;
 +
-+	position = free_list->mr_list[region_id].page_block;
-+	list_splice_tail(list, position);
++	region->nr_free -= nr_pages;
 +
++	/*
++	 * Now delete the page pointed to by region->page_block using
++	 * del_from_freelist(), so that it sets up the region related
++	 * data-structures of the freelist properly.
++	 */
++	page = list_entry(region->page_block, struct page, lru);
++	del_from_freelist(page, free_list, order);
 +
-+	/* Update the statistics */
-+	region = &free_list->mr_list[region_id];
-+	region->nr_free += nr_pages;
++	list_add_tail(&page->lru, list);
 +
 +	area = &(page_zone(page)->free_area[order]);
-+	area->nr_free += nr_pages + 1;
++	area->nr_free -= nr_pages + 1;
 +
-+	/* Fix up the zone region stats, since add_to_freelist() altered it */
-+	region->zone_region->nr_free -= 1 << order;
++	/* Fix up the zone region stats, since del_from_freelist() altered it */
++	region->zone_region->nr_free += 1 << order;
 +}
 +
  /**
-  * __rmqueue_smallest() *always* deletes elements from the head of the
-  * list. Use this knowledge to keep page allocation fast, despite being
+  * Move a given page from one freelist to another.
+  */
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
