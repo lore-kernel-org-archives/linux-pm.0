@@ -1,98 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: mutex warning in cpufreq + RFC patch
-Date: Sat, 31 Aug 2013 02:59:31 +0200
-Message-ID: <41768242.uCD68eUKhK@vostro.rjw.lan>
-References: <20130828025721.GA19754@codeaurora.org> <20130831003641.GE19754@codeaurora.org> <2143062.PTWIfM6mhl@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2143062.PTWIfM6mhl@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: [PATCH v2 0/3] cpufreq/ondemand support for Xserve G5 & iMac G5 iSight
+Date: Sat, 31 Aug 2013 20:23:49 +0300
+Message-ID: <1377969832-27699-1-git-send-email-aaro.koskinen@iki.fi>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from filtteri6.pp.htv.fi ([213.243.153.189]:47318 "EHLO
+	filtteri6.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753501Ab3HaR0K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 31 Aug 2013 13:26:10 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-On Saturday, August 31, 2013 02:55:57 AM Rafael J. Wysocki wrote:
-> On Friday, August 30, 2013 05:36:41 PM Stephen Boyd wrote:
-> > On 08/29, Viresh Kumar wrote:
-> > > On 28 August 2013 22:22, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> > > >
-> > > > I've applied these patches on top of v3.10
-> > > >
-> > > > f51e1eb63d9c28cec188337ee656a13be6980cfd (cpufreq: Fix cpufreq regression after suspend/resume
-> > > > aae760ed21cd690fe8a6db9f3a177ad55d7e12ab (cpufreq: Revert commit a66b2e to fix suspend/resume regression)
-> > > > e8d05276f236ee6435e78411f62be9714e0b9377 (cpufreq: Revert commit 2f7021a8 to fix CPU hotplug regression)
-> > > > 2a99859932281ed6c2ecdd988855f8f6838f6743 (cpufreq: Fix cpufreq driver module refcount balance after suspend/resume)
-> > > > 419e172145cf6c51d436a8bf4afcd17511f0ff79 (cpufreq: don't leave stale policy pointer in cdbs->cur_policy)
-> > > > 95731ebb114c5f0c028459388560fc2a72fe5049 (cpufreq: Fix governor start/stop race condition)
-> > > >
-> > > > That second to last one causes a NULL pointer exception after the mutex
-> > > > warning above because the limits case does
-> > > >
-> > > >     if (policy->max < cpu_cdbs->cur_policy->cur)
-> > > >
-> > > > and that dereferences a NULL cur_policy pointer.
-> > > 
-> > > I have seen something similar and the error checking patch that
-> > > I mentioned earlier came as solution to that only..
-> > 
-> > Yes that patch may reduce the chance of the race condition but I
-> > don't believe it removes it entirely. I believe this bug still
-> > exists in linux-next. Consider the scenario where CPU1 is going
-> > down.
-> > 
-> > __cpufreq_remove_dev()
-> >  ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> >   __cpufreq_governor()
-> >    policy->governor->governor(policy, CPUFREQ_GOV_STOP);
-> >     cpufreq_governor_dbs()
-> >      case CPUFREQ_GOV_STOP:
-> >       mutex_destroy(&cpu_cdbs->timer_mutex)
-> >       cpu_cdbs->cur_policy = NULL;
-> >   <PREEMPT>
-> > store()
-> >  __cpufreq_set_policy()
-> >   ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> >    __cpufreq_governor()
-> >     policy->governor->governor(policy, CPUFREQ_GOV_LIMITS);
-> >      case CPUFREQ_GOV_LIMITS:
-> >       mutex_lock(&cpu_cdbs->timer_mutex); <-- Warning (destroyed mutex)
-> >        if (policy->max < cpu_cdbs->cur_policy->cur) <- cur_policy == NULL
-> > 
-> > Once we stop the governor I don't see how another thread can't
-> > race in and get all the way down into the GOV_LIMITS case. Even
-> > if we wanted to lock out that thread with some mutex or semaphore
-> > it will have to continue running eventually and so we really need
-> > to wait until all the sysfs files are gone before we stop the
-> > governor (in the case of the last cpu for the policy) or we need
-> > to stop and start the governor while holding the policy semaphore
-> > to prevent a race.
-> > 
-> > > 
-> > > > Are there any fixes that I'm missing? I see that some things are
-> > > > changing in linux-next but they don't look like fixes, more like
-> > > > optimizations.
-> > > 
-> > > Getting patches over 3.10 would be tricky.. You are two kernel
-> > > version back and that's not going to help much.. There are too many
-> > > patches in between linux-next and 3.10..
-> > >
-> > > 
-> > > I really can't tell you which specific ones to include, as I am lost in them :)
-> > 
-> > That's a problem. 3.10 is the next long term stable kernel and so we need to
-> > backport any fixes to 3.10 for the next two years. Hopefully these bugs I'm
-> > finding in the 3.10 stable kernel's cpufreq code aren't known issues on
-> > 3.11/next.
-> 
-> No, they aren't.
-> 
-> Well, that's the main reason why I've been pushing back against more churn in
-> the cpuidle subsystem recently.  I think we went too far with changes that
-> were not entirely understood and now we're seeing the fallout.
+Hi,
 
-s/cpuidle/cpufreq/
+This is a second version of the patch set sent earlier
+(http://marc.info/?t=137461124900005&r=1&w=2) to enable ondemand on
+Xserve G5, and also to enable cpufreq on the final iMac G5 (iSight) model.
 
-Apparently, I'm already too tired.
+I changed the second patch to so that it only adds the new latency value
+for PowerMac7,2/PowerMac7,3/RackMac3,1.
+
+The only other changes are ACKs from Viresh Kumar to patches 1 & 3.
+
+A.
+
+Aaro Koskinen (3):
+  cpufreq: pmac64: speed up frequency switch
+  cpufreq: pmac64: provide cpufreq transition latency for older G5
+    models
+  cpufreq: pmac64: enable cpufreq on iMac G5 (iSight) model
+
+ drivers/cpufreq/pmac64-cpufreq.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+-- 
+1.8.3.2
 
