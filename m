@@ -1,24 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: don't allow governor limits to be changed
- when it is disabled
-Date: Sun, 1 Sep 2013 11:56:09 +0530
-Message-ID: <CAKohpomt4vAxHiCkiSzpX6UttMqox=Sc9Oqhgxw6YHtkJfghGQ@mail.gmail.com>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+From: Florian Weimer <fw-d32yF4oPJVt0XxTmqZlbVQ@public.gmane.org>
+Subject: Re: [RFC PATCH 00/18 v3] Signature verification of hibernate snapshot
+Date: Sun, 01 Sep 2013 12:41:22 +0200
+Message-ID: <87r4d8vn71.fsf@mid.deneb.enyo.de>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+	<87eh9dzg00.fsf@mid.deneb.enyo.de>
+	<1377734505.19568.39.camel@linux-s257.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <opensuse-kernel+bounces-5026-glsk-opensuse-kernel=m.gmane.org-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <1377734505.19568.39.camel-ONCj+Eqt86TasUa73XJKwA@public.gmane.org> (joeyli's message of
+	"Thu, 29 Aug 2013 08:01:45 +0800")
+List-Post: <mailto:opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:opensuse-kernel+help-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Subscribe: <mailto:opensuse-kernel+subscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Unsubscribe: <mailto:opensuse-kernel+unsubscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Owner: <mailto:opensuse-kernel+owner-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Archive: <http://lists.opensuse.org/opensuse-kernel/>
+To: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 1 September 2013 10:56, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Its better if we can get these in for 3.11, otherwise we need to get them in the
-> stable tree..
+* joeyli:
 
-They can't get into 3.11 due to two reasons..
-- I haven't tested them over 3.11 but linux-next/master.
-- Few more dependency patches might also be required for 3.11..
+> Yes, Matthew raised this concern at before. I modified patch to load
+> private key in efi stub kernel, before ExitBootServices(), that means we
+> don't need generate key-pair at every system boot. So, the above
+> procedure of efi bootloader will only run one time. 
 
-So get them into 3.12-rc1 if they look okay to you :)
+But if you don't generate fresh keys on every boot, the persistent
+keys are mor exposed to other UEFI applications.  Correct me if I'm
+wrong, but I don't think UEFI variables are segregated between
+different UEFI applications, so if anyone gets a generic UEFI variable
+dumper (or setter) signed by the trusted key, this cryptographic
+validation of hibernate snapshots is bypassable.
