@@ -1,67 +1,58 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: [PATCH v2 1/3] cpufreq: pmac64: speed up frequency switch
-Date: Sat, 31 Aug 2013 20:23:50 +0300
-Message-ID: <1377969832-27699-2-git-send-email-aaro.koskinen@iki.fi>
-References: <1377969832-27699-1-git-send-email-aaro.koskinen@iki.fi>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: don't allow governor limits to be changed when it is disabled
+Date: Sun,  1 Sep 2013 10:56:01 +0530
+Message-ID: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filtteri2.pp.htv.fi ([213.243.153.185]:44790 "EHLO
-	filtteri2.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753901Ab3HaR0K (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 31 Aug 2013 13:26:10 -0400
-In-Reply-To: <1377969832-27699-1-git-send-email-aaro.koskinen@iki.fi>
+Received: from mail-pb0-f45.google.com ([209.85.160.45]:39384 "EHLO
+	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754859Ab3IAF0O (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Sep 2013 01:26:14 -0400
+Received: by mail-pb0-f45.google.com with SMTP id mc17so3463068pbc.32
+        for <linux-pm@vger.kernel.org>; Sat, 31 Aug 2013 22:26:12 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: rjw@sisk.pl, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Some functions on switch path use msleep() which is inaccurate, and
-depends on HZ. With HZ=100 msleep(1) takes actually over ten times longer.
-Using usleep_range() we get more accurate sleeps.
+__cpufreq_governor() returns with -EBUSY when governor is already stopped and we
+try to stop it again, but when it is stopped we must not allow calls to
+CPUFREQ_GOV_LIMITS event as well.
 
-I measured the "pfunc_slewing_done" polling to take 300us at max (on
-2.3GHz dual-processor Xserve G5), so using 500us sleep there should
-be fine.
+This patch adds this check in __cpufreq_governor().
 
-With the patch, g5_switch_freq() duration drops from ~50ms to ~10ms on
-Xserve with HZ=100.
-
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pmac64-cpufreq.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Hi Rafael,
 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 7ba4234..674807d 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -141,7 +141,7 @@ static void g5_vdnap_switch_volt(int speed_mode)
- 		pmf_call_one(pfunc_vdnap0_complete, &args);
- 		if (done)
- 			break;
--		msleep(1);
-+		usleep_range(1000, 1000);
- 	}
- 	if (done == 0)
- 		printk(KERN_WARNING "cpufreq: Timeout in clock slewing !\n");
-@@ -240,7 +240,7 @@ static void g5_pfunc_switch_volt(int speed_mode)
- 		if (pfunc_cpu1_volt_low)
- 			pmf_call_one(pfunc_cpu1_volt_low, NULL);
- 	}
--	msleep(10); /* should be faster , to fix */
-+	usleep_range(10000, 10000); /* should be faster , to fix */
- }
+Its better if we can get these in for 3.11, otherwise we need to get them in the
+stable tree..
+
+Anyway, we will get these in 3.10 stable tree but that requires us to identify
+few more patches that will go with these. I will do that later.
+
+This must fix the issues reported by Stephen.
+
+Tested on my thinkpad over your linux-next branch.
+
+ drivers/cpufreq/cpufreq.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5c75e31..f320a20 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1692,8 +1692,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 						policy->cpu, event);
  
- /*
-@@ -285,7 +285,7 @@ static int g5_pfunc_switch_freq(int speed_mode)
- 		pmf_call_one(pfunc_slewing_done, &args);
- 		if (done)
- 			break;
--		msleep(1);
-+		usleep_range(500, 500);
+ 	mutex_lock(&cpufreq_governor_lock);
+-	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
+-	    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
++	if ((policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
++		(!policy->governor_enabled && ((event == CPUFREQ_GOV_LIMITS) ||
++					       (event == CPUFREQ_GOV_STOP)))) {
+ 		mutex_unlock(&cpufreq_governor_lock);
+ 		return -EBUSY;
  	}
- 	if (done == 0)
- 		printk(KERN_WARNING "cpufreq: Timeout in clock slewing !\n");
 -- 
-1.8.3.2
+1.7.12.rc2.18.g61b472e
 
