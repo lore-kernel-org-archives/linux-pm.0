@@ -1,106 +1,208 @@
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH v3 04/35] mm: Initialize node memory regions during
- boot
-Date: Mon, 2 Sep 2013 15:20:13 +0900
-Message-ID: <52242E1D.4020406@jp.fujitsu.com>
-References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131504.4947.86008.stgit@srivatsabhat.in.ibm.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [RFC PATCH 02/14] drivers: thermal: introduce device tree parser
+Date: Mon, 2 Sep 2013 16:14:03 +0800
+Message-ID: <522448CB.3080102@nvidia.com>
+References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com> <1377299755-5134-3-git-send-email-eduardo.valentin@ti.com> <20130827102205.GC19893@e106331-lin.cambridge.arm.com> <521CAD48.2030306@ti.com> <20130827162309.GR19893@e106331-lin.cambridge.arm.com> <521CED34.2090008@ti.com> <521FD70F.7080104@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20130830131504.4947.86008.stgit@srivatsabhat.in.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:8568 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789Ab3IBINi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Sep 2013 04:13:38 -0400
+In-Reply-To: <521FD70F.7080104@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-(2013/08/30 22:15), Srivatsa S. Bhat wrote:
-> Initialize the node's memory-regions structures with the information about
-> the region-boundaries, at boot time.
->
-> Based-on-patch-by: Ankita Garg <gargankita@gmail.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->
->   include/linux/mm.h |    4 ++++
->   mm/page_alloc.c    |   28 ++++++++++++++++++++++++++++
->   2 files changed, 32 insertions(+)
->
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index f022460..18fdec4 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -627,6 +627,10 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
->   #define LAST_NID_MASK		((1UL << LAST_NID_WIDTH) - 1)
->   #define ZONEID_MASK		((1UL << ZONEID_SHIFT) - 1)
->
-> +/* Hard-code memory region size to be 512 MB for now. */
-> +#define MEM_REGION_SHIFT	(29 - PAGE_SHIFT)
-> +#define MEM_REGION_SIZE		(1UL << MEM_REGION_SHIFT)
+On 08/30/2013 07:19 AM, Eduardo Valentin wrote:
+> * PGP Signed: 08/29/2013 at 04:19:46 PM
+> 
+> Mark, Pawel and Stephen,
+> 
+> 
+> On 27-08-2013 14:17, Eduardo Valentin wrote:
+>> On 27-08-2013 12:23, Mark Rutland wrote:
+>>> On Tue, Aug 27, 2013 at 02:44:40PM +0100, Eduardo Valentin wrote:
+>>>> Hello Mark,
+> 
+> <cut>
+> 
+> I believe now we need to align on thermal bindings, before I propose
+> next version of this series. So, following the discussions on this
+> thread, I believe a typical CPU thermal zone would look like the following:
+> + #include <dt-bindings/thermal/thermal.h>
 > +
->   static inline enum zone_type page_zonenum(const struct page *page)
->   {
->   	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index b86d7e3..bb2d5d4 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -4809,6 +4809,33 @@ static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
->   #endif /* CONFIG_FLAT_NODE_MEM_MAP */
->   }
->
-> +static void __meminit init_node_memory_regions(struct pglist_data *pgdat)
-> +{
-> +	int nid = pgdat->node_id;
-> +	unsigned long start_pfn = pgdat->node_start_pfn;
-> +	unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
-> +	struct node_mem_region *region;
-> +	unsigned long i, absent;
-> +	int idx;
+> + cpu_thermal: cpu_thermal {
+> +         passive-delay = <250>; /* milliseconds */
+> +         polling-delay = <1000>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors = <&bandgap0     0>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip            lower
+> bound             upper bound
+> +                          */
+> +         cooling-devices = <&cpu0        100     &cpu-alert
+> THERMAL_NO_LIMITS        THERMAL_NO_LIMITS>;
+> +         trips {
+> +                 cpu-alert: cpu-alert {
+> +                         temperature = <100000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 cpu-crit: cpu-crit {
+> +                         temperature = <125000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+> 
+> *Note: THERMAL_NO_LIMIT means, it will be using the cooling device
+> minimum and maximum limits.
+> 
+> Couple of comments.
+> 1. I am keeping the pooling intervals. A possible alternative way to
+> describe that would be specifying the maximum dT/dt. Essentially because
+> I am still convinced that this is part of hw specs.
+> 
+> 2. The above follows your suggestion to use consumer pointing to
+> producers. Although, I still need to figure out how this could be
+> implemented for Linux. But I think that is another story, at least for
+> now. We need to first align on the DT binding itself.
+> 
+> 3. The link from cooling device specification to trip points, from my
+> perspective, should be enough, and thus we shall not need the thermal
+> cells and size for trip points, as you proposed. Let me know what you think.
+> 
+> Below is another example, on a more complex scenario, board specific
+> case (hypothetical, just for exemplification):
+> 
+> + #include <dt-bindings/thermal/thermal.h>
 > +
-> +	for (i = start_pfn, idx = 0; i < end_pfn;
-> +				i += region->spanned_pages, idx++) {
+> + board_thermal: board_thermal {
+> +         passive-delay = <1000>; /* milliseconds */
+> +         polling-delay = <2500>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors = <&adc-dummy     0>,
+> +		    <&adc-dummy     1>,
+> +		    <&adc-dymmy     2>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip		lower	upper
+> +                          */
+> +         cooling-devices = <&cpu0       75     &cpu-trip	0      2>,
+> +			    <&gpu0       40     &gpu-trip	0      2>;
+> +			    <&lcd0       25     &lcd-trip	5      10>;
+> +         trips {
+> +                 cpu-trip: cpu-trip {
+> +                         temperature = <60000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 gpu-trip: gpu-trip {
+> +                         temperature = <55000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_PASSIVE>;
+> +                 }
+> +                 lcd-trip: lcp-trip {
+> +                         temperature = <53000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 crit-trip: crit-trip {
+> +                         temperature = <68000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+> 
+> Now writing the above example, one might want to have a way to say the
+> sensor correlation equation.
+> 
+> Another example:
+> + #include <dt-bindings/thermal/thermal.h>
 > +
+> + dsp_thermal: dsp_thermal {
+> +         passive-delay = <250>; /* milliseconds */
+> +         polling-delay = <1000>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors = <&bandgap0     1>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip            lower
+> bound             upper bound
+> +                          */
+> +         cooling-devices = <&dsp0        100     &dsp-alert
+> THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
+> +         trips {
+> +                 dsp-alert: dsp-alert {
+> +                         temperature = <100000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 dsp-crit: cdsp-crit {
+> +                         temperature = <125000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+> +
+> + gpu_thermal: gpu_thermal {
+> +         passive-delay = <500>; /* milliseconds */
+> +         polling-delay = <1000>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors = <&bandgap0     2>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip            lower
+> bound             upper bound
+> +                          */
+> +         cooling-devices = <&gpu0        100     &gpu-alert
+> THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
+> +         trips {
+> +                 gpu-alert: gpu-alert {
+> +                         temperature = <100000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 gpu-crit: gpu-crit {
+> +                         temperature = <125000>; /* milliCelsius */
+> +                         hysteresis = <2000>; /* milliCelsius */
+> +                         type = <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+> 
+> 
+> Wei, I think the above would cover for the IPs with multiple internal
+> sensors cases you were looking for, right?
+Yes, I think so, and this series is what I'm looking for, thanks again.
 
-> +		region = &pgdat->node_regions[idx];
+> 
+> Durga, please also check if I am missing something to cover for your
+> plans to, in case you will be using DT to describe your HW.
+> 
+> Anyways, Mark and Pawel, let me know if I missed something from our
+> discussion. I believe the above bindings would look more like regular
+> standard DT bindings. And also they should be now slim enough, without
+> Linux implementation details and also without policies.
+> 
+>>
+>>
+> 
+> 
 
-It seems that overflow easily occurs.
-node_regions[] has 256 entries and MEM_REGION_SIZE is 512MiB. So if
-the pgdat has more than 128 GiB, overflow will occur. Am I wrong?
-
-Thanks,
-Yasuaki Ishimatsu
-
-> +		region->pgdat = pgdat;
-> +		region->start_pfn = i;
-> +		region->spanned_pages = min(MEM_REGION_SIZE, end_pfn - i);
-> +		region->end_pfn = region->start_pfn + region->spanned_pages;
-> +
-> +		absent = __absent_pages_in_range(nid, region->start_pfn,
-> +						 region->end_pfn);
-> +
-> +		region->present_pages = region->spanned_pages - absent;
-> +	}
-> +
-> +	pgdat->nr_node_regions = idx;
-> +}
-> +
->   void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
->   		unsigned long node_start_pfn, unsigned long *zholes_size)
->   {
-> @@ -4837,6 +4864,7 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
->
->   	free_area_init_core(pgdat, start_pfn, end_pfn,
->   			    zones_size, zholes_size);
-> +	init_node_memory_regions(pgdat);
->   }
->
->   #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
->
-
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
