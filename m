@@ -1,163 +1,108 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv2 3/5] drivers: thermal: make usage of CONFIG_THERMAL_HWMON
- optional
-Date: Mon, 2 Sep 2013 10:09:11 -0400
-Message-ID: <52249C07.60806@ti.com>
-References: <1377648836.2335.252.camel@rzhang-lenovo> <1377807167-12206-1-git-send-email-eduardo.valentin@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] ARM: EXYNOS: add cpuidle-exynos.max_states kernel
+ parameter
+Date: Mon, 02 Sep 2013 16:24:23 +0200
+Message-ID: <52249F97.4080807@linaro.org>
+References: <4002844.4ZqqJexTv4@amdc1032> <7429815.RzOHxBbusd@amdc1032> <5224903B.9050404@linaro.org> <2459763.PzPngK0oec@amdc1032>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="0mIav62nf4FJ8O5QmP66SWVpUHboEg6uX"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:43032 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758587Ab3IBOJo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Sep 2013 10:09:44 -0400
-In-Reply-To: <1377807167-12206-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <2459763.PzPngK0oec@amdc1032>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tomasz Figa <t.figa@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: rui.zhang@intel.com, rjw@sisk.pl, wni@nvidia.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
---0mIav62nf4FJ8O5QmP66SWVpUHboEg6uX
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 09/02/2013 03:48 PM, Bartlomiej Zolnierkiewicz wrote:
+> On Monday, September 02, 2013 03:18:51 PM Daniel Lezcano wrote:
+>> On 09/02/2013 11:41 AM, Bartlomiej Zolnierkiewicz wrote:
+>>> On Monday, September 02, 2013 10:54:17 AM Daniel Lezcano wrote:
+>>>> On 08/30/2013 12:21 PM, Bartlomiej Zolnierkiewicz wrote:
+>>>>> Add "cpuidle-exynos.max_states=3D" parameter to allow user to spe=
+cify
+>>>>> the maximum of allowed CPU idle states for ARM EXYNOS cpuidle dri=
+ver.
+>>>>>
+>>>>> This change is needed because C1 state (AFTR mode) is often not a=
+ble
+>>>>> to work properly due to incompatibility with some bootloader vers=
+ions.
+>>>>>
+>>>>> Usage examples:
+>>>>>
+>>>>> "cpuidle-exynos.max_states=3D1" disables C1 state (AFTR mode).
+>>>>>
+>>>>> "cpuidle-exynos.max_states=3D0" disables the driver completely.
+>>>>>
+>>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.co=
+m>
+>>>>> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>>>>> Cc: Tomasz Figa <t.figa@samsung.com>
+>>>>> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>>>
+>>>> There is a max_cstate option for acpi and intel idle. There is als=
+o the
+>>>> cpuidle.off=3D1 option. As the semantic is the same, I think addin=
+g a
+>>>> common cpuidle option usable for all the drivers is better.
+>>>
+>>> I thought about making the option common for all cpuidle drivers fi=
+rst
+>>> but due to support for multiple cpuidle drivers on one machine (i.e=
+=2E
+>>> big.LITTLE), per-driver option looked like a better approach.
+>>>
+>>> Should I make the option common and not worry about multiple driver=
+s on
+>>> one machine support?
+>>
+>> Mmh, that's a good point.
+>>
+>> I am not in favor of multiple options spread across the different
+>> drivers. Furthermore the max_cstate is used in the intel platform to
+>> 'discover' what states the firmware supports which is not the case o=
+f
+>> the cpuidle ARM drivers (except new PSCI based). This option does no=
+t
+>> really fits well here.
+>>
+>> There is the kernel parameter 'cpuidle.off', so disabling the driver=
+ is ok.
+>>
+>> You converted the cpuidle driver to a platform driver. Isn't possibl=
+e to
+>> pass information in the platform data field at boot time to tell AFT=
+R is
+>> not supported and then act on the 'disabled' field of this state ?
+>=20
+> It might be possible but I don't know where the source of this data w=
+ould
+> be, platform specific kernel parameter? It sounds just like moving th=
+e code
+> around and adding superfluous platform->driver code because the simil=
+ar
+> kernel parameter to disable just AFTR can be added in cpuidle-exynos =
+driver
+> as well.
 
-Hi,
+It is to prevent to add a new kernel parameter (with the documentation)
+for a single driver which has a bogus idle state. If that could be
+handled internally that would be cleaner.
 
-On 29-08-2013 16:12, Eduardo Valentin wrote:
-> When registering a new thermal_device, the thermal framework
-> will always add a hwmon sysfs interface.
->=20
-> This patch adds a flag to make this behavior optional. Now
-> when registering a new thermal device, the caller can
-> optionally inform if hwmon interface is desirable. This can
-> be done by means of passing a thermal_zone_params.no_hwmon =3D=3D true.=
+Can you shortly describe what happens with the bootloader and AFTR ?
 
->=20
-> In order to keep same behavior as of today, all current
-> calls will by default create the hwmon interface.
->=20
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Suggested-by: Wei Ni <wni@nvidia.com>
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  Documentation/thermal/sysfs-api.txt | 5 +++++
->  drivers/thermal/thermal_core.c      | 8 +++++---
->  include/linux/thermal.h             | 8 ++++++++
->  3 files changed, 18 insertions(+), 3 deletions(-)
-> ---
->=20
-> Hello all,
->=20
-> So, here is then a different way of implementing same feature.
-> As requested by Rui, now the flag goes via thermal_zone_params,
-> because this seams to be the preferred way, at least in near future.
->=20
-> Using this method the amount of subsystems involved is reduced to 1:
-> thermal, as requested by Raphael. I just made is a negative flag
-> in order to keep the same behavior of the existing drivers, without
-> changing them. The flag is documented though.
->=20
-
-Objections on this way of adding this flag?
-
-Rui,
-
-If you are OK, I can add this series to my tree too.
-
-
-> All best,
->=20
->=20
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/therma=
-l/sysfs-api.txt
-> index a71bd5b..37c5486 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -142,6 +142,11 @@ temperature) and throttle appropriate devices.
->      This is an optional feature where some platforms can choose not to=
-
->      provide this data.
->      .governor_name: Name of the thermal governor used for this zone
-> +    .no_hwmon: a boolean to indicate if the thermal to hwmon sysfs int=
-erface
-> +               is required. when no_hwmon =3D=3D false, a hwmon sysfs =
-interface
-> +               will be created. when no_hwmon =3D=3D true, nothing wil=
-l be done.
-> +               In case the thermal_zone_params is NULL, the hwmon inte=
-rface
-> +               will be created (for backward compatibility).
->      .num_tbps: Number of thermal_bind_params entries for this zone
->      .tbp: thermal_bind_params entries
-> =20
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_c=
-ore.c
-> index 247528b..51648bf 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1462,9 +1462,11 @@ struct thermal_zone_device *thermal_zone_device_=
-register(const char *type,
-> =20
->  	mutex_unlock(&thermal_governor_lock);
-> =20
-> -	result =3D thermal_add_hwmon_sysfs(tz);
-> -	if (result)
-> -		goto unregister;
-> +	if (!tz->tzp || !tz->tzp->no_hwmon) {
-> +		result =3D thermal_add_hwmon_sysfs(tz);
-> +		if (result)
-> +			goto unregister;
-> +	}
-> =20
->  	mutex_lock(&thermal_list_lock);
->  	list_add_tail(&tz->node, &thermal_tz_list);
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index a386a1c..b4a975f 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -214,6 +214,14 @@ struct thermal_bind_params {
->  /* Structure to define Thermal Zone parameters */
->  struct thermal_zone_params {
->  	char governor_name[THERMAL_NAME_LENGTH];
-> +
-> +	/*
-> +	 * a boolean to indicate if the thermal to hwmon sysfs interface
-> +	 * is required. when no_hwmon =3D=3D false, a hwmon sysfs interface
-> +	 * will be created. when no_hwmon =3D=3D true, nothing will be done
-> +	 */
-> +	bool no_hwmon;
-> +
->  	int num_tbps;	/* Number of tbp entries */
->  	struct thermal_bind_params *tbp;
->  };
->=20
+I guess you are not interested in cpuidle.off=3D1 because you want cpui=
+dle
+statistics for WFI, right ?
 
 
 
 
 --=20
-You have got to be excited about what you are doing. (L. Lamport)
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-Eduardo Valentin
-
-
---0mIav62nf4FJ8O5QmP66SWVpUHboEg6uX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlIknAcACgkQCXcVR3XQvP3vzwD/fiYJ3cVogc+jjYLNqQlZwDdH
-Hd5DjJM8r/UidZ8iZzAA/R+xQhW0Ct+5NwMI5fgu1BJ/GCh9W/AhX22TM0aSarno
-=U70H
------END PGP SIGNATURE-----
-
---0mIav62nf4FJ8O5QmP66SWVpUHboEg6uX--
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
