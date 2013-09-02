@@ -1,32 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Mon, 2 Sep 2013 06:30:30 +0530
-Message-ID: <CAKohpo=CFWH6wCpBQb2fut_duUCY7Ko2JudoV+e6c+wD+d8eFw@mail.gmail.com>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
-	<11222156.oKTjYXFZjG@vostro.rjw.lan>
-	<CAKohpon1VsoUnw=t0c9wQ2Zfva5nnXoKjNNNxLXV7Frto1BFug@mail.gmail.com>
-	<2163175.MrORytQUnh@vostro.rjw.lan>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC PATCH 00/18 v3] Signature verification of hibernate
+ snapshot
+Date: Mon, 02 Sep 2013 10:12:22 +0800
+Message-ID: <1378087942.7080.75.camel__26567.499448038$1378088149$gmane$org@linux-s257.site>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+	 <87eh9dzg00.fsf@mid.deneb.enyo.de>
+	 <1377734505.19568.39.camel@linux-s257.site>
+	 <87r4d8vn71.fsf@mid.deneb.enyo.de> <20130901160429.GA1375@srcf.ucam.org>
+	 <87vc2ksdfa.fsf@mid.deneb.enyo.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2163175.MrORytQUnh@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-crypto-owner@vger.kernel.org>
+In-Reply-To: <87vc2ksdfa.fsf@mid.deneb.enyo.de>
+Sender: linux-crypto-owner@vger.kernel.org
+To: Florian Weimer <fw@deneb.enyo.de>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2 September 2013 01:57, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> The second tab is one too many, I usually write such things like this:
->
->         if (policy->governor_busy
->             || (policy->governor_enabled && event == CPUFREQ_GOV_START)
->             || ...
->
-> Then it is much easier to distinguish the conditional code from the condition
-> itself.
+=E6=96=BC =E6=97=A5=EF=BC=8C2013-09-01 =E6=96=BC 18:40 +0200=EF=BC=8CFl=
+orian Weimer =E6=8F=90=E5=88=B0=EF=BC=9A
+> * Matthew Garrett:
+>=20
+> > On Sun, Sep 01, 2013 at 12:41:22PM +0200, Florian Weimer wrote:
+> >
+> >> But if you don't generate fresh keys on every boot, the persistent
+> >> keys are mor exposed to other UEFI applications.  Correct me if I'=
+m
+> >> wrong, but I don't think UEFI variables are segregated between
+> >> different UEFI applications, so if anyone gets a generic UEFI vari=
+able
+> >> dumper (or setter) signed by the trusted key, this cryptographic
+> >> validation of hibernate snapshots is bypassable.
+> >
+> > If anyone can execute arbitrary code in your UEFI environment then=20
+> > you've already lost.
+>=20
+> This is not about arbitrary code execution.  The problematic
+> applications which conflict with this proposed functionality are not
+> necessarily malicious by themselves and even potentially useful.
+>=20
+> For example, if you want to provision a bunch of machines and you hav=
+e
+> to set certain UEFI variables, it might be helpful to do so in an
+> unattended fashion, just by booting from a USB stick with a suitable
+> UEFI application.  Is this evil?  I don't think so.
+> --
 
-I see... I tried to do it this way but got confused again :)
-You fix it this time and I will understand it from that :)
+Yes, if there have the kind of UEFI tools like you said, and it leak to
+attacker, then we lost.
 
---
-viresh
+Even we re-generate key-pair for every S4, the tool, if it can set
+variable, means it can replace the public key that was stored by efi
+bootloader in bootservices variable. Then we still lost.
+
+When the tool can only dump variable but not set, then re-generate
+key-pair to every S4 can prevent it. If the tool can also set variable,
+then I don't think there have any way to protect key-pair in UEFI
+variables.
+
+Using TPM is a way to protect key-pair, but user need key-in password
+when generate and use key to sign stuff. It noises to user, but the bes=
+t
+way to keep the password is in brain.
+
+
+Thanks a lot!
+Joey Lee
