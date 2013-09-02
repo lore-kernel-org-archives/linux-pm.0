@@ -1,190 +1,236 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH 04/14] arm64: kernel: suspend/resume registers
- save/restore
-Date: Mon, 2 Sep 2013 17:24:40 +0100
-Message-ID: <20130902162440.GA11030@e102568-lin.cambridge.arm.com>
-References: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1377689766-17642-5-git-send-email-lorenzo.pieralisi@arm.com>
- <20130830172310.GJ4650@arm.com>
- <20130902095728.GB2500@e102568-lin.cambridge.arm.com>
- <20130902111716.GF64064@MacBook-Pro.local>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH 02/14] drivers: thermal: introduce device tree parser
+Date: Mon, 2 Sep 2013 12:28:34 -0400
+Message-ID: <5224BCB2.9090305@ti.com>
+References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com> <1377299755-5134-3-git-send-email-eduardo.valentin@ti.com> <20130827102205.GC19893@e106331-lin.cambridge.arm.com> <521CAD48.2030306@ti.com> <20130827162309.GR19893@e106331-lin.cambridge.arm.com> <521CED34.2090008@ti.com> <521FD70F.7080104@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:36741 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755141Ab3IBQYs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Sep 2013 12:24:48 -0400
-In-Reply-To: <20130902111716.GF64064@MacBook-Pro.local>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="KRWvKoulJrSb08iFN5SRUQsiVhVPM4oON"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <521FD70F.7080104@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "wni@nvidia.com" <wni@nvidia.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dave P Martin <Dave.Martin@arm.com>, Will Deacon <Will.Deacon@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>
 
-On Mon, Sep 02, 2013 at 12:17:17PM +0100, Catalin Marinas wrote:
-> On Mon, Sep 02, 2013 at 10:57:28AM +0100, Lorenzo Pieralisi wrote:
-> > On Fri, Aug 30, 2013 at 06:23:10PM +0100, Catalin Marinas wrote:
-> > > On Wed, Aug 28, 2013 at 12:35:56PM +0100, Lorenzo Pieralisi wrote:
-> > > > Power management software requires the kernel to save and restore
-> > > > CPU registers while going through suspend and resume operations
-> > > > triggered by kernel subsystems like CPU idle and suspend to RAM.
-> > > > 
-> > > > This patch implements code that provides save and restore mechanism
-> > > > for the arm v8 implementation. Memory for the context is passed as
-> > > > parameter to both cpu_do_suspend and cpu_do_resume functions, and allows
-> > > > the callers to implement context allocation as they deem fit.
-> > > > 
-> > > > The registers that are saved and restored correspond to the registers
-> > > > actually required by the kernel to be up and running and is by no means
-> > > > a complete save and restore of the entire v8 register set.
-> > > > 
-> > > > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > > > ---
-> > > >  arch/arm64/include/asm/proc-fns.h |  3 ++
-> > > >  arch/arm64/mm/proc.S              | 64 +++++++++++++++++++++++++++++++++++++++
-> > > >  2 files changed, 67 insertions(+)
-> > > > 
-> > > > diff --git a/arch/arm64/include/asm/proc-fns.h b/arch/arm64/include/asm/proc-fns.h
-> > > > index 7cdf466..0c657bb 100644
-> > > > --- a/arch/arm64/include/asm/proc-fns.h
-> > > > +++ b/arch/arm64/include/asm/proc-fns.h
-> > > > @@ -26,11 +26,14 @@
-> > > >  #include <asm/page.h>
-> > > >  
-> > > >  struct mm_struct;
-> > > > +struct cpu_suspend_ctx;
-> > > >  
-> > > >  extern void cpu_cache_off(void);
-> > > >  extern void cpu_do_idle(void);
-> > > >  extern void cpu_do_switch_mm(unsigned long pgd_phys, struct mm_struct *mm);
-> > > >  extern void cpu_reset(unsigned long addr) __attribute__((noreturn));
-> > > > +extern void cpu_do_suspend(struct cpu_suspend_ctx *ptr);
-> > > > +extern u64 cpu_do_resume(phys_addr_t ptr, u64 idmap_ttbr);
-> > > >  
-> > > >  #include <asm/memory.h>
-> > > >  
-> > > > diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
-> > > > index a82ae88..193bf98 100644
-> > > > --- a/arch/arm64/mm/proc.S
-> > > > +++ b/arch/arm64/mm/proc.S
-> > > > @@ -80,6 +80,70 @@ ENTRY(cpu_do_idle)
-> > > >  	ret
-> > > >  ENDPROC(cpu_do_idle)
-> > > >  
-> > > > +#ifdef CONFIG_ARM_CPU_SUSPEND
-> > > > +/**
-> > > > + * cpu_do_suspend - save CPU registers context
-> > > > + * x0: virtual address of context pointer
-> > > > + */
-> > > > +ENTRY(cpu_do_suspend)
-> > > > +	mrs	x1, tpidr_el0
-> > > > +	str	x1, [x0, #CPU_CTX_TPIDR_EL0]
-> > > > +	mrs	x2, tpidrro_el0
-> > > > +	str	x2, [x0, #CPU_CTX_TPIDRRO_EL0]
-> > > > +	mrs	x3, contextidr_el1
-> > > > +	str	x3, [x0, #CPU_CTX_CTXIDR_EL1]
-> > > > +	mrs	x4, mair_el1
-> > > > +	str	x4, [x0, #CPU_CTX_MAIR_EL1]
-> > > > +	mrs	x5, cpacr_el1
-> > > > +	str	x5, [x0, #CPU_CTX_CPACR_EL1]
-> > > > +	mrs	x6, ttbr1_el1
-> > > > +	str	x6, [x0, #CPU_CTX_TTBR1_EL1]
-> > > > +	mrs	x7, tcr_el1
-> > > > +	str	x7, [x0, #CPU_CTX_TCR_EL1]
-> > > > +	mrs	x8, vbar_el1
-> > > > +	str	x8, [x0, #CPU_CTX_VBAR_EL1]
-> > > > +	mrs	x9, sctlr_el1
-> > > > +	str	x9, [x0, #CPU_CTX_SCTLR_EL1]
-> > > > +	ret
-> > > > +ENDPROC(cpu_do_suspend)
-> > > 
-> > > Can you read all the registers a once and do some stp to save them?
-> > 
-> > Yes, absolutely. In a way the store pair will require an assumption on
-> > the context structure layout - eg:
-> > 
-> > 	mrs	x1, tpidr_el0
-> > 	mrs	x2, tpidrro_el0
-> > 	stp	x1, x2, [x0, #CPU_CTX_TPIDR_EL0]
-> > 
-> > implicitly assumes that the storage for TPIDR_EL0 and TPIDRRO_EL0 is
-> > contiguous, we can't change the layout later, but I guess we can live
-> > with that.
-> 
-> Do we need to access the individual saved registers from this structure,
-> outside the suspend/resume code? Otherwise we could simply have a plain
-> array to save the registers.
+--KRWvKoulJrSb08iFN5SRUQsiVhVPM4oON
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Well, there are some registers in the struct that need to be accessed
-from C code through pointer dereference (eg ttbr0), but actually for
-the registers that I save and restore in this snippet of code I do not see a
-point in creating the assembly immediates.
+On 29-08-2013 19:19, Eduardo Valentin wrote:
+> Mark, Pawel and Stephen,
+>=20
+>=20
+> On 27-08-2013 14:17, Eduardo Valentin wrote:
+>> On 27-08-2013 12:23, Mark Rutland wrote:
+>>> On Tue, Aug 27, 2013 at 02:44:40PM +0100, Eduardo Valentin wrote:
+>>>> Hello Mark,
+>=20
+> <cut>
+>=20
+> I believe now we need to align on thermal bindings, before I propose
+> next version of this series. So, following the discussions on this
+> thread, I believe a typical CPU thermal zone would look like the follow=
+ing:
+> + #include <dt-bindings/thermal/thermal.h>
+> +
+> + cpu_thermal: cpu_thermal {
+> +         passive-delay =3D <250>; /* milliseconds */
+> +         polling-delay =3D <1000>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors =3D <&bandgap0     0>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip            lower=
 
-Hence answer is no. I could make the struct context something like:
+> bound             upper bound
+> +                          */
+> +         cooling-devices =3D <&cpu0        100     &cpu-alert
+> THERMAL_NO_LIMITS        THERMAL_NO_LIMITS>;
+> +         trips {
+> +                 cpu-alert: cpu-alert {
+> +                         temperature =3D <100000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 cpu-crit: cpu-crit {
+> +                         temperature =3D <125000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+>=20
+> *Note: THERMAL_NO_LIMIT means, it will be using the cooling device
+> minimum and maximum limits.
+>=20
+> Couple of comments.
+> 1. I am keeping the pooling intervals. A possible alternative way to
+> describe that would be specifying the maximum dT/dt. Essentially becaus=
+e
+> I am still convinced that this is part of hw specs.
+>=20
+> 2. The above follows your suggestion to use consumer pointing to
+> producers. Although, I still need to figure out how this could be
+> implemented for Linux. But I think that is another story, at least for
+> now. We need to first align on the DT binding itself.
+>=20
+> 3. The link from cooling device specification to trip points, from my
+> perspective, should be enough, and thus we shall not need the thermal
+> cells and size for trip points, as you proposed. Let me know what you t=
+hink.
+>=20
+> Below is another example, on a more complex scenario, board specific
+> case (hypothetical, just for exemplification):
+>=20
+> + #include <dt-bindings/thermal/thermal.h>
+> +
+> + board_thermal: board_thermal {
+> +         passive-delay =3D <1000>; /* milliseconds */
+> +         polling-delay =3D <2500>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors =3D <&adc-dummy     0>,
+> +		    <&adc-dummy     1>,
+> +		    <&adc-dymmy     2>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip		lower	upper
+> +                          */
+> +         cooling-devices =3D <&cpu0       75     &cpu-trip	0      2>,
+> +			    <&gpu0       40     &gpu-trip	0      2>;
+> +			    <&lcd0       25     &lcd-trip	5      10>;
+> +         trips {
+> +                 cpu-trip: cpu-trip {
+> +                         temperature =3D <60000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 gpu-trip: gpu-trip {
+> +                         temperature =3D <55000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_PASSIVE>;
+> +                 }
+> +                 lcd-trip: lcp-trip {
+> +                         temperature =3D <53000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 crit-trip: crit-trip {
+> +                         temperature =3D <68000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+>=20
+> Now writing the above example, one might want to have a way to say the
+> sensor correlation equation.
+>=20
+> Another example:
+> + #include <dt-bindings/thermal/thermal.h>
+> +
+> + dsp_thermal: dsp_thermal {
+> +         passive-delay =3D <250>; /* milliseconds */
+> +         polling-delay =3D <1000>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors =3D <&bandgap0     1>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip            lower=
 
-struct cpu_suspend_context {
-	/*
-	 * first two are named members so that they can be easily
-	 * accessed in C and through assembly immediates
-	 */
-	unsigned long sp;
-	unsigned long ttbr0;
-	unsigned long saved_regs[10];  //regs to be saved restored
-};
+> bound             upper bound
+> +                          */
+> +         cooling-devices =3D <&dsp0        100     &dsp-alert
+> THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
+> +         trips {
+> +                 dsp-alert: dsp-alert {
+> +                         temperature =3D <100000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 dsp-crit: cdsp-crit {
+> +                         temperature =3D <125000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+> +
+> + gpu_thermal: gpu_thermal {
+> +         passive-delay =3D <500>; /* milliseconds */
+> +         polling-delay =3D <1000>; /* milliseconds */
+> +                 /*
+> +                  * sensor       ID
+> +                  */
+> +         sensors =3D <&bandgap0     2>;
+> +                         /*
+> +                          * cooling
+> +                          * device       Usage   Trip            lower=
 
-or encapsulate the saved_regs in a struct, even though for the time being it
-is not really needed.
+> bound             upper bound
+> +                          */
+> +         cooling-devices =3D <&gpu0        100     &gpu-alert
+> THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
+> +         trips {
+> +                 gpu-alert: gpu-alert {
+> +                         temperature =3D <100000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_PASSIVE>;
+> +                 };
+> +                 gpu-crit: gpu-crit {
+> +                         temperature =3D <125000>; /* milliCelsius */
+> +                         hysteresis =3D <2000>; /* milliCelsius */
+> +                         type =3D <THERMAL_TRIP_CRITICAL>;
+> +                 };
+> +         };
+> + };
+>=20
+>=20
+> Wei, I think the above would cover for the IPs with multiple internal
+> sensors cases you were looking for, right?
+>=20
+> Durga, please also check if I am missing something to cover for your
+> plans to, in case you will be using DT to describe your HW.
+>=20
+> Anyways, Mark and Pawel, let me know if I missed something from our
+> discussion. I believe the above bindings would look more like regular
+> standard DT bindings. And also they should be now slim enough, without
+> Linux implementation details and also without policies.
 
-> > > > +/**
-> > > > + * cpu_do_resume - registers layout should match the corresponding
-> > > > + *                 cpu_do_suspend call
-> > > > + *
-> > > > + * x0: Physical address of context pointer
-> > > > + * x1: Should contain the physical address of identity map page tables
-> > > > + *     used to turn on the MMU and complete context restore
-> > > > + *
-> > > > + * Returns:
-> > > > + *	sctlr value in x0
-> > > > + */
-> > > > +ENTRY(cpu_do_resume)
-> > > > +	tlbi	vmalle1is	// make sure tlb entries are invalid
-> > > > +	ldr	x2, [x0, #CPU_CTX_TPIDR_EL0]
-> > > > +	msr	tpidr_el0, x2
-> > > > +	ldr	x3, [x0, #CPU_CTX_TPIDRRO_EL0]
-> > > > +	msr	tpidrro_el0, x3
-> > > > +	ldr	x4, [x0, #CPU_CTX_CTXIDR_EL1]
-> > > > +	msr	contextidr_el1, x4
-> > > > +	ldr	x5, [x0, #CPU_CTX_MAIR_EL1]
-> > > > +	msr	mair_el1, x5
-> > > > +	ldr	x6, [x0, #CPU_CTX_CPACR_EL1]
-> > > > +	msr	cpacr_el1, x6
-> > > > +	msr	ttbr0_el1, x1
-> > > > +	ldr	x7, [x0, #CPU_CTX_TTBR1_EL1]
-> > > > +	msr	ttbr1_el1, x7
-> > > > +	ldr	x8, [x0, #CPU_CTX_TCR_EL1]
-> > > > +	msr	tcr_el1, x8
-> > > > +	ldr	x9, [x0, #CPU_CTX_VBAR_EL1]
-> > > > +	msr	vbar_el1, x9
-> > > > +	ldr	x0, [x0, #CPU_CTX_SCTLR_EL1]
-> > > > +	isb
-> > > > +	dsb	sy
-> > > > +	ret
-> > > > +ENDPROC(cpu_do_resume)
-> > > 
-> > > Same here, use ldp.
-> > > 
-> > > BTW, do we need the DSB here or just the ISB?
-> > 
-> > A dsb is required to ensure that the tlb invalidate has completed, I
-> > think it is mandatory from an architectural standpoint but please
-> > correct me if I am wrong.
-> 
-> Yes, it's needed for that (though usually it comes before isb, but in
-> this case the MMU is disabled anyway, so it doesn't matter).
+Any objections on the above binding proposal?
 
-Ok, thanks.
+>=20
+>>
+>>
+>=20
+>=20
 
-Lorenzo
 
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--KRWvKoulJrSb08iFN5SRUQsiVhVPM4oON
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlIkvLgACgkQCXcVR3XQvP2K2wEA74jalbsT1C8NPiyRQLZxxAby
+H5DyhozwZCrWqsQQ9h4BAOu2/Opag6a7Try10r1ILmiyzsnpp6WrQi/ZQmDaihby
+=Ou0V
+-----END PGP SIGNATURE-----
+
+--KRWvKoulJrSb08iFN5SRUQsiVhVPM4oON--
