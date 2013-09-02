@@ -1,159 +1,79 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH 04/14] arm64: kernel: suspend/resume registers
- save/restore
-Date: Mon, 2 Sep 2013 10:57:28 +0100
-Message-ID: <20130902095728.GB2500@e102568-lin.cambridge.arm.com>
+Subject: Re: [RFC PATCH 05/14] arm64: kernel: cpu_{suspend/resume}
+ implementation
+Date: Mon, 2 Sep 2013 11:05:16 +0100
+Message-ID: <20130902100515.GD2500@e102568-lin.cambridge.arm.com>
 References: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1377689766-17642-5-git-send-email-lorenzo.pieralisi@arm.com>
- <20130830172310.GJ4650@arm.com>
+ <1377689766-17642-6-git-send-email-lorenzo.pieralisi@arm.com>
+ <20130830172756.GK4650@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:49033 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:37757 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755330Ab3IBJ5f convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Sep 2013 05:57:35 -0400
-In-Reply-To: <20130830172310.GJ4650@arm.com>
+	with ESMTP id S1753642Ab3IBKFU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Sep 2013 06:05:20 -0400
+In-Reply-To: <20130830172756.GK4650@arm.com>
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Catalin Marinas <catalin.marinas@arm.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dave P Martin <Dave.Martin@arm.com>, Will Deacon <Will.Deacon@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>
 
-On Fri, Aug 30, 2013 at 06:23:10PM +0100, Catalin Marinas wrote:
-> On Wed, Aug 28, 2013 at 12:35:56PM +0100, Lorenzo Pieralisi wrote:
-> > Power management software requires the kernel to save and restore
-> > CPU registers while going through suspend and resume operations
-> > triggered by kernel subsystems like CPU idle and suspend to RAM.
+On Fri, Aug 30, 2013 at 06:27:56PM +0100, Catalin Marinas wrote:
+> On Wed, Aug 28, 2013 at 12:35:57PM +0100, Lorenzo Pieralisi wrote:
+> > Kernel subsystems like CPU idle and suspend to RAM require a generic
+> > mechanism to suspend a processor, save its context and put it into
+> > a quiescent state. The cpu_{suspend}/{resume} implementation provides
+> > such a framework through a kernel interface allowing to save/restore
+> > registers, flush the context to DRAM and suspend/resume to/from
+> > low-power states where processor context may be lost.
 > > 
-> > This patch implements code that provides save and restore mechanism
-> > for the arm v8 implementation. Memory for the context is passed as
-> > parameter to both cpu_do_suspend and cpu_do_resume functions, and allows
-> > the callers to implement context allocation as they deem fit.
+> > Different SoCs might require different operations to be carried out
+> > before a power down request is committed. For this reason the kernel
+> > allows the caller of cpu_suspend to provide a function pointer (fn in
+> > the cpu_suspend prototype below),
 > > 
-> > The registers that are saved and restored correspond to the registers
-> > actually required by the kernel to be up and running and is by no means
-> > a complete save and restore of the entire v8 register set.
+> > int cpu_suspend(unsigned long arg, int (*fn)(unsigned long));
 > > 
-> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > ---
-> >  arch/arm64/include/asm/proc-fns.h |  3 ++
-> >  arch/arm64/mm/proc.S              | 64 +++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 67 insertions(+)
+> > called suspend finisher, that is executed after the context is saved and
+> > flushed to DRAM, so that SoC/platform specific operations can be carried out
+> > before issuing power down commands.
 > > 
-> > diff --git a/arch/arm64/include/asm/proc-fns.h b/arch/arm64/include/asm/proc-fns.h
-> > index 7cdf466..0c657bb 100644
-> > --- a/arch/arm64/include/asm/proc-fns.h
-> > +++ b/arch/arm64/include/asm/proc-fns.h
-> > @@ -26,11 +26,14 @@
-> >  #include <asm/page.h>
-> >  
-> >  struct mm_struct;
-> > +struct cpu_suspend_ctx;
-> >  
-> >  extern void cpu_cache_off(void);
-> >  extern void cpu_do_idle(void);
-> >  extern void cpu_do_switch_mm(unsigned long pgd_phys, struct mm_struct *mm);
-> >  extern void cpu_reset(unsigned long addr) __attribute__((noreturn));
-> > +extern void cpu_do_suspend(struct cpu_suspend_ctx *ptr);
-> > +extern u64 cpu_do_resume(phys_addr_t ptr, u64 idmap_ttbr);
-> >  
-> >  #include <asm/memory.h>
-> >  
-> > diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
-> > index a82ae88..193bf98 100644
-> > --- a/arch/arm64/mm/proc.S
-> > +++ b/arch/arm64/mm/proc.S
-> > @@ -80,6 +80,70 @@ ENTRY(cpu_do_idle)
-> >  	ret
-> >  ENDPROC(cpu_do_idle)
-> >  
-> > +#ifdef CONFIG_ARM_CPU_SUSPEND
-> > +/**
-> > + * cpu_do_suspend - save CPU registers context
-> > + * x0: virtual address of context pointer
-> > + */
-> > +ENTRY(cpu_do_suspend)
-> > +	mrs	x1, tpidr_el0
-> > +	str	x1, [x0, #CPU_CTX_TPIDR_EL0]
-> > +	mrs	x2, tpidrro_el0
-> > +	str	x2, [x0, #CPU_CTX_TPIDRRO_EL0]
-> > +	mrs	x3, contextidr_el1
-> > +	str	x3, [x0, #CPU_CTX_CTXIDR_EL1]
-> > +	mrs	x4, mair_el1
-> > +	str	x4, [x0, #CPU_CTX_MAIR_EL1]
-> > +	mrs	x5, cpacr_el1
-> > +	str	x5, [x0, #CPU_CTX_CPACR_EL1]
-> > +	mrs	x6, ttbr1_el1
-> > +	str	x6, [x0, #CPU_CTX_TTBR1_EL1]
-> > +	mrs	x7, tcr_el1
-> > +	str	x7, [x0, #CPU_CTX_TCR_EL1]
-> > +	mrs	x8, vbar_el1
-> > +	str	x8, [x0, #CPU_CTX_VBAR_EL1]
-> > +	mrs	x9, sctlr_el1
-> > +	str	x9, [x0, #CPU_CTX_SCTLR_EL1]
-> > +	ret
-> > +ENDPROC(cpu_do_suspend)
+> > Context memory is allocated on the stack, whose address is stashed in a
+> > per-cpu variable to keep track of it and passed to core functions that
+> > save/restore the registers required by the architecture.
+> > 
+> > Even though, upon successful execution, the cpu_suspend function shuts
+> > down the suspending processor, the warm boot resume mechanism, based
+> > on the cpu_resume function, makes the resume path operate as a
+> > cpu_suspend function return, so that cpu_suspend can be treated as a C
+> > function by the caller, which simplifies coding the PM drivers that rely
+> > on the cpu_suspend API.
+> > 
+> > Upon context save, the minimal amount of memory is flushed to DRAM so
+> > that it can be retrieved when the MMU is off and caches are not searched.
+> > 
+> > The suspend finisher, depending on the required operations (eg CPU vs
+> > Cluster shutdown) is in charge of flushing the cache hierarchy either
+> > implicitly (by calling firmware implementations like PSCI) or explicitly
+> > by executing the required cache maintainance functions.
 > 
-> Can you read all the registers a once and do some stp to save them?
-
-Yes, absolutely. In a way the store pair will require an assumption on
-the context structure layout - eg:
-
-	mrs	x1, tpidr_el0
-	mrs	x2, tpidrro_el0
-	stp	x1, x2, [x0, #CPU_CTX_TPIDR_EL0]
-
-implicitly assumes that the storage for TPIDR_EL0 and TPIDRRO_EL0 is
-contiguous, we can't change the layout later, but I guess we can live
-with that.
-
-> > +
-> > +/**
-> > + * cpu_do_resume - registers layout should match the corresponding
-> > + *                 cpu_do_suspend call
-> > + *
-> > + * x0: Physical address of context pointer
-> > + * x1: Should contain the physical address of identity map page tables
-> > + *     used to turn on the MMU and complete context restore
-> > + *
-> > + * Returns:
-> > + *	sctlr value in x0
-> > + */
-> > +ENTRY(cpu_do_resume)
-> > +	tlbi	vmalle1is	// make sure tlb entries are invalid
-> > +	ldr	x2, [x0, #CPU_CTX_TPIDR_EL0]
-> > +	msr	tpidr_el0, x2
-> > +	ldr	x3, [x0, #CPU_CTX_TPIDRRO_EL0]
-> > +	msr	tpidrro_el0, x3
-> > +	ldr	x4, [x0, #CPU_CTX_CTXIDR_EL1]
-> > +	msr	contextidr_el1, x4
-> > +	ldr	x5, [x0, #CPU_CTX_MAIR_EL1]
-> > +	msr	mair_el1, x5
-> > +	ldr	x6, [x0, #CPU_CTX_CPACR_EL1]
-> > +	msr	cpacr_el1, x6
-> > +	msr	ttbr0_el1, x1
-> > +	ldr	x7, [x0, #CPU_CTX_TTBR1_EL1]
-> > +	msr	ttbr1_el1, x7
-> > +	ldr	x8, [x0, #CPU_CTX_TCR_EL1]
-> > +	msr	tcr_el1, x8
-> > +	ldr	x9, [x0, #CPU_CTX_VBAR_EL1]
-> > +	msr	vbar_el1, x9
-> > +	ldr	x0, [x0, #CPU_CTX_SCTLR_EL1]
-> > +	isb
-> > +	dsb	sy
-> > +	ret
-> > +ENDPROC(cpu_do_resume)
+> As we discussed, I would like the finisher argument to cpu_suspend() to be
+> removed and just use the default cpu_operations.cpu_suspend (currently
+> smp_operations) which is populated from DT and uses PSCI as the default
+> finisher. The cpuidle drivers can still pass arguments that would make
+> their way into the PSCI CPU_SUSPEND call (like how deep to go) but I
+> would like to avoid each cpuidle driver implementing a finisher that
+> does the PSCI call.
 > 
-> Same here, use ldp.
-> 
-> BTW, do we need the DSB here or just the ISB?
+> If PSCI is not available, the cpuidle driver can register a different
+> cpu_suspend method.
 
-A dsb is required to ensure that the tlb invalidate has completed, I
-think it is mandatory from an architectural standpoint but please
-correct me if I am wrong.
+This makes perfect sense, I will update the code as soon as cpu_operations
+struct and suspend method are put in place in generic kernel code.
 
-Thanks for the review,
+Thanks,
 Lorenzo
 
