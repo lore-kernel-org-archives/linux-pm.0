@@ -1,56 +1,165 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Wed, 04 Sep 2013 17:54:50 -0700
-Message-ID: <5227D65A.7040200@codeaurora.org>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <1706734.hVYFTCa5rJ@vostro.rjw.lan> <5227C729.5040803@codeaurora.org> <16630296.tCCMEKstkO@vostro.rjw.lan>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [RFC PATCH 04/14] arm64: kernel: suspend/resume registers
+ save/restore
+Date: Mon, 2 Sep 2013 12:17:17 +0100
+Message-ID: <20130902111716.GF64064@MacBook-Pro.local>
+References: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1377689766-17642-5-git-send-email-lorenzo.pieralisi@arm.com>
+ <20130830172310.GJ4650@arm.com>
+ <20130902095728.GB2500@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:43676 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755125Ab3IEAyx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Sep 2013 20:54:53 -0400
-In-Reply-To: <16630296.tCCMEKstkO@vostro.rjw.lan>
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:36675 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756751Ab3IEFHg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2013 01:07:36 -0400
+Content-Disposition: inline
+In-Reply-To: <20130902095728.GB2500@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dave P Martin <Dave.Martin@arm.com>, Will Deacon <Will.Deacon@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>
 
-On 09/04/13 17:26, Rafael J. Wysocki wrote:
-> On Wednesday, September 04, 2013 04:50:01 PM Stephen Boyd wrote:
->> On 09/04/13 16:55, Rafael J. Wysocki wrote:
->>> Well, I'm not sure when Viresh is going to be back.
->>>
->>> Srivatsa, can you please resend this patch with a proper changelog?
->>>
->> I haven't had a chance to try this out yet, but I was just thinking
->> about this patch. How is it going to work? If one task opens the file
->> and another task is taking down the CPU wouldn't we deadlock in the
->> CPU_DOWN notifier waiting for the kobject to be released? Task 1 will
->> grab the kobject reference and sleep on the hotplug mutex and task 2
->> will put the kobject and wait for the completion, but it won't happen.
->> At least I think that's what would happen.
-> Do you mean the completion in sysfs_deactivate()?  Yes, we can deadlock
-> there.
+On Mon, Sep 02, 2013 at 10:57:28AM +0100, Lorenzo Pieralisi wrote:
+> On Fri, Aug 30, 2013 at 06:23:10PM +0100, Catalin Marinas wrote:
+> > On Wed, Aug 28, 2013 at 12:35:56PM +0100, Lorenzo Pieralisi wrote:
+> > > Power management software requires the kernel to save and restore
+> > > CPU registers while going through suspend and resume operations
+> > > triggered by kernel subsystems like CPU idle and suspend to RAM.
+> > > 
+> > > This patch implements code that provides save and restore mechanism
+> > > for the arm v8 implementation. Memory for the context is passed as
+> > > parameter to both cpu_do_suspend and cpu_do_resume functions, and allows
+> > > the callers to implement context allocation as they deem fit.
+> > > 
+> > > The registers that are saved and restored correspond to the registers
+> > > actually required by the kernel to be up and running and is by no means
+> > > a complete save and restore of the entire v8 register set.
+> > > 
+> > > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > > ---
+> > >  arch/arm64/include/asm/proc-fns.h |  3 ++
+> > >  arch/arm64/mm/proc.S              | 64 +++++++++++++++++++++++++++++++++++++++
+> > >  2 files changed, 67 insertions(+)
+> > > 
+> > > diff --git a/arch/arm64/include/asm/proc-fns.h b/arch/arm64/include/asm/proc-fns.h
+> > > index 7cdf466..0c657bb 100644
+> > > --- a/arch/arm64/include/asm/proc-fns.h
+> > > +++ b/arch/arm64/include/asm/proc-fns.h
+> > > @@ -26,11 +26,14 @@
+> > >  #include <asm/page.h>
+> > >  
+> > >  struct mm_struct;
+> > > +struct cpu_suspend_ctx;
+> > >  
+> > >  extern void cpu_cache_off(void);
+> > >  extern void cpu_do_idle(void);
+> > >  extern void cpu_do_switch_mm(unsigned long pgd_phys, struct mm_struct *mm);
+> > >  extern void cpu_reset(unsigned long addr) __attribute__((noreturn));
+> > > +extern void cpu_do_suspend(struct cpu_suspend_ctx *ptr);
+> > > +extern u64 cpu_do_resume(phys_addr_t ptr, u64 idmap_ttbr);
+> > >  
+> > >  #include <asm/memory.h>
+> > >  
+> > > diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
+> > > index a82ae88..193bf98 100644
+> > > --- a/arch/arm64/mm/proc.S
+> > > +++ b/arch/arm64/mm/proc.S
+> > > @@ -80,6 +80,70 @@ ENTRY(cpu_do_idle)
+> > >  	ret
+> > >  ENDPROC(cpu_do_idle)
+> > >  
+> > > +#ifdef CONFIG_ARM_CPU_SUSPEND
+> > > +/**
+> > > + * cpu_do_suspend - save CPU registers context
+> > > + * x0: virtual address of context pointer
+> > > + */
+> > > +ENTRY(cpu_do_suspend)
+> > > +	mrs	x1, tpidr_el0
+> > > +	str	x1, [x0, #CPU_CTX_TPIDR_EL0]
+> > > +	mrs	x2, tpidrro_el0
+> > > +	str	x2, [x0, #CPU_CTX_TPIDRRO_EL0]
+> > > +	mrs	x3, contextidr_el1
+> > > +	str	x3, [x0, #CPU_CTX_CTXIDR_EL1]
+> > > +	mrs	x4, mair_el1
+> > > +	str	x4, [x0, #CPU_CTX_MAIR_EL1]
+> > > +	mrs	x5, cpacr_el1
+> > > +	str	x5, [x0, #CPU_CTX_CPACR_EL1]
+> > > +	mrs	x6, ttbr1_el1
+> > > +	str	x6, [x0, #CPU_CTX_TTBR1_EL1]
+> > > +	mrs	x7, tcr_el1
+> > > +	str	x7, [x0, #CPU_CTX_TCR_EL1]
+> > > +	mrs	x8, vbar_el1
+> > > +	str	x8, [x0, #CPU_CTX_VBAR_EL1]
+> > > +	mrs	x9, sctlr_el1
+> > > +	str	x9, [x0, #CPU_CTX_SCTLR_EL1]
+> > > +	ret
+> > > +ENDPROC(cpu_do_suspend)
+> > 
+> > Can you read all the registers a once and do some stp to save them?
+> 
+> Yes, absolutely. In a way the store pair will require an assumption on
+> the context structure layout - eg:
+> 
+> 	mrs	x1, tpidr_el0
+> 	mrs	x2, tpidrro_el0
+> 	stp	x1, x2, [x0, #CPU_CTX_TPIDR_EL0]
+> 
+> implicitly assumes that the storage for TPIDR_EL0 and TPIDRRO_EL0 is
+> contiguous, we can't change the layout later, but I guess we can live
+> with that.
 
-I mean the complete in cpufreq_sysfs_release(). I don't think that will
-ever be called because the kobject is held by the task calling store()
-which is waiting on the hotplug lock to be released.
+Do we need to access the individual saved registers from this structure,
+outside the suspend/resume code? Otherwise we could simply have a plain
+array to save the registers.
 
->
-> Well, I guess the Srivatsa's patch may be salvaged by making it do a "trylock"
-> version of get_online_cpus(), but then I wonder if there's no better way.
+> > > +/**
+> > > + * cpu_do_resume - registers layout should match the corresponding
+> > > + *                 cpu_do_suspend call
+> > > + *
+> > > + * x0: Physical address of context pointer
+> > > + * x1: Should contain the physical address of identity map page tables
+> > > + *     used to turn on the MMU and complete context restore
+> > > + *
+> > > + * Returns:
+> > > + *	sctlr value in x0
+> > > + */
+> > > +ENTRY(cpu_do_resume)
+> > > +	tlbi	vmalle1is	// make sure tlb entries are invalid
+> > > +	ldr	x2, [x0, #CPU_CTX_TPIDR_EL0]
+> > > +	msr	tpidr_el0, x2
+> > > +	ldr	x3, [x0, #CPU_CTX_TPIDRRO_EL0]
+> > > +	msr	tpidrro_el0, x3
+> > > +	ldr	x4, [x0, #CPU_CTX_CTXIDR_EL1]
+> > > +	msr	contextidr_el1, x4
+> > > +	ldr	x5, [x0, #CPU_CTX_MAIR_EL1]
+> > > +	msr	mair_el1, x5
+> > > +	ldr	x6, [x0, #CPU_CTX_CPACR_EL1]
+> > > +	msr	cpacr_el1, x6
+> > > +	msr	ttbr0_el1, x1
+> > > +	ldr	x7, [x0, #CPU_CTX_TTBR1_EL1]
+> > > +	msr	ttbr1_el1, x7
+> > > +	ldr	x8, [x0, #CPU_CTX_TCR_EL1]
+> > > +	msr	tcr_el1, x8
+> > > +	ldr	x9, [x0, #CPU_CTX_VBAR_EL1]
+> > > +	msr	vbar_el1, x9
+> > > +	ldr	x0, [x0, #CPU_CTX_SCTLR_EL1]
+> > > +	isb
+> > > +	dsb	sy
+> > > +	ret
+> > > +ENDPROC(cpu_do_resume)
+> > 
+> > Same here, use ldp.
+> > 
+> > BTW, do we need the DSB here or just the ISB?
+> 
+> A dsb is required to ensure that the tlb invalidate has completed, I
+> think it is mandatory from an architectural standpoint but please
+> correct me if I am wrong.
 
-I think the real solution is to remove the kobject first if the CPU
-going down is the last user of that policy. Once the completion is done
-we can stop the governor and clean up state. For the case where there
-are still CPUs using the policy why can't we cancel that CPU's work and
-do nothing else? Even in the case where we have to move the cpufreq
-directory do we need to do a STOP/START/LIMITS sequence? I hope we can
-get away with just moving the directory and canceling that CPUs work then.
+Yes, it's needed for that (though usually it comes before isb, but in
+this case the MMU is disabled anyway, so it doesn't matter).
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
-
+Catalin
