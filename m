@@ -1,159 +1,88 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v3 06/35] mm: Add helpers to retrieve node region
- and zone region for a given page
-Date: Tue, 03 Sep 2013 14:04:17 +0530
-Message-ID: <52259F09.30409@linux.vnet.ibm.com>
-References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131542.4947.76970.stgit@srivatsabhat.in.ibm.com> <52257A1A.2040200@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v3 09/35] mm: Track the freepage migratetype of pages
+ accurately
+Date: Tue, 03 Sep 2013 14:15:21 +0530
+Message-ID: <5225A1A1.5010204@linux.vnet.ibm.com>
+References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131635.4947.81565.stgit@srivatsabhat.in.ibm.com> <522583DE.709@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:38419 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755165Ab3ICIiT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Sep 2013 04:38:19 -0400
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 3 Sep 2013 13:56:42 +0530
-In-Reply-To: <52257A1A.2040200@jp.fujitsu.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <522583DE.709@jp.fujitsu.com>
+Sender: owner-linux-mm@kvack.org
 To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 09/03/2013 11:26 AM, Yasuaki Ishimatsu wrote:
-> (2013/08/30 22:15), Srivatsa S. Bhat wrote:
->> Given a page, we would like to have an efficient mechanism to find out
->> the node memory region and the zone memory region to which it belongs.
+On 09/03/2013 12:08 PM, Yasuaki Ishimatsu wrote:
+> (2013/08/30 22:16), Srivatsa S. Bhat wrote:
+>> Due to the region-wise ordering of the pages in the buddy allocator's
+>> free lists, whenever we want to delete a free pageblock from a free list
+>> (for ex: when moving blocks of pages from one list to the other), we need
+>> to be able to tell the buddy allocator exactly which migratetype it
+>> belongs
+>> to. For that purpose, we can use the page's freepage migratetype
+>> (which is
+>> maintained in the page's ->index field).
 >>
->> Since the node is assumed to be divided into equal-sized node memory
->> regions, the node memory region can be obtained by simply right-shifting
->> the page's pfn by 'MEM_REGION_SHIFT'.
->>
->> But finding the corresponding zone memory region's index in the zone is
->> not that straight-forward. To have a O(1) algorithm to find it out,
->> define a
->> zone_region_idx[] array to store the zone memory region indices for every
->> node memory region.
->>
->> To illustrate, consider the following example:
->>
->>     |<----------------------Node---------------------->|
->>      __________________________________________________
->>     |      Node mem reg 0      |      Node mem reg 1     |  (Absolute
->> region
->>     |________________________|_________________________|   boundaries)
->>
->>      __________________________________________________
->>     |    ZONE_DMA   |        ZONE_NORMAL           |
->>     |               |                                  |
->>     |<--- ZMR 0 --->|<-ZMR0->|<-------- ZMR 1 -------->|
->>     |_______________|________|_________________________|
->>
->>
->> In the above figure,
->>
->> Node mem region 0:
->> ------------------
->> This region corresponds to the first zone mem region in ZONE_DMA and also
->> the first zone mem region in ZONE_NORMAL. Hence its index array would
->> look
->> like this:
->>      node_regions[0].zone_region_idx[ZONE_DMA]     == 0
->>      node_regions[0].zone_region_idx[ZONE_NORMAL]  == 0
->>
->>
->> Node mem region 1:
->> ------------------
->> This region corresponds to the second zone mem region in ZONE_NORMAL.
->> Hence
->> its index array would look like this:
->>      node_regions[1].zone_region_idx[ZONE_NORMAL]  == 1
->>
->>
->> Using this index array, we can quickly obtain the zone memory region to
->> which a given page belongs.
+>> So, while splitting up higher order pages into smaller ones as part of
+>> buddy
+>> operations, keep the new head pages updated with the correct freepage
+>> migratetype information (because we depend on tracking this info
+>> accurately,
+>> as outlined above).
 >>
 >> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 >> ---
 >>
->>   include/linux/mm.h     |   24 ++++++++++++++++++++++++
->>   include/linux/mmzone.h |    7 +++++++
->>   mm/page_alloc.c        |    1 +
->>   3 files changed, 32 insertions(+)
+>>   mm/page_alloc.c |    7 +++++++
+>>   1 file changed, 7 insertions(+)
 >>
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index 18fdec4..52329d1 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -723,6 +723,30 @@ static inline struct zone *page_zone(const struct
->> page *page)
->>       return
->> &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
+>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+>> index 398b62c..b4b1275 100644
+>> --- a/mm/page_alloc.c
+>> +++ b/mm/page_alloc.c
+>> @@ -947,6 +947,13 @@ static inline void expand(struct zone *zone,
+>> struct page *page,
+>>           add_to_freelist(&page[size], &area->free_list[migratetype]);
+>>           area->nr_free++;
+>>           set_page_order(&page[size], high);
+>> +
+>> +        /*
+>> +         * Freepage migratetype is tracked using the index field of the
+>> +         * first page of the block. So we need to update the new first
+>> +         * page, when changing the page order.
+>> +         */
+>> +        set_freepage_migratetype(&page[size], migratetype);
+>>       }
 >>   }
 >>
->> +static inline int page_node_region_id(const struct page *page,
->> +                      const pg_data_t *pgdat)
->> +{
->> +    return (page_to_pfn(page) - pgdat->node_start_pfn) >>
->> MEM_REGION_SHIFT;
->> +}
->> +
->> +/**
->> + * Return the index of the zone memory region to which the page belongs.
->> + *
->> + * Given a page, find the absolute (node) memory region as well as
->> the zone to
->> + * which it belongs. Then find the region within the zone that
->> corresponds to
->> + * that node memory region, and return its index.
->> + */
->> +static inline int page_zone_region_id(const struct page *page)
->> +{
->> +    pg_data_t *pgdat = NODE_DATA(page_to_nid(page));
->> +    enum zone_type z_num = page_zonenum(page);
->> +    unsigned long node_region_idx;
->> +
->> +    node_region_idx = page_node_region_id(page, pgdat);
->> +
->> +    return pgdat->node_regions[node_region_idx].zone_region_idx[z_num];
->> +}
->> +
->>   #ifdef SECTION_IN_PAGE_FLAGS
->>   static inline void set_page_section(struct page *page, unsigned long
->> section)
->>   {
->> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
->> index 010ab5b..76d9ed2 100644
->> --- a/include/linux/mmzone.h
->> +++ b/include/linux/mmzone.h
->> @@ -726,6 +726,13 @@ struct node_mem_region {
->>       unsigned long end_pfn;
->>       unsigned long present_pages;
->>       unsigned long spanned_pages;
+>>
 > 
->> +
->> +    /*
->> +     * A physical (node) region could be split across multiple zones.
->> +     * Store the indices of the corresponding regions of each such
->> +     * zone for this physical (node) region.
->> +     */
->> +    int zone_region_idx[MAX_NR_ZONES];
-> 
-> You should initialize the zone_region_id[] as negative value.
-
-Oh, I missed that.
-
-> If the zone_region_id is initialized as 0, region 0 belongs to all zones.
+> It this patch a bug fix patch?
+> If so, I want you to split the patch from the patch-set.
 > 
 
-In fact, if it is initialized as zero, every node region will appear to
-map to every zone's first zone-mem-region. But luckily, since we never index
-the zone_region_idx[] array with incorrect zone-number, I didn't encounter
-any wrong values in practice. But thanks for pointing it out, I'll fix it.
+No, its not a bug-fix. We need to take care of this only when using the
+sorted-buddy design to maintain the freelists, which is introduced only in
+this patchset. So mainline doesn't need this patch.
+
+In mainline, we can delete a page from a buddy freelist by simply calling
+list_del() by passing a pointer to page->lru. It doesn't matter which freelist
+the page was belonging to. However, in the sorted-buddy design introduced
+in this patchset, we also need to know which particular freelist we are
+deleting that page from, because apart from breaking the ->lru link from
+the linked-list, we also need to update certain other things such as the
+region->page_block pointer etc, which are part of that particular freelist.
+Thus, it becomes essential to know which freelist we are deleting the page
+from. And for that, we need this patch to maintain that information accurately
+even during buddy operations such as splitting buddy pages in expand().
 
 Regards,
 Srivatsa S. Bhat
 
-
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
