@@ -1,15 +1,15 @@
 From: Jonathan Woithe <jwoithe@just42.net>
-Subject: Re: [PATCH 15/27] fujitsu-laptop: convert acpi_get_handle() to
- acpi_has_method()
-Date: Tue, 3 Sep 2013 22:41:55 +0930
-Message-ID: <20130903131155.GB20020@marvin.atrad.com.au>
+Subject: Re: [PATCH 24/27] fujitsu-laptop: convert acpi_evaluate_object() to
+ acpi_evaluate_integer()
+Date: Tue, 3 Sep 2013 22:42:21 +0930
+Message-ID: <20130903131221.GC20020@marvin.atrad.com.au>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
- <1378168335-22556-16-git-send-email-rui.zhang@intel.com>
+ <1378168335-22556-25-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1378168335-22556-16-git-send-email-rui.zhang@intel.com>
+In-Reply-To: <1378168335-22556-25-git-send-email-rui.zhang@intel.com>
 Sender: platform-driver-x86-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
 Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, Matthew Garrett <matthew.garrett@nebula.com>, platform-driver-x86@vger.kernel.org, jwoithe@just42.net
@@ -17,16 +17,13 @@ List-Id: linux-pm@vger.kernel.org
 
 Acked-by: Jonathan Woithe <jwoithe@just42.net>
 
-On Tue, Sep 03, 2013 at 08:32:03AM +0800, Zhang Rui wrote:
-> acpi_has_method() is a new ACPI API introduced to check
-> the existence of an ACPI control method.
+On Tue, Sep 03, 2013 at 08:32:12AM +0800, Zhang Rui wrote:
+> acpi_evaluate_integer() is an ACPI API introduced to evaluate an
+> ACPI control method that is known to have an integer return value.
+> This API can simplify the code because the calling function does not need to
+> use the specified acpi_buffer structure required by acpi_evaluate_object();
 > 
-> It can be used to replace acpi_get_handle() in the case that
-> 1. the calling function doesn't need the ACPI handle of the control method.
-> and
-> 2. the calling function doesn't care the reason why the method is unavailable.
-> 
-> Convert acpi_get_handle() to acpi_has_method()
+> Convert acpi_evaluate_object() to acpi_evaluate_integer()
 > in drivers/platform/x86/fujitsu-laptop.c in this patch.
 > 
 > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
@@ -34,63 +31,56 @@ On Tue, Sep 03, 2013 at 08:32:03AM +0800, Zhang Rui wrote:
 > CC: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
 > CC: platform-driver-x86@vger.kernel.org
 > ---
->  drivers/platform/x86/fujitsu-laptop.c | 13 ++++---------
->  1 file changed, 4 insertions(+), 9 deletions(-)
+>  drivers/platform/x86/fujitsu-laptop.c | 20 ++++----------------
+>  1 file changed, 4 insertions(+), 16 deletions(-)
 > 
 > diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
-> index 29738cb..765d8c1 100644
+> index 765d8c1..9d30d69 100644
 > --- a/drivers/platform/x86/fujitsu-laptop.c
 > +++ b/drivers/platform/x86/fujitsu-laptop.c
-> @@ -579,11 +579,10 @@ static struct platform_driver fujitsupf_driver = {
+> @@ -219,8 +219,7 @@ static int call_fext_func(int cmd, int arg0, int arg1, int arg2)
+>  	{ .type = ACPI_TYPE_INTEGER }
+>  	};
+>  	struct acpi_object_list arg_list = { 4, &params[0] };
+> -	struct acpi_buffer output;
+> -	union acpi_object out_obj;
+> +	unsigned long long value;
+>  	acpi_handle handle = NULL;
 >  
->  static void dmi_check_cb_common(const struct dmi_system_id *id)
->  {
-> -	acpi_handle handle;
->  	pr_info("Identified laptop model '%s'\n", id->ident);
->  	if (use_alt_lcd_levels == -1) {
-> -		if (ACPI_SUCCESS(acpi_get_handle(NULL,
-> -				"\\_SB.PCI0.LPCB.FJEX.SBL2", &handle)))
-> +		if (acpi_has_method(NULL,
-> +				"\\_SB.PCI0.LPCB.FJEX.SBL2"))
->  			use_alt_lcd_levels = 1;
->  		else
->  			use_alt_lcd_levels = 0;
-> @@ -646,7 +645,6 @@ static struct dmi_system_id fujitsu_dmi_table[] = {
+>  	status = acpi_get_handle(fujitsu_hotkey->acpi_handle, "FUNC", &handle);
+> @@ -235,10 +234,7 @@ static int call_fext_func(int cmd, int arg0, int arg1, int arg2)
+>  	params[2].integer.value = arg1;
+>  	params[3].integer.value = arg2;
 >  
->  static int acpi_fujitsu_add(struct acpi_device *device)
->  {
-> -	acpi_handle handle;
->  	int result = 0;
->  	int state = 0;
->  	struct input_dev *input;
-> @@ -695,8 +693,7 @@ static int acpi_fujitsu_add(struct acpi_device *device)
+> -	output.length = sizeof(out_obj);
+> -	output.pointer = &out_obj;
+> -
+> -	status = acpi_evaluate_object(handle, NULL, &arg_list, &output);
+> +	status = acpi_evaluate_integer(handle, NULL, &arg_list, &value);
+>  	if (ACPI_FAILURE(status)) {
+>  		vdbg_printk(FUJLAPTOP_DBG_WARN,
+>  			"FUNC 0x%x (args 0x%x, 0x%x, 0x%x) call failed\n",
+> @@ -246,18 +242,10 @@ static int call_fext_func(int cmd, int arg0, int arg1, int arg2)
+>  		return -ENODEV;
+>  	}
 >  
->  	fujitsu->dev = device;
+> -	if (out_obj.type != ACPI_TYPE_INTEGER) {
+> -		vdbg_printk(FUJLAPTOP_DBG_WARN,
+> -			"FUNC 0x%x (args 0x%x, 0x%x, 0x%x) did not "
+> -			"return an integer\n",
+> -			cmd, arg0, arg1, arg2);
+> -		return -ENODEV;
+> -	}
+> -
+>  	vdbg_printk(FUJLAPTOP_DBG_TRACE,
+>  		"FUNC 0x%x (args 0x%x, 0x%x, 0x%x) returned 0x%x\n",
+> -			cmd, arg0, arg1, arg2, (int)out_obj.integer.value);
+> -	return out_obj.integer.value;
+> +			cmd, arg0, arg1, arg2, (int)value);
+> +	return value;
+>  }
 >  
-> -	if (ACPI_SUCCESS
-> -	    (acpi_get_handle(device->handle, METHOD_NAME__INI, &handle))) {
-> +	if (acpi_has_method(device->handle, METHOD_NAME__INI)) {
->  		vdbg_printk(FUJLAPTOP_DBG_INFO, "Invoking _INI\n");
->  		if (ACPI_FAILURE
->  		    (acpi_evaluate_object
-> @@ -796,7 +793,6 @@ static void acpi_fujitsu_notify(struct acpi_device *device, u32 event)
->  
->  static int acpi_fujitsu_hotkey_add(struct acpi_device *device)
->  {
-> -	acpi_handle handle;
->  	int result = 0;
->  	int state = 0;
->  	struct input_dev *input;
-> @@ -859,8 +855,7 @@ static int acpi_fujitsu_hotkey_add(struct acpi_device *device)
->  
->  	fujitsu_hotkey->dev = device;
->  
-> -	if (ACPI_SUCCESS
-> -	    (acpi_get_handle(device->handle, METHOD_NAME__INI, &handle))) {
-> +	if (acpi_has_method(device->handle, METHOD_NAME__INI)) {
->  		vdbg_printk(FUJLAPTOP_DBG_INFO, "Invoking _INI\n");
->  		if (ACPI_FAILURE
->  		    (acpi_evaluate_object
+>  #if defined(CONFIG_LEDS_CLASS) || defined(CONFIG_LEDS_CLASS_MODULE)
 > -- 
 > 1.8.1.2
 
