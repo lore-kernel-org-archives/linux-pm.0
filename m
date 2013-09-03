@@ -1,49 +1,59 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 08/27] toshiba_acpi: convert acpi_evaluate_object() to acpi_execute_simple_method()
-Date: Tue,  3 Sep 2013 08:31:56 +0800
-Message-ID: <1378168335-22556-9-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 11/27] i915: intel_acpi: convert acpi_get_handle() to acpi_has_method()
+Date: Tue,  3 Sep 2013 08:31:59 +0800
+Message-ID: <1378168335-22556-12-git-send-email-rui.zhang@intel.com>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:55403 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759241Ab3ICAbG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Sep 2013 20:31:06 -0400
 In-Reply-To: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, platform-driver-x86@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>
 
-acpi_execute_simple_method() is a new ACPI API introduced to invoke
-an ACPI control method that has single integer parameter and no return value.
+acpi_has_method() is a new ACPI API introduced to check
+the existence of an ACPI control method.
 
-Convert acpi_evaluate_object() to acpi_execute_simple_method()
-in drivers/platform/x86/toshiba_acpi.c
+It can be used to replace acpi_get_handle() in the case that
+1. the calling function doesn't need the ACPI handle of the control method.
+and
+2. the calling function doesn't care the reason why the method is unavailable.
+
+Convert acpi_get_handle() to acpi_has_method()
+in drivers/gpu/drm/i915/intel_acpi.c in this patch.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-CC: Matthew Garrett <matthew.garrett@nebula.com>
-CC: platform-driver-x86@vger.kernel.org
+CC: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/platform/x86/toshiba_acpi.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/gpu/drm/i915/intel_acpi.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
-index eb3467e..4c0e657 100644
---- a/drivers/platform/x86/toshiba_acpi.c
-+++ b/drivers/platform/x86/toshiba_acpi.c
-@@ -191,16 +191,9 @@ static __inline__ void _set_bit(u32 * word, u32 mask, int value)
+diff --git a/drivers/gpu/drm/i915/intel_acpi.c b/drivers/gpu/drm/i915/intel_acpi.c
+index 57fe1ae..43959ed 100644
+--- a/drivers/gpu/drm/i915/intel_acpi.c
++++ b/drivers/gpu/drm/i915/intel_acpi.c
+@@ -193,16 +193,14 @@ static void intel_dsm_platform_mux_info(void)
  
- static int write_acpi_int(const char *methodName, int val)
+ static bool intel_dsm_pci_probe(struct pci_dev *pdev)
  {
--	struct acpi_object_list params;
--	union acpi_object in_objs[1];
- 	acpi_status status;
+-	acpi_handle dhandle, intel_handle;
+-	acpi_status status;
++	acpi_handle dhandle;
+ 	int ret;
  
--	params.count = ARRAY_SIZE(in_objs);
--	params.pointer = in_objs;
--	in_objs[0].type = ACPI_TYPE_INTEGER;
--	in_objs[0].integer.value = val;
--
--	status = acpi_evaluate_object(NULL, (char *)methodName, &params, NULL);
-+	status = acpi_execute_simple_method(NULL, (char *)methodName, val);
- 	return (status == AE_OK) ? 0 : -EIO;
- }
+ 	dhandle = DEVICE_ACPI_HANDLE(&pdev->dev);
+ 	if (!dhandle)
+ 		return false;
  
+-	status = acpi_get_handle(dhandle, "_DSM", &intel_handle);
+-	if (ACPI_FAILURE(status)) {
++	if (!acpi_has_method(dhandle, "_DSM")) {
+ 		DRM_DEBUG_KMS("no _DSM method for intel device\n");
+ 		return false;
+ 	}
 -- 
 1.8.1.2
+
