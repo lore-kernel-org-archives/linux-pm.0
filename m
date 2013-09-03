@@ -1,84 +1,100 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 05/27] intel-rst: convert acpi_evaluate_object() to acpi_execute_simple_method()
-Date: Tue,  3 Sep 2013 08:31:53 +0800
-Message-ID: <1378168335-22556-6-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 09/27] wmi: convert acpi_evaluate_object() to acpi_execute_simple_method()
+Date: Tue,  3 Sep 2013 08:31:57 +0800
+Message-ID: <1378168335-22556-10-git-send-email-rui.zhang@intel.com>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:55403 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759185Ab3ICAbF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Sep 2013 20:31:05 -0400
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 In-Reply-To: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: platform-driver-x86-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, platform-driver-x86@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 acpi_execute_simple_method() is a new ACPI API introduced to invoke
 an ACPI control method that has single integer parameter and no return value.
 
 Convert acpi_evaluate_object() to acpi_execute_simple_method()
-in drivers/platform/x86/intel-rst.c
+in drivers/platform/x86/wmi.c
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 CC: Matthew Garrett <matthew.garrett@nebula.com>
 CC: platform-driver-x86@vger.kernel.org
 ---
- drivers/platform/x86/intel-rst.c | 20 ++------------------
- 1 file changed, 2 insertions(+), 18 deletions(-)
+ drivers/platform/x86/wmi.c | 25 ++++++-------------------
+ 1 file changed, 6 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/platform/x86/intel-rst.c b/drivers/platform/x86/intel-rst.c
-index 9385afd..fdf8ca0 100644
---- a/drivers/platform/x86/intel-rst.c
-+++ b/drivers/platform/x86/intel-rst.c
-@@ -54,8 +54,6 @@ static ssize_t irst_store_wakeup_events(struct device *dev,
- 					const char *buf, size_t count)
+diff --git a/drivers/platform/x86/wmi.c b/drivers/platform/x86/wmi.c
+index b13344c..cb4fe80 100644
+--- a/drivers/platform/x86/wmi.c
++++ b/drivers/platform/x86/wmi.c
+@@ -252,8 +252,6 @@ static acpi_status wmi_method_enable(struct wmi_block *wblock, int enable)
  {
- 	struct acpi_device *acpi;
+ 	struct guid_block *block = NULL;
+ 	char method[5];
 -	struct acpi_object_list input;
--	union acpi_object param;
+-	union acpi_object params[1];
  	acpi_status status;
- 	unsigned long value;
- 	int error;
-@@ -67,13 +65,7 @@ static ssize_t irst_store_wakeup_events(struct device *dev,
- 	if (error)
- 		return error;
+ 	acpi_handle handle;
  
--	param.type = ACPI_TYPE_INTEGER;
--	param.integer.value = value;
--
+@@ -263,13 +261,9 @@ static acpi_status wmi_method_enable(struct wmi_block *wblock, int enable)
+ 	if (!block)
+ 		return AE_NOT_EXIST;
+ 
 -	input.count = 1;
--	input.pointer = &param;
--
--	status = acpi_evaluate_object(acpi->handle, "SFFS", &input, NULL);
-+	status = acpi_execute_simple_method(acpi->handle, "SFFS", value);
+-	input.pointer = params;
+-	params[0].type = ACPI_TYPE_INTEGER;
+-	params[0].integer.value = enable;
  
- 	if (!ACPI_SUCCESS(status))
- 		return -EINVAL;
-@@ -116,8 +108,6 @@ static ssize_t irst_store_wakeup_time(struct device *dev,
- 				      const char *buf, size_t count)
- {
- 	struct acpi_device *acpi;
--	struct acpi_object_list input;
--	union acpi_object param;
- 	acpi_status status;
- 	unsigned long value;
- 	int error;
-@@ -129,13 +119,7 @@ static ssize_t irst_store_wakeup_time(struct device *dev,
- 	if (error)
- 		return error;
+ 	snprintf(method, 5, "WE%02X", block->notify_id);
+-	status = acpi_evaluate_object(handle, method, &input, NULL);
++	status = acpi_execute_simple_method(handle, method, enable);
  
--	param.type = ACPI_TYPE_INTEGER;
--	param.integer.value = value;
--
--	input.count = 1;
--	input.pointer = &param;
--
--	status = acpi_evaluate_object(acpi->handle, "SFTV", &input, NULL);
-+	status = acpi_execute_simple_method(acpi->handle, "SFTV", value);
+ 	if (status != AE_OK && status != AE_NOT_FOUND)
+ 		return status;
+@@ -355,8 +349,8 @@ struct acpi_buffer *out)
+ 	struct wmi_block *wblock = NULL;
+ 	acpi_handle handle, wc_handle;
+ 	acpi_status status, wc_status = AE_ERROR;
+-	struct acpi_object_list input, wc_input;
+-	union acpi_object wc_params[1], wq_params[1];
++	struct acpi_object_list input;
++	union acpi_object wq_params[1];
+ 	char method[5];
+ 	char wc_method[5] = "WC";
  
- 	if (!ACPI_SUCCESS(status))
- 		return -EINVAL;
+@@ -386,11 +380,6 @@ struct acpi_buffer *out)
+ 	 * enable collection.
+ 	 */
+ 	if (block->flags & ACPI_WMI_EXPENSIVE) {
+-		wc_input.count = 1;
+-		wc_input.pointer = wc_params;
+-		wc_params[0].type = ACPI_TYPE_INTEGER;
+-		wc_params[0].integer.value = 1;
+-
+ 		strncat(wc_method, block->object_id, 2);
+ 
+ 		/*
+@@ -400,8 +389,8 @@ struct acpi_buffer *out)
+ 		 */
+ 		wc_status = acpi_get_handle(handle, wc_method, &wc_handle);
+ 		if (ACPI_SUCCESS(wc_status))
+-			wc_status = acpi_evaluate_object(handle, wc_method,
+-				&wc_input, NULL);
++			wc_status = acpi_execute_simple_method(handle,
++								wc_method, 1);
+ 	}
+ 
+ 	strcpy(method, "WQ");
+@@ -414,9 +403,7 @@ struct acpi_buffer *out)
+ 	 * the WQxx method failed - we should disable collection anyway.
+ 	 */
+ 	if ((block->flags & ACPI_WMI_EXPENSIVE) && ACPI_SUCCESS(wc_status)) {
+-		wc_params[0].integer.value = 0;
+-		status = acpi_evaluate_object(handle,
+-		wc_method, &wc_input, NULL);
++		status = acpi_execute_simple_method(handle, wc_method, 0);
+ 	}
+ 
+ 	return status;
 -- 
 1.8.1.2
-
