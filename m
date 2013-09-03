@@ -1,18 +1,14 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 20/27] pnpacpi: convert acpi_get_handle() to acpi_has_method()
-Date: Tue,  3 Sep 2013 08:32:08 +0800
-Message-ID: <1378168335-22556-21-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 17/27] sony-laptop: convert acpi_get_handle() to acpi_has_method()
+Date: Tue,  3 Sep 2013 08:32:05 +0800
+Message-ID: <1378168335-22556-18-git-send-email-rui.zhang@intel.com>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:42031 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759251Ab3ICAbi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Sep 2013 20:31:38 -0400
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 In-Reply-To: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: platform-driver-x86-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Mattia Dongili <malattia@linux.it>, platform-driver-x86@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 acpi_has_method() is a new ACPI API introduced to check
 the existence of an ACPI control method.
@@ -23,56 +19,113 @@ and
 2. the calling function doesn't care the reason why the method is unavailable.
 
 Convert acpi_get_handle() to acpi_has_method()
-in drivers/pnp/pnpacpi/core.c in this patch.
+in drivers/platform/x86/sony-laptop.c in this patch.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-CC: Bjorn Helgaas <bhelgaas@google.com>
+CC: Matthew Garrett <matthew.garrett@nebula.com>
+CC: Mattia Dongili <malattia@linux.it>
+CC: platform-driver-x86@vger.kernel.org
 ---
- drivers/pnp/pnpacpi/core.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/platform/x86/sony-laptop.c | 28 +++++++++-------------------
+ 1 file changed, 9 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
-index 34049b0..747826d 100644
---- a/drivers/pnp/pnpacpi/core.c
-+++ b/drivers/pnp/pnpacpi/core.c
-@@ -239,8 +239,6 @@ static char *__init pnpacpi_get_id(struct acpi_device *device)
- 
- static int __init pnpacpi_add_device(struct acpi_device *device)
+diff --git a/drivers/platform/x86/sony-laptop.c b/drivers/platform/x86/sony-laptop.c
+index 069821b..ccacd13 100644
+--- a/drivers/platform/x86/sony-laptop.c
++++ b/drivers/platform/x86/sony-laptop.c
+@@ -1509,7 +1509,6 @@ static void sony_nc_function_resume(void)
+ static int sony_nc_resume(struct device *dev)
  {
--	acpi_handle temp = NULL;
--	acpi_status status;
- 	struct pnp_dev *dev;
- 	char *pnpid;
- 	struct acpi_hardware_id *id;
-@@ -253,8 +251,7 @@ static int __init pnpacpi_add_device(struct acpi_device *device)
- 	 * If a PnPacpi device is not present , the device
- 	 * driver should not be loaded.
- 	 */
--	status = acpi_get_handle(device->handle, "_CRS", &temp);
--	if (ACPI_FAILURE(status))
-+	if (!acpi_has_method(device->handle, "_CRS"))
- 		return 0;
+ 	struct sony_nc_value *item;
+-	acpi_handle handle;
  
- 	pnpid = pnpacpi_get_id(device);
-@@ -271,16 +268,14 @@ static int __init pnpacpi_add_device(struct acpi_device *device)
- 	dev->data = device;
- 	/* .enabled means the device can decode the resources */
- 	dev->active = device->status.enabled;
--	status = acpi_get_handle(device->handle, "_SRS", &temp);
--	if (ACPI_SUCCESS(status))
-+	if (acpi_has_method(device->handle, "_SRS"))
- 		dev->capabilities |= PNP_CONFIGURABLE;
- 	dev->capabilities |= PNP_READ;
- 	if (device->flags.dynamic_status && (dev->capabilities & PNP_CONFIGURABLE))
- 		dev->capabilities |= PNP_WRITE;
- 	if (device->flags.removable)
- 		dev->capabilities |= PNP_REMOVABLE;
--	status = acpi_get_handle(device->handle, "_DIS", &temp);
--	if (ACPI_SUCCESS(status))
-+	if (acpi_has_method(device->handle, "_DIS"))
- 		dev->capabilities |= PNP_DISABLE;
+ 	for (item = sony_nc_values; item->name; item++) {
+ 		int ret;
+@@ -1524,15 +1523,13 @@ static int sony_nc_resume(struct device *dev)
+ 		}
+ 	}
  
- 	if (strlen(acpi_device_name(device)))
+-	if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle, "ECON",
+-					 &handle))) {
++	if (acpi_has_method(sony_nc_acpi_handle, "ECON")) {
+ 		int arg = 1;
+ 		if (sony_nc_int_call(sony_nc_acpi_handle, "ECON", &arg, NULL))
+ 			dprintk("ECON Method failed\n");
+ 	}
+ 
+-	if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle, "SN00",
+-					 &handle)))
++	if (acpi_has_method(sony_nc_acpi_handle, "SN00"))
+ 		sony_nc_function_resume();
+ 
+ 	return 0;
+@@ -2687,7 +2684,6 @@ static void sony_nc_backlight_ng_read_limits(int handle,
+ 
+ static void sony_nc_backlight_setup(void)
+ {
+-	acpi_handle unused;
+ 	int max_brightness = 0;
+ 	const struct backlight_ops *ops = NULL;
+ 	struct backlight_properties props;
+@@ -2722,8 +2718,7 @@ static void sony_nc_backlight_setup(void)
+ 		sony_nc_backlight_ng_read_limits(0x14c, &sony_bl_props);
+ 		max_brightness = sony_bl_props.maxlvl - sony_bl_props.offset;
+ 
+-	} else if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle, "GBRT",
+-						&unused))) {
++	} else if (acpi_has_method(sony_nc_acpi_handle, "GBRT")) {
+ 		ops = &sony_backlight_ops;
+ 		max_brightness = SONY_MAX_BRIGHTNESS - 1;
+ 
+@@ -2755,7 +2750,6 @@ static int sony_nc_add(struct acpi_device *device)
+ {
+ 	acpi_status status;
+ 	int result = 0;
+-	acpi_handle handle;
+ 	struct sony_nc_value *item;
+ 
+ 	pr_info("%s v%s\n", SONY_NC_DRIVER_NAME, SONY_LAPTOP_DRIVER_VERSION);
+@@ -2795,15 +2789,13 @@ static int sony_nc_add(struct acpi_device *device)
+ 		goto outplatform;
+ 	}
+ 
+-	if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle, "ECON",
+-					 &handle))) {
++	if (acpi_has_method(sony_nc_acpi_handle, "ECON")) {
+ 		int arg = 1;
+ 		if (sony_nc_int_call(sony_nc_acpi_handle, "ECON", &arg, NULL))
+ 			dprintk("ECON Method failed\n");
+ 	}
+ 
+-	if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle, "SN00",
+-					 &handle))) {
++	if (acpi_has_method(sony_nc_acpi_handle, "SN00")) {
+ 		dprintk("Doing SNC setup\n");
+ 		/* retrieve the available handles */
+ 		result = sony_nc_handles_setup(sony_pf_device);
+@@ -2826,9 +2818,8 @@ static int sony_nc_add(struct acpi_device *device)
+ 
+ 		/* find the available acpiget as described in the DSDT */
+ 		for (; item->acpiget && *item->acpiget; ++item->acpiget) {
+-			if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle,
+-							 *item->acpiget,
+-							 &handle))) {
++			if (acpi_has_method(sony_nc_acpi_handle,
++							*item->acpiget)) {
+ 				dprintk("Found %s getter: %s\n",
+ 						item->name, *item->acpiget);
+ 				item->devattr.attr.mode |= S_IRUGO;
+@@ -2838,9 +2829,8 @@ static int sony_nc_add(struct acpi_device *device)
+ 
+ 		/* find the available acpiset as described in the DSDT */
+ 		for (; item->acpiset && *item->acpiset; ++item->acpiset) {
+-			if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle,
+-							 *item->acpiset,
+-							 &handle))) {
++			if (acpi_has_method(sony_nc_acpi_handle,
++							*item->acpiset)) {
+ 				dprintk("Found %s setter: %s\n",
+ 						item->name, *item->acpiset);
+ 				item->devattr.attr.mode |= S_IWUSR;
 -- 
 1.8.1.2
-
