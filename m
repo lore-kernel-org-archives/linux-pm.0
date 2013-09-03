@@ -1,252 +1,72 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC PATCH 02/14] drivers: thermal: introduce device tree
- parser
-Date: Tue, 3 Sep 2013 14:15:54 +0100
-Message-ID: <20130903131554.GE18206@e106331-lin.cambridge.arm.com>
-References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com>
- <1377299755-5134-3-git-send-email-eduardo.valentin@ti.com>
- <20130827102205.GC19893@e106331-lin.cambridge.arm.com>
- <521CAD48.2030306@ti.com>
- <20130827162309.GR19893@e106331-lin.cambridge.arm.com>
- <521CED34.2090008@ti.com>
- <521FD70F.7080104@ti.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [GIT PULL] soc-thermal: fixes on 3.12
+Date: Tue, 3 Sep 2013 09:18:32 -0400
+Message-ID: <1378214312-30788-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <521FD70F.7080104@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "wni@nvidia.com" <wni@nvidia.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 30, 2013 at 12:19:43AM +0100, Eduardo Valentin wrote:
-> Mark, Pawel and Stephen,
-> 
-> 
-> On 27-08-2013 14:17, Eduardo Valentin wrote:
-> > On 27-08-2013 12:23, Mark Rutland wrote:
-> >> On Tue, Aug 27, 2013 at 02:44:40PM +0100, Eduardo Valentin wrote:
-> >>> Hello Mark,
 
-Hi, sorry for the delay.
+Hello Rui,
 
-> 
-> <cut>
-> 
-> I believe now we need to align on thermal bindings, before I propose
-> next version of this series. So, following the discussions on this
-> thread, I believe a typical CPU thermal zone would look like the following:
-> + #include <dt-bindings/thermal/thermal.h>
-> +
-> + cpu_thermal: cpu_thermal {
-> +         passive-delay = <250>; /* milliseconds */
-> +         polling-delay = <1000>; /* milliseconds */
+Please consider this pull request. It contains:
+- Fixes on TI-SoC-Thermal driver
+- Fixes on Exynos driver
+- Fixes on core thermal driver
+- Reordanization of hwmon layer inside thermal driver (no functional change)
 
-I'm still not keen on placing these intervals in the dt. Why can the
-kernel not choose sensible values?
 
-> +                 /*
-> +                  * sensor       ID
-> +                  */
-> +         sensors = <&bandgap0     0>;
-> +                         /*
-> +                          * cooling
-> +                          * device       Usage   Trip            lower
-> bound             upper bound
-> +                          */
-> +         cooling-devices = <&cpu0        100     &cpu-alert
-> THERMAL_NO_LIMITS        THERMAL_NO_LIMITS>;
+All best,
 
-I'm not sure it makes sense to group this data within a property. We
-might need to extend this in future and it might not be possible to
-extend this unambiguously. It may make more sense as a sub-node or
-collection of properties.
+The following changes since commit f61d5b4d52e077756ce9dbc47ce737da898ad01d:
 
-> +         trips {
-> +                 cpu-alert: cpu-alert {
-> +                         temperature = <100000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_PASSIVE>;
-> +                 };
-> +                 cpu-crit: cpu-crit {
-> +                         temperature = <125000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_CRITICAL>;
-> +                 };
-> +         };
-> + };
+  Merge branch 'fixes' of .git into next (2013-08-15 15:49:30 +0800)
 
-How do the upper and lower bounds in the cooling-devices property
-interact with temperatures described in the trips node?
+are available in the git repository at:
 
-> 
-> *Note: THERMAL_NO_LIMIT means, it will be using the cooling device
-> minimum and maximum limits.
 
-I'm confused what are the cooling device min and max limits? Where are
-they defined if not in the lower bound and upper bound entries of the
-cooling-devices property?
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next
 
-> 
-> Couple of comments.
-> 1. I am keeping the pooling intervals. A possible alternative way to
-> describe that would be specifying the maximum dT/dt. Essentially because
-> I am still convinced that this is part of hw specs.
+for you to fetch changes up to 50e66c7ed8a1cd7e933628f9f5cf2617394adf5a:
 
-I still don't see why it's not possible to do this dynamically. I am not
-entirely convinced this is part of the hw spec.
+  drivers: thermal: add check when unregistering cpu cooling (2013-09-03 09:10:34 -0400)
 
-> 
-> 2. The above follows your suggestion to use consumer pointing to
-> producers. Although, I still need to figure out how this could be
-> implemented for Linux. But I think that is another story, at least for
-> now. We need to first align on the DT binding itself.
+----------------------------------------------------------------
+Eduardo Valentin (5):
+      thermal: hwmon: move hwmon support to single file
+      drivers: thermal: parent virtual hwmon with thermal zone
+      drivers: thermal: make usage of CONFIG_THERMAL_HWMON optional
+      thermal: thermal_core: allow binding with limits on bind_params
+      drivers: thermal: add check when unregistering cpu cooling
 
-I assume you mean the sensors property? That looks fine to me, though we
-may need to specify the way sensors relate to temperatures in trip
-points and cooling device properties -- do those temperatures correspond
-to an average of sensors readings, min/max, etc?
+Ranganath Krishnan (3):
+      thermal: ti-soc-thermal: Initialize counter_delay field for TI DRA752 sensors
+      thermal: ti-soc-thermal: Set the bandgap mask counter delay value
+      thermal: ti-soc-thermal: Ensure to compute thermal trend
 
-> 
-> 3. The link from cooling device specification to trip points, from my
-> perspective, should be enough, and thus we shall not need the thermal
-> cells and size for trip points, as you proposed. Let me know what you think.
+Sachin Kamat (3):
+      thermal: exynos: Fix typos in Kconfig
+      thermal: exynos: Fix potential NULL pointer dereference
+      thermal: exynos: Clean up non-DT remnants
 
-I'm not keen on the mixed bag of values in the cooling-device property,
-as it's difficult to extend in future if necessary. I think we may need
-cells for cooling devices -- what if a single fan controller controls
-fans in different thermal zones?
-
-I'm also not keen on devices being described as their own cooling
-device, as I think this is more difficult to support than not listing a
-cooling device -- it'll have to be special-cased anyway.
-
-> Below is another example, on a more complex scenario, board specific
-> case (hypothetical, just for exemplification):
-> 
-> + #include <dt-bindings/thermal/thermal.h>
-> +
-> + board_thermal: board_thermal {
-> +         passive-delay = <1000>; /* milliseconds */
-> +         polling-delay = <2500>; /* milliseconds */
-> +                 /*
-> +                  * sensor       ID
-> +                  */
-> +         sensors = <&adc-dummy     0>,
-> +		    <&adc-dummy     1>,
-> +		    <&adc-dymmy     2>;
-
-Here we have a set of sensors, but no relationship between these sensors
-and the trips or cooling-devices are described. How does that work?
-
-> +                         /*
-> +                          * cooling
-> +                          * device       Usage   Trip		lower	upper
-> +                          */
-> +         cooling-devices = <&cpu0       75     &cpu-trip	0      2>,
-> +			    <&gpu0       40     &gpu-trip	0      2>;
-> +			    <&lcd0       25     &lcd-trip	5      10>;
-> +         trips {
-> +                 cpu-trip: cpu-trip {
-> +                         temperature = <60000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_PASSIVE>;
-> +                 };
-> +                 gpu-trip: gpu-trip {
-> +                         temperature = <55000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_PASSIVE>;
-> +                 }
-> +                 lcd-trip: lcp-trip {
-> +                         temperature = <53000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_PASSIVE>;
-> +                 };
-> +                 crit-trip: crit-trip {
-> +                         temperature = <68000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_CRITICAL>;
-> +                 };
-> +         };
-> + };
-> 
-> Now writing the above example, one might want to have a way to say the
-> sensor correlation equation.
-> 
-> Another example:
-> + #include <dt-bindings/thermal/thermal.h>
-> +
-> + dsp_thermal: dsp_thermal {
-> +         passive-delay = <250>; /* milliseconds */
-> +         polling-delay = <1000>; /* milliseconds */
-> +                 /*
-> +                  * sensor       ID
-> +                  */
-> +         sensors = <&bandgap0     1>;
-> +                         /*
-> +                          * cooling
-> +                          * device       Usage   Trip            lower
-> bound             upper bound
-> +                          */
-> +         cooling-devices = <&dsp0        100     &dsp-alert
-> THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
-> +         trips {
-> +                 dsp-alert: dsp-alert {
-> +                         temperature = <100000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_PASSIVE>;
-> +                 };
-> +                 dsp-crit: cdsp-crit {
-> +                         temperature = <125000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_CRITICAL>;
-> +                 };
-> +         };
-> + };
-> +
-> + gpu_thermal: gpu_thermal {
-> +         passive-delay = <500>; /* milliseconds */
-> +         polling-delay = <1000>; /* milliseconds */
-> +                 /*
-> +                  * sensor       ID
-> +                  */
-> +         sensors = <&bandgap0     2>;
-> +                         /*
-> +                          * cooling
-> +                          * device       Usage   Trip            lower
-> bound             upper bound
-> +                          */
-> +         cooling-devices = <&gpu0        100     &gpu-alert
-> THERMAL_NO_LIMIT        THERMAL_NO_LIMIT>;
-> +         trips {
-> +                 gpu-alert: gpu-alert {
-> +                         temperature = <100000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_PASSIVE>;
-> +                 };
-> +                 gpu-crit: gpu-crit {
-> +                         temperature = <125000>; /* milliCelsius */
-> +                         hysteresis = <2000>; /* milliCelsius */
-> +                         type = <THERMAL_TRIP_CRITICAL>;
-> +                 };
-> +         };
-> + };
-> 
-> 
-> Wei, I think the above would cover for the IPs with multiple internal
-> sensors cases you were looking for, right?
-> 
-> Durga, please also check if I am missing something to cover for your
-> plans to, in case you will be using DT to describe your HW.
-> 
-> Anyways, Mark and Pawel, let me know if I missed something from our
-> discussion. I believe the above bindings would look more like regular
-> standard DT bindings. And also they should be now slim enough, without
-> Linux implementation details and also without policies.
-
-I think that the above can describe that, but I'd like to see a binding
-document so we can consider it in more detail.
-
-Thanks,
-Mark.
+ Documentation/thermal/sysfs-api.txt                |  12 +
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   3 +
+ drivers/thermal/cpu_cooling.c                      |   6 +-
+ drivers/thermal/samsung/Kconfig                    |  12 +-
+ drivers/thermal/samsung/exynos_thermal_common.c    |   6 +-
+ drivers/thermal/samsung/exynos_tmu.c               |  30 +--
+ drivers/thermal/thermal_core.c                     | 282 ++-------------------
+ drivers/thermal/thermal_hwmon.c                    | 269 ++++++++++++++++++++
+ drivers/thermal/thermal_hwmon.h                    |  49 ++++
+ .../thermal/ti-soc-thermal/dra752-thermal-data.c   |   5 +
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |   6 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   7 +
+ include/linux/thermal.h                            |  18 ++
+ 14 files changed, 424 insertions(+), 290 deletions(-)
+ create mode 100644 drivers/thermal/thermal_hwmon.c
+ create mode 100644 drivers/thermal/thermal_hwmon.h
