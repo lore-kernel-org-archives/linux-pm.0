@@ -1,59 +1,159 @@
-From: Mathias Nyman <mathias.nyman@linux.intel.com>
-Subject: Re: [PATCH 02/27] gpiolib-acpi: convert acpi_evaluate_object() to
- acpi_execute_simple_method()
-Date: Tue, 03 Sep 2013 10:42:57 +0300
-Message-ID: <52259301.30403@linux.intel.com>
-References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com> <1378168335-22556-3-git-send-email-rui.zhang@intel.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 06/35] mm: Add helpers to retrieve node region
+ and zone region for a given page
+Date: Tue, 03 Sep 2013 14:04:17 +0530
+Message-ID: <52259F09.30409@linux.vnet.ibm.com>
+References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131542.4947.76970.stgit@srivatsabhat.in.ibm.com> <52257A1A.2040200@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:33404 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932300Ab3ICHiT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 3 Sep 2013 03:38:19 -0400
-In-Reply-To: <1378168335-22556-3-git-send-email-rui.zhang@intel.com>
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:38419 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755165Ab3ICIiT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Sep 2013 04:38:19 -0400
+Received: from /spool/local
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 3 Sep 2013 13:56:42 +0530
+In-Reply-To: <52257A1A.2040200@jp.fujitsu.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>, Linus Walleij <linus.walleij@linaro.org>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 
-On 09/03/2013 03:31 AM, Zhang Rui wrote:
-> acpi_execute_simple_method() is a new ACPI API introduced to invoke
-> an ACPI control method that has single integer parameter and no return value.
->
-> Convert acpi_evaluate_object() to acpi_execute_simple_method()
-> in drivers/gpio/gpiolib-acpi.c
->
-> Signed-off-by: Zhang Rui<rui.zhang@intel.com>
-> CC: Mathias Nyman<mathias.nyman@linux.intel.com>
-> CC: Mika Westerberg<mika.westerberg@linux.intel.com>
-> CC: Linus Walleij<linus.walleij@linaro.org>
-> ---
->   drivers/gpio/gpiolib-acpi.c | 9 +--------
->   1 file changed, 1 insertion(+), 8 deletions(-)
->
-> diff --git a/drivers/gpio/gpiolib-acpi.c b/drivers/gpio/gpiolib-acpi.c
-> index 5c1ef2b..f2beb72 100644
-> --- a/drivers/gpio/gpiolib-acpi.c
-> +++ b/drivers/gpio/gpiolib-acpi.c
-> @@ -73,15 +73,8 @@ static irqreturn_t acpi_gpio_irq_handler(int irq, void *data)
->   static irqreturn_t acpi_gpio_irq_handler_evt(int irq, void *data)
->   {
->   	struct acpi_gpio_evt_pin *evt_pin = data;
-> -	struct acpi_object_list args;
-> -	union acpi_object arg;
->
-> -	arg.type = ACPI_TYPE_INTEGER;
-> -	arg.integer.value = evt_pin->pin;
-> -	args.count = 1;
-> -	args.pointer =&arg;
-> -
-> -	acpi_evaluate_object(evt_pin->evt_handle, NULL,&args, NULL);
-> +	acpi_execute_simple_method(evt_pin->evt_handle, NULL, evt_pin->pin);
->
->   	return IRQ_HANDLED;
->   }
+On 09/03/2013 11:26 AM, Yasuaki Ishimatsu wrote:
+> (2013/08/30 22:15), Srivatsa S. Bhat wrote:
+>> Given a page, we would like to have an efficient mechanism to find out
+>> the node memory region and the zone memory region to which it belongs.
+>>
+>> Since the node is assumed to be divided into equal-sized node memory
+>> regions, the node memory region can be obtained by simply right-shifting
+>> the page's pfn by 'MEM_REGION_SHIFT'.
+>>
+>> But finding the corresponding zone memory region's index in the zone is
+>> not that straight-forward. To have a O(1) algorithm to find it out,
+>> define a
+>> zone_region_idx[] array to store the zone memory region indices for every
+>> node memory region.
+>>
+>> To illustrate, consider the following example:
+>>
+>>     |<----------------------Node---------------------->|
+>>      __________________________________________________
+>>     |      Node mem reg 0      |      Node mem reg 1     |  (Absolute
+>> region
+>>     |________________________|_________________________|   boundaries)
+>>
+>>      __________________________________________________
+>>     |    ZONE_DMA   |        ZONE_NORMAL           |
+>>     |               |                                  |
+>>     |<--- ZMR 0 --->|<-ZMR0->|<-------- ZMR 1 -------->|
+>>     |_______________|________|_________________________|
+>>
+>>
+>> In the above figure,
+>>
+>> Node mem region 0:
+>> ------------------
+>> This region corresponds to the first zone mem region in ZONE_DMA and also
+>> the first zone mem region in ZONE_NORMAL. Hence its index array would
+>> look
+>> like this:
+>>      node_regions[0].zone_region_idx[ZONE_DMA]     == 0
+>>      node_regions[0].zone_region_idx[ZONE_NORMAL]  == 0
+>>
+>>
+>> Node mem region 1:
+>> ------------------
+>> This region corresponds to the second zone mem region in ZONE_NORMAL.
+>> Hence
+>> its index array would look like this:
+>>      node_regions[1].zone_region_idx[ZONE_NORMAL]  == 1
+>>
+>>
+>> Using this index array, we can quickly obtain the zone memory region to
+>> which a given page belongs.
+>>
+>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>> ---
+>>
+>>   include/linux/mm.h     |   24 ++++++++++++++++++++++++
+>>   include/linux/mmzone.h |    7 +++++++
+>>   mm/page_alloc.c        |    1 +
+>>   3 files changed, 32 insertions(+)
+>>
+>> diff --git a/include/linux/mm.h b/include/linux/mm.h
+>> index 18fdec4..52329d1 100644
+>> --- a/include/linux/mm.h
+>> +++ b/include/linux/mm.h
+>> @@ -723,6 +723,30 @@ static inline struct zone *page_zone(const struct
+>> page *page)
+>>       return
+>> &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
+>>   }
+>>
+>> +static inline int page_node_region_id(const struct page *page,
+>> +                      const pg_data_t *pgdat)
+>> +{
+>> +    return (page_to_pfn(page) - pgdat->node_start_pfn) >>
+>> MEM_REGION_SHIFT;
+>> +}
+>> +
+>> +/**
+>> + * Return the index of the zone memory region to which the page belongs.
+>> + *
+>> + * Given a page, find the absolute (node) memory region as well as
+>> the zone to
+>> + * which it belongs. Then find the region within the zone that
+>> corresponds to
+>> + * that node memory region, and return its index.
+>> + */
+>> +static inline int page_zone_region_id(const struct page *page)
+>> +{
+>> +    pg_data_t *pgdat = NODE_DATA(page_to_nid(page));
+>> +    enum zone_type z_num = page_zonenum(page);
+>> +    unsigned long node_region_idx;
+>> +
+>> +    node_region_idx = page_node_region_id(page, pgdat);
+>> +
+>> +    return pgdat->node_regions[node_region_idx].zone_region_idx[z_num];
+>> +}
+>> +
+>>   #ifdef SECTION_IN_PAGE_FLAGS
+>>   static inline void set_page_section(struct page *page, unsigned long
+>> section)
+>>   {
+>> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+>> index 010ab5b..76d9ed2 100644
+>> --- a/include/linux/mmzone.h
+>> +++ b/include/linux/mmzone.h
+>> @@ -726,6 +726,13 @@ struct node_mem_region {
+>>       unsigned long end_pfn;
+>>       unsigned long present_pages;
+>>       unsigned long spanned_pages;
+> 
+>> +
+>> +    /*
+>> +     * A physical (node) region could be split across multiple zones.
+>> +     * Store the indices of the corresponding regions of each such
+>> +     * zone for this physical (node) region.
+>> +     */
+>> +    int zone_region_idx[MAX_NR_ZONES];
+> 
+> You should initialize the zone_region_id[] as negative value.
+
+Oh, I missed that.
+
+> If the zone_region_id is initialized as 0, region 0 belongs to all zones.
+> 
+
+In fact, if it is initialized as zero, every node region will appear to
+map to every zone's first zone-mem-region. But luckily, since we never index
+the zone_region_idx[] array with incorrect zone-number, I didn't encounter
+any wrong values in practice. But thanks for pointing it out, I'll fix it.
+
+Regards,
+Srivatsa S. Bhat
 
 
-Acked-by: Mathias Nyman <mathias.nyman@linux.intel.com>
