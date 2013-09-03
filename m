@@ -1,132 +1,153 @@
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH v3 04/35] mm: Initialize node memory regions during
- boot
-Date: Tue, 3 Sep 2013 13:53:59 +0900
-Message-ID: <52256B67.50205@jp.fujitsu.com>
-References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131504.4947.86008.stgit@srivatsabhat.in.ibm.com> <52242E1D.4020406@jp.fujitsu.com> <5224CE37.2070908@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 06/35] mm: Add helpers to retrieve node region
+ and zone region for a given page
+Date: Tue, 3 Sep 2013 14:56:42 +0900
+Message-ID: <52257A1A.2040200@jp.fujitsu.com>
+References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131542.4947.76970.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <5224CE37.2070908@linux.vnet.ibm.com>
-Sender: owner-linux-mm@kvack.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47841 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754356Ab3ICF5q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Sep 2013 01:57:46 -0400
+In-Reply-To: <20130830131542.4947.76970.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-(2013/09/03 2:43), Srivatsa S. Bhat wrote:
-> On 09/02/2013 11:50 AM, Yasuaki Ishimatsu wrote:
->> (2013/08/30 22:15), Srivatsa S. Bhat wrote:
->>> Initialize the node's memory-regions structures with the information
->>> about
->>> the region-boundaries, at boot time.
->>>
->>> Based-on-patch-by: Ankita Garg <gargankita@gmail.com>
->>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->>> ---
->>>
->>>    include/linux/mm.h |    4 ++++
->>>    mm/page_alloc.c    |   28 ++++++++++++++++++++++++++++
->>>    2 files changed, 32 insertions(+)
->>>
->>> diff --git a/include/linux/mm.h b/include/linux/mm.h
->>> index f022460..18fdec4 100644
->>> --- a/include/linux/mm.h
->>> +++ b/include/linux/mm.h
->>> @@ -627,6 +627,10 @@ static inline pte_t maybe_mkwrite(pte_t pte,
->>> struct vm_area_struct *vma)
->>>    #define LAST_NID_MASK        ((1UL << LAST_NID_WIDTH) - 1)
->>>    #define ZONEID_MASK        ((1UL << ZONEID_SHIFT) - 1)
->>>
->>> +/* Hard-code memory region size to be 512 MB for now. */
->>> +#define MEM_REGION_SHIFT    (29 - PAGE_SHIFT)
->>> +#define MEM_REGION_SIZE        (1UL << MEM_REGION_SHIFT)
->>> +
->>>    static inline enum zone_type page_zonenum(const struct page *page)
->>>    {
->>>        return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
->>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->>> index b86d7e3..bb2d5d4 100644
->>> --- a/mm/page_alloc.c
->>> +++ b/mm/page_alloc.c
->>> @@ -4809,6 +4809,33 @@ static void __init_refok
->>> alloc_node_mem_map(struct pglist_data *pgdat)
->>>    #endif /* CONFIG_FLAT_NODE_MEM_MAP */
->>>    }
->>>
->>> +static void __meminit init_node_memory_regions(struct pglist_data
->>> *pgdat)
->>> +{
->>> +    int nid = pgdat->node_id;
->>> +    unsigned long start_pfn = pgdat->node_start_pfn;
->>> +    unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
->>> +    struct node_mem_region *region;
->>> +    unsigned long i, absent;
->>> +    int idx;
->>> +
->>> +    for (i = start_pfn, idx = 0; i < end_pfn;
->>> +                i += region->spanned_pages, idx++) {
->>> +
->>
->>> +        region = &pgdat->node_regions[idx];
->>
->> It seems that overflow easily occurs.
->> node_regions[] has 256 entries and MEM_REGION_SIZE is 512MiB. So if
->> the pgdat has more than 128 GiB, overflow will occur. Am I wrong?
->>
+(2013/08/30 22:15), Srivatsa S. Bhat wrote:
+> Given a page, we would like to have an efficient mechanism to find out
+> the node memory region and the zone memory region to which it belongs.
 >
-> No, you are right. It should be made dynamic to accommodate larger
-> memory. I just used that value as a placeholder, since my focus was to
-> demonstrate what algorithms and designs could be developed on top of
-> this infrastructure, to help shape memory allocations. But certainly
-> this needs to be modified to be flexible enough to work with any memory
-> size. Thank you for your review!
+> Since the node is assumed to be divided into equal-sized node memory
+> regions, the node memory region can be obtained by simply right-shifting
+> the page's pfn by 'MEM_REGION_SHIFT'.
+>
+> But finding the corresponding zone memory region's index in the zone is
+> not that straight-forward. To have a O(1) algorithm to find it out, define a
+> zone_region_idx[] array to store the zone memory region indices for every
+> node memory region.
+>
+> To illustrate, consider the following example:
+>
+> 	|<----------------------Node---------------------->|
+> 	 __________________________________________________
+> 	|      Node mem reg 0 	 |      Node mem reg 1     |  (Absolute region
+> 	|________________________|_________________________|   boundaries)
+>
+> 	 __________________________________________________
+> 	|    ZONE_DMA   |	    ZONE_NORMAL		   |
+> 	|               |                                  |
+> 	|<--- ZMR 0 --->|<-ZMR0->|<-------- ZMR 1 -------->|
+> 	|_______________|________|_________________________|
+>
+>
+> In the above figure,
+>
+> Node mem region 0:
+> ------------------
+> This region corresponds to the first zone mem region in ZONE_DMA and also
+> the first zone mem region in ZONE_NORMAL. Hence its index array would look
+> like this:
+>      node_regions[0].zone_region_idx[ZONE_DMA]     == 0
+>      node_regions[0].zone_region_idx[ZONE_NORMAL]  == 0
+>
+>
+> Node mem region 1:
+> ------------------
+> This region corresponds to the second zone mem region in ZONE_NORMAL. Hence
+> its index array would look like this:
+>      node_regions[1].zone_region_idx[ZONE_NORMAL]  == 1
+>
+>
+> Using this index array, we can quickly obtain the zone memory region to
+> which a given page belongs.
+>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
+>
+>   include/linux/mm.h     |   24 ++++++++++++++++++++++++
+>   include/linux/mmzone.h |    7 +++++++
+>   mm/page_alloc.c        |    1 +
+>   3 files changed, 32 insertions(+)
+>
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 18fdec4..52329d1 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -723,6 +723,30 @@ static inline struct zone *page_zone(const struct page *page)
+>   	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
+>   }
+>
+> +static inline int page_node_region_id(const struct page *page,
+> +				      const pg_data_t *pgdat)
+> +{
+> +	return (page_to_pfn(page) - pgdat->node_start_pfn) >> MEM_REGION_SHIFT;
+> +}
+> +
+> +/**
+> + * Return the index of the zone memory region to which the page belongs.
+> + *
+> + * Given a page, find the absolute (node) memory region as well as the zone to
+> + * which it belongs. Then find the region within the zone that corresponds to
+> + * that node memory region, and return its index.
+> + */
+> +static inline int page_zone_region_id(const struct page *page)
+> +{
+> +	pg_data_t *pgdat = NODE_DATA(page_to_nid(page));
+> +	enum zone_type z_num = page_zonenum(page);
+> +	unsigned long node_region_idx;
+> +
+> +	node_region_idx = page_node_region_id(page, pgdat);
+> +
+> +	return pgdat->node_regions[node_region_idx].zone_region_idx[z_num];
+> +}
+> +
+>   #ifdef SECTION_IN_PAGE_FLAGS
+>   static inline void set_page_section(struct page *page, unsigned long section)
+>   {
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 010ab5b..76d9ed2 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -726,6 +726,13 @@ struct node_mem_region {
+>   	unsigned long end_pfn;
+>   	unsigned long present_pages;
+>   	unsigned long spanned_pages;
 
-Thank you for your explanation. I understood it.
+> +
+> +	/*
+> +	 * A physical (node) region could be split across multiple zones.
+> +	 * Store the indices of the corresponding regions of each such
+> +	 * zone for this physical (node) region.
+> +	 */
+> +	int zone_region_idx[MAX_NR_ZONES];
+
+You should initialize the zone_region_id[] as negative value.
+If the zone_region_id is initialized as 0, region 0 belongs to all zones.
 
 Thanks,
 Yasuaki Ishimatsu
 
+
+>   	struct pglist_data *pgdat;
+>   };
 >
-> Regards,
-> Srivatsa S. Bhat
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 05cedbb..8ffd47b 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -4877,6 +4877,7 @@ static void __meminit init_zone_memory_regions(struct pglist_data *pgdat)
+>   			zone_region->present_pages =
+>   					zone_region->spanned_pages - absent;
 >
->>
->>> +        region->pgdat = pgdat;
->>> +        region->start_pfn = i;
->>> +        region->spanned_pages = min(MEM_REGION_SIZE, end_pfn - i);
->>> +        region->end_pfn = region->start_pfn + region->spanned_pages;
->>> +
->>> +        absent = __absent_pages_in_range(nid, region->start_pfn,
->>> +                         region->end_pfn);
->>> +
->>> +        region->present_pages = region->spanned_pages - absent;
->>> +    }
->>> +
->>> +    pgdat->nr_node_regions = idx;
->>> +}
->>> +
->>>    void __paginginit free_area_init_node(int nid, unsigned long
->>> *zones_size,
->>>            unsigned long node_start_pfn, unsigned long *zholes_size)
->>>    {
->>> @@ -4837,6 +4864,7 @@ void __paginginit free_area_init_node(int nid,
->>> unsigned long *zones_size,
->>>
->>>        free_area_init_core(pgdat, start_pfn, end_pfn,
->>>                    zones_size, zholes_size);
->>> +    init_node_memory_regions(pgdat);
->>>    }
->>>
->>>    #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
->>>
->>
->>
+> +			node_region->zone_region_idx[zone_idx(z)] = idx;
+>   			idx++;
+>   		}
+>
 >
 
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
