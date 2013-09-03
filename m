@@ -1,18 +1,14 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 23/27] i2c-hid: convert acpi_evaluate_object() to acpi_evaluate_integer()
-Date: Tue,  3 Sep 2013 08:32:11 +0800
-Message-ID: <1378168335-22556-24-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 24/27] fujitsu-laptop: convert acpi_evaluate_object() to acpi_evaluate_integer()
+Date: Tue,  3 Sep 2013 08:32:12 +0800
+Message-ID: <1378168335-22556-25-git-send-email-rui.zhang@intel.com>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:41893 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759257Ab3ICAbh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Sep 2013 20:31:37 -0400
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 In-Reply-To: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: platform-driver-x86-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Benjamin Tissoires <benjamin.tissoires@redhat.com>, Jiri Kosina <jkosina@suse.cz>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Jonathan Woithe <jwoithe@physics.adelaide.edu.au>, platform-driver-x86@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 acpi_evaluate_integer() is an ACPI API introduced to evaluate an
 ACPI control method that is known to have an integer return value.
@@ -20,58 +16,62 @@ This API can simplify the code because the calling function does not need to
 use the specified acpi_buffer structure required by acpi_evaluate_object();
 
 Convert acpi_evaluate_object() to acpi_evaluate_integer()
-in drivers/hid/i2c-hid/i2c-hid.c in this patch.
+in drivers/platform/x86/fujitsu-laptop.c in this patch.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-CC: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-CC: Jiri Kosina <jkosina@suse.cz>
+CC: Matthew Garrett <matthew.garrett@nebula.com>
+CC: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+CC: platform-driver-x86@vger.kernel.org
 ---
- drivers/hid/i2c-hid/i2c-hid.c | 18 +++++-------------
- 1 file changed, 5 insertions(+), 13 deletions(-)
+ drivers/platform/x86/fujitsu-laptop.c | 20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/hid/i2c-hid/i2c-hid.c b/drivers/hid/i2c-hid/i2c-hid.c
-index 05d4f96..dbca084 100644
---- a/drivers/hid/i2c-hid/i2c-hid.c
-+++ b/drivers/hid/i2c-hid/i2c-hid.c
-@@ -854,10 +854,10 @@ static int i2c_hid_acpi_pdata(struct i2c_client *client,
- 		0xF7, 0xF6, 0xDF, 0x3C, 0x67, 0x42, 0x55, 0x45,
- 		0xAD, 0x05, 0xB3, 0x0A, 0x3D, 0x89, 0x38, 0xDE,
+diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
+index 765d8c1..9d30d69 100644
+--- a/drivers/platform/x86/fujitsu-laptop.c
++++ b/drivers/platform/x86/fujitsu-laptop.c
+@@ -219,8 +219,7 @@ static int call_fext_func(int cmd, int arg0, int arg1, int arg2)
+ 	{ .type = ACPI_TYPE_INTEGER }
  	};
--	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
--	union acpi_object params[4], *obj;
-+	union acpi_object params[4];
- 	struct acpi_object_list input;
- 	struct acpi_device *adev;
+ 	struct acpi_object_list arg_list = { 4, &params[0] };
+-	struct acpi_buffer output;
+-	union acpi_object out_obj;
 +	unsigned long long value;
- 	acpi_handle handle;
+ 	acpi_handle handle = NULL;
  
- 	handle = ACPI_HANDLE(&client->dev);
-@@ -877,22 +877,14 @@ static int i2c_hid_acpi_pdata(struct i2c_client *client,
- 	params[3].type = ACPI_TYPE_INTEGER;
- 	params[3].integer.value = 0;
+ 	status = acpi_get_handle(fujitsu_hotkey->acpi_handle, "FUNC", &handle);
+@@ -235,10 +234,7 @@ static int call_fext_func(int cmd, int arg0, int arg1, int arg2)
+ 	params[2].integer.value = arg1;
+ 	params[3].integer.value = arg2;
  
--	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_DSM", &input, &buf))) {
-+	if (ACPI_FAILURE(acpi_evaluate_integer(handle, "_DSM", &input,
-+								&value))) {
- 		dev_err(&client->dev, "device _DSM execution failed\n");
+-	output.length = sizeof(out_obj);
+-	output.pointer = &out_obj;
+-
+-	status = acpi_evaluate_object(handle, NULL, &arg_list, &output);
++	status = acpi_evaluate_integer(handle, NULL, &arg_list, &value);
+ 	if (ACPI_FAILURE(status)) {
+ 		vdbg_printk(FUJLAPTOP_DBG_WARN,
+ 			"FUNC 0x%x (args 0x%x, 0x%x, 0x%x) call failed\n",
+@@ -246,18 +242,10 @@ static int call_fext_func(int cmd, int arg0, int arg1, int arg2)
  		return -ENODEV;
  	}
  
--	obj = (union acpi_object *)buf.pointer;
--	if (obj->type != ACPI_TYPE_INTEGER) {
--		dev_err(&client->dev, "device _DSM returned invalid type: %d\n",
--			obj->type);
--		kfree(buf.pointer);
--		return -EINVAL;
+-	if (out_obj.type != ACPI_TYPE_INTEGER) {
+-		vdbg_printk(FUJLAPTOP_DBG_WARN,
+-			"FUNC 0x%x (args 0x%x, 0x%x, 0x%x) did not "
+-			"return an integer\n",
+-			cmd, arg0, arg1, arg2);
+-		return -ENODEV;
 -	}
 -
--	pdata->hid_descriptor_address = obj->integer.value;
-+	pdata->hid_descriptor_address = value;
- 
--	kfree(buf.pointer);
- 	return 0;
+ 	vdbg_printk(FUJLAPTOP_DBG_TRACE,
+ 		"FUNC 0x%x (args 0x%x, 0x%x, 0x%x) returned 0x%x\n",
+-			cmd, arg0, arg1, arg2, (int)out_obj.integer.value);
+-	return out_obj.integer.value;
++			cmd, arg0, arg1, arg2, (int)value);
++	return value;
  }
  
+ #if defined(CONFIG_LEDS_CLASS) || defined(CONFIG_LEDS_CLASS_MODULE)
 -- 
 1.8.1.2
-
