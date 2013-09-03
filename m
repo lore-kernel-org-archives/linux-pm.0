@@ -1,77 +1,58 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 04/27] fujitsu-laptop: convert acpi_evaluate_object() to acpi_execute_simple_method()
-Date: Tue,  3 Sep 2013 08:31:52 +0800
-Message-ID: <1378168335-22556-5-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 10/27] pcc_freq: convert acpi_get_handle() to acpi_has_method()
+Date: Tue,  3 Sep 2013 08:31:58 +0800
+Message-ID: <1378168335-22556-11-git-send-email-rui.zhang@intel.com>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:63460 "EHLO mga09.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:15036 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759150Ab3ICAbF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Sep 2013 20:31:05 -0400
+	id S1759231Ab3ICAbG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Sep 2013 20:31:06 -0400
 In-Reply-To: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Jonathan Woithe <jwoithe@physics.adelaide.edu.au>, platform-driver-x86@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-acpi_execute_simple_method() is a new ACPI API introduced to invoke
-an ACPI control method that has single integer parameter and no return value.
+acpi_has_method() is a new ACPI API introduced to check
+the existence of an ACPI control method.
 
-Convert acpi_evaluate_object() to acpi_execute_simple_method()
-in drivers/platform/x86/fujitsu-laptop.c
+It can be used to replace acpi_get_handle() in the case that
+1. the calling function doesn't need the ACPI handle of the control method.
+and
+2. the calling function doesn't care the reason why the method is unavailable.
+
+Convert acpi_get_handle() to acpi_has_method()
+in drivers/cpufreq/pcc_freq.c in this patch.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-CC: Matthew Garrett <matthew.garrett@nebula.com>
-CC: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-CC: platform-driver-x86@vger.kernel.org
+CC: linux-pm@vger.kernel.org
 ---
- drivers/platform/x86/fujitsu-laptop.c | 11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+ drivers/cpufreq/pcc-cpufreq.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
-index 52b8a97..29738cb 100644
---- a/drivers/platform/x86/fujitsu-laptop.c
-+++ b/drivers/platform/x86/fujitsu-laptop.c
-@@ -317,8 +317,6 @@ static enum led_brightness kblamps_get(struct led_classdev *cdev)
- static int set_lcd_level(int level)
- {
- 	acpi_status status = AE_OK;
--	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
--	struct acpi_object_list arg_list = { 1, &arg0 };
- 	acpi_handle handle = NULL;
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index d81c4e5..70438de 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -396,15 +396,14 @@ static int __init pcc_cpufreq_probe(void)
+ 	struct pcc_memory_resource *mem_resource;
+ 	struct pcc_register_resource *reg_resource;
+ 	union acpi_object *out_obj, *member;
+-	acpi_handle handle, osc_handle, pcch_handle;
++	acpi_handle handle, osc_handle;
+ 	int ret = 0;
  
- 	vdbg_printk(FUJLAPTOP_DBG_TRACE, "set lcd level via SBLL [%d]\n",
-@@ -333,9 +331,8 @@ static int set_lcd_level(int level)
- 		return -ENODEV;
- 	}
- 
--	arg0.integer.value = level;
- 
--	status = acpi_evaluate_object(handle, NULL, &arg_list, NULL);
-+	status = acpi_execute_simple_method(handle, NULL, level);
+ 	status = acpi_get_handle(NULL, "\\_SB", &handle);
  	if (ACPI_FAILURE(status))
  		return -ENODEV;
  
-@@ -345,8 +342,6 @@ static int set_lcd_level(int level)
- static int set_lcd_level_alt(int level)
- {
- 	acpi_status status = AE_OK;
--	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
--	struct acpi_object_list arg_list = { 1, &arg0 };
- 	acpi_handle handle = NULL;
- 
- 	vdbg_printk(FUJLAPTOP_DBG_TRACE, "set lcd level via SBL2 [%d]\n",
-@@ -361,9 +356,7 @@ static int set_lcd_level_alt(int level)
- 		return -ENODEV;
- 	}
- 
--	arg0.integer.value = level;
--
--	status = acpi_evaluate_object(handle, NULL, &arg_list, NULL);
-+	status = acpi_execute_simple_method(handle, NULL, level);
- 	if (ACPI_FAILURE(status))
+-	status = acpi_get_handle(handle, "PCCH", &pcch_handle);
+-	if (ACPI_FAILURE(status))
++	if (!acpi_has_method(handle, "PCCH"))
  		return -ENODEV;
  
+ 	status = acpi_get_handle(handle, "_OSC", &osc_handle);
 -- 
 1.8.1.2
 
