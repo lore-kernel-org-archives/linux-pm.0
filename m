@@ -1,88 +1,71 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v3 09/35] mm: Track the freepage migratetype of pages
- accurately
-Date: Tue, 03 Sep 2013 14:15:21 +0530
-Message-ID: <5225A1A1.5010204@linux.vnet.ibm.com>
-References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131635.4947.81565.stgit@srivatsabhat.in.ibm.com> <522583DE.709@jp.fujitsu.com>
+From: Matt Fleming <matt@console-pimps.org>
+Subject: Re: [PATCH 10/18] efi: Enable secure boot lockdown automatically
+ when enabled in firmware
+Date: Tue, 3 Sep 2013 11:49:41 +0100
+Message-ID: <20130903104941.GG28598@console-pimps.org>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+ <1377169317-5959-11-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <522583DE.709@jp.fujitsu.com>
-Sender: owner-linux-mm@kvack.org
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-security-module-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1377169317-5959-11-git-send-email-jlee@suse.com>
+Sender: linux-security-module-owner@vger.kernel.org
+To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>, Matthew Garrett <mjg@redhat.com>, "Lee, Chun-Yi" <jlee@sus>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/03/2013 12:08 PM, Yasuaki Ishimatsu wrote:
-> (2013/08/30 22:16), Srivatsa S. Bhat wrote:
->> Due to the region-wise ordering of the pages in the buddy allocator's
->> free lists, whenever we want to delete a free pageblock from a free list
->> (for ex: when moving blocks of pages from one list to the other), we need
->> to be able to tell the buddy allocator exactly which migratetype it
->> belongs
->> to. For that purpose, we can use the page's freepage migratetype
->> (which is
->> maintained in the page's ->index field).
->>
->> So, while splitting up higher order pages into smaller ones as part of
->> buddy
->> operations, keep the new head pages updated with the correct freepage
->> migratetype information (because we depend on tracking this info
->> accurately,
->> as outlined above).
->>
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> ---
->>
->>   mm/page_alloc.c |    7 +++++++
->>   1 file changed, 7 insertions(+)
->>
->> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> index 398b62c..b4b1275 100644
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -947,6 +947,13 @@ static inline void expand(struct zone *zone,
->> struct page *page,
->>           add_to_freelist(&page[size], &area->free_list[migratetype]);
->>           area->nr_free++;
->>           set_page_order(&page[size], high);
->> +
->> +        /*
->> +         * Freepage migratetype is tracked using the index field of the
->> +         * first page of the block. So we need to update the new first
->> +         * page, when changing the page order.
->> +         */
->> +        set_freepage_migratetype(&page[size], migratetype);
->>       }
->>   }
->>
->>
+On Thu, 22 Aug, at 07:01:49PM, Lee, Chun-Yi wrote:
+> From: Matthew Garrett <mjg@redhat.com>
 > 
-> It this patch a bug fix patch?
-> If so, I want you to split the patch from the patch-set.
+> The firmware has a set of flags that indicate whether secure boot is enabled
+> and enforcing. Use them to indicate whether the kernel should lock itself
+> down.  We also indicate the machine is in secure boot mode by adding the
+> EFI_SECURE_BOOT bit for use with efi_enabled.
 > 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> Signed-off-by: Josh Boyer <jwboyer@redhat.com>
+> Acked-by: Lee, Chun-Yi <jlee@suse.com>
+> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> ---
+>  Documentation/x86/zero-page.txt        |    2 ++
+>  arch/x86/boot/compressed/eboot.c       |   32 ++++++++++++++++++++++++++++++++
+>  arch/x86/include/asm/bootparam_utils.h |    8 ++++++--
+>  arch/x86/include/uapi/asm/bootparam.h  |    3 ++-
+>  arch/x86/kernel/setup.c                |    7 +++++++
+>  include/linux/cred.h                   |    2 ++
+>  include/linux/efi.h                    |    1 +
+>  7 files changed, 52 insertions(+), 3 deletions(-)
 
-No, its not a bug-fix. We need to take care of this only when using the
-sorted-buddy design to maintain the freelists, which is introduced only in
-this patchset. So mainline doesn't need this patch.
+[...]
 
-In mainline, we can delete a page from a buddy freelist by simply calling
-list_del() by passing a pointer to page->lru. It doesn't matter which freelist
-the page was belonging to. However, in the sorted-buddy design introduced
-in this patchset, we also need to know which particular freelist we are
-deleting that page from, because apart from breaking the ->lru link from
-the linked-list, we also need to update certain other things such as the
-region->page_block pointer etc, which are part of that particular freelist.
-Thus, it becomes essential to know which freelist we are deleting the page
-from. And for that, we need this patch to maintain that information accurately
-even during buddy operations such as splitting buddy pages in expand().
+> +static int get_secure_boot(efi_system_table_t *_table)
+> +{
+> +	u8 sb, setup;
+> +	unsigned long datasize = sizeof(sb);
+> +	efi_guid_t var_guid = EFI_GLOBAL_VARIABLE_GUID;
+> +	efi_status_t status;
+> +
+> +	status = efi_call_phys5(sys_table->runtime->get_variable,
+> +				L"SecureBoot", &var_guid, NULL, &datasize, &sb);
+> +
 
-Regards,
-Srivatsa S. Bhat
+The _table argument isn't needed because it's never used.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+[...]
+
+>  	io_delay_init();
+>  
+> +	if (boot_params.secure_boot) {
+> +#ifdef CONFIG_EFI
+> +		set_bit(EFI_SECURE_BOOT, &x86_efi_facility);
+> +#endif
+> +		secureboot_enable();
+> +	}
+> +
+
+efi_enabled(EFI_BOOT) should be checked also, instead of assuming that
+secure_boot contains a sensible value.
+
+-- 
+Matt Fleming, Intel Open Source Technology Center
