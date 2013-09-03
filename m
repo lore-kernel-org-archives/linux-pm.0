@@ -1,58 +1,49 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 10/27] pcc_freq: convert acpi_get_handle() to acpi_has_method()
-Date: Tue,  3 Sep 2013 08:31:58 +0800
-Message-ID: <1378168335-22556-11-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 08/27] toshiba_acpi: convert acpi_evaluate_object() to acpi_execute_simple_method()
+Date: Tue,  3 Sep 2013 08:31:56 +0800
+Message-ID: <1378168335-22556-9-git-send-email-rui.zhang@intel.com>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:15036 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759231Ab3ICAbG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Sep 2013 20:31:06 -0400
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 In-Reply-To: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: platform-driver-x86-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, platform-driver-x86@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-acpi_has_method() is a new ACPI API introduced to check
-the existence of an ACPI control method.
+acpi_execute_simple_method() is a new ACPI API introduced to invoke
+an ACPI control method that has single integer parameter and no return value.
 
-It can be used to replace acpi_get_handle() in the case that
-1. the calling function doesn't need the ACPI handle of the control method.
-and
-2. the calling function doesn't care the reason why the method is unavailable.
-
-Convert acpi_get_handle() to acpi_has_method()
-in drivers/cpufreq/pcc_freq.c in this patch.
+Convert acpi_evaluate_object() to acpi_execute_simple_method()
+in drivers/platform/x86/toshiba_acpi.c
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-CC: linux-pm@vger.kernel.org
+CC: Matthew Garrett <matthew.garrett@nebula.com>
+CC: platform-driver-x86@vger.kernel.org
 ---
- drivers/cpufreq/pcc-cpufreq.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/platform/x86/toshiba_acpi.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index d81c4e5..70438de 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -396,15 +396,14 @@ static int __init pcc_cpufreq_probe(void)
- 	struct pcc_memory_resource *mem_resource;
- 	struct pcc_register_resource *reg_resource;
- 	union acpi_object *out_obj, *member;
--	acpi_handle handle, osc_handle, pcch_handle;
-+	acpi_handle handle, osc_handle;
- 	int ret = 0;
+diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
+index eb3467e..4c0e657 100644
+--- a/drivers/platform/x86/toshiba_acpi.c
++++ b/drivers/platform/x86/toshiba_acpi.c
+@@ -191,16 +191,9 @@ static __inline__ void _set_bit(u32 * word, u32 mask, int value)
  
- 	status = acpi_get_handle(NULL, "\\_SB", &handle);
- 	if (ACPI_FAILURE(status))
- 		return -ENODEV;
+ static int write_acpi_int(const char *methodName, int val)
+ {
+-	struct acpi_object_list params;
+-	union acpi_object in_objs[1];
+ 	acpi_status status;
  
--	status = acpi_get_handle(handle, "PCCH", &pcch_handle);
--	if (ACPI_FAILURE(status))
-+	if (!acpi_has_method(handle, "PCCH"))
- 		return -ENODEV;
+-	params.count = ARRAY_SIZE(in_objs);
+-	params.pointer = in_objs;
+-	in_objs[0].type = ACPI_TYPE_INTEGER;
+-	in_objs[0].integer.value = val;
+-
+-	status = acpi_evaluate_object(NULL, (char *)methodName, &params, NULL);
++	status = acpi_execute_simple_method(NULL, (char *)methodName, val);
+ 	return (status == AE_OK) ? 0 : -EIO;
+ }
  
- 	status = acpi_get_handle(handle, "_OSC", &osc_handle);
 -- 
 1.8.1.2
-
