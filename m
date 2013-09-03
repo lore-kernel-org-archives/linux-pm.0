@@ -1,82 +1,96 @@
 From: Jonathan Woithe <jwoithe@just42.net>
-Subject: Re: [PATCH 04/27] fujitsu-laptop: convert acpi_evaluate_object() to
- acpi_execute_simple_method()
-Date: Tue, 3 Sep 2013 22:41:26 +0930
-Message-ID: <20130903131126.GA20020@marvin.atrad.com.au>
+Subject: Re: [PATCH 15/27] fujitsu-laptop: convert acpi_get_handle() to
+ acpi_has_method()
+Date: Tue, 3 Sep 2013 22:41:55 +0930
+Message-ID: <20130903131155.GB20020@marvin.atrad.com.au>
 References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
- <1378168335-22556-5-git-send-email-rui.zhang@intel.com>
+ <1378168335-22556-16-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1378168335-22556-5-git-send-email-rui.zhang@intel.com>
+In-Reply-To: <1378168335-22556-16-git-send-email-rui.zhang@intel.com>
 Sender: platform-driver-x86-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
 Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, Matthew Garrett <matthew.garrett@nebula.com>, platform-driver-x86@vger.kernel.org, jwoithe@just42.net
 List-Id: linux-pm@vger.kernel.org
 
-This (and the other two along similar lines) look ok to me.
-
 Acked-by: Jonathan Woithe <jwoithe@just42.net>
 
-On Tue, Sep 03, 2013 at 08:31:52AM +0800, Zhang Rui wrote:
-> acpi_execute_simple_method() is a new ACPI API introduced to invoke
-> an ACPI control method that has single integer parameter and no return value.
+On Tue, Sep 03, 2013 at 08:32:03AM +0800, Zhang Rui wrote:
+> acpi_has_method() is a new ACPI API introduced to check
+> the existence of an ACPI control method.
 > 
-> Convert acpi_evaluate_object() to acpi_execute_simple_method()
-> in drivers/platform/x86/fujitsu-laptop.c
+> It can be used to replace acpi_get_handle() in the case that
+> 1. the calling function doesn't need the ACPI handle of the control method.
+> and
+> 2. the calling function doesn't care the reason why the method is unavailable.
+> 
+> Convert acpi_get_handle() to acpi_has_method()
+> in drivers/platform/x86/fujitsu-laptop.c in this patch.
+> 
 > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 > CC: Matthew Garrett <matthew.garrett@nebula.com>
 > CC: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
 > CC: platform-driver-x86@vger.kernel.org
 > ---
->  drivers/platform/x86/fujitsu-laptop.c | 11 ++---------
->  1 file changed, 2 insertions(+), 9 deletions(-)
+>  drivers/platform/x86/fujitsu-laptop.c | 13 ++++---------
+>  1 file changed, 4 insertions(+), 9 deletions(-)
 > 
 > diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
-> index 52b8a97..29738cb 100644
+> index 29738cb..765d8c1 100644
 > --- a/drivers/platform/x86/fujitsu-laptop.c
 > +++ b/drivers/platform/x86/fujitsu-laptop.c
-> @@ -317,8 +317,6 @@ static enum led_brightness kblamps_get(struct led_classdev *cdev)
->  static int set_lcd_level(int level)
+> @@ -579,11 +579,10 @@ static struct platform_driver fujitsupf_driver = {
+>  
+>  static void dmi_check_cb_common(const struct dmi_system_id *id)
 >  {
->  	acpi_status status = AE_OK;
-> -	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
-> -	struct acpi_object_list arg_list = { 1, &arg0 };
->  	acpi_handle handle = NULL;
+> -	acpi_handle handle;
+>  	pr_info("Identified laptop model '%s'\n", id->ident);
+>  	if (use_alt_lcd_levels == -1) {
+> -		if (ACPI_SUCCESS(acpi_get_handle(NULL,
+> -				"\\_SB.PCI0.LPCB.FJEX.SBL2", &handle)))
+> +		if (acpi_has_method(NULL,
+> +				"\\_SB.PCI0.LPCB.FJEX.SBL2"))
+>  			use_alt_lcd_levels = 1;
+>  		else
+>  			use_alt_lcd_levels = 0;
+> @@ -646,7 +645,6 @@ static struct dmi_system_id fujitsu_dmi_table[] = {
 >  
->  	vdbg_printk(FUJLAPTOP_DBG_TRACE, "set lcd level via SBLL [%d]\n",
-> @@ -333,9 +331,8 @@ static int set_lcd_level(int level)
->  		return -ENODEV;
->  	}
->  
-> -	arg0.integer.value = level;
->  
-> -	status = acpi_evaluate_object(handle, NULL, &arg_list, NULL);
-> +	status = acpi_execute_simple_method(handle, NULL, level);
->  	if (ACPI_FAILURE(status))
->  		return -ENODEV;
->  
-> @@ -345,8 +342,6 @@ static int set_lcd_level(int level)
->  static int set_lcd_level_alt(int level)
+>  static int acpi_fujitsu_add(struct acpi_device *device)
 >  {
->  	acpi_status status = AE_OK;
-> -	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
-> -	struct acpi_object_list arg_list = { 1, &arg0 };
->  	acpi_handle handle = NULL;
+> -	acpi_handle handle;
+>  	int result = 0;
+>  	int state = 0;
+>  	struct input_dev *input;
+> @@ -695,8 +693,7 @@ static int acpi_fujitsu_add(struct acpi_device *device)
 >  
->  	vdbg_printk(FUJLAPTOP_DBG_TRACE, "set lcd level via SBL2 [%d]\n",
-> @@ -361,9 +356,7 @@ static int set_lcd_level_alt(int level)
->  		return -ENODEV;
->  	}
+>  	fujitsu->dev = device;
 >  
-> -	arg0.integer.value = level;
-> -
-> -	status = acpi_evaluate_object(handle, NULL, &arg_list, NULL);
-> +	status = acpi_execute_simple_method(handle, NULL, level);
->  	if (ACPI_FAILURE(status))
->  		return -ENODEV;
+> -	if (ACPI_SUCCESS
+> -	    (acpi_get_handle(device->handle, METHOD_NAME__INI, &handle))) {
+> +	if (acpi_has_method(device->handle, METHOD_NAME__INI)) {
+>  		vdbg_printk(FUJLAPTOP_DBG_INFO, "Invoking _INI\n");
+>  		if (ACPI_FAILURE
+>  		    (acpi_evaluate_object
+> @@ -796,7 +793,6 @@ static void acpi_fujitsu_notify(struct acpi_device *device, u32 event)
 >  
+>  static int acpi_fujitsu_hotkey_add(struct acpi_device *device)
+>  {
+> -	acpi_handle handle;
+>  	int result = 0;
+>  	int state = 0;
+>  	struct input_dev *input;
+> @@ -859,8 +855,7 @@ static int acpi_fujitsu_hotkey_add(struct acpi_device *device)
+>  
+>  	fujitsu_hotkey->dev = device;
+>  
+> -	if (ACPI_SUCCESS
+> -	    (acpi_get_handle(device->handle, METHOD_NAME__INI, &handle))) {
+> +	if (acpi_has_method(device->handle, METHOD_NAME__INI)) {
+>  		vdbg_printk(FUJLAPTOP_DBG_INFO, "Invoking _INI\n");
+>  		if (ACPI_FAILURE
+>  		    (acpi_evaluate_object
 > -- 
 > 1.8.1.2
 
