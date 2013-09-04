@@ -1,113 +1,89 @@
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH v3 09/35] mm: Track the freepage migratetype of pages
- accurately
-Date: Wed, 4 Sep 2013 17:23:43 +0900
-Message-ID: <5226EE0F.5010906@jp.fujitsu.com>
-References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131635.4947.81565.stgit@srivatsabhat.in.ibm.com> <522583DE.709@jp.fujitsu.com> <5225A1A1.5010204@linux.vnet.ibm.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH 23/27] i2c-hid: convert acpi_evaluate_object() to
+ acpi_evaluate_integer()
+Date: Wed, 4 Sep 2013 12:14:23 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1309041214120.3684@pobox.suse.cz>
+References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com> <1378168335-22556-24-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <5225A1A1.5010204@linux.vnet.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:48513 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753821Ab3IDKOa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 4 Sep 2013 06:14:30 -0400
+In-Reply-To: <1378168335-22556-24-git-send-email-rui.zhang@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, Benjamin Tissoires <benjamin.tissoires@redhat.com>
 
-(2013/09/03 17:45), Srivatsa S. Bhat wrote:
-> On 09/03/2013 12:08 PM, Yasuaki Ishimatsu wrote:
->> (2013/08/30 22:16), Srivatsa S. Bhat wrote:
->>> Due to the region-wise ordering of the pages in the buddy allocator's
->>> free lists, whenever we want to delete a free pageblock from a free list
->>> (for ex: when moving blocks of pages from one list to the other), we need
->>> to be able to tell the buddy allocator exactly which migratetype it
->>> belongs
->>> to. For that purpose, we can use the page's freepage migratetype
->>> (which is
->>> maintained in the page's ->index field).
->>>
->>> So, while splitting up higher order pages into smaller ones as part of
->>> buddy
->>> operations, keep the new head pages updated with the correct freepage
->>> migratetype information (because we depend on tracking this info
->>> accurately,
->>> as outlined above).
->>>
->>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->>> ---
->>>
->>>    mm/page_alloc.c |    7 +++++++
->>>    1 file changed, 7 insertions(+)
->>>
->>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->>> index 398b62c..b4b1275 100644
->>> --- a/mm/page_alloc.c
->>> +++ b/mm/page_alloc.c
->>> @@ -947,6 +947,13 @@ static inline void expand(struct zone *zone,
->>> struct page *page,
->>>            add_to_freelist(&page[size], &area->free_list[migratetype]);
->>>            area->nr_free++;
->>>            set_page_order(&page[size], high);
->>> +
->>> +        /*
->>> +         * Freepage migratetype is tracked using the index field of the
->>> +         * first page of the block. So we need to update the new first
->>> +         * page, when changing the page order.
->>> +         */
->>> +        set_freepage_migratetype(&page[size], migratetype);
->>>        }
->>>    }
->>>
->>>
->>
->> It this patch a bug fix patch?
->> If so, I want you to split the patch from the patch-set.
->>
->
-> No, its not a bug-fix. We need to take care of this only when using the
-> sorted-buddy design to maintain the freelists, which is introduced only in
-> this patchset. So mainline doesn't need this patch.
->
-> In mainline, we can delete a page from a buddy freelist by simply calling
-> list_del() by passing a pointer to page->lru. It doesn't matter which freelist
-> the page was belonging to. However, in the sorted-buddy design introduced
-> in this patchset, we also need to know which particular freelist we are
-> deleting that page from, because apart from breaking the ->lru link from
-> the linked-list, we also need to update certain other things such as the
-> region->page_block pointer etc, which are part of that particular freelist.
-> Thus, it becomes essential to know which freelist we are deleting the page
-> from. And for that, we need this patch to maintain that information accurately
-> even during buddy operations such as splitting buddy pages in expand().
+On Tue, 3 Sep 2013, Zhang Rui wrote:
 
-I may be wrong because I do not know this part clearly.
+> acpi_evaluate_integer() is an ACPI API introduced to evaluate an
+> ACPI control method that is known to have an integer return value.
+> This API can simplify the code because the calling function does not need to
+> use the specified acpi_buffer structure required by acpi_evaluate_object();
+> 
+> Convert acpi_evaluate_object() to acpi_evaluate_integer()
+> in drivers/hid/i2c-hid/i2c-hid.c in this patch.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> CC: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+> CC: Jiri Kosina <jkosina@suse.cz>
 
-Original code is here:
+Acked-by: Jiri Kosina <jkosina@suse.cz>
 
----
-static inline void expand(struct zone *zone, struct page *page,
-	int low, int high, struct free_area *area,
-	int migratetype)
-{
-...
-		list_add(&page[size].lru, &area->free_list[migratetype]);
-		area->nr_free++;
-		set_page_order(&page[size], high);
----
+> ---
+>  drivers/hid/i2c-hid/i2c-hid.c | 18 +++++-------------
+>  1 file changed, 5 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/hid/i2c-hid/i2c-hid.c b/drivers/hid/i2c-hid/i2c-hid.c
+> index 05d4f96..dbca084 100644
+> --- a/drivers/hid/i2c-hid/i2c-hid.c
+> +++ b/drivers/hid/i2c-hid/i2c-hid.c
+> @@ -854,10 +854,10 @@ static int i2c_hid_acpi_pdata(struct i2c_client *client,
+>  		0xF7, 0xF6, 0xDF, 0x3C, 0x67, 0x42, 0x55, 0x45,
+>  		0xAD, 0x05, 0xB3, 0x0A, 0x3D, 0x89, 0x38, 0xDE,
+>  	};
+> -	struct acpi_buffer buf = { ACPI_ALLOCATE_BUFFER, NULL };
+> -	union acpi_object params[4], *obj;
+> +	union acpi_object params[4];
+>  	struct acpi_object_list input;
+>  	struct acpi_device *adev;
+> +	unsigned long long value;
+>  	acpi_handle handle;
+>  
+>  	handle = ACPI_HANDLE(&client->dev);
+> @@ -877,22 +877,14 @@ static int i2c_hid_acpi_pdata(struct i2c_client *client,
+>  	params[3].type = ACPI_TYPE_INTEGER;
+>  	params[3].integer.value = 0;
+>  
+> -	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_DSM", &input, &buf))) {
+> +	if (ACPI_FAILURE(acpi_evaluate_integer(handle, "_DSM", &input,
+> +								&value))) {
+>  		dev_err(&client->dev, "device _DSM execution failed\n");
+>  		return -ENODEV;
+>  	}
+>  
+> -	obj = (union acpi_object *)buf.pointer;
+> -	if (obj->type != ACPI_TYPE_INTEGER) {
+> -		dev_err(&client->dev, "device _DSM returned invalid type: %d\n",
+> -			obj->type);
+> -		kfree(buf.pointer);
+> -		return -EINVAL;
+> -	}
+> -
+> -	pdata->hid_descriptor_address = obj->integer.value;
+> +	pdata->hid_descriptor_address = value;
+>  
+> -	kfree(buf.pointer);
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.8.1.2
+> 
 
-It seems that migratietype of page[size] page is changed. So even if not
-applying your patch, I think migratetype of the page should be changed.
-
-thanks,
-Yasuaki Ishimatsu
-
->
-> Regards,
-> Srivatsa S. Bhat
->
-
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+-- 
+Jiri Kosina
+SUSE Labs
