@@ -1,102 +1,146 @@
 From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH 1/3] thermal: samsung: correct the fall interrupt en,
- status bit fields
-Date: Wed, 04 Sep 2013 09:53:47 +0530
-Message-ID: <1378268629-2886-1-git-send-email-ch.naveen@samsung.com>
+Subject: [PATCH 2/3] thermal: samsung: change base_common to more meaningful
+ base_second
+Date: Wed, 04 Sep 2013 09:53:48 +0530
+Message-ID: <1378268629-2886-2-git-send-email-ch.naveen@samsung.com>
 References: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+ <1378268629-2886-1-git-send-email-ch.naveen@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1378268629-2886-1-git-send-email-ch.naveen@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, naveenkrishna.ch@gmail.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-The FALL interrupt related en, status bits are available at an offset of
-16 on INTEN, INTSTAT registers and at an offset of
-12 on INTCLEAR register.
+On Exynos5440 and Exynos5420 there are registers common
+across the TMU channels.
 
-This patch corrects the same for exyns5250 and exynos5440
+To support that, we introduced a ADDRESS_MULTIPLE flag in the
+driver and the 2nd set of register base and size are provided
+in the "reg" property of the node.
+
+As per Amit's suggestion, this patch changes the base_common
+to base_second and SHARED_MEMORY to ADDRESS_MULTIPLE.
 
 Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
 ---
+Changes since v2:
+Changed the flag name from SHARED_MEMORY to ADDRESS_MULTIPLE.
+https://lkml.org/lkml/2013/8/1/38
 
-Changes since v1:
-  None
+ .../devicetree/bindings/thermal/exynos-thermal.txt |    4 ++--
+ drivers/thermal/samsung/exynos_tmu.c               |   12 ++++++------
+ drivers/thermal/samsung/exynos_tmu.h               |    4 ++--
+ drivers/thermal/samsung/exynos_tmu_data.c          |    2 +-
+ 4 files changed, 11 insertions(+), 11 deletions(-)
 
- drivers/thermal/samsung/exynos_tmu.c      |    2 +-
- drivers/thermal/samsung/exynos_tmu.h      |    2 ++
- drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
- drivers/thermal/samsung/exynos_tmu_data.h |    3 ++-
- 4 files changed, 7 insertions(+), 2 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+index 284f530..116cca0 100644
+--- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+@@ -11,8 +11,8 @@
+ - reg : Address range of the thermal registers. For soc's which has multiple
+ 	instances of TMU and some registers are shared across all TMU's like
+ 	interrupt related then 2 set of register has to supplied. First set
+-	belongs	to each instance of TMU and second set belongs to common TMU
+-	registers.
++	belongs	to each instance of TMU and second set belongs to second set
++	of common TMU registers.
+ - interrupts : Should contain interrupt for thermal system
+ - clocks : The main clock for TMU device
+ - clock-names : Thermal system clock name
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index ec01dfe..d201ed8 100644
+index d201ed8..3a55caf 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -265,7 +265,7 @@ skip_calib_data:
- 				data->base + reg->threshold_th1);
+@@ -41,7 +41,7 @@
+  * @id: identifier of the one instance of the TMU controller.
+  * @pdata: pointer to the tmu platform/configuration data
+  * @base: base address of the single instance of the TMU controller.
+- * @base_common: base address of the common registers of the TMU controller.
++ * @base_second: base address of the common registers of the TMU controller.
+  * @irq: irq number of the TMU controller.
+  * @soc: id of the SOC type.
+  * @irq_work: pointer to the irq work structure.
+@@ -56,7 +56,7 @@ struct exynos_tmu_data {
+ 	int id;
+ 	struct exynos_tmu_platform_data *pdata;
+ 	void __iomem *base;
+-	void __iomem *base_common;
++	void __iomem *base_second;
+ 	int irq;
+ 	enum soc_type soc;
+ 	struct work_struct irq_work;
+@@ -297,7 +297,7 @@ skip_calib_data:
+ 	}
+ 	/*Clear the PMIN in the common TMU register*/
+ 	if (reg->tmu_pmin && !data->id)
+-		writel(0, data->base_common + reg->tmu_pmin);
++		writel(0, data->base_second + reg->tmu_pmin);
+ out:
+ 	clk_disable(data->clk);
+ 	mutex_unlock(&data->lock);
+@@ -451,7 +451,7 @@ static void exynos_tmu_work(struct work_struct *work)
  
- 		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
--			(reg->inten_fall_mask << reg->inten_fall_shift),
-+			(reg->inten_fall_mask << reg->intclr_fall_shift),
- 				data->base + reg->tmu_intclear);
+ 	/* Find which sensor generated this interrupt */
+ 	if (reg->tmu_irqstatus) {
+-		val_type = readl(data->base_common + reg->tmu_irqstatus);
++		val_type = readl(data->base_second + reg->tmu_irqstatus);
+ 		if (!((val_type >> data->id) & 0x1))
+ 			goto out;
+ 	}
+@@ -582,7 +582,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 	 * Check if the TMU shares some registers and then try to map the
+ 	 * memory of common registers.
+ 	 */
+-	if (!TMU_SUPPORTS(pdata, SHARED_MEMORY))
++	if (!TMU_SUPPORTS(pdata, ADDRESS_MULTIPLE))
+ 		return 0;
  
- 		/* if last threshold limit is also present */
+ 	if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
+@@ -590,7 +590,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	data->base_common = devm_ioremap(&pdev->dev, res.start,
++	data->base_second = devm_ioremap(&pdev->dev, res.start,
+ 					resource_size(&res));
+ 	if (!data->base) {
+ 		dev_err(&pdev->dev, "Failed to ioremap memory\n");
 diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index b364c9e..7c6c34a 100644
+index 7c6c34a..ebd2ec1 100644
 --- a/drivers/thermal/samsung/exynos_tmu.h
 +++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -134,6 +134,7 @@ enum soc_type {
-  * @inten_fall3_shift: shift bits of falling 3 interrupt bits.
-  * @tmu_intstat: Register containing the interrupt status values.
-  * @tmu_intclear: Register for clearing the raised interrupt status.
-+ * @intclr_fall_shift: shift bits for interrupt clear fall 0
-  * @emul_con: TMU emulation controller register.
-  * @emul_temp_shift: shift bits of emulation temperature.
-  * @emul_time_shift: shift bits of emulation time.
-@@ -204,6 +205,7 @@ struct exynos_tmu_registers {
- 	u32	tmu_intstat;
+@@ -59,7 +59,7 @@ enum soc_type {
+  *			state(active/idle) can be checked.
+  * TMU_SUPPORT_EMUL_TIME - This features allows to set next temp emulation
+  *			sample time.
+- * TMU_SUPPORT_SHARED_MEMORY - This feature tells that the different TMU
++ * TMU_SUPPORT_ADDRESS_MULTIPLE - This feature tells that the different TMU
+  *			sensors shares some common registers.
+  * TMU_SUPPORT - macro to compare the above features with the supplied.
+  */
+@@ -69,7 +69,7 @@ enum soc_type {
+ #define TMU_SUPPORT_FALLING_TRIP		BIT(3)
+ #define TMU_SUPPORT_READY_STATUS		BIT(4)
+ #define TMU_SUPPORT_EMUL_TIME			BIT(5)
+-#define TMU_SUPPORT_SHARED_MEMORY		BIT(6)
++#define TMU_SUPPORT_ADDRESS_MULTIPLE		BIT(6)
  
- 	u32	tmu_intclear;
-+	u32	intclr_fall_shift;
+ #define TMU_SUPPORTS(a, b)	(a->features & TMU_SUPPORT_ ## b)
  
- 	u32	emul_con;
- 	u32	emul_temp_shift;
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 9002499..23fea23 100644
+index 23fea23..58570d0 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -122,6 +122,7 @@ static const struct exynos_tmu_registers exynos5250_tmu_registers = {
- 	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
- 	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
- 	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
-+	.intclr_fall_shift = EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
- 	.emul_con = EXYNOS_EMUL_CON,
- 	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
- 	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
-@@ -210,6 +211,7 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
- 	.inten_fall0_shift = EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
- 	.tmu_intstat = EXYNOS5440_TMU_S0_7_IRQ,
- 	.tmu_intclear = EXYNOS5440_TMU_S0_7_IRQ,
-+	.intclr_fall_shift = EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
- 	.tmu_irqstatus = EXYNOS5440_TMU_IRQ_STATUS,
- 	.emul_con = EXYNOS5440_TMU_S0_7_DEBUG,
- 	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-index dc7feb5..8788a87 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.h
-+++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -69,9 +69,10 @@
- #define EXYNOS_TMU_RISE_INT_MASK	0x111
- #define EXYNOS_TMU_RISE_INT_SHIFT	0
- #define EXYNOS_TMU_FALL_INT_MASK	0x111
--#define EXYNOS_TMU_FALL_INT_SHIFT	12
-+#define EXYNOS_TMU_FALL_INT_SHIFT	16
- #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
- #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
-+#define EXYNOS_TMU_CLEAR_FALL_INT_SHIFT	12
- #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
- #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
- #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
+@@ -239,7 +239,7 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
+ 	.type = SOC_ARCH_EXYNOS5440, \
+ 	.registers = &exynos5440_tmu_registers, \
+ 	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
+-			TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_SHARED_MEMORY),
++			TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_ADDRESS_MULTIPLE),
+ 
+ struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
+ 	.tmu_data = {
 -- 
 1.7.9.5
