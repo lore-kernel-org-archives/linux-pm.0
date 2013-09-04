@@ -1,162 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Tue, 03 Sep 2013 21:40:14 +0200
-Message-ID: <5197493.kSPF7VUWqc@vostro.rjw.lan>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org> <5225E205.7080008@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5225E205.7080008@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Subject: [PATCH 1/3] thermal: samsung: correct the fall interrupt en,
+ status bit fields
+Date: Wed, 04 Sep 2013 09:53:47 +0530
+Message-ID: <1378268629-2886-1-git-send-email-ch.naveen@samsung.com>
+References: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com
+Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, naveenkrishna.ch@gmail.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, September 03, 2013 06:50:05 PM Srivatsa S. Bhat wrote:
-> On 09/01/2013 10:56 AM, Viresh Kumar wrote:
-> > We can't take a big lock around __cpufreq_governor() as this causes recursive
-> > locking for some cases. But calls to this routine must be serialized for every
-> > policy.
-> > 
-> > Lets introduce another variable which would guarantee serialization here.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 7 ++++++-
-> >  include/linux/cpufreq.h   | 1 +
-> >  2 files changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index f320a20..4d5723db 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1692,13 +1692,15 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
-> >  						policy->cpu, event);
-> > 
-> >  	mutex_lock(&cpufreq_governor_lock);
-> > -	if ((policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
-> > +	if (policy->governor_busy ||
-> > +		(policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
-> >  		(!policy->governor_enabled && ((event == CPUFREQ_GOV_LIMITS) ||
-> >  					       (event == CPUFREQ_GOV_STOP)))) {
-> >  		mutex_unlock(&cpufreq_governor_lock);
-> >  		return -EBUSY;
-> >  	}
-> > 
-> > +	policy->governor_busy = true;
-> >  	if (event == CPUFREQ_GOV_STOP)
-> >  		policy->governor_enabled = false;
-> >  	else if (event == CPUFREQ_GOV_START)
-> > @@ -1727,6 +1729,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
-> >  			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
-> >  		module_put(policy->governor->owner);
-> > 
-> > +	mutex_lock(&cpufreq_governor_lock);
-> > +	policy->governor_busy = false;
-> > +	mutex_unlock(&cpufreq_governor_lock);
-> >  	return ret;
-> >  }
-> > 
-> 
-> This doesn't solve the problem completely: it prevents the store_*() task
-> from continuing *only* when it concurrently executes the __cpufreq_governor()
-> function along with the CPU offline task. But if the two calls don't overlap,
-> we will still have the possibility where the store_*() task tries to acquire
-> the timer mutex after the CPU offline task has just finished destroying it.
+The FALL interrupt related en, status bits are available at an offset of
+16 on INTEN, INTSTAT registers and at an offset of
+12 on INTCLEAR register.
 
-Yeah, I overlooked that.
+This patch corrects the same for exyns5250 and exynos5440
 
-> So, IMHO, the right fix is to synchronize with CPU hotplug. That way, the
-> store_*() thread will wait until the entire CPU offline operation is completed.
-> After that, if it continues, it will get -EBUSY, due to patch [1], since
-> policy->governor_enabled will be set to false.
-> 
-> [1]. https://patchwork.kernel.org/patch/2852463/
-> 
-> So here is the (completely untested) fix that I propose, as a replacement to
-> this patch [2/2]:
+Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+---
 
-That looks reasonable to me.
+Changes since v1:
+  None
 
-Viresh?
+ drivers/thermal/samsung/exynos_tmu.c      |    2 +-
+ drivers/thermal/samsung/exynos_tmu.h      |    2 ++
+ drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
+ drivers/thermal/samsung/exynos_tmu_data.h |    3 ++-
+ 4 files changed, 7 insertions(+), 2 deletions(-)
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 5c75e31..71c4fb2 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -440,17 +440,24 @@ static ssize_t store_##file_name					\
->  	unsigned int ret;						\
->  	struct cpufreq_policy new_policy;				\
->  									\
-> +	get_online_cpus();						\
->  	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
-> -	if (ret)							\
-> -		return -EINVAL;						\
-> +	if (ret) {							\
-> +		ret = -EINVAL;						\
-> +		goto out;						\
-> +	}								\
->  									\
->  	ret = sscanf(buf, "%u", &new_policy.object);			\
-> -	if (ret != 1)							\
-> -		return -EINVAL;						\
-> +	if (ret != 1) {							\
-> +		ret = -EINVAL;						\
-> +		goto out;						\
-> +	}								\
->  									\
->  	ret = __cpufreq_set_policy(policy, &new_policy);		\
->  	policy->user_policy.object = policy->object;			\
->  									\
-> +out:									\
-> +	put_online_cpus();						\
->  	return ret ? ret : count;					\
->  }
->  
-> @@ -494,17 +501,22 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
->  	char	str_governor[16];
->  	struct cpufreq_policy new_policy;
->  
-> +	get_online_cpus();
->  	ret = cpufreq_get_policy(&new_policy, policy->cpu);
->  	if (ret)
-> -		return ret;
-> +		goto out;
->  
->  	ret = sscanf(buf, "%15s", str_governor);
-> -	if (ret != 1)
-> -		return -EINVAL;
-> +	if (ret != 1) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
->  
->  	if (cpufreq_parse_governor(str_governor, &new_policy.policy,
-> -						&new_policy.governor))
-> -		return -EINVAL;
-> +						&new_policy.governor)) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
->  
->  	/*
->  	 * Do not use cpufreq_set_policy here or the user_policy.max
-> @@ -515,6 +527,9 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
->  	policy->user_policy.policy = policy->policy;
->  	policy->user_policy.governor = policy->governor;
->  
-> +out:
-> +	put_online_cpus();
-> +
->  	if (ret)
->  		return ret;
->  	else
-> 
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index ec01dfe..d201ed8 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -265,7 +265,7 @@ skip_calib_data:
+ 				data->base + reg->threshold_th1);
+ 
+ 		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
+-			(reg->inten_fall_mask << reg->inten_fall_shift),
++			(reg->inten_fall_mask << reg->intclr_fall_shift),
+ 				data->base + reg->tmu_intclear);
+ 
+ 		/* if last threshold limit is also present */
+diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+index b364c9e..7c6c34a 100644
+--- a/drivers/thermal/samsung/exynos_tmu.h
++++ b/drivers/thermal/samsung/exynos_tmu.h
+@@ -134,6 +134,7 @@ enum soc_type {
+  * @inten_fall3_shift: shift bits of falling 3 interrupt bits.
+  * @tmu_intstat: Register containing the interrupt status values.
+  * @tmu_intclear: Register for clearing the raised interrupt status.
++ * @intclr_fall_shift: shift bits for interrupt clear fall 0
+  * @emul_con: TMU emulation controller register.
+  * @emul_temp_shift: shift bits of emulation temperature.
+  * @emul_time_shift: shift bits of emulation time.
+@@ -204,6 +205,7 @@ struct exynos_tmu_registers {
+ 	u32	tmu_intstat;
+ 
+ 	u32	tmu_intclear;
++	u32	intclr_fall_shift;
+ 
+ 	u32	emul_con;
+ 	u32	emul_temp_shift;
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+index 9002499..23fea23 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
++++ b/drivers/thermal/samsung/exynos_tmu_data.c
+@@ -122,6 +122,7 @@ static const struct exynos_tmu_registers exynos5250_tmu_registers = {
+ 	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
+ 	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
+ 	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
++	.intclr_fall_shift = EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
+ 	.emul_con = EXYNOS_EMUL_CON,
+ 	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
+ 	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+@@ -210,6 +211,7 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
+ 	.inten_fall0_shift = EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
+ 	.tmu_intstat = EXYNOS5440_TMU_S0_7_IRQ,
+ 	.tmu_intclear = EXYNOS5440_TMU_S0_7_IRQ,
++	.intclr_fall_shift = EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
+ 	.tmu_irqstatus = EXYNOS5440_TMU_IRQ_STATUS,
+ 	.emul_con = EXYNOS5440_TMU_S0_7_DEBUG,
+ 	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
+index dc7feb5..8788a87 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.h
++++ b/drivers/thermal/samsung/exynos_tmu_data.h
+@@ -69,9 +69,10 @@
+ #define EXYNOS_TMU_RISE_INT_MASK	0x111
+ #define EXYNOS_TMU_RISE_INT_SHIFT	0
+ #define EXYNOS_TMU_FALL_INT_MASK	0x111
+-#define EXYNOS_TMU_FALL_INT_SHIFT	12
++#define EXYNOS_TMU_FALL_INT_SHIFT	16
+ #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
+ #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
++#define EXYNOS_TMU_CLEAR_FALL_INT_SHIFT	12
+ #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
+ #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
+ #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
