@@ -1,53 +1,50 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 RFT 2/2] PM / Hibernate: add section for resume
- options
-Date: Thu, 5 Sep 2013 14:25:00 +0200
-Message-ID: <20130905122500.GE15161@amd.pavel.ucw.cz>
-References: <1377652437-2379-1-git-send-email-sebastian.capella@linaro.org>
- <1377652437-2379-3-git-send-email-sebastian.capella@linaro.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 11/18] Hibernate: introduced RSA key-pair to verify
+ signature of snapshot
+Date: Thu, 05 Sep 2013 21:28:57 +0800
+Message-ID: <1378387737.6193.75.camel__11042.2406382442$1378387729$gmane$org@linux-s257.site>
+References: <1377169317-5959-1-git-send-email-jlee@suse.com>
+	 <1377169317-5959-12-git-send-email-jlee@suse.com>
+	 <20130905085348.GJ28598@console-pimps.org>
+	 <1378376016.6193.71.camel@linux-s257.site>
+	 <20130905103158.GM28598@console-pimps.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58728 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754427Ab3IEMZC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2013 08:25:02 -0400
-Content-Disposition: inline
-In-Reply-To: <1377652437-2379-3-git-send-email-sebastian.capella@linaro.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:36005 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712Ab3IEN2b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2013 09:28:31 -0400
+In-Reply-To: <20130905103158.GM28598@console-pimps.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@lists.infradead.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, Rob Landley <rob@landley.net>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, trivial@kernel.org
+To: Matt Fleming <matt@console-pimps.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>, Takashi Iwai <tiwai@suse.de>
 
-Hi!
+=E6=96=BC =E5=9B=9B=EF=BC=8C2013-09-05 =E6=96=BC 11:31 +0100=EF=BC=8CMa=
+tt Fleming =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Thu, 05 Sep, at 06:13:36PM, joeyli wrote:
+> > This S4WakeKey is a VOLATILE variable that could not modify by
+> > SetVariable() at runtime. So, it's read only even through efivars.=20
+> >=20
+> > Does it what your concern?
+> =20
+> No, the UEFI spec probibits certain runtime functions from being
+> executed concurrently on separate cpus and the spinlock used in the
+> efivars code ensures that we adhere to that restriction. See table 31=
+ in
+> section 7.1 of the UEFI 2.4 spec for the list of services that are
+> non-reentrant.
+>=20
+> The problem isn't that we want to avoid simultaneous access to
+> S4WakeKey, it's that we can't invoke any of the variable runtime serv=
+ice
+> functions concurrently.
+>=20
 
-On Tue 2013-08-27 18:13:57, Sebastian Capella wrote:
-> Expand the existing documentation to explicitly list the options for
-> resuming a hibernation image, including the manual resume option which
-> can be used from the initrd or initramfs and the kernel init resume.
+I see! I will use efivar api to access EFI variable.
 
-...it also fixes sysfs path in second hunk.
+Thanks a lot!
+Joey Lee
 
-> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-> Cc: Rob Landley <rob@landley.net>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Pavel Machek <pavel@ucw.cz>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
-(Cc-ed trivial so this does not get lost).
-
-> @@ -326,7 +339,7 @@ Q: How can distributions ship a swsusp-supporting kernel with modular
->  disk drivers (especially SATA)?
->  
->  A: Well, it can be done, load the drivers, then do echo into
-> -/sys/power/disk/resume file from initrd. Be sure not to mount
-> +/sys/power/resume file from initrd. Be sure not to mount
->  anything, not even read-only mount, or you are going to lose your
->  data.
->  
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
