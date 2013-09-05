@@ -1,27 +1,121 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH RFC 2/2] PM / Hibernate: add section for resume options
-Date: Thu, 5 Sep 2013 13:56:37 +0200
-Message-ID: <20130905115636.GB15161@amd.pavel.ucw.cz>
-References: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
- <1377114413-8521-3-git-send-email-sebastian.capella@linaro.org>
+Subject: Re: [Suspend-devel] [BUG] 3.7-rc regression bisected: s2disk fails
+ to resume image: Processes could not be frozen, cannot continue resuming
+Date: Thu, 5 Sep 2013 14:08:11 +0200
+Message-ID: <20130905120811.GC15161@amd.pavel.ucw.cz>
+References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
+ <20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57804 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753582Ab3IEMIN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2013 08:08:13 -0400
 Content-Disposition: inline
-In-Reply-To: <1377114413-8521-3-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-doc-owner@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, len.brown@intel.com, rjw@sisk.pl, rob@landley.net, linux-doc@vger.kernel.org
+In-Reply-To: <20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Savchenko <bircoph@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, suspend-devel@lists.sourceforge.net, viro@zeniv.linux.org.uk, linux-pm@vger.kernel.org
 
-On Wed 2013-08-21 12:46:53, Sebastian Capella wrote:
-> Expand the existing documentation to explicitly list the options for
-> resuming a hibernation image, including the manual resume option which
-> can be used from the initrd or initramfs and the kernel init resume.
+Hi!
+
+Rafael, Al: apparently we have a regression caused by
+ba4df2808a86f8b103c4db0b8807649383e9bd13 .
+
+> > after a kernel update from 3.5.7 to the latest stable I found that
+> > user-space resume (from suspend-1.0 aka uswsusp) no longer works.
+> > Kernel-space suspend and resume work fine (e.g. echo disk
+> > > /sys/power/state), problem is with user-space support. (I need
+> > user-space version because it supports image encryption.)
+> > 
+> > After resume (essentially linuxrc) application loads image it fails
+> > to apply it:
+> > 
+> > ========================================================
+> > Processes could not be frozen, cannot continue resuming.
+> > Error 11: Resource temporarily unavailable
+> > 
+> > You can now boot the system and lose the saved state
+> > or reboot and try again.
+> > 
+> > [Notice that if you decide to reboot, you MUST NOT mount
+> > any filesystems before a successful resume.
+> > Resuming after some filesystems have been mounted
+> > will badly damage these filesystems.]
+> > 
+> > Do you want to continue booting (Y/n)?
+> > ========================================================
+> > 
+> > Error code wasn't originally showed, I added it to suspend tool to
+> > aid debugging. Essentially freeze ioctl on /dev/snapshot fails with
+> > this error.
+> > 
+> > I bisected a commit which introduces this bug:
+> > 
+> > ========================================================
+> > commit ba4df2808a86f8b103c4db0b8807649383e9bd13 
+> > Author: Al Viro <viro@zeniv.linux.org.uk> 
+> > Date:   Tue Oct 2 15:29:10 2012 -0400 
+> > 
+> >     don't bother with kernel_thread/kernel_execve for launching
+> > linuxrc 
+> >     exec_usermodehelper_fns() will do just fine... 
+> >     
+> >     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk> 
+> > ========================================================
+> > 
+> > In fact this commit induced/triggered at least two bugs: the first one
+> > I'm facing now and the second one was fixed in commit
+> > f0de17c0babe7f29381892def6b37e9181a53410:
+> > make sure that /linuxrc has std{in,out,err}.
+> > 
+> > As a temporarily workaround for this issue I reverted all changes for
+> > init/do_mounts_initrd.c up to the latest working commit
+> > cb450766bcafc7bd7d40e9a5a0050745e8c68b3e considering the kernel API
+> > changes (kernel_execve -> sys_execve). See linuxrc-workaround.patch.
+> > I understand this isn't a proper solution, I just want to show what
+> > code works for me.
+> > 
+> > I also found an interesting LKML discussion about s2disk and freezer
+> > issue: http://www.spinics.net/lists/linux-nfs/msg38160.html
+> > Maybe it is related to this bug, but patch proposed there doesn't in
+> > my case.
+> > 
+> > Kernel config which fails with
+> > ba4df2808a86f8b103c4db0b8807649383e9bd13 and works with
+> > f0de17c0babe7f29381892def6b37e9181a53410 is also attached.
+> > 
+> > As this issue maybe hardware related, the system is 32-bit EEE PC
+> > 1000H with Atom N270, 2GB RAM, 750 GB SATA drive.
+> > 
+> > Additional (but probably useless) information on this bug may be found
+> > here: https://forums.gentoo.org/viewtopic-p-7371120.html
 > 
-> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> This bug is still here with 3.11-rc7 and 3.10.9.
+> I opened a kernel bug 60802 for this issue:
+> https://bugzilla.kernel.org/show_bug.cgi?id=60802
+> 
+> Any ideas?
+> 
+> Best regards,
+> Andrew Savchenko
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+
+
+> ------------------------------------------------------------------------------
+> Introducing Performance Central, a new site from SourceForge and 
+> AppDynamics. Performance Central is your source for news, insights, 
+> analysis and resources for efficient Application Performance Management. 
+> Visit us today!
+> http://pubads.g.doubleclick.net/gampad/clk?id=48897511&iu=/4140/ostg.clktrk
+
+> _______________________________________________
+> Suspend-devel mailing list
+> Suspend-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/suspend-devel
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
