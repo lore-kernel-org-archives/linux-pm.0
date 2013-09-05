@@ -1,165 +1,242 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [RFC PATCH 04/14] arm64: kernel: suspend/resume registers
- save/restore
-Date: Mon, 2 Sep 2013 12:17:17 +0100
-Message-ID: <20130902111716.GF64064@MacBook-Pro.local>
-References: <1377689766-17642-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1377689766-17642-5-git-send-email-lorenzo.pieralisi@arm.com>
- <20130830172310.GJ4650@arm.com>
- <20130902095728.GB2500@e102568-lin.cambridge.arm.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH] scsi: sr: use block layer runtime PM
+Date: Thu, 05 Sep 2013 13:52:22 +0800
+Message-ID: <52281C16.5040108@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:36675 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756751Ab3IEFHg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2013 01:07:36 -0400
-Content-Disposition: inline
-In-Reply-To: <20130902095728.GB2500@e102568-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-scsi-owner@vger.kernel.org>
+Sender: linux-scsi-owner@vger.kernel.org
+To: James Bottomley <JBottomley@parallels.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dave P Martin <Dave.Martin@arm.com>, Will Deacon <Will.Deacon@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>
 
-On Mon, Sep 02, 2013 at 10:57:28AM +0100, Lorenzo Pieralisi wrote:
-> On Fri, Aug 30, 2013 at 06:23:10PM +0100, Catalin Marinas wrote:
-> > On Wed, Aug 28, 2013 at 12:35:56PM +0100, Lorenzo Pieralisi wrote:
-> > > Power management software requires the kernel to save and restore
-> > > CPU registers while going through suspend and resume operations
-> > > triggered by kernel subsystems like CPU idle and suspend to RAM.
-> > > 
-> > > This patch implements code that provides save and restore mechanism
-> > > for the arm v8 implementation. Memory for the context is passed as
-> > > parameter to both cpu_do_suspend and cpu_do_resume functions, and allows
-> > > the callers to implement context allocation as they deem fit.
-> > > 
-> > > The registers that are saved and restored correspond to the registers
-> > > actually required by the kernel to be up and running and is by no means
-> > > a complete save and restore of the entire v8 register set.
-> > > 
-> > > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > > ---
-> > >  arch/arm64/include/asm/proc-fns.h |  3 ++
-> > >  arch/arm64/mm/proc.S              | 64 +++++++++++++++++++++++++++++++++++++++
-> > >  2 files changed, 67 insertions(+)
-> > > 
-> > > diff --git a/arch/arm64/include/asm/proc-fns.h b/arch/arm64/include/asm/proc-fns.h
-> > > index 7cdf466..0c657bb 100644
-> > > --- a/arch/arm64/include/asm/proc-fns.h
-> > > +++ b/arch/arm64/include/asm/proc-fns.h
-> > > @@ -26,11 +26,14 @@
-> > >  #include <asm/page.h>
-> > >  
-> > >  struct mm_struct;
-> > > +struct cpu_suspend_ctx;
-> > >  
-> > >  extern void cpu_cache_off(void);
-> > >  extern void cpu_do_idle(void);
-> > >  extern void cpu_do_switch_mm(unsigned long pgd_phys, struct mm_struct *mm);
-> > >  extern void cpu_reset(unsigned long addr) __attribute__((noreturn));
-> > > +extern void cpu_do_suspend(struct cpu_suspend_ctx *ptr);
-> > > +extern u64 cpu_do_resume(phys_addr_t ptr, u64 idmap_ttbr);
-> > >  
-> > >  #include <asm/memory.h>
-> > >  
-> > > diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
-> > > index a82ae88..193bf98 100644
-> > > --- a/arch/arm64/mm/proc.S
-> > > +++ b/arch/arm64/mm/proc.S
-> > > @@ -80,6 +80,70 @@ ENTRY(cpu_do_idle)
-> > >  	ret
-> > >  ENDPROC(cpu_do_idle)
-> > >  
-> > > +#ifdef CONFIG_ARM_CPU_SUSPEND
-> > > +/**
-> > > + * cpu_do_suspend - save CPU registers context
-> > > + * x0: virtual address of context pointer
-> > > + */
-> > > +ENTRY(cpu_do_suspend)
-> > > +	mrs	x1, tpidr_el0
-> > > +	str	x1, [x0, #CPU_CTX_TPIDR_EL0]
-> > > +	mrs	x2, tpidrro_el0
-> > > +	str	x2, [x0, #CPU_CTX_TPIDRRO_EL0]
-> > > +	mrs	x3, contextidr_el1
-> > > +	str	x3, [x0, #CPU_CTX_CTXIDR_EL1]
-> > > +	mrs	x4, mair_el1
-> > > +	str	x4, [x0, #CPU_CTX_MAIR_EL1]
-> > > +	mrs	x5, cpacr_el1
-> > > +	str	x5, [x0, #CPU_CTX_CPACR_EL1]
-> > > +	mrs	x6, ttbr1_el1
-> > > +	str	x6, [x0, #CPU_CTX_TTBR1_EL1]
-> > > +	mrs	x7, tcr_el1
-> > > +	str	x7, [x0, #CPU_CTX_TCR_EL1]
-> > > +	mrs	x8, vbar_el1
-> > > +	str	x8, [x0, #CPU_CTX_VBAR_EL1]
-> > > +	mrs	x9, sctlr_el1
-> > > +	str	x9, [x0, #CPU_CTX_SCTLR_EL1]
-> > > +	ret
-> > > +ENDPROC(cpu_do_suspend)
-> > 
-> > Can you read all the registers a once and do some stp to save them?
-> 
-> Yes, absolutely. In a way the store pair will require an assumption on
-> the context structure layout - eg:
-> 
-> 	mrs	x1, tpidr_el0
-> 	mrs	x2, tpidrro_el0
-> 	stp	x1, x2, [x0, #CPU_CTX_TPIDR_EL0]
-> 
-> implicitly assumes that the storage for TPIDR_EL0 and TPIDRRO_EL0 is
-> contiguous, we can't change the layout later, but I guess we can live
-> with that.
+Migrate SCSI Optical Disk Drive(ODD) driver sr to make use of block
+layer runtime PM. Accordingly, the SCSI bus layer runtime PM callback is
+simplified as all SCSI devices that implement runtime PM are now request
+based.
 
-Do we need to access the individual saved registers from this structure,
-outside the suspend/resume code? Otherwise we could simply have a plain
-array to save the registers.
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+Note that due to ODD will be polled every 2 seconds, for suspend to
+actually happen, the autosuspend_delay can not be set to more than 2
+seconds.
 
-> > > +/**
-> > > + * cpu_do_resume - registers layout should match the corresponding
-> > > + *                 cpu_do_suspend call
-> > > + *
-> > > + * x0: Physical address of context pointer
-> > > + * x1: Should contain the physical address of identity map page tables
-> > > + *     used to turn on the MMU and complete context restore
-> > > + *
-> > > + * Returns:
-> > > + *	sctlr value in x0
-> > > + */
-> > > +ENTRY(cpu_do_resume)
-> > > +	tlbi	vmalle1is	// make sure tlb entries are invalid
-> > > +	ldr	x2, [x0, #CPU_CTX_TPIDR_EL0]
-> > > +	msr	tpidr_el0, x2
-> > > +	ldr	x3, [x0, #CPU_CTX_TPIDRRO_EL0]
-> > > +	msr	tpidrro_el0, x3
-> > > +	ldr	x4, [x0, #CPU_CTX_CTXIDR_EL1]
-> > > +	msr	contextidr_el1, x4
-> > > +	ldr	x5, [x0, #CPU_CTX_MAIR_EL1]
-> > > +	msr	mair_el1, x5
-> > > +	ldr	x6, [x0, #CPU_CTX_CPACR_EL1]
-> > > +	msr	cpacr_el1, x6
-> > > +	msr	ttbr0_el1, x1
-> > > +	ldr	x7, [x0, #CPU_CTX_TTBR1_EL1]
-> > > +	msr	ttbr1_el1, x7
-> > > +	ldr	x8, [x0, #CPU_CTX_TCR_EL1]
-> > > +	msr	tcr_el1, x8
-> > > +	ldr	x9, [x0, #CPU_CTX_VBAR_EL1]
-> > > +	msr	vbar_el1, x9
-> > > +	ldr	x0, [x0, #CPU_CTX_SCTLR_EL1]
-> > > +	isb
-> > > +	dsb	sy
-> > > +	ret
-> > > +ENDPROC(cpu_do_resume)
-> > 
-> > Same here, use ldp.
-> > 
-> > BTW, do we need the DSB here or just the ISB?
-> 
-> A dsb is required to ensure that the tlb invalidate has completed, I
-> think it is mandatory from an architectural standpoint but please
-> correct me if I am wrong.
+Also, make sure to use the util-linux utility of version 2.23.2 or later,
+as there is a bug fix for eject command to correctly update the ODD's
+locked state. If the fix is not applied, after the ODD is ejected with the
+eject command, it will not be able to enter runtime suspend state any
+more due to SCSI EH code will submit a lock door command for the ODD
+right after its parent ATA port is runtime suspended.
+https://git.kernel.org/cgit/utils/util-linux/util-linux.git/commit/?id=12272030e563201e0b06732d8a87d8cea7157a04
 
-Yes, it's needed for that (though usually it comes before isb, but in
-this case the MMU is disabled anyway, so it doesn't matter).
+ drivers/scsi/scsi_pm.c | 58 ++++++++++++--------------------------------------
+ drivers/scsi/sr.c      | 37 +++++++++++---------------------
+ 2 files changed, 27 insertions(+), 68 deletions(-)
 
+diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
+index 4c5aabe..752edf0 100644
+--- a/drivers/scsi/scsi_pm.c
++++ b/drivers/scsi/scsi_pm.c
+@@ -144,38 +144,22 @@ static int scsi_bus_restore(struct device *dev)
+ 
+ #ifdef CONFIG_PM_RUNTIME
+ 
+-static int sdev_blk_runtime_suspend(struct scsi_device *sdev,
+-					int (*cb)(struct device *))
++static int sdev_runtime_suspend(struct device *dev)
+ {
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++	struct scsi_device *sdev = to_scsi_device(dev);
+ 	int err;
+ 
+ 	err = blk_pre_runtime_suspend(sdev->request_queue);
+ 	if (err)
+ 		return err;
+-	if (cb)
+-		err = cb(&sdev->sdev_gendev);
++	if (pm && pm->runtime_suspend)
++		err = pm->runtime_suspend(dev);
+ 	blk_post_runtime_suspend(sdev->request_queue, err);
+ 
+ 	return err;
+ }
+ 
+-static int sdev_runtime_suspend(struct device *dev)
+-{
+-	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+-	int (*cb)(struct device *) = pm ? pm->runtime_suspend : NULL;
+-	struct scsi_device *sdev = to_scsi_device(dev);
+-	int err;
+-
+-	if (sdev->request_queue->dev)
+-		return sdev_blk_runtime_suspend(sdev, cb);
+-
+-	err = scsi_dev_type_suspend(dev, cb);
+-	if (err == -EAGAIN)
+-		pm_schedule_suspend(dev, jiffies_to_msecs(
+-					round_jiffies_up_relative(HZ/10)));
+-	return err;
+-}
+-
+ static int scsi_runtime_suspend(struct device *dev)
+ {
+ 	int err = 0;
+@@ -189,31 +173,20 @@ static int scsi_runtime_suspend(struct device *dev)
+ 	return err;
+ }
+ 
+-static int sdev_blk_runtime_resume(struct scsi_device *sdev,
+-					int (*cb)(struct device *))
++static int sdev_runtime_resume(struct device *dev)
+ {
++	struct scsi_device *sdev = to_scsi_device(dev);
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 	int err = 0;
+ 
+ 	blk_pre_runtime_resume(sdev->request_queue);
+-	if (cb)
+-		err = cb(&sdev->sdev_gendev);
++	if (pm && pm->runtime_resume)
++		err = pm->runtime_resume(dev);
+ 	blk_post_runtime_resume(sdev->request_queue, err);
+ 
+ 	return err;
+ }
+ 
+-static int sdev_runtime_resume(struct device *dev)
+-{
+-	struct scsi_device *sdev = to_scsi_device(dev);
+-	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+-	int (*cb)(struct device *) = pm ? pm->runtime_resume : NULL;
+-
+-	if (sdev->request_queue->dev)
+-		return sdev_blk_runtime_resume(sdev, cb);
+-	else
+-		return scsi_dev_type_resume(dev, cb);
+-}
+-
+ static int scsi_runtime_resume(struct device *dev)
+ {
+ 	int err = 0;
+@@ -234,14 +207,11 @@ static int scsi_runtime_idle(struct device *dev)
+ 	/* Insert hooks here for targets, hosts, and transport classes */
+ 
+ 	if (scsi_is_sdev_device(dev)) {
+-		struct scsi_device *sdev = to_scsi_device(dev);
+-
+-		if (sdev->request_queue->dev) {
+-			pm_runtime_mark_last_busy(dev);
+-			pm_runtime_autosuspend(dev);
+-			return -EBUSY;
+-		}
++		pm_runtime_mark_last_busy(dev);
++		pm_runtime_autosuspend(dev);
++		return -EBUSY;
+ 	}
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+index 119d67f..40d8592 100644
+--- a/drivers/scsi/sr.c
++++ b/drivers/scsi/sr.c
+@@ -161,14 +161,10 @@ static inline struct scsi_cd *scsi_cd_get(struct gendisk *disk)
+ 		goto out;
+ 	cd = scsi_cd(disk);
+ 	kref_get(&cd->kref);
+-	if (scsi_device_get(cd->device))
+-		goto out_put;
+-	if (!scsi_autopm_get_device(cd->device))
+-		goto out;
+-
+- out_put:
+-	kref_put(&cd->kref, sr_kref_release);
+-	cd = NULL;
++	if (scsi_device_get(cd->device)) {
++		kref_put(&cd->kref, sr_kref_release);
++		cd = NULL;
++	}
+  out:
+ 	mutex_unlock(&sr_ref_mutex);
+ 	return cd;
+@@ -180,7 +176,6 @@ static void scsi_cd_put(struct scsi_cd *cd)
+ 
+ 	mutex_lock(&sr_ref_mutex);
+ 	kref_put(&cd->kref, sr_kref_release);
+-	scsi_autopm_put_device(sdev);
+ 	scsi_device_put(sdev);
+ 	mutex_unlock(&sr_ref_mutex);
+ }
+@@ -558,8 +553,6 @@ static int sr_block_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
+ 	void __user *argp = (void __user *)arg;
+ 	int ret;
+ 
+-	scsi_autopm_get_device(cd->device);
+-
+ 	mutex_lock(&sr_mutex);
+ 
+ 	/*
+@@ -591,7 +584,6 @@ static int sr_block_ioctl(struct block_device *bdev, fmode_t mode, unsigned cmd,
+ 
+ out:
+ 	mutex_unlock(&sr_mutex);
+-	scsi_autopm_put_device(cd->device);
+ 	return ret;
+ }
+ 
+@@ -599,17 +591,11 @@ static unsigned int sr_block_check_events(struct gendisk *disk,
+ 					  unsigned int clearing)
+ {
+ 	struct scsi_cd *cd = scsi_cd(disk);
+-	unsigned int ret;
+ 
+-	if (atomic_read(&cd->device->disk_events_disable_depth) == 0) {
+-		scsi_autopm_get_device(cd->device);
+-		ret = cdrom_check_events(&cd->cdi, clearing);
+-		scsi_autopm_put_device(cd->device);
+-	} else {
+-		ret = 0;
+-	}
++	if (atomic_read(&cd->device->disk_events_disable_depth))
++		return 0;
+ 
+-	return ret;
++	return cdrom_check_events(&cd->cdi, clearing);
+ }
+ 
+ static int sr_block_revalidate_disk(struct gendisk *disk)
+@@ -617,8 +603,6 @@ static int sr_block_revalidate_disk(struct gendisk *disk)
+ 	struct scsi_cd *cd = scsi_cd(disk);
+ 	struct scsi_sense_hdr sshdr;
+ 
+-	scsi_autopm_get_device(cd->device);
+-
+ 	/* if the unit is not ready, nothing more to do */
+ 	if (scsi_test_unit_ready(cd->device, SR_TIMEOUT, MAX_RETRIES, &sshdr))
+ 		goto out;
+@@ -626,7 +610,6 @@ static int sr_block_revalidate_disk(struct gendisk *disk)
+ 	sr_cd_check(&cd->cdi);
+ 	get_sectorsize(cd);
+ out:
+-	scsi_autopm_put_device(cd->device);
+ 	return 0;
+ }
+ 
+@@ -747,6 +730,12 @@ static int sr_probe(struct device *dev)
+ 	if (register_cdrom(&cd->cdi))
+ 		goto fail_put;
+ 
++	/*
++	 * Initialize block layer runtime PM stuffs before the
++	 * periodic event checking request gets started in add_disk.
++	 */
++	blk_pm_runtime_init(sdev->request_queue, dev);
++
+ 	dev_set_drvdata(dev, cd);
+ 	disk->flags |= GENHD_FL_REMOVABLE;
+ 	add_disk(disk);
 -- 
-Catalin
+1.8.3.2.10.g43d11f4
+
