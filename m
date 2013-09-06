@@ -1,121 +1,48 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Fri, 06 Sep 2013 11:33:55 +0530
-Message-ID: <5229704B.7010200@linux.vnet.ibm.com>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <1706734.hVYFTCa5rJ@vostro.rjw.lan> <5227C729.5040803@codeaurora.org> <16630296.tCCMEKstkO@vostro.rjw.lan> <5227D65A.7040200@codeaurora.org>
+From: Amit Shah <amit.shah@redhat.com>
+Subject: Re: [PATCH] virtio_pci: pm: Use CONFIG_PM_SLEEP instead of CONFIG_PM
+Date: Fri, 6 Sep 2013 12:50:46 +0530
+Message-ID: <20130906072046.GB29367@grmbl.mre>
+References: <52293DD4.6050403@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp05.in.ibm.com ([122.248.162.5]:58636 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763Ab3IFGHz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2013 02:07:55 -0400
-Received: from /spool/local
-	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 6 Sep 2013 11:31:00 +0530
-In-Reply-To: <5227D65A.7040200@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <52293DD4.6050403@intel.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@vger.kernel.org>, virtualization@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/05/2013 06:24 AM, Stephen Boyd wrote:
-> On 09/04/13 17:26, Rafael J. Wysocki wrote:
->> On Wednesday, September 04, 2013 04:50:01 PM Stephen Boyd wrote:
->>> On 09/04/13 16:55, Rafael J. Wysocki wrote:
->>>> Well, I'm not sure when Viresh is going to be back.
->>>>
->>>> Srivatsa, can you please resend this patch with a proper changelog?
->>>>
->>> I haven't had a chance to try this out yet, but I was just thinking
->>> about this patch. How is it going to work? If one task opens the file
->>> and another task is taking down the CPU wouldn't we deadlock in the
->>> CPU_DOWN notifier waiting for the kobject to be released? Task 1 will
->>> grab the kobject reference and sleep on the hotplug mutex and task 2
->>> will put the kobject and wait for the completion, but it won't happen.
->>> At least I think that's what would happen.
->> Do you mean the completion in sysfs_deactivate()?  Yes, we can deadlock
->> there.
-> 
-> I mean the complete in cpufreq_sysfs_release(). I don't think that will
-> ever be called because the kobject is held by the task calling store()
-> which is waiting on the hotplug lock to be released.
-> 
->>
->> Well, I guess the Srivatsa's patch may be salvaged by making it do a "trylock"
->> version of get_online_cpus(), but then I wonder if there's no better way.
-> 
-> I think the real solution is to remove the kobject first if the CPU
-> going down is the last user of that policy. Once the completion is done
-> we can stop the governor and clean up state. For the case where there
-> are still CPUs using the policy why can't we cancel that CPU's work and
-> do nothing else? Even in the case where we have to move the cpufreq
-> directory do we need to do a STOP/START/LIMITS sequence? I hope we can
-> get away with just moving the directory and canceling that CPUs work then.
-> 
-
-Conceptually, I agree that your idea of not allowing any process to take
-a new reference to the kobject while we are taking the CPU offline, is a
-sound solution.
-
-However, I am reluctant to go down that path because, handling the CPU hotplug
-sequence in the suspend/resume path might get even more tricky, if we want
-to implement the changes that you propose. Just recently we managed to
-rework the cpufreq CPU hotplug handling to retain the sysfs file permissions
-around suspend/resume, and doing that was not at all simple. Adding more
-quirks and complexity to the kobject handling in that path will only make
-things even more challenging, IMHO. That's the reason I'm trying to think
-of ways to avoid touching that fragile code, and instead solve this problem
-in some other way, without compromising on the robustness of the solution.
-
-So here is my new proposal, as a replacement to this patch[2/2]:
-
-We note that, at CPU_DOWN_PREPARE stage, the CPU is not yet marked offline,
-whereas by the time we handle CPU_POST_DEAD, the CPU is removed from the
-cpu_online_mask, and also the cpu_hotplug lock is dropped.
-
-So, let us split up __cpu_remove_dev() into 2 parts, say:
-__cpu_remove_prepare() - invoked during CPU_DOWN_PREPARE
-__cpu_remove_finish()  - invoked during CPU_POST_DEAD
-
-
-In the former function, we stop the governors, so that policy->governor_enabled
-gets set to false, so that patch [1/2] will return -EBUSY to any subsequent
-->store() requests. Also, we do everything except the kobject cleanup.
-
-In the latter function, we do the remaining work, particularly the part
-where we wait for the kobject refcount to drop to zero and the subsequent
-cleanup.
-
-
-And the ->store() functions will be modified to look like this:
-
-store()
-{
-	get_online_cpus();
-
-	if (!cpu_online(cpu))
-		goto out;
-
-	/* Body of the function*/
-out:
-	put_online_cpus();
-}
-
-That way, if a task tries to write to a cpufreq file during CPU offline,
-it will get blocked on get_online_cpus(), and will continue after
-CPU_DEAD (since we release the lock here). Then it will notice that the cpu
-is offline, and hence will return silently, thus dropping the kobject refcnt.
-So, when the cpufreq core comes back at the CPU_POST_DEAD stage to cleanup
-the kobject, it won't encounter any problems.
-
-Any thoughts on this approach? I'll try to code it up and post the patch
-later today.
-
-Thank you!
-
-Regards,
-Srivatsa S. Bhat
-
+T24gKEZyaSkgMDYgU2VwIDIwMTMgWzEwOjI4OjM2XSwgQWFyb24gTHUgd3JvdGU6Cj4gCj4gVGhl
+IHZpcnRpb19wY2lfZnJlZXplL3Jlc3RvcmUgYXJlIGRlZmluZWQgdW5kZXIgQ09ORklHX1BNIGJ1
+dCBpcyB1c2VkCj4gYnkgU0VUX1NZU1RFTV9TTEVFUF9QTV9PUFMgbWFjcm8sIHdoaWNoIGlzIGRl
+ZmluZWQgdW5kZXIKPiBDT05GSUdfUE1fU0xFRVAuIFNvIGlmIENPTkZJR19QTV9TTEVFUCBpcyBu
+b3QgY29maWd1cmVkIGJ1dAo+IENPTkZJR19QTV9SVU5USU1FIGlzLCB0aGUgZm9sbG93aW5nIHdh
+cm5pbmcgbWVzc2FnZSBhcHBlYXJlZDoKPiAKPiBkcml2ZXJzL3ZpcnRpby92aXJ0aW9fcGNpLmM6
+NzcwOjEyOiB3YXJuaW5nOiDigJh2aXJ0aW9fcGNpX2ZyZWV6ZeKAmSBkZWZpbmVkIGJ1dCBub3Qg
+dXNlZCBbLVd1bnVzZWQtZnVuY3Rpb25dCj4gIHN0YXRpYyBpbnQgdmlydGlvX3BjaV9mcmVlemUo
+c3RydWN0IGRldmljZSAqZGV2KQo+ICAgICAgICAgICAgIF4KPiBkcml2ZXJzL3ZpcnRpby92aXJ0
+aW9fcGNpLmM6NzkwOjEyOiB3YXJuaW5nOiDigJh2aXJ0aW9fcGNpX3Jlc3RvcmXigJkgZGVmaW5l
+ZCBidXQgbm90IHVzZWQgWy1XdW51c2VkLWZ1bmN0aW9uXQo+ICBzdGF0aWMgaW50IHZpcnRpb19w
+Y2lfcmVzdG9yZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gICAgICAgICAgICAgXgo+IEZpeCBpdCBi
+eSBjaGFuZ2luZyBDT05GSUdfUE0gdG8gQ09ORklHX1BNX1NMRUVQLgo+IAo+IFNpZ25lZC1vZmYt
+Ynk6IEFhcm9uIEx1IDxhYXJvbi5sdUBpbnRlbC5jb20+Cj4gLS0tCj4gIGRyaXZlcnMvdmlydGlv
+L3ZpcnRpb19wY2kuYyB8IDQgKystLQo+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCsp
+LCAyIGRlbGV0aW9ucygtKQoKV2hpbGUgeW91J3JlIGF0IGl0LCBjYW4geW91IHVwZGF0ZSB0aGUg
+dmlydGlvIGRyaXZlcnMgYXMgd2VsbD8KCmRyaXZlcnMvYmxvY2svdmlydGlvX2Jsay5jCmRyaXZl
+cnMvY2hhci9od19yYW5kb20vdmlydGlvX3JuZy5jCmRyaXZlcnMvY2hhci92aXJ0aW9fY29uc29s
+ZS5jCmRyaXZlcnMvbmV0L3ZpcnRpb19uZXQuYwpkcml2ZXJzL3Njc2kvdmlydGlvX3Njc2kuYwpk
+cml2ZXJzL3ZpcnRpby92aXJ0aW9fYmFsbG9vbi5jCgpUaGFua3MsCgoJCUFtaXQKX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KVmlydHVhbGl6YXRpb24gbWFp
+bGluZyBsaXN0ClZpcnR1YWxpemF0aW9uQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBz
+Oi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL3ZpcnR1YWxpemF0
+aW9u
