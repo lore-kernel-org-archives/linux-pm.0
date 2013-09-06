@@ -1,125 +1,120 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v3 09/35] mm: Track the freepage migratetype of pages
- accurately
-Date: Fri, 06 Sep 2013 10:54:10 +0530
-Message-ID: <522966FA.7030507@linux.vnet.ibm.com>
-References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131635.4947.81565.stgit@srivatsabhat.in.ibm.com> <522583DE.709@jp.fujitsu.com> <5225A1A1.5010204@linux.vnet.ibm.com> <5226EE0F.5010906@jp.fujitsu.com>
+Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
+Date: Fri, 06 Sep 2013 11:33:55 +0530
+Message-ID: <5229704B.7010200@linux.vnet.ibm.com>
+References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <1706734.hVYFTCa5rJ@vostro.rjw.lan> <5227C729.5040803@codeaurora.org> <16630296.tCCMEKstkO@vostro.rjw.lan> <5227D65A.7040200@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:53969 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725Ab3IFF2P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2013 01:28:15 -0400
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:58636 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763Ab3IFGHz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2013 02:07:55 -0400
 Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 6 Sep 2013 10:46:29 +0530
-In-Reply-To: <5226EE0F.5010906@jp.fujitsu.com>
+	Fri, 6 Sep 2013 11:31:00 +0530
+In-Reply-To: <5227D65A.7040200@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/04/2013 01:53 PM, Yasuaki Ishimatsu wrote:
-> (2013/09/03 17:45), Srivatsa S. Bhat wrote:
->> On 09/03/2013 12:08 PM, Yasuaki Ishimatsu wrote:
->>> (2013/08/30 22:16), Srivatsa S. Bhat wrote:
->>>> Due to the region-wise ordering of the pages in the buddy allocator's
->>>> free lists, whenever we want to delete a free pageblock from a free
->>>> list
->>>> (for ex: when moving blocks of pages from one list to the other), we
->>>> need
->>>> to be able to tell the buddy allocator exactly which migratetype it
->>>> belongs
->>>> to. For that purpose, we can use the page's freepage migratetype
->>>> (which is
->>>> maintained in the page's ->index field).
+On 09/05/2013 06:24 AM, Stephen Boyd wrote:
+> On 09/04/13 17:26, Rafael J. Wysocki wrote:
+>> On Wednesday, September 04, 2013 04:50:01 PM Stephen Boyd wrote:
+>>> On 09/04/13 16:55, Rafael J. Wysocki wrote:
+>>>> Well, I'm not sure when Viresh is going to be back.
 >>>>
->>>> So, while splitting up higher order pages into smaller ones as part of
->>>> buddy
->>>> operations, keep the new head pages updated with the correct freepage
->>>> migratetype information (because we depend on tracking this info
->>>> accurately,
->>>> as outlined above).
+>>>> Srivatsa, can you please resend this patch with a proper changelog?
 >>>>
->>>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->>>> ---
->>>>
->>>>    mm/page_alloc.c |    7 +++++++
->>>>    1 file changed, 7 insertions(+)
->>>>
->>>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->>>> index 398b62c..b4b1275 100644
->>>> --- a/mm/page_alloc.c
->>>> +++ b/mm/page_alloc.c
->>>> @@ -947,6 +947,13 @@ static inline void expand(struct zone *zone,
->>>> struct page *page,
->>>>            add_to_freelist(&page[size], &area->free_list[migratetype]);
->>>>            area->nr_free++;
->>>>            set_page_order(&page[size], high);
->>>> +
->>>> +        /*
->>>> +         * Freepage migratetype is tracked using the index field of
->>>> the
->>>> +         * first page of the block. So we need to update the new first
->>>> +         * page, when changing the page order.
->>>> +         */
->>>> +        set_freepage_migratetype(&page[size], migratetype);
->>>>        }
->>>>    }
->>>>
->>>>
->>>
->>> It this patch a bug fix patch?
->>> If so, I want you to split the patch from the patch-set.
->>>
+>>> I haven't had a chance to try this out yet, but I was just thinking
+>>> about this patch. How is it going to work? If one task opens the file
+>>> and another task is taking down the CPU wouldn't we deadlock in the
+>>> CPU_DOWN notifier waiting for the kobject to be released? Task 1 will
+>>> grab the kobject reference and sleep on the hotplug mutex and task 2
+>>> will put the kobject and wait for the completion, but it won't happen.
+>>> At least I think that's what would happen.
+>> Do you mean the completion in sysfs_deactivate()?  Yes, we can deadlock
+>> there.
+> 
+> I mean the complete in cpufreq_sysfs_release(). I don't think that will
+> ever be called because the kobject is held by the task calling store()
+> which is waiting on the hotplug lock to be released.
+> 
 >>
->> No, its not a bug-fix. We need to take care of this only when using the
->> sorted-buddy design to maintain the freelists, which is introduced
->> only in
->> this patchset. So mainline doesn't need this patch.
->>
->> In mainline, we can delete a page from a buddy freelist by simply calling
->> list_del() by passing a pointer to page->lru. It doesn't matter which
->> freelist
->> the page was belonging to. However, in the sorted-buddy design introduced
->> in this patchset, we also need to know which particular freelist we are
->> deleting that page from, because apart from breaking the ->lru link from
->> the linked-list, we also need to update certain other things such as the
->> region->page_block pointer etc, which are part of that particular
->> freelist.
->> Thus, it becomes essential to know which freelist we are deleting the
->> page
->> from. And for that, we need this patch to maintain that information
->> accurately
->> even during buddy operations such as splitting buddy pages in expand().
+>> Well, I guess the Srivatsa's patch may be salvaged by making it do a "trylock"
+>> version of get_online_cpus(), but then I wonder if there's no better way.
 > 
-> I may be wrong because I do not know this part clearly.
-> 
-> Original code is here:
-> 
-> ---
-> static inline void expand(struct zone *zone, struct page *page,
->     int low, int high, struct free_area *area,
->     int migratetype)
-> {
-> ...
->         list_add(&page[size].lru, &area->free_list[migratetype]);
->         area->nr_free++;
->         set_page_order(&page[size], high);
-> ---
-> 
-> It seems that migratietype of page[size] page is changed. So even if not
-> applying your patch, I think migratetype of the page should be changed.
+> I think the real solution is to remove the kobject first if the CPU
+> going down is the last user of that policy. Once the completion is done
+> we can stop the governor and clean up state. For the case where there
+> are still CPUs using the policy why can't we cancel that CPU's work and
+> do nothing else? Even in the case where we have to move the cpufreq
+> directory do we need to do a STOP/START/LIMITS sequence? I hope we can
+> get away with just moving the directory and canceling that CPUs work then.
 > 
 
-Hmm, thinking about this a bit more, I agree with you. Although its not a
-bug-fix for mainline, it is certainly good to have, since it makes things
-more consistent by tracking the freepage migratetype properly for pages
-split during buddy expansion. I'll separate this patch from the series and
-post it as a stand-alone patch. Thank you!
+Conceptually, I agree that your idea of not allowing any process to take
+a new reference to the kobject while we are taking the CPU offline, is a
+sound solution.
+
+However, I am reluctant to go down that path because, handling the CPU hotplug
+sequence in the suspend/resume path might get even more tricky, if we want
+to implement the changes that you propose. Just recently we managed to
+rework the cpufreq CPU hotplug handling to retain the sysfs file permissions
+around suspend/resume, and doing that was not at all simple. Adding more
+quirks and complexity to the kobject handling in that path will only make
+things even more challenging, IMHO. That's the reason I'm trying to think
+of ways to avoid touching that fragile code, and instead solve this problem
+in some other way, without compromising on the robustness of the solution.
+
+So here is my new proposal, as a replacement to this patch[2/2]:
+
+We note that, at CPU_DOWN_PREPARE stage, the CPU is not yet marked offline,
+whereas by the time we handle CPU_POST_DEAD, the CPU is removed from the
+cpu_online_mask, and also the cpu_hotplug lock is dropped.
+
+So, let us split up __cpu_remove_dev() into 2 parts, say:
+__cpu_remove_prepare() - invoked during CPU_DOWN_PREPARE
+__cpu_remove_finish()  - invoked during CPU_POST_DEAD
+
+
+In the former function, we stop the governors, so that policy->governor_enabled
+gets set to false, so that patch [1/2] will return -EBUSY to any subsequent
+->store() requests. Also, we do everything except the kobject cleanup.
+
+In the latter function, we do the remaining work, particularly the part
+where we wait for the kobject refcount to drop to zero and the subsequent
+cleanup.
+
+
+And the ->store() functions will be modified to look like this:
+
+store()
+{
+	get_online_cpus();
+
+	if (!cpu_online(cpu))
+		goto out;
+
+	/* Body of the function*/
+out:
+	put_online_cpus();
+}
+
+That way, if a task tries to write to a cpufreq file during CPU offline,
+it will get blocked on get_online_cpus(), and will continue after
+CPU_DEAD (since we release the lock here). Then it will notice that the cpu
+is offline, and hence will return silently, thus dropping the kobject refcnt.
+So, when the cpufreq core comes back at the CPU_POST_DEAD stage to cleanup
+the kobject, it won't encounter any problems.
+
+Any thoughts on this approach? I'll try to code it up and post the patch
+later today.
+
+Thank you!
 
 Regards,
 Srivatsa S. Bhat
