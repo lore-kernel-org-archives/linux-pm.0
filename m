@@ -1,42 +1,45 @@
-From: Amit Shah <amit.shah@redhat.com>
-Subject: Re: [PATCH] virtio_pci: pm: Use CONFIG_PM_SLEEP instead of CONFIG_PM
-Date: Fri, 6 Sep 2013 13:37:44 +0530
-Message-ID: <20130906080744.GD29367@grmbl.mre>
-References: <52293DD4.6050403@intel.com>
+From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Subject: Re: [PATCH 23/27] i2c-hid: convert acpi_evaluate_object() to acpi_evaluate_integer()
+Date: Fri, 06 Sep 2013 10:17:58 +0200
+Message-ID: <52298FB6.1030903@redhat.com>
+References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com> <1378168335-22556-24-git-send-email-rui.zhang@intel.com> <alpine.LNX.2.00.1309041214120.3684@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <52293DD4.6050403@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@vger.kernel.org>, virtualization@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:50683 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750745Ab3IFISH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 Sep 2013 04:18:07 -0400
+In-Reply-To: <alpine.LNX.2.00.1309041214120.3684@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Zhang Rui <rui.zhang@intel.com>, rjw@sisk.pl, linux-pm@vger.kernel.org
 
-T24gKEZyaSkgMDYgU2VwIDIwMTMgWzEwOjI4OjM2XSwgQWFyb24gTHUgd3JvdGU6Cj4gCj4gVGhl
-IHZpcnRpb19wY2lfZnJlZXplL3Jlc3RvcmUgYXJlIGRlZmluZWQgdW5kZXIgQ09ORklHX1BNIGJ1
-dCBpcyB1c2VkCj4gYnkgU0VUX1NZU1RFTV9TTEVFUF9QTV9PUFMgbWFjcm8sIHdoaWNoIGlzIGRl
-ZmluZWQgdW5kZXIKPiBDT05GSUdfUE1fU0xFRVAuIFNvIGlmIENPTkZJR19QTV9TTEVFUCBpcyBu
-b3QgY29maWd1cmVkIGJ1dAo+IENPTkZJR19QTV9SVU5USU1FIGlzLCB0aGUgZm9sbG93aW5nIHdh
-cm5pbmcgbWVzc2FnZSBhcHBlYXJlZDoKPiAKPiBkcml2ZXJzL3ZpcnRpby92aXJ0aW9fcGNpLmM6
-NzcwOjEyOiB3YXJuaW5nOiDigJh2aXJ0aW9fcGNpX2ZyZWV6ZeKAmSBkZWZpbmVkIGJ1dCBub3Qg
-dXNlZCBbLVd1bnVzZWQtZnVuY3Rpb25dCj4gIHN0YXRpYyBpbnQgdmlydGlvX3BjaV9mcmVlemUo
-c3RydWN0IGRldmljZSAqZGV2KQo+ICAgICAgICAgICAgIF4KPiBkcml2ZXJzL3ZpcnRpby92aXJ0
-aW9fcGNpLmM6NzkwOjEyOiB3YXJuaW5nOiDigJh2aXJ0aW9fcGNpX3Jlc3RvcmXigJkgZGVmaW5l
-ZCBidXQgbm90IHVzZWQgWy1XdW51c2VkLWZ1bmN0aW9uXQo+ICBzdGF0aWMgaW50IHZpcnRpb19w
-Y2lfcmVzdG9yZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gICAgICAgICAgICAgXgo+IEZpeCBpdCBi
-eSBjaGFuZ2luZyBDT05GSUdfUE0gdG8gQ09ORklHX1BNX1NMRUVQLgo+IAo+IFNpZ25lZC1vZmYt
-Ynk6IEFhcm9uIEx1IDxhYXJvbi5sdUBpbnRlbC5jb20+CgpSZXZpZXdlZC1ieTogQW1pdCBTaGFo
-IDxhbWl0LnNoYWhAcmVkaGF0LmNvbT4KCgkJQW1pdApfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpWaXJ0dWFsaXphdGlvbiBtYWlsaW5nIGxpc3QKVmlydHVh
-bGl6YXRpb25AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eGZv
-dW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vdmlydHVhbGl6YXRpb24=
+On 04/09/13 12:14, Jiri Kosina wrote:
+> On Tue, 3 Sep 2013, Zhang Rui wrote:
+> 
+>> acpi_evaluate_integer() is an ACPI API introduced to evaluate an
+>> ACPI control method that is known to have an integer return value.
+>> This API can simplify the code because the calling function does not need to
+>> use the specified acpi_buffer structure required by acpi_evaluate_object();
+>>
+>> Convert acpi_evaluate_object() to acpi_evaluate_integer()
+>> in drivers/hid/i2c-hid/i2c-hid.c in this patch.
+>>
+>> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+>> CC: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+>> CC: Jiri Kosina <jkosina@suse.cz>
+> 
+> Acked-by: Jiri Kosina <jkosina@suse.cz>
+
+As long as it does not break current DSM handling (I can not test this
+part of the code),
+
+Acked-by: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+
+Cheers,
+Benjamin
+
+
