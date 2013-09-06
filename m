@@ -1,163 +1,126 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH 2/3] thermal: samsung: change base_common to more
- meaningful base_second
-Date: Fri, 6 Sep 2013 10:08:49 +0530
-Message-ID: <CADGdYn5MVpSrdVhioEesy=5=r6a7cz4yvkiLfavxhcDAjY02OQ@mail.gmail.com>
-References: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
-	<1378268629-2886-1-git-send-email-ch.naveen@samsung.com>
-	<1378268629-2886-2-git-send-email-ch.naveen@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 09/35] mm: Track the freepage migratetype of pages
+ accurately
+Date: Fri, 06 Sep 2013 10:54:10 +0530
+Message-ID: <522966FA.7030507@linux.vnet.ibm.com>
+References: <20130830131221.4947.99764.stgit@srivatsabhat.in.ibm.com> <20130830131635.4947.81565.stgit@srivatsabhat.in.ibm.com> <522583DE.709@jp.fujitsu.com> <5225A1A1.5010204@linux.vnet.ibm.com> <5226EE0F.5010906@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1378268629-2886-2-git-send-email-ch.naveen@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Naveen Krishna <naveenkrishna.ch@gmail.com>, devicetree@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:53969 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725Ab3IFF2P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2013 01:28:15 -0400
+Received: from /spool/local
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 6 Sep 2013 10:46:29 +0530
+In-Reply-To: <5226EE0F.5010906@jp.fujitsu.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, dave@sr71.net, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 
-On Wed, Sep 4, 2013 at 9:53 AM, Naveen Krishna Chatradhi
-<ch.naveen@samsung.com> wrote:
-> On Exynos5440 and Exynos5420 there are registers common
-> across the TMU channels.
->
-> To support that, we introduced a ADDRESS_MULTIPLE flag in the
-> driver and the 2nd set of register base and size are provided
-> in the "reg" property of the node.
->
-> As per Amit's suggestion, this patch changes the base_common
-> to base_second and SHARED_MEMORY to ADDRESS_MULTIPLE.
->
-> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-The changes look good. For all the 3 patches in the series,
-
-Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Reviewed-by: Amit Daniel Kachhap<amit.daniel@samsung.com>
-
-Thanks,
-Amit Daniel
+On 09/04/2013 01:53 PM, Yasuaki Ishimatsu wrote:
+> (2013/09/03 17:45), Srivatsa S. Bhat wrote:
+>> On 09/03/2013 12:08 PM, Yasuaki Ishimatsu wrote:
+>>> (2013/08/30 22:16), Srivatsa S. Bhat wrote:
+>>>> Due to the region-wise ordering of the pages in the buddy allocator's
+>>>> free lists, whenever we want to delete a free pageblock from a free
+>>>> list
+>>>> (for ex: when moving blocks of pages from one list to the other), we
+>>>> need
+>>>> to be able to tell the buddy allocator exactly which migratetype it
+>>>> belongs
+>>>> to. For that purpose, we can use the page's freepage migratetype
+>>>> (which is
+>>>> maintained in the page's ->index field).
+>>>>
+>>>> So, while splitting up higher order pages into smaller ones as part of
+>>>> buddy
+>>>> operations, keep the new head pages updated with the correct freepage
+>>>> migratetype information (because we depend on tracking this info
+>>>> accurately,
+>>>> as outlined above).
+>>>>
+>>>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>>>> ---
+>>>>
+>>>>    mm/page_alloc.c |    7 +++++++
+>>>>    1 file changed, 7 insertions(+)
+>>>>
+>>>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+>>>> index 398b62c..b4b1275 100644
+>>>> --- a/mm/page_alloc.c
+>>>> +++ b/mm/page_alloc.c
+>>>> @@ -947,6 +947,13 @@ static inline void expand(struct zone *zone,
+>>>> struct page *page,
+>>>>            add_to_freelist(&page[size], &area->free_list[migratetype]);
+>>>>            area->nr_free++;
+>>>>            set_page_order(&page[size], high);
+>>>> +
+>>>> +        /*
+>>>> +         * Freepage migratetype is tracked using the index field of
+>>>> the
+>>>> +         * first page of the block. So we need to update the new first
+>>>> +         * page, when changing the page order.
+>>>> +         */
+>>>> +        set_freepage_migratetype(&page[size], migratetype);
+>>>>        }
+>>>>    }
+>>>>
+>>>>
+>>>
+>>> It this patch a bug fix patch?
+>>> If so, I want you to split the patch from the patch-set.
+>>>
+>>
+>> No, its not a bug-fix. We need to take care of this only when using the
+>> sorted-buddy design to maintain the freelists, which is introduced
+>> only in
+>> this patchset. So mainline doesn't need this patch.
+>>
+>> In mainline, we can delete a page from a buddy freelist by simply calling
+>> list_del() by passing a pointer to page->lru. It doesn't matter which
+>> freelist
+>> the page was belonging to. However, in the sorted-buddy design introduced
+>> in this patchset, we also need to know which particular freelist we are
+>> deleting that page from, because apart from breaking the ->lru link from
+>> the linked-list, we also need to update certain other things such as the
+>> region->page_block pointer etc, which are part of that particular
+>> freelist.
+>> Thus, it becomes essential to know which freelist we are deleting the
+>> page
+>> from. And for that, we need this patch to maintain that information
+>> accurately
+>> even during buddy operations such as splitting buddy pages in expand().
+> 
+> I may be wrong because I do not know this part clearly.
+> 
+> Original code is here:
+> 
 > ---
-> Changes since v2:
-> Changed the flag name from SHARED_MEMORY to ADDRESS_MULTIPLE.
-> https://lkml.org/lkml/2013/8/1/38
->
->  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 ++--
->  drivers/thermal/samsung/exynos_tmu.c               |   12 ++++++------
->  drivers/thermal/samsung/exynos_tmu.h               |    4 ++--
->  drivers/thermal/samsung/exynos_tmu_data.c          |    2 +-
->  4 files changed, 11 insertions(+), 11 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> index 284f530..116cca0 100644
-> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -11,8 +11,8 @@
->  - reg : Address range of the thermal registers. For soc's which has multiple
->         instances of TMU and some registers are shared across all TMU's like
->         interrupt related then 2 set of register has to supplied. First set
-> -       belongs to each instance of TMU and second set belongs to common TMU
-> -       registers.
-> +       belongs to each instance of TMU and second set belongs to second set
-> +       of common TMU registers.
->  - interrupts : Should contain interrupt for thermal system
->  - clocks : The main clock for TMU device
->  - clock-names : Thermal system clock name
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index d201ed8..3a55caf 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -41,7 +41,7 @@
->   * @id: identifier of the one instance of the TMU controller.
->   * @pdata: pointer to the tmu platform/configuration data
->   * @base: base address of the single instance of the TMU controller.
-> - * @base_common: base address of the common registers of the TMU controller.
-> + * @base_second: base address of the common registers of the TMU controller.
->   * @irq: irq number of the TMU controller.
->   * @soc: id of the SOC type.
->   * @irq_work: pointer to the irq work structure.
-> @@ -56,7 +56,7 @@ struct exynos_tmu_data {
->         int id;
->         struct exynos_tmu_platform_data *pdata;
->         void __iomem *base;
-> -       void __iomem *base_common;
-> +       void __iomem *base_second;
->         int irq;
->         enum soc_type soc;
->         struct work_struct irq_work;
-> @@ -297,7 +297,7 @@ skip_calib_data:
->         }
->         /*Clear the PMIN in the common TMU register*/
->         if (reg->tmu_pmin && !data->id)
-> -               writel(0, data->base_common + reg->tmu_pmin);
-> +               writel(0, data->base_second + reg->tmu_pmin);
->  out:
->         clk_disable(data->clk);
->         mutex_unlock(&data->lock);
-> @@ -451,7 +451,7 @@ static void exynos_tmu_work(struct work_struct *work)
->
->         /* Find which sensor generated this interrupt */
->         if (reg->tmu_irqstatus) {
-> -               val_type = readl(data->base_common + reg->tmu_irqstatus);
-> +               val_type = readl(data->base_second + reg->tmu_irqstatus);
->                 if (!((val_type >> data->id) & 0x1))
->                         goto out;
->         }
-> @@ -582,7 +582,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
->          * Check if the TMU shares some registers and then try to map the
->          * memory of common registers.
->          */
-> -       if (!TMU_SUPPORTS(pdata, SHARED_MEMORY))
-> +       if (!TMU_SUPPORTS(pdata, ADDRESS_MULTIPLE))
->                 return 0;
->
->         if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
-> @@ -590,7 +590,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
->                 return -ENODEV;
->         }
->
-> -       data->base_common = devm_ioremap(&pdev->dev, res.start,
-> +       data->base_second = devm_ioremap(&pdev->dev, res.start,
->                                         resource_size(&res));
->         if (!data->base) {
->                 dev_err(&pdev->dev, "Failed to ioremap memory\n");
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-> index 7c6c34a..ebd2ec1 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -59,7 +59,7 @@ enum soc_type {
->   *                     state(active/idle) can be checked.
->   * TMU_SUPPORT_EMUL_TIME - This features allows to set next temp emulation
->   *                     sample time.
-> - * TMU_SUPPORT_SHARED_MEMORY - This feature tells that the different TMU
-> + * TMU_SUPPORT_ADDRESS_MULTIPLE - This feature tells that the different TMU
->   *                     sensors shares some common registers.
->   * TMU_SUPPORT - macro to compare the above features with the supplied.
->   */
-> @@ -69,7 +69,7 @@ enum soc_type {
->  #define TMU_SUPPORT_FALLING_TRIP               BIT(3)
->  #define TMU_SUPPORT_READY_STATUS               BIT(4)
->  #define TMU_SUPPORT_EMUL_TIME                  BIT(5)
-> -#define TMU_SUPPORT_SHARED_MEMORY              BIT(6)
-> +#define TMU_SUPPORT_ADDRESS_MULTIPLE           BIT(6)
->
->  #define TMU_SUPPORTS(a, b)     (a->features & TMU_SUPPORT_ ## b)
->
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> index 23fea23..58570d0 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -239,7 +239,7 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
->         .type = SOC_ARCH_EXYNOS5440, \
->         .registers = &exynos5440_tmu_registers, \
->         .features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
-> -                       TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_SHARED_MEMORY),
-> +                       TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_ADDRESS_MULTIPLE),
->
->  struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
->         .tmu_data = {
-> --
-> 1.7.9.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> static inline void expand(struct zone *zone, struct page *page,
+>     int low, int high, struct free_area *area,
+>     int migratetype)
+> {
+> ...
+>         list_add(&page[size].lru, &area->free_list[migratetype]);
+>         area->nr_free++;
+>         set_page_order(&page[size], high);
+> ---
+> 
+> It seems that migratietype of page[size] page is changed. So even if not
+> applying your patch, I think migratetype of the page should be changed.
+> 
+
+Hmm, thinking about this a bit more, I agree with you. Although its not a
+bug-fix for mainline, it is certainly good to have, since it makes things
+more consistent by tracking the freepage migratetype properly for pages
+split during buddy expansion. I'll separate this patch from the series and
+post it as a stand-alone patch. Thank you!
+
+Regards,
+Srivatsa S. Bhat
+
