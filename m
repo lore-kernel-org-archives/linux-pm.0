@@ -1,166 +1,66 @@
 From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH 2/2] virtio: pm: use CONFIG_PM_SLEEP instead of CONFIG_PM
-Date: Fri,  6 Sep 2013 16:20:07 +0800
-Message-ID: <1378455607-32459-3-git-send-email-aaron.lu@intel.com>
+Subject: [PATCH 1/2] virtio_pci: pm: Use CONFIG_PM_SLEEP instead of CONFIG_PM
+Date: Fri,  6 Sep 2013 16:20:06 +0800
+Message-ID: <1378455607-32459-2-git-send-email-aaron.lu@intel.com>
 References: <1378455607-32459-1-git-send-email-aaron.lu@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga01.intel.com ([192.55.52.88]:10098 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952Ab3IFITc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 6 Sep 2013 04:19:32 -0400
+	id S1750929Ab3IFITb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 Sep 2013 04:19:31 -0400
 In-Reply-To: <1378455607-32459-1-git-send-email-aaron.lu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Amit Shah <amit.shah@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, "Rafael J. Wysocki" <rjw@sisk.pl>, virtualization@lists.linux-foundation.org, linux-pm@vger.kernel.org
 
-The freeze and restore functions defined in virtio drivers are used
-for suspend and hibernate, so CONFIG_PM_SLEEP is more appropriate than
-CONFIG_PM. This patch replace all CONFIG_PM with CONFIG_PM_SLEEP for
-virtio drivers that implement freeze and restore callbacks.
+The virtio_pci_freeze/restore are defined under CONFIG_PM but is used
+by SET_SYSTEM_SLEEP_PM_OPS macro, which is defined under
+CONFIG_PM_SLEEP. So if CONFIG_PM_SLEEP is not cofigured but
+CONFIG_PM_RUNTIME is, the following warning message appeared:
+
+drivers/virtio/virtio_pci.c:770:12: warning: =E2=80=98virtio_pci_freeze=
+=E2=80=99 defined but not used [-Wunused-function]
+ static int virtio_pci_freeze(struct device *dev)
+            ^
+drivers/virtio/virtio_pci.c:790:12: warning: =E2=80=98virtio_pci_restor=
+e=E2=80=99 defined but not used [-Wunused-function]
+ static int virtio_pci_restore(struct device *dev)
+            ^
+=46ix it by changing CONFIG_PM to CONFIG_PM_SLEEP.
 
 Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+Reviewed-by: Amit Shah <amit.shah@redhat.com>
 ---
- drivers/block/virtio_blk.c          | 4 ++--
- drivers/char/hw_random/virtio-rng.c | 4 ++--
- drivers/char/virtio_console.c       | 4 ++--
- drivers/net/virtio_net.c            | 4 ++--
- drivers/scsi/virtio_scsi.c          | 4 ++--
- drivers/virtio/virtio_balloon.c     | 4 ++--
- 6 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/virtio/virtio_pci.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
-index 5cdf88b..89245b5 100644
---- a/drivers/block/virtio_blk.c
-+++ b/drivers/block/virtio_blk.c
-@@ -899,7 +899,7 @@ static void virtblk_remove(struct virtio_device *vdev)
- 		ida_simple_remove(&vd_index_ida, index);
+diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
+index 1aba255..98917fc 100644
+--- a/drivers/virtio/virtio_pci.c
++++ b/drivers/virtio/virtio_pci.c
+@@ -766,7 +766,7 @@ static void virtio_pci_remove(struct pci_dev *pci_d=
+ev)
+ 	kfree(vp_dev);
  }
- 
+=20
 -#ifdef CONFIG_PM
 +#ifdef CONFIG_PM_SLEEP
- static int virtblk_freeze(struct virtio_device *vdev)
+ static int virtio_pci_freeze(struct device *dev)
  {
- 	struct virtio_blk *vblk = vdev->priv;
-@@ -959,7 +959,7 @@ static struct virtio_driver virtio_blk = {
- 	.probe			= virtblk_probe,
- 	.remove			= virtblk_remove,
- 	.config_changed		= virtblk_config_changed,
+ 	struct pci_dev *pci_dev =3D to_pci_dev(dev);
+@@ -824,7 +824,7 @@ static struct pci_driver virtio_pci_driver =3D {
+ 	.id_table	=3D virtio_pci_id_table,
+ 	.probe		=3D virtio_pci_probe,
+ 	.remove		=3D virtio_pci_remove,
 -#ifdef CONFIG_PM
 +#ifdef CONFIG_PM_SLEEP
- 	.freeze			= virtblk_freeze,
- 	.restore		= virtblk_restore,
+ 	.driver.pm	=3D &virtio_pci_pm_ops,
  #endif
-diff --git a/drivers/char/hw_random/virtio-rng.c b/drivers/char/hw_random/virtio-rng.c
-index ef46a9c..c12398d 100644
---- a/drivers/char/hw_random/virtio-rng.c
-+++ b/drivers/char/hw_random/virtio-rng.c
-@@ -133,7 +133,7 @@ static void virtrng_remove(struct virtio_device *vdev)
- 	remove_common(vdev);
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static int virtrng_freeze(struct virtio_device *vdev)
- {
- 	remove_common(vdev);
-@@ -157,7 +157,7 @@ static struct virtio_driver virtio_rng_driver = {
- 	.id_table =	id_table,
- 	.probe =	virtrng_probe,
- 	.remove =	virtrng_remove,
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 	.freeze =	virtrng_freeze,
- 	.restore =	virtrng_restore,
- #endif
-diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
-index fc45567..2e96246 100644
---- a/drivers/char/virtio_console.c
-+++ b/drivers/char/virtio_console.c
-@@ -2135,7 +2135,7 @@ static struct virtio_device_id rproc_serial_id_table[] = {
- static unsigned int rproc_serial_features[] = {
  };
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static int virtcons_freeze(struct virtio_device *vdev)
- {
- 	struct ports_device *portdev;
-@@ -2213,7 +2213,7 @@ static struct virtio_driver virtio_console = {
- 	.probe =	virtcons_probe,
- 	.remove =	virtcons_remove,
- 	.config_changed = config_intr,
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 	.freeze =	virtcons_freeze,
- 	.restore =	virtcons_restore,
- #endif
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index defec2b..2ad3d96 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -1683,7 +1683,7 @@ static void virtnet_remove(struct virtio_device *vdev)
- 	free_netdev(vi->dev);
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static int virtnet_freeze(struct virtio_device *vdev)
- {
- 	struct virtnet_info *vi = vdev->priv;
-@@ -1766,7 +1766,7 @@ static struct virtio_driver virtio_net_driver = {
- 	.probe =	virtnet_probe,
- 	.remove =	virtnet_remove,
- 	.config_changed = virtnet_config_changed,
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 	.freeze =	virtnet_freeze,
- 	.restore =	virtnet_restore,
- #endif
-diff --git a/drivers/scsi/virtio_scsi.c b/drivers/scsi/virtio_scsi.c
-index 74b88ef..2a11039 100644
---- a/drivers/scsi/virtio_scsi.c
-+++ b/drivers/scsi/virtio_scsi.c
-@@ -954,7 +954,7 @@ static void virtscsi_remove(struct virtio_device *vdev)
- 	scsi_host_put(shost);
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static int virtscsi_freeze(struct virtio_device *vdev)
- {
- 	virtscsi_remove_vqs(vdev);
-@@ -988,7 +988,7 @@ static struct virtio_driver virtio_scsi_driver = {
- 	.id_table = id_table,
- 	.probe = virtscsi_probe,
- 	.scan = virtscsi_scan,
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 	.freeze = virtscsi_freeze,
- 	.restore = virtscsi_restore,
- #endif
-diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-index 1f572c0..d6f6816 100644
---- a/drivers/virtio/virtio_balloon.c
-+++ b/drivers/virtio/virtio_balloon.c
-@@ -513,7 +513,7 @@ static void virtballoon_remove(struct virtio_device *vdev)
- 	kfree(vb);
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static int virtballoon_freeze(struct virtio_device *vdev)
- {
- 	struct virtio_balloon *vb = vdev->priv;
-@@ -556,7 +556,7 @@ static struct virtio_driver virtio_balloon_driver = {
- 	.probe =	virtballoon_probe,
- 	.remove =	virtballoon_remove,
- 	.config_changed = virtballoon_changed,
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 	.freeze	=	virtballoon_freeze,
- 	.restore =	virtballoon_restore,
- #endif
--- 
+--=20
 1.8.4.12.g2ea3df6
 
