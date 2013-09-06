@@ -1,53 +1,45 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2] scsi: sr: use block layer runtime PM
-Date: Fri, 6 Sep 2013 11:56:48 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1309061153010.1165-100000@iolanthe.rowland.org>
-References: <1378479604.2063.13.camel@dabdike.int.hansenpartnership.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH 0/5] Cpufreq fixes related to cpu hotplug/sysfs-writes
+Date: Sat, 07 Sep 2013 01:22:44 +0530
+Message-ID: <20130906195206.26919.20884.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:33170 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753786Ab3IFP4t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2013 11:56:49 -0400
-In-Reply-To: <1378479604.2063.13.camel@dabdike.int.hansenpartnership.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, sboyd@codeaurora.org, viresh.kumar@linaro.org
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>
 
-On Fri, 6 Sep 2013, James Bottomley wrote:
 
-> > layer runtime PM. Accordingly, the SCSI bus layer runtime PM callback is
-> > simplified as all SCSI devices that implement runtime PM are now request
-> > based.
-> 
-> OK, let's now try for a descriptive changelog.  All SCSI devices
-> (including sr) are "request based".  I think what you mean is "all SCSI
-> devices which implement runtime PM have an exposed block device"?
+Hi,
 
-Actually Aaron means "All SCSI drivers implementing runtime PM now use
-the block layer's request-based mechanism."
+This patchset solves the cpufreq synchronization problems related to CPU
+hotplug and writes to cpufreq sysfs files. The problem was reported and
+described by Stephen Boyd here:
 
-> > Note that due to ODD will be polled every 2 seconds,
-> 
-> Since the device will be polled every 2 seconds
-> 
-> >  for suspend to
-> > actually happen, the autosuspend_delay can not be set to more than 2
-> > seconds or the polling interval has to be increased.
-> 
-> Is this true?  What about event driven devices?  Supposing a distro has
-> a different interval.
-> 
-> How about
-> 
-> If your Distribution polls the device, the autosuspend interval cannot
-> be set to longer than the polling interval otherwise the device will
-> never suspend.
+https://lkml.org/lkml/2013/8/27/643
+https://lkml.org/lkml/2013/8/30/597
 
-The default polling done by the kernel uses 2-second intervals.  Of 
-course, distributions and users can change this or disable it entirely.
+All the patches apply on Rafael's bleeding-edge branch on linux-pm git
+tree[1].
 
-Alan Stern
+[1]. git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+
+
+ Srivatsa S. Bhat (5):
+      cpufreq: Split __cpufreq_remove_dev() into 2 parts (kobj cleanup & the rest)
+      cpufreq: Invoke __cpufreq_remove_dev_finish() after releasing cpu_hotplug.lock
+      cpufreq: Synchronize the cpufreq store_*() routines with CPU hotplug
+      cpufreq: Remove temporary fix for race between CPU hotplug and sysfs-writes
+      cpufreq: Use signed type for 'ret' variable, to store negative error values
+
+ drivers/cpufreq/cpufreq.c |   90 ++++++++++++++++++++++++++++++++++-----------
+ include/linux/cpufreq.h   |    1 -
+ 2 files changed, 68 insertions(+), 23 deletions(-)
+
+
+Thanks,
+Srivatsa S. Bhat
+IBM Linux Technology Center
 
