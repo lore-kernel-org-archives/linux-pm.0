@@ -1,75 +1,116 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: [PATCH 11/27] i915: intel_acpi: convert acpi_get_handle() to
- acpi_has_method()
-Date: Mon, 9 Sep 2013 10:57:48 +0200
-Message-ID: <20130909085748.GD27291@phenom.ffwll.local>
-References: <1378168335-22556-1-git-send-email-rui.zhang@intel.com>
- <1378168335-22556-12-git-send-email-rui.zhang@intel.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v4 12/19] cpufreq: cpufreq-cpu0: remove device tree parsing
+ for cpu nodes
+Date: Mon, 09 Sep 2013 10:24:39 +0100
+Message-ID: <522D93D7.4010307@arm.com>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376991021-12160-13-git-send-email-Sudeep.KarkadaNagesha@arm.com> <Pine.LNX.4.64.1309061539310.11068@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f175.google.com ([209.85.215.175]:63442 "EHLO
-	mail-ea0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025Ab3III5f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Sep 2013 04:57:35 -0400
-Received: by mail-ea0-f175.google.com with SMTP id m14so2948554eaj.6
-        for <linux-pm@vger.kernel.org>; Mon, 09 Sep 2013 01:57:34 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1378168335-22556-12-git-send-email-rui.zhang@intel.com>
+Received: from service87.mimecast.com ([91.220.42.44]:53838 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987Ab3IIJXp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Sep 2013 05:23:45 -0400
+In-Reply-To: <Pine.LNX.4.64.1309061539310.11068@axis700.grange>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Shawn Guo <shawn.guo@linaro.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>
 
-On Tue, Sep 03, 2013 at 08:31:59AM +0800, Zhang Rui wrote:
-> acpi_has_method() is a new ACPI API introduced to check
-> the existence of an ACPI control method.
+On 06/09/13 14:44, Guennadi Liakhovetski wrote:
+> Hi
 > 
-> It can be used to replace acpi_get_handle() in the case that
-> 1. the calling function doesn't need the ACPI handle of the control method.
-> and
-> 2. the calling function doesn't care the reason why the method is unavailable.
+> On Tue, 20 Aug 2013, Sudeep KarkadaNagesha wrote:
 > 
-> Convert acpi_get_handle() to acpi_has_method()
-> in drivers/gpu/drm/i915/intel_acpi.c in this patch.
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> Now that the cpu device registration initialises the of_node(if available)
+>> appropriately for all the cpus, parsing here is redundant.
+>>
+>> This patch removes all DT parsing and uses cpu->of_node instead.
+>>
+>> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+>> Acked-by: Rob Herring <rob.herring@calxeda.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>> ---
+>>  drivers/cpufreq/cpufreq-cpu0.c | 23 ++++-------------------
+>>  1 file changed, 4 insertions(+), 19 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.=
+>> c
+>> index ad1fde2..5b05c26 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -174,29 +174,17 @@ static struct cpufreq_driver cpu0_cpufreq_driver =3D =
+>> {
+>> =20
+>>  static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>>  {
+>> -=09struct device_node *np, *parent;
+>> +=09struct device_node *np;
+>>  =09int ret;
+>> =20
+>> -=09parent =3D of_find_node_by_path("/cpus");
+>> -=09if (!parent) {
+>> -=09=09pr_err("failed to find OF /cpus\n");
+>> -=09=09return -ENOENT;
+>> -=09}
+>> -
+>> -=09for_each_child_of_node(parent, np) {
+>> -=09=09if (of_get_property(np, "operating-points", NULL))
+>> -=09=09=09break;
+>> -=09}
+>> +=09cpu_dev =3D &pdev->dev;
+>> =20
+>> +=09np =3D of_node_get(cpu_dev->of_node);
 > 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> CC: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Has this actually been tested? This seems to break cpufreq-cpu0. The 
+> reason is, that this probe function is called not for the DT CPU node, but 
+> for a special virtual cpufreq-cpu0 platform device, typically created by 
+> platforms, using
+> 
+> 	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
+> 
+> which then of course doesn't have on .of_node associated with it.
+> 
 
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Hi Guennadi,
 
-> ---
->  drivers/gpu/drm/i915/intel_acpi.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/i915/intel_acpi.c b/drivers/gpu/drm/i915/intel_acpi.c
-> index 57fe1ae..43959ed 100644
-> --- a/drivers/gpu/drm/i915/intel_acpi.c
-> +++ b/drivers/gpu/drm/i915/intel_acpi.c
-> @@ -193,16 +193,14 @@ static void intel_dsm_platform_mux_info(void)
->  
->  static bool intel_dsm_pci_probe(struct pci_dev *pdev)
->  {
-> -	acpi_handle dhandle, intel_handle;
-> -	acpi_status status;
-> +	acpi_handle dhandle;
->  	int ret;
->  
->  	dhandle = DEVICE_ACPI_HANDLE(&pdev->dev);
->  	if (!dhandle)
->  		return false;
->  
-> -	status = acpi_get_handle(dhandle, "_DSM", &intel_handle);
-> -	if (ACPI_FAILURE(status)) {
-> +	if (!acpi_has_method(dhandle, "_DSM")) {
->  		DRM_DEBUG_KMS("no _DSM method for intel device\n");
->  		return false;
->  	}
-> -- 
-> 1.8.1.2
-> 
+Based on my understanding of the original code:
+        cpu_dev = &pdev->dev;
+	...
+	ret = of_init_opp_table(cpu_dev);
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+of_init_opp_table needs cpu_dev to be get_cpu_device(0). My
+understanding was that platform using cpufreq-cpu0 sets &pdev->dev to
+get_cpu_device(0). But looks like that's not the case.
+
+Hi Shawn,
+
+Can you please clarify ? The fix would be as below but I would like to
+know if setting cpu_dev to get_cpu_device(0) instead of &pdev->dev has
+any impact on other parts of code using cpu_dev ?
+
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index cbfffa9..871c336 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -177,7 +177,7 @@ static int cpu0_cpufreq_probe(struct platform_device
+*pdev)
+        struct device_node *np;
+        int ret;
+
+-       cpu_dev = &pdev->dev;
++       cpu_dev = get_cpu_device(0);
+
+        np = of_node_get(cpu_dev->of_node);
+        if (!np) {
+
+
+Regards,
+Sudeep
+
+
+
