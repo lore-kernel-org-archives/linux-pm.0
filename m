@@ -1,73 +1,57 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] typo in drivers/thermal/Kconfig: lpatform instead of
- platform
-Date: Mon, 9 Sep 2013 09:12:36 -0400
-Message-ID: <522DC944.80802@ti.com>
-References: <20130908215853.GD8821@nt1.in>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V3]hrtimer: Fix a performance regression by disable
+ reprogramming in remove_hrtimer
+Date: Mon, 9 Sep 2013 15:46:35 +0200
+Message-ID: <20130909134635.GB26785@twins.programming.kicks-ass.net>
+References: <20130729115701.GD3008@twins.programming.kicks-ass.net>
+ <24EECBCC-F655-404F-8946-73CC36095A5F@gmail.com>
+ <1378362989.18435.2.camel@marge.simpson.net>
+ <20130905111428.GB23362@gmail.com>
+ <1378386697.6567.9.camel@marge.simpson.net>
+ <20130905133750.GA26637@gmail.com>
+ <1378445942.5434.31.camel@marge.simpson.net>
+ <20130909122325.GX31370@twins.programming.kicks-ass.net>
+ <1378730538.5586.30.camel@marge.simpson.net>
+ <20130909133044.GB31370@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="4uQTpUQIIEwSiOcpbiG4jweQDlUCenagu"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:35520 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178Ab3IINMx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Sep 2013 09:12:53 -0400
-In-Reply-To: <20130908215853.GD8821@nt1.in>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130909133044.GB31370@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mike Galbraith <bitbucket@online.de>
+Cc: Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, ethan.kernel@gmail.com, rjw@sisk.pl, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, lenb@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Regid Ichira <regid23@nt1.in>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
---4uQTpUQIIEwSiOcpbiG4jweQDlUCenagu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, Sep 09, 2013 at 03:30:44PM +0200, Peter Zijlstra wrote:
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index fa6964d..486c0ba 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -359,6 +359,14 @@ static int intel_idle(struct cpuidle_device *dev,
+>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+>  
+> +	current_thread_into()->status |= TS_POLLING;
+> +
+> +	/*
+> +	 * Order against setting of TS_POLLING against the reading of
+> +	 * NEED_RESCHED, matched by resched_task().
+> +	 */
+> +	smp_mb();
+> +
+>  	if (!need_resched()) {
+>  
+>  		__monitor((void *)&current_thread_info()->flags, 0, 0);
+> @@ -367,6 +375,8 @@ static int intel_idle(struct cpuidle_device *dev,
+>  			__mwait(eax, ecx);
+>  	}
+>  
+> +	current_thread_into()->status &= ~TS_POLLING;
+> +
+>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
 
-On 08-09-2013 17:58, Regid Ichira wrote:
-> Applied to the HEAD of linux.git,
->                        VERSION =3D 3 PATCHLEVEL =3D 11 SUBLEVEL =3D 0
-> Signed-off-by: Regid Ichira <regid23@nt1.in>
-
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
-
-> ---
->  drivers/thermal/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index e988c81..3f99f79 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -47,7 +47,7 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
->  	select THERMAL_GOV_USER_SPACE
->  	help
->  	  Select this if you want to let the user space manage the
-> -	  lpatform thermals.
-> +	  platform thermals.
-> =20
->  endchoice
-> =20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---4uQTpUQIIEwSiOcpbiG4jweQDlUCenagu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlItyU0ACgkQCXcVR3XQvP3tiwD+PR2QkwFSEajaklUzzwOnbhh8
-t4x7hc33ycSsMOecwTYA/jPj3BMooALrMS6xHBw2KT6jKXPyAD+kxfPmqDabuINO
-=tJcI
------END PGP SIGNATURE-----
-
---4uQTpUQIIEwSiOcpbiG4jweQDlUCenagu--
+Hmm, arguably it would be better to set this from
+intel_idle_cpuidle_driver_init() and clear it whenever this goes away.
+Not sure how all that works, the cpuidle driver framework seems 'weird'.
