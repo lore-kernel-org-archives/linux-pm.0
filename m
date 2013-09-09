@@ -1,81 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: "cpufreq: fix serialization issues with freq change notifiers" breaks cpufreq too
-Date: Tue, 10 Sep 2013 01:12:49 +0200
-Message-ID: <2339390.oQAxMuU2Y5@vostro.rjw.lan>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange> <1883706.eFcILAzoo8@vostro.rjw.lan> <Pine.LNX.4.64.1309092330560.12376@axis700.grange>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Tue, 10 Sep 2013 01:14:30 +0200
+Message-ID: <1775778.MeiRhuYy7o@vostro.rjw.lan>
+References: <522E1FEF.6080803@wwwdotorg.org> <6639035.alELXsX8ZI@vostro.rjw.lan> <522E3DA2.9020707@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1309092330560.12376@axis700.grange>
-Sender: linux-sh-owner@vger.kernel.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:39821 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756188Ab3IIXDa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Sep 2013 19:03:30 -0400
+In-Reply-To: <522E3DA2.9020707@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Monday, September 09, 2013 11:42:41 PM Guennadi Liakhovetski wrote:
-> Hi Rafael
-> 
-> On Mon, 9 Sep 2013, Rafael J. Wysocki wrote:
-> 
-> > Hi,
+On Monday, September 09, 2013 03:29:06 PM Stephen Warren wrote:
+> On 09/09/2013 02:24 PM, Rafael J. Wysocki wrote:
+> > On Monday, September 09, 2013 02:01:32 PM Stephen Warren wrote:
+> >> On 09/09/2013 02:01 PM, Rafael J. Wysocki wrote:
+> >>> On Monday, September 09, 2013 01:22:23 PM Stephen Warren wrote:
+> >>>> Viresh,
+> >>>>
+> >>>> I'm seeing the crash below when suspending my system for the second time.
+> >>>>
+> >>>> I can avoid this with the following patch, which adds a check which
+> >>>> already exists in all-but-one other places that the same lookup is made:
+> >>>
+> >>> Which kernel did you test?
+> >>
+> >> next-20130909.
 > > 
-> > On Monday, September 09, 2013 05:11:10 PM Guennadi Liakhovetski wrote:
-> > > Sorry guys, I'm trying my best to stop this patch from propagating to 
-> > > stable and to get it fixed asap, so, the CC list might be a bit excessive. 
-> > > Also trying to fix the originally spare cc list, which makes it impossible 
-> > > for me to reply to the original thread, instead have to start a new one.
-> > 
-> > I'm not sure what you're talking about.  What exactly was wrong with the
-> > original CC list in particular?
+> > Is it reproducible with the current mainline?
 > 
-> I think you advised once to cc cpufreq related mails to linux-pm too at 
-> least.
+> This does not affect v3.11, but does affect current HEAD; 300893b "Merge
+> tag 'xfs-for-linus-v3.12-rc1' of git://oss.sgi.com/xfs/xfs".
 
-Yes, I did.
+What system does it break on?
 
-> I haven't found this patch in my pm archive, have I missed it there?
+Any chance to bisect cpufreq changes between 3.11 and the current HEAD?
 
-Quite frankly, I don't remember if it was there.  ISTR having it it patchwork,
-which would mean that it was there, but well.
-
-> > > Commit
-> > > 
-> > > commit dceff5ce18801dddc220d6238628619c93bc3cb6
-> > > Author: Viresh Kumar <viresh.kumar@linaro.org>
-> > > Date:   Sun Sep 1 22:19:37 2013 +0530
-> > > 
-> > >     cpufreq: fix serialization issues with freq change notifiers
-> > > 
-> > > breaks .transition_ongoing counting.
-> > 
-> > Do you know how exactly it breaks that?  If so, care to share that knowledge?
-> 
-> No, I don't. I only know that in __cpufreq_driver_target() the check for
-> 
-> 	if (policy->transition_ongoing) {
-> 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 		return -EBUSY;
-> 	}
-> 
-> is failing with this patch and cpufreq-cpu0.
-
-OK, we need to figure out that, then.
-
-> > > This leads to cpufreq-cpu0 not working any more. In particular switching the
-> > > governor from performance to powersave directly after boot doesn't result in
-> > > a frequency switch any more. Reverting this patch fixes the problem again.
-> > 
-> > However, this is a regression fix, so I'd prefer to fix the problem on top of
-> > it instead of reverting this commit entirely.
-> 
-> If I understood correctly, this patch fixed some warnings, that, however, 
-> didn't disrupt functionality, is this right? Whereas the patch really 
-> seems to break working set ups.
-
-It fixed warnings that indicated problems and those problems should rather be
-avoided.
-
-Thanks,
 Rafael
 
