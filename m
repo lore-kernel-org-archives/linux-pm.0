@@ -1,137 +1,45 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
- breaks cpufreq too
-Date: Tue, 10 Sep 2013 19:07:39 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1309101853170.16010@axis700.grange>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
- <CAKohponZ+FnzqXYMbBzbun0-1iQMi2fS4syrEBC_MdF41vLCeA@mail.gmail.com>
- <Pine.LNX.4.64.1309101656150.16010@axis700.grange>
- <CAKohpomBBKLhNemVUpUHAftGhPJJe+ZB7T_9UYLD7LwpR1nK0g@mail.gmail.com>
- <Pine.LNX.4.64.1309101740120.16010@axis700.grange>
- <CAKohpomK7Y_6aLMA3B+hZrtgYq9U89ihgkbvYWA3BsKN3gJD3g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomK7Y_6aLMA3B+hZrtgYq9U89ihgkbvYWA3BsKN3gJD3g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH 0/4] cpufreq: fixes for v3.12
+Date: Tue, 10 Sep 2013 18:59:45 +0100
+Message-ID: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 10 Sep 2013, Viresh Kumar wrote:
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-> On 10 September 2013 21:52, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> > Of course, isn't that what I've written above? reverted a commit and added
-> > debug - in that order.
-> 
-> Ok, I misread it then :(
-> 
-> > Sure, I can... So, with the performance governor I get
-> >
-> > [    1.290000] cpufreq-cpu0 cpufreq-cpu0: Looking up cpu0-supply from device tree
-> > [    1.290000] cpufreq: trying to register driver generic_cpu0
-> > [    1.290000] cpufreq: adding CPU 0
-> > [    1.290000] cpufreq: Adding link for CPU: 1
-> > [    1.290000] cpufreq: setting new policy for CPU 0: 398667 - 1196000 kHz
-> > [    1.290000] cpufreq: new min and max freqs are 398667 - 1196000 kHz
-> > [    1.290000] cpufreq: governor switch
-> > [    1.290000] cpufreq: __cpufreq_governor for CPU 0, event 4
-> > [    1.290000] cpufreq: __cpufreq_governor for CPU 0, event 1
-> > [    1.290000] cpufreq_performance: setting to 1196000 kHz because of event 1
-> > [    1.290000] cpufreq: __cpufreq_driver_target().1665 1
-> >
-> > This is my debug - .transition_ongoing is incremented ^^^^^^^^
-> >
-> > [    1.300000] cpufreq: target for CPU 0: 1196000 kHz, relation 1, requested 1196000 kHz
-> 
-> Quite straight forward actually..
+Hi Shawn, Guennadi,
 
-Apparently, not quite.
+These are the fixes for the issue reported by Guennadi.
+cpu_dev should point to cpu0 device instead of cpufreq-cpu0 platform
+devices. The dev_id is also updated while registering the cpu clocks.
 
-> Please try attached patch and see if it fixes
-> your problem.. Which it should if I am not wrong.. I will send it
-> separately then..
+Can you review these ? Tested-by is much appreciated as I don't
+have hardware to check the fix.
 
-It helps only once. The first switching works, the second one doesn't. 
-Below debug
+Regards,
+Sudeep
 
-[   12.010000] cpufreq: setting new policy for CPU 0: 398667 - 1196000 kHz
-[   12.010000] cpufreq: new min and max freqs are 398667 - 1196000 kHz
-[   12.010000] cpufreq: governor switch
-[   12.010000] cpufreq: __cpufreq_governor for CPU 0, event 2
-[   12.010000] cpufreq: __cpufreq_governor for CPU 0, event 5
-[   12.010000] ondemand governor failed, too long transition latency of HW, fallback to performance governor
-[   12.020000] cpufreq: __cpufreq_governor for CPU 0, event 4
-[   12.020000] cpufreq: __cpufreq_governor for CPU 0, event 1
-[   12.020000] cpufreq_performance: setting to 1196000 kHz because of event 1
-[   12.020000] cpufreq: target for CPU 0: 1196000 kHz, relation 1, requested 1196000 kHz
-[   12.020000] cpufreq: governor: change or update limits
-[   12.020000] cpufreq: __cpufreq_governor for CPU 0, event 3
-[   12.020000] cpufreq_performance: setting to 1196000 kHz because of event 3
-[   12.020000] cpufreq: target for CPU 0: 1196000 kHz, relation 1, requested 1196000 kHz
-[   12.030000] cpufreq: setting new policy for CPU 0: 398667 - 1196000 kHz
-[   12.030000] cpufreq: new min and max freqs are 398667 - 1196000 kHz
-[   12.030000] cpufreq: governor switch
-[   12.030000] cpufreq: __cpufreq_governor for CPU 0, event 2
-[   12.030000] cpufreq: __cpufreq_governor for CPU 0, event 5
-[   12.030000] ondemand governor failed, too long transition latency of HW, fallback to performance governor
-[   12.040000] cpufreq: __cpufreq_governor for CPU 0, event 4
-[   12.040000] cpufreq: __cpufreq_governor for CPU 0, event 1
-[   12.040000] cpufreq_performance: setting to 1196000 kHz because of event 1
-[   12.040000] cpufreq: target for CPU 0: 1196000 kHz, relation 1, requested 1196000 kHz
-[   12.040000] cpufreq: governor: change or update limits
-[   12.040000] cpufreq: __cpufreq_governor for CPU 0, event 3
-[   12.040000] cpufreq_performance: setting to 1196000 kHz because of event 3
-[   12.040000] cpufreq: target for CPU 0: 1196000 kHz, relation 1, requested 1196000 kHz
+Sudeep KarkadaNagesha (4):
+  cpufreq: cpufreq-cpu0: assign cpu_dev correctly to cpu0 device
+  cpufreq: imx6q-cpufreq: assign cpu_dev correctly to cpu0 device
+  ARM: i.MX: change dev_id to cpu0 while registering cpu clock
+  ARM: shmobile: change dev_id to cpu0 while registering cpu clock
 
-echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+ arch/arm/mach-imx/clk-imx27.c          | 2 +-
+ arch/arm/mach-imx/clk-imx51-imx53.c    | 2 +-
+ arch/arm/mach-imx/mach-imx6q.c         | 9 +++++++--
+ arch/arm/mach-shmobile/clock-r8a73a4.c | 2 +-
+ arch/arm/mach-shmobile/clock-sh73a0.c  | 2 +-
+ drivers/cpufreq/cpufreq-cpu0.c         | 7 ++++++-
+ drivers/cpufreq/imx6q-cpufreq.c        | 7 ++++++-
+ 7 files changed, 23 insertions(+), 8 deletions(-)
 
-[   66.490000] cpufreq: setting new policy for CPU 0: 398667 - 1196000 kHz
-[   66.490000] cpufreq: new min and max freqs are 398667 - 1196000 kHz
-[   66.490000] cpufreq: governor switch
-[   66.490000] cpufreq: __cpufreq_governor for CPU 0, event 2
-[   66.490000] cpufreq: __cpufreq_governor for CPU 0, event 5
-[   66.490000] cpufreq: __cpufreq_governor for CPU 0, event 4
-[   66.490000] cpufreq: __cpufreq_governor for CPU 0, event 1
-[   66.490000] cpufreq: target for CPU 0: 398667 kHz, relation 0, requested 398667 kHz
-[   66.490000] cpufreq: __cpufreq_driver_target().1677 1
-[   66.500000] cpufreq: notification 0 of frequency transition to 398666 kHz
-[   66.500000] cpufreq: __cpufreq_notify_transition().297 2
-[   66.500000] cpufreq: notification 0 of frequency transition to 398666 kHz
-[   66.500000] cpufreq: __cpufreq_notify_transition().297 3
-[   66.510000] cpufreq: notification 1 of frequency transition to 398666 kHz
-[   66.510000] cpufreq: __cpufreq_notify_transition().327 2
-[   66.520000] cpufreq: FREQ: 398666 - CPU: 0
-[   66.520000] cpufreq: notification 1 of frequency transition to 398666 kHz
-[   66.520000] cpufreq: __cpufreq_notify_transition().327 1
-[   66.520000] cpufreq: FREQ: 398666 - CPU: 1
-[   66.520000] cpufreq: cpufreq_notify_transition().366 0
-[   66.530000] cpufreq: governor: change or update limits
-[   66.530000] cpufreq: __cpufreq_governor for CPU 0, event 3
-[   66.530000] cpufreq: target for CPU 0: 398667 kHz, relation 0, requested 398667 kHz
-[   66.530000] cpufreq: __cpufreq_driver_target().1677 1
+--=20
+1.8.1.2
 
-echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
-[   72.470000] cpufreq: setting new policy for CPU 0: 398667 - 1196000 kHz
-[   72.470000] cpufreq: new min and max freqs are 398667 - 1196000 kHz
-[   72.470000] cpufreq: governor switch
-[   72.470000] cpufreq: __cpufreq_governor for CPU 0, event 2
-[   72.470000] cpufreq: __cpufreq_governor for CPU 0, event 5
-[   72.470000] cpufreq: __cpufreq_governor for CPU 0, event 4
-[   72.470000] cpufreq: __cpufreq_governor for CPU 0, event 1
-[   72.470000] cpufreq_performance: setting to 1196000 kHz because of event 1
-[   72.470000] cpufreq: target for CPU 0: 1196000 kHz, relation 1, requested 1196000 kHz
-[   72.470000] cpufreq: governor: change or update limits
-[   72.470000] cpufreq: __cpufreq_governor for CPU 0, event 3
-[   72.470000] cpufreq_performance: setting to 1196000 kHz because of event 3
-[   72.470000] cpufreq: target for CPU 0: 1196000 kHz, relation 1, requested 1196000 kHz
-
-> Thanks for your time..
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
