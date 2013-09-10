@@ -1,88 +1,46 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Tue, 10 Sep 2013 14:17:15 +0530
-Message-ID: <522EDC93.2060500@linux.vnet.ibm.com>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org> <5225E205.7080008@linux.vnet.ibm.com> <CAKohpom-UFkvORuuzAEUj1jVofHTEkDMhSmMUo4_0Xxfj605-g@mail.gmail.com>
+Subject: Re: [PATCH 4/5] cpufreq: Remove temporary fix for race between CPU
+ hotplug and sysfs-writes
+Date: Tue, 10 Sep 2013 14:27:47 +0530
+Message-ID: <522EDF0B.60308@linux.vnet.ibm.com>
+References: <20130906195206.26919.20884.stgit@srivatsabhat.in.ibm.com> <20130906195353.26919.76123.stgit@srivatsabhat.in.ibm.com> <CAKohpon96ecA3L9ux0tnFngPbWDmrVfW3xUWf_3aZ5qYZGXLVw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:58133 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250Ab3IJIv3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Sep 2013 04:51:29 -0400
+Received: from e28smtp03.in.ibm.com ([122.248.162.3]:55092 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751247Ab3IJJBr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Sep 2013 05:01:47 -0400
 Received: from /spool/local
-	by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 10 Sep 2013 18:33:39 +1000
-In-Reply-To: <CAKohpom-UFkvORuuzAEUj1jVofHTEkDMhSmMUo4_0Xxfj605-g@mail.gmail.com>
+	Tue, 10 Sep 2013 14:23:27 +0530
+In-Reply-To: <CAKohpon96ecA3L9ux0tnFngPbWDmrVfW3xUWf_3aZ5qYZGXLVw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Boyd <sboyd@codeaurora.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 09/10/2013 12:22 PM, Viresh Kumar wrote:
-> Back finally and I see lots of mails over cpufreq stuff.. :)
-> 
-> On 3 September 2013 18:50, Srivatsa S. Bhat
+On 09/10/2013 12:39 PM, Viresh Kumar wrote:
+> On 7 September 2013 01:23, Srivatsa S. Bhat
 > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> This doesn't solve the problem completely: it prevents the store_*() task
->> from continuing *only* when it concurrently executes the __cpufreq_governor()
->> function along with the CPU offline task. But if the two calls don't overlap,
->> we will still have the possibility where the store_*() task tries to acquire
->> the timer mutex after the CPU offline task has just finished destroying it.
+>> Commit "cpufreq: serialize calls to __cpufreq_governor()" had been a temporary
+>> and partial solution to the race condition between writing to a cpufreq sysfs
+>> file and taking a CPU offline. Now that we have a proper and complete solution
+>> to that problem, remove the temporary fix.
+>>
+>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>> ---
 > 
-> How exactly? My brain is still on vacations :)
->
-
-The race window is not limited to __cpufreq_governor() alone. It just starts there,
-but doesn't end there; it extends beyond that point. That's the main problem. And
-that's why serializing __cpufreq_governor() won't completely solve the issue.
-
-CPU_DOWN:
-
-__cpufreq_governor(STOP)  ----+
-  ...                         |
-  ...                         | RACE
-  ...                         | WINDOW
-  ...                         |
-sysfs teardown            ----+
- 
-In the STOP call, we destroy the timer mutex and set cur_policy = NULL. So the
-incorrect access to timer mutex can occur from that point until we finally unlink
-or teardown the sysfs files and prevent userspace from writing to those files.
-Thus, this window involves stuff other than the call to __cpufreq_governor() as
-well. So serializing __cpufreq_governor() alone is not enough.
-
-> Anyway, this was one of the problem that I tried to solve with my patch.
-> But there can be other race conditions where things can go wrong and so
-> that patch may still be useful.
->
-
-I agree, but see below (its the "may be useful" part that I'm not convinced
-about).
- 
-> Call to __cpufreq_governor() must be serialized I believe.
+> I would still vote for keeping this code or reverting this patch of yours..
+> As there might be other scenarios, than hotplug races, where this serialization
+> would be useful..
 > 
 
-Sure, its a good idea to serialize __cpufreq_governor(). However, we need
-specific justification for that. Just a hunch that something will go wrong is
-not enough, IMHO. We have to *prove* that something is indeed wrong, and only
-then add appropriate synchronization to fix it.
-
-Besides, even the commit message appeared a bit odd. It mentions something about
-problems with recursive calls. What cases are those? When do we end up recursively
-calling __cpufreq_governor()?  And hence, why can't we use plain locks and must
-instead use yet another quick-and-dirty variable to protect that function?
-[Using variables like that is bad from a lockdep perspective as well (apart from
-other things) : lockdep can't catch any resulting locking issues.]
-
-Other related questions that are worth answering would be: why should we add the
-synchronization *inside* __cpufreq_governor()? Why not add it at its call-sites?
-
-IOW, I'm all in for fixing problems, just that I'd be comfortable with the
-changes only when we completely understand what problem we are fixing and why
-that patch is the right fix for that problem.
+I would say it would be better to first explain those scenarios in detail, and
+then justify why this solution is the best one. Without that, it starts appearing
+more like premature optimization... and we all know the mess that it can lead to ;-)
 
 Regards,
 Srivatsa S. Bhat
