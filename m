@@ -1,47 +1,137 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/5] cpufreq: Remove temporary fix for race between CPU
- hotplug and sysfs-writes
-Date: Tue, 10 Sep 2013 14:27:47 +0530
-Message-ID: <522EDF0B.60308@linux.vnet.ibm.com>
-References: <20130906195206.26919.20884.stgit@srivatsabhat.in.ibm.com> <20130906195353.26919.76123.stgit@srivatsabhat.in.ibm.com> <CAKohpon96ecA3L9ux0tnFngPbWDmrVfW3xUWf_3aZ5qYZGXLVw@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v4 12/19] cpufreq: cpufreq-cpu0: remove device tree parsing
+ for cpu nodes
+Date: Tue, 10 Sep 2013 11:56:17 +0100
+Message-ID: <522EFAD1.4020709@arm.com>
+References: <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376991021-12160-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1376991021-12160-13-git-send-email-Sudeep.KarkadaNagesha@arm.com> <Pine.LNX.4.64.1309061539310.11068@axis700.grange> <522D93D7.4010307@arm.com> <20130909143253.GD4624@S2101-09.ap.freescale.net> <522DE822.3030907@arm.com> <20130910024404.GC5815@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:55092 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247Ab3IJJBr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Sep 2013 05:01:47 -0400
-Received: from /spool/local
-	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 10 Sep 2013 14:23:27 +0530
-In-Reply-To: <CAKohpon96ecA3L9ux0tnFngPbWDmrVfW3xUWf_3aZ5qYZGXLVw@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:56702 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104Ab3IJK4X convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Sep 2013 06:56:23 -0400
+In-Reply-To: <20130910024404.GC5815@S2101-09.ap.freescale.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Boyd <sboyd@codeaurora.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jonas Bonn <jonas@southpole.se>, Michal Simek <monstr@monstr.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>
 
-On 09/10/2013 12:39 PM, Viresh Kumar wrote:
-> On 7 September 2013 01:23, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Commit "cpufreq: serialize calls to __cpufreq_governor()" had been a temporary
->> and partial solution to the race condition between writing to a cpufreq sysfs
->> file and taking a CPU offline. Now that we have a proper and complete solution
->> to that problem, remove the temporary fix.
+On 10/09/13 03:44, Shawn Guo wrote:
+> On Mon, Sep 09, 2013 at 04:24:18PM +0100, Sudeep KarkadaNagesha wrote:
+>> Hi Shawn,
 >>
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> ---
+>> Ok. But I am bit suspicious about devm_clk_get(cpu_dev, NULL).
+>> I don't understand completely as how the clock are registered(whether
+>> with dev_id or with connection_id).
 > 
-> I would still vote for keeping this code or reverting this patch of yours..
-> As there might be other scenarios, than hotplug races, where this serialization
-> would be useful..
+> As the connection_id of devm_clk_get() call here is NULL, the clock
+> lookup should be registered with a proper dev_id in clk_register_clkdev()
+> call.  And that's what you have seen with imx and shmobile code.
 > 
+>
+>> A quick grep revealed that i.mx and shmobile is using conection id while
+>> registering.
+> 
+> They are using dev_id.
+> 
+Yes correct. I misunderstood, was expecting caller to pass dev and clk
+layer extract dev_name so that even when device name is changed the clk
+registration need not be changed.
 
-I would say it would be better to first explain those scenarios in detail, and
-then justify why this solution is the best one. Without that, it starts appearing
-more like premature optimization... and we all know the mess that it can lead to ;-)
+>> If the clock is registered with connection id and retrieved
+>> with cpu_dev(now dev_id is cpu0 and not cpufreq-cpu0), IIUC that would
+>> break. If we pass pdev->dev for clk_get, it should be fine but again
+>> IIUC it breaks highbank which gets all the information from DT.
+> 
+> If the clock lookup is from DT, we should be just fine, since it will
+> work as long as the DT node with 'clocks' property (/cpus/cpu@0 in this
+> case) is attached to the struct device pointer of devm_clk_get() call.
+> 
+This can be ignored if we are registering with "cpu0" as below in your
+patch.
+
+>> So only solution I can think of is to continue to have the code
+>> assigning (&pdev->dev)->of_node with cpu device node which is not clean
+>> and arguable as incorrect since there is no DT node for cpufreq-cpu0.
+>> I don't have a strong opinion though.
+>>
+>> Let me know how would you like to fix this.
+> 
+> So we only need to change all clkdev registration to use "cpu0" as
+> dev_id intstead of "cpufreq-cpu0.0", something like below.
+> 
+> And for imx, it should work even without the changes, because we have
+> device tree lookup ready there, and those clk_register_clkdev() calls
+> can just be removed now.  But I prefer to include the change and leave
+> the cleanup to another patch for keeping the change log clear.
+> 
+Ok makes sense, do you want me to include this patch also as fix.
+I can send a series to fix this if you OK:
+1. Fix in cpufreq-cpu0
+2. Fix in i.MX driver and platform file
+3. Patch below
 
 Regards,
-Srivatsa S. Bhat
+Sudeep
+
+> 
+> ---8<----------
+> 
+> diff --git a/arch/arm/mach-imx/clk-imx27.c b/arch/arm/mach-imx/clk-imx27.c
+> index c3cfa41..c6b40f3 100644
+> --- a/arch/arm/mach-imx/clk-imx27.c
+> +++ b/arch/arm/mach-imx/clk-imx27.c
+> @@ -285,7 +285,7 @@ int __init mx27_clocks_init(unsigned long fref)
+>  	clk_register_clkdev(clk[ata_ahb_gate], "ata", NULL);
+>  	clk_register_clkdev(clk[rtc_ipg_gate], NULL, "imx21-rtc");
+>  	clk_register_clkdev(clk[scc_ipg_gate], "scc", NULL);
+> -	clk_register_clkdev(clk[cpu_div], NULL, "cpufreq-cpu0.0");
+> +	clk_register_clkdev(clk[cpu_div], NULL, "cpu0");
+>  	clk_register_clkdev(clk[emi_ahb_gate], "emi_ahb" , NULL);
+>  
+>  	mxc_timer_init(MX27_IO_ADDRESS(MX27_GPT1_BASE_ADDR), MX27_INT_GPT1);
+> diff --git a/arch/arm/mach-imx/clk-imx51-imx53.c b/arch/arm/mach-imx/clk-imx51-imx53.c
+> index 1a56a33..de1964c 100644
+> --- a/arch/arm/mach-imx/clk-imx51-imx53.c
+> +++ b/arch/arm/mach-imx/clk-imx51-imx53.c
+> @@ -328,7 +328,7 @@ static void __init mx5_clocks_common_init(unsigned long rate_ckil,
+>  	clk_register_clkdev(clk[ssi2_ipg_gate], NULL, "imx-ssi.1");
+>  	clk_register_clkdev(clk[ssi3_ipg_gate], NULL, "imx-ssi.2");
+>  	clk_register_clkdev(clk[sdma_gate], NULL, "imx35-sdma");
+> -	clk_register_clkdev(clk[cpu_podf], NULL, "cpufreq-cpu0.0");
+> +	clk_register_clkdev(clk[cpu_podf], NULL, "cpu0");
+>  	clk_register_clkdev(clk[iim_gate], "iim", NULL);
+>  	clk_register_clkdev(clk[dummy], NULL, "imx2-wdt.0");
+>  	clk_register_clkdev(clk[dummy], NULL, "imx2-wdt.1");
+> diff --git a/arch/arm/mach-shmobile/clock-r8a73a4.c b/arch/arm/mach-shmobile/clock-r8a73a4.c
+> index 8ea5ef6..5bd2e85 100644
+> --- a/arch/arm/mach-shmobile/clock-r8a73a4.c
+> +++ b/arch/arm/mach-shmobile/clock-r8a73a4.c
+> @@ -555,7 +555,7 @@ static struct clk_lookup lookups[] = {
+>  	CLKDEV_CON_ID("pll2h",			&pll2h_clk),
+>  
+>  	/* CPU clock */
+> -	CLKDEV_DEV_ID("cpufreq-cpu0",		&z_clk),
+> +	CLKDEV_DEV_ID("cpu0",			&z_clk),
+>  
+>  	/* DIV6 */
+>  	CLKDEV_CON_ID("zb",			&div6_clks[DIV6_ZB]),
+> diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile/clock-sh73a0.c
+> index 1942eae..c92c023 100644
+> --- a/arch/arm/mach-shmobile/clock-sh73a0.c
+> +++ b/arch/arm/mach-shmobile/clock-sh73a0.c
+> @@ -616,7 +616,7 @@ static struct clk_lookup lookups[] = {
+>  	CLKDEV_DEV_ID("smp_twd", &twd_clk), /* smp_twd */
+>  
+>  	/* DIV4 clocks */
+> -	CLKDEV_DEV_ID("cpufreq-cpu0", &div4_clks[DIV4_Z]),
+> +	CLKDEV_DEV_ID("cpu0", &div4_clks[DIV4_Z]),
+>  
+>  	/* DIV6 clocks */
+>  	CLKDEV_CON_ID("vck1_clk", &div6_clks[DIV6_VCK1]),
+> 
+> 
+
 
