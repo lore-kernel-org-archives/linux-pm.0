@@ -1,45 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to cpu0 device
-Date: Wed, 11 Sep 2013 14:47:42 +0200
-Message-ID: <2106241.8mK7DMLEOF@vostro.rjw.lan>
-References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <Pine.LNX.4.64.1309111005310.26942@axis700.grange> <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [PATCH 1/1] Cpufreq: Remove fossil comment of cpufreq_set_policy
+Date: Wed, 11 Sep 2013 08:39:11 -0400
+Message-ID: <5230646F.3030701@intel.com>
+References: <1378824287-7696-1-git-send-email-tianyu.lan@intel.com> <CAKohponpX9AedBrsASojK7fKS-rRN-AQwJT42=mrOJcNpGqE+w@mail.gmail.com> <522FE369.3030106@intel.com> <CAKohponyaogXLr5sJzQbb6ZhswMWfwhFTm-b=4Ztzg=UmKx_ig@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:44795 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751523Ab3IKMgm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Sep 2013 08:36:42 -0400
-In-Reply-To: <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponyaogXLr5sJzQbb6ZhswMWfwhFTm-b=4Ztzg=UmKx_ig@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Shawn Guo <shawn.guo@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 11, 2013 02:12:24 PM Viresh Kumar wrote:
-> On 11 September 2013 13:45, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> > Noone else seems to complain, but I don't think these =20, =09 etc. codes
-> > have been invented on my side and I don't think they belong here. I'm
-> > handling enough mails / patches daily to believe, that my mail system
-> > isn't the cause of this. Could you please verify and regenerate and
-> > resend? Unless I'm mistaken this looks like a corruption on your SMTP
-> > side.
-> 
-> Its on Sudeep's side :) .. Or on ARM's side..
-> Don't know why nobody else complained, Atleast people who test these
-> patches (Like Shawn), must have applied them from mail.. Don't know
-> why they aren't shouting :)
+On 09/11/2013 06:08 AM, Viresh Kumar wrote:
+> On 11 September 2013 08:58, Lan Tianyu <tianyu.lan@intel.com> wrote:
+>>  From 668e1b6fd94b5c0e56a651b4c60cbbc7a6868b46 Mon Sep 17 00:00:00 2001
+>> From: Lan Tianyu <tianyu.lan@intel.com>
+>> Date: Wed, 11 Sep 2013 11:31:15 +0800
+>> Subject: [PATCH] Cpufreq/governor: Remove fossil comment
+>>
+>> cpufreq_set_policy() has been changed to origin __cpufreq_set_policy()
+>> and policy->lock has been converted to rewrite lock by commit 5a01f2.
+>> So remove it.
+>>
+>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>> ---
+>>   drivers/cpufreq/cpufreq_userspace.c | 11 -----------
+>>   1 file changed, 11 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq_userspace.c
+>> b/drivers/cpufreq/cpufreq_userspace.c
+>> index 0307809..4dbf1db 100644
+>> --- a/drivers/cpufreq/cpufreq_userspace.c
+>> +++ b/drivers/cpufreq/cpufreq_userspace.c
+>> @@ -38,18 +38,7 @@ static int cpufreq_set(struct cpufreq_policy *policy,
+>> unsigned int freq)
+>>          if (!per_cpu(cpu_is_managed, policy->cpu))
+>>                  goto err;
+>>
+>> -       /*
+>> -        * We're safe from concurrent calls to ->target() here
+>> -        * as we hold the userspace_mutex lock. If we were calling
+>> -        * cpufreq_driver_target, a deadlock situation might occur:
+>> -        * A: cpufreq_set (lock userspace_mutex) ->
+>> -        *      cpufreq_driver_target(lock policy->lock)
+>> -        * B: cpufreq_set_policy(lock policy->lock) ->
+>> -        *      __cpufreq_governor ->
+>> -        *         cpufreq_governor_userspace (lock userspace_mutex)
+>> -        */
+>>          ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
+>> -
+>>    err:
+>>          mutex_unlock(&userspace_mutex);
+>>          return ret;
+>
+> Looks fine:
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
 
-This looks like broken quoted-printable e-mail encoding somewhere (either
-on the sending or on the receiving end).
+Thanks. I will send formal version.
 
-> He mostly send pull requests to Rafael and so this wasn't a issue for
-> Rafael :)
-
-Git pulls are, well, from git, so e-mail encoding doesn't have anything to do
-with them ...
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
