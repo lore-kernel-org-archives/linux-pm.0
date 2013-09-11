@@ -1,38 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] cpufreq: fixes for v3.12
-Date: Thu, 12 Sep 2013 00:58:54 +0200
-Message-ID: <1795989.18GOYqdUtX@vostro.rjw.lan>
-References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: cpufreq regression due to dceff5c "cpufreq: fix serialization
+ issues with freq change notifiers"
+Date: Wed, 11 Sep 2013 16:53:31 -0600
+Message-ID: <5230F46B.7070006@wwwdotorg.org>
+References: <5230ECB4.2090306@wwwdotorg.org> <13389782.ui3WXEBqQV@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:51092 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204Ab3IKWxe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 18:53:34 -0400
+In-Reply-To: <13389782.ui3WXEBqQV@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tuesday, September 10, 2013 06:59:45 PM Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 09/11/2013 04:51 PM, Rafael J. Wysocki wrote:
+> On Wednesday, September 11, 2013 04:20:36 PM Stephen Warren wrote:
+>> One of the test cases I run (not often enough, hence I just noticed this
+>> late) is the following, to make sure our cpufreq driver is present, and
+>> adjusting the CPU clock as expected:
+>>
+>> # echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq ;
+>> sleep 1 ; cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ;
+>> echo 216000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq  ;
+>> sleep 1 ; cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+>>
+>> which prints the following when it works:
+>>
+>> 1000000
+>> 216000
+>>
+>> In next-20130909, that doesn't work, but instead prints:
+>>
+>> 216000
+>> 216000
+>>
+>> I've also seen the following during git bisect:
+>>
+>> 608000
+>> 608000
+>>
+>> ... and perhaps other unexpected sets of values.
 > 
-> Hi Shawn, Guennadi,
-> 
-> These are the fixes for the issue reported by Guennadi.
-> cpu_dev should point to cpu0 device instead of cpufreq-cpu0 platform
-> devices. The dev_id is also updated while registering the cpu clocks.
-> 
-> Can you review these ? Tested-by is much appreciated as I don't
-> have hardware to check the fix.
+> Can you please test the current linux-next?  I've reverted the commit that
+> dceff5c attempted to fix, so the output should be correct now.
 
-I have a little problem with this series, because the last patch is based
-on the current Linus' tree rather than on my master branch which is what
-I have ready to push.  I don't think it makes sense to rebase it, however,
-because that would introduce a merge conflict for Linus unnecessarily.
-
-To avoid merging stuff back and forth, I'll push this series later in the
-cycle.
-
-Thanks,
-Rafael
-
+Yes, indeed next-20130911 works fine. Thanks, and sorry for the noise.
