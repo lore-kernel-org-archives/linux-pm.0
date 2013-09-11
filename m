@@ -1,57 +1,31 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Wed, 11 Sep 2013 00:34:51 +0200
-Message-ID: <2521560.SfeNbV74nj@vostro.rjw.lan>
-References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan> <522F86AD.6010603@wwwdotorg.org>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 0/4] cpufreq: fixes for v3.12
+Date: Wed, 11 Sep 2013 10:23:45 +0800
+Message-ID: <20130911022343.GJ5815@S2101-09.ap.freescale.net>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:42596 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751199Ab3IJWXv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 10 Sep 2013 18:23:51 -0400
-In-Reply-To: <522F86AD.6010603@wwwdotorg.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tuesday, September 10, 2013 02:53:01 PM Stephen Warren wrote:
-> On 09/09/2013 05:14 PM, Rafael J. Wysocki wrote:
-> > On Monday, September 09, 2013 03:29:06 PM Stephen Warren wrote:
-> >> On 09/09/2013 02:24 PM, Rafael J. Wysocki wrote:
-> >>> On Monday, September 09, 2013 02:01:32 PM Stephen Warren wrote:
-> >>>> On 09/09/2013 02:01 PM, Rafael J. Wysocki wrote:
-> >>>>> On Monday, September 09, 2013 01:22:23 PM Stephen Warren wrote:
-> >>>>>> Viresh,
-> >>>>>>
-> >>>>>> I'm seeing the crash below when suspending my system for the second time.
-> >>>>>>
-> >>>>>> I can avoid this with the following patch, which adds a check which
-> >>>>>> already exists in all-but-one other places that the same lookup is made:
-> >>>>>
-> >>>>> Which kernel did you test?
-> >>>>
-> >>>> next-20130909.
-> >>>
-> >>> Is it reproducible with the current mainline?
-> >>
-> >> This does not affect v3.11, but does affect current HEAD; 300893b "Merge
-> >> tag 'xfs-for-linus-v3.12-rc1' of git://oss.sgi.com/xfs/xfs".
-> > 
-> > What system does it break on?
+On Tue, Sep 10, 2013 at 06:59:45PM +0100, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> A dual-core ARM system (NVIDIA Tegra20 SoC, Harmony board).
+> Hi Shawn, Guennadi,
 > 
-> > Any chance to bisect cpufreq changes between 3.11 and the current HEAD?
+> These are the fixes for the issue reported by Guennadi.
+> cpu_dev should point to cpu0 device instead of cpufreq-cpu0 platform
+> devices. The dev_id is also updated while registering the cpu clocks.
 > 
-> Sure, it's due to 5302c3f "cpufreq: Perform light-weight init/teardown
-> during suspend/resume".
+> Can you review these ? Tested-by is much appreciated as I don't
+> have hardware to check the fix.
 
-Thanks!
+For IMX,
 
-Srivatsa, any chance to look into this?
-
-Rafael
+Tested-by: Shawn Guo <shawn.guo@linaro.org>
 
