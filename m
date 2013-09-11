@@ -1,46 +1,44 @@
-From: tianyu.lan@intel.com
-Subject: [PATCH] Cpufreq: Acquire read lock in the cpufreq_policy_restore() rather than write lock
-Date: Wed, 11 Sep 2013 15:05:05 +0800
-Message-ID: <1378883105-1411-1-git-send-email-tianyu.lan@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:58136 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751300Ab3IKHOh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Sep 2013 03:14:37 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v8 0/7] cpufreq:boost: CPU Boost mode support
+Date: Wed, 11 Sep 2013 13:20:41 +0530
+Message-ID: <CAKohpo=4sg9AkXuwBwLVuj7_sdAdwap7a0Yp41KSEHvNMyWaTQ@mail.gmail.com>
+References: <CAKohpom90VAMYHkp3stbJJ-7H3y3zrVoQ+1q=Vza2Q0JhG8bNw@mail.gmail.com>
+	<20130910141603.6225fe4e@amdc308.digital.local>
+	<1525010.ijhgMNYcdJ@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1525010.ijhgMNYcdJ@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com
-Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Lan Tianyu <tianyu.lan@intel.com>
+That is some important piece of information that might be useful for
+others and so cc'ing LKML and other lists..
 
-In the cpufreq_policy_restore(), policy before system suspend is read from
-from percpu's cpufreq_cpu_data_fallback. It's read operation rather than
-write operation. So convert write lock to read lock
-
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
- drivers/cpufreq/cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 81ceea6..b762f9b 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -912,11 +912,11 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
- 	struct cpufreq_policy *policy;
- 	unsigned long flags;
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
- 
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	return policy;
- }
--- 
-1.8.4.rc0.1.g8f6a3e5.dirty
-
+On 11 September 2013 01:06, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, September 10, 2013 02:16:03 PM Lukasz Majewski wrote:
+>> For my curiosity - what is the difference between bleeding-edge and
+>> linux-next branches at kernel_pm?
+>
+> linux-next are patches that I'm going to push to Linus in the future and that
+> have passed automated build testing.  I still may drop one of them occasionally
+> or add tags to commits and rebase the branch as a result, though.
+>
+> bleeding-edge is linux-next plus patches under automated build testing, but it
+> may contain some purely experimental stuff too.  During a merge window, like
+> for example today, it also may contain material for the second next release
+> (like 3.13 at the moment).
+>
+> In addition to those, there are topic branches like pm-cpufreq, acpica etc.
+> that are only material either in the Linus' tree already or going to be pushed
+> to Linus going forward and I don't rebase them.
+>
+> So if you want a stable branch to work on top of, either use one of the topic
+> branches (but please note that they may be somewhat behind Linus sometimes), or
+> ask me for one directly.
+>
+> Thanks,
+> Rafael
+>
