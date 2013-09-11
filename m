@@ -1,41 +1,60 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to
- cpu0 device
-Date: Wed, 11 Sep 2013 17:22:59 +0800
-Message-ID: <20130911092257.GK5815@S2101-09.ap.freescale.net>
-References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <Pine.LNX.4.64.1309111005310.26942@axis700.grange>
- <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/1] Cpufreq: Remove fossil comment of cpufreq_set_policy
+Date: Wed, 11 Sep 2013 15:38:25 +0530
+Message-ID: <CAKohponyaogXLr5sJzQbb6ZhswMWfwhFTm-b=4Ztzg=UmKx_ig@mail.gmail.com>
+References: <1378824287-7696-1-git-send-email-tianyu.lan@intel.com>
+	<CAKohponpX9AedBrsASojK7fKS-rRN-AQwJT42=mrOJcNpGqE+w@mail.gmail.com>
+	<522FE369.3030106@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <522FE369.3030106@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 11, 2013 at 02:12:24PM +0530, Viresh Kumar wrote:
-> On 11 September 2013 13:45, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> > Noone else seems to complain, but I don't think these =20, =09 etc. codes
-> > have been invented on my side and I don't think they belong here. I'm
-> > handling enough mails / patches daily to believe, that my mail system
-> > isn't the cause of this. Could you please verify and regenerate and
-> > resend? Unless I'm mistaken this looks like a corruption on your SMTP
-> > side.
-> 
-> Its on Sudeep's side :) .. Or on ARM's side..
-> Don't know why nobody else complained, Atleast people who test these
-> patches (Like Shawn), must have applied them from mail.. Don't know
-> why they aren't shouting :)
+On 11 September 2013 08:58, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> From 668e1b6fd94b5c0e56a651b4c60cbbc7a6868b46 Mon Sep 17 00:00:00 2001
+> From: Lan Tianyu <tianyu.lan@intel.com>
+> Date: Wed, 11 Sep 2013 11:31:15 +0800
+> Subject: [PATCH] Cpufreq/governor: Remove fossil comment
+>
+> cpufreq_set_policy() has been changed to origin __cpufreq_set_policy()
+> and policy->lock has been converted to rewrite lock by commit 5a01f2.
+> So remove it.
+>
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq_userspace.c | 11 -----------
+>  1 file changed, 11 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_userspace.c
+> b/drivers/cpufreq/cpufreq_userspace.c
+> index 0307809..4dbf1db 100644
+> --- a/drivers/cpufreq/cpufreq_userspace.c
+> +++ b/drivers/cpufreq/cpufreq_userspace.c
+> @@ -38,18 +38,7 @@ static int cpufreq_set(struct cpufreq_policy *policy,
+> unsigned int freq)
+>         if (!per_cpu(cpu_is_managed, policy->cpu))
+>                 goto err;
+>
+> -       /*
+> -        * We're safe from concurrent calls to ->target() here
+> -        * as we hold the userspace_mutex lock. If we were calling
+> -        * cpufreq_driver_target, a deadlock situation might occur:
+> -        * A: cpufreq_set (lock userspace_mutex) ->
+> -        *      cpufreq_driver_target(lock policy->lock)
+> -        * B: cpufreq_set_policy(lock policy->lock) ->
+> -        *      __cpufreq_governor ->
+> -        *         cpufreq_governor_userspace (lock userspace_mutex)
+> -        */
+>         ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
+> -
+>   err:
+>         mutex_unlock(&userspace_mutex);
+>         return ret;
 
-I'm not sure what's going on here.  But I did apply the patches from
-mail without any problem, and the patch I got look just like what the
-archive below [1] shows.
+Looks fine:
 
-Shawn
-
-[1] http://www.spinics.net/lists/arm-kernel/msg272474.html
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
