@@ -1,71 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Wed, 11 Sep 2013 17:29:07 +0530
-Message-ID: <CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
-References: <522E1FEF.6080803@wwwdotorg.org>
-	<1775778.MeiRhuYy7o@vostro.rjw.lan>
-	<522F86AD.6010603@wwwdotorg.org>
-	<2521560.SfeNbV74nj@vostro.rjw.lan>
-	<52304439.3030301@linux.vnet.ibm.com>
-	<CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
-	<CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com>
-	<5230509D.6040205@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to cpu0 device
+Date: Wed, 11 Sep 2013 14:47:42 +0200
+Message-ID: <2106241.8mK7DMLEOF@vostro.rjw.lan>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <Pine.LNX.4.64.1309111005310.26942@axis700.grange> <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5230509D.6040205@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:44795 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751523Ab3IKMgm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Sep 2013 08:36:42 -0400
+In-Reply-To: <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Shawn Guo <shawn.guo@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 11 September 2013 16:44, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Hmm? The problem is not about merely updating the policy->cpu field; the
-> main issue is that the existing code was not letting the cpufreq-stats
-> code know that we updated the policy->cpu under the hood. It is important
-> for cpufreq-stats to know this because it maintains the reference to its
-> stats structure by associating it with the policy->cpu. So if policy->cpu
-> changes under the hood, it loses track of its reference. So we need to
-> keep that code informed about changes to policy->cpu. Thus, we need to call
-> update_policy_cpu() in the CPU online path (during resume). I don't see
-> how we can skip that.
+On Wednesday, September 11, 2013 02:12:24 PM Viresh Kumar wrote:
+> On 11 September 2013 13:45, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> > Noone else seems to complain, but I don't think these =20, =09 etc. codes
+> > have been invented on my side and I don't think they belong here. I'm
+> > handling enough mails / patches daily to believe, that my mail system
+> > isn't the cause of this. Could you please verify and regenerate and
+> > resend? Unless I'm mistaken this looks like a corruption on your SMTP
+> > side.
+> 
+> Its on Sudeep's side :) .. Or on ARM's side..
+> Don't know why nobody else complained, Atleast people who test these
+> patches (Like Shawn), must have applied them from mail.. Don't know
+> why they aren't shouting :)
 
-Okay.. There are two different ways in which cpufreq_add_dev() work
-currently..
+This looks like broken quoted-printable e-mail encoding somewhere (either
+on the sending or on the receiving end).
 
-Boot cluster (i.e. policy with boot CPU)
----------------
+> He mostly send pull requests to Rafael and so this wasn't a issue for
+> Rafael :)
 
-Here cpufreq_remove_dev() is never called for boot cpu but all others.
-And similarly cpufreq_add_dev() is never called for boot cpu but all others.
+Git pulls are, well, from git, so e-mail encoding doesn't have anything to do
+with them ...
 
-Now policy->cpu contains meaningful cpu at beginning of resume and
-we don't need to modify that at all.. For all the remaining CPUs we
-better call cpufreq_add_policy_cpu() rather..
-
-Non-boot Cluster
----------------------
-
-All CPUs here are removed and at the end policy->cpu contains the last
-cpu removed.. So, for a cluster with cpu 2 and 3.... it will contain 3..
-
-Not at resume we will add cpu2 first and so need to update policy->cpu
-to 2.. But for all other CPUs in this cluster we return early from
-cpufreq_add_dev() and call cpufreq_add_policy_cpu() as policy->cpus
-was fixed by call to ->init() for the first cpu of this cluster..
-
-And so we never reach the line: policy->cpu = cpu;
-
-For the first cpu of non-boot cluster we need to call update_policy_cpu()
-and not for others..
-
-
-But for the boot cluster if we can call ->init() somehow at resume time,
-then things would be fairly similar in both cases..
-
-I am running of time now, as need to leave office now...
-I hope I made the problem more clear or probably the way I see it :)
-
---
-viresh
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
