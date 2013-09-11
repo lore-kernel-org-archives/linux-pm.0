@@ -1,19 +1,19 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq: Fix crash in cpufreq-stats during suspend/resume
-Date: Thu, 12 Sep 2013 01:41:53 +0530
-Message-ID: <20130911201128.7749.61727.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 1/3] cpufreq: Fix crash in cpufreq-stats during suspend/resume
+Date: Thu, 12 Sep 2013 01:42:59 +0530
+Message-ID: <20130911201239.7832.72612.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:34120 "EHLO e8.ny.us.ibm.com"
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:60970 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756766Ab3IKUPz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Sep 2013 16:15:55 -0400
+	id S932077Ab3IKURF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Sep 2013 16:17:05 -0400
 Received: from /spool/local
-	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 11 Sep 2013 21:15:54 +0100
+	Wed, 11 Sep 2013 16:17:04 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl, swarren@wwwdotorg.org, viresh.kumar@linaro.org
