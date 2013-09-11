@@ -1,142 +1,152 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 2/2] cpufreq: tegra: Re-model Tegra cpufreq driver
-Date: Wed, 11 Sep 2013 13:33:42 -0600
-Message-ID: <5230C596.7010000@wwwdotorg.org>
-References: <1378898355-31290-1-git-send-email-bilhuang@nvidia.com> <1378898355-31290-3-git-send-email-bilhuang@nvidia.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Thu, 12 Sep 2013 01:16:37 +0530
+Message-ID: <5230C89D.7010801@linux.vnet.ibm.com>
+References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan> <522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan> <52304439.3030301@linux.vnet.ibm.com> <523094CD.3000506@wwwdotorg.org> <5230B078.3070306@linux.vnet.ibm.com> <5230B991.3040702@linux.vnet.ibm.com> <5230BE75.7040307@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:35705 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509Ab3IKTdq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 15:33:46 -0400
-In-Reply-To: <1378898355-31290-3-git-send-email-bilhuang@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5230BE75.7040307@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bill Huang <bilhuang@nvidia.com>
-Cc: rjw@sisk.pl, viresh.kumar@linaro.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 09/11/2013 05:19 AM, Bill Huang wrote:
-> Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
+On 09/12/2013 12:33 AM, Stephen Warren wrote:
+> On 09/11/2013 12:42 PM, Srivatsa S. Bhat wrote:
+> ...
+>> OK, I took a second look at the code, and I suspect that applying the
+>> second patch might help. So can you try by applying both the patches
+>> please[1][2]?
+>>
+> ...
+>> [1]. http://marc.info/?l=linux-kernel&m=137889516210816&w=2
+>> [2]. http://marc.info/?l=linux-kernel&m=137889800511940&w=2
 > 
-> * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
-> * Move Tegra20 specific codes into tegra20-cpufreq.c.
-> * Bind Tegra cpufreq dirver with a fake device so defer probe would work
->   when we're going to get regulator in the driver to support voltage
->   scaling (DVFS).
-> * Call tegra_cpufreq_init() in Tegra machine code specifically so it
->   won't be called in multi-platform kernel which is not running on Tegra
->   SoCs.
+> Yes, with both of those patches applies, the problem is solved:-)
+> 
+> I was going to test the second patch originally, but it sounded like it
+> was more of a cleanup rather than a fix for my issue, so I didn't bother
+> when I found the problem wasn't solved by patch 1. Sorry!
+> 
 
-That's a lot of things for one patch. Can this please be split up?
+Well, honestly, even I had intended the second patch as a cleanup and
+hadn't asked you to test it ;-) Only when you reported that the first patch
+failed to solve your problem, I realized that the second patch was
+important too! :-) Thanks for testing!
 
-In particular, I would like a separate patch for the final bullet point,
-and for that patch to be the first in the series, so that we can merge
-it into both the Tegra and cpufreq trees if needed to resolve any conflicts.
+> For the record, I'm testing on a 2-CPU system, so I'm not sure whether
+> your explanation applies; it talks about CPUs 2 and 3 whereas I only
+> have CPUs 0 and 1, but perhaps your explanation applies equally to any
+> pair of CPUs?
+> 
 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+Yes, it applies to any pair of CPUs, as long as the CPU first taken down
+is not the policy->cpu. In your case, it applies like this:
+IIUC, CPU0 is the boot cpu, and hence it wont be taken offline using hotplug.
+So only CPU 1 is taken offline during suspend. And if it is not the policy->cpu,
+then it hits the very same bug that I described with the analogy of CPUs 2
+and 3.
 
->  config ARM_TEGRA_CPUFREQ
-> -	bool "TEGRA CPUFreq support"
-> -	depends on ARCH_TEGRA
-> +	bool
-> +	select CPU_FREQ_TABLE
+> For the record, here's the information you requested in the other email:
+> 
+> # cat /sys/devices/system/cpu/cpu*/cpufreq/related_cpus
+> 0 1
+> 0 1
+> 
 
-Why make this a hidden option? It'd be best to leave it user-visible, so
-that existing defconfigs aren't broken by this change.
+Thanks! It would have been more useful to somehow know which was the
+policy->cpu. But looking at the problem, certainly CPU0 was the policy->cpu
+in your case. Anyway, nevermind, good to know that the problem got solved
+by the 2 patches :-) And more importantly, we now fully understand the
+problems that can lead to the NULL deref and the solutions, as outlined below:
 
-> +config ARM_EXYNOS_CPUFREQ
-> +	bool
->  	select CPU_FREQ_TABLE
+Problem 1 : The last surviving policy->cpu during suspend might not
+be the one which is onlined during resume. So policy->cpu updates can
+get missed by the cpufreq-stats code. This is solved by patch 1.
 
-I think that Exynos change is a mistake?
+Problem 2 : If a CPU other than the policy->cpu goes down first during
+suspend, then we end up spuriously updating the policy->cpu field, making
+update_policy_cpu() go crazy. This is solved by patch 2.
 
-> +
-> +config ARM_TEGRA20_CPUFREQ
-> +	bool "NVIDIA TEGRA20"
-> +	depends on ARCH_TEGRA
+Ideally, I think we should fix the weird if/else condition, since *that*
+is the real culprit; and retain patch 2 as a cleanup.
 
-Shouldn't that be ARCH_TEGRA_2x_SOC specifically?
+Something like this:
 
->  	default y
 
-Does the syntax "default ARM_TEGRA_CPUFREQ" work? Actually, this should
-depend on ARM_TEGRA_CPUFREQ rather than select it, and that way you can
-keep this "default y" and it'll only be enabled if Tegra cpufreq is enabled.
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: Restructure if/else block to avoid unintended behavior
 
-In summary, I think the following should work well:
+In __cpufreq_remove_dev_prepare(), the code which decides whether to remove
+the sysfs link or nominate a new policy cpu, is governed by an if/else block
+with a rather complex set of conditionals. Worse, they harbor a subtlety
+which leads to certain unintended behavior.
 
-config ARM_TEGRA_CPUFREQ
-	bool "TEGRA CPUFreq support"
-	depends on ARCH_TEGRA
-	select CPU_FREQ_TABLE
+The code looks like this:
 
-config ARM_TEGRA20_CPUFREQ
-	bool "NVIDIA TEGRA20"
-	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
-	default y
-	help
-	  This adds the CPUFreq driver for NVIDIA TEGRA20 SoC.
+        if (cpu != policy->cpu && !frozen) {
+                sysfs_remove_link(&dev->kobj, "cpufreq");
+        } else if (cpus > 1) {
+		new_cpu = cpufreq_nominate_new_policy_cpu(...);
+		...
+		update_policy_cpu(..., new_cpu);
+	}
 
-	  If in doubt, say N.
+The original intention was:
+If the CPU going offline is not policy->cpu, just remove the link.
+On the other hand, if the CPU going offline is the policy->cpu itself,
+handover the policy->cpu job to some other surviving CPU in that policy.
 
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+But because the 'if' condition also includes the 'frozen' check, now there
+are *two* possibilities by which we can enter the 'else' block:
 
-> -#define NUM_CPUS	2
-> +#define NUM_CPUS	4
+1. cpu == policy->cpu (intended)
+2. cpu != policy->cpu && frozen (unintended)
 
-NUM_ or MAX_?
+Due to the second (unintended) scenario, we end up spuriously nominating
+a CPU as the policy->cpu, even when the existing policy->cpu is alive and
+well. This can cause problems further down the line, especially when we end
+up nominating the same policy->cpu as the new one (ie., old == new),
+because it totally confuses update_policy_cpu().
 
-> diff --git a/drivers/cpufreq/tegra-cpufreq.h b/drivers/cpufreq/tegra-cpufreq.h
+To avoid this mess, restructure the if/else block to only do what was
+originally intended, and thus prevent any unwelcome surprises.
 
-> +struct tegra_cpufreq_data {
-> +	struct device *dev;
-> +	struct clk	*cpu_clk;
-> +	struct cpufreq_frequency_table	*freq_table;
-> +	void (*vote_emc_on_cpu_rate)(unsigned long);
-> +	int (*cpu_clk_set_rate)(unsigned long);
-> +	void (*cpufreq_clk_init)(void);
-> +	void (*cpufreq_clk_exit)(void);
-> +};
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
 
-There's a mix of runtime and configuration-time data there. It'd be
-nicer to split the two out, so that all the configuration data could be
-in a const struct that's pointed to by a field in the runtime data
-struct, or passed back out of tegra20_cpufreq_init() as a separate
-pointer variable and assigned to a separate global in tegra-cpufreq.c,
-to avoid double-indirections everywhere at runtime.
+ drivers/cpufreq/cpufreq.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 62bdb95..247842b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1193,8 +1193,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 		cpumask_clear_cpu(cpu, policy->cpus);
+ 	unlock_policy_rwsem_write(cpu);
+ 
+-	if (cpu != policy->cpu && !frozen) {
+-		sysfs_remove_link(&dev->kobj, "cpufreq");
++	if (cpu != policy->cpu) {
++		if (!frozen)
++			sysfs_remove_link(&dev->kobj, "cpufreq");
+ 	} else if (cpus > 1) {
+ 
+ 		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
 
-> +static struct cpufreq_frequency_table freq_table[] = {
-> +	{ .frequency = 216000 },
-> +	{ .frequency = 312000 },
-> +	{ .frequency = 456000 },
-> +	{ .frequency = 608000 },
-> +	{ .frequency = 760000 },
-> +	{ .frequency = 816000 },
-> +	{ .frequency = 912000 },
-> +	{ .frequency = 1000000 },
-> +	{ .frequency = CPUFREQ_TABLE_END },
-> +};
 
-Should/can we query that list from the clock driver?
 
-> +int tegra20_cpufreq_init(struct tegra_cpufreq_data *data)
-...
-> +	data->cpu_clk = cpu_clk;
-> +	data->freq_table = freq_table;
-> +	data->vote_emc_on_cpu_rate = tegra20_vote_emc_on_cpu_rate;
-> +	data->cpu_clk_set_rate = tegra20_cpu_clk_set_rate;
-> +	data->cpufreq_clk_init = tegra20_cpufreq_clk_init;
-> +	data->cpufreq_clk_exit = tegra20_cpufreq_clk_exit;
 
-With the struct split I proposed above, most of that could just be:
+So can you see if patch 1 + this above fix solves your problem as well?
+Then we can retain the original patch 2 as a cleanup, after these 2 patches.
+This organization also makes the code look better and understandable.
 
-*soc_config = &tegra20_cpufreq_config;
+Rafael, I'll post the 3 patches separately after knowing the results from
+Stephen. You don't have to bother deciphering the patch ordering just yet ;-)
 
-where there's an extra function parameter "struct tegra_cpufreq_config
-**soc_config", and most of those values are in a static const
-tegra_cpufreq_config tegra20_cpufreq_config = { ... }.
+Regards,
+Srivatsa S. Bhat
 
