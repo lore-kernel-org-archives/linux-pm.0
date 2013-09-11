@@ -1,44 +1,134 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/5] CPUFreq: Last set of updates for 3.13
-Date: Wed, 11 Sep 2013 16:29:23 +0530
-Message-ID: <CAKohpomFjmfZ5Ce91o1VOhGT33L+jH-5G0NgAQCTFL6v7kNFdw@mail.gmail.com>
-References: <cover.1378893296.git.viresh.kumar@linaro.org>
-	<CAP245DXeU39UE5-_G3J=r=arPt-8DieL4uN9SOOvWQf5xS3wAA@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Wed, 11 Sep 2013 16:39:14 +0530
+Message-ID: <52304F5A.8070509@linux.vnet.ibm.com>
+References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan> <522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan> <52304439.3030301@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAP245DXeU39UE5-_G3J=r=arPt-8DieL4uN9SOOvWQf5xS3wAA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Lists LAKML <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:35264 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810Ab3IKLNP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 07:13:15 -0400
+Received: from /spool/local
+	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 11 Sep 2013 21:05:40 +1000
+In-Reply-To: <52304439.3030301@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-On 11 September 2013 16:23, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> Thanks for the great work cleaning up all the drivers. IIUC, you have
-> ~200 patches lined up for the 3.13 merge window.
+On 09/11/2013 03:51 PM, Srivatsa S. Bhat wrote:
+> On 09/11/2013 04:04 AM, Rafael J. Wysocki wrote:
+>> On Tuesday, September 10, 2013 02:53:01 PM Stephen Warren wrote:
+>>> On 09/09/2013 05:14 PM, Rafael J. Wysocki wrote:
+>>>> On Monday, September 09, 2013 03:29:06 PM Stephen Warren wrote:
+>>>>> On 09/09/2013 02:24 PM, Rafael J. Wysocki wrote:
+>>>>>> On Monday, September 09, 2013 02:01:32 PM Stephen Warren wrote:
+>>>>>>> On 09/09/2013 02:01 PM, Rafael J. Wysocki wrote:
+>>>>>>>> On Monday, September 09, 2013 01:22:23 PM Stephen Warren wrote:
+>>>>>>>>> Viresh,
+>>>>>>>>>
+>>>>>>>>> I'm seeing the crash below when suspending my system for the second time.
+>>>>>>>>>
+>>>>>>>>> I can avoid this with the following patch, which adds a check which
+>>>>>>>>> already exists in all-but-one other places that the same lookup is made:
+>>>>>>>>
+>>>>>>>> Which kernel did you test?
+>>>>>>>
+>>>>>>> next-20130909.
+>>>>>>
+>>>>>> Is it reproducible with the current mainline?
+>>>>>
+>>>>> This does not affect v3.11, but does affect current HEAD; 300893b "Merge
+>>>>> tag 'xfs-for-linus-v3.12-rc1' of git://oss.sgi.com/xfs/xfs".
+>>>>
+>>>> What system does it break on?
+>>>
+>>> A dual-core ARM system (NVIDIA Tegra20 SoC, Harmony board).
+>>>
+>>>> Any chance to bisect cpufreq changes between 3.11 and the current HEAD?
+>>>
+>>> Sure, it's due to 5302c3f "cpufreq: Perform light-weight init/teardown
+>>> during suspend/resume".
+>>
+>> Thanks!
+>>
+>> Srivatsa, any chance to look into this?
+>>
+> 
+> Sure, Rafael. Thanks for CC'ing me.
+> 
+> Stephen, I went through the code and I think I found out what is going wrong.
+> Can you please try the following patch?
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
+> ----------------------------------------------------------------------------
+> 
+> 
+> From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Subject: [PATCH] cpufreq: Fix crash in cpufreq-stats during suspend/resume
+> 
 
-227 to be precise :)
+And here is a follow-up patch, on top of this one. I hit the bug while working
+on this patch, but it doesn't occur in practice, since none of the existing
+callers call update_policy_cpu() with new == old. (I had called it like that
+by mistake while working on the fix and was surprised by the level of problems
+it caused; hence thought of adding a check).
 
-> That causes some worries.
->
-> Can we quickly do the following to get more confidence that there
-> won't be wide-spread breakage:
->
-> 1. Get all of these into linux-next quickly
+Regards,
+Srivatsa S. Bhat
 
-Yes, even Myself and Rafael wanted to do that.. And were waiting
-for pull request to go for 3.12-rc1..
+-----------------------------------------------------------------------------
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: Prevent problems in update_policy_cpu() if last_cpu == new_cpu
 
-I am mostly ready with my patches, wouldn't take long time for
-me to review those completely before sending them..
+If update_policy_cpu() is invoked with the existing policy->cpu itself
+as the new-cpu parameter, then a lot of things can go terribly wrong.
 
-> 2. Set up a LAVA[1] job to get linux-next kernels running on boards in our farm
-> 3. Run cpufreq functional tests, e.g. PM-QA[2] test suite from Linaro
-> with these kernels
+In its present form, update_policy_cpu() always assumes that the new-cpu
+is different from policy->cpu and invokes other functions to perform their
+respective updates. And those functions implement the actual update like
+this:
 
-That would be nice actually.. Anyway some people would test it on
-linux-next, but doing that for few boards by Linaro would be
-Awesome..
+per_cpu(..., new_cpu) = per_cpu(..., last_cpu);
+per_cpu(..., last_cpu) = NULL;
 
---
-viresh
+Thus, when new_cpu == last_cpu, the final NULL assignment makes the per-cpu
+references vanish into thin air! (memory leak). From there, it leads to more
+problems: cpufreq_stats_create_table() now doesn't find the per-cpu reference
+and hence tries to create a new sysfs-group; but sysfs already had created
+the group earlier, so it complains that it cannot create a duplicate filename.
+In short, the repercussions of a rather innocuous invocation of
+update_policy_cpu() can turn out to be pretty nasty.
+
+Ideally update_policy_cpu() should handle this situation (new == last)
+gracefully, and not lead to such severe problems. So fix it by adding an
+appropriate check.
+
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
+
+ drivers/cpufreq/cpufreq.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 62bdb95..a61b7a1 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -949,6 +949,9 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+ 
+ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+ {
++	if (cpu == policy->cpu)
++		return;
++
+ 	policy->last_cpu = policy->cpu;
+ 	policy->cpu = cpu;
+ 
+
