@@ -1,64 +1,82 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH] PM-QoS: simplify pm_qos_power_write()
-Date: Wed, 11 Sep 2013 17:02:38 +0300
-Message-ID: <1378908158-25468-1-git-send-email-andriy.shevchenko@linux.intel.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to
+ cpu0 device
+Date: Wed, 11 Sep 2013 17:43:07 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1309111742290.26942@axis700.grange>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:60979 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752686Ab3IKODN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Sep 2013 10:03:13 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:50792 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754840Ab3IKPnN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 11:43:13 -0400
+In-Reply-To: <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 
-Let kstrtos32_from_user() do the necessary calls and checks.
+On Tue, 10 Sep 2013, Sudeep KarkadaNagesha wrote:
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Commit f837a9b5ab05c52a07108c6f09ca66f2e0aee757 "cpufreq: cpufreq-cpu0:
+> remove device tree parsing for cpu nodes" assumed the pdev->dev is set to
+> cpu0 device in the platform code. But it actually points to the virtual
+> cpufreq-cpu0 platform device which is not present in the device tree.
+> Most of the information needed by cpufreq is stored in cpu0 DT node.
+> So cpu_dev must point to cpu0 device.
+> 
+> This patch fixes the wrong assignment to cpu_dev.
+> 
+> Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+
+Tested-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+
+Thanks
+Guennadi
+
+> ---
+>  drivers/cpufreq/cpufreq-cpu0.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.=
+> c
+> index cbfffa9..78c49d8 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -12,6 +12,7 @@
+>  #define pr_fmt(fmt)=09KBUILD_MODNAME ": " fmt
+> =20
+>  #include <linux/clk.h>
+> +#include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+> @@ -177,7 +178,11 @@ static int cpu0_cpufreq_probe(struct platform_device *=
+> pdev)
+>  =09struct device_node *np;
+>  =09int ret;
+> =20
+> -=09cpu_dev =3D &pdev->dev;
+> +=09cpu_dev =3D get_cpu_device(0);
+> +=09if (!cpu_dev) {
+> +=09=09pr_err("failed to get cpu0 device\n");
+> +=09=09return -ENODEV;
+> +=09}
+> =20
+>  =09np =3D of_node_get(cpu_dev->of_node);
+>  =09if (!np) {
+> --=20
+> 1.8.1.2
+> 
+> 
+
 ---
- kernel/power/qos.c | 26 ++++----------------------
- 1 file changed, 4 insertions(+), 22 deletions(-)
-
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index a394297..8dff9b4 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -558,30 +558,12 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- 	if (count == sizeof(s32)) {
- 		if (copy_from_user(&value, buf, sizeof(s32)))
- 			return -EFAULT;
--	} else if (count <= 11) { /* ASCII perhaps? */
--		char ascii_value[11];
--		unsigned long int ulval;
-+	} else {
- 		int ret;
- 
--		if (copy_from_user(ascii_value, buf, count))
--			return -EFAULT;
--
--		if (count > 10) {
--			if (ascii_value[10] == '\n')
--				ascii_value[10] = '\0';
--			else
--				return -EINVAL;
--		} else {
--			ascii_value[count] = '\0';
--		}
--		ret = kstrtoul(ascii_value, 16, &ulval);
--		if (ret) {
--			pr_debug("%s, 0x%lx, 0x%x\n", ascii_value, ulval, ret);
--			return -EINVAL;
--		}
--		value = (s32)lower_32_bits(ulval);
--	} else {
--		return -EINVAL;
-+		ret = kstrtos32_from_user(buf, count, 16, &value);
-+		if (ret)
-+			return ret;
- 	}
- 
- 	req = filp->private_data;
--- 
-1.8.4.rc3
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
