@@ -1,48 +1,68 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to
- cpu0 device
-Date: Wed, 11 Sep 2013 09:55:46 +0100
-Message-ID: <52303012.3060709@arm.com>
-References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <Pine.LNX.4.64.1309111005310.26942@axis700.grange> <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V3]hrtimer: Fix a performance regression by disable
+ reprogramming in remove_hrtimer
+Date: Wed, 11 Sep 2013 10:56:43 +0200
+Message-ID: <20130911085643.GS26785@twins.programming.kicks-ass.net>
+References: <24EECBCC-F655-404F-8946-73CC36095A5F@gmail.com>
+ <1378362989.18435.2.camel@marge.simpson.net>
+ <20130905111428.GB23362@gmail.com>
+ <1378386697.6567.9.camel@marge.simpson.net>
+ <20130905133750.GA26637@gmail.com>
+ <1378445942.5434.31.camel@marge.simpson.net>
+ <20130909122325.GX31370@twins.programming.kicks-ass.net>
+ <1378730538.5586.30.camel@marge.simpson.net>
+ <20130909133044.GB31370@twins.programming.kicks-ass.net>
+ <20130909134635.GB26785@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:40859 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758Ab3IKIzp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 04:55:45 -0400
-In-Reply-To: <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
+Received: from merlin.infradead.org ([205.233.59.134]:39916 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797Ab3IKI47 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 04:56:59 -0400
+Content-Disposition: inline
+In-Reply-To: <20130909134635.GB26785@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Shawn Guo <shawn.guo@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Mike Galbraith <bitbucket@online.de>
+Cc: Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, ethan.kernel@gmail.com, rjw@sisk.pl, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, lenb@kernel.org
 
-On 11/09/13 09:42, Viresh Kumar wrote:
-> On 11 September 2013 13:45, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
->> Noone else seems to complain, but I don't think these =20, =09 etc. codes
->> have been invented on my side and I don't think they belong here. I'm
->> handling enough mails / patches daily to believe, that my mail system
->> isn't the cause of this. Could you please verify and regenerate and
->> resend? Unless I'm mistaken this looks like a corruption on your SMTP
->> side.
+On Mon, Sep 09, 2013 at 03:46:35PM +0200, Peter Zijlstra wrote:
+> On Mon, Sep 09, 2013 at 03:30:44PM +0200, Peter Zijlstra wrote:
+> > diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> > index fa6964d..486c0ba 100644
+> > --- a/drivers/idle/intel_idle.c
+> > +++ b/drivers/idle/intel_idle.c
+> > @@ -359,6 +359,14 @@ static int intel_idle(struct cpuidle_device *dev,
+> >  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+> >  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+> >  
+> > +	current_thread_into()->status |= TS_POLLING;
+> > +
+> > +	/*
+> > +	 * Order against setting of TS_POLLING against the reading of
+> > +	 * NEED_RESCHED, matched by resched_task().
+> > +	 */
+> > +	smp_mb();
+> > +
+> >  	if (!need_resched()) {
+> >  
+> >  		__monitor((void *)&current_thread_info()->flags, 0, 0);
+> > @@ -367,6 +375,8 @@ static int intel_idle(struct cpuidle_device *dev,
+> >  			__mwait(eax, ecx);
+> >  	}
+> >  
+> > +	current_thread_into()->status &= ~TS_POLLING;
+> > +
+> >  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+> >  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
 > 
-> Its on Sudeep's side :) .. Or on ARM's side..
-> Don't know why nobody else complained, Atleast people who test these
-> patches (Like Shawn), must have applied them from mail.. Don't know
-> why they aren't shouting :)
-> 
-> He mostly send pull requests to Rafael and so this wasn't a issue for
-> Rafael :)
-> 
+> Hmm, arguably it would be better to set this from
+> intel_idle_cpuidle_driver_init() and clear it whenever this goes away.
+> Not sure how all that works, the cpuidle driver framework seems 'weird'.
 
-Yes looks like its at my end. I will try to fix it. There is alternate
-SMTP which should not have this issue, but it was down recently. I
-forgot to switch back to it once it was fixed.
+OK, so I went over the idle stuff again, and we do set TS_POLLING like
+stuff, it got hidden in current_{clr,set}_polling().
 
-For now you can fetch it from:
-	git://linux-arm.org/linux-skn.git cpufreq_fixes_v3.12
-
-Regards,
-Sudeep
-
+Still if that patch causes extra IPIs its bound to be broken in some
+creative way.. I'll prod.
