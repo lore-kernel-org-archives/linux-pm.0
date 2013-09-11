@@ -1,53 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Cpufreq: Acquire read lock in the cpufreq_policy_restore()
- rather than write lock
-Date: Wed, 11 Sep 2013 14:14:50 +0530
-Message-ID: <CAKohponmAkQ2GA22Aaqh1tAfkLJxd873DaEvjmVnFcrLdS3-=g@mail.gmail.com>
-References: <1378883105-1411-1-git-send-email-tianyu.lan@intel.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to
+ cpu0 device
+Date: Wed, 11 Sep 2013 09:55:46 +0100
+Message-ID: <52303012.3060709@arm.com>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <Pine.LNX.4.64.1309111005310.26942@axis700.grange> <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f48.google.com ([209.85.128.48]:60003 "EHLO
-	mail-qe0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150Ab3IKIov (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 04:44:51 -0400
-Received: by mail-qe0-f48.google.com with SMTP id nd7so4177416qeb.21
-        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2013 01:44:50 -0700 (PDT)
-In-Reply-To: <1378883105-1411-1-git-send-email-tianyu.lan@intel.com>
+Received: from service87.mimecast.com ([91.220.42.44]:40859 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751758Ab3IKIzp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 04:55:45 -0400
+In-Reply-To: <CAKohpokgVqmjNGTUOg61YQyqi1qO-9FaB8dmZqTqq2nQFynOkQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Shawn Guo <shawn.guo@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 11 September 2013 12:35,  <tianyu.lan@intel.com> wrote:
-> From: Lan Tianyu <tianyu.lan@intel.com>
->
-> In the cpufreq_policy_restore(), policy before system suspend is read from
-> from percpu's cpufreq_cpu_data_fallback. It's read operation rather than
-> write operation. So convert write lock to read lock
->
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 81ceea6..b762f9b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -912,11 +912,11 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
->         struct cpufreq_policy *policy;
->         unsigned long flags;
->
-> -       write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +       read_lock_irqsave(&cpufreq_driver_lock, flags);
->
->         policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
->
-> -       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
->
->         return policy;
->  }
+On 11/09/13 09:42, Viresh Kumar wrote:
+> On 11 September 2013 13:45, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+>> Noone else seems to complain, but I don't think these =20, =09 etc. codes
+>> have been invented on my side and I don't think they belong here. I'm
+>> handling enough mails / patches daily to believe, that my mail system
+>> isn't the cause of this. Could you please verify and regenerate and
+>> resend? Unless I'm mistaken this looks like a corruption on your SMTP
+>> side.
+> 
+> Its on Sudeep's side :) .. Or on ARM's side..
+> Don't know why nobody else complained, Atleast people who test these
+> patches (Like Shawn), must have applied them from mail.. Don't know
+> why they aren't shouting :)
+> 
+> He mostly send pull requests to Rafael and so this wasn't a issue for
+> Rafael :)
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Yes looks like its at my end. I will try to fix it. There is alternate
+SMTP which should not have this issue, but it was down recently. I
+forgot to switch back to it once it was fixed.
+
+For now you can fetch it from:
+	git://linux-arm.org/linux-skn.git cpufreq_fixes_v3.12
+
+Regards,
+Sudeep
+
