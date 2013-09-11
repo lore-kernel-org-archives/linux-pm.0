@@ -1,35 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Wed, 11 Sep 2013 16:15:31 +0530
-Message-ID: <CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com>
-References: <522E1FEF.6080803@wwwdotorg.org>
-	<1775778.MeiRhuYy7o@vostro.rjw.lan>
-	<522F86AD.6010603@wwwdotorg.org>
-	<2521560.SfeNbV74nj@vostro.rjw.lan>
-	<52304439.3030301@linux.vnet.ibm.com>
-	<CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH 0/5] CPUFreq: Last set of updates for 3.13
+Date: Wed, 11 Sep 2013 16:23:45 +0530
+Message-ID: <CAP245DXeU39UE5-_G3J=r=arPt-8DieL4uN9SOOvWQf5xS3wAA@mail.gmail.com>
+References: <cover.1378893296.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1378893296.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Lists LAKML <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11 September 2013 16:14, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> But I would have solved it differently :)
+On Wed, Sep 11, 2013 at 3:43 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Hi Rafael,
 >
-> We don't really need to call update_policy_cpu() again and again
-> as we don't really need to update policy->cpu...
+> I really tried to stop after you asked me to, but still got few more patches..
+> These are very minor changes and a fairly smaller patchset..
 >
-> Rather it would be better to just move following inside
-> cpufreq_policy_alloc():
+> I have rebased this over your linux-next branch
+>
+> 7c218b1 Merge branch 'acpi-bind-next' into linux-next
+>
+> and tested over my exynos board.. I don't expect them to do any crappy stuff..
+>
+> You can include these first (if they look fine) and then I will send all other
+> patches that I have queued up for 3.13.. I will send all of them in one lot,
+> with partition numbers mentioned (i.e. patches that should go together) and then
+> you can apply them the way you wish.. Set by set or all at once..
+>
+> Thanks..
 
-Half written mail sent :(
+Viresh,
 
-What about moving following to cpufreq_policy_alloc():
+Thanks for the great work cleaning up all the drivers. IIUC, you have
+~200 patches lined up for the 3.13 merge window. That causes some
+worries.
 
-policy->cpu = cpu;
+Can we quickly do the following to get more confidence that there
+won't be wide-spread breakage:
 
-??
+1. Get all of these into linux-next quickly
+2. Set up a LAVA[1] job to get linux-next kernels running on boards in our farm
+3. Run cpufreq functional tests, e.g. PM-QA[2] test suite from Linaro
+with these kernels
+
+Regards,
+Amit
+[1] An automated test harness used by Linaro
+[2] https://git.linaro.org/gitweb?p=tools/pm-qa.git;a=tree;f=cpufreq;h=b53f7ad0fe778011d75e94ec7bd2b2fc1fc4cfd7;hb=HEAD
