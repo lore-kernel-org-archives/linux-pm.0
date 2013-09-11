@@ -1,52 +1,38 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Cpufreq: Acquire read lock in the cpufreq_policy_restore() rather than write lock
-Date: Thu, 12 Sep 2013 00:56:03 +0200
-Message-ID: <2039668.8La2a0cgXT@vostro.rjw.lan>
-References: <1378883105-1411-1-git-send-email-tianyu.lan@intel.com>
+Subject: Re: [PATCH 0/4] cpufreq: fixes for v3.12
+Date: Thu, 12 Sep 2013 00:58:54 +0200
+Message-ID: <1795989.18GOYqdUtX@vostro.rjw.lan>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1378883105-1411-1-git-send-email-tianyu.lan@intel.com>
+In-Reply-To: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: tianyu.lan@intel.com
-Cc: viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 11, 2013 03:05:05 PM tianyu.lan@intel.com wrote:
-> From: Lan Tianyu <tianyu.lan@intel.com>
+On Tuesday, September 10, 2013 06:59:45 PM Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> In the cpufreq_policy_restore(), policy before system suspend is read from
-> from percpu's cpufreq_cpu_data_fallback. It's read operation rather than
-> write operation. So convert write lock to read lock
+> Hi Shawn, Guennadi,
 > 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> These are the fixes for the issue reported by Guennadi.
+> cpu_dev should point to cpu0 device instead of cpufreq-cpu0 platform
+> devices. The dev_id is also updated while registering the cpu clocks.
+> 
+> Can you review these ? Tested-by is much appreciated as I don't
+> have hardware to check the fix.
 
-Applied, thanks Tianyu!
+I have a little problem with this series, because the last patch is based
+on the current Linus' tree rather than on my master branch which is what
+I have ready to push.  I don't think it makes sense to rebase it, however,
+because that would introduce a merge conflict for Linus unnecessarily.
 
-> ---
->  drivers/cpufreq/cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 81ceea6..b762f9b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -912,11 +912,11 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
->  	struct cpufreq_policy *policy;
->  	unsigned long flags;
->  
-> -	write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +	read_lock_irqsave(&cpufreq_driver_lock, flags);
->  
->  	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
->  
-> -	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
->  
->  	return policy;
->  }
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+To avoid merging stuff back and forth, I'll push this series later in the
+cycle.
+
+Thanks,
+Rafael
+
