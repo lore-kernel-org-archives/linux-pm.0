@@ -1,87 +1,46 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to
- cpu0 device
-Date: Wed, 11 Sep 2013 10:15:00 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1309111005310.26942@axis700.grange>
-References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
+ breaks cpufreq too
+Date: Wed, 11 Sep 2013 10:15:53 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1309111015190.26942@axis700.grange>
+References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
+ <CAKohponZ+FnzqXYMbBzbun0-1iQMi2fS4syrEBC_MdF41vLCeA@mail.gmail.com>
+ <Pine.LNX.4.64.1309101656150.16010@axis700.grange>
+ <CAKohpomBBKLhNemVUpUHAftGhPJJe+ZB7T_9UYLD7LwpR1nK0g@mail.gmail.com>
+ <Pine.LNX.4.64.1309101740120.16010@axis700.grange>
+ <CAKohpomK7Y_6aLMA3B+hZrtgYq9U89ihgkbvYWA3BsKN3gJD3g@mail.gmail.com>
+ <Pine.LNX.4.64.1309101853170.16010@axis700.grange>
+ <CAKohpokaHU0V86DPB7nEQ8ndwu_mJ_x_Uz47XPHZeyAW3hcP_w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from moutng.kundenserver.de ([212.227.126.187]:53830 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237Ab3IKIQX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 04:16:23 -0400
+In-Reply-To: <CAKohpokaHU0V86DPB7nEQ8ndwu_mJ_x_Uz47XPHZeyAW3hcP_w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
 
-Hi Sudeep
+On Wed, 11 Sep 2013, Viresh Kumar wrote:
 
-On Tue, 10 Sep 2013, Sudeep KarkadaNagesha wrote:
-
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> On 10 September 2013 22:37, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> > On Tue, 10 Sep 2013, Viresh Kumar wrote:
+> >> Quite straight forward actually..
+> >
+> > Apparently, not quite.
 > 
-> Commit f837a9b5ab05c52a07108c6f09ca66f2e0aee757 "cpufreq: cpufreq-cpu0:
-> remove device tree parsing for cpu nodes" assumed the pdev->dev is set to
-> cpu0 device in the platform code. But it actually points to the virtual
-> cpufreq-cpu0 platform device which is not present in the device tree.
-> Most of the information needed by cpufreq is stored in cpu0 DT node.
-> So cpu_dev must point to cpu0 device.
+> I overlooked the situation where we return early from ->target() routines.. :(
 > 
-> This patch fixes the wrong assignment to cpu_dev.
-> 
-> Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Please try attached patches, I will repost them later (once I am able to
+> convince Rafael that these are really important :) )
 
-Thanks for your patches
-
-> ---
->  drivers/cpufreq/cpufreq-cpu0.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.=
-> c
-> index cbfffa9..78c49d8 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -12,6 +12,7 @@
->  #define pr_fmt(fmt)=09KBUILD_MODNAME ": " fmt
-> =20
-
-Noone else seems to complain, but I don't think these =20, =09 etc. codes 
-have been invented on my side and I don't think they belong here. I'm 
-handling enough mails / patches daily to believe, that my mail system 
-isn't the cause of this. Could you please verify and regenerate and 
-resend? Unless I'm mistaken this looks like a corruption on your SMTP 
-side.
+I'd rather wait until Rafael is convinced, then we'll see.
 
 Thanks
 Guennadi
-
->  #include <linux/clk.h>
-> +#include <linux/cpu.h>
->  #include <linux/cpufreq.h>
->  #include <linux/err.h>
->  #include <linux/module.h>
-> @@ -177,7 +178,11 @@ static int cpu0_cpufreq_probe(struct platform_device *=
-> pdev)
->  =09struct device_node *np;
->  =09int ret;
-> =20
-> -=09cpu_dev =3D &pdev->dev;
-> +=09cpu_dev =3D get_cpu_device(0);
-> +=09if (!cpu_dev) {
-> +=09=09pr_err("failed to get cpu0 device\n");
-> +=09=09return -ENODEV;
-> +=09}
-> =20
->  =09np =3D of_node_get(cpu_dev->of_node);
->  =09if (!np) {
-> --=20
-> 1.8.1.2
-> 
-> 
-
 ---
 Guennadi Liakhovetski, Ph.D.
 Freelance Open-Source Software Developer
