@@ -1,109 +1,86 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH V3 6/6] cpuidle/ppc: Nominate new broadcast cpu on hotplug
- of the old
-Date: Wed, 11 Sep 2013 08:22:26 +0530
-Message-ID: <20130911025226.27726.71053.stgit@preeti.in.ibm.com>
-References: <20130911024906.27726.4735.stgit@preeti.in.ibm.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [PATCH 1/1] Cpufreq: Remove fossil comment of cpufreq_set_policy
+Date: Wed, 11 Sep 2013 11:28:41 +0800
+Message-ID: <522FE369.3030106@intel.com>
+References: <1378824287-7696-1-git-send-email-tianyu.lan@intel.com> <CAKohponpX9AedBrsASojK7fKS-rRN-AQwJT42=mrOJcNpGqE+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130911024906.27726.4735.stgit@preeti.in.ibm.com>
+In-Reply-To: <CAKohponpX9AedBrsASojK7fKS-rRN-AQwJT42=mrOJcNpGqE+w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: benh@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, rjw@sisk.pl, galak@kernel.crashing.org, fweisbec@gmail.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On hotplug of the broadcast cpu, cancel the hrtimer queued to do
-broadcast and nominate a new broadcast cpu to be the first cpu in the
-broadcast mask which includes all the cpus that have notified the broadcast
-framework about entering deep idle state.
+On 2013=E5=B9=B409=E6=9C=8810=E6=97=A5 23:31, Viresh Kumar wrote:
+> On 10 September 2013 20:14,  <tianyu.lan@intel.com> wrote:
+>> From: Lan Tianyu <tianyu.lan@intel.com>
+>>
+>> The cpufreq_set_policy() has been removed by commit 632786c. So remo=
+ve
+>> related comment.
+>> ---
+>>  drivers/cpufreq/cpufreq.c | 4 ----
+>>  1 file changed, 4 deletions(-)
+>=20
+> I have got another patch that takes care of this while fixing other i=
+ssues..
+> Yet to be posted though.. but I have queued it up for 3.13..
+>=20
+> https://git.linaro.org/gitweb?p=3Dpeople/vireshk/linux.git;a=3Dcommit=
+;h=3D85267596078e3160b3b03de39d95c8e4b5bdf554
+>=20
+Ok. I get it. Please ignore it. I just find another such comment relate=
+d
+with cpufreq_set_policy(). Please have a look.
 
-Since the new broadcast cpu is one of the cpus in deep idle, send an ipi to
-wake it up to continue the duty of broadcast. The new broadcast cpu needs to
-find out if it woke up to resume broadcast. If so it needs to restart the
-broadcast hrtimer on itself.
 
-Its possible that the old broadcast cpu was hotplugged out when the broadcast
-hrtimer was about to fire on it. Therefore the newly nominated broadcast cpu
-should set the broadcast hrtimer on itself to expire immediately so as to not
-miss wakeups under such scenarios.
+=46rom 668e1b6fd94b5c0e56a651b4c60cbbc7a6868b46 Mon Sep 17 00:00:00 200=
+1
+=46rom: Lan Tianyu <tianyu.lan@intel.com>
+Date: Wed, 11 Sep 2013 11:31:15 +0800
+Subject: [PATCH] Cpufreq/governor: Remove fossil comment
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+cpufreq_set_policy() has been changed to origin __cpufreq_set_policy()
+and policy->lock has been converted to rewrite lock by commit 5a01f2.
+So remove it.
+
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 ---
+ drivers/cpufreq/cpufreq_userspace.c | 11 -----------
+ 1 file changed, 11 deletions(-)
 
- arch/powerpc/include/asm/time.h     |    1 +
- arch/powerpc/kernel/time.c          |    1 +
- drivers/cpuidle/cpuidle-ibm-power.c |   22 ++++++++++++++++++++++
- 3 files changed, 24 insertions(+)
+diff --git a/drivers/cpufreq/cpufreq_userspace.c
+b/drivers/cpufreq/cpufreq_userspace.c
+index 0307809..4dbf1db 100644
+--- a/drivers/cpufreq/cpufreq_userspace.c
++++ b/drivers/cpufreq/cpufreq_userspace.c
+@@ -38,18 +38,7 @@ static int cpufreq_set(struct cpufreq_policy *policy=
+,
+unsigned int freq)
+        if (!per_cpu(cpu_is_managed, policy->cpu))
+                goto err;
 
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 38341fa..3bc0205 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -31,6 +31,7 @@ struct rtc_time;
- extern void to_tm(int tim, struct rtc_time * tm);
- extern void GregorianDay(struct rtc_time *tm);
- extern void decrementer_timer_interrupt(void);
-+extern void broadcast_irq_entry(void);
- 
- extern void generic_calibrate_decr(void);
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 44a76de..0ac2e11 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -853,6 +853,7 @@ void decrementer_timer_interrupt(void)
- {
- 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
- 
-+	broadcast_irq_entry();
- 	*next_tb = get_tb_or_rtc();
- 	__timer_interrupt();
- }
-diff --git a/drivers/cpuidle/cpuidle-ibm-power.c b/drivers/cpuidle/cpuidle-ibm-power.c
-index ae47a0a..580ea04 100644
---- a/drivers/cpuidle/cpuidle-ibm-power.c
-+++ b/drivers/cpuidle/cpuidle-ibm-power.c
-@@ -282,6 +282,12 @@ static int longnap_loop(struct cpuidle_device *dev,
- 	return index;
- }
- 
-+void broadcast_irq_entry(void)
-+{
-+	if (smp_processor_id() == bc_cpu)
-+		hrtimer_start(bc_hrtimer, ns_to_ktime(0), HRTIMER_MODE_REL_PINNED);
-+}
-+
- /*
-  * States for dedicated partition case.
-  */
-@@ -360,6 +366,7 @@ static int power_cpuidle_add_cpu_notifier(struct notifier_block *n,
- 			unsigned long action, void *hcpu)
- {
- 	int hotcpu = (unsigned long)hcpu;
-+	unsigned long flags;
- 	struct cpuidle_device *dev =
- 			per_cpu(cpuidle_devices, hotcpu);
- 
-@@ -372,6 +379,21 @@ static int power_cpuidle_add_cpu_notifier(struct notifier_block *n,
- 			cpuidle_resume_and_unlock();
- 			break;
- 
-+		case CPU_DYING:
-+		case CPU_DYING_FROZEN:
-+			spin_lock_irqsave(&longnap_idle_lock, flags);
-+			if (hotcpu == bc_cpu) {
-+				bc_cpu = -1;
-+				hrtimer_cancel(bc_hrtimer);
-+				if (!cpumask_empty(tick_get_broadcast_oneshot_mask())) {
-+					bc_cpu = cpumask_first(
-+							tick_get_broadcast_oneshot_mask());
-+					arch_send_tick_broadcast(cpumask_of(bc_cpu));
-+				}
-+			}
-+			spin_unlock_irqrestore(&longnap_idle_lock, flags);
-+			break;
-+
- 		case CPU_DEAD:
- 		case CPU_DEAD_FROZEN:
- 			cpuidle_pause_and_lock();
+-       /*
+-        * We're safe from concurrent calls to ->target() here
+-        * as we hold the userspace_mutex lock. If we were calling
+-        * cpufreq_driver_target, a deadlock situation might occur:
+-        * A: cpufreq_set (lock userspace_mutex) ->
+-        *      cpufreq_driver_target(lock policy->lock)
+-        * B: cpufreq_set_policy(lock policy->lock) ->
+-        *      __cpufreq_governor ->
+-        *         cpufreq_governor_userspace (lock userspace_mutex)
+-        */
+        ret =3D __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_=
+L);
+-
+  err:
+        mutex_unlock(&userspace_mutex);
+        return ret;
+--
+1.8.4.rc0.1.g8f6a3e5.dirty
+
+--=20
+Best regards
+Tianyu Lan
