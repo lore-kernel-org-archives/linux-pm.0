@@ -1,19 +1,19 @@
 From: Geoff Levand <geoff@infradead.org>
-Subject: Re: [PATCH V3 1/6] powerpc: Free up the IPI message slot of ipi
- call function (PPC_MSG_CALL_FUNC)
-Date: Wed, 11 Sep 2013 09:49:58 -0700
-Message-ID: <1378918198.19147.28.camel@smoke>
+Subject: Re: [PATCH V3 2/6] powerpc: Implement broadcast timer interrupt as
+ an IPI message
+Date: Wed, 11 Sep 2013 09:50:59 -0700
+Message-ID: <1378918259.19147.29.camel@smoke>
 References: <20130911024906.27726.4735.stgit@preeti.in.ibm.com>
-	 <20130911025100.27726.95866.stgit@preeti.in.ibm.com>
+	 <20130911025122.27726.84259.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:51051 "EHLO
+Received: from merlin.infradead.org ([205.233.59.134]:51110 "EHLO
 	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203Ab3IKQuT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 12:50:19 -0400
-In-Reply-To: <20130911025100.27726.95866.stgit@preeti.in.ibm.com>
+	with ESMTP id S1752645Ab3IKQvN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 12:51:13 -0400
+In-Reply-To: <20130911025122.27726.84259.stgit@preeti.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
