@@ -1,71 +1,55 @@
-From: Bill Huang <bilhuang@nvidia.com>
-Subject: [PATCH 1/2] cpufreq: tegra: Remove not used header and clean up codes
-Date: Wed, 11 Sep 2013 04:19:13 -0700
-Message-ID: <1378898355-31290-2-git-send-email-bilhuang@nvidia.com>
-References: <1378898355-31290-1-git-send-email-bilhuang@nvidia.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Wed, 11 Sep 2013 16:47:25 +0530
+Message-ID: <52305145.5060901@linux.vnet.ibm.com>
+References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan>	<522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan>	<52304439.3030301@linux.vnet.ibm.com> <CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com> <52304F92.6030109@linux.vnet.ibm.com> <CAKohpo=Wg=e0_+N1Vmx2m6monFMrbdFSfGE_Ufr0D0_kunreFw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1378898355-31290-1-git-send-email-bilhuang@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl, viresh.kumar@linaro.org, swarren@wwwdotorg.org
-Cc: linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Bill Huang <bilhuang@nvidia.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:55028 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754902Ab3IKLVY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 07:21:24 -0400
+Received: from /spool/local
+	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 11 Sep 2013 16:44:23 +0530
+In-Reply-To: <CAKohpo=Wg=e0_+N1Vmx2m6monFMrbdFSfGE_Ufr0D0_kunreFw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-Remove inclustion of the not needed header files and remove the logic
-to check the CPU ID to not exceeding the maximum supported CPUs.
+On 09/11/2013 04:45 PM, Viresh Kumar wrote:
+> On 11 September 2013 16:40, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>> On 09/11/2013 04:14 PM, Viresh Kumar wrote:
+>>> On 11 September 2013 15:51, Srivatsa S. Bhat
+>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>> On 09/11/2013 04:04 AM, Rafael J. Wysocki wrote:
+>>>>> On Tuesday, September 10, 2013 02:53:01 PM Stephen Warren wrote:
+>>>
+>>>>>> Sure, it's due to 5302c3f "cpufreq: Perform light-weight init/teardown
+>>>>>> during suspend/resume".
+>>>
+>>> Sorry Stephen, I was away on vacations and came back yesterday only..
+>>> And was badly stuck in something other CPUFreq bugs until now :)
+>>>
+>>>> Sure, Rafael. Thanks for CC'ing me.
+>>>
+>>> Thanks for jumping in and helping us out buddy!!!.
+>>>
+>>
+>> No problem :-) Besides, I am the one who broke it ;-(
+> 
+> I believe you missed some part of my mail ?
+> 
 
-Signed-off-by: Bill Huang <bilhuang@nvidia.com>
----
- drivers/cpufreq/tegra-cpufreq.c |   14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+See my next reply :-) I was composing it :-)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index a7b876f..6eb3dd8 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -1,5 +1,6 @@
- /*
-- * Copyright (C) 2010 Google, Inc.
-+ * Copyright (c) 2013, NVIDIA Corporation.
-+ * Copyright (C) 2010-2013 Google, Inc.
-  *
-  * Author:
-  *	Colin Cross <ccross@google.com>
-@@ -18,14 +19,9 @@
+Man, you are *fast*! ;-)
  
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/types.h>
--#include <linux/sched.h>
- #include <linux/cpufreq.h>
--#include <linux/delay.h>
--#include <linux/init.h>
- #include <linux/err.h>
- #include <linux/clk.h>
--#include <linux/io.h>
- #include <linux/suspend.h>
- 
- static struct cpufreq_frequency_table freq_table[] = {
-@@ -60,9 +56,6 @@ static unsigned int tegra_getspeed(unsigned int cpu)
- {
- 	unsigned long rate;
- 
--	if (cpu >= NUM_CPUS)
--		return 0;
--
- 	rate = clk_get_rate(cpu_clk) / 1000;
- 	return rate;
- }
-@@ -209,9 +202,6 @@ static struct notifier_block tegra_cpu_pm_notifier = {
- 
- static int tegra_cpu_init(struct cpufreq_policy *policy)
- {
--	if (policy->cpu >= NUM_CPUS)
--		return -EINVAL;
--
- 	clk_prepare_enable(emc_clk);
- 	clk_prepare_enable(cpu_clk);
- 
--- 
-1.7.9.5
+Regards,
+Srivatsa S. Bhat
+
