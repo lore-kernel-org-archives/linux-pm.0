@@ -1,30 +1,142 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH 1/2] cpufreq: tegra: Remove not used header and clean
- up codes
-Date: Wed, 11 Sep 2013 13:19:28 -0600
-Message-ID: <5230C240.8050602@wwwdotorg.org>
-References: <1378898355-31290-1-git-send-email-bilhuang@nvidia.com> <1378898355-31290-2-git-send-email-bilhuang@nvidia.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 2/2] cpufreq: tegra: Re-model Tegra cpufreq driver
+Date: Wed, 11 Sep 2013 13:33:42 -0600
+Message-ID: <5230C596.7010000@wwwdotorg.org>
+References: <1378898355-31290-1-git-send-email-bilhuang@nvidia.com> <1378898355-31290-3-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1378898355-31290-2-git-send-email-bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: rjw-KKrjLPT3xs0@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:35705 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752509Ab3IKTdq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 15:33:46 -0400
+In-Reply-To: <1378898355-31290-3-git-send-email-bilhuang@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bill Huang <bilhuang@nvidia.com>
+Cc: rjw@sisk.pl, viresh.kumar@linaro.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
 On 09/11/2013 05:19 AM, Bill Huang wrote:
-> Remove inclustion of the not needed header files and remove the logic
-> to check the CPU ID to not exceeding the maximum supported CPUs.
+> Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
+> 
+> * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
+> * Move Tegra20 specific codes into tegra20-cpufreq.c.
+> * Bind Tegra cpufreq dirver with a fake device so defer probe would work
+>   when we're going to get regulator in the driver to support voltage
+>   scaling (DVFS).
+> * Call tegra_cpufreq_init() in Tegra machine code specifically so it
+>   won't be called in multi-platform kernel which is not running on Tegra
+>   SoCs.
+
+That's a lot of things for one patch. Can this please be split up?
+
+In particular, I would like a separate patch for the final bullet point,
+and for that patch to be the first in the series, so that we can merge
+it into both the Tegra and cpufreq trees if needed to resolve any conflicts.
+
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+
+>  config ARM_TEGRA_CPUFREQ
+> -	bool "TEGRA CPUFreq support"
+> -	depends on ARCH_TEGRA
+> +	bool
+> +	select CPU_FREQ_TABLE
+
+Why make this a hidden option? It'd be best to leave it user-visible, so
+that existing defconfigs aren't broken by this change.
+
+> +config ARM_EXYNOS_CPUFREQ
+> +	bool
+>  	select CPU_FREQ_TABLE
+
+I think that Exynos change is a mistake?
+
+> +
+> +config ARM_TEGRA20_CPUFREQ
+> +	bool "NVIDIA TEGRA20"
+> +	depends on ARCH_TEGRA
+
+Shouldn't that be ARCH_TEGRA_2x_SOC specifically?
+
+>  	default y
+
+Does the syntax "default ARM_TEGRA_CPUFREQ" work? Actually, this should
+depend on ARM_TEGRA_CPUFREQ rather than select it, and that way you can
+keep this "default y" and it'll only be enabled if Tegra cpufreq is enabled.
+
+In summary, I think the following should work well:
+
+config ARM_TEGRA_CPUFREQ
+	bool "TEGRA CPUFreq support"
+	depends on ARCH_TEGRA
+	select CPU_FREQ_TABLE
+
+config ARM_TEGRA20_CPUFREQ
+	bool "NVIDIA TEGRA20"
+	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
+	default y
+	help
+	  This adds the CPUFreq driver for NVIDIA TEGRA20 SoC.
+
+	  If in doubt, say N.
 
 > diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 
-> - * Copyright (C) 2010 Google, Inc.
-> + * Copyright (c) 2013, NVIDIA Corporation.
-> + * Copyright (C) 2010-2013 Google, Inc.
+> -#define NUM_CPUS	2
+> +#define NUM_CPUS	4
 
-This is such a trivial patch, I don't think it's appropriate to add an
-NVIDIA (c) notice. It may well be appropriate in patch 2/2.
+NUM_ or MAX_?
 
-I assume that Google didn't write this patch, so why adjust that (c) notice?
+> diff --git a/drivers/cpufreq/tegra-cpufreq.h b/drivers/cpufreq/tegra-cpufreq.h
+
+> +struct tegra_cpufreq_data {
+> +	struct device *dev;
+> +	struct clk	*cpu_clk;
+> +	struct cpufreq_frequency_table	*freq_table;
+> +	void (*vote_emc_on_cpu_rate)(unsigned long);
+> +	int (*cpu_clk_set_rate)(unsigned long);
+> +	void (*cpufreq_clk_init)(void);
+> +	void (*cpufreq_clk_exit)(void);
+> +};
+
+There's a mix of runtime and configuration-time data there. It'd be
+nicer to split the two out, so that all the configuration data could be
+in a const struct that's pointed to by a field in the runtime data
+struct, or passed back out of tegra20_cpufreq_init() as a separate
+pointer variable and assigned to a separate global in tegra-cpufreq.c,
+to avoid double-indirections everywhere at runtime.
+
+> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+
+> +static struct cpufreq_frequency_table freq_table[] = {
+> +	{ .frequency = 216000 },
+> +	{ .frequency = 312000 },
+> +	{ .frequency = 456000 },
+> +	{ .frequency = 608000 },
+> +	{ .frequency = 760000 },
+> +	{ .frequency = 816000 },
+> +	{ .frequency = 912000 },
+> +	{ .frequency = 1000000 },
+> +	{ .frequency = CPUFREQ_TABLE_END },
+> +};
+
+Should/can we query that list from the clock driver?
+
+> +int tegra20_cpufreq_init(struct tegra_cpufreq_data *data)
+...
+> +	data->cpu_clk = cpu_clk;
+> +	data->freq_table = freq_table;
+> +	data->vote_emc_on_cpu_rate = tegra20_vote_emc_on_cpu_rate;
+> +	data->cpu_clk_set_rate = tegra20_cpu_clk_set_rate;
+> +	data->cpufreq_clk_init = tegra20_cpufreq_clk_init;
+> +	data->cpufreq_clk_exit = tegra20_cpufreq_clk_exit;
+
+With the struct split I proposed above, most of that could just be:
+
+*soc_config = &tegra20_cpufreq_config;
+
+where there's an extra function parameter "struct tegra_cpufreq_config
+**soc_config", and most of those values are in a static const
+tegra_cpufreq_config tegra20_cpufreq_config = { ... }.
+
