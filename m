@@ -1,42 +1,30 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Wed, 11 Sep 2013 13:03:17 -0600
-Message-ID: <5230BE75.7040307@wwwdotorg.org>
-References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan> <522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan> <52304439.3030301@linux.vnet.ibm.com> <523094CD.3000506@wwwdotorg.org> <5230B078.3070306@linux.vnet.ibm.com> <5230B991.3040702@linux.vnet.ibm.com>
+From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Subject: Re: [PATCH 1/2] cpufreq: tegra: Remove not used header and clean
+ up codes
+Date: Wed, 11 Sep 2013 13:19:28 -0600
+Message-ID: <5230C240.8050602@wwwdotorg.org>
+References: <1378898355-31290-1-git-send-email-bilhuang@nvidia.com> <1378898355-31290-2-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5230B991.3040702@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1378898355-31290-2-git-send-email-bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: rjw-KKrjLPT3xs0@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/11/2013 12:42 PM, Srivatsa S. Bhat wrote:
-...
-> OK, I took a second look at the code, and I suspect that applying the
-> second patch might help. So can you try by applying both the patches
-> please[1][2]?
-> 
-...
-> [1]. http://marc.info/?l=linux-kernel&m=137889516210816&w=2
-> [2]. http://marc.info/?l=linux-kernel&m=137889800511940&w=2
+On 09/11/2013 05:19 AM, Bill Huang wrote:
+> Remove inclustion of the not needed header files and remove the logic
+> to check the CPU ID to not exceeding the maximum supported CPUs.
 
-Yes, with both of those patches applies, the problem is solved:-)
+> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 
-I was going to test the second patch originally, but it sounded like it
-was more of a cleanup rather than a fix for my issue, so I didn't bother
-when I found the problem wasn't solved by patch 1. Sorry!
+> - * Copyright (C) 2010 Google, Inc.
+> + * Copyright (c) 2013, NVIDIA Corporation.
+> + * Copyright (C) 2010-2013 Google, Inc.
 
-For the record, I'm testing on a 2-CPU system, so I'm not sure whether
-your explanation applies; it talks about CPUs 2 and 3 whereas I only
-have CPUs 0 and 1, but perhaps your explanation applies equally to any
-pair of CPUs?
+This is such a trivial patch, I don't think it's appropriate to add an
+NVIDIA (c) notice. It may well be appropriate in patch 2/2.
 
-For the record, here's the information you requested in the other email:
-
-# cat /sys/devices/system/cpu/cpu*/cpufreq/related_cpus
-0 1
-0 1
-
+I assume that Google didn't write this patch, so why adjust that (c) notice?
