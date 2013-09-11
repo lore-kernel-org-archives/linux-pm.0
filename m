@@ -1,86 +1,121 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Thu, 12 Sep 2013 01:35:43 +0530
-Message-ID: <5230CD17.6050200@linux.vnet.ibm.com>
-References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan> <522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan> <52304439.3030301@linux.vnet.ibm.com> <523094CD.3000506@wwwdotorg.org> <5230B078.3070306@linux.vnet.ibm.com> <5230B991.3040702@linux.vnet.ibm.com> <5230BE75.7040307@wwwdotorg.org> <5230C89D.7010801@linux.vnet.ibm.com> <5230CD70.50202@wwwdotorg.org>
+Subject: [PATCH] cpufreq: Fix crash in cpufreq-stats during suspend/resume
+Date: Thu, 12 Sep 2013 01:41:53 +0530
+Message-ID: <20130911201128.7749.61727.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5230CD70.50202@wwwdotorg.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:34120 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756766Ab3IKUPz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Sep 2013 16:15:55 -0400
+Received: from /spool/local
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 11 Sep 2013 21:15:54 +0100
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl, swarren@wwwdotorg.org, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On 09/12/2013 01:37 AM, Stephen Warren wrote:
-> On 09/11/2013 01:46 PM, Srivatsa S. Bhat wrote:
->> On 09/12/2013 12:33 AM, Stephen Warren wrote:
->>> On 09/11/2013 12:42 PM, Srivatsa S. Bhat wrote:
->>> ...
->>>> OK, I took a second look at the code, and I suspect that applying the
->>>> second patch might help. So can you try by applying both the patches
->>>> please[1][2]?
->>>>
->>> ...
->>>> [1]. http://marc.info/?l=linux-kernel&m=137889516210816&w=2
->>>> [2]. http://marc.info/?l=linux-kernel&m=137889800511940&w=2
->>>
->>> Yes, with both of those patches applies, the problem is solved:-)
->>>
->>> I was going to test the second patch originally, but it sounded like it
->>> was more of a cleanup rather than a fix for my issue, so I didn't bother
->>> when I found the problem wasn't solved by patch 1. Sorry!
->>>
->>
->> Well, honestly, even I had intended the second patch as a cleanup and
->> hadn't asked you to test it ;-) Only when you reported that the first patch
->> failed to solve your problem, I realized that the second patch was
->> important too! :-) Thanks for testing!
->>
->>> For the record, I'm testing on a 2-CPU system, so I'm not sure whether
->>> your explanation applies; it talks about CPUs 2 and 3 whereas I only
->>> have CPUs 0 and 1, but perhaps your explanation applies equally to any
->>> pair of CPUs?
->>>
->>
->> Yes, it applies to any pair of CPUs, as long as the CPU first taken down
->> is not the policy->cpu. In your case, it applies like this:
->> IIUC, CPU0 is the boot cpu, and hence it wont be taken offline using hotplug.
->> So only CPU 1 is taken offline during suspend. And if it is not the policy->cpu,
->> then it hits the very same bug that I described with the analogy of CPUs 2
->> and 3.
->>
->>> For the record, here's the information you requested in the other email:
->>>
->>> # cat /sys/devices/system/cpu/cpu*/cpufreq/related_cpus
->>> 0 1
->>> 0 1
->>
->> Thanks! It would have been more useful to somehow know which was the
->> policy->cpu. But looking at the problem, certainly CPU0 was the policy->cpu
->> in your case.
-> 
-> Yes, I believe CPU0 since,
-> 
->> # ls -l /sys/devices/system/cpu/cpu1/cpufreq
->> lrwxrwxrwx 1 root root 0 Jan  1 00:01 /sys/devices/system/cpu/cpu1/cpufreq -> ../cpu0/cpufreq
-> 
-> and cpu0/cpufreq/ has all the files in it.
-> 
-> ...
+Stephen Warren reported that the cpufreq-stats code hits a NULL pointer
+dereference during the second attempt to suspend a system. He also
+pin-pointed the problem to commit 5302c3f "cpufreq: Perform light-weight
+init/teardown during suspend/resume".
 
-Ah, nice!
+That commit actually ensured that the cpufreq-stats table and the
+cpufreq-stats sysfs entries are *not* torn down (ie., not freed) during
+suspend/resume, which makes it all the more surprising. However, it turns
+out that the root-cause is not that we access an already freed memory, but
+that the reference to the allocated memory gets moved around and we lose
+track of that during resume, leading to the reported crash in a subsequent
+suspend attempt.
 
->> So can you see if patch 1 + this above fix solves your problem as well?
->> Then we can retain the original patch 2 as a cleanup, after these 2 patches.
->> This organization also makes the code look better and understandable.
-> 
-> Yes, both patch 1+3 and 1+3+2 work fine.
-> 
+In the suspend path, during CPU offline, the value of policy->cpu is updated
+by choosing one of the surviving CPUs in that policy, as long as there is
+atleast one CPU in that policy. And cpufreq_stats_update_policy_cpu() is
+invoked to update the reference to the stats structure by assigning it to
+the new CPU. However, in the resume path, during CPU online, we end up
+assigning a fresh CPU as the policy->cpu, without letting cpufreq-stats
+know about this. Thus the reference to the stats structure remains
+(incorrectly) associated with the old CPU. So, in a subsequent suspend attempt,
+during CPU offline, we end up accessing an incorrect location to get the
+stats structure, which eventually leads to the NULL pointer dereference.
 
-Cool! Thanks a lot for all your testing efforts Stephen! :-)
+Fix this by letting cpufreq-stats know about the update of the policy->cpu
+during CPU online in the resume path. (Also, move the update_policy_cpu()
+function higher up in the file, so that __cpufreq_add_dev() can invoke
+it).
 
-Regards,
-Srivatsa S. Bhat
+Reported-by: Stephen Warren <swarren@nvidia.com>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Tested-by: Stephen Warren <swarren@nvidia.com>
+---
+
+ drivers/cpufreq/cpufreq.c |   37 ++++++++++++++++++++++++-------------
+ 1 file changed, 24 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5a64f66..62bdb95 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -947,6 +947,18 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+ 	kfree(policy);
+ }
+ 
++static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
++{
++	policy->last_cpu = policy->cpu;
++	policy->cpu = cpu;
++
++#ifdef CONFIG_CPU_FREQ_TABLE
++	cpufreq_frequency_table_update_policy_cpu(policy);
++#endif
++	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
++			CPUFREQ_UPDATE_POLICY_CPU, policy);
++}
++
+ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 			     bool frozen)
+ {
+@@ -1000,7 +1012,18 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	if (!policy)
+ 		goto nomem_out;
+ 
+-	policy->cpu = cpu;
++
++	/*
++	 * In the resume path, since we restore a saved policy, the assignment
++	 * to policy->cpu is like an update of the existing policy, rather than
++	 * the creation of a brand new one. So we need to perform this update
++	 * by invoking update_policy_cpu().
++	 */
++	if (frozen && cpu != policy->cpu)
++		update_policy_cpu(policy, cpu);
++	else
++		policy->cpu = cpu;
++
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 
+@@ -1092,18 +1115,6 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	return __cpufreq_add_dev(dev, sif, false);
+ }
+ 
+-static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+-{
+-	policy->last_cpu = policy->cpu;
+-	policy->cpu = cpu;
+-
+-#ifdef CONFIG_CPU_FREQ_TABLE
+-	cpufreq_frequency_table_update_policy_cpu(policy);
+-#endif
+-	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+-			CPUFREQ_UPDATE_POLICY_CPU, policy);
+-}
+-
+ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
+ 					   unsigned int old_cpu, bool frozen)
+ {
 
