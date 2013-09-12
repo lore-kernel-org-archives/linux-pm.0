@@ -1,75 +1,57 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/5] cpufreq: remove __cpufreq_remove_dev()
-Date: Thu, 12 Sep 2013 10:55:46 +0530
-Message-ID: <e88d0a9d0a4b0d8296a938d4875d2d2ea2a33e49.1378963070.git.viresh.kumar@linaro.org>
+Subject: [PATCH 4/5] cpufreq: don't update policy->cpu while removing while removing other CPUs
+Date: Thu, 12 Sep 2013 10:55:47 +0530
+Message-ID: <0475c234b6ca2849c8a69dad0446d82b065b4161.1378963070.git.viresh.kumar@linaro.org>
 References: <cover.1378963070.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f48.google.com ([209.85.160.48]:48052 "EHLO
+	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754892Ab3ILF10 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Sep 2013 01:27:26 -0400
+Received: by mail-pb0-f48.google.com with SMTP id ma3so10085346pbc.35
+        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2013 22:27:26 -0700 (PDT)
 In-Reply-To: <cover.1378963070.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1378963070.git.viresh.kumar@linaro.org>
 References: <cover.1378963070.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl, swarren@wwwdotorg.org, srivatsa.bhat@linux.vnet.ibm.com
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Nobody except cpufreq_remove_dev() is calling __cpufreq_remove_dev() and so we
-don't need separate routines here. Lets merge code from __cpufreq_remove_dev()
-to cpufreq_remove_dev() and get rid of __cpufreq_remove_dev().
+With a recent change the logic here is changed a bit and I just figured out it
+is something we don't want.
+
+Consider we have four CPUs (0,1,2,3) managed by a policy and policy->cpu is set
+to 0. Now we are suspending and hence we call __cpufreq_remove_dev_prepare() for
+cpu 1, 2 & 3..
+
+With the current code we always call cpufreq_nominate_new_policy_cpu() for cpu
+1, 2 & 3 whereas we should skipped most of __cpufreq_remove_dev_prepare()
+routine.
+
+Lets fix it by moving the check for !frozen inside the first if block.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 26 ++++++++------------------
- 1 file changed, 8 insertions(+), 18 deletions(-)
+ drivers/cpufreq/cpufreq.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 31f7845..5e0a82e 100644
+index 5e0a82e..0e11fcb 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1285,36 +1285,26 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
- }
+@@ -1182,8 +1182,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 		cpumask_clear_cpu(cpu, policy->cpus);
+ 	unlock_policy_rwsem_write(cpu);
  
- /**
-- * __cpufreq_remove_dev - remove a CPU device
-+ * cpufreq_remove_dev - remove a CPU device
-  *
-  * Removes the cpufreq interface for a CPU device.
-  * Caller should already have policy_rwsem in write mode for this CPU.
-  * This routine frees the rwsem before returning.
-  */
--static inline int __cpufreq_remove_dev(struct device *dev,
--				       struct subsys_interface *sif,
--				       bool frozen)
--{
--	int ret;
--
--	ret = __cpufreq_remove_dev_prepare(dev, sif, frozen);
--
--	if (!ret)
--		ret = __cpufreq_remove_dev_finish(dev, sif, frozen);
--
--	return ret;
--}
--
- static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
- {
- 	unsigned int cpu = dev->id;
--	int retval;
-+	int ret;
- 
- 	if (cpu_is_offline(cpu))
- 		return 0;
- 
--	retval = __cpufreq_remove_dev(dev, sif, false);
--	return retval;
-+	ret = __cpufreq_remove_dev_prepare(dev, sif, false);
-+
-+	if (!ret)
-+		ret = __cpufreq_remove_dev_finish(dev, sif, false);
-+
-+	return ret;
- }
- 
- static void handle_update(struct work_struct *work)
+-	if (cpu != policy->cpu && !frozen) {
+-		sysfs_remove_link(&dev->kobj, "cpufreq");
++	if (cpu != policy->cpu) {
++		if (!frozen)
++			sysfs_remove_link(&dev->kobj, "cpufreq");
+ 	} else if (cpus > 1) {
+ 		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
+ 		if (new_cpu >= 0) {
 -- 
 1.7.12.rc2.18.g61b472e
 
