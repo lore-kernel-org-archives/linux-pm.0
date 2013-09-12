@@ -1,170 +1,105 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal Management updates for v3.12-rc1
-Date: Thu, 12 Sep 2013 16:22:59 +0800
-Message-ID: <1378974179.9109.3.camel@rzhang-lenovo>
+From: Andrew Savchenko <bircoph@gmail.com>
+Subject: Re: [BUG] 3.7-rc regression bisected: s2disk fails
+ to resume image: Processes could not be frozen, cannot continue resuming
+Date: Thu, 12 Sep 2013 12:32:17 +0400
+Message-ID: <20130912123217.e1764291616cf8e59f0f92b8@gmail.com>
+References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
+	<20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
+	<20130905120811.GC15161@amd.pavel.ucw.cz>
+	<2662480.5erkm9ACQI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:42889 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753348Ab3ILIVU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 12 Sep 2013 04:21:20 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============7640478067503366647=="
+Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <2662480.5erkm9ACQI@vostro.rjw.lan>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=suspend-devel>
+List-Post: <mailto:suspend-devel@lists.sourceforge.net>
+List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: suspend-devel-bounces@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-pm <linux-pm@vger.kernel.org>
 
-Hi, Linus,
+--===============7640478067503366647==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC"
 
-Please pull from the git repository at
+--Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+Hello,
 
-to receive Thermal updates for v3.12 with top-most commit
-50e66c7ed8a1cd7e933628f9f5y2ycf2617394adf5a
+On Thu, 05 Sep 2013 14:23:25 +0200 Rafael J. Wysocki wrote:
+> On Thursday, September 05, 2013 02:08:11 PM Pavel Machek wrote:
+> > Hi!
+> >=20
+> > Rafael, Al: apparently we have a regression caused by
+> > ba4df2808a86f8b103c4db0b8807649383e9bd13 .
+>=20
+> I noticed that, but I'm not sure how to deal with it.
+>=20
+> Also, s2disk still works on my test machines, so that seems to be
+> specific to this particular configuration.
 
-  drivers: thermal: add check when unregistering cpu cooling (2013-09-03 09:10:34 -0400)
+Is there any way to debug this issue further than just bisecting
+commit? Perhaps suspend ioctl should be traced to see why it fails,
+but I don't know what exactly inside the kernel should be debugged
+and how.
 
-on top of commit 584d88b2cd3b60507e708d2452651e4d3caa1b81:
+Best regards,
+Andrew Savchenko
 
-  Merge branch 'for-next' of git://git.samba.org/sfrench/cifs-2.6 (2013-08-12 15:02:53 -0700)
+--Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-We have a lot of SOC changes and a few thermal core fixes this time.
+iQIcBAEBAgAGBQJSMXwlAAoJEFZZU7lTcnVstv8P/iZYXjqI1rMeeTk9kohTnDUu
+4iXBe3kMOsv/2FAHVQ90AI/WgWYFSv2eDIRYywDt276JsLYIk1EpzO8OpN9nVyaT
+Q8FfwXUXUJ4YCz9k+QzvAVN3BVIFIfCz/eqR4MXLBtGAhkL1NzwOIA/HwzK9saZo
+KTuRKCM/IS5bx/uQvLvYEN45T02c+EAjuKxvPHKPA48Ea6xnGmQWuT0qXn7k1y93
+Mf9N/go3YJ+jkk0mqjpveQpH6bd5CS2p+fDcD/n8w+4+Am9nw6ywuY6jhNzrVNV4
+T2f5fwcmvU16dOqR7i+01JKa1xwcb9rRBMTH8L9kCfVhGpW09YZhDPs/Gy6oHXNp
+Sy0GoQbtXtujxC3z4U0IM/AAVwN3cJQQVZH1EsdwIkMjbpAkk0tvTOjgjorFs3CP
+bEbcOl8DU43PH+FujcRIcuvHFerfyqOi8x9ovcw+sJ4iQQBrs7AFb8dobWIQtbVe
+NcGndaikJO2lCTZb/MCgXwlmBfAefDXSUjJssbpvpZ0tCtpcPfWEZwmrcMjJX0d8
+/O/0gQ8f2trpufC+IdB+HVOjEXzkD44CUoQN0DkCyz+4MjBjPTlhzFpQ8OV/EIpJ
+Trcit+AhE7lKkdbvhB/w4PfBo3A2zdNgWIKlk3/ERXfJZGQmvGemIY3A5A1uOGlk
+5FViGZq4H9ZOon8TBH5j
+=NP95
+-----END PGP SIGNATURE-----
 
-The biggest change is about exynos thermal driver restructure.
-The patch set adds TMU(Thermal management Unit) driver support for
-exynos5440 platform. There are 3 instances of the TMU controllers so
-necessary cleanup/re-structure is done to handle multiple thermal zone.
-
-The next biggest change is the introduction of the imx thermal driver.
-It adds the imx thermal support using Temperature Monitor (TEMPMON)
-block found on some Freescale i.MX SoCs.  The driver uses syscon regmap
-interface to access TEMPMON control registers and calibration data, and
-supports cpufreq as the cooling device.
-
-Highlights:
-
-- restructure exynos thermal driver.
-
-- introduce new imx thermal driver.
-
-- fix a bug in thermal core, which powers on the fans unexpectedly
-  after resume from suspend.
-
-Thanks,
-Rui
-----------------------------------------------------------------
-Amit Daniel Kachhap (28):
-      thermal: exynos: Moving exynos thermal files into samsung directory
-      thermal: exynos: Use ARCH_HAS_BANDGAP config to know the supported soc's
-      thermal: exynos: Remove un-necessary CPU_THERMAL dependency
-      thermal: exynos: Bifurcate exynos thermal common and tmu controller code
-      thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
-      thermal: exynos: Move exynos_thermal.h from include/* to driver/* folder
-      thermal: exynos: Bifurcate exynos tmu driver and configuration data
-      thermal: exynos: Add missing definations and code cleanup
-      thermal: exynos: Add extra entries in the tmu platform data
-      thermal: exynos: Move register definitions from driver to data file
-      thermal: exynos: Support thermal tripping
-      thermal: exynos: Fix to clear only the generated interrupts
-      thermal: exynos: Add support for instance based register/unregister
-      thermal: exynos: Modify private_data to appropriate name driver_data
-      thermal: exynos: Return success even if no cooling data supplied
-      thermal: exynos: Make the zone handling use trip information
-      thermal: exynos: Remove non DT based support
-      thermal: exynos: Add support to handle many instances of TMU
-      thermal: exynos: Add TMU features to check instead of using SOC type
-      thermal: exynos: use device resource management infrastructure
-      thermal: exynos: Add support to access common register for multistance
-      thermal: exynos: Add driver support for exynos5440 TMU sensor
-      thermal: exynos: Add thermal configuration data for exynos5440 TMU sensor
-      thermal: exynos: Fix to set the second point correction value
-      thermal: exynos: Add hardware mode thermal calibration support
-      thermal: exynos: Support for TMU regulator defined at device tree
-      ARM: dts: thermal: exynos: Add documentation for Exynos SoC thermal bindings
-      Documentation: thermal: Explain the exynos thermal driver model
-
-Eduardo Valentin (6):
-      thermal: step_wise: return instance->target by default
-      thermal: hwmon: move hwmon support to single file
-      drivers: thermal: parent virtual hwmon with thermal zone
-      drivers: thermal: make usage of CONFIG_THERMAL_HWMON optional
-      thermal: thermal_core: allow binding with limits on bind_params
-      drivers: thermal: add check when unregistering cpu cooling
-
-Lan Tianyu (1):
-      Thermal/cpu_cooling: Return directly for the cpu out of allowed_cpus in the cpufreq_thermal_notifier()
-
-Naveen Krishna Chatradhi (1):
-      thermal: exynos_tmu: fix wrong error check for mapped memory
-
-Philipp Zabel (2):
-      thermal: imx: dynamic passive and SoC specific critical trip points
-      thermal: imx: implement thermal alarm interrupt handling
-
-Ranganath Krishnan (3):
-      thermal: ti-soc-thermal: Initialize counter_delay field for TI DRA752 sensors
-      thermal: ti-soc-thermal: Set the bandgap mask counter delay value
-      thermal: ti-soc-thermal: Ensure to compute thermal trend
-
-Sachin Kamat (3):
-      thermal: exynos: Fix typos in Kconfig
-      thermal: exynos: Fix potential NULL pointer dereference
-      thermal: exynos: Clean up non-DT remnants
-
-Shawn Guo (2):
-      thermal: add imx thermal driver support
-      thermal: step_wise: cdev only needs update on a new target state
-
-Zhang Rui (4):
-      Merge branch 'for_3.12/exynos' of git://git.kernel.org/.../evalenti/linux-soc-thermal into exynos
-      Merge branch 'for_3.12/imx' of git://git.kernel.org/.../evalenti/linux-soc-thermal into imx
-      Merge branches 'exynos', 'imx' and 'fixes' of .git into next
-      Merge branch 'fixes' of .git into next
-
- .../devicetree/bindings/thermal/exynos-thermal.txt |   55 +
- .../devicetree/bindings/thermal/imx-thermal.txt    |   17 +
- Documentation/thermal/exynos_thermal               |   43 +-
- Documentation/thermal/sysfs-api.txt                |   12 +
- drivers/thermal/Kconfig                            |   33 +-
- drivers/thermal/Makefile                           |    6 +-
- drivers/thermal/cpu_cooling.c                      |    8 +-
- drivers/thermal/exynos_thermal.c                   | 1059 --------------------
- drivers/thermal/imx_thermal.c                      |  541 ++++++++++
- drivers/thermal/samsung/Kconfig                    |   18 +
- drivers/thermal/samsung/Makefile                   |    7 +
- drivers/thermal/samsung/exynos_thermal_common.c    |  432 ++++++++
- drivers/thermal/samsung/exynos_thermal_common.h    |  107 ++
- drivers/thermal/samsung/exynos_tmu.c               |  762 ++++++++++++++
- drivers/thermal/samsung/exynos_tmu.h               |  311 ++++++
- drivers/thermal/samsung/exynos_tmu_data.c          |  250 +++++
- drivers/thermal/samsung/exynos_tmu_data.h          |  155 +++
- drivers/thermal/step_wise.c                        |   32 +-
- drivers/thermal/thermal_core.c                     |  282 +-----
- drivers/thermal/thermal_hwmon.c                    |  269 +++++
- drivers/thermal/thermal_hwmon.h                    |   49 +
- .../thermal/ti-soc-thermal/dra752-thermal-data.c   |    5 +
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        |    6 +-
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |    7 +
- include/linux/platform_data/exynos_thermal.h       |  119 ---
- include/linux/thermal.h                            |   18 +
- 26 files changed, 3133 insertions(+), 1470 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/imx-thermal.txt
- delete mode 100644 drivers/thermal/exynos_thermal.c
- create mode 100644 drivers/thermal/imx_thermal.c
- create mode 100644 drivers/thermal/samsung/Kconfig
- create mode 100644 drivers/thermal/samsung/Makefile
- create mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
- create mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
- create mode 100644 drivers/thermal/samsung/exynos_tmu.c
- create mode 100644 drivers/thermal/samsung/exynos_tmu.h
- create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
- create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
- create mode 100644 drivers/thermal/thermal_hwmon.c
- create mode 100644 drivers/thermal/thermal_hwmon.h
- delete mode 100644 include/linux/platform_data/exynos_thermal.h
+--Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC--
 
 
+--===============7640478067503366647==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+------------------------------------------------------------------------------
+How ServiceNow helps IT people transform IT departments:
+1. Consolidate legacy IT systems to a single system of record for IT
+2. Standardize and globalize service processes across IT
+3. Implement zero-touch automation to replace manual, redundant tasks
+http://pubads.g.doubleclick.net/gampad/clk?id=51271111&iu=/4140/ostg.clktrk
+--===============7640478067503366647==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Suspend-devel mailing list
+Suspend-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/suspend-devel
+
+--===============7640478067503366647==--
