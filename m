@@ -1,29 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/5] cpufreq: Remove extra blank line
-Date: Thu, 12 Sep 2013 15:38:09 +0530
-Message-ID: <CAKohpomLNz2Sac1ZqiQS8yW+q13UWhu4dT+vkfLe2TGXG4+iUw@mail.gmail.com>
-References: <cover.1378963070.git.viresh.kumar@linaro.org>
-	<22f0d94203b9e3d29f123c0e80df4b012e01dbb5.1378963070.git.viresh.kumar@linaro.org>
-	<52317849.90101@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52317849.90101@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] cpufreq: distinguish drivers that do asynchronous notifications
+Date: Thu, 12 Sep 2013 15:40:45 +0530
+Message-ID: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:43263 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862Ab3ILKLH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Sep 2013 06:11:07 -0400
+Received: by mail-pa0-f52.google.com with SMTP id kq13so881030pab.39
+        for <linux-pm@vger.kernel.org>; Thu, 12 Sep 2013 03:11:06 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, g.liakhovetski@gmx.de, amit.daniel@samsung.com, kgene.kim@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 12 September 2013 13:46, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Well, I felt having that line avoids clutter, especially since the code
-> around it was already a bit hard to read..
+There are few special cases like exynos5440 which doesn't send POSTCHANGE
+notification from their ->target() routine and call some kind of bottom halves
+for doing this work, work/tasklet/etc.. From which they finally send POSTCHANGE
+notification.
 
-Well, its exact opposite for me.. somehow my attending keeps dragging
-to extra blank lines :)
+Its better if we distinguish them from other cpufreq drivers in some way so that
+core can handle them specially. So this patch introduces another flag:
+CPUFREQ_ASYNC_NOTIFICATION, which will be set by such drivers.
 
-> Anyway, I don't have any strong opinions either way. So no objections
-> from my side. (But you might have to rebase this patch on top of Rafael's
-> tree, due to the recent changes he pushed in to this code).
+This also changes exynos5440-cpufreq.c in order to set this flag.
 
-I tried a rebase and couldn't find a issue.. And so not resending the series.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/exynos5440-cpufreq.c | 2 +-
+ include/linux/cpufreq.h              | 6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index d514c15..f44664a 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -342,7 +342,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ }
+ 
+ static struct cpufreq_driver exynos_driver = {
+-	.flags		= CPUFREQ_STICKY,
++	.flags		= CPUFREQ_STICKY | CPUFREQ_ASYNC_NOTIFICATION,
+ 	.verify		= exynos_verify_speed,
+ 	.target		= exynos_target,
+ 	.get		= exynos_getspeed,
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index fcabc42..3cefb7b 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -218,6 +218,12 @@ struct cpufreq_driver {
+ 					 * frequency transitions */
+ #define CPUFREQ_PM_NO_WARN	0x04	/* don't warn on suspend/resume speed
+ 					 * mismatches */
++/*
++ * Driver will do POSTCHANGE notifications from outside of their ->target()
++ * routine and so must set cpufreq_driver->flags with this flag, so that core
++ * can handle them specially.
++ */
++#define CPUFREQ_ASYNC_NOTIFICATION 0x08
+ 
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+-- 
+1.7.12.rc2.18.g61b472e
+
