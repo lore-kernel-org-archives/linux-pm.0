@@ -1,34 +1,80 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/5] cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
-Date: Thu, 12 Sep 2013 16:13:03 +0530
-Message-ID: <CAKohpokiBoKxCMeD8a6YgMPZn1NXScvB0=5W3sB_OSZhJO2a1g@mail.gmail.com>
-References: <cover.1378963070.git.viresh.kumar@linaro.org>
-	<52316A40.4050600@linux.vnet.ibm.com>
-	<CAKohponzohnOL4Y81Q1W4Yg=paRO46c-gY=HMbkFUqgrjsT+xw@mail.gmail.com>
-	<5076102.HGJgP9ualc@vostro.rjw.lan>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] cpufreq: Prevent problems in update_policy_cpu()
+ if last_cpu == new_cpu
+Date: Thu, 12 Sep 2013 16:11:04 +0530
+Message-ID: <52319A40.30703@linux.vnet.ibm.com>
+References: <20130911201239.7832.72612.stgit@srivatsabhat.in.ibm.com> <CAKohpomsHSMWmGAACurpN1dYSsvHvH6w_SDpQ5c7CE_1R2MGMg@mail.gmail.com> <5231695D.5070404@linux.vnet.ibm.com> <2753290.JbKAdhJjui@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:51263 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061Ab3ILKnF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Sep 2013 06:43:05 -0400
-Received: by mail-ob0-f179.google.com with SMTP id wn1so321943obc.24
-        for <linux-pm@vger.kernel.org>; Thu, 12 Sep 2013 03:43:03 -0700 (PDT)
-In-Reply-To: <5076102.HGJgP9ualc@vostro.rjw.lan>
+Received: from e28smtp01.in.ibm.com ([122.248.162.1]:54535 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753226Ab3ILKpE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Sep 2013 06:45:04 -0400
+Received: from /spool/local
+	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Thu, 12 Sep 2013 16:05:24 +0530
+In-Reply-To: <2753290.JbKAdhJjui@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 12 September 2013 16:17, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Please resend.  And I honestly don't think that [1-3/5] are fixes and
-> [4/5] is not needed any more.
+On 09/12/2013 04:10 PM, Rafael J. Wysocki wrote:
+> On Thursday, September 12, 2013 12:42:29 PM Srivatsa S. Bhat wrote:
+>> On 09/12/2013 12:14 PM, Viresh Kumar wrote:
+>>> On 12 September 2013 12:00, Srivatsa S. Bhat
+>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>>> Looking at the rate at which we are bumping into each others thoughts, I think
+>>>> maybe we should switch from email to IRC ;-) ;-)
+>>>
+>>> Unbelievable, Even I thought so this morning :)
+>>>
+>>> One more thing that I wanted to say for some other threads..
+>>> Your changelogs are simply superb.. The amount of information that you put in
+>>> them is fantastic.. 
+>>
+>> Thank you! :-) I'm glad to hear that!
+>>
+>> Believe it or not, I spend almost an equal (if not more) amount of time ensuring
+>> that I get the changelog absolutely right, compared to the time I spend actually
+>> writing the code. The reason is that, I have been pleasantly surprised by the
+>> power of the changelog in numerous occasions: the very act of composing a proper 
+>> changelog forces me to think *much* more clearly than when writing code. And it
+>> often gives me the opportunity to rethink the *entire* approach/solution and not
+>> just the implementation, since I need to explain the full context in it, not
+>> just what the code does. And *that* exercise can reveal more complex/subtle bugs
+>> than mere code review can ever do. That's why I put so much emphasis on writing
+>> a perfect changelog :-) [Believe it or not, I have had times when I figured out
+>> that my entire solution was utterly nonsensical when I began writing the changelog,
+>> *after* reviewing and testing the code! ... and of course I had to rework the
+>> entire patch! ;-( ]
+>>
+>> And to prevent myself from going overboard with writing the changelog (like making
+>> it way too verbose or convoluted with too much detail), I have a simple mechanism/
+>> handy rule in place:
+>>
+>> The changelog should be such that, whoever reads the changelog should feel that
+>> the time he spent reading it was totally worth it. IOW, it should not simply
+>> regurgitate what is already obvious from the code. Instead it should provide
+>> insights into the subtle aspects or tradeoffs relevant to the patch; in short, it
+>> should explain the "_why_ behind the _what_" as clearly and in as few words as
+>> possible :-)
+>>
+>> Well, atleast I _try_ to stick to that rule :-)
+> 
+> Can you please prepare a patch against Documentation/SubmittingPatches with the
+> above paragraph in it?  Seriously.
+> 
 
-Okay, I will resend 5/5.. I didn't get you last two statements clearly :(
-- don't think that [1-3/5] are fixes: You meant they are cleanups rather?
-Yes, and that's why I asked you to take those on for 3.13 and not for 12..
+Sure, I'd be delighted to :-)
 
-- [4/5] is not needed any more: 4/5 is already applied by you and it came
-from Rafael.. I reinvented the wheel, nothing more. And so it is not required
-anymore :)
+> There are people who don't really see a reason for writing good patch
+> changelogs.
+> 
+
+Regards,
+Srivatsa S. Bhat
+
