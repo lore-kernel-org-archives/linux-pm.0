@@ -1,37 +1,91 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
- breaks cpufreq too
-Date: Thu, 12 Sep 2013 13:21:40 +0530
-Message-ID: <CAKohpokJJOxKHhyqDRRZnp_Fwc2oXZcUR7KeMF_Zegoqpo_MqA@mail.gmail.com>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
-	<CAKohponZ+FnzqXYMbBzbun0-1iQMi2fS4syrEBC_MdF41vLCeA@mail.gmail.com>
-	<Pine.LNX.4.64.1309101656150.16010@axis700.grange>
-	<CAKohpomBBKLhNemVUpUHAftGhPJJe+ZB7T_9UYLD7LwpR1nK0g@mail.gmail.com>
-	<Pine.LNX.4.64.1309101740120.16010@axis700.grange>
-	<CAKohpomK7Y_6aLMA3B+hZrtgYq9U89ihgkbvYWA3BsKN3gJD3g@mail.gmail.com>
-	<Pine.LNX.4.64.1309101853170.16010@axis700.grange>
-	<CAKohpokaHU0V86DPB7nEQ8ndwu_mJ_x_Uz47XPHZeyAW3hcP_w@mail.gmail.com>
-	<Pine.LNX.4.64.1309120938240.4632@axis700.grange>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/5] cpufreq: remove __cpufreq_remove_dev()
+Date: Thu, 12 Sep 2013 13:39:30 +0530
+Message-ID: <523176BA.3050906@linux.vnet.ibm.com>
+References: <cover.1378963070.git.viresh.kumar@linaro.org> <e88d0a9d0a4b0d8296a938d4875d2d2ea2a33e49.1378963070.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1309120938240.4632@axis700.grange>
-Sender: cpufreq-owner@vger.kernel.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp01.in.ibm.com ([122.248.162.1]:46243 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939Ab3ILIN3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Sep 2013 04:13:29 -0400
+Received: from /spool/local
+	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Thu, 12 Sep 2013 13:33:50 +0530
+In-Reply-To: <e88d0a9d0a4b0d8296a938d4875d2d2ea2a33e49.1378963070.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, swarren@wwwdotorg.org, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12 September 2013 13:17, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> Yes, they seem to fix my issues.
+On 09/12/2013 10:55 AM, Viresh Kumar wrote:
+> Nobody except cpufreq_remove_dev() is calling __cpufreq_remove_dev() and so we
+> don't need separate routines here. Lets merge code from __cpufreq_remove_dev()
+> to cpufreq_remove_dev() and get rid of __cpufreq_remove_dev().
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Great!!
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-> You probably aren't going to submit them
-> in this form, instead, merge them with the original serialisation fix
-> patch, right? So, you don't need my tested-by here. But feel free to cc me
-> when you submit a fixed version.
+Regards,
+Srivatsa S. Bhat
 
-I will add your tested-by as you have eventually test all three patch that I
-would merge :)
+> ---
+>  drivers/cpufreq/cpufreq.c | 26 ++++++++------------------
+>  1 file changed, 8 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 31f7845..5e0a82e 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1285,36 +1285,26 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>  }
+> 
+>  /**
+> - * __cpufreq_remove_dev - remove a CPU device
+> + * cpufreq_remove_dev - remove a CPU device
+>   *
+>   * Removes the cpufreq interface for a CPU device.
+>   * Caller should already have policy_rwsem in write mode for this CPU.
+>   * This routine frees the rwsem before returning.
+>   */
+> -static inline int __cpufreq_remove_dev(struct device *dev,
+> -				       struct subsys_interface *sif,
+> -				       bool frozen)
+> -{
+> -	int ret;
+> -
+> -	ret = __cpufreq_remove_dev_prepare(dev, sif, frozen);
+> -
+> -	if (!ret)
+> -		ret = __cpufreq_remove_dev_finish(dev, sif, frozen);
+> -
+> -	return ret;
+> -}
+> -
+>  static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+>  {
+>  	unsigned int cpu = dev->id;
+> -	int retval;
+> +	int ret;
+> 
+>  	if (cpu_is_offline(cpu))
+>  		return 0;
+> 
+> -	retval = __cpufreq_remove_dev(dev, sif, false);
+> -	return retval;
+> +	ret = __cpufreq_remove_dev_prepare(dev, sif, false);
+> +
+> +	if (!ret)
+> +		ret = __cpufreq_remove_dev_finish(dev, sif, false);
+> +
+> +	return ret;
+>  }
+> 
+>  static void handle_update(struct work_struct *work)
+> 
 
-Thanks for testing this..
+
