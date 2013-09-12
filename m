@@ -1,53 +1,78 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 0/4] Remodel Tegra cpufreq driver to support Tegra
- series SoCs
-Date: Thu, 12 Sep 2013 16:57:28 +0530
-Message-ID: <CAKohpom-8abJCL_VrdvowmKUkfyEw0svne-RpXFhhO1AH6NPew@mail.gmail.com>
-References: <1378985091-9447-1-git-send-email-bilhuang@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1378985091-9447-1-git-send-email-bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
+Date: Thu, 12 Sep 2013 17:06:33 +0530
+Message-ID: <01cdf0d2a0523bd0c2bc73d63055df0bf477b5fb.1378984168.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2013 16:54, Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> This patch series remodel Tegra cpufreq driver to make it more easy to
-> add new SoC support, in addition to that, adding probe function in the
-> driver to let probe defer can be used to control init sequence when we
-> going to support DVFS.
->
-> Changes since v1:
->
-> - Split up patches.
-> - Split configuration-time data out of structure "tegra_cpufreq_data".
-> - Bug fixes.
->
-> Bill Huang (4):
->   cpufreq: tegra: Call tegra_cpufreq_init() specifically in machine
->     code
->   cpufreq: tegra: Remove not used header files and clean up codes
->   cpufreq: tegra: Re-model Tegra cpufreq driver
->   ARM: tegra: defconfig updates
->
->  arch/arm/configs/tegra_defconfig  |    1 +
->  arch/arm/mach-tegra/common.c      |    2 +
->  drivers/cpufreq/Kconfig.arm       |    8 +-
->  drivers/cpufreq/Makefile          |    1 +
->  drivers/cpufreq/tegra-cpufreq.c   |  194 +++++++++++++++++--------------------
->  drivers/cpufreq/tegra-cpufreq.h   |   42 ++++++++
->  drivers/cpufreq/tegra20-cpufreq.c |  138 ++++++++++++++++++++++++++
->  include/linux/tegra-soc.h         |   11 ++-
->  8 files changed, 290 insertions(+), 107 deletions(-)
->  create mode 100644 drivers/cpufreq/tegra-cpufreq.h
->  create mode 100644 drivers/cpufreq/tegra20-cpufreq.c
+This broke after a recent change "cedb70a cpufreq: Split __cpufreq_remove_dev()
+into two parts" from Srivatsa..
 
-I haven't gone deeper into these yet, but there are some cleaup
-patches that I have prepared/posted earlier, which will be queued
-by Rafael soon.. And after that you would be required to rebase
-your stuff on top of it..  As there would be many conflicts..
+Consider a scenario where we have two CPUs in a policy (0 & 1) and we are
+removing cpu 1. On the call to __cpufreq_remove_dev_prepare() we have cleared 1
+from policy->cpus and now on a call to __cpufreq_remove_dev_finish() we read
+cpumask_weight of policy->cpus, which will come as 1 and this code will behave
+as if we are removing the last cpu from policy :)
 
---
-viresh
+Fix it by clearing cpu mask in __cpufreq_remove_dev_finish() instead of
+__cpufreq_remove_dev_prepare().
+
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- sent separately without cleanup patches
+- use cpumask_any_but() instead of cpumask_first()
+
+ drivers/cpufreq/cpufreq.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 43c24aa..dbfe219 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1125,7 +1125,7 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
+ 	int ret;
+ 
+ 	/* first sibling now owns the new sysfs dir */
+-	cpu_dev = get_cpu_device(cpumask_first(policy->cpus));
++	cpu_dev = get_cpu_device(cpumask_any_but(policy->cpus, old_cpu));
+ 
+ 	/* Don't touch sysfs files during light-weight tear-down */
+ 	if (frozen)
+@@ -1189,12 +1189,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 			policy->governor->name, CPUFREQ_NAME_LEN);
+ #endif
+ 
+-	WARN_ON(lock_policy_rwsem_write(cpu));
++	lock_policy_rwsem_read(cpu);
+ 	cpus = cpumask_weight(policy->cpus);
+-
+-	if (cpus > 1)
+-		cpumask_clear_cpu(cpu, policy->cpus);
+-	unlock_policy_rwsem_write(cpu);
++	unlock_policy_rwsem_read(cpu);
+ 
+ 	if (cpu != policy->cpu) {
+ 		if (!frozen)
+@@ -1237,9 +1234,12 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+ 		return -EINVAL;
+ 	}
+ 
+-	lock_policy_rwsem_read(cpu);
++	WARN_ON(lock_policy_rwsem_write(cpu));
+ 	cpus = cpumask_weight(policy->cpus);
+-	unlock_policy_rwsem_read(cpu);
++
++	if (cpus > 1)
++		cpumask_clear_cpu(cpu, policy->cpus);
++	unlock_policy_rwsem_write(cpu);
+ 
+ 	/* If cpu is last user of policy, free policy */
+ 	if (cpus == 1) {
+-- 
+1.7.12.rc2.18.g61b472e
+
