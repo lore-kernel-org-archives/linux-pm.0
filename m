@@ -1,38 +1,24 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Thu, 12 Sep 2013 12:22:49 +0530
-Message-ID: <CAKohponrmV4CFqicEw7tf0g47VNcVY=4mmcH1CnGX388iFYb=g@mail.gmail.com>
-References: <522E1FEF.6080803@wwwdotorg.org>
-	<1775778.MeiRhuYy7o@vostro.rjw.lan>
-	<522F86AD.6010603@wwwdotorg.org>
-	<2521560.SfeNbV74nj@vostro.rjw.lan>
-	<52304439.3030301@linux.vnet.ibm.com>
-	<CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
-	<CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com>
-	<5230509D.6040205@linux.vnet.ibm.com>
-	<CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
-	<CAKohpo=8mqRmmk17D52yiR9w1V4Z+2UzZ2kzABtrxHbYR+sQzw@mail.gmail.com>
-	<52315E9A.3000607@linux.vnet.ibm.com>
-	<CAKohpo=LuoKTf+mX1oBt97K3sJVu0iN=whN7VGw6kuartnrr+w@mail.gmail.com>
-	<52316334.6080603@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/5] cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
+Date: Thu, 12 Sep 2013 12:26:56 +0530
+Message-ID: <CAKohpomCXoO20cQyCrWtN0WgWnzvVmEqFxuwTU8V0GpXsQxgHw@mail.gmail.com>
+References: <cover.1378963070.git.viresh.kumar@linaro.org>
+	<8f777cc6b41b2fed4bf71ce2adc36800353d5738.1378963070.git.viresh.kumar@linaro.org>
+	<523161D1.9040005@linux.vnet.ibm.com>
+	<CAKohpomz-EDbRNqv58zn6B+kC1jdjrxx68hoDrAj==+YbeTj=g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52316334.6080603@linux.vnet.ibm.com>
+In-Reply-To: <CAKohpomz-EDbRNqv58zn6B+kC1jdjrxx68hoDrAj==+YbeTj=g@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2013 12:16, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Of course, if we change the suspend/resume sequence and that fixes this, that
-> would be like getting it for free, nobody would say no to it ;-)
+On 12 September 2013 12:17, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Currently cpus never become zero as we clear mask only while there are
+> more than one cpu in a policy... Wait let me see what's the cleanest way
+> to get this fixed..
 
-Not really :)
-
-Policy with 4 CPUs, 0,1,2,3, policy->cpu currently set to 1, 2 or 3...
-
-We will remove CPUs in order 3,2,1 and add back in 1,2,3... Or Vice Versa
-
-policy->cpu after resume is 0 :)
+Okay, simply replace cpumask_first() with cpumask_any_but() in
+cpufreq_nominate_new_policy_cpu() :)
