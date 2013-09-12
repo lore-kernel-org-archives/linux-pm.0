@@ -1,71 +1,44 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/5] cpufreq: don't update policy->cpu while removing
- while removing other CPUs
-Date: Thu, 12 Sep 2013 13:43:41 +0530
-Message-ID: <523177B5.2050007@linux.vnet.ibm.com>
-References: <cover.1378963070.git.viresh.kumar@linaro.org> <0475c234b6ca2849c8a69dad0446d82b065b4161.1378963070.git.viresh.kumar@linaro.org>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH 0/4] cpufreq: fixes for v3.12
+Date: Thu, 12 Sep 2013 09:18:00 +0100
+Message-ID: <523178B8.8020806@arm.com>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1795989.18GOYqdUtX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:50955 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399Ab3ILIRi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Sep 2013 04:17:38 -0400
-Received: from /spool/local
-	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 12 Sep 2013 13:38:00 +0530
-In-Reply-To: <0475c234b6ca2849c8a69dad0446d82b065b4161.1378963070.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1795989.18GOYqdUtX@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Shawn Guo <shawn.guo@linaro.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, swarren@wwwdotorg.org, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/12/2013 10:55 AM, Viresh Kumar wrote:
-> With a recent change the logic here is changed a bit and I just figured out it
-> is something we don't want.
+On 11/09/13 23:58, Rafael J. Wysocki wrote:
+> On Tuesday, September 10, 2013 06:59:45 PM Sudeep KarkadaNagesha wrote:
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> Hi Shawn, Guennadi,
+>>
+>> These are the fixes for the issue reported by Guennadi.
+>> cpu_dev should point to cpu0 device instead of cpufreq-cpu0 platform
+>> devices. The dev_id is also updated while registering the cpu clocks.
+>>
+>> Can you review these ? Tested-by is much appreciated as I don't
+>> have hardware to check the fix.
 > 
-> Consider we have four CPUs (0,1,2,3) managed by a policy and policy->cpu is set
-> to 0. Now we are suspending and hence we call __cpufreq_remove_dev_prepare() for
-> cpu 1, 2 & 3..
+> I have a little problem with this series, because the last patch is based
+> on the current Linus' tree rather than on my master branch which is what
+> I have ready to push.  I don't think it makes sense to rebase it, however,
+> because that would introduce a merge conflict for Linus unnecessarily.
 > 
-> With the current code we always call cpufreq_nominate_new_policy_cpu() for cpu
-> 1, 2 & 3 whereas we should skipped most of __cpufreq_remove_dev_prepare()
-> routine.
-> 
-> Lets fix it by moving the check for !frozen inside the first if block.
+> To avoid merging stuff back and forth, I'll push this series later in the
+> cycle.
 > 
 
-As you noted in the other thread, Rafael already applied my patch[1] which does
-the same thing. So I guess you'll drop this patch from your series.
-
-[1].http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=bleeding-edge&id=61173f256
+Thanks Rafael.
+Let me know in case if you need me to rebase onto your branch.
 
 Regards,
-Srivatsa S. Bhat
-
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 5e0a82e..0e11fcb 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1182,8 +1182,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->  		cpumask_clear_cpu(cpu, policy->cpus);
->  	unlock_policy_rwsem_write(cpu);
-> 
-> -	if (cpu != policy->cpu && !frozen) {
-> -		sysfs_remove_link(&dev->kobj, "cpufreq");
-> +	if (cpu != policy->cpu) {
-> +		if (!frozen)
-> +			sysfs_remove_link(&dev->kobj, "cpufreq");
->  	} else if (cpus > 1) {
->  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
->  		if (new_cpu >= 0) {
-> 
+Sudeep
 
 
