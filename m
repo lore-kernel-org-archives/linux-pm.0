@@ -1,73 +1,84 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 5/5] cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
-Date: Thu, 12 Sep 2013 12:08:04 -0600
-Message-ID: <52320304.306@wwwdotorg.org>
-References: <cover.1378963070.git.viresh.kumar@linaro.org> <8f777cc6b41b2fed4bf71ce2adc36800353d5738.1378963070.git.viresh.kumar@linaro.org> <523161D1.9040005@linux.vnet.ibm.com> <CAKohpomz-EDbRNqv58zn6B+kC1jdjrxx68hoDrAj==+YbeTj=g@mail.gmail.com> <CAKohpomCXoO20cQyCrWtN0WgWnzvVmEqFxuwTU8V0GpXsQxgHw@mail.gmail.com> <52316A40.4050600@linux.vnet.ibm.com> <CAKohponzohnOL4Y81Q1W4Yg=paRO46c-gY=HMbkFUqgrjsT+xw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohponzohnOL4Y81Q1W4Yg=paRO46c-gY=HMbkFUqgrjsT+xw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] Thermal: change spin lock
+Date: Thu, 12 Sep 2013 15:05:14 -0700
+Message-ID: <1379023514-14982-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:45101 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229Ab3ILWFQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 12 Sep 2013 18:05:16 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 09/12/2013 03:21 AM, Viresh Kumar wrote:
-> On 12 September 2013 12:46, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> That sounds good! Even the naming is much better, it conveys the intent
->> clearly.
-> 
-> Folded below change in my patch (attached):
-...
+Change spin_lock to spin_lock_irqsave and spin_unlock to
+spin_unlock_irqrestore as the data it is trying to protect can also
+be modified in a notification call called from interrupt handler.
 
-For the record, the patch which was attached to Viresh's email solves
-the hangs I was getting in next-20130912 during (the second?) CPU
-hotplug and resume. So,
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/x86_pkg_temp_thermal.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
+diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+index f36950e..7722cb9 100644
+--- a/drivers/thermal/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -316,18 +316,19 @@ static void pkg_temp_thermal_threshold_work_fn(struct work_struct *work)
+ 	int phy_id = topology_physical_package_id(cpu);
+ 	struct phy_dev_entry *phdev = pkg_temp_thermal_get_phy_entry(cpu);
+ 	bool notify = false;
++	unsigned long flags;
+ 
+ 	if (!phdev)
+ 		return;
+ 
+-	spin_lock(&pkg_work_lock);
++	spin_lock_irqsave(&pkg_work_lock, flags);
+ 	++pkg_work_cnt;
+ 	if (unlikely(phy_id > max_phy_id)) {
+-		spin_unlock(&pkg_work_lock);
++		spin_unlock_irqrestore(&pkg_work_lock, flags);
+ 		return;
+ 	}
+ 	pkg_work_scheduled[phy_id] = 0;
+-	spin_unlock(&pkg_work_lock);
++	spin_unlock_irqrestore(&pkg_work_lock, flags);
+ 
+ 	enable_pkg_thres_interrupt();
+ 	rdmsrl(MSR_IA32_PACKAGE_THERM_STATUS, msr_val);
+@@ -397,6 +398,7 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+ 	int thres_count;
+ 	u32 eax, ebx, ecx, edx;
+ 	u8 *temp;
++	unsigned long flags;
+ 
+ 	cpuid(6, &eax, &ebx, &ecx, &edx);
+ 	thres_count = ebx & 0x07;
+@@ -420,19 +422,19 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+ 		goto err_ret_unlock;
+ 	}
+ 
+-	spin_lock(&pkg_work_lock);
++	spin_lock_irqsave(&pkg_work_lock, flags);
+ 	if (topology_physical_package_id(cpu) > max_phy_id)
+ 		max_phy_id = topology_physical_package_id(cpu);
+ 	temp = krealloc(pkg_work_scheduled,
+ 			(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
+ 	if (!temp) {
+-		spin_unlock(&pkg_work_lock);
++		spin_unlock_irqrestore(&pkg_work_lock, flags);
+ 		err = -ENOMEM;
+ 		goto err_ret_free;
+ 	}
+ 	pkg_work_scheduled = temp;
+ 	pkg_work_scheduled[topology_physical_package_id(cpu)] = 0;
+-	spin_unlock(&pkg_work_lock);
++	spin_unlock_irqrestore(&pkg_work_lock, flags);
+ 
+ 	phy_dev_entry->phys_proc_id = topology_physical_package_id(cpu);
+ 	phy_dev_entry->first_cpu = cpu;
+-- 
+1.8.3.1
 
-Without this, I saw:
-
-> root@localhost:~# ./cpuonline.py 
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> [   24.049729] CPU1: shutdown
-> echo 1 > /sys/devices/system/cpu/cpu1/online
-> [   26.090439] CPU1: Booted secondary processor
-> root@localhost:~# ./cpuonline.py 
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> [   29.003016] CPU1: shutdown
-> echo 1 > /sys/devices/system/cpu/cpu1/online
-> [   31.032562] CPU1: Booted secondary processor
-[hung]
-> [  240.300393] INFO: task ondemand:678 blocked for more than 120 seconds.
-> [  240.312842] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> [  240.326658] ondemand        D c050f6cc     0   678      1 0x00000000
-> [  240.339062] [<c050f6cc>] (__schedule+0x330/0x6d0) from [<c050fe50>] (schedule_preempt_disabled+0x24/0x34)
-> [  240.354904] [<c050fe50>] (schedule_preempt_disabled+0x24/0x34) from [<c050e810>] (__mutex_lock_slowpath+0x178/0x370)
-> [  240.371767] [<c050e810>] (__mutex_lock_slowpath+0x178/0x370) from [<c050ea14>] (mutex_lock+0xc/0x24)
-> [  240.387363] [<c050ea14>] (mutex_lock+0xc/0x24) from [<c00245e8>] (get_online_cpus+0x2c/0x48)
-> [  240.402273] [<c00245e8>] (get_online_cpus+0x2c/0x48) from [<c0342c0c>] (store+0x18/0xbc)
-> [  240.417688] [<c0342c0c>] (store+0x18/0xbc) from [<c011d598>] (sysfs_write_file+0x168/0x198)
-> [  240.432687] [<c011d598>] (sysfs_write_file+0x168/0x198) from [<c00cbf98>] (vfs_write+0xb0/0x188)
-> [  240.448185] [<c00cbf98>] (vfs_write+0xb0/0x188) from [<c00cc348>] (SyS_write+0x3c/0x70)
-> [  240.462964] [<c00cc348>] (SyS_write+0x3c/0x70) from [<c000e540>] (ret_fast_syscall+0x0/0x30)
-> [  240.478239] INFO: task sh:827 blocked for more than 120 seconds.
-> [  240.491027] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> [  240.505795] sh              D c050f6cc     0   827    825 0x00000001
-> [  240.519169] [<c050f6cc>] (__schedule+0x330/0x6d0) from [<c0510660>] (__down_write_nested+0x78/0xcc)
-> [  240.535666] [<c0510660>] (__down_write_nested+0x78/0xcc) from [<c0342ae0>] (lock_policy_rwsem_write+0x34/0x48)
-> [  240.552950] [<c0342ae0>] (lock_policy_rwsem_write+0x34/0x48) from [<c0343a04>] (cpufreq_update_policy+0x20/0xec)
-> [  240.570631] [<c0343a04>] (cpufreq_update_policy+0x20/0xec) from [<c0344410>] (cpufreq_cpu_callback+0x78/0x8c)
-> [  240.588051] [<c0344410>] (cpufreq_cpu_callback+0x78/0x8c) from [<c0042f44>] (notifier_call_chain+0x44/0x84)
-> [  240.605401] [<c0042f44>] (notifier_call_chain+0x44/0x84) from [<c0024594>] (__cpu_notify+0x28/0x44)
-> [  240.622085] [<c0024594>] (__cpu_notify+0x28/0x44) from [<c00247fc>] (_cpu_up+0x100/0x154)
-> [  240.638006] [<c00247fc>] (_cpu_up+0x100/0x154) from [<c00248c4>] (cpu_up+0x5c/0x84)
-> [  240.653405] [<c00248c4>] (cpu_up+0x5c/0x84) from [<c028a2a8>] (device_online+0x64/0x88)
-> [  240.669263] [<c028a2a8>] (device_online+0x64/0x88) from [<c028a328>] (store_online+0x5c/0x64)
-> [  240.685683] [<c028a328>] (store_online+0x5c/0x64) from [<c028816c>] (dev_attr_store+0x18/0x24)
-> [  240.702337] [<c028816c>] (dev_attr_store+0x18/0x24) from [<c011d598>] (sysfs_write_file+0x168/0x198)
-> [  240.719520] [<c011d598>] (sysfs_write_file+0x168/0x198) from [<c00cbf98>] (vfs_write+0xb0/0x188)
-> [  240.736614] [<c00cbf98>] (vfs_write+0xb0/0x188) from [<c00cc348>] (SyS_write+0x3c/0x70)
-> [  240.752799] [<c00cc348>] (SyS_write+0x3c/0x70) from [<c000e540>] (ret_fast_syscall+0x0/0x30)
