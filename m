@@ -1,28 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
- breaks cpufreq too
-Date: Thu, 12 Sep 2013 16:22:30 +0530
-Message-ID: <CAKohpo=gF7pVYXrDxBxMOvpu96VOB2V00Y6HACCEz=X-7jWj4A@mail.gmail.com>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
-	<52310E43.1090808@intel.com>
-	<CAKohpomuJNQmk5fg5en5usPgipj7hzXUVNMhz1MjAS-47X4Ggg@mail.gmail.com>
-	<3488595.xbBYlylYai@vostro.rjw.lan>
+From: Bill Huang <bilhuang@nvidia.com>
+Subject: [PATCH v2 0/4] Remodel Tegra cpufreq driver to support Tegra series SoCs
+Date: Thu, 12 Sep 2013 04:24:47 -0700
+Message-ID: <1378985091-9447-1-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <3488595.xbBYlylYai@vostro.rjw.lan>
-Sender: linux-sh-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Greg KH <greg@kroah.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@sisk.pl, viresh.kumar@linaro.org, swarren@wwwdotorg.org
+Cc: linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Bill Huang <bilhuang@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2013 16:31, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Well, if there's more than one it's even simpler.  You can just pick one. :-)
->
-> Like, "for example, <driver name> does the following ... which may cause the
-> hardware to misbehave, because ...".
+This patch series remodel Tegra cpufreq driver to make it more easy to
+add new SoC support, in addition to that, adding probe function in the
+driver to let probe defer can be used to control init sequence when we
+going to support DVFS.
 
-:)
+Changes since v1:
 
-I have written one of my longest changelog ever on the resent of this patch..
-Hope that doesn't have any unanswered stuff left :)
+- Split up patches.
+- Split configuration-time data out of structure "tegra_cpufreq_data".
+- Bug fixes.
+
+Bill Huang (4):
+  cpufreq: tegra: Call tegra_cpufreq_init() specifically in machine
+    code
+  cpufreq: tegra: Remove not used header files and clean up codes
+  cpufreq: tegra: Re-model Tegra cpufreq driver
+  ARM: tegra: defconfig updates
+
+ arch/arm/configs/tegra_defconfig  |    1 +
+ arch/arm/mach-tegra/common.c      |    2 +
+ drivers/cpufreq/Kconfig.arm       |    8 +-
+ drivers/cpufreq/Makefile          |    1 +
+ drivers/cpufreq/tegra-cpufreq.c   |  194 +++++++++++++++++--------------------
+ drivers/cpufreq/tegra-cpufreq.h   |   42 ++++++++
+ drivers/cpufreq/tegra20-cpufreq.c |  138 ++++++++++++++++++++++++++
+ include/linux/tegra-soc.h         |   11 ++-
+ 8 files changed, 290 insertions(+), 107 deletions(-)
+ create mode 100644 drivers/cpufreq/tegra-cpufreq.h
+ create mode 100644 drivers/cpufreq/tegra20-cpufreq.c
+
+-- 
+1.7.9.5
