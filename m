@@ -1,31 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Detect spurious invocations of update_policy_cpu()
-Date: Thu, 12 Sep 2013 19:03:47 +0530
-Message-ID: <CAKohponfLQnPhpLwkOBQ--AXnmD+bvZ85iKQBts1c1wEZmBZuQ@mail.gmail.com>
-References: <20130912115710.25951.98497.stgit@srivatsabhat.in.ibm.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Thu, 12 Sep 2013 09:55:14 -0600
+Message-ID: <5231E3E2.1050101@wwwdotorg.org>
+References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan>	<522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan>	<52304439.3030301@linux.vnet.ibm.com> <CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com> <CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com> <5230509D.6040205@linux.vnet.ibm.com> <CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com> <CAKohpo=8mqRmmk17D52yiR9w1V4Z+2UzZ2kzABtrxHbYR+sQzw@mail.gmail.com> <52315E9A.3000607@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130912115710.25951.98497.stgit@srivatsabhat.in.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52315E9A.3000607@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2013 17:29, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> The function update_policy_cpu() is expected to be called when the policy->cpu
-> of a cpufreq policy is to be changed: ie., the new CPU nominated to become the
-> policy->cpu is different from the old one.
->
-> Print a warning if it is invoked with new_cpu == old_cpu, since such an
-> invocation might hint at a faulty logic in the caller.
->
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->
->  drivers/cpufreq/cpufreq.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On 09/12/2013 12:26 AM, Srivatsa S. Bhat wrote:
+> On 09/12/2013 11:22 AM, Viresh Kumar wrote:
+...
+>> Now coming back to the ideas I have...
+>> Same code will work if hotplug sequence is fixed a bit. Why aren't we doing
+>> exact opposite of suspend in resume?
+>>
+>> We are removing CPUs (leaving the boot cpu) in ascending order and then
+>> adding them back in same order.. Why?
+>>
+>> Why not remove CPUs in descending order and add in ascending order? Or
+>> remove in ascending order and add in descending order?
+> 
+> I had the same thought when solving this bug.. We have had similar issues with
+> CPU hotplug notifiers too: why are they invoked in the same order during both
+> CPU down and up, instead of reversing the order? I even had a patchset to perform
+> reverse-invocation of notifiers.. http://lwn.net/Articles/508072/
+> ... but people didn't find that very compelling to have.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I'm not sure if you're talking about the order the CPUs get plugged back
+in after resume, or the order of the (pair of?) notifiers that gets
+called for each individual CPU.
+
+Sorry if this is blindingly obvious, but with CPU hotplug, I can
+manually unplug/re-plug CPUs in any order I feel like, and cpufreq had
+better work if I do that. Given that, I don't think there's any
+particular need for suspend/resume to unplug/re-plug CPUs in any
+particular order for correctness at least, although perhaps it'd be nice
+cosmetically for some reason?
