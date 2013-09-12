@@ -1,105 +1,100 @@
-From: Andrew Savchenko <bircoph@gmail.com>
-Subject: Re: [BUG] 3.7-rc regression bisected: s2disk fails
- to resume image: Processes could not be frozen, cannot continue resuming
-Date: Thu, 12 Sep 2013 12:32:17 +0400
-Message-ID: <20130912123217.e1764291616cf8e59f0f92b8@gmail.com>
-References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
-	<20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
-	<20130905120811.GC15161@amd.pavel.ucw.cz>
-	<2662480.5erkm9ACQI@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 5/5] cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
+Date: Thu, 12 Sep 2013 14:51:58 +0530
+Message-ID: <CAKohponzohnOL4Y81Q1W4Yg=paRO46c-gY=HMbkFUqgrjsT+xw@mail.gmail.com>
+References: <cover.1378963070.git.viresh.kumar@linaro.org>
+	<8f777cc6b41b2fed4bf71ce2adc36800353d5738.1378963070.git.viresh.kumar@linaro.org>
+	<523161D1.9040005@linux.vnet.ibm.com>
+	<CAKohpomz-EDbRNqv58zn6B+kC1jdjrxx68hoDrAj==+YbeTj=g@mail.gmail.com>
+	<CAKohpomCXoO20cQyCrWtN0WgWnzvVmEqFxuwTU8V0GpXsQxgHw@mail.gmail.com>
+	<52316A40.4050600@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7640478067503366647=="
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <2662480.5erkm9ACQI@vostro.rjw.lan>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Content-Type: multipart/mixed; boundary=e89a8ff1ceb61053c404e62c45cb
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52316A40.4050600@linux.vnet.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============7640478067503366647==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC"
+--e89a8ff1ceb61053c404e62c45cb
+Content-Type: text/plain; charset=ISO-8859-1
 
---Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 12 September 2013 12:46, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> That sounds good! Even the naming is much better, it conveys the intent
+> clearly.
 
-Hello,
+Folded below change in my patch (attached):
 
-On Thu, 05 Sep 2013 14:23:25 +0200 Rafael J. Wysocki wrote:
-> On Thursday, September 05, 2013 02:08:11 PM Pavel Machek wrote:
-> > Hi!
-> >=20
-> > Rafael, Al: apparently we have a regression caused by
-> > ba4df2808a86f8b103c4db0b8807649383e9bd13 .
->=20
-> I noticed that, but I'm not sure how to deal with it.
->=20
-> Also, s2disk still works on my test machines, so that seems to be
-> specific to this particular configuration.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b556d46..23f5845 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1111,7 +1111,7 @@ static int
+cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
+        int ret;
 
-Is there any way to debug this issue further than just bisecting
-commit? Perhaps suspend ioctl should be traced to see why it fails,
-but I don't know what exactly inside the kernel should be debugged
-and how.
+        /* first sibling now owns the new sysfs dir */
+-       cpu_dev = get_cpu_device(cpumask_first(policy->cpus));
++       cpu_dev = get_cpu_device(cpumask_any_but(policy->cpus, old_cpu));
 
-Best regards,
-Andrew Savchenko
+        /* Don't touch sysfs files during light-weight tear-down */
+        if (frozen)
 
---Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC
-Content-Type: application/pgp-signature
+--
+thanks
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+--e89a8ff1ceb61053c404e62c45cb
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-use-correct-values-of-cpus-in-__cpufreq_remo.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-use-correct-values-of-cpus-in-__cpufreq_remo.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hlhrq4xs0
 
-iQIcBAEBAgAGBQJSMXwlAAoJEFZZU7lTcnVstv8P/iZYXjqI1rMeeTk9kohTnDUu
-4iXBe3kMOsv/2FAHVQ90AI/WgWYFSv2eDIRYywDt276JsLYIk1EpzO8OpN9nVyaT
-Q8FfwXUXUJ4YCz9k+QzvAVN3BVIFIfCz/eqR4MXLBtGAhkL1NzwOIA/HwzK9saZo
-KTuRKCM/IS5bx/uQvLvYEN45T02c+EAjuKxvPHKPA48Ea6xnGmQWuT0qXn7k1y93
-Mf9N/go3YJ+jkk0mqjpveQpH6bd5CS2p+fDcD/n8w+4+Am9nw6ywuY6jhNzrVNV4
-T2f5fwcmvU16dOqR7i+01JKa1xwcb9rRBMTH8L9kCfVhGpW09YZhDPs/Gy6oHXNp
-Sy0GoQbtXtujxC3z4U0IM/AAVwN3cJQQVZH1EsdwIkMjbpAkk0tvTOjgjorFs3CP
-bEbcOl8DU43PH+FujcRIcuvHFerfyqOi8x9ovcw+sJ4iQQBrs7AFb8dobWIQtbVe
-NcGndaikJO2lCTZb/MCgXwlmBfAefDXSUjJssbpvpZ0tCtpcPfWEZwmrcMjJX0d8
-/O/0gQ8f2trpufC+IdB+HVOjEXzkD44CUoQN0DkCyz+4MjBjPTlhzFpQ8OV/EIpJ
-Trcit+AhE7lKkdbvhB/w4PfBo3A2zdNgWIKlk3/ERXfJZGQmvGemIY3A5A1uOGlk
-5FViGZq4H9ZOon8TBH5j
-=NP95
------END PGP SIGNATURE-----
-
---Signature=_Thu__12_Sep_2013_12_32_17_+0400_vA=0O4DjQlwtfJbC--
-
-
---===============7640478067503366647==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-------------------------------------------------------------------------------
-How ServiceNow helps IT people transform IT departments:
-1. Consolidate legacy IT systems to a single system of record for IT
-2. Standardize and globalize service processes across IT
-3. Implement zero-touch automation to replace manual, redundant tasks
-http://pubads.g.doubleclick.net/gampad/clk?id=51271111&iu=/4140/ostg.clktrk
---===============7640478067503366647==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Suspend-devel mailing list
-Suspend-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/suspend-devel
-
---===============7640478067503366647==--
+RnJvbSBhNjdiMGRhYWFiZDBlMThlMWE5MTJhMTY1MjFjNDA1YmMxN2JkZWQ5IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8YTY3YjBkYWFhYmQwZTE4ZTFhOTEyYTE2NTIxYzQw
+NWJjMTdiZGVkOS4xMzc4OTc3Njg5LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVGh1LCAxMiBTZXAg
+MjAxMyAxMDoyNTowMCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IHVzZSBjb3JyZWN0
+IHZhbHVlcyBvZiBjcHVzIGluCiBfX2NwdWZyZXFfcmVtb3ZlX2Rldl9maW5pc2goKQoKVGhpcyBi
+cm9rZSBhZnRlciBhIHJlY2VudCBjaGFuZ2UgImNlZGI3MGEgY3B1ZnJlcTogU3BsaXQgX19jcHVm
+cmVxX3JlbW92ZV9kZXYoKQppbnRvIHR3byBwYXJ0cyIgZnJvbSBTcml2YXRzYS4uCgpDb25zaWRl
+ciBhIHNjZW5hcmlvIHdoZXJlIHdlIGhhdmUgdHdvIENQVXMgaW4gYSBwb2xpY3kgKDAgJiAxKSBh
+bmQgd2UgYXJlCnJlbW92aW5nIGNwdSAxLiBPbiB0aGUgY2FsbCB0byBfX2NwdWZyZXFfcmVtb3Zl
+X2Rldl9wcmVwYXJlKCkgd2UgaGF2ZSBjbGVhcmVkIDEKZnJvbSBwb2xpY3ktPmNwdXMgYW5kIG5v
+dyBvbiBhIGNhbGwgdG8gX19jcHVmcmVxX3JlbW92ZV9kZXZfZmluaXNoKCkgd2UgcmVhZApjcHVt
+YXNrX3dlaWdodCBvZiBwb2xpY3ktPmNwdXMsIHdoaWNoIHdpbGwgY29tZSBhcyAxIGFuZCB0aGlz
+IGNvZGUgd2lsbCBiZWhhdmUKYXMgaWYgd2UgYXJlIHJlbW92aW5nIHRoZSBsYXN0IGNwdSBmcm9t
+IHBvbGljeSA6KQoKRml4IGl0IGJ5IGNsZWFyaW5nIGNwdSBtYXNrIGluIF9fY3B1ZnJlcV9yZW1v
+dmVfZGV2X2ZpbmlzaCgpIGluc3RlYWQgb2YKX19jcHVmcmVxX3JlbW92ZV9kZXZfcHJlcGFyZSgp
+LgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4K
+LS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgMTYgKysrKysrKystLS0tLS0tLQogMSBm
+aWxlIGNoYW5nZWQsIDggaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
+YS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwpp
+bmRleCAwZTExZmNiLi4yM2Y1ODQ1IDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJl
+cS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKQEAgLTExMTEsNyArMTExMSw3IEBA
+IHN0YXRpYyBpbnQgY3B1ZnJlcV9ub21pbmF0ZV9uZXdfcG9saWN5X2NwdShzdHJ1Y3QgY3B1ZnJl
+cV9wb2xpY3kgKnBvbGljeSwKIAlpbnQgcmV0OwogCiAJLyogZmlyc3Qgc2libGluZyBub3cgb3du
+cyB0aGUgbmV3IHN5c2ZzIGRpciAqLwotCWNwdV9kZXYgPSBnZXRfY3B1X2RldmljZShjcHVtYXNr
+X2ZpcnN0KHBvbGljeS0+Y3B1cykpOworCWNwdV9kZXYgPSBnZXRfY3B1X2RldmljZShjcHVtYXNr
+X2FueV9idXQocG9saWN5LT5jcHVzLCBvbGRfY3B1KSk7CiAKIAkvKiBEb24ndCB0b3VjaCBzeXNm
+cyBmaWxlcyBkdXJpbmcgbGlnaHQtd2VpZ2h0IHRlYXItZG93biAqLwogCWlmIChmcm96ZW4pCkBA
+IC0xMTc1LDEyICsxMTc1LDkgQEAgc3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2Rldl9wcmVw
+YXJlKHN0cnVjdCBkZXZpY2UgKmRldiwKIAkJCXBvbGljeS0+Z292ZXJub3ItPm5hbWUsIENQVUZS
+RVFfTkFNRV9MRU4pOwogI2VuZGlmCiAKLQlXQVJOX09OKGxvY2tfcG9saWN5X3J3c2VtX3dyaXRl
+KGNwdSkpOworCWxvY2tfcG9saWN5X3J3c2VtX3JlYWQoY3B1KTsKIAljcHVzID0gY3B1bWFza193
+ZWlnaHQocG9saWN5LT5jcHVzKTsKLQotCWlmIChjcHVzID4gMSkKLQkJY3B1bWFza19jbGVhcl9j
+cHUoY3B1LCBwb2xpY3ktPmNwdXMpOwotCXVubG9ja19wb2xpY3lfcndzZW1fd3JpdGUoY3B1KTsK
+Kwl1bmxvY2tfcG9saWN5X3J3c2VtX3JlYWQoY3B1KTsKIAogCWlmIChjcHUgIT0gcG9saWN5LT5j
+cHUpIHsKIAkJaWYgKCFmcm96ZW4pCkBAIC0xMjIyLDkgKzEyMTksMTIgQEAgc3RhdGljIGludCBf
+X2NwdWZyZXFfcmVtb3ZlX2Rldl9maW5pc2goc3RydWN0IGRldmljZSAqZGV2LAogCQlyZXR1cm4g
+LUVJTlZBTDsKIAl9CiAKLQlsb2NrX3BvbGljeV9yd3NlbV9yZWFkKGNwdSk7CisJV0FSTl9PTihs
+b2NrX3BvbGljeV9yd3NlbV93cml0ZShjcHUpKTsKIAljcHVzID0gY3B1bWFza193ZWlnaHQocG9s
+aWN5LT5jcHVzKTsKLQl1bmxvY2tfcG9saWN5X3J3c2VtX3JlYWQoY3B1KTsKKworCWlmIChjcHVz
+ID4gMSkKKwkJY3B1bWFza19jbGVhcl9jcHUoY3B1LCBwb2xpY3ktPmNwdXMpOworCXVubG9ja19w
+b2xpY3lfcndzZW1fd3JpdGUoY3B1KTsKIAogCS8qIElmIGNwdSBpcyBsYXN0IHVzZXIgb2YgcG9s
+aWN5LCBmcmVlIHBvbGljeSAqLwogCWlmIChjcHVzID09IDEpIHsKLS0gCjEuNy4xMi5yYzIuMTgu
+ZzYxYjQ3MmUKCg==
+--e89a8ff1ceb61053c404e62c45cb--
