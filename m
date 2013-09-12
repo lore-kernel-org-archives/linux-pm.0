@@ -1,45 +1,29 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/5] cpufreq: Last minute fixes for 3.12
-Date: Thu, 12 Sep 2013 15:35:37 +0530
-Message-ID: <CAKohpomDbrtvG95oQKvwO=KpLF7fmJDZ4_iEQ=rPAT3e_16FMw@mail.gmail.com>
+Subject: Re: [PATCH 1/5] cpufreq: Remove extra blank line
+Date: Thu, 12 Sep 2013 15:38:09 +0530
+Message-ID: <CAKohpomLNz2Sac1ZqiQS8yW+q13UWhu4dT+vkfLe2TGXG4+iUw@mail.gmail.com>
 References: <cover.1378963070.git.viresh.kumar@linaro.org>
+	<22f0d94203b9e3d29f123c0e80df4b012e01dbb5.1378963070.git.viresh.kumar@linaro.org>
+	<52317849.90101@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1378963070.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52317849.90101@linux.vnet.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2013 10:55, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> First three of the patchset are minor cleanups (you may or may not take them for
-> 3.12), but last two are some real fixes.. I haven't faced any issue without them
-> but simply found them in code review.
+On 12 September 2013 13:46, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Well, I felt having that line avoids clutter, especially since the code
+> around it was already a bit hard to read..
 
-> Viresh Kumar (5):
->   cpufreq: Remove extra blank line
->   cpufreq: don't break string in print statements
->   cpufreq: remove __cpufreq_remove_dev()
->   cpufreq: don't update policy->cpu while removing while removing other
->     CPUs
->   cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
+Well, its exact opposite for me.. somehow my attending keeps dragging
+to extra blank lines :)
 
-So in the end there is only one real fix in this series as 4/4/ is already in..
+> Anyway, I don't have any strong opinions either way. So no objections
+> from my side. (But you might have to rebase this patch on top of Rafael's
+> tree, due to the recent changes he pushed in to this code).
 
-To make it clear again these are my pending patches for cpufreq:
-For 3.12-rc2:
-- 5/5 of this patchset (modified one)..
-- "serialize freq transitions" that I will send separately today as Guennadi
-has already tested that ..
-
-For 3.13:
-- First 3 patches from this series (I tried rebase them over your linux-next and
-didn't found any issue)
-- 5 patches from: http://www.gossamer-threads.com/lists/linux/kernel/1781051
-- And the rest ~220 patches that I will send soon (Will rebase them
-over all above
-patches)..
-
-Thanks.
-Viresh
+I tried a rebase and couldn't find a issue.. And so not resending the series.
