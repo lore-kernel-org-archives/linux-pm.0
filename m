@@ -1,36 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq regression due to dceff5c "cpufreq: fix serialization
- issues with freq change notifiers"
-Date: Thu, 12 Sep 2013 06:01:55 +0530
-Message-ID: <CAKohpo=pwSHF=WWmNfi6Mp3uKp-VdFki7+aXWdJNns=TSh_oGA@mail.gmail.com>
-References: <5230ECB4.2090306@wwwdotorg.org>
-	<13389782.ui3WXEBqQV@vostro.rjw.lan>
-	<5230F46B.7070006@wwwdotorg.org>
-	<CAKohpomqKgQumyEHQuuZ+SUHHULkJaAj5pgw1TFLVLsZzba_2Q@mail.gmail.com>
+Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
+ breaks cpufreq too
+Date: Thu, 12 Sep 2013 06:09:38 +0530
+Message-ID: <CAKohpokEZcwF-zL6rTXYyC_x=SJzGFvdvxqvmvyhJHa8nPXogQ@mail.gmail.com>
+References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
+	<2703632.ul5ekQh5oq@vostro.rjw.lan>
+	<CAKohpo=RKB-_EO=cjaOorAfN=y_cMgJg-j6=xtX71a-TwujgsA@mail.gmail.com>
+	<2013615.oHjWkmedue@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:65458 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103Ab3ILAb4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 20:31:56 -0400
-Received: by mail-ob0-f181.google.com with SMTP id dn14so9279782obc.12
-        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2013 17:31:55 -0700 (PDT)
-In-Reply-To: <CAKohpomqKgQumyEHQuuZ+SUHHULkJaAj5pgw1TFLVLsZzba_2Q@mail.gmail.com>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:54884 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754539Ab3ILAjj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2013 20:39:39 -0400
+Received: by mail-ob0-f178.google.com with SMTP id ef5so9300677obb.9
+        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2013 17:39:39 -0700 (PDT)
+In-Reply-To: <2013615.oHjWkmedue@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
 
-On 12 September 2013 05:56, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> For the record this is where this problem is getting discussed:
+On 11 September 2013 18:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, September 11, 2013 02:08:44 PM Viresh Kumar wrote:
+
+>> That looked like a straight forward issue/bug to me and so I haven't
+>> gotten deep into it..
 >
-> https://lkml.org/lkml/2013/9/9/270
+> Which you should always do when you're going to deal with concurrency issues.
+> Even if they appear to be obvious, they often are far from that, like in this
+> case.
 
-Can you help us a bit here? That patch was reverted for now but we are planning
-to get it back and I have few patches which must help us here...
+/me Nods
 
-If you can try them on Tegra, it would be great!!
-All are present here:
+>> Scenario 2:
+>> --------------
+>> Governor is changing freq and has called __cpufreq_driver_target().
+>> At the same time we are changing scaling_{min|max}_freq from
+>> sysfs, which would eventually end up calling governors:
+>> CPUFREQ_GOV_LIMITS notification, that will also call:
+>> __cpufreq_driver_target()..
+>>
+>> So, we eventually have two concurrent calls to ->target() and we
+>> don't really know how hardware will behave in this case.. Most of
+>> the implementations of ->target() routines just go and change
+>> freq/voltage without checking if we are already in progress of doing
+>> that (i.e. based on expectation that this call is not re entrant)..
+>>
+>> Now anything can happen at hardware level, which I don't have
+>> all insight of :(
+>
+> That is more theoretical, however.
 
-https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-transition-ongoing
+Maybe we can get more deeper into it then :)
+Platform have something like this in their target()
+
+A. If new freq is more than old: Increase voltage
+B. Change freq
+C. If new freq is less than old: decrease voltage
+
+Now, two concurrent calls to target are X and Y, where X is trying to increase
+freq and Y is trying to decrease it..
+
+And this is the sequence that followed due to races..
+
+X.A: voltage increased for larger freq
+Y.A: nothing happened here
+Y.B: freq decreased
+Y.C: voltage decreased
+X.B: freq increased
+X.C: nothing happened..
+
+We ended up setting a freq which is not supported by the voltage we have
+set.. That will probably make clock to CPU unstable and system wouldn't
+be workable anymore...
+
+And so I think even this case must also get some space in the changelog :)
