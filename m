@@ -1,52 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Thu, 12 Sep 2013 12:11:33 +0530
-Message-ID: <CAKohpo=LuoKTf+mX1oBt97K3sJVu0iN=whN7VGw6kuartnrr+w@mail.gmail.com>
-References: <522E1FEF.6080803@wwwdotorg.org>
-	<1775778.MeiRhuYy7o@vostro.rjw.lan>
-	<522F86AD.6010603@wwwdotorg.org>
-	<2521560.SfeNbV74nj@vostro.rjw.lan>
-	<52304439.3030301@linux.vnet.ibm.com>
-	<CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
-	<CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com>
-	<5230509D.6040205@linux.vnet.ibm.com>
-	<CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
-	<CAKohpo=8mqRmmk17D52yiR9w1V4Z+2UzZ2kzABtrxHbYR+sQzw@mail.gmail.com>
-	<52315E9A.3000607@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] cpufreq: Prevent problems in update_policy_cpu() if
+ last_cpu == new_cpu
+Date: Thu, 12 Sep 2013 12:14:16 +0530
+Message-ID: <CAKohpomsHSMWmGAACurpN1dYSsvHvH6w_SDpQ5c7CE_1R2MGMg@mail.gmail.com>
+References: <20130911201239.7832.72612.stgit@srivatsabhat.in.ibm.com>
+	<20130911201334.7832.49714.stgit@srivatsabhat.in.ibm.com>
+	<CAKohpomgd8X4UwFaVtJ49=CXTg2cyEirvD4_mj5ohqS5fk064Q@mail.gmail.com>
+	<52315D7D.3030406@linux.vnet.ibm.com>
+	<CAKohpoktJkAWf2xvRKmz3ZUW3wiRqHYdaR6d_HKsXZPXiiK53Q@mail.gmail.com>
+	<52315F98.8020305@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52315E9A.3000607@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:53260 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753511Ab3ILGoR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Sep 2013 02:44:17 -0400
+Received: by mail-oa0-f46.google.com with SMTP id o20so10238880oag.5
+        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2013 23:44:17 -0700 (PDT)
+In-Reply-To: <52315F98.8020305@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 12 September 2013 11:56, Srivatsa S. Bhat
+On 12 September 2013 12:00, Srivatsa S. Bhat
 <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> I had the same thought when solving this bug.. We have had similar issues with
-> CPU hotplug notifiers too: why are they invoked in the same order during both
-> CPU down and up, instead of reversing the order? I even had a patchset to perform
-> reverse-invocation of notifiers.. http://lwn.net/Articles/508072/
-> ... but people didn't find that very compelling to have.
->
+> Looking at the rate at which we are bumping into each others thoughts, I think
+> maybe we should switch from email to IRC ;-) ;-)
 
-> It does to me too, but I think the reason nobody really bothered is because perhaps
-> not many other subsystems care about the order in which CPUs are torn down or
-> brought up; they just need the total number to match.. cpufreq is one exception
-> as we saw with this bug.
+Unbelievable, Even I thought so this morning :)
 
-Probably its time to re-spin that series and make CPUFreq as one of the users
-of that patchset.. Resume should be just opposite of suspend and so
-that patchset
-would make sense even if not many people care about it :)
+One more thing that I wanted to say for some other threads..
+Your changelogs are simply superb.. The amount of information that you put in
+them is fantastic.. I never do it that way and so get caught by Rafael a number
+of times :)
 
-Over that there is one more problem that I see, don't know if it is really a big
-issue..
+Need to learn this from you for sure :)
 
-After a suspend/resume value of policy->cpu may get changed... And so the
-hierarchy of sysfs cpufreq files too.. Folder that had links to other
-CPUs folder
-can now be actual folders instead of links and vice versa..
-
-Don't know if this can break something ??
+Btw, I am on Freenode for many Linaro channels.... Where can I find you on
+IRC? (Haven't sent this in a private mail as others might also find it useful)
