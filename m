@@ -1,33 +1,91 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
- breaks cpufreq too
-Date: Thu, 12 Sep 2013 11:06:14 +0530
-Message-ID: <CAKohpomuJNQmk5fg5en5usPgipj7hzXUVNMhz1MjAS-47X4Ggg@mail.gmail.com>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
-	<2703632.ul5ekQh5oq@vostro.rjw.lan>
-	<CAKohpo=RKB-_EO=cjaOorAfN=y_cMgJg-j6=xtX71a-TwujgsA@mail.gmail.com>
-	<2013615.oHjWkmedue@vostro.rjw.lan>
-	<CAKohpokEZcwF-zL6rTXYyC_x=SJzGFvdvxqvmvyhJHa8nPXogQ@mail.gmail.com>
-	<52310E43.1090808@intel.com>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Thu, 12 Sep 2013 11:22:52 +0530
+Message-ID: <CAKohpo=8mqRmmk17D52yiR9w1V4Z+2UzZ2kzABtrxHbYR+sQzw@mail.gmail.com>
+References: <522E1FEF.6080803@wwwdotorg.org>
+	<1775778.MeiRhuYy7o@vostro.rjw.lan>
+	<522F86AD.6010603@wwwdotorg.org>
+	<2521560.SfeNbV74nj@vostro.rjw.lan>
+	<52304439.3030301@linux.vnet.ibm.com>
+	<CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
+	<CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com>
+	<5230509D.6040205@linux.vnet.ibm.com>
+	<CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <52310E43.1090808@intel.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Greg KH <greg@kroah.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2013 06:13, Rafael J. Wysocki
-<rafael.j.wysocki@intel.com> wrote:
-> Yes, if you can point to a specific driver having this problem.
+Let me fix my mail first.. I was running out of time yesterday and so couldn't
+frame things correctly :)
 
-There are so many of those (I know it because I went through almost all drivers
-recently with my cleanup series): cpufreq-cpu0, omap-cpufreq,
-exynos-cpufreq, etc..
+On 11 September 2013 17:29, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Okay.. There are two different ways in which cpufreq_add_dev() work
+> currently..
+>
+> Boot cluster (i.e. policy with boot CPU)
+> ---------------
+>
+> Here cpufreq_remove_dev() is never called for boot cpu but all others.
+> And similarly cpufreq_add_dev() is never called for boot cpu but all others.
+>
+> Now policy->cpu contains meaningful cpu at beginning of resume and
+> we don't need to modify that at all.. For all the remaining CPUs we
+> better call cpufreq_add_policy_cpu() rather..
 
-They all do this:
+And this should be done without your patch. Or actually we will simply
+return from this place. Atleast for systems with single cluster, like Tegra.
 
-A. If new freq is more than old: Increase voltage
-B. Change freq
-C. If new freq is less than old: decrease voltage
+policy->related_cpus is still valid after resume and we haven't removed
+policy from the cpufreq_policy_list (though there is a bug which I have
+fixed separately and sent it to you..).. So no change required for a single
+cluster system..
+
+> Non-boot Cluster
+> ---------------------
+>
+> All CPUs here are removed and at the end policy->cpu contains the last
+> cpu removed.. So, for a cluster with cpu 2 and 3.... it will contain 3..
+>
+> Now at resume we will add cpu2 first and so need to update policy->cpu
+> to 2..
+
+> But for all other CPUs in this cluster we return early from
+> cpufreq_add_dev() and call cpufreq_add_policy_cpu() as policy->cpus
+> was fixed by call to ->init() for the first cpu of this cluster..
+
+This was wrong, we need a valid policy->related_cpus field which is always
+valid and so we return early here too, but not for the first cpu of cluster.
+
+> And so we never reach the line: policy->cpu = cpu;
+>
+> For the first cpu of non-boot cluster we need to call update_policy_cpu()
+> and not for others..
+
+that's correct, thought I have one more idea.. :)
+
+> But for the boot cluster if we can call ->init() somehow at resume time,
+> then things would be fairly similar in both cases..
+
+Not required.. its all working already.. and so Stephen shouldn't need your
+patch for Tegra, but rather my patches that fix other cpufreq bugs..
+
+Now coming back to the ideas I have...
+Same code will work if hotplug sequence is fixed a bit. Why aren't we doing
+exact opposite of suspend in resume?
+
+We are removing CPUs (leaving the boot cpu) in ascending order and then
+adding them back in same order.. Why?
+
+Why not remove CPUs in descending order and add in ascending order? Or
+remove in ascending order and add in descending order?
+
+That way policy->cpu will be updated with the right cpu and your patch wouldn't
+be required..
+
+I am not saying that this can't be hacked/fixed in cpufreq but suspend/resume
+may also be fixed and that looks logically more correct to me..
