@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 157/228] cpufreq: elanfreq: Convert to light weight ->target_index() routine
-Date: Fri, 13 Sep 2013 18:31:43 +0530
-Message-ID: <47f3f56316c9848750e1dc3328348391b1aa645f.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 156/228] cpufreq: e_powersaver: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:31:42 +0530
+Message-ID: <d25ecdaa114fc4f0c403d7817fd83c002378512b.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -20,70 +20,53 @@ routine and will pass index to it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/elanfreq.c | 34 +++-------------------------------
- 1 file changed, 3 insertions(+), 31 deletions(-)
+ drivers/cpufreq/e_powersaver.c | 17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
-index d91a645..4ab4153 100644
---- a/drivers/cpufreq/elanfreq.c
-+++ b/drivers/cpufreq/elanfreq.c
-@@ -105,20 +105,8 @@ static unsigned int elanfreq_get_cpu_frequency(unsigned int cpu)
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index 2c11ce3..b39c4ef 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -168,12 +168,9 @@ postchange:
+ 	return err;
  }
  
- 
--/**
-- *	elanfreq_set_cpu_frequency: Change the CPU core frequency
-- *	@cpu: cpu number
-- *	@freq: frequency in kHz
-- *
-- *	This function takes a frequency value and changes the CPU frequency
-- *	according to this. Note that the frequency has to be checked by
-- *	elanfreq_validatespeed() for correctness!
-- *
-- *	There is no return value.
-- */
--
--static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
--		unsigned int state)
-+static int elanfreq_target(struct cpufreq_policy *policy,
-+			    unsigned int state)
+-static int eps_target(struct cpufreq_policy *policy,
+-			       unsigned int target_freq,
+-			       unsigned int relation)
++static int eps_target(struct cpufreq_policy *policy, unsigned int index)
  {
- 	struct cpufreq_freqs    freqs;
- 
-@@ -162,25 +150,9 @@ static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
- 	local_irq_enable();
- 
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--};
--
--
--static int elanfreq_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq,
--			    unsigned int relation)
--{
+ 	struct eps_cpu_data *centaur;
 -	unsigned int newstate = 0;
--
--	if (cpufreq_frequency_table_target(policy, &elanfreq_table[0],
--				target_freq, relation, &newstate))
--		return -EINVAL;
--
--	elanfreq_set_cpu_state(policy, newstate);
+ 	unsigned int cpu = policy->cpu;
+ 	unsigned int dest_state;
+ 	int ret;
+@@ -182,16 +179,8 @@ static int eps_target(struct cpufreq_policy *policy,
+ 		return -ENODEV;
+ 	centaur = eps_cpu[cpu];
  
- 	return 0;
- }
+-	if (unlikely(cpufreq_frequency_table_target(policy,
+-			&eps_cpu[cpu]->freq_table[0],
+-			target_freq,
+-			relation,
+-			&newstate))) {
+-		return -EINVAL;
+-	}
 -
--
- /*
-  *	Module init and exit code
-  */
-@@ -237,7 +209,7 @@ __setup("elanfreq=", elanfreq_setup);
- static struct cpufreq_driver elanfreq_driver = {
- 	.get		= elanfreq_get_cpu_frequency,
+ 	/* Make frequency transition */
+-	dest_state = centaur->freq_table[newstate].driver_data & 0xffff;
++	dest_state = centaur->freq_table[index].driver_data & 0xffff;
+ 	ret = eps_set_state(centaur, policy, dest_state);
+ 	if (ret)
+ 		printk(KERN_ERR "eps: Timeout!\n");
+@@ -418,7 +407,7 @@ static int eps_cpu_exit(struct cpufreq_policy *policy)
+ 
+ static struct cpufreq_driver eps_driver = {
  	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= elanfreq_target,
-+	.target_index	= elanfreq_target,
- 	.init		= elanfreq_cpu_init,
- 	.exit		= cpufreq_generic_exit,
- 	.name		= "elanfreq",
+-	.target		= eps_target,
++	.target_index	= eps_target,
+ 	.init		= eps_cpu_init,
+ 	.exit		= eps_cpu_exit,
+ 	.get		= eps_get,
 -- 
 1.7.12.rc2.18.g61b472e
