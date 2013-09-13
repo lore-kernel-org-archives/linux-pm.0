@@ -1,78 +1,47 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 012/228] cpufreq: sparc: call cpufreq_frequency_table_get_attr()
-Date: Fri, 13 Sep 2013 18:29:18 +0530
-Message-ID: <56edbe14da9944ad026497bc1a0dc4aaa283d506.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 013/228] cpufreq: acpi-cpufreq: use cpufreq_table_validate_and_show()
+Date: Fri, 13 Sep 2013 18:29:19 +0530
+Message-ID: <a8124810563dfe47afcd334a0c33ae824ce695f6.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <sparclinux-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: sparclinux-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This exposes frequency table of driver to cpufreq core and is required for core
-to guess what the index for a target frequency is, when it calls
-cpufreq_frequency_table_target(). And so this driver needs to expose it.
+Lets use cpufreq_table_validate_and_show() instead of calling
+cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: David S. Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sparc-us2e-cpufreq.c | 6 +++++-
- drivers/cpufreq/sparc-us3-cpufreq.c  | 7 ++++++-
- 2 files changed, 11 insertions(+), 2 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/sparc-us2e-cpufreq.c b/drivers/cpufreq/sparc-us2e-cpufreq.c
-index cf5bc2c..80e6d92 100644
---- a/drivers/cpufreq/sparc-us2e-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
-@@ -307,6 +307,7 @@ static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
- 	unsigned long clock_tick = sparc64_get_clock_tick(cpu) / 1000;
- 	struct cpufreq_frequency_table *table =
- 		&us2e_freq_table[cpu].table[0];
-+	int ret;
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index a1260b4..71f8e15 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -837,7 +837,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	data->freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
+ 	perf->state = 0;
  
- 	table[0].driver_data = 0;
- 	table[0].frequency = clock_tick / 1;
-@@ -324,7 +325,10 @@ static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 0;
- 	policy->cur = clock_tick;
+-	result = cpufreq_frequency_table_cpuinfo(policy, data->freq_table);
++	result = cpufreq_table_validate_and_show(policy, data->freq_table);
+ 	if (result)
+ 		goto err_freqfree;
  
--	return cpufreq_frequency_table_cpuinfo(policy, table);
-+	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	if (!ret)
-+		cpufreq_frequency_table_get_attr(table, policy->cpu);
-+	return ret;
- }
+@@ -868,8 +868,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 			(u32) perf->states[i].power,
+ 			(u32) perf->states[i].transition_latency);
  
- static int us2e_freq_cpu_exit(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/sparc-us3-cpufreq.c b/drivers/cpufreq/sparc-us3-cpufreq.c
-index ac76b48..73a90de 100644
---- a/drivers/cpufreq/sparc-us3-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us3-cpufreq.c
-@@ -168,6 +168,7 @@ static int __init us3_freq_cpu_init(struct cpufreq_policy *policy)
- 	unsigned long clock_tick = sparc64_get_clock_tick(cpu) / 1000;
- 	struct cpufreq_frequency_table *table =
- 		&us3_freq_table[cpu].table[0];
-+	int ret;
- 
- 	table[0].driver_data = 0;
- 	table[0].frequency = clock_tick / 1;
-@@ -181,7 +182,11 @@ static int __init us3_freq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 0;
- 	policy->cur = clock_tick;
- 
--	return cpufreq_frequency_table_cpuinfo(policy, table);
-+	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	if (!ret)
-+		cpufreq_frequency_table_get_attr(table, policy->cpu);
-+
-+	return ret;
- }
- 
- static int us3_freq_cpu_exit(struct cpufreq_policy *policy)
+-	cpufreq_frequency_table_get_attr(data->freq_table, policy->cpu);
+-
+ 	/*
+ 	 * the first call to ->target() should result in us actually
+ 	 * writing something to the appropriate registers.
 -- 
 1.7.12.rc2.18.g61b472e
 
