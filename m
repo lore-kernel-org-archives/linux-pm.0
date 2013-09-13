@@ -1,90 +1,100 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 215/228] cpufreq: at32ap: use cpufreq_generic_get() routine
-Date: Fri, 13 Sep 2013 18:32:41 +0530
-Message-ID: <7ea11571a11f19985f6d2db6dbec12450f0b5341.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 221/228] cpufreq: loongson2: use cpufreq_generic_get() routine
+Date: Fri, 13 Sep 2013 18:32:47 +0530
+Message-ID: <f5aaff9b7623faf69b6b38884d866619a75ef15f.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:45358 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933273Ab3IMN3T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:29:19 -0400
+Received: by mail-pa0-f47.google.com with SMTP id kl13so2532187pab.34
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:29:18 -0700 (PDT)
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, John Crispin <blogic@openwrt.org>
 
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+We don't need a global variable to hold clock anymore.
+
+Cc: John Crispin <blogic@openwrt.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/at32ap-cpufreq.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/cpufreq/loongson2_cpufreq.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-index 856ad80..869c0b5 100644
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ b/drivers/cpufreq/at32ap-cpufreq.c
-@@ -21,17 +21,8 @@
- #include <linux/export.h>
- #include <linux/slab.h>
+diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+index a436092..b6581ab 100644
+--- a/drivers/cpufreq/loongson2_cpufreq.c
++++ b/drivers/cpufreq/loongson2_cpufreq.c
+@@ -24,8 +24,6 @@
+ 
+ static uint nowait;
  
 -static struct clk *cpuclk;
- static struct cpufreq_frequency_table *freq_table;
+-
+ static void (*saved_cpu_wait) (void);
  
--static unsigned int at32_get_speed(unsigned int cpu)
+ static int loongson2_cpu_freq_notifier(struct notifier_block *nb,
+@@ -44,11 +42,6 @@ static int loongson2_cpu_freq_notifier(struct notifier_block *nb,
+ 	return 0;
+ }
+ 
+-static unsigned int loongson2_cpufreq_get(unsigned int cpu)
 -{
--	/* No SMP support */
--	if (cpu)
--		return 0;
--	return (unsigned int)((clk_get_rate(cpuclk) + 500) / 1000);
+-	return clk_get_rate(cpuclk);
 -}
 -
- static unsigned int	ref_freq;
- static unsigned long	loops_per_jiffy_ref;
+ /*
+  * Here we notify other drivers of the proposed change and the final change.
+  */
+@@ -69,13 +62,14 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+ 	set_cpus_allowed_ptr(current, &cpus_allowed);
  
-@@ -39,7 +30,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	/* setting the cpu frequency */
+-	clk_set_rate(cpuclk, freq);
++	clk_set_rate(policy->clk, freq);
+ 
+ 	return 0;
+ }
+ 
+ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
  {
- 	unsigned int old_freq, new_freq;
- 
--	old_freq = at32_get_speed(0);
-+	old_freq = policy->cur;
- 	new_freq = freq_table[index].frequency;
- 
- 	if (!ref_freq) {
-@@ -50,7 +41,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	if (old_freq < new_freq)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
- 				loops_per_jiffy_ref, ref_freq, new_freq);
--	clk_set_rate(cpuclk, new_freq * 1000);
-+	clk_set_rate(policy->clk, new_freq * 1000);
- 	if (new_freq < old_freq)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
- 				loops_per_jiffy_ref, ref_freq, new_freq);
-@@ -61,6 +52,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
- static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- {
- 	unsigned int frequency, rate, min_freq;
 +	static struct clk *cpuclk;
- 	int retval, steps, i;
- 
- 	if (policy->cpu != 0)
-@@ -103,6 +95,7 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- 		frequency /= 2;
+ 	int i;
+ 	unsigned long rate;
+ 	int ret;
+@@ -104,13 +98,14 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		return ret;
  	}
  
 +	policy->clk = cpuclk;
- 	freq_table[steps - 1].frequency = CPUFREQ_TABLE_END;
+ 	return cpufreq_generic_init(policy, &loongson2_clockmod_table[0], 0);
+ }
  
- 	retval = cpufreq_table_validate_and_show(policy, freq_table);
-@@ -123,7 +116,7 @@ static struct cpufreq_driver at32_driver = {
- 	.init		= at32_cpufreq_driver_init,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= at32_set_target,
--	.get		= at32_get_speed,
-+	.get		= cpufreq_generic_get,
- 	.flags		= CPUFREQ_STICKY,
+ static int loongson2_cpufreq_exit(struct cpufreq_policy *policy)
+ {
+ 	cpufreq_frequency_table_put_attr(policy->cpu);
+-	clk_put(cpuclk);
++	clk_put(policy->clk);
+ 	return 0;
+ }
+ 
+@@ -119,7 +114,7 @@ static struct cpufreq_driver loongson2_cpufreq_driver = {
+ 	.init = loongson2_cpufreq_cpu_init,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target_index = loongson2_cpufreq_target,
+-	.get = loongson2_cpufreq_get,
++	.get = cpufreq_generic_get,
+ 	.exit = loongson2_cpufreq_exit,
+ 	.attr = cpufreq_generic_attr,
  };
- 
 -- 
 1.7.12.rc2.18.g61b472e
+
