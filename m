@@ -1,56 +1,123 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v2 07/12] ARM: mvebu: Add a new set of registers for pmsu
-Date: Fri, 13 Sep 2013 12:06:36 +0200
-Message-ID: <1379066801-16276-8-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v2 02/12] ARM: mvebu: ll_set_cpu_coherent no more uses the coherency address as parameter
+Date: Fri, 13 Sep 2013 12:06:31 +0200
+Message-ID: <1379066801-16276-3-git-send-email-gregory.clement@free-electrons.com>
 References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:44201 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:44139 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754767Ab3IMKG5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 06:06:57 -0400
+	with ESMTP id S1755360Ab3IMKGw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 06:06:52 -0400
 In-Reply-To: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Chris Van Hoof <vanhoof@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Atsushi Yamagata <yamagata@plathome.co.jp>, Hironobu Shibata <h-shibata@plathome.co.jp>, Tomonori Kimura <kimura@plathome.co.jp>
 
-The Power Management Unit Service block also controls the Coherency
-Fabric subsystem. This new set of registers is needed for the CPU idle
-implementation for the Armada 370/XP, it allows to enter a deep CPU
-idle state where the Coherency Fabric and the L2 cache are power down.
-
-This patch also adds warnings if one of the base registers set can't
-be ioremapped.
+Until now the calling functions of ll_set_cpu_coherent() have to know
+the base address of the coherency registers. This commit doesn't
+expose anymore this address, and replace the argument by a flag to
+indicate if we have to use the physical or the virtual address.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mach-mvebu/pmsu.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/mach-mvebu/coherency.c    |  6 +++---
+ arch/arm/mach-mvebu/coherency_ll.S | 18 +++++++++++++++++-
+ arch/arm/mach-mvebu/headsmp.S      | 10 ++--------
+ 3 files changed, 22 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 3cc4bef..1d147fe 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -25,6 +25,7 @@
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index 4c24303..8e9f7b7 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -29,7 +29,7 @@
+ #include "armada-370-xp.h"
  
- static void __iomem *pmsu_mp_base;
- static void __iomem *pmsu_reset_base;
-+static void __iomem *pmsu_fabric_base;
+ unsigned long coherency_phys_base;
+-static void __iomem *coherency_base;
++void __iomem *coherency_base;
+ static void __iomem *coherency_cpu_base;
  
- #define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu)	((cpu * 0x100) + 0x24)
- #define PMSU_RESET_CTL_OFFSET(cpu)		(cpu * 0x8)
-@@ -66,7 +67,11 @@ int __init armada_370_xp_pmsu_init(void)
- 	if (np) {
- 		pr_info("Initializing Power Management Service Unit\n");
- 		pmsu_mp_base = of_iomap(np, 0);
-+		WARN_ON(!pmsu_mp_base);
- 		pmsu_reset_base = of_iomap(np, 1);
-+		WARN_ON(!pmsu_reset_base);
-+		pmsu_fabric_base = of_iomap(np, 2);
-+		WARN_ON(!pmsu_fabric_base);
+ /* Coherency fabric registers */
+@@ -43,7 +43,7 @@ static struct of_device_id of_coherency_table[] = {
+ };
+ 
+ /* Function defined in coherency_ll.S */
+-int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
++int ll_set_cpu_coherent(bool use_virt_addr, unsigned int hw_cpu_id);
+ 
+ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ {
+@@ -53,7 +53,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ 		return 1;
  	}
  
- 	return 0;
+-	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
++	return ll_set_cpu_coherent(true, hw_cpu_id);
+ }
+ 
+ static inline void mvebu_hwcc_sync_io_barrier(void)
+diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
+index 5476669..8d4e22f 100644
+--- a/arch/arm/mach-mvebu/coherency_ll.S
++++ b/arch/arm/mach-mvebu/coherency_ll.S
+@@ -22,10 +22,22 @@
+ 
+ 	.text
+ /*
+- * r0: Coherency fabric base register address
++ * r0: if r0==0 => physical addres, else virtual address
+  * r1: HW CPU id
+  */
+ ENTRY(ll_set_cpu_coherent)
++	cmp	r0, #0
++	bne	1f
++    /* use physical address */
++	adr	r0, 3f
++	ldr	r3, [r0]
++	ldr	r0, [r0, r3]
++	b	2f
++1:
++    /* use virtual address */
++	ldr	r0, =(coherency_base)
++	ldr	r0, [r0]
++2:
+ 	/* Create bit by cpu index */
+ 	mov	r3, #(1 << 24)
+ 	lsl	r1, r3, r1
+@@ -53,3 +65,7 @@ ENTRY(ll_set_cpu_coherent)
+ 	mov	r0, #0
+ 	mov	pc, lr
+ ENDPROC(ll_set_cpu_coherent)
++
++	.align 2
++3:
++	.long	coherency_phys_base - .
+diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
+index 8a1b0c9..bffaabc 100644
+--- a/arch/arm/mach-mvebu/headsmp.S
++++ b/arch/arm/mach-mvebu/headsmp.S
+@@ -27,10 +27,8 @@
+  * startup
+  */
+ ENTRY(armada_xp_secondary_startup)
+-	/* Get coherency fabric base physical address */
+-	adr	r0, 1f
+-	ldr	r1, [r0]
+-	ldr	r0, [r0, r1]
++	/* Use physical addrss */
++	mov	r0, #0
+ 
+ 	/* Read CPU id */
+ 	mrc     p15, 0, r1, c0, c0, 5
+@@ -41,7 +39,3 @@ ENTRY(armada_xp_secondary_startup)
+ 	b	secondary_startup
+ 
+ ENDPROC(armada_xp_secondary_startup)
+-
+-	.align 2
+-1:
+-	.long	coherency_phys_base - .
 -- 
 1.8.1.2
 
