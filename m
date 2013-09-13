@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 106/228] cpufreq: integrator: don't initialize part of policy that is set by core too
-Date: Fri, 13 Sep 2013 18:30:52 +0530
-Message-ID: <6d8d406ebca886e5147191cc8c333d926ef9eb30.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 105/228] cpufreq: imx6q: don't initialize part of policy that is set by core too
+Date: Fri, 13 Sep 2013 18:30:51 +0530
+Message-ID: <ee404bd44ef9e3f86300b0f1dd4a9deb9a00e395.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Many common initializations of struct policy are moved to core now and hence
@@ -18,29 +18,23 @@ this driver doesn't need to do it. This patch removes such code.
 Most recent of those changes is to call ->get() in the core after calling
 ->init().
 
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/integrator-cpufreq.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/cpufreq/imx6q-cpufreq.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
-index 8152a9b..babf3e4 100644
---- a/drivers/cpufreq/integrator-cpufreq.c
-+++ b/drivers/cpufreq/integrator-cpufreq.c
-@@ -181,10 +181,9 @@ static int integrator_cpufreq_init(struct cpufreq_policy *policy)
- {
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index 29767bb..649547f 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -162,7 +162,6 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ 	}
  
- 	/* set default policy and cpuinfo */
--	policy->cpuinfo.max_freq = 160000;
--	policy->cpuinfo.min_freq = 12000;
-+	policy->max = policy->cpuinfo.max_freq = 160000;
-+	policy->min = policy->cpuinfo.min_freq = 12000;
- 	policy->cpuinfo.transition_latency = 1000000; /* 1 ms, assumed */
--	policy->cur = policy->min = policy->max = integrator_get(policy->cpu);
+ 	policy->cpuinfo.transition_latency = transition_latency;
+-	policy->cur = clk_get_rate(arm_clk) / 1000;
+ 	cpumask_setall(policy->cpus);
  
  	return 0;
- }
 -- 
 1.7.12.rc2.18.g61b472e
-
