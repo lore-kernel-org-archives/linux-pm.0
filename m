@@ -1,37 +1,52 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 012/228] cpufreq: sparc: call
- cpufreq_frequency_table_get_attr()
-Date: Fri, 13 Sep 2013 17:47:11 -0400 (EDT)
-Message-ID: <20130913.174711.268706749518726971.davem@davemloft.net>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
-	<cover.1379063063.git.viresh.kumar@linaro.org>
-	<56edbe14da9944ad026497bc1a0dc4aaa283d506.1379063063.git.viresh.kumar@linaro.org>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH v2 3/4] cpufreq: tegra: Re-model Tegra cpufreq driver
+Date: Fri, 13 Sep 2013 16:26:14 -0600
+Message-ID: <52339106.4020601@wwwdotorg.org>
+References: <1378985091-9447-1-git-send-email-bilhuang@nvidia.com> <1378985091-9447-4-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <56edbe14da9944ad026497bc1a0dc4aaa283d506.1379063063.git.viresh.kumar@linaro.org>
+In-Reply-To: <1378985091-9447-4-git-send-email-bilhuang@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: viresh.kumar@linaro.org
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sparclinux@vger.kernel.org
+To: Bill Huang <bilhuang@nvidia.com>
+Cc: rjw@sisk.pl, viresh.kumar@linaro.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Fri, 13 Sep 2013 18:29:18 +0530
-
-> This exposes frequency table of driver to cpufreq core and is required for core
-> to guess what the index for a target frequency is, when it calls
-> cpufreq_frequency_table_target(). And so this driver needs to expose it.
+On 09/12/2013 05:24 AM, Bill Huang wrote:
+> Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
 > 
-> Cc: David S. Miller <davem@davemloft.net>
-> Cc: sparclinux@vger.kernel.org
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
+> * Move Tegra20 specific codes into tegra20-cpufreq.c.
+> * Bind Tegra cpufreq dirver with a fake device so defer probe would work
+>   when we're going to get regulator in the driver to support voltage
+>   scaling (DVFS).
 
-Wait a second, later in this series you add the put_attr() call claiming
-it's a fix.
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
 
-But you're the one adding the "bug" here.
+> @@ -232,6 +232,12 @@ config ARM_TEGRA_CPUFREQ
+>  	bool "TEGRA CPUFreq support"
+>  	depends on ARCH_TEGRA
+>  	select CPU_FREQ_TABLE
+> +
+> +config ARM_TEGRA20_CPUFREQ
+> +	bool "NVIDIA TEGRA20"
+> +	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
+>  	default y
+>  	help
+> -	  This adds the CPUFreq driver support for TEGRA SOCs.
+> +	  This adds the CPUFreq driver for NVIDIA TEGRA20 SoC.
+> +
+> +	  If in doubt, say N.
 
-So if you are going to add a get_attr() call you should be adding the
-necessary put_attr() call in the same patch.  Otherwise this patch
-introduces a bug.
+This patch removes the following from "config ARM_TEGRA_CPUFREQ":
+
+	default y
+	help
+	  This adds the CPUFreq driver support for TEGRA SOCs.
+
+I think that option should be left unchanged, such that this patch
+*just* adds the new option without changing the existing one. If you do
+that, then you can completely drop patch 4/4.
+
+Other than that, this series looks fine.
