@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 201/228] cpufreq: pmac: remove calls to cpufreq_notify_transition()
-Date: Fri, 13 Sep 2013 18:32:27 +0530
-Message-ID: <b71491eda5d2799d704c3d5953f857a392b8881e.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 203/228] cpufreq: pxa: remove calls to cpufreq_notify_transition()
+Date: Fri, 13 Sep 2013 18:32:29 +0530
+Message-ID: <0188ac9a48f40e549db812e5e17411e65cef1f48.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Eric Miao <eric.y.miao@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,111 +32,113 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
+Cc: Eric Miao <eric.y.miao@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 20 ++++----------------
- drivers/cpufreq/pmac64-cpufreq.c | 18 +-----------------
- 2 files changed, 5 insertions(+), 33 deletions(-)
+ drivers/cpufreq/pxa2xx-cpufreq.c | 27 ++++++---------------------
+ drivers/cpufreq/pxa3xx-cpufreq.c | 12 ------------
+ 2 files changed, 6 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index 9137fa9..476fc4a 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -331,21 +331,11 @@ static int pmu_set_cpu_speed(int low_speed)
- 	return 0;
- }
- 
--static int do_set_cpu_speed(struct cpufreq_policy *policy, int speed_mode,
--		int notify)
-+static int do_set_cpu_speed(struct cpufreq_policy *policy, int speed_mode)
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index 183bc13..0a0f436 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -271,7 +271,6 @@ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
  {
+ 	struct cpufreq_frequency_table *pxa_freqs_table;
+ 	pxa_freqs_t *pxa_freq_settings;
 -	struct cpufreq_freqs freqs;
- 	unsigned long l3cr;
- 	static unsigned long prev_l3cr;
+ 	unsigned long flags;
+ 	unsigned int new_freq_cpu, new_freq_mem;
+ 	unsigned int unused, preset_mdrefr, postset_mdrefr, cclkcfg;
+@@ -282,24 +281,17 @@ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
  
--	freqs.old = cur_freq;
--	freqs.new = (speed_mode == CPUFREQ_HIGH) ? hi_freq : low_freq;
--
--	if (freqs.old == freqs.new)
--		return 0;
--
--	if (notify)
--		cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 	if (speed_mode == CPUFREQ_LOW &&
- 	    cpu_has_feature(CPU_FTR_L3CR)) {
- 		l3cr = _get_L3CR();
-@@ -361,8 +351,6 @@ static int do_set_cpu_speed(struct cpufreq_policy *policy, int speed_mode,
- 		if ((prev_l3cr & L3CR_L3E) && l3cr != prev_l3cr)
- 			_set_L3CR(prev_l3cr);
- 	}
--	if (notify)
--		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 	cur_freq = (speed_mode == CPUFREQ_HIGH) ? hi_freq : low_freq;
+ 	new_freq_cpu = pxa_freq_settings[idx].khz;
+ 	new_freq_mem = pxa_freq_settings[idx].membus;
+-	freqs.old = policy->cur;
+-	freqs.new = new_freq_cpu;
  
- 	return 0;
-@@ -378,7 +366,7 @@ static int pmac_cpufreq_target(	struct cpufreq_policy *policy,
- {
- 	int		rc;
+ 	if (freq_debug)
+ 		pr_debug("Changing CPU frequency to %d Mhz, (SDRAM %d Mhz)\n",
+-			 freqs.new / 1000, (pxa_freq_settings[idx].div2) ?
++			 new_freq_cpu / 1000, (pxa_freq_settings[idx].div2) ?
+ 			 (new_freq_mem / 2000) : (new_freq_mem / 1000));
  
--	rc = do_set_cpu_speed(policy, index, 1);
-+	rc = do_set_cpu_speed(policy, index);
- 
- 	ppc_proc_freq = cur_freq * 1000ul;
- 	return rc;
-@@ -420,7 +408,7 @@ static int pmac_cpufreq_suspend(struct cpufreq_policy *policy)
- 	no_schedule = 1;
- 	sleep_freq = cur_freq;
- 	if (cur_freq == low_freq && !is_pmu_based)
--		do_set_cpu_speed(policy, CPUFREQ_HIGH, 0);
-+		do_set_cpu_speed(policy, CPUFREQ_HIGH);
- 	return 0;
- }
- 
-@@ -437,7 +425,7 @@ static int pmac_cpufreq_resume(struct cpufreq_policy *policy)
- 	 * probably high speed due to our suspend() routine
- 	 */
- 	do_set_cpu_speed(policy, sleep_freq == low_freq ?
--			 CPUFREQ_LOW : CPUFREQ_HIGH, 0);
-+			 CPUFREQ_LOW : CPUFREQ_HIGH);
- 
- 	ppc_proc_freq = cur_freq * 1000ul;
- 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index af970b7..07ef0ee 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -79,8 +79,6 @@ static void (*g5_switch_volt)(int speed_mode);
- static int (*g5_switch_freq)(int speed_mode);
- static int (*g5_query_freq)(void);
- 
--static DEFINE_MUTEX(g5_switch_mutex);
--
- static unsigned long transition_latency;
- 
- #ifdef CONFIG_PMAC_SMU
-@@ -314,21 +312,7 @@ static int g5_pfunc_query_freq(void)
- 
- static int g5_cpufreq_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	struct cpufreq_freqs freqs;
--	int rc;
--
--	mutex_lock(&g5_switch_mutex);
--
--	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
--	freqs.new = g5_cpu_freqs[index].frequency;
--
+-	if (vcc_core && freqs.new > freqs.old)
++	if (vcc_core && new_freq_cpu > policy->cur) {
+ 		ret = pxa_cpufreq_change_voltage(&pxa_freq_settings[idx]);
+-	if (ret)
+-		return ret;
+-	/*
+-	 * Tell everyone what we're about to do...
+-	 * you should add a notify client with any platform specific
+-	 * Vcc changing capability
+-	 */
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--	rc = g5_switch_freq(index);
++		if (ret)
++			return ret;
++	}
+ 
+ 	/* Calculate the next MDREFR.  If we're slowing down the SDRAM clock
+ 	 * we need to preset the smaller DRI before the change.	 If we're
+@@ -350,13 +342,6 @@ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
+ 	local_irq_restore(flags);
+ 
+ 	/*
+-	 * Tell everyone what we've just done...
+-	 * you should add a notify client with any platform specific
+-	 * SDRAM refresh timer adjustments
+-	 */
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 -
--	mutex_unlock(&g5_switch_mutex);
+-	/*
+ 	 * Even if voltage setting fails, we don't report it, as the frequency
+ 	 * change succeeded. The voltage reduction is not a critical failure,
+ 	 * only power savings will suffer from this.
+@@ -365,7 +350,7 @@ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
+ 	 * bug is triggered (seems a deadlock). Should anybody find out where,
+ 	 * the "return 0" should become a "return ret".
+ 	 */
+-	if (vcc_core && freqs.new < freqs.old)
++	if (vcc_core && new_freq_cpu < policy->cur)
+ 		ret = pxa_cpufreq_change_voltage(&pxa_freq_settings[idx]);
+ 
+ 	return 0;
+diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
+index 132e37d..9384004 100644
+--- a/drivers/cpufreq/pxa3xx-cpufreq.c
++++ b/drivers/cpufreq/pxa3xx-cpufreq.c
+@@ -158,7 +158,6 @@ static unsigned int pxa3xx_cpufreq_get(unsigned int cpu)
+ static int pxa3xx_cpufreq_set(struct cpufreq_policy *policy, unsigned int index)
+ {
+ 	struct pxa3xx_freq_info *next;
+-	struct cpufreq_freqs freqs;
+ 	unsigned long flags;
+ 
+ 	if (policy->cpu != 0)
+@@ -166,22 +165,11 @@ static int pxa3xx_cpufreq_set(struct cpufreq_policy *policy, unsigned int index)
+ 
+ 	next = &pxa3xx_freqs[index];
+ 
+-	freqs.old = policy->cur;
+-	freqs.new = next->cpufreq_mhz * 1000;
 -
--	return rc;
-+	return g5_switch_freq(index);
+-	pr_debug("CPU frequency from %d MHz to %d MHz%s\n",
+-			freqs.old / 1000, freqs.new / 1000,
+-			(freqs.old == freqs.new) ? " (skipped)" : "");
+-
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+-
+ 	local_irq_save(flags);
+ 	__update_core_freq(next);
+ 	__update_bus_freq(next);
+ 	local_irq_restore(flags);
+ 
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-
+ 	return 0;
  }
  
- static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
 -- 
 1.7.12.rc2.18.g61b472e
 
