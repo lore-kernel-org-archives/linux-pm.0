@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 217/228] cpufreq: davinci: use cpufreq_generic_get() routine
-Date: Fri, 13 Sep 2013 18:32:43 +0530
-Message-ID: <9306a1c54e69d9fc30afe77c023d0780c84592d7.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 223/228] cpufreq: ppc: use cpufreq_generic_get() routine
+Date: Fri, 13 Sep 2013 18:32:49 +0530
+Message-ID: <d4ef38123fd7f811b6185480a7a32f4b508aad54.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -9,63 +9,78 @@ In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Sekhar Nori <nsekhar@ti.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-Cc: Sekhar Nori <nsekhar@ti.com>
+We don't need a variable to hold clock anymore in struct cpu_data.
+
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/davinci-cpufreq.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
-index 5e8a854..cd7fb6e 100644
---- a/drivers/cpufreq/davinci-cpufreq.c
-+++ b/drivers/cpufreq/davinci-cpufreq.c
-@@ -58,14 +58,6 @@ static int davinci_verify_speed(struct cpufreq_policy *policy)
- 	return 0;
- }
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index 3f7be46..051000f 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -24,12 +24,10 @@
  
--static unsigned int davinci_getspeed(unsigned int cpu)
+ /**
+  * struct cpu_data - per CPU data struct
+- * @clk: the clk of CPU
+  * @parent: the parent node of cpu clock
+  * @table: frequency table
+  */
+ struct cpu_data {
+-	struct clk *clk;
+ 	struct device_node *parent;
+ 	struct cpufreq_frequency_table *table;
+ };
+@@ -81,13 +79,6 @@ static inline const struct cpumask *cpu_core_mask(int cpu)
+ }
+ #endif
+ 
+-static unsigned int corenet_cpufreq_get_speed(unsigned int cpu)
 -{
--	if (cpu)
--		return 0;
+-	struct cpu_data *data = per_cpu(cpu_data, cpu);
 -
--	return clk_get_rate(cpufreq.armclk) / 1000;
+-	return clk_get_rate(data->clk) / 1000;
 -}
 -
- static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
- {
- 	struct davinci_cpufreq_config *pdata = cpufreq.dev->platform_data;
-@@ -73,7 +65,7 @@ static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
- 	unsigned int old_freq, new_freq;
- 	int ret = 0;
- 
--	old_freq = davinci_getspeed(0);
-+	old_freq = policy->cur;
- 	new_freq = pdata->freq_table[idx].frequency;
- 
- 	/* if moving to higher frequency, up the voltage beforehand */
-@@ -116,6 +108,8 @@ static int davinci_cpu_init(struct cpufreq_policy *policy)
- 			return result;
+ /* reduce the duplicated frequencies in frequency table */
+ static void freq_table_redup(struct cpufreq_frequency_table *freq_table,
+ 		int count)
+@@ -158,8 +149,8 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_np;
  	}
  
-+	policy->clk = cpufreq.armclk;
-+
- 	/*
- 	 * Time measurement across the target() function yields ~1500-1800us
- 	 * time taken with no drivers on notification list.
-@@ -129,7 +123,7 @@ static struct cpufreq_driver davinci_driver = {
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= davinci_verify_speed,
- 	.target_index	= davinci_target,
--	.get		= davinci_getspeed,
+-	data->clk = of_clk_get(np, 0);
+-	if (IS_ERR(data->clk)) {
++	policy->clk = of_clk_get(np, 0);
++	if (IS_ERR(policy->clk)) {
+ 		pr_err("%s: no clock information\n", __func__);
+ 		goto err_nomem2;
+ 	}
+@@ -255,7 +246,7 @@ static int corenet_cpufreq_target(struct cpufreq_policy *policy,
+ 	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
+ 
+ 	parent = of_clk_get(data->parent, data->table[index].driver_data);
+-	return clk_set_parent(data->clk, parent);
++	return clk_set_parent(policy->clk, parent);
+ }
+ 
+ static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
+@@ -265,7 +256,7 @@ static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
+ 	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= corenet_cpufreq_target,
+-	.get		= corenet_cpufreq_get_speed,
 +	.get		= cpufreq_generic_get,
- 	.init		= davinci_cpu_init,
- 	.exit		= cpufreq_generic_exit,
- 	.name		= "davinci",
+ 	.attr		= cpufreq_generic_attr,
+ };
+ 
 -- 
 1.7.12.rc2.18.g61b472e
