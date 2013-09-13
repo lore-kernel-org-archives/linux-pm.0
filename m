@@ -1,36 +1,68 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 063/228] cpufreq: dbx500: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 15:18:41 +0200
-Message-ID: <CACRpkdbgpuuSpHpu2-pEvOjd3hB-cqn62Ui6__VFbyNHDLu6+g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 133/228] cpufreq: exynos: use cpufreq_generic_init() routine
+Date: Fri, 13 Sep 2013 18:31:19 +0530
+Message-ID: <8e311fb003cfc82e37e4a5717a92106a2ceb15f7.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-	<a3970f9a04fd061a7ad476f983e10a8768c89fd0.1379063063.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:34427 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933553Ab3IMNSm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:18:42 -0400
-Received: by mail-ob0-f182.google.com with SMTP id wo20so1073421obc.13
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:18:42 -0700 (PDT)
-In-Reply-To: <a3970f9a04fd061a7ad476f983e10a8768c89fd0.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
+References: <cover.1379063063.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Fri, Sep 13, 2013 at 3:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+Use generic cpufreq_generic_init() routine instead of replicating the same code
+here.
 
-> Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
-> and .attr. So its better if we have generic routines for them which can be used
-> by cpufreq drivers then.
->
-> This patch uses these generic routines for this driver.
->
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/exynos-cpufreq.c     |  7 +------
+ drivers/cpufreq/exynos5440-cpufreq.c | 14 ++------------
+ 2 files changed, 3 insertions(+), 18 deletions(-)
 
-Acked-by. It feels like I acked this before...
-
-Yours,
-Linus Walleij
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 5244086..b96fcc8 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -241,12 +241,7 @@ static struct notifier_block exynos_cpufreq_nb = {
+ 
+ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	/* set the transition latency value */
+-	policy->cpuinfo.transition_latency = 100000;
+-
+-	cpumask_setall(policy->cpus);
+-
+-	return cpufreq_table_validate_and_show(policy, exynos_info->freq_table);
++	return cpufreq_generic_init(policy, exynos_info->freq_table, 100000);
+ }
+ 
+ static struct cpufreq_driver exynos_driver = {
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index a7d272b..e6fae7f 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -321,18 +321,8 @@ static void exynos_sort_descend_freq_table(void)
+ 
+ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int ret;
+-
+-	ret = cpufreq_table_validate_and_show(policy, dvfs_info->freq_table);
+-	if (ret) {
+-		dev_err(dvfs_info->dev, "Invalid frequency table: %d\n", ret);
+-		return ret;
+-	}
+-
+-	policy->cpuinfo.transition_latency = dvfs_info->latency;
+-	cpumask_setall(policy->cpus);
+-
+-	return 0;
++	return cpufreq_generic_init(policy, dvfs_info->freq_table,
++			dvfs_info->latency);
+ }
+ 
+ static struct cpufreq_driver exynos_driver = {
+-- 
+1.7.12.rc2.18.g61b472e
