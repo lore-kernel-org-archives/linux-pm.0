@@ -1,22 +1,16 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 115/228] cpufreq: powernow: don't initialize part of policy that is set by core too
-Date: Fri, 13 Sep 2013 18:31:01 +0530
-Message-ID: <878d14d018cba46cdd161e21d801dc0f4a0c3189.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 117/228] cpufreq: pxa: don't initialize part of policy that is set by core too
+Date: Fri, 13 Sep 2013 18:31:03 +0530
+Message-ID: <fc1afb6e52086c08f7a87c168fa14b62929b1513.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:41170 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933325Ab3IMNQi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:16:38 -0400
-Received: by mail-pd0-f172.google.com with SMTP id z10so1235107pdj.31
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:16:38 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Eric Miao <eric.y.miao@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
 Many common initializations of struct policy are moved to core now and hence
 this driver doesn't need to do it. This patch removes such code.
@@ -24,52 +18,44 @@ this driver doesn't need to do it. This patch removes such code.
 Most recent of those changes is to call ->get() in the core after calling
 ->init().
 
+Cc: Eric Miao <eric.y.miao@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/powernow-k6.c | 1 -
- drivers/cpufreq/powernow-k7.c | 2 --
- drivers/cpufreq/powernow-k8.c | 3 ---
- 3 files changed, 6 deletions(-)
+ drivers/cpufreq/pxa2xx-cpufreq.c | 2 --
+ drivers/cpufreq/pxa3xx-cpufreq.c | 7 +++----
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-index ff05d28..eda1702 100644
---- a/drivers/cpufreq/powernow-k6.c
-+++ b/drivers/cpufreq/powernow-k6.c
-@@ -151,7 +151,6 @@ static int powernow_k6_cpu_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index 82905fe..29aca57 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -397,8 +397,6 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
  
- 	/* cpuinfo and default policy values */
- 	policy->cpuinfo.transition_latency = 200000;
--	policy->cur = busfreq * max_multiplier;
+ 	/* set default policy and cpuinfo */
+ 	policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
+-	policy->cur = get_clk_frequency_khz(0);	   /* current freq */
+-	policy->min = policy->max = policy->cur;
  
- 	return cpufreq_table_validate_and_show(policy, clock_ratio);
- }
-diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
-index 14cd98f..44d345b 100644
---- a/drivers/cpufreq/powernow-k7.c
-+++ b/drivers/cpufreq/powernow-k7.c
-@@ -673,8 +673,6 @@ static int powernow_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency =
- 		cpufreq_scale(2000000UL, fsb, latency);
+ 	/* Generate pxa25x the run cpufreq_frequency_table struct */
+ 	for (i = 0; i < NUM_PXA25x_RUN_FREQS; i++) {
+diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
+index ae3ac08..47fbee4 100644
+--- a/drivers/cpufreq/pxa3xx-cpufreq.c
++++ b/drivers/cpufreq/pxa3xx-cpufreq.c
+@@ -201,11 +201,10 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
+ 	int ret = -EINVAL;
  
--	policy->cur = powernow_get(0);
--
- 	return cpufreq_table_validate_and_show(policy, powernow_table);
- }
+ 	/* set default policy and cpuinfo */
+-	policy->cpuinfo.min_freq = 104000;
+-	policy->cpuinfo.max_freq = (cpu_is_pxa320()) ? 806000 : 624000;
++	policy->min = policy->cpuinfo.min_freq = 104000;
++	policy->max = policy->cpuinfo.max_freq =
++		(cpu_is_pxa320()) ? 806000 : 624000;
+ 	policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
+-	policy->max = pxa3xx_get_clk_frequency_khz(0);
+-	policy->cur = policy->min = policy->max;
  
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index f054d5b..8721744 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1161,9 +1161,6 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
- 	cpumask_copy(pol->cpus, cpu_core_mask(pol->cpu));
- 	data->available_cores = pol->cpus;
- 
--	pol->cur = find_khz_freq_from_fid(data->currfid);
--	pr_debug("policy current frequency %d kHz\n", pol->cur);
--
- 	/* min/max the cpu is capable of */
- 	if (cpufreq_table_validate_and_show(pol, data->powernow_table)) {
- 		printk(KERN_ERR FW_BUG PFX "invalid powernow_table\n");
+ 	if (cpu_is_pxa300() || cpu_is_pxa310())
+ 		ret = setup_freqs_table(policy, pxa300_freqs,
 -- 
 1.7.12.rc2.18.g61b472e
-
