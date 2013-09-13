@@ -1,52 +1,57 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH v2 3/4] cpufreq: tegra: Re-model Tegra cpufreq driver
-Date: Fri, 13 Sep 2013 16:26:14 -0600
-Message-ID: <52339106.4020601@wwwdotorg.org>
-References: <1378985091-9447-1-git-send-email-bilhuang@nvidia.com> <1378985091-9447-4-git-send-email-bilhuang@nvidia.com>
+Subject: Re: [PATCH 211/228] cpufreq: tegra: remove calls to cpufreq_notify_transition()
+Date: Fri, 13 Sep 2013 16:52:25 -0600
+Message-ID: <52339729.7030309@wwwdotorg.org>
+References: <cover.1379063063.git.viresh.kumar@linaro.org> <69073c98beae28a6a75103dd202ec2a6b8b1a674.1379063063.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1378985091-9447-4-git-send-email-bilhuang@nvidia.com>
+In-Reply-To: <69073c98beae28a6a75103dd202ec2a6b8b1a674.1379063063.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Bill Huang <bilhuang@nvidia.com>
-Cc: rjw@sisk.pl, viresh.kumar@linaro.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Warren <swarren@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/12/2013 05:24 AM, Bill Huang wrote:
-> Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
+On 09/13/2013 07:02 AM, Viresh Kumar wrote:
+> Most of the drivers do following in their ->target_index() routines:
 > 
-> * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
-> * Move Tegra20 specific codes into tegra20-cpufreq.c.
-> * Bind Tegra cpufreq dirver with a fake device so defer probe would work
->   when we're going to get regulator in the driver to support voltage
->   scaling (DVFS).
+> 	struct cpufreq_freqs freqs;
+> 	freqs.old = old freq...
+> 	freqs.new = new freq...
+> 
+> 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+> 
+> 	/* Change rate here */
+> 
+> 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+> 
+> This is replicated over all cpufreq drivers today and there doesn't exists a
+> good enough reason why this shouldn't be moved to cpufreq core instead.
+> 
+> Earlier patches have added support in cpufreq core to do cpufreq notification on
+> frequency change, this one removes it from this driver.
+> 
+> Some related minor cleanups are also done along with it.
 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 
-> @@ -232,6 +232,12 @@ config ARM_TEGRA_CPUFREQ
->  	bool "TEGRA CPUFreq support"
->  	depends on ARCH_TEGRA
->  	select CPU_FREQ_TABLE
-> +
-> +config ARM_TEGRA20_CPUFREQ
-> +	bool "NVIDIA TEGRA20"
-> +	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
->  	default y
->  	help
-> -	  This adds the CPUFreq driver support for TEGRA SOCs.
-> +	  This adds the CPUFreq driver for NVIDIA TEGRA20 SoC.
-> +
-> +	  If in doubt, say N.
+> @@ -121,21 +117,10 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
+>  	else
+>  		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
+>  
+> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+...
+> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 
-This patch removes the following from "config ARM_TEGRA_CPUFREQ":
+I wonder if this series is bisectable? Perhaps I should just go and read
+the rest of the series, but I presume there's a patch somewhere else
+that adds those two cpufreq_notify_transition() to the cpufreq core.
+Either that happens before this patch (in which case listeners will get
+two notifications each time; perhaps that is safe?), or after this patch
+(in which case with just this patch applied, no notifications will be
+sent until a later patch!
 
-	default y
-	help
-	  This adds the CPUFreq driver support for TEGRA SOCs.
+Aside from that, all the Tegra-specific patches in this series,
+Acked-by: Stephen Warren <swarren@nvidia.com>
 
-I think that option should be left unchanged, such that this patch
-*just* adds the new option without changing the existing one. If you do
-that, then you can completely drop patch 4/4.
-
-Other than that, this series looks fine.
