@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 056/228] cpufreq: acpi: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:02 +0530
-Message-ID: <f3afc7d5df3655fecbe4a29f7f312b0c86ca3e74.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 058/228] cpufreq: at32ap: Use generic cpufreq routines
+Date: Fri, 13 Sep 2013 18:30:04 +0530
+Message-ID: <e2d88ba3fcb0b258675f4cbbff4c84217254435b.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
@@ -18,40 +18,41 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
+Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+ drivers/cpufreq/at32ap-cpufreq.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 71f8e15..d67023d 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -516,15 +516,6 @@ out:
- 	return result;
- }
+diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
+index 1d19fa5..788f7e7 100644
+--- a/drivers/cpufreq/at32ap-cpufreq.c
++++ b/drivers/cpufreq/at32ap-cpufreq.c
+@@ -24,16 +24,6 @@
+ static struct clk *cpuclk;
+ static struct cpufreq_frequency_table *freq_table;
  
--static int acpi_cpufreq_verify(struct cpufreq_policy *policy)
+-static int at32_verify_speed(struct cpufreq_policy *policy)
 -{
--	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
+-	if (policy->cpu != 0)
+-		return -EINVAL;
 -
--	pr_debug("acpi_cpufreq_verify\n");
--
--	return cpufreq_frequency_table_verify(policy, data->freq_table);
+-	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+-			policy->cpuinfo.max_freq);
+-	return 0;
 -}
 -
- static unsigned long
- acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
+ static unsigned int at32_get_speed(unsigned int cpu)
  {
-@@ -927,7 +918,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
- };
- 
- static struct cpufreq_driver acpi_cpufreq_driver = {
--	.verify		= acpi_cpufreq_verify,
+ 	/* No SMP support */
+@@ -152,7 +142,7 @@ out_err:
+ static struct cpufreq_driver at32_driver = {
+ 	.name		= "at32ap",
+ 	.init		= at32_cpufreq_driver_init,
+-	.verify		= at32_verify_speed,
 +	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= acpi_cpufreq_target,
- 	.bios_limit	= acpi_processor_get_bios_limit,
- 	.init		= acpi_cpufreq_cpu_init,
+ 	.target		= at32_set_target,
+ 	.get		= at32_get_speed,
+ 	.flags		= CPUFREQ_STICKY,
 -- 
 1.7.12.rc2.18.g61b472e
-
