@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 196/228] cpufreq: loongson2: remove calls to cpufreq_notify_transition()
-Date: Fri, 13 Sep 2013 18:32:22 +0530
-Message-ID: <c1bf7fd24b713d4f10488c177157556ff6adceac.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 193/228] cpufreq: ia64-acpi: remove calls to cpufreq_notify_transition()
+Date: Fri, 13 Sep 2013 18:32:19 +0530
+Message-ID: <b297569ac875e892ac665c9190212f63a5305000.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, John Crispin <blogic@openwrt.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Luck <tony.luck@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,51 +32,60 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: John Crispin <blogic@openwrt.org>
+Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/loongson2_cpufreq.c | 16 ----------------
- 1 file changed, 16 deletions(-)
+ drivers/cpufreq/ia64-acpi-cpufreq.c | 19 -------------------
+ 1 file changed, 19 deletions(-)
 
-diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-index 41a8e2c..a436092 100644
---- a/drivers/cpufreq/loongson2_cpufreq.c
-+++ b/drivers/cpufreq/loongson2_cpufreq.c
-@@ -57,7 +57,6 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+index 4695fa2..53c6ac6 100644
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -141,7 +141,6 @@ processor_set_freq (
  {
- 	unsigned int cpu = policy->cpu;
- 	cpumask_t cpus_allowed;
--	struct cpufreq_freqs freqs;
- 	unsigned int freq;
+ 	int			ret = 0;
+ 	u32			value = 0;
+-	struct cpufreq_freqs    cpufreq_freqs;
+ 	cpumask_t		saved_mask;
+ 	int			retval;
  
- 	cpus_allowed = current->cpus_allowed;
-@@ -67,26 +66,11 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
- 	    ((cpu_clock_freq / 1000) *
- 	     loongson2_clockmod_table[index].driver_data) / 8;
+@@ -168,13 +167,6 @@ processor_set_freq (
+ 	pr_debug("Transitioning from P%d to P%d\n",
+ 		data->acpi_data.state, state);
  
--	pr_debug("cpufreq: requested frequency %u Hz\n",
--			loongson2_clockmod_table[index].frequency * 1000);
+-	/* cpufreq frequency struct */
+-	cpufreq_freqs.old = data->freq_table[data->acpi_data.state].frequency;
+-	cpufreq_freqs.new = data->freq_table[state].frequency;
 -
--	freqs.old = loongson2_cpufreq_get(cpu);
--	freqs.new = freq;
--	freqs.flags = 0;
+-	/* notify cpufreq */
+-	cpufreq_notify_transition(policy, &cpufreq_freqs, CPUFREQ_PRECHANGE);
 -
--	/* notifiers */
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--
- 	set_cpus_allowed_ptr(current, &cpus_allowed);
+ 	/*
+ 	 * First we write the target state's 'control' value to the
+ 	 * control_register.
+@@ -186,22 +178,11 @@ processor_set_freq (
  
- 	/* setting the cpu frequency */
- 	clk_set_rate(cpuclk, freq);
+ 	ret = processor_set_pstate(value);
+ 	if (ret) {
+-		unsigned int tmp = cpufreq_freqs.new;
+-		cpufreq_notify_transition(policy, &cpufreq_freqs,
+-				CPUFREQ_POSTCHANGE);
+-		cpufreq_freqs.new = cpufreq_freqs.old;
+-		cpufreq_freqs.old = tmp;
+-		cpufreq_notify_transition(policy, &cpufreq_freqs,
+-				CPUFREQ_PRECHANGE);
+-		cpufreq_notify_transition(policy, &cpufreq_freqs,
+-				CPUFREQ_POSTCHANGE);
+ 		printk(KERN_WARNING "Transition failed with error %d\n", ret);
+ 		retval = -ENODEV;
+ 		goto migrate_end;
+ 	}
  
--	/* notifiers */
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-	cpufreq_notify_transition(policy, &cpufreq_freqs, CPUFREQ_POSTCHANGE);
 -
--	pr_debug("cpufreq: set frequency %u kHz\n", freq);
--
- 	return 0;
- }
+ 	data->acpi_data.state = state;
  
+ 	retval = 0;
 -- 
 1.7.12.rc2.18.g61b472e
-
