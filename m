@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 050/228] cpufreq: exynos: call cpufreq_frequency_table_put_attr()
-Date: Fri, 13 Sep 2013 18:29:56 +0530
-Message-ID: <9c9521dc5cea729915ad890a6fe8ffed39fa1a7e.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 048/228] cpufreq: arm_big_little: call cpufreq_frequency_table_put_attr()
+Date: Fri, 13 Sep 2013 18:29:54 +0530
+Message-ID: <38dc2874eabe153bbe4a042d15746c3c62913eb3.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:34358 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757664Ab3IMNI5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:08:57 -0400
-Received: by mail-pd0-f177.google.com with SMTP id y10so1228502pdj.22
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:08:56 -0700 (PDT)
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:39008 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932421Ab3IMNIn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:08:43 -0400
+Received: by mail-pa0-f45.google.com with SMTP id bg4so2484831pad.32
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:08:42 -0700 (PDT)
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -23,35 +23,22 @@ they have called cpufreq_frequency_table_get_attr() in their init path.
 
 This driver was missing this part and is fixed with this patch.
 
-Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/exynos5440-cpufreq.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/cpufreq/arm_big_little.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index 83bd700..e041f5e 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -342,12 +342,18 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return 0;
- }
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 8cb6dbc..2c7c134 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -198,6 +198,7 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
+ 		return -ENODEV;
+ 	}
  
-+static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
 +	cpufreq_frequency_table_put_attr(policy->cpu);
-+}
-+
- static struct cpufreq_driver exynos_driver = {
- 	.flags		= CPUFREQ_STICKY | CPUFREQ_ASYNC_NOTIFICATION,
- 	.verify		= exynos_verify_speed,
- 	.target		= exynos_target,
- 	.get		= exynos_getspeed,
- 	.init		= exynos_cpufreq_cpu_init,
-+	.exit		= exynos_cpufreq_cpu_exit,
- 	.name		= CPUFREQ_NAME,
- };
+ 	put_cluster_clk_and_freq_table(cpu_dev);
+ 	dev_dbg(cpu_dev, "%s: Exited, cpu: %d\n", __func__, policy->cpu);
  
 -- 
 1.7.12.rc2.18.g61b472e
