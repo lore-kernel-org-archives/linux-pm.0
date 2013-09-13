@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 150/228] cpufreq: at32ap: Convert to light weight ->target_index() routine
-Date: Fri, 13 Sep 2013 18:31:36 +0530
-Message-ID: <e8450602548c3cc7163321f1c8f4b0486189c187.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 141/228] cpufreq: pmac64: use cpufreq_generic_init() routine
+Date: Fri, 13 Sep 2013 18:31:27 +0530
+Message-ID: <3c39921134990a55770b0421cf7131916384e8d5.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -12,74 +12,35 @@ To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch converts existing .target() to newly defined light weight
-.target_index() routine for this driver.
+Use generic cpufreq_generic_init() routine instead of replicating the same code
+here.
 
-CPUFreq core will call cpufreq_frequency_table_target() before calling this
-routine and will pass index to it.
-
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/at32ap-cpufreq.c | 23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+ drivers/cpufreq/pmac64-cpufreq.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-index 7439ded..81d0752 100644
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ b/drivers/cpufreq/at32ap-cpufreq.c
-@@ -35,25 +35,12 @@ static unsigned int at32_get_speed(unsigned int cpu)
- static unsigned int	ref_freq;
- static unsigned long	loops_per_jiffy_ref;
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index 79e40c9..b977b9a 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -347,16 +347,9 @@ static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
  
--static int at32_set_target(struct cpufreq_policy *policy,
--			  unsigned int target_freq,
--			  unsigned int relation)
-+static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
  {
- 	struct cpufreq_freqs freqs;
--	long freq;
+-	policy->cpuinfo.transition_latency = transition_latency;
+-	/* secondary CPUs are tied to the primary one by the
+-	 * cpufreq core if in the secondary policy we tell it that
+-	 * it actually must be one policy together with all others. */
+-	cpumask_copy(policy->cpus, cpu_online_mask);
 -
--	/* Convert target_freq from kHz to Hz */
--	freq = clk_round_rate(cpuclk, target_freq * 1000);
--
--	/* Check if policy->min <= new_freq <= policy->max */
--	if(freq < (policy->min * 1000) || freq > (policy->max * 1000))
--		return -EINVAL;
--
--	pr_debug("cpufreq: requested frequency %u Hz\n", target_freq * 1000);
- 
- 	freqs.old = at32_get_speed(0);
--	freqs.new = (freq + 500) / 1000;
--	freqs.flags = 0;
-+	freqs.new = freq_table[index].frequency;
- 
- 	if (!ref_freq) {
- 		ref_freq = freqs.old;
-@@ -64,13 +51,13 @@ static int at32_set_target(struct cpufreq_policy *policy,
- 	if (freqs.old < freqs.new)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
- 				loops_per_jiffy_ref, ref_freq, freqs.new);
--	clk_set_rate(cpuclk, freq);
-+	clk_set_rate(cpuclk, freqs.new * 1000);
- 	if (freqs.new < freqs.old)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
- 				loops_per_jiffy_ref, ref_freq, freqs.new);
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 
--	pr_debug("cpufreq: set frequency %lu Hz\n", freq);
-+	pr_debug("cpufreq: set frequency %u Hz\n", freqs.new * 1000);
- 
- 	return 0;
+-	return cpufreq_table_validate_and_show(policy, g5_cpu_freqs);
++	return cpufreq_generic_init(policy, g5_cpu_freqs, transition_latency);
  }
-@@ -139,7 +126,7 @@ static struct cpufreq_driver at32_driver = {
- 	.name		= "at32ap",
- 	.init		= at32_cpufreq_driver_init,
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= at32_set_target,
-+	.target_index	= at32_set_target,
- 	.get		= at32_get_speed,
- 	.flags		= CPUFREQ_STICKY,
- };
+ 
+-
+ static struct cpufreq_driver g5_cpufreq_driver = {
+ 	.name		= "powermac",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
 -- 
 1.7.12.rc2.18.g61b472e
