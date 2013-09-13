@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 009/228] cpufreq: Add new helper cpufreq_table_validate_and_show()
-Date: Fri, 13 Sep 2013 18:29:15 +0530
-Message-ID: <f5f37153b1933b4fb9be2df2f3c62fda3b399e9d.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 011/228] cpufreq: s3cx4xx: call cpufreq_frequency_table_get_attr()
+Date: Fri, 13 Sep 2013 18:29:17 +0530
+Message-ID: <2636b035d75e4777a12b76534475f85f15a3b676.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -9,61 +9,49 @@ In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Almost every cpufreq driver is required to validate its frequency table with:
-cpufreq_frequency_table_cpuinfo() and then expose it to cpufreq core with:
-cpufreq_frequency_table_get_attr().
+This exposes frequency table of driver to cpufreq core and is required for core
+to guess what the index for a target frequency is, when it calls
+cpufreq_frequency_table_target(). And so this driver needs to expose it.
 
-This patch creates another helper routine cpufreq_table_validate_and_show() that
-will do both these steps in a single call and will return 0 for success, error
-otherwise.
-
-This also fixes potential bugs in cpufreq drivers where people have called
-cpufreq_frequency_table_get_attr() before calling
-cpufreq_frequency_table_cpuinfo(), as the later may fail.
-
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/freq_table.c | 12 ++++++++++++
- include/linux/cpufreq.h      |  2 ++
- 2 files changed, 14 insertions(+)
+ drivers/cpufreq/s3c24xx-cpufreq.c | 4 +++-
+ drivers/cpufreq/s3c64xx-cpufreq.c | 3 +++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 29ff77f..b9336ed 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -218,6 +218,18 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu)
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index b0f343f..f2c872c 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -386,8 +386,10 @@ static int s3c_cpufreq_init(struct cpufreq_policy *policy)
+ 	/* feed the latency information from the cpu driver */
+ 	policy->cpuinfo.transition_latency = cpu_cur.info->latency;
+ 
+-	if (ftab)
++	if (ftab) {
+ 		cpufreq_frequency_table_cpuinfo(policy, ftab);
++		cpufreq_frequency_table_get_attr(ftab, policy->cpu);
++	}
+ 
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index 8a72b0c..9024043 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -257,6 +257,9 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 		       ret);
+ 		regulator_put(vddarm);
+ 		clk_put(armclk);
++	} else {
++		cpufreq_frequency_table_get_attr(s3c64xx_freq_table,
++				policy->cpu);
+ 	}
  
-+int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
-+				      struct cpufreq_frequency_table *table)
-+{
-+	int ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+
-+	if (!ret)
-+		cpufreq_frequency_table_get_attr(table, policy->cpu);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_table_validate_and_show);
-+
- void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy)
- {
- 	pr_debug("Updating show_table for new_cpu %u from last_cpu %u\n",
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 21f6543..e257407 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -433,5 +433,7 @@ extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
- void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
- 				      unsigned int cpu);
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
-+int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
-+				      struct cpufreq_frequency_table *table);
- 
- #endif /* _LINUX_CPUFREQ_H */
+ 	return ret;
 -- 
 1.7.12.rc2.18.g61b472e
