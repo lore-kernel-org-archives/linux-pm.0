@@ -1,47 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 030/228] cpufreq: p4-clockmod: use cpufreq_table_validate_and_show()
-Date: Fri, 13 Sep 2013 18:29:36 +0530
-Message-ID: <1476114c469dd7b3b3a4e793c7c04441021fd315.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 029/228] cpufreq: omap: use cpufreq_table_validate_and_show()
+Date: Fri, 13 Sep 2013 18:29:35 +0530
+Message-ID: <26205fdeb757f9b549331cfe938b8a99f6078746.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: David S. Miller <davem@davemloft.net>
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/p4-clockmod.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/cpufreq/omap-cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
-index 2f0a2a6..03478bf 100644
---- a/drivers/cpufreq/p4-clockmod.c
-+++ b/drivers/cpufreq/p4-clockmod.c
-@@ -230,7 +230,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- 		else
- 			p4clockmod_table[i].frequency = (stock_freq * i)/8;
- 	}
--	cpufreq_frequency_table_get_attr(p4clockmod_table, policy->cpu);
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index f31fcfc..b68ce4e 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -191,12 +191,10 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
  
- 	/* cpuinfo and default policy values */
+ 	atomic_inc_return(&freq_table_users);
  
-@@ -239,7 +238,7 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 10000001;
- 	policy->cur = stock_freq;
+-	result = cpufreq_frequency_table_cpuinfo(policy, freq_table);
++	result = cpufreq_table_validate_and_show(policy, freq_table);
+ 	if (result)
+ 		goto fail_table;
  
--	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
-+	return cpufreq_table_validate_and_show(policy, &p4clockmod_table[0]);
- }
+-	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+-
+ 	policy->cur = omap_getspeed(policy->cpu);
  
- 
+ 	/*
 -- 
 1.7.12.rc2.18.g61b472e
-
