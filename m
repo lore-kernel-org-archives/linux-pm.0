@@ -1,57 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 132/228] cpufreq: dbx500: use cpufreq_generic_init() routine
-Date: Fri, 13 Sep 2013 18:31:18 +0530
-Message-ID: <7703617a46c82433f7de644c35aafba9c880114d.1379063063.git.viresh.kumar@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 063/228] cpufreq: dbx500: Use generic cpufreq routines
+Date: Fri, 13 Sep 2013 15:18:41 +0200
+Message-ID: <CACRpkdbgpuuSpHpu2-pEvOjd3hB-cqn62Ui6__VFbyNHDLu6+g@mail.gmail.com>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+	<a3970f9a04fd061a7ad476f983e10a8768c89fd0.1379063063.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:34427 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933553Ab3IMNSm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:18:42 -0400
+Received: by mail-ob0-f182.google.com with SMTP id wo20so1073421obc.13
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:18:42 -0700 (PDT)
+In-Reply-To: <a3970f9a04fd061a7ad476f983e10a8768c89fd0.1379063063.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Use generic cpufreq_generic_init() routine instead of replicating the same code
-here.
+On Fri, Sep 13, 2013 at 3:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/dbx500-cpufreq.c | 21 +--------------------
- 1 file changed, 1 insertion(+), 20 deletions(-)
+> Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
+> and .attr. So its better if we have generic routines for them which can be used
+> by cpufreq drivers then.
+>
+> This patch uses these generic routines for this driver.
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index ae1aa60..a60f769 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -74,26 +74,7 @@ static unsigned int dbx500_cpufreq_getspeed(unsigned int cpu)
- 
- static int dbx500_cpufreq_init(struct cpufreq_policy *policy)
- {
--	int res;
--
--	/* get policy fields based on the table */
--	res = cpufreq_table_validate_and_show(policy, freq_table);
--	if (res) {
--		pr_err("dbx500-cpufreq: Failed to read policy table\n");
--		return res;
--	}
--
--	/*
--	 * FIXME : Need to take time measurement across the target()
--	 *	   function with no/some/all drivers in the notification
--	 *	   list.
--	 */
--	policy->cpuinfo.transition_latency = 20 * 1000; /* in ns */
--
--	/* policy sharing between dual CPUs */
--	cpumask_setall(policy->cpus);
--
--	return 0;
-+	return cpufreq_generic_init(policy, freq_table, 20 * 1000);
- }
- 
- static struct cpufreq_driver dbx500_cpufreq_driver = {
--- 
-1.7.12.rc2.18.g61b472e
+Acked-by. It feels like I acked this before...
+
+Yours,
+Linus Walleij
