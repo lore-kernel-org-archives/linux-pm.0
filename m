@@ -1,84 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 059/228] cpufreq: blackfin: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:05 +0530
-Message-ID: <47d7b682a43f352686a9a927642cb84fc74e8399.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 121/228] cpufreq: sc520_freq: don't initialize part of policy that is set by core too
+Date: Fri, 13 Sep 2013 18:31:07 +0530
+Message-ID: <e62cf2617ffb3c0d7301ba5c86f35f2f37087b72.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, Steven Miao <realmz6@gmail.com>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
-and .attr. So its better if we have generic routines for them which can be used
-by cpufreq drivers then.
+Many common initializations of struct policy are moved to core now and hence
+this driver doesn't need to do it. This patch removes such code.
 
-This patch uses these generic routines for this driver.
+Most recent of those changes is to call ->get() in the core after calling
+->init().
 
-Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/blackfin-cpufreq.c | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+ drivers/cpufreq/sc520_freq.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
-index 84d446a..48888cf 100644
---- a/drivers/cpufreq/blackfin-cpufreq.c
-+++ b/drivers/cpufreq/blackfin-cpufreq.c
-@@ -191,11 +191,6 @@ static int bfin_target(struct cpufreq_policy *policy,
- 	return ret;
+diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
+index 8556225..9047ab1 100644
+--- a/drivers/cpufreq/sc520_freq.c
++++ b/drivers/cpufreq/sc520_freq.c
+@@ -109,7 +109,6 @@ static int sc520_freq_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	/* cpuinfo and default policy values */
+ 	policy->cpuinfo.transition_latency = 1000000; /* 1ms */
+-	policy->cur = sc520_freq_get_cpu_frequency(0);
+ 
+ 	return cpufreq_table_validate_and_show(policy, sc520_freq_table);
  }
- 
--static int bfin_verify_speed(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, bfin_freq_table);
--}
--
- static int __bfin_cpu_init(struct cpufreq_policy *policy)
- {
- 
-@@ -213,25 +208,14 @@ static int __bfin_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, bfin_freq_table);
- }
- 
--static int __bfin_cpu_exit(struct cpufreq_policy *policy)
--{
--
--	cpufreq_frequency_table_put_attr(policy->cpu);
--}
--
--static struct freq_attr *bfin_freq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static struct cpufreq_driver bfin_driver = {
--	.verify = bfin_verify_speed,
-+	.verify = cpufreq_generic_frequency_table_verify,
- 	.target = bfin_target,
- 	.get = bfin_getfreq_khz,
- 	.init = __bfin_cpu_init,
--	.exit = __bfin_cpu_exit,
-+	.exit = cpufreq_generic_exit,
- 	.name = "bfin cpufreq",
--	.attr = bfin_freq_attr,
-+	.attr = cpufreq_generic_attr,
- };
- 
- static int __init bfin_cpu_init(void)
 -- 
 1.7.12.rc2.18.g61b472e
