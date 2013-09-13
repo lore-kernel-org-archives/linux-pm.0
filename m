@@ -1,69 +1,70 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 090/228] cpufreq: call cpufreq_driver->get() after calling
- ->init()
-Date: Fri, 13 Sep 2013 18:30:36 +0530
-Message-ID: <65ceb79aa6cf70ee2ee64f92ffe92e43e8663c4e.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 159/228] cpufreq: ia64: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:31:45 +0530
+Message-ID: <1c9b241efbaa456013cc6b484bb17d9353aef340.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Luck <tony.luck@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Almost all drivers set policy->cur with current cpu frequency in their ->init()
-part. This can be done for all of them at core level and so they wouldn't need
-to do it.
+This patch converts existing .target() to newly defined light weight
+.target_index() routine for this driver.
 
-This patch adds supporting code in cpufreq core for calling get() after we have
-called init() for a policy.
+CPUFreq core will call cpufreq_frequency_table_target() before calling this
+routine and will pass index to it.
 
+Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/cpufreq/ia64-acpi-cpufreq.c | 21 +++------------------
+ 1 file changed, 3 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c7274e6..1e6b602 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1081,6 +1081,14 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		goto err_set_policy_cpu;
- 	}
+diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+index 90c6598..4695fa2 100644
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -227,26 +227,11 @@ acpi_cpufreq_get (
+ static int
+ acpi_cpufreq_target (
+ 	struct cpufreq_policy   *policy,
+-	unsigned int target_freq,
+-	unsigned int relation)
++	unsigned int index)
+ {
+-	struct cpufreq_acpi_io *data = acpi_io_data[policy->cpu];
+-	unsigned int next_state = 0;
+-	unsigned int result = 0;
+-
+-	pr_debug("acpi_cpufreq_setpolicy\n");
+-
+-	result = cpufreq_frequency_table_target(policy,
+-			data->freq_table, target_freq, relation, &next_state);
+-	if (result)
+-		return (result);
+-
+-	result = processor_set_freq(data, policy, next_state);
+-
+-	return (result);
++	return processor_set_freq(acpi_io_data[policy->cpu], policy, index);
+ }
  
-+	if (cpufreq_driver->get) {
-+		policy->cur = cpufreq_driver->get(policy->cpu);
-+		if (!policy->cur) {
-+			pr_err("%s: ->get() failed\n", __func__);
-+			goto err_get_freq;
-+		}
-+	}
-+
- 	/* related cpus should atleast have policy->cpus */
- 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+-
+ static int
+ acpi_cpufreq_cpu_init (
+ 	struct cpufreq_policy   *policy)
+@@ -379,7 +364,7 @@ acpi_cpufreq_cpu_exit (
  
-@@ -1135,6 +1143,9 @@ err_out_unregister:
- 		per_cpu(cpufreq_cpu_data, j) = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+err_get_freq:
-+	if (cpufreq_driver->exit)
-+		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
- 	cpufreq_policy_free(policy);
- nomem_out:
+ static struct cpufreq_driver acpi_cpufreq_driver = {
+ 	.verify 	= cpufreq_generic_frequency_table_verify,
+-	.target 	= acpi_cpufreq_target,
++	.target_index	= acpi_cpufreq_target,
+ 	.get 		= acpi_cpufreq_get,
+ 	.init		= acpi_cpufreq_cpu_init,
+ 	.exit		= acpi_cpufreq_cpu_exit,
 -- 
 1.7.12.rc2.18.g61b472e
