@@ -1,45 +1,104 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Fri, 13 Sep 2013 09:56:18 +0530
-Message-ID: <CAKohpokEc1vZacN2X+8_cY8DF1wehSE6yaZ5-SQbqtt5qUUW_A@mail.gmail.com>
-References: <522E1FEF.6080803@wwwdotorg.org>
-	<1775778.MeiRhuYy7o@vostro.rjw.lan>
-	<522F86AD.6010603@wwwdotorg.org>
-	<2521560.SfeNbV74nj@vostro.rjw.lan>
-	<52304439.3030301@linux.vnet.ibm.com>
-	<CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
-	<CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com>
-	<5230509D.6040205@linux.vnet.ibm.com>
-	<CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
-	<CAKohpo=8mqRmmk17D52yiR9w1V4Z+2UzZ2kzABtrxHbYR+sQzw@mail.gmail.com>
-	<52315E9A.3000607@linux.vnet.ibm.com>
-	<5231E3E2.1050101@wwwdotorg.org>
-	<5231F939.2010502@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5231F939.2010502@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: [PATCH v2 01/12] ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
+Date: Fri, 13 Sep 2013 12:06:30 +0200
+Message-ID: <1379066801-16276-2-git-send-email-gregory.clement@free-electrons.com>
+References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:44122 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755160Ab3IMKGv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 06:06:51 -0400
+In-Reply-To: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Chris Van Hoof <vanhoof@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Atsushi Yamagata <yamagata@plathome.co.jp>, Hironobu Shibata <h-shibata@plathome.co.jp>, Tomonori Kimura <kimura@plathome.co.jp>
 
-On 12 September 2013 22:56, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> On 09/12/2013 09:25 PM, Stephen Warren wrote:
-> Anyway, nevermind, as of now, subsystems do work around this suitably, so
-> there is no known bug as such at the present. Just that we could have probably
-> done it a better way, that's all.
+PJ4B needs extra instructions for suspend and resume, so instead of
+using the armv7 version, this commit introduces specific versions for
+PJ4B.
 
-Yeah, there is no bug as of now due to the number of hacks adopted by different
-framework.. I believe we can still have a cleanup series to take care
-of this stuff..
-That would be some improvement and would be better for future.. Otherwise
-this kind of problems would keep coming again and again..
+Cc: Russell King <linux@arm.linux.org.uk>
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+---
+ arch/arm/mm/proc-v7.S | 64 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 61 insertions(+), 3 deletions(-)
 
-> You're absolutely right! Regular CPU hotplug is more demanding than
-> suspend/resume in the context we are discussing, since any CPU can be
-> hotplugged at any time and put back in any order. So code like cpufreq should
-> be prepared to work with any ordering.
+diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
+index c63d9bd..b14801b 100644
+--- a/arch/arm/mm/proc-v7.S
++++ b/arch/arm/mm/proc-v7.S
+@@ -162,9 +162,67 @@ ENDPROC(cpu_pj4b_do_idle)
+ 	globl_equ	cpu_pj4b_do_idle,  	cpu_v7_do_idle
+ #endif
+ 	globl_equ	cpu_pj4b_dcache_clean_area,	cpu_v7_dcache_clean_area
+-	globl_equ	cpu_pj4b_do_suspend,	cpu_v7_do_suspend
+-	globl_equ	cpu_pj4b_do_resume,	cpu_v7_do_resume
+-	globl_equ	cpu_pj4b_suspend_size,	cpu_v7_suspend_size
++#ifdef CONFIG_ARM_CPU_SUSPEND
++ENTRY(cpu_pj4b_do_suspend)
++	stmfd	sp!, {r4 - r10, lr}
++	mrc	p15, 0, r4, c13, c0, 0	@ FCSE/PID
++	mrc	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
++	stmia	r0!, {r4 - r5}
++	mrc	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
++	mrc	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
++	mrc	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
++	mrc	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
++	mrc	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
++	stmia	r0!, {r6 - r10}
++	mrc	p15, 0, r6, c3, c0, 0	@ Domain ID
++	mrc	p15, 0, r7, c2, c0, 1	@ TTB 1
++	mrc	p15, 0, r11, c2, c0, 2	@ TTB control register
++	mrc	p15, 0, r8, c1, c0, 0	@ Control register
++	mrc	p15, 0, r9, c1, c0, 1	@ Auxiliary control register
++	mrc	p15, 0, r10, c1, c0, 2	@ Co-processor access control
++	stmia	r0, {r6 - r11}
++	ldmfd	sp!, {r4 - r10, pc}
++ENDPROC(cpu_pj4b_do_suspend)
++
++ENTRY(cpu_pj4b_do_resume)
++	mov	ip, #0
++	mcr	p15, 0, ip, c7, c5, 0	@ invalidate I cache
++	mcr	p15, 0, ip, c13, c0, 1	@ set reserved context ID
++	ldmia	r0!, {r4 - r5}
++	mcr	p15, 0, r4, c13, c0, 0	@ FCSE/PID
++	mcr	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
++	ldmia	r0!, {r6 - r10}
++	mcr	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
++	mcr	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
++	mcr	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
++	mcr	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
++	mcr	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
++	ldmia	r0, {r6 - r11}
++	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
++	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
++#ifndef CONFIG_ARM_LPAE
++	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
++	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
++#endif
++	mcr	p15, 0, r1, c2, c0, 0	@ TTB 0
++	mcr	p15, 0, r7, c2, c0, 1	@ TTB 1
++	mcr	p15, 0, r11, c2, c0, 2	@ TTB control register
++	ldr	r4, =PRRR		@ PRRR
++	ldr	r5, =NMRR		@ NMRR
++	mcr	p15, 0, r4, c10, c2, 0	@ write PRRR
++	mcr	p15, 0, r5, c10, c2, 1	@ write NMRR
++	mrc	p15, 0, r4, c1, c0, 1	@ Read Auxiliary control register
++	teq	r4, r9			@ Is it already set?
++	mcrne	p15, 0, r9, c1, c0, 1	@ No, so write it
++	mcr	p15, 0, r10, c1, c0, 2	@ Co-processor access control
++	isb
++	dsb
++	mov	r0, r8			@ control register
++	b	cpu_resume_mmu
++ENDPROC(cpu_pj4b_do_resume)
++#endif
++.globl	cpu_pj4b_suspend_size
++.equ	cpu_pj4b_suspend_size, 4 * 13
+ 
+ #endif
+ 
+-- 
+1.8.1.2
 
-And that part is well implemented and tested as far as I know..
