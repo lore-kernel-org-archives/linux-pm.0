@@ -1,51 +1,33 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH] drivers: cpuidle: rename ARM big.LITTLE driver config and makefile entries
-Date: Fri, 13 Sep 2013 08:23:44 -0700
-Message-ID: <87ppscg2yn.fsf@linaro.org>
-References: <1379071966-26757-1-git-send-email-lorenzo.pieralisi@arm.com>
-	<5232FCD4.2070802@free-electrons.com>
-	<20130913140125.GA2062@e102568-lin.cambridge.arm.com>
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+Subject: Re: [PATCH 153/228] cpufreq: cris: Convert to light weight
+ ->target_index() routine
+Date: Fri, 13 Sep 2013 17:24:43 +0200
+Message-ID: <20130913152443.GH32443@axis.com>
+References: <cover.1379063063.git.viresh.kumar@linaro.org>
+ <73fe150773b41450f222c179e4a7ea84884a119e.1379063063.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:48633 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754932Ab3IMPXr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 11:23:47 -0400
-Received: by mail-pa0-f48.google.com with SMTP id kp13so2653202pab.21
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 08:23:47 -0700 (PDT)
-In-Reply-To: <20130913140125.GA2062@e102568-lin.cambridge.arm.com> (Lorenzo
-	Pieralisi's message of "Fri, 13 Sep 2013 15:01:25 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <73fe150773b41450f222c179e4a7ea84884a119e.1379063063.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jesper Nilsson <jespern@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel <linux-cris-kernel@axis.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Olof Johansson <olof@lixom.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+On Fri, Sep 13, 2013 at 03:01:39PM +0200, Viresh Kumar wrote:
+> This patch converts existing .target() to newly defined light weight
+> .target_index() routine for this driver.
+> 
+> CPUFreq core will call cpufreq_frequency_table_target() before calling this
+> routine and will pass index to it.
 
-> On Fri, Sep 13, 2013 at 12:53:56PM +0100, Gregory CLEMENT wrote:
->> Hi Lorenzo,
->> 
->> On 13/09/2013 13:32, Lorenzo Pieralisi wrote:
->> > Following the reorganization of CPU idle drivers configurations into an ARM
->> > specific Kconfig, the existing idle drivers Kconfig entries were renamed and
->> > moved to the Kconfig.arm file. Makefile entries were updated accordingly.
->> > 
->> > This patch renames the entries in Kconfig.arm and makefile to make the newly
->> > added big.LITTLE CPUidle driver compliant with the new naming convention.
->> 
->> Do you also consider to reorder the entries in alphabetic order?
->> It should help to reduce the merge conflict.
->
-> Sure, here it is, thanks for pointing that out.
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-FYI, updated patches deep inside threads are very likely to be missed.
-I saw this because I was looking for it, but would've easily been
-missed.
+> Cc: Mikael Starvik <starvik@axis.com>
+> Cc: linux-cris-kernel@axis.com
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Could you resend a v2 with my ack so Daniel can pick up and get it
-merged for v3.12-rc?  Thanks
-
-Acked-by: Kevin Hilman <khilman@linaro.org>
-
-Kevin
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
