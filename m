@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 214/228] cpufreq: arm_big_little: use cpufreq_generic_get() routine
-Date: Fri, 13 Sep 2013 18:32:40 +0530
-Message-ID: <8c58f016642470a2203997ca8619107da7872f06.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 216/228] cpufreq: cpu0: use cpufreq_generic_get() routine
+Date: Fri, 13 Sep 2013 18:32:42 +0530
+Message-ID: <602b3897e17ec61cab6a0f6c7a22aef25463a787.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -15,46 +15,45 @@ List-Id: linux-pm@vger.kernel.org
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/arm_big_little.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 69cae42..5b745f9 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -40,13 +40,6 @@ static struct clk *clk[MAX_CLUSTERS];
- static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS];
- static atomic_t cluster_usage[MAX_CLUSTERS] = {ATOMIC_INIT(0), ATOMIC_INIT(0)};
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 7b5547f..536ac8c 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -29,11 +29,6 @@ static struct clk *cpu_clk;
+ static struct regulator *cpu_reg;
+ static struct cpufreq_frequency_table *freq_table;
  
--static unsigned int bL_cpufreq_get(unsigned int cpu)
+-static unsigned int cpu0_get_speed(unsigned int cpu)
 -{
--	u32 cur_cluster = cpu_to_cluster(cpu);
--
--	return clk_get_rate(clk[cur_cluster]) / 1000;
+-	return clk_get_rate(cpu_clk) / 1000;
 -}
 -
- /* Set clock frequency */
- static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 		unsigned int index)
-@@ -145,6 +138,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 	else
- 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+ 	struct opp *opp;
+@@ -99,6 +94,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
  
-+	policy->clk = clk[cur_cluster];
- 	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
+ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ {
++	policy->clk = cpu_clk;
+ 	return cpufreq_generic_init(policy, freq_table, transition_latency);
+ }
  
- 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
-@@ -175,7 +169,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
- 					CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
- 	.verify			= cpufreq_generic_frequency_table_verify,
- 	.target_index		= bL_cpufreq_set_target,
--	.get			= bL_cpufreq_get,
-+	.get			= cpufreq_generic_get,
- 	.init			= bL_cpufreq_init,
- 	.exit			= bL_cpufreq_exit,
- 	.attr			= cpufreq_generic_attr,
+@@ -106,7 +102,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+ 	.flags = CPUFREQ_STICKY,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target_index = cpu0_set_target,
+-	.get = cpu0_get_speed,
++	.get = cpufreq_generic_get,
+ 	.init = cpu0_cpufreq_init,
+ 	.exit = cpufreq_generic_exit,
+ 	.name = "generic_cpu0",
 -- 
 1.7.12.rc2.18.g61b472e
 
