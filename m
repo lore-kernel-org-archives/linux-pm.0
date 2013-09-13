@@ -1,22 +1,16 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 061/228] cpufreq: cris: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:07 +0530
-Message-ID: <d5f36a652c8fed4bb90bb711f520c964131a0d61.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 063/228] cpufreq: dbx500: Use generic cpufreq routines
+Date: Fri, 13 Sep 2013 18:30:09 +0530
+Message-ID: <a3970f9a04fd061a7ad476f983e10a8768c89fd0.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:62800 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073Ab3IMNKQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:10:16 -0400
-Received: by mail-pb0-f46.google.com with SMTP id rq2so1214426pbb.5
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:10:16 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel@axis.com
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Linus Walleij <linus.walleij@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
 and .attr. So its better if we have generic routines for them which can be used
@@ -24,106 +18,47 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: linux-cris-kernel@axis.com
+Cc: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cris-artpec3-cpufreq.c | 23 +++--------------------
- drivers/cpufreq/cris-etraxfs-cpufreq.c | 22 +++-------------------
- 2 files changed, 6 insertions(+), 39 deletions(-)
+ drivers/cpufreq/dbx500-cpufreq.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/cris-artpec3-cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
-index 444fd96..d26f4e4 100644
---- a/drivers/cpufreq/cris-artpec3-cpufreq.c
-+++ b/drivers/cpufreq/cris-artpec3-cpufreq.c
-@@ -54,11 +54,6 @@ static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- };
+diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
+index 8a484e9..2d70637 100644
+--- a/drivers/cpufreq/dbx500-cpufreq.c
++++ b/drivers/cpufreq/dbx500-cpufreq.c
+@@ -19,16 +19,6 @@
+ static struct cpufreq_frequency_table *freq_table;
+ static struct clk *armss_clk;
  
--static int cris_freq_verify(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, &cris_freq_table[0]);
--}
--
- static int cris_freq_target(struct cpufreq_policy *policy,
- 			    unsigned int target_freq,
- 			    unsigned int relation)
-@@ -84,26 +79,14 @@ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- }
- 
- 
--static int cris_freq_cpu_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--	return 0;
--}
--
--
--static struct freq_attr *cris_freq_attr[] = {
+-static struct freq_attr *dbx500_cpufreq_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
- static struct cpufreq_driver cris_freq_driver = {
- 	.get	= cris_freq_get_cpu_frequency,
--	.verify	= cris_freq_verify,
-+	.verify	= cpufreq_generic_frequency_table_verify,
- 	.target	= cris_freq_target,
- 	.init	= cris_freq_cpu_init,
--	.exit	= cris_freq_cpu_exit,
-+	.exit	= cpufreq_generic_exit,
- 	.name	= "cris_freq",
--	.attr	= cris_freq_attr,
-+	.attr	= cpufreq_generic_attr,
- };
- 
- static int __init cris_freq_init(void)
-diff --git a/drivers/cpufreq/cris-etraxfs-cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-index 428395e..d384e63 100644
---- a/drivers/cpufreq/cris-etraxfs-cpufreq.c
-+++ b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-@@ -54,11 +54,6 @@ static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- };
- 
--static int cris_freq_verify(struct cpufreq_policy *policy)
+-static int dbx500_cpufreq_verify_speed(struct cpufreq_policy *policy)
 -{
--	return cpufreq_frequency_table_verify(policy, &cris_freq_table[0]);
+-	return cpufreq_frequency_table_verify(policy, freq_table);
 -}
 -
- static int cris_freq_target(struct cpufreq_policy *policy,
- 			    unsigned int target_freq, unsigned int relation)
- {
-@@ -82,25 +77,14 @@ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- 	return cpufreq_table_validate_and_show(policy, cris_freq_table);
- }
+ static int dbx500_cpufreq_target(struct cpufreq_policy *policy,
+ 				unsigned int target_freq,
+ 				unsigned int relation)
+@@ -113,12 +103,12 @@ static int dbx500_cpufreq_init(struct cpufreq_policy *policy)
  
--static int cris_freq_cpu_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--	return 0;
--}
--
--static struct freq_attr *cris_freq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static struct cpufreq_driver cris_freq_driver = {
- 	.get = cris_freq_get_cpu_frequency,
--	.verify = cris_freq_verify,
+ static struct cpufreq_driver dbx500_cpufreq_driver = {
+ 	.flags  = CPUFREQ_STICKY | CPUFREQ_CONST_LOOPS,
+-	.verify = dbx500_cpufreq_verify_speed,
 +	.verify = cpufreq_generic_frequency_table_verify,
- 	.target = cris_freq_target,
- 	.init = cris_freq_cpu_init,
--	.exit = cris_freq_cpu_exit,
-+	.exit = cpufreq_generic_exit,
- 	.name = "cris_freq",
--	.attr = cris_freq_attr,
-+	.attr = cpufreq_generic_attr,
+ 	.target = dbx500_cpufreq_target,
+ 	.get    = dbx500_cpufreq_getspeed,
+ 	.init   = dbx500_cpufreq_init,
+ 	.name   = "DBX500",
+-	.attr   = dbx500_cpufreq_attr,
++	.attr   = cpufreq_generic_attr,
  };
  
- static int __init cris_freq_init(void)
+ static int dbx500_cpufreq_probe(struct platform_device *pdev)
 -- 
 1.7.12.rc2.18.g61b472e
-
