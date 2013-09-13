@@ -1,58 +1,97 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 226/228] cpufreq: spear: use cpufreq_generic_get() routine
-Date: Fri, 13 Sep 2013 18:32:52 +0530
-Message-ID: <f2370b329d6ec42e92bd5eac3abb3e64774530fe.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 228/228] cpufreq: unicore2: use cpufreq_generic_get() routine
+Date: Fri, 13 Sep 2013 18:32:54 +0530
+Message-ID: <e9af7a189354b35bf5e8ea203e6315f29923e163.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f44.google.com ([209.85.160.44]:47866 "EHLO
+	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934429Ab3IMNaI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:30:08 -0400
+Received: by mail-pb0-f44.google.com with SMTP id xa7so1239911pbc.17
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:30:07 -0700 (PDT)
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, spear-devel@list.st.com
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-Cc: spear-devel@list.st.com
+We also do clk_get() once instead of doing it again and again in target & init.
+
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/spear-cpufreq.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/cpufreq/unicore2-cpufreq.c | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 658cfe7..ea2f26e 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -30,11 +30,6 @@ static struct {
- 	u32 cnt;
- } spear_cpufreq;
+diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unicore2-cpufreq.c
+index 653ae29..951152f 100644
+--- a/drivers/cpufreq/unicore2-cpufreq.c
++++ b/drivers/cpufreq/unicore2-cpufreq.c
+@@ -11,6 +11,7 @@
+  * published by the Free Software Foundation.
+  */
  
--static unsigned int spear_cpufreq_get(unsigned int cpu)
++#include <linux/err.h>
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/init.h>
+@@ -33,26 +34,16 @@ static int ucv2_verify_speed(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
+-static unsigned int ucv2_getspeed(unsigned int cpu)
 -{
--	return clk_get_rate(spear_cpufreq.clk) / 1000;
+-	struct clk *mclk = clk_get(NULL, "MAIN_CLK");
+-
+-	if (cpu)
+-		return 0;
+-	return clk_get_rate(mclk)/1000;
 -}
 -
- static struct clk *spear1340_cpu_get_possible_parent(unsigned long newfreq)
+ static int ucv2_target(struct cpufreq_policy *policy,
+ 			 unsigned int target_freq,
+ 			 unsigned int relation)
  {
- 	struct clk *sys_pclk;
-@@ -156,6 +151,7 @@ static int spear_cpufreq_target(struct cpufreq_policy *policy,
+-	unsigned int cur = ucv2_getspeed(0);
++	unsigned int cur = policy->cur;
+ 	struct cpufreq_freqs freqs;
+-	struct clk *mclk = clk_get(NULL, "MAIN_CLK");
  
- static int spear_cpufreq_init(struct cpufreq_policy *policy)
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+-	if (!clk_set_rate(mclk, target_freq * 1000)) {
++	if (!clk_set_rate(policy->clk, target_freq * 1000)) {
+ 		freqs.old = cur;
+ 		freqs.new = target_freq;
+ 	}
+@@ -66,9 +57,13 @@ static int __init ucv2_cpu_init(struct cpufreq_policy *policy)
  {
-+	policy->clk = spear_cpufreq.clk;
- 	return cpufreq_generic_init(policy, spear_cpufreq.freq_tbl,
- 			spear_cpufreq.transition_latency);
+ 	if (policy->cpu != 0)
+ 		return -EINVAL;
++
+ 	policy->min = policy->cpuinfo.min_freq = 250000;
+ 	policy->max = policy->cpuinfo.max_freq = 1000000;
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
++	policy->clk = clk_get(NULL, "MAIN_CLK");
++	if (IS_ERR(policy->clk))
++		return PTR_ERR(policy->clk);
+ 	return 0;
  }
-@@ -165,7 +161,7 @@ static struct cpufreq_driver spear_cpufreq_driver = {
+ 
+@@ -76,7 +71,7 @@ static struct cpufreq_driver ucv2_driver = {
  	.flags		= CPUFREQ_STICKY,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= spear_cpufreq_target,
--	.get		= spear_cpufreq_get,
+ 	.verify		= ucv2_verify_speed,
+ 	.target		= ucv2_target,
+-	.get		= ucv2_getspeed,
 +	.get		= cpufreq_generic_get,
- 	.init		= spear_cpufreq_init,
- 	.exit		= cpufreq_generic_exit,
- 	.attr		= cpufreq_generic_attr,
+ 	.init		= ucv2_cpu_init,
+ 	.name		= "UniCore-II",
+ };
 -- 
 1.7.12.rc2.18.g61b472e
+
