@@ -1,49 +1,97 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 122/228] cpufreq: sh: don't initialize part of policy that is set by core too
-Date: Fri, 13 Sep 2013 18:31:08 +0530
-Message-ID: <b7aefeb7f7e756d9608039d58a11ab907096e6e6.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 127/228] cpufreq: create cpufreq_generic_init() routine
+Date: Fri, 13 Sep 2013 18:31:13 +0530
+Message-ID: <ed142d4ec15206f4249e2cd851dbe8da7bfc06d4.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f47.google.com ([209.85.160.47]:40384 "EHLO
-	mail-pb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933422Ab3IMNR2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:17:28 -0400
-Received: by mail-pb0-f47.google.com with SMTP id rr4so1222048pbb.34
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:17:28 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Many common initializations of struct policy are moved to core now and hence
-this driver doesn't need to do it. This patch removes such code.
+Many CPUFreq drivers for SMP system (where all cores share same clock lines), do
+similar stuff in their ->init() part.
 
-Most recent of those changes is to call ->get() in the core after calling
-->init().
+This patch creates a generic routine in cpufreq core which can be used by these
+so that we can remove some redundant code.
 
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sh-cpufreq.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/cpufreq/Kconfig   |  1 +
+ drivers/cpufreq/cpufreq.c | 31 +++++++++++++++++++++++++++++++
+ include/linux/cpufreq.h   |  3 +++
+ 3 files changed, 35 insertions(+)
 
-diff --git a/drivers/cpufreq/sh-cpufreq.c b/drivers/cpufreq/sh-cpufreq.c
-index c681b86..387af12 100644
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -111,8 +111,6 @@ static int sh_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		return PTR_ERR(cpuclk);
- 	}
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 534fcb8..2d06754 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -2,6 +2,7 @@ menu "CPU Frequency scaling"
  
--	policy->cur = sh_cpufreq_get(cpu);
--
- 	freq_table = cpuclk->nr_freqs ? cpuclk->freq_table : NULL;
- 	if (freq_table) {
- 		int result;
+ config CPU_FREQ
+ 	bool "CPU Frequency scaling"
++	select CPU_FREQ_TABLE
+ 	help
+ 	  CPU Frequency scaling allows you to change the clock speed of 
+ 	  CPUs on the fly. This is a nice method to save power, because 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 1e6b602..c4d89c5 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -183,6 +183,37 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
+ }
+ EXPORT_SYMBOL_GPL(get_cpu_idle_time);
+ 
++/*
++ * This is a generic cpufreq init() routine which can be used by cpufreq
++ * drivers of SMP systems. It will do following:
++ * - validate & show freq table passed
++ * - set policies transition latency
++ * - policy->cpus with all possible CPUs
++ */
++int cpufreq_generic_init(struct cpufreq_policy *policy,
++		struct cpufreq_frequency_table *table,
++		unsigned int transition_latency)
++{
++	int ret;
++
++	ret = cpufreq_table_validate_and_show(policy, table);
++	if (ret) {
++		pr_err("%s: invalid frequency table: %d\n", __func__, ret);
++		return ret;
++	}
++
++	policy->cpuinfo.transition_latency = transition_latency;
++
++	/*
++	 * The driver only supports the SMP configuartion where all processors
++	 * share the clock and voltage and clock.
++	 */
++	cpumask_setall(policy->cpus);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cpufreq_generic_init);
++
+ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = NULL;
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 57d2907..c2184c6 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -438,6 +438,9 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu);
+ int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
+ 				      struct cpufreq_frequency_table *table);
+ 
++int cpufreq_generic_init(struct cpufreq_policy *policy,
++		struct cpufreq_frequency_table *table,
++		unsigned int transition_latency);
+ static inline int cpufreq_generic_exit(struct cpufreq_policy *policy)
+ {
+ 	cpufreq_frequency_table_put_attr(policy->cpu);
 -- 
 1.7.12.rc2.18.g61b472e
-
