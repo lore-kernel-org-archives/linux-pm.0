@@ -1,70 +1,78 @@
-From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v2 12/12] ARM: dts: mvebu: Add a new set of registers to the PMSU node
-Date: Fri, 13 Sep 2013 12:06:41 +0200
-Message-ID: <1379066801-16276-13-git-send-email-gregory.clement@free-electrons.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: [PATCH v2 04/12] ARM: mvebu: Remove the unused argument of set_cpu_coherent()
+Date: Fri, 13 Sep 2013 12:06:33 +0200
+Message-ID: <1379066801-16276-5-git-send-email-gregory.clement@free-electrons.com>
 References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1379066801-16276-1-git-send-email-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Nicolas Pitre <nico-vtqb6HGKxmzR7s880joybQ@public.gmane.org>, Lior Amsalem <alior-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Maen Suleiman <maen-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Tawfik Bayouk <tawfik-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Shadi Ammouri <shadi-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Eran Ben-Avi <benavi-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Yehuda Yitschak <yehuday-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Ike Pan <ike.pan-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>, Chris Van Hoof <vanhoof-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>, Dan Frazier <dann.frazier-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>, Leif Lindholm <leif.lindholm-5wv7dgnIgG8@public.gmane.org>, Jon Masters <jcm-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, David Marlin <dmarlin-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Nobuhiro Iwamatsu <iwamatsu-+mkmVskJBflAfugRpC6u6w@public.gmane.org>, Atsushi Yamagata <yamagata-SisyDS/t9hATBYAz+LHnZg@public.gmane.org>, Hironobu Shibata <h-shibata-SisyDS/t9hATBYAz+LHnZg@public.gmane.org>, Tomonori Kimura <kimura-SisyDS/t9hATBYAz+LHnZg@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:44169 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755162Ab3IMKGy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 06:06:54 -0400
+In-Reply-To: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Chris Van Hoof <vanhoof@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Atsushi Yamagata <yamagata@plathome.co.jp>, Hironobu Shibata <h-shibata@plathome.co.jp>, Tomonori Kimura <kimura@plathome.co.jp>
 
-The Power Management Unit Service block also controls the Coherency
-Fabric subsystem. This new set of registers is needed for the CPU idle
-implementation for the Armada XP, it allows to enter in a deep CPU
-idle state where the Coherency Fabric and the L2 cache are powerdown.
+set_cpu_coherent() took the SMP group ID as parameter. But this
+parameter was never used, and the CPU always use the SMP group 0. So
+we can remove this parameter.
 
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt | 12 +++++++-----
- arch/arm/boot/dts/armada-xp.dtsi                             |  2 +-
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ arch/arm/mach-mvebu/coherency.c | 4 ++--
+ arch/arm/mach-mvebu/coherency.h | 2 +-
+ arch/arm/mach-mvebu/platsmp.c   | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
-index 926b4d6..8a9db0c 100644
---- a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
-+++ b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
-@@ -7,14 +7,16 @@ Required properties:
- - compatible: "marvell,armada-370-xp-pmsu"
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index e48518e..a2b6366 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -45,7 +45,7 @@ static struct of_device_id of_coherency_table[] = {
+ /* Function defined in coherency_ll.S */
+ int ll_set_cpu_coherent(bool use_virt_addr);
  
- - reg: Should contain PMSU registers location and length. First pair
--  for the per-CPU SW Reset Control registers, second pair for the
--  Power Management Service Unit.
-+  for the per-CPU SW Reset Control registers, second pair for the CPU
-+  Power Management Service Unit registers, third pair for the Fabric Power
-+  Management Service Unit registers.
+-int set_cpu_coherent(int smp_group_id)
++int set_cpu_coherent(void)
+ {
+ 	if (!coherency_base) {
+ 		pr_warn("Can't make current CPU cache coherent.\n");
+@@ -139,7 +139,7 @@ int __init coherency_init(void)
+ 		sync_cache_w(&coherency_phys_base);
+ 		coherency_base = of_iomap(np, 0);
+ 		coherency_cpu_base = of_iomap(np, 1);
+-		set_cpu_coherent(0);
++		set_cpu_coherent();
+ 	}
  
- Example:
+ 	return 0;
+diff --git a/arch/arm/mach-mvebu/coherency.h b/arch/arm/mach-mvebu/coherency.h
+index d4bc067..700376e 100644
+--- a/arch/arm/mach-mvebu/coherency.h
++++ b/arch/arm/mach-mvebu/coherency.h
+@@ -14,7 +14,7 @@
+ #ifndef __MACH_370_XP_COHERENCY_H
+ #define __MACH_370_XP_COHERENCY_H
  
--armada-370-xp-pmsu@d0022000 {
-+armada-370-xp-pmsu@22000 {
- 	compatible = "marvell,armada-370-xp-pmsu";
--	reg = <0xd0022100 0x430>,
--	      <0xd0020800 0x20>;
-+	reg = <0x22100 0x430>,
-+	      <0x20800 0x20>,
-+	      <0x22000 0x24>;
- };
+-int set_cpu_coherent(int smp_group_id);
++int set_cpu_coherent(void);
+ int coherency_init(void);
  
-diff --git a/arch/arm/boot/dts/armada-xp.dtsi b/arch/arm/boot/dts/armada-xp.dtsi
-index def125c..c79cd53 100644
---- a/arch/arm/boot/dts/armada-xp.dtsi
-+++ b/arch/arm/boot/dts/armada-xp.dtsi
-@@ -48,7 +48,7 @@
+ #endif	/* __MACH_370_XP_COHERENCY_H */
+diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
+index 1b86e03..a0fe97e 100644
+--- a/arch/arm/mach-mvebu/platsmp.c
++++ b/arch/arm/mach-mvebu/platsmp.c
+@@ -102,7 +102,7 @@ void __init armada_xp_smp_prepare_cpus(unsigned int max_cpus)
  
- 			armada-370-xp-pmsu@22000 {
- 				compatible = "marvell,armada-370-xp-pmsu";
--				reg = <0x22100 0x430>, <0x20800 0x20>;
-+				reg = <0x22100 0x430>, <0x20800 0x20>, <0x22000 0x24>;
- 			};
+ 	set_secondary_cpus_clock();
+ 	flush_cache_all();
+-	set_cpu_coherent(0);
++	set_cpu_coherent();
  
- 			serial@12200 {
+ 	/*
+ 	 * In order to boot the secondary CPUs we need to ensure
 -- 
 1.8.1.2
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
