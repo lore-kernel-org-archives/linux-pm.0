@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 198/228] cpufreq: omap: remove calls to cpufreq_notify_transition()
-Date: Fri, 13 Sep 2013 18:32:24 +0530
-Message-ID: <460ac80ae0afb99ba681bedcbd3863c0ddae0ea8.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 195/228] cpufreq: kirkwood: remove calls to cpufreq_notify_transition()
+Date: Fri, 13 Sep 2013 18:32:21 +0530
+Message-ID: <0a512914fd48b2d6db685446f88b9a096eff79a1.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the drivers do following in their ->target_index() routines:
@@ -32,98 +32,84 @@ frequency change, this one removes it from this driver.
 
 Some related minor cleanups are also done along with it.
 
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/omap-cpufreq.c | 39 ++++++++++++++-------------------------
- 1 file changed, 14 insertions(+), 25 deletions(-)
+ drivers/cpufreq/kirkwood-cpufreq.c | 54 ++++++++++++++------------------------
+ 1 file changed, 20 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index 0653887..e92d72e 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -53,15 +53,15 @@ static unsigned int omap_getspeed(unsigned int cpu)
- 
- static int omap_target(struct cpufreq_policy *policy, unsigned int index)
+diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+index 0ae4dd7..0767a4e 100644
+--- a/drivers/cpufreq/kirkwood-cpufreq.c
++++ b/drivers/cpufreq/kirkwood-cpufreq.c
+@@ -58,48 +58,34 @@ static unsigned int kirkwood_cpufreq_get_cpu_frequency(unsigned int cpu)
+ static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
+ 			    unsigned int index)
  {
--	int r, ret = 0;
 -	struct cpufreq_freqs freqs;
-+	int r, ret;
- 	struct opp *opp;
- 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
-+	unsigned int old_freq, new_freq;
+ 	unsigned int state = kirkwood_freq_table[index].driver_data;
+ 	unsigned long reg;
  
--	freqs.old = omap_getspeed(policy->cpu);
--	freqs.new = freq_table[index].frequency;
-+	old_freq = omap_getspeed(policy->cpu);
-+	new_freq = freq_table[index].frequency;
+-	freqs.old = kirkwood_cpufreq_get_cpu_frequency(0);
+-	freqs.new = kirkwood_freq_table[index].frequency;
++	local_irq_disable();
  
--	freq = freqs.new * 1000;
-+	freq = new_freq * 1000;
- 	ret = clk_round_rate(mpu_clk, freq);
- 	if (IS_ERR_VALUE(ret)) {
- 		dev_warn(mpu_dev,
-@@ -77,7 +77,7 @@ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
- 		if (IS_ERR(opp)) {
- 			rcu_read_unlock();
- 			dev_err(mpu_dev, "%s: unable to find MPU OPP for %d\n",
--				__func__, freqs.new);
-+				__func__, new_freq);
- 			return -EINVAL;
- 		}
- 		volt = opp_get_voltage(opp);
-@@ -87,43 +87,32 @@ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
- 	}
- 
- 	dev_dbg(mpu_dev, "cpufreq-omap: %u MHz, %ld mV --> %u MHz, %ld mV\n", 
--		freqs.old / 1000, volt_old ? volt_old / 1000 : -1,
--		freqs.new / 1000, volt ? volt / 1000 : -1);
--
--	/* notifiers */
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-+		old_freq / 1000, volt_old ? volt_old / 1000 : -1,
-+		new_freq / 1000, volt ? volt / 1000 : -1);
++	/* Disable interrupts to the CPU */
++	reg = readl_relaxed(priv.base);
++	reg |= CPU_SW_INT_BLK;
++	writel_relaxed(reg, priv.base);
  
- 	/* scaling up?  scale voltage before frequency */
--	if (mpu_reg && (freqs.new > freqs.old)) {
-+	if (mpu_reg && (new_freq > old_freq)) {
- 		r = regulator_set_voltage(mpu_reg, volt - tol, volt + tol);
- 		if (r < 0) {
- 			dev_warn(mpu_dev, "%s: unable to scale voltage up.\n",
- 				 __func__);
--			freqs.new = freqs.old;
--			goto done;
-+			return r;
- 		}
- 	}
- 
--	ret = clk_set_rate(mpu_clk, freqs.new * 1000);
-+	ret = clk_set_rate(mpu_clk, new_freq * 1000);
- 
- 	/* scaling down?  scale voltage after frequency */
--	if (mpu_reg && (freqs.new < freqs.old)) {
-+	if (mpu_reg && (new_freq < old_freq)) {
- 		r = regulator_set_voltage(mpu_reg, volt - tol, volt + tol);
- 		if (r < 0) {
- 			dev_warn(mpu_dev, "%s: unable to scale voltage down.\n",
- 				 __func__);
--			ret = clk_set_rate(mpu_clk, freqs.old * 1000);
--			freqs.new = freqs.old;
--			goto done;
-+			clk_set_rate(mpu_clk, old_freq * 1000);
-+			return r;
- 		}
- 	}
- 
--	freqs.new = omap_getspeed(policy->cpu);
+-	dev_dbg(priv.dev, "Attempting to set frequency to %i KHz\n",
+-		kirkwood_freq_table[index].frequency);
+-	dev_dbg(priv.dev, "old frequency was %i KHz\n",
+-		kirkwood_cpufreq_get_cpu_frequency(0));
 -
--done:
--	/* notifiers */
+-	if (freqs.old != freqs.new) {
+-		local_irq_disable();
+-
+-		/* Disable interrupts to the CPU */
+-		reg = readl_relaxed(priv.base);
+-		reg |= CPU_SW_INT_BLK;
+-		writel_relaxed(reg, priv.base);
+-
+-		switch (state) {
+-		case STATE_CPU_FREQ:
+-			clk_disable(priv.powersave_clk);
+-			break;
+-		case STATE_DDR_FREQ:
+-			clk_enable(priv.powersave_clk);
+-			break;
+-		}
++	switch (state) {
++	case STATE_CPU_FREQ:
++		clk_disable(priv.powersave_clk);
++		break;
++	case STATE_DDR_FREQ:
++		clk_enable(priv.powersave_clk);
++		break;
++	}
+ 
+-		/* Wait-for-Interrupt, while the hardware changes frequency */
+-		cpu_do_idle();
++	/* Wait-for-Interrupt, while the hardware changes frequency */
++	cpu_do_idle();
+ 
+-		/* Enable interrupts to the CPU */
+-		reg = readl_relaxed(priv.base);
+-		reg &= ~CPU_SW_INT_BLK;
+-		writel_relaxed(reg, priv.base);
++	/* Enable interrupts to the CPU */
++	reg = readl_relaxed(priv.base);
++	reg &= ~CPU_SW_INT_BLK;
++	writel_relaxed(reg, priv.base);
+ 
+-		local_irq_enable();
+-	}
 -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--
- 	return ret;
- }
++	local_irq_enable();
  
+ 	return 0;
+ }
 -- 
 1.7.12.rc2.18.g61b472e
-
