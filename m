@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 144/228] cpufreq: sa11x0: use cpufreq_generic_init() routine
-Date: Fri, 13 Sep 2013 18:31:30 +0530
-Message-ID: <254e7e912c3817fdf1499bb1ea7be7bc7f3cdbef.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 148/228] cpufreq: acpi: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:31:34 +0530
+Message-ID: <40776b7be5e8ec5300b83298e0bf967bc3bf61a0.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -12,48 +12,77 @@ To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Use generic cpufreq_generic_init() routine instead of replicating the same code
-here.
+This patch converts existing .target() to newly defined light weight
+.target_index() routine for this driver.
+
+CPUFreq core will call cpufreq_frequency_table_target() before calling this
+routine and will pass index to it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sa1100-cpufreq.c | 6 +-----
- drivers/cpufreq/sa1110-cpufreq.c | 6 +-----
- 2 files changed, 2 insertions(+), 10 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 21 ++++++---------------
+ 1 file changed, 6 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/sa1100-cpufreq.c b/drivers/cpufreq/sa1100-cpufreq.c
-index a1d1bb7..b282cea 100644
---- a/drivers/cpufreq/sa1100-cpufreq.c
-+++ b/drivers/cpufreq/sa1100-cpufreq.c
-@@ -218,11 +218,7 @@ static int sa1100_target(struct cpufreq_policy *policy,
- 
- static int __init sa1100_cpu_init(struct cpufreq_policy *policy)
- {
--	if (policy->cpu != 0)
--		return -EINVAL;
--	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
--
--	return cpufreq_table_validate_and_show(policy, sa11x0_freq_table);
-+	return cpufreq_generic_init(policy, sa11x0_freq_table, CPUFREQ_ETERNAL);
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 372febf..7536e7d 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -424,17 +424,17 @@ static unsigned int check_freqs(const struct cpumask *mask, unsigned int freq,
  }
  
- static struct cpufreq_driver sa1100_driver __refdata = {
-diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
-index 9da940e..bca04c0 100644
---- a/drivers/cpufreq/sa1110-cpufreq.c
-+++ b/drivers/cpufreq/sa1110-cpufreq.c
-@@ -332,11 +332,7 @@ static int sa1110_target(struct cpufreq_policy *policy,
- 
- static int __init sa1110_cpu_init(struct cpufreq_policy *policy)
+ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+-			       unsigned int target_freq, unsigned int relation)
++			       unsigned int index)
  {
--	if (policy->cpu != 0)
--		return -EINVAL;
--	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
--
--	return cpufreq_table_validate_and_show(policy, sa11x0_freq_table);
-+	return cpufreq_generic_init(policy, sa11x0_freq_table, CPUFREQ_ETERNAL);
- }
+ 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
+ 	struct acpi_processor_performance *perf;
+ 	struct cpufreq_freqs freqs;
+ 	struct drv_cmd cmd;
+-	unsigned int next_state = 0; /* Index into freq_table */
+ 	unsigned int next_perf_state = 0; /* Index into perf table */
+ 	int result = 0;
  
- /* sa1110_driver needs __refdata because it must remain after init registers
+-	pr_debug("acpi_cpufreq_target %d (%d)\n", target_freq, policy->cpu);
++	pr_debug("acpi_cpufreq_target %d (%d)\n",
++			data->freq_table[index].frequency, policy->cpu);
+ 
+ 	if (unlikely(data == NULL ||
+ 	     data->acpi_data == NULL || data->freq_table == NULL)) {
+@@ -442,16 +442,7 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+ 	}
+ 
+ 	perf = data->acpi_data;
+-	result = cpufreq_frequency_table_target(policy,
+-						data->freq_table,
+-						target_freq,
+-						relation, &next_state);
+-	if (unlikely(result)) {
+-		result = -ENODEV;
+-		goto out;
+-	}
+-
+-	next_perf_state = data->freq_table[next_state].driver_data;
++	next_perf_state = data->freq_table[index].driver_data;
+ 	if (perf->state == next_perf_state) {
+ 		if (unlikely(data->resume)) {
+ 			pr_debug("Called after resume, resetting to P%d\n",
+@@ -493,7 +484,7 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+ 		cmd.mask = cpumask_of(policy->cpu);
+ 
+ 	freqs.old = perf->states[perf->state].core_frequency * 1000;
+-	freqs.new = data->freq_table[next_state].frequency;
++	freqs.new = data->freq_table[index].frequency;
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+ 	drv_write(&cmd);
+@@ -918,7 +909,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
+ 
+ static struct cpufreq_driver acpi_cpufreq_driver = {
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target		= acpi_cpufreq_target,
++	.target_index	= acpi_cpufreq_target,
+ 	.bios_limit	= acpi_processor_get_bios_limit,
+ 	.init		= acpi_cpufreq_cpu_init,
+ 	.exit		= acpi_cpufreq_cpu_exit,
 -- 
 1.7.12.rc2.18.g61b472e
