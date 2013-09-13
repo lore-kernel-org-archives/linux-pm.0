@@ -1,70 +1,80 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 130/228] cpufreq: cris: use cpufreq_generic_init() routine
-Date: Fri, 13 Sep 2013 18:31:16 +0530
-Message-ID: <2b5bec06ece382705b51aaf97f53762ff540639f.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 068/228] cpufreq: imx6q: Use generic cpufreq routines
+Date: Fri, 13 Sep 2013 18:30:14 +0530
+Message-ID: <e17b8cc8527391f00931a2c84903dba5ca80ee59.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:50847 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933479Ab3IMNSZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:18:25 -0400
-Received: by mail-pd0-f178.google.com with SMTP id w10so1222323pde.23
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:18:24 -0700 (PDT)
+Received: from mail-pb0-f48.google.com ([209.85.160.48]:65235 "EHLO
+	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755282Ab3IMNLF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:11:05 -0400
+Received: by mail-pb0-f48.google.com with SMTP id ma3so1214961pbc.21
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:11:05 -0700 (PDT)
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel@axis.com
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Use generic cpufreq_generic_init() routine instead of replicating the same code
-here.
+Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
+and .attr. So its better if we have generic routines for them which can be used
+by cpufreq drivers then.
 
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: linux-cris-kernel@axis.com
+This patch uses these generic routines for this driver.
+
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cris-artpec3-cpufreq.c | 6 +-----
- drivers/cpufreq/cris-etraxfs-cpufreq.c | 5 +----
- 2 files changed, 2 insertions(+), 9 deletions(-)
+ drivers/cpufreq/imx6q-cpufreq.c | 22 +++-------------------
+ 1 file changed, 3 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/cpufreq/cris-artpec3-cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
-index 4d88e4f..05fdc7e 100644
---- a/drivers/cpufreq/cris-artpec3-cpufreq.c
-+++ b/drivers/cpufreq/cris-artpec3-cpufreq.c
-@@ -71,13 +71,9 @@ static int cris_freq_target(struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index cd9489f..29767bb 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -34,11 +34,6 @@ static struct device *cpu_dev;
+ static struct cpufreq_frequency_table *freq_table;
+ static unsigned int transition_latency;
  
- static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- {
--	/* cpuinfo and default policy values */
--	policy->cpuinfo.transition_latency = 1000000; /* 1ms */
+-static int imx6q_verify_speed(struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy, freq_table);
+-}
 -
--	return cpufreq_table_validate_and_show(policy, cris_freq_table);
-+	return cpufreq_generic_init(policy, cris_freq_table, 1000000);
+ static unsigned int imx6q_get_speed(unsigned int cpu)
+ {
+ 	return clk_get_rate(arm_clk) / 1000;
+@@ -173,25 +168,14 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ 	return 0;
  }
  
+-static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
+-{
+-	cpufreq_frequency_table_put_attr(policy->cpu);
+-	return 0;
+-}
 -
- static struct cpufreq_driver cris_freq_driver = {
- 	.get	= cris_freq_get_cpu_frequency,
- 	.verify	= cpufreq_generic_frequency_table_verify,
-diff --git a/drivers/cpufreq/cris-etraxfs-cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-index f7d2d49..fac2b26 100644
---- a/drivers/cpufreq/cris-etraxfs-cpufreq.c
-+++ b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-@@ -70,10 +70,7 @@ static int cris_freq_target(struct cpufreq_policy *policy,
- 
- static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- {
--	/* cpuinfo and default policy values */
--	policy->cpuinfo.transition_latency = 1000000;	/* 1ms */
+-static struct freq_attr *imx6q_cpufreq_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
+-};
 -
--	return cpufreq_table_validate_and_show(policy, cris_freq_table);
-+	return cpufreq_generic_init(policy, cris_freq_table, 1000000);
- }
+ static struct cpufreq_driver imx6q_cpufreq_driver = {
+-	.verify = imx6q_verify_speed,
++	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target = imx6q_set_target,
+ 	.get = imx6q_get_speed,
+ 	.init = imx6q_cpufreq_init,
+-	.exit = imx6q_cpufreq_exit,
++	.exit = cpufreq_generic_exit,
+ 	.name = "imx6q-cpufreq",
+-	.attr = imx6q_cpufreq_attr,
++	.attr = cpufreq_generic_attr,
+ };
  
- static struct cpufreq_driver cris_freq_driver = {
+ static int imx6q_cpufreq_probe(struct platform_device *pdev)
 -- 
 1.7.12.rc2.18.g61b472e
 
