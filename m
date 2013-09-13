@@ -1,22 +1,16 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 076/228] cpufreq: pmac: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:22 +0530
-Message-ID: <713307ed299ca14f012d0d41b4805c77e5bad3a1.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 074/228] cpufreq: p4-clockmod: Use generic cpufreq routines
+Date: Fri, 13 Sep 2013 18:30:20 +0530
+Message-ID: <362d9c2397b31d84171f9d6cc5b35357f2542199.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:42061 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932814Ab3IMNMB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:12:01 -0400
-Received: by mail-pa0-f43.google.com with SMTP id hz10so2515190pad.2
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:12:01 -0700 (PDT)
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
+List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
 and .attr. So its better if we have generic routines for them which can be used
@@ -24,98 +18,65 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
+Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 14 ++------------
- drivers/cpufreq/pmac64-cpufreq.c | 14 ++------------
- 2 files changed, 4 insertions(+), 24 deletions(-)
+ drivers/cpufreq/p4-clockmod.c | 23 +++--------------------
+ 1 file changed, 3 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index 470b555..8715ab9 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -86,11 +86,6 @@ static struct cpufreq_frequency_table pmac_cpu_freqs[] = {
- 	{0,			CPUFREQ_TABLE_END},
- };
+diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
+index 03478bf..4fe6d4c 100644
+--- a/drivers/cpufreq/p4-clockmod.c
++++ b/drivers/cpufreq/p4-clockmod.c
+@@ -140,12 +140,6 @@ static int cpufreq_p4_target(struct cpufreq_policy *policy,
+ }
  
--static struct freq_attr* pmac_cpu_freqs_attr[] = {
+ 
+-static int cpufreq_p4_verify(struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy, &p4clockmod_table[0]);
+-}
+-
+-
+ static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
+ {
+ 	if (c->x86 == 0x06) {
+@@ -242,12 +236,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ }
+ 
+ 
+-static int cpufreq_p4_cpu_exit(struct cpufreq_policy *policy)
+-{
+-	cpufreq_frequency_table_put_attr(policy->cpu);
+-	return 0;
+-}
+-
+ static unsigned int cpufreq_p4_get(unsigned int cpu)
+ {
+ 	u32 l, h;
+@@ -266,19 +254,14 @@ static unsigned int cpufreq_p4_get(unsigned int cpu)
+ 	return stock_freq;
+ }
+ 
+-static struct freq_attr *p4clockmod_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
- static inline void local_delay(unsigned long ms)
- {
- 	if (no_schedule)
-@@ -378,11 +373,6 @@ static unsigned int pmac_cpufreq_get_speed(unsigned int cpu)
- 	return cur_freq;
- }
- 
--static int pmac_cpufreq_verify(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, pmac_cpu_freqs);
--}
--
- static int pmac_cpufreq_target(	struct cpufreq_policy *policy,
- 					unsigned int target_freq,
- 					unsigned int relation)
-@@ -468,14 +458,14 @@ static int pmac_cpufreq_resume(struct cpufreq_policy *policy)
- }
- 
- static struct cpufreq_driver pmac_cpufreq_driver = {
--	.verify 	= pmac_cpufreq_verify,
-+	.verify 	= cpufreq_generic_frequency_table_verify,
- 	.target 	= pmac_cpufreq_target,
- 	.get		= pmac_cpufreq_get_speed,
- 	.init		= pmac_cpufreq_cpu_init,
- 	.suspend	= pmac_cpufreq_suspend,
- 	.resume		= pmac_cpufreq_resume,
- 	.flags		= CPUFREQ_PM_NO_WARN,
--	.attr		= pmac_cpu_freqs_attr,
-+	.attr		= cpufreq_generic_attr,
- 	.name		= "powermac",
- };
- 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 41fa89e..e853b85 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -70,11 +70,6 @@ static struct cpufreq_frequency_table g5_cpu_freqs[] = {
- 	{0,			CPUFREQ_TABLE_END},
- };
- 
--static struct freq_attr* g5_cpu_freqs_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- /* Power mode data is an array of the 32 bits PCR values to use for
-  * the various frequencies, retrieved from the device-tree
-  */
-@@ -317,11 +312,6 @@ static int g5_pfunc_query_freq(void)
-  * Common interface to the cpufreq core
-  */
- 
--static int g5_cpufreq_verify(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, g5_cpu_freqs);
--}
--
- static int g5_cpufreq_target(struct cpufreq_policy *policy,
- 	unsigned int target_freq, unsigned int relation)
- {
-@@ -372,10 +362,10 @@ static struct cpufreq_driver g5_cpufreq_driver = {
- 	.name		= "powermac",
- 	.flags		= CPUFREQ_CONST_LOOPS,
- 	.init		= g5_cpufreq_cpu_init,
--	.verify		= g5_cpufreq_verify,
+ static struct cpufreq_driver p4clockmod_driver = {
+-	.verify		= cpufreq_p4_verify,
 +	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= g5_cpufreq_target,
- 	.get		= g5_cpufreq_get_speed,
--	.attr 		= g5_cpu_freqs_attr,
-+	.attr 		= cpufreq_generic_attr,
+ 	.target		= cpufreq_p4_target,
+ 	.init		= cpufreq_p4_cpu_init,
+-	.exit		= cpufreq_p4_cpu_exit,
++	.exit		= cpufreq_generic_exit,
+ 	.get		= cpufreq_p4_get,
+ 	.name		= "p4-clockmod",
+-	.attr		= p4clockmod_attr,
++	.attr		= cpufreq_generic_attr,
  };
  
- 
+ static const struct x86_cpu_id cpufreq_p4_id[] = {
 -- 
 1.7.12.rc2.18.g61b472e
 
