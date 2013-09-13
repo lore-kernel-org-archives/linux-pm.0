@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 031/228] cpufreq: pasemi: use cpufreq_table_validate_and_show()
-Date: Fri, 13 Sep 2013 18:29:37 +0530
-Message-ID: <a922e1f02dfb0d5eba81a457036189b2a2f15fc8.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 034/228] cpufreq: ppc: use cpufreq_table_validate_and_show()
+Date: Fri, 13 Sep 2013 18:29:40 +0530
+Message-ID: <b631c32eb59062e56c908e907f02c8a0fe2588fb.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -17,27 +17,48 @@ cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pasemi-cpufreq.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 3 +--
+ drivers/cpufreq/ppc_cbe_cpufreq.c     | 4 +---
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 534e43a..23bc8a82 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -219,12 +219,10 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index 60e81d5..5716b44 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -202,7 +202,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	table[i].frequency = CPUFREQ_TABLE_END;
  
- 	ppc_proc_freq = policy->cur * 1000ul;
+ 	/* set the min and max frequency properly */
+-	ret = cpufreq_frequency_table_cpuinfo(policy, table);
++	ret = cpufreq_table_validate_and_show(policy, table);
+ 	if (ret) {
+ 		pr_err("invalid frequency table: %d\n", ret);
+ 		goto err_nomem1;
+@@ -219,7 +219,6 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	policy->cur = corenet_cpufreq_get_speed(policy->cpu);
  
--	cpufreq_frequency_table_get_attr(pas_freqs, policy->cpu);
+-	cpufreq_frequency_table_get_attr(table, cpu);
+ 	of_node_put(np);
+ 
+ 	return 0;
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
+index 2e448f0..6c5be63 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
+@@ -123,11 +123,9 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	cpumask_copy(policy->cpus, cpu_sibling_mask(policy->cpu));
+ #endif
+ 
+-	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
 -
- 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max
- 	 * are set correctly
- 	 */
--	return cpufreq_frequency_table_cpuinfo(policy, pas_freqs);
-+	return cpufreq_table_validate_and_show(policy, pas_freqs);
+ 	/* this ensures that policy->cpuinfo_min
+ 	 * and policy->cpuinfo_max are set correctly */
+-	return cpufreq_frequency_table_cpuinfo(policy, cbe_freqs);
++	return cpufreq_table_validate_and_show(policy, cbe_freqs);
+ }
  
- out_unmap_sdcpwr:
- 	iounmap(sdcpwr_mapbase);
+ static int cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
 -- 
 1.7.12.rc2.18.g61b472e
 
