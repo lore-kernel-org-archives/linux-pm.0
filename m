@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 113/228] cpufreq: pcc: don't initialize part of policy that is set by core too
-Date: Fri, 13 Sep 2013 18:30:59 +0530
-Message-ID: <980fc9e44953ea5b8d13284ae62a8f2c00130453.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 116/228] cpufreq: ppc: don't initialize part of policy that is set by core too
+Date: Fri, 13 Sep 2013 18:31:02 +0530
+Message-ID: <bb32c408741e1008c39ce62ec03bc76e5ccaa267.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -20,26 +20,21 @@ Most recent of those changes is to call ->get() in the core after calling
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pcc-cpufreq.c | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 78787e9..ef66347 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -559,13 +559,6 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		ioread32(&pcch_hdr->nominal) * 1000;
- 	policy->min = policy->cpuinfo.min_freq =
- 		ioread32(&pcch_hdr->minimum_frequency) * 1000;
--	policy->cur = pcc_get_freq(cpu);
--
--	if (!policy->cur) {
--		pr_debug("init: Unable to get current CPU frequency\n");
--		result = -EINVAL;
--		goto out;
--	}
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index befd489..a0f562c 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -217,8 +217,6 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		per_cpu(cpu_data, i) = data;
  
- 	pr_debug("init: policy->max is %d, policy->min is %d\n",
- 		policy->max, policy->min);
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+-	policy->cur = corenet_cpufreq_get_speed(policy->cpu);
+-
+ 	of_node_put(np);
+ 
+ 	return 0;
 -- 
 1.7.12.rc2.18.g61b472e
