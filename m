@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 175/228] cpufreq: sa11x0: Convert to light weight ->target_index() routine
-Date: Fri, 13 Sep 2013 18:32:01 +0530
-Message-ID: <84ed2fae0095e526e0665f5859d39d3ff22c7613.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 172/228] cpufreq: s3c2416: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:31:58 +0530
+Message-ID: <9e42a0a329defc8f0934c0b64f116d0da83a658d.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,165 +18,60 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Some existing routines are no more required and so are removed now.
-
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-sa1100/generic.c   | 20 --------------------
- arch/arm/mach-sa1100/generic.h   |  2 --
- drivers/cpufreq/sa1100-cpufreq.c | 24 ++++--------------------
- drivers/cpufreq/sa1110-cpufreq.c | 26 ++++----------------------
- 4 files changed, 8 insertions(+), 64 deletions(-)
+ drivers/cpufreq/s3c2416-cpufreq.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/mach-sa1100/generic.c b/arch/arm/mach-sa1100/generic.c
-index cb4b2ca..d4ea142 100644
---- a/arch/arm/mach-sa1100/generic.c
-+++ b/arch/arm/mach-sa1100/generic.c
-@@ -62,26 +62,6 @@ struct cpufreq_frequency_table sa11x0_freq_table[NR_FREQS+1] = {
- 	{ .frequency = CPUFREQ_TABLE_END, },
- };
- 
--/* rounds up(!)  */
--unsigned int sa11x0_freq_to_ppcr(unsigned int khz)
--{
--	int i;
--
--	for (i = 0; i < NR_FREQS; i++)
--		if (sa11x0_freq_table[i].frequency >= khz)
--			break;
--
--	return i;
--}
--
--unsigned int sa11x0_ppcr_to_freq(unsigned int idx)
--{
--	unsigned int freq = 0;
--	if (idx < NR_FREQS)
--		freq = sa11x0_freq_table[idx].frequency;
--	return freq;
--}
--
- unsigned int sa11x0_getspeed(unsigned int cpu)
- {
- 	if (cpu)
-diff --git a/arch/arm/mach-sa1100/generic.h b/arch/arm/mach-sa1100/generic.h
-index 39d56a67..84505d5 100644
---- a/arch/arm/mach-sa1100/generic.h
-+++ b/arch/arm/mach-sa1100/generic.h
-@@ -22,9 +22,7 @@ extern void sa1110_mb_disable(void);
- struct cpufreq_policy;
- 
- extern struct cpufreq_frequency_table sa11x0_freq_table[];
--extern unsigned int sa11x0_freq_to_ppcr(unsigned int khz);
- extern unsigned int sa11x0_getspeed(unsigned int cpu);
--extern unsigned int sa11x0_ppcr_to_freq(unsigned int idx);
- 
- struct flash_platform_data;
- struct resource;
-diff --git a/drivers/cpufreq/sa1100-cpufreq.c b/drivers/cpufreq/sa1100-cpufreq.c
-index b282cea..b0da1fe 100644
---- a/drivers/cpufreq/sa1100-cpufreq.c
-+++ b/drivers/cpufreq/sa1100-cpufreq.c
-@@ -177,36 +177,20 @@ static void sa1100_update_dram_timings(int current_speed, int new_speed)
- 	}
+diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
+index 26a35d1..4188acc 100644
+--- a/drivers/cpufreq/s3c2416-cpufreq.c
++++ b/drivers/cpufreq/s3c2416-cpufreq.c
+@@ -217,24 +217,15 @@ static int s3c2416_cpufreq_leave_dvs(struct s3c2416_data *s3c_freq, int idx)
  }
  
--static int sa1100_target(struct cpufreq_policy *policy,
--			 unsigned int target_freq,
--			 unsigned int relation)
-+static int sa1100_target(struct cpufreq_policy *policy, unsigned int ppcr)
+ static int s3c2416_cpufreq_set_target(struct cpufreq_policy *policy,
+-				      unsigned int target_freq,
+-				      unsigned int relation)
++				      unsigned int index)
  {
- 	unsigned int cur = sa11x0_getspeed(0);
--	unsigned int new_ppcr;
+ 	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
  	struct cpufreq_freqs freqs;
+ 	int idx, ret, to_dvs = 0;
+-	unsigned int i;
  
--	new_ppcr = sa11x0_freq_to_ppcr(target_freq);
--	switch (relation) {
--	case CPUFREQ_RELATION_L:
--		if (sa11x0_ppcr_to_freq(new_ppcr) > policy->max)
--			new_ppcr--;
--		break;
--	case CPUFREQ_RELATION_H:
--		if ((sa11x0_ppcr_to_freq(new_ppcr) > target_freq) &&
--		    (sa11x0_ppcr_to_freq(new_ppcr - 1) >= policy->min))
--			new_ppcr--;
--		break;
--	}
+ 	mutex_lock(&cpufreq_lock);
+ 
+-	pr_debug("cpufreq: to %dKHz, relation %d\n", target_freq, relation);
 -
- 	freqs.old = cur;
--	freqs.new = sa11x0_ppcr_to_freq(new_ppcr);
-+	freqs.new = sa11x0_freq_table[ppcr].frequency;
- 
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 
- 	if (freqs.new > cur)
- 		sa1100_update_dram_timings(cur, freqs.new);
- 
--	PPCR = new_ppcr;
-+	PPCR = ppcr;
- 
- 	if (freqs.new < cur)
- 		sa1100_update_dram_timings(cur, freqs.new);
-@@ -224,7 +208,7 @@ static int __init sa1100_cpu_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver sa1100_driver __refdata = {
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= sa1100_target,
-+	.target_index	= sa1100_target,
- 	.get		= sa11x0_getspeed,
- 	.init		= sa1100_cpu_init,
- 	.name		= "sa1100",
-diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
-index bca04c0..55b1818c 100644
---- a/drivers/cpufreq/sa1110-cpufreq.c
-+++ b/drivers/cpufreq/sa1110-cpufreq.c
-@@ -229,34 +229,16 @@ sdram_update_refresh(u_int cpu_khz, struct sdram_params *sdram)
- /*
-  * Ok, set the CPU frequency.
-  */
--static int sa1110_target(struct cpufreq_policy *policy,
--			 unsigned int target_freq,
--			 unsigned int relation)
-+static int sa1110_target(struct cpufreq_policy *policy, unsigned int ppcr)
- {
- 	struct sdram_params *sdram = &sdram_params;
- 	struct cpufreq_freqs freqs;
- 	struct sdram_info sd;
- 	unsigned long flags;
--	unsigned int ppcr, unused;
+-	ret = cpufreq_frequency_table_target(policy, s3c_freq->freq_table,
+-					     target_freq, relation, &i);
+-	if (ret != 0)
+-		goto out;
 -
--	switch (relation) {
--	case CPUFREQ_RELATION_L:
--		ppcr = sa11x0_freq_to_ppcr(target_freq);
--		if (sa11x0_ppcr_to_freq(ppcr) > policy->max)
--			ppcr--;
--		break;
--	case CPUFREQ_RELATION_H:
--		ppcr = sa11x0_freq_to_ppcr(target_freq);
--		if (ppcr && (sa11x0_ppcr_to_freq(ppcr) > target_freq) &&
--		    (sa11x0_ppcr_to_freq(ppcr-1) >= policy->min))
--			ppcr--;
--		break;
--	default:
--		return -EINVAL;
--	}
-+	unsigned int unused;
+-	idx = s3c_freq->freq_table[i].driver_data;
++	idx = s3c_freq->freq_table[index].driver_data;
  
- 	freqs.old = sa11x0_getspeed(0);
--	freqs.new = sa11x0_ppcr_to_freq(ppcr);
-+	freqs.new = sa11x0_freq_table[ppcr].frequency;
+ 	if (idx == SOURCE_HCLK)
+ 		to_dvs = 1;
+@@ -256,7 +247,7 @@ static int s3c2416_cpufreq_set_target(struct cpufreq_policy *policy,
+ 	 */
+ 	freqs.new = (s3c_freq->is_dvs && !to_dvs)
+ 				? clk_get_rate(s3c_freq->hclk) / 1000
+-				: s3c_freq->freq_table[i].frequency;
++				: s3c_freq->freq_table[index].frequency;
  
- 	sdram_calculate_timing(&sd, freqs.new, sdram);
+ 	pr_debug("cpufreq: Transition %d-%dkHz\n", freqs.old, freqs.new);
  
-@@ -340,7 +322,7 @@ static int __init sa1110_cpu_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver sa1110_driver __refdata = {
- 	.flags		= CPUFREQ_STICKY,
+@@ -505,7 +496,7 @@ err_hclk:
+ static struct cpufreq_driver s3c2416_cpufreq_driver = {
+ 	.flags          = 0,
  	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= sa1110_target,
-+	.target_index	= sa1110_target,
- 	.get		= sa11x0_getspeed,
- 	.init		= sa1110_cpu_init,
- 	.name		= "sa1110",
+-	.target		= s3c2416_cpufreq_set_target,
++	.target_index	= s3c2416_cpufreq_set_target,
+ 	.get		= s3c2416_cpufreq_get_speed,
+ 	.init		= s3c2416_cpufreq_driver_init,
+ 	.name		= "s3c2416",
 -- 
 1.7.12.rc2.18.g61b472e
