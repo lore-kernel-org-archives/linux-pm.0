@@ -1,39 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 206/228] cpufreq: sa11x0: remove calls to cpufreq_notify_transition()
-Date: Fri, 13 Sep 2013 21:52:31 +0530
-Message-ID: <CAKohpomBdAgciTYnQPn6fKC7iHvuBxFLiK8kCz62q7jRHhXK1A@mail.gmail.com>
+Subject: Re: [PATCH 195/228] cpufreq: kirkwood: remove calls to cpufreq_notify_transition()
+Date: Fri, 13 Sep 2013 21:53:58 +0530
+Message-ID: <CAKohpo=7FbGkq=vQLjoha3yxvKZomsgLdvf+SMYnPt4jsSk67Q@mail.gmail.com>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-	<6e2ca86ce948c0bc35f7709baf22672771fcf1e8.1379063063.git.viresh.kumar@linaro.org>
-	<20130913155424.GB12758@n2100.arm.linux.org.uk>
-	<CAKohpomAj0wDnjdi7XXw=bGsu0LMRrr1SMwdzBsa0GTxGrABoQ@mail.gmail.com>
-	<20130913161527.GE12758@n2100.arm.linux.org.uk>
+	<0a512914fd48b2d6db685446f88b9a096eff79a1.1379063063.git.viresh.kumar@linaro.org>
+	<20130913161820.GM19363@lunn.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130913161527.GE12758@n2100.arm.linux.org.uk>
-Sender: cpufreq-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f50.google.com ([209.85.219.50]:34944 "EHLO
+	mail-oa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966Ab3IMQX7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 12:23:59 -0400
+Received: by mail-oa0-f50.google.com with SMTP id i4so1385442oah.9
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 09:23:58 -0700 (PDT)
+In-Reply-To: <20130913161820.GM19363@lunn.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 13 September 2013 21:45, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> The patch to which I'm replying removes the above calls.  These calls are
-> necessary to shutdown various bits of CPU-clock dependent hardware
-> before changing the CPU clock, and restore them - reconfiguring them
-> for the new clock rate after the transition has happened.
+On 13 September 2013 21:48, Andrew Lunn <andrew@lunn.ch> wrote:
+> On Fri, Sep 13, 2013 at 06:32:21PM +0530, Viresh Kumar wrote:
 >
-> So, if you're removing these calls, what replaces them?  I don't see
-> anything which does without the above set.
+>> -     if (freqs.old != freqs.new) {
+>> -             local_irq_disable();
+>> -
+>> -             /* Disable interrupts to the CPU */
+>> -             reg = readl_relaxed(priv.base);
+>> -             reg |= CPU_SW_INT_BLK;
+>> -             writel_relaxed(reg, priv.base);
+>> -
+>> -             switch (state) {
+>> -             case STATE_CPU_FREQ:
+>> -                     clk_disable(priv.powersave_clk);
+>> -                     break;
+>> -             case STATE_DDR_FREQ:
+>> -                     clk_enable(priv.powersave_clk);
+>> -                     break;
+>> -             }
+>
+> Hi Viresh
+>
+> I see you removed the test that the old and the new frequency are
+> different. Is this guaranteed by the core? Because if not, you can
+> lockup the CPU. The call to cpu_do_idle() will never return.
 
-The other patch on which you commented about unnecessary read
-locks being taken:
-
-[PATCH 181/228] cpufreq: move freq change notifications to cpufreq
-
-That calls these notifiers, for all platforms except the ones that have
-set CPUFREQ_ASYNC_NOTIFICATION, before and after calling
-->target_index()..
-
-And so functionally the code is supposed to be the same.. Unless I
-have done some stupid mistake..
+Yes, that's guaranteed by core: patch 181..
