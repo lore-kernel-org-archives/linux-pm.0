@@ -1,101 +1,31 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 138/228] cpufreq: omap: use cpufreq_generic_init() routine
-Date: Fri, 13 Sep 2013 18:31:24 +0530
-Message-ID: <e3b7b2442c78b1ca7b708f4e5ecd8512f0f2fcbe.1379063063.git.viresh.kumar@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 099/228] cpufreq: dbx500: don't initialize part of policy
+ that is set by core too
+Date: Fri, 13 Sep 2013 15:19:20 +0200
+Message-ID: <CACRpkda=vzV1k5sJbnZSJHpEuEGwaHN_qi_-QzU79QoyoHse2w@mail.gmail.com>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f48.google.com ([209.85.160.48]:51562 "EHLO
-	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932936Ab3IMNTV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:19:21 -0400
-Received: by mail-pb0-f48.google.com with SMTP id ma3so1221625pbc.35
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:19:20 -0700 (PDT)
-In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+	<43f3fedcc13b4cd8a016f2dbbc91936423420cb8.1379063063.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <43f3fedcc13b4cd8a016f2dbbc91936423420cb8.1379063063.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-Use generic cpufreq_generic_init() routine instead of replicating the same code
-here.
+On Fri, Sep 13, 2013 at 3:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-This also rearranges the code a bit to make it more sensible. Also removes some
-unnecessary checks.
+> Many common initializations of struct policy are moved to core now and hence
+> this driver doesn't need to do it. This patch removes such code.
+>
+> Most recent of those changes is to call ->get() in the core after calling
+> ->init().
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/omap-cpufreq.c | 41 +++++++++++------------------------------
- 1 file changed, 11 insertions(+), 30 deletions(-)
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index a8c3f90..58b2200 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -160,50 +160,31 @@ static inline void freq_table_free(void)
- 
- static int omap_cpu_init(struct cpufreq_policy *policy)
- {
--	int result = 0;
-+	int result;
- 
- 	mpu_clk = clk_get(NULL, "cpufreq_ck");
- 	if (IS_ERR(mpu_clk))
- 		return PTR_ERR(mpu_clk);
- 
--	if (policy->cpu >= NR_CPUS) {
--		result = -EINVAL;
--		goto fail_ck;
--	}
--
--	if (!freq_table)
-+	if (!freq_table) {
- 		result = opp_init_cpufreq_table(mpu_dev, &freq_table);
--
--	if (result) {
--		dev_err(mpu_dev, "%s: cpu%d: failed creating freq table[%d]\n",
-+		if (result) {
-+			dev_err(mpu_dev,
-+				"%s: cpu%d: failed creating freq table[%d]\n",
- 				__func__, policy->cpu, result);
--		goto fail_ck;
-+			goto fail;
-+		}
- 	}
- 
- 	atomic_inc_return(&freq_table_users);
- 
--	result = cpufreq_table_validate_and_show(policy, freq_table);
--	if (result)
--		goto fail_table;
--
--	/*
--	 * On OMAP SMP configuartion, both processors share the voltage
--	 * and clock. So both CPUs needs to be scaled together and hence
--	 * needs software co-ordination. Use cpufreq affected_cpus
--	 * interface to handle this scenario. Additional is_smp() check
--	 * is to keep SMP_ON_UP build working.
--	 */
--	if (is_smp())
--		cpumask_setall(policy->cpus);
--
- 	/* FIXME: what's the actual transition time? */
--	policy->cpuinfo.transition_latency = 300 * 1000;
--
--	return 0;
-+	result = cpufreq_generic_init(policy, freq_table, 300 * 1000);
-+	if (!result)
-+		return 0;
- 
--fail_table:
- 	freq_table_free();
--fail_ck:
-+fail:
- 	clk_put(mpu_clk);
- 	return result;
- }
--- 
-1.7.12.rc2.18.g61b472e
-
+Yours,
+Linus Walleij
