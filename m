@@ -1,31 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
-Date: Fri, 13 Sep 2013 09:53:09 +0530
-Message-ID: <CAKohpo=kBvx3-fkmOUzk3PsbGZxicAWD9iJyUBkXYG-1wM_WNA@mail.gmail.com>
-References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org>
-	<793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Fri, 13 Sep 2013 09:56:18 +0530
+Message-ID: <CAKohpokEc1vZacN2X+8_cY8DF1wehSE6yaZ5-SQbqtt5qUUW_A@mail.gmail.com>
+References: <522E1FEF.6080803@wwwdotorg.org>
+	<1775778.MeiRhuYy7o@vostro.rjw.lan>
+	<522F86AD.6010603@wwwdotorg.org>
+	<2521560.SfeNbV74nj@vostro.rjw.lan>
+	<52304439.3030301@linux.vnet.ibm.com>
+	<CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com>
+	<CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com>
+	<5230509D.6040205@linux.vnet.ibm.com>
+	<CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
+	<CAKohpo=8mqRmmk17D52yiR9w1V4Z+2UzZ2kzABtrxHbYR+sQzw@mail.gmail.com>
+	<52315E9A.3000607@linux.vnet.ibm.com>
+	<5231E3E2.1050101@wwwdotorg.org>
+	<5231F939.2010502@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+In-Reply-To: <5231F939.2010502@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2013 15:40, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Some part of this patch was pushed in mainline earlier but was then removed due
-> to loopholes in the patch. Those are now fixed and this patch is tested by the
-> people who reported these problems.
->
-> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-> shouldn't be called twice contiguously. Also, calls to cpufreq_driver_target()
-> or cpufreq_driver->target() must also be serialized. Following examples show why
-> this is important:
+On 12 September 2013 22:56, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> On 09/12/2013 09:25 PM, Stephen Warren wrote:
+> Anyway, nevermind, as of now, subsystems do work around this suitably, so
+> there is no known bug as such at the present. Just that we could have probably
+> done it a better way, that's all.
 
-Adding:
+Yeah, there is no bug as of now due to the number of hacks adopted by different
+framework.. I believe we can still have a cleanup series to take care
+of this stuff..
+That would be some improvement and would be better for future.. Otherwise
+this kind of problems would keep coming again and again..
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
+> You're absolutely right! Regular CPU hotplug is more demanding than
+> suspend/resume in the context we are discussing, since any CPU can be
+> hotplugged at any time and put back in any order. So code like cpufreq should
+> be prepared to work with any ordering.
 
-Picked from the other thread..
+And that part is well implemented and tested as far as I know..
