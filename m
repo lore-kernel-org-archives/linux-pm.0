@@ -1,82 +1,100 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 003/228] cpufreq: remove __cpufreq_remove_dev()
-Date: Fri, 13 Sep 2013 18:29:09 +0530
-Message-ID: <9efdaeff9bbdd0f9df3b0edd7b274535708de3dd.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 005/228] cpufreq: rename __cpufreq_set_policy() as cpufreq_set_policy()
+Date: Fri, 13 Sep 2013 18:29:11 +0530
+Message-ID: <42ae34cf2b26098569d74980321fe3680fe81c48.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:59507 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756484Ab3IMNDW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:03:22 -0400
-Received: by mail-pd0-f182.google.com with SMTP id r10so1218903pdi.41
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:03:21 -0700 (PDT)
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Nobody except cpufreq_remove_dev() is calling __cpufreq_remove_dev() and so we
-don't need separate routines here. Lets merge code from __cpufreq_remove_dev()
-to cpufreq_remove_dev() and get rid of __cpufreq_remove_dev().
+Earlier there used to be two functions named __cpufreq_set_policy() and
+cpufreq_set_policy(), but now we only have a single routine lets name it
+cpufreq_set_policy() instead of __cpufreq_set_policy().
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+This also removes some invalid comments or fixes some incorrect comments.
+
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 26 ++++++++------------------
- 1 file changed, 8 insertions(+), 18 deletions(-)
+ drivers/cpufreq/cpufreq.c | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 6a8cae9..e217d8f 100644
+index e217d8f..d5fb343 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1343,36 +1343,26 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
- }
+@@ -457,7 +457,7 @@ show_one(scaling_min_freq, min);
+ show_one(scaling_max_freq, max);
+ show_one(scaling_cur_freq, cur);
+ 
+-static int __cpufreq_set_policy(struct cpufreq_policy *policy,
++static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 				struct cpufreq_policy *new_policy);
  
  /**
-- * __cpufreq_remove_dev - remove a CPU device
-+ * cpufreq_remove_dev - remove a CPU device
-  *
-  * Removes the cpufreq interface for a CPU device.
-  * Caller should already have policy_rwsem in write mode for this CPU.
-  * This routine frees the rwsem before returning.
+@@ -478,7 +478,7 @@ static ssize_t store_##file_name					\
+ 	if (ret != 1)							\
+ 		return -EINVAL;						\
+ 									\
+-	ret = __cpufreq_set_policy(policy, &new_policy);		\
++	ret = cpufreq_set_policy(policy, &new_policy);		\
+ 	policy->user_policy.object = policy->object;			\
+ 									\
+ 	return ret ? ret : count;					\
+@@ -536,11 +536,7 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
+ 						&new_policy.governor))
+ 		return -EINVAL;
+ 
+-	/*
+-	 * Do not use cpufreq_set_policy here or the user_policy.max
+-	 * will be wrongly overridden
+-	 */
+-	ret = __cpufreq_set_policy(policy, &new_policy);
++	ret = cpufreq_set_policy(policy, &new_policy);
+ 
+ 	policy->user_policy.policy = policy->policy;
+ 	policy->user_policy.governor = policy->governor;
+@@ -887,11 +883,11 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ 	int ret = 0;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
+-	/* assure that the starting sequence is run in __cpufreq_set_policy */
++	/* assure that the starting sequence is run in cpufreq_set_policy */
+ 	policy->governor = NULL;
+ 
+ 	/* set default policy */
+-	ret = __cpufreq_set_policy(policy, &new_policy);
++	ret = cpufreq_set_policy(policy, &new_policy);
+ 	policy->user_policy.policy = policy->policy;
+ 	policy->user_policy.governor = policy->governor;
+ 
+@@ -1932,10 +1928,10 @@ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
+ EXPORT_SYMBOL(cpufreq_get_policy);
+ 
+ /*
+- * data   : current policy.
+- * policy : policy to be set.
++ * policy : current policy.
++ * new_policy: policy to be set.
   */
--static inline int __cpufreq_remove_dev(struct device *dev,
--				       struct subsys_interface *sif,
--				       bool frozen)
--{
--	int ret;
--
--	ret = __cpufreq_remove_dev_prepare(dev, sif, frozen);
--
--	if (!ret)
--		ret = __cpufreq_remove_dev_finish(dev, sif, frozen);
--
--	return ret;
--}
--
- static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+-static int __cpufreq_set_policy(struct cpufreq_policy *policy,
++static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 				struct cpufreq_policy *new_policy)
  {
- 	unsigned int cpu = dev->id;
--	int retval;
-+	int ret;
+ 	int ret = 0, failed = 1;
+@@ -2084,7 +2080,7 @@ int cpufreq_update_policy(unsigned int cpu)
+ 		}
+ 	}
  
- 	if (cpu_is_offline(cpu))
- 		return 0;
+-	ret = __cpufreq_set_policy(policy, &new_policy);
++	ret = cpufreq_set_policy(policy, &new_policy);
  
--	retval = __cpufreq_remove_dev(dev, sif, false);
--	return retval;
-+	ret = __cpufreq_remove_dev_prepare(dev, sif, false);
-+
-+	if (!ret)
-+		ret = __cpufreq_remove_dev_finish(dev, sif, false);
-+
-+	return ret;
- }
+ 	unlock_policy_rwsem_write(cpu);
  
- static void handle_update(struct work_struct *work)
 -- 
 1.7.12.rc2.18.g61b472e
 
