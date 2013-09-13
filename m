@@ -1,54 +1,57 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 023/228] cpufreq: ia64-acpi: use cpufreq_table_validate_and_show()
-Date: Fri, 13 Sep 2013 18:29:29 +0530
-Message-ID: <2b8c89862530b7be0ece1e9aa2cce7b5f0a8ed0f.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 025/228] cpufreq: kirkwood: use cpufreq_table_validate_and_show()
+Date: Fri, 13 Sep 2013 18:29:31 +0530
+Message-ID: <cb6a141e05f3d1ca1b47823591008908d90956ac.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:56378 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757491Ab3IMNFq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:05:46 -0400
-Received: by mail-pd0-f171.google.com with SMTP id g10so1224337pdj.2
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:05:45 -0700 (PDT)
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:56002 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757478Ab3IMNGC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:06:02 -0400
+Received: by mail-pa0-f48.google.com with SMTP id kp13so2492932pab.7
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:06:02 -0700 (PDT)
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Luck <tony.luck@intel.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: Tony Luck <tony.luck@intel.com>
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/ia64-acpi-cpufreq.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/cpufreq/kirkwood-cpufreq.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-index 3e14f03..6cfad51 100644
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -335,7 +335,7 @@ acpi_cpufreq_cpu_init (
- 		}
- 	}
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, data->freq_table);
-+	result = cpufreq_table_validate_and_show(policy, data->freq_table);
- 	if (result) {
- 		goto err_freqfree;
- 	}
-@@ -356,8 +356,6 @@ acpi_cpufreq_cpu_init (
- 			(u32) data->acpi_data.states[i].status,
- 			(u32) data->acpi_data.states[i].control);
- 
--	cpufreq_frequency_table_get_attr(data->freq_table, policy->cpu);
+diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+index ba10658..59cbb35 100644
+--- a/drivers/cpufreq/kirkwood-cpufreq.c
++++ b/drivers/cpufreq/kirkwood-cpufreq.c
+@@ -125,19 +125,11 @@ static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
+ /* Module init and exit code */
+ static int kirkwood_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int result;
 -
- 	/* the first call to ->target() should result in us actually
- 	 * writing something to the appropriate registers. */
- 	data->resume = 1;
+ 	/* cpuinfo and default policy values */
+ 	policy->cpuinfo.transition_latency = 5000; /* 5uS */
+ 	policy->cur = kirkwood_cpufreq_get_cpu_frequency(0);
+ 
+-	result = cpufreq_frequency_table_cpuinfo(policy, kirkwood_freq_table);
+-	if (result)
+-		return result;
+-
+-	cpufreq_frequency_table_get_attr(kirkwood_freq_table, policy->cpu);
+-
+-	return 0;
++	return cpufreq_table_validate_and_show(policy, kirkwood_freq_table);
+ }
+ 
+ static int kirkwood_cpufreq_cpu_exit(struct cpufreq_policy *policy)
 -- 
 1.7.12.rc2.18.g61b472e
 
