@@ -1,77 +1,52 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 172/228] cpufreq: s3c2416: Convert to light weight ->target_index() routine
-Date: Fri, 13 Sep 2013 18:31:58 +0530
-Message-ID: <9e42a0a329defc8f0934c0b64f116d0da83a658d.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 094/228] cpufreq: blackfin: don't initialize part of policy
+ that is set by core too
+Date: Fri, 13 Sep 2013 18:30:40 +0530
+Message-ID: <26f6beb862d15b9c763f0a71737a8d3bb255ffab.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: linaro-kernel@lists.linaro.org, Steven Miao <realmz6@gmail.com>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch converts existing .target() to newly defined light weight
-.target_index() routine for this driver.
+Many common initializations of struct policy are moved to core now and hence
+this driver doesn't need to do it. This patch removes such code.
 
-CPUFreq core will call cpufreq_frequency_table_target() before calling this
-routine and will pass index to it.
+Most recent of those changes is to call ->get() in the core after calling
+->init().
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/s3c2416-cpufreq.c | 17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
+ drivers/cpufreq/blackfin-cpufreq.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
-index 26a35d1..4188acc 100644
---- a/drivers/cpufreq/s3c2416-cpufreq.c
-+++ b/drivers/cpufreq/s3c2416-cpufreq.c
-@@ -217,24 +217,15 @@ static int s3c2416_cpufreq_leave_dvs(struct s3c2416_data *s3c_freq, int idx)
+diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+index 48888cf..0bc9e8c 100644
+--- a/drivers/cpufreq/blackfin-cpufreq.c
++++ b/drivers/cpufreq/blackfin-cpufreq.c
+@@ -204,7 +204,6 @@ static int __bfin_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	policy->cpuinfo.transition_latency = 50000; /* 50us assumed */
+ 
+-	policy->cur = cclk;
+ 	return cpufreq_table_validate_and_show(policy, bfin_freq_table);
  }
  
- static int s3c2416_cpufreq_set_target(struct cpufreq_policy *policy,
--				      unsigned int target_freq,
--				      unsigned int relation)
-+				      unsigned int index)
- {
- 	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
- 	struct cpufreq_freqs freqs;
- 	int idx, ret, to_dvs = 0;
--	unsigned int i;
- 
- 	mutex_lock(&cpufreq_lock);
- 
--	pr_debug("cpufreq: to %dKHz, relation %d\n", target_freq, relation);
--
--	ret = cpufreq_frequency_table_target(policy, s3c_freq->freq_table,
--					     target_freq, relation, &i);
--	if (ret != 0)
--		goto out;
--
--	idx = s3c_freq->freq_table[i].driver_data;
-+	idx = s3c_freq->freq_table[index].driver_data;
- 
- 	if (idx == SOURCE_HCLK)
- 		to_dvs = 1;
-@@ -256,7 +247,7 @@ static int s3c2416_cpufreq_set_target(struct cpufreq_policy *policy,
- 	 */
- 	freqs.new = (s3c_freq->is_dvs && !to_dvs)
- 				? clk_get_rate(s3c_freq->hclk) / 1000
--				: s3c_freq->freq_table[i].frequency;
-+				: s3c_freq->freq_table[index].frequency;
- 
- 	pr_debug("cpufreq: Transition %d-%dkHz\n", freqs.old, freqs.new);
- 
-@@ -505,7 +496,7 @@ err_hclk:
- static struct cpufreq_driver s3c2416_cpufreq_driver = {
- 	.flags          = 0,
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= s3c2416_cpufreq_set_target,
-+	.target_index	= s3c2416_cpufreq_set_target,
- 	.get		= s3c2416_cpufreq_get_speed,
- 	.init		= s3c2416_cpufreq_driver_init,
- 	.name		= "s3c2416",
 -- 
 1.7.12.rc2.18.g61b472e
