@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 086/228] cpufreq: sparc: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:32 +0530
-Message-ID: <5cf8e2c2fb92577ef065fa85abeef68fa52a9b59.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 088/228] cpufreq: speedstep: Use generic cpufreq routines
+Date: Fri, 13 Sep 2013 18:30:34 +0530
+Message-ID: <84333c10ef1032e5354e9d31b004fcab7daed95c.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
@@ -19,64 +19,174 @@ by cpufreq drivers then.
 This patch uses these generic routines for this driver.
 
 Cc: David S. Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sparc-us2e-cpufreq.c | 8 +-------
- drivers/cpufreq/sparc-us3-cpufreq.c  | 8 +-------
- 2 files changed, 2 insertions(+), 14 deletions(-)
+ drivers/cpufreq/speedstep-centrino.c | 22 ++--------------------
+ drivers/cpufreq/speedstep-ich.c      | 30 +++---------------------------
+ drivers/cpufreq/speedstep-smi.c      | 30 +++---------------------------
+ 3 files changed, 8 insertions(+), 74 deletions(-)
 
-diff --git a/drivers/cpufreq/sparc-us2e-cpufreq.c b/drivers/cpufreq/sparc-us2e-cpufreq.c
-index 8db0c18..291688c 100644
---- a/drivers/cpufreq/sparc-us2e-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
-@@ -295,12 +295,6 @@ static int us2e_freq_target(struct cpufreq_policy *policy,
- 	return 0;
+diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
+index f180561..c7c14ae 100644
+--- a/drivers/cpufreq/speedstep-centrino.c
++++ b/drivers/cpufreq/speedstep-centrino.c
+@@ -420,19 +420,6 @@ static int centrino_cpu_exit(struct cpufreq_policy *policy)
  }
  
--static int us2e_freq_verify(struct cpufreq_policy *policy)
+ /**
+- * centrino_verify - verifies a new CPUFreq policy
+- * @policy: new policy
+- *
+- * Limit must be within this model's frequency range at least one
+- * border included.
+- */
+-static int centrino_verify (struct cpufreq_policy *policy)
 -{
 -	return cpufreq_frequency_table_verify(policy,
--					      &us2e_freq_table[policy->cpu].table[0]);
+-			per_cpu(centrino_model, policy->cpu)->op_points);
 -}
 -
- static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned int cpu = policy->cpu;
-@@ -363,7 +357,7 @@ static int __init us2e_freq_init(void)
- 			goto err_out;
- 
- 		driver->init = us2e_freq_cpu_init;
--		driver->verify = us2e_freq_verify;
-+		driver->verify = cpufreq_generic_frequency_table_verify;
- 		driver->target = us2e_freq_target;
- 		driver->get = us2e_freq_get;
- 		driver->exit = us2e_freq_cpu_exit;
-diff --git a/drivers/cpufreq/sparc-us3-cpufreq.c b/drivers/cpufreq/sparc-us3-cpufreq.c
-index 120a2df..9b3dbd3 100644
---- a/drivers/cpufreq/sparc-us3-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us3-cpufreq.c
-@@ -156,12 +156,6 @@ static int us3_freq_target(struct cpufreq_policy *policy,
- 	return 0;
+-/**
+  * centrino_setpolicy - set a new CPUFreq policy
+  * @policy: new policy
+  * @target_freq: the target frequency
+@@ -553,20 +540,15 @@ out:
+ 	return retval;
  }
  
--static int us3_freq_verify(struct cpufreq_policy *policy)
+-static struct freq_attr* centrino_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
+-};
+-
+ static struct cpufreq_driver centrino_driver = {
+ 	.name		= "centrino", /* should be speedstep-centrino,
+ 					 but there's a 16 char limit */
+ 	.init		= centrino_cpu_init,
+ 	.exit		= centrino_cpu_exit,
+-	.verify		= centrino_verify,
++	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target		= centrino_target,
+ 	.get		= get_cur_freq,
+-	.attr           = centrino_attr,
++	.attr		= cpufreq_generic_attr,
+ };
+ 
+ /*
+diff --git a/drivers/cpufreq/speedstep-ich.c b/drivers/cpufreq/speedstep-ich.c
+index 86a184e..929a4f0 100644
+--- a/drivers/cpufreq/speedstep-ich.c
++++ b/drivers/cpufreq/speedstep-ich.c
+@@ -289,18 +289,6 @@ static int speedstep_target(struct cpufreq_policy *policy,
+ }
+ 
+ 
+-/**
+- * speedstep_verify - verifies a new CPUFreq policy
+- * @policy: new policy
+- *
+- * Limit must be within speedstep_low_freq and speedstep_high_freq, with
+- * at least one border included.
+- */
+-static int speedstep_verify(struct cpufreq_policy *policy)
 -{
--	return cpufreq_frequency_table_verify(policy,
--					      &us3_freq_table[policy->cpu].table[0]);
+-	return cpufreq_frequency_table_verify(policy, &speedstep_freqs[0]);
 -}
 -
- static int __init us3_freq_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned int cpu = policy->cpu;
-@@ -224,7 +218,7 @@ static int __init us3_freq_init(void)
- 			goto err_out;
+ struct get_freqs {
+ 	struct cpufreq_policy *policy;
+ 	int ret;
+@@ -352,26 +340,14 @@ static int speedstep_cpu_init(struct cpufreq_policy *policy)
+ }
  
- 		driver->init = us3_freq_cpu_init;
--		driver->verify = us3_freq_verify;
-+		driver->verify = cpufreq_generic_frequency_table_verify;
- 		driver->target = us3_freq_target;
- 		driver->get = us3_freq_get;
- 		driver->exit = us3_freq_cpu_exit;
+ 
+-static int speedstep_cpu_exit(struct cpufreq_policy *policy)
+-{
+-	cpufreq_frequency_table_put_attr(policy->cpu);
+-	return 0;
+-}
+-
+-static struct freq_attr *speedstep_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
+-};
+-
+-
+ static struct cpufreq_driver speedstep_driver = {
+ 	.name	= "speedstep-ich",
+-	.verify	= speedstep_verify,
++	.verify	= cpufreq_generic_frequency_table_verify,
+ 	.target	= speedstep_target,
+ 	.init	= speedstep_cpu_init,
+-	.exit	= speedstep_cpu_exit,
++	.exit	= cpufreq_generic_exit,
+ 	.get	= speedstep_get,
+-	.attr	= speedstep_attr,
++	.attr	= cpufreq_generic_attr,
+ };
+ 
+ static const struct x86_cpu_id ss_smi_ids[] = {
+diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+index f4d0318..b3dfba0 100644
+--- a/drivers/cpufreq/speedstep-smi.c
++++ b/drivers/cpufreq/speedstep-smi.c
+@@ -264,19 +264,6 @@ static int speedstep_target(struct cpufreq_policy *policy,
+ }
+ 
+ 
+-/**
+- * speedstep_verify - verifies a new CPUFreq policy
+- * @policy: new policy
+- *
+- * Limit must be within speedstep_low_freq and speedstep_high_freq, with
+- * at least one border included.
+- */
+-static int speedstep_verify(struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy, &speedstep_freqs[0]);
+-}
+-
+-
+ static int speedstep_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	int result;
+@@ -332,12 +319,6 @@ static int speedstep_cpu_init(struct cpufreq_policy *policy)
+ 	return cpufreq_table_validate_and_show(policy, speedstep_freqs);
+ }
+ 
+-static int speedstep_cpu_exit(struct cpufreq_policy *policy)
+-{
+-	cpufreq_frequency_table_put_attr(policy->cpu);
+-	return 0;
+-}
+-
+ static unsigned int speedstep_get(unsigned int cpu)
+ {
+ 	if (cpu)
+@@ -356,20 +337,15 @@ static int speedstep_resume(struct cpufreq_policy *policy)
+ 	return result;
+ }
+ 
+-static struct freq_attr *speedstep_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
+-};
+-
+ static struct cpufreq_driver speedstep_driver = {
+ 	.name		= "speedstep-smi",
+-	.verify		= speedstep_verify,
++	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target		= speedstep_target,
+ 	.init		= speedstep_cpu_init,
+-	.exit		= speedstep_cpu_exit,
++	.exit		= cpufreq_generic_exit,
+ 	.get		= speedstep_get,
+ 	.resume		= speedstep_resume,
+-	.attr		= speedstep_attr,
++	.attr		= cpufreq_generic_attr,
+ };
+ 
+ static const struct x86_cpu_id ss_smi_ids[] = {
 -- 
 1.7.12.rc2.18.g61b472e
+
