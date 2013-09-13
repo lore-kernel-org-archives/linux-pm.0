@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 170/228] cpufreq: ppc: Convert to light weight ->target_index() routine
-Date: Fri, 13 Sep 2013 18:31:56 +0530
-Message-ID: <e63f94c1261cdb530341ab05d71b801c8829f976.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 173/228] cpufreq: s3c64xx: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:31:59 +0530
+Message-ID: <a21a38542cffe2fc5ede11cdc2d7bcbb5746dd1b.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,88 +18,55 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/ppc-corenet-cpufreq.c | 15 ++++-----------
- drivers/cpufreq/ppc_cbe_cpufreq.c     | 12 ++----------
- 2 files changed, 6 insertions(+), 21 deletions(-)
+ drivers/cpufreq/s3c64xx-cpufreq.c | 18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-index a0f562c..79d8e9c 100644
---- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -251,27 +251,20 @@ static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index 16dc315..34ae66b 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -63,26 +63,16 @@ static unsigned int s3c64xx_cpufreq_get_speed(unsigned int cpu)
  }
  
- static int corenet_cpufreq_target(struct cpufreq_policy *policy,
--		unsigned int target_freq, unsigned int relation)
-+		unsigned int index)
+ static int s3c64xx_cpufreq_set_target(struct cpufreq_policy *policy,
+-				      unsigned int target_freq,
+-				      unsigned int relation)
++				      unsigned int index)
  {
- 	struct cpufreq_freqs freqs;
--	unsigned int new;
- 	struct clk *parent;
  	int ret;
- 	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
- 
--	cpufreq_frequency_table_target(policy, data->table,
--			target_freq, relation, &new);
--
--	if (policy->cur == data->table[new].frequency)
--		return 0;
--
- 	freqs.old = policy->cur;
--	freqs.new = data->table[new].frequency;
-+	freqs.new = data->table[index].frequency;
- 
- 	mutex_lock(&cpufreq_lock);
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 
--	parent = of_clk_get(data->parent, data->table[new].driver_data);
-+	parent = of_clk_get(data->parent, data->table[index].driver_data);
- 	ret = clk_set_parent(data->clk, parent);
- 	if (ret)
- 		freqs.new = freqs.old;
-@@ -288,7 +281,7 @@ static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
- 	.init		= corenet_cpufreq_cpu_init,
- 	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= corenet_cpufreq_target,
-+	.target_index	= corenet_cpufreq_target,
- 	.get		= corenet_cpufreq_get_speed,
- 	.attr		= cpufreq_generic_attr,
- };
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 38540d1..52f707d 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -129,18 +129,10 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- }
- 
- static int cbe_cpufreq_target(struct cpufreq_policy *policy,
--			      unsigned int target_freq,
--			      unsigned int relation)
-+			      unsigned int cbe_pmode_new)
- {
- 	int rc;
+-	unsigned int i;
  	struct cpufreq_freqs freqs;
--	unsigned int cbe_pmode_new;
+ 	struct s3c64xx_dvfs *dvfs;
+ 
+-	ret = cpufreq_frequency_table_target(policy, s3c64xx_freq_table,
+-					     target_freq, relation, &i);
+-	if (ret != 0)
+-		return ret;
 -
--	cpufreq_frequency_table_target(policy,
--				       cbe_freqs,
--				       target_freq,
--				       relation,
--				       &cbe_pmode_new);
+ 	freqs.old = clk_get_rate(armclk) / 1000;
+-	freqs.new = s3c64xx_freq_table[i].frequency;
++	freqs.new = s3c64xx_freq_table[index].frequency;
+ 	freqs.flags = 0;
+-	dvfs = &s3c64xx_dvfs_table[s3c64xx_freq_table[i].driver_data];
+-
+-	if (freqs.old == freqs.new)
+-		return 0;
++	dvfs = &s3c64xx_dvfs_table[s3c64xx_freq_table[index].driver_data];
  
- 	freqs.old = policy->cur;
- 	freqs.new = cbe_freqs[cbe_pmode_new].frequency;
-@@ -164,7 +156,7 @@ static int cbe_cpufreq_target(struct cpufreq_policy *policy,
+ 	pr_debug("Transition %d-%dkHz\n", freqs.old, freqs.new);
  
- static struct cpufreq_driver cbe_cpufreq_driver = {
+@@ -254,7 +244,7 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
+ static struct cpufreq_driver s3c64xx_cpufreq_driver = {
+ 	.flags          = 0,
  	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= cbe_cpufreq_target,
-+	.target_index	= cbe_cpufreq_target,
- 	.init		= cbe_cpufreq_cpu_init,
- 	.exit		= cpufreq_generic_exit,
- 	.name		= "cbe-cpufreq",
+-	.target		= s3c64xx_cpufreq_set_target,
++	.target_index	= s3c64xx_cpufreq_set_target,
+ 	.get		= s3c64xx_cpufreq_get_speed,
+ 	.init		= s3c64xx_cpufreq_driver_init,
+ 	.name		= "s3c",
 -- 
 1.7.12.rc2.18.g61b472e
+
