@@ -1,114 +1,60 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 212/228] cpufreq: tegra: remove target_cpu_speed[] array
-Date: Fri, 13 Sep 2013 18:32:38 +0530
-Message-ID: <f209c372494d79098a50e98635675ae6b6428403.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 214/228] cpufreq: arm_big_little: use cpufreq_generic_get() routine
+Date: Fri, 13 Sep 2013 18:32:40 +0530
+Message-ID: <8c58f016642470a2203997ca8619107da7872f06.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Tegra's cpufreq driver was maintaining requested target frequencies in an array:
-target_cpu_speed. And then finally setting the highest requested freq in the
-core. This was probably done because both cores share clock line and logically
-we want to set both cores to the max frequency requested..
+We have common infrastructure available with us for getting a CPUs clk rate.
+Lets use it for this driver.
 
-But this wasn't required to be done in individual CPUFreq drivers, its already
-taken care of by CPUFreq governors. They evaluate load for all CPUs and finally
-call target only for the frequency corresponding to max load.
-
-So, get rid of this stuff from Tegra's cpufreq driver.
-
-Acked-by: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 36 ++++++------------------------------
- 1 file changed, 6 insertions(+), 30 deletions(-)
+ drivers/cpufreq/arm_big_little.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index f42df7e..7d36b54 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -47,7 +47,6 @@ static struct clk *pll_x_clk;
- static struct clk *pll_p_clk;
- static struct clk *emc_clk;
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 69cae42..5b745f9 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -40,13 +40,6 @@ static struct clk *clk[MAX_CLUSTERS];
+ static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS];
+ static atomic_t cluster_usage[MAX_CLUSTERS] = {ATOMIC_INIT(0), ATOMIC_INIT(0)};
  
--static unsigned long target_cpu_speed[NUM_CPUS];
- static DEFINE_MUTEX(tegra_cpu_lock);
- static bool is_suspended;
- 
-@@ -103,9 +102,6 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- {
- 	int ret = 0;
- 
--	if (tegra_getspeed(0) == rate)
--		return ret;
--
- 	/*
- 	 * Vote on memory bus frequency based on cpu frequency
- 	 * This sets the minimum frequency, display or avp may request higher
-@@ -125,35 +121,16 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 	return ret;
- }
- 
--static unsigned long tegra_cpu_highest_speed(void)
+-static unsigned int bL_cpufreq_get(unsigned int cpu)
 -{
--	unsigned long rate = 0;
--	int i;
+-	u32 cur_cluster = cpu_to_cluster(cpu);
 -
--	for_each_online_cpu(i)
--		rate = max(rate, target_cpu_speed[i]);
--	return rate;
+-	return clk_get_rate(clk[cur_cluster]) / 1000;
 -}
 -
- static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	unsigned int freq;
--	int ret = 0;
-+	int ret = -EBUSY;
+ /* Set clock frequency */
+ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
+ 		unsigned int index)
+@@ -145,6 +138,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 	else
+ 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
  
- 	mutex_lock(&tegra_cpu_lock);
++	policy->clk = clk[cur_cluster];
+ 	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
  
--	if (is_suspended) {
--		ret = -EBUSY;
--		goto out;
--	}
--
--	freq = freq_table[index].frequency;
--
--	target_cpu_speed[policy->cpu] = freq;
-+	if (!is_suspended)
-+		ret = tegra_update_cpu_speed(policy,
-+				freq_table[index].frequency);
- 
--	ret = tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
--
--out:
- 	mutex_unlock(&tegra_cpu_lock);
- 	return ret;
- }
-@@ -167,7 +144,8 @@ static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
- 		is_suspended = true;
- 		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
- 			freq_table[0].frequency);
--		tegra_update_cpu_speed(policy, freq_table[0].frequency);
-+		if (tegra_getspeed(0) != freq_table[0].frequency)
-+			tegra_update_cpu_speed(policy, freq_table[0].frequency);
- 		cpufreq_cpu_put(policy);
- 	} else if (event == PM_POST_SUSPEND) {
- 		is_suspended = false;
-@@ -191,8 +169,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- 	clk_prepare_enable(emc_clk);
- 	clk_prepare_enable(cpu_clk);
- 
--	target_cpu_speed[policy->cpu] = tegra_getspeed(policy->cpu);
--
- 	/* FIXME: what's the actual transition time? */
- 	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
- 	if (ret) {
+ 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
+@@ -175,7 +169,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
+ 					CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+ 	.verify			= cpufreq_generic_frequency_table_verify,
+ 	.target_index		= bL_cpufreq_set_target,
+-	.get			= bL_cpufreq_get,
++	.get			= cpufreq_generic_get,
+ 	.init			= bL_cpufreq_init,
+ 	.exit			= bL_cpufreq_exit,
+ 	.attr			= cpufreq_generic_attr,
 -- 
 1.7.12.rc2.18.g61b472e
+
