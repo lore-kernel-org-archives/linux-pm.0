@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 145/228] cpufreq: spear: use cpufreq_generic_init() routine
-Date: Fri, 13 Sep 2013 18:31:31 +0530
-Message-ID: <be773b3d7b00a128c366a7b7201c2e255a6f2460.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 144/228] cpufreq: sa11x0: use cpufreq_generic_init() routine
+Date: Fri, 13 Sep 2013 18:31:30 +0530
+Message-ID: <254e7e912c3817fdf1499bb1ea7be7bc7f3cdbef.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -17,33 +17,43 @@ here.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/spear-cpufreq.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ drivers/cpufreq/sa1100-cpufreq.c | 6 +-----
+ drivers/cpufreq/sa1110-cpufreq.c | 6 +-----
+ 2 files changed, 2 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index aacdb61..2a03158 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -171,18 +171,8 @@ static int spear_cpufreq_target(struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/sa1100-cpufreq.c b/drivers/cpufreq/sa1100-cpufreq.c
+index a1d1bb7..b282cea 100644
+--- a/drivers/cpufreq/sa1100-cpufreq.c
++++ b/drivers/cpufreq/sa1100-cpufreq.c
+@@ -218,11 +218,7 @@ static int sa1100_target(struct cpufreq_policy *policy,
  
- static int spear_cpufreq_init(struct cpufreq_policy *policy)
+ static int __init sa1100_cpu_init(struct cpufreq_policy *policy)
  {
--	int ret;
+-	if (policy->cpu != 0)
+-		return -EINVAL;
+-	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
 -
--	ret = cpufreq_table_validate_and_show(policy, spear_cpufreq.freq_tbl);
--	if (ret) {
--		pr_err("cpufreq_table_validate_and_show() failed");
--		return ret;
--	}
--
--	policy->cpuinfo.transition_latency = spear_cpufreq.transition_latency;
--	cpumask_setall(policy->cpus);
--
--	return 0;
-+	return cpufreq_generic_init(policy, spear_cpufreq.freq_tbl,
-+			spear_cpufreq.transition_latency);
+-	return cpufreq_table_validate_and_show(policy, sa11x0_freq_table);
++	return cpufreq_generic_init(policy, sa11x0_freq_table, CPUFREQ_ETERNAL);
  }
  
- static struct cpufreq_driver spear_cpufreq_driver = {
+ static struct cpufreq_driver sa1100_driver __refdata = {
+diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
+index 9da940e..bca04c0 100644
+--- a/drivers/cpufreq/sa1110-cpufreq.c
++++ b/drivers/cpufreq/sa1110-cpufreq.c
+@@ -332,11 +332,7 @@ static int sa1110_target(struct cpufreq_policy *policy,
+ 
+ static int __init sa1110_cpu_init(struct cpufreq_policy *policy)
+ {
+-	if (policy->cpu != 0)
+-		return -EINVAL;
+-	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+-
+-	return cpufreq_table_validate_and_show(policy, sa11x0_freq_table);
++	return cpufreq_generic_init(policy, sa11x0_freq_table, CPUFREQ_ETERNAL);
+ }
+ 
+ /* sa1110_driver needs __refdata because it must remain after init registers
 -- 
 1.7.12.rc2.18.g61b472e
