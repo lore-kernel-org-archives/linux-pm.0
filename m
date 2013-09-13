@@ -1,37 +1,130 @@
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: Re: [PATCH 097/228] cpufreq: cris: don't initialize part of policy
- that is set by core too
-Date: Fri, 13 Sep 2013 17:27:58 +0200
-Message-ID: <20130913152758.GK32443@axis.com>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
- <ba2db8dd7d87b0a284be900bf908c09444e6d979.1379063063.git.viresh.kumar@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2 11/12] cpuidle: mvebu: Add initial CPU idle support
+ for Armada 370/XP SoC
+Date: Fri, 13 Sep 2013 17:36:50 +0200
+Message-ID: <52333112.2050003@linaro.org>
+References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+ <1379066801-16276-12-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anubis.se.axis.com ([195.60.68.12]:36040 "EHLO
-	anubis.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757421Ab3IMP2A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 11:28:00 -0400
-Content-Disposition: inline
-In-Reply-To: <ba2db8dd7d87b0a284be900bf908c09444e6d979.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1379066801-16276-12-git-send-email-gregory.clement@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Chris Van Hoof <van>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jesper Nilsson <jespern@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel <linux-cris-kernel@axis.com>
 
-On Fri, Sep 13, 2013 at 03:00:43PM +0200, Viresh Kumar wrote:
-> Many common initializations of struct policy are moved to core now and hence
-> this driver doesn't need to do it. This patch removes such code.
-> 
-> Most recent of those changes is to call ->get() in the core after calling
-> ->init().
-
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
-
-> Cc: Mikael Starvik <starvik@axis.com>
-> Cc: linux-cris-kernel@axis.com
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+T24gMDkvMTMvMjAxMyAxMjowNiBQTSwgR3JlZ29yeSBDTEVNRU5UIHdyb3RlOgo+IEFkZCB0aGUg
+d2ZpLCBjcHUgaWRsZSBhbmQgY3B1IGRlZXAgaWRsZSBwb3dlciBzdGF0ZXMgc3VwcG9ydCBmb3Ig
+dGhlCj4gQXJtYWRhIFhQIFNvQ3MuCj4gCj4gQWxsIHRoZSBsYXRlbmNpZXMgYW5kIHRoZSBwb3dl
+ciBjb25zdW1wdGlvbiB2YWx1ZXMgdXNlZCBhdCB0aGUKPiAiYXJtYWRhXzM3MF94cF9pZGxlX2Ry
+aXZlciIgc3RydWN0dXJlIGFyZSBwcmVsaW1pbmFyeSBhbmQgd2lsbCBiZQo+IG1vZGlmaWVkIGlu
+IHRoZSBmdXR1cmUgYWZ0ZXIgcnVubmluZyBzb21lIG1lYXN1cmVtZW50cyBhbmQgYW5hbHlzaXMu
+Cj4gCj4gQmFzZWQgb24gdGhlIHdvcmsgb2YgTmFkYXYgSGFrbGFpLgo+IAo+IFNpZ25lZC1vZmYt
+Ynk6IE5hZGF2IEhha2xhaSA8bmFkYXZoQG1hcnZlbGwuY29tPgo+IFNpZ25lZC1vZmYtYnk6IEdy
+ZWdvcnkgQ0xFTUVOVCA8Z3JlZ29yeS5jbGVtZW50QGZyZWUtZWxlY3Ryb25zLmNvbT4KPiAtLS0K
+PiAgZHJpdmVycy9jcHVpZGxlL0tjb25maWcuYXJtICAgICAgICAgICAgIHwgICA1ICsrCj4gIGRy
+aXZlcnMvY3B1aWRsZS9NYWtlZmlsZSAgICAgICAgICAgICAgICB8ICAgMSArCj4gIGRyaXZlcnMv
+Y3B1aWRsZS9jcHVpZGxlLWFybWFkYS0zNzAteHAuYyB8IDEwMyArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKwo+ICBkcml2ZXJzL2NwdWlkbGUvc3VzcGVuZC1hcm1hZGEtMzcwLXhwLlMg
+fCAgOTEgKysrKysrKysrKysrKysrKysrKysrKysrKysrKwoKU29tZWhvdywgeW91IHdpbGwgaGF2
+ZSB0byBtb3ZlICJzdXNwZW5kLWFybWFkYS0zNzAteHAuUyIgaW50byBhcmNoL2FybS4KCj4gIDQg
+ZmlsZXMgY2hhbmdlZCwgMjAwIGluc2VydGlvbnMoKykKPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGRy
+aXZlcnMvY3B1aWRsZS9jcHVpZGxlLWFybWFkYS0zNzAteHAuYwo+ICBjcmVhdGUgbW9kZSAxMDA2
+NDQgZHJpdmVycy9jcHVpZGxlL3N1c3BlbmQtYXJtYWRhLTM3MC14cC5TCj4gCj4gZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvY3B1aWRsZS9LY29uZmlnLmFybSBiL2RyaXZlcnMvY3B1aWRsZS9LY29uZmln
+LmFybQo+IGluZGV4IDhlMzY2MDMuLjA3MWQ5NjAgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVp
+ZGxlL0tjb25maWcuYXJtCj4gKysrIGIvZHJpdmVycy9jcHVpZGxlL0tjb25maWcuYXJtCj4gQEAg
+LTEsNiArMSwxMSBAQAo+ICAjCj4gICMgQVJNIENQVSBJZGxlIGRyaXZlcnMKPiAgIwo+ICtjb25m
+aWcgQVJNX0FSTUFEQV8zNzBfWFBfQ1BVSURMRQo+ICsJYm9vbCAiQ1BVIElkbGUgRHJpdmVyIGZv
+ciBBcm1hZGEgMzcwL1hQIGZhbWlseSBwcm9jZXNzb3JzIgo+ICsJZGVwZW5kcyBvbiBBUkNIX01W
+RUJVCj4gKwloZWxwCj4gKwkgIFNlbGVjdCB0aGlzIHRvIGVuYWJsZSBjcHVpZGxlIG9uIEFybWFk
+YSAzNzAvWFAgcHJvY2Vzc29ycy4KPiAgCj4gIGNvbmZpZyBBUk1fSElHSEJBTktfQ1BVSURMRQo+
+ICAJYm9vbCAiQ1BVIElkbGUgRHJpdmVyIGZvciBDYWx4ZWRhIHByb2Nlc3NvcnMiCj4gZGlmZiAt
+LWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9NYWtlZmlsZSBiL2RyaXZlcnMvY3B1aWRsZS9NYWtlZmls
+ZQo+IGluZGV4IGNlYTVlZjUuLjkwZmM0YTYgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVpZGxl
+L01ha2VmaWxlCj4gKysrIGIvZHJpdmVycy9jcHVpZGxlL01ha2VmaWxlCj4gQEAgLTcsNiArNyw3
+IEBAIG9iai0kKENPTkZJR19BUkNIX05FRURTX0NQVV9JRExFX0NPVVBMRUQpICs9IGNvdXBsZWQu
+bwo+ICAKPiAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwo+ICAjIEFSTSBTb0MgZHJpdmVycwo+
+ICtvYmotJChDT05GSUdfQVJNX0FSTUFEQV8zNzBfWFBfQ1BVSURMRSkgKz0gY3B1aWRsZS1hcm1h
+ZGEtMzcwLXhwLm8gc3VzcGVuZC1hcm1hZGEtMzcwLXhwLm8KPiAgb2JqLSQoQ09ORklHX0FSTV9I
+SUdIQkFOS19DUFVJRExFKQkrPSBjcHVpZGxlLWNhbHhlZGEubwo+ICBvYmotJChDT05GSUdfQVJN
+X0tJUktXT09EX0NQVUlETEUpCSs9IGNwdWlkbGUta2lya3dvb2Qubwo+ICBvYmotJChDT05GSUdf
+QVJNX1pZTlFfQ1BVSURMRSkJCSs9IGNwdWlkbGUtenlucS5vCj4gZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvY3B1aWRsZS9jcHVpZGxlLWFybWFkYS0zNzAteHAuYyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVp
+ZGxlLWFybWFkYS0zNzAteHAuYwo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gaW5kZXggMDAwMDAw
+MC4uN2M3OGQ5Mgo+IC0tLSAvZGV2L251bGwKPiArKysgYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRs
+ZS1hcm1hZGEtMzcwLXhwLmMKPiBAQCAtMCwwICsxLDEwMyBAQAo+ICsvKgo+ICsgKiBNYXJ2ZWxs
+IEFybWFkYSAzNzAgYW5kIEFybWFkYSBYUCBTb0MgY3B1aWRsZSBkcml2ZXIKPiArICoKPiArICog
+Q29weXJpZ2h0IChDKSAyMDEzIE1hcnZlbGwKPiArICoKPiArICogTmFkYXYgSGFrbGFpIDxuYWRh
+dmhAbWFydmVsbC5jb20+Cj4gKyAqIEdyZWdvcnkgQ0xFTUVOVCA8Z3JlZ29yeS5jbGVtZW50QGZy
+ZWUtZWxlY3Ryb25zLmNvbT4KPiArICoKPiArICogVGhpcyBmaWxlIGlzIGxpY2Vuc2VkIHVuZGVy
+IHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljCj4gKyAqIExpY2Vuc2UgdmVyc2lv
+biAyLiAgVGhpcyBwcm9ncmFtIGlzIGxpY2Vuc2VkICJhcyBpcyIgd2l0aG91dCBhbnkKPiArICog
+d2FycmFudHkgb2YgYW55IGtpbmQsIHdoZXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLgo+ICsgKgo+
+ICsgKiBNYWludGFpbmVyOiBHcmVnb3J5IENMRU1FTlQgPGdyZWdvcnkuY2xlbWVudEBmcmVlLWVs
+ZWN0cm9ucy5jb20+Cj4gKyAqLwo+ICsKPiArI2luY2x1ZGUgPGxpbnV4L2NwdWlkbGUuaD4KPiAr
+I2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgo+ICsjaW5jbHVkZSA8bGludXgvaW8uaD4KPiArI2lu
+Y2x1ZGUgPGxpbnV4L29mLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9zdXNwZW5kLmg+Cj4gKyNpbmNs
+dWRlIDxhc20vc3VzcGVuZC5oPgo+ICsjaW5jbHVkZSA8bGludXgvc21wLmg+Cj4gKyNpbmNsdWRl
+IDxhc20vY3B1aWRsZS5oPgo+ICsjaW5jbHVkZSA8YXNtL3NtcF9wbGF0Lmg+Cj4gKyNpbmNsdWRl
+IDxsaW51eC9hcm1hZGEtMzcwLXhwLXBtc3UuaD4KPiArCj4gKyNkZWZpbmUgQVJNQURBXzM3MF9Y
+UF9NQVhfU1RBVEVTCTMKPiArCj4gK2VudW0gbXZfcG1fc3RhdGVzIHsKPiArCVdGSSA9IDAsCj4g
+KwlNVl9DUFVfSURMRSwKPiArCU1WX0NQVV9ERUVQX0lETEUsCj4gK307Cj4gKwo+ICtleHRlcm4g
+dm9pZCB2N19mbHVzaF9kY2FjaGVfYWxsKHZvaWQpOwo+ICsKPiArLyogRnVuY3Rpb25zIGRlZmlu
+ZWQgaW4gc3VzcGVuZC1hcm1hZGEtMzcwLXhwLlMgKi8KPiAraW50IGFybWFkYV8zNzBfeHBfY3B1
+X3Jlc3VtZSh1bnNpZ25lZCBsb25nKTsKPiAraW50IGFybWFkYV8zNzBfeHBfY3B1X3N1c3BlbmQo
+dW5zaWduZWQgbG9uZyk7Cj4gKwo+ICtzdGF0aWMgaW50IGFybWFkYV8zNzBfeHBfZW50ZXJfaWRs
+ZShzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiwKPiArCQkJCXN0cnVjdCBjcHVpZGxlX2RyaXZl
+ciAqZHJ2LAo+ICsJCQkJaW50IGluZGV4KQo+ICt7Cj4gKwlib29sIGRlZXBpZGxlID0gZmFsc2U7
+Cj4gKwl1bnNpZ25lZCBpbnQgaHdfY3B1ID0gY3B1X2xvZ2ljYWxfbWFwKHNtcF9wcm9jZXNzb3Jf
+aWQoKSk7Cj4gKwo+ICsJYXJtYWRhXzM3MF94cF9wbXN1X3NldF9zdGFydF9hZGRyKGFybWFkYV8z
+NzBfeHBfY3B1X3Jlc3VtZSwgaHdfY3B1KTsKPiArCj4gKwlpZiAoaW5kZXggPT0gTVZfQ1BVX0RF
+RVBfSURMRSkKPiArCQlkZWVwaWRsZSA9IHRydWU7CgpUaGF0IGxvb2tzIGEgYml0IGhhY2tpc2gg
+bm8gPyA6KQoKQ2FuJ3QgeW91IHVzZSB0aGUgQ1BVSURMRV9EUklWRVJfRkxBR1NfTUFTSyB0byBz
+dG9yZSB0aGlzIGluZm9ybWF0aW9uID8KCj4gKwljcHVfc3VzcGVuZChkZWVwaWRsZSwgYXJtYWRh
+XzM3MF94cF9jcHVfc3VzcGVuZCk7Cj4gKwo+ICsJY3B1X2luaXQoKTsKPiArCj4gKwlhcm1hZGFf
+MzcwX3hwX3Btc3VfaWRsZV9yZXN0b3JlKCk7Cj4gKwo+ICsJcmV0dXJuIGluZGV4Owo+ICt9Cj4g
+Kwo+ICtzdGF0aWMgc3RydWN0IGNwdWlkbGVfZHJpdmVyIGFybWFkYV8zNzBfeHBfaWRsZV9kcml2
+ZXIgPSB7Cj4gKwkubmFtZQkJCT0gImFybWFkYV8zNzBfeHBfaWRsZSIsCj4gKwkuc3RhdGVzWzBd
+CQk9IEFSTV9DUFVJRExFX1dGSV9TVEFURSwKPiArCS5zdGF0ZXNbMV0JCT0gewo+ICsJCS5lbnRl
+cgkJCT0gYXJtYWRhXzM3MF94cF9lbnRlcl9pZGxlLAo+ICsJCS5leGl0X2xhdGVuY3kJCT0gMTAs
+Cj4gKwkJLnBvd2VyX3VzYWdlCQk9IDUwLAo+ICsJCS50YXJnZXRfcmVzaWRlbmN5CT0gMTAwLAo+
+ICsJCS5mbGFncwkJCT0gQ1BVSURMRV9GTEFHX1RJTUVfVkFMSUQsCj4gKwkJLm5hbWUJCQk9ICJN
+ViBDUFUgSURMRSIsCj4gKwkJLmRlc2MJCQk9ICJDUFUgcG93ZXIgZG93biIsCj4gKwl9LAo+ICsJ
+LnN0YXRlc1syXQkJPSB7Cj4gKwkJLmVudGVyCQkJPSBhcm1hZGFfMzcwX3hwX2VudGVyX2lkbGUs
+Cj4gKwkJLmV4aXRfbGF0ZW5jeQkJPSAxMDAsCj4gKwkJLnBvd2VyX3VzYWdlCQk9IDUsCj4gKwkJ
+LnRhcmdldF9yZXNpZGVuY3kJPSAxMDAwLAo+ICsJCS5mbGFncwkJCT0gQ1BVSURMRV9GTEFHX1RJ
+TUVfVkFMSUQsCj4gKwkJLm5hbWUJCQk9ICJNViBDUFUgREVFUCBJRExFIiwKPiArCQkuZGVzYwkJ
+CT0gIkNQVSBhbmQgTDIgRmFicmljIHBvd2VyIGRvd24iLAo+ICsJfSwKPiArCS5zdGF0ZV9jb3Vu
+dCA9IEFSTUFEQV8zNzBfWFBfTUFYX1NUQVRFUywKPiArfTsKCldoYXQgYWJvdXQgdGhlIGxvY2Fs
+IHRpbWVycyA/IEFyZSB0aGV5IHNodXRkb3duID8KCj4gKwo+ICtzdGF0aWMgaW50IF9faW5pdCBh
+cm1hZGFfMzcwX3hwX2NwdWlkbGVfaW5pdCh2b2lkKQo+ICt7Cj4gKwlpZiAoIW9mX2ZpbmRfY29t
+cGF0aWJsZV9ub2RlKE5VTEwsIE5VTEwsICJtYXJ2ZWxsLGFybWFkYS0zNzAteHAtcG1zdSIpKQo+
+ICsJCXJldHVybiAtRU5PREVWOwo+ICsKPiArCWlmICghb2ZfZmluZF9jb21wYXRpYmxlX25vZGUo
+TlVMTCwgTlVMTCwgIm1hcnZlbGwsY29oZXJlbmN5LWZhYnJpYyIpKQo+ICsJCXJldHVybiAtRU5P
+REVWOwo+ICsKPiArCXByX2luZm8oIkluaXRpYWxpemluZyBBcm1hZGEtWFAgQ1BVIHBvd2VyIG1h
+bmFnZW1lbnQgIik7Cj4gKwo+ICsJYXJtYWRhXzM3MF94cF9wbXN1X2VuYWJsZV9sMl9wb3dlcmRv
+d25fb25pZGxlKCk7Cj4gKwo+ICsJcmV0dXJuIGNwdWlkbGVfcmVnaXN0ZXIoJmFybWFkYV8zNzBf
+eHBfaWRsZV9kcml2ZXIsIE5VTEwpOwo+ICt9Cj4gKwo+ICttb2R1bGVfaW5pdChhcm1hZGFfMzcw
+X3hwX2NwdWlkbGVfaW5pdCk7CgpJc24ndCBpdCBwb3NzaWJsZSB0byByZXBsYWNlIGl0IGJ5IG1v
+ZHVsZV9wbGF0Zm9ybV9kcml2ZXIgPyBsaWtlIHV4NTAwCm9yIGtpcmt3b29kID8KClRoYW5rcwog
+IC0tIERhbmllbAoKPiArTU9EVUxFX0xJQ0VOU0UoIkdQTCIpOwoKWyAuLi4gXQoKCi0tIAogPGh0
+dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJl
+IGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9w
+YWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+
+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1r
+ZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpo
+dHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJu
+ZWwK
