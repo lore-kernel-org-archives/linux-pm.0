@@ -1,54 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 041/228] cpufreq: sh: use cpufreq_table_validate_and_show()
-Date: Fri, 13 Sep 2013 18:29:47 +0530
-Message-ID: <04eded57c208c65caa64ac44cea9a1eee8507f0d.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 091/228] cpufreq: acpi: don't initialize part of policy that is set by core too
+Date: Fri, 13 Sep 2013 18:30:37 +0530
+Message-ID: <be00fc29dbe59581f03969a3d75dce6011bf4e1b.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, linux-arm-kernel@lists.infradead.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Lets use cpufreq_table_validate_and_show() instead of calling
-cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
+Many common initializations of struct policy are moved to core now and hence
+this driver doesn't need to do it. This patch removes such code.
 
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org
+Most recent of those changes is to call ->get() in the core after calling
+->init().
+
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sh-cpufreq.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/cpufreq/sh-cpufreq.c b/drivers/cpufreq/sh-cpufreq.c
-index f671aa1..f1fb944 100644
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -117,9 +117,9 @@ static int sh_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	if (freq_table) {
- 		int result;
- 
--		result = cpufreq_frequency_table_cpuinfo(policy, freq_table);
--		if (!result)
--			cpufreq_frequency_table_get_attr(freq_table, cpu);
-+		result = cpufreq_table_validate_and_show(policy, freq_table);
-+		if (result)
-+			return result;
- 	} else {
- 		dev_notice(dev, "no frequency table found, falling back "
- 			   "to rate rounding.\n");
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index d67023d..372febf 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -842,7 +842,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		break;
+ 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
+ 		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
+-		policy->cur = get_cur_freq_on_cpu(cpu);
+ 		break;
+ 	default:
+ 		break;
 -- 
 1.7.12.rc2.18.g61b472e
