@@ -1,52 +1,75 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 094/228] cpufreq: blackfin: don't initialize part of policy
- that is set by core too
-Date: Fri, 13 Sep 2013 18:30:40 +0530
-Message-ID: <26f6beb862d15b9c763f0a71737a8d3bb255ffab.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 176/228] cpufreq: sc520: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:32:02 +0530
+Message-ID: <7919f0077e23bcc483596063bb795d8bb0956564.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, Steven Miao <realmz6@gmail.com>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Many common initializations of struct policy are moved to core now and hence
-this driver doesn't need to do it. This patch removes such code.
+This patch converts existing .target() to newly defined light weight
+.target_index() routine for this driver.
 
-Most recent of those changes is to call ->get() in the core after calling
-->init().
+CPUFreq core will call cpufreq_frequency_table_target() before calling this
+routine and will pass index to it.
 
-Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/blackfin-cpufreq.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/cpufreq/sc520_freq.c | 19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
-index 48888cf..0bc9e8c 100644
---- a/drivers/cpufreq/blackfin-cpufreq.c
-+++ b/drivers/cpufreq/blackfin-cpufreq.c
-@@ -204,7 +204,6 @@ static int __bfin_cpu_init(struct cpufreq_policy *policy)
- 
- 	policy->cpuinfo.transition_latency = 50000; /* 50us assumed */
- 
--	policy->cur = cclk;
- 	return cpufreq_table_validate_and_show(policy, bfin_freq_table);
+diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
+index 9047ab1..6c86452 100644
+--- a/drivers/cpufreq/sc520_freq.c
++++ b/drivers/cpufreq/sc520_freq.c
+@@ -53,8 +53,7 @@ static unsigned int sc520_freq_get_cpu_frequency(unsigned int cpu)
+ 	}
  }
  
+-static void sc520_freq_set_cpu_state(struct cpufreq_policy *policy,
+-		unsigned int state)
++static int sc520_freq_target(struct cpufreq_policy *policy, unsigned int state)
+ {
+ 
+ 	struct cpufreq_freqs	freqs;
+@@ -76,24 +75,10 @@ static void sc520_freq_set_cpu_state(struct cpufreq_policy *policy,
+ 	local_irq_enable();
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-};
+-
+-static int sc520_freq_target(struct cpufreq_policy *policy,
+-			    unsigned int target_freq,
+-			    unsigned int relation)
+-{
+-	unsigned int newstate = 0;
+-
+-	if (cpufreq_frequency_table_target(policy, sc520_freq_table,
+-				target_freq, relation, &newstate))
+-		return -EINVAL;
+-
+-	sc520_freq_set_cpu_state(policy, newstate);
+ 
+ 	return 0;
+ }
+ 
+-
+ /*
+  *	Module init and exit code
+  */
+@@ -117,7 +102,7 @@ static int sc520_freq_cpu_init(struct cpufreq_policy *policy)
+ static struct cpufreq_driver sc520_freq_driver = {
+ 	.get	= sc520_freq_get_cpu_frequency,
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+-	.target	= sc520_freq_target,
++	.target_index = sc520_freq_target,
+ 	.init	= sc520_freq_cpu_init,
+ 	.exit	= cpufreq_generic_exit,
+ 	.name	= "sc520_freq",
 -- 
 1.7.12.rc2.18.g61b472e
