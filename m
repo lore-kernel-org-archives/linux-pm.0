@@ -1,66 +1,42 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v2 06/12] ARM: mvebu: Low level functions to disable cache snooping
-Date: Fri, 13 Sep 2013 12:06:35 +0200
-Message-ID: <1379066801-16276-7-git-send-email-gregory.clement@free-electrons.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH v2 00/12] CPU idle for Armada XP
+Date: Fri, 13 Sep 2013 13:00:43 +0200
+Message-ID: <20130913110043.GJ19363@lunn.ch>
 References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:44169 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755360Ab3IMKGz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 06:06:55 -0400
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
 In-Reply-To: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazz>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Chris Van Hoof <vanhoof@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Atsushi Yamagata <yamagata@plathome.co.jp>, Hironobu Shibata <h-shibata@plathome.co.jp>, Tomonori Kimura <kimura@plathome.co.jp>
 
-When going to deep idle we need to disable the SoC snooping by
-"hand". Playing with the coherency fabric requires to use assembly
-code to be sure that the compiler doesn't reorder the instructions nor
-do wrong optimization.
 
-This function will be called by the low level (in assembly) part of
-the CPU idle functions.
+On Fri, Sep 13, 2013 at 12:06:29PM +0200, Gregory CLEMENT wrote:
+> Hello,
+> 
+> This patch set adds the CPU idle support for Armada XP and prepares
+> the support for Armada 370. This was based on the work of Nadav
+> Haklai.
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
----
- arch/arm/mach-mvebu/coherency_ll.S | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+Hi Gregory.
 
-diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-index 1526b94..3fb426e 100644
---- a/arch/arm/mach-mvebu/coherency_ll.S
-+++ b/arch/arm/mach-mvebu/coherency_ll.S
-@@ -73,6 +73,28 @@ ENTRY(ll_set_cpu_coherent)
- 	mov	pc, lr
- ENDPROC(ll_set_cpu_coherent)
- 
-+/*
-+ * r0: if r0==0 => physical addres, else virtual address
-+ */
-+ENTRY(armada_370_xp_disable_snoop_ena)
-+	ldr	r0, =(coherency_base)
-+	ldr	r0, [r0]
-+	/* Enable SnoopEna - Exclusive */
-+	mrc	15, 0, r1, cr0, cr0, 5
-+	and	r1, r1, #15
-+	mov	r2, #(1 << 24)
-+	lsl	r2, r2, r1
-+
-+1:
-+	ldrex	r1, [r0]
-+	bic	r1, r1, r2
-+	strex	r3, r1, [r0]
-+	cmp	r3, #0
-+	bne 1b
-+
-+	mov pc, lr
-+ENDPROC(armada_370_xp_disable_snoop_ena)
-+
- 	.align 2
- 3:
--	.long	coherency_phys_base - .
-+		.long	coherency_phys_base - .
--- 
-1.8.1.2
+Kirkwood has the ability to put the DDR into self refresh mode, which
+is used as part of the second level idle mode. Does 370/XP have this?
 
+For XP, with it being SMP, it would be a bit more complex, since you
+would not want to use it unless all CPUs were idle.
+
+      Thanks
+	Andrew
