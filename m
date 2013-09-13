@@ -1,56 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 039/228] cpufreq: sa11x0: let cpufreq core initialize struct policy fields
-Date: Fri, 13 Sep 2013 18:29:45 +0530
-Message-ID: <8a36f8e32d7a9e9f4aa74db0525dbdc74fc023dd.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 043/228] cpufreq: spear: use cpufreq_table_validate_and_show()
+Date: Fri, 13 Sep 2013 18:29:49 +0530
+Message-ID: <b34aca10fd1d031fb728dea8c83d4babedcfaf32.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, spear-devel@list.st.com
 List-Id: linux-pm@vger.kernel.org
 
-Many fields of struct policy are filled by cpufreq core when we call
-cpufreq_table_validate_and_show() and so cpufreq driver doesn't need to set them
-anymore.
+Lets use cpufreq_table_validate_and_show() instead of calling
+cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
+Cc: spear-devel@list.st.com
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sa1100-cpufreq.c | 4 +---
- drivers/cpufreq/sa1110-cpufreq.c | 4 +---
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/cpufreq/spear-cpufreq.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/sa1100-cpufreq.c b/drivers/cpufreq/sa1100-cpufreq.c
-index 1323a69..37fce2f 100644
---- a/drivers/cpufreq/sa1100-cpufreq.c
-+++ b/drivers/cpufreq/sa1100-cpufreq.c
-@@ -220,9 +220,7 @@ static int __init sa1100_cpu_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 19e364fa..b86be6b 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -178,13 +178,12 @@ static int spear_cpufreq_init(struct cpufreq_policy *policy)
  {
- 	if (policy->cpu != 0)
- 		return -EINVAL;
--	policy->cur = policy->min = policy->max = sa11x0_getspeed(0);
--	policy->cpuinfo.min_freq = 59000;
--	policy->cpuinfo.max_freq = 287000;
-+	policy->cur = sa11x0_getspeed(0);
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	int ret;
  
- 	return cpufreq_table_validate_and_show(policy, sa11x0_freq_table);
-diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
-index adb0524..13760fc 100644
---- a/drivers/cpufreq/sa1110-cpufreq.c
-+++ b/drivers/cpufreq/sa1110-cpufreq.c
-@@ -334,9 +334,7 @@ static int __init sa1110_cpu_init(struct cpufreq_policy *policy)
- {
- 	if (policy->cpu != 0)
- 		return -EINVAL;
--	policy->cur = policy->min = policy->max = sa11x0_getspeed(0);
--	policy->cpuinfo.min_freq = 59000;
--	policy->cpuinfo.max_freq = 287000;
-+	policy->cur = sa11x0_getspeed(0);
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+-	ret = cpufreq_frequency_table_cpuinfo(policy, spear_cpufreq.freq_tbl);
++	ret = cpufreq_table_validate_and_show(policy, spear_cpufreq.freq_tbl);
+ 	if (ret) {
+-		pr_err("cpufreq_frequency_table_cpuinfo() failed");
++		pr_err("cpufreq_table_validate_and_show() failed");
+ 		return ret;
+ 	}
  
- 	return cpufreq_table_validate_and_show(policy, sa11x0_freq_table);
+-	cpufreq_frequency_table_get_attr(spear_cpufreq.freq_tbl, policy->cpu);
+ 	policy->cpuinfo.transition_latency = spear_cpufreq.transition_latency;
+ 	policy->cur = spear_cpufreq_get(0);
+ 
 -- 
 1.7.12.rc2.18.g61b472e
+
