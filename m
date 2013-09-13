@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 146/228] cpufreq: tegra: use cpufreq_generic_init() routine
-Date: Fri, 13 Sep 2013 18:31:32 +0530
-Message-ID: <14e1986c6418227f8c3c47ab9853eb7a65fad2f1.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 145/228] cpufreq: spear: use cpufreq_generic_init() routine
+Date: Fri, 13 Sep 2013 18:31:31 +0530
+Message-ID: <be773b3d7b00a128c366a7b7201c2e255a6f2460.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
@@ -17,49 +17,33 @@ here.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ drivers/cpufreq/spear-cpufreq.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index 9c32b23..32483ef 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -204,19 +204,23 @@ static struct notifier_block tegra_cpu_pm_notifier = {
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index aacdb61..2a03158 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -171,18 +171,8 @@ static int spear_cpufreq_target(struct cpufreq_policy *policy,
  
- static int tegra_cpu_init(struct cpufreq_policy *policy)
+ static int spear_cpufreq_init(struct cpufreq_policy *policy)
  {
-+	int ret;
-+
- 	if (policy->cpu >= NUM_CPUS)
- 		return -EINVAL;
- 
- 	clk_prepare_enable(emc_clk);
- 	clk_prepare_enable(cpu_clk);
- 
--	cpufreq_table_validate_and_show(policy, freq_table);
- 	target_cpu_speed[policy->cpu] = tegra_getspeed(policy->cpu);
- 
- 	/* FIXME: what's the actual transition time? */
--	policy->cpuinfo.transition_latency = 300 * 1000;
+-	int ret;
 -
--	cpumask_copy(policy->cpus, cpu_possible_mask);
-+	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
-+	if (ret) {
-+		clk_disable_unprepare(cpu_clk);
-+		clk_disable_unprepare(emc_clk);
-+		return ret;
-+	}
- 
- 	if (policy->cpu == 0)
- 		register_pm_notifier(&tegra_cpu_pm_notifier);
-@@ -227,6 +231,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- static int tegra_cpu_exit(struct cpufreq_policy *policy)
- {
- 	cpufreq_frequency_table_put_attr(policy->cpu);
-+	clk_disable_unprepare(cpu_clk);
- 	clk_disable_unprepare(emc_clk);
- 	return 0;
+-	ret = cpufreq_table_validate_and_show(policy, spear_cpufreq.freq_tbl);
+-	if (ret) {
+-		pr_err("cpufreq_table_validate_and_show() failed");
+-		return ret;
+-	}
+-
+-	policy->cpuinfo.transition_latency = spear_cpufreq.transition_latency;
+-	cpumask_setall(policy->cpus);
+-
+-	return 0;
++	return cpufreq_generic_init(policy, spear_cpufreq.freq_tbl,
++			spear_cpufreq.transition_latency);
  }
+ 
+ static struct cpufreq_driver spear_cpufreq_driver = {
 -- 
 1.7.12.rc2.18.g61b472e
-
