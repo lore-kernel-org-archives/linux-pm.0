@@ -1,86 +1,121 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 211/228] cpufreq: tegra: remove calls to cpufreq_notify_transition()
-Date: Fri, 13 Sep 2013 18:32:37 +0530
-Message-ID: <69073c98beae28a6a75103dd202ec2a6b8b1a674.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 213/228] cpufreq: create cpufreq_generic_get() routine
+Date: Fri, 13 Sep 2013 18:32:39 +0530
+Message-ID: <4ed298916d96d41c4a9e221ac71aa1dfc74dbffe.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Most of the drivers do following in their ->target_index() routines:
+CPUFreq drivers that use clock frameworks interface,i.e. clk_get_rate(), to get
+CPUs clk rate, has similar sort of code used for most of them.
 
-	struct cpufreq_freqs freqs;
-	freqs.old = old freq...
-	freqs.new = new freq...
+This patch adds a generic ->get() which will do the same thing for them. All
+those drivers are required to now is to set .get to cpufreq_generic_get() and
+set their clk pointer in policy->clk during ->init().
 
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-
-	/* Change rate here */
-
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-
-This is replicated over all cpufreq drivers today and there doesn't exists a
-good enough reason why this shouldn't be moved to cpufreq core instead.
-
-Earlier patches have added support in cpufreq core to do cpufreq notification on
-frequency change, this one removes it from this driver.
-
-Some related minor cleanups are also done along with it.
-
-Cc: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 25 +++++--------------------
- 1 file changed, 5 insertions(+), 20 deletions(-)
+ drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++------
+ include/linux/cpufreq.h   |  3 +++
+ 2 files changed, 23 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index bd7d89c..f42df7e 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -102,12 +102,8 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 		unsigned long rate)
- {
- 	int ret = 0;
--	struct cpufreq_freqs freqs;
- 
--	freqs.old = tegra_getspeed(0);
--	freqs.new = rate;
--
--	if (freqs.old == freqs.new)
-+	if (tegra_getspeed(0) == rate)
- 		return ret;
- 
- 	/*
-@@ -121,21 +117,10 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 	else
- 		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
- 
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
--
--#ifdef CONFIG_CPU_FREQ_DEBUG
--	printk(KERN_DEBUG "cpufreq-tegra: transition: %u --> %u\n",
--	       freqs.old, freqs.new);
--#endif
--
--	ret = tegra_cpu_clk_set_rate(freqs.new * 1000);
--	if (ret) {
--		pr_err("cpu-tegra: Failed to set cpu frequency to %d kHz\n",
--			freqs.new);
--		freqs.new = freqs.old;
--	}
--
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-+	ret = tegra_cpu_clk_set_rate(rate * 1000);
-+	if (ret)
-+		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
-+			rate);
- 
- 	return ret;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 79f89c3..2c1ae708 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -219,6 +219,20 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
  }
+ EXPORT_SYMBOL_GPL(cpufreq_generic_init);
+ 
++unsigned int cpufreq_generic_get(unsigned int cpu)
++{
++	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
++
++	if (!policy || IS_ERR(policy->clk)) {
++		pr_err("%s: No %s associated to cpu: %d\n", __func__,
++				policy ? "clk" : "policy", cpu);
++		return 0;
++	}
++
++	return clk_get_rate(policy->clk) / 1000;
++}
++EXPORT_SYMBOL_GPL(cpufreq_generic_get);
++
+ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = NULL;
+@@ -1115,6 +1129,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 		goto err_set_policy_cpu;
+ 	}
+ 
++	write_lock_irqsave(&cpufreq_driver_lock, flags);
++	for_each_cpu(j, policy->cpus)
++		per_cpu(cpufreq_cpu_data, j) = policy;
++	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
++
+ 	if (cpufreq_driver->get) {
+ 		policy->cur = cpufreq_driver->get(policy->cpu);
+ 		if (!policy->cur) {
+@@ -1147,11 +1166,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	}
+ #endif
+ 
+-	write_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu(j, policy->cpus)
+-		per_cpu(cpufreq_cpu_data, j) = policy;
+-	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-
+ 	if (!frozen) {
+ 		ret = cpufreq_add_dev_interface(policy, dev);
+ 		if (ret)
+@@ -1172,12 +1186,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	return 0;
+ 
+ err_out_unregister:
++err_get_freq:
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	for_each_cpu(j, policy->cpus)
+ 		per_cpu(cpufreq_cpu_data, j) = NULL;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+-err_get_freq:
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+ err_set_policy_cpu:
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index f13beec..d396fba 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -11,6 +11,7 @@
+ #ifndef _LINUX_CPUFREQ_H
+ #define _LINUX_CPUFREQ_H
+ 
++#include <linux/clk.h>
+ #include <linux/cpumask.h>
+ #include <linux/completion.h>
+ #include <linux/kobject.h>
+@@ -66,6 +67,7 @@ struct cpufreq_policy {
+ 	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
+ 	unsigned int		last_cpu; /* cpu nr of previous CPU that managed
+ 					   * this policy */
++	struct clk		*clk;
+ 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
+ 
+ 	unsigned int		min;    /* in kHz */
+@@ -440,6 +442,7 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu);
+ int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
+ 				      struct cpufreq_frequency_table *table);
+ 
++unsigned int cpufreq_generic_get(unsigned int cpu);
+ int cpufreq_generic_init(struct cpufreq_policy *policy,
+ 		struct cpufreq_frequency_table *table,
+ 		unsigned int transition_latency);
 -- 
 1.7.12.rc2.18.g61b472e
+
