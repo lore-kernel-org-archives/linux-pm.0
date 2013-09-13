@@ -1,50 +1,70 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH v2 00/12] CPU idle for Armada XP
-Date: Fri, 13 Sep 2013 13:38:10 +0200
-Message-ID: <20130913113810.GK19363@lunn.ch>
-References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
- <20130913110043.GJ19363@lunn.ch>
- <5232F43D.4040404@free-electrons.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
+Date: Fri, 13 Sep 2013 17:14:26 +0530
+Message-ID: <CAKohpom8d89OtJOs-_eCu+RiVA+B0bt7rtgNcJn=D=y95+jdQg@mail.gmail.com>
+References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+	<80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org>
+	<5225E205.7080008@linux.vnet.ibm.com>
+	<5197493.kSPF7VUWqc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <5232F43D.4040404@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazz>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5197493.kSPF7VUWqc@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 13, 2013 at 01:17:17PM +0200, Gregory CLEMENT wrote:
-> On 13/09/2013 13:00, Andrew Lunn wrote:
-> > 
-> > On Fri, Sep 13, 2013 at 12:06:29PM +0200, Gregory CLEMENT wrote:
-> >> Hello,
-> >>
-> >> This patch set adds the CPU idle support for Armada XP and prepares
-> >> the support for Armada 370. This was based on the work of Nadav
-> >> Haklai.
-> > 
-> > Hi Gregory.
-> > 
-> > Kirkwood has the ability to put the DDR into self refresh mode, which
-> > is used as part of the second level idle mode. Does 370/XP have this?
-> 
-> Indeed there is a self refresh bit on a DDR related register. I thought
-> this kind of feature is more likely used for suspend to ram.
+On 4 September 2013 01:10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, September 03, 2013 06:50:05 PM Srivatsa S. Bhat wrote:
 
-The kirkwood data sheet suggests it is useful if the CPU is idle for a
-few milliseconds. So it sounds like it is a slow transition, but does
-seem to save a bit of power. I guess in a NO_HZ system, it would make
-sense.
+>> This doesn't solve the problem completely: it prevents the store_*() task
+>> from continuing *only* when it concurrently executes the __cpufreq_governor()
+>> function along with the CPU offline task. But if the two calls don't overlap,
+>> we will still have the possibility where the store_*() task tries to acquire
+>> the timer mutex after the CPU offline task has just finished destroying it.
+>
+> Yeah, I overlooked that.
 
-	Andrew
+As a background, I had a IRC chat with Srivatsa on this mail.. (I have marked
+this unread as there were other important topics to close)..
+
+And he had some other code in mind and these synchronization problems
+aren't there with my patch at all (as per him too)..
+
+Rafael, probably both me and Srivatsa are missing something that you
+understood, can you please share what problem you see here with my patch?
+
+And yes, even with Srivatsa's patchset I found a problem:
+Two threads, one changing governor from ondemand->conservative and other
+one changing min/max freq..
+
+First one will try to STOP governor and other one will try to change
+limits of gov.
+Suppose 2nd one gets to ->governor() and after this first one stops
+the governor.
+Now the first one tries to access lock and crashes..
+
+On IRC, Srivatsa agreed about the problem..
+
+So, probably the first thing to do is to get this patch back, i.e.
+revert of Srivatsa's
+patch:
+
+commit 56d07db274b7b15ca38b60ea4a762d40de093000
+Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Date:   Sat Sep 7 01:23:55 2013 +0530
+
+    cpufreq: Remove temporary fix for race between CPU hotplug and sysfs-writes
+
+
+Srivatsa also asked if we can get a big lock around call to ->governor()
+which would create recursive locks on a call to EXIT event (as we have seen it
+earlier..)..
+
+But he believes he can pull it off and will try this later.. So, for
+now we can revert
+the above patch :)
+
+--
+viresh
