@@ -1,112 +1,52 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 047/228] cpufreq: at32ap: add frequency table
-Date: Fri, 13 Sep 2013 18:29:53 +0530
-Message-ID: <3a35746ef433eb30448302efe2c610c14b7feeca.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 049/228] cpufreq: blackfin: call cpufreq_frequency_table_put_attr()
+Date: Fri, 13 Sep 2013 18:29:55 +0530
+Message-ID: <4a03d7c65edb3c8f993860893daea3f874cff1e6.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Steven Miao <realmz6@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Drivers which have an exit path must call cpufreq_frequency_table_put_attr() if
+they have called cpufreq_frequency_table_get_attr() in their init path.
 
-This patch adds a dynamically calculated frequency table to the at32ap driver.
-In short the architecture can scale in power of two between a maximum and
-minimum frequency. Min, max, and the steps in between are added to the table.
+This driver was missing this part and is fixed with this patch.
 
-Signed-off-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/at32ap-cpufreq.c | 49 +++++++++++++++++++++++++++++++++++++---
- 1 file changed, 46 insertions(+), 3 deletions(-)
+ drivers/cpufreq/blackfin-cpufreq.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-index e0c38d9..1d19fa5 100644
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ b/drivers/cpufreq/at32ap-cpufreq.c
-@@ -19,8 +19,10 @@
- #include <linux/clk.h>
- #include <linux/err.h>
- #include <linux/export.h>
-+#include <linux/slab.h>
- 
- static struct clk *cpuclk;
-+static struct cpufreq_frequency_table *freq_table;
- 
- static int at32_verify_speed(struct cpufreq_policy *policy)
- {
-@@ -85,13 +87,17 @@ static int at32_set_target(struct cpufreq_policy *policy,
- 
- static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- {
-+	unsigned int frequency, rate;
-+	int retval, steps, i;
-+
- 	if (policy->cpu != 0)
- 		return -EINVAL;
- 
- 	cpuclk = clk_get(NULL, "cpu");
- 	if (IS_ERR(cpuclk)) {
- 		pr_debug("cpufreq: could not get CPU clk\n");
--		return PTR_ERR(cpuclk);
-+		retval = PTR_ERR(cpuclk);
-+		goto out_err;
- 	}
- 
- 	policy->cpuinfo.min_freq = (clk_round_rate(cpuclk, 1) + 500) / 1000;
-@@ -101,9 +107,46 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	policy->min = policy->cpuinfo.min_freq;
- 	policy->max = policy->cpuinfo.max_freq;
- 
--	printk("cpufreq: AT32AP CPU frequency driver\n");
-+	/*
-+	 * AVR32 CPU frequency rate scales in power of two between maximum and
-+	 * minimum, also add space for the table end marker.
-+	 *
-+	 * Further validate that the frequency is usable, and append it to the
-+	 * frequency table.
-+	 */
-+	steps = fls(policy->cpuinfo.max_freq / policy->cpuinfo.min_freq) + 1;
-+	freq_table = kzalloc(steps * sizeof(struct cpufreq_frequency_table),
-+			GFP_KERNEL);
-+	if (!freq_table) {
-+		retval = -ENOMEM;
-+		goto out_err_put_clk;
-+	}
- 
--	return 0;
-+	frequency = policy->cpuinfo.max_freq;
-+	for (i = 0; i < (steps - 1); i++) {
-+		rate = clk_round_rate(cpuclk, frequency * 1000) / 1000;
-+
-+		if (rate != frequency)
-+			freq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
-+		else
-+			freq_table[i].frequency = frequency;
-+
-+		frequency /= 2;
-+	}
-+
-+	freq_table[steps - 1].frequency = CPUFREQ_TABLE_END;
-+
-+	retval = cpufreq_table_validate_and_show(policy, freq_table);
-+	if (!retval) {
-+		printk("cpufreq: AT32AP CPU frequency driver\n");
-+		return 0;
-+	}
-+
-+	kfree(freq_table);
-+out_err_put_clk:
-+	clk_put(cpuclk);
-+out_err:
-+	return retval;
+diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+index 54c0a0c..84d446a 100644
+--- a/drivers/cpufreq/blackfin-cpufreq.c
++++ b/drivers/cpufreq/blackfin-cpufreq.c
+@@ -213,6 +213,12 @@ static int __bfin_cpu_init(struct cpufreq_policy *policy)
+ 	return cpufreq_table_validate_and_show(policy, bfin_freq_table);
  }
  
- static struct cpufreq_driver at32_driver = {
++static int __bfin_cpu_exit(struct cpufreq_policy *policy)
++{
++
++	cpufreq_frequency_table_put_attr(policy->cpu);
++}
++
+ static struct freq_attr *bfin_freq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	NULL,
+@@ -223,6 +229,7 @@ static struct cpufreq_driver bfin_driver = {
+ 	.target = bfin_target,
+ 	.get = bfin_getfreq_khz,
+ 	.init = __bfin_cpu_init,
++	.exit = __bfin_cpu_exit,
+ 	.name = "bfin cpufreq",
+ 	.attr = bfin_freq_attr,
+ };
 -- 
 1.7.12.rc2.18.g61b472e
-
