@@ -1,80 +1,112 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 068/228] cpufreq: imx6q: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:14 +0530
-Message-ID: <e17b8cc8527391f00931a2c84903dba5ca80ee59.1379063063.git.viresh.kumar@linaro.org>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH] drivers: cpuidle: rename ARM big.LITTLE driver config
+ and makefile entries
+Date: Fri, 13 Sep 2013 15:01:25 +0100
+Message-ID: <20130913140125.GA2062@e102568-lin.cambridge.arm.com>
+References: <1379071966-26757-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <5232FCD4.2070802@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f48.google.com ([209.85.160.48]:65235 "EHLO
-	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755282Ab3IMNLF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:11:05 -0400
-Received: by mail-pb0-f48.google.com with SMTP id ma3so1214961pbc.21
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:11:05 -0700 (PDT)
-In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
+Received: from service87.mimecast.com ([91.220.42.44]:48232 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933243Ab3IMOBa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 10:01:30 -0400
+In-Reply-To: <5232FCD4.2070802@free-electrons.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Olof Johansson <olof@lixom.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
-and .attr. So its better if we have generic routines for them which can be used
-by cpufreq drivers then.
+On Fri, Sep 13, 2013 at 12:53:56PM +0100, Gregory CLEMENT wrote:
+> Hi Lorenzo,
+> 
+> On 13/09/2013 13:32, Lorenzo Pieralisi wrote:
+> > Following the reorganization of CPU idle drivers configurations into an ARM
+> > specific Kconfig, the existing idle drivers Kconfig entries were renamed and
+> > moved to the Kconfig.arm file. Makefile entries were updated accordingly.
+> > 
+> > This patch renames the entries in Kconfig.arm and makefile to make the newly
+> > added big.LITTLE CPUidle driver compliant with the new naming convention.
+> 
+> Do you also consider to reorder the entries in alphabetic order?
+> It should help to reduce the merge conflict.
 
-This patch uses these generic routines for this driver.
+Sure, here it is, thanks for pointing that out.
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Lorenzo
+
+-- >8 --
+Subject: [PATCH] drivers: cpuidle: rename ARM big.LITTLE driver config and
+ makefile entries
+
+Following the reorganization of CPU idle drivers configurations into an ARM
+specific Kconfig, the existing idle drivers Kconfig entries were renamed and
+moved to the Kconfig.arm file. Makefile entries were updated accordingly.
+
+This patch renames the entries in Kconfig.arm and makefile to make the newly
+added big.LITTLE CPUidle driver compliant with the new naming convention.
+
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+ drivers/cpuidle/Kconfig.arm | 22 +++++++++++-----------
+ drivers/cpuidle/Makefile    |  2 +-
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index cd9489f..29767bb 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -34,11 +34,6 @@ static struct device *cpu_dev;
- static struct cpufreq_frequency_table *freq_table;
- static unsigned int transition_latency;
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index 8e36603..6a7e6f2 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -2,6 +2,17 @@
+ # ARM CPU Idle drivers
+ #
  
--static int imx6q_verify_speed(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, freq_table);
--}
++config ARM_BIG_LITTLE_CPUIDLE
++	bool "Support for ARM big.LITTLE processors"
++	depends on ARCH_VEXPRESS_TC2_PM
++	select ARM_CPU_SUSPEND
++	select CPU_IDLE_MULTIPLE_DRIVERS
++	help
++	  Select this option to enable CPU idle driver for big.LITTLE based
++	  ARM systems. Driver manages CPUs coordination through MCPM and
++	  define different C-states for little and big cores through the
++	  multiple CPU idle drivers infrastructure.
++
+ config ARM_HIGHBANK_CPUIDLE
+ 	bool "CPU Idle Driver for Calxeda processors"
+ 	depends on ARCH_HIGHBANK
+@@ -26,14 +37,3 @@ config ARM_U8500_CPUIDLE
+ 	depends on ARCH_U8500
+ 	help
+ 	  Select this to enable cpuidle for ST-E u8500 processors
 -
- static unsigned int imx6q_get_speed(unsigned int cpu)
- {
- 	return clk_get_rate(arm_clk) / 1000;
-@@ -173,25 +168,14 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- 	return 0;
- }
+-config CPU_IDLE_BIG_LITTLE
+-	bool "Support for ARM big.LITTLE processors"
+-	depends on ARCH_VEXPRESS_TC2_PM
+-	select ARM_CPU_SUSPEND
+-	select CPU_IDLE_MULTIPLE_DRIVERS
+-	help
+-	  Select this option to enable CPU idle driver for big.LITTLE based
+-	  ARM systems. Driver manages CPUs coordination through MCPM and
+-	  define different C-states for little and big cores through the
+-	  multiple CPU idle drivers infrastructure.
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index cea5ef5..d08bd40 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -7,8 +7,8 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
  
--static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--	return 0;
--}
--
--static struct freq_attr *imx6q_cpufreq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static struct cpufreq_driver imx6q_cpufreq_driver = {
--	.verify = imx6q_verify_speed,
-+	.verify = cpufreq_generic_frequency_table_verify,
- 	.target = imx6q_set_target,
- 	.get = imx6q_get_speed,
- 	.init = imx6q_cpufreq_init,
--	.exit = imx6q_cpufreq_exit,
-+	.exit = cpufreq_generic_exit,
- 	.name = "imx6q-cpufreq",
--	.attr = imx6q_cpufreq_attr,
-+	.attr = cpufreq_generic_attr,
- };
- 
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ ##################################################################################
+ # ARM SoC drivers
++obj-$(CONFIG_ARM_BIG_LITTLE_CPUIDLE)	+= cpuidle-big_little.o
+ obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
+ obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
+ obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
+ obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
+-obj-$(CONFIG_CPU_IDLE_BIG_LITTLE)	+= cpuidle-big_little.o
 -- 
-1.7.12.rc2.18.g61b472e
+1.8.2.2
+
 
