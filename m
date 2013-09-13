@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 093/228] cpufreq: at32ap: don't initialize part of policy that is set by core too
-Date: Fri, 13 Sep 2013 18:30:39 +0530
-Message-ID: <555cf20f110c47446ee8a2850703862d6fa88e6b.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 092/228] cpufreq: arm_big_little: don't initialize part of policy that is set by core too
+Date: Fri, 13 Sep 2013 18:30:38 +0530
+Message-ID: <799a45eb0d50557b20e508e55f98ce2df9e16b76.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -18,56 +18,23 @@ this driver doesn't need to do it. This patch removes such code.
 Most recent of those changes is to call ->get() in the core after calling
 ->init().
 
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/at32ap-cpufreq.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/cpufreq/arm_big_little.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-index 788f7e7..7439ded 100644
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ b/drivers/cpufreq/at32ap-cpufreq.c
-@@ -77,7 +77,7 @@ static int at32_set_target(struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 132c966..f7717ef 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -171,8 +171,6 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 	else
+ 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
  
- static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- {
--	unsigned int frequency, rate;
-+	unsigned int frequency, rate, min_freq;
- 	int retval, steps, i;
+-	policy->cur = bL_cpufreq_get(policy->cpu);
+-
+ 	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
  
- 	if (policy->cpu != 0)
-@@ -90,12 +90,9 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- 		goto out_err;
- 	}
- 
--	policy->cpuinfo.min_freq = (clk_round_rate(cpuclk, 1) + 500) / 1000;
--	policy->cpuinfo.max_freq = (clk_round_rate(cpuclk, ~0UL) + 500) / 1000;
-+	min_freq = (clk_round_rate(cpuclk, 1) + 500) / 1000;
-+	frequency = (clk_round_rate(cpuclk, ~0UL) + 500) / 1000;
- 	policy->cpuinfo.transition_latency = 0;
--	policy->cur = at32_get_speed(0);
--	policy->min = policy->cpuinfo.min_freq;
--	policy->max = policy->cpuinfo.max_freq;
- 
- 	/*
- 	 * AVR32 CPU frequency rate scales in power of two between maximum and
-@@ -104,7 +101,7 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	 * Further validate that the frequency is usable, and append it to the
- 	 * frequency table.
- 	 */
--	steps = fls(policy->cpuinfo.max_freq / policy->cpuinfo.min_freq) + 1;
-+	steps = fls(frequency / min_freq) + 1;
- 	freq_table = kzalloc(steps * sizeof(struct cpufreq_frequency_table),
- 			GFP_KERNEL);
- 	if (!freq_table) {
-@@ -112,7 +109,6 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- 		goto out_err_put_clk;
- 	}
- 
--	frequency = policy->cpuinfo.max_freq;
- 	for (i = 0; i < (steps - 1); i++) {
- 		rate = clk_round_rate(cpuclk, frequency * 1000) / 1000;
- 
+ 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
 -- 
 1.7.12.rc2.18.g61b472e
