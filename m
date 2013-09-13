@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 153/228] cpufreq: cris: Convert to light weight ->target_index() routine
-Date: Fri, 13 Sep 2013 18:31:39 +0530
-Message-ID: <73fe150773b41450f222c179e4a7ea84884a119e.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 149/228] cpufreq: arm_big_little: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:31:35 +0530
+Message-ID: <d8d4ea46426066dc5e962b08aebe6543a29d4ca5.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel@axis.com
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,100 +18,56 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: linux-cris-kernel@axis.com
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cris-artpec3-cpufreq.c | 18 ++----------------
- drivers/cpufreq/cris-etraxfs-cpufreq.c | 17 ++---------------
- 2 files changed, 4 insertions(+), 31 deletions(-)
+ drivers/cpufreq/arm_big_little.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/cris-artpec3-cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
-index 05fdc7e..841857c 100644
---- a/drivers/cpufreq/cris-artpec3-cpufreq.c
-+++ b/drivers/cpufreq/cris-artpec3-cpufreq.c
-@@ -27,8 +27,7 @@ static unsigned int cris_freq_get_cpu_frequency(unsigned int cpu)
- 	return clk_ctrl.pll ? 200000 : 6000;
- }
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index f7717ef..c3936ef 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -49,28 +49,21 @@ static unsigned int bL_cpufreq_get(unsigned int cpu)
  
--static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
--		unsigned int state)
-+static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
+ /* Set clock frequency */
+ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
+-		unsigned int target_freq, unsigned int relation)
++		unsigned int index)
  {
  	struct cpufreq_freqs freqs;
- 	reg_clkgen_rw_clk_ctrl clk_ctrl;
-@@ -52,19 +51,6 @@ static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
- 	local_irq_enable();
+-	u32 cpu = policy->cpu, freq_tab_idx, cur_cluster;
++	u32 cpu = policy->cpu, cur_cluster;
+ 	int ret = 0;
  
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--};
--
--static int cris_freq_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq,
--			    unsigned int relation)
--{
--	unsigned int newstate = 0;
--
--	if (cpufreq_frequency_table_target(policy, cris_freq_table,
--			target_freq, relation, &newstate))
--		return -EINVAL;
--
--	cris_freq_set_cpu_state(policy, newstate);
+ 	cur_cluster = cpu_to_cluster(policy->cpu);
  
- 	return 0;
- }
-@@ -77,7 +63,7 @@ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver cris_freq_driver = {
- 	.get	= cris_freq_get_cpu_frequency,
- 	.verify	= cpufreq_generic_frequency_table_verify,
--	.target	= cris_freq_target,
-+	.target_index = cris_freq_target,
- 	.init	= cris_freq_cpu_init,
- 	.exit	= cpufreq_generic_exit,
- 	.name	= "cris_freq",
-diff --git a/drivers/cpufreq/cris-etraxfs-cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-index fac2b26..c58811a 100644
---- a/drivers/cpufreq/cris-etraxfs-cpufreq.c
-+++ b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-@@ -27,8 +27,7 @@ static unsigned int cris_freq_get_cpu_frequency(unsigned int cpu)
- 	return clk_ctrl.pll ? 200000 : 6000;
- }
- 
--static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
--		unsigned int state)
-+static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
- {
- 	struct cpufreq_freqs freqs;
- 	reg_config_rw_clk_ctrl clk_ctrl;
-@@ -52,18 +51,6 @@ static void cris_freq_set_cpu_state(struct cpufreq_policy *policy,
- 	local_irq_enable();
- 
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
--};
+ 	freqs.old = bL_cpufreq_get(policy->cpu);
 -
--static int cris_freq_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq, unsigned int relation)
--{
--	unsigned int newstate = 0;
--
--	if (cpufreq_frequency_table_target
--	    (policy, cris_freq_table, target_freq, relation, &newstate))
--		return -EINVAL;
--
--	cris_freq_set_cpu_state(policy, newstate);
+-	/* Determine valid target frequency using freq_table */
+-	cpufreq_frequency_table_target(policy, freq_table[cur_cluster],
+-			target_freq, relation, &freq_tab_idx);
+-	freqs.new = freq_table[cur_cluster][freq_tab_idx].frequency;
++	freqs.new = freq_table[cur_cluster][index].frequency;
  
- 	return 0;
- }
-@@ -76,7 +63,7 @@ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver cris_freq_driver = {
- 	.get = cris_freq_get_cpu_frequency,
- 	.verify = cpufreq_generic_frequency_table_verify,
--	.target = cris_freq_target,
-+	.target_index = cris_freq_target,
- 	.init = cris_freq_cpu_init,
- 	.exit = cpufreq_generic_exit,
- 	.name = "cris_freq",
+ 	pr_debug("%s: cpu: %d, cluster: %d, oldfreq: %d, target freq: %d, new freq: %d\n",
+-			__func__, cpu, cur_cluster, freqs.old, target_freq,
++			__func__, cpu, cur_cluster, freqs.old, freqs.new,
+ 			freqs.new);
+ 
+-	if (freqs.old == freqs.new)
+-		return 0;
+-
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+ 	ret = clk_set_rate(clk[cur_cluster], freqs.new * 1000);
+@@ -200,7 +193,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
+ 	.flags			= CPUFREQ_STICKY |
+ 					CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+ 	.verify			= cpufreq_generic_frequency_table_verify,
+-	.target			= bL_cpufreq_set_target,
++	.target_index		= bL_cpufreq_set_target,
+ 	.get			= bL_cpufreq_get,
+ 	.init			= bL_cpufreq_init,
+ 	.exit			= bL_cpufreq_exit,
 -- 
 1.7.12.rc2.18.g61b472e
-
