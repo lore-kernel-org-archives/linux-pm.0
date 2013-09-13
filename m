@@ -1,50 +1,61 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [Question] Verification For arm64: suspend/resume implementation
-Date: Fri, 13 Sep 2013 15:40:02 +0100
-Message-ID: <20130913144001.GA28531@e102568-lin.cambridge.arm.com>
-References: <52327E41.1070904@marvell.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH v2 00/12] CPU idle for Armada XP
+Date: Fri, 13 Sep 2013 07:48:05 -0700
+Message-ID: <871u4shj6i.fsf@linaro.org>
+References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+ <20130913110043.GJ19363@lunn.ch> <5232F43D.4040404@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:57691 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755124Ab3IMOkJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 10:40:09 -0400
-In-Reply-To: <52327E41.1070904@marvell.com>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <5232F43D.4040404@free-electrons.com> (Gregory CLEMENT's message
+ of "Fri, 13 Sep 2013 13:17:17 +0200")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazz>
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leoy@marvell.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Fri, Sep 13, 2013 at 03:53:53AM +0100, Leo Yan wrote:
-> hi Lorenzo,
-> 
-> I have applied your ARM64's suspend/resume related patches and can built 
-> successfully. i want to verify these patches on foundation model 
-> firstly, so below are my questions:
-> 
-> "Code has been tested on AEM v8 models and a simple CPU idle driver that 
-> enables a C-state where CPUs are reset when wfi is hit."
-> 
-> 1. Can u help share this simple cpu idle driver?
+Gregory CLEMENT <gregory.clement@free-electrons.com> writes:
 
-Yes, I will post a simple skeleton driver, PSCI based (bootwrapper
-implementation), by the end of September.
+> On 13/09/2013 13:00, Andrew Lunn wrote:
+>> 
+>> On Fri, Sep 13, 2013 at 12:06:29PM +0200, Gregory CLEMENT wrote:
+>>> Hello,
+>>>
+>>> This patch set adds the CPU idle support for Armada XP and prepares
+>>> the support for Armada 370. This was based on the work of Nadav
+>>> Haklai.
+>> 
+>> Hi Gregory.
+>> 
+>> Kirkwood has the ability to put the DDR into self refresh mode, which
+>> is used as part of the second level idle mode. Does 370/XP have this?
+>
+> Indeed there is a self refresh bit on a DDR related register. I thought
+> this kind of feature is more likely used for suspend to ram.
+>
+> We plan to also submit the suspend to ram but not immediately.
+>
+>> 
+>> For XP, with it being SMP, it would be a bit more complex, since you
+>> would not want to use it unless all CPUs were idle.
+>
+> I wonder how the others SMP ARM SoCs deal with it, I hope this time
+> there will be a framework available and we won't have to create it! ;)
 
-> 2. On the foundation model, if the core is placed into reset state, then 
-> if there have interrupt is routed to the core, the core still cannot be 
-> waken up anymore; because the reset bit cannot be released by h/w. So 
-> how can let the core return back from the reset state?
+You shouldn't have to invent anything here.
 
-Well, I am testing it with the AEM models power controller that is not
-publicly available yet, and _should_ be released with the new version of the
-foundation models.
+For low-power states that require all CPUs to be idle, we have "coupled"
+CPUidle states (c.f. drivers/cpuidle/coupled.)  OMAP and Tegra are using
+this, but I believe Daniel wants to move away from this, so I'll let him
+elaborate.
 
-As a first step, I will write a PSCI suspend implementation that just executes
-wfi and resumes through the reset vector to emulate a power down as a means to
-make the suspend/resume code path usable to everyone.
-
-Lorenzo
-
+Kevin
