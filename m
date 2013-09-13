@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 155/228] cpufreq: dbx500: Convert to light weight ->target_index() routine
-Date: Fri, 13 Sep 2013 18:31:41 +0530
-Message-ID: <e0ca159fa43ae01436c76818908539c49fa047ff.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 157/228] cpufreq: elanfreq: Convert to light weight ->target_index() routine
+Date: Fri, 13 Sep 2013 18:31:43 +0530
+Message-ID: <47f3f56316c9848750e1dc3328348391b1aa645f.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
@@ -18,50 +18,72 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/dbx500-cpufreq.c | 16 +++-------------
- 1 file changed, 3 insertions(+), 13 deletions(-)
+ drivers/cpufreq/elanfreq.c | 34 +++-------------------------------
+ 1 file changed, 3 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index a60f769..238b169 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -20,23 +20,13 @@ static struct cpufreq_frequency_table *freq_table;
- static struct clk *armss_clk;
+diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
+index d91a645..4ab4153 100644
+--- a/drivers/cpufreq/elanfreq.c
++++ b/drivers/cpufreq/elanfreq.c
+@@ -105,20 +105,8 @@ static unsigned int elanfreq_get_cpu_frequency(unsigned int cpu)
+ }
  
- static int dbx500_cpufreq_target(struct cpufreq_policy *policy,
--				unsigned int target_freq,
--				unsigned int relation)
-+				unsigned int index)
+ 
+-/**
+- *	elanfreq_set_cpu_frequency: Change the CPU core frequency
+- *	@cpu: cpu number
+- *	@freq: frequency in kHz
+- *
+- *	This function takes a frequency value and changes the CPU frequency
+- *	according to this. Note that the frequency has to be checked by
+- *	elanfreq_validatespeed() for correctness!
+- *
+- *	There is no return value.
+- */
+-
+-static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
+-		unsigned int state)
++static int elanfreq_target(struct cpufreq_policy *policy,
++			    unsigned int state)
  {
- 	struct cpufreq_freqs freqs;
--	unsigned int idx;
- 	int ret;
+ 	struct cpufreq_freqs    freqs;
  
--	/* Lookup the next frequency */
--	if (cpufreq_frequency_table_target(policy, freq_table, target_freq,
--					relation, &idx))
+@@ -162,25 +150,9 @@ static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
+ 	local_irq_enable();
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-};
+-
+-
+-static int elanfreq_target(struct cpufreq_policy *policy,
+-			    unsigned int target_freq,
+-			    unsigned int relation)
+-{
+-	unsigned int newstate = 0;
+-
+-	if (cpufreq_frequency_table_target(policy, &elanfreq_table[0],
+-				target_freq, relation, &newstate))
 -		return -EINVAL;
 -
- 	freqs.old = policy->cur;
--	freqs.new = freq_table[idx].frequency;
--
--	if (freqs.old == freqs.new)
--		return 0;
-+	freqs.new = freq_table[index].frequency;
+-	elanfreq_set_cpu_state(policy, newstate);
  
- 	/* pre-change notification */
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-@@ -80,7 +70,7 @@ static int dbx500_cpufreq_init(struct cpufreq_policy *policy)
- static struct cpufreq_driver dbx500_cpufreq_driver = {
- 	.flags  = CPUFREQ_STICKY | CPUFREQ_CONST_LOOPS,
- 	.verify = cpufreq_generic_frequency_table_verify,
--	.target = dbx500_cpufreq_target,
-+	.target_index = dbx500_cpufreq_target,
- 	.get    = dbx500_cpufreq_getspeed,
- 	.init   = dbx500_cpufreq_init,
- 	.name   = "DBX500",
+ 	return 0;
+ }
+-
+-
+ /*
+  *	Module init and exit code
+  */
+@@ -237,7 +209,7 @@ __setup("elanfreq=", elanfreq_setup);
+ static struct cpufreq_driver elanfreq_driver = {
+ 	.get		= elanfreq_get_cpu_frequency,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target		= elanfreq_target,
++	.target_index	= elanfreq_target,
+ 	.init		= elanfreq_cpu_init,
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= "elanfreq",
 -- 
 1.7.12.rc2.18.g61b472e
