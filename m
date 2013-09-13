@@ -1,67 +1,91 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 218/228] cpufreq: dbx500: use cpufreq_generic_get() routine
-Date: Fri, 13 Sep 2013 18:32:44 +0530
-Message-ID: <d447b693596cb56da5973d97127793a17e524646.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 209/228] cpufreq: SPEAr: remove calls to cpufreq_notify_transition()
+Date: Fri, 13 Sep 2013 18:32:35 +0530
+Message-ID: <b534df7a33f95a347fb064f41ae3080b2d400933.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:36021 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757873Ab3IMN1z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2013 09:27:55 -0400
+Received: by mail-pd0-f174.google.com with SMTP id y13so1255100pdi.33
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 06:27:54 -0700 (PDT)
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, spear-devel@list.st.com
 
-We have common infrastructure available with us for getting a CPUs clk rate.
-Lets use it for this driver.
+Most of the drivers do following in their ->target_index() routines:
 
-We don't have to find closest frequency in platform specific ->get() routine
-wihch dbx500 driver was doing and hence it can be removed as well.
+	struct cpufreq_freqs freqs;
+	freqs.old = old freq...
+	freqs.new = new freq...
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+
+	/* Change rate here */
+
+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+
+This is replicated over all cpufreq drivers today and there doesn't exists a
+good enough reason why this shouldn't be moved to cpufreq core instead.
+
+Earlier patches have added support in cpufreq core to do cpufreq notification on
+frequency change, this one removes it from this driver.
+
+Some related minor cleanups are also done along with it.
+
+Cc: spear-devel@list.st.com
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/dbx500-cpufreq.c | 19 ++-----------------
- 1 file changed, 2 insertions(+), 17 deletions(-)
+ drivers/cpufreq/spear-cpufreq.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index 0e67ab9..d83129d 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -26,24 +26,9 @@ static int dbx500_cpufreq_target(struct cpufreq_policy *policy,
- 	return clk_set_rate(armss_clk, freq_table[index].frequency * 1000);
- }
- 
--static unsigned int dbx500_cpufreq_getspeed(unsigned int cpu)
--{
--	int i = 0;
--	unsigned long freq = clk_get_rate(armss_clk) / 1000;
--
--	/* The value is rounded to closest frequency in the defined table. */
--	while (freq_table[i + 1].frequency != CPUFREQ_TABLE_END) {
--		if (freq < freq_table[i].frequency +
--		   (freq_table[i + 1].frequency - freq_table[i].frequency) / 2)
--			return freq_table[i].frequency;
--		i++;
--	}
--
--	return freq_table[i].frequency;
--}
--
- static int dbx500_cpufreq_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 0326040..658cfe7 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -107,12 +107,10 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
+ static int spear_cpufreq_target(struct cpufreq_policy *policy,
+ 		unsigned int index)
  {
-+	policy->clk = armss_clk;
- 	return cpufreq_generic_init(policy, freq_table, 20 * 1000);
+-	struct cpufreq_freqs freqs;
+ 	unsigned long newfreq;
+ 	struct clk *srcclk;
+ 	int ret, mult = 1;
+ 
+-	freqs.old = spear_cpufreq_get(0);
+ 	newfreq = spear_cpufreq.freq_tbl[index].frequency * 1000;
+ 
+ 	if (of_machine_is_compatible("st,spear1340")) {
+@@ -145,23 +143,14 @@ static int spear_cpufreq_target(struct cpufreq_policy *policy,
+ 		return newfreq;
+ 	}
+ 
+-	freqs.new = newfreq / 1000;
+-	freqs.new /= mult;
+-
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+-
+ 	if (mult == 2)
+ 		ret = spear1340_set_cpu_rate(srcclk, newfreq);
+ 	else
+ 		ret = clk_set_rate(spear_cpufreq.clk, newfreq);
+ 
+-	/* Get current rate after clk_set_rate, in case of failure */
+-	if (ret) {
++	if (ret)
+ 		pr_err("CPU Freq: cpu clk_set_rate failed: %d\n", ret);
+-		freqs.new = clk_get_rate(spear_cpufreq.clk) / 1000;
+-	}
+ 
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 	return ret;
  }
  
-@@ -51,7 +36,7 @@ static struct cpufreq_driver dbx500_cpufreq_driver = {
- 	.flags  = CPUFREQ_STICKY | CPUFREQ_CONST_LOOPS,
- 	.verify = cpufreq_generic_frequency_table_verify,
- 	.target_index = dbx500_cpufreq_target,
--	.get    = dbx500_cpufreq_getspeed,
-+	.get    = cpufreq_generic_get,
- 	.init   = dbx500_cpufreq_init,
- 	.name   = "DBX500",
- 	.attr   = cpufreq_generic_attr,
 -- 
 1.7.12.rc2.18.g61b472e
+
