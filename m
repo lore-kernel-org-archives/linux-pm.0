@@ -1,60 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI / ACPI / PM: Clear pme_poll for devices in D3cold on wakeup
-Date: Sat, 14 Sep 2013 03:38:20 +0200
-Message-ID: <4974289.QhzOmFXm0s@vostro.rjw.lan>
+From: Bill Huang <bilhuang@nvidia.com>
+Subject: Re: [PATCH v2 3/4] cpufreq: tegra: Re-model Tegra cpufreq driver
+Date: Fri, 13 Sep 2013 19:00:42 -0700
+Message-ID: <1379124042.2475.6.camel@bilhuang-vm1>
+References: <1378985091-9447-1-git-send-email-bilhuang@nvidia.com>
+	 <1378985091-9447-4-git-send-email-bilhuang@nvidia.com>
+	 <52339106.4020601@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PCI <linux-pci@vger.kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Huang Ying <ying.huang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "David E. Box" <david.e.box@intel.com>
+Content-Type: text/plain; charset="ISO-8859-9"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52339106.4020601@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sat, 2013-09-14 at 06:26 +0800, Stephen Warren wrote:
+> On 09/12/2013 05:24 AM, Bill Huang wrote:
+> > Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
+> > 
+> > * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
+> > * Move Tegra20 specific codes into tegra20-cpufreq.c.
+> > * Bind Tegra cpufreq dirver with a fake device so defer probe would work
+> >   when we're going to get regulator in the driver to support voltage
+> >   scaling (DVFS).
+> 
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> 
+> > @@ -232,6 +232,12 @@ config ARM_TEGRA_CPUFREQ
+> >  	bool "TEGRA CPUFreq support"
+> >  	depends on ARCH_TEGRA
+> >  	select CPU_FREQ_TABLE
+> > +
+> > +config ARM_TEGRA20_CPUFREQ
+> > +	bool "NVIDIA TEGRA20"
+> > +	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
+> >  	default y
+> >  	help
+> > -	  This adds the CPUFreq driver support for TEGRA SOCs.
+> > +	  This adds the CPUFreq driver for NVIDIA TEGRA20 SoC.
+> > +
+> > +	  If in doubt, say N.
+> 
+> This patch removes the following from "config ARM_TEGRA_CPUFREQ":
+> 
+> 	default y
+> 	help
+> 	  This adds the CPUFreq driver support for TEGRA SOCs.
+> 
+> I think that option should be left unchanged, such that this patch
+> *just* adds the new option without changing the existing one. If you do
+> that, then you can completely drop patch 4/4.
 
-Commit 448bd85 (PCI/PM: add PCIe runtime D3cold support) added a
-piece of code to pci_acpi_wake_dev() causing that function to behave
-in a special way for devices in D3cold (so that their configuration
-registeres are not accessed before those devices are resumed).
-However, it didn't take the clearing of the pme_poll flag into
-account.  That has to be done for all devices, even if they are in
-D3cold, or pci_pme_list_scan() will not know that wakeup has been
-signaled for the device and will poll its PME Status bit
-unnecessarily.
+Thanks, I'll change and rebase in next version after Viresh's cleanup
+patch series is merged.
+> 
+> Other than that, this series looks fine.
 
-Fix the problem by moving the clearing of the pme_poll flag in
-pci_acpi_wake_dev() before the code introduced by commit 448bd85.
-
-Reported-and-tested-by: David E. Box <david.e.box@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: 3.6+ <stable@vger.kernel.org> # 3.6+
----
- drivers/pci/pci-acpi.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -47,6 +47,9 @@ static void pci_acpi_wake_dev(acpi_handl
- 	if (event != ACPI_NOTIFY_DEVICE_WAKE || !pci_dev)
- 		return;
- 
-+	if (pci_dev->pme_poll)
-+		pci_dev->pme_poll = false;
-+
- 	if (pci_dev->current_state == PCI_D3cold) {
- 		pci_wakeup_event(pci_dev);
- 		pm_runtime_resume(&pci_dev->dev);
-@@ -57,9 +60,6 @@ static void pci_acpi_wake_dev(acpi_handl
- 	if (pci_dev->pme_support)
- 		pci_check_pme_status(pci_dev);
- 
--	if (pci_dev->pme_poll)
--		pci_dev->pme_poll = false;
--
- 	pci_wakeup_event(pci_dev);
- 	pm_runtime_resume(&pci_dev->dev);
- 
 
