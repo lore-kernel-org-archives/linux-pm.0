@@ -1,31 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Announcement] I may be slow to respond during the next 3 weeks
-Date: Sat, 14 Sep 2013 02:29:21 +0200
-Message-ID: <6387805.nUK39hXlkT@vostro.rjw.lan>
+Subject: [PATCH] PCI / ACPI / PM: Clear pme_poll for devices in D3cold on wakeup
+Date: Sat, 14 Sep 2013 03:38:20 +0200
+Message-ID: <4974289.QhzOmFXm0s@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:55675 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755875Ab3INASQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 13 Sep 2013 20:18:16 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PCI <linux-pci@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Huang Ying <ying.huang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "David E. Box" <david.e.box@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi All,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In several hours I'm flying to New Orleans for LinuxCon and the LPC
-and I'll be traveling pretty much continuously during the next three
-weeks, so I may be very slow to respond.  I apologize for that in
-advance.
+Commit 448bd85 (PCI/PM: add PCIe runtime D3cold support) added a
+piece of code to pci_acpi_wake_dev() causing that function to behave
+in a special way for devices in D3cold (so that their configuration
+registeres are not accessed before those devices are resumed).
+However, it didn't take the clearing of the pme_poll flag into
+account.  That has to be done for all devices, even if they are in
+D3cold, or pci_pme_list_scan() will not know that wakeup has been
+signaled for the device and will poll its PME Status bit
+unnecessarily.
 
-Moreover, if you've sent any patches to me recently, you haven't received
-any response about them and they are not in my linux-next or bleeding-edge
-branches, please be patient unless they are fixes that should go into 3.12,
-in which case please ping me on Monday.
+Fix the problem by moving the clearing of the pme_poll flag in
+pci_acpi_wake_dev() before the code introduced by commit 448bd85.
 
-Kind regards,
-Rafael
+Reported-and-tested-by: David E. Box <david.e.box@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: 3.6+ <stable@vger.kernel.org> # 3.6+
+---
+ drivers/pci/pci-acpi.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -47,6 +47,9 @@ static void pci_acpi_wake_dev(acpi_handl
+ 	if (event != ACPI_NOTIFY_DEVICE_WAKE || !pci_dev)
+ 		return;
+ 
++	if (pci_dev->pme_poll)
++		pci_dev->pme_poll = false;
++
+ 	if (pci_dev->current_state == PCI_D3cold) {
+ 		pci_wakeup_event(pci_dev);
+ 		pm_runtime_resume(&pci_dev->dev);
+@@ -57,9 +60,6 @@ static void pci_acpi_wake_dev(acpi_handl
+ 	if (pci_dev->pme_support)
+ 		pci_check_pme_status(pci_dev);
+ 
+-	if (pci_dev->pme_poll)
+-		pci_dev->pme_poll = false;
+-
+ 	pci_wakeup_event(pci_dev);
+ 	pm_runtime_resume(&pci_dev->dev);
+ 
 
