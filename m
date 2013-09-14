@@ -1,29 +1,69 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Sat, 14 Sep 2013 09:59:57 +0530
-Message-ID: <CAKohpokVxksc-BSU87oAWN_uNaZtCXnTJ70RnYVrYMVmeTkLmQ@mail.gmail.com>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
-	<5197493.kSPF7VUWqc@vostro.rjw.lan>
-	<CAKohpom8d89OtJOs-_eCu+RiVA+B0bt7rtgNcJn=D=y95+jdQg@mail.gmail.com>
-	<9715082.jFAchu7UKu@vostro.rjw.lan>
+Subject: Re: [PATCH 000/228] CPUFreq: cleanup stuff for 3.13
+Date: Sat, 14 Sep 2013 10:04:54 +0530
+Message-ID: <CAKohpokn_FS1EcNdLg9jZJ=ChLPM1kjxtR5iFCxYyNpn1dDL7A@mail.gmail.com>
+References: <cover.1379063063.git.viresh.kumar@linaro.org>
+	<3040696.n8OU0605eG@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:55721 "EHLO
-	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739Ab3INE35 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Sep 2013 00:29:57 -0400
-Received: by mail-oa0-f49.google.com with SMTP id i7so1946484oag.36
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 21:29:57 -0700 (PDT)
-In-Reply-To: <9715082.jFAchu7UKu@vostro.rjw.lan>
+Received: from mail-oa0-f47.google.com ([209.85.219.47]:43891 "EHLO
+	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669Ab3INEey (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Sep 2013 00:34:54 -0400
+Received: by mail-oa0-f47.google.com with SMTP id g12so1942770oah.6
+        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2013 21:34:54 -0700 (PDT)
+In-Reply-To: <3040696.n8OU0605eG@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 14 September 2013 05:18, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> OK, I'll think about that, but not today and probably not within the next
-> few days, because I'm heading to New Orleans in several hours and really
-> have other stuff to take care of now.  Sorry about that.
+On 14 September 2013 05:08, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday, September 13, 2013 06:29:06 PM Viresh Kumar wrote:
+>> This is my biggest patchset ever and it might not happen again in my entire
+>> career. I hope I haven't screwed up here :)
+>>
+>> CPUFreq cleanup patches are ready to hit linux-next (I hope it doesn't turn out
+>> into horror stories, where it broke all possible architectures where Linux runs
+>> :))
+>>
+>> Most of these are build tested only, Also done by: Fengguang Wu's build bot.
+>>
+>> All of these were sent separately in smaller patchsets earlier and now merged
+>> together as a single set. Some parts are reviewed by platform maintainers and
+>> their Acks are included in the patches (Sorry if I missed any)..
+>
+> I believe I asked you to send this stuff in pieces.
+>
+> In any case, there's no way I'll apply this all at once and I'm not going to
+> pull it all at once either.
 
-No issues..
+Exactly for this reason I had following in my cover-letter:
+
+"As suggested by Rafael earlier, he might not apply all at once and will give
+people some chance to test sets one by one.. So, first set now, next one after
+few days. So, I am marking different sets with patch numbers to make it easier
+for Rafael.
+
+- Patch 1->8: Generic cleanup of cpufreq core (First batch)
+- Patch 9->54: Mostly about cpufreq_table_validate_and_show() helper
+(First batch)
+- Patch 55->89: New generic routines for cpufreq drivers (First/Second batch)
+- Patch 90->126: About calling cpufreq_driver->get() from core
+(First/Second batch)
+- Patch 127->146: Generic init() routine (First/Second batch)
+- Patch 147->180: Light weight ->target() routine (Third batch)
+- Patch 181->211: Call notifiers from core instead of target()
+(Third/Fourth batch)
+- Patch 212->228: Generic get() (Fifth batch)
+"
+
+I kept them together because it looked like multiple patchsets have confused
+people.. I have seen people reviewing first few sets and later on they haven't
+bothered to review.. Probably they got confused..
+
+And so it was required to keep them together, so that people get the complete
+picture..
+
+Sorry for the noise..
