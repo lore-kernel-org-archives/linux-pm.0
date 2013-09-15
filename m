@@ -1,381 +1,47 @@
-From: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH V4 15/15] Hibernate: adapt to UEFI secure boot with signature check
-Date: Sun, 15 Sep 2013 08:57:01 +0800
-Message-ID: <1379206621-18639-16-git-send-email-jlee@suse.com>
-References: <1379206621-18639-1-git-send-email-jlee@suse.com>
-Return-path: <opensuse-kernel+bounces-5109-glsk-opensuse-kernel=m.gmane.org-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <1379206621-18639-1-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
-List-Post: <mailto:opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:opensuse-kernel+help-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Subscribe: <mailto:opensuse-kernel+subscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Unsubscribe: <mailto:opensuse-kernel+unsubscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Owner: <mailto:opensuse-kernel+owner-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Archive: <http://lists.opensuse.org/opensuse-kernel/>
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 211/228] cpufreq: tegra: remove calls to cpufreq_notify_transition()
+Date: Sun, 15 Sep 2013 07:05:48 +0200
+Message-ID: <32077984.uYNhUh2ogt@vostro.rjw.lan>
+References: <cover.1379063063.git.viresh.kumar@linaro.org> <52339729.7030309@wwwdotorg.org> <CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Warren <swarren@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Base on Matthew Garrett's 2 patches in
-"[PATCH] Add additional security checks when module loading is restricted" series
-  [PATCH 01/10] Add secure_modules() call
-  [PATCH V3 11/11] Add option to automatically enforce module signatures when in Secure Boot mode
+On Saturday, September 14, 2013 09:39:31 AM Viresh Kumar wrote:
+> On 14 September 2013 04:22, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> > I wonder if this series is bisectable? Perhaps I should just go and read
+> > the rest of the series, but I presume there's a patch somewhere else
+> > that adds those two cpufreq_notify_transition() to the cpufreq core.
+> > Either that happens before this patch (in which case listeners will get
+> > two notifications each time; perhaps that is safe?), or after this patch
+> > (in which case with just this patch applied, no notifications will be
+> > sent until a later patch!
+> 
+> Hmm.. Good Catch..
+> 
+> So, yes git bisect would be compilable but not runnable.. As we are
+> already serialized notifications and so two PRE notifications will
+> generate a crash..
+> 
+> But I don't want to get all that in a single patch as that would be:
+> 
+>  40 files changed, 192 insertions(+), 623 deletions(-)
+> 
+> And that would be hard to review it..
+> 
+> Any suggestions?
 
-This patch introduced EFI_SECURE_BOOT_SNAPSHOT_SIG_ENFORCE kernel config, it's
-provide user to binding UEFI secure boot with SIG_ENFORCE flag of hibernate.
+Well, I guess you can assume that everyone has a chance to review the series
+by now and send it as one patch in the next iteration.
 
-In current solution, the snapshot signature check used the RSA key-pair
-that are generated by bootloader(e.g. shim) then pass the key-pair to
-kernel through EFI variables. Simply say: The root of trust is base on
-UEFI secure boot enabled. So, that makes sense to binding the snapshot
-signature check mechanism with UEFI secure boot for provide stronger
-protection of hibernate. The behavior when enabled
-EFI_SECURE_BOOT_SNAPSHOT_SIG_ENFORCE as following:
+A patch that adds 192 lines of code isn't shockingly large by any measure.
 
- + UEFI Secure Boot ON (means SIG_ENFORCE on),
-   and Kernel found key-pair from bootloader:
-   Will do the S4 signature check.
+Thanks,
+Rafael
 
- + UEFI Secure Boot ON, (SIG_ENFORCE on)
-   but Kernel didn't find key-pair from shim:
-   Will lock down S4 function.
-
- + UEFI Secure Boot OFF (means SIG_ENFORCE off)
-   taint kernel when signature check fail or didn't find key-pair.
-
-V3:
-Use helper function secure_hibernate() to reduce ifdef block.
-
-V2:
-Replace sign_key_data_loaded() by skey_data_available() to check sign key data
-is available for hibernate.
-
-Reviewed-by: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
-Signed-off-by: Lee, Chun-Yi <jlee-IBi9RG/b67k@public.gmane.org>
----
- arch/x86/kernel/setup.c       |    7 ++++++
- kernel/power/hibernate.c      |   17 ++++++++++++++
- kernel/power/hibernate_keys.c |   16 +++++++++++++
- kernel/power/main.c           |    7 +++++-
- kernel/power/power.h          |   13 +++++++++++
- kernel/power/snapshot.c       |   49 +++++++++++++++++++++-------------------
- kernel/power/swap.c           |    4 +-
- kernel/power/user.c           |    5 +++-
- 8 files changed, 91 insertions(+), 27 deletions(-)
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index deeb7bc..b3878b4 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -50,6 +50,7 @@
- #include <linux/init_ohci1394_dma.h>
- #include <linux/kvm_para.h>
- #include <linux/dma-contiguous.h>
-+#include <linux/suspend.h>
- 
- #include <linux/errno.h>
- #include <linux/kernel.h>
-@@ -1135,6 +1136,12 @@ void __init setup_arch(char **cmdline_p)
- 	}
- #endif
- 
-+#ifdef CONFIG_EFI_SECURE_BOOT_SNAPSHOT_SIG_ENFORCE
-+	if (boot_params.secure_boot) {
-+		enforce_signed_snapshot();
-+	}
-+#endif
-+
- 	/*
- 	 * Parse the ACPI tables for possible boot-time SMP configuration.
- 	 */
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 6336499..abbc5b0 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -29,6 +29,7 @@
- #include <linux/ctype.h>
- #include <linux/genhd.h>
- #include <linux/key.h>
-+#include <linux/efi.h>
- 
- #include "power.h"
- 
-@@ -633,6 +634,9 @@ int hibernate(void)
- {
- 	int error;
- 
-+	if (secure_hibernate(SIG_ENFORCE | SIG_CHECK_SKEY))
-+		return -EPERM;
-+
- 	lock_system_sleep();
- 	/* The snapshot device should not be opened while we're running */
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-@@ -800,6 +804,11 @@ static int software_resume(void)
- 	if (error)
- 		goto Unlock;
- 
-+	if (secure_hibernate(SIG_ENFORCE | SIG_CHECK_WKEY)) {
-+		mutex_unlock(&pm_mutex);
-+		return -EPERM;
-+	}
-+
- 	/* The snapshot device should not be opened while we're running */
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
- 		error = -EBUSY;
-@@ -893,6 +902,11 @@ static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
- 	int i;
- 	char *start = buf;
- 
-+	if (secure_hibernate(SIG_ENFORCE | SIG_CHECK_SKEY)) {
-+		buf += sprintf(buf, "[%s]\n", "disabled");
-+		return buf-start;
-+	}
-+
- 	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
- 		if (!hibernation_modes[i])
- 			continue;
-@@ -927,6 +941,9 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
- 	char *p;
- 	int mode = HIBERNATION_INVALID;
- 
-+	if (secure_hibernate(SIG_ENFORCE | SIG_CHECK_SKEY))
-+		return -EPERM;
-+
- 	p = memchr(buf, '\n', n);
- 	len = p ? p - buf : n;
- 
-diff --git a/kernel/power/hibernate_keys.c b/kernel/power/hibernate_keys.c
-index 72d5c7a..b70f397 100644
---- a/kernel/power/hibernate_keys.c
-+++ b/kernel/power/hibernate_keys.c
-@@ -367,6 +367,22 @@ static int clean_key_regen_flag(void)
- 	return ret;
- }
- 
-+bool secure_hibernate(u8 check_items)
-+{
-+	bool ret = true;
-+
-+	if (check_items & SIG_ENFORCE)
-+		ret = sig_enforce;
-+
-+	/* check S4 key to lock hibernate when not available */
-+	if (ret && (check_items & SIG_CHECK_SKEY))
-+		ret = ret && !skey_data_available();
-+	if (ret && (check_items & SIG_CHECK_WKEY))
-+		ret = ret && (wkey_data_available() != 0);
-+
-+	return ret;
-+}
-+
- static int __init init_sign_key_data(void)
- {
- 	skey_data = (void *)get_zeroed_page(GFP_KERNEL);
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 1d1bf63..10ff23f 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -15,6 +15,7 @@
- #include <linux/workqueue.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
-+#include <linux/efi.h>
- 
- #include "power.h"
- 
-@@ -301,7 +302,11 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
- 	}
- #endif
- #ifdef CONFIG_HIBERNATION
--	s += sprintf(s, "%s\n", "disk");
-+	if (secure_hibernate(SIG_ENFORCE | SIG_CHECK_SKEY)) {
-+		s += sprintf(s, "\n");
-+	} else {
-+		s += sprintf(s, "%s\n", "disk");
-+	}
- #else
- 	if (s != buf)
- 		/* convert the last space to a newline */
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index da5733f..8fc94cc 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -2,6 +2,7 @@
- #include <linux/suspend_ioctls.h>
- #include <linux/utsname.h>
- #include <linux/freezer.h>
-+#include <linux/module.h>
- 
- /* The maximum length of snapshot signature */
- #define SIG_LEN 512
-@@ -174,6 +175,11 @@ extern int swsusp_unmark(void);
- #endif
- 
- /* kernel/power/hibernate_key.c */
-+#define SIG_ENFORCE            (1<<0)  /* Check sig_enforce flag */
-+#define SIG_CHECK_SKEY         (1<<1)  /* Check S4SignKey exist */
-+#define SIG_CHECK_WKEY         (1<<2)  /* Check S4WakeKey exist */
-+#define SIG_SECURE_LOCKDOWN     (1<<3)  /* TODO: binding to new secure level */
-+
- #ifdef CONFIG_SNAPSHOT_VERIFICATION
- extern bool skey_data_available(void);
- extern struct key *get_sign_key(void);
-@@ -189,6 +195,7 @@ extern unsigned long get_sig_forward_info_pfn(void);
- extern void fill_sig_forward_info(void *page_addr, int sig_check_ret);
- extern bool sig_enforced(void);
- extern int set_key_regen_flag(void);
-+extern bool secure_hibernate(u8 check_items);
- #else
- static inline bool skey_data_available(void)
- {
-@@ -207,6 +214,12 @@ static inline int set_key_regen_flag(void)
- {
- 	return 0;
- }
-+static inline bool secure_hibernate(u8 check_items)
-+{
-+	/* TODO: adapt to kernel lockdown */
-+
-+	return false;
-+}
- #endif /* !CONFIG_SNAPSHOT_VERIFICATION */
- 
- /* kernel/power/block_io.c */
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 896f11d..29f1ec1 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1759,13 +1759,15 @@ asmlinkage int swsusp_save(void)
- 	nr_copy_pages = nr_pages;
- 	nr_meta_pages = DIV_ROUND_UP(nr_pages * sizeof(long), PAGE_SIZE);
- 
--	if (skey_data_available()) {
--		ret = swsusp_generate_signature(&copy_bm, nr_pages);
--		if (ret)
--			return ret;
--	} else
--		/* set zero signature if skey doesn't exist */
--		memset(signature, 0, SIG_LEN);
-+	if (secure_hibernate(0)) {
-+		if (skey_data_available()) {
-+			ret = swsusp_generate_signature(&copy_bm, nr_pages);
-+			if (ret)
-+				return ret;
-+		} else
-+			/* set zero signature if skey doesn't exist */
-+			memset(signature, 0, SIG_LEN);
-+	}
- 
- 	printk(KERN_INFO "PM: Hibernation image created (%d pages copied)\n",
- 		nr_pages);
-@@ -2398,14 +2400,15 @@ int snapshot_write_next(struct snapshot_handle *handle)
- 		if (error)
- 			return error;
- 
--#ifdef CONFIG_SNAPSHOT_VERIFICATION
- 		/* Allocate void * array to keep buffer point for generate hash,
- 		 * handle_buffers will freed in snapshot_image_verify().
- 		 */
--		handle_buffers = kmalloc(sizeof(void *) * nr_copy_pages, GFP_KERNEL);
--		if (!handle_buffers)
--			pr_err("Allocate hash buffer fail!\n");
--#endif
-+		if (secure_hibernate(0)) {
-+			handle_buffers =
-+				kmalloc(sizeof(void *) * nr_copy_pages, GFP_KERNEL);
-+			if (!handle_buffers)
-+				pr_err("Allocate hash buffer fail!\n");
-+		}
- 
- 		error = memory_bm_create(&copy_bm, GFP_ATOMIC, PG_ANY);
- 		if (error)
-@@ -2433,10 +2436,8 @@ int snapshot_write_next(struct snapshot_handle *handle)
- 			handle->sync_read = 0;
- 			if (IS_ERR(handle->buffer))
- 				return PTR_ERR(handle->buffer);
--#ifdef CONFIG_SNAPSHOT_VERIFICATION
--			if (handle_buffers)
-+			if (secure_hibernate(0) && handle_buffers)
- 				*handle_buffers = handle->buffer;
--#endif
- 		}
- 	} else {
- 		copy_last_highmem_page();
-@@ -2447,13 +2448,15 @@ int snapshot_write_next(struct snapshot_handle *handle)
- 			return PTR_ERR(handle->buffer);
- 		if (handle->buffer != buffer)
- 			handle->sync_read = 0;
--#ifdef CONFIG_SNAPSHOT_VERIFICATION
--		if (handle_buffers)
--			*(handle_buffers + (handle->cur - nr_meta_pages - 1)) = handle->buffer;
--		/* Keep the buffer of sign key in snapshot */
--		if (pfn == sig_forward_info_pfn)
--			sig_forward_info_buf = handle->buffer;
--#endif
-+		if (secure_hibernate(0)) {
-+			if (handle_buffers) {
-+				unsigned int offset = handle->cur - nr_meta_pages - 1;
-+				*(handle_buffers + offset) = handle->buffer;
-+			}
-+			/* Keep the buffer of sign key in snapshot */
-+			if (pfn == sig_forward_info_pfn)
-+				sig_forward_info_buf = handle->buffer;
-+		}
- 	}
- 	handle->cur++;
- 	return PAGE_SIZE;
-@@ -2546,7 +2549,7 @@ int snapshot_image_verify(void)
- {
- 	struct timeval start;
- 	struct timeval stop;
--	struct crypto_shash *tfm = NULL
-+	struct crypto_shash *tfm = NULL;
- 	struct shash_desc *desc;
- 	u8 *digest = NULL;
- 	size_t digest_size, desc_size;
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 5aef236..19cb393 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -1004,7 +1004,7 @@ static int load_image(struct swap_map_handle *handle,
- 		snapshot_write_finalize(snapshot);
- 		if (!snapshot_image_loaded(snapshot))
- 			ret = -ENODATA;
--		else
-+		else if (secure_hibernate(0))
- 			ret = snapshot_image_verify();
- 	}
- 	swsusp_show_speed(&start, &stop, nr_to_read, "Read");
-@@ -1360,7 +1360,7 @@ out_finish:
- 				}
- 			}
- 		}
--		if (!ret)
-+		if (!ret && secure_hibernate(0))
- 			ret = snapshot_image_verify();
- 	}
- 	swsusp_show_speed(&start, &stop, nr_to_read, "Read");
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 3d3632b..6c75427 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -48,6 +48,9 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 	struct snapshot_data *data;
- 	int error;
- 
-+	if (secure_hibernate(SIG_ENFORCE | SIG_CHECK_SKEY | SIG_SECURE_LOCKDOWN))
-+		return -EPERM;
-+
- 	lock_system_sleep();
- 
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-@@ -254,7 +257,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 			error = -EPERM;
- 			break;
- 		}
--		if (snapshot_image_verify()) {
-+		if (secure_hibernate(0) && snapshot_image_verify()) {
- 			error = -EPERM;
- 			break;
- 		}
--- 
-1.6.0.2
