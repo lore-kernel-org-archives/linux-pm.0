@@ -1,58 +1,240 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: Re: [PATCH 136/228] cpufreq: loongson2: use cpufreq_generic_init()
- routine
-Date: Sun, 15 Sep 2013 00:48:27 +0300
-Message-ID: <20130914214827.GA30568@blackmetal.musicnaut.iki.fi>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
- <63ebf29a1bcc7b3a26f8bfc76a5677d2880f8534.1379063063.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filtteri1.pp.htv.fi ([213.243.153.184]:38037 "EHLO
-	filtteri1.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756789Ab3INVsm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Sep 2013 17:48:42 -0400
-Content-Disposition: inline
-In-Reply-To: <63ebf29a1bcc7b3a26f8bfc76a5677d2880f8534.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [RFC V4 PATCH 00/15] Signature verification of hibernate snapshot
+Date: Sun, 15 Sep 2013 08:56:46 +0800
+Message-ID: <1379206621-18639-1-git-send-email-jlee@suse.com>
+Return-path: <opensuse-kernel+bounces-5094-glsk-opensuse-kernel=m.gmane.org-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Post: <mailto:opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:opensuse-kernel+help-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Subscribe: <mailto:opensuse-kernel+subscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Unsubscribe: <mailto:opensuse-kernel+unsubscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Owner: <mailto:opensuse-kernel+owner-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Archive: <http://lists.opensuse.org/opensuse-kernel/>
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, John Crispin <blogic@openwrt.org>, linux-mips@linux-mips.org
 
-On Fri, Sep 13, 2013 at 06:31:22PM +0530, Viresh Kumar wrote:
-> Use generic cpufreq_generic_init() routine instead of replicating the same code
-> here. This driver wasn't setting transition_latency and so is getting set to 0
-> by default. Lets mark it explicitly by calling the generic routine with
-> transition_latency as 0.
-> 
-> Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-> Cc: John Crispin <blogic@openwrt.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi experts,
 
-Acked-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+This patchset is the implementation for signature verification of hibernate
+snapshot image. The origin idea is from Jiri Kosina: Let EFI bootloader
+generate key-pair in UEFI secure boot environment, then pass it to kernel
+for sign/verify S4 image.
 
-BTW, this is not ARM but MIPS board, so adding linux-mips to CC.
+Due to there have potential threat from the S4 image hacked, it may causes
+kernel lost the trust in UEFI secure boot. Hacker attack the S4 snapshot
+image in swap partition through whatever exploit from another trusted OS,
+and the exploit may don't need physical access machine.
 
-A.
+So, this patchset give the ability to kernel for parsing RSA private key
+from EFI bootloader, then using the private key to generate the signature
+of S4 snapshot image. Kernel put the signature to snapshot header, and
+verify the signature when kernel try to recover snapshot image to memory.
 
-> ---
->  drivers/cpufreq/loongson2_cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-> index dd4f3e4..2c8ec8e 100644
-> --- a/drivers/cpufreq/loongson2_cpufreq.c
-> +++ b/drivers/cpufreq/loongson2_cpufreq.c
-> @@ -131,8 +131,7 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  		return ret;
->  	}
->  
-> -	return cpufreq_table_validate_and_show(policy,
-> -					    &loongson2_clockmod_table[0]);
-> +	return cpufreq_generic_init(policy, &loongson2_clockmod_table[0], 0);
->  }
->  
->  static int loongson2_cpufreq_exit(struct cpufreq_policy *policy)
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
+How To Enable
+==============
+
+Set CONFIG_SNAPSHOT_VERIFICATION kernel config to enable. And you can also
+choice which hash algorithm should snapshot be signed with. Then rebuild
+kernel. This function depends on EFI_STUB.
+
+Please note this function need UEFI bootloader's support to generate key-pair
+in UEFI secure boot environment, e.g. shim. Current shim implementation by
+Gary Lin:
+
+Git:
+     https://github.com/lcp/shim/tree/s4-key-upstream
+RPM:
+     https://build.opensuse.org/package/show/home:gary_lin:UEFI/shim
+
+Please use the shim from above URL if you want to try. Please remember add
+the hash of shim to db in UEFI BIOS because it didn't sign by Microsoft or
+any OSV key.
+
+The default behavior is taint kernel when signature check fail. If you want
+direct fail whole hibernate snapshot restore procedure when signature check
+does not pass, please use snapshot_sig_enforce kernel parameter or
+CONFIG_EFI_SECURE_BOOT_SNAPSHOT_SIG_ENFORCE config.
+
+If you want binding UEF secure boot with sig_enforce flag, then you can use
+CONFIG_EFI_SECURE_BOOT_SNAPSHOT_SIG_ENFORCE config. The sig_enforce flag will
+auto enabled when UEFI secure boot enabled.
+
+Behavior
+=========
+
+The RSA key-pair are generated by EFI bootloader(e.g. shim) in UEFI secure
+boot environment, then put private key to S4SignKey, public key to S4WakeKey
+EFI variable. Kernel's behavior as following:
+
+ + First, EFI stub kernel will check the following 2 EFI variable:
+   S4SignKey-fe141863-c070-478e-b8a3-878a5dc9ef21    [BootService]
+   S4WakeKey-fe141863-c070-478e-b8a3-878a5dc9ef21    [Runtime][Volatile]
+
+   S4SignKey and S4WakeKey is a RSA key-pair:
+    - S4SignKey is a private key that's used to generate signature of S4
+      snapshot.
+      The blob format of S4SignKey is PKCS#8 _uncompressed_ format, it should
+      packaged a RSA private key that's followed PKCS#1.
+
+    - S4WakeKey is a public key that's used to verify signature of S4
+      snapshot.
+      The blob format of S4WakeKey is X.509 format, it should packaged a RSA
+      public key that's followed PKCS#1.
+
+ + EFI stub kernel will load the S4SignKey blob to RAM before ExitBootServices,
+   then copy to a memory page that's maintained by hibernate_key.c. This
+   private key will be used to sign snapshot when hibernate launched.
+
+ + When sig_enforce flag set to TRUE, means force check verification pass:
+    - If kernel didn't find S4 key-pair, then kernel will block hibernate
+      functions including kernel space and userspace hibernate.
+    - If snapshot signature check fail when hibernate resume, the snapshot
+      restore procedure will fail and running normal boot process.
+
+ + When sig_enforce flag set to FALSE, means not force the verification pass:
+    - If kernel didn't find S4 key-pair, then the hibernate function still
+      available. But kernel will be tainted after hibernate resume.
+    - If snapshot signature check fail when hibernate resume, the snapshot
+      restore procedure will allow continue. But kernel will be tainted.
+
+On EFI bootloader side, the behavior as following:
+
+ + EFI bootloader must generate RSA key-pair when:
+    - First time boot, bootloader generate key-pair when didn't find it.
+
+    - Bootloader need re-generate after found GenS4Key efi variable from OS:
+        GenS4Key-fe141863-c070-478e-b8a3-878a5dc9ef21   [Runtime][Non-Volatile]
+      The size of GenS4Key is 1 byte, OS(kernel or userland tool) will set it to
+      "1" for notify efi bootloader regenerate key-pair.
+
+    - If re-generate key-pair, bootloader need store the new public key to
+      EFI bootservices variable by itself, e.g. store to NextWakeKey variable
+      When system resumed from hibernate, bootloader need copy public key from
+      NextWakeKey to S4WakeKey, then kernel will use it to verify snapshot
+      image.
+
+Implementation
+==============
+
+Whole implementation including 3 parts: shim, asymmetric keys and hibernate:
+
+ + shim:
+   Current solution implemented by Gary Lin:
+     https://github.com/lcp/shim/tree/s4-key-upstream
+
+   Please use shim from the above URL if you want to try. Please remember add
+   this shim to db because it didn't sign by Microsoft or any OSV key.
+
+ + Asymmetric keys:
+   This patchset implemented uncompressed PKCS#8 and RSA private key parser,
+   it also implement the signature generation operation of RSASSA-PKCS1-v_5
+   in PKCS#1 spec. [RFC3447 sec 8.2.2]
+   Set CONFIG_PKCS8_PRIVATE_KEY_INFO_PARSER=y will give kernel the abilities
+   to parsing private key in uncompressed PKCS#8 blob and generate signature.
+
+ + Hibernate:
+   Set CONFIG_SNAPSHOT_VERIFICATION=y will enable the function of snapshot
+   signature generation and verification. I reserved 512 byes size in snapshot
+   header for store the signature that's generated from the digest with SHA
+   algorithms.
+
+For adapt S4 signature check to secure boot, It Base on Matthew Garrett's 2
+patches in "[PATCH] Add additional security checks when module loading is
+restricted" series: https://lkml.org/lkml/2013/8/19/331
+  [PATCH 01/10] Add secure_modules() call
+  [PATCH V3 11/11] Add option to automatically enforce module signatures when in Secure Boot mode
+
+Please help review this RFC patchset! Appreciate for any comments!
+
+
+V4:
+ - Cleaned source code, use helper functions to reduce #ifdef chunk.
+ - Introduced sig_enforce flag, taint kernel when signature check fail.
+ - Use forward_info structure to maintain the empty of forward information and
+   new sign key from boot kernel to resume target kernel.
+ - Use efivar API to access S4WakeKey variable.
+ - Call set_key_regen_flag() to set key-pair regeneration flag in hibernate.c
+   and user.c
+
+V3:
+ - Load S4 sign key before ExitBootServices in efi stub.
+ - In Makefile, moved hibernate_keys.o before hibernate.o for load S4 sign
+   key before check hibernate image. It makes sure the new sign key will be
+   transfer to resume target kernel.
+ - Set "depends on EFI_STUB" in Kconfig.
+
+V2:
+ - Moved SNAPSHOT_VERIFICATION kernel config to earlier patch.
+ - Add dummy functions to simplify the ifdef check.
+ - Sent to opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org for review:
+   http://lists.opensuse.org/opensuse-kernel/2013-08/msg00025.html
+
+V1:
+ - Internal review
+ - github:
+   https://github.com/joeyli/linux-s4sign/commits/devel-s4sign
+
+
+Lee, Chun-Yi (15):
+  asymmetric keys: add interface and skeleton for implement signature
+    generation
+  asymmetric keys: implement EMSA_PKCS1-v1_5-ENCODE in rsa
+  asymmetric keys: separate the length checking of octet string from
+    RSA_I2OSP
+  asymmetric keys: implement OS2IP in rsa
+  asymmetric keys: implement RSASP1
+  asymmetric keys: support parsing PKCS #8 private key information
+  asymmetric keys: explicitly add the leading zero byte to encoded
+    message
+  Hibernate: introduced RSA key-pair to verify signature of snapshot
+  Hibernate: generate and verify signature of snapshot
+  Hibernate: Avoid S4 sign key data included in snapshot image
+  Hibernate: taint kernel when signature check fail
+  Hibernate: show the verification time for monitor performance
+  Hibernate: introduced SNAPSHOT_SIG_HASH config for select hash
+    algorithm
+  Hibernate: notify bootloader regenerate key-pair for snapshot
+    verification
+  Hibernate: adapt to UEFI secure boot with signature check
+
+ Documentation/kernel-parameters.txt        |    7 +
+ arch/x86/Kconfig                           |   11 +
+ arch/x86/boot/compressed/eboot.c           |   92 +++++++
+ arch/x86/include/asm/efi.h                 |    9 +
+ arch/x86/include/uapi/asm/bootparam.h      |    1 +
+ arch/x86/kernel/setup.c                    |    7 +
+ arch/x86/platform/efi/efi.c                |   68 +++++
+ crypto/asymmetric_keys/Kconfig             |   11 +
+ crypto/asymmetric_keys/Makefile            |   16 +
+ crypto/asymmetric_keys/pkcs8.asn1          |   19 ++
+ crypto/asymmetric_keys/pkcs8_info_parser.c |  152 ++++++++++
+ crypto/asymmetric_keys/pkcs8_parser.h      |   23 ++
+ crypto/asymmetric_keys/pkcs8_private_key.c |  148 ++++++++++
+ crypto/asymmetric_keys/pkcs8_rsakey.asn1   |   29 ++
+ crypto/asymmetric_keys/private_key.h       |   29 ++
+ crypto/asymmetric_keys/public_key.c        |   32 +++
+ crypto/asymmetric_keys/rsa.c               |  296 +++++++++++++++++++-
+ crypto/asymmetric_keys/signature.c         |   28 ++
+ include/crypto/public_key.h                |   28 ++
+ include/keys/asymmetric-subtype.h          |    6 +
+ include/linux/efi.h                        |   25 ++
+ include/linux/kernel.h                     |    1 +
+ include/linux/suspend.h                    |    7 +
+ kernel/panic.c                             |    2 +
+ kernel/power/Kconfig                       |   77 +++++-
+ kernel/power/Makefile                      |    1 +
+ kernel/power/hibernate.c                   |   23 ++-
+ kernel/power/hibernate_keys.c              |  410 ++++++++++++++++++++++++++++
+ kernel/power/main.c                        |    7 +-
+ kernel/power/power.h                       |   62 +++++
+ kernel/power/snapshot.c                    |  323 ++++++++++++++++++++++-
+ kernel/power/swap.c                        |    4 +
+ kernel/power/user.c                        |   14 +-
+ 33 files changed, 1946 insertions(+), 22 deletions(-)
+ create mode 100644 crypto/asymmetric_keys/pkcs8.asn1
+ create mode 100644 crypto/asymmetric_keys/pkcs8_info_parser.c
+ create mode 100644 crypto/asymmetric_keys/pkcs8_parser.h
+ create mode 100644 crypto/asymmetric_keys/pkcs8_private_key.c
+ create mode 100644 crypto/asymmetric_keys/pkcs8_rsakey.asn1
+ create mode 100644 crypto/asymmetric_keys/private_key.h
+ create mode 100644 kernel/power/hibernate_keys.c
