@@ -1,81 +1,138 @@
-From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH 01/16] drivers: thermal: allow registering without .get_temp
-Date: Sun, 15 Sep 2013 18:02:28 -0400
-Message-ID: <1379282563-14650-2-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 03/16] drivers: thermal: cpu_cooling: introduce of_cpufreq_cooling_register
+Date: Sun, 15 Sep 2013 18:02:30 -0400
+Message-ID: <1379282563-14650-4-git-send-email-eduardo.valentin@ti.com>
 References: <1379282563-14650-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1379282563-14650-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
-Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1379282563-14650-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com
+Cc: grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch changes the thermal core driver to allow
-registration of thermal zones without the .get_temp callback.
+This patch introduces an API to register cpufreq cooling device
+based on device tree node.
 
-The idea behind this change is to allow lazy registration
-of sensor callbacks.
+The registration via device tree node differs from normal
+registration due to the fact that it is needed to fill
+the device_node structure in order to be able to match
+the cooling devices with trip points.
 
-The thermal zone will be disabled whenever the ops
-does not contain a .get_temp callback. The sysfs interface
-will be returning -EINVAL on any temperature read operation.
-
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/thermal/thermal_core.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/thermal/Kconfig       |  1 +
+ drivers/thermal/cpu_cooling.c | 31 +++++++++++++++++++++++++++++++
+ include/linux/cpu_cooling.h   | 25 +++++++++++++++++++++++++
+ 3 files changed, 57 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4962a6a..8a94300 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -402,7 +402,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
- 	enum thermal_trip_type type;
- #endif
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index dd81eb8..9e7cc3f 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -91,6 +91,7 @@ config THERMAL_GOV_USER_SPACE
+ config CPU_THERMAL
+ 	bool "generic cpu cooling support"
+ 	depends on CPU_FREQ
++	depends on THERMAL_OF
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  This implements the generic cpu cooling mechanism through frequency
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index d179028..cd2f532 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -491,6 +491,37 @@ cpufreq_cooling_register(const struct cpumask *clip_cpus)
+ EXPORT_SYMBOL_GPL(cpufreq_cooling_register);
  
--	if (!tz || IS_ERR(tz))
-+	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
- 		goto exit;
+ /**
++ * of_cpufreq_cooling_register - function to create cpufreq cooling device.
++ * @np: a valid struct device_node to the cooling device device tree node
++ * @clip_cpus: cpumask of cpus where the frequency constraints will happen.
++ *
++ * This interface function registers the cpufreq cooling device with the name
++ * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
++ * cooling devices.
++ *
++ * Return: a valid struct thermal_cooling_device pointer on success,
++ * on failure, it returns a corresponding ERR_PTR().
++ */
++struct thermal_cooling_device *
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus)
++{
++	struct thermal_cooling_device *cdev;
++
++	if (!np)
++		return ERR_PTR(-EINVAL);
++
++	cdev = cpufreq_cooling_register(clip_cpus);
++	if (IS_ERR(cdev))
++		return cdev;
++
++	cdev->np = np;
++
++	return cdev;
++}
++EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
++
++/**
+  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
+  * @cdev: thermal cooling device pointer.
+  *
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index a5d52ee..c303d38 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -24,6 +24,7 @@
+ #ifndef __CPU_COOLING_H__
+ #define __CPU_COOLING_H__
  
- 	mutex_lock(&tz->lock);
-@@ -455,6 +455,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
++#include <linux/of.h>
+ #include <linux/thermal.h>
+ #include <linux/cpumask.h>
+ 
+@@ -36,6 +37,24 @@ struct thermal_cooling_device *
+ cpufreq_cooling_register(const struct cpumask *clip_cpus);
+ 
+ /**
++ * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
++ * @np: a valid struct device_node to the cooling device device tree node.
++ * @clip_cpus: cpumask of cpus where the frequency constraints will happen
++ */
++#ifdef CONFIG_THERMAL_OF
++struct thermal_cooling_device *
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus);
++#else
++static inline struct thermal_cooling_device *
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus)
++{
++	return NULL;
++}
++#endif
++
++/**
+  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
+  * @cdev: thermal cooling device pointer.
+  */
+@@ -48,6 +67,12 @@ cpufreq_cooling_register(const struct cpumask *clip_cpus)
  {
- 	int count;
- 
-+	if (!tz->ops->get_temp)
-+		return;
-+
- 	update_temperature(tz);
- 
- 	for (count = 0; count < tz->trips; count++)
-@@ -1384,7 +1387,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips)
- 		return ERR_PTR(-EINVAL);
- 
--	if (!ops || !ops->get_temp)
-+	if (!ops)
- 		return ERR_PTR(-EINVAL);
- 
- 	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp))
-@@ -1488,6 +1491,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 
- 	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
- 
-+	if (!tz->ops->get_temp)
-+		thermal_zone_device_set_polling(tz, 0);
-+
- 	thermal_zone_device_update(tz);
- 
- 	if (!result)
+ 	return NULL;
+ }
++static inline struct thermal_cooling_device *
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus)
++{
++	return NULL;
++}
+ static inline
+ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ {
 -- 
 1.8.2.1.342.gfa7285d
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
