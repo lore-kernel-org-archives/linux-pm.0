@@ -1,84 +1,61 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 11/12] cpuidle: mvebu: Add initial CPU idle support
- for Armada 370/XP SoC
-Date: Sun, 15 Sep 2013 19:31:13 +0200
-Message-ID: <5235EEE1.8020501@linaro.org>
-References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
- <1379066801-16276-12-git-send-email-gregory.clement@free-electrons.com>
- <52333112.2050003@linaro.org> <5235C587.4030802@free-electrons.com>
+Subject: Re: [PATCH v2] drivers: cpuidle: rename ARM big.LITTLE driver config
+ and makefile entries
+Date: Sun, 15 Sep 2013 19:32:34 +0200
+Message-ID: <5235EF32.7050302@linaro.org>
+References: <1379086721-5242-1-git-send-email-lorenzo.pieralisi@arm.com> <878uz0e82x.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <5235C587.4030802@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Chris Van Hoof <van>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f49.google.com ([209.85.216.49]:42446 "EHLO
+	mail-qa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932517Ab3IORca (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 15 Sep 2013 13:32:30 -0400
+Received: by mail-qa0-f49.google.com with SMTP id k15so598373qaq.1
+        for <linux-pm@vger.kernel.org>; Sun, 15 Sep 2013 10:32:29 -0700 (PDT)
+In-Reply-To: <878uz0e82x.fsf@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Olof Johansson <olof@lixom.net>
 
-T24gMDkvMTUvMjAxMyAwNDozNCBQTSwgR3JlZ29yeSBDTEVNRU5UIHdyb3RlOgo+IEhpIERhbmll
-bCwKPiAKPiB0aGFua3MgZm9yIHlvdSByZXZpZXcsCj4gCj4gT24gMTMvMDkvMjAxMyAxNzozNiwg
-RGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+IE9uIDA5LzEzLzIwMTMgMTI6MDYgUE0sIEdyZWdvcnkg
-Q0xFTUVOVCB3cm90ZToKPj4+IEFkZCB0aGUgd2ZpLCBjcHUgaWRsZSBhbmQgY3B1IGRlZXAgaWRs
-ZSBwb3dlciBzdGF0ZXMgc3VwcG9ydCBmb3IgdGhlCj4+PiBBcm1hZGEgWFAgU29Dcy4KPj4+Cj4+
-PiBBbGwgdGhlIGxhdGVuY2llcyBhbmQgdGhlIHBvd2VyIGNvbnN1bXB0aW9uIHZhbHVlcyB1c2Vk
-IGF0IHRoZQo+Pj4gImFybWFkYV8zNzBfeHBfaWRsZV9kcml2ZXIiIHN0cnVjdHVyZSBhcmUgcHJl
-bGltaW5hcnkgYW5kIHdpbGwgYmUKPj4+IG1vZGlmaWVkIGluIHRoZSBmdXR1cmUgYWZ0ZXIgcnVu
-bmluZyBzb21lIG1lYXN1cmVtZW50cyBhbmQgYW5hbHlzaXMuCj4+Pgo+Pj4gQmFzZWQgb24gdGhl
-IHdvcmsgb2YgTmFkYXYgSGFrbGFpLgo+Pj4KPj4+IFNpZ25lZC1vZmYtYnk6IE5hZGF2IEhha2xh
-aSA8bmFkYXZoQG1hcnZlbGwuY29tPgo+Pj4gU2lnbmVkLW9mZi1ieTogR3JlZ29yeSBDTEVNRU5U
-IDxncmVnb3J5LmNsZW1lbnRAZnJlZS1lbGVjdHJvbnMuY29tPgo+Pj4gLS0tCj4+PiAgZHJpdmVy
-cy9jcHVpZGxlL0tjb25maWcuYXJtICAgICAgICAgICAgIHwgICA1ICsrCj4+PiAgZHJpdmVycy9j
-cHVpZGxlL01ha2VmaWxlICAgICAgICAgICAgICAgIHwgICAxICsKPj4+ICBkcml2ZXJzL2NwdWlk
-bGUvY3B1aWRsZS1hcm1hZGEtMzcwLXhwLmMgfCAxMDMgKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysKPj4+ICBkcml2ZXJzL2NwdWlkbGUvc3VzcGVuZC1hcm1hZGEtMzcwLXhwLlMgfCAg
-OTEgKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+Pgo+PiBTb21laG93LCB5b3Ugd2lsbCBo
-YXZlIHRvIG1vdmUgInN1c3BlbmQtYXJtYWRhLTM3MC14cC5TIiBpbnRvIGFyY2gvYXJtLgo+IAo+
-IERvZXMgaXQgbWVhbiB0aGF0IHlvdSB3YW50IEkgbW92ZSBpdCBmb3IgdGhlIG5leHQgdmVyc2lv
-bj8KClllcyBwbGVhc2UuCgpbIC4uLiBdCgo+Pj4gK3N0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9kcml2
-ZXIgYXJtYWRhXzM3MF94cF9pZGxlX2RyaXZlciA9IHsKPj4+ICsJLm5hbWUJCQk9ICJhcm1hZGFf
-MzcwX3hwX2lkbGUiLAo+Pj4gKwkuc3RhdGVzWzBdCQk9IEFSTV9DUFVJRExFX1dGSV9TVEFURSwK
-Pj4+ICsJLnN0YXRlc1sxXQkJPSB7Cj4+PiArCQkuZW50ZXIJCQk9IGFybWFkYV8zNzBfeHBfZW50
-ZXJfaWRsZSwKPj4+ICsJCS5leGl0X2xhdGVuY3kJCT0gMTAsCj4+PiArCQkucG93ZXJfdXNhZ2UJ
-CT0gNTAsCj4+PiArCQkudGFyZ2V0X3Jlc2lkZW5jeQk9IDEwMCwKPj4+ICsJCS5mbGFncwkJCT0g
-Q1BVSURMRV9GTEFHX1RJTUVfVkFMSUQsCj4+PiArCQkubmFtZQkJCT0gIk1WIENQVSBJRExFIiwK
-Pj4+ICsJCS5kZXNjCQkJPSAiQ1BVIHBvd2VyIGRvd24iLAo+Pj4gKwl9LAo+Pj4gKwkuc3RhdGVz
-WzJdCQk9IHsKPj4+ICsJCS5lbnRlcgkJCT0gYXJtYWRhXzM3MF94cF9lbnRlcl9pZGxlLAo+Pj4g
-KwkJLmV4aXRfbGF0ZW5jeQkJPSAxMDAsCj4+PiArCQkucG93ZXJfdXNhZ2UJCT0gNSwKPj4+ICsJ
-CS50YXJnZXRfcmVzaWRlbmN5CT0gMTAwMCwKPj4+ICsJCS5mbGFncwkJCT0gQ1BVSURMRV9GTEFH
-X1RJTUVfVkFMSUQsCj4+PiArCQkubmFtZQkJCT0gIk1WIENQVSBERUVQIElETEUiLAo+Pj4gKwkJ
-LmRlc2MJCQk9ICJDUFUgYW5kIEwyIEZhYnJpYyBwb3dlciBkb3duIiwKPj4+ICsJfSwKPj4+ICsJ
-LnN0YXRlX2NvdW50ID0gQVJNQURBXzM3MF9YUF9NQVhfU1RBVEVTLAo+Pj4gK307Cj4+Cj4+IFdo
-YXQgYWJvdXQgdGhlIGxvY2FsIHRpbWVycyA/IEFyZSB0aGV5IHNodXRkb3duID8KPiAKPiBJIG5l
-ZWQgdG8gY2hla2MgaXQuCgpPaywgaWYgaXQgaXMgdGhlIGNhc2UsIHRoZXJlIGlzIHRoZSBmbGFn
-IENQVUlETEVfRkxBR19USU1FUl9TVE9QIHRvIHRlbGwKdGhlIGNwdWlkbGUgZnJhbWV3b3JrIHRv
-IHN3aXRjaCB0byB0aGUgYnJvYWRjYXN0IHRpbWVyIHdpdGggdGhpcyBzdGF0ZS4KCj4+PiArc3Rh
-dGljIGludCBfX2luaXQgYXJtYWRhXzM3MF94cF9jcHVpZGxlX2luaXQodm9pZCkKPj4+ICt7Cj4+
-PiArCWlmICghb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgIm1hcnZlbGwsYXJt
-YWRhLTM3MC14cC1wbXN1IikpCj4+PiArCQlyZXR1cm4gLUVOT0RFVjsKPj4+ICsKPj4+ICsJaWYg
-KCFvZl9maW5kX2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAibWFydmVsbCxjb2hlcmVuY3kt
-ZmFicmljIikpCj4+PiArCQlyZXR1cm4gLUVOT0RFVjsKPj4+ICsKPj4+ICsJcHJfaW5mbygiSW5p
-dGlhbGl6aW5nIEFybWFkYS1YUCBDUFUgcG93ZXIgbWFuYWdlbWVudCAiKTsKPj4+ICsKPj4+ICsJ
-YXJtYWRhXzM3MF94cF9wbXN1X2VuYWJsZV9sMl9wb3dlcmRvd25fb25pZGxlKCk7Cj4+PiArCj4+
-PiArCXJldHVybiBjcHVpZGxlX3JlZ2lzdGVyKCZhcm1hZGFfMzcwX3hwX2lkbGVfZHJpdmVyLCBO
-VUxMKTsKPj4+ICt9Cj4+PiArCj4+PiArbW9kdWxlX2luaXQoYXJtYWRhXzM3MF94cF9jcHVpZGxl
-X2luaXQpOwo+Pgo+PiBJc24ndCBpdCBwb3NzaWJsZSB0byByZXBsYWNlIGl0IGJ5IG1vZHVsZV9w
-bGF0Zm9ybV9kcml2ZXIgPyBsaWtlIHV4NTAwCj4+IG9yIGtpcmt3b29kID8KPiAKPiBJdCBzaG91
-bGQgYmUgcG9zc2libGUgaW5kZWVkLCBJIHdpbGwgY2hlY2sgaXQuCgpUaGF0IHdvdWxkIGJlIGdy
-ZWF0LiBJdCBpcyBhIG5pY2VyIGFwcHJvYWNoIGZvciB0aGUgc2luZ2xlIHpJbWFnZSBJTUhPLgoK
-VGhhbmtzICEKICAtLSBEYW5pZWwKCi0tIAogPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFy
-by5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFy
-bzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0
-dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5h
-cm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFy
-bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On 09/13/2013 11:16 PM, Kevin Hilman wrote:
+> Daniel,
+>=20
+> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+>=20
+>> Following the reorganization of CPU idle drivers configurations into=
+ an ARM
+>> specific Kconfig, the existing idle drivers Kconfig entries were ren=
+amed and
+>> moved to the Kconfig.arm file. Makefile entries were updated accordi=
+ngly.
+>>
+>> This patch renames the entries in Kconfig.arm and makefile to make t=
+he newly
+>> added big.LITTLE CPUidle driver compliant with the new naming conven=
+tion.
+>>
+>> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> Acked-by: Kevin Hilman <khilman@linaro.org>
+>=20
+> We picked up this driver originally through arm-soc (with your signof=
+f)
+> because of arch/arm dependencies, but you might as well take this one
+> directly since it's isolated to drivers/cpuidle.
+>=20
+> Can you queue this up for v3.12-rc please?
+
+Yes, sure.
+
+  -- Daniel
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
