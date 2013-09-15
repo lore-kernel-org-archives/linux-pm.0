@@ -1,16 +1,16 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH v2 11/12] cpuidle: mvebu: Add initial CPU idle support
  for Armada 370/XP SoC
-Date: Sun, 15 Sep 2013 16:34:47 +0200
-Message-ID: <5235C587.4030802@free-electrons.com>
+Date: Sun, 15 Sep 2013 19:31:13 +0200
+Message-ID: <5235EEE1.8020501@linaro.org>
 References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
  <1379066801-16276-12-git-send-email-gregory.clement@free-electrons.com>
- <52333112.2050003@linaro.org>
+ <52333112.2050003@linaro.org> <5235C587.4030802@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <52333112.2050003@linaro.org>
+In-Reply-To: <5235C587.4030802@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,209 +20,65 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
 Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Chris Van Hoof <van>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
-
-thanks for you review,
-
-On 13/09/2013 17:36, Daniel Lezcano wrote:
-> On 09/13/2013 12:06 PM, Gregory CLEMENT wrote:
->> Add the wfi, cpu idle and cpu deep idle power states support for the
->> Armada XP SoCs.
->>
->> All the latencies and the power consumption values used at the
->> "armada_370_xp_idle_driver" structure are preliminary and will be
->> modified in the future after running some measurements and analysis.
->>
->> Based on the work of Nadav Haklai.
->>
->> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
->> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
->> ---
->>  drivers/cpuidle/Kconfig.arm             |   5 ++
->>  drivers/cpuidle/Makefile                |   1 +
->>  drivers/cpuidle/cpuidle-armada-370-xp.c | 103 ++++++++++++++++++++++++++++++++
->>  drivers/cpuidle/suspend-armada-370-xp.S |  91 ++++++++++++++++++++++++++++
-> 
-> Somehow, you will have to move "suspend-armada-370-xp.S" into arch/arm.
-
-Does it mean that you want I move it for the next version?
-
-> 
->>  4 files changed, 200 insertions(+)
->>  create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
->>  create mode 100644 drivers/cpuidle/suspend-armada-370-xp.S
->>
->> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
->> index 8e36603..071d960 100644
->> --- a/drivers/cpuidle/Kconfig.arm
->> +++ b/drivers/cpuidle/Kconfig.arm
->> @@ -1,6 +1,11 @@
->>  #
->>  # ARM CPU Idle drivers
->>  #
->> +config ARM_ARMADA_370_XP_CPUIDLE
->> +	bool "CPU Idle Driver for Armada 370/XP family processors"
->> +	depends on ARCH_MVEBU
->> +	help
->> +	  Select this to enable cpuidle on Armada 370/XP processors.
->>  
->>  config ARM_HIGHBANK_CPUIDLE
->>  	bool "CPU Idle Driver for Calxeda processors"
->> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
->> index cea5ef5..90fc4a6 100644
->> --- a/drivers/cpuidle/Makefile
->> +++ b/drivers/cpuidle/Makefile
->> @@ -7,6 +7,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
->>  
->>  ##################################################################################
->>  # ARM SoC drivers
->> +obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) += cpuidle-armada-370-xp.o suspend-armada-370-xp.o
->>  obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
->>  obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
->>  obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
->> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidle/cpuidle-armada-370-xp.c
->> new file mode 100644
->> index 0000000..7c78d92
->> --- /dev/null
->> +++ b/drivers/cpuidle/cpuidle-armada-370-xp.c
->> @@ -0,0 +1,103 @@
->> +/*
->> + * Marvell Armada 370 and Armada XP SoC cpuidle driver
->> + *
->> + * Copyright (C) 2013 Marvell
->> + *
->> + * Nadav Haklai <nadavh@marvell.com>
->> + * Gregory CLEMENT <gregory.clement@free-electrons.com>
->> + *
->> + * This file is licensed under the terms of the GNU General Public
->> + * License version 2.  This program is licensed "as is" without any
->> + * warranty of any kind, whether express or implied.
->> + *
->> + * Maintainer: Gregory CLEMENT <gregory.clement@free-electrons.com>
->> + */
->> +
->> +#include <linux/cpuidle.h>
->> +#include <linux/module.h>
->> +#include <linux/io.h>
->> +#include <linux/of.h>
->> +#include <linux/suspend.h>
->> +#include <asm/suspend.h>
->> +#include <linux/smp.h>
->> +#include <asm/cpuidle.h>
->> +#include <asm/smp_plat.h>
->> +#include <linux/armada-370-xp-pmsu.h>
->> +
->> +#define ARMADA_370_XP_MAX_STATES	3
->> +
->> +enum mv_pm_states {
->> +	WFI = 0,
->> +	MV_CPU_IDLE,
->> +	MV_CPU_DEEP_IDLE,
->> +};
->> +
->> +extern void v7_flush_dcache_all(void);
->> +
->> +/* Functions defined in suspend-armada-370-xp.S */
->> +int armada_370_xp_cpu_resume(unsigned long);
->> +int armada_370_xp_cpu_suspend(unsigned long);
->> +
->> +static int armada_370_xp_enter_idle(struct cpuidle_device *dev,
->> +				struct cpuidle_driver *drv,
->> +				int index)
->> +{
->> +	bool deepidle = false;
->> +	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
->> +
->> +	armada_370_xp_pmsu_set_start_addr(armada_370_xp_cpu_resume, hw_cpu);
->> +
->> +	if (index == MV_CPU_DEEP_IDLE)
->> +		deepidle = true;
-> 
-> That looks a bit hackish no ? :)
-> 
-> Can't you use the CPUIDLE_DRIVER_FLAGS_MASK to store this information ?
-
-I didn't notice this mask until now but indeed we can use it.
-
-> 
->> +	cpu_suspend(deepidle, armada_370_xp_cpu_suspend);
->> +
->> +	cpu_init();
->> +
->> +	armada_370_xp_pmsu_idle_restore();
->> +
->> +	return index;
->> +}
->> +
->> +static struct cpuidle_driver armada_370_xp_idle_driver = {
->> +	.name			= "armada_370_xp_idle",
->> +	.states[0]		= ARM_CPUIDLE_WFI_STATE,
->> +	.states[1]		= {
->> +		.enter			= armada_370_xp_enter_idle,
->> +		.exit_latency		= 10,
->> +		.power_usage		= 50,
->> +		.target_residency	= 100,
->> +		.flags			= CPUIDLE_FLAG_TIME_VALID,
->> +		.name			= "MV CPU IDLE",
->> +		.desc			= "CPU power down",
->> +	},
->> +	.states[2]		= {
->> +		.enter			= armada_370_xp_enter_idle,
->> +		.exit_latency		= 100,
->> +		.power_usage		= 5,
->> +		.target_residency	= 1000,
->> +		.flags			= CPUIDLE_FLAG_TIME_VALID,
->> +		.name			= "MV CPU DEEP IDLE",
->> +		.desc			= "CPU and L2 Fabric power down",
->> +	},
->> +	.state_count = ARMADA_370_XP_MAX_STATES,
->> +};
-> 
-> What about the local timers ? Are they shutdown ?
-
-I need to chekc it.
-
-> 
->> +
->> +static int __init armada_370_xp_cpuidle_init(void)
->> +{
->> +	if (!of_find_compatible_node(NULL, NULL, "marvell,armada-370-xp-pmsu"))
->> +		return -ENODEV;
->> +
->> +	if (!of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric"))
->> +		return -ENODEV;
->> +
->> +	pr_info("Initializing Armada-XP CPU power management ");
->> +
->> +	armada_370_xp_pmsu_enable_l2_powerdown_onidle();
->> +
->> +	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
->> +}
->> +
->> +module_init(armada_370_xp_cpuidle_init);
-> 
-> Isn't it possible to replace it by module_platform_driver ? like ux500
-> or kirkwood ?
-
-It should be possible indeed, I will check it.
-
-> 
-> Thanks
->   -- Daniel
-> 
->> +MODULE_LICENSE("GPL");
-> 
-> [ ... ]
-> 
-> 
-
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+T24gMDkvMTUvMjAxMyAwNDozNCBQTSwgR3JlZ29yeSBDTEVNRU5UIHdyb3RlOgo+IEhpIERhbmll
+bCwKPiAKPiB0aGFua3MgZm9yIHlvdSByZXZpZXcsCj4gCj4gT24gMTMvMDkvMjAxMyAxNzozNiwg
+RGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+IE9uIDA5LzEzLzIwMTMgMTI6MDYgUE0sIEdyZWdvcnkg
+Q0xFTUVOVCB3cm90ZToKPj4+IEFkZCB0aGUgd2ZpLCBjcHUgaWRsZSBhbmQgY3B1IGRlZXAgaWRs
+ZSBwb3dlciBzdGF0ZXMgc3VwcG9ydCBmb3IgdGhlCj4+PiBBcm1hZGEgWFAgU29Dcy4KPj4+Cj4+
+PiBBbGwgdGhlIGxhdGVuY2llcyBhbmQgdGhlIHBvd2VyIGNvbnN1bXB0aW9uIHZhbHVlcyB1c2Vk
+IGF0IHRoZQo+Pj4gImFybWFkYV8zNzBfeHBfaWRsZV9kcml2ZXIiIHN0cnVjdHVyZSBhcmUgcHJl
+bGltaW5hcnkgYW5kIHdpbGwgYmUKPj4+IG1vZGlmaWVkIGluIHRoZSBmdXR1cmUgYWZ0ZXIgcnVu
+bmluZyBzb21lIG1lYXN1cmVtZW50cyBhbmQgYW5hbHlzaXMuCj4+Pgo+Pj4gQmFzZWQgb24gdGhl
+IHdvcmsgb2YgTmFkYXYgSGFrbGFpLgo+Pj4KPj4+IFNpZ25lZC1vZmYtYnk6IE5hZGF2IEhha2xh
+aSA8bmFkYXZoQG1hcnZlbGwuY29tPgo+Pj4gU2lnbmVkLW9mZi1ieTogR3JlZ29yeSBDTEVNRU5U
+IDxncmVnb3J5LmNsZW1lbnRAZnJlZS1lbGVjdHJvbnMuY29tPgo+Pj4gLS0tCj4+PiAgZHJpdmVy
+cy9jcHVpZGxlL0tjb25maWcuYXJtICAgICAgICAgICAgIHwgICA1ICsrCj4+PiAgZHJpdmVycy9j
+cHVpZGxlL01ha2VmaWxlICAgICAgICAgICAgICAgIHwgICAxICsKPj4+ICBkcml2ZXJzL2NwdWlk
+bGUvY3B1aWRsZS1hcm1hZGEtMzcwLXhwLmMgfCAxMDMgKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysKPj4+ICBkcml2ZXJzL2NwdWlkbGUvc3VzcGVuZC1hcm1hZGEtMzcwLXhwLlMgfCAg
+OTEgKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+Pgo+PiBTb21laG93LCB5b3Ugd2lsbCBo
+YXZlIHRvIG1vdmUgInN1c3BlbmQtYXJtYWRhLTM3MC14cC5TIiBpbnRvIGFyY2gvYXJtLgo+IAo+
+IERvZXMgaXQgbWVhbiB0aGF0IHlvdSB3YW50IEkgbW92ZSBpdCBmb3IgdGhlIG5leHQgdmVyc2lv
+bj8KClllcyBwbGVhc2UuCgpbIC4uLiBdCgo+Pj4gK3N0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9kcml2
+ZXIgYXJtYWRhXzM3MF94cF9pZGxlX2RyaXZlciA9IHsKPj4+ICsJLm5hbWUJCQk9ICJhcm1hZGFf
+MzcwX3hwX2lkbGUiLAo+Pj4gKwkuc3RhdGVzWzBdCQk9IEFSTV9DUFVJRExFX1dGSV9TVEFURSwK
+Pj4+ICsJLnN0YXRlc1sxXQkJPSB7Cj4+PiArCQkuZW50ZXIJCQk9IGFybWFkYV8zNzBfeHBfZW50
+ZXJfaWRsZSwKPj4+ICsJCS5leGl0X2xhdGVuY3kJCT0gMTAsCj4+PiArCQkucG93ZXJfdXNhZ2UJ
+CT0gNTAsCj4+PiArCQkudGFyZ2V0X3Jlc2lkZW5jeQk9IDEwMCwKPj4+ICsJCS5mbGFncwkJCT0g
+Q1BVSURMRV9GTEFHX1RJTUVfVkFMSUQsCj4+PiArCQkubmFtZQkJCT0gIk1WIENQVSBJRExFIiwK
+Pj4+ICsJCS5kZXNjCQkJPSAiQ1BVIHBvd2VyIGRvd24iLAo+Pj4gKwl9LAo+Pj4gKwkuc3RhdGVz
+WzJdCQk9IHsKPj4+ICsJCS5lbnRlcgkJCT0gYXJtYWRhXzM3MF94cF9lbnRlcl9pZGxlLAo+Pj4g
+KwkJLmV4aXRfbGF0ZW5jeQkJPSAxMDAsCj4+PiArCQkucG93ZXJfdXNhZ2UJCT0gNSwKPj4+ICsJ
+CS50YXJnZXRfcmVzaWRlbmN5CT0gMTAwMCwKPj4+ICsJCS5mbGFncwkJCT0gQ1BVSURMRV9GTEFH
+X1RJTUVfVkFMSUQsCj4+PiArCQkubmFtZQkJCT0gIk1WIENQVSBERUVQIElETEUiLAo+Pj4gKwkJ
+LmRlc2MJCQk9ICJDUFUgYW5kIEwyIEZhYnJpYyBwb3dlciBkb3duIiwKPj4+ICsJfSwKPj4+ICsJ
+LnN0YXRlX2NvdW50ID0gQVJNQURBXzM3MF9YUF9NQVhfU1RBVEVTLAo+Pj4gK307Cj4+Cj4+IFdo
+YXQgYWJvdXQgdGhlIGxvY2FsIHRpbWVycyA/IEFyZSB0aGV5IHNodXRkb3duID8KPiAKPiBJIG5l
+ZWQgdG8gY2hla2MgaXQuCgpPaywgaWYgaXQgaXMgdGhlIGNhc2UsIHRoZXJlIGlzIHRoZSBmbGFn
+IENQVUlETEVfRkxBR19USU1FUl9TVE9QIHRvIHRlbGwKdGhlIGNwdWlkbGUgZnJhbWV3b3JrIHRv
+IHN3aXRjaCB0byB0aGUgYnJvYWRjYXN0IHRpbWVyIHdpdGggdGhpcyBzdGF0ZS4KCj4+PiArc3Rh
+dGljIGludCBfX2luaXQgYXJtYWRhXzM3MF94cF9jcHVpZGxlX2luaXQodm9pZCkKPj4+ICt7Cj4+
+PiArCWlmICghb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgIm1hcnZlbGwsYXJt
+YWRhLTM3MC14cC1wbXN1IikpCj4+PiArCQlyZXR1cm4gLUVOT0RFVjsKPj4+ICsKPj4+ICsJaWYg
+KCFvZl9maW5kX2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAibWFydmVsbCxjb2hlcmVuY3kt
+ZmFicmljIikpCj4+PiArCQlyZXR1cm4gLUVOT0RFVjsKPj4+ICsKPj4+ICsJcHJfaW5mbygiSW5p
+dGlhbGl6aW5nIEFybWFkYS1YUCBDUFUgcG93ZXIgbWFuYWdlbWVudCAiKTsKPj4+ICsKPj4+ICsJ
+YXJtYWRhXzM3MF94cF9wbXN1X2VuYWJsZV9sMl9wb3dlcmRvd25fb25pZGxlKCk7Cj4+PiArCj4+
+PiArCXJldHVybiBjcHVpZGxlX3JlZ2lzdGVyKCZhcm1hZGFfMzcwX3hwX2lkbGVfZHJpdmVyLCBO
+VUxMKTsKPj4+ICt9Cj4+PiArCj4+PiArbW9kdWxlX2luaXQoYXJtYWRhXzM3MF94cF9jcHVpZGxl
+X2luaXQpOwo+Pgo+PiBJc24ndCBpdCBwb3NzaWJsZSB0byByZXBsYWNlIGl0IGJ5IG1vZHVsZV9w
+bGF0Zm9ybV9kcml2ZXIgPyBsaWtlIHV4NTAwCj4+IG9yIGtpcmt3b29kID8KPiAKPiBJdCBzaG91
+bGQgYmUgcG9zc2libGUgaW5kZWVkLCBJIHdpbGwgY2hlY2sgaXQuCgpUaGF0IHdvdWxkIGJlIGdy
+ZWF0LiBJdCBpcyBhIG5pY2VyIGFwcHJvYWNoIGZvciB0aGUgc2luZ2xlIHpJbWFnZSBJTUhPLgoK
+VGhhbmtzICEKICAtLSBEYW5pZWwKCi0tIAogPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFy
+by5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFy
+bzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0
+dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5h
+cm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFy
+bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
