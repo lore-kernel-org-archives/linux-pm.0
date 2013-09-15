@@ -1,47 +1,104 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH] drivers: thermal: allow ti-soc-thermal run without pcb zone
-Date: Sun, 15 Sep 2013 15:21:51 -0400
-Message-ID: <1379272911-29401-1-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Subject: [PATCH 00/16] device thermal limits represented in device tree nodes (v3)
+Date: Sun, 15 Sep 2013 18:02:27 -0400
+Message-ID: <1379282563-14650-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:33777 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753007Ab3IOTWD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 15 Sep 2013 15:22:03 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch changes the behavior of TI SoC thermal driver
-when there is a PCB thermal zone.
+Hello all,
 
-Instead of reporting an error code when reading from
-PCB temperature sensor fails, this patch will make
-the driver attempt to compose the hotspot extrapolation
-based on bandgap readings only.
+Here is the continuation of work of representing hardware thermal properties
+in device tree infrastructure. The present patch series is the third version
+of this work. Previous versions were sent as RFCs and can be found here:
+RFCv2: http://lkml.org/lkml/2013/8/23/594
+RFCv1: http://lkml.org/lkml/2013/7/22/319
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 1 +
- 1 file changed, 1 insertion(+)
+The major change between RFCv2 and this version is the fact that I am now
+designing the binding accordingly to the common practice of creating links
+from consumers to producers, as seen in regulators for instance. The change
+make a thermal zone node point to used cooling devices and used sensor devices.
+As direct need, cooling devices then need to be properly represented.
+I am proposing to have cooling properties inside existing nodes, e.g. fan nodes,
+cpu nodes. The change also required me to modify the existing thermal core
+code to allow decoupling thermal zones from sensor code. Currently, the
+binding proposal covers for the situation in which one thermal zone has
+several sensor devices. Although this situation is not covered by the
+current thermal framework code, and thus not supported by this series.
+I believe this is not a stopper for this series, it can be done
+in later patch sets.
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index f588b32..e5b1cde 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -111,6 +111,7 @@ static inline int __ti_thermal_get_temp(void *devdata, long *temp)
- 		} else {
- 			dev_err(bgp->dev,
- 				"Failed to read PCB state. Using defaults\n");
-+			ret = 0;
- 		}
- 	}
- 	*temp = ti_thermal_hotspot_temperature(tmp, slope, constant);
+The second patch includes a detailed documentation with examples
+and the proposed code. In this patch series, a part from the dt parser,
+there are changes in the cpufreq code to load the cpu cooling device,
+also changes in the following sensor drivers: tmp102, lm75 and ti-soc-thermal.
+Several changes in TI's SoC DT bindings are also included, as source
+of tested examples.
+
+The present patch series was tested on OMAP4430, OMAP4460, OMAP5430 and DRA7,
+although the DRA7 changes were not sent as the core device tree support is
+currently in the process to find its way to upstream.
+
+All best,
+
+Eduardo Valentin (16):
+  drivers: thermal: allow registering without .get_temp
+  drivers: thermal: introduce device tree parser
+  drivers: thermal: cpu_cooling: introduce of_cpufreq_cooling_register
+  cpufreq: cpufreq-cpu0: add dt node parsing for cooling device
+    properties
+  hwmon: lm75: expose to thermal fw via DT nodes
+  hwmon: tmp102: expose to thermal fw via DT nodes
+  thermal: ti-soc-thermal: use thermal DT infrastructure
+  arm: dts: add omap4 CPU thermal data
+  arm: dts: add omap4430 thermal data
+  arm: dts: add omap4460 thermal data
+  arm: dts: add cooling properties on omap4430 cpu node
+  arm: dts: add cooling properties on omap4460 cpu node
+  arm: dts: add omap5 GPU thermal data
+  arm: dts: add omap5 CORE thermal data
+  arm: dts: add omap5 thermal data
+  arm: dts: add cooling properties on omap5 cpu node
+
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   7 +
+ .../devicetree/bindings/thermal/thermal.txt        | 498 ++++++++++++++
+ arch/arm/boot/dts/omap4-cpu-thermal.dtsi           |  41 ++
+ arch/arm/boot/dts/omap443x.dtsi                    |  15 +-
+ arch/arm/boot/dts/omap4460.dtsi                    |  15 +-
+ arch/arm/boot/dts/omap5-core-thermal.dtsi          |  28 +
+ arch/arm/boot/dts/omap5-gpu-thermal.dtsi           |  28 +
+ arch/arm/boot/dts/omap5.dtsi                       |  15 +-
+ drivers/cpufreq/Kconfig                            |   2 +-
+ drivers/cpufreq/cpufreq-cpu0.c                     |  16 +
+ drivers/hwmon/lm75.c                               |  46 +-
+ drivers/hwmon/tmp102.c                             |  28 +
+ drivers/thermal/Kconfig                            |  14 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/cpu_cooling.c                      |  31 +
+ drivers/thermal/of-thermal.c                       | 763 +++++++++++++++++++++
+ drivers/thermal/thermal_core.c                     |  19 +-
+ drivers/thermal/thermal_core.h                     |   9 +
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  77 ++-
+ include/dt-bindings/thermal/thermal.h              |  27 +
+ include/linux/cpu_cooling.h                        |  25 +
+ include/linux/thermal.h                            |  28 +-
+ 22 files changed, 1701 insertions(+), 32 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/thermal.txt
+ create mode 100644 arch/arm/boot/dts/omap4-cpu-thermal.dtsi
+ create mode 100644 arch/arm/boot/dts/omap5-core-thermal.dtsi
+ create mode 100644 arch/arm/boot/dts/omap5-gpu-thermal.dtsi
+ create mode 100644 drivers/thermal/of-thermal.c
+ create mode 100644 include/dt-bindings/thermal/thermal.h
+
 -- 
 1.8.2.1.342.gfa7285d
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
