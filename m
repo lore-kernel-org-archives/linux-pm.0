@@ -1,69 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 14/44] cpufreq: exynos: use cpufreq_table_validate_and_show()
-Date: Mon, 16 Sep 2013 18:56:16 +0530
-Message-ID: <0bbae405428e678a8a59d4f3c76393b0fbf5f856.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 15/44] cpufreq: ia64-acpi: use cpufreq_table_validate_and_show()
+Date: Mon, 16 Sep 2013 18:56:17 +0530
+Message-ID: <def54433f7c57099a2746c1a4e65f5d152eb85f1.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f41.google.com ([209.85.160.41]:57353 "EHLO
+	mail-pb0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250Ab3IPN2R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 09:28:17 -0400
+Received: by mail-pb0-f41.google.com with SMTP id rp2so4107430pbb.0
+        for <linux-pm@vger.kernel.org>; Mon, 16 Sep 2013 06:28:17 -0700 (PDT)
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/exynos-cpufreq.c     | 4 +---
- drivers/cpufreq/exynos5440-cpufreq.c | 4 +---
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/cpufreq/ia64-acpi-cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 0fac344..954baed 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -249,14 +249,12 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	policy->cur = policy->min = policy->max = exynos_getspeed(policy->cpu);
+diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+index 3e14f03..6cfad51 100644
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -335,7 +335,7 @@ acpi_cpufreq_cpu_init (
+ 		}
+ 	}
  
--	cpufreq_frequency_table_get_attr(exynos_info->freq_table, policy->cpu);
+-	result = cpufreq_frequency_table_cpuinfo(policy, data->freq_table);
++	result = cpufreq_table_validate_and_show(policy, data->freq_table);
+ 	if (result) {
+ 		goto err_freqfree;
+ 	}
+@@ -356,8 +356,6 @@ acpi_cpufreq_cpu_init (
+ 			(u32) data->acpi_data.states[i].status,
+ 			(u32) data->acpi_data.states[i].control);
+ 
+-	cpufreq_frequency_table_get_attr(data->freq_table, policy->cpu);
 -
- 	/* set the transition latency value */
- 	policy->cpuinfo.transition_latency = 100000;
- 
- 	cpumask_setall(policy->cpus);
- 
--	return cpufreq_frequency_table_cpuinfo(policy, exynos_info->freq_table);
-+	return cpufreq_table_validate_and_show(policy, exynos_info->freq_table);
- }
- 
- static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index d514c15..cf52759 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -326,7 +326,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	int ret;
- 
--	ret = cpufreq_frequency_table_cpuinfo(policy, dvfs_info->freq_table);
-+	ret = cpufreq_table_validate_and_show(policy, dvfs_info->freq_table);
- 	if (ret) {
- 		dev_err(dvfs_info->dev, "Invalid frequency table: %d\n", ret);
- 		return ret;
-@@ -336,8 +336,6 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = dvfs_info->latency;
- 	cpumask_setall(policy->cpus);
- 
--	cpufreq_frequency_table_get_attr(dvfs_info->freq_table, policy->cpu);
--
- 	return 0;
- }
- 
+ 	/* the first call to ->target() should result in us actually
+ 	 * writing something to the appropriate registers. */
+ 	data->resume = 1;
 -- 
 1.7.12.rc2.18.g61b472e
 
