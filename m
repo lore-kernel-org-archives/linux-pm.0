@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 01/44] cpufreq: Add new helper cpufreq_table_validate_and_show()
-Date: Mon, 16 Sep 2013 18:56:03 +0530
-Message-ID: <da0b370692a107bc767bf1e57beba0a30d405703.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 02/44] cpufreq: pxa: call cpufreq_frequency_table_get_attr()
+Date: Mon, 16 Sep 2013 18:56:04 +0530
+Message-ID: <7d0a46b946fb2800f9d4eaa4fc7a65a237a7e44c.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
@@ -12,59 +12,98 @@ To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Almost every cpufreq driver is required to validate its frequency table with:
-cpufreq_frequency_table_cpuinfo() and then expose it to cpufreq core with:
-cpufreq_frequency_table_get_attr().
+This exposes frequency table of driver to cpufreq core and is required for core
+to guess what the index for a target frequency is, when it calls
+cpufreq_frequency_table_target(). And so this driver needs to expose it.
 
-This patch creates another helper routine cpufreq_table_validate_and_show() that
-will do both these steps in a single call and will return 0 for success, error
-otherwise.
-
-This also fixes potential bugs in cpufreq drivers where people have called
-cpufreq_frequency_table_get_attr() before calling
-cpufreq_frequency_table_cpuinfo(), as the later may fail.
-
+Cc: Eric Miao <eric.y.miao@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/freq_table.c | 12 ++++++++++++
- include/linux/cpufreq.h      |  2 ++
- 2 files changed, 14 insertions(+)
+ drivers/cpufreq/pxa2xx-cpufreq.c | 13 ++++++++++++-
+ drivers/cpufreq/pxa3xx-cpufreq.c | 15 +++++++++++++--
+ 2 files changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index f111454a..11f6fa9 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -219,6 +219,18 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu)
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
- 
-+int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
-+				      struct cpufreq_frequency_table *table)
-+{
-+	int ret = cpufreq_frequency_table_cpuinfo(policy, table);
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index 8749eaf18..b004cf1 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -453,20 +453,31 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
+ 		find_freq_tables(&pxa255_freq_table, &pxa255_freqs);
+ 		pr_info("PXA255 cpufreq using %s frequency table\n",
+ 			pxa255_turbo_table ? "turbo" : "run");
 +
+ 		cpufreq_frequency_table_cpuinfo(policy, pxa255_freq_table);
++		cpufreq_frequency_table_get_attr(pxa255_freq_table, policy->cpu);
+ 	}
+-	else if (cpu_is_pxa27x())
++	else if (cpu_is_pxa27x()) {
+ 		cpufreq_frequency_table_cpuinfo(policy, pxa27x_freq_table);
++		cpufreq_frequency_table_get_attr(pxa27x_freq_table, policy->cpu);
++	}
+ 
+ 	printk(KERN_INFO "PXA CPU frequency change support initialized\n");
+ 
+ 	return 0;
+ }
+ 
++static int pxa_cpufreq_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	return 0;
++}
++
+ static struct cpufreq_driver pxa_cpufreq_driver = {
+ 	.verify	= pxa_verify_policy,
+ 	.target	= pxa_set_target,
+ 	.init	= pxa_cpufreq_init,
++	.exit	= pxa_cpufreq_exit,
+ 	.get	= pxa_cpufreq_get,
+ 	.name	= "PXA2xx",
+ };
+diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
+index d26306f..cebbed1 100644
+--- a/drivers/cpufreq/pxa3xx-cpufreq.c
++++ b/drivers/cpufreq/pxa3xx-cpufreq.c
+@@ -91,7 +91,7 @@ static int setup_freqs_table(struct cpufreq_policy *policy,
+ 			     struct pxa3xx_freq_info *freqs, int num)
+ {
+ 	struct cpufreq_frequency_table *table;
+-	int i;
++	int i, ret;
+ 
+ 	table = kzalloc((num + 1) * sizeof(*table), GFP_KERNEL);
+ 	if (table == NULL)
+@@ -108,7 +108,11 @@ static int setup_freqs_table(struct cpufreq_policy *policy,
+ 	pxa3xx_freqs_num = num;
+ 	pxa3xx_freqs_table = table;
+ 
+-	return cpufreq_frequency_table_cpuinfo(policy, table);
++	ret = cpufreq_frequency_table_cpuinfo(policy, table);
 +	if (!ret)
 +		cpufreq_frequency_table_get_attr(table, policy->cpu);
 +
 +	return ret;
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_table_validate_and_show);
-+
- void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy)
- {
- 	pr_debug("Updating show_table for new_cpu %u from last_cpu %u\n",
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index fcabc42..6b199ed 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -410,5 +410,7 @@ extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
- void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
- 				      unsigned int cpu);
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
-+int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
-+				      struct cpufreq_frequency_table *table);
+ }
  
- #endif /* _LINUX_CPUFREQ_H */
+ static void __update_core_freq(struct pxa3xx_freq_info *info)
+@@ -229,10 +233,17 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
++static int pxa3xx_cpufreq_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	return 0;
++}
++
+ static struct cpufreq_driver pxa3xx_cpufreq_driver = {
+ 	.verify		= pxa3xx_cpufreq_verify,
+ 	.target		= pxa3xx_cpufreq_set,
+ 	.init		= pxa3xx_cpufreq_init,
++	.exit		= pxa3xx_cpufreq_exit,
+ 	.get		= pxa3xx_cpufreq_get,
+ 	.name		= "pxa3xx-cpufreq",
+ };
 -- 
 1.7.12.rc2.18.g61b472e
 
