@@ -1,54 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 08/44] cpufreq: cpufreq-cpu0: use cpufreq_table_validate_and_show()
-Date: Mon, 16 Sep 2013 18:56:10 +0530
-Message-ID: <1f06d6872ed7448ce1fae206540620c626705978.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 09/44] cpufreq: cris: use cpufreq_table_validate_and_show()
+Date: Mon, 16 Sep 2013 18:56:11 +0530
+Message-ID: <f1b9aa4a63cfca34345de7b354040f08420a7302.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:36268 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485Ab3IPN1h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 09:27:37 -0400
-Received: by mail-pd0-f178.google.com with SMTP id w10so4120090pde.37
-        for <linux-pm@vger.kernel.org>; Mon, 16 Sep 2013 06:27:36 -0700 (PDT)
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Mikael Starvik <starvik@axis.com>
+Cc: linux-cris-kernel@axis.com
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-cpu0.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/cpufreq/cris-artpec3-cpufreq.c | 10 +---------
+ drivers/cpufreq/cris-etraxfs-cpufreq.c | 10 +---------
+ 2 files changed, 2 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index cbfffa9..ce4fa47 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -128,7 +128,7 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/cris-artpec3-cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
+index cb8276d..444fd96 100644
+--- a/drivers/cpufreq/cris-artpec3-cpufreq.c
++++ b/drivers/cpufreq/cris-artpec3-cpufreq.c
+@@ -76,19 +76,11 @@ static int cris_freq_target(struct cpufreq_policy *policy,
+ 
+ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
  {
- 	int ret;
- 
--	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
-+	ret = cpufreq_table_validate_and_show(policy, freq_table);
- 	if (ret) {
- 		pr_err("invalid frequency table: %d\n", ret);
- 		return ret;
-@@ -144,8 +144,6 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- 	 */
- 	cpumask_setall(policy->cpus);
- 
--	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+-	int result;
 -
- 	return 0;
+ 	/* cpuinfo and default policy values */
+ 	policy->cpuinfo.transition_latency = 1000000; /* 1ms */
+ 	policy->cur = cris_freq_get_cpu_frequency(0);
+ 
+-	result = cpufreq_frequency_table_cpuinfo(policy, cris_freq_table);
+-	if (result)
+-		return (result);
+-
+-	cpufreq_frequency_table_get_attr(cris_freq_table, policy->cpu);
+-
+-	return 0;
++	return cpufreq_table_validate_and_show(policy, cris_freq_table);
  }
  
+ 
+diff --git a/drivers/cpufreq/cris-etraxfs-cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
+index 72328f7..428395e 100644
+--- a/drivers/cpufreq/cris-etraxfs-cpufreq.c
++++ b/drivers/cpufreq/cris-etraxfs-cpufreq.c
+@@ -75,19 +75,11 @@ static int cris_freq_target(struct cpufreq_policy *policy,
+ 
+ static int cris_freq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int result;
+-
+ 	/* cpuinfo and default policy values */
+ 	policy->cpuinfo.transition_latency = 1000000;	/* 1ms */
+ 	policy->cur = cris_freq_get_cpu_frequency(0);
+ 
+-	result = cpufreq_frequency_table_cpuinfo(policy, cris_freq_table);
+-	if (result)
+-		return (result);
+-
+-	cpufreq_frequency_table_get_attr(cris_freq_table, policy->cpu);
+-
+-	return 0;
++	return cpufreq_table_validate_and_show(policy, cris_freq_table);
+ }
+ 
+ static int cris_freq_cpu_exit(struct cpufreq_policy *policy)
 -- 
 1.7.12.rc2.18.g61b472e
 
