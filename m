@@ -1,34 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 211/228] cpufreq: tegra: remove calls to cpufreq_notify_transition()
-Date: Mon, 16 Sep 2013 09:57:27 +0530
-Message-ID: <CAKohponrJerykspkd0b4wtE2YtPRMpphUW_3ZN0Lg9Q6bNdJRg@mail.gmail.com>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
-	<52339729.7030309@wwwdotorg.org>
-	<CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
-	<32077984.uYNhUh2ogt@vostro.rjw.lan>
+Subject: Re: Few clarifications on DVFS
+Date: Mon, 16 Sep 2013 11:16:18 +0530
+Message-ID: <CAOh2x=n3PVMJhbrJE33Qe73=6ZUhh8yR1rs+ziWTD5tFNjW6RA@mail.gmail.com>
+References: <CAOuKo4nZ5Yij3cnM=PuMR3awJ2QAbY4O+-mKi110xfc66xyWUg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:37912 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752Ab3IPE11 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 00:27:27 -0400
-Received: by mail-ob0-f173.google.com with SMTP id vb8so3319922obc.18
-        for <linux-pm@vger.kernel.org>; Sun, 15 Sep 2013 21:27:27 -0700 (PDT)
-In-Reply-To: <32077984.uYNhUh2ogt@vostro.rjw.lan>
+Received: from mail-vb0-f46.google.com ([209.85.212.46]:52632 "EHLO
+	mail-vb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752464Ab3IPFqT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 01:46:19 -0400
+In-Reply-To: <CAOuKo4nZ5Yij3cnM=PuMR3awJ2QAbY4O+-mKi110xfc66xyWUg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Warren <swarren@nvidia.com>
+To: karthik vm <meetvm@gmail.com>
+Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 15 September 2013 10:35, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Well, I guess you can assume that everyone has a chance to review the series
-> by now and send it as one patch in the next iteration.
+Included pm list as well..
 
-Yeah, that's what I thought..
+On Mon, Sep 16, 2013 at 6:00 AM, karthik vm <meetvm@gmail.com> wrote:
+> Hi,
+>
+> I am a PhD student doing research in DVFS area. I have few questions
+> for which I am looking for an answer. It would be great if some one
+> could give some pointers.
+>
+> 1) In my current Core2Duo laptop, "maximum transition latency" from
+> cpufreq-info command is 10us. Hence I get that to change the frequency
+> of my cpu it takes 10us. Also recent research papers say that the
+> frequency of the processor can be changed in ns scale (eg. 10 ns -
+> 100ns). If that is the case, can processor frequency be still modified
+> thru OS? Will OS be able to handle such a fine grained frequency
+> change?
 
-> A patch that adds 192 lines of code isn't shockingly large by any measure.
+What's the problem you see in OS doing that? Its not about the guarantee
+that OS can change freq in that time, but is more about hardware... And
+so it doesn't matter who changes it..
 
-It was more about removal of things and the number of files it touches..
-But yes, its good for review to send them separately but in the end they can
-be merged..
+> 2) Currently the frequency change is handled by governors. But is it
+> possible to change the frequency of a cpu directly by calling the
+> CPU-driver functions from another part of the kernel?
+
+Ya, the API is open to be called from anywhere you want... but then its
+your hardware and you must know what you are doing :)
