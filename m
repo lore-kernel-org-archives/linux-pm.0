@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 09/44] cpufreq: cris: use cpufreq_table_validate_and_show()
-Date: Mon, 16 Sep 2013 18:56:11 +0530
-Message-ID: <f1b9aa4a63cfca34345de7b354040f08420a7302.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 10/44] cpufreq: davinci: use cpufreq_table_validate_and_show()
+Date: Mon, 16 Sep 2013 18:56:12 +0530
+Message-ID: <98f52eca19183cd96014dd4c011f2442d55458d3.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
@@ -15,65 +15,34 @@ List-Id: linux-pm@vger.kernel.org
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: linux-cris-kernel@axis.com
+Cc: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cris-artpec3-cpufreq.c | 10 +---------
- drivers/cpufreq/cris-etraxfs-cpufreq.c | 10 +---------
- 2 files changed, 2 insertions(+), 18 deletions(-)
+ drivers/cpufreq/davinci-cpufreq.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/cris-artpec3-cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
-index cb8276d..444fd96 100644
---- a/drivers/cpufreq/cris-artpec3-cpufreq.c
-+++ b/drivers/cpufreq/cris-artpec3-cpufreq.c
-@@ -76,19 +76,11 @@ static int cris_freq_target(struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
+index 551dd65..f67196e 100644
+--- a/drivers/cpufreq/davinci-cpufreq.c
++++ b/drivers/cpufreq/davinci-cpufreq.c
+@@ -140,15 +140,13 @@ static int davinci_cpu_init(struct cpufreq_policy *policy)
  
- static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- {
--	int result;
+ 	policy->cur = davinci_getspeed(0);
+ 
+-	result = cpufreq_frequency_table_cpuinfo(policy, freq_table);
++	result = cpufreq_table_validate_and_show(policy, freq_table);
+ 	if (result) {
+-		pr_err("%s: cpufreq_frequency_table_cpuinfo() failed",
++		pr_err("%s: cpufreq_table_validate_and_show() failed",
+ 				__func__);
+ 		return result;
+ 	}
+ 
+-	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
 -
- 	/* cpuinfo and default policy values */
- 	policy->cpuinfo.transition_latency = 1000000; /* 1ms */
- 	policy->cur = cris_freq_get_cpu_frequency(0);
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, cris_freq_table);
--	if (result)
--		return (result);
--
--	cpufreq_frequency_table_get_attr(cris_freq_table, policy->cpu);
--
--	return 0;
-+	return cpufreq_table_validate_and_show(policy, cris_freq_table);
- }
- 
- 
-diff --git a/drivers/cpufreq/cris-etraxfs-cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-index 72328f7..428395e 100644
---- a/drivers/cpufreq/cris-etraxfs-cpufreq.c
-+++ b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-@@ -75,19 +75,11 @@ static int cris_freq_target(struct cpufreq_policy *policy,
- 
- static int cris_freq_cpu_init(struct cpufreq_policy *policy)
- {
--	int result;
--
- 	/* cpuinfo and default policy values */
- 	policy->cpuinfo.transition_latency = 1000000;	/* 1ms */
- 	policy->cur = cris_freq_get_cpu_frequency(0);
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, cris_freq_table);
--	if (result)
--		return (result);
--
--	cpufreq_frequency_table_get_attr(cris_freq_table, policy->cpu);
--
--	return 0;
-+	return cpufreq_table_validate_and_show(policy, cris_freq_table);
- }
- 
- static int cris_freq_cpu_exit(struct cpufreq_policy *policy)
+ 	/*
+ 	 * Time measurement across the target() function yields ~1500-1800us
+ 	 * time taken with no drivers on notification list.
 -- 
 1.7.12.rc2.18.g61b472e
 
