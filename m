@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 22/44] cpufreq: p4-clockmod: use cpufreq_table_validate_and_show()
-Date: Mon, 16 Sep 2013 18:56:24 +0530
-Message-ID: <aea01f3a28287e41caf3a840ad86c16aa30b1f3f.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 23/44] cpufreq: pasemi: use cpufreq_table_validate_and_show()
+Date: Mon, 16 Sep 2013 18:56:25 +0530
+Message-ID: <5e4d862be96ed0934920267cecdcb402096914f6.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:49990 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754449Ab3IPN2z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 09:28:55 -0400
-Received: by mail-pa0-f41.google.com with SMTP id bj1so5391185pad.0
-        for <linux-pm@vger.kernel.org>; Mon, 16 Sep 2013 06:28:55 -0700 (PDT)
+Received: from mail-pb0-f49.google.com ([209.85.160.49]:33656 "EHLO
+	mail-pb0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754449Ab3IPN3B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 09:29:01 -0400
+Received: by mail-pb0-f49.google.com with SMTP id xb4so4054390pbc.36
+        for <linux-pm@vger.kernel.org>; Mon, 16 Sep 2013 06:29:00 -0700 (PDT)
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
@@ -21,33 +21,29 @@ Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/p4-clockmod.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/cpufreq/pasemi-cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
-index 2f0a2a6..03478bf 100644
---- a/drivers/cpufreq/p4-clockmod.c
-+++ b/drivers/cpufreq/p4-clockmod.c
-@@ -230,7 +230,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- 		else
- 			p4clockmod_table[i].frequency = (stock_freq * i)/8;
- 	}
--	cpufreq_frequency_table_get_attr(p4clockmod_table, policy->cpu);
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index 534e43a..23bc8a82 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -219,12 +219,10 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
  
- 	/* cpuinfo and default policy values */
+ 	ppc_proc_freq = policy->cur * 1000ul;
  
-@@ -239,7 +238,7 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 10000001;
- 	policy->cur = stock_freq;
+-	cpufreq_frequency_table_get_attr(pas_freqs, policy->cpu);
+-
+ 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max
+ 	 * are set correctly
+ 	 */
+-	return cpufreq_frequency_table_cpuinfo(policy, pas_freqs);
++	return cpufreq_table_validate_and_show(policy, pas_freqs);
  
--	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
-+	return cpufreq_table_validate_and_show(policy, &p4clockmod_table[0]);
- }
- 
- 
+ out_unmap_sdcpwr:
+ 	iounmap(sdcpwr_mapbase);
 -- 
 1.7.12.rc2.18.g61b472e
 
