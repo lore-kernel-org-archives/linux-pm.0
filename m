@@ -1,32 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] cpufreq: unlock correct rwsem while updating policy->cpu
-Date: Mon, 16 Sep 2013 20:34:46 +0200
-Message-ID: <7384008.XcFgntkLDk@vostro.rjw.lan>
-References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org> <1379348823.3422.42.camel@linaro1.home> <CAKohpomEQsS-WHQpa=_07NQ1FXDB711inrmMgUguD529BA7g1A@mail.gmail.com>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: unlock correct rwsem while updating
+ policy->cpu
+Date: Mon, 16 Sep 2013 19:42:10 +0100
+Message-ID: <1379356930.3422.71.camel@linaro1.home>
+References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+	 <1379348823.3422.42.camel@linaro1.home>
+	 <CAKohpomEQsS-WHQpa=_07NQ1FXDB711inrmMgUguD529BA7g1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <CAKohpomEQsS-WHQpa=_07NQ1FXDB711inrmMgUguD529BA7g1A@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, September 16, 2013 10:38:05 PM Viresh Kumar wrote:
+On Mon, 2013-09-16 at 22:38 +0530, Viresh Kumar wrote:
 > On 16 September 2013 21:57, Jon Medhurst (Tixy) <tixy@linaro.org> wrote:
 > > If I take mainline code and just change the line above to:
 > 
 > You meant this line by above line?
 > 
 >          unlock_policy_rwsem_write(cpu);
-> 
+
+Yes.
+
 > >    up_write(&per_cpu(cpu_policy_rwsem, (per_cpu(cpufreq_cpu_data,
 > > cpu))->last_cpu));
 > > then the big_little cpufreq driver works for me.
 > 
 > That would be same as: up_write(&per_cpu(cpu_policy_rwsem, policy->last_cpu));
-> 
+
+Yes. (I had cut'n'pasted from the unlock_policy_rwsem_ macro)
+
 > >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 > >> index 43c24aa..c18bf7b 100644
 > >> --- a/drivers/cpufreq/cpufreq.c
@@ -56,9 +63,55 @@ On Monday, September 16, 2013 10:38:05 PM Viresh Kumar wrote:
 > 
 > Fixed my patch now.. find attached..
 
-Care to resend with a subject indicating that that's a patch update?
+The commit log to that patch still mentions taking both locks.
+The code itself fixes the lockdep errors I had, so
 
-Like [PATCH v2] etc. or similar?
+Tested-by: Jon Medhurst <tixy@linaro.org>
 
-Rafael
+however, I still have concerns about the locking (below)...
+
+>  It mentions why lock for last cpu is
+> enough here. Copied that here too..
+> 
+> + /*
+> + * Take direct locks as lock_policy_rwsem_write wouldn't work here.
+> + * Also lock for last cpu is enough here as contention will happen only
+> + * after policy->cpu is changed and after it is changed, other threads
+> + * will try to acquire lock for new cpu. And policy is already updated
+> + * by then.
+> + */
+> 
+> > Also, this locking is now just happening around policy->cpu update,
+> > whereas before this change, it was locked for the whole of
+> > update_policy_cpu, i.e. cpufreq_frequency_table_update_policy_cpu and
+> > the notifier callbacks. Is that change of lock coverage OK?
+> 
+> Yeah, the rwsem is only required for updating policy's fields and so that
+> should be okay.
+
+But what about reads, like in cpufreq_frequency_table_update_policy_cpu
+which is called immediately after the unlocking writes? Should that not
+be covered by a reader lock?
+
+And after that call, policy is passed into blocking_notifier_call_chain,
+do those callbacks not want to look at policy fields? Or are they going
+to do there own locking?
+
+Or is update_policy_cpu itself meant to be called with a read lock held?
+(It doesn't appear to be as the semaphore 'activiy' field of the lock is
+zero).
+
+Or is there some other non-obvious synchronisation method which means
+the policy object can't change?
+
+This is the first time I've looked at this code, so feel free just to
+say 'it's complicated, just trust me, I'm the expert, I know what I'm
+doing'...
+
+-- 
+Tixy
+
+
+
+
 
