@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 04/44] cpufreq: sparc: call cpufreq_frequency_table_get_attr()
-Date: Mon, 16 Sep 2013 18:56:06 +0530
-Message-ID: <4e98887bdfcf31caede9c185ec57e436882f2062.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 05/44] cpufreq: acpi-cpufreq: use cpufreq_table_validate_and_show()
+Date: Mon, 16 Sep 2013 18:56:07 +0530
+Message-ID: <459b18c12f53aaf04058a0f8fc208c26a4491e67.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:38202 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753049Ab3IPN1P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 09:27:15 -0400
-Received: by mail-pa0-f51.google.com with SMTP id lf1so5332554pab.24
-        for <linux-pm@vger.kernel.org>; Mon, 16 Sep 2013 06:27:15 -0700 (PDT)
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34258 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753120Ab3IPN1U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2013 09:27:20 -0400
+Received: by mail-pa0-f44.google.com with SMTP id fz6so5342240pac.17
+        for <linux-pm@vger.kernel.org>; Mon, 16 Sep 2013 06:27:20 -0700 (PDT)
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
@@ -18,85 +18,36 @@ List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-This exposes frequency table of driver to cpufreq core and is required for core
-to guess what the index for a target frequency is, when it calls
-cpufreq_frequency_table_target(). And so this driver needs to expose it.
+Lets use cpufreq_table_validate_and_show() instead of calling
+cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: David S. Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sparc-us2e-cpufreq.c | 10 ++++++++--
- drivers/cpufreq/sparc-us3-cpufreq.c  | 11 +++++++++--
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/sparc-us2e-cpufreq.c b/drivers/cpufreq/sparc-us2e-cpufreq.c
-index cf5bc2c..63b3eae 100644
---- a/drivers/cpufreq/sparc-us2e-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
-@@ -307,6 +307,7 @@ static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
- 	unsigned long clock_tick = sparc64_get_clock_tick(cpu) / 1000;
- 	struct cpufreq_frequency_table *table =
- 		&us2e_freq_table[cpu].table[0];
-+	int ret;
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index a1260b4..71f8e15 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -837,7 +837,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	data->freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
+ 	perf->state = 0;
  
- 	table[0].driver_data = 0;
- 	table[0].frequency = clock_tick / 1;
-@@ -324,13 +325,18 @@ static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 0;
- 	policy->cur = clock_tick;
+-	result = cpufreq_frequency_table_cpuinfo(policy, data->freq_table);
++	result = cpufreq_table_validate_and_show(policy, data->freq_table);
+ 	if (result)
+ 		goto err_freqfree;
  
--	return cpufreq_frequency_table_cpuinfo(policy, table);
-+	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	if (!ret)
-+		cpufreq_frequency_table_get_attr(table, policy->cpu);
-+	return ret;
- }
+@@ -868,8 +868,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 			(u32) perf->states[i].power,
+ 			(u32) perf->states[i].transition_latency);
  
- static int us2e_freq_cpu_exit(struct cpufreq_policy *policy)
- {
--	if (cpufreq_us2e_driver)
-+	if (cpufreq_us2e_driver) {
-+		cpufreq_frequency_table_put_attr(policy->cpu);
- 		us2e_set_cpu_divider_index(policy, 0);
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/cpufreq/sparc-us3-cpufreq.c b/drivers/cpufreq/sparc-us3-cpufreq.c
-index ac76b48..985bc56 100644
---- a/drivers/cpufreq/sparc-us3-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us3-cpufreq.c
-@@ -168,6 +168,7 @@ static int __init us3_freq_cpu_init(struct cpufreq_policy *policy)
- 	unsigned long clock_tick = sparc64_get_clock_tick(cpu) / 1000;
- 	struct cpufreq_frequency_table *table =
- 		&us3_freq_table[cpu].table[0];
-+	int ret;
- 
- 	table[0].driver_data = 0;
- 	table[0].frequency = clock_tick / 1;
-@@ -181,13 +182,19 @@ static int __init us3_freq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 0;
- 	policy->cur = clock_tick;
- 
--	return cpufreq_frequency_table_cpuinfo(policy, table);
-+	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	if (!ret)
-+		cpufreq_frequency_table_get_attr(table, policy->cpu);
-+
-+	return ret;
- }
- 
- static int us3_freq_cpu_exit(struct cpufreq_policy *policy)
- {
--	if (cpufreq_us3_driver)
-+	if (cpufreq_us3_driver) {
-+		cpufreq_frequency_table_put_attr(policy->cpu);
- 		us3_set_cpu_divider_index(policy, 0);
-+	}
- 
- 	return 0;
- }
+-	cpufreq_frequency_table_get_attr(data->freq_table, policy->cpu);
+-
+ 	/*
+ 	 * the first call to ->target() should result in us actually
+ 	 * writing something to the appropriate registers.
 -- 
 1.7.12.rc2.18.g61b472e
 
