@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 36/44] cpufreq: speedstep: use cpufreq_table_validate_and_show()
-Date: Mon, 16 Sep 2013 18:56:38 +0530
-Message-ID: <4d9a87c03d39d25880907cdd1ee12c6cbd90acc8.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 37/44] cpufreq: tegra: use cpufreq_table_validate_and_show()
+Date: Mon, 16 Sep 2013 18:56:39 +0530
+Message-ID: <bc57d8e446d63275d2c832a15fa28208adb56aa3.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
@@ -15,89 +15,26 @@ List-Id: linux-pm@vger.kernel.org
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: David S. Miller <davem@davemloft.net>
+Acked-by: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/speedstep-centrino.c | 10 +---------
- drivers/cpufreq/speedstep-ich.c      |  9 +--------
- drivers/cpufreq/speedstep-smi.c      |  8 +-------
- 3 files changed, 3 insertions(+), 24 deletions(-)
+ drivers/cpufreq/tegra-cpufreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
-index f897d51..f180561 100644
---- a/drivers/cpufreq/speedstep-centrino.c
-+++ b/drivers/cpufreq/speedstep-centrino.c
-@@ -345,7 +345,6 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
- 	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
- 	unsigned freq;
- 	unsigned l, h;
--	int ret;
- 	int i;
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index a7b876f..d45c1d8 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -215,8 +215,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
+ 	clk_prepare_enable(emc_clk);
+ 	clk_prepare_enable(cpu_clk);
  
- 	/* Only Intel makes Enhanced Speedstep-capable CPUs */
-@@ -402,15 +401,8 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
+-	cpufreq_frequency_table_cpuinfo(policy, freq_table);
+-	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
++	cpufreq_table_validate_and_show(policy, freq_table);
+ 	policy->cur = tegra_getspeed(policy->cpu);
+ 	target_cpu_speed[policy->cpu] = policy->cur;
  
- 	pr_debug("centrino_cpu_init: cur=%dkHz\n", policy->cur);
- 
--	ret = cpufreq_frequency_table_cpuinfo(policy,
-+	return cpufreq_table_validate_and_show(policy,
- 		per_cpu(centrino_model, policy->cpu)->op_points);
--	if (ret)
--		return (ret);
--
--	cpufreq_frequency_table_get_attr(
--		per_cpu(centrino_model, policy->cpu)->op_points, policy->cpu);
--
--	return 0;
- }
- 
- static int centrino_cpu_exit(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/speedstep-ich.c b/drivers/cpufreq/speedstep-ich.c
-index 5355abb..86a184e 100644
---- a/drivers/cpufreq/speedstep-ich.c
-+++ b/drivers/cpufreq/speedstep-ich.c
-@@ -320,7 +320,6 @@ static void get_freqs_on_cpu(void *_get_freqs)
- 
- static int speedstep_cpu_init(struct cpufreq_policy *policy)
- {
--	int result;
- 	unsigned int policy_cpu, speed;
- 	struct get_freqs gf;
- 
-@@ -349,13 +348,7 @@ static int speedstep_cpu_init(struct cpufreq_policy *policy)
- 	/* cpuinfo and default policy values */
- 	policy->cur = speed;
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, speedstep_freqs);
--	if (result)
--		return result;
--
--	cpufreq_frequency_table_get_attr(speedstep_freqs, policy->cpu);
--
--	return 0;
-+	return cpufreq_table_validate_and_show(policy, speedstep_freqs);
- }
- 
- 
-diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-index abfba4f..f4d0318 100644
---- a/drivers/cpufreq/speedstep-smi.c
-+++ b/drivers/cpufreq/speedstep-smi.c
-@@ -329,13 +329,7 @@ static int speedstep_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
- 	policy->cur = speed;
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, speedstep_freqs);
--	if (result)
--		return result;
--
--	cpufreq_frequency_table_get_attr(speedstep_freqs, policy->cpu);
--
--	return 0;
-+	return cpufreq_table_validate_and_show(policy, speedstep_freqs);
- }
- 
- static int speedstep_cpu_exit(struct cpufreq_policy *policy)
 -- 
 1.7.12.rc2.18.g61b472e
 
