@@ -1,169 +1,85 @@
 From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: make return type of
- lock_policy_rwsem_{read|write}() as void
-Date: Tue, 17 Sep 2013 09:28:39 +0100
-Message-ID: <1379406519.3413.13.camel@linaro1.home>
-References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
-	 <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/2] cpufreq: unlock correct rwsem while updating
+ policy->cpu
+Date: Tue, 17 Sep 2013 10:24:46 +0100
+Message-ID: <1379409886.3413.14.camel@linaro1.home>
+References: <63ac1edc637ef2c8cf05579972506ad5365948c1.1379393377.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
+In-Reply-To: <63ac1edc637ef2c8cf05579972506ad5365948c1.1379393377.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2013-09-16 at 20:40 +0530, Viresh Kumar wrote:
-> lock_policy_rwsem_{read|write}() currently has return type of int but it always
-> return zero and hence its return type must be void instead. This patch makes its
-> return type void and fixes all users of it as well.
+On Tue, 2013-09-17 at 10:22 +0530, Viresh Kumar wrote:
+> Current code looks like this:
 > 
-> Reported-by: Jon Medhurst<tixy@linaro.org>
+>         WARN_ON(lock_policy_rwsem_write(cpu));
+>         update_policy_cpu(policy, new_cpu);
+>         unlock_policy_rwsem_write(cpu);
+> 
+> {lock|unlock}_policy_rwsem_write(cpu) takes/releases policy->cpu's rwsem.
+> Because cpu is changing with the call to update_policy_cpu(), the
+> unlock_policy_rwsem_write() will release the incorrect lock.
+> 
+> The right solution would be to release the same lock as was taken earlier. Also
+> update_policy_cpu() was also called from cpufreq_add_dev() without any locks and
+> so its better if we move this locking to inside update_policy_cpu().
+> 
+> Reported-and-Tested-by: Jon Medhurst<tixy@linaro.org>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Tested-by: Jon Medhurst <tixy@linaro.org>
-
 > ---
->  drivers/cpufreq/cpufreq.c | 38 +++++++++++---------------------------
->  1 file changed, 11 insertions(+), 27 deletions(-)
+> Hi Rafael,
+> 
+> Only one patch is sent now as other one is unchanged.
+
+This patch fixes a regression introduced in 3.12 by commit f9ba680d23
+(cpufreq: Extract the handover of policy cpu to a helper function).
+
+The other patch is a tidyup of long-standing code.
+
+>  drivers/cpufreq/cpufreq.c | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index c18bf7b..598af5c 100644
+> index 43c24aa..1479522 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -67,13 +67,11 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->  static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
+> @@ -952,9 +952,20 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+>  	if (cpu == policy->cpu)
+>  		return;
 >  
->  #define lock_policy_rwsem(mode, cpu)					\
-> -static int lock_policy_rwsem_##mode(int cpu)				\
-> +static void lock_policy_rwsem_##mode(int cpu)				\
->  {									\
->  	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);	\
->  	BUG_ON(!policy);						\
->  	down_##mode(&per_cpu(cpu_policy_rwsem, policy->cpu));		\
-> -									\
-> -	return 0;							\
->  }
->  
->  lock_policy_rwsem(read, cpu);
-> @@ -653,13 +651,12 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
->  {
->  	struct cpufreq_policy *policy = to_policy(kobj);
->  	struct freq_attr *fattr = to_attr(attr);
-> -	ssize_t ret = -EINVAL;
-> +	ssize_t ret;
->  
->  	if (!down_read_trylock(&cpufreq_rwsem))
-> -		goto exit;
-> +		return -EINVAL;
->  
-> -	if (lock_policy_rwsem_read(policy->cpu) < 0)
-> -		goto up_read;
-> +	lock_policy_rwsem_read(policy->cpu);
->  
->  	if (fattr->show)
->  		ret = fattr->show(policy, buf);
-> @@ -667,10 +664,8 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
->  		ret = -EIO;
->  
->  	unlock_policy_rwsem_read(policy->cpu);
-> -
-> -up_read:
->  	up_read(&cpufreq_rwsem);
-> -exit:
+> +	/*
+> +	 * Take direct locks as lock_policy_rwsem_write wouldn't work here.
+> +	 * Also lock for last cpu is enough here as contention will happen only
+> +	 * after policy->cpu is changed and after it is changed, other threads
+> +	 * will try to acquire lock for new cpu. And policy is already updated
+> +	 * by then.
+> +	 */
+> +	down_write(&per_cpu(cpu_policy_rwsem, policy->cpu));
 > +
->  	return ret;
->  }
+>  	policy->last_cpu = policy->cpu;
+>  	policy->cpu = cpu;
 >  
-> @@ -689,8 +684,7 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
->  	if (!down_read_trylock(&cpufreq_rwsem))
->  		goto unlock;
->  
-> -	if (lock_policy_rwsem_write(policy->cpu) < 0)
-> -		goto up_read;
-> +	lock_policy_rwsem_write(policy->cpu);
->  
->  	if (fattr->store)
->  		ret = fattr->store(policy, buf, count);
-> @@ -699,7 +693,6 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
->  
->  	unlock_policy_rwsem_write(policy->cpu);
->  
-> -up_read:
->  	up_read(&cpufreq_rwsem);
->  unlock:
->  	put_online_cpus();
-> @@ -1143,7 +1136,7 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
->  	if (ret) {
->  		pr_err("%s: Failed to move kobj: %d", __func__, ret);
->  
-> -		WARN_ON(lock_policy_rwsem_write(old_cpu));
-> +		lock_policy_rwsem_write(old_cpu);
->  		cpumask_set_cpu(old_cpu, policy->cpus);
->  		unlock_policy_rwsem_write(old_cpu);
->  
-> @@ -1196,7 +1189,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->  			policy->governor->name, CPUFREQ_NAME_LEN);
+> +	up_write(&per_cpu(cpu_policy_rwsem, policy->last_cpu));
+> +
+>  #ifdef CONFIG_CPU_FREQ_TABLE
+>  	cpufreq_frequency_table_update_policy_cpu(policy);
 >  #endif
+> @@ -1203,9 +1214,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
 >  
-> -	WARN_ON(lock_policy_rwsem_write(cpu));
-> +	lock_policy_rwsem_write(cpu);
->  	cpus = cpumask_weight(policy->cpus);
+>  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
+>  		if (new_cpu >= 0) {
+> -			WARN_ON(lock_policy_rwsem_write(cpu));
+>  			update_policy_cpu(policy, new_cpu);
+> -			unlock_policy_rwsem_write(cpu);
 >  
->  	if (cpus > 1)
-> @@ -1459,14 +1452,11 @@ unsigned int cpufreq_get(unsigned int cpu)
->  	if (!down_read_trylock(&cpufreq_rwsem))
->  		return 0;
->  
-> -	if (unlikely(lock_policy_rwsem_read(cpu)))
-> -		goto out_policy;
-> +	lock_policy_rwsem_read(cpu);
->  
->  	ret_freq = __cpufreq_get(cpu);
->  
->  	unlock_policy_rwsem_read(cpu);
-> -
-> -out_policy:
->  	up_read(&cpufreq_rwsem);
->  
->  	return ret_freq;
-> @@ -1690,14 +1680,12 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
->  {
->  	int ret = -EINVAL;
->  
-> -	if (unlikely(lock_policy_rwsem_write(policy->cpu)))
-> -		goto fail;
-> +	lock_policy_rwsem_write(policy->cpu);
->  
->  	ret = __cpufreq_driver_target(policy, target_freq, relation);
->  
->  	unlock_policy_rwsem_write(policy->cpu);
->  
-> -fail:
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_driver_target);
-> @@ -1988,10 +1976,7 @@ int cpufreq_update_policy(unsigned int cpu)
->  		goto no_policy;
->  	}
->  
-> -	if (unlikely(lock_policy_rwsem_write(cpu))) {
-> -		ret = -EINVAL;
-> -		goto fail;
-> -	}
-> +	lock_policy_rwsem_write(cpu);
->  
->  	pr_debug("updating policy for CPU %u\n", cpu);
->  	memcpy(&new_policy, policy, sizeof(*policy));
-> @@ -2020,7 +2005,6 @@ int cpufreq_update_policy(unsigned int cpu)
->  
->  	unlock_policy_rwsem_write(cpu);
->  
-> -fail:
->  	cpufreq_cpu_put(policy);
->  no_policy:
->  	return ret;
+>  			if (!frozen) {
+>  				pr_debug("%s: policy Kobject moved to cpu: %d "
 
+-- 
+Tixy
 
