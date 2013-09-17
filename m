@@ -1,33 +1,23 @@
-From: karthik vm <meetvm@gmail.com>
-Subject: Re: Few clarifications on DVFS
-Date: Mon, 16 Sep 2013 22:13:11 -0400
-Message-ID: <CAOuKo4kZNv70OyEt6tRynfFmRex8DW+nJCg2pZGPoydnHn+LaA@mail.gmail.com>
-References: <CAOuKo4nZ5Yij3cnM=PuMR3awJ2QAbY4O+-mKi110xfc66xyWUg@mail.gmail.com>
- <CAOh2x=n3PVMJhbrJE33Qe73=6ZUhh8yR1rs+ziWTD5tFNjW6RA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: unlock correct rwsem while updating policy->cpu
+Date: Tue, 17 Sep 2013 10:08:20 +0530
+Message-ID: <CAKohpondRF0NiYQW4vc1RXHaiqV3vCR9EHtZhM42AMW8xvm-+A@mail.gmail.com>
+References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+	<1379348823.3422.42.camel@linaro1.home>
+	<CAKohpomEQsS-WHQpa=_07NQ1FXDB711inrmMgUguD529BA7g1A@mail.gmail.com>
+	<7384008.XcFgntkLDk@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=n3PVMJhbrJE33Qe73=6ZUhh8yR1rs+ziWTD5tFNjW6RA@mail.gmail.com>
+In-Reply-To: <7384008.XcFgntkLDk@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks for immediate response Viresh.
+On 17 September 2013 00:04, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Care to resend with a subject indicating that that's a patch update?
+>
+> Like [PATCH v2] etc. or similar?
 
-On Mon, Sep 16, 2013 at 1:46 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-
-> What's the problem you see in OS doing that? Its not about the guarantee
-> that OS can change freq in that time, but is more about hardware... And
-> so it doesn't matter who changes it..
-
-Yeah actually that is what my concern is. It seems that for changing
-the frequency we need to acquire a lock (in cpufreq_driver_target()).
-Hence even though the hardware is capable of ns level DVFS, OS
-overhead may be large enough to take advantage of it. Can we measure
-this overhead?
-
-> Ya, the API is open to be called from anywhere you want... but then its
-> your hardware and you must know what you are doing :)
-
-Great to know. Thanks!!
+Yeah.. I was waiting for Tixy to test it once..
