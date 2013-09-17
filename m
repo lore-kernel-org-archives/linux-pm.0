@@ -1,72 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 1/2] cpufreq: unlock correct rwsem while updating policy->cpu
-Date: Tue, 17 Sep 2013 10:22:11 +0530
-Message-ID: <63ac1edc637ef2c8cf05579972506ad5365948c1.1379393377.git.viresh.kumar@linaro.org>
+Subject: Re: Few clarifications on DVFS
+Date: Tue, 17 Sep 2013 10:31:27 +0530
+Message-ID: <CAKohpokp4QknDECgv2ecVbu-7L3jhcLtHy=TZh-3m5=ib_xDyg@mail.gmail.com>
+References: <CAOuKo4nZ5Yij3cnM=PuMR3awJ2QAbY4O+-mKi110xfc66xyWUg@mail.gmail.com>
+	<CAOh2x=n3PVMJhbrJE33Qe73=6ZUhh8yR1rs+ziWTD5tFNjW6RA@mail.gmail.com>
+	<CAOuKo4kZNv70OyEt6tRynfFmRex8DW+nJCg2pZGPoydnHn+LaA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOuKo4kZNv70OyEt6tRynfFmRex8DW+nJCg2pZGPoydnHn+LaA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, tixy@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: karthik vm <meetvm@gmail.com>
+Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Current code looks like this:
+On 17 September 2013 07:43, karthik vm <meetvm@gmail.com> wrote:
+> Yeah actually that is what my concern is. It seems that for changing
+> the frequency we need to acquire a lock (in cpufreq_driver_target()).
+> Hence even though the hardware is capable of ns level DVFS, OS
+> overhead may be large enough to take advantage of it. Can we measure
+> this overhead?
 
-        WARN_ON(lock_policy_rwsem_write(cpu));
-        update_policy_cpu(policy, new_cpu);
-        unlock_policy_rwsem_write(cpu);
+There are a lot of other things that we really need to look before this
+one..
 
-{lock|unlock}_policy_rwsem_write(cpu) takes/releases policy->cpu's rwsem.
-Because cpu is changing with the call to update_policy_cpu(), the
-unlock_policy_rwsem_write() will release the incorrect lock.
+The way we are changing frequency currently is very delayed... There
+are few other threads that are going around power aware scheduler
+which you might be interested in.. Look for them in Archives..
 
-The right solution would be to release the same lock as was taken earlier. Also
-update_policy_cpu() was also called from cpufreq_add_dev() without any locks and
-so its better if we move this locking to inside update_policy_cpu().
+Coming back to your question, these kind of overheads will always be
+there, isn't it? Normally that lock will be acquired fairly quickly as there
+might be no contention..
 
-Reported-and-Tested-by: Jon Medhurst<tixy@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Rafael,
-
-Only one patch is sent now as other one is unchanged.
-
- drivers/cpufreq/cpufreq.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 43c24aa..1479522 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -952,9 +952,20 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
- 	if (cpu == policy->cpu)
- 		return;
- 
-+	/*
-+	 * Take direct locks as lock_policy_rwsem_write wouldn't work here.
-+	 * Also lock for last cpu is enough here as contention will happen only
-+	 * after policy->cpu is changed and after it is changed, other threads
-+	 * will try to acquire lock for new cpu. And policy is already updated
-+	 * by then.
-+	 */
-+	down_write(&per_cpu(cpu_policy_rwsem, policy->cpu));
-+
- 	policy->last_cpu = policy->cpu;
- 	policy->cpu = cpu;
- 
-+	up_write(&per_cpu(cpu_policy_rwsem, policy->last_cpu));
-+
- #ifdef CONFIG_CPU_FREQ_TABLE
- 	cpufreq_frequency_table_update_policy_cpu(policy);
- #endif
-@@ -1203,9 +1214,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 
- 		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
- 		if (new_cpu >= 0) {
--			WARN_ON(lock_policy_rwsem_write(cpu));
- 			update_policy_cpu(policy, new_cpu);
--			unlock_policy_rwsem_write(cpu);
- 
- 			if (!frozen) {
- 				pr_debug("%s: policy Kobject moved to cpu: %d "
--- 
-1.7.12.rc2.18.g61b472e
-
+Yeah, you can measure it but don't know who is your best friend in
+term of tools.. Maybe ftrace can get you some details.
