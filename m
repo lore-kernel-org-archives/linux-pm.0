@@ -1,45 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 5/5] cpufreq: use correct values of cpus in __cpufreq_remove_dev_finish()
-Date: Tue, 17 Sep 2013 20:43:30 +0200
-Message-ID: <4586351.EPC2yFj4Nj@vostro.rjw.lan>
-References: <cover.1378963070.git.viresh.kumar@linaro.org> <52387343.7040007@wwwdotorg.org> <CAKohpo=_bhaws44_XEf=DEjbVtiRfYHeMm-cK=bHo1Sed14kAg@mail.gmail.com>
+From: Sebastian Capella <sebastian.capella-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH RFC 1/2] PM / Hibernate: use name_to_dev_t to parse resume
+Date: Tue, 17 Sep 2013 13:50:21 -0700
+Message-ID: <20130917205021.20736.5257@capellas-linux>
+References: <1377114413-8521-1-git-send-email-sebastian.capella@linaro.org>
+ <1377114413-8521-2-git-send-email-sebastian.capella@linaro.org>
+ <20130825153811.GA4795@amd.pavel.ucw.cz>
+ <20130826174050.16429.7419@capellas-linux>
+ <20130830113533.GA7226@amd.pavel.ucw.cz>
+ <20130830184230.28518.71814@capellas-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55853 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753371Ab3IQScW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Sep 2013 14:32:22 -0400
-In-Reply-To: <CAKohpo=_bhaws44_XEf=DEjbVtiRfYHeMm-cK=bHo1Sed14kAg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <20130830184230.28518.71814@capellas-linux>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+ <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+ <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Sebastian Capella <sebastian.capella-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, rjw-+BtOjEMDT1ZEFMq0/Lb3/3WsBbEqB2P/@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, @lists.linaro.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, September 17, 2013 09:48:08 PM Viresh Kumar wrote:
-> On 17 September 2013 20:50, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> > On 09/11/2013 11:25 PM, Viresh Kumar wrote:
-> >> This broke after a recent change "cedb70a cpufreq: Split __cpufreq_remove_dev()
-> >> into two parts" from Srivatsa..
-> >>
-> >> Consider a scenario where we have two CPUs in a policy (0 & 1) and we are
-> >> removing cpu 1. On the call to __cpufreq_remove_dev_prepare() we have cleared 1
-> >> from policy->cpus and now on a call to __cpufreq_remove_dev_finish() we read
-> >> cpumask_weight of policy->cpus, which will come as 1 and this code will behave
-> >> as if we are removing the last cpu from policy :)
-> >>
-> >> Fix it by clearing cpu mask in __cpufreq_remove_dev_finish() instead of
-> >> __cpufreq_remove_dev_prepare().
-> >
-> > I see this patch isn't in linux-next yet, nor did it make 3.12-rc1. I
-> > assume it'll make 3.12-rc2? It solves various CPU hotplug and
-> > suspend/resume issues for me.
+Quoting Sebastian Capella (2013-08-30 11:42:30)
+> Quoting Pavel Machek (2013-08-30 04:35:33)
+> > On Mon 2013-08-26 10:40:50, Sebastian Capella wrote:
+> > > Quoting Pavel Machek (2013-08-25 08:38:11)
+> > > > Is the allocation actually neccessary? At the very least this should
+> > > > test for NULL...
+> > > 
+> > > name_to_dev_t expects a non-const name, but the buffer passed in
+> > > is const.  I also am removing the '\n' if found at the end of the
+> > > string which would violate the const.
+> > 
+> > Fix name_to_dev_t, then. No need to do memory allocation just to work
+> > around const.
+> > 
+> Hi Pavel,
 > 
-> Yes, I have asked Rafael to get this in for rc2 and few others too..
-> Waiting for his reply though..
+> The issue is really Removing the \n from the user space input.  The
+> flow is:
+> const input buf -> copy to work buffer, remove newline -> name_to_dev_t
+> 
+>   ssize_t resume_store(..., const char *buf, size_t n)
+>   // copy buf, strip off trailing newline, pass to name_to_dev_t
+>   dev_t name_to_dev_t(char *name)
+> 
+> The const in the restore_store buffer comes from the function type of the
+> store member of the kobj_attribute.  I don't believe this should be changed.
+> 
+> Currently, name_to_dev_t will fail in some cases if a trailing \n is present.
+> Is it more appropriate to handle stripping the newline in the store
+> function rather than modifying name_to_dev_t to clean it up?
+> 
+> It seems logical for name_to_dev_t to take a const name parameter as
+> there should be no reason to modify the name buffer passed to it.
+> I'll be happy to make a patch to do this, but without hardening
+> name_to_dev_t against trailing newlines, it would not be neccesary for
+> this problem.
+> 
+> Thanks for your time and comments!
+> 
 
-Care to remind me what the other patches were?
+Hi Pavel,
 
-Rafael
+Do you have any more feedback regarding leaving the strndup?
 
+Thanks!
+
+Sebastian
