@@ -1,208 +1,113 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH 1/3] PM / OPP: extend DT binding to specify phandle of another node for OPP
-Date: Wed, 18 Sep 2013 11:58:11 +0100
-Message-ID: <1379501893-12669-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1379501893-12669-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Subject: Re: [PATCHv2 06/16] hwmon: tmp102: expose to thermal fw via DT nodes
+Date: Wed, 18 Sep 2013 04:06:49 -0700
+Message-ID: <20130918110649.GA9050@roeck-us.net>
+References: <523643D4.30208@roeck-us.net>
+ <1379457245-17810-1-git-send-email-eduardo.valentin@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1379501893-12669-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1379457245-17810-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Cc: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+On Tue, Sep 17, 2013 at 06:34:05PM -0400, Eduardo Valentin wrote:
+> This patch adds to tmp102 temperature sensor the possibility
+> to expose itself as thermal zone device, registered on the
+> thermal framework.
+> 
+> The thermal zone is built only if a device tree node
+> describing a thermal zone for this sensor is present
+> inside the tmp102 DT node. Otherwise, the driver behavior
+> will be the same.
+> 
+> Cc: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
+> Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+> Cc: lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org
+> Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+> ---
+>  drivers/hwmon/tmp102.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> ---
+> 
+> Guenter,
+> 
+> Here is a version without the warnings, as requested.
+> 
+> Eduardo
+> 
+> diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
+> index d7b47ab..dc96598 100644
+> --- a/drivers/hwmon/tmp102.c
+> +++ b/drivers/hwmon/tmp102.c
+> @@ -27,6 +27,8 @@
+>  #include <linux/mutex.h>
+>  #include <linux/device.h>
+>  #include <linux/jiffies.h>
+> +#include <linux/thermal.h>
+> +#include <linux/of.h>
+>  
+>  #define	DRIVER_NAME "tmp102"
+>  
+> @@ -50,6 +52,7 @@
+>  
+>  struct tmp102 {
+>  	struct device *hwmon_dev;
+> +	struct thermal_zone_device *tz;
+>  	struct mutex lock;
+>  	u16 config_orig;
+>  	unsigned long last_update;
+> @@ -93,6 +96,15 @@ static struct tmp102 *tmp102_update_device(struct i2c_client *client)
+>  	return tmp102;
+>  }
+>  
+> +static int tmp102_read_temp(void *dev, long *temp)
+> +{
+> +	struct tmp102 *tmp102 = tmp102_update_device(to_i2c_client(dev));
+> +
+> +	*temp = tmp102->temp[0];
+> +
+> +	return 0;
+> +}
+> +
+>  static ssize_t tmp102_show_temp(struct device *dev,
+>  				struct device_attribute *attr,
+>  				char *buf)
+> @@ -204,6 +216,12 @@ static int tmp102_probe(struct i2c_client *client,
+>  		goto fail_remove_sysfs;
+>  	}
+>  
+> +	tmp102->tz = thermal_zone_of_sensor_register(&client->dev, 0,
+> +						     &client->dev,
+> +						     tmp102_read_temp, NULL);
+> +	if (IS_ERR(tmp102->tz))
+> +		tmp102->tz = NULL;
+> +
+>  	dev_info(&client->dev, "initialized\n");
+>  
+>  	return 0;
+> @@ -220,6 +238,8 @@ static int tmp102_remove(struct i2c_client *client)
+>  {
+>  	struct tmp102 *tmp102 = i2c_get_clientdata(client);
+>  
+> +	/* thermal zone life cycle is not our responsibility */
 
-If more than one similar devices share the same operating points(OPPs)
-being in the same clock domain, currently we need to replicate the
-OPP entries in all the nodes.
+This comment does not provide any value. Please drop it from both drivers.
+Sorry I missed that earlier.
 
-This patch extends existing binding by adding a new property named
-'operating-points-phandle' to specify the phandle in any device node
-pointing to another node which contains the actual OPP tuples.
-This helps to avoid replication if multiple devices share the OPPs.
-
-Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
----
- Documentation/devicetree/bindings/power/opp.txt | 152 ++++++++++++++++++++++--
- 1 file changed, 140 insertions(+), 12 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-index 74499e5..e9fea65 100644
---- a/Documentation/devicetree/bindings/power/opp.txt
-+++ b/Documentation/devicetree/bindings/power/opp.txt
-@@ -4,22 +4,150 @@ SoCs have a standard set of tuples consisting of frequency and
- voltage pairs that the device will support per voltage domain. These
- are called Operating Performance Points or OPPs.
- 
--Properties:
-+Required Properties:
- - operating-points: An array of 2-tuples items, and each item consists
-   of frequency and voltage like <freq-kHz vol-uV>.
- 	freq: clock frequency in kHz
- 	vol: voltage in microvolt
- 
-+Optional properties:
-+- operating-points-phandle: phandle to the device tree node which contains
-+	the operating points tuples(recommended to be used if multiple
-+	devices are in the same clock domain and hence share OPPs, as it
-+	avoids replication of OPPs)
-+
- Examples:
- 
--cpu@0 {
--	compatible = "arm,cortex-a9";
--	reg = <0>;
--	next-level-cache = <&L2>;
--	operating-points = <
--		/* kHz    uV */
--		792000  1100000
--		396000  950000
--		198000  850000
--	>;
--};
-+1. A uniprocessor system (phandle not required)
-+
-+	cpu0: cpu@0 {
-+		compatible = "arm,cortex-a9";
-+		reg = <0>;
-+		operating-points = <
-+			/* kHz    uV */
-+			792000  1100000
-+			396000  950000
-+			198000  850000
-+		>;
-+	};
-+
-+If more than one device of same type share the same OPPs, for example
-+all the CPUs on a SoC or in a single cluster on a SoC, then we need to
-+avoid replicating the OPPs in all the nodes. We can specify the phandle
-+of the node which contains the OPP tuples
-+
-+2a. Consider a SMP system with 4 CPUs in the same clock domain
-+    (backward compatible style, only CPU0 contains OPP)
-+
-+	cpu0: cpu@0 {
-+		compatible = "arm,cortex-a9";
-+		reg = <0>;
-+		operating-points = <
-+			/* kHz    uV */
-+			792000  1100000
-+			396000  950000
-+			198000  850000
-+		>;
-+	};
-+
-+	cpu1: cpu@1 {
-+		compatible = "arm,cortex-a9";
-+		reg = <1>;
-+	};
-+
-+	cpu2: cpu@2 {
-+		compatible = "arm,cortex-a9";
-+		reg = <2>;
-+	};
-+
-+	cpu3: cpu@3 {
-+		compatible = "arm,cortex-a9";
-+		reg = <3>;
-+	};
-+
-+2b. Consider a SMP system with 4 CPUs in the same clock domain
-+    (using operating-points-phandle)
-+
-+	cpu0: cpu@0 {
-+		compatible = "arm,cortex-a9";
-+		reg = <0>;
-+		operating-points-phandle = <&cpu_opp>;
-+	};
-+
-+	cpu1: cpu@1 {
-+		compatible = "arm,cortex-a9";
-+		reg = <1>;
-+		operating-points-phandle = <&cpu_opp>;
-+	};
-+
-+	cpu2: cpu@2 {
-+		compatible = "arm,cortex-a9";
-+		reg = <2>;
-+		operating-points-phandle = <&cpu_opp>;
-+	};
-+
-+	cpu3: cpu@3 {
-+		compatible = "arm,cortex-a9";
-+		reg = <3>;
-+		operating-points-phandle = <&cpu_opp>;
-+	};
-+
-+	operating_points {
-+		cpu_opp: cpu_opp {
-+			operating-points = <
-+				/* kHz    uV */
-+				792000  1100000
-+				396000  950000
-+				198000  850000
-+			>;
-+		};
-+		... /* other device OPP nodes */
-+	}
-+
-+3. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of CPUs.
-+   Each cluster has 2 CPUs and all the CPUs within the cluster share the clock
-+   domain.
-+
-+	cpu0: cpu@0 {
-+		compatible = "arm,cortex-a15";
-+		reg = <0>;
-+		operating-points-phandle = <&cluster0_opp>;
-+	};
-+
-+	cpu1: cpu@1 {
-+		compatible = "arm,cortex-a15";
-+		reg = <1>;
-+		operating-points-phandle = <&cluster0_opp>;
-+	};
-+
-+	cpu2: cpu@100 {
-+		compatible = "arm,cortex-a7";
-+		reg = <100>;
-+		operating-points-phandle = <&cluster1_opp>;
-+	};
-+
-+	cpu3: cpu@101 {
-+		compatible = "arm,cortex-a7";
-+		reg = <101>;
-+		operating-points-phandle = <&cluster1_opp>;
-+	};
-+
-+	operating_points {
-+		cluster0_opp: cluster0_opp {
-+			operating-points = <
-+				/* kHz    uV */
-+				792000  1100000
-+				396000  950000
-+				198000  850000
-+			>;
-+		};
-+		cluster1_opp: cluster1_opp {
-+			operating-points = <
-+				/* kHz    uV */
-+				792000  950000
-+				396000  750000
-+				198000  450000
-+			>;
-+		};
-+		... /* other device OPP nodes */
-+	}
--- 
-1.8.1.2
-
+> +	thermal_zone_of_sensor_unregister(&client->dev, tmp102->tz);
+>  	hwmon_device_unregister(tmp102->hwmon_dev);
+>  	sysfs_remove_group(&client->dev.kobj, &tmp102_attr_group);
+>  
+> -- 
+> 1.8.2.1.342.gfa7285d
+> 
+> 
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
