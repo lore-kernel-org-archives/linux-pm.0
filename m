@@ -1,392 +1,733 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH V4 02/15] asymmetric keys: implement
- EMSA_PKCS1-v1_5-ENCODE in rsa
-Date: Wed, 18 Sep 2013 04:08:00 -0500
-Message-ID: <1379495280.21947.311.camel__16054.655009839$1379495285$gmane$org@linux-s257.site>
-References: <1379206621-18639-1-git-send-email-jlee@suse.com>
-	 <1379206621-18639-3-git-send-email-jlee@suse.com>
-	 <CACE9dm-7HKz4VFR1bNTTFd-YpYhnkNVwiW81iXSJZbqjUTBR_Q@mail.gmail.com>
+From: Ajit Pal Singh <ajitpal.singh@st.com>
+Subject: [PATCH] thermal: st: Add support for STiH41x thermal sensors
+Date: Wed, 18 Sep 2013 15:08:23 +0530
+Message-ID: <1379497103-5657-1-git-send-email-ajitpal.singh@st.com>
+References: <ajitpal.singh@st.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-security-module-owner@vger.kernel.org>
-In-Reply-To: <CACE9dm-7HKz4VFR1bNTTFd-YpYhnkNVwiW81iXSJZbqjUTBR_Q@mail.gmail.com>
-Sender: linux-security-module-owner@vger.kernel.org
-To: Dmitry Kasatkin <dmitry.kasatkin@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <ajitpal.singh@st.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
+Cc: grant.likely@linaro.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, rob@landley.net, Ajit Pal Singh <ajitpal.singh@st.com>, Stephen Gallimore <stephen.gallimore@st.com>, Srinivas Kandagatla <srinivas.kandagatla@st.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dmitry,=20
+Adds support for thermal sensors on STiH41x series SOCs.
+Single trip point 'THERMAL_TRIP_CRITICAL' is supported.
+STIH416 MPE sensor supports interrupt reporting when a preset
+threshold temperature is crossed.
+For rest of the thermal sensors a polling delay of 10000ms is
+set.
 
-=46irst, thanks for your time to review my patches!
+CC: Stephen Gallimore <stephen.gallimore@st.com>
+CC: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+Signed-off-by: Ajit Pal Singh <ajitpal.singh@st.com>
+---
+ .../devicetree/bindings/thermal/st-thermal.txt     |   22 +
+ drivers/thermal/Kconfig                            |   11 +
+ drivers/thermal/Makefile                           |    1 +
+ drivers/thermal/st_thermal.c                       |  633 ++++++++++++++++++++
+ 4 files changed, 667 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/st-thermal.txt
+ create mode 100644 drivers/thermal/st_thermal.c
 
-=E6=96=BC =E4=BA=8C=EF=BC=8C2013-09-17 =E6=96=BC 16:51 -0500=EF=BC=8CDm=
-itry Kasatkin =E6=8F=90=E5=88=B0=EF=BC=9A
-> Hello,
->=20
->=20
-> On Sat, Sep 14, 2013 at 7:56 PM, Lee, Chun-Yi <joeyli.kernel@gmail.co=
-m> wrote:
-> > Implement EMSA_PKCS1-v1_5-ENCODE [RFC3447 sec 9.2] in rsa.c. It's t=
-he
-> > first step of signature generation operation (RSASSA-PKCS1-v1_5-SIG=
-N).
-> >
-> > This patch is temporary set emLen to pks->k, and temporary set EM t=
-o
-> > pks->S for debugging. We will replace the above values to real sign=
-ature
-> > after implement RSASP1.
-> >
-> > The naming of EMSA_PKCS1_v1_5_ENCODE and the variables used in this=
- function
-> > accord PKCS#1 spec but not follow kernel naming convention, it usef=
-ul when look
-> > at them with spec.
-> >
-> > Reference: ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1v2/pkcs1ietffin=
-al.txt
-> > Reference: http://www.emc.com/collateral/white-papers/h11300-pkcs-1=
-v2-2-rsa-cryptography-standard-wp.pdf
-> >
-> > V2:
-> > - Clean up naming of variable: replace _EM by EM, replace EM by EM_=
-tmp.
-> > - Add comment to EMSA_PKCS1-v1_5-ENCODE function.
-> >
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Reviewed-by: Jiri Kosina <jkosina@suse.cz>
-> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
-> > ---
-> >  crypto/asymmetric_keys/rsa.c |  163 ++++++++++++++++++++++++++++++=
-+++++++++++-
-> >  include/crypto/public_key.h  |    2 +
-> >  2 files changed, 164 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/crypto/asymmetric_keys/rsa.c b/crypto/asymmetric_keys/=
-rsa.c
-> > index 47f3be4..352ba45 100644
-> > --- a/crypto/asymmetric_keys/rsa.c
-> > +++ b/crypto/asymmetric_keys/rsa.c
-> > @@ -13,6 +13,7 @@
-> >  #include <linux/module.h>
-> >  #include <linux/kernel.h>
-> >  #include <linux/slab.h>
-> > +#include <crypto/hash.h>
-> >  #include "public_key.h"
-> >  #include "private_key.h"
-> >
-> > @@ -152,6 +153,132 @@ static int RSA_I2OSP(MPI x, size_t xLen, u8 *=
-*_X)
-> >  }
-> >
-> >  /*
-> > + * EMSA_PKCS1-v1_5-ENCODE [RFC3447 sec 9.2]
-> > + * @M: message to be signed, an octet string
-> > + * @emLen: intended length in octets of the encoded message
-> > + * @hash_algo: hash function (option)
-> > + * @hash: true means hash M, otherwise M is already a digest
-> > + * @EM: encoded message, an octet string of length emLen
-> > + *
-> > + * This function is a implementation of the EMSA-PKCS1-v1_5 encodi=
-ng operation
-> > + * in RSA PKCS#1 spec. It used by the signautre generation operati=
-on of
-> > + * RSASSA-PKCS1-v1_5 to encode message M to encoded message EM.
-> > + *
-> > + * The variables used in this function accord PKCS#1 spec but not =
-follow kernel
-> > + * naming convention, it useful when look at them with spec.
-> > + */
-> > +static int EMSA_PKCS1_v1_5_ENCODE(const u8 *M, size_t emLen,
-> > +               enum pkey_hash_algo hash_algo, const bool hash,
-> > +               u8 **EM, struct public_key_signature *pks)
-> > +{
-> > +       u8 *digest;
-> > +       struct crypto_shash *tfm;
-> > +       struct shash_desc *desc;
-> > +       size_t digest_size, desc_size;
-> > +       size_t tLen;
-> > +       u8 *T, *PS, *EM_tmp;
-> > +       int i, ret;
-> > +
-> > +       pr_info("EMSA_PKCS1_v1_5_ENCODE start\n");
-> > +
-> > +       if (!RSA_ASN1_templates[hash_algo].data)
->=20
-> What about checking hash_algo against PKEY_HASH__LAST, or it relies o=
-n
-> the caller?
->=20
-
-Yes, check PKEY_HASH__LAST is more easy and clear, I will change it.
-Thanks!
-
->=20
-> > +               ret =3D -ENOTSUPP;
-> > +       else
-> > +               pks->pkey_hash_algo =3D hash_algo;
-> > +
-> > +       /* 1) Apply the hash function to the message M to produce a=
- hash value H */
-> > +       tfm =3D crypto_alloc_shash(pkey_hash_algo[hash_algo], 0, 0)=
-;
-> > +       if (IS_ERR(tfm))
-> > +               return (PTR_ERR(tfm) =3D=3D -ENOENT) ? -ENOPKG : PT=
-R_ERR(tfm);
-> > +
-> > +       desc_size =3D crypto_shash_descsize(tfm) + sizeof(*desc);
-> > +       digest_size =3D crypto_shash_digestsize(tfm);
-> > +
-> > +       ret =3D -ENOMEM;
-> > +
-> > +       digest =3D kzalloc(digest_size + desc_size, GFP_KERNEL);
-> > +       if (!digest)
-> > +               goto error_digest;
-> > +       pks->digest =3D digest;
-> > +       pks->digest_size =3D digest_size;
-> > +
->=20
-> Ok. You allocated tfm to get hash size, right?
->=20
-> But why do you allocate descriptor even it might not be needed?
->=20
-
-You are right, I should skip the code of allocate descriptor when the
-hash is supported. I will modified it.
-Thanks!
-
-> > +       if (hash) {
-> > +               desc =3D (void *) digest + digest_size;
-> > +               desc->tfm =3D tfm;
-> > +               desc->flags =3D CRYPTO_TFM_REQ_MAY_SLEEP;
-> > +
-> > +               ret =3D crypto_shash_init(desc);
-> > +               if (ret < 0)
-> > +                       goto error_shash;
-> > +               ret =3D crypto_shash_finup(desc, M, sizeof(M), pks-=
->digest);
->=20
-> This is I completely fail to understand... You expect sizeof(M) to be
-> the message length?????
-> Have you ever tested it?
->=20
-
-Sigh!
-I just checked my test program for this code path, this stupid problem
-causes by my test program doesn't feed the right hash result that shoul=
-d
-used to verify signature. So, I didn't capture this bug.
-
-And, the hibernate signature check mechanism doesn't run into this code
-path because the hash generation is done by hibernate code but not in
-here. So, I also didn't find this problem when running hibernate check.
-
-Appreciate for your point out! I just fix it in next patch version.
-
-> > +               if (ret < 0)
-> > +                       goto error_shash;
-> > +       } else {
-> > +               memcpy(pks->digest, M, pks->digest_size);
-> > +               pks->digest_size =3D digest_size;
-> > +       }
->=20
-> Does caller use pks->digest and pks->digest_size after return?
-> I think it needs encoded value, not the hash...
-> So why do you pass pks?
->=20
-
-I put the signature MPI to pks->rsa.s, and put the encoded signature to
-pks->S. So caller can grab encoded signature.
-
-I also pass the pks->digest and pks->digest_size to caller for
-reference. Then caller can simply feed this pks to
-RSA_verify_signature() for verify the signature result, don't need
-generate hash again.
-
->=20
->=20
-> > +       crypto_free_shash(tfm);
-> > +
-> > +       /* 2) Encode the algorithm ID for the hash function and the=
- hash value into
-> > +        * an ASN.1 value of type DigestInfo with the DER. Let T be=
- the DER encoding of
-> > +        * the DigestInfo value and let tLen be the length in octet=
-s of T.
-> > +        */
-> > +       tLen =3D RSA_ASN1_templates[hash_algo].size + pks->digest_s=
-ize;
-> > +       T =3D kmalloc(tLen, GFP_KERNEL);
-> > +       if (!T)
-> > +               goto error_T;
-> > +
->=20
-> Why do you need T and PS memory allocations at all?
-> You need only EM_tmp allocation and copy directly to the destination.=
-=2E.
->=20
-
-OK, I will change the code to allocate T and PS size in EM_tmp.
-
->=20
-> > +       memcpy(T, RSA_ASN1_templates[hash_algo].data, RSA_ASN1_temp=
-lates[hash_algo].size);
-> > +       memcpy(T + RSA_ASN1_templates[hash_algo].size, pks->digest,=
- pks->digest_size);
-> > +
-> > +       /* 3) check If emLen < tLen + 11, output "intended encoded =
-message length too short" */
-> > +       if (emLen < tLen + 11) {
-> > +               ret =3D -EINVAL;
-> > +               goto error_emLen;
-> > +       }
-> > +
-> > +       /* 4) Generate an octet string PS consisting of emLen - tLe=
-n - 3 octets with 0xff. */
-> > +       PS =3D kmalloc(emLen - tLen - 3, GFP_KERNEL);
-> > +       if (!PS)
-> > +               goto error_P;
-> > +
->=20
-> ditto
-
-OK, I will allocate PS with EM_tmp.
-Thanks!
-
->=20
-> > +       for (i =3D 0; i < (emLen - tLen - 3); i++)
-> > +               PS[i] =3D 0xff;
-> > +
-> > +       /* 5) Concatenate PS, the DER encoding T, and other padding=
- to form the encoded
-> > +        * message EM as EM =3D 0x00 || 0x01 || PS || 0x00 || T
-> > +        */
-> > +       EM_tmp =3D kmalloc(3 + emLen - tLen - 3 + tLen, GFP_KERNEL)=
-;
-> > +       if (!EM_tmp)
-> > +               goto error_EM;
-> > +
-> > +       EM_tmp[0] =3D 0x00;
-> > +       EM_tmp[1] =3D 0x01;
-> > +       memcpy(EM_tmp + 2, PS, emLen - tLen - 3);
-> > +       EM_tmp[2 + emLen - tLen - 3] =3D 0x00;
-> > +       memcpy(EM_tmp + 2 + emLen - tLen - 3 + 1, T, tLen);
-> > +
-> > +       *EM =3D EM_tmp;
-> > +
-> > +       kfree(PS);
-> > +       kfree(T);
->=20
-> get rid of it...
->=20
-
-OK!
-
->=20
-> - Dmitry
->=20
-> > +
-> > +       return 0;
-> > +
-> > +error_EM:
-> > +       kfree(PS);
-> > +error_P:
-> > +error_emLen:
-> > +       kfree(T);
-> > +error_T:
-> > +error_shash:
-> > +       kfree(digest);
-> > +error_digest:
-> > +       crypto_free_shash(tfm);
-> > +       return ret;
-> > +}
-> > +
-> > +/*
-> >   * Perform the RSA signature verification.
-> >   * @H: Value of hash of data and metadata
-> >   * @EM: The computed signature value
-> > @@ -275,9 +402,43 @@ static struct public_key_signature *RSA_genera=
-te_signature(
-> >                 const struct private_key *key, u8 *M,
-> >                 enum pkey_hash_algo hash_algo, const bool hash)
-> >  {
-> > +       struct public_key_signature *pks;
-> > +       u8 *EM =3D NULL;
-> > +       size_t emLen;
-> > +       int ret;
-> > +
-> >         pr_info("RSA_generate_signature start\n");
-> >
-> > -       return 0;
-> > +       ret =3D -ENOMEM;
-> > +       pks =3D kzalloc(sizeof(*pks), GFP_KERNEL);
-> > +       if (!pks)
-> > +               goto error_no_pks;
-> > +
-> > +       /* 1): EMSA-PKCS1-v1_5 encoding: */
-> > +       /* Use the private key modulus size to be EM length */
-> > +       emLen =3D mpi_get_nbits(key->rsa.n);
-> > +       emLen =3D (emLen + 7) / 8;
-> > +
-> > +       ret =3D EMSA_PKCS1_v1_5_ENCODE(M, emLen, hash_algo, hash, &=
-EM, pks);
-> > +       if (ret < 0)
-> > +               goto error_v1_5_encode;
-> > +
-> > +       /* TODO 2): m =3D OS2IP (EM) */
-> > +
-> > +       /* TODO 3): s =3D RSASP1 (K, m) */
-> > +
-> > +       /* TODO 4): S =3D I2OSP (s, k) */
-> > +
-> > +       /* TODO: signature S to a u8* S or set to sig->rsa.s? */
-> > +       pks->S =3D EM;            /* TODO: temporary set S to EM */
-> > +
-> > +       return pks;
-> > +
-> > +error_v1_5_encode:
-> > +       kfree(pks);
-> > +error_no_pks:
-> > +       pr_info("<=3D=3D%s() =3D %d\n", __func__, ret);
-> > +       return ERR_PTR(ret);
-> >  }
-> >
-> >  const struct public_key_algorithm RSA_public_key_algorithm =3D {
-> > diff --git a/include/crypto/public_key.h b/include/crypto/public_ke=
-y.h
-> > index d44b29f..1cdf457 100644
-> > --- a/include/crypto/public_key.h
-> > +++ b/include/crypto/public_key.h
-> > @@ -110,6 +110,8 @@ extern void public_key_destroy(void *payload);
-> >  struct public_key_signature {
-> >         u8 *digest;
-> >         u8 digest_size;                 /* Number of bytes in diges=
-t */
-> > +       u8 *S;                          /* signature S of length k =
-octets */
-> > +       size_t k;                       /* length k of signature S =
-*/
-> >         u8 nr_mpi;                      /* Occupancy of mpi[] */
-> >         enum pkey_hash_algo pkey_hash_algo : 8;
-> >         union {
-> > --
-> > 1.6.0.2
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-cry=
-pto" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
->=20
->=20
-
-Thanks a lot!
-Joey Lee
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-securit=
-y-module" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/Documentation/devicetree/bindings/thermal/st-thermal.txt b/Documentation/devicetree/bindings/thermal/st-thermal.txt
+new file mode 100644
+index 0000000..f127044
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/st-thermal.txt
+@@ -0,0 +1,22 @@
++Binding for Thermal sensor driver for STMicroelectronics STiH41x series of SoCs.
++
++Required parameters:
++1) compatible : st,<SoC>-<module>-thermal
++		Should be one of "st,stih415-sas-thermal", "st,stih415-mpe-thermal",
++		"st,stih416-sas-thermal" or "st,stih416-mpe-thermal" according to the
++		SoC type (stih415 or stih416) and module type (sas or mpe).
++2) st,syscfg : 	Should be a phandle of the syscfg node.
++3) clocks: 	phandle of the clock used by the thermal sensor according to the common
++		clock binding: Documentation/devicetree/bindings/clock/clock-bindings.txt
++
++Optional:
++1) interrupts:	Standard way to define interrupt number.
++		refer: Documentation/devicetree/bindings/resource-names.txt
++		Interrupt is mandatory to be defined when compatible is stih416-mpe-thermal.
++
++Example:
++temp0{
++	compatible      = "st,stih416-sas-thermal";
++	st,syscfg       = <&syscfg_front>;
++	clocks          = <&CLOCKGEN_C_VCC 14>;
++}
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index e988c81..158b4d8 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -180,6 +180,17 @@ config X86_PKG_TEMP_THERMAL
+ 	  two trip points which can be set by user to get notifications via thermal
+ 	  notification methods.
+ 
++config ST_THERMAL
++	tristate "Thermal sensors on STMicroelectronics STiH41x series of SoCs"
++	depends on ARCH_STI
++	depends on OF
++	default y
++	help
++	  Support for thermal sensors on STMicroelectronics STiH41x series of
++	  SoCs. STiH415 and STiH416 SoCs have 2 thermal sensors each, one on the
++	  SAS and second on the MPE module. STiH416 MPE thermal sensor supports
++	  interrupt reporting when a preset thermal threshold is crossed.
++
+ menu "Texas Instruments thermal drivers"
+ source "drivers/thermal/ti-soc-thermal/Kconfig"
+ endmenu
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 67184a2..d0a4c86 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -25,3 +25,4 @@ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+ obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
++obj-$(CONFIG_ST_THERMAL)	+= st_thermal.o
+diff --git a/drivers/thermal/st_thermal.c b/drivers/thermal/st_thermal.c
+new file mode 100644
+index 0000000..8645a9c
+--- /dev/null
++++ b/drivers/thermal/st_thermal.c
+@@ -0,0 +1,633 @@
++/*
++ * st_thermal.c: ST Thermal Sensor Driver for STIH41x series of SoCs
++ * Author: Ajit Pal Singh <ajitpal.singh@st.com>
++ *
++ * Copyright (C) 2003-2013 STMicroelectronics (R&D) Limited
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ */
++
++#include <linux/clk.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++#include <linux/mfd/syscon.h>
++#include <linux/thermal.h>
++
++#define DRIVER_NAME "st-thermal"
++
++/* Regfield IDs */
++enum {
++	/*
++	 * The PWR and INTerrupt threshold regfields
++	 * share the same index as they are mutually exclusive
++	 */
++	TEMP_PWR = 0, INT_THRESH_HI = 0,
++	DCORRECT	= 1,
++	OVERFLOW	= 2,
++	DATA		= 3,
++	INT_ENABLE	= 4,
++	/* keep last */
++	MAX_REGFIELDS
++};
++
++/* Thermal sensor power states */
++enum st_thermal_power_state {
++	POWER_OFF = 0,
++	POWER_ON = 1
++};
++
++struct st_thermal_sensor;
++
++struct st_thermal_sensor_ops {
++	/* Power control */
++	int (*power_ctrl)(struct st_thermal_sensor *,
++		enum st_thermal_power_state);
++	/* Adjust the temperature read from the sensor */
++	unsigned int (*adjust_temp)(struct st_thermal_sensor *,
++		unsigned int);
++	/* Allocate regfields specific for this sensor */
++	int (*alloc_regfields)(struct st_thermal_sensor *);
++	int (*register_irq)(struct st_thermal_sensor *);
++	int (*enable_irq)(struct st_thermal_sensor *);
++};
++
++struct st_thermal_compat_data {
++	const struct reg_field *reg_fields;
++	struct st_thermal_sensor_ops *ops;
++	unsigned int calibration_val;
++	int temp_adjust_val;
++	int crit_temp;
++};
++
++struct st_thermal_sensor {
++	struct platform_device *pdev;
++	struct thermal_zone_device *th_dev;
++	struct st_thermal_sensor_ops *ops;
++	const struct st_thermal_compat_data *data;
++	struct clk *clk;
++	struct regmap *regmap;
++	struct regmap_field *pwr;
++	struct regmap_field *dcorrect;
++	struct regmap_field *overflow;
++	struct regmap_field *temp_data;
++	struct regmap_field *int_thresh_hi;
++	struct regmap_field *int_enable;
++	unsigned int irq;
++};
++
++/* Helper macros */
++#define thzone_to_sensor(th)			((th)->devdata)
++#define sensor_to_dev(sensor)			(&(sensor)->pdev->dev)
++
++/* STiH415 */
++#define STIH415_SYSCFG_FRONT(num)		((num - 100)*4)
++#define STIH415_SYSCFG_MPE(num)			((num - 600)*4)
++
++#define STIH415_SAS_THSENS_CONF			STIH415_SYSCFG_FRONT(178)
++#define STIH415_SAS_THSENS_STATUS		STIH415_SYSCFG_FRONT(198)
++#define STIH415_MPE_THSENS_CONF			STIH415_SYSCFG_MPE(607)
++#define STIH415_MPE_THSENS_STATUS		STIH415_SYSCFG_MPE(667)
++
++/* STiH416 */
++#define STIH416_SYSCFG_FRONT(num)		((num - 1000)*4)
++#define STIH416_SYSCFG_THSENS(num)		(num*4)
++
++#define STIH416_SAS_THSENS_CONF			STIH416_SYSCFG_FRONT(1552)
++#define STIH416_SAS_THSENS_STATUS1		STIH416_SYSCFG_FRONT(1554)
++#define STIH416_SAS_THSENS_STATUS2		STIH416_SYSCFG_FRONT(1594)
++#define STIH416_MPE_THSENS_CONF			STIH416_SYSCFG_THSENS(0)
++#define STIH416_MPE_THSENS_STATUS		STIH416_SYSCFG_THSENS(1)
++#define STIH416_MPE_THSENS_INT_THRESH		STIH416_SYSCFG_THSENS(2)
++#define STIH416_MPE_THSENS_INT_EN		STIH416_SYSCFG_THSENS(3)
++
++/* STiH416_MPE power control bits */
++#define STIH416_MPE_PDN				BIT(4)
++#define STIH416_MPE_SRSTN			BIT(10)
++
++#define mcelsius(temp)				((temp) * 1000)
++
++static const struct reg_field st_415sas_regfields[MAX_REGFIELDS] = {
++	[TEMP_PWR] = REG_FIELD(STIH415_SAS_THSENS_CONF, 9, 9),
++	[DCORRECT] = REG_FIELD(STIH415_SAS_THSENS_CONF, 4, 8),
++	[OVERFLOW] = REG_FIELD(STIH415_SAS_THSENS_STATUS, 9, 9),
++	[DATA] = REG_FIELD(STIH415_SAS_THSENS_STATUS, 11, 18),
++};
++
++static const struct reg_field st_415mpe_regfields[MAX_REGFIELDS] = {
++	[TEMP_PWR] = REG_FIELD(STIH415_MPE_THSENS_CONF, 8, 8),
++	[DCORRECT] = REG_FIELD(STIH415_MPE_THSENS_CONF, 3, 7),
++	[OVERFLOW] = REG_FIELD(STIH415_MPE_THSENS_STATUS, 9, 9),
++	[DATA] = REG_FIELD(STIH415_MPE_THSENS_STATUS, 11, 18),
++};
++
++static const struct reg_field st_416sas_regfields[MAX_REGFIELDS] = {
++	[TEMP_PWR] = REG_FIELD(STIH416_SAS_THSENS_CONF, 9, 9),
++	[DCORRECT] = REG_FIELD(STIH416_SAS_THSENS_CONF, 4, 8),
++	[OVERFLOW] = REG_FIELD(STIH416_SAS_THSENS_STATUS1, 8, 8),
++	[DATA] = REG_FIELD(STIH416_SAS_THSENS_STATUS2, 10, 16),
++};
++
++static const struct reg_field st_416mpe_regfields[MAX_REGFIELDS] = {
++	/*
++	 * According to the STIH416 MPE temp sensor data sheet -
++	 * the PDN (Power Down Bit) and SRSTN (Soft Reset Bit) need to be
++	 * written simultaneously for powering on and off the temperature
++	 * sensor. regmap_update_bits() will be used to update the register.
++	 */
++	[INT_THRESH_HI] = REG_FIELD(STIH416_MPE_THSENS_INT_THRESH, 0, 7),
++	[DCORRECT] = REG_FIELD(STIH416_MPE_THSENS_CONF, 5, 9),
++	[OVERFLOW] = REG_FIELD(STIH416_MPE_THSENS_STATUS, 9, 9),
++	[DATA] = REG_FIELD(STIH416_MPE_THSENS_STATUS, 11, 18),
++	[INT_ENABLE] = REG_FIELD(STIH416_MPE_THSENS_INT_EN, 0, 0),
++};
++
++static irqreturn_t st_thermal_thresh_int(int irq, void *data)
++{
++	struct st_thermal_sensor *sensor = data;
++	struct device *dev = sensor_to_dev(sensor);
++
++	dev_dbg(dev, "%s,called\n", __func__);
++	thermal_zone_device_update(sensor->th_dev);
++	return IRQ_HANDLED;
++}
++
++static int st_thermal_alloc_common_regfields(struct st_thermal_sensor *sensor)
++{
++	struct device *dev = sensor_to_dev(sensor);
++	struct regmap *regmap = sensor->regmap;
++	const struct reg_field *reg_fields = sensor->data->reg_fields;
++
++	sensor->dcorrect = devm_regmap_field_alloc(dev, regmap,
++					reg_fields[DCORRECT]);
++
++	sensor->overflow = devm_regmap_field_alloc(dev, regmap,
++					reg_fields[OVERFLOW]);
++
++	sensor->temp_data = devm_regmap_field_alloc(dev, regmap,
++					reg_fields[DATA]);
++
++	if (IS_ERR(sensor->dcorrect) || IS_ERR(sensor->overflow) ||
++	    IS_ERR(sensor->temp_data)) {
++		return -EINVAL;
++	}
++	return 0;
++}
++
++/* Private ops for STIH415 SAS,MPE & STIH416 SAS sensor modules */
++static int st_power_ctrl(struct st_thermal_sensor *sensor,
++			enum st_thermal_power_state power_state)
++{
++	return regmap_field_write(sensor->pwr, power_state);
++}
++
++static unsigned int st_adjust_temp(struct st_thermal_sensor *sensor,
++				unsigned int raw_temp)
++{
++	return raw_temp + sensor->data->temp_adjust_val;
++}
++
++static int st_alloc_regfields(struct st_thermal_sensor *sensor)
++{
++	struct device *dev = sensor_to_dev(sensor);
++	int ret;
++
++	ret = st_thermal_alloc_common_regfields(sensor);
++	if (ret)
++		return ret;
++
++	sensor->pwr = devm_regmap_field_alloc(dev, sensor->regmap,
++				sensor->data->reg_fields[TEMP_PWR]);
++	if (IS_ERR(sensor->pwr)) {
++		dev_err(dev, "%s,failed to alloc reg field\n", __func__);
++		return PTR_ERR(sensor->pwr);
++	}
++	return 0;
++}
++
++static struct st_thermal_sensor_ops st_sensor_ops = {
++	.power_ctrl = st_power_ctrl,
++	.adjust_temp = st_adjust_temp,
++	.alloc_regfields = st_alloc_regfields,
++};
++
++/* Private ops for the STIH416 MPE sensor module */
++static int st_416mpe_power_ctrl(struct st_thermal_sensor *sensor,
++				enum st_thermal_power_state power_state)
++{
++	const unsigned int mask = (STIH416_MPE_PDN | STIH416_MPE_SRSTN);
++	const unsigned int val = power_state ? mask : 0;
++	return regmap_update_bits(sensor->regmap, STIH416_MPE_THSENS_CONF,
++				  mask, val);
++}
++
++static unsigned int st_416mpe_adjust_temp(struct st_thermal_sensor *sensor,
++					unsigned int raw_temp)
++{
++	return raw_temp - sensor->data->temp_adjust_val;
++}
++
++static int st_416mpe_alloc_regfields(struct st_thermal_sensor *sensor)
++{
++	struct device *dev = sensor_to_dev(sensor);
++	struct regmap *regmap = sensor->regmap;
++	const struct reg_field *reg_fields = sensor->data->reg_fields;
++	int ret;
++
++	ret = st_thermal_alloc_common_regfields(sensor);
++	if (ret)
++		return ret;
++
++	sensor->int_thresh_hi = devm_regmap_field_alloc(dev, regmap,
++					reg_fields[INT_THRESH_HI]);
++	sensor->int_enable = devm_regmap_field_alloc(dev, regmap,
++					reg_fields[INT_ENABLE]);
++	if (IS_ERR(sensor->int_thresh_hi) || IS_ERR(sensor->int_enable)) {
++		dev_err(dev, "%s,failed to alloc reg field(s)\n", __func__);
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static int st_416mpe_register_irq(struct st_thermal_sensor *sensor)
++{
++	struct platform_device *pdev = sensor->pdev;
++	struct device *dev = sensor_to_dev(sensor);
++	int ret;
++
++	sensor->irq = platform_get_irq(pdev, 0);
++	if (sensor->irq < 0)
++		return sensor->irq;
++
++	ret = devm_request_threaded_irq(dev, sensor->irq,
++					NULL, st_thermal_thresh_int,
++					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
++					DRIVER_NAME, sensor);
++	if (ret) {
++		dev_err(dev, "IRQ %d register failed\n", sensor->irq);
++		return ret;
++	}
++	return sensor->ops->enable_irq(sensor);
++}
++
++static int st_416mpe_enable_irq(struct st_thermal_sensor *sensor)
++{
++	int ret;
++
++	/* Set upper critical threshold */
++	ret = regmap_field_write(sensor->int_thresh_hi, sensor->data->crit_temp
++			 + sensor->data->temp_adjust_val);
++	if (ret)
++		return ret;
++
++	return regmap_field_write(sensor->int_enable, 1);
++}
++
++static struct st_thermal_sensor_ops st_416mpe_sensor_ops = {
++	.power_ctrl = st_416mpe_power_ctrl,
++	.adjust_temp = st_416mpe_adjust_temp,
++	.alloc_regfields = st_416mpe_alloc_regfields,
++	.register_irq = st_416mpe_register_irq,
++	.enable_irq = st_416mpe_enable_irq,
++};
++
++/* Compatible device data for stih415 sas thermal sensor */
++static struct st_thermal_compat_data st_415sas_data = {
++	.reg_fields = &st_415sas_regfields[0],
++	.ops = &st_sensor_ops,
++	.calibration_val = 16,
++	.temp_adjust_val = 20,
++	.crit_temp = 120,
++};
++
++/* Compatible device data for stih415 mpe thermal sensor */
++static struct st_thermal_compat_data st_415mpe_data = {
++	.reg_fields = &st_415mpe_regfields[0],
++	.ops = &st_sensor_ops,
++	.calibration_val = 16,
++	.temp_adjust_val = 20,
++	.crit_temp = 120,
++};
++
++/* Compatible device data for stih416 sas thermal sensor */
++static struct st_thermal_compat_data st_416sas_data = {
++	.reg_fields = &st_416sas_regfields[0],
++	.ops = &st_sensor_ops,
++	.calibration_val = 16,
++	.temp_adjust_val = 20,
++	.crit_temp = 120,
++};
++
++/* Compatible device data stih416 mpe thermal sensor */
++static struct st_thermal_compat_data st_416mpe_data = {
++	.reg_fields = &st_416mpe_regfields[0],
++	.ops = &st_416mpe_sensor_ops,
++	.calibration_val = 24,
++	.temp_adjust_val = 103,
++	.crit_temp = 120,
++};
++
++static struct of_device_id st_thermal_of_match[] = {
++	{ .compatible = "st,stih415-sas-thermal",
++		.data = &st_415sas_data },
++	{ .compatible = "st,stih415-mpe-thermal",
++		.data = &st_415mpe_data },
++	{ .compatible = "st,stih416-sas-thermal",
++		.data = &st_416sas_data },
++	{ .compatible = "st,stih416-mpe-thermal",
++		.data = &st_416mpe_data },
++	{ /* sentinel */ }
++};
++
++static int st_thermal_probe_dt(struct st_thermal_sensor *sensor)
++{
++	struct device *dev = sensor_to_dev(sensor);
++	struct device_node *np = dev->of_node;
++
++	sensor->regmap = syscon_regmap_lookup_by_phandle(np, "st,syscfg");
++	if (IS_ERR(sensor->regmap)) {
++		dev_err(dev, "no syscfg phandle specified\n");
++		return PTR_ERR(sensor->regmap);
++	}
++
++	sensor->data = of_match_node(st_thermal_of_match, np)->data;
++	if (!sensor->data->ops)
++		return -EINVAL;
++
++	sensor->ops = sensor->data->ops;
++	return sensor->ops->alloc_regfields(sensor);
++}
++
++static int st_thermal_sensor_on(struct st_thermal_sensor *sensor)
++{
++	int ret;
++	struct device *dev = sensor_to_dev(sensor);
++
++	ret = clk_prepare_enable(sensor->clk);
++	if (ret) {
++		dev_err(dev, "unable to enable clk\n");
++		goto out;
++	}
++
++	ret = sensor->ops->power_ctrl(sensor, POWER_ON);
++	if (ret) {
++		dev_err(dev, "unable to power on sensor\n");
++		goto clk_dis;
++	}
++	return 0;
++clk_dis:
++	clk_disable_unprepare(sensor->clk);
++out:
++	return ret;
++}
++
++static int st_thermal_sensor_off(struct st_thermal_sensor *sensor)
++{
++	int ret;
++
++	ret = sensor->ops->power_ctrl(sensor, POWER_OFF);
++	if (ret)
++		return ret;
++
++	clk_disable_unprepare(sensor->clk);
++	return 0;
++}
++
++/* Callback to get temperature from HW*/
++static int st_thermal_get_temp(struct thermal_zone_device *th,
++		unsigned long *temperature)
++{
++	struct st_thermal_sensor *sensor = thzone_to_sensor(th);
++	struct device *dev = sensor_to_dev(sensor);
++	unsigned int data;
++	unsigned int overflow;
++	int ret;
++
++	ret = regmap_field_read(sensor->overflow, &overflow);
++	if (ret)
++		return ret;
++	if (overflow)
++		return -EIO;
++
++	ret = regmap_field_read(sensor->temp_data, &data);
++	if (ret)
++		return ret;
++
++	data = sensor->ops->adjust_temp(sensor, data);
++	data = mcelsius(data);
++	dev_dbg(dev, "%s:temperature:%d\n", __func__, data);
++
++	*temperature = data;
++	return 0;
++}
++
++static int st_thermal_get_trip_type(struct thermal_zone_device *th,
++				int trip, enum thermal_trip_type *type)
++{
++	struct st_thermal_sensor *sensor = thzone_to_sensor(th);
++	struct device *dev = sensor_to_dev(sensor);
++
++	switch (trip) {
++	case 0:
++		*type = THERMAL_TRIP_CRITICAL;
++		break;
++	default:
++		dev_err(dev, "invalid trip point\n");
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static int st_thermal_get_trip_temp(struct thermal_zone_device *th,
++				    int trip, unsigned long *temp)
++{
++	struct st_thermal_sensor *sensor = thzone_to_sensor(th);
++	struct device *dev = sensor_to_dev(sensor);
++
++	switch (trip) {
++	case 0:
++		*temp = mcelsius(sensor->data->crit_temp);
++		break;
++	default:
++		dev_err(dev, "Invalid trip point\n");
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static int st_thermal_notify(struct thermal_zone_device *th,
++			       int trip, enum thermal_trip_type type)
++{
++	struct st_thermal_sensor *sensor = thzone_to_sensor(th);
++	struct device *dev = sensor_to_dev(sensor);
++
++	switch (type) {
++	case THERMAL_TRIP_CRITICAL:
++		/* TODO: Send event to user space */
++		dev_err(dev, "Critical temp reached:Going for shutdown\n");
++		break;
++	default:
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static struct thermal_zone_device_ops st_tz_ops = {
++	.get_temp	= st_thermal_get_temp,
++	.get_trip_type	= st_thermal_get_trip_type,
++	.get_trip_temp	= st_thermal_get_trip_temp,
++	.notify		= st_thermal_notify,
++};
++
++static int st_thermal_probe(struct platform_device *pdev)
++{
++	struct st_thermal_sensor *sensor;
++	struct device *dev = &pdev->dev;
++	struct device_node *np = dev->of_node;
++	int ret;
++	unsigned int val;
++	static char start_banner[] __initdata =
++			"STMicroelectronics thermal sensor initialised\n";
++
++	if (!np) {
++		dev_err(dev, "device node not found\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	sensor = devm_kzalloc(dev, sizeof(*sensor), GFP_KERNEL);
++	if (!sensor) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	sensor->pdev = pdev;
++	ret = st_thermal_probe_dt(sensor);
++	if (ret)
++		goto out;
++
++	sensor->clk = devm_clk_get(dev, NULL);
++	if (IS_ERR(sensor->clk)) {
++		dev_err(dev, "unable to get clk\n");
++		ret = PTR_ERR(sensor->clk);
++		goto out;
++	}
++	/* Activate thermal sensor */
++	ret = st_thermal_sensor_on(sensor);
++	if (ret) {
++		dev_err(dev, "unable to power on sensor\n");
++		goto out;
++	}
++
++	/* Check if sensor calibration data is already written */
++	ret = regmap_field_read(sensor->dcorrect, &val);
++	if (ret) {
++		dev_err(dev, "unable to read calibration data\n");
++		goto turn_off_exit;
++	}
++	if (val == 0) {
++		/* Sensor calibration value not set by bootloader,
++		 * default calibration data to be used
++		 */
++		ret = regmap_field_write(sensor->dcorrect,
++				sensor->data->calibration_val);
++		if (ret) {
++			dev_err(dev, "unable to set calibration data\n");
++			goto turn_off_exit;
++		}
++	}
++
++	sensor->th_dev = thermal_zone_device_register(
++		(char *)dev_name(dev), 1,
++		0, (void *)sensor, &st_tz_ops,
++		NULL, 0, sensor->ops->register_irq ? 0 : 10000);
++
++	if (IS_ERR(sensor->th_dev)) {
++		dev_err(dev, "unable to register thermal zone device\n");
++		ret = PTR_ERR(sensor->th_dev);
++		goto turn_off_exit;
++	}
++
++	if (sensor->ops->register_irq) {
++		ret = sensor->ops->register_irq(sensor);
++		if (ret) {
++			dev_err(dev, "unable to register irq\n");
++			goto unregister_thzone;
++		}
++	}
++
++	platform_set_drvdata(pdev, sensor);
++	dev_info(dev, start_banner);
++	return 0;
++
++unregister_thzone:
++	thermal_zone_device_unregister(sensor->th_dev);
++turn_off_exit:
++	st_thermal_sensor_off(sensor);
++out:
++	return ret;
++}
++
++static int st_thermal_remove(struct platform_device *pdev)
++{
++	struct st_thermal_sensor *sensor = platform_get_drvdata(pdev);
++
++	st_thermal_sensor_off(sensor);
++	thermal_zone_device_unregister(sensor->th_dev);
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int st_thermal_suspend(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct st_thermal_sensor *sensor = platform_get_drvdata(pdev);
++
++	return st_thermal_sensor_off(sensor);
++}
++
++static int st_thermal_resume(struct device *dev)
++{
++	int ret;
++	struct platform_device *pdev = to_platform_device(dev);
++	struct st_thermal_sensor *sensor = platform_get_drvdata(pdev);
++
++	ret = st_thermal_sensor_on(sensor);
++	if (ret)
++		return ret;
++
++	if (sensor->ops->enable_irq) {
++		ret = sensor->ops->enable_irq(sensor);
++		if (ret)
++			return ret;
++	}
++	return 0;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(st_thermal_pm_ops, st_thermal_suspend,
++		st_thermal_resume);
++
++MODULE_DEVICE_TABLE(of, st_thermal_of_match);
++static struct platform_driver st_thermal_driver = {
++	.driver = {
++		.name	= DRIVER_NAME,
++		.owner  = THIS_MODULE,
++		.of_match_table = st_thermal_of_match,
++		.pm     = &st_thermal_pm_ops,
++	},
++	.probe		= st_thermal_probe,
++	.remove		= st_thermal_remove,
++};
++
++module_platform_driver(st_thermal_driver);
++MODULE_AUTHOR("STMicroelectronics (R&D) Limited");
++MODULE_DESCRIPTION("STMicroelectronics STIH41x SOC thermal sensor driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
