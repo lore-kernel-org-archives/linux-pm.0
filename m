@@ -1,90 +1,135 @@
-From: Joe Perches <joe@perches.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
 Subject: Re: [PATCHv4 02/16] drivers: thermal: introduce device tree parser
-Date: Wed, 18 Sep 2013 13:44:50 -0700
-Message-ID: <1379537090.1787.67.camel@joe-AO722>
-References: <1379530923-29268-1-git-send-email-eduardo.valentin@ti.com>
-	 <1379536310-30000-1-git-send-email-eduardo.valentin@ti.com>
+Date: Wed, 18 Sep 2013 16:52:44 -0400
+Message-ID: <523A129C.3060606@ti.com>
+References: <1379530923-29268-1-git-send-email-eduardo.valentin@ti.com>  <1379536310-30000-1-git-send-email-eduardo.valentin@ti.com> <1379537090.1787.67.camel@joe-AO722>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0185.hostedemail.com ([216.40.44.185]:41252 "EHLO
-	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751635Ab3IRUo4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Sep 2013 16:44:56 -0400
-In-Reply-To: <1379536310-30000-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="gg09oXHOWKRLA7S5pXwa5qIrHfjGgpUvH"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1379537090.1787.67.camel@joe-AO722>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, 2013-09-18 at 16:31 -0400, Eduardo Valentin wrote:
+--gg09oXHOWKRLA7S5pXwa5qIrHfjGgpUvH
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> +/**
-> + * of_parse_thermal_zones - parse device tree thermal data
-> + *
-> + * Initialization function that can be called by machine initialization
-> + * code to parse thermal data and populate the thermal framework
-> + * with hardware thermal zones info. This function only parses thermal zones.
-> + * Cooling devices and sensor devices nodes are supposed to be parsed
-> + * by their respective drivers.
-> + *
-> + * Return: 0 on success, proper error code otherwise
-> + *
-> + */
-> +int __init of_parse_thermal_zones(void)
-> +{
-> +	struct device_node *np, *child;
-> +	struct __thermal_zone *tz;
-> +	struct thermal_zone_device_ops *ops;
-> +
-> +	np = of_find_node_by_name(NULL, "thermal-zones");
-> +	if (!np) {
-> +		pr_err("unable to find thermal zones\n");
-> +		return 0;
+On 18-09-2013 16:44, Joe Perches wrote:
+> On Wed, 2013-09-18 at 16:31 -0400, Eduardo Valentin wrote:
+>=20
+>> +/**
+>> + * of_parse_thermal_zones - parse device tree thermal data
+>> + *
+>> + * Initialization function that can be called by machine initializati=
+on
+>> + * code to parse thermal data and populate the thermal framework
+>> + * with hardware thermal zones info. This function only parses therma=
+l zones.
+>> + * Cooling devices and sensor devices nodes are supposed to be parsed=
 
-return 0? This is success?
+>> + * by their respective drivers.
+>> + *
+>> + * Return: 0 on success, proper error code otherwise
+>> + *
+>> + */
+>> +int __init of_parse_thermal_zones(void)
+>> +{
+>> +	struct device_node *np, *child;
+>> +	struct __thermal_zone *tz;
+>> +	struct thermal_zone_device_ops *ops;
+>> +
+>> +	np =3D of_find_node_by_name(NULL, "thermal-zones");
+>> +	if (!np) {
+>> +		pr_err("unable to find thermal zones\n");
+>> +		return 0;
+>=20
+> return 0? This is success?
 
-> +	}
-> +
-> +	for_each_child_of_node(np, child) {
-> +		struct thermal_zone_device *zone;
-> +		struct thermal_zone_params *tzp;
-> +
-> +		tz = thermal_of_build_thermal_zone(child);
-> +		if (IS_ERR(tz)) {
-> +			pr_err("failed to build thermal zone %ld\n",
-> +			       PTR_ERR(tz));
-> +			return 0;
-> +		}
-> +
-> +		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
-> +		if (!ops)
-> +			return 0;
-> +
-> +		memcpy(ops, &of_thermal_ops, sizeof(*ops));
+This case is success because there should be systems without thermal DT
+entries.
 
-kmemdup instead of alloc/memcpy
+>=20
+>> +	}
+>> +
+>> +	for_each_child_of_node(np, child) {
+>> +		struct thermal_zone_device *zone;
+>> +		struct thermal_zone_params *tzp;
+>> +
+>> +		tz =3D thermal_of_build_thermal_zone(child);
+>> +		if (IS_ERR(tz)) {
+>> +			pr_err("failed to build thermal zone %ld\n",
+>> +			       PTR_ERR(tz));
+>> +			return 0;
+>> +		}
+>> +
+>> +		ops =3D kzalloc(sizeof(*ops), GFP_KERNEL);
+>> +		if (!ops)
+>> +			return 0;
+>> +
+>> +		memcpy(ops, &of_thermal_ops, sizeof(*ops));
+>=20
+> kmemdup instead of alloc/memcpy
+>=20
 
-> +		tzp = kzalloc(sizeof(*tzp), GFP_KERNEL);
-> +		if (!ops)
-> +			return 0;
-> +
-> +		/* No hwmon because there might be hwmon drivers registering */
-> +		tzp->no_hwmon = true;
-> +
-> +		zone = thermal_zone_device_register(child->name, tz->ntrips,
-> +						    0, tz,
-> +						    ops, tzp,
-> +						    tz->passive_delay,
-> +						    tz->polling_delay);
-> +		if (IS_ERR(zone))
-> +			pr_err("Failed to build %s zone %ld\n", child->name,
-> +			       PTR_ERR(zone));
-> +	}
-> +	return 0;
-> +}
+OK.
 
-All returns are 0, always successful?
+>> +		tzp =3D kzalloc(sizeof(*tzp), GFP_KERNEL);
+>> +		if (!ops)
+>> +			return 0;
+>> +
+
+These should not be 0 though.
+
+>> +		/* No hwmon because there might be hwmon drivers registering */
+>> +		tzp->no_hwmon =3D true;
+>> +
+>> +		zone =3D thermal_zone_device_register(child->name, tz->ntrips,
+>> +						    0, tz,
+>> +						    ops, tzp,
+>> +						    tz->passive_delay,
+>> +						    tz->polling_delay);
+>> +		if (IS_ERR(zone))
+>> +			pr_err("Failed to build %s zone %ld\n", child->name,
+>> +			       PTR_ERR(zone));
+>> +	}
+>> +	return 0;
+
+This one is correct.
+
+>> +}
+>=20
+> All returns are 0, always successful?
+
+hmmm.. I am sending after reworking the return code of this function.
+
+>=20
+>=20
+>=20
+>=20
 
 
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--gg09oXHOWKRLA7S5pXwa5qIrHfjGgpUvH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlI6Ep4ACgkQCXcVR3XQvP2jXwEAlW3m5OVr+n9hxxrBJGUgE8S/
+LrGREcClF6FW1kLGde0A/jnbrA89xrw6Lz1OzFubwNac8ogYiudSPkloHBDNsWvL
+=VgXM
+-----END PGP SIGNATURE-----
+
+--gg09oXHOWKRLA7S5pXwa5qIrHfjGgpUvH--
