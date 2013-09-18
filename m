@@ -1,70 +1,151 @@
-From: Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [BUG] 3.7-rc regression bisected: s2disk fails to resume image:
- Processes could not be frozen, cannot continue resuming
-Date: Wed, 18 Sep 2013 20:16:07 +0100
-Message-ID: <20130918191607.GO13318@ZenIV.linux.org.uk>
-References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
- <20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
- <20130918135239.GL13318@ZenIV.linux.org.uk>
- <20130918224032.84e09e0c1372dbc51c86ab1e@gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv3 02/16] drivers: thermal: introduce device tree parser
+Date: Wed, 18 Sep 2013 15:44:16 -0400
+Message-ID: <523A0290.8050502@ti.com>
+References: <5239F6D8.1020907@ti.com>  <1379530923-29268-1-git-send-email-eduardo.valentin@ti.com> <1379531483.1787.55.camel@joe-AO722>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="QGeIEom5s0FanB2kpUmipVPmpnifuMlT7"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34997 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683Ab3IRTQJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Sep 2013 15:16:09 -0400
-Content-Disposition: inline
-In-Reply-To: <20130918224032.84e09e0c1372dbc51c86ab1e@gmail.com>
+Received: from bear.ext.ti.com ([192.94.94.41]:33114 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753044Ab3IRTqG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 Sep 2013 15:46:06 -0400
+In-Reply-To: <1379531483.1787.55.camel@joe-AO722>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Savchenko <bircoph@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, suspend-devel@lists.sourceforge.net
+To: Joe Perches <joe@perches.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
-On Wed, Sep 18, 2013 at 10:40:32PM +0400, Andrew Savchenko wrote:
+--QGeIEom5s0FanB2kpUmipVPmpnifuMlT7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> And from suspend_ioctls.h:
-> #define SNAPSHOT_IOC_MAGIC      '3'
-> #define SNAPSHOT_FREEZE                 _IO(SNAPSHOT_IOC_MAGIC, 1)
-> 
-> My mistake, should be '3' instead of 3.
+Hello Joe,
 
-OK...  The thing to test, then, is what does __usermodehelper_disable()
-return to freeze_processes().  If that's where this -EAGAIN comes from,
-we at least have a plausible theory re what's going on.
+Thanks for reviewing this code. Couple of replies.
 
-freeze_processes() uses __usermodehelper_disable() to stop any new userland
-processes spawned by UMH (modprobe, etc.) and waits for ones it might be
-waiting for to complete.  Then it does try_to_freeze_tasks(), which
-freezes remaining userland, carefully skipping the current thread.
-However, it misses the possibility that current thread might have been
-spawned by something that had been launched by UMH, with UMH waiting
-for it.  Which is the case of everything spawned by linuxrc.
+ 18-09-2013 15:11, Joe Perches wrote:
+> On Wed, 2013-09-18 at 15:02 -0400, Eduardo Valentin wrote:
+>> This patch introduces a device tree bindings for
+>> describing the hardware thermal behavior and limits.
+>> Also a parser to read and interpret the data and feed
+>> it in the thermal framework is presented.
+>=20
+> trivial notes:
 
-I'd try something like diff below, but I'm *NOT* familiar with swsusp at
-all; it's not for mainline until ACKed by swsusp folks.
 
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index fb32636..d968882 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -571,7 +571,8 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
- 	DECLARE_COMPLETION_ONSTACK(done);
- 	int retval = 0;
- 
--	helper_lock();
-+	if (!(current->flags & PF_FREEZER_SKIP))
-+		helper_lock();
- 	if (!khelper_wq || usermodehelper_disabled) {
- 		retval = -EBUSY;
- 		goto out;
-@@ -611,7 +612,8 @@ wait_done:
- out:
- 	call_usermodehelper_freeinfo(sub_info);
- unlock:
--	helper_unlock();
-+	if (!(current->flags & PF_FREEZER_SKIP))
-+		helper_unlock();
- 	return retval;
- }
- EXPORT_SYMBOL(call_usermodehelper_exec);
+No issues.
+
+>=20
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal=
+=2Ec
+> []
+>> +static int of_thermal_get_trend(struct thermal_zone_device *tz, int t=
+rip,
+>> +				enum thermal_trend *trend)
+>> +{
+>> +	struct __thermal_zone *data =3D tz->devdata;
+>> +	long dev_trend;
+>> +	int r;
+>> +
+>> +	if (!data->get_trend)
+>> +		return -EINVAL;
+>> +
+>> +	r =3D data->get_trend(data->sensor_data, &dev_trend);
+>> +	if (r)
+>> +		return r;
+>> +
+>> +	if (dev_trend > 0)
+>> +		*trend =3D THERMAL_TREND_RAISING;
+>> +	else if (dev_trend < 0)
+>> +		*trend =3D THERMAL_TREND_DROPPING;
+>> +	else
+>> +		*trend =3D THERMAL_TREND_STABLE;
+>> +
+>> +	return 0;
+>> +}
+>=20
+> If readings are within some non zero noise level,
+> perhaps stable should be returned.
+
+Yes, there should be some sort of threshold for temperature trend. But I
+am not sure this is the right place to implement this. This type of
+feature is in my TODO list, but I am planing to get it done within the
+core code of the thermal framework.
+
+
+>=20
+>> +static struct __thermal_zone *
+>> +thermal_of_build_thermal_zone(struct device_node *np)
+>> +{
+>> +	struct device_node *child, *gchild;
+>> +	struct __thermal_zone *tz;
+>> +	int ret, i;
+>> +	u32 prop;
+>> +
+>> +	if (!np) {
+>> +		pr_err("no thermal zone np\n");
+>> +		return ERR_PTR(-EINVAL);
+>> +	}
+>> +
+>> +	tz =3D kzalloc(sizeof(*tz), GFP_KERNEL);
+>> +	if (!tz) {
+>> +		pr_err("not enough memory for thermal of zone\n");
+>=20
+> Unnecessary OOM message.
+> All allocs without GFP_NOWARN get a dump_stack()
+>=20
+>> +int __init of_parse_thermal_zones(void)
+>> +{
+> []
+>> +		ops =3D kzalloc(sizeof(*ops), GFP_KERNEL);
+>> +		if (!ops) {
+>> +			pr_err("no memory available for thermal ops\n");
+>> +			return 0;
+>> +		}
+>> +		memcpy(ops, &of_thermal_ops, sizeof(*ops));
+>> +
+>> +		tzp =3D kzalloc(sizeof(*tzp), GFP_KERNEL);
+>> +		if (!ops) {
+>> +			pr_err("no memory available for thermal zone params\n");
+>> +			return 0;
+>> +		}
+>=20
+> a couple more OOMs.
+>=20
+
+Hmmm.. I am pretty sure you have a good point. But to me seams to be
+still a common practice to have drivers outputing error messages when
+allocation fails. A simple git grep -A 4 kzalloc for instance, shows
+that there are still quite a considerable amount of occurrences of such
+practice.
+
+
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--QGeIEom5s0FanB2kpUmipVPmpnifuMlT7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlI6ApcACgkQCXcVR3XQvP1eowEA0vcsoda058lNFG/8FLwbLmpG
+dxXBo+44TgC6WYwG5NwBAI1H45DKqqrEqC/xK3SfErszcWt64wSJZ+eIJHiRK4cN
+=n92E
+-----END PGP SIGNATURE-----
+
+--QGeIEom5s0FanB2kpUmipVPmpnifuMlT7--
