@@ -1,108 +1,66 @@
-From: Andrew Savchenko <bircoph@gmail.com>
-Subject: Re: [BUG] 3.7-rc regression bisected: s2disk fails to resume image:
- Processes could not be frozen, cannot continue resuming
-Date: Thu, 19 Sep 2013 02:13:04 +0400
-Message-ID: <20130919021304.f99875ea88655f3ded008589@gmail.com>
-References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
-	<20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
-	<20130918135239.GL13318@ZenIV.linux.org.uk>
-	<20130918224032.84e09e0c1372dbc51c86ab1e@gmail.com>
-	<20130918191607.GO13318@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__19_Sep_2013_02_13_04_+0400_nty3ITOZ+YF2rY.V"
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v3 RFT 0/2] PM / Hibernate: sysfs resume
+Date: Wed, 18 Sep 2013 16:29:00 -0700
+Message-ID: <1379546942-22344-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f46.google.com ([209.85.215.46]:43730 "EHLO
-	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188Ab3IRWNa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Sep 2013 18:13:30 -0400
-In-Reply-To: <20130918191607.GO13318@ZenIV.linux.org.uk>
+Received: from mail-pd0-f182.google.com ([209.85.192.182]:62604 "EHLO
+	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890Ab3IRXaA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Sep 2013 19:30:00 -0400
+Received: by mail-pd0-f182.google.com with SMTP id r10so7683315pdi.41
+        for <linux-pm@vger.kernel.org>; Wed, 18 Sep 2013 16:30:00 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, suspend-devel@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 
---Signature=_Thu__19_Sep_2013_02_13_04_+0400_nty3ITOZ+YF2rY.V
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Patchset related to hibernation resume: one enhancement to make the use
+of an existing resume file more general and one enhances name_to_dev_t
+to ignore the trailing newlines coming from userspace.
 
-On Wed, 18 Sep 2013 20:16:07 +0100 Al Viro wrote:
-> On Wed, Sep 18, 2013 at 10:40:32PM +0400, Andrew Savchenko wrote:
->=20
-> > And from suspend_ioctls.h:
-> > #define SNAPSHOT_IOC_MAGIC      '3'
-> > #define SNAPSHOT_FREEZE                 _IO(SNAPSHOT_IOC_MAGIC, 1)
-> >=20
-> > My mistake, should be '3' instead of 3.
->=20
-> OK...  The thing to test, then, is what does __usermodehelper_disable()
-> return to freeze_processes().  If that's where this -EAGAIN comes from,
-> we at least have a plausible theory re what's going on.
->=20
-> freeze_processes() uses __usermodehelper_disable() to stop any new userla=
-nd
-> processes spawned by UMH (modprobe, etc.) and waits for ones it might be
-> waiting for to complete.  Then it does try_to_freeze_tasks(), which
-> freezes remaining userland, carefully skipping the current thread.
-> However, it misses the possibility that current thread might have been
-> spawned by something that had been launched by UMH, with UMH waiting
-> for it.  Which is the case of everything spawned by linuxrc.
->=20
-> I'd try something like diff below, but I'm *NOT* familiar with swsusp at
-> all; it's not for mainline until ACKed by swsusp folks.
->=20
-> diff --git a/kernel/kmod.c b/kernel/kmod.c
-> index fb32636..d968882 100644
-> --- a/kernel/kmod.c
-> +++ b/kernel/kmod.c
-> @@ -571,7 +571,8 @@ int call_usermodehelper_exec(struct subprocess_info *=
-sub_info, int wait)
->  	DECLARE_COMPLETION_ONSTACK(done);
->  	int retval =3D 0;
-> =20
-> -	helper_lock();
-> +	if (!(current->flags & PF_FREEZER_SKIP))
-> +		helper_lock();
->  	if (!khelper_wq || usermodehelper_disabled) {
->  		retval =3D -EBUSY;
->  		goto out;
-> @@ -611,7 +612,8 @@ wait_done:
->  out:
->  	call_usermodehelper_freeinfo(sub_info);
->  unlock:
-> -	helper_unlock();
-> +	if (!(current->flags & PF_FREEZER_SKIP))
-> +		helper_unlock();
->  	return retval;
->  }
->  EXPORT_SYMBOL(call_usermodehelper_exec);
+Both patches are based on the 3.11 tag.  This was tested on a
+Pandaboard with partial hibernation support, and compiled for x86.
 
-With this patch and 3.11.1 kernel resume works fine.
+Further testing is needed on other platforms.  Please let me know if
+you're able to verify this on any other systems.
 
-Best regards,
-Andrew Savchenko
+[PATCH 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
+  init/do_mounts.c |   23 ++++++++++++++++++-----
+  1 file changed, 18 insertions(+), 5 deletions(-)
 
---Signature=_Thu__19_Sep_2013_02_13_04_+0400_nty3ITOZ+YF2rY.V
-Content-Type: application/pgp-signature
+  Changes name_to_dev_t to handle a trailing newline in the
+  input buffer, which will allow name_to_dev_t to be used
+  directly with user buffers without requiring a copy.
+  Also adds a const to the name parameter which reflects
+  how name_to_dev_t is treating the input buffer currently.
+  This also allows direct use of user buffers
+  (from resume_store for example).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+[PATCH 2/2] PM / Hibernate: use name_to_dev_t to parse resume
+  kernel/power/hibernate.c |   15 ++++-----------
+  1 file changed, 4 insertions(+), 11 deletions(-)
 
-iQIcBAEBAgAGBQJSOiWFAAoJEFZZU7lTcnVssosP/Az7NwjZm3geDn8vahQowaBP
-XVWmks2oLFYMLSMxxUU/bU2bGhkaMmKlXq2IAK0skbvuWJUQbxPnurH+78cGzmvJ
-uHmdRKcvzOWRujjvRzoYtquxzJqAfmldlj4NNya0pb7FGBQDuX4ZpoJry1nCUqzw
-Z7rsIOluXmO1VdpG6qPswgJBFRWEZQjhpuUEICD38Y0j1osxWbqJ/bUQFI3PiDzQ
-9itHrCp11p9qaw92QxevseyvkPPIPUTOPr/Mwqg+y/xekUDG3ROj/CsMEK+WAmOH
-QeknC9FBvDc6owiOwbcKiaFa0TvyE98KKf+gt+hZ6ik3dnwHhHQU6pux0srpIaiD
-Kvlh+0MqQEMxv5y2VlDIHdhWAlc0njRzUwvvXJBThPsGCN1Hxn9/r4ea31ISLcRP
-+W74z9D02C9iAmVK+LHhUjeQA1ZAH/MfPtRn+SbdMHX45WzUkJr4mj3YvDDM+3t1
-pqXAMozbe/4p2UwQTgIkenjfzGS0FURauDOR+iKqa6nGiCop761jFuArUsSlaTbe
-2XsV3Lou95VQN72xEIOVDMW2iv99qLDTq4W1XJsJIoNQHRG3TdcOX2Z+OAhLneTz
-x2XoHVEAcI2MXHeG1BX7DvcMzzzqpJeWrWlI5TpvbVBjqX+agZ3hjMVW3CZ0PPT1
-4Xt727V9RJ0sN3ejkuPN
-=UCWr
------END PGP SIGNATURE-----
+  Use name_to_dev_t to parse the /sys/power/resume file making the
+  syntax more flexible.  It supports the previous use syntax
+  and additionally can support other formats such as
+  /dev/devicenode and UUID= formats.
 
---Signature=_Thu__19_Sep_2013_02_13_04_+0400_nty3ITOZ+YF2rY.V--
+  By changing /sys/debug/resume to accept the same syntax as
+  the resume=device parameter, we can parse the resume=device
+  in the initrd init script and use the resume device directly
+  from the kernel command line.
+
+Changes in v3:
+--------------
+* Dropped documentation patch as it went in through trivial
+* Added patch for name_to_dev_t to support directly parsing userspace
+  buffer
+
+Changes in v2:
+--------------
+* Added check for null return of kstrndup in hibernate.c
+
+
+Thanks,
+
+Sebastian
+
