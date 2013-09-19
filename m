@@ -1,167 +1,49 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v1 4/6] x86/msr: add 64bit _on_cpu access functions
-Date: Thu, 19 Sep 2013 09:00:33 -0700
-Message-ID: <1379606435-15871-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH v1 5/6] bitops: Introduce BIT_ULL
+Date: Thu, 19 Sep 2013 18:48:30 +0200
+Message-ID: <20130919164830.GB9427@pd.tnic>
 References: <1379606435-15871-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1379606435-15871-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+ <1379606435-15871-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:51847 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751933Ab3ISQsg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 Sep 2013 12:48:36 -0400
+Content-Disposition: inline
+In-Reply-To: <1379606435-15871-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com
 
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+On Thu, Sep 19, 2013 at 09:00:34AM -0700, Srinivas Pandruvada wrote:
+> Adding BIT(x) equivalent for unsigned long long type, BIT_ULL(x).
+> 
+> Suggested-by: Joe Perches <joe@perches.com>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  include/linux/bitops.h | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+> index a3b6b82..34e9e94 100644
+> --- a/include/linux/bitops.h
+> +++ b/include/linux/bitops.h
+> @@ -4,6 +4,7 @@
+>  
+>  #ifdef	__KERNEL__
+>  #define BIT(nr)			(1UL << (nr))
+> +#define BIT_ULL(nr)		(1ULL << (nr))
 
-Having 64-bit MSR access methods on given CPU can avoid shifting and
-simplify MSR content manipulation. We already have other combinations
-of rdmsrl_xxx and wrmsrl_xxx but missing the _on_cpu version.
+We already have BIT_64 for that.
 
-Reviewed-by: H. Peter Anvin <hpa@linux.intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/x86/include/asm/msr.h | 22 ++++++++++++++++
- arch/x86/lib/msr-smp.c     | 62 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 84 insertions(+)
-
-diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-index cb75028..e139b13 100644
---- a/arch/x86/include/asm/msr.h
-+++ b/arch/x86/include/asm/msr.h
-@@ -218,10 +218,14 @@ void msrs_free(struct msr *msrs);
- #ifdef CONFIG_SMP
- int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+int rdmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 *q);
-+int wrmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 q);
- void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
- void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
- int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+int rdmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 *q);
-+int wrmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 q);
- int rdmsr_safe_regs_on_cpu(unsigned int cpu, u32 regs[8]);
- int wrmsr_safe_regs_on_cpu(unsigned int cpu, u32 regs[8]);
- #else  /*  CONFIG_SMP  */
-@@ -235,6 +239,16 @@ static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- 	wrmsr(msr_no, l, h);
- 	return 0;
- }
-+static inline int rdmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 *q)
-+{
-+	rdmsrl(msr_no, *q);
-+	return 0;
-+}
-+static inline int wrmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 q)
-+{
-+	wrmsrl(msr_no, q);
-+	return 0;
-+}
- static inline void rdmsr_on_cpus(const struct cpumask *m, u32 msr_no,
- 				struct msr *msrs)
- {
-@@ -254,6 +268,14 @@ static inline int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- {
- 	return wrmsr_safe(msr_no, l, h);
- }
-+static inline int rdmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 *q)
-+{
-+	return rdmsrl_safe(msr_no, q);
-+}
-+static inline int wrmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 q)
-+{
-+	return wrmsrl_safe(msr_no, q);
-+}
- static inline int rdmsr_safe_regs_on_cpu(unsigned int cpu, u32 regs[8])
- {
- 	return rdmsr_safe_regs(regs);
-diff --git a/arch/x86/lib/msr-smp.c b/arch/x86/lib/msr-smp.c
-index a6b1b86..518532e 100644
---- a/arch/x86/lib/msr-smp.c
-+++ b/arch/x86/lib/msr-smp.c
-@@ -47,6 +47,21 @@ int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
- }
- EXPORT_SYMBOL(rdmsr_on_cpu);
- 
-+int rdmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 *q)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	memset(&rv, 0, sizeof(rv));
-+
-+	rv.msr_no = msr_no;
-+	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
-+	*q = rv.reg.q;
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(rdmsrl_on_cpu);
-+
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- {
- 	int err;
-@@ -63,6 +78,22 @@ int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- }
- EXPORT_SYMBOL(wrmsr_on_cpu);
- 
-+int wrmsrl_on_cpu(unsigned int cpu, u32 msr_no, u64 q)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	memset(&rv, 0, sizeof(rv));
-+
-+	rv.msr_no = msr_no;
-+	rv.reg.q = q;
-+
-+	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(wrmsrl_on_cpu);
-+
- static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
- 			    struct msr *msrs,
- 			    void (*msr_func) (void *info))
-@@ -159,6 +190,37 @@ int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
- }
- EXPORT_SYMBOL(wrmsr_safe_on_cpu);
- 
-+int wrmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 q)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	memset(&rv, 0, sizeof(rv));
-+
-+	rv.msr_no = msr_no;
-+	rv.reg.q = q;
-+
-+	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
-+
-+	return err ? err : rv.err;
-+}
-+EXPORT_SYMBOL(wrmsrl_safe_on_cpu);
-+
-+int rdmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 *q)
-+{
-+	int err;
-+	struct msr_info rv;
-+
-+	memset(&rv, 0, sizeof(rv));
-+
-+	rv.msr_no = msr_no;
-+	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
-+	*q = rv.reg.q;
-+
-+	return err ? err : rv.err;
-+}
-+EXPORT_SYMBOL(rdmsrl_safe_on_cpu);
-+
- /*
-  * These variants are significantly slower, but allows control over
-  * the entire 32-bit GPR set.
 -- 
-1.8.3.1
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
