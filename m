@@ -1,37 +1,78 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 RFT 2/2] PM / Hibernate: use name_to_dev_t to parse
- resume
-Date: Thu, 19 Sep 2013 12:11:00 +0200
-Message-ID: <20130919101100.GE19346@amd.pavel.ucw.cz>
-References: <1379546942-22344-1-git-send-email-sebastian.capella@linaro.org>
- <1379546942-22344-3-git-send-email-sebastian.capella@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1 0/6] Power Capping Framework and RAPL Driver
+Date: Thu, 19 Sep 2013 09:00:29 -0700
+Message-ID: <1379606435-15871-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38561 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751994Ab3ISKLB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Sep 2013 06:11:01 -0400
-Content-Disposition: inline
-In-Reply-To: <1379546942-22344-3-git-send-email-sebastian.capella@linaro.org>
+Received: from mga02.intel.com ([134.134.136.20]:60050 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751562Ab3ISQA1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 Sep 2013 12:00:27 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Wed 2013-09-18 16:29:02, Sebastian Capella wrote:
-> Use the name_to_dev_t call to parse the device name echo'd to
-> to /sys/power/resume.  This imitates the method used in hibernate.c
-> in software_resume, and allows the resume partition to be specified
-> using other equivalent device formats as well.  By allowing
-> /sys/debug/resume to accept the same syntax as the resume=device
-> parameter, we can parse the resume=device in the init script and
-> use the resume device directly from the kernel command line.
-> 
-> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-> Cc: Len Brown <len.brown@intel.com>
+Overview
+With the evolution of technologies, which enables power monitoring and limiting,
+more and more devices are able to constrain their power consumption under certain
+limits. There are several use cases for such technologies:
+- Power monitoring: Each device can report its power consumption.
+- Power Limiting: Setting power limits on the devices allows users to guard against
+platform reaching max system power level.
+- Maximize performance: While staying below a power limit, it allows devices to
+automatically adjust performance to meet demands
+- Dynamic control and re-budgeting: If each device can be constrained to some power,
+extra power can redistributed to other devices, which needs additional performance.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+One such example of technologies is RAPL (Running Average Power Limit) mechanism
+available in the latest Intel processors. Intel is slowly adding many devices under
+RAPL control. Also there are other technologies available, for power capping various
+devices. Soon it is very likely that other vendors are also adding or considering
+such implementation.
+
+Power Capping framework is an effort to have a uniform interface available to Linux
+drivers, which will enable
+- A uniform sysfs interface for all devices which can offer power capping
+- A common API for drivers, which will avoid code duplication and easy
+implementation of client drivers.
+
+Also submitting Intel RAPL driver using power capping framework.
+
+History:
+v1
+Incorporated changes suggested during RFC stage
+
+Jacob Pan (2):
+  x86/msr: add 64bit _on_cpu access functions
+  Introduce Intel RAPL power capping driver
+
+Srinivas Pandruvada (4):
+  PowerCap: Documentation
+  PowerCap: Add class driver
+  PowerCap: Added to drivers build
+  bitops: Introduce BIT_ULL
+
+ Documentation/ABI/testing/sysfs-class-powercap |  152 +++
+ Documentation/power/powercap/powercap.txt      |  236 ++++
+ arch/x86/include/asm/msr.h                     |   22 +
+ arch/x86/lib/msr-smp.c                         |   62 ++
+ drivers/Kconfig                                |    2 +
+ drivers/Makefile                               |    1 +
+ drivers/powercap/Kconfig                       |   31 +
+ drivers/powercap/Makefile                      |    2 +
+ drivers/powercap/intel_rapl.c                  | 1395 ++++++++++++++++++++++++
+ drivers/powercap/powercap_sys.c                |  699 ++++++++++++
+ include/linux/bitops.h                         |    1 +
+ include/linux/powercap.h                       |  325 ++++++
+ 12 files changed, 2928 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-powercap
+ create mode 100644 Documentation/power/powercap/powercap.txt
+ create mode 100644 drivers/powercap/Kconfig
+ create mode 100644 drivers/powercap/Makefile
+ create mode 100644 drivers/powercap/intel_rapl.c
+ create mode 100644 drivers/powercap/powercap_sys.c
+ create mode 100644 include/linux/powercap.h
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.8.3.1
+
