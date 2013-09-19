@@ -1,45 +1,68 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH v1 5/6] bitops: Introduce BIT_ULL
-Date: Thu, 19 Sep 2013 20:48:55 +0200
-Message-ID: <20130919184855.GG9412@pd.tnic>
-References: <1379606435-15871-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1379606435-15871-6-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20130919164830.GB9427@pd.tnic>
- <523B2F57.2050504@linux.intel.com>
- <20130919172819.GD9412@pd.tnic>
- <1379614490.22168.7.camel@joe-AO722>
- <523B43BC.2020701@linux.intel.com>
- <1379615641.22168.15.camel@joe-AO722>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH] PCI / ACPI / PM: Clear pme_poll for devices in D3cold on wakeup
+Date: Thu, 19 Sep 2013 14:51:15 -0600
+Message-ID: <CAErSpo6ztY=Hd42UUi=KZvN62+9fd4BmyGafLDqfvwp9NxhrYw@mail.gmail.com>
+References: <4974289.QhzOmFXm0s@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:33412 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434Ab3ISStA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 Sep 2013 14:49:00 -0400
-Content-Disposition: inline
-In-Reply-To: <1379615641.22168.15.camel@joe-AO722>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <4974289.QhzOmFXm0s@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Huang Ying <ying.huang@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "David E. Box" <david.e.box@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com
 
-On Thu, Sep 19, 2013 at 11:34:01AM -0700, Joe Perches wrote:
-> On Thu, 2013-09-19 at 11:34 -0700, Srinivas Pandruvada wrote:
-> 
-> > Let's do in two steps:
-> > - In the next patcheset I will add BIT_ULL_MASK and BIT_ULL_WORD in 
-> > addition to BIT_ULL
-> > - Once this series is approved, submit a separate patch to change BIT_64 
-> > to BIT_ULL
-> 
-> Fine by me.
+On Fri, Sep 13, 2013 at 7:38 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Commit 448bd85 (PCI/PM: add PCIe runtime D3cold support) added a
+> piece of code to pci_acpi_wake_dev() causing that function to behave
+> in a special way for devices in D3cold (so that their configuration
+> registeres are not accessed before those devices are resumed).
 
-+1.
+s/registeres/registers/
 
--- 
-Regards/Gruss,
-    Boris.
+> However, it didn't take the clearing of the pme_poll flag into
+> account.  That has to be done for all devices, even if they are in
+> D3cold, or pci_pme_list_scan() will not know that wakeup has been
+> signaled for the device and will poll its PME Status bit
+> unnecessarily.
+>
+> Fix the problem by moving the clearing of the pme_poll flag in
+> pci_acpi_wake_dev() before the code introduced by commit 448bd85.
+>
+> Reported-and-tested-by: David E. Box <david.e.box@intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+
+> Cc: 3.6+ <stable@vger.kernel.org> # 3.6+
+> ---
+>  drivers/pci/pci-acpi.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> Index: linux-pm/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-acpi.c
+> +++ linux-pm/drivers/pci/pci-acpi.c
+> @@ -47,6 +47,9 @@ static void pci_acpi_wake_dev(acpi_handl
+>         if (event != ACPI_NOTIFY_DEVICE_WAKE || !pci_dev)
+>                 return;
+>
+> +       if (pci_dev->pme_poll)
+> +               pci_dev->pme_poll = false;
+> +
+>         if (pci_dev->current_state == PCI_D3cold) {
+>                 pci_wakeup_event(pci_dev);
+>                 pm_runtime_resume(&pci_dev->dev);
+> @@ -57,9 +60,6 @@ static void pci_acpi_wake_dev(acpi_handl
+>         if (pci_dev->pme_support)
+>                 pci_check_pme_status(pci_dev);
+>
+> -       if (pci_dev->pme_poll)
+> -               pci_dev->pme_poll = false;
+> -
+>         pci_wakeup_event(pci_dev);
+>         pm_runtime_resume(&pci_dev->dev);
+>
+>
