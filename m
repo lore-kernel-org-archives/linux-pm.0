@@ -1,65 +1,45 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v3 RFT 2/2] PM / Hibernate: use name_to_dev_t to parse resume
-Date: Wed, 18 Sep 2013 16:29:02 -0700
-Message-ID: <1379546942-22344-3-git-send-email-sebastian.capella@linaro.org>
-References: <1379546942-22344-1-git-send-email-sebastian.capella@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1379546942-22344-1-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH] cpufreq: return EEXIST instead of EBUSY for second registering
+Date: Wed, 18 Sep 2013 21:05:20 -0700
+Message-ID: <1379563520-7221-1-git-send-email-yinghai@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from aserp1040.oracle.com ([141.146.126.69]:20658 "EHLO
+	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460Ab3ISEFi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Sep 2013 00:05:38 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
 
-Use the name_to_dev_t call to parse the device name echo'd to
-to /sys/power/resume.  This imitates the method used in hibernate.c
-in software_resume, and allows the resume partition to be specified
-using other equivalent device formats as well.  By allowing
-/sys/debug/resume to accept the same syntax as the resume=device
-parameter, we can parse the resume=device in the init script and
-use the resume device directly from the kernel command line.
+System that cpu support intel_pstate, acpi_cpufreq fail to
+load, and udev keep trying until trace get filled up and
+kernel crash.
 
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+The root cause is driver return ret from cpufreq_register_driver
+and when some other driver take over before, it would return
+EBUSY, then udev will keep trying...
+
+cpufreq_register_driver should return EEXIST instead.
+then system could boot without appending intel_pstate=disable
+and still use intel_pstate.
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
- kernel/power/hibernate.c |   15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+ drivers/cpufreq/cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index b26f5f1..8b253c2 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -971,16 +971,11 @@ static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
- static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			    const char *buf, size_t n)
- {
--	unsigned int maj, min;
- 	dev_t res;
--	int ret = -EINVAL;
- 
--	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
--		goto out;
--
--	res = MKDEV(maj,min);
--	if (maj != MAJOR(res) || min != MINOR(res))
--		goto out;
-+	res = name_to_dev_t(buf);
-+	if (res == 0)
-+		return -EINVAL;
- 
- 	lock_system_sleep();
- 	swsusp_resume_device = res;
-@@ -988,9 +983,7 @@ static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
- 	printk(KERN_INFO "PM: Starting manual resume from disk\n");
- 	noresume = 0;
- 	software_resume();
--	ret = n;
-- out:
--	return ret;
-+	return n;
- }
- 
- power_attr(resume);
--- 
-1.7.9.5
+Index: linux-2.6/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6/drivers/cpufreq/cpufreq.c
+@@ -2104,7 +2104,7 @@ int cpufreq_register_driver(struct cpufr
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	if (cpufreq_driver) {
+ 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-		return -EBUSY;
++		return -EEXIST;
+ 	}
+ 	cpufreq_driver = driver_data;
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
