@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v1 2/6] PowerCap: Add class driver
-Date: Thu, 19 Sep 2013 09:00:31 -0700
-Message-ID: <1379606435-15871-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1 1/6] PowerCap: Documentation
+Date: Thu, 19 Sep 2013 09:00:30 -0700
+Message-ID: <1379606435-15871-2-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1379606435-15871-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -13,1151 +13,574 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The power capping framework providing a consistent interface between th=
-e
-kernel and user space that allows power capping drivers to expose their
-settings to user space in a uniform way.
-The overall design of the framework is described in the documentation
-added by the previous patch in this series.
+Added power cap framework documentation. This explains the use of power=
+ capping
+framework, sysfs and programming interface.
+There are two documents:
+Documentation/power/powercap/powercap.txt : Explains use case and APIs.
+Documentation/ABI/testing/sysfs-class-powercap: Explains ABIs.
 
 Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com=
 >
 Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- drivers/powercap/Kconfig        |  19 ++
- drivers/powercap/Makefile       |   1 +
- drivers/powercap/powercap_sys.c | 699 ++++++++++++++++++++++++++++++++=
+ Documentation/ABI/testing/sysfs-class-powercap | 152 ++++++++++++++++
+ Documentation/power/powercap/powercap.txt      | 236 +++++++++++++++++=
 ++++++++
- include/linux/powercap.h        | 325 +++++++++++++++++++
- 4 files changed, 1044 insertions(+)
- create mode 100644 drivers/powercap/Kconfig
- create mode 100644 drivers/powercap/Makefile
- create mode 100644 drivers/powercap/powercap_sys.c
- create mode 100644 include/linux/powercap.h
+ 2 files changed, 388 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-powercap
+ create mode 100644 Documentation/power/powercap/powercap.txt
 
-diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
+diff --git a/Documentation/ABI/testing/sysfs-class-powercap b/Documenta=
+tion/ABI/testing/sysfs-class-powercap
 new file mode 100644
-index 0000000..a37055e
+index 0000000..db3b3ff
 --- /dev/null
-+++ b/drivers/powercap/Kconfig
-@@ -0,0 +1,19 @@
-+#
-+# Generic power capping sysfs interface configuration
-+#
++++ b/Documentation/ABI/testing/sysfs-class-powercap
+@@ -0,0 +1,152 @@
++What:		/sys/class/powercap/
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		The powercap/ class sub directory belongs to the power cap
++		subsystem. Refer to
++		Documentation/power/powercap/powercap.txt for details.
 +
-+menuconfig POWERCAP
-+	bool "Generic powercap sysfs driver"
-+	help
-+	  The power capping sysfs interface allows kernel subsystems to expos=
++What:		/sys/class/powercap/<control type>
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		A <control type> is a unique name under /sys/class/powercap.
++		Here <control type> determines how the power is going to be
++		controlled. A <control type> can contain multiple power zones.
++
++What:		/sys/class/powercap/<control type>/enabled
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		This allows to enable/disable power capping for a "control type".
++		This status affects every power zone using this "control_type.
++
++What:		/sys/class/powercap/<control type>/<power zone>
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		A power zone is a single or a collection of devices, which can
++		be independently monitored and controlled. A power zone sysfs
++		entry is qualified with the name of the <control type>.
++		E.g. intel-rapl:0:1:1.
++
++What:		/sys/class/powercap/<control type>/<power zone>/<child power zo=
+ne>
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Power zones may be organized in a hierarchy in which child
++		power zones provide monitoring and control for a subset of
++		devices under the parent. For example, if there is a parent
++		power zone for a whole CPU package, each CPU core in it can
++		be a child power zone.
++
++What:		/sys/class/powercap/.../<power zone>/name
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Specifies the name of this power zone.
++
++What:		/sys/class/powercap/.../<power zone>/energy_uj
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Current energy counter in micro-joules. Write "0" to reset.
++		If the counter can not be reset, then this attribute is
++		read-only.
++
++What:		/sys/class/powercap/.../<power zone>/max_energy_range_uj
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Range of the above energy counter in micro-joules.
++
++
++What:		/sys/class/powercap/.../<power zone>/power_uw
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Current power in micro-watts.
++
++What:		/sys/class/powercap/.../<power zone>/max_power_range_uw
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Range of the above power value in micro-watts.
++
++What:		/sys/class/powercap/.../<power zone>/constraint_X_name
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Each power zone can define one or more constraints. Each
++		constraint can have an optional name. Here "X" can have values
++		from 0 to max integer.
++
++What:		/sys/class/powercap/.../<power zone>/constraint_X_power_limit_u=
+w
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Power limit in micro-watts should be applicable for
++		the time window specified by "constraint_X_time_window_us".
++		Here "X" can have values from 0 to max integer.
++
++What:		/sys/class/powercap/.../<power zone>/constraint_X_time_window_u=
+s
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Time window in micro seconds. This is used along with
++		constraint_X_power_limit_uw to define a power constraint.
++		Here "X" can have values from 0 to max integer.
++
++
++What:		/sys/class/powercap/<control type>/.../constraint_X_max_power_u=
+w
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Maximum allowed power in micro watts for this constraint.
++		Here "X" can have values from 0 to max integer.
++
++What:		/sys/class/powercap/<control type>/.../constraint_X_min_power_u=
+w
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Minimum allowed power in micro watts for this constraint.
++		Here "X" can have values from 0 to max integer.
++
++What:		/sys/class/powercap/.../<power zone>/constraint_X_max_time_wind=
+ow_us
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Maximum allowed time window in micro seconds for this
++		constraint. Here "X" can have values from 0 to max integer.
++
++What:		/sys/class/powercap/.../<power zone>/constraint_X_min_time_wind=
+ow_us
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Minimum allowed time window in micro seconds for this
++		constraint. Here "X" can have values from 0 to max integer.
++
++What:		/sys/class/powercap/.../<power zone>/enabled
++Date:		September 2013
++KernelVersion:	3.13
++Contact:	linux-pm@vger.kernel.org
++Description
++		This allows to enable/disable power capping at power zone level.
++		This applies to current power zone and its children.
+diff --git a/Documentation/power/powercap/powercap.txt b/Documentation/=
+power/powercap/powercap.txt
+new file mode 100644
+index 0000000..8d83bb3
+--- /dev/null
++++ b/Documentation/power/powercap/powercap.txt
+@@ -0,0 +1,236 @@
++Power Capping Framework
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++The power capping framework provides a consistent interface between th=
+e kernel
++and the user space that allows power capping drivers to expose the set=
+tings to
++user space in a uniform way.
++
++Terminology
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
++The framework exposes power capping devices to user space via sysfs in=
+ the
++form of a tree of objects. The objects at the root level of the tree r=
+epresent
++'control types', which correspond to different methods of power cappin=
+g.  For
++example, the intel-rapl control type represents the Intel "Running Ave=
+rage
++Power Limit" (RAPL) technology, whereas the 'idle-injection' control t=
+ype
++corresponds to the use of idle injection for controlling power.
++
++Power zones represent different parts of the system, which can be cont=
+rolled and
++monitored using the power capping method determined by the control typ=
+e the
++given zone belongs to. They each contain attributes for monitoring pow=
+er, as
++well as controls represented in the form of power constraints.  If the=
+ parts of
++the system represented by different power zones are hierarchical (that=
+ is, one
++bigger part consists of multiple smaller parts that each have their ow=
+n power
++controls), those power zones may also be organized in a hierarchy with=
+ one
++parent power zone containing multiple subzones and so on to reflect th=
 e power
-+	  capping settings to user space in a consistent way.  Usually, it co=
-nsists
-+	  of multiple control types that determine which settings may be expo=
-sed and
-+	  power zones representing parts of the system that can be subject to=
++control topology of the system.  In that case, it is possible to apply=
  power
-+	  capping.
++capping to a set of devices together using the parent power zone and i=
+f more
++fine grained control is required, it can be applied through the subzon=
+es.
 +
-+	  If you want this code to be compiled in, say Y here.
 +
-+if POWERCAP
-+# Client driver configurations go here.
++Example sysfs interface tree:
 +
-+endif
-diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
-new file mode 100644
-index 0000000..6defbc8
---- /dev/null
-+++ b/drivers/powercap/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_POWERCAP)	+=3D powercap_sys.o
-diff --git a/include/linux/powercap.h b/include/linux/powercap.h
-new file mode 100644
-index 0000000..4e25041
---- /dev/null
-+++ b/include/linux/powercap.h
-@@ -0,0 +1,325 @@
-+/*
-+ * powercap.h: Data types and headers for sysfs power capping interfac=
++/sys/devices/virtual/powercap
++=E2=94=94=E2=94=80=E2=94=80 intel-rapl
++    =E2=94=9C=E2=94=80=E2=94=80 intel-rapl:0
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_0_nam=
 e
-+ * Copyright (c) 2013, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modif=
-y it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITH=
-OUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY =
-or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licen=
-se for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License a=
-long with
-+ * this program; if not, write to the Free Software Foundation, Inc.
-+ *
-+ */
-+
-+#ifndef __POWERCAP_H__
-+#define __POWERCAP_H__
-+
-+#include <linux/device.h>
-+#include <linux/idr.h>
-+
-+/*
-+ * A power cap class device can contain multiple powercap control_type=
-s.
-+ * Each control_type can have multiple power zones, which can be indep=
-endently
-+ * controlled. Each power zone can have one or more constraints.
-+ */
-+
-+struct powercap_control_type;
-+struct powercap_zone;
-+struct powercap_zone_constraint;
-+
-+/**
-+ * struct powercap_control_type_ops - Define control type callbacks
-+ * @set_enable:		Enable/Disable whole control type.
-+ *			Default is enabled. But this callback allows all zones
-+ *			to be in disable state and remove any applied power
-+ *			limits. If disabled power zone can only be monitored
-+ *			not controlled.
-+ * @get_enable:		get Enable/Disable status.
-+ * @release:		Callback to inform that last reference to this
-+ *			control type is closed. So it is safe to free data
-+ *			structure associated with this control type.
-+ *			This callback is mandatory if the client own memory
-+ *			for the control type.
-+ *
-+ * This structure defines control type callbacks to be implemented by =
-client
-+ * drivers
-+ */
-+struct powercap_control_type_ops {
-+	int (*set_enable) (struct powercap_control_type *, bool mode);
-+	int (*get_enable) (struct powercap_control_type *, bool *mode);
-+	int (*release) (struct powercap_control_type *);
-+};
-+
-+/**
-+ * struct powercap_control_type- Defines a powercap control_type
-+ * @name:		name of control_type
-+ * @dev:		device for this control_type
-+ * @idr:		idr to have unique id for its child
-+ * @root_node:		Root holding power zones for this control_type
-+ * @ops:		Pointer to callback struct
-+ * @node_lock:		mutex for control type
-+ * @allocated:		This is possible that client owns the memory
-+ *			used by this structure. In this case
-+ *			this flag is set to false by framework to
-+ *			prevent deallocation during release process.
-+ *			Otherwise this flag is set to true.
-+ * @ctrl_inst:		link to the control_type list
-+ *
-+ * Defines powercap control_type. This acts as a container for power
-+ * zones, which use same method to control power. E.g. RAPL, RAPL-PCI =
-etc.
-+ * All fields are private and should not be used by client drivers.
-+ */
-+struct powercap_control_type {
-+	struct device dev;
-+	struct idr idr;
-+	int nr_zones;
-+	const struct powercap_control_type_ops *ops;
-+	struct mutex lock;
-+	bool allocated;
-+	struct list_head node;
-+};
-+
-+/**
-+ * struct powercap_zone_ops - Define power zone callbacks
-+ * @get_max_energy_range_uj:	Get maximum range of energy counter in
-+ *				micro-joules.
-+ * @get_energy_uj:		Get current energy counter in micro-joules.
-+ * @reset_energy_uj:		Reset micro-joules energy counter.
-+ * @get_max_power_range_uw:	Get maximum range of power counter in
-+ *				micro-watts.
-+ * @get_power_uw:		Get current power counter in micro-watts.
-+ * @set_enable:			Enable/Disable power zone controls.
-+ *				Default is enabled.
-+ * @get_enable:			get Enable/Disable status.
-+ * @release:			Callback to inform that last reference to this
-+ *				control type is closed. So it is safe to free
-+ *				data structure associated with this
-+ *				control type. Mandatory, if client driver owns
-+ *				the power_zone memory.
-+ *
-+ * This structure defines zone callbacks to be implemented by client d=
-rivers.
-+ * Client drives can define both energy and power related callbacks. B=
-ut at
-+ * the least one type (either power or energy) is mandatory. Client dr=
-ivers
-+ * should handle mutual exclusion, if required in callbacks.
-+ */
-+struct powercap_zone_ops {
-+	int (*get_max_energy_range_uj) (struct powercap_zone *, u64 *);
-+	int (*get_energy_uj) (struct powercap_zone *, u64 *);
-+	int (*reset_energy_uj) (struct powercap_zone *);
-+	int (*get_max_power_range_uw) (struct powercap_zone *, u64 *);
-+	int (*get_power_uw) (struct powercap_zone *, u64 *);
-+	int (*set_enable) (struct powercap_zone *, bool mode);
-+	int (*get_enable) (struct powercap_zone *, bool *mode);
-+	int (*release) (struct powercap_zone *);
-+};
-+
-+#define	POWERCAP_ZONE_MAX_ATTRS		6
-+#define	POWERCAP_CONSTRAINTS_ATTRS	8
-+#define MAX_CONSTRAINTS_PER_ZONE	10
-+/**
-+ * struct powercap_zone- Defines instance of a power cap zone
-+ * @id:			Unique id
-+ * @name:		Power zone name.
-+ * @control_type_inst:	Control type instance for this zone.
-+ * @ops:		Pointer to the zone operation structure.
-+ * @dev:		Instance of a device.
-+ * @const_id_cnt:	Number of constraint defined.
-+ * @idr:		Instance to an idr entry for children zones.
-+ * @parent_idr:		To remove reference from the parent idr.
-+ * @private_data:	Private data pointer if any for this zone.
-+ * @zone_dev_attrs:	Attributes associated with this device.
-+ * @zone_attr_count:	Attribute count.
-+ * @dev_zone_attr_group: Attribute group for attributes.
-+ * @dev_attr_groups:	Attribute group store to register with device.
-+ * @allocated:		This is possible that client owns the memory
-+ *			used by this structure. In this case
-+ *			this flag is set to false by framework to
-+ *			prevent deallocation during release process.
-+ *			Otherwise this flag is set to true.
-+ * @constraint_ptr:	List of constraints for this zone.
-+ *
-+ * This defines a power zone instance. The fields of this structure ar=
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_0_pow=
+er_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_0_tim=
+e_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_1_nam=
 e
-+ * private, and should not be used by client drivers.
-+ */
-+struct powercap_zone {
-+	int id;
-+	char *name;
-+	void *control_type_inst;
-+	const struct powercap_zone_ops *ops;
-+	struct device dev;
-+	int const_id_cnt;
-+	struct idr idr;
-+	struct idr *parent_idr;
-+	void *private_data;
-+	struct attribute **zone_dev_attrs;
-+	int zone_attr_count;
-+	struct attribute_group dev_zone_attr_group;
-+	const struct attribute_group *dev_attr_groups[2]; /* 1 group + NULL *=
-/
-+	bool allocated;
-+	struct powercap_zone_constraint *constraints;
-+};
-+
-+/**
-+ * struct powercap_zone_constraint_ops - Define constraint callbacks
-+ * @set_power_limit_uw:		Set power limit in micro-watts.
-+ * @get_power_limit_uw:		Get power limit in micro-watts.
-+ * @set_time_window_us:		Set time window in micro-seconds.
-+ * @get_time_window_us:		Get time window in micro-seconds.
-+ * @get_max_power_uw:		Get max power allowed in micro-watts.
-+ * @get_min_power_uw:		Get min power allowed in micro-watts.
-+ * @get_max_time_window_us:	Get max time window allowed in micro-secon=
-ds.
-+ * @get_min_time_window_us:	Get min time window allowed in micro-secon=
-ds.
-+ * @get_name:			Get the name of constraint
-+ *
-+ * This structure is used to define the constraint callbacks for the c=
-lient
-+ * drivers. The following callbacks are mandatory and can't be NULL:
-+ *  set_power_limit_uw
-+ *  get_power_limit_uw
-+ *  set_time_window_us
-+ *  get_time_window_us
-+ *  get_name
-+ *  Client drivers should handle mutual exclusion, if required in call=
-backs.
-+ */
-+struct powercap_zone_constraint_ops {
-+	int (*set_power_limit_uw) (struct powercap_zone *, int, u64);
-+	int (*get_power_limit_uw) (struct powercap_zone *, int, u64 *);
-+	int (*set_time_window_us) (struct powercap_zone *, int, u64);
-+	int (*get_time_window_us) (struct powercap_zone *, int, u64 *);
-+	int (*get_max_power_uw) (struct powercap_zone *, int, u64 *);
-+	int (*get_min_power_uw) (struct powercap_zone *, int, u64 *);
-+	int (*get_max_time_window_us) (struct powercap_zone *, int, u64 *);
-+	int (*get_min_time_window_us) (struct powercap_zone *, int, u64 *);
-+	const char *(*get_name) (struct powercap_zone *, int);
-+};
-+
-+/**
-+ * struct powercap_zone_constraint- Defines instance of a constraint
-+ * @id:			Instance Id of this constraint.
-+ * @power_zone:		Pointer to the power zone for this constraint.
-+ * @ops:		Pointer to the constraint callbacks.
-+ *
-+ * This defines a constraint instance.
-+ */
-+struct powercap_zone_constraint {
-+	int id;
-+	struct powercap_zone *power_zone;
-+	struct powercap_zone_constraint_ops *ops;
-+};
-+
-+
-+/* For clients to get their device pointer, may be used for dev_dbgs *=
-/
-+#define POWERCAP_GET_DEV(power_zone)	(&power_zone->dev)
-+
-+/**
-+* powercap_set_zone_data() - Set private data for a zone
-+* @power_zone:	A pointer to the valid zone instance.
-+* @pdata:	A pointer to the user private data.
-+*
-+* Allows client drivers to associate some private data to zone instanc=
-e.
-+*/
-+static inline void powercap_set_zone_data(struct powercap_zone *power_=
-zone,
-+						void *pdata)
-+{
-+	if (power_zone)
-+		power_zone->private_data =3D pdata;
-+}
-+
-+/**
-+* powercap_get_zone_data() - Get private data for a zone
-+* @power_zone:	A pointer to the valid zone instance.
-+*
-+* Allows client drivers to get private data associate with a zone,
-+* using call to powercap_set_zone_data.
-+*/
-+static inline void *powercap_get_zone_data(struct powercap_zone *power=
-_zone)
-+{
-+	if (power_zone)
-+		return power_zone->private_data;
-+	return NULL;
-+}
-+
-+/**
-+* powercap_register_control_type() - Register a control_type with fram=
-ework
-+* @control_type:	Pointer to client allocated memory for the control ty=
-pe
-+*			structure storage. If this is NULL, powercap framework
-+*			will allocate memory and own it.
-+*			Advantage of this parameter is that client can embed
-+*			this data in its data structures and allocate in a
-+*			single call, preventing multiple allocations.
-+* @control_type_name:	The Name of this control_type, which will be sho=
-wn
-+*			in the sysfs Interface.
-+* @ops:			Callbacks for control type. This parameter is optional.
-+*
-+* Used to create a control_type with the power capping class. Here con=
-trol_type
-+* can represent a type of technology, which can control a range of pow=
-er zones.
-+* For example a control_type can be RAPL (Running Average Power Limit)
-+* Intel=C2=AE 64 and IA-32 Processor Architectures. The name can be an=
-y string
-+* which must be unique, otherwise this function returns NULL.
-+* A pointer to the control_type instance is returned on success.
-+*/
-+struct powercap_control_type *powercap_register_control_type(
-+				struct powercap_control_type *control_type,
-+				const char *name,
-+				const struct powercap_control_type_ops *ops);
-+
-+/**
-+* powercap_unregister_control_type() - Unregister a control_type from =
-framework
-+* @instance:	A pointer to the valid control_type instance.
-+*
-+* Used to unregister a control_type with the power capping class.
-+* All power zones registered under this control type have to be unregi=
-stered
-+* before calling this function, or it will fail with an error code.
-+*/
-+int powercap_unregister_control_type(struct powercap_control_type *ins=
-tance);
-+
-+/* Zone register/unregister API */
-+
-+/**
-+* powercap_register_zone() - Register a power zone
-+* @power_zone:	Pointer to client allocated memory for the power zone s=
-tructure
-+*		storage. If this is NULL, powercap framework will allocate
-+*		memory and own it. Advantage of this parameter is that client
-+*		can embed this data in its data structures and allocate in a
-+*		single call, preventing multiple allocations.
-+* @control_type: A control_type instance under which this zone operate=
-s.
-+* @name:	A name for this zone.
-+* @parent:	A pointer to the parent power zone instance if any or NULL
-+* @ops:		Pointer to zone operation callback structure.
-+* @no_constraints: Number of constraints for this zone
-+* @const_ops:	Pointer to constraint callback structure
-+*
-+* Register a power zone under a given control type. A power zone must =
-register
-+* a pointer to a structure representing zone callbacks.
-+* A power zone can be located under a parent power zone, in which case=
- @parent
-+* should point to it.  Otherwise, if @parent is NULL, the new power zo=
-ne will
-+* be located directly under the given control type
-+* For each power zone there may be a number of constraints that appear=
- in the
-+* sysfs under that zone as attributes with unique numeric IDs.
-+* Returns pointer to the power_zone on success.
-+*/
-+struct powercap_zone *powercap_register_zone(
-+			struct powercap_zone *power_zone,
-+			struct powercap_control_type *control_type,
-+			const char *name,
-+			struct powercap_zone *parent,
-+			const struct powercap_zone_ops *ops,
-+			int nr_constraints,
-+			struct powercap_zone_constraint_ops *const_ops);
-+
-+/**
-+* powercap_unregister_zone() - Unregister a zone device
-+* @control_type:	A pointer to the valid instance of a control_type.
-+* @power_zone:	A pointer to the valid zone instance for a control_type
-+*
-+* Used to unregister a zone device for a control_type.  Caller should
-+* make sure that children for this zone are unregistered first.
-+*/
-+int powercap_unregister_zone(struct powercap_control_type *control_typ=
-e,
-+				struct powercap_zone *power_zone);
-+
-+#endif
-diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powerca=
-p_sys.c
-new file mode 100644
-index 0000000..56d6747
---- /dev/null
-+++ b/drivers/powercap/powercap_sys.c
-@@ -0,0 +1,699 @@
-+/*
-+ * Power capping class
-+ * Copyright (c) 2013, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modif=
-y it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITH=
-OUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY =
-or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licen=
-se for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License a=
-long with
-+ * this program; if not, write to the Free Software Foundation, Inc.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/powercap.h>
-+
-+/* Power zone ro attributes define */
-+#define powercap_attr_ro(_name)		\
-+	static DEVICE_ATTR(_name, 0444, show_##_name, NULL)
-+
-+/* Power zone rw attributes define */
-+#define powercap_attr_rw(_name)		\
-+	static DEVICE_ATTR(_name, 0644, show_##_name, store_##_name)
-+
-+/* constraint attributes define rw */
-+#define powercap_const_attr_rw(_name)		\
-+	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, \
-+				store_constraint_##_name)
-+/* constraint attributes define ro */
-+#define powercap_const_attr_ro(_name)		\
-+	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, NULL)
-+
-+#define to_powercap_zone(n) container_of(n, struct powercap_zone, dev)
-+#define to_powercap_control_type(n) \
-+			container_of(n, struct powercap_control_type, dev)
-+
-+/* Power zone show function */
-+#define define_power_zone_show(_attr)		\
-+static ssize_t show_##_attr(struct device *dev, \
-+					struct device_attribute *dev_attr,\
-+					char *buf) \
-+{ \
-+	u64 value; \
-+	ssize_t len =3D -EINVAL; \
-+	struct powercap_zone *power_zone =3D to_powercap_zone(dev); \
-+	\
-+	if (power_zone->ops->get_##_attr) { \
-+		if (!power_zone->ops->get_##_attr(power_zone, &value)) \
-+			len =3D sprintf(buf, "%lld\n", value); \
-+	} \
-+	\
-+	return len; \
-+}
-+
-+/* The only meaningful input is 0 (reset), others are silently ignored=
- */
-+#define define_power_zone_store(_attr)		\
-+static ssize_t store_##_attr(struct device *dev,\
-+				struct device_attribute *dev_attr, \
-+				const char *buf, size_t count) \
-+{ \
-+	int err; \
-+	struct powercap_zone *power_zone =3D to_powercap_zone(dev); \
-+	u64 value; \
-+	\
-+	err =3D kstrtoull(buf, 10, &value); \
-+	if (err) \
-+		return -EINVAL; \
-+	if (value) \
-+		return count; \
-+	if (power_zone->ops->reset_##_attr) { \
-+		if (!power_zone->ops->reset_##_attr(power_zone)) \
-+			return count; \
-+	} \
-+	\
-+	return -EINVAL; \
-+}
-+
-+/* Power zone constraint show function */
-+#define define_power_zone_constraint_show(_attr) \
-+static ssize_t show_constraint_##_attr(struct device *dev, \
-+				struct device_attribute *dev_attr,\
-+				char *buf) \
-+{ \
-+	u64 value; \
-+	ssize_t len =3D -ENODATA; \
-+	struct powercap_zone *power_zone =3D to_powercap_zone(dev); \
-+	int id; \
-+	struct powercap_zone_constraint *pconst;\
-+	\
-+	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id)) \
-+		return -EINVAL; \
-+	if (id >=3D power_zone->const_id_cnt)	\
-+		return -EINVAL; \
-+	pconst =3D &power_zone->constraints[id]; \
-+	if (pconst && pconst->ops && pconst->ops->get_##_attr) { \
-+		if (!pconst->ops->get_##_attr(power_zone, id, &value)) \
-+			len =3D sprintf(buf, "%lld\n", value); \
-+	} \
-+	\
-+	return len; \
-+}
-+
-+/* Power zone constraint store function */
-+#define define_power_zone_constraint_store(_attr) \
-+static ssize_t store_constraint_##_attr(struct device *dev,\
-+				struct device_attribute *dev_attr, \
-+				const char *buf, size_t count) \
-+{ \
-+	int err; \
-+	u64 value; \
-+	struct powercap_zone *power_zone =3D to_powercap_zone(dev); \
-+	int id; \
-+	struct powercap_zone_constraint *pconst;\
-+	\
-+	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id)) \
-+		return -EINVAL; \
-+	if (id >=3D power_zone->const_id_cnt)	\
-+		return -EINVAL; \
-+	pconst =3D &power_zone->constraints[id]; \
-+	err =3D kstrtoull(buf, 10, &value); \
-+	if (err) \
-+		return -EINVAL; \
-+	if (pconst && pconst->ops && pconst->ops->set_##_attr) { \
-+		if (!pconst->ops->set_##_attr(power_zone, id, value)) \
-+			return count; \
-+	} \
-+	\
-+	return -ENODATA; \
-+}
-+
-+/* Power zone information callbacks */
-+define_power_zone_show(power_uw);
-+define_power_zone_show(max_power_range_uw);
-+define_power_zone_show(energy_uj);
-+define_power_zone_store(energy_uj);
-+define_power_zone_show(max_energy_range_uj);
-+
-+/* Power zone attributes */
-+powercap_attr_ro(max_power_range_uw);
-+powercap_attr_ro(power_uw);
-+powercap_attr_ro(max_energy_range_uj);
-+powercap_attr_rw(energy_uj);
-+
-+/* Power zone constraint attributes callbacks */
-+define_power_zone_constraint_show(power_limit_uw);
-+define_power_zone_constraint_store(power_limit_uw);
-+define_power_zone_constraint_show(time_window_us);
-+define_power_zone_constraint_store(time_window_us);
-+define_power_zone_constraint_show(max_power_uw);
-+define_power_zone_constraint_show(min_power_uw);
-+define_power_zone_constraint_show(max_time_window_us);
-+define_power_zone_constraint_show(min_time_window_us);
-+
-+/* For one time seeding of constraint device attributes */
-+struct powercap_constraint_attr {
-+	struct device_attribute power_limit_attr;
-+	struct device_attribute time_window_attr;
-+	struct device_attribute max_power_attr;
-+	struct device_attribute min_power_attr;
-+	struct device_attribute max_time_window_attr;
-+	struct device_attribute min_time_window_attr;
-+	struct device_attribute name_attr;
-+};
-+
-+static struct powercap_constraint_attr
-+				constraint_attrs[MAX_CONSTRAINTS_PER_ZONE];
-+
-+/* A list of powercap control_types */
-+static LIST_HEAD(powercap_cntrl_list);
-+/* Mutex to protect list of powercap control_types */
-+static DEFINE_MUTEX(powercap_cntrl_list_lock);
-+
-+#define POWERCAP_CONSTRAINT_NAME_LEN	30 /* Some limit to avoid overflo=
-w */
-+static ssize_t show_constraint_name(struct device *dev,
-+				struct device_attribute *dev_attr,
-+				char *buf)
-+{
-+	const char *name;
-+	struct powercap_zone *power_zone =3D to_powercap_zone(dev);
-+	int id;
-+	ssize_t len =3D -ENODATA;
-+	struct powercap_zone_constraint *pconst;
-+
-+	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id))
-+		return -EINVAL;
-+	if (id >=3D power_zone->const_id_cnt)
-+		return -EINVAL;
-+	pconst =3D &power_zone->constraints[id];
-+
-+	if (pconst && pconst->ops && pconst->ops->get_name) {
-+		name =3D pconst->ops->get_name(power_zone, id);
-+		if (name) {
-+			snprintf(buf, POWERCAP_CONSTRAINT_NAME_LEN,
-+								"%s\n", name);
-+			buf[POWERCAP_CONSTRAINT_NAME_LEN] =3D '\0';
-+			len =3D strlen(buf);
-+		}
-+	}
-+
-+	return len;
-+}
-+
-+static int create_constraint_attribute(int id, const char *name,
-+				int mode,
-+				struct device_attribute *dev_attr,
-+				ssize_t (*show)(struct device *,
-+					struct device_attribute *, char *),
-+				ssize_t (*store)(struct device *,
-+					struct device_attribute *,
-+				const char *, size_t)
-+				)
-+{
-+
-+	dev_attr->attr.name =3D kasprintf(GFP_KERNEL, "constraint_%d_%s",
-+								id, name);
-+	if (!dev_attr->attr.name)
-+		return -ENOMEM;
-+	dev_attr->attr.mode =3D mode;
-+	dev_attr->show =3D show;
-+	dev_attr->store =3D store;
-+
-+	return 0;
-+}
-+
-+static void free_constraint_attributes(void)
-+{
-+	int i;
-+
-+	for (i =3D 0; i < MAX_CONSTRAINTS_PER_ZONE; ++i) {
-+		kfree(constraint_attrs[i].power_limit_attr.attr.name);
-+		kfree(constraint_attrs[i].time_window_attr.attr.name);
-+		kfree(constraint_attrs[i].name_attr.attr.name);
-+		kfree(constraint_attrs[i].max_power_attr.attr.name);
-+		kfree(constraint_attrs[i].min_power_attr.attr.name);
-+		kfree(constraint_attrs[i].max_time_window_attr.attr.name);
-+		kfree(constraint_attrs[i].min_time_window_attr.attr.name);
-+	}
-+}
-+
-+static int seed_constraint_attributes(void)
-+{
-+	int i;
-+	int ret;
-+
-+	for (i =3D 0; i < MAX_CONSTRAINTS_PER_ZONE; ++i) {
-+		ret =3D create_constraint_attribute(i, "power_limit_uw",
-+					S_IWUSR | S_IRUGO,
-+					&constraint_attrs[i].power_limit_attr,
-+					show_constraint_power_limit_uw,
-+					store_constraint_power_limit_uw);
-+		if (ret)
-+			goto err_alloc;
-+		ret =3D create_constraint_attribute(i, "time_window_us",
-+					S_IWUSR | S_IRUGO,
-+					&constraint_attrs[i].time_window_attr,
-+					show_constraint_time_window_us,
-+					store_constraint_time_window_us);
-+		if (ret)
-+			goto err_alloc;
-+		ret =3D create_constraint_attribute(i, "name", S_IRUGO,
-+				&constraint_attrs[i].name_attr,
-+				show_constraint_name,
-+				NULL);
-+		if (ret)
-+			goto err_alloc;
-+		ret =3D create_constraint_attribute(i, "max_power_uw", S_IRUGO,
-+				&constraint_attrs[i].max_power_attr,
-+				show_constraint_max_power_uw,
-+				NULL);
-+		if (ret)
-+			goto err_alloc;
-+		ret =3D create_constraint_attribute(i, "min_power_uw", S_IRUGO,
-+				&constraint_attrs[i].min_power_attr,
-+				show_constraint_min_power_uw,
-+				NULL);
-+		if (ret)
-+			goto err_alloc;
-+		ret =3D create_constraint_attribute(i, "max_time_window_us",
-+				S_IRUGO,
-+				&constraint_attrs[i].max_time_window_attr,
-+				show_constraint_max_time_window_us,
-+				NULL);
-+		if (ret)
-+			goto err_alloc;
-+		ret =3D create_constraint_attribute(i, "min_time_window_us",
-+				S_IRUGO,
-+				&constraint_attrs[i].min_time_window_attr,
-+				show_constraint_min_time_window_us,
-+				NULL);
-+		if (ret)
-+			goto err_alloc;
-+
-+	}
-+
-+	return 0;
-+
-+err_alloc:
-+	free_constraint_attributes();
-+
-+	return ret;
-+}
-+
-+static int create_constraints(struct powercap_zone *power_zone,
-+				int nr_constraints,
-+				struct powercap_zone_constraint_ops *const_ops)
-+{
-+	int i;
-+	int ret =3D 0;
-+	int count;
-+	struct powercap_zone_constraint *pconst;
-+
-+	if (!power_zone || !const_ops || !const_ops->get_power_limit_uw ||
-+					!const_ops->set_power_limit_uw ||
-+					!const_ops->get_time_window_us ||
-+					!const_ops->set_time_window_us)
-+		return -EINVAL;
-+
-+	count =3D power_zone->zone_attr_count;
-+	for (i =3D 0; i < nr_constraints; ++i) {
-+		pconst =3D &power_zone->constraints[i];
-+		pconst->ops =3D const_ops;
-+		pconst->id =3D power_zone->const_id_cnt;
-+		power_zone->const_id_cnt++;
-+		power_zone->zone_dev_attrs[count++] =3D
-+				&constraint_attrs[i].power_limit_attr.attr;
-+		power_zone->zone_dev_attrs[count++] =3D
-+				&constraint_attrs[i].time_window_attr.attr;
-+		if (pconst->ops->get_name)
-+			power_zone->zone_dev_attrs[count++] =3D
-+				&constraint_attrs[i].name_attr.attr;
-+		if (pconst->ops->get_max_power_uw)
-+			power_zone->zone_dev_attrs[count++] =3D
-+				&constraint_attrs[i].max_power_attr.attr;
-+		if (pconst->ops->get_min_power_uw)
-+			power_zone->zone_dev_attrs[count++] =3D
-+				&constraint_attrs[i].min_power_attr.attr;
-+		if (pconst->ops->get_max_time_window_us)
-+			power_zone->zone_dev_attrs[count++] =3D
-+				&constraint_attrs[i].max_time_window_attr.attr;
-+		if (pconst->ops->get_min_time_window_us)
-+			power_zone->zone_dev_attrs[count++] =3D
-+				&constraint_attrs[i].min_time_window_attr.attr;
-+	}
-+	power_zone->zone_attr_count =3D count;
-+
-+	return ret;
-+}
-+
-+static bool control_type_valid(void *control_type)
-+{
-+	struct powercap_control_type *pos =3D NULL;
-+	bool found =3D false;
-+
-+	mutex_lock(&powercap_cntrl_list_lock);
-+
-+	list_for_each_entry(pos, &powercap_cntrl_list, node) {
-+		if (pos =3D=3D control_type) {
-+			found =3D true;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&powercap_cntrl_list_lock);
-+
-+	return found;
-+}
-+
-+static ssize_t show_name(struct device *dev,
-+				struct device_attribute *attr,
-+				char *buf)
-+{
-+	struct powercap_zone *power_zone =3D to_powercap_zone(dev);
-+
-+	return sprintf(buf, "%s\n", power_zone->name);
-+}
-+
-+static DEVICE_ATTR(name, 0444, show_name, NULL);
-+
-+/* Create zone and attributes in sysfs */
-+static void create_power_zone_common_attributes(
-+					struct powercap_zone *power_zone)
-+{
-+	int count =3D 0;
-+
-+	power_zone->zone_dev_attrs[count++] =3D &dev_attr_name.attr;
-+	if (power_zone->ops->get_max_energy_range_uj)
-+		power_zone->zone_dev_attrs[count++] =3D
-+					&dev_attr_max_energy_range_uj.attr;
-+	if (power_zone->ops->get_energy_uj)
-+		power_zone->zone_dev_attrs[count++] =3D
-+					&dev_attr_energy_uj.attr;
-+	if (power_zone->ops->get_power_uw)
-+		power_zone->zone_dev_attrs[count++] =3D
-+					&dev_attr_power_uw.attr;
-+	if (power_zone->ops->get_max_power_range_uw)
-+		power_zone->zone_dev_attrs[count++] =3D
-+					&dev_attr_max_power_range_uw.attr;
-+	power_zone->zone_dev_attrs[count] =3D NULL;
-+	power_zone->zone_attr_count =3D count;
-+}
-+
-+static void powercap_release(struct device *dev)
-+{
-+	bool allocated;
-+
-+	if (dev->parent) {
-+		struct powercap_zone *power_zone =3D to_powercap_zone(dev);
-+
-+		/* Store flag as the release() may free memory */
-+		allocated =3D power_zone->allocated;
-+		/* Remove id from parent idr struct */
-+		idr_remove(power_zone->parent_idr, power_zone->id);
-+		/* Destroy idrs allocated for this zone */
-+		idr_destroy(&power_zone->idr);
-+		kfree(power_zone->name);
-+		kfree(power_zone->zone_dev_attrs);
-+		kfree(power_zone->constraints);
-+		if (power_zone->ops->release)
-+			power_zone->ops->release(power_zone);
-+		if (allocated)
-+			kfree(power_zone);
-+	} else {
-+		struct powercap_control_type *control_type =3D
-+						to_powercap_control_type(dev);
-+
-+		/* Store flag as the release() may free memory */
-+		allocated =3D control_type->allocated;
-+		idr_destroy(&control_type->idr);
-+		mutex_destroy(&control_type->lock);
-+		if (control_type->ops && control_type->ops->release)
-+			control_type->ops->release(control_type);
-+		if (allocated)
-+			kfree(control_type);
-+	}
-+}
-+
-+static ssize_t enabled_show(struct device *dev,
-+				struct device_attribute *attr,
-+				char *buf)
-+{
-+	bool mode =3D true;
-+
-+	/* Default is enabled */
-+	if (dev->parent) {
-+		struct powercap_zone *power_zone =3D to_powercap_zone(dev);
-+		if (power_zone->ops->get_enable)
-+			if (power_zone->ops->get_enable(power_zone, &mode))
-+				mode =3D false;
-+	} else {
-+		struct powercap_control_type *control_type =3D
-+						to_powercap_control_type(dev);
-+		if (control_type->ops && control_type->ops->get_enable)
-+			if (control_type->ops->get_enable(control_type, &mode))
-+				mode =3D false;
-+	}
-+
-+	return sprintf(buf, "%d\n", mode);
-+}
-+
-+static ssize_t enabled_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf,  size_t len)
-+{
-+	bool mode;
-+
-+	if (strtobool(buf, &mode))
-+		return -EINVAL;
-+	if (dev->parent) {
-+		struct powercap_zone *power_zone =3D to_powercap_zone(dev);
-+		if (power_zone->ops->set_enable)
-+			if (!power_zone->ops->set_enable(power_zone, mode))
-+				return len;
-+	} else {
-+		struct powercap_control_type *control_type =3D
-+						to_powercap_control_type(dev);
-+		if (control_type->ops && control_type->ops->set_enable)
-+			if (!control_type->ops->set_enable(control_type, mode))
-+				return len;
-+	}
-+
-+	return -ENOSYS;
-+}
-+
-+static struct device_attribute powercap_def_attrs[] =3D {
-+		__ATTR(enabled, S_IWUSR | S_IRUGO, enabled_show,
-+							enabled_store),
-+		__ATTR_NULL
-+};
-+
-+static struct class powercap_class =3D {
-+	.name =3D "powercap",
-+	.dev_release =3D powercap_release,
-+	.dev_attrs =3D powercap_def_attrs,
-+};
-+
-+struct powercap_zone *powercap_register_zone(
-+				struct powercap_zone *power_zone,
-+				struct powercap_control_type *control_type,
-+				const char *name,
-+				struct powercap_zone *parent,
-+				const struct powercap_zone_ops *ops,
-+				int nr_constraints,
-+				struct powercap_zone_constraint_ops *const_ops)
-+{
-+	int result;
-+	int nr_attrs;
-+
-+	if (!name || !control_type || !ops ||
-+			nr_constraints > MAX_CONSTRAINTS_PER_ZONE ||
-+			(!ops->get_energy_uj && !ops->get_power_uw) ||
-+			!control_type_valid(control_type))
-+		return ERR_PTR(-EINVAL);
-+
-+	if (power_zone) {
-+		if (!ops->release)
-+			return ERR_PTR(-EINVAL);
-+		memset(power_zone, 0, sizeof(*power_zone));
-+	} else {
-+		power_zone =3D kzalloc(sizeof(*power_zone), GFP_KERNEL);
-+		if (!power_zone)
-+			return ERR_PTR(-ENOMEM);
-+		power_zone->allocated =3D true;
-+	}
-+	power_zone->ops =3D ops;
-+	power_zone->control_type_inst =3D control_type;
-+	if (!parent) {
-+		power_zone->dev.parent =3D &control_type->dev;
-+		power_zone->parent_idr =3D &control_type->idr;
-+	} else {
-+		power_zone->dev.parent =3D &parent->dev;
-+		power_zone->parent_idr =3D &parent->idr;
-+	}
-+	power_zone->dev.class =3D &powercap_class;
-+
-+	mutex_lock(&control_type->lock);
-+	/* Using idr to get the unique id */
-+	result =3D idr_alloc(power_zone->parent_idr, NULL, 0, 0, GFP_KERNEL);
-+	if (result < 0)
-+		goto err_idr_alloc;
-+
-+	power_zone->id =3D result;
-+	idr_init(&power_zone->idr);
-+	power_zone->name =3D kstrdup(name, GFP_KERNEL);
-+	if (!power_zone->name)
-+		goto err_name_alloc;
-+	dev_set_name(&power_zone->dev, "%s:%x",
-+					dev_name(power_zone->dev.parent),
-+					power_zone->id);
-+	power_zone->constraints =3D kzalloc(sizeof(*power_zone->constraints) =
-*
-+					 nr_constraints, GFP_KERNEL);
-+	if (!power_zone->constraints)
-+		goto err_const_alloc;
-+
-+	nr_attrs =3D nr_constraints * POWERCAP_CONSTRAINTS_ATTRS +
-+						POWERCAP_ZONE_MAX_ATTRS + 1;
-+	power_zone->zone_dev_attrs =3D kzalloc(sizeof(void *) *
-+						nr_attrs, GFP_KERNEL);
-+	if (!power_zone->zone_dev_attrs)
-+		goto err_attr_alloc;
-+	create_power_zone_common_attributes(power_zone);
-+	result =3D create_constraints(power_zone, nr_constraints, const_ops);
-+	if (result)
-+		goto err_dev_ret;
-+
-+	power_zone->zone_dev_attrs[power_zone->zone_attr_count] =3D NULL;
-+	power_zone->dev_zone_attr_group.attrs =3D power_zone->zone_dev_attrs;
-+	power_zone->dev_attr_groups[0] =3D &power_zone->dev_zone_attr_group;
-+	power_zone->dev_attr_groups[1] =3D NULL;
-+	power_zone->dev.groups =3D power_zone->dev_attr_groups;
-+	result =3D device_register(&power_zone->dev);
-+	if (result)
-+		goto err_dev_ret;
-+
-+	control_type->nr_zones++;
-+	mutex_unlock(&control_type->lock);
-+
-+	return power_zone;
-+
-+err_dev_ret:
-+	kfree(power_zone->zone_dev_attrs);
-+err_attr_alloc:
-+	kfree(power_zone->constraints);
-+err_const_alloc:
-+	kfree(power_zone->name);
-+err_name_alloc:
-+	idr_remove(power_zone->parent_idr, power_zone->id);
-+err_idr_alloc:
-+	if (power_zone->allocated)
-+		kfree(power_zone);
-+	mutex_unlock(&control_type->lock);
-+
-+	return ERR_PTR(result);
-+}
-+EXPORT_SYMBOL_GPL(powercap_register_zone);
-+
-+int powercap_unregister_zone(struct powercap_control_type *control_typ=
-e,
-+				struct powercap_zone *power_zone)
-+{
-+	if (!power_zone || !control_type)
-+		return -EINVAL;
-+
-+	mutex_lock(&control_type->lock);
-+	control_type->nr_zones--;
-+	mutex_unlock(&control_type->lock);
-+
-+	device_unregister(&power_zone->dev);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(powercap_unregister_zone);
-+
-+struct powercap_control_type *powercap_register_control_type(
-+				struct powercap_control_type *control_type,
-+				const char *name,
-+				const struct powercap_control_type_ops *ops)
-+{
-+	int result;
-+
-+	if (!name)
-+		return ERR_PTR(-EINVAL);
-+	if (control_type) {
-+		if (!ops || !ops->release)
-+			return ERR_PTR(-EINVAL);
-+		memset(control_type, 0, sizeof(*control_type));
-+	} else {
-+		control_type =3D kzalloc(sizeof(*control_type), GFP_KERNEL);
-+		if (!control_type)
-+			return ERR_PTR(-ENOMEM);
-+		control_type->allocated =3D true;
-+	}
-+	mutex_init(&control_type->lock);
-+	control_type->ops =3D ops;
-+	INIT_LIST_HEAD(&control_type->node);
-+	control_type->dev.class =3D &powercap_class;
-+	dev_set_name(&control_type->dev, name);
-+	result =3D device_register(&control_type->dev);
-+	if (result) {
-+		if (control_type->allocated)
-+			kfree(control_type);
-+		return ERR_PTR(result);
-+	}
-+	idr_init(&control_type->idr);
-+
-+	mutex_lock(&powercap_cntrl_list_lock);
-+	list_add_tail(&control_type->node, &powercap_cntrl_list);
-+	mutex_unlock(&powercap_cntrl_list_lock);
-+
-+	return control_type;
-+}
-+EXPORT_SYMBOL_GPL(powercap_register_control_type);
-+
-+int powercap_unregister_control_type(struct powercap_control_type *con=
-trol_type)
-+{
-+	struct powercap_control_type *pos =3D NULL;
-+
-+	if (control_type->nr_zones) {
-+		dev_err(&control_type->dev, "Zones of this type still not freed\n");
-+		return -EINVAL;
-+	}
-+	mutex_lock(&powercap_cntrl_list_lock);
-+	list_for_each_entry(pos, &powercap_cntrl_list, node) {
-+		if (pos =3D=3D control_type) {
-+			list_del(&control_type->node);
-+			mutex_unlock(&powercap_cntrl_list_lock);
-+			device_unregister(&control_type->dev);
-+			return 0;
-+		}
-+	}
-+	mutex_unlock(&powercap_cntrl_list_lock);
-+
-+	return -ENODEV;
-+}
-+EXPORT_SYMBOL_GPL(powercap_unregister_control_type);
-+
-+static int __init powercap_init(void)
-+{
-+	int result =3D 0;
-+
-+	result =3D seed_constraint_attributes();
-+	if (result)
-+		return result;
-+
-+	result =3D class_register(&powercap_class);
-+
-+	return result;
-+}
-+
-+device_initcall(powercap_init);
-+
-+MODULE_DESCRIPTION("PowerCap sysfs Driver");
-+MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.co=
-m>");
-+MODULE_LICENSE("GPL v2");
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_1_pow=
+er_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_1_tim=
+e_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 device -> ../../=
+intel-rapl
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 energy_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 intel-rapl:0:0
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 device -> ../../intel-rapl:0
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 energy_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 max_energy_range_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 enabled
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 power
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+=E2=94=9C=E2=94=80=E2=94=80 async
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+[]
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 subsystem -> ../../../../../../class/power_cap
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=
+=80 uevent
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 intel-rapl:0:1
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 device -> ../../intel-rapl:0
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 energy_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 max_energy_range_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 enabled
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 power
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+=E2=94=9C=E2=94=80=E2=94=80 async
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+[]
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 subsystem -> ../../../../../../class/power_cap
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=
+=80 uevent
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 max_energy_range=
+_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 max_power_range_=
+uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 enabled
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 power
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 async
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 []
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 subsystem -> ../=
+=2E./../../../class/power_cap
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 enabled
++    =E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=80 uevent
++    =E2=94=9C=E2=94=80=E2=94=80 intel-rapl:1
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_0_nam=
+e
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_0_pow=
+er_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_0_tim=
+e_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_1_nam=
+e
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_1_pow=
+er_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 constraint_1_tim=
+e_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 device -> ../../=
+intel-rapl
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 energy_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 intel-rapl:1:0
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 device -> ../../intel-rapl:1
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 energy_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 max_energy_range_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 enabled
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 power
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+=E2=94=9C=E2=94=80=E2=94=80 async
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+[]
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 subsystem -> ../../../../../../class/power_cap
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=
+=80 uevent
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 intel-rapl:1:1
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_0_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_power_limit_uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 constraint_1_time_window_us
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 device -> ../../intel-rapl:1
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 energy_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 max_energy_range_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 enabled
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 power
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+=E2=94=9C=E2=94=80=E2=94=80 async
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =
+[]
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 subsystem -> ../../../../../../class/power_cap
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=
+=80 uevent
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 max_energy_range=
+_uj
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 max_power_range_=
+uw
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 name
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 enabled
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 power
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=
+=80 async
++    =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 []
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 subsystem -> ../=
+=2E./../../../class/power_cap
++    =E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=80 uevent
++    =E2=94=9C=E2=94=80=E2=94=80 power
++    =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 async
++    =E2=94=82=C2=A0=C2=A0 []
++    =E2=94=9C=E2=94=80=E2=94=80 subsystem -> ../../../../class/power_c=
+ap
++    =E2=94=9C=E2=94=80=E2=94=80 enabled
++    =E2=94=94=E2=94=80=E2=94=80 uevent
++
++The above example illustrates a case in which the Intel RAPL technolog=
+y,
++available in Intel=C2=AE IA-64 and IA-32 Processor Architectures, is u=
+sed. There is one
++control type called intel-rapl which contains two power zones, intel-r=
+apl:0 and
++intel-rapl:1, representing CPU packages.  Each of these power zones co=
+ntains
++two subzones, intel-rapl:j:0 and intel-rapl:j:1 (j =3D 0, 1), represen=
+ting the
++"core" and the "uncore" parts of the given CPU package, respectively. =
+ All of
++the zones and subzones contain energy monitoring attributes (energy_uj=
+,
++max_energy_range_uj) and constraint attributes (constraint_*) allowing=
+ controls
++to be applied (the constraints in the 'package' power zones apply to t=
+he whole
++CPU packages and the subzone constraints only apply to the respective =
+parts of
++the given package individually). Since Intel RAPL doesn't provide inst=
+antaneous
++power value, there is no power_uw attribute.
++
++In addition to that, each power zone contains a name attribute, allowi=
+ng the
++part of the system represented by that zone to be identified.
++For example:
++
++cat /sys/class/power_cap/intel-rapl/intel-rapl:0/name
++package-0
++
++The Intel RAPL technology allows two constraints, short term and long =
+term,
++with two different time windows to be applied to each power zone.  Thu=
+s for
++each zone there are 2 attributes representing the constraint names, 2 =
+power
++limits and 2 attributes representing the sizes of the time windows. Su=
+ch that,
++constraint_j_* attributes correspond to the jth constraint (j =3D 0,1)=
+=2E
++
++For example:
++	constraint_0_name
++	constraint_0_power_limit_uw
++	constraint_0_time_window_us
++	constraint_1_name
++	constraint_1_power_limit_uw
++	constraint_1_time_window_us
++
++Power Zone Attributes
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
++Monitoring attributes
++----------------------
++
++energy_uj (rw): Current energy counter in micro joules. Write "0" to r=
+eset.
++If the counter can not be reset, then this attribute is read only.
++
++max_energy_range_uj (ro): Range of the above energy counter in micro-j=
+oules.
++
++power_uw (ro): Current power in micro watts.
++
++max_power_range_uw (ro): Range of the above power value in micro-watts=
+=2E
++
++name (ro): Name of this power zone.
++
++It is possible that some domains have both power ranges and energy cou=
+nter ranges;
++however, only one is mandatory.
++
++Constraints
++----------------
++constraint_X_power_limit_uw (rw): Power limit in micro watts, which sh=
+ould be
++applicable for the time window specified by "constraint_X_time_window_=
+us".
++
++constraint_X_time_window_us (rw): Time window in micro seconds.
++
++constraint_X_name (ro): An optional name of the constraint
++
++constraint_X_max_power_uw(ro): Maximum allowed power in micro watts.
++
++constraint_X_min_power_uw(ro): Minimum allowed power in micro watts.
++
++constraint_X_max_time_window_us(ro): Maximum allowed time window in mi=
+cro seconds.
++
++constraint_X_min_time_window_us(ro): Minimum allowed time window in mi=
+cro seconds.
++
++Except power_limit_uw and time_window_us other fields are optional.
++
++Common zone and control type attributes
++----------------------------------------
++enabled (rw): Enable/Disable controls at zone level or for all zones u=
+sing
++a control type.
++
++Power Cap Client Driver Interface
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++The API summary:
++
++Call powercap_register_control_type() to register control type object.
++Call powercap_register_zone() to register a power zone (under a given
++control type), either as a top-level power zone or as a subzone of ano=
+ther
++power zone registered earlier.
++The number of constraints in a power zone and the corresponding callba=
+cks have
++to be defined prior to calling powercap_register_zone() to register th=
+at zone.
++
++To Free a power zone call powercap_unregister_zone().
++To free a control type object call powercap_unregister_control_type().
++Detailed API can be generated using kernel-doc on include/linux/powerc=
+ap.h.
 --=20
 1.8.3.1
