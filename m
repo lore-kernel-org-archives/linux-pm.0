@@ -1,49 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] PM / OPP: rename functions to dev_pm_opp*
-Date: Fri, 20 Sep 2013 22:21:05 +0530
-Message-ID: <CAKohpoktS4ZSQAeKvu3hdVsKkzcbKFvHvR2=wCA3qeB6moPphA@mail.gmail.com>
-References: <1379624632-17356-1-git-send-email-nm@ti.com>
-	<1379624632-17356-2-git-send-email-nm@ti.com>
-	<CAKohpoku7n6b2dDKD=+3DqG4pHtmWoeXZnAt3EoFRp+rNFofYA@mail.gmail.com>
-	<20130920123808.GA22176@kahuna>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:43368 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984Ab3ITQvH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 12:51:07 -0400
-Received: by mail-ob0-f173.google.com with SMTP id vb8so869372obc.32
-        for <linux-pm@vger.kernel.org>; Fri, 20 Sep 2013 09:51:06 -0700 (PDT)
-In-Reply-To: <20130920123808.GA22176@kahuna>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH] cpufreq: check cpufreq driver is valid and cpufreq isn't disabled in cpufreq_get()
+Date: Fri, 20 Sep 2013 22:37:31 +0530
+Message-ID: <389fbc3c8ad7c339cd2d9572d73c355b7b967823.1379669625.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, linus.walleij@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-doc@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Rob Landley <rob@landley.net>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Kukjin Kim <kgene.kim@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Randy Dunlap <rdunlap@infradead.org>
 
-On 20 September 2013 18:08, Nishanth Menon <nm@ti.com> wrote:
+cpufreq_get() can be called from external drivers which might not be aware if
+cpufreq driver is registered or not. And so we should actually check if cpufreq
+driver is registered or not and also if cpufreq is active or disabled, at the
+beginning of cpufreq_get().
 
-> I am open to suggestions if any one feels we can improve this better.
+Otherwise call to lock_policy_rwsem_read() might hit BUG_ON(!policy).
 
-I didn't really had one.. I thought of pm_opp** instead of dev_pm_opp**
-though..
+Reported-and-Tested-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
 
-> I believe that change was from Patch #2[1]
+For 3.12.
 
-Yeah.. I just replied on a single patch :)
+ drivers/cpufreq/cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-> yes, you are right, I had squashed this patch in to squelch checkpatch
-> warnings:
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 82ecbe3..db004a8 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1460,6 +1460,9 @@ unsigned int cpufreq_get(unsigned int cpu)
+ {
+ 	unsigned int ret_freq = 0;
+ 
++	if (cpufreq_disabled() || !cpufreq_driver)
++		return -ENOENT;
++
+ 	if (!down_read_trylock(&cpufreq_rwsem))
+ 		return 0;
+ 
+-- 
+1.7.12.rc2.18.g61b472e
 
-I see..
-
-> I had added a comment:
-> " Minor checkpatch warning fixes as a result of this change was fixed as
-> well."
-
-I really missed that..
-
-> Would you suggest I split the change off to a separate patch or improve
->  the comment a little more?
-
-don't really know, maybe leave those as is and let checkpatch warn you..
