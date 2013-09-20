@@ -1,61 +1,50 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH -v2] cpufreq: fix racing between acpi_cpufreq_loading
-Date: Fri, 20 Sep 2013 10:44:03 -0700
-Message-ID: <1379699043-7414-1-git-send-email-yinghai@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 189/228] cpufreq: dbx500: remove calls to cpufreq_notify_transition()
+Date: Fri, 20 Sep 2013 20:56:34 +0200
+Message-ID: <CACRpkdY9wwEJ-kjPZyh1gtrmULy3tyKuU_3s-3CZmP0YWz87wA@mail.gmail.com>
+References: <cover.1379063063.git.viresh.kumar@linaro.org>
+	<6fbcd6c0c6799d62f379b7c02ef08a93714b75a9.1379063063.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:63462 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753069Ab3ITS4f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 14:56:35 -0400
+Received: by mail-ob0-f179.google.com with SMTP id wn1so1067858obc.10
+        for <linux-pm@vger.kernel.org>; Fri, 20 Sep 2013 11:56:35 -0700 (PDT)
+In-Reply-To: <6fbcd6c0c6799d62f379b7c02ef08a93714b75a9.1379063063.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-There is racing in
-	__acpi_processor_start
-		 ==> acpi_processor_load_module
-			 ==> request_module_nowait/requested = 1
-before first pr path to have requested set, second cpu would request again.
-that will cause acpi_cpufreq_early_init to be called in parallel,
-that will cause data curruption in acpi_cpufreq_early_init...
-and intermittent crash.
+On Fri, Sep 13, 2013 at 3:02 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-So add mutex to protect it.
+> Most of the drivers do following in their ->target_index() routines:
+>
+>         struct cpufreq_freqs freqs;
+>         freqs.old = old freq...
+>         freqs.new = new freq...
+>
+>         cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+>
+>         /* Change rate here */
+>
+>         cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+>
+> This is replicated over all cpufreq drivers today and there doesn't exists a
+> good enough reason why this shouldn't be moved to cpufreq core instead.
+>
+> Earlier patches have added support in cpufreq core to do cpufreq notification on
+> frequency change, this one removes it from this driver.
+>
+> Some related minor cleanups are also done along with it.
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
----
- drivers/acpi/processor_perflib.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/acpi/processor_perflib.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/processor_perflib.c
-+++ linux-2.6/drivers/acpi/processor_perflib.c
-@@ -235,6 +235,7 @@ void acpi_processor_ppc_exit(void)
- 	acpi_processor_ppc_status &= ~PPC_REGISTERED;
- }
- 
-+static DEFINE_MUTEX(acpi_cpufreq_load_lock);
- /*
-  * Do a quick check if the systems looks like it should use ACPI
-  * cpufreq. We look at a _PCT method being available, but don't
-@@ -246,8 +247,12 @@ void acpi_processor_load_module(struct a
- 	acpi_status status = 0;
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
- 
--	if (!arch_has_acpi_pdc() || requested)
-+	mutex_lock(&acpi_cpufreq_load_lock);
-+	if (!arch_has_acpi_pdc() || requested) {
-+		mutex_unlock(&acpi_cpufreq_load_lock);
- 		return;
-+	}
-+
- 	status = acpi_evaluate_object(pr->handle, "_PCT", NULL, &buffer);
- 	if (!ACPI_FAILURE(status)) {
- 		printk(KERN_INFO PREFIX "Requesting acpi_cpufreq\n");
-@@ -255,6 +260,7 @@ void acpi_processor_load_module(struct a
- 		requested = 1;
- 	}
- 	kfree(buffer.pointer);
-+	mutex_unlock(&acpi_cpufreq_load_lock);
- }
- 
- static int acpi_processor_get_performance_control(struct acpi_processor *pr)
+Yours,
+Linus Walleij
