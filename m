@@ -1,29 +1,65 @@
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] cpufreq: return EEXIST instead of EBUSY for second registering
-Date: Fri, 20 Sep 2013 12:30:19 -0700
-Message-ID: <CAE9FiQUDwkQOt+rO8vbJW6hv3swP1n5kP3dT_rESoWUj5G6ANw@mail.gmail.com>
-References: <1379563520-7221-1-git-send-email-yinghai@kernel.org>
-	<CAKohpom-3orEns00DC2=uk4pgV_xnfRpM1hrdyK9pjPUEgBXrA@mail.gmail.com>
-	<CAE9FiQU5PD4asdE3=sBSnLK8fwPT8vK81FAOuYtAWj_3ruyS0g@mail.gmail.com>
-	<3290463.fBbGMovmdx@vostro.rjw.lan>
-	<CAE9FiQWm=Db4e8nYdVJzpirmV2EfKxEYYRHo6ggTtX0CY3-hhg@mail.gmail.com>
+Subject: Re: [PATCH -v2] cpufreq: skip loading acpi_cpufreq after intel_pstate
+Date: Fri, 20 Sep 2013 12:51:08 -0700
+Message-ID: <CAE9FiQWQt_NUTE5NOCGAHTr+1VzgjWp+cFwaOH8nJZ7=fE2dbQ@mail.gmail.com>
+References: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f177.google.com ([209.85.223.177]:51875 "EHLO
-	mail-ie0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129Ab3ITTaU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 15:30:20 -0400
-In-Reply-To: <CAE9FiQWm=Db4e8nYdVJzpirmV2EfKxEYYRHo6ggTtX0CY3-hhg@mail.gmail.com>
+Received: from mail-ie0-f178.google.com ([209.85.223.178]:35104 "EHLO
+	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752921Ab3ITTvJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 15:51:09 -0400
+In-Reply-To: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
 
-On Fri, Sep 20, 2013 at 10:12 AM, Yinghai Lu <yinghai@kernel.org> wrote:
->>
->> I *think* we can just drop the module requesting stuff entirely, because it
->> doesn't seem to work anyway and udev is handling this for us.
+On Fri, Sep 20, 2013 at 10:43 AM, Yinghai Lu <yinghai@kernel.org> wrote:
+> If the hw support intel_pstate and acpi_cpufreq, intel_pstate will
+> get loaded first.
 >
-Yes. looks like acpi_processor_load_module() is not needed.
-udev will do the work.
+> acpi_cpufreq_init will call acpi_cpufreq_early_init()
+> and that will allocate perf data and init those perf data in ACPI core,
+> (that will cover all cpus). But later it will free them as
+> cpufreq_register_driver(acpi_cpufreq) will fail as init_pstate is
+> already registered
+>
+> Use cpufreq_get_current_driver() to check if we can skip the
+> acpi_cpufreq loading.
+>
+> -v2: update changelog and separate second part to another patch, according
+>      to Viresh.
+>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> Index: linux-2.6/drivers/cpufreq/acpi-cpufreq.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/cpufreq/acpi-cpufreq.c
+> +++ linux-2.6/drivers/cpufreq/acpi-cpufreq.c
+> @@ -986,6 +986,10 @@ static int __init acpi_cpufreq_init(void
+>  {
+>         int ret;
+>
+> +       /* don't keep reloading if cpufreq_driver exists */
+> +       if (cpufreq_get_current_driver())
+> +               return 0;
+> +
+>         if (acpi_disabled)
+>                 return 0;
+>
+
+only this one is needed, other one
+
+cpufreq: fix racing between acpi_cpufreq_loading
+
+is not needed.
+
+Thanks
+
+Yinghai
