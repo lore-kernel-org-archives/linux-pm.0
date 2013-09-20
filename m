@@ -1,156 +1,49 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH RESEND v8 3/7] thermal:boost: Automatic enable/disable of BOOST
- feature
-Date: Fri, 20 Sep 2013 18:01:00 +0200
-Message-ID: <1379692864-4954-4-git-send-email-l.majewski@samsung.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1379692864-4954-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1379692864-4954-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] PM / OPP: rename functions to dev_pm_opp*
+Date: Fri, 20 Sep 2013 22:21:05 +0530
+Message-ID: <CAKohpoktS4ZSQAeKvu3hdVsKkzcbKFvHvR2=wCA3qeB6moPphA@mail.gmail.com>
+References: <1379624632-17356-1-git-send-email-nm@ti.com>
+	<1379624632-17356-2-git-send-email-nm@ti.com>
+	<CAKohpoku7n6b2dDKD=+3DqG4pHtmWoeXZnAt3EoFRp+rNFofYA@mail.gmail.com>
+	<20130920123808.GA22176@kahuna>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:43368 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751984Ab3ITQvH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 12:51:07 -0400
+Received: by mail-ob0-f173.google.com with SMTP id vb8so869372obc.32
+        for <linux-pm@vger.kernel.org>; Fri, 20 Sep 2013 09:51:06 -0700 (PDT)
+In-Reply-To: <20130920123808.GA22176@kahuna>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-doc@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Rob Landley <rob@landley.net>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Kukjin Kim <kgene.kim@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Randy Dunlap <rdunlap@infradead.org>
 
-This patch provides auto disable/enable operation for boost. When any
-defined trip point is passed, the boost is disabled.
-In that moment thermal monitor workqueue is woken up and it monitors
-if the device temperature drops below 75% of the smallest trip point.
-When device cools down, the boost is enabled again.
+On 20 September 2013 18:08, Nishanth Menon <nm@ti.com> wrote:
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> I am open to suggestions if any one feels we can improve this better.
 
----
-Changes for v8:
-- Move cpufreq_boost_* stub functions definition (needed when cpufreq
-  is not compiled in) to cpufreq.h at cpufreq core support commit
+I didn't really had one.. I thought of pm_opp** instead of dev_pm_opp**
+though..
 
-Changes for v7:
-- None
+> I believe that change was from Patch #2[1]
 
-Changes for v6:
-- Disable boost only when supported and enabled
-- Protect boost related thermal_zone_device struct fields with mutex
-- Evaluate temperature trend during boost enable decision
-- Create separate methods to handle boost enable/disable
-  (thermal_boost_{enable|disable}) operations
-- Boost is disabled at any trip point passage (not only the non critical one)
-- Add stub definitions for cpufreq boost functions used when
-  CONFIG_CPU_FREQ is NOT defined.
+Yeah.. I just replied on a single patch :)
 
-Changes for v5:
-- Move boost disable code from cpu_cooling.c to thermal_core.c
-  (to handle_non_critical_trips)
-- Extent struct thermal_zone_device by adding overheated bool flag
-- Implement auto enable of boost after device cools down
-- Introduce boost_polling flag, which indicates if thermal uses it's predefined
-  pool delay or has woken up thermal workqueue only to wait until device
-  cools down.
+> yes, you are right, I had squashed this patch in to squelch checkpatch
+> warnings:
 
-Changes for v4:
-- New patch
+I see..
 
- drivers/thermal/thermal_core.c |   55 ++++++++++++++++++++++++++++++++++++++++
- include/linux/thermal.h        |    2 ++
- 2 files changed, 57 insertions(+)
+> I had added a comment:
+> " Minor checkpatch warning fixes as a result of this change was fixed as
+> well."
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 1f02e8e..8f4be55 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -34,6 +34,7 @@
- #include <linux/thermal.h>
- #include <linux/reboot.h>
- #include <linux/string.h>
-+#include <linux/cpufreq.h>
- #include <net/netlink.h>
- #include <net/genetlink.h>
- 
-@@ -354,9 +355,59 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 	}
- }
- 
-+static int thermal_boost_enable(struct thermal_zone_device *tz)
-+{
-+	enum thermal_trend trend = get_tz_trend(tz, 0);
-+	long trip_temp;
-+
-+	if (!tz->ops->get_trip_temp || !tz->overheated)
-+		return -EPERM;
-+	if (trend == THERMAL_TREND_RAISING || trend == THERMAL_TREND_RAISE_FULL)
-+		return -EBUSY;
-+
-+	tz->ops->get_trip_temp(tz, 0, &trip_temp);
-+	/*
-+	 * Enable boost again only when current temperature is less
-+	 * than 75% of trip_temp[0]
-+	 */
-+	if ((tz->temperature + (trip_temp >> 2)) < trip_temp) {
-+		mutex_lock(&tz->lock);
-+		tz->overheated = false;
-+		if (tz->boost_polling) {
-+			tz->boost_polling = false;
-+			tz->polling_delay = 0;
-+		}
-+		mutex_unlock(&tz->lock);
-+		cpufreq_boost_trigger_state(1);
-+		return 0;
-+	}
-+	return -EBUSY;
-+}
-+
-+static void thermal_boost_disable(struct thermal_zone_device *tz)
-+{
-+	cpufreq_boost_trigger_state(0);
-+
-+	/*
-+	 * If no workqueue for monitoring is running - start one with
-+	 * 1000 ms monitoring period
-+	 * If workqueue already running - do not change its period and only
-+	 * test if target CPU has cooled down
-+	 */
-+	mutex_lock(&tz->lock);
-+	if (!tz->polling_delay) {
-+		tz->boost_polling = true;
-+		tz->polling_delay = 1000;
-+	}
-+	tz->overheated = true;
-+	mutex_unlock(&tz->lock);
-+}
-+
- static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
- {
- 	enum thermal_trip_type type;
-+	if (cpufreq_boost_supported() && cpufreq_boost_enabled())
-+		thermal_boost_disable(tz);
- 
- 	tz->ops->get_trip_type(tz, trip, &type);
- 
-@@ -455,6 +506,10 @@ static void thermal_zone_device_check(struct work_struct *work)
- 	struct thermal_zone_device *tz = container_of(work, struct
- 						      thermal_zone_device,
- 						      poll_queue.work);
-+	if (cpufreq_boost_supported())
-+		if (!thermal_boost_enable(tz))
-+			return;
-+
- 	thermal_zone_device_update(tz);
- }
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index a386a1c..f1aa3c2 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -172,6 +172,8 @@ struct thermal_zone_device {
- 	int emul_temperature;
- 	int passive;
- 	unsigned int forced_passive;
-+	bool overheated;
-+	bool boost_polling;
- 	const struct thermal_zone_device_ops *ops;
- 	const struct thermal_zone_params *tzp;
- 	struct thermal_governor *governor;
--- 
-1.7.10.4
+I really missed that..
+
+> Would you suggest I split the change off to a separate patch or improve
+>  the comment a little more?
+
+don't really know, maybe leave those as is and let checkpatch warn you..
