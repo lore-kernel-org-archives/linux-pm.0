@@ -1,45 +1,45 @@
-From: karthik vm <meetvm@gmail.com>
-Subject: Re: Few clarifications on DVFS
-Date: Thu, 19 Sep 2013 20:45:30 -0400
-Message-ID: <CAOuKo4=Ju3JHmgQMasmPB31mKPeHYKv3+hWmacjZ+Fw1qPpYBg@mail.gmail.com>
-References: <CAOuKo4nZ5Yij3cnM=PuMR3awJ2QAbY4O+-mKi110xfc66xyWUg@mail.gmail.com>
- <CAOh2x=n3PVMJhbrJE33Qe73=6ZUhh8yR1rs+ziWTD5tFNjW6RA@mail.gmail.com>
- <CAOuKo4kZNv70OyEt6tRynfFmRex8DW+nJCg2pZGPoydnHn+LaA@mail.gmail.com> <CAKohpokp4QknDECgv2ecVbu-7L3jhcLtHy=TZh-3m5=ib_xDyg@mail.gmail.com>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] cpufreq: return EEXIST instead of EBUSY for second registering
+Date: Thu, 19 Sep 2013 18:31:52 -0700
+Message-ID: <CAE9FiQXP3DARdJYHBS8w0ATVM78Q9tGTd=8CeMJiwozBU0F_OA@mail.gmail.com>
+References: <1379563520-7221-1-git-send-email-yinghai@kernel.org>
+	<CAKohpomt+sASL=2i-v=HSkhOZhbPmnFesEfPoEqSE+WKcCfnmw@mail.gmail.com>
+	<11319698.mBBnJVdnIk@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokp4QknDECgv2ecVbu-7L3jhcLtHy=TZh-3m5=ib_xDyg@mail.gmail.com>
+In-Reply-To: <11319698.mBBnJVdnIk@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks for the pointers Viresh. I gave a quick look into ftrace.
-Surely it will be helpful for my analysis as it has info on time taken
-by each function. Hope further analysis using ftrace can give me more
-pointers.
+On Thu, Sep 19, 2013 at 3:37 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, September 19, 2013 09:38:32 AM Viresh Kumar wrote:
+>> On 19 September 2013 09:35, Yinghai Lu <yinghai@kernel.org> wrote:
+>> > System that cpu support intel_pstate, acpi_cpufreq fail to
+>> > load, and udev keep trying until trace get filled up and
+>> > kernel crash.
+>> >
+>> > The root cause is driver return ret from cpufreq_register_driver
+>> > and when some other driver take over before, it would return
+>> > EBUSY, then udev will keep trying...
+>> >
+>> > cpufreq_register_driver should return EEXIST instead.
+>> > then system could boot without appending intel_pstate=disable
+>> > and still use intel_pstate.
+>> >
+>> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Applied, thanks!
 
-Cheers,
-karthik
+Sorry,  looks like this one is not enough.
 
-On Tue, Sep 17, 2013 at 1:01 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 17 September 2013 07:43, karthik vm <meetvm@gmail.com> wrote:
->> Yeah actually that is what my concern is. It seems that for changing
->> the frequency we need to acquire a lock (in cpufreq_driver_target()).
->> Hence even though the hardware is capable of ns level DVFS, OS
->> overhead may be large enough to take advantage of it. Can we measure
->> this overhead?
->
-> There are a lot of other things that we really need to look before this
-> one..
->
-> The way we are changing frequency currently is very delayed... There
-> are few other threads that are going around power aware scheduler
-> which you might be interested in.. Look for them in Archives..
->
-> Coming back to your question, these kind of overheads will always be
-> there, isn't it? Normally that lock will be acquired fairly quickly as there
-> might be no contention..
->
-> Yeah, you can measure it but don't know who is your best friend in
-> term of tools.. Maybe ftrace can get you some details.
+please let me know if you prefer me send addon patch
+or revised one.
+
+Thanks
+
+Yinghai
