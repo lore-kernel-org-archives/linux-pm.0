@@ -1,50 +1,66 @@
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] cpufreq: skip loading acpi_cpufreq after intel_pstate
-Date: Fri, 20 Sep 2013 10:08:07 -0700
-Message-ID: <CAE9FiQUXGtNeAS70Mr6Nscax26dRoXTCyb28gz1iX2j1s8Nojw@mail.gmail.com>
-References: <1379654772-10700-1-git-send-email-yinghai@kernel.org>
-	<CAKohpokdyk9hfBreVeXttN23biTVjWiJRm8eYkfAjLz+cbnreQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: return EEXIST instead of EBUSY for second registering
+Date: Fri, 20 Sep 2013 10:12:31 -0700
+Message-ID: <CAE9FiQWm=Db4e8nYdVJzpirmV2EfKxEYYRHo6ggTtX0CY3-hhg@mail.gmail.com>
+References: <1379563520-7221-1-git-send-email-yinghai@kernel.org>
+	<CAKohpom-3orEns00DC2=uk4pgV_xnfRpM1hrdyK9pjPUEgBXrA@mail.gmail.com>
+	<CAE9FiQU5PD4asdE3=sBSnLK8fwPT8vK81FAOuYtAWj_3ruyS0g@mail.gmail.com>
+	<3290463.fBbGMovmdx@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokdyk9hfBreVeXttN23biTVjWiJRm8eYkfAjLz+cbnreQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f176.google.com ([209.85.223.176]:38928 "EHLO
+	mail-ie0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752414Ab3ITRMc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 13:12:32 -0400
+In-Reply-To: <3290463.fBbGMovmdx@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Sep 19, 2013 at 11:10 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 20 September 2013 10:56, Yinghai Lu <yinghai@kernel.org> wrote:
->> If the hw support intel_pstate and acpi_cpufreq, intel_pstate will
->> get loaded at first.
+On Fri, Sep 20, 2013 at 6:30 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, September 19, 2013 10:30:04 PM Yinghai Lu wrote:
+>> On Thu, Sep 19, 2013 at 9:23 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > On 20 September 2013 07:01, Yinghai Lu <yinghai@kernel.org> wrote:
+>> >> Sorry,  looks like this one is not enough.
 >
-> s/at //
+> Well, I've already applied this one and it makes sense to me anyway.
+
+you can keep that.
+
 >
+>> >> please let me know if you prefer me send addon patch
+>> >> or revised one.
+>> >
+>> > Atleast you can let us know what the problem is? And then we
+>> > can decide on that.. But anyway, you can send a new patch
+>> > based over latest linux-next (which will have your original patch),
+>> > and then leave it onto Rafael to merge it or have two patches..
+>> > (though I am quite sure he will not drop anything now, unless its
+>> > too screwed.., at worst he might revert it..)..
 >>
->> acpi_cpufreq_init will call acpi_cpufreq_early_init()
->> and it allocate perf data and init those perf data in ACPI core, (that
+>> looks like the crash is intermittent..., so i thought that patch fixed
+>> the problem.
+>> but later I found other suspicious print out.
 >
-> s/it /that will /
->
->> will go over all cpus).
->
-> s/go over/cover/
->
->> but late it will free them as cpufreq_register_driver(acpi_cpufreq) will
->
-> s/late/later
->
->> return fail as init_pstate already take over before.
->
-> write it as: fail as intel_pstate is already registered.
->
->> Use cpufreq_get_current_driver() to check if we can skip the
->> acpi_cpufreq loading.
->
-> The below material looks to be a separate issue and so we
-> probably break this patch into two?
+> So, does it mean that the $subject patch fixes the issue for you to some
+> extent, but more changes are necessary to make it go away completely?
 
-ok, check that.
+yes.
+
+>
+>> please check new one:
+>>
+>> https://patchwork.kernel.org/patch/2915181/
+>
+> I see.
+>
+> I *think* we can just drop the module requesting stuff entirely, because it
+> doesn't seem to work anyway and udev is handling this for us.
+
+looks some nehalem/westmere based system may need it when they have
+several SSDTs. will double check that.
 
 Thanks
 
