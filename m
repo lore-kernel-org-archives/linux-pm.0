@@ -1,40 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] Skip the driver if ACPI has power mgmt option
-Date: Fri, 20 Sep 2013 13:05:08 +0530
-Message-ID: <CAKohpokoOHop8AjffafzeAyrgndpPbCXO8c=gCK1tXa6-_Uftg@mail.gmail.com>
-References: <1379662368-6580-1-git-send-email-adrian.huang@hp.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 1/3] PM / OPP: rename functions to dev_pm_opp*
+Date: Fri, 20 Sep 2013 07:38:08 -0500
+Message-ID: <20130920123808.GA22176@kahuna>
+References: <1379624632-17356-1-git-send-email-nm@ti.com>
+ <1379624632-17356-2-git-send-email-nm@ti.com>
+ <CAKohpoku7n6b2dDKD=+3DqG4pHtmWoeXZnAt3EoFRp+rNFofYA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f48.google.com ([209.85.128.48]:35643 "EHLO
-	mail-qe0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559Ab3ITHfJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 03:35:09 -0400
-Received: by mail-qe0-f48.google.com with SMTP id nd7so38339qeb.7
-        for <linux-pm@vger.kernel.org>; Fri, 20 Sep 2013 00:35:08 -0700 (PDT)
-In-Reply-To: <1379662368-6580-1-git-send-email-adrian.huang@hp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpoku7n6b2dDKD=+3DqG4pHtmWoeXZnAt3EoFRp+rNFofYA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Sascha Hauer <kernel@pengutronix.de>, linux-doc@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@deeprootsystems.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Adrian Huang <adrian.huang@hp.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linda.knippers@hp.com
 
-On 20 September 2013 13:02, Adrian Huang <adrian.huang@hp.com> wrote:
-> I re-sent this email becuase my system time was incorrect for my first submission (The sent time of the first submission showed "2012/8/16  08:12PM"). Sorry for any inconvenience.
+On 12:44-20130920, Viresh Kumar wrote:
+> On 20 September 2013 02:33, Nishanth Menon <nm@ti.com> wrote:
+> > opp_get_opp_count
+> > opp_find_freq_exact
+> > opp_init_cpufreq_table
+> > opp_free_cpufreq_table
+> 
+> The only problem I see is that routines names for few of them are getting
+> really long now.. Otherwise not much I could find...
+I am open to suggestions if any one feels we can improve this better.
 
-You should have added this after the "---" available below, so
-that it doesn't get commited in the logs..
+> 
+> Though you had following changes, which you could have avoided in this
+> hard to review patchset:
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>         new_opp = [-kzalloc(sizeof(struct
+> opp),-]{+kzalloc(sizeof(*new_opp),+} GFP_KERNEL);
+>         new_opp = [-kmalloc(sizeof(struct
+> opp),-]{+kmalloc(sizeof(*new_opp),+} GFP_KERNEL);
+> 
+> It is almost impossible to catch these with naked eyes for such long
+> patches.. I took help of --word-diff though :)
+I believe that change was from Patch #2[1]
+yes, you are right, I had squashed this patch in to squelch checkpatch
+warnings:
+CHECK: Prefer kzalloc(sizeof(*new_opp)...) over kzalloc(sizeof(struct
+		       dev_pm_opp)...)
+#177: FILE: drivers/base/power/opp.c:406:
++	new_opp = kzalloc(sizeof(struct dev_pm_opp), GFP_KERNEL);
 
-> Do not load the Intel pstate driver if the platform firmware
-> (ACPI BIOS) supports the power management alternatives.
-> The ACPI BIOS indicates that the OS control mode can be used
-> if the _PSS (Performance Supported States) is defined in ACPI
-> table. For the OS control mode, the Intel pstate driver will be
-> loaded.
->
-> Signed-off-by: Adrian Huang <adrian.huang@hp.com>
-> ---
+CHECK: Prefer kmalloc(sizeof(*new_opp)...) over kmalloc(sizeof(struct
+		       dev_pm_opp)...)
+#191: FILE: drivers/base/power/opp.c:495:
++	new_opp = kmalloc(sizeof(struct dev_pm_opp), GFP_KERNEL);
 
-<Here..>
 
->  drivers/cpufreq/intel_pstate.c | 84 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 84 insertions(+)
+I had added a comment:
+" Minor checkpatch warning fixes as a result of this change was fixed as
+well."
+
+Would you suggest I split the change off to a separate patch or improve
+ the comment a little more?
+> 
+> If no one else sees these as problems then feel free to add my:
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+[1] https://patchwork.kernel.org/patch/2913551/
+-- 
+Regards,
+Nishanth Menon
