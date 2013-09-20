@@ -1,64 +1,29 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 1/3] PM / OPP: rename functions to dev_pm_opp*
-Date: Fri, 20 Sep 2013 14:07:17 -0500
-Message-ID: <523C9CE5.9040009@ti.com>
-References: <1379624632-17356-1-git-send-email-nm@ti.com>	<1379624632-17356-2-git-send-email-nm@ti.com>	<CAKohpoku7n6b2dDKD=+3DqG4pHtmWoeXZnAt3EoFRp+rNFofYA@mail.gmail.com>	<20130920123808.GA22176@kahuna>
- <CAKohpoktS4ZSQAeKvu3hdVsKkzcbKFvHvR2=wCA3qeB6moPphA@mail.gmail.com>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] cpufreq: return EEXIST instead of EBUSY for second registering
+Date: Fri, 20 Sep 2013 12:30:19 -0700
+Message-ID: <CAE9FiQUDwkQOt+rO8vbJW6hv3swP1n5kP3dT_rESoWUj5G6ANw@mail.gmail.com>
+References: <1379563520-7221-1-git-send-email-yinghai@kernel.org>
+	<CAKohpom-3orEns00DC2=uk4pgV_xnfRpM1hrdyK9pjPUEgBXrA@mail.gmail.com>
+	<CAE9FiQU5PD4asdE3=sBSnLK8fwPT8vK81FAOuYtAWj_3ruyS0g@mail.gmail.com>
+	<3290463.fBbGMovmdx@vostro.rjw.lan>
+	<CAE9FiQWm=Db4e8nYdVJzpirmV2EfKxEYYRHo6ggTtX0CY3-hhg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAKohpoktS4ZSQAeKvu3hdVsKkzcbKFvHvR2=wCA3qeB6moPphA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Sascha Hauer <kernel@pengutronix.de>, linux-doc@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@deeprootsystems.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f177.google.com ([209.85.223.177]:51875 "EHLO
+	mail-ie0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129Ab3ITTaU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2013 15:30:20 -0400
+In-Reply-To: <CAE9FiQWm=Db4e8nYdVJzpirmV2EfKxEYYRHo6ggTtX0CY3-hhg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 09/20/2013 11:51 AM, Viresh Kumar wrote:
-> On 20 September 2013 18:08, Nishanth Menon <nm@ti.com> wrote:
-> 
->> I am open to suggestions if any one feels we can improve this better.
-> 
-> I didn't really had one.. I thought of pm_opp** instead of dev_pm_opp**
-> though..
-
-I had proposed this earlier, however, had gone with Rafael's
-suggestion [1] to have the right context to the usage.
-
-> 
->> I believe that change was from Patch #2[1]
-> 
-> Yeah.. I just replied on a single patch :)
-> 
->> yes, you are right, I had squashed this patch in to squelch checkpatch
->> warnings:
-> 
-> I see..
-> 
->> I had added a comment:
->> " Minor checkpatch warning fixes as a result of this change was fixed as
->> well."
-> 
-> I really missed that..
-no problems..
-
-> 
->> Would you suggest I split the change off to a separate patch or improve
->>  the comment a little more?
-> 
-> don't really know, maybe leave those as is and let checkpatch warn you..
-> 
-that is fair as well. i can split it off seperately in the next respin.
-
-[1] http://marc.info/?l=linaro-kernel&m=137645747511725&w=2
--- 
-Regards,
-Nishanth Menon
+On Fri, Sep 20, 2013 at 10:12 AM, Yinghai Lu <yinghai@kernel.org> wrote:
+>>
+>> I *think* we can just drop the module requesting stuff entirely, because it
+>> doesn't seem to work anyway and udev is handling this for us.
+>
+Yes. looks like acpi_processor_load_module() is not needed.
+udev will do the work.
