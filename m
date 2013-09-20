@@ -1,43 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: check cpufreq driver is valid and cpufreq isn't disabled in cpufreq_get()
-Date: Fri, 20 Sep 2013 22:37:31 +0530
-Message-ID: <389fbc3c8ad7c339cd2d9572d73c355b7b967823.1379669625.git.viresh.kumar@linaro.org>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] cpufreq: skip loading acpi_cpufreq after intel_pstate
+Date: Fri, 20 Sep 2013 10:08:07 -0700
+Message-ID: <CAE9FiQUXGtNeAS70Mr6Nscax26dRoXTCyb28gz1iX2j1s8Nojw@mail.gmail.com>
+References: <1379654772-10700-1-git-send-email-yinghai@kernel.org>
+	<CAKohpokdyk9hfBreVeXttN23biTVjWiJRm8eYkfAjLz+cbnreQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokdyk9hfBreVeXttN23biTVjWiJRm8eYkfAjLz+cbnreQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, linus.walleij@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-cpufreq_get() can be called from external drivers which might not be aware if
-cpufreq driver is registered or not. And so we should actually check if cpufreq
-driver is registered or not and also if cpufreq is active or disabled, at the
-beginning of cpufreq_get().
+On Thu, Sep 19, 2013 at 11:10 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 20 September 2013 10:56, Yinghai Lu <yinghai@kernel.org> wrote:
+>> If the hw support intel_pstate and acpi_cpufreq, intel_pstate will
+>> get loaded at first.
+>
+> s/at //
+>
+>>
+>> acpi_cpufreq_init will call acpi_cpufreq_early_init()
+>> and it allocate perf data and init those perf data in ACPI core, (that
+>
+> s/it /that will /
+>
+>> will go over all cpus).
+>
+> s/go over/cover/
+>
+>> but late it will free them as cpufreq_register_driver(acpi_cpufreq) will
+>
+> s/late/later
+>
+>> return fail as init_pstate already take over before.
+>
+> write it as: fail as intel_pstate is already registered.
+>
+>> Use cpufreq_get_current_driver() to check if we can skip the
+>> acpi_cpufreq loading.
+>
+> The below material looks to be a separate issue and so we
+> probably break this patch into two?
 
-Otherwise call to lock_policy_rwsem_read() might hit BUG_ON(!policy).
+ok, check that.
 
-Reported-and-Tested-by: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
+Thanks
 
-For 3.12.
-
- drivers/cpufreq/cpufreq.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 82ecbe3..db004a8 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1460,6 +1460,9 @@ unsigned int cpufreq_get(unsigned int cpu)
- {
- 	unsigned int ret_freq = 0;
- 
-+	if (cpufreq_disabled() || !cpufreq_driver)
-+		return -ENOENT;
-+
- 	if (!down_read_trylock(&cpufreq_rwsem))
- 		return 0;
- 
--- 
-1.7.12.rc2.18.g61b472e
-
+Yinghai
