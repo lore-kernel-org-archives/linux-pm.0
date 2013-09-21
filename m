@@ -1,38 +1,84 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: Re: [PATCH 06/16] hwmon: tmp102: expose to thermal fw via DT nodes
-Date: Sat, 21 Sep 2013 11:07:15 -0700
-Message-ID: <523DE053.7010502@roeck-us.net>
-References: <1379457245-17810-1-git-send-email-eduardo.valentin@ti.com> <1379521390-17404-1-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv3 05/16] hwmon: lm75: expose to thermal fw via DT nodes
+Date: Sat, 21 Sep 2013 19:30:35 -0400
+Message-ID: <523E2C1B.9010307@ti.com>
+References: <1379457325-18192-1-git-send-email-eduardo.valentin@ti.com> <1379521314-16959-1-git-send-email-eduardo.valentin@ti.com> <523DE01F.4020607@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1379521390-17404-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Cc: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="9x4MDBE764IgUNxf3PGiCru6VpXDCprP3"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:42962 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936Ab3IUXdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 21 Sep 2013 19:33:08 -0400
+In-Reply-To: <523DE01F.4020607@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
 
-On 09/18/2013 09:23 AM, Eduardo Valentin wrote:
-> This patch adds to tmp102 temperature sensor the possibility
-> to expose itself as thermal zone device, registered on the
-> thermal framework.
->
-> The thermal zone is built only if a device tree node
-> describing a thermal zone for this sensor is present
-> inside the tmp102 DT node. Otherwise, the driver behavior
-> will be the same.
->
-> Cc: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-> Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-> Cc: lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org
-> Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+--9x4MDBE764IgUNxf3PGiCru6VpXDCprP3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+On 21-09-2013 14:06, Guenter Roeck wrote:
+> On 09/18/2013 09:21 AM, Eduardo Valentin wrote:
+>> This patch adds to lm75 temperature sensor the possibility
+>> to expose itself as thermal zone device, registered on the
+>> thermal framework.
+>>
+>> The thermal zone is built only if a device tree node
+>> describing a thermal zone for this sensor is present
+>> inside the lm75 DT node. Otherwise, the driver behavior
+>> will be the same.
+>>
+>> Cc: Jean Delvare <khali@linux-fr.org>
+>> Cc: Guenter Roeck <linux@roeck-us.net>
+>> Cc: lm-sensors@lm-sensors.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>=20
+> Acked-by: Guenter Roeck <linux@roeck-us.net>
+>=20
+
+Cool! thanks again for taking the time to review this.
+
+> I assume this will be sent upstream through the thermal tree ?
+
+Yeah, that is the idea, at least for the core part. The hwmon changes I
+believe goes via hwmon tree, right?
 
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I still need acks from device tree maintainers before moving forward,
+though.
+
+
+>=20
+> Guenter
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--9x4MDBE764IgUNxf3PGiCru6VpXDCprP3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlI+LBsACgkQCXcVR3XQvP1YkgEA+thEwLny2zsb7vO5ODX15WSW
+cqta5NCW0piq29l+mqIBAKFJSPshORy6eRR4I+hAw6GSFYhQ0bqUsz07MY/dQOIW
+=FscP
+-----END PGP SIGNATURE-----
+
+--9x4MDBE764IgUNxf3PGiCru6VpXDCprP3--
