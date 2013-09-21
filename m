@@ -1,54 +1,49 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: check cpufreq driver is valid and cpufreq isn't
- disabled in cpufreq_get()
-Date: Sat, 21 Sep 2013 11:21:14 +0530
-Message-ID: <523D33D2.4050602@linux.vnet.ibm.com>
-References: <389fbc3c8ad7c339cd2d9572d73c355b7b967823.1379669625.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <389fbc3c8ad7c339cd2d9572d73c355b7b967823.1379669625.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linus.walleij@linaro.org
+From: Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
+Subject: [PATCH v4 0/3] ARM: S5PV210: move to common clk framework
+Date: Sat, 21 Sep 2013 19:42:19 +0200
+Message-ID: <1379785342-25107-1-git-send-email-m.krawczuk@partner.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mturquette@linaro.org
+Cc: rob@landley.net, ijc+devicetree@hellion.org.uk, swarren@wwwdotorg.org, mark.rutland@arm.com, pawel.moll@arm.com, rob.herring@calxeda.com, kgene.kim@samsung.com, ben-linux@fluff.org, kyungmin.park@samsung.com, linux@arm.linux.org.uk, tomasz.figa@gmail.com, t.figa@samsung.com, thomas.abraham@linaro.org, s.nawrocki@samsung.com, rjw@sisk.pl, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/20/2013 10:37 PM, Viresh Kumar wrote:
-> cpufreq_get() can be called from external drivers which might not be aware if
-> cpufreq driver is registered or not. And so we should actually check if cpufreq
-> driver is registered or not and also if cpufreq is active or disabled, at the
-> beginning of cpufreq_get().
-> 
-> Otherwise call to lock_policy_rwsem_read() might hit BUG_ON(!policy).
-> 
-> Reported-and-Tested-by: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+This patch series is the new s5pv210 clock implementation
+(using common clk framework).
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+This implementation is compatible with device tree definition and board 
+files.
 
-Regards,
-Srivatsa S. Bhat
+This patch series is based on linux-next and has been tested on goni and 
+aquila 
+boards using board file.
 
-> 
-> For 3.12.
-> 
->  drivers/cpufreq/cpufreq.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 82ecbe3..db004a8 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1460,6 +1460,9 @@ unsigned int cpufreq_get(unsigned int cpu)
->  {
->  	unsigned int ret_freq = 0;
-> 
-> +	if (cpufreq_disabled() || !cpufreq_driver)
-> +		return -ENOENT;
-> +
->  	if (!down_read_trylock(&cpufreq_rwsem))
->  		return 0;
-> 
+Since v3:
 
+Replace s5pv210_clk_register_finpll, by creating mux finpll
+with xusbxti and xxti as parrents.
+
+Mateusz Krawczuk (3):
+  clk: samsung: Add clock driver for s5pc110/s5pv210
+  Cpufreq: s5pv210 cpufreq fixes for CCF
+  ARM: s5pv210: Migrate clock handling to Common Clock Framework
+
+ .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+ arch/arm/mach-s5pv210/Kconfig                      |   9 +
+ arch/arm/mach-s5pv210/Makefile                     |   4 +-
+ arch/arm/mach-s5pv210/common.c                     |  17 +
+ arch/arm/mach-s5pv210/common.h                     |  10 +
+ arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+ arch/arm/plat-samsung/Kconfig                      |   2 +-
+ drivers/clk/samsung/Makefile                       |   3 +
+ drivers/clk/samsung/clk-s5pv210.c                  | 673 +++++++++++++++++++++
+ drivers/cpufreq/s5pv210-cpufreq.c                  |   6 +-
+ include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+ 12 files changed, 1019 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+ create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+ create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
+
+-- 
+1.8.1.2
