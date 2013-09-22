@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 09/21] cpuidle: merge two if() statements for checking error cases
-Date: Sun, 22 Sep 2013 06:51:01 +0530
-Message-ID: <63116bb9adaf7336a019ce087fbe17c4ace81cea.1379779777.git.viresh.kumar@linaro.org>
+Subject: [PATCH 11/21] cpuidle: replace multiline statements with single line in cpuidle_idle_call()
+Date: Sun, 22 Sep 2013 06:51:03 +0530
+Message-ID: <c79ae2ab0a5a3946fcd0e68c855742f06f695f0f.1379779777.git.viresh.kumar@linaro.org>
 References: <cover.1379779777.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
@@ -12,28 +12,37 @@ To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Both return same error message and so better write them in a single line.
+Few statements in cpuidle_idle_call() are broken into multiple lines, whereas
+they can actually come in a single line. Convert those to single line.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/cpuidle.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/cpuidle/cpuidle.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index aec9029..b8c63cb 100644
+index ed67e3c..43d5836 100644
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
-@@ -119,10 +119,7 @@ int cpuidle_idle_call(void)
- 	struct cpuidle_driver *drv;
- 	int next_state, entered_state;
+@@ -145,8 +145,7 @@ int cpuidle_idle_call(void)
+ 	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
  
--	if (cpuidle_disabled())
--		return -ENODEV;
--
--	if (!initialized)
-+	if (cpuidle_disabled() || !initialized)
- 		return -ENODEV;
+ 	if (broadcast)
+-		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+-				   &dev->cpu);
++		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
  
- 	/* check if the device is ready */
+ 	if (cpuidle_state_is_coupled(dev, drv, next_state))
+ 		entered_state = cpuidle_enter_state_coupled(dev, drv,
+@@ -155,8 +154,7 @@ int cpuidle_idle_call(void)
+ 		entered_state = cpuidle_enter_state(dev, drv, next_state);
+ 
+ 	if (broadcast)
+-		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+-				   &dev->cpu);
++		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+ 
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
 -- 
 1.7.12.rc2.18.g61b472e
