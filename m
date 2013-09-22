@@ -1,85 +1,30 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv3 05/16] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Sat, 21 Sep 2013 20:23:43 -0400
-Message-ID: <523E388F.80707@ti.com>
-References: <1379457325-18192-1-git-send-email-eduardo.valentin@ti.com> <1379521314-16959-1-git-send-email-eduardo.valentin@ti.com> <523DE01F.4020607@roeck-us.net> <523E2C1B.9010307@ti.com> <523E321F.8050502@roeck-us.net>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 2/3] Cpufreq: s5pv210 cpufreq fixes for CCF
+Date: Sun, 22 Sep 2013 06:42:35 +0530
+Message-ID: <CAKohpokEF_+d_G0LX76JK_dNBtYtAKPznWbDcwLen4pgQTOt6w@mail.gmail.com>
+References: <1379785342-25107-1-git-send-email-m.krawczuk@partner.samsung.com>
+	<1379785342-25107-3-git-send-email-m.krawczuk@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="RkarQOG3vJEbKAaitGRxPoHpbGxAkROdT"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <523E321F.8050502@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1379785342-25107-3-git-send-email-m.krawczuk-GrGkmOP51GdLN7c7dRTbYkEOCMrvLtNR@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mateusz Krawczuk <m.krawczuk-GrGkmOP51GdLN7c7dRTbYkEOCMrvLtNR@public.gmane.org>
+Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ben Dooks <ben-linux-elnMNo+KYs3YtjvyW6yDsg@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Thomas Abraham <thomas.abraham-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kern
 List-Id: linux-pm@vger.kernel.org
 
---RkarQOG3vJEbKAaitGRxPoHpbGxAkROdT
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 21 September 2013 23:12, Mateusz Krawczuk
+<m.krawczuk-GrGkmOP51GdLN7c7dRTbYkEOCMrvLtNR@public.gmane.org> wrote:
+> Use common clock framework api to get clock.
+>
+> Signed-off-by: Mateusz Krawczuk <m.krawczuk-GrGkmOP51GdLN7c7dRTbYkEOCMrvLtNR@public.gmane.org>
+> Signed-off-by: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  drivers/cpufreq/s5pv210-cpufreq.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-On 21-09-2013 19:56, Guenter Roeck wrote:
-> On 09/21/2013 04:30 PM, Eduardo Valentin wrote:
->> On 21-09-2013 14:06, Guenter Roeck wrote:
->>> On 09/18/2013 09:21 AM, Eduardo Valentin wrote:
->>>> This patch adds to lm75 temperature sensor the possibility
->>>> to expose itself as thermal zone device, registered on the
->>>> thermal framework.
->>>>
->>>> The thermal zone is built only if a device tree node
->>>> describing a thermal zone for this sensor is present
->>>> inside the lm75 DT node. Otherwise, the driver behavior
->>>> will be the same.
->>>>
->>>> Cc: Jean Delvare <khali@linux-fr.org>
->>>> Cc: Guenter Roeck <linux@roeck-us.net>
->>>> Cc: lm-sensors@lm-sensors.org
->>>> Cc: linux-kernel@vger.kernel.org
->>>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->>>
->>> Acked-by: Guenter Roeck <linux@roeck-us.net>
->>>
->>
->> Cool! thanks again for taking the time to review this.
->>
->>> I assume this will be sent upstream through the thermal tree ?
->>
->> Yeah, that is the idea, at least for the core part. The hwmon changes =
-I
->> believe goes via hwmon tree, right?
->>
->=20
-> Not necessarily, as the hwmon code depends on the core code.
-> In such cases it is quite common that both are sent through the same tr=
-ee.
-
-If this works for you I can queue these changes via the thermal tree.
-
->=20
-> Guenter
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---RkarQOG3vJEbKAaitGRxPoHpbGxAkROdT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlI+OJAACgkQCXcVR3XQvP1YiQD+JZooF8YOKlvGkdDpSBoiwRCi
-a8TnkjJ9P2v9DfASHC4A+QHRzlhGlzEleFn8xxJ4hmC3gUPqAULKhcITQCGj3PHj
-=5NFu
------END PGP SIGNATURE-----
-
---RkarQOG3vJEbKAaitGRxPoHpbGxAkROdT--
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
