@@ -1,126 +1,95 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 17/21] cpuidle: avoid unnecessary kzalloc/free of struct cpuidle_driver_kobj
-Date: Sun, 22 Sep 2013 06:51:09 +0530
-Message-ID: <b9855839a2067249d5992acd46140e834737c1b7.1379779777.git.viresh.kumar@linaro.org>
+Subject: [PATCH 21/21] cpuidle: change governor from within cpuidle_replace_governor()
+Date: Sun, 22 Sep 2013 06:51:13 +0530
+Message-ID: <5b758e21eeb97f5f68191819c0820673692b6b75.1379779777.git.viresh.kumar@linaro.org>
 References: <cover.1379779777.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:42406 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753421Ab3IVBXk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Sep 2013 21:23:40 -0400
+Received: by mail-pa0-f42.google.com with SMTP id lj1so2182834pab.29
+        for <linux-pm@vger.kernel.org>; Sat, 21 Sep 2013 18:23:40 -0700 (PDT)
 In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
 References: <cover.1379779777.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-For CONFIG_CPU_IDLE_MULTIPLE_DRIVERS, struct cpuidle_device always needs to
-allocate struct cpuidle_driver_kobj for all CPUs and so there is no real need to
-have a pointer to it inside struct cpuidle_device.
+When I first read cpuidle_replace_governor()'s name I thought it will replace
+the governor (as per its name) but then found that it just returns the next best
+governor. And cpuidle_unregister_governor() actually replaces it.
 
-This patch makes a object instance of struct cpuidle_driver_kobj inside struct
-cpuidle_device instead of a pointer.
+We always replace current governor with the next best and this information is
+already present with cpuidle_replace_governor() and so we don't really need to
+send an additional argument for it.
 
-It also makes kobj_driver dependent on CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
+Also, it makes sense to actually call cpuidle_switch_governor() from within
+cpuidle_replace_governor() instead.
+
+Along with this ret_gov is now renamed as new_gov to better suit its purpose.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/sysfs.c | 20 +++-----------------
- include/linux/cpuidle.h | 11 +++++++++--
- 2 files changed, 12 insertions(+), 19 deletions(-)
+ drivers/cpuidle/governor.c | 24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index db0aac3..3386d64 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -439,12 +439,6 @@ static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
- 	static struct cpuidle_driver_attr attr_driver_##_name = \
- 		__ATTR(_name, 0644, show, NULL)
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index ea2f8e7..deb6e50 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -98,26 +98,27 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
+ }
  
--struct cpuidle_driver_kobj {
--	struct cpuidle_driver *drv;
--	struct completion kobj_unregister;
--	struct kobject kobj;
--};
--
- struct cpuidle_driver_attr {
- 	struct attribute attr;
- 	ssize_t (*show)(struct cpuidle_driver *, char *);
-@@ -518,27 +512,20 @@ static struct kobj_type ktype_driver_cpuidle = {
+ /**
+- * cpuidle_replace_governor - find a replacement governor
+- * @exclude_rating: the rating that will be skipped while looking for
+- * new governor.
++ * cpuidle_replace_governor - replace governor with highest rating one
++ *
++ * Finds governor (excluding cpuidle_curr_governor) with highest rating and
++ * replaces cpuidle_curr_governor with it.
   */
- static int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
+-static struct cpuidle_governor *cpuidle_replace_governor(int exclude_rating)
++static inline void cpuidle_replace_governor(void)
  {
--	struct cpuidle_driver_kobj *kdrv;
-+	struct cpuidle_driver_kobj *kdrv = &dev->kobj_driver;
- 	struct cpuidle_device_kobj *kdev = &dev->kobj_dev;
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int ret;
+ 	struct cpuidle_governor *gov;
+-	struct cpuidle_governor *ret_gov = NULL;
++	struct cpuidle_governor *new_gov = NULL;
+ 	unsigned int max_rating = 0;
  
--	kdrv = kzalloc(sizeof(*kdrv), GFP_KERNEL);
--	if (!kdrv)
--		return -ENOMEM;
--
- 	kdrv->drv = drv;
- 	init_completion(&kdrv->kobj_unregister);
+ 	list_for_each_entry(gov, &cpuidle_governors, governor_list) {
+-		if (gov->rating == exclude_rating)
++		if (gov == cpuidle_curr_governor)
+ 			continue;
+ 		if (gov->rating > max_rating) {
+ 			max_rating = gov->rating;
+-			ret_gov = gov;
++			new_gov = gov;
+ 		}
+ 	}
  
- 	ret = kobject_init_and_add(&kdrv->kobj, &ktype_driver_cpuidle,
- 				   &kdev->kobj, "driver");
--	if (ret) {
--		kfree(kdrv);
-+	if (ret)
- 		return ret;
+-	return ret_gov;
++	cpuidle_switch_governor(new_gov);
+ }
+ 
+ /**
+@@ -130,11 +131,8 @@ void cpuidle_unregister_governor(struct cpuidle_governor *gov)
+ 		return;
+ 
+ 	mutex_lock(&cpuidle_lock);
+-	if (gov == cpuidle_curr_governor) {
+-		struct cpuidle_governor *new_gov;
+-		new_gov = cpuidle_replace_governor(gov->rating);
+-		cpuidle_switch_governor(new_gov);
 -	}
- 
- 	kobject_uevent(&kdrv->kobj, KOBJ_ADD);
--	dev->kobj_driver = kdrv;
- 
- 	return ret;
++	if (gov == cpuidle_curr_governor)
++		cpuidle_replace_governor();
+ 	list_del(&gov->governor_list);
+ 	mutex_unlock(&cpuidle_lock);
  }
-@@ -549,10 +536,9 @@ static int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
-  */
- static void cpuidle_remove_driver_sysfs(struct cpuidle_device *dev)
- {
--	struct cpuidle_driver_kobj *kdrv = dev->kobj_driver;
-+	struct cpuidle_driver_kobj *kdrv = &dev->kobj_driver;
- 	kobject_put(&kdrv->kobj);
- 	wait_for_completion(&kdrv->kobj_unregister);
--	kfree(kdrv);
- }
- #else
- static inline int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 1fc5cb5..0f0da17 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -62,7 +62,6 @@ struct cpuidle_state {
- #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
- 
- struct cpuidle_state_kobj;
--struct cpuidle_driver_kobj;
- 
- struct cpuidle_device_kobj {
- 	struct cpuidle_device *dev;
-@@ -70,6 +69,12 @@ struct cpuidle_device_kobj {
- 	struct kobject kobj;
- };
- 
-+struct cpuidle_driver_kobj {
-+	struct cpuidle_driver *drv;
-+	struct completion kobj_unregister;
-+	struct kobject kobj;
-+};
-+
- struct cpuidle_device {
- 	unsigned int		registered:1;
- 	unsigned int		enabled:1;
-@@ -79,7 +84,9 @@ struct cpuidle_device {
- 	int			state_count;
- 	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
- 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
--	struct cpuidle_driver_kobj *kobj_driver;
-+#ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
-+	struct cpuidle_driver_kobj kobj_driver;
-+#endif
- 	struct cpuidle_device_kobj kobj_dev;
- 	struct list_head 	device_list;
- 
 -- 
 1.7.12.rc2.18.g61b472e
+
