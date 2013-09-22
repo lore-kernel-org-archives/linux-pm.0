@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 12/21] cpuidle: call cpuidle_get_driver() from after taking cpuidle_driver_lock
-Date: Sun, 22 Sep 2013 06:51:04 +0530
-Message-ID: <193825f6c2fb70462f6da2cc60e7c6c02682d6c5.1379779777.git.viresh.kumar@linaro.org>
+Subject: [PATCH 13/21] cpuidle: use drv instead of cpuidle_driver in show_current_driver()
+Date: Sun, 22 Sep 2013 06:51:05 +0530
+Message-ID: <dee4978199c13f45547f50a5f709c9b0d57f669b.1379779777.git.viresh.kumar@linaro.org>
 References: <cover.1379779777.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
@@ -12,49 +12,36 @@ To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-cpuidle_driver_lock is taken correctly at most of the places but at few places
-calls to cpuidle_get_driver() are done from outside of this lock.
+Instances of "struct cpuidle_driver *" are consistently named as "drv" in
+cpuidle core. Its broken only at one place: show_current_driver().
 
-Fix them by calling cpuidle_get_driver() after taking cpuidle_driver_lock.
+Fix it for consistency.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/driver.c | 3 ++-
- drivers/cpuidle/sysfs.c  | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/cpuidle/sysfs.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 6279e1c..7b2510a 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -340,10 +340,11 @@ struct cpuidle_driver *cpuidle_driver_ref(void)
-  */
- void cpuidle_driver_unref(void)
- {
--	struct cpuidle_driver *drv = cpuidle_get_driver();
-+	struct cpuidle_driver *drv;
- 
- 	spin_lock(&cpuidle_driver_lock);
- 
-+	drv = cpuidle_get_driver();
- 	if (drv && !WARN_ON(drv->refcnt <= 0))
- 		drv->refcnt--;
- 
 diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index 8739cc0..a022393 100644
+index a022393..e918b6d 100644
 --- a/drivers/cpuidle/sysfs.c
 +++ b/drivers/cpuidle/sysfs.c
-@@ -52,9 +52,10 @@ static ssize_t show_current_driver(struct device *dev,
+@@ -52,12 +52,12 @@ static ssize_t show_current_driver(struct device *dev,
  				   char *buf)
  {
  	ssize_t ret;
--	struct cpuidle_driver *cpuidle_driver = cpuidle_get_driver();
-+	struct cpuidle_driver *cpuidle_driver;
+-	struct cpuidle_driver *cpuidle_driver;
++	struct cpuidle_driver *drv;
  
  	spin_lock(&cpuidle_driver_lock);
-+	cpuidle_driver = cpuidle_get_driver();
- 	if (cpuidle_driver)
- 		ret = sprintf(buf, "%s\n", cpuidle_driver->name);
+-	cpuidle_driver = cpuidle_get_driver();
+-	if (cpuidle_driver)
+-		ret = sprintf(buf, "%s\n", cpuidle_driver->name);
++	drv = cpuidle_get_driver();
++	if (drv)
++		ret = sprintf(buf, "%s\n", drv->name);
  	else
+ 		ret = sprintf(buf, "none\n");
+ 	spin_unlock(&cpuidle_driver_lock);
 -- 
 1.7.12.rc2.18.g61b472e
