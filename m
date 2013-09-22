@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 19/21] cpuidle: create list of registered drivers
-Date: Sun, 22 Sep 2013 06:51:11 +0530
-Message-ID: <7e9565e323c1e065eeb2a2a1075967bd21ee6066.1379779777.git.viresh.kumar@linaro.org>
+Subject: [PATCH 17/21] cpuidle: avoid unnecessary kzalloc/free of struct cpuidle_driver_kobj
+Date: Sun, 22 Sep 2013 06:51:09 +0530
+Message-ID: <b9855839a2067249d5992acd46140e834737c1b7.1379779777.git.viresh.kumar@linaro.org>
 References: <cover.1379779777.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
@@ -12,211 +12,115 @@ To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently we have multiple definitions of few routines based on following config
-option: CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
+For CONFIG_CPU_IDLE_MULTIPLE_DRIVERS, struct cpuidle_device always needs to
+allocate struct cpuidle_driver_kobj for all CPUs and so there is no real need to
+have a pointer to it inside struct cpuidle_device.
 
-These are present to save space by not creating per-cpu variable for platforms
-which need only one cpuidle driver to be registered for all CPUs.
+This patch makes a object instance of struct cpuidle_driver_kobj inside struct
+cpuidle_device instead of a pointer.
 
-But this setup has a problem. For ARM multi-platform kernel use case this option
-will get enabled and so we will have per-cpu variables even for platforms that
-don't need it.
-
-The bigger problem is two separate code paths for such platforms for single &
-multi platform kernels. Which doesn't sound good.
-
-A better way of solving this problem would be to create cpuidle driver's list
-that can be used to manage all information we need. Then we don't really have to
-write any special code for handling platforms with
-CONFIG_CPU_IDLE_MULTIPLE_DRIVERS option set.
-
-This patch does it.
+It also makes kobj_driver dependent on CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/driver.c | 106 ++++++++++++-----------------------------------
- include/linux/cpuidle.h  |   1 +
- 2 files changed, 27 insertions(+), 80 deletions(-)
+ drivers/cpuidle/sysfs.c | 20 +++-----------------
+ include/linux/cpuidle.h | 11 +++++++++--
+ 2 files changed, 12 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index a4a93b4..320b4ec 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -18,10 +18,19 @@
- #include "cpuidle.h"
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index db0aac3..3386d64 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -439,12 +439,6 @@ static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
+ 	static struct cpuidle_driver_attr attr_driver_##_name = \
+ 		__ATTR(_name, 0644, show, NULL)
  
- DEFINE_SPINLOCK(cpuidle_driver_lock);
-+static LIST_HEAD(cpuidle_detected_drivers);
- 
--#ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
-+static inline struct cpuidle_driver *
-+__cpuidle_get_driver(const struct cpumask *cpumask)
-+{
-+	struct cpuidle_driver *drv;
-+
-+	list_for_each_entry(drv, &cpuidle_detected_drivers, driver_list)
-+		if (cpumask_intersects(drv->cpumask, cpumask))
-+			return drv;
- 
--static DEFINE_PER_CPU(struct cpuidle_driver *, cpuidle_drivers);
-+	return NULL;
-+}
- 
- /**
-  * __cpuidle_get_cpu_driver - return the cpuidle driver tied to a CPU.
-@@ -32,103 +41,39 @@ static DEFINE_PER_CPU(struct cpuidle_driver *, cpuidle_drivers);
+-struct cpuidle_driver_kobj {
+-	struct cpuidle_driver *drv;
+-	struct completion kobj_unregister;
+-	struct kobject kobj;
+-};
+-
+ struct cpuidle_driver_attr {
+ 	struct attribute attr;
+ 	ssize_t (*show)(struct cpuidle_driver *, char *);
+@@ -518,27 +512,20 @@ static struct kobj_type ktype_driver_cpuidle = {
   */
- static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
+ static int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
  {
--	return per_cpu(cpuidle_drivers, cpu);
-+	return __cpuidle_get_driver(cpumask_of(cpu));
- }
+-	struct cpuidle_driver_kobj *kdrv;
++	struct cpuidle_driver_kobj *kdrv = &dev->kobj_driver;
+ 	struct cpuidle_device_kobj *kdev = &dev->kobj_dev;
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+ 	int ret;
  
- /**
-- * __cpuidle_unset_driver - unset per CPU driver variables.
-+ * __cpuidle_add_driver - adds a cpuidle driver to list.
-  * @drv: a valid pointer to a struct cpuidle_driver
-  *
-- * For each CPU in the driver's CPU mask, unset the registered driver per CPU
-- * variable. If @drv is different from the registered driver, the corresponding
-- * variable is not cleared.
-- */
--static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
--{
--	int cpu;
+-	kdrv = kzalloc(sizeof(*kdrv), GFP_KERNEL);
+-	if (!kdrv)
+-		return -ENOMEM;
 -
--	for_each_cpu(cpu, drv->cpumask) {
--
--		if (drv != __cpuidle_get_cpu_driver(cpu))
--			continue;
--
--		per_cpu(cpuidle_drivers, cpu) = NULL;
--	}
--}
--
--/**
-- * __cpuidle_set_driver - set per CPU driver variables for the given driver.
-- * @drv: a valid pointer to a struct cpuidle_driver
-- *
-- * For each CPU in the driver's cpumask, unset the registered driver per CPU
-- * to @drv.
-+ * Adds cpuidle driver to cpuidle_detected_drivers list if no driver is already
-+ * registered for any CPUs present in drv->cpumask.
-  *
-  * Returns 0 on success, -EBUSY if the CPUs have driver(s) already.
-  */
--static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
--{
--	int cpu;
--
--	for_each_cpu(cpu, drv->cpumask) {
--
--		if (__cpuidle_get_cpu_driver(cpu)) {
--			__cpuidle_unset_driver(drv);
--			return -EBUSY;
--		}
--
--		per_cpu(cpuidle_drivers, cpu) = drv;
--	}
--
--	return 0;
--}
--
--#else
--
--static struct cpuidle_driver *cpuidle_curr_driver;
--
--/**
-- * __cpuidle_get_cpu_driver - return the global cpuidle driver pointer.
-- * @cpu: ignored without the multiple driver support
-- *
-- * Return a pointer to a struct cpuidle_driver object or NULL if no driver was
-- * previously registered.
-- */
--static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
--{
--	return cpuidle_curr_driver;
--}
--
--/**
-- * __cpuidle_set_driver - assign the global cpuidle driver variable.
-- * @drv: pointer to a struct cpuidle_driver object
-- *
-- * Returns 0 on success, -EBUSY if the driver is already registered.
-- */
--static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
-+static inline int __cpuidle_add_driver(struct cpuidle_driver *drv)
- {
--	if (cpuidle_curr_driver)
-+	if (__cpuidle_get_driver(drv->cpumask))
- 		return -EBUSY;
+ 	kdrv->drv = drv;
+ 	init_completion(&kdrv->kobj_unregister);
  
--	cpuidle_curr_driver = drv;
-+	list_add(&drv->driver_list, &cpuidle_detected_drivers);
- 
- 	return 0;
- }
- 
- /**
-- * __cpuidle_unset_driver - unset the global cpuidle driver variable.
-- * @drv: a pointer to a struct cpuidle_driver
-+ * __cpuidle_remove_driver - remove cpuidle driver from list.
-+ * @drv: a valid pointer to a struct cpuidle_driver
-  *
-- * Reset the global cpuidle variable to NULL.  If @drv does not match the
-- * registered driver, do nothing.
-+ * Removes cpuidle driver from cpuidle_detected_drivers list.
-  */
--static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
-+static inline void __cpuidle_remove_driver(struct cpuidle_driver *drv)
- {
--	if (drv == cpuidle_curr_driver)
--		cpuidle_curr_driver = NULL;
-+	list_del(&drv->driver_list);
- }
- 
--#endif
--
- /**
-  * cpuidle_setup_broadcast_timer - enable/disable the broadcast timer
-  * @arg: a void pointer used to match the SMP cross call API
-@@ -158,6 +103,7 @@ static void __cpuidle_driver_init(struct cpuidle_driver *drv)
- 	int i;
- 
- 	drv->refcnt = 0;
-+	INIT_LIST_HEAD(&drv->driver_list);
- 
- 	/*
- 	 * Use all possible CPUs as the default, because if the kernel boots
-@@ -244,7 +190,7 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv)
- 
- 	__cpuidle_driver_init(drv);
- 
--	ret = __cpuidle_set_driver(drv);
-+	ret = __cpuidle_add_driver(drv);
- 	if (ret)
+ 	ret = kobject_init_and_add(&kdrv->kobj, &ktype_driver_cpuidle,
+ 				   &kdev->kobj, "driver");
+-	if (ret) {
+-		kfree(kdrv);
++	if (ret)
  		return ret;
+-	}
  
-@@ -277,7 +223,7 @@ static void __cpuidle_unregister_driver(struct cpuidle_driver *drv)
- 				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF, 1);
- 	}
+ 	kobject_uevent(&kdrv->kobj, KOBJ_ADD);
+-	dev->kobj_driver = kdrv;
  
--	__cpuidle_unset_driver(drv);
-+	__cpuidle_remove_driver(drv);
+ 	return ret;
  }
- 
- /**
+@@ -549,10 +536,9 @@ static int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
+  */
+ static void cpuidle_remove_driver_sysfs(struct cpuidle_device *dev)
+ {
+-	struct cpuidle_driver_kobj *kdrv = dev->kobj_driver;
++	struct cpuidle_driver_kobj *kdrv = &dev->kobj_driver;
+ 	kobject_put(&kdrv->kobj);
+ 	wait_for_completion(&kdrv->kobj_unregister);
+-	kfree(kdrv);
+ }
+ #else
+ static inline int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
 diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 0f0da17..81b74d2 100644
+index 1fc5cb5..0f0da17 100644
 --- a/include/linux/cpuidle.h
 +++ b/include/linux/cpuidle.h
-@@ -129,6 +129,7 @@ struct cpuidle_driver {
+@@ -62,7 +62,6 @@ struct cpuidle_state {
+ #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
  
- 	/* the driver handles the cpus in cpumask */
- 	struct cpumask		*cpumask;
-+	struct list_head	driver_list;
+ struct cpuidle_state_kobj;
+-struct cpuidle_driver_kobj;
+ 
+ struct cpuidle_device_kobj {
+ 	struct cpuidle_device *dev;
+@@ -70,6 +69,12 @@ struct cpuidle_device_kobj {
+ 	struct kobject kobj;
  };
  
- #ifdef CONFIG_CPU_IDLE
++struct cpuidle_driver_kobj {
++	struct cpuidle_driver *drv;
++	struct completion kobj_unregister;
++	struct kobject kobj;
++};
++
+ struct cpuidle_device {
+ 	unsigned int		registered:1;
+ 	unsigned int		enabled:1;
+@@ -79,7 +84,9 @@ struct cpuidle_device {
+ 	int			state_count;
+ 	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
+ 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
+-	struct cpuidle_driver_kobj *kobj_driver;
++#ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
++	struct cpuidle_driver_kobj kobj_driver;
++#endif
+ 	struct cpuidle_device_kobj kobj_dev;
+ 	struct list_head 	device_list;
+ 
 -- 
 1.7.12.rc2.18.g61b472e
