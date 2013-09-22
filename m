@@ -1,70 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 20/21] cpuidle: don't calculate time-diff if entered_state == 0
-Date: Sun, 22 Sep 2013 06:51:12 +0530
-Message-ID: <acd1cc837f969a50582d2b25a73c5e247f40f843.1379779777.git.viresh.kumar@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl, daniel.lezcano@linaro.org
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Aaron Lu <aaron.lwe@gmail.com>
+Subject: Re: Bisected 3.12.0-rc1 Laptop screen goes blank during kernelboot
+Date: Sun, 22 Sep 2013 10:10:49 +0800
+Message-ID: <523E51A9.8050609@gmail.com>
+References: <523C8238.3000200@xmsnet.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <523C8238.3000200@xmsnet.nl>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Bruin <jmdebruin@xmsnet.nl>
+Cc: linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-If entered_state == 0, we don't need to set dev->last_residency to 'diff' as we
-will be setting it to zero without using its new value.
+Add linux-pm.
 
-And so move calculation of diff also inside the "if" statement.
+-Aaron
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpuidle/cpuidle.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+On 09/21/2013 01:13 AM, Hans de Bruin wrote:
+> During boot time my laptop screen goes blank when de kernel switches the 
+> screen to another resolution. The backlight is on. Eventually a kde 
+> login box appears out of the blackness. Swiching to a lower resolution 
+> gives me a black screen again. After testing the 
+> intel-gfx@lists.freedesktop.org developers test-tree problem less they 
+> sugested a bisect. That bisect ended in:
+> 
+> 
+> commit 137b944e100278d696826cf25c83014ac17473fe
+> Author: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Date:   Wed Jun 12 15:08:48 2013 +0200
+> 
+>    cpuidle: Make it clear that governors cannot be modules
+> 
+>    cpufreq governors are defined as modules in the code, but the Kconfig
+>    options do not allow them to be built as modules.  This is not really
+>    a problem, but the cpuidle init ordering is: the cpuidle init
+>    functions (framework and driver) and then the governors.  That leads
+>    to some weirdness in the cpuidle framework.
+> 
+>    Namely,  cpuidle_register_device() calls cpuidle_enable_device() which
+>    fails at the first attempt, because governors have not been registered
+>    yet.  When a governor is registered, the framework calls
+>    cpuidle_enable_device() again which runs __cpuidle_register_device()
+>    only then.  Of course, for that to work, the cpuidle_enable_device()
+>    return value has to be ignored by cpuidle_register_device().
+> 
+>      Instead of having this cyclic call graph and relying on a positive
+>      side effects of the hackish back and forth cpuidle_enable_device()
+>      calls it is better to fix the cpuidle init ordering.
+> 
+>      To that end, replace the module init code with postcore_initcall()
+>      so we have:
+> 
+>       * cpuidle framework : core_initcall
+>       * cpuidle governors : postcore_initcall
+>       * cpuidle drivers   : device_initcall
+> 
+>      and remove the corresponding module exit code as it is dead anyway
+>      (governors can't be built as modules).
+> 
+>      [rjw: Changelog]
+>      Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>      Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> :040000 040000 45e7cb28411864c00b62296a7ff239f9f139d5d9 
+> 86a36b01dee52a77cfbab41a973b7a2bfa44ce34 M      drivers
+> 
+> 
+> 
+> Reverting it makes the problem go away.
+> 
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index bf80236..cb81689 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -77,23 +77,22 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 
- 	struct cpuidle_state *target_state = &drv->states[index];
- 	ktime_t time_start, time_end;
--	s64 diff;
- 
- 	time_start = ktime_get();
- 
- 	entered_state = target_state->enter(dev, drv, index);
- 
--	time_end = ktime_get();
-+	if (entered_state >= 0) {
-+		s64 diff;
- 
--	local_irq_enable();
-+		time_end = ktime_get();
-+		diff = ktime_to_us(ktime_sub(time_end, time_start));
- 
--	diff = ktime_to_us(ktime_sub(time_end, time_start));
--	if (diff > INT_MAX)
--		diff = INT_MAX;
-+		if (diff > INT_MAX)
-+			diff = INT_MAX;
- 
--	dev->last_residency = (int) diff;
-+		dev->last_residency = (int) diff;
- 
--	if (entered_state >= 0) {
- 		/* Update cpuidle counters */
- 		/* This can be moved to within driver enter routine
- 		 * but that results in multiple copies of same code.
-@@ -104,6 +103,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 		dev->last_residency = 0;
- 	}
- 
-+	local_irq_enable();
-+
- 	return entered_state;
- }
- 
--- 
-1.7.12.rc2.18.g61b472e
