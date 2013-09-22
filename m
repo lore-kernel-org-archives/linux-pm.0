@@ -1,95 +1,70 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 21/21] cpuidle: change governor from within cpuidle_replace_governor()
-Date: Sun, 22 Sep 2013 06:51:13 +0530
-Message-ID: <5b758e21eeb97f5f68191819c0820673692b6b75.1379779777.git.viresh.kumar@linaro.org>
+Subject: [PATCH 20/21] cpuidle: don't calculate time-diff if entered_state == 0
+Date: Sun, 22 Sep 2013 06:51:12 +0530
+Message-ID: <acd1cc837f969a50582d2b25a73c5e247f40f843.1379779777.git.viresh.kumar@linaro.org>
 References: <cover.1379779777.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:42406 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753421Ab3IVBXk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Sep 2013 21:23:40 -0400
-Received: by mail-pa0-f42.google.com with SMTP id lj1so2182834pab.29
-        for <linux-pm@vger.kernel.org>; Sat, 21 Sep 2013 18:23:40 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379779777.git.viresh.kumar@linaro.org>
 References: <cover.1379779777.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-When I first read cpuidle_replace_governor()'s name I thought it will replace
-the governor (as per its name) but then found that it just returns the next best
-governor. And cpuidle_unregister_governor() actually replaces it.
+If entered_state == 0, we don't need to set dev->last_residency to 'diff' as we
+will be setting it to zero without using its new value.
 
-We always replace current governor with the next best and this information is
-already present with cpuidle_replace_governor() and so we don't really need to
-send an additional argument for it.
-
-Also, it makes sense to actually call cpuidle_switch_governor() from within
-cpuidle_replace_governor() instead.
-
-Along with this ret_gov is now renamed as new_gov to better suit its purpose.
+And so move calculation of diff also inside the "if" statement.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/governor.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/cpuidle/cpuidle.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
-index ea2f8e7..deb6e50 100644
---- a/drivers/cpuidle/governor.c
-+++ b/drivers/cpuidle/governor.c
-@@ -98,26 +98,27 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
- }
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index bf80236..cb81689 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -77,23 +77,22 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
  
- /**
-- * cpuidle_replace_governor - find a replacement governor
-- * @exclude_rating: the rating that will be skipped while looking for
-- * new governor.
-+ * cpuidle_replace_governor - replace governor with highest rating one
-+ *
-+ * Finds governor (excluding cpuidle_curr_governor) with highest rating and
-+ * replaces cpuidle_curr_governor with it.
-  */
--static struct cpuidle_governor *cpuidle_replace_governor(int exclude_rating)
-+static inline void cpuidle_replace_governor(void)
- {
- 	struct cpuidle_governor *gov;
--	struct cpuidle_governor *ret_gov = NULL;
-+	struct cpuidle_governor *new_gov = NULL;
- 	unsigned int max_rating = 0;
+ 	struct cpuidle_state *target_state = &drv->states[index];
+ 	ktime_t time_start, time_end;
+-	s64 diff;
  
- 	list_for_each_entry(gov, &cpuidle_governors, governor_list) {
--		if (gov->rating == exclude_rating)
-+		if (gov == cpuidle_curr_governor)
- 			continue;
- 		if (gov->rating > max_rating) {
- 			max_rating = gov->rating;
--			ret_gov = gov;
-+			new_gov = gov;
- 		}
+ 	time_start = ktime_get();
+ 
+ 	entered_state = target_state->enter(dev, drv, index);
+ 
+-	time_end = ktime_get();
++	if (entered_state >= 0) {
++		s64 diff;
+ 
+-	local_irq_enable();
++		time_end = ktime_get();
++		diff = ktime_to_us(ktime_sub(time_end, time_start));
+ 
+-	diff = ktime_to_us(ktime_sub(time_end, time_start));
+-	if (diff > INT_MAX)
+-		diff = INT_MAX;
++		if (diff > INT_MAX)
++			diff = INT_MAX;
+ 
+-	dev->last_residency = (int) diff;
++		dev->last_residency = (int) diff;
+ 
+-	if (entered_state >= 0) {
+ 		/* Update cpuidle counters */
+ 		/* This can be moved to within driver enter routine
+ 		 * but that results in multiple copies of same code.
+@@ -104,6 +103,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 		dev->last_residency = 0;
  	}
  
--	return ret_gov;
-+	cpuidle_switch_governor(new_gov);
++	local_irq_enable();
++
+ 	return entered_state;
  }
  
- /**
-@@ -130,11 +131,8 @@ void cpuidle_unregister_governor(struct cpuidle_governor *gov)
- 		return;
- 
- 	mutex_lock(&cpuidle_lock);
--	if (gov == cpuidle_curr_governor) {
--		struct cpuidle_governor *new_gov;
--		new_gov = cpuidle_replace_governor(gov->rating);
--		cpuidle_switch_governor(new_gov);
--	}
-+	if (gov == cpuidle_curr_governor)
-+		cpuidle_replace_governor();
- 	list_del(&gov->governor_list);
- 	mutex_unlock(&cpuidle_lock);
- }
 -- 
 1.7.12.rc2.18.g61b472e
-
