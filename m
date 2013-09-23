@@ -1,89 +1,275 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 0/9] cpuidle: rework device state count handling
-Date: Mon, 23 Sep 2013 18:05:53 +0200
-Message-ID: <98588621.30oeP6cEfZ@amdc1032>
-References: <1377008627-32691-1-git-send-email-b.zolnierkie@samsung.com>
+From: Phil Carmody <phil.carmody@partner.samsung.com>
+Subject: Re: [PATCH V4 02/15] asymmetric keys: implement EMSA_PKCS1-v1_5-ENCODE
+ in rsa
+Date: Mon, 23 Sep 2013 19:49:44 +0300
+Message-ID: <20130923164931.GD6772@samsung.com>
+References: <1379206621-18639-1-git-send-email-jlee@suse.com>
+ <1379206621-18639-3-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:54401 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752310Ab3IWQF5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 12:05:57 -0400
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MTL00B8B61W7RJ0@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 24 Sep 2013 01:05:56 +0900 (KST)
-In-reply-to: <1377008627-32691-1-git-send-email-b.zolnierkie@samsung.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:28229 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545Ab3IWQt4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 12:49:56 -0400
+Content-disposition: inline
+In-reply-to: <1379206621-18639-3-git-send-email-jlee@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, kyungmin.park@samsung.com
+To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.uc>
 
-
-Hi Daniel,
-
-Did you have a chance to take a look at this patchset?
-
-Could it be queued for 3.13 (unfortunately it is probably too late for 3.12)?
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-On Tuesday, August 20, 2013 04:23:38 PM Bartlomiej Zolnierkiewicz wrote:
-> Hi,
+On Sun, Sep 15, 2013 at 08:56:48AM +0800, Lee, Chun-Yi wrote:
+> Implement EMSA_PKCS1-v1_5-ENCODE [RFC3447 sec 9.2] in rsa.c. It's the
+> first step of signature generation operation (RSASSA-PKCS1-v1_5-SIGN).
 > 
-> Some cpuidle drivers assume that cpuidle core will handle cases where
-> device->state_count is smaller than driver->state_count, unfortunately
-> currently this is untrue (device->state_count is used only for handling
-> cpuidle state sysfs entries and driver->state_count is used for all
-> other cases) and will not be fixed in the future as device->state_count
-> is planned to be removed [1].
+> This patch is temporary set emLen to pks->k, and temporary set EM to
+> pks->S for debugging. We will replace the above values to real signature
+> after implement RSASP1.
 > 
-> This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
-> cpuidle driver), removes superflous device->state_count initialization
-> from drivers for which device->state_count equals driver->state_count
-> (POWERPC pseries cpuidle driver and intel_idle driver) and finally
-> removes state_count field from struct cpuidle_device.
+> The naming of EMSA_PKCS1_v1_5_ENCODE and the variables used in this function
+> accord PKCS#1 spec but not follow kernel naming convention, it useful when look
+> at them with spec.
 > 
-> Additionaly (while at it) this patchset fixes C1E promotion disable
-> quirk handling (in intel_idle driver) and converts cpuidle drivers code
-> to use the common cpuidle_[un]register() routines (in POWERPC pseries
-> cpuidle driver and intel_idle driver).
+> Reference: ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1v2/pkcs1ietffinal.txt
+> Reference: http://www.emc.com/collateral/white-papers/h11300-pkcs-1v2-2-rsa-cryptography-standard-wp.pdf
 > 
-> [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
+> V2:
+
+You're now at V4.
+
+> - Clean up naming of variable: replace _EM by EM, replace EM by EM_tmp.
+> - Add comment to EMSA_PKCS1-v1_5-ENCODE function.
 > 
-> Best regards,
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Reviewed-by: Jiri Kosina <jkosina@suse.cz>
+> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> ---
+>  crypto/asymmetric_keys/rsa.c |  163 +++++++++++++++++++++++++++++++++++++++++-
+>  include/crypto/public_key.h  |    2 +
+>  2 files changed, 164 insertions(+), 1 deletions(-)
+> 
+> diff --git a/crypto/asymmetric_keys/rsa.c b/crypto/asymmetric_keys/rsa.c
+> index 47f3be4..352ba45 100644
+> --- a/crypto/asymmetric_keys/rsa.c
+> +++ b/crypto/asymmetric_keys/rsa.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+>  #include <linux/slab.h>
+> +#include <crypto/hash.h>
+>  #include "public_key.h"
+>  #include "private_key.h"
+>  
+> @@ -152,6 +153,132 @@ static int RSA_I2OSP(MPI x, size_t xLen, u8 **_X)
+>  }
+>  
+>  /*
+> + * EMSA_PKCS1-v1_5-ENCODE [RFC3447 sec 9.2]
+> + * @M: message to be signed, an octet string
+> + * @emLen: intended length in octets of the encoded message
+> + * @hash_algo: hash function (option)
+> + * @hash: true means hash M, otherwise M is already a digest
+> + * @EM: encoded message, an octet string of length emLen
+> + *
+> + * This function is a implementation of the EMSA-PKCS1-v1_5 encoding operation
+> + * in RSA PKCS#1 spec. It used by the signautre generation operation of
+> + * RSASSA-PKCS1-v1_5 to encode message M to encoded message EM.
+> + *
+> + * The variables used in this function accord PKCS#1 spec but not follow kernel
+> + * naming convention, it useful when look at them with spec.
+> + */
+> +static int EMSA_PKCS1_v1_5_ENCODE(const u8 *M, size_t emLen,
+> +		enum pkey_hash_algo hash_algo, const bool hash,
+> +		u8 **EM, struct public_key_signature *pks)
+> +{
+> +	u8 *digest;
+> +	struct crypto_shash *tfm;
+> +	struct shash_desc *desc;
+> +	size_t digest_size, desc_size;
+> +	size_t tLen;
+> +	u8 *T, *PS, *EM_tmp;
+> +	int i, ret;
+> +
+> +	pr_info("EMSA_PKCS1_v1_5_ENCODE start\n");
+> +
+> +	if (!RSA_ASN1_templates[hash_algo].data)
+> +		ret = -ENOTSUPP;
+
+...
+
+> +	else
+> +		pks->pkey_hash_algo = hash_algo;
+> +
+> +	/* 1) Apply the hash function to the message M to produce a hash value H */
+> +	tfm = crypto_alloc_shash(pkey_hash_algo[hash_algo], 0, 0);
+> +	if (IS_ERR(tfm))
+> +		return (PTR_ERR(tfm) == -ENOENT) ? -ENOPKG : PTR_ERR(tfm);
+> +
+> +	desc_size = crypto_shash_descsize(tfm) + sizeof(*desc);
+> +	digest_size = crypto_shash_digestsize(tfm);
+> +
+> +	ret = -ENOMEM;
+
+The earlier "ret = -ENOTSUPP;" is either unused because you return at the IS_ERR,
+or unused because you overwrite it here. I'm a little disappointed that
+the compiler didn't recognise that something was assigned to a value that 
+is never used.
+
+Phil
+
+> +
+> +	digest = kzalloc(digest_size + desc_size, GFP_KERNEL);
+> +	if (!digest)
+> +		goto error_digest;
+> +	pks->digest = digest;
+> +	pks->digest_size = digest_size;
+> +
+> +	if (hash) {
+> +		desc = (void *) digest + digest_size;
+> +		desc->tfm = tfm;
+> +		desc->flags = CRYPTO_TFM_REQ_MAY_SLEEP;
+> +
+> +		ret = crypto_shash_init(desc);
+> +		if (ret < 0)
+> +			goto error_shash;
+> +		ret = crypto_shash_finup(desc, M, sizeof(M), pks->digest);
+> +		if (ret < 0)
+> +			goto error_shash;
+> +	} else {
+> +		memcpy(pks->digest, M, pks->digest_size);
+> +		pks->digest_size = digest_size;
+> +	}
+> +	crypto_free_shash(tfm);
+> +
+> +	/* 2) Encode the algorithm ID for the hash function and the hash value into
+> +	 * an ASN.1 value of type DigestInfo with the DER. Let T be the DER encoding of
+> +	 * the DigestInfo value and let tLen be the length in octets of T.
+> +	 */
+> +	tLen = RSA_ASN1_templates[hash_algo].size + pks->digest_size;
+> +	T = kmalloc(tLen, GFP_KERNEL);
+> +	if (!T)
+> +		goto error_T;
+> +
+> +	memcpy(T, RSA_ASN1_templates[hash_algo].data, RSA_ASN1_templates[hash_algo].size);
+> +	memcpy(T + RSA_ASN1_templates[hash_algo].size, pks->digest, pks->digest_size);
+> +
+> +	/* 3) check If emLen < tLen + 11, output "intended encoded message length too short" */
+> +	if (emLen < tLen + 11) {
+> +		ret = -EINVAL;
+> +		goto error_emLen;
+> +	}
+> +
+> +	/* 4) Generate an octet string PS consisting of emLen - tLen - 3 octets with 0xff. */
+> +	PS = kmalloc(emLen - tLen - 3, GFP_KERNEL);
+> +	if (!PS)
+> +		goto error_P;
+> +
+> +	for (i = 0; i < (emLen - tLen - 3); i++)
+> +		PS[i] = 0xff;
+> +
+> +	/* 5) Concatenate PS, the DER encoding T, and other padding to form the encoded
+> +	 * message EM as EM = 0x00 || 0x01 || PS || 0x00 || T
+> +	 */
+> +	EM_tmp = kmalloc(3 + emLen - tLen - 3 + tLen, GFP_KERNEL);
+> +	if (!EM_tmp)
+> +		goto error_EM;
+> +
+> +	EM_tmp[0] = 0x00;
+> +	EM_tmp[1] = 0x01;
+> +	memcpy(EM_tmp + 2, PS, emLen - tLen - 3);
+> +	EM_tmp[2 + emLen - tLen - 3] = 0x00;
+> +	memcpy(EM_tmp + 2 + emLen - tLen - 3 + 1, T, tLen);
+> +
+> +	*EM = EM_tmp;
+> +
+> +	kfree(PS);
+> +	kfree(T);
+> +
+> +	return 0;
+> +
+> +error_EM:
+> +	kfree(PS);
+> +error_P:
+> +error_emLen:
+> +	kfree(T);
+> +error_T:
+> +error_shash:
+> +	kfree(digest);
+> +error_digest:
+> +	crypto_free_shash(tfm);
+> +	return ret;
+> +}
+> +
+> +/*
+>   * Perform the RSA signature verification.
+>   * @H: Value of hash of data and metadata
+>   * @EM: The computed signature value
+> @@ -275,9 +402,43 @@ static struct public_key_signature *RSA_generate_signature(
+>  		const struct private_key *key, u8 *M,
+>  		enum pkey_hash_algo hash_algo, const bool hash)
+>  {
+> +	struct public_key_signature *pks;
+> +	u8 *EM = NULL;
+> +	size_t emLen;
+> +	int ret;
+> +
+>  	pr_info("RSA_generate_signature start\n");
+>  
+> -	return 0;
+> +	ret = -ENOMEM;
+> +	pks = kzalloc(sizeof(*pks), GFP_KERNEL);
+> +	if (!pks)
+> +		goto error_no_pks;
+> +
+> +	/* 1): EMSA-PKCS1-v1_5 encoding: */
+> +	/* Use the private key modulus size to be EM length */
+> +	emLen = mpi_get_nbits(key->rsa.n);
+> +	emLen = (emLen + 7) / 8;
+> +
+> +	ret = EMSA_PKCS1_v1_5_ENCODE(M, emLen, hash_algo, hash, &EM, pks);
+> +	if (ret < 0)
+> +		goto error_v1_5_encode;
+> +
+> +	/* TODO 2): m = OS2IP (EM) */
+> +
+> +	/* TODO 3): s = RSASP1 (K, m) */
+> +
+> +	/* TODO 4): S = I2OSP (s, k) */
+> +
+> +	/* TODO: signature S to a u8* S or set to sig->rsa.s? */
+> +	pks->S = EM;            /* TODO: temporary set S to EM */
+> +
+> +	return pks;
+> +
+> +error_v1_5_encode:
+> +	kfree(pks);
+> +error_no_pks:
+> +	pr_info("<==%s() = %d\n", __func__, ret);
+> +	return ERR_PTR(ret);
+>  }
+>  
+>  const struct public_key_algorithm RSA_public_key_algorithm = {
+> diff --git a/include/crypto/public_key.h b/include/crypto/public_key.h
+> index d44b29f..1cdf457 100644
+> --- a/include/crypto/public_key.h
+> +++ b/include/crypto/public_key.h
+> @@ -110,6 +110,8 @@ extern void public_key_destroy(void *payload);
+>  struct public_key_signature {
+>  	u8 *digest;
+>  	u8 digest_size;			/* Number of bytes in digest */
+> +	u8 *S;				/* signature S of length k octets */
+> +	size_t k;			/* length k of signature S */
+>  	u8 nr_mpi;			/* Occupancy of mpi[] */
+>  	enum pkey_hash_algo pkey_hash_algo : 8;
+>  	union {
+> -- 
+> 1.6.0.2
+> 
 > --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 > 
-> Bartlomiej Zolnierkiewicz (9):
->   ARM: EXYNOS: cpuidle: fix AFTR mode check
->   POWERPC: pseries: cpuidle: remove superfluous dev->state_count
->     initialization
->   POWERPC: pseries: cpuidle: use the common cpuidle_[un]register()
->     routines
->   ACPI / cpuidle: fix max idle state handling with hotplug CPU support
->   ACPI / cpuidle: remove dev->state_count setting
->   intel_idle: do C1E promotion disable quirk for hotplugged CPUs
->   intel_idle: remove superfluous dev->state_count initialization
->   intel_idle: use the common cpuidle_[un]register() routines
->   cpuidle: remove state_count field from struct cpuidle_device
-> 
->  arch/arm/mach-exynos/cpuidle.c                  |   8 +-
->  arch/powerpc/platforms/pseries/processor_idle.c |  59 +---------
->  drivers/acpi/processor_idle.c                   |  29 +++--
->  drivers/cpuidle/cpuidle.c                       |   3 -
->  drivers/cpuidle/sysfs.c                         |   5 +-
->  drivers/idle/intel_idle.c                       | 140 +++++-------------------
->  include/linux/cpuidle.h                         |   1 -
->  7 files changed, 51 insertions(+), 194 deletions(-)
-
