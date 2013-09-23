@@ -1,51 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/6] ACPI bus conversion
-Date: Tue, 24 Sep 2013 01:24:48 +0200
-Message-ID: <3080877.RjBlghmd7E@vostro.rjw.lan>
-References: <1379922651-5578-1-git-send-email-rui.zhang@intel.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v5 2/2] hwmon: (coretemp) Report power and energy consumption
+Date: Mon, 23 Sep 2013 16:25:33 -0700
+Message-ID: <5240CDED.40501@linux.intel.com>
+References: <1379968489-13781-1-git-send-email-linux@roeck-us.net> <1379968489-13781-2-git-send-email-linux@roeck-us.net> <5240C145.6080104@linux.intel.com> <20130923224541.GA25966@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55786 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752354Ab3IWXNa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 19:13:30 -0400
-In-Reply-To: <1379922651-5578-1-git-send-email-rui.zhang@intel.com>
+Received: from mga02.intel.com ([134.134.136.20]:44483 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752394Ab3IWXRT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Sep 2013 19:17:19 -0400
+In-Reply-To: <20130923224541.GA25966@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Jean Delvare <khali@linux-fr.org>, Fenghua Yu <fenghua.yu@intel.com>, "Artem S. Tashkinov" <t.artem@mailcity.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, September 23, 2013 03:50:45 PM Zhang Rui wrote:
-> Hi,
-> 
-> Currently, all the ACPI device objects are enumerated in ACPI bus.
-> Some of them are used as real devices, while some of them are used
-> as shadow devices.
-> 
-> This is misleading and confusing because we have several instances
-> in Linux driver model for a single device.
-> So Rafael proposed to stop using ACPI as a shadow bus.
-> To do this, we need to:
-> 1. for the devices that already have physical nodes, just leave them
->    as they are today.
-> 2. for the devices that are not associated with any physical nodes,
->    make them platform bus devices.
-> 3. create the sysfs subtree of ACPI objects under /sys/firmware/acpi/
-> 4. remove ACPI bus from driver model.
-> 
-> This patch set, which converts two different kinds of ACPI
-> devices/drivers to platform bus, is an experimentation of Step 2 above.
-> And in general, so far so good. I do not see anything can really stuck
-> us so far, although I do get a couple of problems when converting
-> the ideapad_laptop driver and rewrite the patches for a few times.
-> 
-> I've tested the patches on an Lenovo U300s, which has a VPC2004 device.
-> Both the AC adapter and the ideapad_laptop drivers work well.
-> They are shown in platform bus, and their sysfs/debugfs work well.
+On 09/23/2013 03:45 PM, Guenter Roeck wrote:
+> On Mon, Sep 23, 2013 at 03:31:33PM -0700, Srinivas Pandruvada wrote:
+>> On 09/23/2013 01:34 PM, Guenter Roeck wrote:
+>>> Supported by SandyBridge and newer CPUs.
+>>>
+>>> Cc: Fenghua Yu <fenghua.yu@intel.com>
+>>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>>> ---
+>>> v5: Merged to 3.12-rc1
+>>> v4: Replaced INIT_DELAYED_WORK with INIT_DEFERRABLE_WORK
+>>> v3: Added Cc:
+>>> v2: Fix missing symbol error on i386 builds
+>>>      Dropped leftover pr_info from debugging
+>>>
+>>> I am inclined to drop this patch set, as I received neither test nor code
+>>> review feedback even though the patch set has been out there for a long time.
+>>> Also, I am concerned that it overlaps or even conflicts with the proposed
+>>> Power Cap/RAPL driver (https://lkml.org/lkml/2013/9/19/260).
+>> <We feel that the power capping framework is the right place to show
+>> the RAPL data. This is not just monitoring but also control.
+>> There are other drivers getting developed using this framework to
+>> expose an uniform sysfs interface.
+> Thought so. Have you thought about providing a hwmon bridge ?
+<Good idea. I think after base version is accepted, we can add this. >
+>
+> Thanks,
+> Guenter
 
-Care to send this to linux-acpi too?
-
-Rafael
+Thanks,
+Srinivas
 
