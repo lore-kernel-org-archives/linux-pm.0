@@ -1,61 +1,50 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: Re: [PATCHv3 05/16] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Sat, 21 Sep 2013 19:24:55 -0700
-Message-ID: <523E54F7.9010403@roeck-us.net>
-References: <1379457325-18192-1-git-send-email-eduardo.valentin@ti.com> <1379521314-16959-1-git-send-email-eduardo.valentin@ti.com> <523DE01F.4020607@roeck-us.net> <523E2C1B.9010307@ti.com> <523E321F.8050502@roeck-us.net> <523E388F.80707@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <523E388F.80707-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Cc: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 0/6] ACPI bus conversion
+Date: Mon, 23 Sep 2013 15:50:45 +0800
+Message-ID: <1379922651-5578-1-git-send-email-rui.zhang@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:40072 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752335Ab3IWHuz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Sep 2013 03:50:55 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-On 09/21/2013 05:23 PM, Eduardo Valentin wrote:
-> On 21-09-2013 19:56, Guenter Roeck wrote:
->> On 09/21/2013 04:30 PM, Eduardo Valentin wrote:
->>> On 21-09-2013 14:06, Guenter Roeck wrote:
->>>> On 09/18/2013 09:21 AM, Eduardo Valentin wrote:
->>>>> This patch adds to lm75 temperature sensor the possibility
->>>>> to expose itself as thermal zone device, registered on the
->>>>> thermal framework.
->>>>>
->>>>> The thermal zone is built only if a device tree node
->>>>> describing a thermal zone for this sensor is present
->>>>> inside the lm75 DT node. Otherwise, the driver behavior
->>>>> will be the same.
->>>>>
->>>>> Cc: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
->>>>> Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
->>>>> Cc: lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org
->>>>> Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->>>>> Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
->>>>
->>>> Acked-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
->>>>
->>>
->>> Cool! thanks again for taking the time to review this.
->>>
->>>> I assume this will be sent upstream through the thermal tree ?
->>>
->>> Yeah, that is the idea, at least for the core part. The hwmon changes I
->>> believe goes via hwmon tree, right?
->>>
->>
->> Not necessarily, as the hwmon code depends on the core code.
->> In such cases it is quite common that both are sent through the same tree.
->
-> If this works for you I can queue these changes via the thermal tree.
->
+Hi,
 
-Ok with me.
+Currently, all the ACPI device objects are enumerated in ACPI bus.
+Some of them are used as real devices, while some of them are used
+as shadow devices.
 
-Guenter
+This is misleading and confusing because we have several instances
+in Linux driver model for a single device.
+So Rafael proposed to stop using ACPI as a shadow bus.
+To do this, we need to:
+1. for the devices that already have physical nodes, just leave them
+   as they are today.
+2. for the devices that are not associated with any physical nodes,
+   make them platform bus devices.
+3. create the sysfs subtree of ACPI objects under /sys/firmware/acpi/
+4. remove ACPI bus from driver model.
 
+This patch set, which converts two different kinds of ACPI
+devices/drivers to platform bus, is an experimentation of Step 2 above.
+And in general, so far so good. I do not see anything can really stuck
+us so far, although I do get a couple of problems when converting
+the ideapad_laptop driver and rewrite the patches for a few times.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I've tested the patches on an Lenovo U300s, which has a VPC2004 device.
+Both the AC adapter and the ideapad_laptop drivers work well.
+They are shown in platform bus, and their sysfs/debugfs work well.
+
+thanks,
+rui
+
+-----------------------------------------------------------------------
+ drivers/acpi/ac.c                     |  163 ++++++++--------
+ drivers/acpi/acpi_platform.c          |    3 +-
+ drivers/platform/x86/ideapad-laptop.c |  344 ++++++++++++++++++---------------
+ 3 files changed, 266 insertions(+), 244 deletions(-)
+
