@@ -1,27 +1,35 @@
-From: Ryan <ryanphilips19@googlemail.com>
-Subject: clarifications on ondemand governor
-Date: Mon, 23 Sep 2013 23:20:16 +0530
-Message-ID: <CANMsd03OzPdF2Sf0rDTkQQ+68x5+2PcRqZSf9+N9o9Oxn+d1yQ@mail.gmail.com>
+From: "Wendy Ng" <wendy.ng@broadcom.com>
+Subject: [PATCH 0/3] thermal: bcm281xx: Add thermal driver
+Date: Mon, 23 Sep 2013 10:51:35 -0700
+Message-ID: <1379958698-7554-1-git-send-email-wendy.ng@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f171.google.com ([209.85.128.171]:44132 "EHLO
-	mail-ve0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567Ab3IWRuR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 13:50:17 -0400
-Received: by mail-ve0-f171.google.com with SMTP id pa12so2509157veb.2
-        for <linux-pm@vger.kernel.org>; Mon, 23 Sep 2013 10:50:16 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <rob.herring@calxeda.com>, Stephen Warren <swarren@wwwdotorg.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>, Wendy Ng <wendy.ng@broadcom.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-In on demand governor:
+This patch series adds the support of the thermal driver for Broadcom
+bcm281xx family of SoCs.
 
-what is down_differential, down threshold and up threshold.
+Wendy Ng (3):
+  thermal: bcm281xx: Add thermal driver
+  ARM: bcm281xx: Turn on Thermal and HWMON drivers.
+  ARM: bcm281xx: Add thermal driver to device tree.
 
-how are they related to each other. can anyone care to explain some
-detail on this?
+ .../bindings/thermal/bcm-kona-thermal.txt          |   18 +++
+ arch/arm/boot/dts/bcm11351-brt.dts                 |    4 +-
+ arch/arm/boot/dts/bcm11351.dtsi                    |    6 +
+ arch/arm/boot/dts/bcm28155-ap.dts                  |    4 +
+ arch/arm/configs/bcm_defconfig                     |    3 +-
+ drivers/thermal/Kconfig                            |   10 ++
+ drivers/thermal/Makefile                           |    1 +
+ drivers/thermal/bcm_thermal.c                      |  170 ++++++++++++++++++++
+ 8 files changed, 214 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
+ create mode 100644 drivers/thermal/bcm_thermal.c
 
-
-Thanks,
-/Ryan
+-- 
+1.7.9.5
