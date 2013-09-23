@@ -1,48 +1,71 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 2/2] hwmon: (coretemp) Report power and energy
- consumption
-Date: Mon, 23 Sep 2013 15:45:41 -0700
-Message-ID: <20130923224541.GA25966@roeck-us.net>
-References: <1379968489-13781-1-git-send-email-linux@roeck-us.net>
- <1379968489-13781-2-git-send-email-linux@roeck-us.net>
- <5240C145.6080104@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: ehci-pci D3cold logspam
+Date: Tue, 24 Sep 2013 01:14:16 +0200
+Message-ID: <1627120.X3A5Q8aMqo@vostro.rjw.lan>
+References: <CALCETrWkr53ZjqdN3t7rTTfr=+ZKZXJoYsuBcwPf0kN_33GfAw@mail.gmail.com> <Pine.LNX.4.44L0.1309231430540.1348-100000@iolanthe.rowland.org> <CAErSpo4SGnM4Ycy=YRbdMox2b0JE=P=J_1-7HpPMwEy+=rJDjQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:51233 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555Ab3IWWpq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 18:45:46 -0400
-Content-Disposition: inline
-In-Reply-To: <5240C145.6080104@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAErSpo4SGnM4Ycy=YRbdMox2b0JE=P=J_1-7HpPMwEy+=rJDjQ@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Andy Lutomirski <luto@amacapital.net>, USB list <linux-usb@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Jean Delvare <khali@linux-fr.org>, Fenghua Yu <fenghua.yu@intel.com>, "Artem S. Tashkinov" <t.artem@mailcity.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, Sep 23, 2013 at 03:31:33PM -0700, Srinivas Pandruvada wrote:
-> On 09/23/2013 01:34 PM, Guenter Roeck wrote:
-> >Supported by SandyBridge and newer CPUs.
+On Monday, September 23, 2013 04:28:49 PM Bjorn Helgaas wrote:
+> [+cc Rafael, linux-pm]
+> 
+> On Mon, Sep 23, 2013 at 1:36 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Mon, 23 Sep 2013, Andy Lutomirski wrote:
 > >
-> >Cc: Fenghua Yu <fenghua.yu@intel.com>
-> >Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> >---
-> >v5: Merged to 3.12-rc1
-> >v4: Replaced INIT_DELAYED_WORK with INIT_DEFERRABLE_WORK
-> >v3: Added Cc:
-> >v2: Fix missing symbol error on i386 builds
-> >     Dropped leftover pr_info from debugging
+> >> I've been getting this on several recent kernel revisions.  Is it
+> >> interesting?  If so, I'm happy to help diagnose it.  If not, can the
+> >> message be killed or severely ratelimited?  I'm getting so much of
+> >> this that it tends to overflow the log ring.
 > >
-> >I am inclined to drop this patch set, as I received neither test nor code
-> >review feedback even though the patch set has been out there for a long time.
-> >Also, I am concerned that it overlaps or even conflicts with the proposed
-> >Power Cap/RAPL driver (https://lkml.org/lkml/2013/9/19/260).
-> <We feel that the power capping framework is the right place to show
-> the RAPL data. This is not just monitoring but also control.
-> There are other drivers getting developed using this framework to
-> expose an uniform sysfs interface.
+> > It's interesting only if you care about when your EHCI controllers get
+> > resumed and suspended.  In this case, it's not clear why the
+> > transitions happen so rapidly.  It looks like some sort of polling
+> > is going on at roughly 2-second intervals.
+> >
+> >> [  287.344991] ehci-pci 0000:00:1d.0: power state changed by ACPI to D0
+> >> [  287.445433] ehci-pci 0000:00:1d.0: setting latency timer to 64
+> >> [  287.446255] ehci-pci 0000:00:1a.0: power state changed by ACPI to D0
+> >> [  287.456094] ehci-pci 0000:00:1d.0: power state changed by ACPI to D3cold
+> >> [  287.547205] ehci-pci 0000:00:1a.0: setting latency timer to 64
+> >> [  287.557890] ehci-pci 0000:00:1a.0: power state changed by ACPI to D3cold
+> >> [  290.126910] ehci-pci 0000:00:1d.0: power state changed by ACPI to D0
+> >> [  290.227958] ehci-pci 0000:00:1d.0: setting latency timer to 64
+> >> [  290.228416] ehci-pci 0000:00:1a.0: power state changed by ACPI to D0
+> >> [  290.238749] ehci-pci 0000:00:1d.0: power state changed by ACPI to D3cold
+> >> [  290.328904] ehci-pci 0000:00:1a.0: setting latency timer to 64
+> >> [  290.339565] ehci-pci 0000:00:1a.0: power state changed by ACPI to D3cold
+> >> [  292.214834] ehci-pci 0000:00:1d.0: power state changed by ACPI to D0
+> >> [  292.315458] ehci-pci 0000:00:1d.0: setting latency timer to 64
+> >> [  292.315908] ehci-pci 0000:00:1a.0: power state changed by ACPI to D0
+> >> [  292.326262] ehci-pci 0000:00:1d.0: power state changed by ACPI to D3cold
+> >> [  292.416487] ehci-pci 0000:00:1a.0: setting latency timer to 64
+> >> [  292.431075] ehci-pci 0000:00:1a.0: power state changed by ACPI to D3cold
+> >> [  295.458048] ehci-pci 0000:00:1d.0: power state changed by ACPI to D0
+> >> [  295.558613] ehci-pci 0000:00:1d.0: setting latency timer to 64
+> >
+> > This question should be addressed to the PCI mailing list (cc'ed), as
+> > those two messages are generated by
+> > drivers/pci/pci-acpi.c:acpi_pci_set_power_state() and
+> > drivers/pci/pci.c:pcibios_set_master() respectively.
+> 
+> d010e5769 ("PCI / ACPI: Use dev_dbg() instead of dev_info() in
+> acpi_pci_set_power_state()") might be part of the solution.  That was
+> done in response to https://bugzilla.kernel.org/show_bug.cgi?id=60636,
+> which looks basically the same as your complaint.
+> 
+> But if we are indeed polling every two seconds, even a dev_dbg() seems
+> like overkill to me.  Rafael or Lan can probably provide a better
+> answer here.
 
-Thought so. Have you thought about providing a hwmon bridge ?
+I'd like to be able to see if ACPI PM is called for devices at least in
+debug mode.  Otherwise it's difficult to say why things don't work sometimes.
 
 Thanks,
-Guenter
+Rafael
