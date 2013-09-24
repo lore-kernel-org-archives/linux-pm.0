@@ -1,66 +1,41 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
-Date: Tue, 24 Sep 2013 15:04:07 +0200
-Message-ID: <4983756.tzuZRus2Wn@amdc1227>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH v5 1/3] clk: samsung: Add clock driver for s5pc110/s5pv210
+Date: Tue, 24 Sep 2013 15:58:06 +0200
+Message-ID: <52419A6E.9020203@samsung.com>
 References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
+ <1380027009-2239-2-git-send-email-m.krawczuk@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1380027009-2239-2-git-send-email-m.krawczuk@partner.samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
-Cc: rjw@sisk.pl, kgene.kim@samsung.com, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rob.herring@calxeda.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, rob@landley.net, mturquette@linaro.org, tomasz.figa@gmail.com, thomas.abraham@linaro.org, s.nawrocki@samsung.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, t.stanislaws@samsung.com, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Cc: rjw@sisk.pl, kgene.kim@samsung.com, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rob.herring@calxeda.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, rob@landley.net, mturquette@linaro.org, tomasz.figa@gmail.com, thomas.abraham@linaro.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, t.stanislaws@samsung.com, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mateusz,
+Hi,
 
-On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
-> This patch series is the new s5pv210 clock implementation
-> (using common clk framework).
-> 
-> This implementation is compatible with device tree definition and board
-> files.
-> 
-> This patch series is based on linux-next and has been tested on goni and
-> aquila
-> boards using board file.
-> 
-> Since v4:
-> Corrected mux flags for finpll.
-> 
-> Since v3:
-> 
-> Replace s5pv210_clk_register_finpll, by creating mux finpll
-> with xusbxti and xxti as parrents.
-> 
-> 
-> Mateusz Krawczuk (3):
->   clk: samsung: Add clock driver for s5pc110/s5pv210
->   Cpufreq: s5pv210 cpufreq fixes for CCF
->   ARM: s5pv210: Migrate clock handling to Common Clock Framework
-> 
->  .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
->  arch/arm/mach-s5pv210/Kconfig                      |   9 +
->  arch/arm/mach-s5pv210/Makefile                     |   4 +-
->  arch/arm/mach-s5pv210/common.c                     |  17 +
->  arch/arm/mach-s5pv210/common.h                     |  10 +
->  arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
->  arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
->  arch/arm/plat-samsung/Kconfig                      |   2 +-
->  drivers/clk/samsung/Makefile                       |   3 +
->  drivers/clk/samsung/clk-s5pv210.c                  | 673 +++++++++++++++++++++
->  drivers/cpufreq/s5pv210-cpufreq.c                  |   6 +-
->  include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
->  12 files changed, 1019 insertions(+), 8 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
->  create mode 100644 drivers/clk/samsung/clk-s5pv210.c
->  create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
+On 24/09/13 14:50, Mateusz Krawczuk wrote:
+> +++ b/Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+> @@ -0,0 +1,75 @@
+> +* Samsung S5PC110/S5PV210 Clock Controller
+> +
+> +The S5PV210 clock controller generates and supplies clock to various controllers
+> +within the SoC. The clock binding described here is applicable to all SoCs in
+> +the S5PC110/S5PV210 family.
+> +
+> +Required Properties:
+> +
+> +- compatible: should be "samsung,s5pv210-clock".
 
-For this series:
+I have nothing against this compatible value, but wouldn't it be more
+accurate to use, e.g. "samsung,s5pv210-cmu" - for Clock Management Unit,
+as this IP block is also referred to in the documentation ?
 
-Acked-by: Tomasz Figa <t.figa@samsung.com>
+May just be me, but "samsung,s5pv210-clock" sounds like just one
+specific clock type.
 
-Best regards,
-Tomasz
-
+--
+Thanks,
+Sylwester
