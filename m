@@ -1,44 +1,53 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: ehci-pci D3cold logspam
-Date: Tue, 24 Sep 2013 10:12:29 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1309241011520.1243-100000@iolanthe.rowland.org>
-References: <CAErSpo4SGnM4Ycy=YRbdMox2b0JE=P=J_1-7HpPMwEy+=rJDjQ@mail.gmail.com>
+From: Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v5 1/3] clk: samsung: Add clock driver for s5pc110/s5pv210
+Date: Tue, 24 Sep 2013 16:26:01 +0200
+Message-ID: <2095838.ED3sWFjloW@amdc1227>
+References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
+ <1380027009-2239-2-git-send-email-m.krawczuk@partner.samsung.com>
+ <52419A6E.9020203@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <CAErSpo4SGnM4Ycy=YRbdMox2b0JE=P=J_1-7HpPMwEy+=rJDjQ@mail.gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Andy Lutomirski <luto@amacapital.net>, USB list <linux-usb@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <52419A6E.9020203-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Mateusz Krawczuk <m.krawczuk-GrGkmOP51GdLN7c7dRTbYkEOCMrvLtNR@public.gmane.org>, rjw-KKrjLPT3xs0@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, ben-linux-elnMNo+KYs3YtjvyW6yDsg@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thomas.abraham-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, t.stanislaws-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 23 Sep 2013, Bjorn Helgaas wrote:
-
-> d010e5769 ("PCI / ACPI: Use dev_dbg() instead of dev_info() in
-> acpi_pci_set_power_state()") might be part of the solution.  That was
-> done in response to https://bugzilla.kernel.org/show_bug.cgi?id=60636,
-> which looks basically the same as your complaint.
+On Tuesday 24 of September 2013 15:58:06 Sylwester Nawrocki wrote:
+> Hi,
 > 
-> But if we are indeed polling every two seconds, even a dev_dbg() seems
-> like overkill to me.  Rafael or Lan can probably provide a better
-> answer here.
+> On 24/09/13 14:50, Mateusz Krawczuk wrote:
+> > +++ b/Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+> > @@ -0,0 +1,75 @@
+> > +* Samsung S5PC110/S5PV210 Clock Controller
+> > +
+> > +The S5PV210 clock controller generates and supplies clock to various controllers
+> > +within the SoC. The clock binding described here is applicable to all SoCs in
+> > +the S5PC110/S5PV210 family.
+> > +
+> > +Required Properties:
+> > +
+> > +- compatible: should be "samsung,s5pv210-clock".
 > 
-> As for the "setting latency timer" messages, I really doubt those are
-> useful to anybody.  If nobody objects, I'll just drop it, e.g.:
+> I have nothing against this compatible value, but wouldn't it be more
+> accurate to use, e.g. "samsung,s5pv210-cmu" - for Clock Management Unit,
+> as this IP block is also referred to in the documentation ?
 > 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index b821a62..55a947b 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -2854,7 +2854,7 @@ void __weak pcibios_set_master(struct pci_dev *dev)
->                 lat = pcibios_max_latency;
->         else
->                 return;
-> -       dev_printk(KERN_DEBUG, &dev->dev, "setting latency timer to %d\n", lat);
-> +
->         pci_write_config_byte(dev, PCI_LATENCY_TIMER, lat);
->  }
+> May just be me, but "samsung,s5pv210-clock" sounds like just one
+> specific clock type.
 
-No objection from me.
+In the user's manual I have, this IP is referred to either as "CMU", as
+you suggested, or simply as "clock controller". "CMU" is not very
+meaningfull, so "samsung,s5pv210-clock-controller" would be the best here
+I guess, but for consistency with other Samsung's clock bindings, I'd
+suggest leaving this as is in the patch.
 
-Alan Stern
+Best regards,
+Tomasz
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
