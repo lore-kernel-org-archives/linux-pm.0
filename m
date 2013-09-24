@@ -1,41 +1,44 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH v5 1/3] clk: samsung: Add clock driver for s5pc110/s5pv210
-Date: Tue, 24 Sep 2013 15:58:06 +0200
-Message-ID: <52419A6E.9020203@samsung.com>
-References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
- <1380027009-2239-2-git-send-email-m.krawczuk@partner.samsung.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: ehci-pci D3cold logspam
+Date: Tue, 24 Sep 2013 10:12:29 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1309241011520.1243-100000@iolanthe.rowland.org>
+References: <CAErSpo4SGnM4Ycy=YRbdMox2b0JE=P=J_1-7HpPMwEy+=rJDjQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1380027009-2239-2-git-send-email-m.krawczuk@partner.samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
-Cc: rjw@sisk.pl, kgene.kim@samsung.com, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rob.herring@calxeda.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, rob@landley.net, mturquette@linaro.org, tomasz.figa@gmail.com, thomas.abraham@linaro.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, t.stanislaws@samsung.com, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAErSpo4SGnM4Ycy=YRbdMox2b0JE=P=J_1-7HpPMwEy+=rJDjQ@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Andy Lutomirski <luto@amacapital.net>, USB list <linux-usb@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, 23 Sep 2013, Bjorn Helgaas wrote:
 
-On 24/09/13 14:50, Mateusz Krawczuk wrote:
-> +++ b/Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
-> @@ -0,0 +1,75 @@
-> +* Samsung S5PC110/S5PV210 Clock Controller
+> d010e5769 ("PCI / ACPI: Use dev_dbg() instead of dev_info() in
+> acpi_pci_set_power_state()") might be part of the solution.  That was
+> done in response to https://bugzilla.kernel.org/show_bug.cgi?id=60636,
+> which looks basically the same as your complaint.
+> 
+> But if we are indeed polling every two seconds, even a dev_dbg() seems
+> like overkill to me.  Rafael or Lan can probably provide a better
+> answer here.
+> 
+> As for the "setting latency timer" messages, I really doubt those are
+> useful to anybody.  If nobody objects, I'll just drop it, e.g.:
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index b821a62..55a947b 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -2854,7 +2854,7 @@ void __weak pcibios_set_master(struct pci_dev *dev)
+>                 lat = pcibios_max_latency;
+>         else
+>                 return;
+> -       dev_printk(KERN_DEBUG, &dev->dev, "setting latency timer to %d\n", lat);
 > +
-> +The S5PV210 clock controller generates and supplies clock to various controllers
-> +within the SoC. The clock binding described here is applicable to all SoCs in
-> +the S5PC110/S5PV210 family.
-> +
-> +Required Properties:
-> +
-> +- compatible: should be "samsung,s5pv210-clock".
+>         pci_write_config_byte(dev, PCI_LATENCY_TIMER, lat);
+>  }
 
-I have nothing against this compatible value, but wouldn't it be more
-accurate to use, e.g. "samsung,s5pv210-cmu" - for Clock Management Unit,
-as this IP block is also referred to in the documentation ?
+No objection from me.
 
-May just be me, but "samsung,s5pv210-clock" sounds like just one
-specific clock type.
-
---
-Thanks,
-Sylwester
+Alan Stern
