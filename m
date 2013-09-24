@@ -1,75 +1,58 @@
-From: Leo Yan <leoy@marvell.com>
-Subject: Re: [Question] Verification For arm64: suspend/resume implementation
-Date: Tue, 24 Sep 2013 19:49:33 +0800
-Message-ID: <52417C4D.1030009@marvell.com>
-References: <52327E41.1070904@marvell.com> <20130913144001.GA28531@e102568-lin.cambridge.arm.com> <524021EC.2000207@marvell.com> <20130923152606.GA6157@e102648.cambridge.arm.com> <5240F246.6050402@marvell.com> <20130924090236.GY10174@e102648.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
+Subject: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
+Date: Tue, 24 Sep 2013 14:50:06 +0200
+Message-ID: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:57191 "EHLO
-	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751038Ab3IXLuM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Sep 2013 07:50:12 -0400
-In-Reply-To: <20130924090236.GY10174@e102648.cambridge.arm.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:56485 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750742Ab3IXMu2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Sep 2013 08:50:28 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Achin Gupta <achin.gupta@arm.com>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Neil Zhang <zhangwm@marvell.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: rjw@sisk.pl, kgene.kim@samsung.com
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, rob.herring@calxeda.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, rob@landley.net, mturquette@linaro.org, tomasz.figa@gmail.com, thomas.abraham@linaro.org, s.nawrocki@samsung.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, t.stanislaws@samsung.com, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>
+
+This patch series is the new s5pv210 clock implementation
+(using common clk framework).
+
+This implementation is compatible with device tree definition and board
+files.
+
+This patch series is based on linux-next and has been tested on goni and
+aquila
+boards using board file.
+
+Since v4:
+Corrected mux flags for finpll.
+
+Since v3:
+
+Replace s5pv210_clk_register_finpll, by creating mux finpll
+with xusbxti and xxti as parrents.
 
 
-On 09/24/2013 05:02 PM, Achin Gupta wrote:
-> Hi Leo,
->
-> On Tue, Sep 24, 2013 at 03:00:38AM +0100, Leo Yan wrote:
->>
->> On 09/23/2013 11:26 PM, Achin Gupta wrote:
->>
->>> The foundation model (if thats what you are using) does not model an
->>> ARM cpu implementation. The CPUECTLR is a cpu specific register
->>> (imp. def.)  so it is not present. The caches on the Foundation Model
->>> are inherently coherent so you do not need to access this register. If
->>> you do then the access is treated as an illegal instruction.
->>>
->>
->> Thx for the info. So do u mean i need use FVP Model for A53?
->
-> I think you should use the dual cluster A57_A53 Base FVP models. They
-> have the power controller and model the CPUECTLR.SMP bit behaviour as
-> well.
->
+Mateusz Krawczuk (3):
+  clk: samsung: Add clock driver for s5pc110/s5pv210
+  Cpufreq: s5pv210 cpufreq fixes for CCF
+  ARM: s5pv210: Migrate clock handling to Common Clock Framework
 
-Hmm...So far i only focus on A53; actually i have built FVP model for 
-A53x4 cores, but now are pending for the license. If this model can 
-support power controller and SMP bit, it will let my work much clean.
+ .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+ arch/arm/mach-s5pv210/Kconfig                      |   9 +
+ arch/arm/mach-s5pv210/Makefile                     |   4 +-
+ arch/arm/mach-s5pv210/common.c                     |  17 +
+ arch/arm/mach-s5pv210/common.h                     |  10 +
+ arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+ arch/arm/plat-samsung/Kconfig                      |   2 +-
+ drivers/clk/samsung/Makefile                       |   3 +
+ drivers/clk/samsung/clk-s5pv210.c                  | 673 +++++++++++++++++++++
+ drivers/cpufreq/s5pv210-cpufreq.c                  |   6 +-
+ include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+ 12 files changed, 1019 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+ create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+ create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
 
->>
->> Here have another question, ARM have the example code for boot wrapper
->> which will switch from EL3 to secure EL1 rather than non-secure's EL1?
->
-> I dont' think we do but let me check. Switching to S-EL1 instead of
-> NS-EL1 should be a matter of _not_ setting the SCR_EL3.NS bit before
-> doing the exception level change (ERET).
-
-I quick try with below patch for boot wrapper, i saw foundataion model 
-cannot boot up successfully and there have no console output; suppose 
-it's hang at some boot operations, but now foundation model cannot debug 
-low level code, so i cannot debug further more. :-(
-
-diff --git a/boot.S b/boot.S
-index a1f25e2..2f1b867 100644
---- a/boot.S
-+++ b/boot.S
-@@ -19,7 +19,6 @@ _start:
-         b.ne    start_ns                        // skip EL3 initialisation
-
-         mov     x0, #0x30                       // RES1
--       orr     x0, x0, #(1 << 0)               // Non-secure EL1
-         orr     x0, x0, #(1 << 8)               // HVC enable
-         orr     x0, x0, #(1 << 10)              // 64-bit EL2
-         msr     scr_el3, x0
-
-
-Thx,
-Leo Yan
+-- 
+1.8.1.2
 
