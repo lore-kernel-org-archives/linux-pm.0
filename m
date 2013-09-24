@@ -1,85 +1,36 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Suspend-devel] [BUG] 3.7-rc regression bisected: s2disk fails
- to resume image: Processes could not be frozen, cannot continue resuming
-Date: Tue, 24 Sep 2013 02:21:11 +0200
-Message-ID: <20130924002111.GB31569@amd.pavel.ucw.cz>
-References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
- <20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
- <20130918135239.GL13318@ZenIV.linux.org.uk>
- <20130918224032.84e09e0c1372dbc51c86ab1e@gmail.com>
- <20130918191607.GO13318@ZenIV.linux.org.uk>
+From: Leo Yan <leoy@marvell.com>
+Subject: Re: [Question] Verification For arm64: suspend/resume implementation
+Date: Tue, 24 Sep 2013 10:00:38 +0800
+Message-ID: <5240F246.6050402@marvell.com>
+References: <52327E41.1070904@marvell.com> <20130913144001.GA28531@e102568-lin.cambridge.arm.com> <524021EC.2000207@marvell.com> <20130923152606.GA6157@e102648.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48752 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850Ab3IXAVN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 20:21:13 -0400
-Content-Disposition: inline
-In-Reply-To: <20130918191607.GO13318@ZenIV.linux.org.uk>
+Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:41465 "EHLO
+	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752706Ab3IXCBQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 22:01:16 -0400
+In-Reply-To: <20130923152606.GA6157@e102648.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Al Viro <viro@ZenIV.linux.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Savchenko <bircoph@gmail.com>, suspend-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Achin Gupta <achin.gupta@arm.com>
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Neil Zhang <zhangwm@marvell.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi!
 
-> > And from suspend_ioctls.h:
-> > #define SNAPSHOT_IOC_MAGIC      '3'
-> > #define SNAPSHOT_FREEZE                 _IO(SNAPSHOT_IOC_MAGIC, 1)
-> > 
-> > My mistake, should be '3' instead of 3.
-> 
-> OK...  The thing to test, then, is what does __usermodehelper_disable()
-> return to freeze_processes().  If that's where this -EAGAIN comes from,
-> we at least have a plausible theory re what's going on.
-> 
-> freeze_processes() uses __usermodehelper_disable() to stop any new userland
-> processes spawned by UMH (modprobe, etc.) and waits for ones it might be
-> waiting for to complete.  Then it does try_to_freeze_tasks(), which
-> freezes remaining userland, carefully skipping the current thread.
-> However, it misses the possibility that current thread might have been
-> spawned by something that had been launched by UMH, with UMH waiting
-> for it.  Which is the case of everything spawned by linuxrc.
-> 
-> I'd try something like diff below, but I'm *NOT* familiar with swsusp at
-> all; it's not for mainline until ACKed by swsusp folks.
-> 
-> diff --git a/kernel/kmod.c b/kernel/kmod.c
-> index fb32636..d968882 100644
-> --- a/kernel/kmod.c
-> +++ b/kernel/kmod.c
-> @@ -571,7 +571,8 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
->  	DECLARE_COMPLETION_ONSTACK(done);
->  	int retval = 0;
->  
-> -	helper_lock();
-> +	if (!(current->flags & PF_FREEZER_SKIP))
-> +		helper_lock();
->  	if (!khelper_wq || usermodehelper_disabled) {
->  		retval = -EBUSY;
->  		goto out;
-> @@ -611,7 +612,8 @@ wait_done:
->  out:
->  	call_usermodehelper_freeinfo(sub_info);
->  unlock:
-> -	helper_unlock();
-> +	if (!(current->flags & PF_FREEZER_SKIP))
-> +		helper_unlock();
->  	return retval;
->  }
->  EXPORT_SYMBOL(call_usermodehelper_exec);
+On 09/23/2013 11:26 PM, Achin Gupta wrote:
 
-PF_FREEZER_SKIP flag is manipulated at about 1000 places, so I'm not
-sure this will nest correctly. They seem to be in form of 
+> The foundation model (if thats what you are using) does not model an
+> ARM cpu implementation. The CPUECTLR is a cpu specific register
+> (imp. def.)  so it is not present. The caches on the Foundation Model
+> are inherently coherent so you do not need to access this register. If
+> you do then the access is treated as an illegal instruction.
+>
 
-|= FREEZER_SKIP
-schedule()
-&= ~FREEZER_SKIP
+Thx for the info. So do u mean i need use FVP Model for A53?
 
-so this should be safe, but...
+Here have another question, ARM have the example code for boot wrapper 
+which will switch from EL3 to secure EL1 rather than non-secure's EL1?
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thx,
+Leo Yan
