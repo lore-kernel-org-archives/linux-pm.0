@@ -1,367 +1,85 @@
-From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH 1/3] thermal: bcm281xx: Add thermal driver
-Date: Mon, 23 Sep 2013 19:46:20 -0400
-Message-ID: <5240D2CC.1070403@ti.com>
-References: <1379958698-7554-1-git-send-email-wendy.ng@broadcom.com> <1379958698-7554-2-git-send-email-wendy.ng@broadcom.com> <52408648.7040301@ti.com> <5240C42A.3030705@broadcom.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Suspend-devel] [BUG] 3.7-rc regression bisected: s2disk fails
+ to resume image: Processes could not be frozen, cannot continue resuming
+Date: Tue, 24 Sep 2013 02:21:11 +0200
+Message-ID: <20130924002111.GB31569@amd.pavel.ucw.cz>
+References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
+ <20130827074843.ba1b6f62cc0a6dca8e47c06c@gmail.com>
+ <20130918135239.GL13318@ZenIV.linux.org.uk>
+ <20130918224032.84e09e0c1372dbc51c86ab1e@gmail.com>
+ <20130918191607.GO13318@ZenIV.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="etjk3EbJ10PM0aiLVT2MdFhlHV8knUAjB"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5240C42A.3030705-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wendy Ng <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Christian Daudt <bcm-xK7y4jjYLqYh9ZMKESR00Q@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48752 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752850Ab3IXAVN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2013 20:21:13 -0400
+Content-Disposition: inline
+In-Reply-To: <20130918191607.GO13318@ZenIV.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Al Viro <viro@ZenIV.linux.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Savchenko <bircoph@gmail.com>, suspend-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
---etjk3EbJ10PM0aiLVT2MdFhlHV8knUAjB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi!
 
-On 23-09-2013 18:43, Wendy Ng wrote:
->=20
-> On 9/23/2013 11:19 AM, Eduardo Valentin wrote:
->> On 23-09-2013 13:51, Wendy Ng wrote:
->>> This adds the support for reading out temperature from Broadcom bcm28=
-1xx
->>> SoCs.
->>>
->>> Signed-off-by: Wendy Ng <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->>> Reviewed-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->>> Reviewed-by: Christian Daudt <csd-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->>> ---
->>>   .../bindings/thermal/bcm-kona-thermal.txt          |   18 +++
->>>   drivers/thermal/Kconfig                            |   10 ++
->>>   drivers/thermal/Makefile                           |    1 +
->>>   drivers/thermal/bcm_thermal.c                      |  170
->>> ++++++++++++++++++++
->>>   4 files changed, 199 insertions(+)
->>>   create mode 100644
->>> Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>>   create mode 100644 drivers/thermal/bcm_thermal.c
->>>
->>> diff --git
->>> a/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>> b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>> new file mode 100644
->>> index 0000000..acca99e
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>> @@ -0,0 +1,18 @@
->>> +* Broadcom Kona Thermal Management Unit
->>> +
->>> +This version is for the BCM281xx family of SoCs.
->>> +
->>> +Required properties:
->>> +- compatible : "brcm,bcm11351-thermal", "brcm,kona-thermal"
->>> +- reg : Address range of the thermal register
->>> +- thermal-name: this entry must be specified and it will be passed i=
-nto
->>> +thermal_zone_device_register().  This name will also be reported
->>> under Hwmon
->>> +sysfs 'name' attribute.
->>> +
->>> +Example:
->>> +    thermal@34008000 {
->>> +        compatible =3D "brcm,bcm11351-thermal", "brcm,kona-thermal";=
+> > And from suspend_ioctls.h:
+> > #define SNAPSHOT_IOC_MAGIC      '3'
+> > #define SNAPSHOT_FREEZE                 _IO(SNAPSHOT_IOC_MAGIC, 1)
+> > 
+> > My mistake, should be '3' instead of 3.
+> 
+> OK...  The thing to test, then, is what does __usermodehelper_disable()
+> return to freeze_processes().  If that's where this -EAGAIN comes from,
+> we at least have a plausible theory re what's going on.
+> 
+> freeze_processes() uses __usermodehelper_disable() to stop any new userland
+> processes spawned by UMH (modprobe, etc.) and waits for ones it might be
+> waiting for to complete.  Then it does try_to_freeze_tasks(), which
+> freezes remaining userland, carefully skipping the current thread.
+> However, it misses the possibility that current thread might have been
+> spawned by something that had been launched by UMH, with UMH waiting
+> for it.  Which is the case of everything spawned by linuxrc.
+> 
+> I'd try something like diff below, but I'm *NOT* familiar with swsusp at
+> all; it's not for mainline until ACKed by swsusp folks.
+> 
+> diff --git a/kernel/kmod.c b/kernel/kmod.c
+> index fb32636..d968882 100644
+> --- a/kernel/kmod.c
+> +++ b/kernel/kmod.c
+> @@ -571,7 +571,8 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
+>  	DECLARE_COMPLETION_ONSTACK(done);
+>  	int retval = 0;
+>  
+> -	helper_lock();
+> +	if (!(current->flags & PF_FREEZER_SKIP))
+> +		helper_lock();
+>  	if (!khelper_wq || usermodehelper_disabled) {
+>  		retval = -EBUSY;
+>  		goto out;
+> @@ -611,7 +612,8 @@ wait_done:
+>  out:
+>  	call_usermodehelper_freeinfo(sub_info);
+>  unlock:
+> -	helper_unlock();
+> +	if (!(current->flags & PF_FREEZER_SKIP))
+> +		helper_unlock();
+>  	return retval;
+>  }
+>  EXPORT_SYMBOL(call_usermodehelper_exec);
 
->>> +        reg =3D <0x34008000 0x0024>;
->>> +        thermal-name =3D "bcm_kona_therm";
->>> +        status =3D "disabled";
->>> +    };
->>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->>> index dbfc390..7f823f0 100644
->>> --- a/drivers/thermal/Kconfig
->>> +++ b/drivers/thermal/Kconfig
->>> @@ -134,6 +134,16 @@ config KIRKWOOD_THERMAL
->>>         Support for the Kirkwood thermal sensor driver into the Linux=
+PF_FREEZER_SKIP flag is manipulated at about 1000 places, so I'm not
+sure this will nest correctly. They seem to be in form of 
 
->>> thermal
->>>         framework. Only kirkwood 88F6282 and 88F6283 have this sensor=
-=2E
->>>   +config BCM_THERMAL
->>> +    tristate "Temperature sensor on Broadcom BCM281xx family of SoCs=
-"
->>> +    depends on ARCH_BCM
->>> +    default y
->>> +    help
->>> +      If you say yes here you get support for TMU (Thermal Managemen=
-t
->>> +      Unit) on Broadcom BCM281xx family of SoCs. This provides therm=
-al
->>> +      monitoring of CPU clusters, graphics, and SoC glue, but does n=
-ot
->>> +      include monitoring of charger temperature.
->>> +
->>>   config DOVE_THERMAL
->>>       tristate "Temperature sensor on Marvell Dove SoCs"
->>>       depends on ARCH_DOVE
->>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
->>> index 584b363..3ea8c1c 100644
->>> --- a/drivers/thermal/Makefile
->>> +++ b/drivers/thermal/Makefile
->>> @@ -21,6 +21,7 @@ obj-$(CONFIG_SPEAR_THERMAL)    +=3D spear_thermal.o=
+|= FREEZER_SKIP
+schedule()
+&= ~FREEZER_SKIP
 
->>>   obj-$(CONFIG_RCAR_THERMAL)    +=3D rcar_thermal.o
->>>   obj-$(CONFIG_KIRKWOOD_THERMAL)  +=3D kirkwood_thermal.o
->>>   obj-y                +=3D samsung/
->>> +obj-$(CONFIG_BCM_THERMAL)       +=3D bcm_thermal.o
->>>   obj-$(CONFIG_DOVE_THERMAL)      +=3D dove_thermal.o
->>>   obj-$(CONFIG_DB8500_THERMAL)    +=3D db8500_thermal.o
->>>   obj-$(CONFIG_ARMADA_THERMAL)    +=3D armada_thermal.o
->>> diff --git a/drivers/thermal/bcm_thermal.c
->>> b/drivers/thermal/bcm_thermal.c
->>> new file mode 100644
->>> index 0000000..131d3c4
->>> --- /dev/null
->>> +++ b/drivers/thermal/bcm_thermal.c
->>> @@ -0,0 +1,170 @@
->>> +/*
->>> + * Copyright 2013 Broadcom Corporation.
->>> + *
->>> + * This program is free software; you can redistribute it and/or mod=
-ify
->>> + * it under the terms of the GNU General Public License, version 2,
->>> + * as published by the Free Software Foundation (the "GPL").
->>> + *
->>> + * This program is distributed in the hope that it will be useful,
->>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->>> + * GNU General Public License for more details.
->>> + *
->>> + * A copy of the GPL is available at
->>> http://www.broadcom.com/licenses/GPLv2.php,
->>> + * or by writing to the Free Software Foundation, Inc.,
->>> + * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
->>> + */
->>> +
->>> +/**
->>> +*  Broadcom Thermal Management Unit - bcm_tmu
->>> +*/
->>> +#include <linux/module.h>
->>> +#include <linux/err.h>
->>> +#include <linux/kernel.h>
->>> +#include <linux/platform_device.h>
->>> +#include <linux/io.h>
->>> +#include <linux/thermal.h>
->>> +#include <linux/of.h>
->>> +
->>> +/* From TMON Register Database */
->>> +#define TMON_TEMP_VAL_OFFSET            0x0000001c
->>> +#define TMON_TEMP_VAL_TEMP_VAL_SHIFT        0
->>> +#define TMON_TEMP_VAL_TEMP_VAL_MASK        0x000003ff
->>> +
->>> +/* Broadcom Thermal Zone Device Structure */
->>> +struct bcm_thermal_zone_priv {
->>> +    char name[THERMAL_NAME_LENGTH];
->>> +    void __iomem *base;
->>> +};
->>> +
->>> +/* Temperature conversion function for TMON block */
->>> +static long raw_to_mcelsius(u32 raw)
->>> +{
->>> +    /*
->>> +     * According to Broadcom internal Analog Module Specification
->>> +     * the formula for converting TMON block output to temperature i=
-n
->>> +     * degree Celsius is:
->>> +     *    T =3D 428 - (0.561 * raw)
->>> +     * Note: the valid operating range for the TMON block is -40C to=
+so this should be safe, but...
 
->>> 125C
->>> +     */
->>> +    return 428000 - (561 * (long)raw);
->>> +}
->>> +
->>> +/* Get temperature callback function for thermal zone */
->>> +static int bcm_get_temp(struct thermal_zone_device *thermal,
->>> +            unsigned long *temp)
->>> +{
->>> +    u32 raw;
->>> +    long mcelsius;
->>> +    struct bcm_thermal_zone_priv *priv =3D thermal->devdata;
->>> +
->>> +    if (!priv) {
->>> +        pr_err("%s: thermal zone number %d devdata not initialized.\=
-n",
->>> +            __func__, thermal->id);
->>> +        return -EINVAL;
->>> +    }
->>> +
->>> +    raw =3D (readl(priv->base + TMON_TEMP_VAL_OFFSET)
->>> +        & TMON_TEMP_VAL_TEMP_VAL_MASK) >> TMON_TEMP_VAL_TEMP_VAL_SHI=
-FT;
->>> +
->>> +    pr_debug("%s: thermal zone number %d raw temp 0x%x\n", __func__,=
-
->>> +        thermal->id, raw);
->>> +
->>> +    mcelsius =3D raw_to_mcelsius(raw);
->>> +
->>> +    /*
->>> +     * Since 'mcelsius' might be negative, we need to limit it to
->>> smallest
->>> +     * unsigned value before returning it to thermal framework.
->>> +     */
->>> +    if (mcelsius < 0)
->>> +        *temp =3D 0;
->>> +    else
->>> +        *temp =3D mcelsius;
->>> +
->>> +    pr_debug("%s: thermal zone number %d final temp %d\n", __func__,=
-
->>> +        thermal->id, (int) *temp);
->>> +
->>> +    return 0;
->>> +}
->>> +
->>> +/* Operation callback functions for thermal zone */
->>> +static struct thermal_zone_device_ops bcm_dev_ops =3D {
->>> +    .get_temp =3D bcm_get_temp,
->>> +};
->>> +
->>> +static const struct of_device_id bcm_tmu_match_table[] =3D {
->>> +    { .compatible =3D "brcm,kona-thermal" },
->>> +    {},
->>> +};
->>> +MODULE_DEVICE_TABLE(of, bcm_tmu_match_table);
->>> +
->>> +static int bcm_tmu_probe(struct platform_device *pdev)
->>> +{
->>> +    struct thermal_zone_device *thermal =3D NULL;
->>> +    struct bcm_thermal_zone_priv *priv;
->>> +    struct resource *res;
->>> +    const char *str;
->>> +
->>> +    priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
->>> +    if (!priv) {
->>> +        dev_err(&pdev->dev, "Failed to malloc priv.\n");
->>> +        return -ENOMEM;
->>> +    }
->>> +
->>> +    /* Obtain the tmu name from device tree file */
->>> +    if (of_property_read_string(pdev->dev.of_node, "thermal-name",
->> Hello Wendy,
->>
->> I would prefer we wait until the work for thermal data [1] gets accept=
-ed
->> before accepting this driver, specially because you are adding device
->> specific DT entry to help in your registration with the thermal
->> framework. With the mentioned work you wont need it at all.
->>
->> All best,
->>
->> [1] - http://lkml.org/lkml/2013/9/15/122
-> Hello Eduardo,
->=20
-> Since your changes are quite extensive, would you recommend me to get
-> your 16 patches into my local workspace and try to integrate the code
-> from my patches on the top of your patches at this time?  Or should I
-> wait until your patches get accepted.
-
-Hello again Wendy,
-
-The only part I am concerned is the device tree entry you are creating
-for your device/driver. That could be obsolete in near future with the
-work I am doing currently.
-
-The work is, as you mentioned, quite extensive, but should make things
-easier for device driver writer. If you want, of course, it would be
-great if you could rebase your work on top of mine and try it out on
-your side and let me know the outcome.
-
-Comments on the proposed binding and documentation is also welcome. Let
-me know if there is something that it is not clear.
-
->=20
-> Thanks,
-> -Wendy
->>> +            &str) =3D=3D 0) {
->>> +        strlcpy(priv->name, str, sizeof(priv->name));
->>> +    } else {
->>> +        dev_err(&pdev->dev, "Failed to get thermal-name from DT.\n")=
-;
->>> +        return -EINVAL;
->>> +    }
->>> +
->>> +    res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
->>> +    priv->base =3D devm_ioremap_resource(&pdev->dev, res);
->>> +    if (IS_ERR(priv->base))
->>> +        return PTR_ERR(priv->base);
->>> +
->>> +    thermal =3D thermal_zone_device_register(priv->name, 0, 0, priv,=
-
->>> +                        &bcm_dev_ops, NULL, 0, 0);
->>> +    if (IS_ERR(thermal)) {
->>> +        dev_err(&pdev->dev,
->>> +            "Failed to register Broadcom thermal zone device.\n");
->>> +        return PTR_ERR(thermal);
->>> +    }
->>> +
->>> +    platform_set_drvdata(pdev, thermal);
->>> +
->>> +    dev_info(&pdev->dev, "Broadcom Thermal Monitor Initialized.\n");=
-
->>> +
->>> +    return 0;
->>> +}
->>> +
->>> +static int bcm_tmu_remove(struct platform_device *pdev)
->>> +{
->>> +    struct thermal_zone_device *broadcom_thermal =3D
->>> +        platform_get_drvdata(pdev);
->>> +
->>> +    thermal_zone_device_unregister(broadcom_thermal);
->>> +
->>> +    dev_info(&pdev->dev, "Broadcom Thermal Monitor Uninitialized.\n"=
-);
->>> +
->>> +    return 0;
->>> +}
->>> +
->>> +static struct platform_driver bcm_tmu_driver =3D {
->>> +    .driver =3D {
->>> +        .name =3D "bcm-thermal",
->>> +        .owner =3D THIS_MODULE,
->>> +        .of_match_table =3D bcm_tmu_match_table,
->>> +    },
->>> +    .probe =3D bcm_tmu_probe,
->>> +    .remove =3D bcm_tmu_remove,
->>> +};
->>> +
->>> +module_platform_driver(bcm_tmu_driver);
->>> +
->>> +MODULE_DESCRIPTION("Broadcom Thermal Driver");
->>> +MODULE_AUTHOR("Broadcom");
->>> +MODULE_LICENSE("GPL v2");
->>> +MODULE_ALIAS("platform:bcm-thermal");
->>>
->>
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---etjk3EbJ10PM0aiLVT2MdFhlHV8knUAjB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJA0s4ACgkQCXcVR3XQvP0V0AEAy9tQn1UsYOBnUpnde0318w08
-mCTQ6iOMwjv7NoxdaIUBAIYQiOZU7jeJprUdW0tPRb/o+aIJLI+Xt6cXtMcP3wBK
-=NhyW
------END PGP SIGNATURE-----
-
---etjk3EbJ10PM0aiLVT2MdFhlHV8knUAjB--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
