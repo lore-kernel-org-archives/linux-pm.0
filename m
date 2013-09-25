@@ -1,29 +1,104 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/6] ACPI bus conversion
-Date: Wed, 25 Sep 2013 19:30:16 +0200
-Message-ID: <2033963.KdhvK9KkDN@vostro.rjw.lan>
-References: <1380112790-2321-1-git-send-email-rui.zhang@intel.com> <8324764.AkcjZ4DNvq@vostro.rjw.lan> <20130925161034.GA6777@srcf.ucam.org>
+Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
+Date: Wed, 25 Sep 2013 20:37:10 +0200
+Message-ID: <1791712.tJBFGgQvyI@vostro.rjw.lan>
+References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org> <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20130925161034.GA6777@srcf.ucam.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, g.liakhovetski@gmx.de, amit.daniel@samsung.com, kgene.kim@samsung.com, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 25, 2013 05:10:34 PM Matthew Garrett wrote:
-> On Wed, Sep 25, 2013 at 04:49:04PM +0200, Rafael J. Wysocki wrote:
+On Thursday, September 12, 2013 03:40:46 PM Viresh Kumar wrote:
+> Some part of this patch was pushed in mainline earlier but was then removed due
+> to loopholes in the patch. Those are now fixed and this patch is tested by the
+> people who reported these problems.
 > 
-> > Matthew, any objections to this?
+> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
+> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
+> shouldn't be called twice contiguously. Also, calls to cpufreq_driver_target()
+> or cpufreq_driver->target() must also be serialized. Following examples show why
+> this is important:
 > 
-> No, this seems reasonable. Feel free to push the conversions through 
-> your tree so we can make sure they're synchronised?
+> Scenario 1:
+> -----------
+> One thread reading value of cpuinfo_cur_freq, which will call
+> __cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
+> 
+> And ondemand governor trying to change freq of cpu at the same time and so
+> sending notification via ->target()..
+> 
+> Notifiers are not serialized and suppose this is what happened
+> - PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
+> - PRECHANGE Notification for freq B (from target())
+> - Freq changed by target() to B
+> - POSTCHANGE Notification for freq B
+> - POSTCHANGE Notification for freq A
+> 
+> Now the last POSTCHANGE Notification happened for freq A and hardware is
+> currently running at freq B :)
+> 
+> Where would we break then?: adjust_jiffies() in cpufreq.c,
+> cpufreq_callback() in arch/arm/kernel/smp.c (which is also adjusting
+> jiffies).. All loops_per_jiffy based stuff is broken..
+> 
+> Scenario 2:
+> -----------
+> Governor is changing freq and has called __cpufreq_driver_target(). At the same
+> time we are changing scaling_{min|max}_freq from sysfs, which would eventually
+> end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
+> __cpufreq_driver_target().. And hence concurrent calls to ->target()
+> 
+> And Platform have something like this in their ->target()
+> (Like: cpufreq-cpu0, omap, exynos, etc)
+> 
+> A. If new freq is more than old: Increase voltage
+> B. Change freq
+> C. If new freq is less than old: decrease voltage
+> 
+> Now, two concurrent calls to target are X and Y, where X is trying to increase
+> freq and Y is trying to decrease it..
+> 
+> And this is the sequence that followed due to races..
+> 
+> X.A: voltage increased for larger freq
+> Y.A: nothing happened here
+> Y.B: freq decreased
+> Y.C: voltage decreased
+> X.B: freq increased
+> X.C: nothing happened..
+> 
+> We ended up setting a freq which is not supported by the voltage we have
+> set.. That will probably make clock to CPU unstable and system wouldn't
+> be workable anymore...
+> 
+> This patch adds some protection against to make transitions serialized.
+> 
+> Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Sure, I will.  Thanks!
+So the problem is real, but the fix seems to be of a "quick and dirty" kind.
 
+First of all, it looks like we need a clear "begin transition" call that
+I suppose drivers should execute from their .target() methods once they have
+decided to do a transition.  That would increment the "ongoing" counter etc.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Second, we need a corresponding "end transition" call that would be executed
+whenever appropriate from the driver's perspective.
+
+Clearly, these two things should be independent of the notifiers and the
+notifications should only be done between "begin transition" and "end
+transition" and only by whoever called the "begin transition" to start with.
+
+Now, question is what should happen if "begin transition" is called when
+the previous transition hasn't been completed yet, should it block or should
+it fail?  There seem to be arguments for both, but I suppose blocking would be
+easier to implement.
+
+Thanks,
+Rafael
+
