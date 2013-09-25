@@ -1,58 +1,68 @@
-From: Kyungmin Park <kmpark@infradead.org>
-Subject: Re: [RFC PATCH] freezer: allow killing of frozen tasks
-Date: Wed, 25 Sep 2013 14:52:26 +0900
-Message-ID: <CAH9JG2X3grVnUbuzksRLnDCT4dMQTyJuPa72qi4QmKTHo2QzEA@mail.gmail.com>
-References: <5917186.DMyAa9ofOj@amdc1032>
-	<7346644.tueXegsfXu@vostro.rjw.lan>
-	<20130820122727.GC3926@htj.dyndns.org>
-	<7588112.eXrFpITlCh@vostro.rjw.lan>
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+Subject: Re: [PATCHv6 02/16] drivers: thermal: introduce device tree parser
+Date: Wed, 25 Sep 2013 15:13:23 +0800
+Message-ID: <52428D13.7080007@freescale.com>
+References: <1379537849-28425-1-git-send-email-eduardo.valentin@ti.com> <1379540136-28378-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f180.google.com ([209.85.214.180]:43843 "EHLO
-	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107Ab3IYFw1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 01:52:27 -0400
-In-Reply-To: <7588112.eXrFpITlCh@vostro.rjw.lan>
+Received: from mail-db8lp0184.outbound.messaging.microsoft.com ([213.199.154.184]:38086
+	"EHLO db8outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752457Ab3IYHN2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 03:13:28 -0400
+In-Reply-To: <1379540136-28378-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Colin Cross <ccross@android.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, joe@perches.com, grant.likely@linaro.org, durgadoss.r@intel.com, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Aug 20, 2013 at 9:41 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, August 20, 2013 08:27:27 AM Tejun Heo wrote:
->> On Tue, Aug 20, 2013 at 02:34:14PM +0200, Rafael J. Wysocki wrote:
->> > On Tuesday, August 20, 2013 08:22:00 AM Tejun Heo wrote:
->> > > On Tue, Aug 20, 2013 at 02:30:18PM +0200, Rafael J. Wysocki wrote:
->> > > > > So, I don't think we can simply turn TASK_UNITERRUPTIBLE to
->> > > > > TASK_KILLABLE at this point.  We really need to strictly define where
->> > > > > a task can freeze before being able to do anything like this.
->> > > >
->> > > > But we could do that for user space tasks I suppose?
->> > >
->> > > Even for userland tasks, we don't know where the task is stuck at.  I
->> > > think there are enough freeze points in the kernel which are in the
->> > > middle of something which can be used by userland tasks excuting some
->> > > syscall.  We need to collect all those sites into well defined trap
->> > > points before doing this.
->> >
->> > OK, thanks!
->>
->> I scanned through try_to_freeze() users and it seems like we don't
->> have that many which can be hit by userland tasks.  I think it should
->> be doable to audit all the users, remove the ones which can be invoked
->> by userland and make try_to_freeze() whine loudly if it's running off
->> a userland task except from well-defined spots.
->
-> Which might be worth doing anyway to be sure we know what's going on.
->
->> Anyways, we need to ensure that userland task doesn't get stuck deep in the
->> kernel before allowing this.
->
-> Agreed.
+On 09/19/2013 05:35 AM, Eduardo Valentin wrote:
+>   
+> [...]
+> +
+> +/***   sensor API   ***/
+> +
 
-Are there any update? we need this feature to kill frozen app easily.
-Don't need to thaw app to kill.
+You are introducing new concept here, the original framework and drivers 
+cannot use this, right? any further plan to update original framework 
+for this new feature?
 
-Thank you,
-Kyungmin Park
+> +static struct thermal_zone_device *
+> +thermal_zone_of_add_sensor(struct device_node *zone,
+> +			   struct device_node *sensor, void *data,
+> +			   int (*get_temp)(void *, long *),
+> +			   int (*get_trend)(void *, long *))
+> +{
+> +	struct thermal_zone_device *tzd;
+> +	struct __thermal_zone *tz;
+> +
+> +	tzd = thermal_zone_get_zone_by_name(zone->name);
+> +	if (IS_ERR(tzd))
+> +		return ERR_PTR(-EPROBE_DEFER);
+> +
+> [...]
+> +
+> +/*
+> + * Here are the thermal trip types. This must
+> + * match with enum thermal_trip_type at
+> + * include/linux/thermal.h
+> + */
+> +#define THERMAL_TRIP_ACTIVE		0
+> +#define THERMAL_TRIP_PASSIVE		1
+> +#define THERMAL_TRIP_HOT		2
+> +#define THERMAL_TRIP_CRITICAL		3
+> +
+
+These macros seem duplicated with enum thermal_trip_type in thermal.h, 
+do you have further plan to merge them?
+Or by using string "active",  "passive" etc in the dts, then you can 
+reuse the original enum definition.
+
+> +/* On cooling devices upper and lower limits */
+> +#define THERMAL_NO_LIMIT		(-1UL)
+> +
+> +#endif
+> [...]
+
+
