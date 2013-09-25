@@ -1,55 +1,69 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 09/21] cpuidle: merge two if() statements for checking
- error cases
-Date: Wed, 25 Sep 2013 23:52:55 +0200
-Message-ID: <52435B37.1040304@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org> <63116bb9adaf7336a019ce087fbe17c4ace81cea.1379779777.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 10/21] cpuidle: reduce code duplication inside cpuidle_idle_call()
+Date: Thu, 26 Sep 2013 00:01:14 +0200
+Message-ID: <52435D2A.1000907@linaro.org>
+References: <cover.1379779777.git.viresh.kumar@linaro.org> <5e4629515deb76208df205210a77b1e8a9984f79.1379779777.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:48705 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753495Ab3IYVw6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 17:52:58 -0400
-Received: by mail-wi0-f172.google.com with SMTP id hn9so6152489wib.11
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 14:52:57 -0700 (PDT)
-In-Reply-To: <63116bb9adaf7336a019ce087fbe17c4ace81cea.1379779777.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5e4629515deb76208df205210a77b1e8a9984f79.1379779777.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 On 09/22/2013 03:21 AM, Viresh Kumar wrote:
-> Both return same error message and so better write them in a single l=
-ine.
+> We are doing this twice in cpuidle_idle_call() routine:
+> 	drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP
+>=20
+> Would be better if we actually store this in a local variable and use=
+ that. That
+> would remove code duplication as well as make this piece of code run =
+fast (in
+> case compiler wasn't able to optimize it earlier)
 >=20
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-modulo the comment on patch 08/21:
 
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
->  drivers/cpuidle/cpuidle.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
+>  drivers/cpuidle/cpuidle.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
 >=20
 > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index aec9029..b8c63cb 100644
+> index b8c63cb..ed67e3c 100644
 > --- a/drivers/cpuidle/cpuidle.c
 > +++ b/drivers/cpuidle/cpuidle.c
-> @@ -119,10 +119,7 @@ int cpuidle_idle_call(void)
+> @@ -118,6 +118,7 @@ int cpuidle_idle_call(void)
+>  	struct cpuidle_device *dev =3D __this_cpu_read(cpuidle_devices);
 >  	struct cpuidle_driver *drv;
 >  	int next_state, entered_state;
+> +	bool broadcast;
 > =20
-> -	if (cpuidle_disabled())
-> -		return -ENODEV;
-> -
-> -	if (!initialized)
-> +	if (cpuidle_disabled() || !initialized)
+>  	if (cpuidle_disabled() || !initialized)
 >  		return -ENODEV;
+> @@ -141,7 +142,9 @@ int cpuidle_idle_call(void)
 > =20
->  	/* check if the device is ready */
+>  	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> =20
+> -	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
+> +	broadcast =3D drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_ST=
+OP;
+> +
+> +	if (broadcast)
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+>  				   &dev->cpu);
+> =20
+> @@ -151,7 +154,7 @@ int cpuidle_idle_call(void)
+>  	else
+>  		entered_state =3D cpuidle_enter_state(dev, drv, next_state);
+> =20
+> -	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
+> +	if (broadcast)
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+>  				   &dev->cpu);
+> =20
 >=20
 
 
@@ -60,4 +74,3 @@ Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
-
