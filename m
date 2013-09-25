@@ -1,60 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] freezer: allow killing of frozen tasks
-Date: Wed, 25 Sep 2013 10:07:22 +0200
-Message-ID: <2084875.Px2m8K6oH7@vostro.rjw.lan>
-References: <5917186.DMyAa9ofOj@amdc1032> <7588112.eXrFpITlCh@vostro.rjw.lan> <CAH9JG2X3grVnUbuzksRLnDCT4dMQTyJuPa72qi4QmKTHo2QzEA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:56888 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172Ab3IYH4G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 Sep 2013 03:56:06 -0400
-In-Reply-To: <CAH9JG2X3grVnUbuzksRLnDCT4dMQTyJuPa72qi4QmKTHo2QzEA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH 0/2] cpufreq: exynos: Fixes for v3.12
+Date: Wed, 25 Sep 2013 13:22:16 +0200
+Message-ID: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Colin Cross <ccross@android.com>
 
-On Wednesday, September 25, 2013 02:52:26 PM Kyungmin Park wrote:
-> On Tue, Aug 20, 2013 at 9:41 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, August 20, 2013 08:27:27 AM Tejun Heo wrote:
-> >> On Tue, Aug 20, 2013 at 02:34:14PM +0200, Rafael J. Wysocki wrote:
-> >> > On Tuesday, August 20, 2013 08:22:00 AM Tejun Heo wrote:
-> >> > > On Tue, Aug 20, 2013 at 02:30:18PM +0200, Rafael J. Wysocki wrote:
-> >> > > > > So, I don't think we can simply turn TASK_UNITERRUPTIBLE to
-> >> > > > > TASK_KILLABLE at this point.  We really need to strictly define where
-> >> > > > > a task can freeze before being able to do anything like this.
-> >> > > >
-> >> > > > But we could do that for user space tasks I suppose?
-> >> > >
-> >> > > Even for userland tasks, we don't know where the task is stuck at.  I
-> >> > > think there are enough freeze points in the kernel which are in the
-> >> > > middle of something which can be used by userland tasks excuting some
-> >> > > syscall.  We need to collect all those sites into well defined trap
-> >> > > points before doing this.
-> >> >
-> >> > OK, thanks!
-> >>
-> >> I scanned through try_to_freeze() users and it seems like we don't
-> >> have that many which can be hit by userland tasks.  I think it should
-> >> be doable to audit all the users, remove the ones which can be invoked
-> >> by userland and make try_to_freeze() whine loudly if it's running off
-> >> a userland task except from well-defined spots.
-> >
-> > Which might be worth doing anyway to be sure we know what's going on.
-> >
-> >> Anyways, we need to ensure that userland task doesn't get stuck deep in the
-> >> kernel before allowing this.
-> >
-> > Agreed.
-> 
-> Are there any update? we need this feature to kill frozen app easily.
-> Don't need to thaw app to kill.
+Attached commits provide cpufreq regression fixes for Trats and Trats2
+Exynos4 boards.
+Since v3.12 Exynos4 uses common clock framework for clock manipulation.
+Those patches restore correct output for cpuinfo_cur_freq [1] sysfs
+attribute.
+Without them, the [1] provides default frequency (800 MHz) set at driver
+initialization.
 
-No updates, but the above pretty much describes what needs to be done.
+Lukasz Majewski (2):
+  cpufreq: exynos4x12: Use the common clock framework to set APLL clock
+    rate
+  cpufreq: exynos4210: Use the common clock framework to set APLL clock
+    rate
 
-Thanks,
-Rafael
+ drivers/cpufreq/exynos4210-cpufreq.c |   20 ++++----------------
+ drivers/cpufreq/exynos4x12-cpufreq.c |   23 ++++-------------------
+ 2 files changed, 8 insertions(+), 35 deletions(-)
 
+-- 
+1.7.10.4
