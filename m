@@ -1,104 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
-Date: Wed, 25 Sep 2013 20:37:10 +0200
-Message-ID: <1791712.tJBFGgQvyI@vostro.rjw.lan>
-References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org> <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+From: Matt Porter <matt.porter@linaro.org>
+Subject: Re: [PATCH 1/3] thermal: bcm281xx: Add thermal driver
+Date: Wed, 25 Sep 2013 15:26:13 -0400
+Message-ID: <20130925192609.GB25191@ohporter.com>
+References: <1379958698-7554-1-git-send-email-wendy.ng@broadcom.com>
+ <1379958698-7554-2-git-send-email-wendy.ng@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, g.liakhovetski@gmx.de, amit.daniel@samsung.com, kgene.kim@samsung.com, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f54.google.com ([209.85.213.54]:48489 "EHLO
+	mail-yh0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515Ab3IYT0T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 15:26:19 -0400
+Content-Disposition: inline
+In-Reply-To: <1379958698-7554-2-git-send-email-wendy.ng@broadcom.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wendy Ng <wendy.ng@broadcom.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, Stephen Warren <swarren@wwwdotorg.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>
 
-On Thursday, September 12, 2013 03:40:46 PM Viresh Kumar wrote:
-> Some part of this patch was pushed in mainline earlier but was then removed due
-> to loopholes in the patch. Those are now fixed and this patch is tested by the
-> people who reported these problems.
+On Mon, Sep 23, 2013 at 10:51:36AM -0700, Wendy Ng wrote:
+> This adds the support for reading out temperature from Broadcom bcm281xx
+> SoCs.
 > 
-> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-> shouldn't be called twice contiguously. Also, calls to cpufreq_driver_target()
-> or cpufreq_driver->target() must also be serialized. Following examples show why
-> this is important:
+> Signed-off-by: Wendy Ng <wendy.ng@broadcom.com>
+> Reviewed-by: Markus Mayer <mmayer@broadcom.com>
+> Reviewed-by: Christian Daudt <csd@broadcom.com>
+> ---
+>  .../bindings/thermal/bcm-kona-thermal.txt          |   18 +++
+>  drivers/thermal/Kconfig                            |   10 ++
+>  drivers/thermal/Makefile                           |    1 +
+>  drivers/thermal/bcm_thermal.c                      |  170 ++++++++++++++++++++
+>  4 files changed, 199 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
+>  create mode 100644 drivers/thermal/bcm_thermal.c
 > 
-> Scenario 1:
-> -----------
-> One thread reading value of cpuinfo_cur_freq, which will call
-> __cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
-> 
-> And ondemand governor trying to change freq of cpu at the same time and so
-> sending notification via ->target()..
-> 
-> Notifiers are not serialized and suppose this is what happened
-> - PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
-> - PRECHANGE Notification for freq B (from target())
-> - Freq changed by target() to B
-> - POSTCHANGE Notification for freq B
-> - POSTCHANGE Notification for freq A
-> 
-> Now the last POSTCHANGE Notification happened for freq A and hardware is
-> currently running at freq B :)
-> 
-> Where would we break then?: adjust_jiffies() in cpufreq.c,
-> cpufreq_callback() in arch/arm/kernel/smp.c (which is also adjusting
-> jiffies).. All loops_per_jiffy based stuff is broken..
-> 
-> Scenario 2:
-> -----------
-> Governor is changing freq and has called __cpufreq_driver_target(). At the same
-> time we are changing scaling_{min|max}_freq from sysfs, which would eventually
-> end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
-> __cpufreq_driver_target().. And hence concurrent calls to ->target()
-> 
-> And Platform have something like this in their ->target()
-> (Like: cpufreq-cpu0, omap, exynos, etc)
-> 
-> A. If new freq is more than old: Increase voltage
-> B. Change freq
-> C. If new freq is less than old: decrease voltage
-> 
-> Now, two concurrent calls to target are X and Y, where X is trying to increase
-> freq and Y is trying to decrease it..
-> 
-> And this is the sequence that followed due to races..
-> 
-> X.A: voltage increased for larger freq
-> Y.A: nothing happened here
-> Y.B: freq decreased
-> Y.C: voltage decreased
-> X.B: freq increased
-> X.C: nothing happened..
-> 
-> We ended up setting a freq which is not supported by the voltage we have
-> set.. That will probably make clock to CPU unstable and system wouldn't
-> be workable anymore...
-> 
-> This patch adds some protection against to make transitions serialized.
-> 
-> Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> diff --git a/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
+> new file mode 100644
+> index 0000000..acca99e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
+> @@ -0,0 +1,18 @@
+> +* Broadcom Kona Thermal Management Unit
+> +
+> +This version is for the BCM281xx family of SoCs.
+> +
+> +Required properties:
+> +- compatible : "brcm,bcm11351-thermal", "brcm,kona-thermal"
+> +- reg : Address range of the thermal register
+> +- thermal-name: this entry must be specified and it will be passed into
+> +thermal_zone_device_register().  This name will also be reported under Hwmon
+> +sysfs 'name' attribute.
+> +
+> +Example:
+> +	thermal@34008000 {
+> +		compatible = "brcm,bcm11351-thermal", "brcm,kona-thermal";
+> +		reg = <0x34008000 0x0024>;
+> +		thermal-name = "bcm_kona_therm";
+> +		status = "disabled";
+> +	};
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index dbfc390..7f823f0 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -134,6 +134,16 @@ config KIRKWOOD_THERMAL
+>  	  Support for the Kirkwood thermal sensor driver into the Linux thermal
+>  	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
+>  
+> +config BCM_THERMAL
+> +	tristate "Temperature sensor on Broadcom BCM281xx family of SoCs"
+> +	depends on ARCH_BCM
 
-So the problem is real, but the fix seems to be of a "quick and dirty" kind.
+Hi Wendy,
 
-First of all, it looks like we need a clear "begin transition" call that
-I suppose drivers should execute from their .target() methods once they have
-decided to do a transition.  That would increment the "ongoing" counter etc.
+I just noticed that, depending on acceptance, this could collide with
+Christian's ARCH_BCM->ARCH_BCM_MOBILE rename that is expected to go into
+3.13. I'm not sure if this series is targeted for 3.13 (due to the discussion
+about Eduardo's subsystem changes that impact it). If it is, you might
+want to rebase on Christian's rename series
+http://www.spinics.net/lists/arm-kernel/msg274963.html and use
+ARCH_BCM_MOBILE here.
 
-Second, we need a corresponding "end transition" call that would be executed
-whenever appropriate from the driver's perspective.
+-Matt
 
-Clearly, these two things should be independent of the notifiers and the
-notifications should only be done between "begin transition" and "end
-transition" and only by whoever called the "begin transition" to start with.
-
-Now, question is what should happen if "begin transition" is called when
-the previous transition hasn't been completed yet, should it block or should
-it fail?  There seem to be arguments for both, but I suppose blocking would be
-easier to implement.
-
-Thanks,
-Rafael
+> +	default y
+> +	help
+> +	  If you say yes here you get support for TMU (Thermal Management
+> +	  Unit) on Broadcom BCM281xx family of SoCs. This provides thermal
+> +	  monitoring of CPU clusters, graphics, and SoC glue, but does not
+> +	  include monitoring of charger temperature.
 
