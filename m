@@ -1,8 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 22/40] mm: Propagate the sorted-buddy bias for picking
- free regions, to region allocator
-Date: Thu, 26 Sep 2013 04:48:53 +0530
-Message-ID: <20130925231852.26184.31885.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v4 23/40] mm: Fix vmstat to also account for freepages in
+ the region allocator
+Date: Thu, 26 Sep 2013 04:49:05 +0530
+Message-ID: <20130925231903.26184.23956.stgit@srivatsabhat.in.ibm.com>
 References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,79 +14,43 @@ To: akpm@linux-foundation.org, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.or
 Cc: gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The sorted-buddy page allocator keeps the buddy freelists sorted region-wise,
-and tries to pick lower numbered regions while allocating pages. The idea is
-to allocate regions in the increasing order of region number.
-
-Propagate the same bias to the region allocator as well. That is, make it
-favor lower numbered regions while allocating regions to the page allocator.
-To do this efficiently, add a bitmap to represent the regions in the region
-allocator, and use bitmap operations to manage these regions and to pick the
-lowest numbered free region efficiently.
+Currently vmstat considers only the freepages present in the buddy freelists
+of the page allocator. But with the newly introduced region allocator in
+place, freepages could be present in the region allocator as well. So teach
+vmstat to take them into consideration when reporting free memory.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- include/linux/mmzone.h |    1 +
- mm/page_alloc.c        |   19 ++++++++++++++++++-
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ mm/vmstat.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 7c87518..49c8926 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -125,6 +125,7 @@ struct mem_region {
- struct region_allocator {
- 	struct mem_region	region[MAX_NR_ZONE_REGIONS];
- 	int			next_region;
-+	DECLARE_BITMAP(ralloc_mask, MAX_NR_ZONE_REGIONS);
- };
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index bb44d30..4dc103e 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -868,6 +868,8 @@ static void frag_show_print(struct seq_file *m, pg_data_t *pgdat,
+ {
+ 	int i, order, t;
+ 	struct free_area *area;
++	struct free_area_region *reg_area;
++	struct region_allocator *reg_alloc;
  
- struct pglist_data;
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ee6c098..d5acea7 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -935,7 +935,7 @@ static void add_to_region_allocator(struct zone *z, struct free_list *free_list,
- 	struct free_area_region *reg_area;
- 	struct list_head *ralloc_list;
- 	unsigned long nr_pages;
--	int order;
-+	int order, *next_region;
+ 	seq_printf(m, "Node %d, zone %8s \n", pgdat->node_id, zone->name);
  
- 	if (WARN_ON(list_empty(&free_list->list)))
- 		return;
-@@ -952,6 +952,13 @@ static void add_to_region_allocator(struct zone *z, struct free_list *free_list,
- 
- 	WARN_ON(reg_area->nr_free != 0);
- 	reg_area->nr_free += nr_pages;
+@@ -884,6 +886,12 @@ static void frag_show_print(struct seq_file *m, pg_data_t *pgdat,
+ 				nr_free +=
+ 					area->free_list[t].mr_list[i].nr_free;
+ 			}
 +
-+	set_bit(region_id, reg_alloc->ralloc_mask);
-+	next_region = &reg_alloc->next_region;
++			/* Add up freepages in the region allocator as well */
++			reg_alloc = &zone->region_allocator;
++			reg_area = &reg_alloc->region[i].region_area[order];
++			nr_free += reg_area->nr_free;
 +
-+	if ((*next_region < 0) ||
-+			(*next_region > 0 && region_id < *next_region))
-+		*next_region = region_id;
- }
- 
- /* Delete freepages from the region allocator and add them to buddy freelists */
-@@ -982,6 +989,16 @@ static int del_from_region_allocator(struct zone *zone, unsigned int order,
- 	reg_area->nr_free -= nr_pages;
- 	WARN_ON(reg_area->nr_free != 0);
- 
-+	/* Pick a new next_region */
-+	clear_bit(next_region, reg_alloc->ralloc_mask);
-+	next_region = find_first_bit(reg_alloc->ralloc_mask,
-+				     MAX_NR_ZONE_REGIONS);
-+
-+	if (next_region >= MAX_NR_ZONE_REGIONS)
-+		next_region = -1; /* No free regions available */
-+
-+	reg_alloc->next_region = next_region;
-+
- 	return 0;
- }
- 
+ 			seq_printf(m, "%6lu ", nr_free);
+ 		}
+ 		seq_putc(m, '\n');
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
