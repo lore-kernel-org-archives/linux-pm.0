@@ -1,61 +1,74 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 13/21] cpuidle: use drv instead of cpuidle_driver in show_current_driver()
-Date: Thu, 26 Sep 2013 00:05:14 +0200
-Message-ID: <52435E1A.9010108@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org> <dee4978199c13f45547f50a5f709c9b0d57f669b.1379779777.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 14/21] cpuidle: coupled: don't compare cpu masks unnecessarily
+Date: Thu, 26 Sep 2013 00:06:39 +0200
+Message-ID: <52435E6F.4000002@linaro.org>
+References: <cover.1379779777.git.viresh.kumar@linaro.org> <564c8b1f073dc396b54866a2220b09b7869289f4.1379779777.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f169.google.com ([74.125.82.169]:37148 "EHLO
-	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292Ab3IYWFR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:05:17 -0400
-Received: by mail-we0-f169.google.com with SMTP id t60so305524wes.14
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:05:16 -0700 (PDT)
-In-Reply-To: <dee4978199c13f45547f50a5f709c9b0d57f669b.1379779777.git.viresh.kumar@linaro.org>
+Received: from mail-we0-f172.google.com ([74.125.82.172]:62466 "EHLO
+	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751226Ab3IYWGn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:06:43 -0400
+Received: by mail-we0-f172.google.com with SMTP id w61so302964wes.17
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:06:42 -0700 (PDT)
+In-Reply-To: <564c8b1f073dc396b54866a2220b09b7869289f4.1379779777.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Colin Cross <ccross@google.com>
 
 On 09/22/2013 03:21 AM, Viresh Kumar wrote:
-> Instances of "struct cpuidle_driver *" are consistently named as "drv=
-" in
-> cpuidle core. Its broken only at one place: show_current_driver().
+> In cpuidle_coupled_register_device() we do following:
+> 	if (WARN_ON(!cpumask_equal(&dev->coupled_cpus, &coupled->coupled_cpu=
+s)))
+> 		coupled->prevent++;
 >=20
-> Fix it for consistency.
+> This is only required to be done when we are using 'coupled' from an =
+existing
+> cpuidle_device and not when we have just done this:
+>=20
+> 	coupled->coupled_cpus =3D dev->coupled_cpus
+>=20
+> So, move this compare statement to the right place.
 >=20
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc'ed Colin Cross.
 
 > ---
->  drivers/cpuidle/sysfs.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  drivers/cpuidle/coupled.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 >=20
-> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index a022393..e918b6d 100644
-> --- a/drivers/cpuidle/sysfs.c
-> +++ b/drivers/cpuidle/sysfs.c
-> @@ -52,12 +52,12 @@ static ssize_t show_current_driver(struct device =
-*dev,
->  				   char *buf)
->  {
->  	ssize_t ret;
-> -	struct cpuidle_driver *cpuidle_driver;
-> +	struct cpuidle_driver *drv;
+> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+> index e952936..19a89eb 100644
+> --- a/drivers/cpuidle/coupled.c
+> +++ b/drivers/cpuidle/coupled.c
+> @@ -642,6 +642,10 @@ int cpuidle_coupled_register_device(struct cpuid=
+le_device *dev)
+>  		other_dev =3D per_cpu(cpuidle_devices, cpu);
+>  		if (other_dev && other_dev->coupled) {
+>  			coupled =3D other_dev->coupled;
+> +
+> +			if (WARN_ON(!cpumask_equal(&dev->coupled_cpus,
+> +						&coupled->coupled_cpus)))
+> +				coupled->prevent++;
+>  			goto have_coupled;
+>  		}
+>  	}
+> @@ -655,9 +659,6 @@ int cpuidle_coupled_register_device(struct cpuidl=
+e_device *dev)
 > =20
->  	spin_lock(&cpuidle_driver_lock);
-> -	cpuidle_driver =3D cpuidle_get_driver();
-> -	if (cpuidle_driver)
-> -		ret =3D sprintf(buf, "%s\n", cpuidle_driver->name);
-> +	drv =3D cpuidle_get_driver();
-> +	if (drv)
-> +		ret =3D sprintf(buf, "%s\n", drv->name);
->  	else
->  		ret =3D sprintf(buf, "none\n");
->  	spin_unlock(&cpuidle_driver_lock);
+>  have_coupled:
+>  	dev->coupled =3D coupled;
+> -	if (WARN_ON(!cpumask_equal(&dev->coupled_cpus, &coupled->coupled_cp=
+us)))
+> -		coupled->prevent++;
+> -
+>  	cpuidle_coupled_update_online_cpus(coupled);
+> =20
+>  	coupled->refcnt++;
 >=20
 
 
