@@ -1,228 +1,93 @@
-From: Zoran Markovic <zoran.markovic@linaro.org>
-Subject: [RFC PATCHv4] drivers: power: Detect device suspend/resume lockup and log event in pstore.
-Date: Wed, 25 Sep 2013 15:31:53 -0700
-Message-ID: <1380148313-763-1-git-send-email-zoran.markovic@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 20/21] cpuidle: don't calculate time-diff if entered_state
+ == 0
+Date: Thu, 26 Sep 2013 00:38:50 +0200
+Message-ID: <524365FA.4090108@linaro.org>
+References: <cover.1379779777.git.viresh.kumar@linaro.org> <acd1cc837f969a50582d2b25a73c5e247f40f843.1379779777.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:38838 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961Ab3IYWdO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:33:14 -0400
-Received: by mail-pd0-f169.google.com with SMTP id r10so280905pdi.28
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:33:14 -0700 (PDT)
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:41582 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188Ab3IYWix (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:38:53 -0400
+Received: by mail-wi0-f179.google.com with SMTP id hm2so364191wib.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:38:52 -0700 (PDT)
+In-Reply-To: <acd1cc837f969a50582d2b25a73c5e247f40f843.1379779777.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Benoit Goby <benoit@android.com>
+On 09/22/2013 03:21 AM, Viresh Kumar wrote:
+> If entered_state =3D=3D 0, we don't need to set dev->last_residency t=
+o 'diff' as we
+> will be setting it to zero without using its new value.
 
-Rather than hard-lock the kernel, dump the suspend/resume thread stack and
-panic() to capture a message in pstore when a driver takes too long to
-suspend/resume. Default suspend/resume watchdog timeout is set to 12
-seconds to be longer than the usbhid 10 second timeout, but could be
-changed at compile time.
+I don't get it, can you elaborate. We can be a long time in this state
+(eg. if the prediction is false).
 
-Exclude from the watchdog the time spent waiting for children that
-are resumed asynchronously and time every device, whether or not they
-resumed synchronously.
+> And so move calculation of diff also inside the "if" statement.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle.c | 17 +++++++++--------
+>  1 file changed, 9 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index bf80236..cb81689 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -77,23 +77,22 @@ int cpuidle_enter_state(struct cpuidle_device *de=
+v, struct cpuidle_driver *drv,
+> =20
+>  	struct cpuidle_state *target_state =3D &drv->states[index];
+>  	ktime_t time_start, time_end;
+> -	s64 diff;
+> =20
+>  	time_start =3D ktime_get();
+> =20
+>  	entered_state =3D target_state->enter(dev, drv, index);
+> =20
+> -	time_end =3D ktime_get();
+> +	if (entered_state >=3D 0) {
+> +		s64 diff;
+> =20
+> -	local_irq_enable();
+> +		time_end =3D ktime_get();
+> +		diff =3D ktime_to_us(ktime_sub(time_end, time_start));
+> =20
+> -	diff =3D ktime_to_us(ktime_sub(time_end, time_start));
+> -	if (diff > INT_MAX)
+> -		diff =3D INT_MAX;
+> +		if (diff > INT_MAX)
+> +			diff =3D INT_MAX;
+> =20
+> -	dev->last_residency =3D (int) diff;
+> +		dev->last_residency =3D (int) diff;
+> =20
+> -	if (entered_state >=3D 0) {
+>  		/* Update cpuidle counters */
+>  		/* This can be moved to within driver enter routine
+>  		 * but that results in multiple copies of same code.
+> @@ -104,6 +103,8 @@ int cpuidle_enter_state(struct cpuidle_device *de=
+v, struct cpuidle_driver *drv,
+>  		dev->last_residency =3D 0;
+>  	}
+> =20
+> +	local_irq_enable();
+> +
+>  	return entered_state;
+>  }
+> =20
+>=20
 
-This patch is targeted for mobile devices where a suspend/resume lockup
-could cause a system reboot. Information about failing device can be
-retrieved in subsequent boot session by mounting pstore and inspecting
-the log. Laptops with EFI-enabled pstore could also benefit from
-this feature.
 
-The hardware watchdog timer is likely suspended during this time and
-couldn't be relied upon. The soft-lockup detector would eventually tell
-that tasks are not scheduled, but would provide little context as to why.
-The patch hence uses system timer and assumes it is still active while the
-devices are suspended/resumed.
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-This feature can be enabled/disabled during kernel configuration.
-
-Cc: Android Kernel Team <kernel-team@android.com>
-Cc: Colin Cross <ccross@android.com>
-Cc: Todd Poynor <toddpoynor@google.com>
-Cc: San Mehat <san@google.com>
-Cc: Benoit Goby <benoit@android.com>
-Cc: John Stultz <john.stultz@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Original-author: San Mehat <san@google.com>
-Signed-off-by: Benoit Goby <benoit@android.com>
-[zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
-tweaked commit message. Moved call to dpm_wd_set() before device_lock() in
-device_resume(). Minor changes to add compile-time inclusion of the feature.]
-Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
----
- drivers/base/power/main.c |   68 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/Kconfig      |   16 +++++++++++
- 2 files changed, 84 insertions(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9f098a8..9b7e6b6 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -30,6 +30,8 @@
- #include <linux/suspend.h>
- #include <trace/events/power.h>
- #include <linux/cpuidle.h>
-+#include <linux/timer.h>
-+
- #include "../base.h"
- #include "power.h"
- 
-@@ -55,6 +57,12 @@ struct suspend_stats suspend_stats;
- static DEFINE_MUTEX(dpm_list_mtx);
- static pm_message_t pm_transition;
- 
-+struct dpm_watchdog {
-+	struct device		*dev;
-+	struct task_struct	*tsk;
-+	struct timer_list	timer;
-+};
-+
- static int async_error;
- 
- static char *pm_verb(int event)
-@@ -390,6 +398,60 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	return error;
- }
- 
-+#ifdef CONFIG_DPM_WD
-+/**
-+ * dpm_wd_handler - Driver suspend / resume watchdog handler.
-+ *
-+ * Called when a driver has timed out suspending or resuming.
-+ * There's not much we can do here to recover so panic() to
-+ * capture a crash-dump in pstore.
-+ */
-+static void dpm_wd_handler(unsigned long data)
-+{
-+	struct dpm_watchdog *wd = (void *)data;
-+
-+	dev_emerg(wd->dev, "**** DPM device timeout ****\n");
-+	show_stack(wd->tsk, NULL);
-+	panic("%s %s: unrecoverable failure\n",
-+		dev_driver_string(wd->dev), dev_name(wd->dev));
-+}
-+
-+/**
-+ * dpm_wd_set - Enable pm watchdog for given device.
-+ * @wd: Watchdog. Must be allocated on the stack.
-+ * @dev: Device to handle.
-+ */
-+static void dpm_wd_set(struct dpm_watchdog *wd, struct device *dev)
-+{
-+	struct timer_list *timer = &wd->timer;
-+
-+	wd->dev = dev;
-+	wd->tsk = get_current();
-+
-+	init_timer_on_stack(timer);
-+	/* use same timeout value for both suspend and resume */
-+	timer->expires = jiffies + HZ * CONFIG_DPM_WD_TIMEOUT;
-+	timer->function = dpm_wd_handler;
-+	timer->data = (unsigned long)wd;
-+	add_timer(timer);
-+}
-+
-+/**
-+ * dpm_wd_clear - Disable suspend/resume watchdog.
-+ * @wd: Watchdog to disable.
-+ */
-+static void dpm_wd_clear(struct dpm_watchdog *wd)
-+{
-+	struct timer_list *timer = &wd->timer;
-+
-+	del_timer_sync(timer);
-+	destroy_timer_on_stack(timer);
-+}
-+#else
-+#define dpm_wd_set(x, y)
-+#define dpm_wd_clear(x)
-+#endif
-+
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-@@ -576,6 +638,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 	int error = 0;
-+	struct dpm_watchdog wd;
- 
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
-@@ -584,6 +647,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 		goto Complete;
- 
- 	dpm_wait(dev->parent, async);
-+	dpm_wd_set(&wd, dev);
- 	device_lock(dev);
- 
- 	/*
-@@ -642,6 +706,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 
-  Unlock:
- 	device_unlock(dev);
-+	dpm_wd_clear(&wd);
- 
-  Complete:
- 	complete_all(&dev->power.completion);
-@@ -1060,6 +1125,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 	int error = 0;
-+	struct dpm_watchdog wd;
- 
- 	dpm_wait_for_children(dev, async);
- 
-@@ -1083,6 +1149,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->power.syscore)
- 		goto Complete;
- 
-+	dpm_wd_set(&wd, dev);
- 	device_lock(dev);
- 
- 	if (dev->pm_domain) {
-@@ -1139,6 +1206,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	}
- 
- 	device_unlock(dev);
-+	dpm_wd_clear(&wd);
- 
-  Complete:
- 	complete_all(&dev->power.completion);
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index d444c4e..6a6b763 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -178,6 +178,22 @@ config PM_SLEEP_DEBUG
- 	def_bool y
- 	depends on PM_DEBUG && PM_SLEEP
- 
-+config DPM_WD
-+	bool "Device suspend/resume watchdog"
-+	depends on PM_DEBUG && PSTORE
-+	---help---
-+	  Sets up a watchdog timer to capture drivers that are
-+	  locked up attempting to suspend/resume a device.
-+	  A detected lockup causes system panic with message
-+	  captured in pstore device for inspection in subsequent
-+	  boot session.
-+
-+config DPM_WD_TIMEOUT
-+	int "Watchdog timeout in seconds"
-+	range 1 120
-+	default 12
-+	depends on DPM_WD
-+
- config PM_TRACE
- 	bool
- 	help
--- 
-1.7.9.5
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
