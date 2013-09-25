@@ -1,64 +1,70 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 11/21] cpuidle: replace multiline statements with single
- line in cpuidle_idle_call()
-Date: Thu, 26 Sep 2013 00:03:16 +0200
-Message-ID: <52435DA4.3080204@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org> <c79ae2ab0a5a3946fcd0e68c855742f06f695f0f.1379779777.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 12/21] cpuidle: call cpuidle_get_driver() from after taking
+ cpuidle_driver_lock
+Date: Thu, 26 Sep 2013 00:04:39 +0200
+Message-ID: <52435DF7.8040307@linaro.org>
+References: <cover.1379779777.git.viresh.kumar@linaro.org> <193825f6c2fb70462f6da2cc60e7c6c02682d6c5.1379779777.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f177.google.com ([209.85.212.177]:41635 "EHLO
-	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242Ab3IYWDT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:03:19 -0400
-Received: by mail-wi0-f177.google.com with SMTP id cb5so328648wib.10
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:03:18 -0700 (PDT)
-In-Reply-To: <c79ae2ab0a5a3946fcd0e68c855742f06f695f0f.1379779777.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <193825f6c2fb70462f6da2cc60e7c6c02682d6c5.1379779777.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 On 09/22/2013 03:21 AM, Viresh Kumar wrote:
-> Few statements in cpuidle_idle_call() are broken into multiple lines,=
- whereas
-> they can actually come in a single line. Convert those to single line=
-=2E
+> cpuidle_driver_lock is taken correctly at most of the places but at f=
+ew places
+> calls to cpuidle_get_driver() are done from outside of this lock.
+>=20
+> Fix them by calling cpuidle_get_driver() after taking cpuidle_driver_=
+lock.
 >=20
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I splitted these lines because they have 81 cols.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
->  drivers/cpuidle/cpuidle.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+>  drivers/cpuidle/driver.c | 3 ++-
+>  drivers/cpuidle/sysfs.c  | 3 ++-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
 >=20
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index ed67e3c..43d5836 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -145,8 +145,7 @@ int cpuidle_idle_call(void)
->  	broadcast =3D drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_ST=
-OP;
+> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+> index 6279e1c..7b2510a 100644
+> --- a/drivers/cpuidle/driver.c
+> +++ b/drivers/cpuidle/driver.c
+> @@ -340,10 +340,11 @@ struct cpuidle_driver *cpuidle_driver_ref(void)
+>   */
+>  void cpuidle_driver_unref(void)
+>  {
+> -	struct cpuidle_driver *drv =3D cpuidle_get_driver();
+> +	struct cpuidle_driver *drv;
 > =20
->  	if (broadcast)
-> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-> -				   &dev->cpu);
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
+>  	spin_lock(&cpuidle_driver_lock);
 > =20
->  	if (cpuidle_state_is_coupled(dev, drv, next_state))
->  		entered_state =3D cpuidle_enter_state_coupled(dev, drv,
-> @@ -155,8 +154,7 @@ int cpuidle_idle_call(void)
->  		entered_state =3D cpuidle_enter_state(dev, drv, next_state);
+> +	drv =3D cpuidle_get_driver();
+>  	if (drv && !WARN_ON(drv->refcnt <=3D 0))
+>  		drv->refcnt--;
 > =20
->  	if (broadcast)
-> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
-> -				   &dev->cpu);
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+> index 8739cc0..a022393 100644
+> --- a/drivers/cpuidle/sysfs.c
+> +++ b/drivers/cpuidle/sysfs.c
+> @@ -52,9 +52,10 @@ static ssize_t show_current_driver(struct device *=
+dev,
+>  				   char *buf)
+>  {
+>  	ssize_t ret;
+> -	struct cpuidle_driver *cpuidle_driver =3D cpuidle_get_driver();
+> +	struct cpuidle_driver *cpuidle_driver;
 > =20
->  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-> =20
+>  	spin_lock(&cpuidle_driver_lock);
+> +	cpuidle_driver =3D cpuidle_get_driver();
+>  	if (cpuidle_driver)
+>  		ret =3D sprintf(buf, "%s\n", cpuidle_driver->name);
+>  	else
 >=20
 
 
@@ -69,4 +75,3 @@ OP;
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
-
