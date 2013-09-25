@@ -1,54 +1,114 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: exynos4x12: Use the common clock framework
- to set APLL clock rate
-Date: Wed, 25 Sep 2013 17:05:11 +0530
-Message-ID: <CAK9yfHzb8VA+E38iQ3b31Yjfd9BvKcEMBc_gijJ3hERa_fBqFw@mail.gmail.com>
-References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
-	<1380108138-30402-2-git-send-email-l.majewski@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: Bisected 3.12.0-rc1 Laptop screen goes blank during kernelboot
+Date: Wed, 25 Sep 2013 14:29:40 +0200
+Message-ID: <5242D734.7020800@linaro.org>
+References: <523C8238.3000200@xmsnet.nl> <523E51A9.8050609@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:52065 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755096Ab3IYLfM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 07:35:12 -0400
-Received: by mail-oa0-f48.google.com with SMTP id m6so825322oag.7
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 04:35:11 -0700 (PDT)
-In-Reply-To: <1380108138-30402-2-git-send-email-l.majewski@samsung.com>
+Received: from mail-we0-f172.google.com ([74.125.82.172]:59229 "EHLO
+	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752428Ab3IYM3n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 08:29:43 -0400
+Received: by mail-we0-f172.google.com with SMTP id w61so6052687wes.31
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 05:29:42 -0700 (PDT)
+In-Reply-To: <523E51A9.8050609@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+To: Aaron Lu <aaron.lwe@gmail.com>
+Cc: Hans de Bruin <jmdebruin@xmsnet.nl>, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-Hi Lukasz,
+On 09/22/2013 04:10 AM, Aaron Lu wrote:
+> Add linux-pm.
+>=20
+> -Aaron
+>=20
+> On 09/21/2013 01:13 AM, Hans de Bruin wrote:
+>> During boot time my laptop screen goes blank when de kernel switches=
+ the=20
+>> screen to another resolution. The backlight is on. Eventually a kde=20
+>> login box appears out of the blackness. Swiching to a lower resoluti=
+on=20
+>> gives me a black screen again. After testing the=20
+>> intel-gfx@lists.freedesktop.org developers test-tree problem less th=
+ey=20
+>> sugested a bisect. That bisect ended in:
+>>
+>>
+>> commit 137b944e100278d696826cf25c83014ac17473fe
+>> Author: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Date:   Wed Jun 12 15:08:48 2013 +0200
+>>
+>>    cpuidle: Make it clear that governors cannot be modules
+>>
+>>    cpufreq governors are defined as modules in the code, but the Kco=
+nfig
+>>    options do not allow them to be built as modules.  This is not re=
+ally
+>>    a problem, but the cpuidle init ordering is: the cpuidle init
+>>    functions (framework and driver) and then the governors.  That le=
+ads
+>>    to some weirdness in the cpuidle framework.
+>>
+>>    Namely,  cpuidle_register_device() calls cpuidle_enable_device() =
+which
+>>    fails at the first attempt, because governors have not been regis=
+tered
+>>    yet.  When a governor is registered, the framework calls
+>>    cpuidle_enable_device() again which runs __cpuidle_register_devic=
+e()
+>>    only then.  Of course, for that to work, the cpuidle_enable_devic=
+e()
+>>    return value has to be ignored by cpuidle_register_device().
+>>
+>>      Instead of having this cyclic call graph and relying on a posit=
+ive
+>>      side effects of the hackish back and forth cpuidle_enable_devic=
+e()
+>>      calls it is better to fix the cpuidle init ordering.
+>>
+>>      To that end, replace the module init code with postcore_initcal=
+l()
+>>      so we have:
+>>
+>>       * cpuidle framework : core_initcall
+>>       * cpuidle governors : postcore_initcall
+>>       * cpuidle drivers   : device_initcall
+>>
+>>      and remove the corresponding module exit code as it is dead any=
+way
+>>      (governors can't be built as modules).
+>>
+>>      [rjw: Changelog]
+>>      Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>      Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> :040000 040000 45e7cb28411864c00b62296a7ff239f9f139d5d9=20
+>> 86a36b01dee52a77cfbab41a973b7a2bfa44ce34 M      drivers
+>>
+>>
+>>
+>> Reverting it makes the problem go away.
 
-On 25 September 2013 16:52, Lukasz Majewski <l.majewski@samsung.com> wrote:
->
->  static void exynos4x12_set_apll(unsigned int index)
->  {
-> -       unsigned int tmp, pdiv;
-> +       unsigned int tmp, freq = apll_freq_4x12[index].freq;
+Ok, can you give more informations about it, I don't see the connection
+between screen resolution and cpuidle.
 
-nit: It is better to put the 'freq' assignment on a new line.
+It would be interesting here to understand the root problem.
 
->
-> -       /* 1. MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
-> +       /* MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
->         clk_set_parent(moutcore, mout_mpll);
->
->         do {
-> @@ -140,24 +140,9 @@ static void exynos4x12_set_apll(unsigned int index)
->                 tmp &= 0x7;
->         } while (tmp != 0x2);
->
-> -       /* 2. Set APLL Lock time */
-> -       pdiv = ((apll_freq_4x12[index].mps >> 8) & 0x3f);
-> +       clk_set_rate(mout_apll, freq * 1000);
+Can you give the cpuidle configuration (used governor and driver) ? If
+you don't revert the patch but disable cpuidle (eg. cpuidle.off=3D1 or
+don't compile it in the kernel), does the bug issue still occur ?
 
-Don't we need to check the return value of this?
+Thanks
+  -- Daniel
 
-Same comments for the second patch too.
 
--- 
-With warm regards,
-Sachin
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
