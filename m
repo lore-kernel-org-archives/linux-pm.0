@@ -1,70 +1,61 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 12/21] cpuidle: call cpuidle_get_driver() from after taking
- cpuidle_driver_lock
-Date: Thu, 26 Sep 2013 00:04:39 +0200
-Message-ID: <52435DF7.8040307@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org> <193825f6c2fb70462f6da2cc60e7c6c02682d6c5.1379779777.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 13/21] cpuidle: use drv instead of cpuidle_driver in show_current_driver()
+Date: Thu, 26 Sep 2013 00:05:14 +0200
+Message-ID: <52435E1A.9010108@linaro.org>
+References: <cover.1379779777.git.viresh.kumar@linaro.org> <dee4978199c13f45547f50a5f709c9b0d57f669b.1379779777.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <193825f6c2fb70462f6da2cc60e7c6c02682d6c5.1379779777.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f169.google.com ([74.125.82.169]:37148 "EHLO
+	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754292Ab3IYWFR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:05:17 -0400
+Received: by mail-we0-f169.google.com with SMTP id t60so305524wes.14
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:05:16 -0700 (PDT)
+In-Reply-To: <dee4978199c13f45547f50a5f709c9b0d57f669b.1379779777.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 On 09/22/2013 03:21 AM, Viresh Kumar wrote:
-> cpuidle_driver_lock is taken correctly at most of the places but at f=
-ew places
-> calls to cpuidle_get_driver() are done from outside of this lock.
+> Instances of "struct cpuidle_driver *" are consistently named as "drv=
+" in
+> cpuidle core. Its broken only at one place: show_current_driver().
 >=20
-> Fix them by calling cpuidle_get_driver() after taking cpuidle_driver_=
-lock.
+> Fix it for consistency.
 >=20
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
->  drivers/cpuidle/driver.c | 3 ++-
->  drivers/cpuidle/sysfs.c  | 3 ++-
->  2 files changed, 4 insertions(+), 2 deletions(-)
+>  drivers/cpuidle/sysfs.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >=20
-> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-> index 6279e1c..7b2510a 100644
-> --- a/drivers/cpuidle/driver.c
-> +++ b/drivers/cpuidle/driver.c
-> @@ -340,10 +340,11 @@ struct cpuidle_driver *cpuidle_driver_ref(void)
->   */
->  void cpuidle_driver_unref(void)
->  {
-> -	struct cpuidle_driver *drv =3D cpuidle_get_driver();
-> +	struct cpuidle_driver *drv;
-> =20
->  	spin_lock(&cpuidle_driver_lock);
-> =20
-> +	drv =3D cpuidle_get_driver();
->  	if (drv && !WARN_ON(drv->refcnt <=3D 0))
->  		drv->refcnt--;
-> =20
 > diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index 8739cc0..a022393 100644
+> index a022393..e918b6d 100644
 > --- a/drivers/cpuidle/sysfs.c
 > +++ b/drivers/cpuidle/sysfs.c
-> @@ -52,9 +52,10 @@ static ssize_t show_current_driver(struct device *=
-dev,
+> @@ -52,12 +52,12 @@ static ssize_t show_current_driver(struct device =
+*dev,
 >  				   char *buf)
 >  {
 >  	ssize_t ret;
-> -	struct cpuidle_driver *cpuidle_driver =3D cpuidle_get_driver();
-> +	struct cpuidle_driver *cpuidle_driver;
+> -	struct cpuidle_driver *cpuidle_driver;
+> +	struct cpuidle_driver *drv;
 > =20
 >  	spin_lock(&cpuidle_driver_lock);
-> +	cpuidle_driver =3D cpuidle_get_driver();
->  	if (cpuidle_driver)
->  		ret =3D sprintf(buf, "%s\n", cpuidle_driver->name);
+> -	cpuidle_driver =3D cpuidle_get_driver();
+> -	if (cpuidle_driver)
+> -		ret =3D sprintf(buf, "%s\n", cpuidle_driver->name);
+> +	drv =3D cpuidle_get_driver();
+> +	if (drv)
+> +		ret =3D sprintf(buf, "%s\n", drv->name);
 >  	else
+>  		ret =3D sprintf(buf, "none\n");
+>  	spin_unlock(&cpuidle_driver_lock);
 >=20
 
 
@@ -75,3 +66,4 @@ dev,
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
+
