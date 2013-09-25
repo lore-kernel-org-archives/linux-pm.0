@@ -1,59 +1,144 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH 1/2] cpufreq: exynos4x12: Use the common clock framework to
- set APLL clock rate
-Date: Wed, 25 Sep 2013 16:03:22 +0200
-Message-ID: <3068635.myUg9qMyJN@amdc1227>
-References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
- <1380108138-30402-2-git-send-email-l.majewski@samsung.com>
- <CAKew6eW9-QHL5NKHV8roER_yuoLEiCoS53Gby8zC841fr=whqQ@mail.gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv6 02/16] drivers: thermal: introduce device tree parser
+Date: Wed, 25 Sep 2013 10:15:45 -0400
+Message-ID: <5242F011.4090607@ti.com>
+References: <1379537849-28425-1-git-send-email-eduardo.valentin@ti.com> <1379540136-28378-1-git-send-email-eduardo.valentin@ti.com> <52428D13.7080007@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAKew6eW9-QHL5NKHV8roER_yuoLEiCoS53Gby8zC841fr=whqQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Yadwinder Singh Brar <yadi.brar01@gmail.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="9NVv4OF6QSeDBwn6Ia3DfDqDCb3MeNUTg"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:49320 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755432Ab3IYORI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Sep 2013 10:17:08 -0400
+In-Reply-To: <52428D13.7080007@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hongbo Zhang <hongbo.zhang@freescale.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, joe@perches.com, grant.likely@linaro.org, durgadoss.r@intel.com, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Yadwinder,
+--9NVv4OF6QSeDBwn6Ia3DfDqDCb3MeNUTg
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-[resending in plain text, as my mail client somehow reset message 
-format from plain back to HTML...]
+On 25-09-2013 03:13, Hongbo Zhang wrote:
+> On 09/19/2013 05:35 AM, Eduardo Valentin wrote:
+>>   [...]
+>> +
+>> +/***   sensor API   ***/
+>> +
+>=20
+> You are introducing new concept here, the original framework and driver=
+s
+> cannot use this, right? any further plan to update original framework
+> for this new feature?
+>=20
 
-On Wednesday 25 of September 2013 19:25:54 Yadwinder Singh Brar wrote:
-> Hi Lukasz,
-> 
-> On Wed, Sep 25, 2013 at 4:52 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > In the exynos4x12_set_apll() function, the APLL frequency is set with
-> > direct register manipulation.
-> >
-> > Such approach is not allowed in the common clock framework. The frequency
-> > is changed, but the corresponding clock value is not updated. This causes
-> > wrong frequency read from cpufreq's cpuinfo_cur_freq sysfs attribute.
-> >
-> 
-> This patch looks incomplete, leaving the driver in untidy state, perhaps its
-> doesn't fix the above stated problem completely. what about
-> if (!exynos4x12_pms_change(old_index, new_index)) becomes true?
-> 
-> IMHO, this driver needs lot more work in addition to this patch to cleanly and
-> completely move the cpufreq driver to common clock framework.
+Well, not new as such. Just a specific way to register sensors to
+thermal framework. What is really new is the fact that we really need to
+have sensors decoupled from thermal zone devices, and today we have
+these concepts pretty merged together.
 
-I agree that the other case needs to be handled as well. Basically the
-whole conditional block dependent on exynos4x12_pms_change() can be safely
-dropped, because this condition is already handled in PLL driver.
+To answer your question, for now I am more concerned with the bindings
+definition. Once that is at least agreed, then we can follow up with the
+migration of existing drivers. For now, there are two examples in this
+series, first one is using one existing thermal driver, which is the TI
+SoC thermal driver, and the second one is the hwmon drivers, which are
+existing sensor drivers, but are not thermal drivers.
 
-Lukasz is already working on further rework of this driver to clean it up
-from legacy code, but this will have to wait for 3.13, as 3.12 is already
-in rc stage and only fixes can be accepted for it.
+The plan forward, once this series is accepted is to migrate existing
+drivers, yes, so that they can use device tree uniformly. Of course,
+this needs help from driver authors.
 
-> For fixing this issue urgently, setting CLK_GET_RATE_NOCACHE for apll
-> in clk driver can also be quicker fix.
+My proposal will be to follow up this series with a two fold migration.
+First step to change the existing thermal drivers to have both, the
+current support and the device tree support. And second step, for those
+who wish to, we could remove the old code containing thermal data and
+have only dt support. Of course, this requires drivers authors input.
 
-Unfortunately this is not how this flag works. It only makes
-clk_get_rate() call ->recalc_rate() operation of the clock instead of
-instantly returning cached rate - it doesn't seem to work recursively.
 
-Best regards,
-Tomasz
+
+>> +static struct thermal_zone_device *
+>> +thermal_zone_of_add_sensor(struct device_node *zone,
+>> +               struct device_node *sensor, void *data,
+>> +               int (*get_temp)(void *, long *),
+>> +               int (*get_trend)(void *, long *))
+>> +{
+>> +    struct thermal_zone_device *tzd;
+>> +    struct __thermal_zone *tz;
+>> +
+>> +    tzd =3D thermal_zone_get_zone_by_name(zone->name);
+>> +    if (IS_ERR(tzd))
+>> +        return ERR_PTR(-EPROBE_DEFER);
+>> +
+>> [...]
+>> +
+>> +/*
+>> + * Here are the thermal trip types. This must
+>> + * match with enum thermal_trip_type at
+>> + * include/linux/thermal.h
+>> + */
+>> +#define THERMAL_TRIP_ACTIVE        0
+>> +#define THERMAL_TRIP_PASSIVE        1
+>> +#define THERMAL_TRIP_HOT        2
+>> +#define THERMAL_TRIP_CRITICAL        3
+>> +
+>=20
+> These macros seem duplicated with enum thermal_trip_type in thermal.h,
+> do you have further plan to merge them?
+> Or by using string "active",  "passive" etc in the dts, then you can
+> reuse the original enum definition.
+
+I am changing this so that in DT we have string constants, and we keep a
+map from string to enum, just like we have for phy-mode, as suggested by
+Mark.
+
+You can have a taste of it here:
+https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/commit/?h=
+=3Dthermal_work/thermal_core/dt_parser_rfc_v4&id=3D73f16c27fc763495188fba=
+7d6e17b9c986efc6ac
+
+I will be reposting this version once we are done with this thread
+discussion and I am finished with my current test.
+
+If you have the time, I would appreciate if you could try the series on
+your board, as I am don't have access to your hardware. It would be
+really nice to see how this work is behaving in other environments then
+the one I have.
+
+Thanks for your interest in this work.
+
+>=20
+>> +/* On cooling devices upper and lower limits */
+>> +#define THERMAL_NO_LIMIT        (-1UL)
+>> +
+>> +#endif
+>> [...]
+>=20
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--9NVv4OF6QSeDBwn6Ia3DfDqDCb3MeNUTg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlJC8BMACgkQCXcVR3XQvP3oKgEAj64gKzVrZc4SETh0SokWHZlg
+On0jslhZhOCdmuuMG/ABAKfDYzjXutR3IyEPoRU62kXHVbUV9/HsDBBt2yKmUJF0
+=H9Dx
+-----END PGP SIGNATURE-----
+
+--9NVv4OF6QSeDBwn6Ia3DfDqDCb3MeNUTg--
