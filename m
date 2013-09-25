@@ -1,39 +1,35 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Andi Kleen <andi@firstfloor.org>
 Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Wed, 25 Sep 2013 16:40:57 -0700
-Message-ID: <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
+Date: Thu, 26 Sep 2013 01:47:34 +0200
+Message-ID: <20130925234734.GK18242@two.firstfloor.org>
 References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
-	<52437128.7030402@linux.vnet.ibm.com>
+ <52437128.7030402@linux.vnet.ibm.com>
+ <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:51076 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753490Ab3IYXk7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 19:40:59 -0400
-In-Reply-To: <52437128.7030402@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 
-On Thu, 26 Sep 2013 04:56:32 +0530 "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Also, the changelogs don't appear to discuss one obvious downside: the
+> latency incurred in bringing a bank out of one of the low-power states
+> and back into full operation.  Please do discuss and quantify that to
+> the best of your knowledge.
 
-> Experimental Results:
-> ====================
-> 
-> Test setup:
-> ----------
-> 
-> x86 Sandybridge dual-socket quad core HT-enabled machine, with 128GB RAM.
-> Memory Region size = 512MB.
+On Sandy Bridge the memry wakeup overhead is really small. It's on by default
+in most setups today.
 
-Yes, but how much power was saved ;)
+-Andi
 
-Also, the changelogs don't appear to discuss one obvious downside: the
-latency incurred in bringing a bank out of one of the low-power states
-and back into full operation.  Please do discuss and quantify that to
-the best of your knowledge.
+-- 
+ak@linux.intel.com -- Speaking for myself only.
 
-
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
