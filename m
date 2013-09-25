@@ -1,8 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 38/40] mm: Add a mechanism to queue work to the
- kmempowerd kthread
-Date: Thu, 26 Sep 2013 04:52:26 +0530
-Message-ID: <20130925232224.26184.9597.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v4 39/40] mm: Add intelligence in kmempowerd to ignore
+ regions unsuitable for evacuation
+Date: Thu, 26 Sep 2013 04:52:42 +0530
+Message-ID: <20130925232240.26184.54998.stgit@srivatsabhat.in.ibm.com>
 References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,67 +14,91 @@ To: akpm@linux-foundation.org, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.or
 Cc: gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have a dedicated kthread in place to perform targeted region
-evacuation, add and export a mechanism to queue work to the kthread.
+Enhance kmempowerd to determine situations where evacuating a region would prove
+to be too costly or counter-productive, and ignore those regions for region
+evacuation.
 
-Adding work to kmempowerd is very simple: just set the bits corresponding
-to the region numbers that we want to evacuate, and queue the work item
-to the kthread.
+For example, if the region has a significant number of used pages (say more than
+32), then evacuation will involve more work and might not be justifiable. Also,
+compacting region 0 would be pointless, since that is the target of all our
+compaction runs. Add these checks in the region-evacuator.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- mm/compaction.c |   26 ++++++++++++++++++++++++++
- mm/internal.h   |    3 +++
- 2 files changed, 29 insertions(+)
+ include/linux/mmzone.h |    2 ++
+ mm/compaction.c        |   25 +++++++++++++++++++++++--
+ mm/internal.h          |    2 ++
+ 3 files changed, 27 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 257afdf..f383cc8d4 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -84,6 +84,8 @@ static inline int get_pageblock_migratetype(struct page *page)
+ 	return get_pageblock_flags_group(page, PB_migrate, PB_migrate_end);
+ }
+ 
++#define MAX_MEMPWR_MIGRATE_PAGES	32
++
+ struct mem_region_list {
+ 	struct list_head	*page_block;
+ 	unsigned long		nr_free;
 diff --git a/mm/compaction.c b/mm/compaction.c
-index 0511eae..b56be89 100644
+index b56be89..41585b0 100644
 --- a/mm/compaction.c
 +++ b/mm/compaction.c
-@@ -1271,6 +1271,32 @@ int evacuate_mem_region(struct zone *z, struct zone_mem_region *zmr)
- #define nr_zone_region_bits	MAX_NR_ZONE_REGIONS
- static DECLARE_BITMAP(mpwork_mask, nr_zone_region_bits);
+@@ -1297,9 +1297,26 @@ void queue_mempower_work(struct pglist_data *pgdat, struct zone *zone,
+ 	queue_kthread_work(&pgdat->mempower_worker, &mpwork->work);
+ }
  
-+void queue_mempower_work(struct pglist_data *pgdat, struct zone *zone,
-+			 int region_id)
++int should_evacuate_region(struct zone *z, struct zone_mem_region *region)
 +{
-+	struct mempower_work *mpwork;
-+	unsigned long flags;
++	unsigned long pages_in_use;
 +
-+	mpwork = &zone->mempower_work;
-+	spin_lock_irqsave(&mpwork->lock, flags);
-+	set_bit(region_id, mpwork->mempower_mask);
-+	spin_unlock_irqrestore(&mpwork->lock, flags);
++	/* Don't try to evacuate region 0, since its the target of migration */
++	if (region == z->zone_regions)
++		return 0;
 +
-+	/*
-+	 * The kmempowerd kthread will never miss the work we assign it,
-+	 * due to the way queue_kthread_work() and kthread_worker_fn()
-+	 * synchronize with each other. If the work is currently executing,
-+	 * it gets requeued; but if it is pending, the kthread will naturally
-+	 * process it in the future. Eitherway, it will notice and process
-+	 * all the work submitted to it, and won't prematurely go to sleep.
-+	 *
-+	 * Note: The bits set in the mempower_mask represent the actual
-+	 * "work" for the kthread. The work-struct is just a container used
-+	 * to communicate that work to the kthread.
-+	 */
-+	queue_kthread_work(&pgdat->mempower_worker, &mpwork->work);
++	pages_in_use = region->present_pages - region->nr_free;
++
++	if (pages_in_use > 0 && pages_in_use <= MAX_MEMPWR_MIGRATE_PAGES)
++		return 1;
++
++	return 0;
 +}
 +
  static void kmempowerd(struct kthread_work *work)
  {
  	struct mempower_work *mpwork;
++	struct zone_mem_region *zmr;
+ 	struct zone *zone;
+ 	unsigned long flags;
+ 	int region_id;
+@@ -1315,8 +1332,12 @@ repeat:
+ 	if (bitmap_empty(mpwork_mask, nr_zone_region_bits))
+ 		return;
+ 
+-	for_each_set_bit(region_id, mpwork_mask, nr_zone_region_bits)
+-		evacuate_mem_region(zone, &zone->zone_regions[region_id]);
++	for_each_set_bit(region_id, mpwork_mask, nr_zone_region_bits) {
++		zmr = &zone->zone_regions[region_id];
++
++		if (should_evacuate_region(zone, zmr))
++			evacuate_mem_region(zone, zmr);
++	}
+ 
+ 	spin_lock_irqsave(&mpwork->lock, flags);
+ 
 diff --git a/mm/internal.h b/mm/internal.h
-index acb50f8..3fbc9f6 100644
+index 3fbc9f6..5b4658c 100644
 --- a/mm/internal.h
 +++ b/mm/internal.h
-@@ -181,6 +181,9 @@ int compact_range(struct compact_control *cc, struct aggression_control *ac,
- 		  struct free_page_control *fc, unsigned long start,
- 		  unsigned long end);
+@@ -184,6 +184,8 @@ int compact_range(struct compact_control *cc, struct aggression_control *ac,
+ void queue_mempower_work(struct pglist_data *pgdat, struct zone *zone,
+ 			 int region_id);
  
-+void queue_mempower_work(struct pglist_data *pgdat, struct zone *zone,
-+			 int region_id);
++int should_evacuate_region(struct zone *z, struct zone_mem_region *region);
 +
  #endif
  
