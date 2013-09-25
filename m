@@ -1,76 +1,103 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 1/2] cpufreq: exynos4x12: Use the common clock framework to
- set APLL clock rate
-Date: Wed, 25 Sep 2013 15:10:22 +0200
-Message-ID: <20130925151022.74df54a7@amdc308.digital.local>
-References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
- <1380108138-30402-2-git-send-email-l.majewski@samsung.com>
- <CAK9yfHzb8VA+E38iQ3b31Yjfd9BvKcEMBc_gijJ3hERa_fBqFw@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] Thermal: x86_pkg_temp: change spin lock
+Date: Wed, 25 Sep 2013 21:47:48 +0800
+Message-ID: <1380116868.2422.0.camel@rzhang1-mobl4>
+References: <1380045916-29833-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:17385 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755289Ab3IYNKg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 09:10:36 -0400
-In-reply-to: <CAK9yfHzb8VA+E38iQ3b31Yjfd9BvKcEMBc_gijJ3hERa_fBqFw@mail.gmail.com>
+Received: from mga03.intel.com ([143.182.124.21]:55107 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755379Ab3IYNst (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Sep 2013 09:48:49 -0400
+In-Reply-To: <1380045916-29833-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: eduardo.valentin@ti.com, linux-pm@vger.kernel.org
 
-Hi Sachin,
-
-> Hi Lukasz,
+On Tue, 2013-09-24 at 11:05 -0700, Srinivas Pandruvada wrote:
+> x86_pkg_temp receives thermal notifications via a callback from a
+> therm_throt driver, where thermal interrupts are processed.
+> This callback is pkg_temp_thermal_platform_thermal_notify. Here to
+> avoid multiple interrupts from cores in a package, we disable the
+> source and also set a variable to avoid scheduling delayed work function.
+> This variable is protected via spin_lock_irqsave. On one buggy platform,
+> we still receiving interrupts even if the source is disabled. This
+> can cause deadlock/lockdep warning, when interrupt is generated while under
+> spinlock in work function.
+> Change spin_lock to spin_lock_irqsave and spin_unlock to
+> spin_unlock_irqrestore as the data it is trying to protect can also
+> be modified in a notification call called from interrupt handler.
 > 
-> On 25 September 2013 16:52, Lukasz Majewski <l.majewski@samsung.com>
-> wrote:
-> >
-> >  static void exynos4x12_set_apll(unsigned int index)
-> >  {
-> > -       unsigned int tmp, pdiv;
-> > +       unsigned int tmp, freq = apll_freq_4x12[index].freq;
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+applied to thermal .next.
+
+thanks,
+rui
+> ---
+>  drivers/thermal/x86_pkg_temp_thermal.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 > 
-> nit: It is better to put the 'freq' assignment on a new line.
+> diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+> index f36950e..7722cb9 100644
+> --- a/drivers/thermal/x86_pkg_temp_thermal.c
+> +++ b/drivers/thermal/x86_pkg_temp_thermal.c
+> @@ -316,18 +316,19 @@ static void pkg_temp_thermal_threshold_work_fn(struct work_struct *work)
+>  	int phy_id = topology_physical_package_id(cpu);
+>  	struct phy_dev_entry *phdev = pkg_temp_thermal_get_phy_entry(cpu);
+>  	bool notify = false;
+> +	unsigned long flags;
+>  
+>  	if (!phdev)
+>  		return;
+>  
+> -	spin_lock(&pkg_work_lock);
+> +	spin_lock_irqsave(&pkg_work_lock, flags);
+>  	++pkg_work_cnt;
+>  	if (unlikely(phy_id > max_phy_id)) {
+> -		spin_unlock(&pkg_work_lock);
+> +		spin_unlock_irqrestore(&pkg_work_lock, flags);
+>  		return;
+>  	}
+>  	pkg_work_scheduled[phy_id] = 0;
+> -	spin_unlock(&pkg_work_lock);
+> +	spin_unlock_irqrestore(&pkg_work_lock, flags);
+>  
+>  	enable_pkg_thres_interrupt();
+>  	rdmsrl(MSR_IA32_PACKAGE_THERM_STATUS, msr_val);
+> @@ -397,6 +398,7 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+>  	int thres_count;
+>  	u32 eax, ebx, ecx, edx;
+>  	u8 *temp;
+> +	unsigned long flags;
+>  
+>  	cpuid(6, &eax, &ebx, &ecx, &edx);
+>  	thres_count = ebx & 0x07;
+> @@ -420,19 +422,19 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+>  		goto err_ret_unlock;
+>  	}
+>  
+> -	spin_lock(&pkg_work_lock);
+> +	spin_lock_irqsave(&pkg_work_lock, flags);
+>  	if (topology_physical_package_id(cpu) > max_phy_id)
+>  		max_phy_id = topology_physical_package_id(cpu);
+>  	temp = krealloc(pkg_work_scheduled,
+>  			(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
+>  	if (!temp) {
+> -		spin_unlock(&pkg_work_lock);
+> +		spin_unlock_irqrestore(&pkg_work_lock, flags);
+>  		err = -ENOMEM;
+>  		goto err_ret_free;
+>  	}
+>  	pkg_work_scheduled = temp;
+>  	pkg_work_scheduled[topology_physical_package_id(cpu)] = 0;
+> -	spin_unlock(&pkg_work_lock);
+> +	spin_unlock_irqrestore(&pkg_work_lock, flags);
+>  
+>  	phy_dev_entry->phys_proc_id = topology_physical_package_id(cpu);
+>  	phy_dev_entry->first_cpu = cpu;
 
-checkpatch.pl wasn't complaining :-).
-Also please consider below comment.
 
-> 
-> >
-> > -       /* 1. MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
-> > +       /* MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
-> >         clk_set_parent(moutcore, mout_mpll);
-> >
-> >         do {
-> > @@ -140,24 +140,9 @@ static void exynos4x12_set_apll(unsigned int
-> > index) tmp &= 0x7;
-> >         } while (tmp != 0x2);
-> >
-> > -       /* 2. Set APLL Lock time */
-> > -       pdiv = ((apll_freq_4x12[index].mps >> 8) & 0x3f);
-> > +       clk_set_rate(mout_apll, freq * 1000);
-> 
-> Don't we need to check the return value of this?
-
-The broken code isn't handling errors now (*_set_apll() function is
-defined as void). Since this patch is a regression fix (for v3.12) I
-just wanted to change as little as possible to provide a functional fix.
-
-I think that regression fix shall not change much functionality -
-therefore the exynosXXXX-cpufreq.c cleanup will be done for next kernel
-release.
-
-> 
-> Same comments for the second patch too.
-> 
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
