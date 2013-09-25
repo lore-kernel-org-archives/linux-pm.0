@@ -1,91 +1,28 @@
-From: Matt Porter <matt.porter@linaro.org>
-Subject: Re: [PATCH 1/3] thermal: bcm281xx: Add thermal driver
-Date: Wed, 25 Sep 2013 15:26:13 -0400
-Message-ID: <20130925192609.GB25191@ohporter.com>
-References: <1379958698-7554-1-git-send-email-wendy.ng@broadcom.com>
- <1379958698-7554-2-git-send-email-wendy.ng@broadcom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f54.google.com ([209.85.213.54]:48489 "EHLO
-	mail-yh0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515Ab3IYT0T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 15:26:19 -0400
-Content-Disposition: inline
-In-Reply-To: <1379958698-7554-2-git-send-email-wendy.ng@broadcom.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate snapshot
+Date: Wed, 25 Sep 2013 22:04:33 +0100
+Message-ID: <29408.1380143073@warthog.procyon.org.uk>
+References: <1379206621-18639-1-git-send-email-jlee@suse.com>
+Return-path: <opensuse-kernel+bounces-5131-glsk-opensuse-kernel=m.gmane.org-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <1379206621-18639-1-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
+List-Post: <mailto:opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:opensuse-kernel+help-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Subscribe: <mailto:opensuse-kernel+subscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Unsubscribe: <mailto:opensuse-kernel+unsubscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Owner: <mailto:opensuse-kernel+owner-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Archive: <http://lists.opensuse.org/opensuse-kernel/>
+To: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-F6s6mLieUQo7FNHlEwC/lvQIK84fMopw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee,                          Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Wendy Ng <wendy.ng@broadcom.com>
-Cc: Rob Herring <rob.herring@calxeda.com>, Stephen Warren <swarren@wwwdotorg.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>
 
-On Mon, Sep 23, 2013 at 10:51:36AM -0700, Wendy Ng wrote:
-> This adds the support for reading out temperature from Broadcom bcm281xx
-> SoCs.
-> 
-> Signed-off-by: Wendy Ng <wendy.ng@broadcom.com>
-> Reviewed-by: Markus Mayer <mmayer@broadcom.com>
-> Reviewed-by: Christian Daudt <csd@broadcom.com>
-> ---
->  .../bindings/thermal/bcm-kona-thermal.txt          |   18 +++
->  drivers/thermal/Kconfig                            |   10 ++
->  drivers/thermal/Makefile                           |    1 +
->  drivers/thermal/bcm_thermal.c                      |  170 ++++++++++++++++++++
->  4 files changed, 199 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->  create mode 100644 drivers/thermal/bcm_thermal.c
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
-> new file mode 100644
-> index 0000000..acca99e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
-> @@ -0,0 +1,18 @@
-> +* Broadcom Kona Thermal Management Unit
-> +
-> +This version is for the BCM281xx family of SoCs.
-> +
-> +Required properties:
-> +- compatible : "brcm,bcm11351-thermal", "brcm,kona-thermal"
-> +- reg : Address range of the thermal register
-> +- thermal-name: this entry must be specified and it will be passed into
-> +thermal_zone_device_register().  This name will also be reported under Hwmon
-> +sysfs 'name' attribute.
-> +
-> +Example:
-> +	thermal@34008000 {
-> +		compatible = "brcm,bcm11351-thermal", "brcm,kona-thermal";
-> +		reg = <0x34008000 0x0024>;
-> +		thermal-name = "bcm_kona_therm";
-> +		status = "disabled";
-> +	};
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index dbfc390..7f823f0 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -134,6 +134,16 @@ config KIRKWOOD_THERMAL
->  	  Support for the Kirkwood thermal sensor driver into the Linux thermal
->  	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
->  
-> +config BCM_THERMAL
-> +	tristate "Temperature sensor on Broadcom BCM281xx family of SoCs"
-> +	depends on ARCH_BCM
 
-Hi Wendy,
+I have pushed some keyrings patches that will likely affect this to:
 
-I just noticed that, depending on acceptance, this could collide with
-Christian's ARCH_BCM->ARCH_BCM_MOBILE rename that is expected to go into
-3.13. I'm not sure if this series is targeted for 3.13 (due to the discussion
-about Eduardo's subsystem changes that impact it). If it is, you might
-want to rebase on Christian's rename series
-http://www.spinics.net/lists/arm-kernel/msg274963.html and use
-ARCH_BCM_MOBILE here.
+	http://git.kernel.org/cgit/linux/kernel/git/dhowells/linux-fs.git/log/?h=keys-devel
 
--Matt
+I intend to ask James to pull these into his next branch.  If he's happy to do
+so, I can look at pulling at least your asymmetric keys patch on top of them.
 
-> +	default y
-> +	help
-> +	  If you say yes here you get support for TMU (Thermal Management
-> +	  Unit) on Broadcom BCM281xx family of SoCs. This provides thermal
-> +	  monitoring of CPU clusters, graphics, and SoC glue, but does not
-> +	  include monitoring of charger temperature.
+It'd be helpful if you could see if you need to make any updates.
 
+David
