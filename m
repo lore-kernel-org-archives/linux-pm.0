@@ -1,277 +1,228 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 19/21] cpuidle: create list of registered drivers
-Date: Thu, 26 Sep 2013 00:30:51 +0200
-Message-ID: <5243641B.6050604@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org> <7e9565e323c1e065eeb2a2a1075967bd21ee6066.1379779777.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: [RFC PATCHv4] drivers: power: Detect device suspend/resume lockup and log event in pstore.
+Date: Wed, 25 Sep 2013 15:31:53 -0700
+Message-ID: <1380148313-763-1-git-send-email-zoran.markovic@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f45.google.com ([74.125.82.45]:65469 "EHLO
-	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364Ab3IYWay (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:30:54 -0400
-Received: by mail-wg0-f45.google.com with SMTP id y10so337513wgg.24
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:30:53 -0700 (PDT)
-In-Reply-To: <7e9565e323c1e065eeb2a2a1075967bd21ee6066.1379779777.git.viresh.kumar@linaro.org>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:38838 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961Ab3IYWdO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 18:33:14 -0400
+Received: by mail-pd0-f169.google.com with SMTP id r10so280905pdi.28
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 15:33:14 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>
 
-On 09/22/2013 03:21 AM, Viresh Kumar wrote:
-> Currently we have multiple definitions of few routines based on follo=
-wing config
-> option: CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
->=20
-> These are present to save space by not creating per-cpu variable for =
-platforms
-> which need only one cpuidle driver to be registered for all CPUs.
->=20
-> But this setup has a problem. For ARM multi-platform kernel use case =
-this option
-> will get enabled and so we will have per-cpu variables even for platf=
-orms that
-> don't need it.
->=20
-> The bigger problem is two separate code paths for such platforms for =
-single &
-> multi platform kernels. Which doesn't sound good.
->=20
-> A better way of solving this problem would be to create cpuidle drive=
-r's list
-> that can be used to manage all information we need. Then we don't rea=
-lly have to
-> write any special code for handling platforms with
-> CONFIG_CPU_IDLE_MULTIPLE_DRIVERS option set.
->=20
-> This patch does it.
+From: Benoit Goby <benoit@android.com>
 
-If you introduce a list, you will have to introduce a lock to protect
-it. This lock will be in the fast path cpuidle_idle_call with the
-get_driver function and conforming to the comment: "NOTE: no locks or
-semaphores should be used here".
+Rather than hard-lock the kernel, dump the suspend/resume thread stack and
+panic() to capture a message in pstore when a driver takes too long to
+suspend/resume. Default suspend/resume watchdog timeout is set to 12
+seconds to be longer than the usbhid 10 second timeout, but could be
+changed at compile time.
 
-A lock has been introduced in this function already and the system hang=
-s
-with 1024 cpus.
+Exclude from the watchdog the time spent waiting for children that
+are resumed asynchronously and time every device, whether or not they
+resumed synchronously.
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpuidle/driver.c | 106 ++++++++++++-------------------------=
-----------
->  include/linux/cpuidle.h  |   1 +
->  2 files changed, 27 insertions(+), 80 deletions(-)
->=20
-> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-> index a4a93b4..320b4ec 100644
-> --- a/drivers/cpuidle/driver.c
-> +++ b/drivers/cpuidle/driver.c
-> @@ -18,10 +18,19 @@
->  #include "cpuidle.h"
-> =20
->  DEFINE_SPINLOCK(cpuidle_driver_lock);
-> +static LIST_HEAD(cpuidle_detected_drivers);
-> =20
-> -#ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
-> +static inline struct cpuidle_driver *
-> +__cpuidle_get_driver(const struct cpumask *cpumask)
-> +{
-> +	struct cpuidle_driver *drv;
-> +
-> +	list_for_each_entry(drv, &cpuidle_detected_drivers, driver_list)
-> +		if (cpumask_intersects(drv->cpumask, cpumask))
-> +			return drv;
-> =20
-> -static DEFINE_PER_CPU(struct cpuidle_driver *, cpuidle_drivers);
-> +	return NULL;
-> +}
-> =20
->  /**
->   * __cpuidle_get_cpu_driver - return the cpuidle driver tied to a CP=
-U.
-> @@ -32,103 +41,39 @@ static DEFINE_PER_CPU(struct cpuidle_driver *, c=
-puidle_drivers);
->   */
->  static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int cp=
-u)
->  {
-> -	return per_cpu(cpuidle_drivers, cpu);
-> +	return __cpuidle_get_driver(cpumask_of(cpu));
->  }
-> =20
->  /**
-> - * __cpuidle_unset_driver - unset per CPU driver variables.
-> + * __cpuidle_add_driver - adds a cpuidle driver to list.
->   * @drv: a valid pointer to a struct cpuidle_driver
->   *
-> - * For each CPU in the driver's CPU mask, unset the registered drive=
-r per CPU
-> - * variable. If @drv is different from the registered driver, the co=
-rresponding
-> - * variable is not cleared.
-> - */
-> -static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv=
-)
-> -{
-> -	int cpu;
-> -
-> -	for_each_cpu(cpu, drv->cpumask) {
-> -
-> -		if (drv !=3D __cpuidle_get_cpu_driver(cpu))
-> -			continue;
-> -
-> -		per_cpu(cpuidle_drivers, cpu) =3D NULL;
-> -	}
-> -}
-> -
-> -/**
-> - * __cpuidle_set_driver - set per CPU driver variables for the given=
- driver.
-> - * @drv: a valid pointer to a struct cpuidle_driver
-> - *
-> - * For each CPU in the driver's cpumask, unset the registered driver=
- per CPU
-> - * to @drv.
-> + * Adds cpuidle driver to cpuidle_detected_drivers list if no driver=
- is already
-> + * registered for any CPUs present in drv->cpumask.
->   *
->   * Returns 0 on success, -EBUSY if the CPUs have driver(s) already.
->   */
-> -static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
-> -{
-> -	int cpu;
-> -
-> -	for_each_cpu(cpu, drv->cpumask) {
-> -
-> -		if (__cpuidle_get_cpu_driver(cpu)) {
-> -			__cpuidle_unset_driver(drv);
-> -			return -EBUSY;
-> -		}
-> -
-> -		per_cpu(cpuidle_drivers, cpu) =3D drv;
-> -	}
-> -
-> -	return 0;
-> -}
-> -
-> -#else
-> -
-> -static struct cpuidle_driver *cpuidle_curr_driver;
-> -
-> -/**
-> - * __cpuidle_get_cpu_driver - return the global cpuidle driver point=
-er.
-> - * @cpu: ignored without the multiple driver support
-> - *
-> - * Return a pointer to a struct cpuidle_driver object or NULL if no =
-driver was
-> - * previously registered.
-> - */
-> -static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int cp=
-u)
-> -{
-> -	return cpuidle_curr_driver;
-> -}
-> -
-> -/**
-> - * __cpuidle_set_driver - assign the global cpuidle driver variable.
-> - * @drv: pointer to a struct cpuidle_driver object
-> - *
-> - * Returns 0 on success, -EBUSY if the driver is already registered.
-> - */
-> -static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
-> +static inline int __cpuidle_add_driver(struct cpuidle_driver *drv)
->  {
-> -	if (cpuidle_curr_driver)
-> +	if (__cpuidle_get_driver(drv->cpumask))
->  		return -EBUSY;
-> =20
-> -	cpuidle_curr_driver =3D drv;
-> +	list_add(&drv->driver_list, &cpuidle_detected_drivers);
-> =20
->  	return 0;
->  }
-> =20
->  /**
-> - * __cpuidle_unset_driver - unset the global cpuidle driver variable=
-=2E
-> - * @drv: a pointer to a struct cpuidle_driver
-> + * __cpuidle_remove_driver - remove cpuidle driver from list.
-> + * @drv: a valid pointer to a struct cpuidle_driver
->   *
-> - * Reset the global cpuidle variable to NULL.  If @drv does not matc=
-h the
-> - * registered driver, do nothing.
-> + * Removes cpuidle driver from cpuidle_detected_drivers list.
->   */
-> -static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv=
-)
-> +static inline void __cpuidle_remove_driver(struct cpuidle_driver *dr=
-v)
->  {
-> -	if (drv =3D=3D cpuidle_curr_driver)
-> -		cpuidle_curr_driver =3D NULL;
-> +	list_del(&drv->driver_list);
->  }
-> =20
-> -#endif
-> -
->  /**
->   * cpuidle_setup_broadcast_timer - enable/disable the broadcast time=
-r
->   * @arg: a void pointer used to match the SMP cross call API
-> @@ -158,6 +103,7 @@ static void __cpuidle_driver_init(struct cpuidle_=
-driver *drv)
->  	int i;
-> =20
->  	drv->refcnt =3D 0;
-> +	INIT_LIST_HEAD(&drv->driver_list);
-> =20
->  	/*
->  	 * Use all possible CPUs as the default, because if the kernel boot=
-s
-> @@ -244,7 +190,7 @@ static int __cpuidle_register_driver(struct cpuid=
-le_driver *drv)
-> =20
->  	__cpuidle_driver_init(drv);
-> =20
-> -	ret =3D __cpuidle_set_driver(drv);
-> +	ret =3D __cpuidle_add_driver(drv);
->  	if (ret)
->  		return ret;
-> =20
-> @@ -277,7 +223,7 @@ static void __cpuidle_unregister_driver(struct cp=
-uidle_driver *drv)
->  				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF, 1);
->  	}
-> =20
-> -	__cpuidle_unset_driver(drv);
-> +	__cpuidle_remove_driver(drv);
->  }
-> =20
->  /**
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 0f0da17..81b74d2 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -129,6 +129,7 @@ struct cpuidle_driver {
-> =20
->  	/* the driver handles the cpus in cpumask */
->  	struct cpumask		*cpumask;
-> +	struct list_head	driver_list;
->  };
-> =20
->  #ifdef CONFIG_CPU_IDLE
->=20
+This patch is targeted for mobile devices where a suspend/resume lockup
+could cause a system reboot. Information about failing device can be
+retrieved in subsequent boot session by mounting pstore and inspecting
+the log. Laptops with EFI-enabled pstore could also benefit from
+this feature.
 
+The hardware watchdog timer is likely suspended during this time and
+couldn't be relied upon. The soft-lockup detector would eventually tell
+that tasks are not scheduled, but would provide little context as to why.
+The patch hence uses system timer and assumes it is still active while the
+devices are suspended/resumed.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+This feature can be enabled/disabled during kernel configuration.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Cc: Android Kernel Team <kernel-team@android.com>
+Cc: Colin Cross <ccross@android.com>
+Cc: Todd Poynor <toddpoynor@google.com>
+Cc: San Mehat <san@google.com>
+Cc: Benoit Goby <benoit@android.com>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Original-author: San Mehat <san@google.com>
+Signed-off-by: Benoit Goby <benoit@android.com>
+[zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
+tweaked commit message. Moved call to dpm_wd_set() before device_lock() in
+device_resume(). Minor changes to add compile-time inclusion of the feature.]
+Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
+---
+ drivers/base/power/main.c |   68 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/Kconfig      |   16 +++++++++++
+ 2 files changed, 84 insertions(+)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 9f098a8..9b7e6b6 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -30,6 +30,8 @@
+ #include <linux/suspend.h>
+ #include <trace/events/power.h>
+ #include <linux/cpuidle.h>
++#include <linux/timer.h>
++
+ #include "../base.h"
+ #include "power.h"
+ 
+@@ -55,6 +57,12 @@ struct suspend_stats suspend_stats;
+ static DEFINE_MUTEX(dpm_list_mtx);
+ static pm_message_t pm_transition;
+ 
++struct dpm_watchdog {
++	struct device		*dev;
++	struct task_struct	*tsk;
++	struct timer_list	timer;
++};
++
+ static int async_error;
+ 
+ static char *pm_verb(int event)
+@@ -390,6 +398,60 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	return error;
+ }
+ 
++#ifdef CONFIG_DPM_WD
++/**
++ * dpm_wd_handler - Driver suspend / resume watchdog handler.
++ *
++ * Called when a driver has timed out suspending or resuming.
++ * There's not much we can do here to recover so panic() to
++ * capture a crash-dump in pstore.
++ */
++static void dpm_wd_handler(unsigned long data)
++{
++	struct dpm_watchdog *wd = (void *)data;
++
++	dev_emerg(wd->dev, "**** DPM device timeout ****\n");
++	show_stack(wd->tsk, NULL);
++	panic("%s %s: unrecoverable failure\n",
++		dev_driver_string(wd->dev), dev_name(wd->dev));
++}
++
++/**
++ * dpm_wd_set - Enable pm watchdog for given device.
++ * @wd: Watchdog. Must be allocated on the stack.
++ * @dev: Device to handle.
++ */
++static void dpm_wd_set(struct dpm_watchdog *wd, struct device *dev)
++{
++	struct timer_list *timer = &wd->timer;
++
++	wd->dev = dev;
++	wd->tsk = get_current();
++
++	init_timer_on_stack(timer);
++	/* use same timeout value for both suspend and resume */
++	timer->expires = jiffies + HZ * CONFIG_DPM_WD_TIMEOUT;
++	timer->function = dpm_wd_handler;
++	timer->data = (unsigned long)wd;
++	add_timer(timer);
++}
++
++/**
++ * dpm_wd_clear - Disable suspend/resume watchdog.
++ * @wd: Watchdog to disable.
++ */
++static void dpm_wd_clear(struct dpm_watchdog *wd)
++{
++	struct timer_list *timer = &wd->timer;
++
++	del_timer_sync(timer);
++	destroy_timer_on_stack(timer);
++}
++#else
++#define dpm_wd_set(x, y)
++#define dpm_wd_clear(x)
++#endif
++
+ /*------------------------- Resume routines -------------------------*/
+ 
+ /**
+@@ -576,6 +638,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+ 	int error = 0;
++	struct dpm_watchdog wd;
+ 
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
+@@ -584,6 +647,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 		goto Complete;
+ 
+ 	dpm_wait(dev->parent, async);
++	dpm_wd_set(&wd, dev);
+ 	device_lock(dev);
+ 
+ 	/*
+@@ -642,6 +706,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 
+  Unlock:
+ 	device_unlock(dev);
++	dpm_wd_clear(&wd);
+ 
+  Complete:
+ 	complete_all(&dev->power.completion);
+@@ -1060,6 +1125,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+ 	int error = 0;
++	struct dpm_watchdog wd;
+ 
+ 	dpm_wait_for_children(dev, async);
+ 
+@@ -1083,6 +1149,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	if (dev->power.syscore)
+ 		goto Complete;
+ 
++	dpm_wd_set(&wd, dev);
+ 	device_lock(dev);
+ 
+ 	if (dev->pm_domain) {
+@@ -1139,6 +1206,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	}
+ 
+ 	device_unlock(dev);
++	dpm_wd_clear(&wd);
+ 
+  Complete:
+ 	complete_all(&dev->power.completion);
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index d444c4e..6a6b763 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -178,6 +178,22 @@ config PM_SLEEP_DEBUG
+ 	def_bool y
+ 	depends on PM_DEBUG && PM_SLEEP
+ 
++config DPM_WD
++	bool "Device suspend/resume watchdog"
++	depends on PM_DEBUG && PSTORE
++	---help---
++	  Sets up a watchdog timer to capture drivers that are
++	  locked up attempting to suspend/resume a device.
++	  A detected lockup causes system panic with message
++	  captured in pstore device for inspection in subsequent
++	  boot session.
++
++config DPM_WD_TIMEOUT
++	int "Watchdog timeout in seconds"
++	range 1 120
++	default 12
++	depends on DPM_WD
++
+ config PM_TRACE
+ 	bool
+ 	help
+-- 
+1.7.9.5
 
