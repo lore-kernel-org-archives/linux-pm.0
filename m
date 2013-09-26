@@ -1,98 +1,65 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Thu, 26 Sep 2013 18:28:23 +0530
-Message-ID: <52442F6F.5020703@linux.vnet.ibm.com>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
+Date: Thu, 26 Sep 2013 18:39:19 +0530
+Message-ID: <524431FF.50904@linux.vnet.ibm.com>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <20130925234734.GK18242@two.firstfloor.org> <52438A6B.30202@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:55111 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756988Ab3IZNCl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 09:02:41 -0400
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:45750 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757069Ab3IZNN3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 09:13:29 -0400
 Received: from /spool/local
-	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 26 Sep 2013 18:32:37 +0530
-In-Reply-To: <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
+	Thu, 26 Sep 2013 18:43:27 +0530
+In-Reply-To: <52438A6B.30202@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, amit.kachhap@linaro.org, thomas.abraham@linaro.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Andrew Morton <akpm@linux-foundation.org>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, thomas.abraham@linaro.org, amit.kachhap@linaro.org
 
-On 09/26/2013 05:10 AM, Andrew Morton wrote:
-> On Thu, 26 Sep 2013 04:56:32 +0530 "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> 
->> Experimental Results:
->> ====================
+On 09/26/2013 06:44 AM, Arjan van de Ven wrote:
+> On 9/25/2013 4:47 PM, Andi Kleen wrote:
+>>> Also, the changelogs don't appear to discuss one obvious downside: the
+>>> latency incurred in bringing a bank out of one of the low-power states
+>>> and back into full operation.  Please do discuss and quantify that to
+>>> the best of your knowledge.
 >>
->> Test setup:
->> ----------
->>
->> x86 Sandybridge dual-socket quad core HT-enabled machine, with 128GB RAM.
->> Memory Region size = 512MB.
+>> On Sandy Bridge the memry wakeup overhead is really small. It's on by
+>> default
+>> in most setups today.
 > 
-> Yes, but how much power was saved ;)
-> 
-
-I don't have those numbers yet, but I'll be able to get them going forward.
-
-Let me explain the challenge I am facing. A prototype powerpc platform that
-I work with has the capability to transition memory banks to content-preserving
-low-power states at a per-socket granularity. What that means is that we can
-get memory power savings *without* needing to go to full-system-idle, unlike
-Intel platforms such as Sandybridge.
-
-So, since we can exploit per-socket memory power-savings irrespective of
-whether the system is fully idle or not, using this patchset to shape the
-memory references appropriately is definitely going to be beneficial on that
-platform.
-
-But the challenge is that I don't have all the pieces in place for demarcating
-the actual boundaries of the power-manageable memory chunks of that platform
-and exposing it to the Linux kernel. As a result, I was not able to test and
-report the overall power-savings from this patchset.
-
-But I'll soon start working on getting the required pieces ready to expose
-the memory boundary info of the platform via device-tree and then using
-that to construct the Linux MM's view of memory regions (instead of hard-coding
-them as I did in this patchset). With that done, I should be able to test and
-report the overall power-savings numbers on this prototype powerpc platform.
-
-Until then, in this and previous versions of the patchset, I had used an
-Intel Sandybridge system just to evaluate the effectiveness of this patchset
-by looking at the statistics (such as /proc/zoneinfo, /proc/pagetypeinfo
-etc)., and of course this patchset has the code to export per-memory-region
-info in procfs to enable such analyses. Apart from this, I was able to
-evaluate the performance overhead of this patchset similarly, without actually
-needing to run on a system with true (hardware) memory region boundaries.
-Of course, this was a first-level algorithmic/functional testing and evaluation,
-and I was able to demonstrate a huge benefit over mainline in terms of
-consolidation of allocations. Going forward, I'll work on getting this running
-on a setup that can give me the overall power-savings numbers as well.
-
-BTW, it would be really great if somebody who has access to custom BIOSes
-(which export memory region/ACPI MPST info) on x86 platforms could try out
-this patchset and let me know how well this patchset performs on x86 in terms
-of memory power savings. I don't have a custom x86 BIOS to get that info, so
-I don't think I'll be able to try that out myself :-(
-
-
-> Also, the changelogs don't appear to discuss one obvious downside: the
-> latency incurred in bringing a bank out of one of the low-power states
-> and back into full operation.  Please do discuss and quantify that to
-> the best of your knowledge.
-> 
+> yet grouping is often defeated (in current systems) due to hw level
+> interleaving ;-(
+> sometimes that's a bios setting though.
 > 
 
-As Andi mentioned, the wakeup latency is not expected to be noticeable. And
-these power-savings logic is turned on in the hardware by default. So its not
-as if this patchset is going to _introduce_ that latency. This patchset only
-tries to make the Linux MM _cooperate_ with the (already existing) hardware
-power-savings logic and thereby get much better memory power-savings benefits
-out of it.
+True, and I plan to tweak those hardware settings in the prototype powerpc
+platform and evaluate the power vs performance trade-offs of various
+interleaving schemes in conjunction with this patchset.
 
+> in internal experimental bioses we've been able to observe a "swing" of
+> a few watts
+> (not with these patches but with some other tricks)...
+
+Great! So, would you have the opportunity to try out this patchset as well
+on those systems that you have? I can modify the patchset to take memory
+region info from whatever source you want me to take it from and then we'll
+have realistic power-savings numbers to evaluate this patchset and its benefits
+on Intel/x86 platforms.
+
+> I'm curious to see how these patches do for Srivatsa
+> 
+
+As I mentioned in my other mail, I don't yet have a setup for doing actual
+power-measurements. Hence, so far I was focussing on the algorithmic aspects
+of the patchset and was trying to get an excellent consolidation ratio,
+without hurting performance too much. Going forward, I'll work on getting the
+power-measurements as well on the powerpc platform that I have.
+ 
 Regards,
 Srivatsa S. Bhat
 
