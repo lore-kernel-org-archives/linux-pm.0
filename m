@@ -1,35 +1,76 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Thu, 26 Sep 2013 01:47:34 +0200
-Message-ID: <20130925234734.GK18242@two.firstfloor.org>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
- <52437128.7030402@linux.vnet.ibm.com>
- <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
+From: Colin Cross <ccross@google.com>
+Subject: Re: [PATCH 14/21] cpuidle: coupled: don't compare cpu masks unnecessarily
+Date: Wed, 25 Sep 2013 17:25:28 -0700
+Message-ID: <CAMbhsRQRGGpShFiTBP7OZ8txhKG_i-1_s=AAGPQx+JzTkW=0Lg@mail.gmail.com>
+References: <cover.1379779777.git.viresh.kumar@linaro.org>
+	<564c8b1f073dc396b54866a2220b09b7869289f4.1379779777.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
-Sender: owner-linux-mm@kvack.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:53997 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384Ab3IZAZ3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 20:25:29 -0400
+Received: by mail-ob0-f170.google.com with SMTP id va2so956231obc.15
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 17:25:28 -0700 (PDT)
+In-Reply-To: <564c8b1f073dc396b54866a2220b09b7869289f4.1379779777.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 
-> Also, the changelogs don't appear to discuss one obvious downside: the
-> latency incurred in bringing a bank out of one of the low-power states
-> and back into full operation.  Please do discuss and quantify that to
-> the best of your knowledge.
+On Sat, Sep 21, 2013 at 6:21 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> In cpuidle_coupled_register_device() we do following:
+>         if (WARN_ON(!cpumask_equal(&dev->coupled_cpus, &coupled->coupled_cpus)))
+>                 coupled->prevent++;
+>
+> This is only required to be done when we are using 'coupled' from an existing
+> cpuidle_device and not when we have just done this:
+>
+>         coupled->coupled_cpus = dev->coupled_cpus
+>
+> So, move this compare statement to the right place.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-On Sandy Bridge the memry wakeup overhead is really small. It's on by default
-in most setups today.
+I don't agree with this.  This patch is a tiny optimization in code
+that is rarely called, and it moves a final sanity check somewhere
+that it might get missed if the code were later refactored.
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> ---
+>  drivers/cpuidle/coupled.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+> index e952936..19a89eb 100644
+> --- a/drivers/cpuidle/coupled.c
+> +++ b/drivers/cpuidle/coupled.c
+> @@ -642,6 +642,10 @@ int cpuidle_coupled_register_device(struct cpuidle_device *dev)
+>                 other_dev = per_cpu(cpuidle_devices, cpu);
+>                 if (other_dev && other_dev->coupled) {
+>                         coupled = other_dev->coupled;
+> +
+> +                       if (WARN_ON(!cpumask_equal(&dev->coupled_cpus,
+> +                                               &coupled->coupled_cpus)))
+> +                               coupled->prevent++;
+>                         goto have_coupled;
+>                 }
+>         }
+> @@ -655,9 +659,6 @@ int cpuidle_coupled_register_device(struct cpuidle_device *dev)
+>
+>  have_coupled:
+>         dev->coupled = coupled;
+> -       if (WARN_ON(!cpumask_equal(&dev->coupled_cpus, &coupled->coupled_cpus)))
+> -               coupled->prevent++;
+> -
+>         cpuidle_coupled_update_online_cpus(coupled);
+>
+>         coupled->refcnt++;
+> --
+> 1.7.12.rc2.18.g61b472e
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
