@@ -1,54 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 20/21] cpuidle: don't calculate time-diff if entered_state
- == 0
-Date: Thu, 26 Sep 2013 11:54:09 +0530
-Message-ID: <CAKohpong15qzFg_sZVB77wVm4gu-4Se1E=eqvJOv96fgnyMXDA@mail.gmail.com>
-References: <cover.1379779777.git.viresh.kumar@linaro.org>
-	<acd1cc837f969a50582d2b25a73c5e247f40f843.1379779777.git.viresh.kumar@linaro.org>
-	<524365FA.4090108@linaro.org>
+From: Jiri Kosina <jiri.kosina-IBi9RG/b67k@public.gmane.org>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
+ snapshot
+Date: Thu, 26 Sep 2013 08:24:41 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1309260819490.18703@pobox.suse.cz>
+References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>  <1380147414.18835.36.camel@dabdike.int.hansenpartnership.com>  <20130926002730.GA26857@amd.pavel.ucw.cz> <1380162771.18835.47.camel@dabdike.int.hansenpartnership.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <524365FA.4090108@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <opensuse-kernel+bounces-5141-glsk-opensuse-kernel=m.gmane.org-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <1380162771.18835.47.camel-sFMDBYUN5F8GjUHQrlYNx2Wm91YjaHnnhRte9Li2A+AAvxtiuMwx3w@public.gmane.org>
+List-Post: <mailto:opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:opensuse-kernel+help-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Subscribe: <mailto:opensuse-kernel+subscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Unsubscribe: <mailto:opensuse-kernel+unsubscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Owner: <mailto:opensuse-kernel+owner-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
+List-Archive: <http://lists.opensuse.org/opensuse-kernel/>
+To: James Bottomley <James.Bottomley-d9PhHud1JfjCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>
+Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-F6s6mLieUQo7FNHlEwC/lvQIK84fMopw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 26 September 2013 04:08, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> On 09/22/2013 03:21 AM, Viresh Kumar wrote:
->> If entered_state == 0, we don't need to set dev->last_residency to 'diff' as we
->> will be setting it to zero without using its new value.
->
-> I don't get it, can you elaborate.
+On Wed, 25 Sep 2013, James Bottomley wrote:
 
-Sure.. We have following code in cpuidle_enter_state():
+> > I don't get this. Why is it important that current kernel can't
+> > recreate the signature?
+> 
+> The thread model is an attack on the saved information (i.e. the suspend
+> image) between it being saved by the old kernel and used by the new one.
+> The important point isn't that the new kernel doesn't have access to
+> K_{N-1} it's that no-one does: the key is destroyed as soon as the old
+> kernel terminates however the verification public part P_{N-1} survives.
 
----------
-        diff = ktime_to_us(ktime_sub(time_end, time_start));
-        if (diff > INT_MAX)
-                diff = INT_MAX;
+James,
 
-        dev->last_residency = (int) diff;
+could you please describe the exact scenario you think that the symmetric 
+keys aproach doesn't protect against, while the assymetric key aproach 
+does?
 
-        if (entered_state >= 0) {
-                /* Update cpuidle counters */
-                /* This can be moved to within driver enter routine
-                 * but that results in multiple copies of same code.
-                 */
-                dev->states_usage[entered_state].time += dev->last_residency;
-                dev->states_usage[entered_state].usage++;
-        } else {
-                dev->last_residency = 0;
-        }
--------
+The crucial points, which I believe make the symmetric key aproach work 
+(and I feel quite embarassed by the fact that I haven't realized this 
+initially when coming up with the assymetric keys aproach) are:
 
-We are setting last_residency to 0 when (entered_state < 0) and aren't using
-the value of "diff". So, we can actually skip calculations of time_end, diff and
-last_residency when (entered_state < 0).. Makes sense?
+- the kernel that is performing the actual resumption is trusted in the 
+  secure boot model, i.e. you trust it to perform proper verification
 
+- potentially malicious userspace (which is what we are protecting against 
+  -- malicious root creating fake hibernation image and issuing reboot) 
+  doesn't have access to the symmetric key
 
-> We can be a long time in this state
-> (eg. if the prediction is false).
-
-Okay.. I didn't get it :)
+-- 
+Jiri Kosina
+SUSE Labs
