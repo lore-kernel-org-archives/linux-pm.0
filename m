@@ -1,52 +1,54 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH V4 13/15] Hibernate: introduced SNAPSHOT_SIG_HASH
- config for select hash algorithm
-Date: Thu, 26 Sep 2013 10:21:47 +0200
-Message-ID: <20130926082146.GA22286@amd.pavel.ucw.cz>
-References: <1379206621-18639-1-git-send-email-jlee@suse.com>
- <1379206621-18639-14-git-send-email-jlee@suse.com>
- <20130918134535.GA3748@amd.pavel.ucw.cz>
- <1380159819.32302.24.camel@linux-s257.site>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 08/21] cpuidle: use cpuidle_disabled() instead of "off"
+Date: Thu, 26 Sep 2013 10:25:00 +0200
+Message-ID: <5243EF5C.6060908@linaro.org>
+References: <cover.1379779777.git.viresh.kumar@linaro.org>	<19979ce88726285c72dd6fe3d7b370d53669443c.1379779777.git.viresh.kumar@linaro.org>	<52435B05.9030201@linaro.org> <CAKohpon6fgCp2StW1=6JUua1xuZW8iS=0VLVCTsTD6JS027meg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43190 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203Ab3IZIVs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 04:21:48 -0400
-Content-Disposition: inline
-In-Reply-To: <1380159819.32302.24.camel@linux-s257.site>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:45352 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007Ab3IZIZD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 04:25:03 -0400
+Received: by mail-wi0-f180.google.com with SMTP id hj3so826186wib.7
+        for <linux-pm@vger.kernel.org>; Thu, 26 Sep 2013 01:25:02 -0700 (PDT)
+In-Reply-To: <CAKohpon6fgCp2StW1=6JUua1xuZW8iS=0VLVCTsTD6JS027meg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi!
+On 09/26/2013 07:06 AM, Viresh Kumar wrote:
+> On 26 September 2013 03:22, Daniel Lezcano <daniel.lezcano@linaro.org=
+> wrote:
+>> On 09/22/2013 03:21 AM, Viresh Kumar wrote:
+>>> We have a routine for getting value of "off", better call that inst=
+ead of using
+>>> "off" directly.
+>>
+>> We are in the fast path, I am not sure invoking a function here is
+>> better than using directly the static variable.
+>
+> I only did it for consistency as we have this routine specifically fo=
+r reading
+> value of "off" and so we better don't use off directly..
+>
+> Probably we can make it static inline and move it into
+> drivers/cpuidle/cpuidle.h?
 
-> > On Sun 2013-09-15 08:56:59, Lee, Chun-Yi wrote:
-> > > This patch introduced SNAPSHOT_SIG_HASH config for user to select which
-> > > hash algorithm will be used during signature generation of snapshot.
-> > 
-> > This series is big enough already... and who is going to test it?
-> 
-> The hash config not just for testing, it's relate to the performance and
-> secure between different hash algorithms.
+If you move it to cpuidle.h, you will have to move the 'off' variable i=
+n=20
+the header hence increasing the scope of it.
 
-I'm not saying it is for testing. I'm saying that selection makes
-testing harder.
 
-> There have person raised in LPC say he don't like SHA algorithm.
 
-Well, I don't like the config option.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-> > There's no need to make hash configurable. Just select one that works.
-> 
-> SHA1 has good performance, and SHA512 has better security, which one you
-> like it?
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-Use SHA1. It is completely adequate for what you are trying to do.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
