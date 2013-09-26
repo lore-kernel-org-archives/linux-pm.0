@@ -1,73 +1,73 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [RFC PATCH] freezer: allow killing of frozen tasks
-Date: Wed, 25 Sep 2013 18:46:44 -0700
-Message-ID: <CAMbhsRT-a-TMr369Poo5OMyw=TMrQxpTfk-1zDFKp0YYWv7xLg@mail.gmail.com>
-References: <5917186.DMyAa9ofOj@amdc1032>
-	<7588112.eXrFpITlCh@vostro.rjw.lan>
-	<CAH9JG2X3grVnUbuzksRLnDCT4dMQTyJuPa72qi4QmKTHo2QzEA@mail.gmail.com>
-	<2084875.Px2m8K6oH7@vostro.rjw.lan>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
+Date: Thu, 26 Sep 2013 03:50:16 +0200
+Message-ID: <20130926015016.GM18242@two.firstfloor.org>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
+ <52437128.7030402@linux.vnet.ibm.com>
+ <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
+ <20130925234734.GK18242@two.firstfloor.org>
+ <52438AA9.3020809@linux.intel.com>
+ <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:55259 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833Ab3IZBqp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 21:46:45 -0400
-Received: by mail-ob0-f176.google.com with SMTP id uy5so1100469obc.35
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 18:46:44 -0700 (PDT)
-In-Reply-To: <2084875.Px2m8K6oH7@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Andi Kleen <andi@firstfloor.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kyungmin Park <kmpark@infradead.org>, Tejun Heo <tj@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Wed, Sep 25, 2013 at 1:07 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, September 25, 2013 02:52:26 PM Kyungmin Park wrote:
->> On Tue, Aug 20, 2013 at 9:41 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Tuesday, August 20, 2013 08:27:27 AM Tejun Heo wrote:
->> >> On Tue, Aug 20, 2013 at 02:34:14PM +0200, Rafael J. Wysocki wrote:
->> >> > On Tuesday, August 20, 2013 08:22:00 AM Tejun Heo wrote:
->> >> > > On Tue, Aug 20, 2013 at 02:30:18PM +0200, Rafael J. Wysocki wrote:
->> >> > > > > So, I don't think we can simply turn TASK_UNITERRUPTIBLE to
->> >> > > > > TASK_KILLABLE at this point.  We really need to strictly define where
->> >> > > > > a task can freeze before being able to do anything like this.
->> >> > > >
->> >> > > > But we could do that for user space tasks I suppose?
->> >> > >
->> >> > > Even for userland tasks, we don't know where the task is stuck at.  I
->> >> > > think there are enough freeze points in the kernel which are in the
->> >> > > middle of something which can be used by userland tasks excuting some
->> >> > > syscall.  We need to collect all those sites into well defined trap
->> >> > > points before doing this.
->> >> >
->> >> > OK, thanks!
->> >>
->> >> I scanned through try_to_freeze() users and it seems like we don't
->> >> have that many which can be hit by userland tasks.  I think it should
->> >> be doable to audit all the users, remove the ones which can be invoked
->> >> by userland and make try_to_freeze() whine loudly if it's running off
->> >> a userland task except from well-defined spots.
->> >
->> > Which might be worth doing anyway to be sure we know what's going on.
->> >
->> >> Anyways, we need to ensure that userland task doesn't get stuck deep in the
->> >> kernel before allowing this.
->> >
->> > Agreed.
->>
->> Are there any update? we need this feature to kill frozen app easily.
->> Don't need to thaw app to kill.
->
-> No updates, but the above pretty much describes what needs to be done.
+On Wed, Sep 25, 2013 at 06:21:29PM -0700, Andrew Morton wrote:
+> On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
+> 
+> > On 9/25/2013 4:47 PM, Andi Kleen wrote:
+> > >> Also, the changelogs don't appear to discuss one obvious downside: the
+> > >> latency incurred in bringing a bank out of one of the low-power states
+> > >> and back into full operation.  Please do discuss and quantify that to
+> > >> the best of your knowledge.
+> > >
+> > > On Sandy Bridge the memry wakeup overhead is really small. It's on by default
+> > > in most setups today.
+> > 
+> > btw note that those kind of memory power savings are content-preserving,
+> > so likely a whole chunk of these patches is not actually needed on SNB
+> > (or anything else Intel sells or sold)
+> 
+> (head spinning a bit).  Could you please expand on this rather a lot?
 
-FWIW, the places I added try_to_freeze (which are all accessible from
-userspace tasks) were all audited to make sure they weren't holding
-any shared resources.  I didn't check if they would leak any memory if
-the process was killed there, but they aren't holding any locks.  It's
-pretty easy to audit them, just follow the error paths up each
-function - if the first error path after the freezing function doesn't
-free any resources then that function is safe, and repeat for each
-function that calls it.
+As far as I understand there is a range of aggressiveness. You could
+just group memory a bit better (assuming you can sufficiently predict
+the future or have some interface to let someone tell you about it).
 
-On the other hand, would it be better to send a kill to the process
-and thaw it, and let it exit before returning to userspace?
+Or you can actually move memory around later to get as low footprint
+as possible.
+
+This patchkit seems to do both, with the later parts being on the
+aggressive side (move things around) 
+
+If you had non content preserving memory saving you would 
+need to be aggressive as you couldn't afford any mistakes.
+
+If you had very slow wakeup you also couldn't afford mistakes,
+as those could cost a lot of time.
+
+On SandyBridge is not slow and it's preserving, so some mistakes are ok.
+
+But being aggressive (so move things around) may still help you saving
+more power -- i guess only benchmarks can tell. It's a trade off between
+potential gain and potential worse case performance regression.
+It may also depend on the workload.
+
+At least right now the numbers seem to be positive.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
