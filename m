@@ -1,39 +1,59 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH] cpufreq: cpufreq-cpu0: NULL is a valid regulator, part 2
-Date: Thu, 26 Sep 2013 11:19:37 +0200
-Message-ID: <1380187177-9447-1-git-send-email-p.zabel@pengutronix.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59099 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471Ab3IZJTs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 05:19:48 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/4] CPUFreq stats: Bug fixes
+Date: Thu, 26 Sep 2013 15:59:50 +0530
+Message-ID: <cover.1380190886.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, nicolas.pitre@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Brown <broonie@linaro.org>, kernel@pengutronix.de, Philipp Zabel <p.zabel@pengutronix.de>
 
-Since the patch "cpufreq: cpufreq-cpu0: NULL is a valid regulator", cpu_reg
-contains an error value if the regulator is not set, instead of NULL.
-Accordingly, fix the remaining check for non-NULL cpu_reg.
+Hi Rafael,
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/cpufreq/cpufreq-cpu0.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I know you asked me not to send any more patches before the earlier ones get
+into kernel. I got to this as Nicolas Pitre required to send few CPUFreq patches
+for ARM's big LITTLE In-Kernel-Switcher. And within linaro we have hacked these
+bugs in a bad way..
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 78c49d8..c522a95 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -229,7 +229,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	if (of_property_read_u32(np, "clock-latency", &transition_latency))
- 		transition_latency = CPUFREQ_ETERNAL;
- 
--	if (cpu_reg) {
-+	if (!IS_ERR(cpu_reg)) {
- 		struct opp *opp;
- 		unsigned long min_uV, max_uV;
- 		int i;
+Because of his dependency I am forced to send these.. These aren't introduced
+recently and so they can be included in 3.13.
+
+There are several problems/bugs in cpufreq-stats specially with cpufreq drivers
+as modules and suspend/resume path. These are mentioned well in changelogs.
+
+These are tested over my thinkpad (acpi-cpufreq) in following way:
+[1] offline+online all CPUs except boot cpu in a while loop
+[2] then do suspend resume
+[3] repeat [1] and [2] several times.
+
+No issues found..
+
+Also tested on my exynos board:
+- Added cpufreq_unregister/register while loop in exynos-cpufreq.c so that we
+  continuously register/unregister driver... Stats were working fine now..
+- Compile cpufreq-stats as module and insert/remove it several times after
+  removing above hack (as that doesn't let linux boot :) )..
+
+@Srivatsa: You also have fairly good idea of cpufreq now, so please give some
+time to review this :)
+
+@Nico: Can you remove the hacky code from IKS tree and test these instead to see
+if we still have any issues?
+
+--
+viresh
+
+Viresh Kumar (4):
+  cpufreq: stats: handle cpufreq_unregister_driver() and suspend/resume
+    properly
+  cpufreq: stats: remove hotplug notifiers
+  cpufreq: stats: free table and remove sysfs entry in a single routine
+  cpufreq: stats: create sysfs entries when cpufreq_stats is a module
+
+ drivers/cpufreq/cpufreq.c       |   5 ++
+ drivers/cpufreq/cpufreq_stats.c | 109 ++++++++++++++++++----------------------
+ include/linux/cpufreq.h         |   2 +
+ 3 files changed, 55 insertions(+), 61 deletions(-)
+
 -- 
-1.8.4.rc3
-
+1.7.12.rc2.18.g61b472e
