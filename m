@@ -1,79 +1,70 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Thu, 26 Sep 2013 19:12:45 +0530
-Message-ID: <524439D5.8020306@linux.vnet.ibm.com>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <20130925234734.GK18242@two.firstfloor.org> <52438AA9.3020809@linux.intel.com> <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org> <20130926015016.GM18242@two.firstfloor.org> <20130925195953.826a9f7d.akpm@linux-foundation.org>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
+ snapshot
+Date: Thu, 26 Sep 2013 07:44:14 -0700
+Message-ID: <1380206654.18835.56.camel@dabdike.int.hansenpartnership.com>
+References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
+	  <1380147414.18835.36.camel@dabdike.int.hansenpartnership.com>
+	  <20130926002730.GA26857@amd.pavel.ucw.cz>
+	 <1380162771.18835.47.camel@dabdike.int.hansenpartnership.com>
+	 <alpine.LNX.2.00.1309260819490.18703@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-15"
 Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20130925195953.826a9f7d.akpm@linux-foundation.org>
-Sender: owner-linux-mm@kvack.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@linux.intel.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, thomas.abraham@linaro.org, amit.kachhap@linaro.org
+Return-path: <linux-security-module-owner@vger.kernel.org>
+In-Reply-To: <alpine.LNX.2.00.1309260819490.18703@pobox.suse.cz>
+Sender: linux-security-module-owner@vger.kernel.org
+To: Jiri Kosina <jiri.kosina@suse.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>, David Howells <dhowells@redhat.com>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Greg KH <gregkh@linuxfoundation.org>, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.hengli.com.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>, "Lee, Chun-Yi" <jlee@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/26/2013 08:29 AM, Andrew Morton wrote:
-> On Thu, 26 Sep 2013 03:50:16 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+On Thu, 2013-09-26 at 08:24 +0200, Jiri Kosina wrote:
+> On Wed, 25 Sep 2013, James Bottomley wrote:
 > 
->> On Wed, Sep 25, 2013 at 06:21:29PM -0700, Andrew Morton wrote:
->>> On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
->>>
->>>> On 9/25/2013 4:47 PM, Andi Kleen wrote:
->>>>>> Also, the changelogs don't appear to discuss one obvious downside: the
->>>>>> latency incurred in bringing a bank out of one of the low-power states
->>>>>> and back into full operation.  Please do discuss and quantify that to
->>>>>> the best of your knowledge.
->>>>>
->>>>> On Sandy Bridge the memry wakeup overhead is really small. It's on by default
->>>>> in most setups today.
->>>>
->>>> btw note that those kind of memory power savings are content-preserving,
->>>> so likely a whole chunk of these patches is not actually needed on SNB
->>>> (or anything else Intel sells or sold)
->>>
->>> (head spinning a bit).  Could you please expand on this rather a lot?
->>
->> As far as I understand there is a range of aggressiveness. You could
->> just group memory a bit better (assuming you can sufficiently predict
->> the future or have some interface to let someone tell you about it).
->>
->> Or you can actually move memory around later to get as low footprint
->> as possible.
->>
->> This patchkit seems to do both, with the later parts being on the
->> aggressive side (move things around) 
->>
->> If you had non content preserving memory saving you would 
->> need to be aggressive as you couldn't afford any mistakes.
->>
->> If you had very slow wakeup you also couldn't afford mistakes,
->> as those could cost a lot of time.
->>
->> On SandyBridge is not slow and it's preserving, so some mistakes are ok.
->>
->> But being aggressive (so move things around) may still help you saving
->> more power -- i guess only benchmarks can tell. It's a trade off between
->> potential gain and potential worse case performance regression.
->> It may also depend on the workload.
->>
->> At least right now the numbers seem to be positive.
+> > > I don't get this. Why is it important that current kernel can't
+> > > recreate the signature?
+> > 
+> > The thread model is an attack on the saved information (i.e. the suspend
+> > image) between it being saved by the old kernel and used by the new one.
+> > The important point isn't that the new kernel doesn't have access to
+> > K_{N-1} it's that no-one does: the key is destroyed as soon as the old
+> > kernel terminates however the verification public part P_{N-1} survives.
 > 
-> OK.  But why are "a whole chunk of these patches not actually needed on SNB
-> (or anything else Intel sells or sold)"?  What's the difference between
-> Intel products and whatever-it-is-this-patchset-was-designed-for?
+> James,
 > 
+> could you please describe the exact scenario you think that the symmetric 
+> keys aproach doesn't protect against, while the assymetric key aproach 
+> does?
+> 
+> The crucial points, which I believe make the symmetric key aproach work 
+> (and I feel quite embarassed by the fact that I haven't realized this 
+> initially when coming up with the assymetric keys aproach) are:
+> 
+> - the kernel that is performing the actual resumption is trusted in the 
+>   secure boot model, i.e. you trust it to perform proper verification
+> 
+> - potentially malicious userspace (which is what we are protecting against 
+>   -- malicious root creating fake hibernation image and issuing reboot) 
+>   doesn't have access to the symmetric key
 
-Arjan, are you referring to the fact that Intel/SNB systems can exploit
-memory self-refresh only when the entire system goes idle? Is that why this
-patchset won't turn out to be that useful on those platforms?
+OK, so the scheme is to keep a symmetric key in BS that is passed into
+the kernel each time (effectively a secret key) for signing and
+validation?
+
+The only two problems I see are
+
+     1. The key isn't generational (any compromise obtains it).  This
+        can be fixed by using a set of keys generated on each boot and
+        passing in both K_{N-1} and K_N
+     2. No external agency other than the next kernel can do the
+        validation since the validating key has to be secret
+
+The importance of 2 is just tripwire like detection ... perhaps it
+doesn't really matter in a personal computer situation.  It would matter
+in an enterprise where images are stored and re-used but until servers
+have UEFI secure boot, that's not going to be an issue.
+
+James
 
 
-Regards,
-Srivatsa S. Bhat
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
