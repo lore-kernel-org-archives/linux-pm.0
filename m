@@ -1,41 +1,54 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Wed, 25 Sep 2013 18:21:29 -0700
-Message-ID: <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
-	<52437128.7030402@linux.vnet.ibm.com>
-	<20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
-	<20130925234734.GK18242@two.firstfloor.org>
-	<52438AA9.3020809@linux.intel.com>
+From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
+ snapshot
+Date: Thu, 26 Sep 2013 09:36:35 +0800
+Message-ID: <1380159395.32302.19.camel__8286.87984399057$1380159422$gmane$org@linux-s257.site>
+References: <1379206621-18639-1-git-send-email-jlee@suse.com>
+	 <29408.1380143073@warthog.procyon.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <52438AA9.3020809@linux.intel.com>
-Sender: owner-linux-mm@kvack.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <29408.1380143073-S6HVgzuS8uM4Awkfq6JHfwNdhmdF6hFW@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, James Bottomley <james.bottomley-JuX6DAaQMKPCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, JKosina-IBi9RG/b67k@public.gmane.org, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-F6s6mLieUQo7FNHlEwC/lvQIK84fMopw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
+=E6=96=BC =E4=B8=89=EF=BC=8C2013-09-25 =E6=96=BC 22:04 +0100=EF=BC=8CDa=
+vid Howells =E6=8F=90=E5=88=B0=EF=BC=9A
+> I have pushed some keyrings patches that will likely affect this to:
+>=20
+> 	http://git.kernel.org/cgit/linux/kernel/git/dhowells/linux-fs.git/lo=
+g/?h=3Dkeys-devel
+>=20
 
-> On 9/25/2013 4:47 PM, Andi Kleen wrote:
-> >> Also, the changelogs don't appear to discuss one obvious downside: the
-> >> latency incurred in bringing a bank out of one of the low-power states
-> >> and back into full operation.  Please do discuss and quantify that to
-> >> the best of your knowledge.
-> >
-> > On Sandy Bridge the memry wakeup overhead is really small. It's on by default
-> > in most setups today.
-> 
-> btw note that those kind of memory power savings are content-preserving,
-> so likely a whole chunk of these patches is not actually needed on SNB
-> (or anything else Intel sells or sold)
+Thanks for your point out, I will respin my asymmetric keys patch base
+on this tree.
 
-(head spinning a bit).  Could you please expand on this rather a lot?
+> I intend to ask James to pull these into his next branch.  If he's ha=
+ppy to do
+> so, I can look at pulling at least your asymmetric keys patch on top =
+of them.
+>=20
+> It'd be helpful if you could see if you need to make any updates.
+>=20
+> David
+>=20
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+In LPC, Alan and Vojtech raised another thinking is using symmetric key
+to protect the hash of snapshot. It's simpler then using RSA private ke=
+y
+to sign it.
+
+Even finally we use the symmetric key solution, I will still respin and
+resent the patch for add the leading zero byte:
+
+[PATCH V4 07/15] asymmetric keys: explicitly add the leading zero byte
+to encoded message
+
+I think keys-devel tree need it.
+
+
+Thanks a lot!
+Joey Lee
