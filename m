@@ -1,79 +1,37 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
- snapshot
-Date: Thu, 26 Sep 2013 12:40:03 +0800
-Message-ID: <1380170403.32302.52.camel__4908.01846976883$1380170445$gmane$org@linux-s257.site>
-References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
-	 <1380147414.18835.36.camel@dabdike.int.hansenpartnership.com>
-	 <20130926002730.GA26857@amd.pavel.ucw.cz>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 1/2] cpuidle: simplify multiple driver support
+Date: Thu, 26 Sep 2013 10:27:31 +0530
+Message-ID: <CAKohponWjcmkku1NnMsYPJxPE9TvpJ-MQfs3EqJ1Vp4yFdXL0g@mail.gmail.com>
+References: <1370641990-13884-1-git-send-email-daniel.lezcano@linaro.org>
+	<CAKohponeFAc3EVEOO_Tpd61eE7UQmEmWfuaYd-VdR=UKnDFUgw@mail.gmail.com>
+	<5242FAFC.8010905@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-crypto-owner@vger.kernel.org>
-In-Reply-To: <20130926002730.GA26857@amd.pavel.ucw.cz>
-Sender: linux-crypto-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, Alan Stern <stern@rowland.harvard.edu>, David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.hengli.com.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f177.google.com ([209.85.216.177]:45415 "EHLO
+	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750795Ab3IZE5c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 00:57:32 -0400
+Received: by mail-qc0-f177.google.com with SMTP id x12so431152qcv.36
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 21:57:31 -0700 (PDT)
+In-Reply-To: <5242FAFC.8010905@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Len Brown <lenb@kernel.org>
 
-=E6=96=BC =E5=9B=9B=EF=BC=8C2013-09-26 =E6=96=BC 02:27 +0200=EF=BC=8CPa=
-vel Machek =E6=8F=90=E5=88=B0=EF=BC=9A
-> On Wed 2013-09-25 15:16:54, James Bottomley wrote:
-> > On Wed, 2013-09-25 at 17:25 -0400, Alan Stern wrote:
-> > > On Wed, 25 Sep 2013, David Howells wrote:
-> > >=20
-> > > > I have pushed some keyrings patches that will likely affect thi=
-s to:
-> > > >=20
-> > > > 	http://git.kernel.org/cgit/linux/kernel/git/dhowells/linux-fs.=
-git/log/?h=3Dkeys-devel
-> > > >=20
-> > > > I intend to ask James to pull these into his next branch.  If h=
-e's happy to do
-> > > > so, I can look at pulling at least your asymmetric keys patch o=
-n top of them.
-> > >=20
-> > > This suggests a point that I raised at the Linux Plumbers confere=
-nce:
-> > >=20
-> > > Why are asymmetric keys used for verifying the hibernation image?=
-  It
-> > > seems that a symmetric key would work just as well.  And it would=
- be a
-> > > lot quicker to generate, because it wouldn't need any high-precis=
-ion
-> > > integer computations.
-> >=20
-> > The reason is the desire to validate that the previous kernel creat=
-ed
-> > something which it passed on to the current kernel (in this case, t=
-he
-> > hibernation image) untampered with.  To do that, something must be
-> > passed to the prior kernel that can be validated but *not* recreate=
-d by
-> > the current kernel.
->=20
-> I don't get this. Why is it important that current kernel can't
-> recreate the signature?
->=20
-> Current kernel is not considered malicious (if it were, you have wors=
-e
-> problems).
->=20
+On 25 September 2013 20:32, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+> Where is it wrong in design ? If the multiple driver support is enabled
+> in the kernel but the driver handles all the cpu, it works.
 
-Current boot kernel should not malicious especially when UEFI secure
-boot enabled.
+Yeah It works but I don't really support two separate code paths based
+on how kernel is compiled.. For example:
+Consider any ARM system which doesn't need multiple drivers support
+and so must be using the non-per-cpu variable for holding drivers pointer..
 
-> 								Pavel
->=20
-> PS: And yes, it would be nice to have
-> Documentation/power/swsusp-uefi.txt (or something) explaining the
-> design.
->=20
+Now the same driver is included as part of a multiplatform kernel and
+now the same driver/platform is using the per-cpu variables for storing
+driver pointer.. Even sysfs will have files with name "driver" to print
+drivers name for CPUs..
 
-Thanks for your suggestion, I will write the swsusp-uefi.txt to
-explaining the design in next version.
-
-
-Thanks a lot!
-Joey Lee
+I know it doesn't break anything but it didn't looked good design wise to me..
