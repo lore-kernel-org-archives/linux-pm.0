@@ -1,54 +1,73 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH V4 13/15] Hibernate: introduced SNAPSHOT_SIG_HASH
- config for select hash algorithm
-Date: Thu, 26 Sep 2013 09:43:39 +0800
-Message-ID: <1380159819.32302.24.camel__7790.42176804996$1380159867$gmane$org@linux-s257.site>
-References: <1379206621-18639-1-git-send-email-jlee@suse.com>
-	 <1379206621-18639-14-git-send-email-jlee@suse.com>
-	 <20130918134535.GA3748@amd.pavel.ucw.cz>
+From: Colin Cross <ccross@android.com>
+Subject: Re: [RFC PATCH] freezer: allow killing of frozen tasks
+Date: Wed, 25 Sep 2013 18:46:44 -0700
+Message-ID: <CAMbhsRT-a-TMr369Poo5OMyw=TMrQxpTfk-1zDFKp0YYWv7xLg@mail.gmail.com>
+References: <5917186.DMyAa9ofOj@amdc1032>
+	<7588112.eXrFpITlCh@vostro.rjw.lan>
+	<CAH9JG2X3grVnUbuzksRLnDCT4dMQTyJuPa72qi4QmKTHo2QzEA@mail.gmail.com>
+	<2084875.Px2m8K6oH7@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:47475 "EHLO
-	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384Ab3IZBnk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 21:43:40 -0400
-In-Reply-To: <20130918134535.GA3748@amd.pavel.ucw.cz>
+Received: from mail-ob0-f176.google.com ([209.85.214.176]:55259 "EHLO
+	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833Ab3IZBqp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 21:46:45 -0400
+Received: by mail-ob0-f176.google.com with SMTP id uy5so1100469obc.35
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 18:46:44 -0700 (PDT)
+In-Reply-To: <2084875.Px2m8K6oH7@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kyungmin Park <kmpark@infradead.org>, Tejun Heo <tj@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-=E6=96=BC =E4=B8=89=EF=BC=8C2013-09-18 =E6=96=BC 15:45 +0200=EF=BC=8CPa=
-vel Machek =E6=8F=90=E5=88=B0=EF=BC=9A
-> On Sun 2013-09-15 08:56:59, Lee, Chun-Yi wrote:
-> > This patch introduced SNAPSHOT_SIG_HASH config for user to select w=
-hich
-> > hash algorithm will be used during signature generation of snapshot=
-=2E
->=20
-> This series is big enough already... and who is going to test it?
+On Wed, Sep 25, 2013 at 1:07 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, September 25, 2013 02:52:26 PM Kyungmin Park wrote:
+>> On Tue, Aug 20, 2013 at 9:41 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Tuesday, August 20, 2013 08:27:27 AM Tejun Heo wrote:
+>> >> On Tue, Aug 20, 2013 at 02:34:14PM +0200, Rafael J. Wysocki wrote:
+>> >> > On Tuesday, August 20, 2013 08:22:00 AM Tejun Heo wrote:
+>> >> > > On Tue, Aug 20, 2013 at 02:30:18PM +0200, Rafael J. Wysocki wrote:
+>> >> > > > > So, I don't think we can simply turn TASK_UNITERRUPTIBLE to
+>> >> > > > > TASK_KILLABLE at this point.  We really need to strictly define where
+>> >> > > > > a task can freeze before being able to do anything like this.
+>> >> > > >
+>> >> > > > But we could do that for user space tasks I suppose?
+>> >> > >
+>> >> > > Even for userland tasks, we don't know where the task is stuck at.  I
+>> >> > > think there are enough freeze points in the kernel which are in the
+>> >> > > middle of something which can be used by userland tasks excuting some
+>> >> > > syscall.  We need to collect all those sites into well defined trap
+>> >> > > points before doing this.
+>> >> >
+>> >> > OK, thanks!
+>> >>
+>> >> I scanned through try_to_freeze() users and it seems like we don't
+>> >> have that many which can be hit by userland tasks.  I think it should
+>> >> be doable to audit all the users, remove the ones which can be invoked
+>> >> by userland and make try_to_freeze() whine loudly if it's running off
+>> >> a userland task except from well-defined spots.
+>> >
+>> > Which might be worth doing anyway to be sure we know what's going on.
+>> >
+>> >> Anyways, we need to ensure that userland task doesn't get stuck deep in the
+>> >> kernel before allowing this.
+>> >
+>> > Agreed.
+>>
+>> Are there any update? we need this feature to kill frozen app easily.
+>> Don't need to thaw app to kill.
+>
+> No updates, but the above pretty much describes what needs to be done.
 
-The hash config not just for testing, it's relate to the performance an=
-d
-secure between different hash algorithms.
+FWIW, the places I added try_to_freeze (which are all accessible from
+userspace tasks) were all audited to make sure they weren't holding
+any shared resources.  I didn't check if they would leak any memory if
+the process was killed there, but they aren't holding any locks.  It's
+pretty easy to audit them, just follow the error paths up each
+function - if the first error path after the freezing function doesn't
+free any resources then that function is safe, and repeat for each
+function that calls it.
 
-There have person raised in LPC say he don't like SHA algorithm.
-
-> There's no need to make hash configurable. Just select one that works=
-=2E
-> =09
-> 									Pavel
->=20
-
-SHA1 has good performance, and SHA512 has better security, which one yo=
-u
-like it?
-
-
-Thanks a lot!
-Joey Lee
-
-
-
+On the other hand, would it be better to send a kill to the process
+and thaw it, and let it exit before returning to userspace?
