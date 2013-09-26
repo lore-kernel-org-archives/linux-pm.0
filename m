@@ -1,63 +1,94 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH v2 1/2] ARM: shmobile: r8a7790: implement CPU clock
- scaling for CPUFreq
-Date: Thu, 26 Sep 2013 10:56:02 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1309261052580.11968@axis700.grange>
-References: <Pine.LNX.4.64.1305211601180.2863@axis700.grange>
- <20130525013445.GE24005@verge.net.au> <20130925045007.GC24243@verge.net.au>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 1/2] cpufreq: exynos4x12: Use the common clock framework to
+ set APLL clock rate
+Date: Thu, 26 Sep 2013 11:16:25 +0200
+Message-ID: <20130926111625.09cb2071@amdc308.digital.local>
+References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
+ <1380108138-30402-2-git-send-email-l.majewski@samsung.com>
+ <CAKew6eW9-QHL5NKHV8roER_yuoLEiCoS53Gby8zC841fr=whqQ@mail.gmail.com>
+ <3068635.myUg9qMyJN@amdc1227>
+ <CAKew6eVXw5qUuZ=Oc6ko3BkJj=iYqvN-NsrfmOHPQmMkxiv-nA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20130925045007.GC24243@verge.net.au>
-Sender: linux-sh-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:50173 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018Ab3IZJQe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 05:16:34 -0400
+In-reply-to: <CAKew6eVXw5qUuZ=Oc6ko3BkJj=iYqvN-NsrfmOHPQmMkxiv-nA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Yadwinder Singh Brar <yadi.brar01@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 
-Hi Simon
+Hi Yadwinder,
 
-Thanks for following on this.
-
-On Wed, 25 Sep 2013, Simon Horman wrote:
-
-> On Sat, May 25, 2013 at 10:34:45AM +0900, Simon Horman wrote:
-> > On Tue, May 21, 2013 at 04:07:46PM +0200, Guennadi Liakhovetski wrote:
-> > > This patch adds support for the Z-clock on r8a7790 SoCs, which is driving
-> > > the Cortex A15 core, and a "cpufreq-cpu0" platform device. Adding an
-> > > "operating-points" property to the CPU0 DT node and a regulator, this
-> > > patch allows platforms to use the generic cpufreq-cpu0 driver to use
-> > > SoC's DVFS capabilities.
-> > > 
-> > > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-> > > ---
-> > > 
-> > > v2:
-> > > 1. a typo in the r8a7790 datasheet confused me to implement kick-bit 
-> > > handling wrongly, this is fixed in this version
-> > > 2. patch 3 merged with this one
-> > > 
-> > > Same comments, as to v1 of this series, apply.
-> > 
-> > Magnus,
-> > 
-> > could you please review this series?
+> Hi Tomasz,
 > 
-> I have marked this patch as deferred in the patch tracker
-> as it has been rotting there for several months now.
+> >> On Wed, Sep 25, 2013 at 4:52 PM, Lukasz Majewski
+> >> <l.majewski@samsung.com> wrote:
+> >> > In the exynos4x12_set_apll() function, the APLL frequency is set
+> >> > with direct register manipulation.
+> >> >
+> >> > Such approach is not allowed in the common clock framework. The
+> >> > frequency is changed, but the corresponding clock value is not
+> >> > updated. This causes wrong frequency read from cpufreq's
+> >> > cpuinfo_cur_freq sysfs attribute.
+> >> >
+> >>
+> >> This patch looks incomplete, leaving the driver in untidy state,
+> >> perhaps its doesn't fix the above stated problem completely. what
+> >> about if (!exynos4x12_pms_change(old_index, new_index)) becomes
+> >> true?
+> >>
+> >> IMHO, this driver needs lot more work in addition to this patch to
+> >> cleanly and completely move the cpufreq driver to common clock
+> >> framework.
+> >
+> > I agree that the other case needs to be handled as well. Basically
+> > the whole conditional block dependent on exynos4x12_pms_change()
+> > can be safely dropped, because this condition is already handled in
+> > PLL driver.
+> >
 > 
-> I will need the following before taking it into the tree:
-> 1. Repost, rebased if needed.
-> 2. An ack from Magnus or indication from him that someone else should
->    review it.
+> Exactly!
 
-This patch is superseded by my recent patches
+After more corner case testing, I admit that corner cases with PLL s
+parameter change are still broken (e.g. 1400000 -> 700000).
 
-[PATCH 3/4] ARM: shmobile: r8a7790: add CPUFreq clock support
-[PATCH/RFC 4/4] ARM: shmobile: lager: add CPUFreq support
+I will prepare v2 for it.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+If I manage I will push it into -rc. If not those changes will be
+included to exynos cpufreq rework. 
+
+Thanks guys for a thorough review.
+
+> 
+> > Lukasz is already working on further rework of this driver to clean
+> > it up from legacy code, but this will have to wait for 3.13, as
+> > 3.12 is already in rc stage and only fixes can be accepted for it.
+> >
+> >> For fixing this issue urgently, setting CLK_GET_RATE_NOCACHE for
+> >> apll in clk driver can also be quicker fix.
+> >
+> > Unfortunately this is not how this flag works. It only makes
+> > clk_get_rate() call ->recalc_rate() operation of the clock instead
+> > of instantly returning cached rate - it doesn't seem to work
+> > recursively.
+> >
+> 
+> hmm.. yes it can't help in our case as it recursively walks only the
+> subtree of clk but in our case we are changing rate of parent.
+> 
+> Regards,
+> Yadwinder
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
