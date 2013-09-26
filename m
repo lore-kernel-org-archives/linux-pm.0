@@ -1,62 +1,53 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v2 1/2] ARM: shmobile: r8a7790: implement CPU clock
- scaling for CPUFreq
-Date: Fri, 27 Sep 2013 06:40:11 +0900
-Message-ID: <20130926214008.GA19788@verge.net.au>
-References: <Pine.LNX.4.64.1305211601180.2863@axis700.grange>
- <20130525013445.GE24005@verge.net.au>
- <20130925045007.GC24243@verge.net.au>
- <Pine.LNX.4.64.1309261052580.11968@axis700.grange>
+From: Dave Hansen <dave@sr71.net>
+Subject: Re: [RFC PATCH v4 06/40] mm: Demarcate and maintain pageblocks in
+ region-order in the zones' freelists
+Date: Thu, 26 Sep 2013 15:16:12 -0700
+Message-ID: <5244B22C.9020503@sr71.net>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <20130925231454.26184.19783.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1309261052580.11968@axis700.grange>
-Sender: linux-sh-owner@vger.kernel.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130925231454.26184.19783.stgit@srivatsabhat.in.ibm.com>
+Sender: owner-linux-mm@kvack.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl
+Cc: gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 26, 2013 at 10:56:02AM +0200, Guennadi Liakhovetski wrote:
-> Hi Simon
-> 
-> Thanks for following on this.
-> 
-> On Wed, 25 Sep 2013, Simon Horman wrote:
-> 
-> > On Sat, May 25, 2013 at 10:34:45AM +0900, Simon Horman wrote:
-> > > On Tue, May 21, 2013 at 04:07:46PM +0200, Guennadi Liakhovetski wrote:
-> > > > This patch adds support for the Z-clock on r8a7790 SoCs, which is driving
-> > > > the Cortex A15 core, and a "cpufreq-cpu0" platform device. Adding an
-> > > > "operating-points" property to the CPU0 DT node and a regulator, this
-> > > > patch allows platforms to use the generic cpufreq-cpu0 driver to use
-> > > > SoC's DVFS capabilities.
-> > > > 
-> > > > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-> > > > ---
-> > > > 
-> > > > v2:
-> > > > 1. a typo in the r8a7790 datasheet confused me to implement kick-bit 
-> > > > handling wrongly, this is fixed in this version
-> > > > 2. patch 3 merged with this one
-> > > > 
-> > > > Same comments, as to v1 of this series, apply.
-> > > 
-> > > Magnus,
-> > > 
-> > > could you please review this series?
-> > 
-> > I have marked this patch as deferred in the patch tracker
-> > as it has been rotting there for several months now.
-> > 
-> > I will need the following before taking it into the tree:
-> > 1. Repost, rebased if needed.
-> > 2. An ack from Magnus or indication from him that someone else should
-> >    review it.
-> 
-> This patch is superseded by my recent patches
-> 
-> [PATCH 3/4] ARM: shmobile: r8a7790: add CPUFreq clock support
-> [PATCH/RFC 4/4] ARM: shmobile: lager: add CPUFreq support
+On 09/25/2013 04:14 PM, Srivatsa S. Bhat wrote:
+> @@ -605,16 +713,22 @@ static inline void __free_one_page(struct page *page,
+>  		buddy_idx = __find_buddy_index(combined_idx, order + 1);
+>  		higher_buddy = higher_page + (buddy_idx - combined_idx);
+>  		if (page_is_buddy(higher_page, higher_buddy, order + 1)) {
+> -			list_add_tail(&page->lru,
+> -				&zone->free_area[order].free_list[migratetype].list);
+> +
+> +			/*
+> +			 * Implementing an add_to_freelist_tail() won't be
+> +			 * very useful because both of them (almost) add to
+> +			 * the tail within the region. So we could potentially
+> +			 * switch off this entire "is next-higher buddy free?"
+> +			 * logic when memory regions are used.
+> +			 */
+> +			add_to_freelist(page, &area->free_list[migratetype]);
+>  			goto out;
+>  		}
+>  	}
 
-Thanks, noted.
+Commit 6dda9d55b says that this had some discrete performance gains.
+It's a bummer that this deoptimizes it, and I think that (expected)
+performance degredation at least needs to be referenced _somewhere_.
+
+I also find it very hard to take code seriously which stuff like this:
+
+> +#ifdef CONFIG_DEBUG_PAGEALLOC
+> +		WARN(region->nr_free == 0, "%s: nr_free messed up\n", __func__);
+> +#endif
+
+nine times.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
