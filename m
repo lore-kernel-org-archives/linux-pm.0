@@ -1,96 +1,71 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
- snapshot
-Date: Thu, 26 Sep 2013 18:43:38 +0800
-Message-ID: <1380192218.32302.69.camel__16864.3804303885$1380192284$gmane$org@linux-s257.site>
-References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
-	 <1380161957.32302.42.camel@linux-s257.site>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/9] POWERPC: pseries: cpuidle: remove superfluous dev->state_count
+ initialization
+Date: Thu, 26 Sep 2013 12:45:53 +0200
+Message-ID: <52441061.8090704@linaro.org>
+References: <1377008627-32691-1-git-send-email-b.zolnierkie@samsung.com> <1377008627-32691-3-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:50727 "EHLO
-	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756414Ab3IZKoK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 06:44:10 -0400
-In-Reply-To: <1380161957.32302.42.camel@linux-s257.site>
+Received: from mail-we0-f173.google.com ([74.125.82.173]:42685 "EHLO
+	mail-we0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756114Ab3IZKp4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 06:45:56 -0400
+Received: by mail-we0-f173.google.com with SMTP id w62so941915wes.32
+        for <linux-pm@vger.kernel.org>; Thu, 26 Sep 2013 03:45:55 -0700 (PDT)
+In-Reply-To: <1377008627-32691-3-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.hengli.com.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 
-=E6=96=BC =E5=9B=9B=EF=BC=8C2013-09-26 =E6=96=BC 10:19 +0800=EF=BC=8Cjo=
-eyli =E6=8F=90=E5=88=B0=EF=BC=9A
-> =E6=96=BC =E4=B8=89=EF=BC=8C2013-09-25 =E6=96=BC 17:25 -0400=EF=BC=8C=
-Alan Stern =E6=8F=90=E5=88=B0=EF=BC=9A
-> > On Wed, 25 Sep 2013, David Howells wrote:
-> >=20
-> > > I have pushed some keyrings patches that will likely affect this =
-to:
-> > >=20
-> > > 	http://git.kernel.org/cgit/linux/kernel/git/dhowells/linux-fs.gi=
-t/log/?h=3Dkeys-devel
-> > >=20
-> > > I intend to ask James to pull these into his next branch.  If he'=
-s happy to do
-> > > so, I can look at pulling at least your asymmetric keys patch on =
-top of them.
-> >=20
-> > This suggests a point that I raised at the Linux Plumbers conferenc=
-e:
-> >=20
-> > Why are asymmetric keys used for verifying the hibernation image?  =
-It
-> > seems that a symmetric key would work just as well.  And it would b=
-e a
-> > lot quicker to generate, because it wouldn't need any high-precisio=
-n
-> > integer computations.
-> >=20
-> > Alan Stern
-> >=20
-> >=20
->=20
-> Per my understood, it's like add salt to snapshot when generate
-> signature, then remove the salt when store the snapshot to swap. (or
-> pass snapshot to userland).
->=20
-> Let me explain the symmetric key solution base on my understand:
->=20
->  + EFI stub kernel generate a hash value from a random seed, then sto=
-re
-> it to EFi boot varaible. It should protected by UEFI secure boot
-> environment.
->=20
->  + When hibernate launched:
->     - Kernel create the snapshot image of memory. It's included the
-> random hash value(salt) that generated in EFI stub stage.
->     - Then kernel hash the snapshot image, put the hash to snapshot
-> header, just like current asymmetric keys solution.
->     - Kernel erase the salt in snapshot image before it go to swap or
-> pass to userspace tool.
->=20
->  + When hibernate resume:
->     - Kernel or userspace tool load the snapshot(without salt) from s=
-wap
-> to temporary memory space.
->     - Kernel fill the salt back to snapshot image in memory, hash it.
->     - Kernel compare the hash with the hash that put in snapshot head=
-er.
->     - Verification done! The follow-up action as current solution.
->=20
-> Please current me if I missed anything.
->=20
->=20
-> Thanks a lot!
-> Joey Lee
->=20
+On 08/20/2013 04:23 PM, Bartlomiej Zolnierkiewicz wrote:
+> pseries cpuidle driver sets dev->state_count to drv->state_count so
+> the default dev->state_count initialization in cpuidle_enable_device(=
+)
+> (called from cpuidle_register_device()) can be used instead.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 
-=46or the symmetric key solution, I will try HMAC (Hash Message
-Authentication Code). It's already used in networking, hope the
-performance is not too bad to a big image.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+> ---
+>   arch/powerpc/platforms/pseries/processor_idle.c | 2 --
+>   1 file changed, 2 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/p=
+owerpc/platforms/pseries/processor_idle.c
+> index 14899b1..23fc091 100644
+> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+> @@ -273,7 +273,6 @@ static void pseries_idle_devices_uninit(void)
+>   static int pseries_idle_devices_init(void)
+>   {
+>   	int i;
+> -	struct cpuidle_driver *drv =3D &pseries_idle_driver;
+>   	struct cpuidle_device *dev;
+>
+>   	pseries_cpuidle_devices =3D alloc_percpu(struct cpuidle_device);
+> @@ -282,7 +281,6 @@ static int pseries_idle_devices_init(void)
+>
+>   	for_each_possible_cpu(i) {
+>   		dev =3D per_cpu_ptr(pseries_cpuidle_devices, i);
+> -		dev->state_count =3D drv->state_count;
+>   		dev->cpu =3D i;
+>   		if (cpuidle_register_device(dev)) {
+>   			printk(KERN_DEBUG \
+>
 
 
-Thanks
-Joey Lee
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
