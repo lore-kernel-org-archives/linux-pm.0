@@ -1,31 +1,81 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH -v2] cpufreq: skip loading acpi_cpufreq after intel_pstate
-Date: Thu, 26 Sep 2013 08:41:18 -0700
-Message-ID: <CAE9FiQUtZAe2Y1CUNKYRsSV3UM4g2N67EP5cAEcX7C786bXcaQ@mail.gmail.com>
-References: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
-	<CAE9FiQV+K9QSEiRMA8BtqC8k2OHm4aZWODNL+vgfFmpsuBfzQg@mail.gmail.com>
-	<CAKohpom3SkbGk-XgjXXFWZw2asAkxaM=XBYebWHxKQFN_WoXBw@mail.gmail.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
+Date: Thu, 26 Sep 2013 08:58:11 -0700
+Message-ID: <52445993.7050608@linux.intel.com>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <20130925234734.GK18242@two.firstfloor.org> <52438AA9.3020809@linux.intel.com> <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org> <20130926015016.GM18242@two.firstfloor.org> <20130925195953.826a9f7d.akpm@linux-foundation.org> <524439D5.8020306@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom3SkbGk-XgjXXFWZw2asAkxaM=XBYebWHxKQFN_WoXBw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <524439D5.8020306@linux.vnet.ibm.com>
+Sender: owner-linux-mm@kvack.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <andi@firstfloor.org>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, thomas.abraham@linaro.org, amit.kachhap@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 25, 2013 at 10:40 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 26 September 2013 10:47, Yinghai Lu <yinghai@kernel.org> wrote:
->> can you put this one in acpi tree?
+On 9/26/2013 6:42 AM, Srivatsa S. Bhat wrote:
+> On 09/26/2013 08:29 AM, Andrew Morton wrote:
+>> On Thu, 26 Sep 2013 03:50:16 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+>>
+>>> On Wed, Sep 25, 2013 at 06:21:29PM -0700, Andrew Morton wrote:
+>>>> On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
+>>>>
+>>>>> On 9/25/2013 4:47 PM, Andi Kleen wrote:
+>>>>>>> Also, the changelogs don't appear to discuss one obvious downside: the
+>>>>>>> latency incurred in bringing a bank out of one of the low-power states
+>>>>>>> and back into full operation.  Please do discuss and quantify that to
+>>>>>>> the best of your knowledge.
+>>>>>>
+>>>>>> On Sandy Bridge the memry wakeup overhead is really small. It's on by default
+>>>>>> in most setups today.
+>>>>>
+>>>>> btw note that those kind of memory power savings are content-preserving,
+>>>>> so likely a whole chunk of these patches is not actually needed on SNB
+>>>>> (or anything else Intel sells or sold)
+>>>>
+>>>> (head spinning a bit).  Could you please expand on this rather a lot?
+>>>
+>>> As far as I understand there is a range of aggressiveness. You could
+>>> just group memory a bit better (assuming you can sufficiently predict
+>>> the future or have some interface to let someone tell you about it).
+>>>
+>>> Or you can actually move memory around later to get as low footprint
+>>> as possible.
+>>>
+>>> This patchkit seems to do both, with the later parts being on the
+>>> aggressive side (move things around)
+>>>
+>>> If you had non content preserving memory saving you would
+>>> need to be aggressive as you couldn't afford any mistakes.
+>>>
+>>> If you had very slow wakeup you also couldn't afford mistakes,
+>>> as those could cost a lot of time.
+>>>
+>>> On SandyBridge is not slow and it's preserving, so some mistakes are ok.
+>>>
+>>> But being aggressive (so move things around) may still help you saving
+>>> more power -- i guess only benchmarks can tell. It's a trade off between
+>>> potential gain and potential worse case performance regression.
+>>> It may also depend on the workload.
+>>>
+>>> At least right now the numbers seem to be positive.
+>>
+>> OK.  But why are "a whole chunk of these patches not actually needed on SNB
+>> (or anything else Intel sells or sold)"?  What's the difference between
+>> Intel products and whatever-it-is-this-patchset-was-designed-for?
+>>
 >
-> Its already applied in Rafael's linux-next branch.. Do you want something
-> else?
+> Arjan, are you referring to the fact that Intel/SNB systems can exploit
+> memory self-refresh only when the entire system goes idle? Is that why this
+> patchset won't turn out to be that useful on those platforms?
 
-sorry, I missed that.
+no we can use other things (CKE and co) all the time.
 
-I still had that in local patches directory, but looks like quilt is
-not smart enough and did not report that patch is already applied.
+just that we found that statistical grouping gave 95%+ of the benefit,
+without the cost of being aggressive on going to a 100.00% grouping
 
-Thanks
-
-Yinghai
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
