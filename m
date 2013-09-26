@@ -1,51 +1,52 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 21/21] cpuidle: change governor from within cpuidle_replace_governor()
-Date: Thu, 26 Sep 2013 10:20:11 +0200
-Message-ID: <5243EE3B.1050600@linaro.org>
-References: <cover.1379779777.git.viresh.kumar@linaro.org>	<5b758e21eeb97f5f68191819c0820673692b6b75.1379779777.git.viresh.kumar@linaro.org>	<524368CF.4030803@linaro.org> <CAKohpom_BTYC4DZLP93VzFqfnCudPb9whugPigh-jO0MpHurtw@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V4 13/15] Hibernate: introduced SNAPSHOT_SIG_HASH
+ config for select hash algorithm
+Date: Thu, 26 Sep 2013 10:21:47 +0200
+Message-ID: <20130926082146.GA22286@amd.pavel.ucw.cz>
+References: <1379206621-18639-1-git-send-email-jlee@suse.com>
+ <1379206621-18639-14-git-send-email-jlee@suse.com>
+ <20130918134535.GA3748@amd.pavel.ucw.cz>
+ <1380159819.32302.24.camel@linux-s257.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f49.google.com ([74.125.82.49]:34073 "EHLO
-	mail-wg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751452Ab3IZIUP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 04:20:15 -0400
-Received: by mail-wg0-f49.google.com with SMTP id l18so758338wgh.4
-        for <linux-pm@vger.kernel.org>; Thu, 26 Sep 2013 01:20:14 -0700 (PDT)
-In-Reply-To: <CAKohpom_BTYC4DZLP93VzFqfnCudPb9whugPigh-jO0MpHurtw@mail.gmail.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43190 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203Ab3IZIVs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 04:21:48 -0400
+Content-Disposition: inline
+In-Reply-To: <1380159819.32302.24.camel@linux-s257.site>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: joeyli <jlee@suse.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
 
-On 09/26/2013 08:37 AM, Viresh Kumar wrote:
-> On 26 September 2013 04:20, Daniel Lezcano <daniel.lezcano@linaro.org=
-> wrote:
->> Actually I am wondering if all this stuff is not over-engineered.
->>
->> There are 2 governors, each of them suits for a specific kernel conf=
-ig,
->> periodic tick or tickless system.
->>
->> menu     =3D> tickless system
->> periodic =3D> periodic tick system
->>
->> IMHO, all the code with rating checking and so do not really makes
->> sense. Wouldn't make sense to remove this code ?
->
-> I am a newbie here, really can't think of all side effects of this :)
+Hi!
 
-Rafael is pretty busy ATM but may be he can give his feedback on this l=
-ater.
+> > On Sun 2013-09-15 08:56:59, Lee, Chun-Yi wrote:
+> > > This patch introduced SNAPSHOT_SIG_HASH config for user to select which
+> > > hash algorithm will be used during signature generation of snapshot.
+> > 
+> > This series is big enough already... and who is going to test it?
+> 
+> The hash config not just for testing, it's relate to the performance and
+> secure between different hash algorithms.
 
+I'm not saying it is for testing. I'm saying that selection makes
+testing harder.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+> There have person raised in LPC say he don't like SHA algorithm.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Well, I don't like the config option.
 
+> > There's no need to make hash configurable. Just select one that works.
+> 
+> SHA1 has good performance, and SHA512 has better security, which one you
+> like it?
+
+Use SHA1. It is completely adequate for what you are trying to do.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
