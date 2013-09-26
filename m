@@ -1,51 +1,44 @@
-From: Jiri Kosina <jiri.kosina-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
- snapshot
-Date: Thu, 26 Sep 2013 08:24:41 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1309260819490.18703@pobox.suse.cz>
-References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>  <1380147414.18835.36.camel@dabdike.int.hansenpartnership.com>  <20130926002730.GA26857@amd.pavel.ucw.cz> <1380162771.18835.47.camel@dabdike.int.hansenpartnership.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 14/21] cpuidle: coupled: don't compare cpu masks unnecessarily
+Date: Thu, 26 Sep 2013 12:06:04 +0530
+Message-ID: <CAKohpokmdk2xJ6OFz68Oen4YRqC5MptSn7tGmH+nZrn9hoLmbA@mail.gmail.com>
+References: <cover.1379779777.git.viresh.kumar@linaro.org>
+	<564c8b1f073dc396b54866a2220b09b7869289f4.1379779777.git.viresh.kumar@linaro.org>
+	<CAMbhsRQRGGpShFiTBP7OZ8txhKG_i-1_s=AAGPQx+JzTkW=0Lg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <opensuse-kernel+bounces-5141-glsk-opensuse-kernel=m.gmane.org-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <1380162771.18835.47.camel-sFMDBYUN5F8GjUHQrlYNx2Wm91YjaHnnhRte9Li2A+AAvxtiuMwx3w@public.gmane.org>
-List-Post: <mailto:opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:opensuse-kernel+help-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Subscribe: <mailto:opensuse-kernel+subscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Unsubscribe: <mailto:opensuse-kernel+unsubscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Owner: <mailto:opensuse-kernel+owner-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Archive: <http://lists.opensuse.org/opensuse-kernel/>
-To: James Bottomley <James.Bottomley-d9PhHud1JfjCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>
-Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-F6s6mLieUQo7FNHlEwC/lvQIK84fMopw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f48.google.com ([209.85.216.48]:58343 "EHLO
+	mail-qa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649Ab3IZGgF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 02:36:05 -0400
+Received: by mail-qa0-f48.google.com with SMTP id hu16so571789qab.14
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 23:36:04 -0700 (PDT)
+In-Reply-To: <CAMbhsRQRGGpShFiTBP7OZ8txhKG_i-1_s=AAGPQx+JzTkW=0Lg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Colin Cross <ccross@google.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 
-On Wed, 25 Sep 2013, James Bottomley wrote:
+On 26 September 2013 05:55, Colin Cross <ccross@google.com> wrote:
+> I don't agree with this.  This patch is a tiny optimization in code
+> that is rarely called, and it moves a final sanity check somewhere
+> that it might get missed if the code were later refactored.
 
-> > I don't get this. Why is it important that current kernel can't
-> > recreate the signature?
-> 
-> The thread model is an attack on the saved information (i.e. the suspend
-> image) between it being saved by the old kernel and used by the new one.
-> The important point isn't that the new kernel doesn't have access to
-> K_{N-1} it's that no-one does: the key is destroyed as soon as the old
-> kernel terminates however the verification public part P_{N-1} survives.
+This is what we are doing for the first cpu of coupled-cpus:
+if (WARN_ON(!cpumask_equal(&dev->coupled_cpus, &dev->coupled_cpus)))
+    coupled->prevent++;
 
-James,
+i.e. comparing a variable to itself :)
 
-could you please describe the exact scenario you think that the symmetric 
-keys aproach doesn't protect against, while the assymetric key aproach 
-does?
+And I believe my patch puts the sanity check at the right place (where
+we are using coupled from existing CPUs.. And that is where it should
+have been since the beginning)..
 
-The crucial points, which I believe make the symmetric key aproach work 
-(and I feel quite embarassed by the fact that I haven't realized this 
-initially when coming up with the assymetric keys aproach) are:
+If people miss this during code re-factoring, then it would be even more
+stupid on the part of Author and Reviewer.. And if it still gets missed
+then this is not the only place where we need to worry about such stuff..
 
-- the kernel that is performing the actual resumption is trusted in the 
-  secure boot model, i.e. you trust it to perform proper verification
-
-- potentially malicious userspace (which is what we are protecting against 
-  -- malicious root creating fake hibernation image and issuing reboot) 
-  doesn't have access to the symmetric key
-
--- 
-Jiri Kosina
-SUSE Labs
+This is present everywhere in our code.. You can't really some part of
+code to some place and leave the other as-is.. The change is supposed
+to be more logical and so funny mistakes must be caught during reviews.
