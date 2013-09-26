@@ -2,18 +2,22 @@ From: joeyli <jlee@suse.com>
 Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
  snapshot
 Date: Thu, 26 Sep 2013 18:43:38 +0800
-Message-ID: <1380192218.32302.69.camel__23368.8378743411$1380192270$gmane$org@linux-s257.site>
+Message-ID: <1380192218.32302.69.camel__16864.3804303885$1380192284$gmane$org@linux-s257.site>
 References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
 	 <1380161957.32302.42.camel@linux-s257.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:50727 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756414Ab3IZKoK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 06:44:10 -0400
 In-Reply-To: <1380161957.32302.42.camel@linux-s257.site>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.hengli.com.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
-List-Id: linux-pm@vger.kernel.org
 
 =E6=96=BC =E5=9B=9B=EF=BC=8C2013-09-26 =E6=96=BC 10:19 +0800=EF=BC=8Cjo=
 eyli =E6=8F=90=E5=88=B0=EF=BC=9A
@@ -89,3 +93,4 @@ performance is not too bad to a big image.
 
 Thanks
 Joey Lee
+
