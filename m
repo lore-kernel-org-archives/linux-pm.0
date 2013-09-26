@@ -1,108 +1,53 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Thu, 26 Sep 2013 22:30:49 +0530
-Message-ID: <52446841.2030301@linux.vnet.ibm.com>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <20130925234734.GK18242@two.firstfloor.org> <52438AA9.3020809@linux.intel.com> <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org> <20130926015016.GM18242@two.firstfloor.org> <20130925195953.826a9f7d.akpm@linux-foundation.org> <524439D5.8020306@linux.vnet.ibm.com> <52445993.7050608@linux.intel.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+Subject: RE: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
+Date: Thu, 26 Sep 2013 17:22:30 +0000
+Message-ID: <3908561D78D1C84285E8C5FCA982C28F31D1B6BE@ORSMSX106.amr.corp.intel.com>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
+ <52437128.7030402@linux.vnet.ibm.com>
+ <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
+ <52442F6F.5020703@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <52445993.7050608@linux.intel.com>
+In-Reply-To: <52442F6F.5020703@linux.vnet.ibm.com>
+Content-Language: en-US
 Sender: owner-linux-mm@kvack.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <andi@firstfloor.org>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, thomas.abraham@linaro.org, amit.kachhap@linaro.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: "mgorman@suse.de" <mgorman@suse.de>, "dave@sr71.net" <dave@sr71.net>, "hannes@cmpxchg.org" <hannes@cmpxchg.org>, "matthew.garrett@nebula.com" <matthew.garrett@nebula.com>, "riel@redhat.com" <riel@redhat.com>, "arjan@linux.intel.com" <arjan@linux.intel.com>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "willy@linux.intel.com" <willy@linux.intel.com>, "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>, "lenb@kernel.org" <lenb@kernel.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "gargankita@gmail.com" <gargankita@gmail.com>, "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>, "andi@firstfloor.org" <andi@firstfloor.org>, "isimatu.yasuaki@jp.fujitsu.com" <isimatu.yasuaki@jp.fujitsu.com>, "santosh.shilimkar@ti.com" <santosh.shilimkar@ti.com>, "kosaki.motohiro@gmail.com" <kosaki.>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/26/2013 09:28 PM, Arjan van de Ven wrote:
-> On 9/26/2013 6:42 AM, Srivatsa S. Bhat wrote:
->> On 09/26/2013 08:29 AM, Andrew Morton wrote:
->>> On Thu, 26 Sep 2013 03:50:16 +0200 Andi Kleen <andi@firstfloor.org>
->>> wrote:
->>>
->>>> On Wed, Sep 25, 2013 at 06:21:29PM -0700, Andrew Morton wrote:
->>>>> On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven
->>>>> <arjan@linux.intel.com> wrote:
->>>>>
->>>>>> On 9/25/2013 4:47 PM, Andi Kleen wrote:
->>>>>>>> Also, the changelogs don't appear to discuss one obvious
->>>>>>>> downside: the
->>>>>>>> latency incurred in bringing a bank out of one of the low-power
->>>>>>>> states
->>>>>>>> and back into full operation.  Please do discuss and quantify
->>>>>>>> that to
->>>>>>>> the best of your knowledge.
->>>>>>>
->>>>>>> On Sandy Bridge the memry wakeup overhead is really small. It's
->>>>>>> on by default
->>>>>>> in most setups today.
->>>>>>
->>>>>> btw note that those kind of memory power savings are
->>>>>> content-preserving,
->>>>>> so likely a whole chunk of these patches is not actually needed on
->>>>>> SNB
->>>>>> (or anything else Intel sells or sold)
->>>>>
->>>>> (head spinning a bit).  Could you please expand on this rather a lot?
->>>>
->>>> As far as I understand there is a range of aggressiveness. You could
->>>> just group memory a bit better (assuming you can sufficiently predict
->>>> the future or have some interface to let someone tell you about it).
->>>>
->>>> Or you can actually move memory around later to get as low footprint
->>>> as possible.
->>>>
->>>> This patchkit seems to do both, with the later parts being on the
->>>> aggressive side (move things around)
->>>>
->>>> If you had non content preserving memory saving you would
->>>> need to be aggressive as you couldn't afford any mistakes.
->>>>
->>>> If you had very slow wakeup you also couldn't afford mistakes,
->>>> as those could cost a lot of time.
->>>>
->>>> On SandyBridge is not slow and it's preserving, so some mistakes are
->>>> ok.
->>>>
->>>> But being aggressive (so move things around) may still help you saving
->>>> more power -- i guess only benchmarks can tell. It's a trade off
->>>> between
->>>> potential gain and potential worse case performance regression.
->>>> It may also depend on the workload.
->>>>
->>>> At least right now the numbers seem to be positive.
->>>
->>> OK.  But why are "a whole chunk of these patches not actually needed
->>> on SNB
->>> (or anything else Intel sells or sold)"?  What's the difference between
->>> Intel products and whatever-it-is-this-patchset-was-designed-for?
->>>
->>
->> Arjan, are you referring to the fact that Intel/SNB systems can exploit
->> memory self-refresh only when the entire system goes idle? Is that why
->> this
->> patchset won't turn out to be that useful on those platforms?
-> 
-> no we can use other things (CKE and co) all the time.
-> 
+> As Andi mentioned, the wakeup latency is not expected to be noticeable. A=
+nd
+> these power-savings logic is turned on in the hardware by default. So its=
+ not
+> as if this patchset is going to _introduce_ that latency. This patchset o=
+nly
+> tries to make the Linux MM _cooperate_ with the (already existing) hardwa=
+re
+> power-savings logic and thereby get much better memory power-savings bene=
+fits
+> out of it.
 
-Ah, ok..
+You will still get the blame :-)   By grouping active memory areas along h/=
+w power
+boundaries you enable the power saving modes to kick in (where before they =
+didn't
+because of scattered access to all areas).  This seems very similar to sche=
+duler changes
+that allow processors to go idle long enough to enter deep C-states ... ups=
+etting
+users who notice the exit latency.
 
-> just that we found that statistical grouping gave 95%+ of the benefit,
-> without the cost of being aggressive on going to a 100.00% grouping
-> 
+The interleave problem mentioned elsewhere in this thread is possibly a big=
+ problem.
+High core counts mean that memory bandwidth can be the bottleneck for sever=
+al
+workloads.  Dropping, or reducing, the degree of interleaving will seriousl=
+y impact
+bandwidth (unless your applications are spread out "just right").
 
-And how do you do that statistical grouping? Don't you need patches similar
-to those in this patchset? Or are you saying that the existing vanilla
-kernel itself does statistical grouping somehow?
-
-Also, I didn't fully understand how NUMA policy will help in this case..
-If you want to group memory allocations/references into fewer memory regions
-_within_ a node, will NUMA policy really help? For example, in this patchset,
-everything (all the allocation/reference shaping) is done _within_ the
-NUMA boundary, assuming that the memory regions are subsets of a NUMA node.
-
-Regards,
-Srivatsa S. Bhat
+-Tony
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
