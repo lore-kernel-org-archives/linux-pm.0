@@ -1,74 +1,84 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Wed, 25 Sep 2013 19:59:53 -0700
-Message-ID: <20130925195953.826a9f7d.akpm@linux-foundation.org>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
-	<52437128.7030402@linux.vnet.ibm.com>
-	<20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
-	<20130925234734.GK18242@two.firstfloor.org>
-	<52438AA9.3020809@linux.intel.com>
-	<20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
-	<20130926015016.GM18242@two.firstfloor.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
+ snapshot
+Date: Thu, 26 Sep 2013 12:40:03 +0800
+Message-ID: <1380170403.32302.52.camel__28178.3024584458$1380170422$gmane$org@linux-s257.site>
+References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
+	 <1380147414.18835.36.camel@dabdike.int.hansenpartnership.com>
+	 <20130926002730.GA26857@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:52488 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752428Ab3IZC7p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 22:59:45 -0400
-In-Reply-To: <20130926015016.GM18242@two.firstfloor.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:44623 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211Ab3IZEkH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 00:40:07 -0400
+In-Reply-To: <20130926002730.GA26857@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, Alan Stern <stern@rowland.harvard.edu>, David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.hengli.com.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
 
-On Thu, 26 Sep 2013 03:50:16 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+=E6=96=BC =E5=9B=9B=EF=BC=8C2013-09-26 =E6=96=BC 02:27 +0200=EF=BC=8CPa=
+vel Machek =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Wed 2013-09-25 15:16:54, James Bottomley wrote:
+> > On Wed, 2013-09-25 at 17:25 -0400, Alan Stern wrote:
+> > > On Wed, 25 Sep 2013, David Howells wrote:
+> > >=20
+> > > > I have pushed some keyrings patches that will likely affect thi=
+s to:
+> > > >=20
+> > > > 	http://git.kernel.org/cgit/linux/kernel/git/dhowells/linux-fs.=
+git/log/?h=3Dkeys-devel
+> > > >=20
+> > > > I intend to ask James to pull these into his next branch.  If h=
+e's happy to do
+> > > > so, I can look at pulling at least your asymmetric keys patch o=
+n top of them.
+> > >=20
+> > > This suggests a point that I raised at the Linux Plumbers confere=
+nce:
+> > >=20
+> > > Why are asymmetric keys used for verifying the hibernation image?=
+  It
+> > > seems that a symmetric key would work just as well.  And it would=
+ be a
+> > > lot quicker to generate, because it wouldn't need any high-precis=
+ion
+> > > integer computations.
+> >=20
+> > The reason is the desire to validate that the previous kernel creat=
+ed
+> > something which it passed on to the current kernel (in this case, t=
+he
+> > hibernation image) untampered with.  To do that, something must be
+> > passed to the prior kernel that can be validated but *not* recreate=
+d by
+> > the current kernel.
+>=20
+> I don't get this. Why is it important that current kernel can't
+> recreate the signature?
+>=20
+> Current kernel is not considered malicious (if it were, you have wors=
+e
+> problems).
+>=20
 
-> On Wed, Sep 25, 2013 at 06:21:29PM -0700, Andrew Morton wrote:
-> > On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
-> > 
-> > > On 9/25/2013 4:47 PM, Andi Kleen wrote:
-> > > >> Also, the changelogs don't appear to discuss one obvious downside: the
-> > > >> latency incurred in bringing a bank out of one of the low-power states
-> > > >> and back into full operation.  Please do discuss and quantify that to
-> > > >> the best of your knowledge.
-> > > >
-> > > > On Sandy Bridge the memry wakeup overhead is really small. It's on by default
-> > > > in most setups today.
-> > > 
-> > > btw note that those kind of memory power savings are content-preserving,
-> > > so likely a whole chunk of these patches is not actually needed on SNB
-> > > (or anything else Intel sells or sold)
-> > 
-> > (head spinning a bit).  Could you please expand on this rather a lot?
-> 
-> As far as I understand there is a range of aggressiveness. You could
-> just group memory a bit better (assuming you can sufficiently predict
-> the future or have some interface to let someone tell you about it).
-> 
-> Or you can actually move memory around later to get as low footprint
-> as possible.
-> 
-> This patchkit seems to do both, with the later parts being on the
-> aggressive side (move things around) 
-> 
-> If you had non content preserving memory saving you would 
-> need to be aggressive as you couldn't afford any mistakes.
-> 
-> If you had very slow wakeup you also couldn't afford mistakes,
-> as those could cost a lot of time.
-> 
-> On SandyBridge is not slow and it's preserving, so some mistakes are ok.
-> 
-> But being aggressive (so move things around) may still help you saving
-> more power -- i guess only benchmarks can tell. It's a trade off between
-> potential gain and potential worse case performance regression.
-> It may also depend on the workload.
-> 
-> At least right now the numbers seem to be positive.
+Current boot kernel should not malicious especially when UEFI secure
+boot enabled.
 
-OK.  But why are "a whole chunk of these patches not actually needed on SNB
-(or anything else Intel sells or sold)"?  What's the difference between
-Intel products and whatever-it-is-this-patchset-was-designed-for?
+> 								Pavel
+>=20
+> PS: And yes, it would be nice to have
+> Documentation/power/swsusp-uefi.txt (or something) explaining the
+> design.
+>=20
+
+Thanks for your suggestion, I will write the swsusp-uefi.txt to
+explaining the design in next version.
+
+
+Thanks a lot!
+Joey Lee
 
