@@ -1,64 +1,66 @@
-From: Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>
-Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate snapshot
-Date: Thu, 26 Sep 2013 16:56:33 +0200
-Message-ID: <20130926145633.GA572@suse.cz>
-References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
- <1380147414.18835.36.camel@dabdike.int.hansenpartnership.com>
- <20130926002730.GA26857@amd.pavel.ucw.cz>
- <1380162771.18835.47.camel@dabdike.int.hansenpartnership.com>
- <alpine.LNX.2.00.1309260819490.18703@pobox.suse.cz>
- <1380206654.18835.56.camel@dabdike.int.hansenpartnership.com>
- <alpine.LNX.2.00.1309261646150.18703@pobox.suse.cz>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
+Date: Thu, 26 Sep 2013 08:23:32 -0700
+Message-ID: <52445174.70409@linux.intel.com>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <20130925234734.GK18242@two.firstfloor.org> <52438AA9.3020809@linux.intel.com> <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <opensuse-kernel+bounces-5154-glsk-opensuse-kernel=m.gmane.org-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Post: <mailto:opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:opensuse-kernel+help-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Subscribe: <mailto:opensuse-kernel+subscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Unsubscribe: <mailto:opensuse-kernel+unsubscribe-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Owner: <mailto:opensuse-kernel+owner-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org>
-List-Archive: <http://lists.opensuse.org/opensuse-kernel/>
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1309261646150.18703-ztGlSCb7Y1iN3ZZ/Hiejyg@public.gmane.org>
-To: Jiri Kosina <jiri.kosina-IBi9RG/b67k@public.gmane.org>
-Cc: James Bottomley <James.Bottomley-d9PhHud1JfjCXq6kfMZ53/egYHeGw8Jk@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, opensuse-kernel-stAJ6ESoqRxg9hUCZPvPmw@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rusty Russell <rusty-8n+1lVoiYb80n/F98K4Iww@public.gmane.org>, Herbert Xu <herbert-F6s6mLieUQo7FNHlEwC/lvQIK84fMopw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Michal Marek <mmarek-AlSwsSmVLrQ@public.gmane.org>, Gary Lin <GLin-IBi9RG/b67k@public.gmane.org>, Vivek Goyal <vgoyal-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-WDPRK7U/wSs@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 26, 2013 at 04:48:00PM +0200, Jiri Kosina wrote:
+On 9/25/2013 6:21 PM, Andrew Morton wrote:
+> On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
+>
+>> On 9/25/2013 4:47 PM, Andi Kleen wrote:
+>>>> Also, the changelogs don't appear to discuss one obvious downside: the
+>>>> latency incurred in bringing a bank out of one of the low-power states
+>>>> and back into full operation.  Please do discuss and quantify that to
+>>>> the best of your knowledge.
+>>>
+>>> On Sandy Bridge the memry wakeup overhead is really small. It's on by default
+>>> in most setups today.
+>>
+>> btw note that those kind of memory power savings are content-preserving,
+>> so likely a whole chunk of these patches is not actually needed on SNB
+>> (or anything else Intel sells or sold)
+>
+> (head spinning a bit).  Could you please expand on this rather a lot?
 
-> > The only two problems I see are
-> > 
-> >      1. The key isn't generational (any compromise obtains it).  This
-> >         can be fixed by using a set of keys generated on each boot and
-> >         passing in both K_{N-1} and K_N
-> 
-> I think this could be easily made optional, leaving the user with choice 
-> of faster or "safer" boot.
+so there is two general ways to save power on memory
 
-Ideally, the key should be regenerated on each true reboot and kept the
-same if it is just a resume. Unfortunately, I don't see a way to
-distinguish those before we call ExitBootServices().
+one way keeps the content of the memory there
 
-The reasoning behind that is that in the case of a kernel compromise, a
-suspended-and-resumed kernel will still be compromised, so there is no
-value in passing it a new key. A freshly booted kernel, though, should
-get a new key, exactly because the attacker could have obtained a key
-from the previous, compromised one.
+the other way loses the content of the memory.
 
-This speeds up the ususal suspend-and-resume cycle, but provides full
-security once the user performs a full reboot.
+in the first type, there are degrees of power savings (each with their own costs), and the mechanism to enter/exit
+tends to be fully automatic, e.g. OS invisible. (and generally very very fast.. measured in low numbers of nanoseconds)
 
-The question that remains is how to tell in advance.
+in the later case the OS by nature has to get involved and actively free the content of the memory prior to
+setting the power level lower (and thus lose the content).
 
-> >      2. No external agency other than the next kernel can do the
-> >         validation since the validating key has to be secret
-> 
-> This is true, but as you said, the relevance of this seems to be rather 
-> questionable.
 
-Indeed, it's hard to imagine a scenario that is also valid within the
-secure boot threat model.
+on the machines Srivatsa has been measuring, only the first type exists... e.g. content is preserved.
+at which point, I am skeptical that it is worth spending a lot of CPU time (and thus power!) to move stuff around
+or free memory (e.g. reduce disk cache efficiency -> loses power as well).
 
--- 
-Vojtech Pavlik
-Director SUSE Labs
+the patches posted seem to go to great lengths doing these kind of things.
+
+
+to get the power savings, my deep suspicion (based on some rudimentary experiments done internally to Intel
+earlier this year) is that it is more than enough to have "statistical" level of "binding", to get 95%+ of
+the max theoretical power savings.... basically what todays NUMA policy would do.
+
+
+
+>
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
