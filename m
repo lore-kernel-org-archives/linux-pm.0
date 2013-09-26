@@ -1,59 +1,40 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH -v2] cpufreq: skip loading acpi_cpufreq after intel_pstate
-Date: Wed, 25 Sep 2013 22:17:49 -0700
-Message-ID: <CAE9FiQV+K9QSEiRMA8BtqC8k2OHm4aZWODNL+vgfFmpsuBfzQg@mail.gmail.com>
-References: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1379699036-7380-1-git-send-email-yinghai@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] cpufreq: SPEAr: Fix incorrect variable type
+Date: Thu, 26 Sep 2013 10:56:42 +0530
+Message-ID: <1380173202-12624-1-git-send-email-sachin.kamat@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f42.google.com ([209.85.160.42]:60423 "EHLO
+	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805Ab3IZF0q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 01:26:46 -0400
+Received: by mail-pb0-f42.google.com with SMTP id un15so638972pbc.15
+        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 22:26:45 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: cpufreq@vger.kernel.org, viresh.kumar@linaro.org, rjw@sisk.pl, sachin.kamat@linaro.org
 
-On Fri, Sep 20, 2013 at 10:43 AM, Yinghai Lu <yinghai@kernel.org> wrote:
-> If the hw support intel_pstate and acpi_cpufreq, intel_pstate will
-> get loaded first.
->
-> acpi_cpufreq_init will call acpi_cpufreq_early_init()
-> and that will allocate perf data and init those perf data in ACPI core,
-> (that will cover all cpus). But later it will free them as
-> cpufreq_register_driver(acpi_cpufreq) will fail as init_pstate is
-> already registered
->
-> Use cpufreq_get_current_driver() to check if we can skip the
-> acpi_cpufreq loading.
->
-> -v2: update changelog and separate second part to another patch, according
->      to Viresh.
->
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->
-> ---
->  drivers/cpufreq/acpi-cpufreq.c |    4 ++++
->  1 file changed, 4 insertions(+)
->
-> Index: linux-2.6/drivers/cpufreq/acpi-cpufreq.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/cpufreq/acpi-cpufreq.c
-> +++ linux-2.6/drivers/cpufreq/acpi-cpufreq.c
-> @@ -986,6 +986,10 @@ static int __init acpi_cpufreq_init(void
->  {
->         int ret;
->
-> +       /* don't keep reloading if cpufreq_driver exists */
-> +       if (cpufreq_get_current_driver())
-> +               return 0;
-> +
->         if (acpi_disabled)
->                 return 0;
->
+'clk_round_rate' returns a negative error code upon failure. This
+will never get detected by unsigned 'newfreq'. Make it signed.
 
-Rafael,
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/cpufreq/spear-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-can you put this one in acpi tree?
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 19e364fa..3f41816 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -113,7 +113,7 @@ static int spear_cpufreq_target(struct cpufreq_policy *policy,
+ 		unsigned int target_freq, unsigned int relation)
+ {
+ 	struct cpufreq_freqs freqs;
+-	unsigned long newfreq;
++	long newfreq;
+ 	struct clk *srcclk;
+ 	int index, ret, mult = 1;
+ 
+-- 
+1.7.9.5
 
-Thanks
-
-Yinghai
