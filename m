@@ -1,51 +1,53 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Thu, 26 Sep 2013 18:46:31 +0530
-Message-ID: <524433AF.8010102@linux.vnet.ibm.com>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <20130925234734.GK18242@two.firstfloor.org> <52438AA9.3020809@linux.intel.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
+ snapshot
+Date: Thu, 26 Sep 2013 21:20:38 +0800
+Message-ID: <1380201638.32302.90.camel__11281.5675246113$1380201694$gmane$org@linux-s257.site>
+References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
+	 <1380161957.32302.42.camel@linux-s257.site>
+	 <1380192218.32302.69.camel@linux-s257.site>
+	 <20130926120621.GA7537@amd.pavel.ucw.cz>  <20130926122210.GA30225@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <52438AA9.3020809@linux.intel.com>
-Sender: owner-linux-mm@kvack.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Andrew Morton <akpm@linux-foundation.org>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, thomas.abraham@linaro.org, amit.kachhap@linaro.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-crypto-owner@vger.kernel.org>
+In-Reply-To: <20130926122210.GA30225@suse.cz>
+Sender: linux-crypto-owner@vger.kernel.org
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>, David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.hengli.com.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/26/2013 06:45 AM, Arjan van de Ven wrote:
-> On 9/25/2013 4:47 PM, Andi Kleen wrote:
->>> Also, the changelogs don't appear to discuss one obvious downside: the
->>> latency incurred in bringing a bank out of one of the low-power states
->>> and back into full operation.  Please do discuss and quantify that to
->>> the best of your knowledge.
->>
->> On Sandy Bridge the memry wakeup overhead is really small. It's on by
->> default
->> in most setups today.
-> 
-> btw note that those kind of memory power savings are content-preserving,
-> so likely a whole chunk of these patches is not actually needed on SNB
-> (or anything else Intel sells or sold)
-> 
+=E6=96=BC =E5=9B=9B=EF=BC=8C2013-09-26 =E6=96=BC 14:22 +0200=EF=BC=8CVo=
+jtech Pavlik =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Thu, Sep 26, 2013 at 02:06:21PM +0200, Pavel Machek wrote:
+>=20
+> > > For the symmetric key solution, I will try HMAC (Hash Message
+> > > Authentication Code). It's already used in networking, hope the
+> > > performance is not too bad to a big image.
+> >=20
+> > Kernel already supports crc32 of the hibernation image, you may wan=
+t
+> > to take a look how that is done.
+> >=20
+> > Maybe you want to replace crc32 with cryptographics hash (sha1?) an=
+d
+> > then use only hash for more crypto? That way speed of whatever
+> crypto
+> > you do should not be an issue.
+>=20
+> Well, yes, one could skip the CRC when the signing is enabled to gain
+> a
+> little speedup.=20
 
-Umm, why not? By consolidating the allocations to fewer memory regions,
-this patchset also indirectly consolidates the *references* as well. And
-its the lack of memory references that really makes the hardware transition
-the unreferenced banks to low-power (content-preserving) states. So from what
-I understand, this patchset should provide noticeable benefits on Intel/SNB
-platforms as well.
+In current kernel, CRC is for check the integrity of LZO compressed
+image, the purpose is different to check the integrity of snapshot
+image.
+So, CRC will not in non-compress hibernate or userspace hibernate code
+path
 
-(BTW, even in the prototype powerpc hardware that I mentioned, the primary
-memory power savings is expected to come from content-preserving states. So
-its not like this patchset was designed only for content-losing/full-poweroff
-type of scenarios).
+On the other hand, attacker can easily change the CRC code in the heade=
+r
+of LZO hibernate image.
 
-Regards,
-Srivatsa S. Bhat
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Thanks a lot!
+Joey Lee
