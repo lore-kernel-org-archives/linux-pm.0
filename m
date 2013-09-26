@@ -1,73 +1,80 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Thu, 26 Sep 2013 03:50:16 +0200
-Message-ID: <20130926015016.GM18242@two.firstfloor.org>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com>
- <52437128.7030402@linux.vnet.ibm.com>
- <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org>
- <20130925234734.GK18242@two.firstfloor.org>
- <52438AA9.3020809@linux.intel.com>
- <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate
+ snapshot
+Date: Thu, 26 Sep 2013 10:19:17 +0800
+Message-ID: <1380161957.32302.42.camel__288.425575900142$1380161974$gmane$org@linux-s257.site>
+References: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20130925182129.a7db6a0fd2c7cc3b43fda92d@linux-foundation.org>
-Sender: owner-linux-mm@kvack.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Andi Kleen <andi@firstfloor.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:56672 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753625Ab3IZCTU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2013 22:19:20 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1309251723001.26508-100000@netrider.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.hengli.com.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>
 
-On Wed, Sep 25, 2013 at 06:21:29PM -0700, Andrew Morton wrote:
-> On Wed, 25 Sep 2013 18:15:21 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
-> 
-> > On 9/25/2013 4:47 PM, Andi Kleen wrote:
-> > >> Also, the changelogs don't appear to discuss one obvious downside: the
-> > >> latency incurred in bringing a bank out of one of the low-power states
-> > >> and back into full operation.  Please do discuss and quantify that to
-> > >> the best of your knowledge.
-> > >
-> > > On Sandy Bridge the memry wakeup overhead is really small. It's on by default
-> > > in most setups today.
-> > 
-> > btw note that those kind of memory power savings are content-preserving,
-> > so likely a whole chunk of these patches is not actually needed on SNB
-> > (or anything else Intel sells or sold)
-> 
-> (head spinning a bit).  Could you please expand on this rather a lot?
+=E6=96=BC =E4=B8=89=EF=BC=8C2013-09-25 =E6=96=BC 17:25 -0400=EF=BC=8CAl=
+an Stern =E6=8F=90=E5=88=B0=EF=BC=9A
+> On Wed, 25 Sep 2013, David Howells wrote:
+>=20
+> > I have pushed some keyrings patches that will likely affect this to=
+:
+> >=20
+> > 	http://git.kernel.org/cgit/linux/kernel/git/dhowells/linux-fs.git/=
+log/?h=3Dkeys-devel
+> >=20
+> > I intend to ask James to pull these into his next branch.  If he's =
+happy to do
+> > so, I can look at pulling at least your asymmetric keys patch on to=
+p of them.
+>=20
+> This suggests a point that I raised at the Linux Plumbers conference:
+>=20
+> Why are asymmetric keys used for verifying the hibernation image?  It
+> seems that a symmetric key would work just as well.  And it would be =
+a
+> lot quicker to generate, because it wouldn't need any high-precision
+> integer computations.
+>=20
+> Alan Stern
+>=20
+>=20
 
-As far as I understand there is a range of aggressiveness. You could
-just group memory a bit better (assuming you can sufficiently predict
-the future or have some interface to let someone tell you about it).
+Per my understood, it's like add salt to snapshot when generate
+signature, then remove the salt when store the snapshot to swap. (or
+pass snapshot to userland).
 
-Or you can actually move memory around later to get as low footprint
-as possible.
+Let me explain the symmetric key solution base on my understand:
 
-This patchkit seems to do both, with the later parts being on the
-aggressive side (move things around) 
+ + EFI stub kernel generate a hash value from a random seed, then store
+it to EFi boot varaible. It should protected by UEFI secure boot
+environment.
 
-If you had non content preserving memory saving you would 
-need to be aggressive as you couldn't afford any mistakes.
+ + When hibernate launched:
+    - Kernel create the snapshot image of memory. It's included the
+random hash value(salt) that generated in EFI stub stage.
+    - Then kernel hash the snapshot image, put the hash to snapshot
+header, just like current asymmetric keys solution.
+    - Kernel erase the salt in snapshot image before it go to swap or
+pass to userspace tool.
 
-If you had very slow wakeup you also couldn't afford mistakes,
-as those could cost a lot of time.
+ + When hibernate resume:
+    - Kernel or userspace tool load the snapshot(without salt) from swa=
+p
+to temporary memory space.
+    - Kernel fill the salt back to snapshot image in memory, hash it.
+    - Kernel compare the hash with the hash that put in snapshot header=
+=2E
+    - Verification done! The follow-up action as current solution.
 
-On SandyBridge is not slow and it's preserving, so some mistakes are ok.
+Please current me if I missed anything.
 
-But being aggressive (so move things around) may still help you saving
-more power -- i guess only benchmarks can tell. It's a trade off between
-potential gain and potential worse case performance regression.
-It may also depend on the workload.
 
-At least right now the numbers seem to be positive.
+Thanks a lot!
+Joey Lee
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
