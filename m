@@ -1,38 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 18/21] cpuidle: don't call poll_idle_init() for every cpu
-Date: Thu, 26 Sep 2013 11:39:28 +0530
-Message-ID: <CAKohpokBPD35pBpCt-x0KGNvy3hxmYGPxXpSBJZcgo7ir8L3hA@mail.gmail.com>
-References: <cover.1379779777.git.viresh.kumar@linaro.org>
-	<495ffb1175175b0180ca3da96eb5ed72a8280364.1379779777.git.viresh.kumar@linaro.org>
-	<52436237.3040500@linaro.org>
+From: Yadwinder Singh Brar <yadi.brar01@gmail.com>
+Subject: Re: [PATCH 1/2] cpufreq: exynos4x12: Use the common clock framework
+ to set APLL clock rate
+Date: Thu, 26 Sep 2013 11:44:56 +0530
+Message-ID: <CAKew6eVXw5qUuZ=Oc6ko3BkJj=iYqvN-NsrfmOHPQmMkxiv-nA@mail.gmail.com>
+References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
+	<1380108138-30402-2-git-send-email-l.majewski@samsung.com>
+	<CAKew6eW9-QHL5NKHV8roER_yuoLEiCoS53Gby8zC841fr=whqQ@mail.gmail.com>
+	<3068635.myUg9qMyJN@amdc1227>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f174.google.com ([209.85.216.174]:54688 "EHLO
-	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211Ab3IZGJ2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 02:09:28 -0400
-Received: by mail-qc0-f174.google.com with SMTP id n9so464472qcw.33
-        for <linux-pm@vger.kernel.org>; Wed, 25 Sep 2013 23:09:28 -0700 (PDT)
-In-Reply-To: <52436237.3040500@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <3068635.myUg9qMyJN@amdc1227>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 26 September 2013 03:52, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> On 09/22/2013 03:21 AM, Viresh Kumar wrote:
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi Tomasz,
 
-This deserved a log, sorry for missing that :(
-
-> The optimization sounds good but IMHO if we can move this state out of
-> the cpuidle common framework that would be nicer.
+>> On Wed, Sep 25, 2013 at 4:52 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> > In the exynos4x12_set_apll() function, the APLL frequency is set with
+>> > direct register manipulation.
+>> >
+>> > Such approach is not allowed in the common clock framework. The frequency
+>> > is changed, but the corresponding clock value is not updated. This causes
+>> > wrong frequency read from cpufreq's cpuinfo_cur_freq sysfs attribute.
+>> >
+>>
+>> This patch looks incomplete, leaving the driver in untidy state, perhaps its
+>> doesn't fix the above stated problem completely. what about
+>> if (!exynos4x12_pms_change(old_index, new_index)) becomes true?
+>>
+>> IMHO, this driver needs lot more work in addition to this patch to cleanly and
+>> completely move the cpufreq driver to common clock framework.
 >
-> The poll_idle is only applicable for x86 (acpi_driver and intel_idle),
-> hence I suggest we move this state to these drivers, that will cleanup
-> the framework code and will remove index shift macro
-> CPUIDLE_DRIVER_STATE_START which IMHO is weid and prone-to-error.
+> I agree that the other case needs to be handled as well. Basically the
+> whole conditional block dependent on exynos4x12_pms_change() can be safely
+> dropped, because this condition is already handled in PLL driver.
+>
 
-Lets see what X86 folks have to say about it and then we can do it..
-Btw, wouldn't that add some code duplication in those two drivers?
+Exactly!
+
+> Lukasz is already working on further rework of this driver to clean it up
+> from legacy code, but this will have to wait for 3.13, as 3.12 is already
+> in rc stage and only fixes can be accepted for it.
+>
+>> For fixing this issue urgently, setting CLK_GET_RATE_NOCACHE for apll
+>> in clk driver can also be quicker fix.
+>
+> Unfortunately this is not how this flag works. It only makes
+> clk_get_rate() call ->recalc_rate() operation of the clock instead of
+> instantly returning cached rate - it doesn't seem to work recursively.
+>
+
+hmm.. yes it can't help in our case as it recursively walks only the subtree
+of clk but in our case we are changing rate of parent.
+
+Regards,
+Yadwinder
