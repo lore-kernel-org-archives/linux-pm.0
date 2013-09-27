@@ -1,44 +1,39 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/6] cpuidle: calxeda: add ecx-2000 support
-Date: Fri, 27 Sep 2013 10:47:04 +0200
-Message-ID: <52454608.6040504@linaro.org>
-References: <1380248694-13388-1-git-send-email-robherring2@gmail.com> <1380248694-13388-4-git-send-email-robherring2@gmail.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Subject: Re: [PATCH 1/2] ARM: zynq: cpuidle: Remove useless compatibility
+ string
+Date: Fri, 27 Sep 2013 10:51:43 +0200
+Message-ID: <c0351789-56de-47f7-bc03-6af126f8e45f@TX2EHSMHS012.ehs.local>
+References: <1380269867-18336-1-git-send-email-daniel.lezcano@linaro.org> <31f13d14-2af7-4285-8770-3cc7ef7e7b09@AM1EHSMHS008.ehs.local> <52454342.80706@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f52.google.com ([74.125.83.52]:44891 "EHLO
-	mail-ee0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457Ab3I0IrI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 04:47:08 -0400
-Received: by mail-ee0-f52.google.com with SMTP id c41so1045638eek.39
-        for <linux-pm@vger.kernel.org>; Fri, 27 Sep 2013 01:47:06 -0700 (PDT)
-In-Reply-To: <1380248694-13388-4-git-send-email-robherring2@gmail.com>
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:5918 "EHLO
+	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751548Ab3I0Ivr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 04:51:47 -0400
+In-Reply-To: <52454342.80706@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Michal Simek <michal.simek@xilinx.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, =?UTF-8?B?U8O2cmVuIEJyaW5rbWFubg==?= <soren.brinkmann@xilinx.com>
 
-On 09/27/2013 04:24 AM, Rob Herring wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
->
-> Add cpuidle support for Calxeda ecx-2000 SoC.
->
-> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: linux-pm@vger.kernel.org
+On 09/27/2013 10:35 AM, Daniel Lezcano wrote:
+> On 09/27/2013 10:19 AM, Michal Simek wrote:
+>> On 09/27/2013 10:17 AM, Daniel Lezcano wrote:
+>>> All zynq platforms have this compatibility string and there is no any other
+>>> clone.
+>>>
+>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> 
+> The patchset is only compile-tested (I don't have the hardware).
+> 
+> Michal or someone else, if you have the time can you give it a try ?
+> 
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Soren: Can you please retest it on hw?
 
-Shall I pick these three patches in my tree ?
+Thanks,
+Michal
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
