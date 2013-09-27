@@ -1,61 +1,95 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Subject: Re: [RFC PATCH] ARM: zynq: cpuidle: convert to platform driver
-Date: Fri, 27 Sep 2013 07:12:20 +0200
-Message-ID: <22edc518-27ad-4dcf-918a-def23df93bcc@DB9EHSMHS022.ehs.local>
-References: <1380212138-4020-1-git-send-email-daniel.lezcano@linaro.org>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v4 06/40] mm: Demarcate and maintain pageblocks in
+ region-order in the zones' freelists
+Date: Fri, 27 Sep 2013 12:04:23 +0530
+Message-ID: <524526EF.1080101@linux.vnet.ibm.com>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <20130925231454.26184.19783.stgit@srivatsabhat.in.ibm.com> <5244B22C.9020503@sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db9lp0250.outbound.messaging.microsoft.com ([213.199.154.250]:14576
-	"EHLO db9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750820Ab3I0FMd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 01:12:33 -0400
-In-Reply-To: <1380212138-4020-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:38348 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203Ab3I0Gi6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 02:38:58 -0400
+Received: from /spool/local
+	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 27 Sep 2013 16:38:55 +1000
+In-Reply-To: <5244B22C.9020503@sr71.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: michal.simek@xilinx.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Dave Hansen <dave@sr71.net>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, "maxime.coquelin@stericsson.com" <maxime.coquelin@stericsson.com>, "loic.pallardy@stericsson.com" <loic.pallardy@stericsson.com>, "thomas.abraham@linaro.org" <thomas.abraham@linaro.org>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>
 
-Hi Daniel,
-
-On 09/26/2013 06:15 PM, Daniel Lezcano wrote:
-> As the ux500 and the kirkwood driver, make the zynq driver a platform driver
+On 09/27/2013 03:46 AM, Dave Hansen wrote:
+> On 09/25/2013 04:14 PM, Srivatsa S. Bhat wrote:
+>> @@ -605,16 +713,22 @@ static inline void __free_one_page(struct page *page,
+>>  		buddy_idx = __find_buddy_index(combined_idx, order + 1);
+>>  		higher_buddy = higher_page + (buddy_idx - combined_idx);
+>>  		if (page_is_buddy(higher_page, higher_buddy, order + 1)) {
+>> -			list_add_tail(&page->lru,
+>> -				&zone->free_area[order].free_list[migratetype].list);
+>> +
+>> +			/*
+>> +			 * Implementing an add_to_freelist_tail() won't be
+>> +			 * very useful because both of them (almost) add to
+>> +			 * the tail within the region. So we could potentially
+>> +			 * switch off this entire "is next-higher buddy free?"
+>> +			 * logic when memory regions are used.
+>> +			 */
+>> +			add_to_freelist(page, &area->free_list[migratetype]);
+>>  			goto out;
+>>  		}
+>>  	}
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  arch/arm/mach-zynq/common.c    |    7 +++++++
->  drivers/cpuidle/cpuidle-zynq.c |   15 ++++++++++-----
->  2 files changed, 17 insertions(+), 5 deletions(-)
+> Commit 6dda9d55b says that this had some discrete performance gains.
+
+I had seen the comments about this but not the patch which made that change.
+Thanks for pointing the commit to me! But now that I went through the changelog
+carefully, it appears as if there were only some slight benefits in huge page
+allocation benchmarks, and the results were either inconclusive or unsubstantial
+in most other benchmarks that the author tried.
+
+> It's a bummer that this deoptimizes it, and I think that (expected)
+> performance degredation at least needs to be referenced _somewhere_.
+>
+
+I'm not so sure about that. Yes, I know that my patchset treats all pages
+equally (by adding all of them _far_ _away_ from the head of the list), but
+given that the above commit didn't show any significant improvements, I doubt
+whether my patchset will lead to any noticeable _degradation_. Perhaps I'll try
+out the huge-page allocation benchmark and observe what happens with my patchset.
+ 
+> I also find it very hard to take code seriously which stuff like this:
 > 
-> diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.c
-> index 5f25256..0f0d88f 100644
-> --- a/arch/arm/mach-zynq/common.c
-> +++ b/arch/arm/mach-zynq/common.c
-> @@ -44,6 +44,10 @@ static struct of_device_id zynq_of_bus_ids[] __initdata = {
->  	{}
->  };
->  
-> +static struct platform_device zynq_cpuidle_device = {
-> +	.name = "cpuidle-zynq",
-> +};
-> +
->  /**
->   * zynq_init_machine - System specific initialization, intended to be
->   *		       called from board specific initialization.
-> @@ -56,6 +60,9 @@ static void __init zynq_init_machine(void)
->  	l2x0_of_init(0x02060000, 0xF0F0FFFF);
->  
->  	of_platform_bus_probe(NULL, zynq_of_bus_ids, NULL);
-> +
-> +	if (of_machine_is_compatible("xlnx,zynq-7000"))
+>> +#ifdef CONFIG_DEBUG_PAGEALLOC
+>> +		WARN(region->nr_free == 0, "%s: nr_free messed up\n", __func__);
+>> +#endif
+> 
+> nine times.
+> 
 
-This is not needed because all zynq platforms have this compatibility string
-and there is no any other clone.
+Hmm, those debug checks were pretty invaluable for me when testing the code.
+I retained them in the patches so that if other people test it and find
+problems, they would be able to send bug reports with good amount of info as
+to what exactly went wrong. Besides, this patchset adds a ton of new code, and
+this list manipulation framework along with the bitmap-based radix tree is one
+of the core components. If that goes for a toss, everything from there onwards
+will be a train-wreck! So I felt having these checks and balances would be very
+useful to validate the correct working of each piece and to debug complex
+problems easily.
 
-The rest is fine.
+But please help me understand your point correctly - are you suggesting that
+I remove these checks completely or just make them gel well with the other code
+so that they don't become such an eyesore as they are at the moment (with all
+the #ifdefs sticking out etc)?
 
-Thanks,
-Michal
+If you are suggesting the latter, I completely agree with you. I'll find out
+a way to do that, and if you have any suggestions, please let me know!
 
+Thank you!
+
+Regards,
+Srivatsa S. Bhat
 
