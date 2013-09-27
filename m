@@ -1,146 +1,49 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv4 00/18] device thermal limits represented in device tree
- nodes (v4)
-Date: Thu, 26 Sep 2013 23:15:02 -0400
-Message-ID: <5244F836.3070102@ti.com>
+Subject: [PATCHv4 11/18] arm: dts: add omap4430 thermal data
+Date: Thu, 26 Sep 2013 23:13:18 -0400
+Message-ID: <1380251605-3804-12-git-send-email-eduardo.valentin@ti.com>
 References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:58532 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947Ab3I0DQM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 26 Sep 2013 23:16:12 -0400
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com
+Cc: devicetree@vger.kernel.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, grant.likely@linaro.org, Russell King <linux@arm.linux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
---SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On 26-09-2013 23:13, Eduardo Valentin wrote:
-> Hello all,
->=20
-> Here is the continuation of work of representing hardware thermal prope=
-rties
-> in device tree infrastructure. The present patch series is the fourth v=
-ersion
-> of this work. Previous versions were sent as RFCs and can be found here=
-:
-> V3:=20
-
-Too fast, hit send too early. For those interested, here is the link to V=
-3:
-https://lkml.org/lkml/2013/9/15/122
-
-> RFCv2: http://lkml.org/lkml/2013/8/23/594
-> RFCv1: http://lkml.org/lkml/2013/7/22/319
->=20
-> Major difference from V3 is on the parser itself. I have updated the bi=
-nding
-> documentation and improved the code accordingly to previous comments ma=
-inly
-> from Mark R. and Joe P.
->=20
-> The changes on hwmon drivers have been accepted by Guenter, and in this=
-
-> series I am including his Acked-by, as I didn't change anything on that=
- side.
->=20
-> I also found a bug while using all involved code built as modules, thus=
-
-> I have reworked a bit the cooling device registration part. This is why=
-
-> there are two new patches in this series (patches 02 and 04).
->=20
-> Tests were done, just like in V3, on TI OMAP4430, OMAP4460, OMAP5430 an=
-d DRA7,
-> although this series is not including the DRA7 part (I will be sending =
-separately).
->=20
-> Thanks all who have been contributing reviewing this code.
->=20
-> All best,
->=20
-> Eduardo Valentin (18):
->   thermal: allow registering without .get_temp
->   thermal: core: allow binding via .bind when tzp is present
->   thermal: introduce device tree parser
->   thermal: core: introduce thermal_of_cooling_device_register
->   thermal: cpu_cooling: introduce of_cpufreq_cooling_register
->   cpufreq: cpufreq-cpu0: add dt node parsing for cooling device
->     properties
->   hwmon: lm75: expose to thermal fw via DT nodes
->   hwmon: tmp102: expose to thermal fw via DT nodes
->   thermal: ti-soc-thermal: use thermal DT infrastructure
->   arm: dts: add omap4 CPU thermal data
->   arm: dts: add omap4430 thermal data
->   arm: dts: add omap4460 thermal data
->   arm: dts: add cooling properties on omap4430 cpu node
->   arm: dts: add cooling properties on omap4460 cpu node
->   arm: dts: add omap5 GPU thermal data
->   arm: dts: add omap5 CORE thermal data
->   arm: dts: add omap5 thermal data
->   arm: dts: add cooling properties on omap5 cpu node
->=20
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   7 +
->  .../devicetree/bindings/thermal/thermal.txt        | 537 +++++++++++++=
-
->  arch/arm/boot/dts/omap4-cpu-thermal.dtsi           |  41 +
->  arch/arm/boot/dts/omap443x.dtsi                    |  15 +-
->  arch/arm/boot/dts/omap4460.dtsi                    |  15 +-
->  arch/arm/boot/dts/omap5-core-thermal.dtsi          |  28 +
->  arch/arm/boot/dts/omap5-gpu-thermal.dtsi           |  28 +
->  arch/arm/boot/dts/omap5.dtsi                       |  15 +-
->  drivers/cpufreq/Kconfig                            |   2 +-
->  drivers/cpufreq/cpufreq-cpu0.c                     |  16 +
->  drivers/hwmon/lm75.c                               |  35 +-
->  drivers/hwmon/tmp102.c                             |  19 +
->  drivers/thermal/Kconfig                            |  14 +
->  drivers/thermal/Makefile                           |   1 +
->  drivers/thermal/cpu_cooling.c                      |  56 +-
->  drivers/thermal/of-thermal.c                       | 845 +++++++++++++=
-++++++++
->  drivers/thermal/thermal_core.c                     |  79 +-
->  drivers/thermal/thermal_core.h                     |   9 +
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  77 +-
->  include/dt-bindings/thermal/thermal.h              |  27 +
->  include/linux/cpu_cooling.h                        |  25 +
->  include/linux/thermal.h                            |  32 +-
->  22 files changed, 1880 insertions(+), 43 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/thermal/thermal.t=
-xt
->  create mode 100644 arch/arm/boot/dts/omap4-cpu-thermal.dtsi
->  create mode 100644 arch/arm/boot/dts/omap5-core-thermal.dtsi
->  create mode 100644 arch/arm/boot/dts/omap5-gpu-thermal.dtsi
->  create mode 100644 drivers/thermal/of-thermal.c
->  create mode 100644 include/dt-bindings/thermal/thermal.h
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJE+DkACgkQCXcVR3XQvP0YugEAndpUoFu9iRor2W5i3z46e8rz
-jsB7+ioqEgdpK+q3mIYBAILdLpqvErZt2fh9WKrWWNS1K8PB/NOs4oaVseP+yl7a
-=+Qmq
------END PGP SIGNATURE-----
-
---SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a--
+VGhpcyBwYXRjaCBjaGFuZ2VzIHRoZSBkdHNpIGVudHJ5IG9uIG9tYXA0NDMwIHRvIGNvbnRhaW4K
+dGhlIHRoZXJtYWwgZGF0YS4gVGhpcyBkYXRhIHdpbGwgZW5hYmxlIHRoZSBwYXNzaXZlCmNvb2xp
+bmcgd2l0aCBDUFVmcmVxIGNvb2xpbmcgZGV2aWNlIGF0IDEwMEMgYW5kIHRoZQpzeXN0ZW0gd2ls
+bCBkbyBhIHRoZXJtYWwgc2h1dGRvd24gYXQgMTI1Qy4KCkNjOiAiQmVub8OudCBDb3Vzc29uIiA8
+YmNvdXNzb25AYmF5bGlicmUuY29tPgpDYzogVG9ueSBMaW5kZ3JlbiA8dG9ueUBhdG9taWRlLmNv
+bT4KQ2M6IFJ1c3NlbGwgS2luZyA8bGludXhAYXJtLmxpbnV4Lm9yZy51az4KQ2M6IGxpbnV4LW9t
+YXBAdmdlci5rZXJuZWwub3JnCkNjOiBkZXZpY2V0cmVlLWRpc2N1c3NAbGlzdHMub3psYWJzLm9y
+ZwpDYzogbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCkNjOiBsaW51eC1rZXJu
+ZWxAdmdlci5rZXJuZWwub3JnClNpZ25lZC1vZmYtYnk6IEVkdWFyZG8gVmFsZW50aW4gPGVkdWFy
+ZG8udmFsZW50aW5AdGkuY29tPgotLS0KIGFyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDN4LmR0c2kg
+fCAxMCArKysrKysrKy0tCiAxIGZpbGUgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCAyIGRlbGV0
+aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDN4LmR0c2kgYi9h
+cmNoL2FybS9ib290L2R0cy9vbWFwNDQzeC5kdHNpCmluZGV4IGJjZjQ1NWUuLmU5Yzk3ZDYgMTAw
+NjQ0Ci0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDN4LmR0c2kKKysrIGIvYXJjaC9hcm0v
+Ym9vdC9kdHMvb21hcDQ0M3guZHRzaQpAQCAtMTIsNyArMTIsNyBAQAogCiAvIHsKIAljcHVzIHsK
+LQkJY3B1QDAgeworCQljcHUwOiBjcHVAMCB7CiAJCQkvKiBPTUFQNDQzeCB2YXJpYW50cyBPUFA1
+MC1PUFBOVCAqLwogCQkJb3BlcmF0aW5nLXBvaW50cyA9IDwKIAkJCQkvKiBrSHogICAgdVYgKi8K
+QEAgLTI1LDkgKzI1LDE1IEBACiAJCX07CiAJfTsKIAotCWJhbmRnYXAgeworCXRoZXJtYWwtem9u
+ZXN7CisJCSNpbmNsdWRlICJvbWFwNC1jcHUtdGhlcm1hbC5kdHNpIgorCX07CisKKwliYW5kZ2Fw
+OiBiYW5kZ2FwIHsKIAkJcmVnID0gPDB4NGEwMDIyNjAgMHg0CiAJCSAgICAgICAweDRhMDAyMzJD
+IDB4ND47CiAJCWNvbXBhdGlibGUgPSAidGksb21hcDQ0MzAtYmFuZGdhcCI7CisKKwkJI3RoZXJt
+YWwtc2Vuc29yLWNlbGxzID0gPDA+OwogCX07CiB9OwotLSAKMS44LjIuMS4zNDIuZ2ZhNzI4NWQK
+CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1h
+cm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5v
+cmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0t
+a2VybmVsCg==
