@@ -1,48 +1,65 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] ARM: ux500: cpuidle: fix section mismatch
-Date: Fri, 27 Sep 2013 19:16:35 +0200
-Message-ID: <1380302195-18678-1-git-send-email-daniel.lezcano@linaro.org>
+From: Luka Perkov <luka@openwrt.org>
+Subject: [PATCH v2] thermal: Kconfig: cosmetic fixes
+Date: Fri, 27 Sep 2013 20:20:33 +0200
+Message-ID: <1380306033-20325-1-git-send-email-luka@openwrt.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f53.google.com ([74.125.82.53]:43524 "EHLO
-	mail-wg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726Ab3I0RQj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 13:16:39 -0400
-Received: by mail-wg0-f53.google.com with SMTP id x12so2493724wgg.20
-        for <linux-pm@vger.kernel.org>; Fri, 27 Sep 2013 10:16:38 -0700 (PDT)
+Received: from arrakis.dune.hu ([78.24.191.176]:37431 "EHLO arrakis.dune.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754125Ab3I0SVD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 27 Sep 2013 14:21:03 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linus.walleij@linaro.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Luka Perkov <luka@openwrt.org>, Randy Dunlap <rdunlap@infradead.org>
 
-The dbx500_cpuidle_probe is tagged as an __init section but the variable
-dbx500_cpuidle_plat_driver is not.
+Fix typo, finish sentence and add missing dots.
 
-The dbx500_cpuidle_probe could not be declared as __init because of macro
-module_platform_driver builds the exit function, tags as __exit and this one
-refers to the dbx500_cpuidle_plat_driver which is an __initdata.
-
-That leads to a section mismatch.
-
-Fix it by removing the __init tag for the probe function.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Luka Perkov <luka@openwrt.org>
+CC: Randy Dunlap <rdunlap@infradead.org>
 ---
- drivers/cpuidle/cpuidle-ux500.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/Kconfig | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuidle-ux500.c
-index e056465..5e35804 100644
---- a/drivers/cpuidle/cpuidle-ux500.c
-+++ b/drivers/cpuidle/cpuidle-ux500.c
-@@ -111,7 +111,7 @@ static struct cpuidle_driver ux500_idle_driver = {
- 	.state_count = 2,
- };
+v1 -> v2:
+* address Randy's comment about unfinished sentence
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index dbfc390..3910b09 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -56,7 +56,7 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
+ 	select THERMAL_GOV_USER_SPACE
+ 	help
+ 	  Select this if you want to let the user space manage the
+-	  lpatform thermals.
++	  platform thermals.
  
--static int __init dbx500_cpuidle_probe(struct platform_device *pdev)
-+static int dbx500_cpuidle_probe(struct platform_device *pdev)
- {
- 	/* Configure wake up reasons */
- 	prcmu_enable_wakeups(PRCMU_WAKEUP(ARM) | PRCMU_WAKEUP(RTC) |
+ endchoice
+ 
+@@ -69,6 +69,7 @@ config THERMAL_GOV_STEP_WISE
+ 	bool "Step_wise thermal governor"
+ 	help
+ 	  Enable this to manage platform thermals using a simple linear
++	  governor.
+ 
+ config THERMAL_GOV_USER_SPACE
+ 	bool "User_space thermal governor"
+@@ -117,14 +118,14 @@ config SPEAR_THERMAL
+ 	depends on OF
+ 	help
+ 	  Enable this to plug the SPEAr thermal sensor driver into the Linux
+-	  thermal framework
++	  thermal framework.
+ 
+ config RCAR_THERMAL
+ 	tristate "Renesas R-Car thermal driver"
+ 	depends on ARCH_SHMOBILE
+ 	help
+ 	  Enable this to plug the R-Car thermal sensor driver into the Linux
+-	  thermal framework
++	  thermal framework.
+ 
+ config KIRKWOOD_THERMAL
+ 	tristate "Temperature sensor on Marvell Kirkwood SoCs"
 -- 
-1.7.9.5
-
+1.8.4
