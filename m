@@ -1,75 +1,92 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH] thermal: Kconfig: cosmetic fixes
-Date: Fri, 27 Sep 2013 07:30:39 -0700
-Message-ID: <5245968F.2020502@infradead.org>
-References: <1380270220-32147-1-git-send-email-luka@openwrt.org>
+From: Dave Martin <Dave.Martin@arm.com>
+Subject: Re: [PATCH] arm: vexpress: tc2: fix CPU hotplug and CPU idle race on
+ cluster power down
+Date: Fri, 27 Sep 2013 16:10:49 +0100
+Message-ID: <20130927151043.GA9746@localhost.localdomain>
+References: <1380292153-10480-1-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:54710 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166Ab3I0ObB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 10:31:01 -0400
-In-Reply-To: <1380270220-32147-1-git-send-email-luka@openwrt.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:51916 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752589Ab3I0PLZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 11:11:25 -0400
+Content-Disposition: inline
+In-Reply-To: <1380292153-10480-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Luka Perkov <luka@openwrt.org>
-Cc: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Kevin Hilman <khilman@linaro.org>, Olof Johansson <olof@lixom.net>, Nicolas Pitre <nicolas.pitre@linaro.org>
 
-On 09/27/13 01:23, Luka Perkov wrote:
-> Fix typo and add missing dots.
+On Fri, Sep 27, 2013 at 03:29:13PM +0100, Lorenzo Pieralisi wrote:
+> On the TC2 testchip, when all CPUs in a cluster enter standbywfi and
+> commit a power down request, the power controller will wait for
+
+[...]
+
+(Minor nit: please wrap the commit message to a shorter length for git
+log.  I use 67, but I can't remember where that recommendation came from)
+
+[...]
+
+> This patch moves the GIC CPU IF disable call in the TC2 MCPM implementation
+> from the suspend method to the power down method to fix the mentioned
+> race condition.
+
+Reviewed-by: Dave Martin <Dave.Martin@arm.com>
+Tested-by: Dave Martn <Dave.Martin@arm.com> (for kexec)
+
+It's worth briefly summarising the kexec scenario too:
+
+kexec hotplugs secondary CPUs out during kernel reload/restart.
+Because kexec may (deliberately) trash the old kernel text, it is
+not OK for CPUs to follow the MCPM soft reboot path, since
+instructions after the WFI may have been replaced by kexec.
+
+If tc2_pm_down() does not disable the GIC cpu interface, there is a
+race between CPU powerdown in the old kernel and the IPI from the
+new kernel that triggers secondary boot, particluarly if the
+powerdown is slow (due to L2 cache cleaning for example).  If the
+new kernel wins the race, the affected CPU(s) will not really be
+reset and may execute garbage after the WFI.
+
+(some comments below)
+
 > 
-> Signed-off-by: Luka Perkov <luka@openwrt.org>
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > ---
->  drivers/thermal/Kconfig | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  arch/arm/mach-vexpress/tc2_pm.c | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index dbfc390..ea74abb 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -56,7 +56,7 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
->  	select THERMAL_GOV_USER_SPACE
->  	help
->  	  Select this if you want to let the user space manage the
-> -	  lpatform thermals.
-> +	  platform thermals.
+> diff --git a/arch/arm/mach-vexpress/tc2_pm.c b/arch/arm/mach-vexpress/tc2_pm.c
+> index 7aeb5d6..e6eb481 100644
+> --- a/arch/arm/mach-vexpress/tc2_pm.c
+> +++ b/arch/arm/mach-vexpress/tc2_pm.c
+> @@ -131,6 +131,16 @@ static void tc2_pm_down(u64 residency)
+>  	} else
+>  		BUG();
 >  
->  endchoice
->  
-> @@ -68,7 +68,7 @@ config THERMAL_GOV_FAIR_SHARE
->  config THERMAL_GOV_STEP_WISE
->  	bool "Step_wise thermal governor"
->  	help
-> -	  Enable this to manage platform thermals using a simple linear
-> +	  Enable this to manage platform thermals using a simple linear.
+> +	/*
+> +	 * If the CPU is committed to power down, make sure
+> +	 * the power controller will be in charge of waking it
+> +	 * up upon IRQ, ie IRQ lines are cut from GIC CPU IF
+> +	 * to the CPU by disabling the GIC CPU IF to prevent wfi
+> +	 * from completing execution behind power controller back
+> +	 */
+> +	if (!skip_wfi)
+> +		gic_cpu_if_down();
+> +
 
-Missing some ending word?  maybe:
-	                                          using a simple linear governor.
+In my version of this fix, I disabled the CPU interface much earlier,
+just after entering the function.  I think it probably works either
+way.  Do you think the location is critical, or should it not matter?
 
->  
->  config THERMAL_GOV_USER_SPACE
->  	bool "User_space thermal governor"
-> @@ -117,14 +117,14 @@ config SPEAR_THERMAL
->  	depends on OF
->  	help
->  	  Enable this to plug the SPEAr thermal sensor driver into the Linux
-> -	  thermal framework
-> +	  thermal framework.
->  
->  config RCAR_THERMAL
->  	tristate "Renesas R-Car thermal driver"
->  	depends on ARCH_SHMOBILE
->  	help
->  	  Enable this to plug the R-Car thermal sensor driver into the Linux
-> -	  thermal framework
-> +	  thermal framework.
->  
->  config KIRKWOOD_THERMAL
->  	tristate "Temperature sensor on Marvell Kirkwood SoCs"
-> 
+As far as I could tell, it matters only that this is done sometime
+between committing to WFI and actually doing it, but if you think
+there are extra requirements then I would like to understand them.
 
+[...]
 
--- 
-~Randy
+Cheers
+---Dave
