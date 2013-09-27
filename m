@@ -1,119 +1,73 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv4 07/18] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Thu, 26 Sep 2013 23:13:14 -0400
-Message-ID: <1380251605-3804-8-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCHv4 12/18] arm: dts: add omap4460 thermal data
+Date: Thu, 26 Sep 2013 23:13:19 -0400
+Message-ID: <1380251605-3804-13-git-send-email-eduardo.valentin@ti.com>
 References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com
-Cc: grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Jean Delvare <khali@linux-fr.org>
+Cc: grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds to lm75 temperature sensor the possibility
-to expose itself as thermal zone device, registered on the
-thermal framework.
+This patch changes the dtsi entry on omap4460 to contain
+the thermal data. This data will enable the passive
+cooling with CPUfreq cooling device at 100C and the
+system will do a thermal shutdown at 125C.
 
-The thermal zone is built only if a device tree node
-describing a thermal zone for this sensor is present
-inside the lm75 DT node. Otherwise, the driver behavior
-will be the same.
-
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: lm-sensors@lm-sensors.org
+Cc: "Beno=C3=AEt Cousson" <bcousson@baylibre.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ian.campbell@citrix.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: linux-omap@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
-Acked-by: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/hwmon/lm75.c | 35 ++++++++++++++++++++++++++++++-----
- 1 file changed, 30 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/omap4460.dtsi | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
-index c03b490..1d3600a 100644
---- a/drivers/hwmon/lm75.c
-+++ b/drivers/hwmon/lm75.c
-@@ -27,6 +27,8 @@
- #include <linux/hwmon-sysfs.h>
- #include <linux/err.h>
- #include <linux/mutex.h>
-+#include <linux/of.h>
-+#include <linux/thermal.h>
- #include "lm75.h"
- 
- 
-@@ -70,6 +72,7 @@ static const u8 LM75_REG_TEMP[3] = {
- /* Each client has this additional data */
- struct lm75_data {
- 	struct device		*hwmon_dev;
-+	struct thermal_zone_device	*tz;
- 	struct mutex		update_lock;
- 	u8			orig_conf;
- 	u8			resolution;	/* In bits, between 9 and 12 */
-@@ -90,22 +93,36 @@ static struct lm75_data *lm75_update_device(struct device *dev);
- 
- /*-----------------------------------------------------------------------*/
- 
-+static inline long lm75_reg_to_mc(s16 temp, u8 resolution)
-+{
-+	return ((temp >> (16 - resolution)) * 1000) >> (resolution - 8);
-+}
+diff --git a/arch/arm/boot/dts/omap4460.dtsi b/arch/arm/boot/dts/omap44=
+60.dtsi
+index c2f0f39..4d93aba 100644
+--- a/arch/arm/boot/dts/omap4460.dtsi
++++ b/arch/arm/boot/dts/omap4460.dtsi
+@@ -12,7 +12,7 @@
+ / {
+ 	cpus {
+ 		/* OMAP446x 'standard device' variants OPP50 to OPPTurbo */
+-		cpu@0 {
++		cpu0: cpu@0 {
+ 			operating-points =3D <
+ 				/* kHz    uV */
+ 				350000  1025000
+@@ -30,12 +30,18 @@
+ 		ti,hwmods =3D "debugss";
+ 	};
+=20
+-	bandgap {
++	thermal-zones{
++		#include "omap4-cpu-thermal.dtsi"
++	};
 +
- /* sysfs attributes for hwmon */
- 
-+static int lm75_read_temp(void *dev, long *temp)
-+{
-+	struct lm75_data *data = lm75_update_device(dev);
++	bandgap: bandgap {
+ 		reg =3D <0x4a002260 0x4
+ 		       0x4a00232C 0x4
+ 		       0x4a002378 0x18>;
+ 		compatible =3D "ti,omap4460-bandgap";
+ 		interrupts =3D <0 126 IRQ_TYPE_LEVEL_HIGH>; /* talert */
+ 		gpios =3D <&gpio3 22 0>; /* tshut */
 +
-+	if (IS_ERR(data))
-+		return PTR_ERR(data);
-+
-+	*temp = lm75_reg_to_mc(data->temp[0], data->resolution);
-+
-+	return 0;
-+}
-+
- static ssize_t show_temp(struct device *dev, struct device_attribute *da,
- 			 char *buf)
- {
- 	struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
- 	struct lm75_data *data = lm75_update_device(dev);
--	long temp;
- 
- 	if (IS_ERR(data))
- 		return PTR_ERR(data);
- 
--	temp = ((data->temp[attr->index] >> (16 - data->resolution)) * 1000)
--	       >> (data->resolution - 8);
--
--	return sprintf(buf, "%ld\n", temp);
-+	return sprintf(buf, "%ld\n", lm75_reg_to_mc(data->temp[attr->index],
-+						    data->resolution));
- }
- 
- static ssize_t set_temp(struct device *dev, struct device_attribute *da,
-@@ -271,6 +288,13 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 		goto exit_remove;
- 	}
- 
-+	data->tz = thermal_zone_of_sensor_register(&client->dev,
-+						   0,
-+						   &client->dev,
-+						   lm75_read_temp, NULL);
-+	if (IS_ERR(data->tz))
-+		data->tz = NULL;
-+
- 	dev_info(&client->dev, "%s: sensor '%s'\n",
- 		 dev_name(data->hwmon_dev), client->name);
- 
-@@ -285,6 +309,7 @@ static int lm75_remove(struct i2c_client *client)
- {
- 	struct lm75_data *data = i2c_get_clientdata(client);
- 
-+	thermal_zone_of_sensor_unregister(&client->dev, data->tz);
- 	hwmon_device_unregister(data->hwmon_dev);
- 	sysfs_remove_group(&client->dev.kobj, &lm75_group);
- 	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
--- 
++		#thermal-sensor-cells =3D <0>;
+ 	};
+ };
+--=20
 1.8.2.1.342.gfa7285d
