@@ -1,96 +1,45 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] ACPI/thermal : Remove zone disabled warning
-Date: Fri, 27 Sep 2013 17:53:53 -0400
-Message-ID: <5245FE71.6020401@ti.com>
-References: <1380126590-25809-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Wendy Ng" <wendy.ng@broadcom.com>
+Subject: [PATCH v2 0/3] thermal: bcm281xx: Add thermal driver
+Date: Fri, 27 Sep 2013 15:37:31 -0700
+Message-ID: <1380321454-16216-1-git-send-email-wendy.ng@broadcom.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid"
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:41725 "EHLO comal.ext.ti.com"
+Received: from mms3.broadcom.com ([216.31.210.19]:2674 "EHLO mms3.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753925Ab3I0Vx7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 27 Sep 2013 17:53:59 -0400
-In-Reply-To: <1380126590-25809-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	id S1753419Ab3I0Wjb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 27 Sep 2013 18:39:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: eduardo.valentin@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: Rob Herring <rob.herring@calxeda.com>, Stephen Warren <swarren@wwwdotorg.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>, Wendy Ng <wendy.ng@broadcom.com>
 
---QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch series adds the support of the thermal driver for Broadcom
+bcm281xx family of SoCs.
 
-On 25-09-2013 12:29, Srinivas Pandruvada wrote:
-> Once thermal zone is disabled to move thermal control to user space,
-> too many warnings printed in logs. Remove pr_warn from this path,
-> instead warn when user mode issues request to disable thermal zone.
->=20
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com=
->
+The change for this version of the patch is to work with the
+ARCH_BCM->ARCH_BCM_MOBILE renaming series as shown in the link below:
+http://www.spinics.net/lists/arm-kernel/msg274963.html
 
-Although this is actually really under Rui's, I believe this patch makes
-sense to me. So, you can add my acked.
+Wendy Ng (3):
+  thermal: bcm281xx: Add thermal driver
+  ARM: bcm281xx: Turn on Thermal and HWMON drivers.
+  ARM: bcm281xx: Add thermal driver to device tree.
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+ .../bindings/thermal/bcm-kona-thermal.txt          |   18 +++
+ arch/arm/boot/dts/bcm11351-brt.dts                 |    4 +-
+ arch/arm/boot/dts/bcm11351.dtsi                    |    6 +
+ arch/arm/boot/dts/bcm28155-ap.dts                  |    4 +
+ arch/arm/configs/bcm_defconfig                     |    3 +-
+ drivers/thermal/Kconfig                            |   10 ++
+ drivers/thermal/Makefile                           |    1 +
+ drivers/thermal/bcm_thermal.c                      |  170 ++++++++++++++++++++
+ 8 files changed, 214 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
+ create mode 100644 drivers/thermal/bcm_thermal.c
 
-> ---
->  drivers/acpi/thermal.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 6a03293..92bebb9 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -515,10 +515,9 @@ static void acpi_thermal_check(void *data)
->  {
->  	struct acpi_thermal *tz =3D data;
-> =20
-> -	if (!tz->tz_enabled) {
-> -		pr_warn("thermal zone is disabled \n");
-> +	if (!tz->tz_enabled)
->  		return;
-> -	}
-> +
->  	thermal_zone_device_update(tz->thermal_zone);
->  }
-> =20
-> @@ -570,9 +569,10 @@ static int thermal_set_mode(struct thermal_zone_de=
-vice *thermal,
->  	 */
->  	if (mode =3D=3D THERMAL_DEVICE_ENABLED)
->  		enable =3D 1;
-> -	else if (mode =3D=3D THERMAL_DEVICE_DISABLED)
-> +	else if (mode =3D=3D THERMAL_DEVICE_DISABLED) {
->  		enable =3D 0;
-> -	else
-> +		pr_warn("thermal zone will be disabled\n");
-> +	} else
->  		return -EINVAL;
-> =20
->  	if (enable !=3D tz->tz_enabled) {
->=20
+-- 
+1.7.9.5
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJF/nEACgkQCXcVR3XQvP01jAD9GeCfOLO3LSWIWjJRUwnI18lE
-DukKFp/1FJ4lWjDnxLoBAPlpvmtGOYLbxLQlxs5x0q3baxHyOGIJD95U9gPpLrI4
-=zuNK
------END PGP SIGNATURE-----
-
---QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid--
