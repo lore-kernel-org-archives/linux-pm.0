@@ -1,108 +1,83 @@
-From: "Wendy Ng" <wendy.ng@broadcom.com>
-Subject: Re: [PATCH 1/3] thermal: bcm281xx: Add thermal driver
-Date: Fri, 27 Sep 2013 15:49:52 -0700
-Message-ID: <52460B90.5060907@broadcom.com>
-References: <1379958698-7554-1-git-send-email-wendy.ng@broadcom.com>
- <1379958698-7554-2-git-send-email-wendy.ng@broadcom.com>
- <20130925192609.GB25191@ohporter.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] ACPI and power management fixes for v3.12-rc3
+Date: Sat, 28 Sep 2013 01:31:08 +0200
+Message-ID: <1720906.nJEUKiKuDL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mms2.broadcom.com ([216.31.210.18]:4661 "EHLO mms2.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754042Ab3I0Wt7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 27 Sep 2013 18:49:59 -0400
-In-Reply-To: <20130925192609.GB25191@ohporter.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Matt Porter <matt.porter@linaro.org>
-Cc: Rob Herring <rob.herring@calxeda.com>, Stephen Warren <swarren@wwwdotorg.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>
+
+Hi Linus,
+
+Please pull from the git repository at
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.12-rc3
+
+to receive ACPI and power management fixes for v3.12-rc3 with
+top-most commit dcc7bc3f3d91bbd5c15409a92317c2c24449a285
+
+  Merge branch 'pm-cpufreq-fixes'
+
+on top of commit 4a10c2ac2f368583138b774ca41fac4207911983
+
+  Linux 3.12-rc2
+
+These fix one recent cpufreq regression, a few older bugs that may
+harm users and a kerneldoc typo.
+
+Specifics:
+
+ 1) After recent locking changes in the cpufreq core it is possible
+    to trigger BUG_ON(!policy) in lock_policy_rwsem_read() if
+    cpufreq_get() is called before registering a cpufreq driver.
+    Fix from Viresh Kumar.
+
+ 2) If intel_pstate has been loaded already, it doesn't make sense
+    to do anything in acpi_cpufreq_init() and moreover doing something
+    in there in that case may be harmful, so make that function return
+    immediately if another cpufreq driver is already present.  From
+    Yinghai Lu.
+
+ 3) The ACPI IPMI driver sometimes attempts to acquire a mutex from
+    interrupt context, which can be avoided by replacing that mutex
+    with a spinlock.  From Lv Zheng.
+
+ 4) A NULL pointer may be dereferenced by the exynos5440 cpufreq
+    driver if a memory allocation made by it fails.  Fix from
+    Sachin Kamat.
+
+ 5) Hanjun Guo's commit fixes a typo in the kerneldoc comment
+    documenting acpi_bus_unregister_driver().
+
+Thanks!
 
 
-On 9/25/2013 12:26 PM, Matt Porter wrote:
-> On Mon, Sep 23, 2013 at 10:51:36AM -0700, Wendy Ng wrote:
->> This adds the support for reading out temperature from Broadcom bcm281xx
->> SoCs.
->>
->> Signed-off-by: Wendy Ng <wendy.ng@broadcom.com>
->> Reviewed-by: Markus Mayer <mmayer@broadcom.com>
->> Reviewed-by: Christian Daudt <csd@broadcom.com>
->> ---
->>   .../bindings/thermal/bcm-kona-thermal.txt          |   18 +++
->>   drivers/thermal/Kconfig                            |   10 ++
->>   drivers/thermal/Makefile                           |    1 +
->>   drivers/thermal/bcm_thermal.c                      |  170 ++++++++++++++++++++
->>   4 files changed, 199 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>   create mode 100644 drivers/thermal/bcm_thermal.c
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->> new file mode 100644
->> index 0000000..acca99e
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->> @@ -0,0 +1,18 @@
->> +* Broadcom Kona Thermal Management Unit
->> +
->> +This version is for the BCM281xx family of SoCs.
->> +
->> +Required properties:
->> +- compatible : "brcm,bcm11351-thermal", "brcm,kona-thermal"
->> +- reg : Address range of the thermal register
->> +- thermal-name: this entry must be specified and it will be passed into
->> +thermal_zone_device_register().  This name will also be reported under Hwmon
->> +sysfs 'name' attribute.
->> +
->> +Example:
->> +	thermal@34008000 {
->> +		compatible = "brcm,bcm11351-thermal", "brcm,kona-thermal";
->> +		reg = <0x34008000 0x0024>;
->> +		thermal-name = "bcm_kona_therm";
->> +		status = "disabled";
->> +	};
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index dbfc390..7f823f0 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -134,6 +134,16 @@ config KIRKWOOD_THERMAL
->>   	  Support for the Kirkwood thermal sensor driver into the Linux thermal
->>   	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
->>   
->> +config BCM_THERMAL
->> +	tristate "Temperature sensor on Broadcom BCM281xx family of SoCs"
->> +	depends on ARCH_BCM
-> Hi Wendy,
->
-> I just noticed that, depending on acceptance, this could collide with
-> Christian's ARCH_BCM->ARCH_BCM_MOBILE rename that is expected to go into
-> 3.13. I'm not sure if this series is targeted for 3.13 (due to the discussion
-> about Eduardo's subsystem changes that impact it). If it is, you might
-> want to rebase on Christian's rename series
-> http://www.spinics.net/lists/arm-kernel/msg274963.html and use
-> ARCH_BCM_MOBILE here.
->
-> -Matt
-Hi Matt,
+---------------
 
-I have uploaded v2 of this thermal driver patch series to make it 
-compatible with Christian's
-ARCH_BCM->ARCH_BCM_MOBILE changes.
+Hanjun Guo (1):
+      ACPI / scan: fix typo in comments of acpi_bus_unregister_driver()
 
-Thanks for pointing this out!
+Lv Zheng (1):
+      ACPI / IPMI: Fix atomic context requirement of ipmi_msg_handler()
 
->> +	default y
->> +	help
->> +	  If you say yes here you get support for TMU (Thermal Management
->> +	  Unit) on Broadcom BCM281xx family of SoCs. This provides thermal
->> +	  monitoring of CPU clusters, graphics, and SoC glue, but does not
->> +	  include monitoring of charger temperature.
->
+Sachin Kamat (1):
+      cpufreq: exynos5440: Fix potential NULL pointer dereference
 
--- 
-Best regards,
--Wendy
+Viresh Kumar (1):
+      cpufreq: check cpufreq driver is valid and cpufreq isn't disabled in cpufreq_get()
 
+Yinghai Lu (1):
+      acpi-cpufreq: skip loading acpi_cpufreq after intel_pstate
 
+---------------
+
+ drivers/acpi/acpi_ipmi.c             |   24 ++++++++++++++----------
+ drivers/acpi/scan.c                  |    2 +-
+ drivers/cpufreq/acpi-cpufreq.c       |    4 ++++
+ drivers/cpufreq/cpufreq.c            |    3 +++
+ drivers/cpufreq/exynos5440-cpufreq.c |    2 +-
+ 5 files changed, 23 insertions(+), 12 deletions(-)
