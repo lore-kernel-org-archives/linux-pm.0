@@ -1,140 +1,99 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv4 11/18] arm: dts: add omap4430 thermal data
-Date: Fri, 27 Sep 2013 09:42:49 -0400
-Message-ID: <52458B59.8070703@ti.com>
-References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
- <1380251605-3804-12-git-send-email-eduardo.valentin@ti.com>
- <20130927122439.GA8360@kahuna> <5245861F.7000109@ti.com>
- <CAGo_u6p3pp2EBo_fJE_RJOdrc05OHM-QFgCZFBUW+duhPgOYpw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1152409969966347977=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAGo_u6p3pp2EBo_fJE_RJOdrc05OHM-QFgCZFBUW+duhPgOYpw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, dt list <devicetree@vger.kernel.org>, wni@nvidia.com, durgadoss.r@intel.com, Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Tony Lindgren <tony@atomide.com>, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, linux@roeck-us.net, =?ISO-8859-1?Q?Beno=EEt_Cousson?= <bcousson@baylibre.com>, Grant Likely <grant.likely@linaro.org>, Russell King <linux@arm.linux.org.uk>, rui.zhang@intel.com, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-List-Id: linux-pm@vger.kernel.org
-
---===============1152409969966347977==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="okDvHLNIenjhDREDRe2cvg6qUKECOqodL"
-
---okDvHLNIenjhDREDRe2cvg6qUKECOqodL
-Content-Type: text/plain; charset=ISO-8859-1
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH] arm: vexpress: tc2: fix CPU hotplug and CPU idle race on cluster power down
+Date: Fri, 27 Sep 2013 15:29:13 +0100
+Message-ID: <1380292153-10480-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:34890 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155Ab3I0O3X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 10:29:23 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Kevin Hilman <khilman@linaro.org>, Olof Johansson <olof@lixom.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, Dave Martin <dave.martin@arm.com>
 
-On 27-09-2013 09:26, Nishanth Menon wrote:
-> On Fri, Sep 27, 2013 at 8:20 AM, Eduardo Valentin
-> <eduardo.valentin@ti.com> wrote:
->> On 27-09-2013 08:24, Nishanth Menon wrote:
->>> On 23:13-20130926, Eduardo Valentin wrote:
->>>> This patch changes the dtsi entry on omap4430 to contain
->>>> the thermal data. This data will enable the passive
->>>> cooling with CPUfreq cooling device at 100C and the
->>>> system will do a thermal shutdown at 125C.
->>>>
->>>> Cc: "Beno=EEt Cousson" <bcousson@baylibre.com>
->>>> Cc: Tony Lindgren <tony@atomide.com>
->>>> Cc: Russell King <linux@arm.linux.org.uk>
->>>> Cc: linux-omap@vger.kernel.org
->>>> Cc: devicetree-discuss@lists.ozlabs.org
->>>> Cc: linux-arm-kernel@lists.infradead.org
->>>> Cc: linux-kernel@vger.kernel.org
->>>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->>>> ---
->>>>  arch/arm/boot/dts/omap443x.dtsi | 10 ++++++++--
->>>>  1 file changed, 8 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/arch/arm/boot/dts/omap443x.dtsi b/arch/arm/boot/dts/oma=
-p443x.dtsi
->>>> index bcf455e..e9c97d6 100644
->>>> --- a/arch/arm/boot/dts/omap443x.dtsi
->>>> +++ b/arch/arm/boot/dts/omap443x.dtsi
->>>> @@ -12,7 +12,7 @@
->>>>
->>>>  / {
->>>>      cpus {
->>>> -            cpu@0 {
->>>> +            cpu0: cpu@0 {
->>>>                      /* OMAP443x variants OPP50-OPPNT */
->>>>                      operating-points =3D <
->>>>                              /* kHz    uV */
->>>> @@ -25,9 +25,15 @@
->>>>              };
->>>>      };
->>>>
->>>> -    bandgap {
->>>> +    thermal-zones{
->>>> +            #include "omap4-cpu-thermal.dtsi"
->>>> +    };
->>>> +
->>>> +    bandgap: bandgap {
->>>>              reg =3D <0x4a002260 0x4
->>>>                     0x4a00232C 0x4>;
->>>>              compatible =3D "ti,omap4430-bandgap";
->>>> +
->>>> +            #thermal-sensor-cells =3D <0>;
->>> 2 cents:
->>> we might want to move bandgap under ocp?
->>>
->>
->> Yes, agreed. But I don't think this change is related to this patch or=
+On the TC2 testchip, when all CPUs in a cluster enter standbywfi and
+commit a power down request, the power controller will wait for
+standbywfil2 coming from L2 cache controller to shut the cluster down.
+By the time all CPUs in a cluster commit a power down request and enter wfi=
+,
+the power controller cannot backtrack, or put it another way, a CPU must
+not be allowed to complete execution independently of the power
+controller, the only way for it to resume properly must be upon wake-up IRQ
+pending and subsequent reset triggered from the power controller.
 
->> to this series.
->=20
-> Correct - this comment is not related to the current patch, hence my 2
-> cents ;) - will be nice to have it cleaned up though..
+Current MCPM back-end for TC2 disables the GIC CPU IF only when power
+down is committed through the suspend method, that makes sense since a
+suspended CPU is still online and can receive interrupts whereas a
+hotplugged CPU, since it is offline, migrated all IRQs and shutdown
+the per-CPU peripherals, hence their PPIs.
 
-Yes, it will be cleaned. ;-) Tks.
+The flaw with this reasoning is the following. If all CPUs in a clusters ar=
+e
+entering a power down state either through CPU idle or CPU hotplug, when th=
+e
+last man successfully completes the MCPM power down sequence (and executes
+wfi), power controller waits for L2 wfi signal to quiesce the cluster and s=
+hut
+it down. If, when all CPUs are sitting in wfi, an online CPU hotplugs back =
+in
+one of the CPUs in the cluster being shutdown, that CPU receives an IPI tha=
+t
+causes wfi to complete (since MCPM power down method does not disable the G=
+IC
+CPU IF in that case - CPU being hotplugged out, not idle) and the power
+controller will never see the stanbywfil2 signal coming from L2 that is
+required for shutdown to happen and the system deadlocks.
 
->=20
-> Regards,
-> Nishanth Menon
->=20
->=20
+The only solution to this problem consists in disabling the GIC CPU IF
+on a CPU committed to power down regardless of the power down entry
+method (CPU hotplug or CPU idle). This way, CPU wake-up is under power
+controller control, which prevents unexpected wfi exit caused by a
+pending IRQ.
 
+This patch moves the GIC CPU IF disable call in the TC2 MCPM implementation
+from the suspend method to the power down method to fix the mentioned
+race condition.
 
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+---
+ arch/arm/mach-vexpress/tc2_pm.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-vexpress/tc2_pm.c b/arch/arm/mach-vexpress/tc2_p=
+m.c
+index 7aeb5d6..e6eb481 100644
+--- a/arch/arm/mach-vexpress/tc2_pm.c
++++ b/arch/arm/mach-vexpress/tc2_pm.c
+@@ -131,6 +131,16 @@ static void tc2_pm_down(u64 residency)
+ =09} else
+ =09=09BUG();
+=20
++=09/*
++=09 * If the CPU is committed to power down, make sure
++=09 * the power controller will be in charge of waking it
++=09 * up upon IRQ, ie IRQ lines are cut from GIC CPU IF
++=09 * to the CPU by disabling the GIC CPU IF to prevent wfi
++=09 * from completing execution behind power controller back
++=09 */
++=09if (!skip_wfi)
++=09=09gic_cpu_if_down();
++
+ =09if (last_man && __mcpm_outbound_enter_critical(cpu, cluster)) {
+ =09=09arch_spin_unlock(&tc2_pm_lock);
+=20
+@@ -231,7 +241,6 @@ static void tc2_pm_suspend(u64 residency)
+ =09cpu =3D MPIDR_AFFINITY_LEVEL(mpidr, 0);
+ =09cluster =3D MPIDR_AFFINITY_LEVEL(mpidr, 1);
+ =09ve_spc_set_resume_addr(cluster, cpu, virt_to_phys(mcpm_entry_point));
+-=09gic_cpu_if_down();
+ =09tc2_pm_down(residency);
+ }
+=20
 --=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
+1.8.2.2
 
 
---okDvHLNIenjhDREDRe2cvg6qUKECOqodL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJFi1kACgkQCXcVR3XQvP0QoAEA4MfbQt5xnfzUFjwU/nzb4Ahg
-nKZcdTIocqE6yVs/mg0A+wejPt8TOxTb8Gxy4/HJfD3MgfnLul13qlpnMBWID75d
-=J34r
------END PGP SIGNATURE-----
-
---okDvHLNIenjhDREDRe2cvg6qUKECOqodL--
-
-
---===============1152409969966347977==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============1152409969966347977==--
