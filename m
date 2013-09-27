@@ -1,80 +1,75 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v2] thermal: Kconfig: cosmetic fixes
-Date: Fri, 27 Sep 2013 17:51:59 -0400
-Message-ID: <5245FDFF.6070507@ti.com>
-References: <1380306033-20325-1-git-send-email-luka@openwrt.org>
+Subject: Re: [PATCH] ACPI/thermal : Remove zone disabled warning
+Date: Fri, 27 Sep 2013 17:53:53 -0400
+Message-ID: <5245FE71.6020401@ti.com>
+References: <1380126590-25809-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="SLRa4w6pE1eLBQECdFCXxX2lewJOmO7j8"
+	boundary="QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:59009 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753925Ab3I0Vwy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 17:52:54 -0400
-In-Reply-To: <1380306033-20325-1-git-send-email-luka@openwrt.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:41725 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753925Ab3I0Vx7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 27 Sep 2013 17:53:59 -0400
+In-Reply-To: <1380126590-25809-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Luka Perkov <luka@openwrt.org>
-Cc: linux-pm@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, eduardo.valentin@ti.com
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: eduardo.valentin@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
---SLRa4w6pE1eLBQECdFCXxX2lewJOmO7j8
+--QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 27-09-2013 14:20, Luka Perkov wrote:
-> Fix typo, finish sentence and add missing dots.
+On 25-09-2013 12:29, Srinivas Pandruvada wrote:
+> Once thermal zone is disabled to move thermal control to user space,
+> too many warnings printed in logs. Remove pr_warn from this path,
+> instead warn when user mode issues request to disable thermal zone.
 >=20
-> Signed-off-by: Luka Perkov <luka@openwrt.org>
-> CC: Randy Dunlap <rdunlap@infradead.org>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com=
+>
+
+Although this is actually really under Rui's, I believe this patch makes
+sense to me. So, you can add my acked.
 
 Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
 > ---
->  drivers/thermal/Kconfig | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+>  drivers/acpi/thermal.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 >=20
-> v1 -> v2:
-> * address Randy's comment about unfinished sentence
->=20
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index dbfc390..3910b09 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -56,7 +56,7 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
->  	select THERMAL_GOV_USER_SPACE
->  	help
->  	  Select this if you want to let the user space manage the
-> -	  lpatform thermals.
-> +	  platform thermals.
+> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+> index 6a03293..92bebb9 100644
+> --- a/drivers/acpi/thermal.c
+> +++ b/drivers/acpi/thermal.c
+> @@ -515,10 +515,9 @@ static void acpi_thermal_check(void *data)
+>  {
+>  	struct acpi_thermal *tz =3D data;
 > =20
->  endchoice
+> -	if (!tz->tz_enabled) {
+> -		pr_warn("thermal zone is disabled \n");
+> +	if (!tz->tz_enabled)
+>  		return;
+> -	}
+> +
+>  	thermal_zone_device_update(tz->thermal_zone);
+>  }
 > =20
-> @@ -69,6 +69,7 @@ config THERMAL_GOV_STEP_WISE
->  	bool "Step_wise thermal governor"
->  	help
->  	  Enable this to manage platform thermals using a simple linear
-> +	  governor.
+> @@ -570,9 +569,10 @@ static int thermal_set_mode(struct thermal_zone_de=
+vice *thermal,
+>  	 */
+>  	if (mode =3D=3D THERMAL_DEVICE_ENABLED)
+>  		enable =3D 1;
+> -	else if (mode =3D=3D THERMAL_DEVICE_DISABLED)
+> +	else if (mode =3D=3D THERMAL_DEVICE_DISABLED) {
+>  		enable =3D 0;
+> -	else
+> +		pr_warn("thermal zone will be disabled\n");
+> +	} else
+>  		return -EINVAL;
 > =20
->  config THERMAL_GOV_USER_SPACE
->  	bool "User_space thermal governor"
-> @@ -117,14 +118,14 @@ config SPEAR_THERMAL
->  	depends on OF
->  	help
->  	  Enable this to plug the SPEAr thermal sensor driver into the Linux
-> -	  thermal framework
-> +	  thermal framework.
-> =20
->  config RCAR_THERMAL
->  	tristate "Renesas R-Car thermal driver"
->  	depends on ARCH_SHMOBILE
->  	help
->  	  Enable this to plug the R-Car thermal sensor driver into the Linux
-> -	  thermal framework
-> +	  thermal framework.
-> =20
->  config KIRKWOOD_THERMAL
->  	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+>  	if (enable !=3D tz->tz_enabled) {
 >=20
 
 
@@ -84,7 +79,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---SLRa4w6pE1eLBQECdFCXxX2lewJOmO7j8
+--QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -93,9 +88,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlJF/ggACgkQCXcVR3XQvP3SawEAhW9H6xDae1GyJ9cNKDZsPg3s
-CGMpGBFWBIvAN3n78aQA/0b901wTyH/hvRPoHwSZMX450SzKClXli+078+ktGyKE
-=HGxq
+iF4EAREIAAYFAlJF/nEACgkQCXcVR3XQvP01jAD9GeCfOLO3LSWIWjJRUwnI18lE
+DukKFp/1FJ4lWjDnxLoBAPlpvmtGOYLbxLQlxs5x0q3baxHyOGIJD95U9gPpLrI4
+=zuNK
 -----END PGP SIGNATURE-----
 
---SLRa4w6pE1eLBQECdFCXxX2lewJOmO7j8--
+--QkTRXREJD6PQNjXGXCEwLwQ5brQNH8gid--
