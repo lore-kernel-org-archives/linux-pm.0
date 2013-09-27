@@ -1,63 +1,72 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: Bisected 3.12.0-rc1 Laptop screen goes blank during kernelboot
-Date: Fri, 27 Sep 2013 09:05:41 +0200
-Message-ID: <52452E45.5000501@linaro.org>
-References: <523C8238.3000200@xmsnet.nl> <523E51A9.8050609@gmail.com> <5242D734.7020800@linaro.org> <52447A4C.3020000@xmsnet.nl>
+Subject: Re: [RFC PATCH] ARM: zynq: cpuidle: convert to platform driver
+Date: Fri, 27 Sep 2013 09:21:52 +0200
+Message-ID: <52453210.6090606@linaro.org>
+References: <1380212138-4020-1-git-send-email-daniel.lezcano@linaro.org> <22edc518-27ad-4dcf-918a-def23df93bcc@DB9EHSMHS022.ehs.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <52447A4C.3020000@xmsnet.nl>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Bruin <jmdebruin@xmsnet.nl>
-Cc: Aaron Lu <aaron.lwe@gmail.com>, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f51.google.com ([74.125.82.51]:33193 "EHLO
+	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176Ab3I0HVz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2013 03:21:55 -0400
+Received: by mail-wg0-f51.google.com with SMTP id c11so2287500wgh.30
+        for <linux-pm@vger.kernel.org>; Fri, 27 Sep 2013 00:21:54 -0700 (PDT)
+In-Reply-To: <22edc518-27ad-4dcf-918a-def23df93bcc@DB9EHSMHS022.ehs.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michal Simek <michal.simek@xilinx.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On 09/26/2013 08:17 PM, Hans de Bruin wrote:
+On 09/27/2013 07:12 AM, Michal Simek wrote:
+> Hi Daniel,
+>
+> On 09/26/2013 06:15 PM, Daniel Lezcano wrote:
+>> As the ux500 and the kirkwood driver, make the zynq driver a platfor=
+m driver
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>   arch/arm/mach-zynq/common.c    |    7 +++++++
+>>   drivers/cpuidle/cpuidle-zynq.c |   15 ++++++++++-----
+>>   2 files changed, 17 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common=
+=2Ec
+>> index 5f25256..0f0d88f 100644
+>> --- a/arch/arm/mach-zynq/common.c
+>> +++ b/arch/arm/mach-zynq/common.c
+>> @@ -44,6 +44,10 @@ static struct of_device_id zynq_of_bus_ids[] __in=
+itdata =3D {
+>>   	{}
+>>   };
+>>
+>> +static struct platform_device zynq_cpuidle_device =3D {
+>> +	.name =3D "cpuidle-zynq",
+>> +};
+>> +
+>>   /**
+>>    * zynq_init_machine - System specific initialization, intended to=
+ be
+>>    *		       called from board specific initialization.
+>> @@ -56,6 +60,9 @@ static void __init zynq_init_machine(void)
+>>   	l2x0_of_init(0x02060000, 0xF0F0FFFF);
+>>
+>>   	of_platform_bus_probe(NULL, zynq_of_bus_ids, NULL);
+>> +
+>> +	if (of_machine_is_compatible("xlnx,zynq-7000"))
+>
+> This is not needed because all zynq platforms have this compatibility=
+ string
+> and there is no any other clone.
 
-[ ... ]
+Ah, ok. So it is not needed in the current code. I will write its=20
+removal in a separate patch.
 
-> todays kernel with problem:
->
-> #
-> # CPU Idle
-> #
-> CONFIG_CPU_IDLE=3Dy
-> # CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is not set
-> CONFIG_CPU_IDLE_GOV_LADDER=3Dy
-> CONFIG_CPU_IDLE_GOV_MENU=3Dy
-> # CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is not set
-> CONFIG_INTEL_IDLE=3Dy
->
->
-> =3D=3D> /sys/devices/system/cpu/cpuidle/current_driver <=3D=3D
-> acpi_idle
->
-> =3D=3D> /sys/devices/system/cpu/cpuidle/current_governor_ro <=3D=3D
-> menu
->
-> [    0.056000] cpuidle: using governor ladder
-> [    0.056000] cpuidle: using governor menu
->
->
->
-> 3.8.0:
-> bash-4.1# tail /sys/devices/system/cpu/cpuidle/*
-> =3D=3D> /sys/devices/system/cpu/cpuidle/current_driver <=3D=3D
-> acpi_idle
->
-> =3D=3D> /sys/devices/system/cpu/cpuidle/current_governor_ro <=3D=3D
-> menu
->
-> [    1.759857] cpuidle: using governor ladder
-> [    1.763849] scsi 0:0:0:0: Direct-Access     ATA      TOSHIBA MK400=
-9GA
-> BS11 PQ: 0 ANSI: 5
-> [    1.767098] cpuidle: using governor menu
-
-Thanks for the detailed information. Could you pastebin you kernel=20
-config file or send it to me privately so I can reproduce the problem ?
+Thanks
+   -- Daniel
 
 
 --=20
@@ -68,8 +77,3 @@ r ARM SoCs
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
