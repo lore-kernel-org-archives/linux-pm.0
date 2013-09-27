@@ -1,61 +1,62 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Subject: Re: [PATCH 1/2] ARM: zynq: cpuidle: Remove useless compatibility
- string
-Date: Fri, 27 Sep 2013 10:19:14 +0200
-Message-ID: <31f13d14-2af7-4285-8770-3cc7ef7e7b09@AM1EHSMHS008.ehs.local>
-References: <1380269867-18336-1-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1380269867-18336-1-git-send-email-daniel.lezcano@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: michal.simek@xilinx.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From: Luka Perkov <luka@openwrt.org>
+Subject: [PATCH] thermal: Kconfig: cosmetic fixes
+Date: Fri, 27 Sep 2013 10:23:40 +0200
+Message-ID: <1380270220-32147-1-git-send-email-luka@openwrt.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arrakis.dune.hu ([78.24.191.176]:54322 "EHLO arrakis.dune.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751526Ab3I0IY0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 27 Sep 2013 04:24:26 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Luka Perkov <luka@openwrt.org>
 
-On 09/27/2013 10:17 AM, Daniel Lezcano wrote:
-> All zynq platforms have this compatibility string and there is no any other
-> clone.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/cpuidle/cpuidle-zynq.c |    4 ----
->  1 file changed, 4 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
-> index 38e03a1..ab6c4b4 100644
-> --- a/drivers/cpuidle/cpuidle-zynq.c
-> +++ b/drivers/cpuidle/cpuidle-zynq.c
-> @@ -28,7 +28,6 @@
->  #include <linux/init.h>
->  #include <linux/cpu_pm.h>
->  #include <linux/cpuidle.h>
-> -#include <linux/of.h>
->  #include <asm/proc-fns.h>
->  #include <asm/cpuidle.h>
->  
-> @@ -72,9 +71,6 @@ static struct cpuidle_driver zynq_idle_driver = {
->  /* Initialize CPU idle by registering the idle states */
->  static int __init zynq_cpuidle_init(void)
->  {
-> -	if (!of_machine_is_compatible("xlnx,zynq-7000"))
-> -		return -ENODEV;
-> -
->  	pr_info("Xilinx Zynq CpuIdle Driver started\n");
->  
->  	return cpuidle_register(&zynq_idle_driver, NULL);
-> 
+Fix typo and add missing dots.
 
-Acked-by: Michal Simek <michal.simek@xilinx.com>
+Signed-off-by: Luka Perkov <luka@openwrt.org>
+---
+ drivers/thermal/Kconfig | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Thx,
-M
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index dbfc390..ea74abb 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -56,7 +56,7 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
+ 	select THERMAL_GOV_USER_SPACE
+ 	help
+ 	  Select this if you want to let the user space manage the
+-	  lpatform thermals.
++	  platform thermals.
+ 
+ endchoice
+ 
+@@ -68,7 +68,7 @@ config THERMAL_GOV_FAIR_SHARE
+ config THERMAL_GOV_STEP_WISE
+ 	bool "Step_wise thermal governor"
+ 	help
+-	  Enable this to manage platform thermals using a simple linear
++	  Enable this to manage platform thermals using a simple linear.
+ 
+ config THERMAL_GOV_USER_SPACE
+ 	bool "User_space thermal governor"
+@@ -117,14 +117,14 @@ config SPEAR_THERMAL
+ 	depends on OF
+ 	help
+ 	  Enable this to plug the SPEAr thermal sensor driver into the Linux
+-	  thermal framework
++	  thermal framework.
+ 
+ config RCAR_THERMAL
+ 	tristate "Renesas R-Car thermal driver"
+ 	depends on ARCH_SHMOBILE
+ 	help
+ 	  Enable this to plug the R-Car thermal sensor driver into the Linux
+-	  thermal framework
++	  thermal framework.
+ 
+ config KIRKWOOD_THERMAL
+ 	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+-- 
+1.8.4
