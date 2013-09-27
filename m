@@ -1,77 +1,41 @@
-From: "Wendy Ng" <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v2 3/3] ARM: bcm281xx: Add thermal driver to device
- tree.
-Date: Fri, 27 Sep 2013 15:37:34 -0700
-Message-ID: <1380321454-16216-4-git-send-email-wendy.ng@broadcom.com>
+From: "Wendy Ng" <wendy.ng@broadcom.com>
+Subject: [PATCH v2 2/3] ARM: bcm281xx: Turn on Thermal and HWMON
+ drivers.
+Date: Fri, 27 Sep 2013 15:37:33 -0700
+Message-ID: <1380321454-16216-3-git-send-email-wendy.ng@broadcom.com>
 References: <1380321454-16216-1-git-send-email-wendy.ng@broadcom.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1380321454-16216-1-git-send-email-wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Christian Daudt <bcm-xK7y4jjYLqYh9ZMKESR00Q@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Wendy Ng <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1380321454-16216-1-git-send-email-wendy.ng@broadcom.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <rob.herring@calxeda.com>, Stephen Warren <swarren@wwwdotorg.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>, Wendy Ng <wendy.ng@broadcom.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the device tree node for Broadcom bcm281xx SoCs thermal
-driver.
+This enables the thermal and HWMON drivers for Broadcom bcm281xx SoCs.
 
-Signed-off-by: Wendy Ng <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Reviewed-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Reviewed-by: Christian Daudt <csd-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Signed-off-by: Wendy Ng <wendy.ng@broadcom.com>
+Reviewed-by: Markus Mayer <mmayer@broadcom.com>
+Reviewed-by: Christian Daudt <csd@broadcom.com>
 ---
- arch/arm/boot/dts/bcm11351-brt.dts |    4 +++-
- arch/arm/boot/dts/bcm11351.dtsi    |    6 ++++++
- arch/arm/boot/dts/bcm28155-ap.dts  |    4 ++++
- 3 files changed, 13 insertions(+), 1 deletion(-)
+ arch/arm/configs/bcm_defconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/bcm11351-brt.dts b/arch/arm/boot/dts/bcm11351-brt.dts
-index 9d36eb4..0771b6b 100644
---- a/arch/arm/boot/dts/bcm11351-brt.dts
-+++ b/arch/arm/boot/dts/bcm11351-brt.dts
-@@ -43,5 +43,7 @@
- 		status = "okay";
- 	};
- 
--
-+	thermal@34008000 {
-+		status = "okay";
-+	};
- };
-diff --git a/arch/arm/boot/dts/bcm11351.dtsi b/arch/arm/boot/dts/bcm11351.dtsi
-index 05a5aab..aa13353 100644
---- a/arch/arm/boot/dts/bcm11351.dtsi
-+++ b/arch/arm/boot/dts/bcm11351.dtsi
-@@ -96,4 +96,10 @@
- 		status = "disabled";
- 	};
- 
-+	thermal@34008000 {
-+		compatible = "brcm,bcm11351-thermal", "brcm,kona-thermal";
-+		reg = <0x34008000 0x0024>;
-+		thermal-name = "bcm_kona_therm";
-+		status = "disabled";
-+	};
- };
-diff --git a/arch/arm/boot/dts/bcm28155-ap.dts b/arch/arm/boot/dts/bcm28155-ap.dts
-index 96ae67a..a39aa47 100644
---- a/arch/arm/boot/dts/bcm28155-ap.dts
-+++ b/arch/arm/boot/dts/bcm28155-ap.dts
-@@ -42,4 +42,8 @@
- 		max-frequency = <48000000>;
- 		status = "okay";
- 	};
-+
-+	thermal@34008000 {
-+		status = "okay";
-+	};
- };
+diff --git a/arch/arm/configs/bcm_defconfig b/arch/arm/configs/bcm_defconfig
+index 6e49310..1474661 100644
+--- a/arch/arm/configs/bcm_defconfig
++++ b/arch/arm/configs/bcm_defconfig
+@@ -83,7 +83,8 @@ CONFIG_SERIAL_8250_DW=y
+ CONFIG_HW_RANDOM=y
+ CONFIG_I2C=y
+ CONFIG_I2C_CHARDEV=y
+-# CONFIG_HWMON is not set
++CONFIG_THERMAL=y
++CONFIG_HWMON=y
+ CONFIG_VIDEO_OUTPUT_CONTROL=y
+ CONFIG_FB=y
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
 -- 
 1.7.9.5
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
