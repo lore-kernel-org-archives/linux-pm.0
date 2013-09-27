@@ -1,164 +1,188 @@
-From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: [PATCHv4 04/18] thermal: core: introduce thermal_of_cooling_device_register
-Date: Thu, 26 Sep 2013 23:13:11 -0400
-Message-ID: <1380251605-3804-5-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCHv4 05/18] thermal: cpu_cooling: introduce of_cpufreq_cooling_register
+Date: Thu, 26 Sep 2013 23:13:12 -0400
+Message-ID: <1380251605-3804-6-git-send-email-eduardo.valentin@ti.com>
 References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
-Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com
+Cc: grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds a new API to allow registering cooling devices
-in the thermal framework derived from device tree nodes.
+This patch introduces an API to register cpufreq cooling device
+based on device tree node.
 
-This API links the cooling device with the device tree node
-so that binding with thermal zones is possible, given
-that thermal zones are pointing to cooling device
-device tree nodes.
+The registration via device tree node differs from normal
+registration due to the fact that it is needed to fill
+the device_node structure in order to be able to match
+the cooling devices with trip points.
 
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/thermal/thermal_core.c | 58 +++++++++++++++++++++++++++++++++++++++---
- include/linux/thermal.h        |  4 +++
- 2 files changed, 58 insertions(+), 4 deletions(-)
+ drivers/thermal/Kconfig       |  1 +
+ drivers/thermal/cpu_cooling.c | 56 ++++++++++++++++++++++++++++++++++++++-----
+ include/linux/cpu_cooling.h   | 25 +++++++++++++++++++
+ 3 files changed, 76 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index fec3351..5325fee 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -34,6 +34,7 @@
- #include <linux/thermal.h>
- #include <linux/reboot.h>
- #include <linux/string.h>
-+#include <linux/of.h>
- #include <net/netlink.h>
- #include <net/genetlink.h>
- 
-@@ -1053,7 +1054,8 @@ static struct class thermal_class = {
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index dd81eb8..9e7cc3f 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -91,6 +91,7 @@ config THERMAL_GOV_USER_SPACE
+ config CPU_THERMAL
+ 	bool "generic cpu cooling support"
+ 	depends on CPU_FREQ
++	depends on THERMAL_OF
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  This implements the generic cpu cooling mechanism through frequency
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index d179028..b7db93a 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -417,18 +417,21 @@ static struct notifier_block thermal_cpufreq_notifier_block = {
  };
  
  /**
-- * thermal_cooling_device_register() - register a new thermal cooling device
-+ * __thermal_cooling_device_register() - register a new thermal cooling device
-+ * @np:		a pointer to a device tree node.
-  * @type:	the thermal cooling device type.
-  * @devdata:	device private data.
-  * @ops:		standard thermal cooling devices callbacks.
-@@ -1061,13 +1063,16 @@ static struct class thermal_class = {
-  * This interface function adds a new thermal cooling device (fan/processor/...)
-  * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-  * to all the thermal zone devices registered at the same time.
-+ * It also gives the opportunity to link the cooling device to a device tree
-+ * node, so that it can be bound to a thermal zone created out of device tree.
+- * cpufreq_cooling_register - function to create cpufreq cooling device.
++ * __cpufreq_cooling_register - helper function to create cpufreq cooling device
++ * @np: a valid struct device_node to the cooling device device tree node
+  * @clip_cpus: cpumask of cpus where the frequency constraints will happen.
   *
-  * Return: a pointer to the created struct thermal_cooling_device or an
-  * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
+  * This interface function registers the cpufreq cooling device with the name
+  * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
+- * cooling devices.
++ * cooling devices. It also gives the opportunity to link the cooling device
++ * with a device tree node, in order to bind it via the thermal DT code.
+  *
+  * Return: a valid struct thermal_cooling_device pointer on success,
+  * on failure, it returns a corresponding ERR_PTR().
   */
 -struct thermal_cooling_device *
--thermal_cooling_device_register(char *type, void *devdata,
--				const struct thermal_cooling_device_ops *ops)
+-cpufreq_cooling_register(const struct cpumask *clip_cpus)
 +static struct thermal_cooling_device *
-+__thermal_cooling_device_register(struct device_node *np,
-+				  char *type, void *devdata,
-+				  const struct thermal_cooling_device_ops *ops)
++__cpufreq_cooling_register(struct device_node *np,
++			   const struct cpumask *clip_cpus)
  {
- 	struct thermal_cooling_device *cdev;
- 	int result;
-@@ -1092,6 +1097,7 @@ thermal_cooling_device_register(char *type, void *devdata,
- 	strlcpy(cdev->type, type ? : "", sizeof(cdev->type));
- 	mutex_init(&cdev->lock);
- 	INIT_LIST_HEAD(&cdev->thermal_instances);
-+	cdev->np = np;
- 	cdev->ops = ops;
- 	cdev->updated = true;
- 	cdev->device.class = &thermal_class;
-@@ -1134,9 +1140,53 @@ unregister:
- 	device_unregister(&cdev->device);
- 	return ERR_PTR(result);
+ 	struct thermal_cooling_device *cool_dev;
+ 	struct cpufreq_cooling_device *cpufreq_dev = NULL;
+@@ -467,8 +470,8 @@ cpufreq_cooling_register(const struct cpumask *clip_cpus)
+ 	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
+ 		 cpufreq_dev->id);
+ 
+-	cool_dev = thermal_cooling_device_register(dev_name, cpufreq_dev,
+-						   &cpufreq_cooling_ops);
++	cool_dev = thermal_of_cooling_device_register(np, dev_name, cpufreq_dev,
++						      &cpufreq_cooling_ops);
+ 	if (!cool_dev) {
+ 		release_idr(&cpufreq_idr, cpufreq_dev->id);
+ 		kfree(cpufreq_dev);
+@@ -488,9 +491,50 @@ cpufreq_cooling_register(const struct cpumask *clip_cpus)
+ 
+ 	return cool_dev;
  }
 +
 +/**
-+ * thermal_cooling_device_register() - register a new thermal cooling device
-+ * @type:	the thermal cooling device type.
-+ * @devdata:	device private data.
-+ * @ops:		standard thermal cooling devices callbacks.
++ * cpufreq_cooling_register - function to create cpufreq cooling device.
++ * @clip_cpus: cpumask of cpus where the frequency constraints will happen.
 + *
-+ * This interface function adds a new thermal cooling device (fan/processor/...)
-+ * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-+ * to all the thermal zone devices registered at the same time.
++ * This interface function registers the cpufreq cooling device with the name
++ * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
++ * cooling devices.
 + *
-+ * Return: a pointer to the created struct thermal_cooling_device or an
-+ * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
++ * Return: a valid struct thermal_cooling_device pointer on success,
++ * on failure, it returns a corresponding ERR_PTR().
 + */
 +struct thermal_cooling_device *
-+thermal_cooling_device_register(char *type, void *devdata,
-+				const struct thermal_cooling_device_ops *ops)
++cpufreq_cooling_register(const struct cpumask *clip_cpus)
 +{
-+	return __thermal_cooling_device_register(NULL, type, devdata, ops);
++	return __cpufreq_cooling_register(NULL, clip_cpus);
 +}
- EXPORT_SYMBOL_GPL(thermal_cooling_device_register);
+ EXPORT_SYMBOL_GPL(cpufreq_cooling_register);
  
  /**
-+ * thermal_of_cooling_device_register() - register an OF thermal cooling device
-+ * @np:		a pointer to a device tree node.
-+ * @type:	the thermal cooling device type.
-+ * @devdata:	device private data.
-+ * @ops:		standard thermal cooling devices callbacks.
++ * of_cpufreq_cooling_register - function to create cpufreq cooling device.
++ * @np: a valid struct device_node to the cooling device device tree node
++ * @clip_cpus: cpumask of cpus where the frequency constraints will happen.
 + *
-+ * This function will register a cooling device with device tree node reference.
-+ * This interface function adds a new thermal cooling device (fan/processor/...)
-+ * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-+ * to all the thermal zone devices registered at the same time.
++ * This interface function registers the cpufreq cooling device with the name
++ * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
++ * cooling devices. Using this API, the cpufreq cooling device will be
++ * linked to the device tree node provided.
 + *
-+ * Return: a pointer to the created struct thermal_cooling_device or an
-+ * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
++ * Return: a valid struct thermal_cooling_device pointer on success,
++ * on failure, it returns a corresponding ERR_PTR().
 + */
 +struct thermal_cooling_device *
-+thermal_of_cooling_device_register(struct device_node *np,
-+				   char *type, void *devdata,
-+				   const struct thermal_cooling_device_ops *ops)
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus)
 +{
-+	return __thermal_cooling_device_register(np, type, devdata, ops);
++	if (!np)
++		return ERR_PTR(-EINVAL);
++
++	return __cpufreq_cooling_register(np, clip_cpus);
 +}
-+EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
++EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
 +
 +/**
-  * thermal_cooling_device_unregister - removes the registered thermal cooling device
-  * @cdev:	the thermal cooling device to remove.
+  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
+  * @cdev: thermal cooling device pointer.
   *
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index b780c5b..f7e11c7 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -25,6 +25,7 @@
- #ifndef __THERMAL_H__
- #define __THERMAL_H__
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index a5d52ee..c303d38 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -24,6 +24,7 @@
+ #ifndef __CPU_COOLING_H__
+ #define __CPU_COOLING_H__
  
 +#include <linux/of.h>
- #include <linux/idr.h>
- #include <linux/device.h>
- #include <linux/workqueue.h>
-@@ -280,6 +281,9 @@ void thermal_zone_device_update(struct thermal_zone_device *);
+ #include <linux/thermal.h>
+ #include <linux/cpumask.h>
  
- struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
- 		const struct thermal_cooling_device_ops *);
+@@ -36,6 +37,24 @@ struct thermal_cooling_device *
+ cpufreq_cooling_register(const struct cpumask *clip_cpus);
+ 
+ /**
++ * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
++ * @np: a valid struct device_node to the cooling device device tree node.
++ * @clip_cpus: cpumask of cpus where the frequency constraints will happen
++ */
++#ifdef CONFIG_THERMAL_OF
 +struct thermal_cooling_device *
-+thermal_of_cooling_device_register(struct device_node *np, char *, void *,
-+				   const struct thermal_cooling_device_ops *);
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
- struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
- int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp);
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus);
++#else
++static inline struct thermal_cooling_device *
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus)
++{
++	return NULL;
++}
++#endif
++
++/**
+  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
+  * @cdev: thermal cooling device pointer.
+  */
+@@ -48,6 +67,12 @@ cpufreq_cooling_register(const struct cpumask *clip_cpus)
+ {
+ 	return NULL;
+ }
++static inline struct thermal_cooling_device *
++of_cpufreq_cooling_register(struct device_node *np,
++			    const struct cpumask *clip_cpus)
++{
++	return NULL;
++}
+ static inline
+ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ {
 -- 
 1.8.2.1.342.gfa7285d
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
