@@ -1,97 +1,146 @@
-From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: [PATCHv4 08/18] hwmon: tmp102: expose to thermal fw via DT nodes
-Date: Thu, 26 Sep 2013 23:13:15 -0400
-Message-ID: <1380251605-3804-9-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv4 00/18] device thermal limits represented in device tree
+ nodes (v4)
+Date: Thu, 26 Sep 2013 23:15:02 -0400
+Message-ID: <5244F836.3070102@ti.com>
 References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
-Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:58532 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752947Ab3I0DQM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Sep 2013 23:16:12 -0400
+In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
-This patch adds to tmp102 temperature sensor the possibility
-to expose itself as thermal zone device, registered on the
-thermal framework.
+--SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-The thermal zone is built only if a device tree node
-describing a thermal zone for this sensor is present
-inside the tmp102 DT node. Otherwise, the driver behavior
-will be the same.
+On 26-09-2013 23:13, Eduardo Valentin wrote:
+> Hello all,
+>=20
+> Here is the continuation of work of representing hardware thermal prope=
+rties
+> in device tree infrastructure. The present patch series is the fourth v=
+ersion
+> of this work. Previous versions were sent as RFCs and can be found here=
+:
+> V3:=20
 
-Cc: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-Cc: lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Acked-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
----
- drivers/hwmon/tmp102.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+Too fast, hit send too early. For those interested, here is the link to V=
+3:
+https://lkml.org/lkml/2013/9/15/122
 
-diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
-index d7b47ab..6748b45 100644
---- a/drivers/hwmon/tmp102.c
-+++ b/drivers/hwmon/tmp102.c
-@@ -27,6 +27,8 @@
- #include <linux/mutex.h>
- #include <linux/device.h>
- #include <linux/jiffies.h>
-+#include <linux/thermal.h>
-+#include <linux/of.h>
- 
- #define	DRIVER_NAME "tmp102"
- 
-@@ -50,6 +52,7 @@
- 
- struct tmp102 {
- 	struct device *hwmon_dev;
-+	struct thermal_zone_device *tz;
- 	struct mutex lock;
- 	u16 config_orig;
- 	unsigned long last_update;
-@@ -93,6 +96,15 @@ static struct tmp102 *tmp102_update_device(struct i2c_client *client)
- 	return tmp102;
- }
- 
-+static int tmp102_read_temp(void *dev, long *temp)
-+{
-+	struct tmp102 *tmp102 = tmp102_update_device(to_i2c_client(dev));
-+
-+	*temp = tmp102->temp[0];
-+
-+	return 0;
-+}
-+
- static ssize_t tmp102_show_temp(struct device *dev,
- 				struct device_attribute *attr,
- 				char *buf)
-@@ -204,6 +216,12 @@ static int tmp102_probe(struct i2c_client *client,
- 		goto fail_remove_sysfs;
- 	}
- 
-+	tmp102->tz = thermal_zone_of_sensor_register(&client->dev, 0,
-+						     &client->dev,
-+						     tmp102_read_temp, NULL);
-+	if (IS_ERR(tmp102->tz))
-+		tmp102->tz = NULL;
-+
- 	dev_info(&client->dev, "initialized\n");
- 
- 	return 0;
-@@ -220,6 +238,7 @@ static int tmp102_remove(struct i2c_client *client)
- {
- 	struct tmp102 *tmp102 = i2c_get_clientdata(client);
- 
-+	thermal_zone_of_sensor_unregister(&client->dev, tmp102->tz);
- 	hwmon_device_unregister(tmp102->hwmon_dev);
- 	sysfs_remove_group(&client->dev.kobj, &tmp102_attr_group);
- 
--- 
-1.8.2.1.342.gfa7285d
+> RFCv2: http://lkml.org/lkml/2013/8/23/594
+> RFCv1: http://lkml.org/lkml/2013/7/22/319
+>=20
+> Major difference from V3 is on the parser itself. I have updated the bi=
+nding
+> documentation and improved the code accordingly to previous comments ma=
+inly
+> from Mark R. and Joe P.
+>=20
+> The changes on hwmon drivers have been accepted by Guenter, and in this=
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> series I am including his Acked-by, as I didn't change anything on that=
+ side.
+>=20
+> I also found a bug while using all involved code built as modules, thus=
+
+> I have reworked a bit the cooling device registration part. This is why=
+
+> there are two new patches in this series (patches 02 and 04).
+>=20
+> Tests were done, just like in V3, on TI OMAP4430, OMAP4460, OMAP5430 an=
+d DRA7,
+> although this series is not including the DRA7 part (I will be sending =
+separately).
+>=20
+> Thanks all who have been contributing reviewing this code.
+>=20
+> All best,
+>=20
+> Eduardo Valentin (18):
+>   thermal: allow registering without .get_temp
+>   thermal: core: allow binding via .bind when tzp is present
+>   thermal: introduce device tree parser
+>   thermal: core: introduce thermal_of_cooling_device_register
+>   thermal: cpu_cooling: introduce of_cpufreq_cooling_register
+>   cpufreq: cpufreq-cpu0: add dt node parsing for cooling device
+>     properties
+>   hwmon: lm75: expose to thermal fw via DT nodes
+>   hwmon: tmp102: expose to thermal fw via DT nodes
+>   thermal: ti-soc-thermal: use thermal DT infrastructure
+>   arm: dts: add omap4 CPU thermal data
+>   arm: dts: add omap4430 thermal data
+>   arm: dts: add omap4460 thermal data
+>   arm: dts: add cooling properties on omap4430 cpu node
+>   arm: dts: add cooling properties on omap4460 cpu node
+>   arm: dts: add omap5 GPU thermal data
+>   arm: dts: add omap5 CORE thermal data
+>   arm: dts: add omap5 thermal data
+>   arm: dts: add cooling properties on omap5 cpu node
+>=20
+>  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   7 +
+>  .../devicetree/bindings/thermal/thermal.txt        | 537 +++++++++++++=
+
+>  arch/arm/boot/dts/omap4-cpu-thermal.dtsi           |  41 +
+>  arch/arm/boot/dts/omap443x.dtsi                    |  15 +-
+>  arch/arm/boot/dts/omap4460.dtsi                    |  15 +-
+>  arch/arm/boot/dts/omap5-core-thermal.dtsi          |  28 +
+>  arch/arm/boot/dts/omap5-gpu-thermal.dtsi           |  28 +
+>  arch/arm/boot/dts/omap5.dtsi                       |  15 +-
+>  drivers/cpufreq/Kconfig                            |   2 +-
+>  drivers/cpufreq/cpufreq-cpu0.c                     |  16 +
+>  drivers/hwmon/lm75.c                               |  35 +-
+>  drivers/hwmon/tmp102.c                             |  19 +
+>  drivers/thermal/Kconfig                            |  14 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/cpu_cooling.c                      |  56 +-
+>  drivers/thermal/of-thermal.c                       | 845 +++++++++++++=
+++++++++
+>  drivers/thermal/thermal_core.c                     |  79 +-
+>  drivers/thermal/thermal_core.h                     |   9 +
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  77 +-
+>  include/dt-bindings/thermal/thermal.h              |  27 +
+>  include/linux/cpu_cooling.h                        |  25 +
+>  include/linux/thermal.h                            |  32 +-
+>  22 files changed, 1880 insertions(+), 43 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/thermal.t=
+xt
+>  create mode 100644 arch/arm/boot/dts/omap4-cpu-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/omap5-core-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/omap5-gpu-thermal.dtsi
+>  create mode 100644 drivers/thermal/of-thermal.c
+>  create mode 100644 include/dt-bindings/thermal/thermal.h
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlJE+DkACgkQCXcVR3XQvP0YugEAndpUoFu9iRor2W5i3z46e8rz
+jsB7+ioqEgdpK+q3mIYBAILdLpqvErZt2fh9WKrWWNS1K8PB/NOs4oaVseP+yl7a
+=+Qmq
+-----END PGP SIGNATURE-----
+
+--SsWncKjtLd7kNI9MEQsiOB2CHuaOOeP8a--
