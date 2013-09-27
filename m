@@ -1,71 +1,97 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv4 10/18] arm: dts: add omap4 CPU thermal data
-Date: Thu, 26 Sep 2013 23:13:17 -0400
-Message-ID: <1380251605-3804-11-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Subject: [PATCHv4 08/18] hwmon: tmp102: expose to thermal fw via DT nodes
+Date: Thu, 26 Sep 2013 23:13:15 -0400
+Message-ID: <1380251605-3804-9-git-send-email-eduardo.valentin@ti.com>
 References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com
-Cc: devicetree@vger.kernel.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, grant.likely@linaro.org, Russell King <linux@arm.linux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBwYXRjaCBjaGFuZ2VzIGEgZHRzaSBmaWxlIHRvIGNvbnRhaW4gdGhlIHRoZXJtYWwgZGF0
-YQpmb3IgTVBVIGRvbWFpbiBvbiBPTUFQNCBhbmQgbGF0ZXIgU29Dcy4gVGhpcyBkYXRhIHdpbGwK
-ZW5hYmxlIHRoZSBwYXNzaXZlIGNvb2xpbmcgd2l0aCBDUFVmcmVxIGNvb2xpbmcgZGV2aWNlCmF0
-IDEwMEMgYW5kIHRoZSBzeXN0ZW0gd2lsbCBkbyBhIHRoZXJtYWwgc2h1dGRvd24gYXQgMTI1Qy4K
-ClRoaXMgdGhlcm1hbCBkYXRhIGNhbiBiZSByZXVzZWQgYWNyb3NzIFRJIFNvQyBkZXZpY2VzLgoK
-Q2M6ICJCZW5vw650IENvdXNzb24iIDxiY291c3NvbkBiYXlsaWJyZS5jb20+CkNjOiBUb255IExp
-bmRncmVuIDx0b255QGF0b21pZGUuY29tPgpDYzogUm9iIEhlcnJpbmcgPHJvYi5oZXJyaW5nQGNh
-bHhlZGEuY29tPgpDYzogUGF3ZWwgTW9sbCA8cGF3ZWwubW9sbEBhcm0uY29tPgpDYzogTWFyayBS
-dXRsYW5kIDxtYXJrLnJ1dGxhbmRAYXJtLmNvbT4KQ2M6IFN0ZXBoZW4gV2FycmVuIDxzd2FycmVu
-QHd3d2RvdG9yZy5vcmc+CkNjOiBJYW4gQ2FtcGJlbGwgPGlhbi5jYW1wYmVsbEBjaXRyaXguY29t
-PgpDYzogUnVzc2VsbCBLaW5nIDxsaW51eEBhcm0ubGludXgub3JnLnVrPgpDYzogbGludXgtb21h
-cEB2Z2VyLmtlcm5lbC5vcmcKQ2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnCkNjOiBsaW51
-eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtl
-cm5lbC5vcmcKU2lnbmVkLW9mZi1ieTogRWR1YXJkbyBWYWxlbnRpbiA8ZWR1YXJkby52YWxlbnRp
-bkB0aS5jb20+Ci0tLQogYXJjaC9hcm0vYm9vdC9kdHMvb21hcDQtY3B1LXRoZXJtYWwuZHRzaSB8
-IDQxICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCiAxIGZpbGUgY2hhbmdlZCwgNDEg
-aW5zZXJ0aW9ucygrKQogY3JlYXRlIG1vZGUgMTAwNjQ0IGFyY2gvYXJtL2Jvb3QvZHRzL29tYXA0
-LWNwdS10aGVybWFsLmR0c2kKCmRpZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9vbWFwNC1j
-cHUtdGhlcm1hbC5kdHNpIGIvYXJjaC9hcm0vYm9vdC9kdHMvb21hcDQtY3B1LXRoZXJtYWwuZHRz
-aQpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwLi42NWE2ZGViCi0tLSAvZGV2L251
-bGwKKysrIGIvYXJjaC9hcm0vYm9vdC9kdHMvb21hcDQtY3B1LXRoZXJtYWwuZHRzaQpAQCAtMCww
-ICsxLDQxIEBACisvKgorICogRGV2aWNlIFRyZWUgU291cmNlIGZvciBPTUFQNC81IFNvQyBDUFUg
-dGhlcm1hbAorICoKKyAqIENvcHlyaWdodCAoQykgMjAxMyBUZXhhcyBJbnN0cnVtZW50cyBJbmNv
-cnBvcmF0ZWQgLSBodHRwOi8vd3d3LnRpLmNvbS8KKyAqIENvbnRhY3Q6IEVkdWFyZG8gVmFsZW50
-aW4gPGVkdWFyZG8udmFsZW50aW5AdGkuY29tPgorICoKKyAqIFRoaXMgZmlsZSBpcyBsaWNlbnNl
-ZCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlCisgKiB2
-ZXJzaW9uIDIuICBUaGlzIHByb2dyYW0gaXMgbGljZW5zZWQgImFzIGlzIiB3aXRob3V0IGFueSB3
-YXJyYW50eSBvZiBhbnkKKyAqIGtpbmQsIHdoZXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLgorICov
-CisKKyNpbmNsdWRlIDxkdC1iaW5kaW5ncy90aGVybWFsL3RoZXJtYWwuaD4KKworY3B1X3RoZXJt
-YWw6IGNwdV90aGVybWFsIHsKKwlwb2xsaW5nLWRlbGF5LXBhc3NpdmUgPSA8MjUwPjsgLyogbWls
-bGlzZWNvbmRzICovCisJcG9sbGluZy1kZWxheSA9IDwxMDAwPjsgLyogbWlsbGlzZWNvbmRzICov
-CisKKwkJCS8qIHNlbnNvciAgICAgICBJRCAqLworICAgICAgICB0aGVybWFsLXNlbnNvcnMgPSA8
-JmJhbmRnYXAgICAgIDA+OworCisgICAgICAgIHRyaXBzIHsKKyAgICAgICAgICAgICAgICBjcHVf
-YWxlcnQwOiBjcHVfYWxlcnQgeworICAgICAgICAgICAgICAgICAgICAgICAgdGVtcGVyYXR1cmUg
-PSA8MTAwMDAwPjsgLyogbWlsbGljZWxzaXVzICovCisgICAgICAgICAgICAgICAgICAgICAgICBo
-eXN0ZXJlc2lzID0gPDIwMDA+OyAvKiBtaWxsaWNlbHNpdXMgKi8KKyAgICAgICAgICAgICAgICAg
-ICAgICAgIHR5cGUgPSBUSEVSTUFMX1RSSVBfUEFTU0lWRTsKKyAgICAgICAgICAgICAgICB9Owor
-ICAgICAgICAgICAgICAgIGNwdV9jcml0OiBjcHVfY3JpdCB7CisgICAgICAgICAgICAgICAgICAg
-ICAgICB0ZW1wZXJhdHVyZSA9IDwxMjUwMDA+OyAvKiBtaWxsaWNlbHNpdXMgKi8KKyAgICAgICAg
-ICAgICAgICAgICAgICAgIGh5c3RlcmVzaXMgPSA8MjAwMD47IC8qIG1pbGxpY2Vsc2l1cyAqLwor
-ICAgICAgICAgICAgICAgICAgICAgICAgdHlwZSA9IFRIRVJNQUxfVFJJUF9DUklUSUNBTDsKKyAg
-ICAgICAgICAgICAgICB9OworICAgICAgICB9OworCisJY29vbGluZy1tYXBzIHsKKwkJbWFwMCB7
-CisJCQl0cmlwID0gPCZjcHVfYWxlcnQwPjsKKwkJCWNvb2xpbmctZGV2aWNlID0KKwkJCQk8JmNw
-dTAgVEhFUk1BTF9OT19MSU1JVCBUSEVSTUFMX05PX0xJTUlUPjsKKwkJfTsKKwl9OworfTsKLS0g
-CjEuOC4yLjEuMzQyLmdmYTcyODVkCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtl
-cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxt
-YW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+This patch adds to tmp102 temperature sensor the possibility
+to expose itself as thermal zone device, registered on the
+thermal framework.
+
+The thermal zone is built only if a device tree node
+describing a thermal zone for this sensor is present
+inside the tmp102 DT node. Otherwise, the driver behavior
+will be the same.
+
+Cc: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
+Cc: lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Acked-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+---
+ drivers/hwmon/tmp102.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
+index d7b47ab..6748b45 100644
+--- a/drivers/hwmon/tmp102.c
++++ b/drivers/hwmon/tmp102.c
+@@ -27,6 +27,8 @@
+ #include <linux/mutex.h>
+ #include <linux/device.h>
+ #include <linux/jiffies.h>
++#include <linux/thermal.h>
++#include <linux/of.h>
+ 
+ #define	DRIVER_NAME "tmp102"
+ 
+@@ -50,6 +52,7 @@
+ 
+ struct tmp102 {
+ 	struct device *hwmon_dev;
++	struct thermal_zone_device *tz;
+ 	struct mutex lock;
+ 	u16 config_orig;
+ 	unsigned long last_update;
+@@ -93,6 +96,15 @@ static struct tmp102 *tmp102_update_device(struct i2c_client *client)
+ 	return tmp102;
+ }
+ 
++static int tmp102_read_temp(void *dev, long *temp)
++{
++	struct tmp102 *tmp102 = tmp102_update_device(to_i2c_client(dev));
++
++	*temp = tmp102->temp[0];
++
++	return 0;
++}
++
+ static ssize_t tmp102_show_temp(struct device *dev,
+ 				struct device_attribute *attr,
+ 				char *buf)
+@@ -204,6 +216,12 @@ static int tmp102_probe(struct i2c_client *client,
+ 		goto fail_remove_sysfs;
+ 	}
+ 
++	tmp102->tz = thermal_zone_of_sensor_register(&client->dev, 0,
++						     &client->dev,
++						     tmp102_read_temp, NULL);
++	if (IS_ERR(tmp102->tz))
++		tmp102->tz = NULL;
++
+ 	dev_info(&client->dev, "initialized\n");
+ 
+ 	return 0;
+@@ -220,6 +238,7 @@ static int tmp102_remove(struct i2c_client *client)
+ {
+ 	struct tmp102 *tmp102 = i2c_get_clientdata(client);
+ 
++	thermal_zone_of_sensor_unregister(&client->dev, tmp102->tz);
+ 	hwmon_device_unregister(tmp102->hwmon_dev);
+ 	sysfs_remove_group(&client->dev.kobj, &tmp102_attr_group);
+ 
+-- 
+1.8.2.1.342.gfa7285d
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
