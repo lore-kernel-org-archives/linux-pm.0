@@ -1,49 +1,119 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv4 11/18] arm: dts: add omap4430 thermal data
-Date: Thu, 26 Sep 2013 23:13:18 -0400
-Message-ID: <1380251605-3804-12-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCHv4 07/18] hwmon: lm75: expose to thermal fw via DT nodes
+Date: Thu, 26 Sep 2013 23:13:14 -0400
+Message-ID: <1380251605-3804-8-git-send-email-eduardo.valentin@ti.com>
 References: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1380251605-3804-1-git-send-email-eduardo.valentin@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com
-Cc: devicetree@vger.kernel.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, grant.likely@linaro.org, Russell King <linux@arm.linux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Jean Delvare <khali@linux-fr.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBwYXRjaCBjaGFuZ2VzIHRoZSBkdHNpIGVudHJ5IG9uIG9tYXA0NDMwIHRvIGNvbnRhaW4K
-dGhlIHRoZXJtYWwgZGF0YS4gVGhpcyBkYXRhIHdpbGwgZW5hYmxlIHRoZSBwYXNzaXZlCmNvb2xp
-bmcgd2l0aCBDUFVmcmVxIGNvb2xpbmcgZGV2aWNlIGF0IDEwMEMgYW5kIHRoZQpzeXN0ZW0gd2ls
-bCBkbyBhIHRoZXJtYWwgc2h1dGRvd24gYXQgMTI1Qy4KCkNjOiAiQmVub8OudCBDb3Vzc29uIiA8
-YmNvdXNzb25AYmF5bGlicmUuY29tPgpDYzogVG9ueSBMaW5kZ3JlbiA8dG9ueUBhdG9taWRlLmNv
-bT4KQ2M6IFJ1c3NlbGwgS2luZyA8bGludXhAYXJtLmxpbnV4Lm9yZy51az4KQ2M6IGxpbnV4LW9t
-YXBAdmdlci5rZXJuZWwub3JnCkNjOiBkZXZpY2V0cmVlLWRpc2N1c3NAbGlzdHMub3psYWJzLm9y
-ZwpDYzogbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCkNjOiBsaW51eC1rZXJu
-ZWxAdmdlci5rZXJuZWwub3JnClNpZ25lZC1vZmYtYnk6IEVkdWFyZG8gVmFsZW50aW4gPGVkdWFy
-ZG8udmFsZW50aW5AdGkuY29tPgotLS0KIGFyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDN4LmR0c2kg
-fCAxMCArKysrKysrKy0tCiAxIGZpbGUgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCAyIGRlbGV0
-aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDN4LmR0c2kgYi9h
-cmNoL2FybS9ib290L2R0cy9vbWFwNDQzeC5kdHNpCmluZGV4IGJjZjQ1NWUuLmU5Yzk3ZDYgMTAw
-NjQ0Ci0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDN4LmR0c2kKKysrIGIvYXJjaC9hcm0v
-Ym9vdC9kdHMvb21hcDQ0M3guZHRzaQpAQCAtMTIsNyArMTIsNyBAQAogCiAvIHsKIAljcHVzIHsK
-LQkJY3B1QDAgeworCQljcHUwOiBjcHVAMCB7CiAJCQkvKiBPTUFQNDQzeCB2YXJpYW50cyBPUFA1
-MC1PUFBOVCAqLwogCQkJb3BlcmF0aW5nLXBvaW50cyA9IDwKIAkJCQkvKiBrSHogICAgdVYgKi8K
-QEAgLTI1LDkgKzI1LDE1IEBACiAJCX07CiAJfTsKIAotCWJhbmRnYXAgeworCXRoZXJtYWwtem9u
-ZXN7CisJCSNpbmNsdWRlICJvbWFwNC1jcHUtdGhlcm1hbC5kdHNpIgorCX07CisKKwliYW5kZ2Fw
-OiBiYW5kZ2FwIHsKIAkJcmVnID0gPDB4NGEwMDIyNjAgMHg0CiAJCSAgICAgICAweDRhMDAyMzJD
-IDB4ND47CiAJCWNvbXBhdGlibGUgPSAidGksb21hcDQ0MzAtYmFuZGdhcCI7CisKKwkJI3RoZXJt
-YWwtc2Vuc29yLWNlbGxzID0gPDA+OwogCX07CiB9OwotLSAKMS44LjIuMS4zNDIuZ2ZhNzI4NWQK
-CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1h
-cm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5v
-cmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0t
-a2VybmVsCg==
+This patch adds to lm75 temperature sensor the possibility
+to expose itself as thermal zone device, registered on the
+thermal framework.
+
+The thermal zone is built only if a device tree node
+describing a thermal zone for this sensor is present
+inside the lm75 DT node. Otherwise, the driver behavior
+will be the same.
+
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: lm-sensors@lm-sensors.org
+Cc: linux-kernel@vger.kernel.org
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/hwmon/lm75.c | 35 ++++++++++++++++++++++++++++++-----
+ 1 file changed, 30 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
+index c03b490..1d3600a 100644
+--- a/drivers/hwmon/lm75.c
++++ b/drivers/hwmon/lm75.c
+@@ -27,6 +27,8 @@
+ #include <linux/hwmon-sysfs.h>
+ #include <linux/err.h>
+ #include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/thermal.h>
+ #include "lm75.h"
+ 
+ 
+@@ -70,6 +72,7 @@ static const u8 LM75_REG_TEMP[3] = {
+ /* Each client has this additional data */
+ struct lm75_data {
+ 	struct device		*hwmon_dev;
++	struct thermal_zone_device	*tz;
+ 	struct mutex		update_lock;
+ 	u8			orig_conf;
+ 	u8			resolution;	/* In bits, between 9 and 12 */
+@@ -90,22 +93,36 @@ static struct lm75_data *lm75_update_device(struct device *dev);
+ 
+ /*-----------------------------------------------------------------------*/
+ 
++static inline long lm75_reg_to_mc(s16 temp, u8 resolution)
++{
++	return ((temp >> (16 - resolution)) * 1000) >> (resolution - 8);
++}
++
+ /* sysfs attributes for hwmon */
+ 
++static int lm75_read_temp(void *dev, long *temp)
++{
++	struct lm75_data *data = lm75_update_device(dev);
++
++	if (IS_ERR(data))
++		return PTR_ERR(data);
++
++	*temp = lm75_reg_to_mc(data->temp[0], data->resolution);
++
++	return 0;
++}
++
+ static ssize_t show_temp(struct device *dev, struct device_attribute *da,
+ 			 char *buf)
+ {
+ 	struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+ 	struct lm75_data *data = lm75_update_device(dev);
+-	long temp;
+ 
+ 	if (IS_ERR(data))
+ 		return PTR_ERR(data);
+ 
+-	temp = ((data->temp[attr->index] >> (16 - data->resolution)) * 1000)
+-	       >> (data->resolution - 8);
+-
+-	return sprintf(buf, "%ld\n", temp);
++	return sprintf(buf, "%ld\n", lm75_reg_to_mc(data->temp[attr->index],
++						    data->resolution));
+ }
+ 
+ static ssize_t set_temp(struct device *dev, struct device_attribute *da,
+@@ -271,6 +288,13 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 		goto exit_remove;
+ 	}
+ 
++	data->tz = thermal_zone_of_sensor_register(&client->dev,
++						   0,
++						   &client->dev,
++						   lm75_read_temp, NULL);
++	if (IS_ERR(data->tz))
++		data->tz = NULL;
++
+ 	dev_info(&client->dev, "%s: sensor '%s'\n",
+ 		 dev_name(data->hwmon_dev), client->name);
+ 
+@@ -285,6 +309,7 @@ static int lm75_remove(struct i2c_client *client)
+ {
+ 	struct lm75_data *data = i2c_get_clientdata(client);
+ 
++	thermal_zone_of_sensor_unregister(&client->dev, data->tz);
+ 	hwmon_device_unregister(data->hwmon_dev);
+ 	sysfs_remove_group(&client->dev.kobj, &lm75_group);
+ 	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
+-- 
+1.8.2.1.342.gfa7285d
