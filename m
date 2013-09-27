@@ -1,50 +1,122 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: [PATCH 2/6] cpuidle: calxeda: add cpu_pm_enter/exit calls
-Date: Thu, 26 Sep 2013 21:24:50 -0500
-Message-ID: <1380248694-13388-3-git-send-email-robherring2@gmail.com>
-References: <1380248694-13388-1-git-send-email-robherring2@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1380248694-13388-1-git-send-email-robherring2@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+From: Leo Yan <leoy@marvell.com>
+Subject: Re: [Question] Verification For arm64: suspend/resume implementation
+Date: Fri, 27 Sep 2013 10:53:58 +0800
+Message-ID: <5244F346.1040205@marvell.com>
+References: <52327E41.1070904@marvell.com> <20130913144001.GA28531@e102568-lin.cambridge.arm.com> <524021EC.2000207@marvell.com> <20130923152606.GA6157@e102648.cambridge.arm.com> <5240F246.6050402@marvell.com> <20130924090236.GY10174@e102648.cambridge.arm.com> <52417C4D.1030009@marvell.com> <20130924130012.GE25907@arm.com> <524416B5.3040303@marvell.com> <20130926165351.GK3253@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:46332 "EHLO
+	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750744Ab3I0Cy3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Sep 2013 22:54:29 -0400
+In-Reply-To: <20130926165351.GK3253@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Achin Gupta <Achin.Gupta@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yu Tang <ytang5@marvell.com>, Neil Zhang <zhangwm@marvell.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Zhou Zhu <zzhu3@marvell.com>
 
-From: Rob Herring <rob.herring@calxeda.com>
 
-Wnen powergating the core, we need to call cpu pm notifiers to save VFP
-state (!SMP only) and resetting the breakpoint h/w.
+On 09/27/2013 12:53 AM, Catalin Marinas wrote:
+> On Thu, Sep 26, 2013 at 12:12:53PM +0100, Leo Yan wrote:
+>> On 09/24/2013 09:00 PM, Catalin Marinas wrote:
+>>> On Tue, Sep 24, 2013 at 12:49:33PM +0100, Leo Yan wrote:
+>>>> On 09/24/2013 05:02 PM, Achin Gupta wrote:
+>>>>> On Tue, Sep 24, 2013 at 03:00:38AM +0100, Leo Yan wrote:
+>>>>>> Here have another question, ARM have the example code for boot wrapper
+>>>>>> which will switch from EL3 to secure EL1 rather than non-secure's EL1?
+>>>>>
+>>>>> I dont' think we do but let me check. Switching to S-EL1 instead of
+>>>>> NS-EL1 should be a matter of _not_ setting the SCR_EL3.NS bit before
+>>>>> doing the exception level change (ERET).
+>>>>
+>>>> I quick try with below patch for boot wrapper, i saw foundataion model
+>>>> cannot boot up successfully and there have no console output; suppose
+>>>> it's hang at some boot operations, but now foundation model cannot debug
+>>>> low level code, so i cannot debug further more. :-(
+>>>>
+>>>> diff --git a/boot.S b/boot.S
+>>>> index a1f25e2..2f1b867 100644
+>>>> --- a/boot.S
+>>>> +++ b/boot.S
+>>>> @@ -19,7 +19,6 @@ _start:
+>>>>            b.ne    start_ns                        // skip EL3 initialisation
+>>>>
+>>>>            mov     x0, #0x30                       // RES1
+>>>> -       orr     x0, x0, #(1 << 0)               // Non-secure EL1
+>>>>            orr     x0, x0, #(1 << 8)               // HVC enable
+>>>>            orr     x0, x0, #(1 << 10)              // 64-bit EL2
+>>>>            msr     scr_el3, x0
+>>>
+>>> You also need to make sure the boot wrapper starts the kernel in S-EL1
+>>> rather than NS-EL2.
+>>
+>> I tried to use below modification, but it still failed to boot up on
+>> foundation model; pls help review if convienence.
+>
+> You probably need group 0 interrupts as well.
 
-Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
----
- drivers/cpuidle/cpuidle-calxeda.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Thanks a lot for help. After change the IRQs to group 0, then kernel can 
+work well in S-EL1. :-)
 
-diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
-index 01cfecf3..b04767a 100644
---- a/drivers/cpuidle/cpuidle-calxeda.c
-+++ b/drivers/cpuidle/cpuidle-calxeda.c
-@@ -21,6 +21,7 @@
-  */
- 
- #include <linux/cpuidle.h>
-+#include <linux/cpu_pm.h>
- #include <linux/init.h>
- #include <linux/of.h>
- #include <asm/cpuidle.h>
-@@ -39,7 +40,10 @@ static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
- 				struct cpuidle_driver *drv,
- 				int index)
- {
-+	cpu_pm_enter();
- 	cpu_suspend(0, calxeda_idle_finish);
-+	cpu_pm_exit();
-+
- 	return index;
- }
- 
--- 
-1.8.1.2
+diff --git a/boot.S b/boot.S
+index a1f25e2..ae14c66 100644
+--- a/boot.S
++++ b/boot.S
+@@ -19,7 +19,6 @@ _start:
+         b.ne    start_ns                        // skip EL3 initialisation
+
+         mov     x0, #0x30                       // RES1
+-       orr     x0, x0, #(1 << 0)               // Non-secure EL1
+         orr     x0, x0, #(1 << 8)               // HVC enable
+         orr     x0, x0, #(1 << 10)              // 64-bit EL2
+         msr     scr_el3, x0
+@@ -42,7 +41,7 @@ _start:
+         str     w0, [x1]
+
+  1:     ldr     x1, =GIC_DIST_BASE + 0x80       // GICD_IGROUPR
+-       mov     w0, #~0                         // Grp1 interrupts
++       mov     w0, #0                          // Grp0 interrupts
+         str     w0, [x1], #4
+         b.ne    2f                              // Only local 
+interrupts for secondary CPUs
+         str     w0, [x1], #4
+@@ -62,7 +61,7 @@ _start:
+          * Prepare the switch to the EL2_SP1 mode from EL3
+          */
+         ldr     x0, =start_ns                   // Return after mode switch
+-       mov     x1, #0x3c9                      // EL2_SP1 | D | A | I | F
++       mov     x1, #0x3c5                      // EL1_SP1 | D | A | I | F
+         msr     elr_el3, x0
+         msr     spsr_el3, x1
+         eret
+
+>>> BTW, why do you need this? There are no virtualisation features
+>>> supported on the secure side.
+>>
+>> So far the virtualisation is not a mandatory feature in short term due
+>> now our product is mainly focusing on the mobile product, so firstly we
+>> want to enable Linux kernel directly on secure world; just like we do
+>> same as ARMv7.
+>
+> But is there other reason than just being the same as on your ARMv7
+> platform?
+>
+> Apart from virtualisation, there are other Linux developments that
+> assume Linux running in non-secure mode (SMMU, future GIC). I *strongly*
+> recommend that you run AArch64 Linux in non-secure mode from start (and
+> for the early bring-up, just configure your hardware to allow non-secure
+> access to all your peripherals/registers).
+>
+
+I have no such whole picture as you arm guys for ARMv8 and related 
+features; this is also what i have concern if here have show stopper 
+issue if kernel run in S-EL1. So thanks for the reminding and more 
+detailed info will always be welcomed.
+
+After the generic firmware has been opened and we get the code, then we 
+will study it carefully and estimate how to deploy it.
+
+Thx,
+Leo Yan
