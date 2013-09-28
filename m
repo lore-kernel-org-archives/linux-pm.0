@@ -1,83 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.12-rc3
-Date: Sat, 28 Sep 2013 01:31:08 +0200
-Message-ID: <1720906.nJEUKiKuDL@vostro.rjw.lan>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 19/21] cpuidle: create list of registered drivers
+Date: Sat, 28 Sep 2013 14:33:43 -0700
+Message-ID: <20130928213343.GA19582@linux.vnet.ibm.com>
+References: <cover.1379779777.git.viresh.kumar@linaro.org>
+ <7e9565e323c1e065eeb2a2a1075967bd21ee6066.1379779777.git.viresh.kumar@linaro.org>
+ <5243641B.6050604@linaro.org>
+ <CAKohpo=3qFQ+gD+3u__NtZEL4xu51FBN+og+_UE7aTR26XvRng@mail.gmail.com>
+ <5243EE02.9020207@linaro.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e32.co.us.ibm.com ([32.97.110.150]:39710 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755070Ab3I1Vds (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Sep 2013 17:33:48 -0400
+Received: from /spool/local
+	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Sat, 28 Sep 2013 15:33:48 -0600
+Content-Disposition: inline
+In-Reply-To: <5243EE02.9020207@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+On Thu, Sep 26, 2013 at 10:19:14AM +0200, Daniel Lezcano wrote:
+> On 09/26/2013 08:17 AM, Viresh Kumar wrote:
+> >On 26 September 2013 04:00, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+> >>If you introduce a list, you will have to introduce a lock to protect
+> >>it.
+> >
+> >I missed it, should have added that :)
+> >
+> >>This lock will be in the fast path cpuidle_idle_call with the
+> >>get_driver function and conforming to the comment: "NOTE: no locks or
+> >>semaphores should be used here".
+> >>
+> >>A lock has been introduced in this function already and the system hangs
+> >>with 1024 cpus.
+> >
+> >Hmm... I see.. I didn't knew about this expectation.. What about a rcu
+> >read/write lock? As far as I know its too lightweight... Can we have that
+> >in fast path?
+> 
+> Nope, we can't use rcu in the idle path :)
+> 
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2012-February/083054.html
 
-Please pull from the git repository at
+But you should be able to use SRCU in the idle path, if that helps.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.12-rc3
+							Thanx, Paul
 
-to receive ACPI and power management fixes for v3.12-rc3 with
-top-most commit dcc7bc3f3d91bbd5c15409a92317c2c24449a285
-
-  Merge branch 'pm-cpufreq-fixes'
-
-on top of commit 4a10c2ac2f368583138b774ca41fac4207911983
-
-  Linux 3.12-rc2
-
-These fix one recent cpufreq regression, a few older bugs that may
-harm users and a kerneldoc typo.
-
-Specifics:
-
- 1) After recent locking changes in the cpufreq core it is possible
-    to trigger BUG_ON(!policy) in lock_policy_rwsem_read() if
-    cpufreq_get() is called before registering a cpufreq driver.
-    Fix from Viresh Kumar.
-
- 2) If intel_pstate has been loaded already, it doesn't make sense
-    to do anything in acpi_cpufreq_init() and moreover doing something
-    in there in that case may be harmful, so make that function return
-    immediately if another cpufreq driver is already present.  From
-    Yinghai Lu.
-
- 3) The ACPI IPMI driver sometimes attempts to acquire a mutex from
-    interrupt context, which can be avoided by replacing that mutex
-    with a spinlock.  From Lv Zheng.
-
- 4) A NULL pointer may be dereferenced by the exynos5440 cpufreq
-    driver if a memory allocation made by it fails.  Fix from
-    Sachin Kamat.
-
- 5) Hanjun Guo's commit fixes a typo in the kerneldoc comment
-    documenting acpi_bus_unregister_driver().
-
-Thanks!
-
-
----------------
-
-Hanjun Guo (1):
-      ACPI / scan: fix typo in comments of acpi_bus_unregister_driver()
-
-Lv Zheng (1):
-      ACPI / IPMI: Fix atomic context requirement of ipmi_msg_handler()
-
-Sachin Kamat (1):
-      cpufreq: exynos5440: Fix potential NULL pointer dereference
-
-Viresh Kumar (1):
-      cpufreq: check cpufreq driver is valid and cpufreq isn't disabled in cpufreq_get()
-
-Yinghai Lu (1):
-      acpi-cpufreq: skip loading acpi_cpufreq after intel_pstate
-
----------------
-
- drivers/acpi/acpi_ipmi.c             |   24 ++++++++++++++----------
- drivers/acpi/scan.c                  |    2 +-
- drivers/cpufreq/acpi-cpufreq.c       |    4 ++++
- drivers/cpufreq/cpufreq.c            |    3 +++
- drivers/cpufreq/exynos5440-cpufreq.c |    2 +-
- 5 files changed, 23 insertions(+), 12 deletions(-)
