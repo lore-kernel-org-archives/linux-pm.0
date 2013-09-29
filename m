@@ -1,90 +1,41 @@
-From: Ronald <ronald645@gmail.com>
-Subject: Re: Fwd: [v3.12-rc1] [regression] PM / hibernate: Create memory
- bitmaps after freezing user space
-Date: Sun, 29 Sep 2013 09:22:45 +0200
-Message-ID: <CAF1_xX0zQriGMKvH8aLs4GhmCnLGSd7C2ESTvsOQvB7q22Mk8Q@mail.gmail.com>
-References: <CAF1_xX2=BYkEn3ycM4smREqk-ioGbvu8Ea4or22U-jBdKmDKGA@mail.gmail.com>
-	<CAF1_xX0suiHSgqWRBrA66qc1A_32Xq08hOikM2VSwQOEgRH-RA@mail.gmail.com>
-	<6939844.AIXnPB8Wdj@vostro.rjw.lan>
+From: Guru Prasad <gurupras@buffalo.edu>
+Subject: Userspace program to wake system from suspend
+Date: Sun, 29 Sep 2013 12:02:11 -0400
+Message-ID: <CAMefCkAsg8sDku-dU+kdYwLfaFbUC=z_4XQnjt3E1LZE21v5aA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f178.google.com ([74.125.82.178]:42110 "EHLO
-	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751523Ab3I2HWr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Sep 2013 03:22:47 -0400
-In-Reply-To: <6939844.AIXnPB8Wdj@vostro.rjw.lan>
+Received: from mail-pb0-f42.google.com ([209.85.160.42]:33741 "EHLO
+	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753234Ab3I2QCL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Sep 2013 12:02:11 -0400
+Received: by mail-pb0-f42.google.com with SMTP id un15so4565340pbc.29
+        for <linux-pm@vger.kernel.org>; Sun, 29 Sep 2013 09:02:11 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-Attached patch fixes the issue. Both methods function as they did
-before. Thanks for the superfast fix!
+Hi,
 
-2013/9/29 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> On Saturday, September 28, 2013 08:18:18 PM Ronald wrote:
->> [ resend, forgot to disable HTML (sorry!) ]
->>
->> Dear kernel developers,
->>
->> Commit 8fd37a4c9 (PM / hibernate: Create memory bitmaps after freezing
->> user space) causes resume to fail.
->>
->> Only, when using the s2disk utility (through pm-hibernate).
->>
->> Not when I do:
->>
->> echo -n "disk" > /sys/power/state
->>
->> Reverting the commit did not work.
->>
->> I am using a encrypted LUKS partition with a temporary key that is
->> functioning as the swap device used for the suspend image.
->>
->> Awaiting further orders....
->
-> I'm traveling now, so I can't really test things, but I think I know what the
-> problem is.
->
-> Can you please check if the appended patch makes any difference for you?
->
-> Rafael
->
->
-> ---
->  kernel/power/snapshot.c |    5 ++++-
->  kernel/power/user.c     |    5 +++++
->  2 files changed, 9 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/snapshot.c
-> +++ linux-pm/kernel/power/snapshot.c
-> @@ -743,7 +743,10 @@ int create_basic_memory_bitmaps(void)
->         struct memory_bitmap *bm1, *bm2;
->         int error = 0;
->
-> -       BUG_ON(forbidden_pages_map || free_pages_map);
-> +       if (forbidden_pages_map && free_pages_map)
-> +               return 0;
-> +       else
-> +               BUG_ON(forbidden_pages_map || free_pages_map);
->
->         bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
->         if (!bm1)
-> Index: linux-pm/kernel/power/user.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/user.c
-> +++ linux-pm/kernel/power/user.c
-> @@ -82,6 +82,9 @@ static int snapshot_open(struct inode *i
->                 data->swap = -1;
->                 data->mode = O_WRONLY;
->                 error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-> +               if (!error)
-> +                       error = create_basic_memory_bitmaps();
-> +
->                 if (error)
->                         pm_notifier_call_chain(PM_POST_RESTORE);
->         }
->
+I'm working with a fairly old version of the Linux kernel (v3.0) on
+the Android platform.
+
+I tried searching for examples where I can wake the system using some
+of the clocks that continue to tick despite the system being suspended
+(CLOCK_REALTIME_ALARM I think?) but couldn't find any.
+
+>From my understanding, it should be possible to do so as long as I can
+request an alarm from CLOCK_REALTIME_ALARM..but I don't quite
+understand how to do so.
+
+One option on my platform seems to be /sys/class/rtc/rtc0/wakealarm..I
+guess I could use this as a last resort.
+I would like to know whether there is any way to do this via C using
+system calls, rather than writing to the 'wakealarm' file mentioned
+above?
+
+Could someone please share some resources on how one can set an alarm
+from userspace using these clocks?
+
+
+Thanks
