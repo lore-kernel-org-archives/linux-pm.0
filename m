@@ -1,55 +1,84 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 19/21] cpuidle: create list of registered drivers
-Date: Sat, 28 Sep 2013 14:33:43 -0700
-Message-ID: <20130928213343.GA19582@linux.vnet.ibm.com>
-References: <cover.1379779777.git.viresh.kumar@linaro.org>
- <7e9565e323c1e065eeb2a2a1075967bd21ee6066.1379779777.git.viresh.kumar@linaro.org>
- <5243641B.6050604@linaro.org>
- <CAKohpo=3qFQ+gD+3u__NtZEL4xu51FBN+og+_UE7aTR26XvRng@mail.gmail.com>
- <5243EE02.9020207@linaro.org>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Fwd: [v3.12-rc1] [regression] PM / hibernate: Create memory bitmaps after freezing user space
+Date: Sun, 29 Sep 2013 03:16:40 +0200
+Message-ID: <6939844.AIXnPB8Wdj@vostro.rjw.lan>
+References: <CAF1_xX2=BYkEn3ycM4smREqk-ioGbvu8Ea4or22U-jBdKmDKGA@mail.gmail.com> <CAF1_xX0suiHSgqWRBrA66qc1A_32Xq08hOikM2VSwQOEgRH-RA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39710 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755070Ab3I1Vds (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Sep 2013 17:33:48 -0400
-Received: from /spool/local
-	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Sat, 28 Sep 2013 15:33:48 -0600
-Content-Disposition: inline
-In-Reply-To: <5243EE02.9020207@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62809 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752174Ab3I2BFP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Sep 2013 21:05:15 -0400
+In-Reply-To: <CAF1_xX0suiHSgqWRBrA66qc1A_32Xq08hOikM2VSwQOEgRH-RA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Ronald <ronald645@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Sep 26, 2013 at 10:19:14AM +0200, Daniel Lezcano wrote:
-> On 09/26/2013 08:17 AM, Viresh Kumar wrote:
-> >On 26 September 2013 04:00, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> >>If you introduce a list, you will have to introduce a lock to protect
-> >>it.
-> >
-> >I missed it, should have added that :)
-> >
-> >>This lock will be in the fast path cpuidle_idle_call with the
-> >>get_driver function and conforming to the comment: "NOTE: no locks or
-> >>semaphores should be used here".
-> >>
-> >>A lock has been introduced in this function already and the system hangs
-> >>with 1024 cpus.
-> >
-> >Hmm... I see.. I didn't knew about this expectation.. What about a rcu
-> >read/write lock? As far as I know its too lightweight... Can we have that
-> >in fast path?
+On Saturday, September 28, 2013 08:18:18 PM Ronald wrote:
+> [ resend, forgot to disable HTML (sorry!) ]
 > 
-> Nope, we can't use rcu in the idle path :)
+> Dear kernel developers,
 > 
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2012-February/083054.html
+> Commit 8fd37a4c9 (PM / hibernate: Create memory bitmaps after freezing
+> user space) causes resume to fail.
+> 
+> Only, when using the s2disk utility (through pm-hibernate).
+> 
+> Not when I do:
+> 
+> echo -n "disk" > /sys/power/state
+> 
+> Reverting the commit did not work.
+> 
+> I am using a encrypted LUKS partition with a temporary key that is
+> functioning as the swap device used for the suspend image.
+> 
+> Awaiting further orders....
 
-But you should be able to use SRCU in the idle path, if that helps.
+I'm traveling now, so I can't really test things, but I think I know what the
+problem is.
 
-							Thanx, Paul
+Can you please check if the appended patch makes any difference for you?
+
+Rafael
+
+
+---
+ kernel/power/snapshot.c |    5 ++++-
+ kernel/power/user.c     |    5 +++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+Index: linux-pm/kernel/power/snapshot.c
+===================================================================
+--- linux-pm.orig/kernel/power/snapshot.c
++++ linux-pm/kernel/power/snapshot.c
+@@ -743,7 +743,10 @@ int create_basic_memory_bitmaps(void)
+ 	struct memory_bitmap *bm1, *bm2;
+ 	int error = 0;
+ 
+-	BUG_ON(forbidden_pages_map || free_pages_map);
++	if (forbidden_pages_map && free_pages_map)
++		return 0;
++	else
++		BUG_ON(forbidden_pages_map || free_pages_map);
+ 
+ 	bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
+ 	if (!bm1)
+Index: linux-pm/kernel/power/user.c
+===================================================================
+--- linux-pm.orig/kernel/power/user.c
++++ linux-pm/kernel/power/user.c
+@@ -82,6 +82,9 @@ static int snapshot_open(struct inode *i
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
+ 		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		if (!error)
++			error = create_basic_memory_bitmaps();
++
+ 		if (error)
+ 			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	}
 
