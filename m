@@ -1,102 +1,82 @@
-From: Ronald <ronald645@gmail.com>
-Subject: Re: Fwd: [v3.12-rc1] [regression] PM / hibernate: Create memory
- bitmaps after freezing user space
-Date: Mon, 30 Sep 2013 07:45:54 +0200
-Message-ID: <CAF1_xX1DO1V-cZyDWsDyrbCfG7uWnPeKP5w0H7Bz=oSpRMXTvQ@mail.gmail.com>
-References: <CAF1_xX2=BYkEn3ycM4smREqk-ioGbvu8Ea4or22U-jBdKmDKGA@mail.gmail.com>
-	<6939844.AIXnPB8Wdj@vostro.rjw.lan>
-	<CAF1_xX0zQriGMKvH8aLs4GhmCnLGSd7C2ESTvsOQvB7q22Mk8Q@mail.gmail.com>
-	<18917329.YEy4ieURCA@vostro.rjw.lan>
+From: Guru Prasad <gurupras@buffalo.edu>
+Subject: Re: Userspace program to wake system from suspend
+Date: Mon, 30 Sep 2013 03:16:21 -0400
+Message-ID: <CAMefCkDZBBFxFKmNFq1ANd6XuwnMpz3ovf42eYwOyyW0iWLR_g@mail.gmail.com>
+References: <CAMefCkAsg8sDku-dU+kdYwLfaFbUC=z_4XQnjt3E1LZE21v5aA@mail.gmail.com>
+	<CAAW3YpY6wi9q+SJNznjNJogJ-dWPzSQMcy38ha_Yqgo-E9UnNQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:57644 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872Ab3I3Fp5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2013 01:45:57 -0400
-In-Reply-To: <18917329.YEy4ieURCA@vostro.rjw.lan>
+Received: from mail-pb0-f49.google.com ([209.85.160.49]:34611 "EHLO
+	mail-pb0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137Ab3I3HQW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2013 03:16:22 -0400
+Received: by mail-pb0-f49.google.com with SMTP id xb4so5196816pbc.22
+        for <linux-pm@vger.kernel.org>; Mon, 30 Sep 2013 00:16:22 -0700 (PDT)
+In-Reply-To: <CAAW3YpY6wi9q+SJNznjNJogJ-dWPzSQMcy38ha_Yqgo-E9UnNQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Todd Poynor <toddpoynor@google.com>
+Cc: linux-pm@vger.kernel.org
 
-Yes, works as well. Just survived twe cycles with s2disk. I'm
-surprised someone else did not report this earlier btw... Because it
-looks pretty generic (i.e. not specific to a 64bit UP system).
+Hi Todd,
 
-Thanks again!
+Thanks for your response.
 
-2013/9/30 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> On Sunday, September 29, 2013 09:22:45 AM Ronald wrote:
->> Attached patch fixes the issue. Both methods function as they did
->> before. Thanks for the superfast fix!
+I'm trying to look at the Android platform AlarmManager code; both
+Java and native, to try and figure out exactly how I'm supposed to use
+this interface.
+
+I'm now trying to set an alarm using something like
+struct timespec ts;
+ts.tv_nsec     = 0;
+ts.tv_sec       = 15;
+
+int alarm_fd = open("/dev/alarm", O_RDWR);
+int result = ioctl(alarm_fd,
+ANDROID_ALARM_SET(ANDROID_ALARM_ELAPSED_REALTIME), &ts);
+
+
+However, upon execution, kmsg shows me the following
+[  430.304171] alarm_release: clear alarm, pending 0
+
+Is the timespec value expected to be relative to time since epoch?
+
+I've also confirmed that the device does not wake up from suspend
+using the above snippet.
+
+
+Currently, I've exported android_alarm.h from aosp kernel-headers.
+Would that be a problem?
+This also means that I'm using sys/ioctl.h instead of aosp's kernel/ioctl.h
+
+
+Thanks and Regards
+Guru
+
+On Sun, Sep 29, 2013 at 3:18 PM, Todd Poynor <toddpoynor@google.com> wrote:
+> On Sun, Sep 29, 2013 at 9:02 AM, Guru Prasad <gurupras@buffalo.edu> wrote:
+>> I'm working with a fairly old version of the Linux kernel (v3.0) on
+>> the Android platform.
+>>
+>> I tried searching for examples where I can wake the system using some
+>> of the clocks that continue to tick despite the system being suspended
+>> (CLOCK_REALTIME_ALARM I think?) but couldn't find any.
+>>
+>> From my understanding, it should be possible to do so as long as I can
+>> request an alarm from CLOCK_REALTIME_ALARM..but I don't quite
+>> understand how to do so.
 >
-> You're welcome, it's not the final one, however.
+> Later android kernels + bionic support for timerfd can do it with
+> timerfd_create and timerfd_settime on *_ALARM clocks (kernel support
+> for this went into upstream linux-3.11), but android-3.0 is too old
+> (the alarm driver would need significant upgrading and reconciling the
+> android vs. upstream alarm drivers, prior to merging timerfd support
+> for alarms).
 >
-> Can you please test the one below and report back?
+> In android-3.0 you can also use the Android-specific alarm driver
+> interface in drivers/rtc/alarm-dev.c to set an alarm of type
+> ANDROID_ALARM_{RTC,ELAPSED_REALTIME}_WAKEUP.
 >
-> Rafael
 >
->
-> ---
->  kernel/power/snapshot.c |    5 ++++-
->  kernel/power/user.c     |    8 ++++++++
->  2 files changed, 12 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/snapshot.c
-> +++ linux-pm/kernel/power/snapshot.c
-> @@ -743,7 +743,10 @@ int create_basic_memory_bitmaps(void)
->         struct memory_bitmap *bm1, *bm2;
->         int error = 0;
->
-> -       BUG_ON(forbidden_pages_map || free_pages_map);
-> +       if (forbidden_pages_map && free_pages_map)
-> +               return 0;
-> +       else
-> +               BUG_ON(forbidden_pages_map || free_pages_map);
->
->         bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
->         if (!bm1)
-> Index: linux-pm/kernel/power/user.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/user.c
-> +++ linux-pm/kernel/power/user.c
-> @@ -39,6 +39,7 @@ static struct snapshot_data {
->         char frozen;
->         char ready;
->         char platform_support;
-> +       bool free_bitmaps;
->  } snapshot_state;
->
->  atomic_t snapshot_device_available = ATOMIC_INIT(1);
-> @@ -82,6 +83,10 @@ static int snapshot_open(struct inode *i
->                 data->swap = -1;
->                 data->mode = O_WRONLY;
->                 error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-> +               if (!error) {
-> +                       error = create_basic_memory_bitmaps();
-> +                       data->free_bitmaps = !error;
-> +               }
->                 if (error)
->                         pm_notifier_call_chain(PM_POST_RESTORE);
->         }
-> @@ -111,6 +116,8 @@ static int snapshot_release(struct inode
->                 pm_restore_gfp_mask();
->                 free_basic_memory_bitmaps();
->                 thaw_processes();
-> +       } else if (data->free_bitmaps) {
-> +               free_basic_memory_bitmaps();
->         }
->         pm_notifier_call_chain(data->mode == O_RDONLY ?
->                         PM_POST_HIBERNATION : PM_POST_RESTORE);
-> @@ -231,6 +238,7 @@ static long snapshot_ioctl(struct file *
->                         break;
->                 pm_restore_gfp_mask();
->                 free_basic_memory_bitmaps();
-> +               data->free_bitmaps = false;
->                 thaw_processes();
->                 data->frozen = 0;
->                 break;
->
+> Todd
