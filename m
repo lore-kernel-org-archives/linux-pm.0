@@ -1,42 +1,92 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] ARM: ux500: cpuidle: fix section mismatch
-Date: Mon, 30 Sep 2013 01:12:10 +0200
-Message-ID: <CACRpkdZN0ErvBSYuOK3XP5JgLZRqJ7Rvcc=sj=naT9c4tSSG5Q@mail.gmail.com>
-References: <1380302195-18678-1-git-send-email-daniel.lezcano@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Fwd: [v3.12-rc1] [regression] PM / hibernate: Create memory bitmaps after freezing user space
+Date: Mon, 30 Sep 2013 02:12:48 +0200
+Message-ID: <18917329.YEy4ieURCA@vostro.rjw.lan>
+References: <CAF1_xX2=BYkEn3ycM4smREqk-ioGbvu8Ea4or22U-jBdKmDKGA@mail.gmail.com> <6939844.AIXnPB8Wdj@vostro.rjw.lan> <CAF1_xX0zQriGMKvH8aLs4GhmCnLGSd7C2ESTvsOQvB7q22Mk8Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f174.google.com ([209.85.223.174]:62954 "EHLO
-	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709Ab3I2XML (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Sep 2013 19:12:11 -0400
-Received: by mail-ie0-f174.google.com with SMTP id u16so8491690iet.19
-        for <linux-pm@vger.kernel.org>; Sun, 29 Sep 2013 16:12:10 -0700 (PDT)
-In-Reply-To: <1380302195-18678-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:49311 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751720Ab3I3ABX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Sep 2013 20:01:23 -0400
+In-Reply-To: <CAF1_xX0zQriGMKvH8aLs4GhmCnLGSd7C2ESTvsOQvB7q22Mk8Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Ronald <ronald645@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Sep 27, 2013 at 7:16 PM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
+On Sunday, September 29, 2013 09:22:45 AM Ronald wrote:
+> Attached patch fixes the issue. Both methods function as they did
+> before. Thanks for the superfast fix!
 
-> The dbx500_cpuidle_probe is tagged as an __init section but the variable
-> dbx500_cpuidle_plat_driver is not.
->
-> The dbx500_cpuidle_probe could not be declared as __init because of macro
-> module_platform_driver builds the exit function, tags as __exit and this one
-> refers to the dbx500_cpuidle_plat_driver which is an __initdata.
->
-> That leads to a section mismatch.
->
-> Fix it by removing the __init tag for the probe function.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+You're welcome, it's not the final one, however.
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Can you please test the one below and report back?
 
-Sorry if I caused this and thanks for fixing it up!
+Rafael
 
-Yours,
-Linus Walleij
+
+---
+ kernel/power/snapshot.c |    5 ++++-
+ kernel/power/user.c     |    8 ++++++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+Index: linux-pm/kernel/power/snapshot.c
+===================================================================
+--- linux-pm.orig/kernel/power/snapshot.c
++++ linux-pm/kernel/power/snapshot.c
+@@ -743,7 +743,10 @@ int create_basic_memory_bitmaps(void)
+ 	struct memory_bitmap *bm1, *bm2;
+ 	int error = 0;
+ 
+-	BUG_ON(forbidden_pages_map || free_pages_map);
++	if (forbidden_pages_map && free_pages_map)
++		return 0;
++	else
++		BUG_ON(forbidden_pages_map || free_pages_map);
+ 
+ 	bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
+ 	if (!bm1)
+Index: linux-pm/kernel/power/user.c
+===================================================================
+--- linux-pm.orig/kernel/power/user.c
++++ linux-pm/kernel/power/user.c
+@@ -39,6 +39,7 @@ static struct snapshot_data {
+ 	char frozen;
+ 	char ready;
+ 	char platform_support;
++	bool free_bitmaps;
+ } snapshot_state;
+ 
+ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+@@ -82,6 +83,10 @@ static int snapshot_open(struct inode *i
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
+ 		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		if (!error) {
++			error = create_basic_memory_bitmaps();
++			data->free_bitmaps = !error;
++		}
+ 		if (error)
+ 			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	}
+@@ -111,6 +116,8 @@ static int snapshot_release(struct inode
+ 		pm_restore_gfp_mask();
+ 		free_basic_memory_bitmaps();
+ 		thaw_processes();
++	} else if (data->free_bitmaps) {
++		free_basic_memory_bitmaps();
+ 	}
+ 	pm_notifier_call_chain(data->mode == O_RDONLY ?
+ 			PM_POST_HIBERNATION : PM_POST_RESTORE);
+@@ -231,6 +238,7 @@ static long snapshot_ioctl(struct file *
+ 			break;
+ 		pm_restore_gfp_mask();
+ 		free_basic_memory_bitmaps();
++		data->free_bitmaps = false;
+ 		thaw_processes();
+ 		data->frozen = 0;
+ 		break;
+
