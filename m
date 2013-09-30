@@ -1,90 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / hibernate: Fix user space driven resume regression
-Date: Mon, 30 Sep 2013 19:37:07 +0200
-Message-ID: <1904990.pSWyZTIzEi@vostro.rjw.lan>
-References: <CAF1_xX2=BYkEn3ycM4smREqk-ioGbvu8Ea4or22U-jBdKmDKGA@mail.gmail.com> <CAF1_xX1DO1V-cZyDWsDyrbCfG7uWnPeKP5w0H7Bz=oSpRMXTvQ@mail.gmail.com> <7570724.v5QLmkRO38@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] cpufreq: make return type of lock_policy_rwsem_{read|write}() as void
+Date: Mon, 30 Sep 2013 20:28:21 +0200
+Message-ID: <2382588.IckWbq3JRN@vostro.rjw.lan>
+References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org> <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7570724.v5QLmkRO38@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Ronald <ronald645@gmail.com>, linux-kernel@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: tixy@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday, September 16, 2013 08:40:17 PM Viresh Kumar wrote:
+> lock_policy_rwsem_{read|write}() currently has return type of int but it always
+> return zero and hence its return type must be void instead. This patch makes its
+> return type void and fixes all users of it as well.
+> 
+> Reported-by: Jon Medhurst<tixy@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Recent commit 8fd37a4 (PM / hibernate: Create memory bitmaps after
-freezing user space) broke the resume part of the user space driven
-hibernation (s2disk), because I forgot that the resume utility
-loaded the image into memory without freezing user space (it still
-freezes tasks after loading the image).  This means that during user
-space driven resume we need to create the memory bitmaps at the
-"device open" time rather than at the "freeze tasks" time, so make
-that happen (that's a special case anyway, so it needs to be treated
-in a special way).
+This doesn't apply to bleeding-edge for me any more after I have applied your
+series of 44 patches to it.  Care to resend?
 
-Reported-and-tested-by: Ronald <ronald645@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/power/snapshot.c |    5 ++++-
- kernel/power/user.c     |    8 ++++++++
- 2 files changed, 12 insertions(+), 1 deletion(-)
+Rafael
 
-Index: linux-pm/kernel/power/snapshot.c
-===================================================================
---- linux-pm.orig/kernel/power/snapshot.c
-+++ linux-pm/kernel/power/snapshot.c
-@@ -743,7 +743,10 @@ int create_basic_memory_bitmaps(void)
- 	struct memory_bitmap *bm1, *bm2;
- 	int error = 0;
- 
--	BUG_ON(forbidden_pages_map || free_pages_map);
-+	if (forbidden_pages_map && free_pages_map)
-+		return 0;
-+	else
-+		BUG_ON(forbidden_pages_map || free_pages_map);
- 
- 	bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
- 	if (!bm1)
-Index: linux-pm/kernel/power/user.c
-===================================================================
---- linux-pm.orig/kernel/power/user.c
-+++ linux-pm/kernel/power/user.c
-@@ -39,6 +39,7 @@ static struct snapshot_data {
- 	char frozen;
- 	char ready;
- 	char platform_support;
-+	bool free_bitmaps;
- } snapshot_state;
- 
- atomic_t snapshot_device_available = ATOMIC_INIT(1);
-@@ -82,6 +83,10 @@ static int snapshot_open(struct inode *i
- 		data->swap = -1;
- 		data->mode = O_WRONLY;
- 		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-+		if (!error) {
-+			error = create_basic_memory_bitmaps();
-+			data->free_bitmaps = !error;
-+		}
- 		if (error)
- 			pm_notifier_call_chain(PM_POST_RESTORE);
- 	}
-@@ -111,6 +116,8 @@ static int snapshot_release(struct inode
- 		pm_restore_gfp_mask();
- 		free_basic_memory_bitmaps();
- 		thaw_processes();
-+	} else if (data->free_bitmaps) {
-+		free_basic_memory_bitmaps();
- 	}
- 	pm_notifier_call_chain(data->mode == O_RDONLY ?
- 			PM_POST_HIBERNATION : PM_POST_RESTORE);
-@@ -231,6 +238,7 @@ static long snapshot_ioctl(struct file *
- 			break;
- 		pm_restore_gfp_mask();
- 		free_basic_memory_bitmaps();
-+		data->free_bitmaps = false;
- 		thaw_processes();
- 		data->frozen = 0;
- 		break;
