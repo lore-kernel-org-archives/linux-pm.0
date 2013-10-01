@@ -1,119 +1,181 @@
-From: Ronald <ronald645@gmail.com>
-Subject: Re: Fwd: [v3.12-rc1] [regression] PM / hibernate: Create memory
- bitmaps after freezing user space
-Date: Tue, 1 Oct 2013 18:38:03 +0200
-Message-ID: <CAF1_xX0veXd4AtPR43r50g8Tu4WeP0kVzqPihgSC-NCpW+nwkQ@mail.gmail.com>
-References: <CAF1_xX2=BYkEn3ycM4smREqk-ioGbvu8Ea4or22U-jBdKmDKGA@mail.gmail.com>
-	<18917329.YEy4ieURCA@vostro.rjw.lan>
-	<CAF1_xX1DO1V-cZyDWsDyrbCfG7uWnPeKP5w0H7Bz=oSpRMXTvQ@mail.gmail.com>
-	<7570724.v5QLmkRO38@vostro.rjw.lan>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v2 2/5] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Tue, 01 Oct 2013 17:46:10 +0100
+Message-ID: <524AFC52.8080201@arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f46.google.com ([74.125.82.46]:45314 "EHLO
-	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239Ab3JAQiF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Oct 2013 12:38:05 -0400
-In-Reply-To: <7570724.v5QLmkRO38@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1380634382-15609-3-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-This could be a coincidence, but I had a disk data corruption in /var
-(LVM). Most other partitions are read-only during normal operation. So
-I can safely keep testing this kernel. Just mentioning this, in case
-you see this happening with other ppl testing this patch as well.
+On 01/10/13 14:32, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+> 
+> Currently we need to replicate the OPP entries in all the nodes even
+> though they share OPPs being in the same clock domain.
+> 
+> Few drivers like cpufreq depend on physical cpu0 node to specify the
+> OPPs and only that node is referred irrespective of the logical cpu
+> accessing it. Alternatively to support cpuhotplug path, few drivers
+> parse all the cpu nodes for OPPs. Instead we can specify the phandle
+> of the node which contains the OPP tuples.
+> 
+> This patch adds support to the new property 'operating-points-phandle'
+> which specifies the phandle pointing to another node which contains the
+> actual OPP tuples.
+> 
+> Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+> Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+> Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+> Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+> ---
+>  drivers/base/power/opp.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index ef89897..bb6ff64 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -708,12 +708,20 @@ struct srcu_notifier_head *opp_get_notifier(struct device *dev)
+>  int of_init_opp_table(struct device *dev)
+>  {
+>  	const struct property *prop;
+> +	struct device_node *opp_node;
+>  	const __be32 *val;
+>  	int nr;
+>  
+> -	prop = of_find_property(dev->of_node, "operating-points", NULL);
+> -	if (!prop)
+> +	opp_node = of_parse_phandle(dev->of_node,
+> +					"operating-points-phandle", 0);
+> +	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
+> +		opp_node = dev->of_node;
+> +	prop = of_find_property(opp_node, "operating-points", NULL);
+> +	if (!prop) {
+> +		dev_warn(dev, "node %s missing operating-points property\n",
+> +							opp_node->full_name);
+>  		return -ENODEV;
+> +	}
+>  	if (!prop->value)
+>  		return -ENODATA;
+>  
+> @@ -740,6 +748,9 @@ int of_init_opp_table(struct device *dev)
+>  		nr -= 2;
+>  	}
+>  
+> +	if (opp_node != dev->of_node)
+> +		of_node_put(opp_node);
+> +
+There are several exit paths on error conditions where we need to do this.
+I missed them all. Here is the updated patch:
 
-2013/9/30 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> On Monday, September 30, 2013 07:45:54 AM Ronald wrote:
->> Yes, works as well. Just survived twe cycles with s2disk. I'm
->> surprised someone else did not report this earlier btw... Because it
->> looks pretty generic (i.e. not specific to a 64bit UP system).
->
-> It is a generic bug, actually.  Well, this means the user space driven
-> hibernation doesn't receive much testing coverage these days ...
->
-> I'll resend the patch with a proper changelog and then push it for v3.12-rc4.
->
-> Thanks,
-> Rafael
->
->
->> 2013/9/30 Rafael J. Wysocki <rjw@rjwysocki.net>:
->> > On Sunday, September 29, 2013 09:22:45 AM Ronald wrote:
->> >> Attached patch fixes the issue. Both methods function as they did
->> >> before. Thanks for the superfast fix!
->> >
->> > You're welcome, it's not the final one, however.
->> >
->> > Can you please test the one below and report back?
->> >
->> > Rafael
->> >
->> >
->> > ---
->> >  kernel/power/snapshot.c |    5 ++++-
->> >  kernel/power/user.c     |    8 ++++++++
->> >  2 files changed, 12 insertions(+), 1 deletion(-)
->> >
->> > Index: linux-pm/kernel/power/snapshot.c
->> > ===================================================================
->> > --- linux-pm.orig/kernel/power/snapshot.c
->> > +++ linux-pm/kernel/power/snapshot.c
->> > @@ -743,7 +743,10 @@ int create_basic_memory_bitmaps(void)
->> >         struct memory_bitmap *bm1, *bm2;
->> >         int error = 0;
->> >
->> > -       BUG_ON(forbidden_pages_map || free_pages_map);
->> > +       if (forbidden_pages_map && free_pages_map)
->> > +               return 0;
->> > +       else
->> > +               BUG_ON(forbidden_pages_map || free_pages_map);
->> >
->> >         bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
->> >         if (!bm1)
->> > Index: linux-pm/kernel/power/user.c
->> > ===================================================================
->> > --- linux-pm.orig/kernel/power/user.c
->> > +++ linux-pm/kernel/power/user.c
->> > @@ -39,6 +39,7 @@ static struct snapshot_data {
->> >         char frozen;
->> >         char ready;
->> >         char platform_support;
->> > +       bool free_bitmaps;
->> >  } snapshot_state;
->> >
->> >  atomic_t snapshot_device_available = ATOMIC_INIT(1);
->> > @@ -82,6 +83,10 @@ static int snapshot_open(struct inode *i
->> >                 data->swap = -1;
->> >                 data->mode = O_WRONLY;
->> >                 error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
->> > +               if (!error) {
->> > +                       error = create_basic_memory_bitmaps();
->> > +                       data->free_bitmaps = !error;
->> > +               }
->> >                 if (error)
->> >                         pm_notifier_call_chain(PM_POST_RESTORE);
->> >         }
->> > @@ -111,6 +116,8 @@ static int snapshot_release(struct inode
->> >                 pm_restore_gfp_mask();
->> >                 free_basic_memory_bitmaps();
->> >                 thaw_processes();
->> > +       } else if (data->free_bitmaps) {
->> > +               free_basic_memory_bitmaps();
->> >         }
->> >         pm_notifier_call_chain(data->mode == O_RDONLY ?
->> >                         PM_POST_HIBERNATION : PM_POST_RESTORE);
->> > @@ -231,6 +238,7 @@ static long snapshot_ioctl(struct file *
->> >                         break;
->> >                 pm_restore_gfp_mask();
->> >                 free_basic_memory_bitmaps();
->> > +               data->free_bitmaps = false;
->> >                 thaw_processes();
->> >                 data->frozen = 0;
->> >                 break;
->> >
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+-->8--
+
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+
+Currently we need to replicate the OPP entries in all the nodes even
+though they share OPPs being in the same clock domain.
+
+Few drivers like cpufreq depend on physical cpu0 node to specify the
+OPPs and only that node is referred irrespective of the logical cpu
+accessing it. Alternatively to support cpuhotplug path, few drivers
+parse all the cpu nodes for OPPs. Instead we can specify the phandle
+of the node which contains the OPP tuples.
+
+This patch adds support to the new property 'operating-points-phandle'
+which specifies the phandle pointing to another node which contains the
+actual OPP tuples.
+
+Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+---
+ drivers/base/power/opp.c | 34 +++++++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index ef89897..cd4dbb3 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -708,14 +708,25 @@ struct srcu_notifier_head *opp_get_notifier(struct device
+*dev)
+ int of_init_opp_table(struct device *dev)
+ {
+ 	const struct property *prop;
++	struct device_node *opp_node;
+ 	const __be32 *val;
+-	int nr;
+-
+-	prop = of_find_property(dev->of_node, "operating-points", NULL);
+-	if (!prop)
+-		return -ENODEV;
+-	if (!prop->value)
+-		return -ENODATA;
++	int nr, ret = 0;
++
++	opp_node = of_parse_phandle(dev->of_node,
++					"operating-points-phandle", 0);
++	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
++		opp_node = dev->of_node;
++	prop = of_find_property(opp_node, "operating-points", NULL);
++	if (!prop) {
++		dev_warn(dev, "node %s missing operating-points property\n",
++							opp_node->full_name);
++		ret = -ENODEV;
++		goto put_node;
++	}
++	if (!prop->value) {
++		ret = -ENODATA;
++		goto put_node;
++	}
+
+ 	/*
+ 	 * Each OPP is a set of tuples consisting of frequency and
+@@ -724,7 +735,8 @@ int of_init_opp_table(struct device *dev)
+ 	nr = prop->length / sizeof(u32);
+ 	if (nr % 2) {
+ 		dev_err(dev, "%s: Invalid OPP list\n", __func__);
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto put_node;
+ 	}
+
+ 	val = prop->value;
+@@ -740,7 +752,11 @@ int of_init_opp_table(struct device *dev)
+ 		nr -= 2;
+ 	}
+
+-	return 0;
++put_node:
++	if (opp_node != dev->of_node)
++		of_node_put(opp_node);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(of_init_opp_table);
+ #endif
+-- 
+1.8.1.2
+
+
+
+
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
