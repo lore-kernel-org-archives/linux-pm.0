@@ -1,7 +1,7 @@
 From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCHv4 4/9] Thermal: Add APIs to bind cdev to new zone structure
-Date: Wed,  2 Oct 2013 00:08:03 +0530
-Message-ID: <1380652688-5787-5-git-send-email-durgadoss.r@intel.com>
+Subject: [PATCHv4 8/9] Thermal: Add ABI Documentation for sysfs interfaces
+Date: Wed,  2 Oct 2013 00:08:07 +0530
+Message-ID: <1380652688-5787-9-git-send-email-durgadoss.r@intel.com>
 References: <1380652688-5787-1-git-send-email-durgadoss.r@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1380652688-5787-1-git-send-email-durgadoss.r@intel.com>
@@ -10,252 +10,157 @@ To: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hongbo.zhang@freescale.com, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch creates new APIs to add/remove a
-cdev to/from a zone. This patch does not change
-the old cooling device implementation.
+This patch adds Documentation for ABI's introduced
+for thermal subsystem (under /sys/class/thermal/).
 
 Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
 ---
- drivers/thermal/thermal_core.c |  136 ++++++++++++++++++++++++++++++++++++++++
- include/linux/thermal.h        |    9 +++
- 2 files changed, 145 insertions(+)
+ Documentation/ABI/testing/sysfs-class-thermal |  137 +++++++++++++++++++++++++
+ 1 file changed, 137 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index a053b60..3c4ef62 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -58,6 +58,7 @@ static LIST_HEAD(thermal_governor_list);
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(sensor_list_lock);
- static DEFINE_MUTEX(zone_list_lock);
-+static DEFINE_MUTEX(cdev_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
- 
- #define for_each_thermal_sensor(pos) \
-@@ -86,6 +87,9 @@ static DEFINE_MUTEX(thermal_governor_lock);
- 	ret;						\
- })
- 
-+#define for_each_cdev(pos) \
-+	list_for_each_entry(pos, &thermal_cdev_list, node)
+diff --git a/Documentation/ABI/testing/sysfs-class-thermal b/Documentation/ABI/testing/sysfs-class-thermal
+new file mode 100644
+index 0000000..36e23da
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-thermal
+@@ -0,0 +1,137 @@
++What:		/sys/class/thermal/sensorX/temp
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Exposes 'temperature' of a thermal sensor in mC
++Users:		Kernel/User space thermal governors
 +
- static struct thermal_governor *__find_governor(const char *name)
- {
- 	struct thermal_governor *pos;
-@@ -511,6 +515,27 @@ static void remove_sensor_from_zone(struct thermal_zone *tz,
- 	mutex_unlock(&tz->lock);
- }
- 
-+static void remove_cdev_from_zone(struct thermal_zone *tz,
-+				struct thermal_cooling_device *cdev)
-+{
-+	int j, indx;
++What:		/sys/class/thermal/sensorX/name
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Name of the thermal sensor
++Users:		Kernel/User space thermal governors
 +
-+	indx = GET_INDEX(tz, cdev, cdev);
-+	if (indx < 0)
-+		return;
++What:		/sys/class/thermal/sensorX/thresholdY
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Programmable threshold (in terms of mC). On reaching
++		this, the thermal governors may take action to control
++		temperature.
++Users:		Kernel/User space thermal governors
 +
-+	sysfs_remove_link(&tz->device.kobj, kobject_name(&cdev->device.kobj));
++What:		/sys/class/thermal/zoneX/name
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Name of the thermal zone.
++Users:		Kernel/User space thermal governors
 +
-+	mutex_lock(&tz->lock);
++What:		/sys/class/thermal/zoneX/sensorY
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Symlink to a sensor associated with this zone.
++Users:		User space thermal governors or applications
 +
-+	/* Shift the entries in the tz->cdevs array */
-+	for (j = indx; j < MAX_CDEVS_PER_ZONE - 1; j++)
-+		tz->cdevs[j] = tz->cdevs[j + 1];
++What:		/sys/class/thermal/zoneX/cooling_deviceY
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Symlink to a cooling device associated with this zone.
++Users:		User space thermal governors or applications
 +
-+	tz->cdev_indx--;
-+	mutex_unlock(&tz->lock);
-+}
++What:		/sys/class/thermal/zoneX/sensorY_trip_activeM
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Active Trip point temperature in mC for sensorY in
++		thermal zoneX.
++Users:		Kernel/User space thermal governors
 +
- /* sys I/F for thermal zone */
- 
- #define to_thermal_zone(_dev) \
-@@ -1555,6 +1580,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- 	int i;
- 	const struct thermal_zone_params *tzp;
- 	struct thermal_zone_device *tz;
-+	struct thermal_zone *tmp_tz;
- 	struct thermal_cooling_device *pos = NULL;
- 
- 	if (!cdev)
-@@ -1592,6 +1618,13 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- 
- 	mutex_unlock(&thermal_list_lock);
- 
-+	mutex_lock(&zone_list_lock);
++What:		/sys/class/thermal/zoneX/sensorY_trip_passiveN
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Passive Trip point temperature in mC for sensorY in
++		thermal zoneX.
++Users:		Kernel/User space thermal governors
 +
-+	for_each_thermal_zone(tmp_tz)
-+		remove_cdev_from_zone(tmp_tz, cdev);
++What:		/sys/class/thermal/zoneX/sensorY_trip_hot
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Hot trip point for 'sensorY' in 'zoneX' (in mC).
++Users:		Kernel/User space thermal governors
 +
-+	mutex_unlock(&zone_list_lock);
++What:		/sys/class/thermal/zoneX/sensorY_trip_critical
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Critical trip point for 'sensorY' in 'zoneX' (in mC).
++Users:		Kernel/User space thermal governors
 +
- 	if (cdev->type[0])
- 		device_remove_file(&cdev->device, &dev_attr_cdev_type);
- 	device_remove_file(&cdev->device, &dev_attr_max_state);
-@@ -1873,6 +1906,7 @@ void remove_thermal_zone(struct thermal_zone *tz)
- {
- 	struct thermal_zone *pos, *next;
- 	struct thermal_sensor *ts;
-+	struct thermal_cooling_device *cdev;
- 	bool found = false;
- 
- 	if (!tz)
-@@ -1894,6 +1928,9 @@ void remove_thermal_zone(struct thermal_zone *tz)
- 	for_each_thermal_sensor(ts)
- 		remove_sensor_from_zone(tz, ts);
- 
-+	for_each_cdev(cdev)
-+		remove_cdev_from_zone(tz, cdev);
++What:		/sys/class/thermal/zoneX/mapY_trip_type
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Mapping information between a sensor and a cooling device
++		in 'zoneX'. This interface provides the trip_type for a
++		particular map(Y).
++Users:		Kernel/User space thermal governors
 +
- 	device_remove_file(&tz->device, &dev_attr_zone_name);
- 
- 	mutex_destroy(&tz->lock);
-@@ -1909,6 +1946,47 @@ exit:
- EXPORT_SYMBOL(remove_thermal_zone);
- 
- /**
-+ * get_cdev_by_name() - search for a cdev and returns its reference
-+ * @name: cooling device name to fetch the reference
-+ *
-+ * On success returns a reference to an unique cdev with
-+ * the name matching that of @name, an ERR_PTR otherwise:
-+ * -EINVAL for invalid paramenters
-+ * -ENODEV for cdev not found
-+ * -EEXIST for multiple matches
-+ */
-+struct thermal_cooling_device *get_cdev_by_name(const char *name)
-+{
-+	int found = 0;
-+	struct thermal_cooling_device *pos;
-+	struct thermal_cooling_device *cdev = ERR_PTR(-EINVAL);
++What:		/sys/class/thermal/zoneX/mapY_sensor_name
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Mapping information between a sensor and a cooling device
++		in 'zoneX'. This interface provides the name of the sensor
++		used in this map(Y).
++Users:		Kernel/User space thermal governors
 +
-+	if (!name)
-+		return cdev;
++What:		/sys/class/thermal/zoneX/mapY_cdev_name
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Mapping information between a sensor and a cooling device
++		in 'zoneX'. This interface provides the name of the cooling
++		device used in this map(Y).
++Users:		Kernel/User space thermal governors
 +
-+	mutex_lock(&cdev_list_lock);
-+	for_each_cdev(pos) {
-+		if (!strnicmp(pos->type, name, THERMAL_NAME_LENGTH)) {
-+			found++;
-+			cdev = pos;
-+		}
-+	}
-+	mutex_unlock(&cdev_list_lock);
++What:		/sys/class/thermal/zoneX/mapY_trip_mask
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Mapping information between a sensor and a cooling device
++		in 'zoneX'. This interface provides the trip point mask,
++		which defines whether or not to throttle a particular
++		cooling device. See Documentation/thermal/sysfs-api2.txt
++		for more information on this interface.
++Users:		Kernel/User space thermal governors
 +
-+	/*
-+	 * Nothing has been found; return an error code for it.
-+	 * Return success only when an unique cdev is found.
-+	 */
-+	if (found == 0)
-+		cdev = ERR_PTR(-ENODEV);
-+	else if (found > 1)
-+		cdev = ERR_PTR(-EEXIST);
-+
-+	return cdev;
-+}
-+EXPORT_SYMBOL(get_cdev_by_name);
-+
-+/**
-  * get_sensor_by_name() - search for a sensor and returns its reference
-  * @name: thermal sensor name to fetch the reference
-  *
-@@ -2003,6 +2081,64 @@ exit_zone:
- EXPORT_SYMBOL(add_sensor_to_zone);
- 
- /**
-+ * add_cdev_to_zone - Add @cdev to thermal zone @tz
-+ * @tz:		Thermal zone reference
-+ * @cdev:	Cooling device reference
-+ *
-+ * Returns 0 on success, otherwise
-+ * -EINVAL for invalid paramenters
-+ * -EINVAL when trying to add more cdevs than MAX_CDEVS_PER_ZONE
-+ * -EEXIST when trying add existing cdev again
-+ */
-+int add_cdev_to_zone(struct thermal_zone *tz,
-+			struct thermal_cooling_device *cdev)
-+{
-+	int ret;
-+
-+	if (!tz || !cdev)
-+		return -EINVAL;
-+
-+	mutex_lock(&zone_list_lock);
-+
-+	/* Ensure we are not adding the same cdev again!! */
-+	ret = GET_INDEX(tz, cdev, cdev);
-+	if (ret >= 0) {
-+		ret = -EEXIST;
-+		goto exit_zone;
-+	}
-+
-+	/* Protect against 'cdev' being unregistered */
-+	mutex_lock(&cdev_list_lock);
-+
-+	ret = sysfs_create_link(&tz->device.kobj, &cdev->device.kobj,
-+				kobject_name(&cdev->device.kobj));
-+	if (ret)
-+		goto exit_cdev;
-+
-+	mutex_lock(&tz->lock);
-+
-+	if (tz->cdev_indx >= MAX_CDEVS_PER_ZONE - 1) {
-+		dev_err(&tz->device, "Only %d cdevs allowed per zone\n",
-+					MAX_CDEVS_PER_ZONE);
-+		sysfs_remove_link(&tz->device.kobj,
-+				kobject_name(&cdev->device.kobj));
-+		ret = -EINVAL;
-+		goto exit_indx_check;
-+	}
-+
-+	tz->cdevs[tz->cdev_indx++] = cdev;
-+
-+exit_indx_check:
-+	mutex_unlock(&tz->lock);
-+exit_cdev:
-+	mutex_unlock(&cdev_list_lock);
-+exit_zone:
-+	mutex_unlock(&zone_list_lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL(add_cdev_to_zone);
-+
-+/**
-  * thermal_sensor_register - register a new thermal sensor
-  * @name:	name of the thermal sensor
-  * @count:	Number of thresholds supported by hardware
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 2e12321..da7520c 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -60,6 +60,8 @@
- 
- #define MAX_SENSORS_PER_ZONE		5
- 
-+#define MAX_CDEVS_PER_ZONE		5
-+
- struct thermal_sensor;
- struct thermal_zone_device;
- struct thermal_cooling_device;
-@@ -223,6 +225,10 @@ struct thermal_zone {
- 	/* Sensor level information */
- 	int sensor_indx; /* index into 'sensors' array */
- 	struct thermal_sensor *sensors[MAX_SENSORS_PER_ZONE];
-+
-+	/* cdev level information */
-+	int cdev_indx; /* index into 'cdevs' array */
-+	struct thermal_cooling_device *cdevs[MAX_CDEVS_PER_ZONE];
- };
- 
- /* Structure that holds thermal governor information */
-@@ -300,6 +306,9 @@ void remove_thermal_zone(struct thermal_zone *);
- int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
- struct thermal_sensor *get_sensor_by_name(const char *);
- 
-+int add_cdev_to_zone(struct thermal_zone *, struct thermal_cooling_device *);
-+struct thermal_cooling_device *get_cdev_by_name(const char *);
-+
- #ifdef CONFIG_NET
- extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
- 						enum events event);
++What:		/sys/class/thermal/zoneX/mapY_weightN
++Date:		October 2013
++KernelVersion:	3.12
++Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
++Description:
++		Mapping information between a sensor and a cooling device
++		in 'zoneX'. This interface provides the weights that can
++		be used to throttle a cooling device, on thermal violations.
++		See Documentation/thermal/sysfs-api2.txt for more details on
++		this interface.
++Users:		Kernel/User space thermal governors
 -- 
 1.7.9.5
