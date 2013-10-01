@@ -1,43 +1,51 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] Intel Pstate driver: fix no turbo
-Date: Tue,  1 Oct 2013 10:28:41 -0700
-Message-ID: <1380648521-17849-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 0/7] DRA7: DT thermal support
+Date: Tue, 1 Oct 2013 14:32:17 -0400
+Message-ID: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:52363 "EHLO mga09.intel.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:51661 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750704Ab3JAR3A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Oct 2013 13:29:00 -0400
+	id S1751790Ab3JASdr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Oct 2013 14:33:47 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@sisk.pl, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-When sysfs for no_turbo is set, then also some p states in turbo regions
-are observed. This patch will set IDA Engage bit when no_turbo is set to
-explicitly disengage turbo.
+Hello all,
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+This is a complementary patch series with themal DT support for DRA7.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 9733f29..32b3479 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -394,7 +394,10 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
- 	trace_cpu_frequency(pstate * 100000, cpu->cpu);
- 
- 	cpu->pstate.current_pstate = pstate;
--	wrmsrl(MSR_IA32_PERF_CTL, pstate << 8);
-+	if (limits.no_turbo)
-+		wrmsrl(MSR_IA32_PERF_CTL, BIT(32) | (pstate << 8));
-+	else
-+		wrmsrl(MSR_IA32_PERF_CTL, pstate << 8);
- 
- }
- 
+Although this work depends on the thermal dt parser work [1], I decided
+to share it before hand. It also depends on DRA7 DT base port support,
+which I fetched from Rajendra's tree [2].
+
+This patch series has been runtime tested on DRA7-evm.
+
+All best,
+
+[1] - https://lkml.org/lkml/2013/9/26/787
+[2] - git://github.com/rrnayak/linux.git out-of-tree/dra-integrated-v3
+
+Eduardo Valentin (7):
+  arm: dts: add dra7 DSPEVE thermal data
+  arm: dts: add dra7 IVA thermal data
+  arm: dts: dra7: add bandgap entry
+  arm: dts: add cooling properties on dra7 cpu node
+  arm: dts: dra7: add thermal data
+  arm: dts: add tmp102 i2c sensor node on dra7-evm
+  arm: dts: add thermal zones info on tmp102 for DRA7-EVM
+
+ arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 ++++++++++++++++++++++++++++
+ arch/arm/boot/dts/dra7-evm.dts             | 23 +++++++++++++++++++++++
+ arch/arm/boot/dts/dra7-iva-thermal.dtsi    | 28 ++++++++++++++++++++++++++++
+ arch/arm/boot/dts/dra7.dtsi                | 27 ++++++++++++++++++++++++++-
+ 4 files changed, 105 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
+ create mode 100644 arch/arm/boot/dts/dra7-iva-thermal.dtsi
+
 -- 
-1.7.11.7
+1.8.2.1.342.gfa7285d
 
