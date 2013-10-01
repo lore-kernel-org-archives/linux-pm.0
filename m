@@ -1,47 +1,45 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 2/7] arm: dts: add dra7 IVA thermal data
-Date: Tue, 1 Oct 2013 17:33:37 -0500
-Message-ID: <20131001223337.GA11451@kahuna>
+Subject: Re: [PATCH 1/7] arm: dts: add dra7 DSPEVE thermal data
+Date: Tue, 1 Oct 2013 17:37:03 -0500
+Message-ID: <20131001223703.GB11451@kahuna>
 References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
- <1380652344-18819-3-git-send-email-eduardo.valentin@ti.com>
+ <1380652344-18819-2-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:45231 "EHLO arroyo.ext.ti.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:34893 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752092Ab3JAWeh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Oct 2013 18:34:37 -0400
+	id S1752436Ab3JAWiD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Oct 2013 18:38:03 -0400
 Content-Disposition: inline
-In-Reply-To: <1380652344-18819-3-git-send-email-eduardo.valentin@ti.com>
+In-Reply-To: <1380652344-18819-2-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
 On 14:32-20131001, Eduardo Valentin wrote:
-minor comments follow
 > This patch changes a dtsi file to contain the thermal data
-s/changes/introduces?
-> for IVA domain on DRA7 and later SoCs. This data will
+	     ^^ introduces?
+> for DSPEVE domain on DRA7 and later SoCs. This data will
 > enable a thermal shutdown at 125C.
 > 
 > This thermal data can be reused across TI SoC devices.
-is'nt it just DRA7 that reuses this - based on dtsi name?
 > 
 > Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 > ---
->  arch/arm/boot/dts/dra7-iva-thermal.dtsi | 28 ++++++++++++++++++++++++++++
+>  arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 ++++++++++++++++++++++++++++
 >  1 file changed, 28 insertions(+)
->  create mode 100644 arch/arm/boot/dts/dra7-iva-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
 > 
-> diff --git a/arch/arm/boot/dts/dra7-iva-thermal.dtsi b/arch/arm/boot/dts/dra7-iva-thermal.dtsi
+> diff --git a/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi b/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
 > new file mode 100644
-> index 0000000..fea0cea
+> index 0000000..f8b9051
 > --- /dev/null
-> +++ b/arch/arm/boot/dts/dra7-iva-thermal.dtsi
+> +++ b/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
 > @@ -0,0 +1,28 @@
 > +/*
-> + * Device Tree Source for DRA7 SoC IVA thermal
+> + * Device Tree Source for DRA7 SoC DSPEVE thermal
 > + *
 > + * Copyright (C) 2013 Texas Instruments Incorporated - http://www.ti.com/
 > + * Contact: Eduardo Valentin <eduardo.valentin@ti.com>
@@ -53,17 +51,17 @@ is'nt it just DRA7 that reuses this - based on dtsi name?
 > +
 > +#include <dt-bindings/thermal/thermal.h>
 > +
-> +iva_thermal: iva_thermal {
+> +dspeve_thermal: dspeve_thermal {
 > +	polling-delay-passive = <250>; /* milliseconds */
 > +	polling-delay = <1000>; /* milliseconds */
 > +
 > +		/* sensor       ID */
-^^ double tab here?
-> +	thermal-sensors = <&bandgap     4>;
-space after bandgap is good enough?
+^^
+> +	thermal-sensors = <&bandgap     3>;
+^^ tab control a bit? ;)
 > +
 > +	trips {
-> +		iva_crit: iva_crit {
+> +		dspeve_crit: dspeve_crit {
 > +			temperature = <125000>; /* milliCelsius */
 > +			hysteresis = <2000>; /* milliCelsius */
 > +			type = THERMAL_TRIP_CRITICAL;
