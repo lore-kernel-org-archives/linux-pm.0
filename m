@@ -1,119 +1,119 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
-Date: Tue, 01 Oct 2013 21:36:58 +0530
-Message-ID: <524AF322.8040200@linux.vnet.ibm.com>
-References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org> <793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org> <1791712.tJBFGgQvyI@vostro.rjw.lan>
+From: Ronald <ronald645@gmail.com>
+Subject: Re: Fwd: [v3.12-rc1] [regression] PM / hibernate: Create memory
+ bitmaps after freezing user space
+Date: Tue, 1 Oct 2013 18:38:03 +0200
+Message-ID: <CAF1_xX0veXd4AtPR43r50g8Tu4WeP0kVzqPihgSC-NCpW+nwkQ@mail.gmail.com>
+References: <CAF1_xX2=BYkEn3ycM4smREqk-ioGbvu8Ea4or22U-jBdKmDKGA@mail.gmail.com>
+	<18917329.YEy4ieURCA@vostro.rjw.lan>
+	<CAF1_xX1DO1V-cZyDWsDyrbCfG7uWnPeKP5w0H7Bz=oSpRMXTvQ@mail.gmail.com>
+	<7570724.v5QLmkRO38@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:56635 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751114Ab3JAQLO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Oct 2013 12:11:14 -0400
-Received: from /spool/local
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 2 Oct 2013 02:11:13 +1000
-In-Reply-To: <1791712.tJBFGgQvyI@vostro.rjw.lan>
+Received: from mail-wg0-f46.google.com ([74.125.82.46]:45314 "EHLO
+	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239Ab3JAQiF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Oct 2013 12:38:05 -0400
+In-Reply-To: <7570724.v5QLmkRO38@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, g.liakhovetski@gmx.de, amit.daniel@samsung.com, kgene.kim@samsung.com
+Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 09/26/2013 12:07 AM, Rafael J. Wysocki wrote:
-> On Thursday, September 12, 2013 03:40:46 PM Viresh Kumar wrote:
->> Some part of this patch was pushed in mainline earlier but was then removed due
->> to loopholes in the patch. Those are now fixed and this patch is tested by the
->> people who reported these problems.
->>
->> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
->> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
->> shouldn't be called twice contiguously. Also, calls to cpufreq_driver_target()
->> or cpufreq_driver->target() must also be serialized. Following examples show why
->> this is important:
->>
->> Scenario 1:
->> -----------
->> One thread reading value of cpuinfo_cur_freq, which will call
->> __cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
->>
->> And ondemand governor trying to change freq of cpu at the same time and so
->> sending notification via ->target()..
->>
->> Notifiers are not serialized and suppose this is what happened
->> - PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
->> - PRECHANGE Notification for freq B (from target())
->> - Freq changed by target() to B
->> - POSTCHANGE Notification for freq B
->> - POSTCHANGE Notification for freq A
->>
->> Now the last POSTCHANGE Notification happened for freq A and hardware is
->> currently running at freq B :)
->>
->> Where would we break then?: adjust_jiffies() in cpufreq.c,
->> cpufreq_callback() in arch/arm/kernel/smp.c (which is also adjusting
->> jiffies).. All loops_per_jiffy based stuff is broken..
->>
->> Scenario 2:
->> -----------
->> Governor is changing freq and has called __cpufreq_driver_target(). At the same
->> time we are changing scaling_{min|max}_freq from sysfs, which would eventually
->> end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
->> __cpufreq_driver_target().. And hence concurrent calls to ->target()
->>
->> And Platform have something like this in their ->target()
->> (Like: cpufreq-cpu0, omap, exynos, etc)
->>
->> A. If new freq is more than old: Increase voltage
->> B. Change freq
->> C. If new freq is less than old: decrease voltage
->>
->> Now, two concurrent calls to target are X and Y, where X is trying to increase
->> freq and Y is trying to decrease it..
->>
->> And this is the sequence that followed due to races..
->>
->> X.A: voltage increased for larger freq
->> Y.A: nothing happened here
->> Y.B: freq decreased
->> Y.C: voltage decreased
->> X.B: freq increased
->> X.C: nothing happened..
->>
->> We ended up setting a freq which is not supported by the voltage we have
->> set.. That will probably make clock to CPU unstable and system wouldn't
->> be workable anymore...
->>
->> This patch adds some protection against to make transitions serialized.
->>
->> Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> So the problem is real, but the fix seems to be of a "quick and dirty" kind.
-> 
-> First of all, it looks like we need a clear "begin transition" call that
-> I suppose drivers should execute from their .target() methods once they have
-> decided to do a transition.  That would increment the "ongoing" counter etc.
-> 
-> Second, we need a corresponding "end transition" call that would be executed
-> whenever appropriate from the driver's perspective.
-> 
-> Clearly, these two things should be independent of the notifiers and the
-> notifications should only be done between "begin transition" and "end
-> transition" and only by whoever called the "begin transition" to start with.
-> 
-> Now, question is what should happen if "begin transition" is called when
-> the previous transition hasn't been completed yet, should it block or should
-> it fail?  There seem to be arguments for both, but I suppose blocking would be
-> easier to implement.
+This could be a coincidence, but I had a disk data corruption in /var
+(LVM). Most other partitions are read-only during normal operation. So
+I can safely keep testing this kernel. Just mentioning this, in case
+you see this happening with other ppl testing this patch as well.
+
+2013/9/30 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> On Monday, September 30, 2013 07:45:54 AM Ronald wrote:
+>> Yes, works as well. Just survived twe cycles with s2disk. I'm
+>> surprised someone else did not report this earlier btw... Because it
+>> looks pretty generic (i.e. not specific to a 64bit UP system).
 >
-
-I agree with Rafael. We really need an elegant solution for this problem,
-something whose very semantics makes it easy and almost intuitive to get the
-synchronization right. Otherwise it might become too easy to get things wrong
-in these cases.
-
-Regards,
-Srivatsa S. Bhat
-
+> It is a generic bug, actually.  Well, this means the user space driven
+> hibernation doesn't receive much testing coverage these days ...
+>
+> I'll resend the patch with a proper changelog and then push it for v3.12-rc4.
+>
+> Thanks,
+> Rafael
+>
+>
+>> 2013/9/30 Rafael J. Wysocki <rjw@rjwysocki.net>:
+>> > On Sunday, September 29, 2013 09:22:45 AM Ronald wrote:
+>> >> Attached patch fixes the issue. Both methods function as they did
+>> >> before. Thanks for the superfast fix!
+>> >
+>> > You're welcome, it's not the final one, however.
+>> >
+>> > Can you please test the one below and report back?
+>> >
+>> > Rafael
+>> >
+>> >
+>> > ---
+>> >  kernel/power/snapshot.c |    5 ++++-
+>> >  kernel/power/user.c     |    8 ++++++++
+>> >  2 files changed, 12 insertions(+), 1 deletion(-)
+>> >
+>> > Index: linux-pm/kernel/power/snapshot.c
+>> > ===================================================================
+>> > --- linux-pm.orig/kernel/power/snapshot.c
+>> > +++ linux-pm/kernel/power/snapshot.c
+>> > @@ -743,7 +743,10 @@ int create_basic_memory_bitmaps(void)
+>> >         struct memory_bitmap *bm1, *bm2;
+>> >         int error = 0;
+>> >
+>> > -       BUG_ON(forbidden_pages_map || free_pages_map);
+>> > +       if (forbidden_pages_map && free_pages_map)
+>> > +               return 0;
+>> > +       else
+>> > +               BUG_ON(forbidden_pages_map || free_pages_map);
+>> >
+>> >         bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
+>> >         if (!bm1)
+>> > Index: linux-pm/kernel/power/user.c
+>> > ===================================================================
+>> > --- linux-pm.orig/kernel/power/user.c
+>> > +++ linux-pm/kernel/power/user.c
+>> > @@ -39,6 +39,7 @@ static struct snapshot_data {
+>> >         char frozen;
+>> >         char ready;
+>> >         char platform_support;
+>> > +       bool free_bitmaps;
+>> >  } snapshot_state;
+>> >
+>> >  atomic_t snapshot_device_available = ATOMIC_INIT(1);
+>> > @@ -82,6 +83,10 @@ static int snapshot_open(struct inode *i
+>> >                 data->swap = -1;
+>> >                 data->mode = O_WRONLY;
+>> >                 error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+>> > +               if (!error) {
+>> > +                       error = create_basic_memory_bitmaps();
+>> > +                       data->free_bitmaps = !error;
+>> > +               }
+>> >                 if (error)
+>> >                         pm_notifier_call_chain(PM_POST_RESTORE);
+>> >         }
+>> > @@ -111,6 +116,8 @@ static int snapshot_release(struct inode
+>> >                 pm_restore_gfp_mask();
+>> >                 free_basic_memory_bitmaps();
+>> >                 thaw_processes();
+>> > +       } else if (data->free_bitmaps) {
+>> > +               free_basic_memory_bitmaps();
+>> >         }
+>> >         pm_notifier_call_chain(data->mode == O_RDONLY ?
+>> >                         PM_POST_HIBERNATION : PM_POST_RESTORE);
+>> > @@ -231,6 +238,7 @@ static long snapshot_ioctl(struct file *
+>> >                         break;
+>> >                 pm_restore_gfp_mask();
+>> >                 free_basic_memory_bitmaps();
+>> > +               data->free_bitmaps = false;
+>> >                 thaw_processes();
+>> >                 data->frozen = 0;
+>> >                 break;
+>> >
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
