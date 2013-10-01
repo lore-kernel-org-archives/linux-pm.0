@@ -1,41 +1,63 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH v2 5/5] cpufreq: arm_big_little_dt: return success if OPP list already exists
-Date: Tue,  1 Oct 2013 14:33:02 +0100
-Message-ID: <1380634382-15609-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v2 3/5] PM / OPP: check for existing OPP list when initialising from device tree
+Date: Tue,  1 Oct 2013 14:33:00 +0100
+Message-ID: <1380634382-15609-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 
-of_init_opp_table returns -EEXIST if an OPP list is already associated
-with the device, before attempting to re-initialise it. In such cases,
-dt_init_opp_table must return success as OPP table is initialised.
+CPUs are registered as devices and their OPPs can be initialised from
+the device tree. Whenever CPUs are hotplugged out, the corresponding
+cpu devices are not removed. As a result all their OPPs remain intact
+even when they are offlined.
 
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+But when they are hotplugged back-in, the cpufreq along with other cpu
+related subsystem gets re-initialised. Since its almost same as secondary
+cpu being brought up, no special consideration is taken in the hotplug
+path. This may result in cpufreq trying to initialise the OPPs again though
+the cpu device already contains the OPPs.
+
+This patch checks if there exist an OPP list associated with the device,
+before attempting to initialise it.
+
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 ---
- drivers/cpufreq/arm_big_little_dt.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/base/power/opp.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
-index b03d4fe..cc5d92e 100644
---- a/drivers/cpufreq/arm_big_little_dt.c
-+++ b/drivers/cpufreq/arm_big_little_dt.c
-@@ -56,6 +56,8 @@ static int dt_init_opp_table(struct device *cpu_dev)
- 	}
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index bb6ff64..05b2ebf 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -709,9 +709,15 @@ int of_init_opp_table(struct device *dev)
+ {
+ 	const struct property *prop;
+ 	struct device_node *opp_node;
++	struct device_opp *dev_opp;
+ 	const __be32 *val;
+ 	int nr;
  
- 	ret = of_init_opp_table(cpu_dev);
-+	if (ret == -EEXIST)
-+		ret = 0;
- 	of_node_put(np);
- 
- 	return ret;
++	/* Check for existing list for 'dev' */
++	dev_opp = find_device_opp(dev);
++	if (!IS_ERR(dev_opp))
++		return -EEXIST; /* Device OPP already initialized */
++
+ 	opp_node = of_parse_phandle(dev->of_node,
+ 					"operating-points-phandle", 0);
+ 	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
 -- 
 1.8.1.2
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
