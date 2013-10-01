@@ -1,7 +1,7 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 1/7] arm: dts: add dra7 DSPEVE thermal data
-Date: Tue, 1 Oct 2013 14:32:18 -0400
-Message-ID: <1380652344-18819-2-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 4/7] arm: dts: add cooling properties on dra7 cpu node
+Date: Tue, 1 Oct 2013 14:32:21 -0400
+Message-ID: <1380652344-18819-5-git-send-email-eduardo.valentin@ti.com>
 References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,51 +12,34 @@ To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbel
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch changes a dtsi file to contain the thermal data
-for DSPEVE domain on DRA7 and later SoCs. This data will
-enable a thermal shutdown at 125C.
+DRA7 devices can reach high temperatures and thus
+needs to have cpufreq-cooling on systems running on it.
 
-This thermal data can be reused across TI SoC devices.
+This patch adds the required cooling device properties
+so that cpufreq-cpu0 driver loads the cooling device.
 
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
- create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
+ arch/arm/boot/dts/dra7.dtsi | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi b/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
-new file mode 100644
-index 0000000..f8b9051
---- /dev/null
-+++ b/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
-@@ -0,0 +1,28 @@
-+/*
-+ * Device Tree Source for DRA7 SoC DSPEVE thermal
-+ *
-+ * Copyright (C) 2013 Texas Instruments Incorporated - http://www.ti.com/
-+ * Contact: Eduardo Valentin <eduardo.valentin@ti.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
+diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
+index 4e9b159..1104d8a 100644
+--- a/arch/arm/boot/dts/dra7.dtsi
++++ b/arch/arm/boot/dts/dra7.dtsi
+@@ -25,8 +25,12 @@
+ 	};
+ 
+ 	cpus {
+-		cpu@0 {
++		cpu0: cpu@0 {
+ 			compatible = "arm,cortex-a15";
 +
-+#include <dt-bindings/thermal/thermal.h>
++			/* cooling properties */
++			#cooling-cells = <2>; /* min and max */
 +
-+dspeve_thermal: dspeve_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <1000>; /* milliseconds */
-+
-+		/* sensor       ID */
-+	thermal-sensors = <&bandgap     3>;
-+
-+	trips {
-+		dspeve_crit: dspeve_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = THERMAL_TRIP_CRITICAL;
-+		};
-+	};
-+};
+ 			timer {
+ 				compatible = "arm,armv7-timer";
+ 				/*
 -- 
 1.8.2.1.342.gfa7285d
