@@ -1,74 +1,59 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 1/7] arm: dts: add dra7 DSPEVE thermal data
-Date: Tue, 1 Oct 2013 17:37:03 -0500
-Message-ID: <20131001223703.GB11451@kahuna>
+From: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH 3/7] arm: dts: dra7: add bandgap entry
+Date: Tue, 1 Oct 2013 17:46:47 -0500
+Message-ID: <20131001224645.GC11451@kahuna>
 References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
- <1380652344-18819-2-git-send-email-eduardo.valentin@ti.com>
+ <1380652344-18819-4-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:34893 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752436Ab3JAWiD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Oct 2013 18:38:03 -0400
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1380652344-18819-2-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1380652344-18819-4-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Cc: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
 On 14:32-20131001, Eduardo Valentin wrote:
-> This patch changes a dtsi file to contain the thermal data
-	     ^^ introduces?
-> for DSPEVE domain on DRA7 and later SoCs. This data will
-> enable a thermal shutdown at 125C.
+> This patch adds bandgap IP entry on DRA7 dtsi device tree file.
 > 
-> This thermal data can be reused across TI SoC devices.
-> 
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
 > ---
->  arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 ++++++++++++++++++++++++++++
->  1 file changed, 28 insertions(+)
->  create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
+>  arch/arm/boot/dts/dra7.dtsi | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 > 
-> diff --git a/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi b/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
-> new file mode 100644
-> index 0000000..f8b9051
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
-> @@ -0,0 +1,28 @@
-> +/*
-> + * Device Tree Source for DRA7 SoC DSPEVE thermal
-> + *
-> + * Copyright (C) 2013 Texas Instruments Incorporated - http://www.ti.com/
-> + * Contact: Eduardo Valentin <eduardo.valentin@ti.com>
-> + *
-> + * This file is licensed under the terms of the GNU General Public License
-> + * version 2.  This program is licensed "as is" without any warranty of any
-> + * kind, whether express or implied.
-> + */
-> +
-> +#include <dt-bindings/thermal/thermal.h>
-> +
-> +dspeve_thermal: dspeve_thermal {
-> +	polling-delay-passive = <250>; /* milliseconds */
-> +	polling-delay = <1000>; /* milliseconds */
-> +
-> +		/* sensor       ID */
-^^
-> +	thermal-sensors = <&bandgap     3>;
-^^ tab control a bit? ;)
-> +
-> +	trips {
-> +		dspeve_crit: dspeve_crit {
-> +			temperature = <125000>; /* milliCelsius */
-> +			hysteresis = <2000>; /* milliCelsius */
-> +			type = THERMAL_TRIP_CRITICAL;
-> +		};
-> +	};
-> +};
+> diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
+> index 3a746c2..4e9b159 100644
+> --- a/arch/arm/boot/dts/dra7.dtsi
+> +++ b/arch/arm/boot/dts/dra7.dtsi
+> @@ -53,6 +53,18 @@
+>  		};
+>  	};
+>  
+> +	bandgap: bandgap {
+	would you like to follow bandgap: bandgap@4a0021e0 convention?
+Also, could you move it under ocp?
+I already commented about this previously here: 
+https://lkml.org/lkml/2013/9/27/300
 
+> +		reg = <0x4a0021e0 0xc
+> +			0x4a00232c 0xc
+> +			0x4a002380 0x2c
+> +			0x4a0023C0 0x3c
+> +			0x4a002564 0x8
+> +			0x4a002574 0x50>;
+> +		compatible = "ti,dra752-bandgap";
+> +		interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>;
+> +		#thermal-sensor-cells = <1>;
+> +	};
+> +
+>  	gic: interrupt-controller@48211000 {
+>  		compatible = "arm,cortex-a15-gic";
+>  		interrupt-controller;
 -- 
 Regards,
 Nishanth Menon
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
