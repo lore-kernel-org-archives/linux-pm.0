@@ -1,7 +1,7 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 4/7] arm: dts: add cooling properties on dra7 cpu node
-Date: Tue, 1 Oct 2013 14:32:21 -0400
-Message-ID: <1380652344-18819-5-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 3/7] arm: dts: dra7: add bandgap entry
+Date: Tue, 1 Oct 2013 14:32:20 -0400
+Message-ID: <1380652344-18819-4-git-send-email-eduardo.valentin@ti.com>
 References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,34 +12,35 @@ To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbel
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-DRA7 devices can reach high temperatures and thus
-needs to have cpufreq-cooling on systems running on it.
-
-This patch adds the required cooling device properties
-so that cpufreq-cpu0 driver loads the cooling device.
+This patch adds bandgap IP entry on DRA7 dtsi device tree file.
 
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- arch/arm/boot/dts/dra7.dtsi | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/dra7.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
-index 4e9b159..1104d8a 100644
+index 3a746c2..4e9b159 100644
 --- a/arch/arm/boot/dts/dra7.dtsi
 +++ b/arch/arm/boot/dts/dra7.dtsi
-@@ -25,8 +25,12 @@
+@@ -53,6 +53,18 @@
+ 		};
  	};
  
- 	cpus {
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			compatible = "arm,cortex-a15";
++	bandgap: bandgap {
++		reg = <0x4a0021e0 0xc
++			0x4a00232c 0xc
++			0x4a002380 0x2c
++			0x4a0023C0 0x3c
++			0x4a002564 0x8
++			0x4a002574 0x50>;
++		compatible = "ti,dra752-bandgap";
++		interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>;
++		#thermal-sensor-cells = <1>;
++	};
 +
-+			/* cooling properties */
-+			#cooling-cells = <2>; /* min and max */
-+
- 			timer {
- 				compatible = "arm,armv7-timer";
- 				/*
+ 	gic: interrupt-controller@48211000 {
+ 		compatible = "arm,cortex-a15-gic";
+ 		interrupt-controller;
 -- 
 1.8.2.1.342.gfa7285d
