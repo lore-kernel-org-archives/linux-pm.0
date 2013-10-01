@@ -1,59 +1,213 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH v2 3/5] PM / OPP: check for existing OPP list when initialising from device tree
-Date: Tue,  1 Oct 2013 14:33:00 +0100
-Message-ID: <1380634382-15609-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle of another node for OPP
+Date: Tue,  1 Oct 2013 14:32:58 +0100
+Message-ID: <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 
-CPUs are registered as devices and their OPPs can be initialised from
-the device tree. Whenever CPUs are hotplugged out, the corresponding
-cpu devices are not removed. As a result all their OPPs remain intact
-even when they are offlined.
+If more than one similar devices share the same operating points(OPPs)
+being in the same clock domain, currently we need to replicate the
+OPP entries in all the nodes.
 
-But when they are hotplugged back-in, the cpufreq along with other cpu
-related subsystem gets re-initialised. Since its almost same as secondary
-cpu being brought up, no special consideration is taken in the hotplug
-path. This may result in cpufreq trying to initialise the OPPs again though
-the cpu device already contains the OPPs.
+This patch extends existing binding by adding a new property named
+'operating-points-phandle' to specify the phandle in any device node
+pointing to another node which contains the actual OPP tuples.
+This helps to avoid replication if multiple devices share the OPPs.
 
-This patch checks if there exist an OPP list associated with the device,
-before attempting to initialise it.
-
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
 Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
 ---
- drivers/base/power/opp.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ Documentation/devicetree/bindings/power/opp.txt | 161 ++++++++++++++++++++++--
+ 1 file changed, 149 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index bb6ff64..05b2ebf 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -709,9 +709,15 @@ int of_init_opp_table(struct device *dev)
- {
- 	const struct property *prop;
- 	struct device_node *opp_node;
-+	struct device_opp *dev_opp;
- 	const __be32 *val;
- 	int nr;
+diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+index 74499e5..f59b878 100644
+--- a/Documentation/devicetree/bindings/power/opp.txt
++++ b/Documentation/devicetree/bindings/power/opp.txt
+@@ -4,22 +4,159 @@ SoCs have a standard set of tuples consisting of frequency and
+ voltage pairs that the device will support per voltage domain. These
+ are called Operating Performance Points or OPPs.
  
-+	/* Check for existing list for 'dev' */
-+	dev_opp = find_device_opp(dev);
-+	if (!IS_ERR(dev_opp))
-+		return -EEXIST; /* Device OPP already initialized */
+-Properties:
++Required Properties:
+ - operating-points: An array of 2-tuples items, and each item consists
+   of frequency and voltage like <freq-kHz vol-uV>.
+ 	freq: clock frequency in kHz
+ 	vol: voltage in microvolt
+ 
++- operating-points-phandle: phandle to the device tree node which contains
++	the operating points tuples(recommended to be used if multiple
++	devices are in the same clock domain and hence share OPPs, as it
++	avoids replication of OPPs)
 +
- 	opp_node = of_parse_phandle(dev->of_node,
- 					"operating-points-phandle", 0);
- 	if (!opp_node) /* if no OPP phandle, search for OPPs in current node */
++  operating-points and operating-points-phandle are mutually exclusive, only
++  one of them can be present in any device node.
++
+ Examples:
+ 
+-cpu@0 {
+-	compatible = "arm,cortex-a9";
+-	reg = <0>;
+-	next-level-cache = <&L2>;
+-	operating-points = <
+-		/* kHz    uV */
+-		792000  1100000
+-		396000  950000
+-		198000  850000
+-	>;
+-};
++1. A uniprocessor system (phandle not required)
++
++	cpu0: cpu@0 {
++		compatible = "arm,cortex-a9";
++		reg = <0>;
++		operating-points = <
++			/* kHz    uV */
++			792000  1100000
++			396000  950000
++			198000  850000
++		>;
++	};
++
++2a. Consider a SMP system with 4 CPUs in the same clock domain(no phandle)
++    Some existing DTs describe homogenous SMP systems by only listing the
++    OPPs in the cpu@0 node. For compatiblity with existing DTs, an
++    operating system may handle this case specially.
++
++	cpu0: cpu@0 {
++		compatible = "arm,cortex-a9";
++		reg = <0>;
++		operating-points = <
++			/* kHz    uV */
++			792000  1100000
++			396000  950000
++			198000  850000
++		>;
++	};
++
++	cpu1: cpu@1 {
++		compatible = "arm,cortex-a9";
++		reg = <1>;
++	};
++
++	cpu2: cpu@2 {
++		compatible = "arm,cortex-a9";
++		reg = <2>;
++	};
++
++	cpu3: cpu@3 {
++		compatible = "arm,cortex-a9";
++		reg = <3>;
++	};
++
++2b. Consider a SMP system with 4 CPUs in the same clock domain(with phandle)
++    If more than one device of same type share the same OPPs, for example
++    all the CPUs on a SoC or in a single cluster on a SoC, then we can avoid
++    replicating the OPPs in all the nodes. We can specify the phandle of
++    the node which contains the OPP tuples instead.
++
++	cpu0: cpu@0 {
++		compatible = "arm,cortex-a9";
++		reg = <0>;
++		operating-points-phandle = <&cpu_opp>;
++	};
++
++	cpu1: cpu@1 {
++		compatible = "arm,cortex-a9";
++		reg = <1>;
++		operating-points-phandle = <&cpu_opp>;
++	};
++
++	cpu2: cpu@2 {
++		compatible = "arm,cortex-a9";
++		reg = <2>;
++		operating-points-phandle = <&cpu_opp>;
++	};
++
++	cpu3: cpu@3 {
++		compatible = "arm,cortex-a9";
++		reg = <3>;
++		operating-points-phandle = <&cpu_opp>;
++	};
++
++	opps-table {
++		cpu_opp: cpu_opp {
++			operating-points = <
++				/* kHz    uV */
++				792000  1100000
++				396000  950000
++				198000  850000
++			>;
++		};
++		... /* other device OPP nodes */
++	}
++
++4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
++   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
++   the clock domain.
++
++	cpu0: cpu@0 {
++		compatible = "arm,cortex-a15";
++		reg = <0>;
++		operating-points-phandle = <&cluster0_opp>;
++	};
++
++	cpu1: cpu@1 {
++		compatible = "arm,cortex-a15";
++		reg = <1>;
++		operating-points-phandle = <&cluster0_opp>;
++	};
++
++	cpu2: cpu@100 {
++		compatible = "arm,cortex-a7";
++		reg = <100>;
++		operating-points-phandle = <&cluster1_opp>;
++	};
++
++	cpu3: cpu@101 {
++		compatible = "arm,cortex-a7";
++		reg = <101>;
++		operating-points-phandle = <&cluster1_opp>;
++	};
++
++	opps-table {
++		cluster0_opp: cluster0_opp {
++			operating-points = <
++				/* kHz    uV */
++				792000  1100000
++				396000  950000
++				198000  850000
++			>;
++		};
++		cluster1_opp: cluster1_opp {
++			operating-points = <
++				/* kHz    uV */
++				792000  950000
++				396000  750000
++				198000  450000
++			>;
++		};
++		... /* other device OPP nodes */
++	}
++
++Container Node
++--------------
++	- It's highly recommended to place all the shared OPPs under single
++	  node for consistency and better readability
++	- It's quite similar to clocks or pinmux container nodes
++	- In the above examples, "opps-table" is the container node
 -- 
 1.8.1.2
 
