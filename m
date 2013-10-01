@@ -1,44 +1,106 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH] cpufreq: arm-big-little: use clk_get instead of clk_get_sys
-Date: Tue,  1 Oct 2013 10:30:03 +0100
-Message-ID: <1380619803-2760-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Durgadoss R <durgadoss.r@intel.com>
+Subject: [PATCHv4 0/9] Thermal Framework Enhancements
+Date: Wed,  2 Oct 2013 00:07:59 +0530
+Message-ID: <1380652688-5787-1-git-send-email-durgadoss.r@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:39132 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753281Ab3JANKh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Oct 2013 09:10:37 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hongbo.zhang@freescale.com, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+This patch set is a v4 of the previous versions submitted here:
+[v3]: https://lkml.org/lkml/2013/2/5/228 
+[v2]: http://lwn.net/Articles/531720/
+[v1]: https://lkml.org/lkml/2012/12/18/108 
+[RFC]:https://patchwork.kernel.org/patch/1758921/
 
-Currently clk_get_sys is used with cpu-cluster.<n> as the device id
-which is incorrect. It should be connection/consumer ID instead.
+This patch set is based on Rui's -next tree, on top
+of commit 'f61d5b4d52e077756ce9dbc47ce737da898ad01d'
+This is tested on a Core-i5 and an Atom netbook,
+running ubuntu 12.04.
 
-It is possible to specify input clock in the cpu device node along
-with the optional clock-name. clk_get_sys can't handle that.
+Changes since v3:
+ * Added a patch to conditionally do kfree(cdev) in
+   thermal_release function.
+ * Reworked all sysfs attributes to have one value per file
+   This includes sensor_trip_* and map_weight* attributes.
+ * Added 'lock' variable in thermal_zone structure to
+   protect its members.
+ * Added Documentation to all functions in thermal_core.c
+ * Changes all strcpy() to strlcpy()
+ * Used devm_kzalloc() in places where applicable
+ * Address some buffer overflow conditions and contentions
+   in tz->sensors[] and tz->cdevs[].
+Changes since v2:
+ * Reworked the map sysfs attributes in patch [5/8]
+ * Dropped configuration for maximum sensors and
+   cooling devices, through Kconfig.
+ * Added __remove_trip_attr method
+ * Renamed __clean_map_entry to __remove_map_entry
+   for consistency in naming.
+Changes Since v1:
+ * Removed kobject creation for thermal_trip and thermal_map
+   nodes as per Greg-KH's comments.
+ * Added ABI Documentation under 'testing'.
+ * Modified the GET_INDEX macro to be more linux-like, thanks
+   to Joe Perches.
+ * Added get_[sensor/cdev]_by_name APIs to thermal.h
 
-This patch replaces clk_get_sys with clk_get to extend support for
-clocks specified in the device tree cpu node.
+This series contains 9 patches:
+Patch 1/9: Fixes a kfree issue. This is required so that the new sensor
+	   and zone devices are not freed accidently.
+	   We can do two things here:
+	   1) Conditionally free every device
+	   2) Remove this _release function, and free the memory
+              in corresponding _unregister functions.
+	   I prefer 2) and we can have this as a separate patch
+	   outside this series; but would like to see the opinion
+	   of maintainers'.
+Patch 2/9: Creates new sensor level APIs
+Patch 3/9: Creates new zone level APIs. The existing tzd structure is
+           kept as such for clarity and compatibility purposes.
+Patch 4/9: Creates functions to add/remove a cdev to/from a zone. The
+           existing tcd structure need not be modified.
+Patch 5/9: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
+	   under /sys/class/thermal/zoneY/. This exposes various trip
+           points for sensorX present in zoneY.
+Patch 6/9: Adds mapY_* sysfs node. These attributes represent
+Patch 7/9: Creates Documentation for the new APIs. A new file is
+           created for clarity. Final goal is to merge with the existing
+           file or refactor the files, as whatever seems appropriate.
+Patch 8/9: Add ABI documentation for sysfs interfaces introduced in this patch.
+Patch 9/9: A dummy driver that can be used for testing. This is not for merge.
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
----
- drivers/cpufreq/arm_big_little.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Sorry for the long delay in resubmitting this patch set.
+Thanks to Eduardo, Wei Ni, for their comments on v3.
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 3549f07..501a091 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -127,7 +127,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 	}
- 
- 	name[12] = cluster + '0';
--	clk[cluster] = clk_get_sys(name, NULL);
-+	clk[cluster] = clk_get(cpu_dev, name);
- 	if (!IS_ERR(clk[cluster])) {
- 		dev_dbg(cpu_dev, "%s: clk: %p & freq table: %p, cluster: %d\n",
- 				__func__, clk[cluster], freq_table[cluster],
+Durgadoss R (9):
+  Thermal: Check for validity before doing kfree
+  Thermal: Create sensor level APIs
+  Thermal: Create zone level APIs
+  Thermal: Add APIs to bind cdev to new zone structure
+  Thermal: Add trip point sysfs nodes for sensor
+  Thermal: Create Thermal map sysfs attributes for a zone
+  Thermal: Add Documentation to new APIs
+  Thermal: Add ABI Documentation for sysfs interfaces
+  Thermal: Dummy driver used for testing
+
+ Documentation/ABI/testing/sysfs-class-thermal |  137 +++
+ Documentation/thermal/sysfs-api2.txt          |  248 +++++
+ drivers/thermal/Kconfig                       |    5 +
+ drivers/thermal/Makefile                      |    3 +
+ drivers/thermal/thermal_core.c                | 1406 +++++++++++++++++++++++--
+ drivers/thermal/thermal_test.c                |  322 ++++++
+ include/linux/thermal.h                       |  127 ++-
+ 7 files changed, 2180 insertions(+), 68 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
+ create mode 100644 Documentation/thermal/sysfs-api2.txt
+ create mode 100644 drivers/thermal/thermal_test.c
+
 -- 
-1.8.1.2
+1.7.9.5
 
