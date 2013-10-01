@@ -1,51 +1,67 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 0/7] DRA7: DT thermal support
-Date: Tue, 1 Oct 2013 14:32:17 -0400
-Message-ID: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Subject: [PATCH 2/7] arm: dts: add dra7 IVA thermal data
+Date: Tue, 1 Oct 2013 14:32:19 -0400
+Message-ID: <1380652344-18819-3-git-send-email-eduardo.valentin@ti.com>
+References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:51661 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751790Ab3JASdr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Oct 2013 14:33:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1380652344-18819-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-Hello all,
+This patch changes a dtsi file to contain the thermal data
+for IVA domain on DRA7 and later SoCs. This data will
+enable a thermal shutdown at 125C.
 
-This is a complementary patch series with themal DT support for DRA7.
+This thermal data can be reused across TI SoC devices.
 
-Although this work depends on the thermal dt parser work [1], I decided
-to share it before hand. It also depends on DRA7 DT base port support,
-which I fetched from Rajendra's tree [2].
-
-This patch series has been runtime tested on DRA7-evm.
-
-All best,
-
-[1] - https://lkml.org/lkml/2013/9/26/787
-[2] - git://github.com/rrnayak/linux.git out-of-tree/dra-integrated-v3
-
-Eduardo Valentin (7):
-  arm: dts: add dra7 DSPEVE thermal data
-  arm: dts: add dra7 IVA thermal data
-  arm: dts: dra7: add bandgap entry
-  arm: dts: add cooling properties on dra7 cpu node
-  arm: dts: dra7: add thermal data
-  arm: dts: add tmp102 i2c sensor node on dra7-evm
-  arm: dts: add thermal zones info on tmp102 for DRA7-EVM
-
- arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 ++++++++++++++++++++++++++++
- arch/arm/boot/dts/dra7-evm.dts             | 23 +++++++++++++++++++++++
- arch/arm/boot/dts/dra7-iva-thermal.dtsi    | 28 ++++++++++++++++++++++++++++
- arch/arm/boot/dts/dra7.dtsi                | 27 ++++++++++++++++++++++++++-
- 4 files changed, 105 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
+Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+---
+ arch/arm/boot/dts/dra7-iva-thermal.dtsi | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
  create mode 100644 arch/arm/boot/dts/dra7-iva-thermal.dtsi
 
+diff --git a/arch/arm/boot/dts/dra7-iva-thermal.dtsi b/arch/arm/boot/dts/dra7-iva-thermal.dtsi
+new file mode 100644
+index 0000000..fea0cea
+--- /dev/null
++++ b/arch/arm/boot/dts/dra7-iva-thermal.dtsi
+@@ -0,0 +1,28 @@
++/*
++ * Device Tree Source for DRA7 SoC IVA thermal
++ *
++ * Copyright (C) 2013 Texas Instruments Incorporated - http://www.ti.com/
++ * Contact: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <dt-bindings/thermal/thermal.h>
++
++iva_thermal: iva_thermal {
++	polling-delay-passive = <250>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
++
++		/* sensor       ID */
++	thermal-sensors = <&bandgap     4>;
++
++	trips {
++		iva_crit: iva_crit {
++			temperature = <125000>; /* milliCelsius */
++			hysteresis = <2000>; /* milliCelsius */
++			type = THERMAL_TRIP_CRITICAL;
++		};
++	};
++};
 -- 
 1.8.2.1.342.gfa7285d
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
