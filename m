@@ -1,46 +1,54 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 5/7] arm: dts: dra7: add thermal data
-Date: Tue, 1 Oct 2013 14:32:22 -0400
-Message-ID: <1380652344-18819-6-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 7/7] arm: dts: add thermal zones info on tmp102 for DRA7-EVM
+Date: Tue, 1 Oct 2013 14:32:24 -0400
+Message-ID: <1380652344-18819-8-git-send-email-eduardo.valentin@ti.com>
 References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:36354 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600Ab3JASe5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Oct 2013 14:34:57 -0400
 In-Reply-To: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch adds thermal data for DRA7 SoCs. Cpufreq cooling
-will be enabled for MPU domain whenever it crosses 100C.
-GPU, CORE, DSPEVE, IVA will be exposed and system shall
-shutdown when they cross 125C.
+Add simple thermal zone on tmp102.
 
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- arch/arm/boot/dts/dra7.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm/boot/dts/dra7-evm.dts | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
-index 1104d8a..8ba5e1c 100644
---- a/arch/arm/boot/dts/dra7.dtsi
-+++ b/arch/arm/boot/dts/dra7.dtsi
-@@ -57,6 +57,15 @@
- 		};
+diff --git a/arch/arm/boot/dts/dra7-evm.dts b/arch/arm/boot/dts/dra7-evm.dts
+index 3b6c16a..70e1a12 100644
+--- a/arch/arm/boot/dts/dra7-evm.dts
++++ b/arch/arm/boot/dts/dra7-evm.dts
+@@ -90,6 +90,21 @@
  	};
+ };
  
-+	thermal_zones: thermal-zones {
-+		/* SoC thermal zones */
-+		#include "omap4-cpu-thermal.dtsi"
-+		#include "omap5-gpu-thermal.dtsi"
-+		#include "omap5-core-thermal.dtsi"
-+		#include "dra7-dspeve-thermal.dtsi"
-+		#include "dra7-iva-thermal.dtsi"
++&thermal_zones {
++	pcb_thermal: pcb_thermal {
++		polling-delay-passive = <250>; /* milliseconds */
++		polling-delay = <1000>; /* milliseconds */
++		thermal-sensors = <&tmp102>;
++		trips {
++			crit@80000 {
++			temperature = <80000>;
++				hysteresis = <1000>;
++				type = "critical";
++			};
++		};
 +	};
++};
 +
- 	bandgap: bandgap {
- 		reg = <0x4a0021e0 0xc
- 			0x4a00232c 0xc
+ &i2c1 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
 -- 
 1.8.2.1.342.gfa7285d
+
