@@ -1,87 +1,68 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 1/7] arm: dts: add dra7 DSPEVE thermal data
-Date: Tue, 1 Oct 2013 21:27:26 -0400
-Message-ID: <524B767E.9070906@ti.com>
-References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com> <1380652344-18819-2-git-send-email-eduardo.valentin@ti.com> <20131001223703.GB11451@kahuna>
+Subject: Re: [PATCH 3/7] arm: dts: dra7: add bandgap entry
+Date: Tue, 1 Oct 2013 21:28:07 -0400
+Message-ID: <524B76A7.101@ti.com>
+References: <1380652344-18819-1-git-send-email-eduardo.valentin@ti.com> <1380652344-18819-4-git-send-email-eduardo.valentin@ti.com> <20131001224645.GC11451@kahuna>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="A8Lpu5T6CM67kuBfFlIjXgkUEfsITOtUA"
+	boundary="Vo1ERtetX9QxKm2uHovL9jc0UFaGJSDol"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:35239 "EHLO bear.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:35266 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180Ab3JBB2i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Oct 2013 21:28:38 -0400
-In-Reply-To: <20131001223703.GB11451@kahuna>
+	id S1751786Ab3JBB3M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Oct 2013 21:29:12 -0400
+In-Reply-To: <20131001224645.GC11451@kahuna>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Nishanth Menon <nm@ti.com>
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
---A8Lpu5T6CM67kuBfFlIjXgkUEfsITOtUA
+--Vo1ERtetX9QxKm2uHovL9jc0UFaGJSDol
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 01-10-2013 18:37, Nishanth Menon wrote:
+On 01-10-2013 18:46, Nishanth Menon wrote:
 > On 14:32-20131001, Eduardo Valentin wrote:
->> This patch changes a dtsi file to contain the thermal data
-> 	     ^^ introduces?
->> for DSPEVE domain on DRA7 and later SoCs. This data will
->> enable a thermal shutdown at 125C.
->>
->> This thermal data can be reused across TI SoC devices.
+>> This patch adds bandgap IP entry on DRA7 dtsi device tree file.
 >>
 >> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 >> ---
->>  arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 +++++++++++++++++++++=
-+++++++
->>  1 file changed, 28 insertions(+)
->>  create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
+>>  arch/arm/boot/dts/dra7.dtsi | 12 ++++++++++++
+>>  1 file changed, 12 insertions(+)
 >>
->> diff --git a/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi b/arch/arm/boo=
-t/dts/dra7-dspeve-thermal.dtsi
->> new file mode 100644
->> index 0000000..f8b9051
->> --- /dev/null
->> +++ b/arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
->> @@ -0,0 +1,28 @@
->> +/*
->> + * Device Tree Source for DRA7 SoC DSPEVE thermal
->> + *
->> + * Copyright (C) 2013 Texas Instruments Incorporated - http://www.ti.=
-com/
->> + * Contact: Eduardo Valentin <eduardo.valentin@ti.com>
->> + *
->> + * This file is licensed under the terms of the GNU General Public Li=
-cense
->> + * version 2.  This program is licensed "as is" without any warranty =
-of any
->> + * kind, whether express or implied.
->> + */
->> +
->> +#include <dt-bindings/thermal/thermal.h>
->> +
->> +dspeve_thermal: dspeve_thermal {
->> +	polling-delay-passive =3D <250>; /* milliseconds */
->> +	polling-delay =3D <1000>; /* milliseconds */
->> +
->> +		/* sensor       ID */
-> ^^
->> +	thermal-sensors =3D <&bandgap     3>;
-> ^^ tab control a bit? ;)
+>> diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi=
 
-check answer on IVA patch.
+>> index 3a746c2..4e9b159 100644
+>> --- a/arch/arm/boot/dts/dra7.dtsi
+>> +++ b/arch/arm/boot/dts/dra7.dtsi
+>> @@ -53,6 +53,18 @@
+>>  		};
+>>  	};
+>> =20
+>> +	bandgap: bandgap {
+> 	would you like to follow bandgap: bandgap@4a0021e0 convention?
+> Also, could you move it under ocp?
+> I already commented about this previously here:=20
+> https://lkml.org/lkml/2013/9/27/300
 
->> +
->> +	trips {
->> +		dspeve_crit: dspeve_crit {
->> +			temperature =3D <125000>; /* milliCelsius */
->> +			hysteresis =3D <2000>; /* milliCelsius */
->> +			type =3D THERMAL_TRIP_CRITICAL;
->> +		};
->> +	};
->> +};
+yes, this can be done.
+
 >=20
+>> +		reg =3D <0x4a0021e0 0xc
+>> +			0x4a00232c 0xc
+>> +			0x4a002380 0x2c
+>> +			0x4a0023C0 0x3c
+>> +			0x4a002564 0x8
+>> +			0x4a002574 0x50>;
+>> +		compatible =3D "ti,dra752-bandgap";
+>> +		interrupts =3D <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>;
+>> +		#thermal-sensor-cells =3D <1>;
+>> +	};
+>> +
+>>  	gic: interrupt-controller@48211000 {
+>>  		compatible =3D "arm,cortex-a15-gic";
+>>  		interrupt-controller;
 
 
 --=20
@@ -90,7 +71,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---A8Lpu5T6CM67kuBfFlIjXgkUEfsITOtUA
+--Vo1ERtetX9QxKm2uHovL9jc0UFaGJSDol
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -99,9 +80,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlJLdn4ACgkQCXcVR3XQvP1fVwEA4a4KFN2g8PAaYI4xxj00GGRB
-hvDHowoMAIcNU+xRz3UBANgsua4vWnWCCFvjpZD1/HEjA7rKXSctoHF7ZJzK5OTx
-=Bk8h
+iF4EAREIAAYFAlJLdqcACgkQCXcVR3XQvP3eSAEAnybI5nl+eEfPcvdDtXgBxaiC
+19sq+S1czdf5bTxo0bABAP3Jl/r8PdsojZbCUyDyxP5kjqdHNmWlTnmj1BxkADJ/
+=jDIx
 -----END PGP SIGNATURE-----
 
---A8Lpu5T6CM67kuBfFlIjXgkUEfsITOtUA--
+--Vo1ERtetX9QxKm2uHovL9jc0UFaGJSDol--
