@@ -1,105 +1,109 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH RESEND 08/11] cpufreq: rename __cpufreq_set_policy() as cpufreq_set_policy()
-Date: Wed,  2 Oct 2013 14:13:16 +0530
-Message-ID: <e76f74ec04b6487442ae1d7f8b0004f00ad97290.1380703248.git.viresh.kumar@linaro.org>
+Subject: [PATCH RESEND 10/11] cpufreq: use cpufreq_driver->flags to mark CPUFREQ_HAVE_GOVERNOR_PER_POLICY
+Date: Wed,  2 Oct 2013 14:13:18 +0530
+Message-ID: <4c9af8dda1c4f968e08815632cea3987d0426127.1380703248.git.viresh.kumar@linaro.org>
 References: <cover.1380703248.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f43.google.com ([209.85.160.43]:64839 "EHLO
-	mail-pb0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041Ab3JBIod (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2013 04:44:33 -0400
-Received: by mail-pb0-f43.google.com with SMTP id md4so584973pbc.16
-        for <linux-pm@vger.kernel.org>; Wed, 02 Oct 2013 01:44:33 -0700 (PDT)
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1380703248.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380703248.git.viresh.kumar@linaro.org>
 References: <cover.1380703248.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Earlier there used to be two functions named __cpufreq_set_policy() and
-cpufreq_set_policy(), but now we only have a single routine lets name it
-cpufreq_set_policy() instead of __cpufreq_set_policy().
-
-This also removes some invalid comments or fixes some incorrect comments.
+Lets use cpufreq_driver->flags to mark CPUFREQ_HAVE_GOVERNOR_PER_POLICY instead
+of a separate field within cpufreq_driver. This will save some bytes for us.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
+ drivers/cpufreq/arm_big_little.c   |  4 ++--
+ drivers/cpufreq/cpufreq.c          |  2 +-
+ drivers/cpufreq/cpufreq_governor.h |  5 ++++-
+ include/linux/cpufreq.h            | 15 ++++++++-------
+ 4 files changed, 15 insertions(+), 11 deletions(-)
 
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 9acfb82..2c7c134 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -213,13 +213,13 @@ static struct freq_attr *bL_cpufreq_attr[] = {
+ 
+ static struct cpufreq_driver bL_cpufreq_driver = {
+ 	.name			= "arm-big-little",
+-	.flags			= CPUFREQ_STICKY,
++	.flags			= CPUFREQ_STICKY |
++					CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+ 	.verify			= bL_cpufreq_verify_policy,
+ 	.target			= bL_cpufreq_set_target,
+ 	.get			= bL_cpufreq_get,
+ 	.init			= bL_cpufreq_init,
+ 	.exit			= bL_cpufreq_exit,
+-	.have_governor_per_policy = true,
+ 	.attr			= bL_cpufreq_attr,
+ };
+ 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1394dac..267ae99 100644
+index 267ae99..23e0a40 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -371,7 +371,7 @@ show_one(scaling_min_freq, min);
- show_one(scaling_max_freq, max);
- show_one(scaling_cur_freq, cur);
+@@ -92,7 +92,7 @@ static DEFINE_MUTEX(cpufreq_governor_mutex);
  
--static int __cpufreq_set_policy(struct cpufreq_policy *policy,
-+static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 				struct cpufreq_policy *new_policy);
- 
- /**
-@@ -392,7 +392,7 @@ static ssize_t store_##file_name					\
- 	if (ret != 1)							\
- 		return -EINVAL;						\
- 									\
--	ret = __cpufreq_set_policy(policy, &new_policy);		\
-+	ret = cpufreq_set_policy(policy, &new_policy);		\
- 	policy->user_policy.object = policy->object;			\
- 									\
- 	return ret ? ret : count;					\
-@@ -450,11 +450,7 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
- 						&new_policy.governor))
- 		return -EINVAL;
- 
--	/*
--	 * Do not use cpufreq_set_policy here or the user_policy.max
--	 * will be wrongly overridden
--	 */
--	ret = __cpufreq_set_policy(policy, &new_policy);
-+	ret = cpufreq_set_policy(policy, &new_policy);
- 
- 	policy->user_policy.policy = policy->policy;
- 	policy->user_policy.governor = policy->governor;
-@@ -796,11 +792,11 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
- 	int ret = 0;
- 
- 	memcpy(&new_policy, policy, sizeof(*policy));
--	/* assure that the starting sequence is run in __cpufreq_set_policy */
-+	/* assure that the starting sequence is run in cpufreq_set_policy */
- 	policy->governor = NULL;
- 
- 	/* set default policy */
--	ret = __cpufreq_set_policy(policy, &new_policy);
-+	ret = cpufreq_set_policy(policy, &new_policy);
- 	policy->user_policy.policy = policy->policy;
- 	policy->user_policy.governor = policy->governor;
- 
-@@ -1803,10 +1799,10 @@ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
- EXPORT_SYMBOL(cpufreq_get_policy);
- 
- /*
-- * data   : current policy.
-- * policy : policy to be set.
-+ * policy : current policy.
-+ * new_policy: policy to be set.
-  */
--static int __cpufreq_set_policy(struct cpufreq_policy *policy,
-+static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 				struct cpufreq_policy *new_policy)
+ bool have_governor_per_policy(void)
  {
- 	int ret = 0, failed = 1;
-@@ -1952,7 +1948,7 @@ int cpufreq_update_policy(unsigned int cpu)
- 		}
- 	}
+-	return cpufreq_driver->have_governor_per_policy;
++	return !!(cpufreq_driver->flags & CPUFREQ_HAVE_GOVERNOR_PER_POLICY);
+ }
+ EXPORT_SYMBOL_GPL(have_governor_per_policy);
  
--	ret = __cpufreq_set_policy(policy, &new_policy);
-+	ret = cpufreq_set_policy(policy, &new_policy);
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 88cd39f..b5f2b86 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -191,7 +191,10 @@ struct common_dbs_data {
+ 	struct attribute_group *attr_group_gov_sys; /* one governor - system */
+ 	struct attribute_group *attr_group_gov_pol; /* one governor - policy */
  
- 	up_write(&policy->rwsem);
+-	/* Common data for platforms that don't set have_governor_per_policy */
++	/*
++	 * Common data for platforms that don't set
++	 * CPUFREQ_HAVE_GOVERNOR_PER_POLICY
++	 */
+ 	struct dbs_data *gdbs_data;
+ 
+ 	struct cpu_dbs_common_info *(*get_cpu_cdbs)(int cpu);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 9321059..6c9c365 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -194,13 +194,6 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
+ struct cpufreq_driver {
+ 	char			name[CPUFREQ_NAME_LEN];
+ 	u8			flags;
+-	/*
+-	 * This should be set by platforms having multiple clock-domains, i.e.
+-	 * supporting multiple policies. With this sysfs directories of governor
+-	 * would be created in cpu/cpu<num>/cpufreq/ directory and so they can
+-	 * use the same governor with different tunables for different clusters.
+-	 */
+-	bool			have_governor_per_policy;
+ 
+ 	/* needed by all drivers */
+ 	int	(*init)		(struct cpufreq_policy *policy);
+@@ -234,6 +227,14 @@ struct cpufreq_driver {
+ #define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
+ 						   speed mismatches */
+ 
++/*
++ * This should be set by platforms having multiple clock-domains, i.e.
++ * supporting multiple policies. With this sysfs directories of governor would
++ * be created in cpu/cpu<num>/cpufreq/ directory and so they can use the same
++ * governor with different tunables for different clusters.
++ */
++#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY (1 << 3)
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
  
 -- 
 1.7.12.rc2.18.g61b472e
