@@ -1,110 +1,60 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH RESEND 10/11] cpufreq: use cpufreq_driver->flags to mark CPUFREQ_HAVE_GOVERNOR_PER_POLICY
-Date: Wed,  2 Oct 2013 14:13:18 +0530
-Message-ID: <4c9af8dda1c4f968e08815632cea3987d0426127.1380703248.git.viresh.kumar@linaro.org>
+Subject: [PATCH RESEND 09/11] cpufreq: rewrite cpufreq_driver->flags using shift operator
+Date: Wed,  2 Oct 2013 14:13:17 +0530
+Message-ID: <7b34bf61846bed19e4a7e8ee18a55e717c570fef.1380703248.git.viresh.kumar@linaro.org>
 References: <cover.1380703248.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:64503 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753326Ab3JBIoj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2013 04:44:39 -0400
+Received: by mail-pd0-f177.google.com with SMTP id y10so583686pdj.36
+        for <linux-pm@vger.kernel.org>; Wed, 02 Oct 2013 01:44:38 -0700 (PDT)
 In-Reply-To: <cover.1380703248.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380703248.git.viresh.kumar@linaro.org>
 References: <cover.1380703248.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Lets use cpufreq_driver->flags to mark CPUFREQ_HAVE_GOVERNOR_PER_POLICY instead
-of a separate field within cpufreq_driver. This will save some bytes for us.
+Currently cpufreq_driver's flags are defined directly using 0x1, 0x2, 0x4, 0x8,
+etc.. As the list grows it doesn't stays much readable..
+
+Lets use bitwise shift operator << to generate these numbers for respective
+positions.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/arm_big_little.c   |  4 ++--
- drivers/cpufreq/cpufreq.c          |  2 +-
- drivers/cpufreq/cpufreq_governor.h |  5 ++++-
- include/linux/cpufreq.h            | 15 ++++++++-------
- 4 files changed, 15 insertions(+), 11 deletions(-)
+ include/linux/cpufreq.h | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 9acfb82..2c7c134 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -213,13 +213,13 @@ static struct freq_attr *bL_cpufreq_attr[] = {
- 
- static struct cpufreq_driver bL_cpufreq_driver = {
- 	.name			= "arm-big-little",
--	.flags			= CPUFREQ_STICKY,
-+	.flags			= CPUFREQ_STICKY |
-+					CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
- 	.verify			= bL_cpufreq_verify_policy,
- 	.target			= bL_cpufreq_set_target,
- 	.get			= bL_cpufreq_get,
- 	.init			= bL_cpufreq_init,
- 	.exit			= bL_cpufreq_exit,
--	.have_governor_per_policy = true,
- 	.attr			= bL_cpufreq_attr,
- };
- 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 267ae99..23e0a40 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -92,7 +92,7 @@ static DEFINE_MUTEX(cpufreq_governor_mutex);
- 
- bool have_governor_per_policy(void)
- {
--	return cpufreq_driver->have_governor_per_policy;
-+	return !!(cpufreq_driver->flags & CPUFREQ_HAVE_GOVERNOR_PER_POLICY);
- }
- EXPORT_SYMBOL_GPL(have_governor_per_policy);
- 
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 88cd39f..b5f2b86 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -191,7 +191,10 @@ struct common_dbs_data {
- 	struct attribute_group *attr_group_gov_sys; /* one governor - system */
- 	struct attribute_group *attr_group_gov_pol; /* one governor - policy */
- 
--	/* Common data for platforms that don't set have_governor_per_policy */
-+	/*
-+	 * Common data for platforms that don't set
-+	 * CPUFREQ_HAVE_GOVERNOR_PER_POLICY
-+	 */
- 	struct dbs_data *gdbs_data;
- 
- 	struct cpu_dbs_common_info *(*get_cpu_cdbs)(int cpu);
 diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 9321059..6c9c365 100644
+index a72bac2..9321059 100644
 --- a/include/linux/cpufreq.h
 +++ b/include/linux/cpufreq.h
-@@ -194,13 +194,6 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
- struct cpufreq_driver {
- 	char			name[CPUFREQ_NAME_LEN];
- 	u8			flags;
--	/*
--	 * This should be set by platforms having multiple clock-domains, i.e.
--	 * supporting multiple policies. With this sysfs directories of governor
--	 * would be created in cpu/cpu<num>/cpufreq/ directory and so they can
--	 * use the same governor with different tunables for different clusters.
--	 */
--	bool			have_governor_per_policy;
+@@ -225,13 +225,14 @@ struct cpufreq_driver {
+ };
  
- 	/* needed by all drivers */
- 	int	(*init)		(struct cpufreq_policy *policy);
-@@ -234,6 +227,14 @@ struct cpufreq_driver {
- #define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
- 						   speed mismatches */
+ /* flags */
+-#define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if
+-					 * all ->init() calls failed */
+-#define CPUFREQ_CONST_LOOPS	0x02	/* loops_per_jiffy or other kernel
+-					 * "constants" aren't affected by
+-					 * frequency transitions */
+-#define CPUFREQ_PM_NO_WARN	0x04	/* don't warn on suspend/resume speed
+-					 * mismatches */
++#define CPUFREQ_STICKY		(1 << 0)	/* driver isn't removed even if
++						   all ->init() calls failed */
++#define CPUFREQ_CONST_LOOPS	(1 << 1)	/* loops_per_jiffy or other
++						   kernel "constants" aren't
++						   affected by frequency
++						   transitions */
++#define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
++						   speed mismatches */
  
-+/*
-+ * This should be set by platforms having multiple clock-domains, i.e.
-+ * supporting multiple policies. With this sysfs directories of governor would
-+ * be created in cpu/cpu<num>/cpufreq/ directory and so they can use the same
-+ * governor with different tunables for different clusters.
-+ */
-+#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY (1 << 3)
-+
  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
- 
 -- 
 1.7.12.rc2.18.g61b472e
 
