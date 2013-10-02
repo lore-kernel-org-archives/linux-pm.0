@@ -1,39 +1,94 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: make return type of lock_policy_rwsem_{read|write}()
- as void
-Date: Wed, 2 Oct 2013 22:19:18 +0530
-Message-ID: <CAKohpok2iwwhZbAZuawW-Ow4ofbGZpUj6Jn7A-F8C42yQ=rA7Q@mail.gmail.com>
-References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
-	<2382588.IckWbq3JRN@vostro.rjw.lan>
-	<CAKohpomoqp0dtS+TG-Johsh=o6VefeqByD0bM_DLXg+qYhQ5+g@mail.gmail.com>
-	<1472934.KdmdpVCX1h@vostro.rjw.lan>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH v2 00/12] CPU idle for Armada XP
+Date: Wed, 2 Oct 2013 13:39:11 -0400
+Message-ID: <20131002173911.GP31178@titan.lakedaemon.net>
+References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1472934.KdmdpVCX1h@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jon Medhurst <tixy@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Chris
 List-Id: linux-pm@vger.kernel.org
 
-On 2 October 2013 22:08, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, October 02, 2013 02:13:36 PM Viresh Kumar wrote:
->> On 30 September 2013 23:58, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Monday, September 16, 2013 08:40:17 PM Viresh Kumar wrote:
->> >> lock_policy_rwsem_{read|write}() currently has return type of int but it always
->> >> return zero and hence its return type must be void instead. This patch makes its
->> >> return type void and fixes all users of it as well.
->> >>
->> >> Reported-by: Jon Medhurst<tixy@linaro.org>
->> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> >
->> > This doesn't apply to bleeding-edge for me any more after I have applied your
->> > series of 44 patches to it.  Care to resend?
->>
->> Done..
->
-> Which one is it?
->
+Gregory,
 
- [PATCH RESEND 01/11] cpufreq: make return type of
-lock_policy_rwsem_{read|write}() as void
+On Fri, Sep 13, 2013 at 12:06:29PM +0200, Gregory CLEMENT wrote:
+> Hello,
+> 
+> This patch set adds the CPU idle support for Armada XP and prepares
+> the support for Armada 370. This was based on the work of Nadav
+> Haklai.
+> 
+> Most of the patches modify the mvebu code in order to prepare the
+> support for CPU idle, hence the patches 2 to 10 should go to mvebu
+> subsystem (and then arm-soc).
+> 
+> The first patch should go through ARM subsystem and should be taken
+> by Russell King.
+> 
+> The 11th patch 'cpuidle: mvebu: Add initial cpu idle support for
+> Armada 370/XP SoC' is the only one who should go to the cpuidle
+> subsystem. But of course I would like that Daniel Lezcano or Rafael
+> J. Wysocki have a look on the whole series.
+> 
+> The last patch should also go to mvebu subsystem (and then arm-soc)
+> but with an Acked-by from on of the device tree maintainer.
+> 
+> The whole series is also available in the branch CPU-idle-ArmadaXP-v2
+> at https://github.com/MISL-EBU-System-SW/mainline-public.git
+> 
+> Thanks,
+> 
+> Changelog:
+> 
+> v1 -> v2:
+> 
+> * Removed the pm_level kernel parameter. As Kevin Hilman pointed, its
+>   usage can be replaced by using
+>   /sys/devices/system/cpu/cpu*/cpuidle/state*/disable or the kernel
+>   parameter cpuidle.off.
+> 
+> * Used BIT() macro (reported by Ezequiel)
+> 
+> * Made the function more readable the
+>   armada_370_xp_pmsu_idle_prepare() function (reported by Thomas)
+> 
+> * Moved the config entry in Kconfig.arm, and rename the config symbol
+>   according the pattern used by other arm cpu: ARM_"soc name"_CPUIDLE
+> 
+> * Moved the build rule under the new ARM SoC section in the Makefile
+> 
+> * Rebased on Linus Torvalds master branch of Thursday September 12
+> 
+> Gregory CLEMENT (12):
+>   ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
+>   ARM: mvebu: ll_set_cpu_coherent no more uses the coherency address as
+>     parameter
+>   ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
+>   ARM: mvebu: Remove the unused argument of set_cpu_coherent()
+>   ARM: mvebu: Make ll_set_cpu_coherent() more configurable
+>   ARM: mvebu: Low level functions to disable cache snooping
+>   ARM: mvebu: Add a new set of registers for pmsu
+>   ARM: mvebu: Allow to power down L2 cache controller in idle mode
+>   ARM: mvebu: Add the PMSU related part of the cpu idle functions
+>   ARM: mvebu: Set the start address of a CPU in a separate function
+>   cpuidle: mvebu: Add initial CPU idle support for Armada 370/XP SoC
+>   ARM: dts: mvebu: Add a new set of registers to the PMSU node
+
+Is a v3 of this series on it's way?
+
+thx,
+
+Jason.
