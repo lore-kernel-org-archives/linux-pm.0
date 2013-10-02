@@ -1,48 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH RESEND 00/11] CPUFreq: Cleanups/fixes for v3.13
-Date: Wed,  2 Oct 2013 14:13:08 +0530
-Message-ID: <cover.1380703248.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: make return type of lock_policy_rwsem_{read|write}()
+ as void
+Date: Wed, 2 Oct 2013 14:13:36 +0530
+Message-ID: <CAKohpomoqp0dtS+TG-Johsh=o6VefeqByD0bM_DLXg+qYhQ5+g@mail.gmail.com>
+References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+	<a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
+	<2382588.IckWbq3JRN@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:46784 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753185Ab3JBInh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2013 04:43:37 -0400
+Received: by mail-qa0-f50.google.com with SMTP id j7so401616qaq.9
+        for <linux-pm@vger.kernel.org>; Wed, 02 Oct 2013 01:43:36 -0700 (PDT)
+In-Reply-To: <2382588.IckWbq3JRN@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jon Medhurst <tixy@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-Hi Rafael,
+On 30 September 2013 23:58, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday, September 16, 2013 08:40:17 PM Viresh Kumar wrote:
+>> lock_policy_rwsem_{read|write}() currently has return type of int but it always
+>> return zero and hence its return type must be void instead. This patch makes its
+>> return type void and fixes all users of it as well.
+>>
+>> Reported-by: Jon Medhurst<tixy@linaro.org>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> This doesn't apply to bleeding-edge for me any more after I have applied your
+> series of 44 patches to it.  Care to resend?
 
-As asked by you the first patch is rebased over your bleeding edge. Other minor
-patches are also added in this series (sent earlier too) which can also go in.
-Let me know if you see/face any issues with them.
-
-Viresh Kumar (11):
-  cpufreq: make return type of lock_policy_rwsem_{read|write}() as void
-  cpufreq: create per policy rwsem instead of per cpu cpu_policy_rwsem
-  cpufreq: remove invalid comment from __cpufreq_remove_dev()
-  cpufreq: Remove extra blank line
-  cpufreq: don't break string in print statements
-  cpufreq: remove __cpufreq_remove_dev()
-  cpufreq: Optimize cpufreq_frequency_table_verify()
-  cpufreq: rename __cpufreq_set_policy() as cpufreq_set_policy()
-  cpufreq: rewrite cpufreq_driver->flags using shift operator
-  cpufreq: use cpufreq_driver->flags to mark
-    CPUFREQ_HAVE_GOVERNOR_PER_POLICY
-  cpufreq: add new routine cpufreq_verify_within_cpu_limits()
-
- drivers/cpufreq/arm_big_little.c     |   4 +-
- drivers/cpufreq/cpufreq-nforce2.c    |   4 +-
- drivers/cpufreq/cpufreq.c            | 189 ++++++++++-------------------------
- drivers/cpufreq/cpufreq_governor.h   |   5 +-
- drivers/cpufreq/davinci-cpufreq.c    |   4 +-
- drivers/cpufreq/freq_table.c         |  27 +++--
- drivers/cpufreq/integrator-cpufreq.c |   9 +-
- drivers/cpufreq/intel_pstate.c       |   4 +-
- drivers/cpufreq/longrun.c            |   4 +-
- drivers/cpufreq/pcc-cpufreq.c        |   3 +-
- drivers/cpufreq/sh-cpufreq.c         |   7 +-
- drivers/cpufreq/unicore2-cpufreq.c   |   4 +-
- include/linux/cpufreq.h              |  51 +++++++---
- 13 files changed, 120 insertions(+), 195 deletions(-)
-
--- 
-1.7.12.rc2.18.g61b472e
-
+Done..
