@@ -1,218 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH RESEND 11/11] cpufreq: add new routine cpufreq_verify_within_cpu_limits()
-Date: Wed,  2 Oct 2013 14:13:19 +0530
-Message-ID: <269a6a5bf55462c3e0aa0b96e6aba2f811ac9871.1380703248.git.viresh.kumar@linaro.org>
-References: <cover.1380703248.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1380703248.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1380703248.git.viresh.kumar@linaro.org>
-References: <cover.1380703248.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCH 0/2] ARM: at91: cpuidle: encapsulate and move the
+ driver to drivers/cpuidle
+Date: Wed, 02 Oct 2013 15:01:15 +0200
+Message-ID: <524C191B.30500@linaro.org>
+References: <1380211567-2972-1-git-send-email-daniel.lezcano@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f54.google.com ([74.125.83.54]:55038 "EHLO
+	mail-ee0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753688Ab3JBNBT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2013 09:01:19 -0400
+Received: by mail-ee0-f54.google.com with SMTP id e53so382936eek.13
+        for <linux-pm@vger.kernel.org>; Wed, 02 Oct 2013 06:01:18 -0700 (PDT)
+In-Reply-To: <1380211567-2972-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-Most of the users of cpufreq_verify_within_limits() calls it for limiting with
-min/max from policy->cpuinfo. We can make that code simple by introducing
-another routine which will do this for them automatically.
+On 09/26/2013 06:06 PM, Daniel Lezcano wrote:
+> Several patches were send to encapsulate the standby code.
+>
+> Creating a platform driver model allows to finish to encapsulate this=
+ code more
+> and make possible to move the driver to the drivers/cpuidle directory=
+=2E
+>
+> I was not able to test the patchset, I don't have the hardware.
+>
+> Daniel Lezcano (2):
+>    ARM: at91: cpuidle: convert to platform driver
+>    ARM: at91: cpuidle: Move driver to drivers/cpuidle
+>
+>   arch/arm/mach-at91/Makefile    |    1 -
+>   arch/arm/mach-at91/cpuidle.c   |   68 -----------------------------=
+----------
+>   arch/arm/mach-at91/pm.c        |   16 +++++++++-
+>   drivers/cpuidle/Kconfig.arm    |    6 ++++
+>   drivers/cpuidle/Makefile       |    1 +
+>   drivers/cpuidle/cpuidle-at91.c |   69 +++++++++++++++++++++++++++++=
++++++++++++
+>   6 files changed, 91 insertions(+), 70 deletions(-)
+>   delete mode 100644 arch/arm/mach-at91/cpuidle.c
+>   create mode 100644 drivers/cpuidle/cpuidle-at91.c
 
-This patch adds another routine cpufreq_verify_within_cpu_limits() and updates
-others to use it.
+ping ?
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-nforce2.c    | 4 +---
- drivers/cpufreq/davinci-cpufreq.c    | 4 +---
- drivers/cpufreq/freq_table.c         | 6 ++----
- drivers/cpufreq/integrator-cpufreq.c | 9 ++-------
- drivers/cpufreq/intel_pstate.c       | 4 +---
- drivers/cpufreq/longrun.c            | 4 +---
- drivers/cpufreq/pcc-cpufreq.c        | 3 +--
- drivers/cpufreq/sh-cpufreq.c         | 7 ++-----
- drivers/cpufreq/unicore2-cpufreq.c   | 4 +---
- include/linux/cpufreq.h              | 7 +++++++
- 10 files changed, 19 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-nforce2.c b/drivers/cpufreq/cpufreq-nforce2.c
-index b83d45f6..56c964c 100644
---- a/drivers/cpufreq/cpufreq-nforce2.c
-+++ b/drivers/cpufreq/cpufreq-nforce2.c
-@@ -303,9 +303,7 @@ static int nforce2_verify(struct cpufreq_policy *policy)
- 	if (policy->min < (fsb_pol_max * fid * 100))
- 		policy->max = (fsb_pol_max + 1) * fid * 100;
- 
--	cpufreq_verify_within_limits(policy,
--				     policy->cpuinfo.min_freq,
--				     policy->cpuinfo.max_freq);
-+	cpufreq_verify_within_cpu_limits(policy);
- 	return 0;
- }
- 
-diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
-index f67196e..ba03e6f 100644
---- a/drivers/cpufreq/davinci-cpufreq.c
-+++ b/drivers/cpufreq/davinci-cpufreq.c
-@@ -50,9 +50,7 @@ static int davinci_verify_speed(struct cpufreq_policy *policy)
- 	if (policy->cpu)
- 		return -EINVAL;
- 
--	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
--				     policy->cpuinfo.max_freq);
--
-+	cpufreq_verify_within_cpu_limits(policy);
- 	policy->min = clk_round_rate(armclk, policy->min * 1000) / 1000;
- 	policy->max = clk_round_rate(armclk, policy->max * 1000) / 1000;
- 	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 10f3cfb..b9336ed 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -60,8 +60,7 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- 	pr_debug("request for verification of policy (%u - %u kHz) for cpu %u\n",
- 					policy->min, policy->max, policy->cpu);
- 
--	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
--				     policy->cpuinfo.max_freq);
-+	cpufreq_verify_within_cpu_limits(policy);
- 
- 	for (; freq = table[i].frequency, freq != CPUFREQ_TABLE_END; i++) {
- 		if (freq == CPUFREQ_ENTRY_INVALID)
-@@ -77,8 +76,7 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- 
- 	if (!found) {
- 		policy->max = next_larger;
--		cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
--				policy->cpuinfo.max_freq);
-+		cpufreq_verify_within_cpu_limits(policy);
- 	}
- 
- 	pr_debug("verification lead to (%u - %u kHz) for cpu %u\n",
-diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
-index f7c99df..8152a9b 100644
---- a/drivers/cpufreq/integrator-cpufreq.c
-+++ b/drivers/cpufreq/integrator-cpufreq.c
-@@ -59,9 +59,7 @@ static int integrator_verify_policy(struct cpufreq_policy *policy)
- {
- 	struct icst_vco vco;
- 
--	cpufreq_verify_within_limits(policy, 
--				     policy->cpuinfo.min_freq, 
--				     policy->cpuinfo.max_freq);
-+	cpufreq_verify_within_cpu_limits(policy);
- 
- 	vco = icst_hz_to_vco(&cclk_params, policy->max * 1000);
- 	policy->max = icst_hz(&cclk_params, vco) / 1000;
-@@ -69,10 +67,7 @@ static int integrator_verify_policy(struct cpufreq_policy *policy)
- 	vco = icst_hz_to_vco(&cclk_params, policy->min * 1000);
- 	policy->min = icst_hz(&cclk_params, vco) / 1000;
- 
--	cpufreq_verify_within_limits(policy, 
--				     policy->cpuinfo.min_freq, 
--				     policy->cpuinfo.max_freq);
--
-+	cpufreq_verify_within_cpu_limits(policy);
- 	return 0;
- }
- 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 32b3479..22b8d54 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -614,9 +614,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 
- static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
- {
--	cpufreq_verify_within_limits(policy,
--				policy->cpuinfo.min_freq,
--				policy->cpuinfo.max_freq);
-+	cpufreq_verify_within_cpu_limits(policy);
- 
- 	if ((policy->policy != CPUFREQ_POLICY_POWERSAVE) &&
- 		(policy->policy != CPUFREQ_POLICY_PERFORMANCE))
-diff --git a/drivers/cpufreq/longrun.c b/drivers/cpufreq/longrun.c
-index 5aa0316..074971b 100644
---- a/drivers/cpufreq/longrun.c
-+++ b/drivers/cpufreq/longrun.c
-@@ -129,9 +129,7 @@ static int longrun_verify_policy(struct cpufreq_policy *policy)
- 		return -EINVAL;
- 
- 	policy->cpu = 0;
--	cpufreq_verify_within_limits(policy,
--		policy->cpuinfo.min_freq,
--		policy->cpuinfo.max_freq);
-+	cpufreq_verify_within_cpu_limits(policy);
- 
- 	if ((policy->policy != CPUFREQ_POLICY_POWERSAVE) &&
- 	    (policy->policy != CPUFREQ_POLICY_PERFORMANCE))
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 70438de..160cc1e 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -111,8 +111,7 @@ static struct pcc_cpu __percpu *pcc_cpu_info;
- 
- static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
- {
--	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
--				     policy->cpuinfo.max_freq);
-+	cpufreq_verify_within_cpu_limits(policy);
- 	return 0;
- }
- 
-diff --git a/drivers/cpufreq/sh-cpufreq.c b/drivers/cpufreq/sh-cpufreq.c
-index 1362e88..f1fb944 100644
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -87,15 +87,12 @@ static int sh_cpufreq_verify(struct cpufreq_policy *policy)
- 	if (freq_table)
- 		return cpufreq_frequency_table_verify(policy, freq_table);
- 
--	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
--				     policy->cpuinfo.max_freq);
-+	cpufreq_verify_within_cpu_limits(policy);
- 
- 	policy->min = (clk_round_rate(cpuclk, 1) + 500) / 1000;
- 	policy->max = (clk_round_rate(cpuclk, ~0UL) + 500) / 1000;
- 
--	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
--				     policy->cpuinfo.max_freq);
--
-+	cpufreq_verify_within_cpu_limits(policy);
- 	return 0;
- }
- 
-diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unicore2-cpufreq.c
-index b225f04..14e6d31 100644
---- a/drivers/cpufreq/unicore2-cpufreq.c
-+++ b/drivers/cpufreq/unicore2-cpufreq.c
-@@ -29,9 +29,7 @@ static int ucv2_verify_speed(struct cpufreq_policy *policy)
- 	if (policy->cpu)
- 		return -EINVAL;
- 
--	cpufreq_verify_within_limits(policy,
--			policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
--
-+	cpufreq_verify_within_cpu_limits(policy);
- 	return 0;
- }
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 6c9c365..ddc6332 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -256,6 +256,13 @@ static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy,
- 	return;
- }
- 
-+static inline void
-+cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
-+{
-+	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
-+			policy->cpuinfo.max_freq);
-+}
-+
- /*********************************************************************
-  *                     CPUFREQ NOTIFIER INTERFACE                    *
-  *********************************************************************/
--- 
-1.7.12.rc2.18.g61b472e
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
