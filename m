@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 63/92] cpufreq: pxa: don't initialize part of policy that is set by core too
-Date: Thu,  3 Oct 2013 20:28:57 +0530
-Message-ID: <48f83e6db5013a0b4a021075c9f603886772957a.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 64/92] cpufreq: s3c: don't initialize part of policy that is set by core too
+Date: Thu,  3 Oct 2013 20:28:58 +0530
+Message-ID: <e6532440b82f5319acdccb460ed04ef419264bc4.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eric Miao <eric.y.miao@gmail.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 Many common initializations of struct policy are moved to core now and hence
@@ -18,45 +18,56 @@ this driver doesn't need to do it. This patch removes such code.
 Most recent of those changes is to call ->get() in the core after calling
 ->init().
 
-Cc: Eric Miao <eric.y.miao@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pxa2xx-cpufreq.c | 2 --
- drivers/cpufreq/pxa3xx-cpufreq.c | 7 +++----
- 2 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/cpufreq/s3c2416-cpufreq.c | 2 --
+ drivers/cpufreq/s3c24xx-cpufreq.c | 5 -----
+ drivers/cpufreq/s3c64xx-cpufreq.c | 2 --
+ 3 files changed, 9 deletions(-)
 
-diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-index 82905fe..29aca57 100644
---- a/drivers/cpufreq/pxa2xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-@@ -397,8 +397,6 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
+index 8c57f10..22c4c2d 100644
+--- a/drivers/cpufreq/s3c2416-cpufreq.c
++++ b/drivers/cpufreq/s3c2416-cpufreq.c
+@@ -476,8 +476,6 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 		freq++;
+ 	}
  
- 	/* set default policy and cpuinfo */
- 	policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
--	policy->cur = get_clk_frequency_khz(0);	   /* current freq */
--	policy->min = policy->max = policy->cur;
+-	policy->cur = clk_get_rate(s3c_freq->armclk) / 1000;
+-
+ 	/* Datasheet says PLL stabalisation time must be at least 300us,
+ 	 * so but add some fudge. (reference in LOCKCON0 register description)
+ 	 */
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index 027dec1..e0fbaef 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -378,11 +378,6 @@ static int s3c_cpufreq_init(struct cpufreq_policy *policy)
+ 	if (policy->cpu != 0)
+ 		return -EINVAL;
  
- 	/* Generate pxa25x the run cpufreq_frequency_table struct */
- 	for (i = 0; i < NUM_PXA25x_RUN_FREQS; i++) {
-diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
-index ae3ac08..47fbee4 100644
---- a/drivers/cpufreq/pxa3xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa3xx-cpufreq.c
-@@ -201,11 +201,10 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
- 	int ret = -EINVAL;
+-	policy->cur = s3c_cpufreq_get(0);
+-	policy->min = policy->cpuinfo.min_freq = 0;
+-	policy->max = policy->cpuinfo.max_freq = cpu_cur.info->max.fclk / 1000;
+-	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-
+ 	/* feed the latency information from the cpu driver */
+ 	policy->cpuinfo.transition_latency = cpu_cur.info->latency;
  
- 	/* set default policy and cpuinfo */
--	policy->cpuinfo.min_freq = 104000;
--	policy->cpuinfo.max_freq = (cpu_is_pxa320()) ? 806000 : 624000;
-+	policy->min = policy->cpuinfo.min_freq = 104000;
-+	policy->max = policy->cpuinfo.max_freq =
-+		(cpu_is_pxa320()) ? 806000 : 624000;
- 	policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
--	policy->max = pxa3xx_get_clk_frequency_khz(0);
--	policy->cur = policy->min = policy->max;
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index 99fbc49..a66cfa3 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -235,8 +235,6 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 		freq++;
+ 	}
  
- 	if (cpu_is_pxa300() || cpu_is_pxa310())
- 		ret = setup_freqs_table(policy, pxa300_freqs,
+-	policy->cur = clk_get_rate(armclk) / 1000;
+-
+ 	/* Datasheet says PLL stabalisation time (if we were to use
+ 	 * the PLLs, which we don't currently) is ~300us worst case,
+ 	 * but add some fudge.
 -- 
 1.7.12.rc2.18.g61b472e
 
