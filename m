@@ -1,43 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 3/5] PM / OPP: check for existing OPP list when
- initialising from device tree
-Date: Thu, 3 Oct 2013 10:24:58 +0530
-Message-ID: <CAKohpomi_+YY53nL-uj50Qc5LCZZFtBz25Bu7ZEuA==WUMZENg@mail.gmail.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-	<1380634382-15609-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH] cpufreq: highbank-cpufreq: Enable Midway/ECX-2000
+Date: Thu, 3 Oct 2013 10:38:37 +0530
+Message-ID: <CAOh2x=mZ__gYkhi6o_goUkw+JB==VY2PSk-T_1G+6QBxDZGFFg@mail.gmail.com>
+References: <1380641424-5666-1-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1380634382-15609-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1380641424-5666-1-git-send-email-mark.langsdorf@calxeda.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 1 October 2013 19:03, Sudeep KarkadaNagesha
-<Sudeep.KarkadaNagesha@arm.com> wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On Tue, Oct 1, 2013 at 9:00 PM, Mark Langsdorf
+<mark.langsdorf@calxeda.com> wrote:
+> Calxeda's new ECX-2000 part uses the same cpufreq interface as highbank,
+> so add it to the driver's compatibility list.
 >
-> CPUs are registered as devices and their OPPs can be initialised from
-> the device tree. Whenever CPUs are hotplugged out, the corresponding
-> cpu devices are not removed. As a result all their OPPs remain intact
-> even when they are offlined.
+> This is a minor change that can safely be applied to the 3.10 and 3.11
+> stable trees.
 >
-> But when they are hotplugged back-in, the cpufreq along with other cpu
-> related subsystem gets re-initialised. Since its almost same as secondary
-> cpu being brought up, no special consideration is taken in the hotplug
-> path. This may result in cpufreq trying to initialise the OPPs again though
-> the cpu device already contains the OPPs.
->
-> This patch checks if there exist an OPP list associated with the device,
-> before attempting to initialise it.
->
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
 > ---
->  drivers/base/power/opp.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/cpufreq/highbank-cpufreq.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+> index 794123f..bf8902a 100644
+> --- a/drivers/cpufreq/highbank-cpufreq.c
+> +++ b/drivers/cpufreq/highbank-cpufreq.c
+> @@ -66,7 +66,8 @@ static int hb_cpufreq_driver_init(void)
+>         struct device_node *np;
+>         int ret;
+>
+> -       if (!of_machine_is_compatible("calxeda,highbank"))
+> +       if ((!of_machine_is_compatible("calxeda,highbank")) &&
+> +               (!of_machine_is_compatible("calxeda,ecx-2000")))
+>                 return -ENODEV;
+>
+>         cpu_dev = get_cpu_device(0);
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
