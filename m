@@ -1,61 +1,45 @@
-From: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v2 4/5] cpufreq: arm_big_little_dt: enhance OPP error
- checking
-Date: Thu, 3 Oct 2013 09:26:27 -0500
-Message-ID: <524D7E93.8040005@ti.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Thu, 3 Oct 2013 09:29:23 -0500
+Message-ID: <524D7F43.60102@ti.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <524D65A3.5090906@ti.com> <524D6B83.5030308@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1380634382-15609-5-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <524D6B83.5030308@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/01/2013 08:33 AM, Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
-> 
-> Since the OPPs can be specified either through 'operating-points'
-> as tuples or through 'operating-points-phandle' as phandle to the
-> node containing tuples, we need to check for both the properties.
-> 
-> Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-> Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
-> ---
->  drivers/cpufreq/arm_big_little_dt.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
-> index 480c0bd..b03d4fe 100644
-> --- a/drivers/cpufreq/arm_big_little_dt.c
-> +++ b/drivers/cpufreq/arm_big_little_dt.c
-> @@ -35,7 +35,8 @@ static struct device_node *get_cpu_node_with_valid_op(int cpu)
->  {
->  	struct device_node *np = of_cpu_device_node_get(cpu);
->  
-> -	if (!of_get_property(np, "operating-points", NULL)) {
-> +	if (!of_get_property(np, "operating-points", NULL) &&
-> +		!of_get_property(np, "operating-points-phandle", NULL)) {
->  		of_node_put(np);
->  		np = NULL;
->  	}
-> 
-generated checkpatch --strict warning:
-CHECK: Alignment should match open parenthesis
-#28: FILE: drivers/cpufreq/arm_big_little_dt.c:39:
-+	if (!of_get_property(np, "operating-points", NULL) &&
-+		!of_get_property(np, "operating-points-phandle", NULL)) {
+On 10/03/2013 08:05 AM, Sudeep KarkadaNagesha wrote:
+[...]
+>> However, could you squash this to patch #2 -> having implementation
+>> and binding together is better for git log history.
+>>
+> Based on some arguments on the other threads[1] on devicetree list, I thought
+> having separate patches for binding and driver changes is preferred. Hence the
+> split, I am OK either way.
+Thanks for pointing the discussion out.
 
-otherwise,
-Reviewed-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+/me might rant about this ;) -> if someone has a strong opinion about
+this, they should probably propose a change to submitting patches
+guideline.. Grr..
+
+I leave this to Rafael as to how he'd like this to be squashed/split
+
+> 
+> Can I add your ACK/Reviewed-by otherwise ?
+> 
+> Regards,
+> Sudeep
+> 
+> [1] http://www.spinics.net/lists/devicetree/msg04855.html
+> 
+
 
 -- 
 Regards,
 Nishanth Menon
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
