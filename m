@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 59/92] cpufreq: pcc: don't initialize part of policy that is set by core too
-Date: Thu,  3 Oct 2013 20:28:53 +0530
-Message-ID: <945e3f35296bbca5e38a815f7ae3d0c27b35c95b.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 60/92] cpufreq: pmac: don't initialize part of policy that is set by core too
+Date: Thu,  3 Oct 2013 20:28:54 +0530
+Message-ID: <ca27e97d08534c1c1b81454f7d36f8d05b79a7d0.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f54.google.com ([209.85.160.54]:49930 "EHLO
-	mail-pb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754578Ab3JCPFs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:05:48 -0400
-Received: by mail-pb0-f54.google.com with SMTP id ro12so2608949pbb.27
-        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:05:48 -0700 (PDT)
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:61465 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753713Ab3JCPFy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:05:54 -0400
+Received: by mail-pd0-f169.google.com with SMTP id r10so2606964pdi.0
+        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:05:54 -0700 (PDT)
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
@@ -26,27 +26,34 @@ Most recent of those changes is to call ->get() in the core after calling
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pcc-cpufreq.c | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/cpufreq/pmac32-cpufreq.c | 1 -
+ drivers/cpufreq/pmac64-cpufreq.c | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 70438de..c265fd1 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -559,13 +559,6 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		ioread32(&pcch_hdr->nominal) * 1000;
- 	policy->min = policy->cpuinfo.min_freq =
- 		ioread32(&pcch_hdr->minimum_frequency) * 1000;
--	policy->cur = pcc_get_freq(cpu);
--
--	if (!policy->cur) {
--		pr_debug("init: Unable to get current CPU frequency\n");
--		result = -EINVAL;
--		goto out;
--	}
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 8715ab9..672b7f4 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -396,7 +396,6 @@ static int pmac_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		return -ENODEV;
  
- 	pr_debug("init: policy->max is %d, policy->min is %d\n",
- 		policy->max, policy->min);
+ 	policy->cpuinfo.transition_latency	= transition_latency;
+-	policy->cur = cur_freq;
+ 
+ 	return cpufreq_table_validate_and_show(policy, pmac_cpu_freqs);
+ }
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index e853b85..79e40c9 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -348,7 +348,6 @@ static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
+ static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	policy->cpuinfo.transition_latency = transition_latency;
+-	policy->cur = g5_cpu_freqs[g5_query_freq()].frequency;
+ 	/* secondary CPUs are tied to the primary one by the
+ 	 * cpufreq core if in the secondary policy we tell it that
+ 	 * it actually must be one policy together with all others. */
 -- 
 1.7.12.rc2.18.g61b472e
 
