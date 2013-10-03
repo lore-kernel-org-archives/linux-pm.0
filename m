@@ -1,27 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 Resend 07/92] cpufreq: cris: Use generic cpufreq routines
-Date: Thu, 3 Oct 2013 21:16:32 +0530
-Message-ID: <CAKohpo=+5adkr_OfDhq4WELNb-wk5LdphWmbjHPjVRBz9joQyg@mail.gmail.com>
-References: <cover.1380783079.git.viresh.kumar@linaro.org>
-	<2906aa4a654021836ca97e717e1cee68ebec93d8.1380783079.git.viresh.kumar@linaro.org>
-	<20131003152542.GR11028@axis.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131003152542.GR11028@axis.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jesper Nilsson <jespern@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel <linux-cris-kernel@axis.com>
+Subject: [PATCH V2 00/16] CPUIdle: Minor cleanups for 3.13
+Date: Thu,  3 Oct 2013 21:26:39 +0530
+Message-ID: <cover.1380815504.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:45303 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754699Ab3JCP5C (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:57:02 -0400
+Received: by mail-pa0-f53.google.com with SMTP id kq14so2791999pab.26
+        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:57:02 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl, daniel.lezcano@linaro.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 3 October 2013 20:55, Jesper Nilsson <jesper.nilsson@axis.com> wrote:
-> On Thu, Oct 03, 2013 at 04:58:01PM +0200, Viresh Kumar wrote:
->> Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
->> and .attr. So its better if we have generic routines for them which can be used
->> by cpufreq drivers then.
->>
->> This patch uses these generic routines for this driver.
->
-> You should already have gotten my Acked-by: for this series, but here it is again:
+Hi Rafael,
 
-Yeah.. So sorry for missing those :(
+These are V2 of my CPUIdle cleanup series.. Few patches are dropped as they
+required further modifications. Last one is rewritten as suggested by Daniel.
+Most of them are already Acked by Daniel.
+
+Viresh Kumar (16):
+  cpuidle: fix indentation of cpumask
+  cpuidle: Fix comments in cpuidle core
+  cpuidle: make __cpuidle_get_cpu_driver() inline
+  cpuidle: make __cpuidle_device_init() return void
+  cpuidle: make __cpuidle_driver_init() return void
+  cpuidle: rearrange code in __cpuidle_driver_init()
+  cpuidle: rearrange __cpuidle_register_device() to keep minimal exit
+    points
+  cpuidle: merge two if() statements for checking error cases
+  cpuidle: reduce code duplication inside cpuidle_idle_call()
+  cpuidle: replace multiline statements with single line in
+    cpuidle_idle_call()
+  cpuidle: call cpuidle_get_driver() from after taking
+    cpuidle_driver_lock
+  cpuidle: use drv instead of cpuidle_driver in show_current_driver()
+  cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+  cpuidle: don't calculate time-diff if entered_state < 0
+  cpuidle: don't call poll_idle_init() for every cpu
+  cpuidle: remove cpuidle_unregister_governor()
+
+ Documentation/cpuidle/governor.txt |  1 -
+ drivers/cpuidle/coupled.c          |  2 +-
+ drivers/cpuidle/cpuidle.c          | 95 ++++++++++----------------------------
+ drivers/cpuidle/driver.c           | 69 ++++++++++++++++++++-------
+ drivers/cpuidle/governor.c         | 43 -----------------
+ drivers/cpuidle/sysfs.c            | 30 ++++++------
+ include/linux/cpuidle.h            |  8 +---
+ 7 files changed, 94 insertions(+), 154 deletions(-)
+
+-- 
+1.7.12.rc2.18.g61b472e
+
