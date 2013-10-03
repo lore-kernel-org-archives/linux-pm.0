@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 30/92] cpufreq: sc520: Use generic cpufreq routines
-Date: Thu,  3 Oct 2013 20:28:24 +0530
-Message-ID: <9f435e61f761b62fe99d9edfdeb08676b3b0e5a5.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 31/92] cpufreq: sh: Use generic cpufreq routines
+Date: Thu,  3 Oct 2013 20:28:25 +0530
+Message-ID: <59688d8381646e3b617d973f9eeee9d2a29e6d30.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-sh-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
@@ -18,58 +18,38 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/sc520_freq.c | 24 +++---------------------
- 1 file changed, 3 insertions(+), 21 deletions(-)
+ drivers/cpufreq/sh-cpufreq.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
-index bb9c0de..8556225 100644
---- a/drivers/cpufreq/sc520_freq.c
-+++ b/drivers/cpufreq/sc520_freq.c
-@@ -78,11 +78,6 @@ static void sc520_freq_set_cpu_state(struct cpufreq_policy *policy,
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- };
- 
--static int sc520_freq_verify(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, &sc520_freq_table[0]);
--}
--
- static int sc520_freq_target(struct cpufreq_policy *policy,
- 			    unsigned int target_freq,
- 			    unsigned int relation)
-@@ -120,27 +115,14 @@ static int sc520_freq_cpu_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/sh-cpufreq.c b/drivers/cpufreq/sh-cpufreq.c
+index 1362e88..91c6446 100644
+--- a/drivers/cpufreq/sh-cpufreq.c
++++ b/drivers/cpufreq/sh-cpufreq.c
+@@ -154,11 +154,6 @@ static int sh_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ 	return 0;
  }
  
- 
--static int sc520_freq_cpu_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--	return 0;
--}
--
--
--static struct freq_attr *sc520_freq_attr[] = {
+-static struct freq_attr *sh_freq_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
--
- static struct cpufreq_driver sc520_freq_driver = {
- 	.get	= sc520_freq_get_cpu_frequency,
--	.verify	= sc520_freq_verify,
-+	.verify	= cpufreq_generic_frequency_table_verify,
- 	.target	= sc520_freq_target,
- 	.init	= sc520_freq_cpu_init,
--	.exit	= sc520_freq_cpu_exit,
-+	.exit	= cpufreq_generic_exit,
- 	.name	= "sc520_freq",
--	.attr	= sc520_freq_attr,
-+	.attr	= cpufreq_generic_attr,
+ static struct cpufreq_driver sh_cpufreq_driver = {
+ 	.name		= "sh",
+ 	.get		= sh_cpufreq_get,
+@@ -166,7 +161,7 @@ static struct cpufreq_driver sh_cpufreq_driver = {
+ 	.verify		= sh_cpufreq_verify,
+ 	.init		= sh_cpufreq_cpu_init,
+ 	.exit		= sh_cpufreq_cpu_exit,
+-	.attr		= sh_freq_attr,
++	.attr		= cpufreq_generic_attr,
  };
  
- static const struct x86_cpu_id sc520_ids[] = {
+ static int __init sh_cpufreq_module_init(void)
 -- 
 1.7.12.rc2.18.g61b472e
 
