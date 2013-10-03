@@ -1,50 +1,47 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 86/92] cpufreq: pmac32: use cpufreq_generic_init() routine
-Date: Thu,  3 Oct 2013 20:29:20 +0530
-Message-ID: <483660116fd16da021c996c78ae2c72b339de10d.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 87/92] cpufreq: pmac64: use cpufreq_generic_init() routine
+Date: Thu,  3 Oct 2013 20:29:21 +0530
+Message-ID: <69a1d185626cee5b5d57644328ad7c8c5614b434.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f53.google.com ([209.85.160.53]:40662 "EHLO
-	mail-pb0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754128Ab3JCPIZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:08:25 -0400
-Received: by mail-pb0-f53.google.com with SMTP id up15so2576437pbc.40
-        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:08:24 -0700 (PDT)
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
 Use generic cpufreq_generic_init() routine instead of replicating the same code
 here.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/cpufreq/pmac64-cpufreq.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index 672b7f4..6eac1e2 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -392,12 +392,7 @@ static int pmac_cpufreq_target(	struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index 79e40c9..b977b9a 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -347,16 +347,9 @@ static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
  
- static int pmac_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
  {
--	if (policy->cpu != 0)
--		return -ENODEV;
+-	policy->cpuinfo.transition_latency = transition_latency;
+-	/* secondary CPUs are tied to the primary one by the
+-	 * cpufreq core if in the secondary policy we tell it that
+-	 * it actually must be one policy together with all others. */
+-	cpumask_copy(policy->cpus, cpu_online_mask);
 -
--	policy->cpuinfo.transition_latency	= transition_latency;
--
--	return cpufreq_table_validate_and_show(policy, pmac_cpu_freqs);
-+	return cpufreq_generic_init(policy, pmac_cpu_freqs, transition_latency);
+-	return cpufreq_table_validate_and_show(policy, g5_cpu_freqs);
++	return cpufreq_generic_init(policy, g5_cpu_freqs, transition_latency);
  }
  
- static u32 read_gpio(struct device_node *np)
+-
+ static struct cpufreq_driver g5_cpufreq_driver = {
+ 	.name		= "powermac",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
 -- 
 1.7.12.rc2.18.g61b472e
 
