@@ -1,247 +1,104 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [RFC PATCH 2/2] ARM: at91: cpuidle: Move driver to drivers/cpuidle
-Date: Thu, 03 Oct 2013 14:59:46 +0200
-Message-ID: <3239256.KJU9uDytC0@amdc1032>
-References: <1380211567-2972-1-git-send-email-daniel.lezcano@linaro.org>
- <1380211567-2972-3-git-send-email-daniel.lezcano@linaro.org>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Thu, 03 Oct 2013 14:05:07 +0100
+Message-ID: <524D6B83.5030308@arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <524D65A3.5090906@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:58748 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710Ab3JCM7x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 08:59:53 -0400
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MU3006V1G31LYB0@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 03 Oct 2013 21:59:50 +0900 (KST)
-In-reply-to: <1380211567-2972-3-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <524D65A3.5090906-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux-pm@vger.kernel.org
 
+Hi Nishanth,
 
-Hi,
+Thanks for reviewing it.
 
-On Thursday, September 26, 2013 06:06:07 PM Daniel Lezcano wrote:
-> As the cpuidle driver code has no more the dependency with the pm code, the
-> 'standby' callback being passed as a parameter to the device's platform data,
-> we can move the cpuidle driver in the drivers/cpuidle directory.
+On 03/10/13 13:40, Nishanth Menon wrote:
+> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+[...]
+>> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
+>> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
+>> +   the clock domain.
+>> +
+>> +	cpu0: cpu@0 {
+>> +		compatible = "arm,cortex-a15";
+>> +		reg = <0>;
+>> +		operating-points-phandle = <&cluster0_opp>;
+>> +	};
+>> +
+>> +	cpu1: cpu@1 {
+>> +		compatible = "arm,cortex-a15";
+>> +		reg = <1>;
+>> +		operating-points-phandle = <&cluster0_opp>;
+>> +	};
+>> +
+>> +	cpu2: cpu@100 {
+>> +		compatible = "arm,cortex-a7";
+>> +		reg = <100>;
+>> +		operating-points-phandle = <&cluster1_opp>;
+>> +	};
+>> +
+>> +	cpu3: cpu@101 {
+>> +		compatible = "arm,cortex-a7";
+>> +		reg = <101>;
+>> +		operating-points-phandle = <&cluster1_opp>;
+>> +	};
+>> +
+>> +	opps-table {
+>> +		cluster0_opp: cluster0_opp {
+>> +			operating-points = <
+>> +				/* kHz    uV */
+>> +				792000  1100000
+>> +				396000  950000
+>> +				198000  850000
+>> +			>;
+>> +		};
+> Style comment - add an EOL
+Ok will fix up.
+
+>> +		cluster1_opp: cluster1_opp {
+>> +			operating-points = <
+>> +				/* kHz    uV */
+>> +				792000  950000
+>> +				396000  750000
+>> +				198000  450000
+>> +			>;
+>> +		};
+>> +		... /* other device OPP nodes */
+>> +	}
+>> +
+>> +Container Node
+>> +--------------
+>> +	- It's highly recommended to place all the shared OPPs under single
+>> +	  node for consistency and better readability
+>> +	- It's quite similar to clocks or pinmux container nodes
+>> +	- In the above examples, "opps-table" is the container node
+>>
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  arch/arm/mach-at91/Makefile    |    1 -
->  arch/arm/mach-at91/cpuidle.c   |   69 ----------------------------------------
->  drivers/cpuidle/Kconfig.arm    |    6 ++++
->  drivers/cpuidle/Makefile       |    1 +
->  drivers/cpuidle/cpuidle-at91.c |   69 ++++++++++++++++++++++++++++++++++++++++
->  5 files changed, 76 insertions(+), 70 deletions(-)
->  delete mode 100644 arch/arm/mach-at91/cpuidle.c
->  create mode 100644 drivers/cpuidle/cpuidle-at91.c
+> in short, I love this - thanks for doing this.
 > 
-> diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
-> index 3b0a953..c1b7370 100644
-> --- a/arch/arm/mach-at91/Makefile
-> +++ b/arch/arm/mach-at91/Makefile
-> @@ -98,7 +98,6 @@ obj-y				+= leds.o
->  # Power Management
->  obj-$(CONFIG_PM)		+= pm.o
->  obj-$(CONFIG_AT91_SLOW_CLOCK)	+= pm_slowclock.o
-> -obj-$(CONFIG_CPU_IDLE)	+= cpuidle.o
->  
->  ifeq ($(CONFIG_PM_DEBUG),y)
->  CFLAGS_pm.o += -DDEBUG
-> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
-> deleted file mode 100644
-> index 6cdc76d..0000000
-> --- a/arch/arm/mach-at91/cpuidle.c
-> +++ /dev/null
-> @@ -1,69 +0,0 @@
-> -/*
-> - * based on arch/arm/mach-kirkwood/cpuidle.c
-> - *
-> - * CPU idle support for AT91 SoC
-> - *
-> - * This file is licensed under the terms of the GNU General Public
-> - * License version 2.  This program is licensed "as is" without any
-> - * warranty of any kind, whether express or implied.
-> - *
-> - * The cpu idle uses wait-for-interrupt and RAM self refresh in order
-> - * to implement two idle states -
-> - * #1 wait-for-interrupt
-> - * #2 wait-for-interrupt and RAM self refresh
-> - */
-> -
-> -#include <linux/kernel.h>
-> -#include <linux/init.h>
-> -#include <linux/platform_device.h>
-> -#include <linux/cpuidle.h>
-> -#include <linux/io.h>
-> -#include <linux/export.h>
-> -#include <asm/proc-fns.h>
-> -#include <asm/cpuidle.h>
-> -
-> -#define AT91_MAX_STATES	2
-> -
-> -static void (*at91_standby)(void);
-> -
-> -/* Actual code that puts the SoC in different idle states */
-> -static int at91_enter_idle(struct cpuidle_device *dev,
-> -			struct cpuidle_driver *drv,
-> -			       int index)
-> -{
-> -	at91_standby();
-> -	return index;
-> -}
-> -
-> -static struct cpuidle_driver at91_idle_driver = {
-> -	.name			= "at91_idle",
-> -	.owner			= THIS_MODULE,
-> -	.states[0]		= ARM_CPUIDLE_WFI_STATE,
-> -	.states[1]		= {
-> -		.enter			= at91_enter_idle,
-> -		.exit_latency		= 10,
-> -		.target_residency	= 10000,
-> -		.flags			= CPUIDLE_FLAG_TIME_VALID,
-> -		.name			= "RAM_SR",
-> -		.desc			= "WFI and DDR Self Refresh",
-> -	},
-> -	.state_count = AT91_MAX_STATES,
-> -};
-> -
-> -/* Initialize CPU idle by registering the idle states */
-> -static int __init at91_cpuidle_probe(struct platform_device *dev)
-> -{
-> -	at91_standby = (void *)(dev->dev.platform_data);
-> -	
-> -	return cpuidle_register(&at91_idle_driver, NULL);
-> -}
-> -
-> -static struct platform_driver at91_cpuidle_driver = {
-> -	.driver = {
-> -		.name = "cpuidle-at91",
-> -		.owner = THIS_MODULE,
-> -	},
-> -	.probe = at91_cpuidle_probe,
-> -};
-> -
-> -module_platform_driver(at91_cpuidle_driver);
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-> index 8e36603..edecfc8 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -27,6 +27,12 @@ config ARM_U8500_CPUIDLE
->  	help
->  	  Select this to enable cpuidle for ST-E u8500 processors
->  
-> +config ARM_AT91_CPUIDLE
-> +        bool "Cpu Idle Driver for the AT91 processors"
+> However, could you squash this to patch #2 -> having implementation
+> and binding together is better for git log history.
+> 
+Based on some arguments on the other threads[1] on devicetree list, I thought
+having separate patches for binding and driver changes is preferred. Hence the
+split, I am OK either way.
 
-whitespace damage, please replace spaces by tab
+Can I add your ACK/Reviewed-by otherwise ?
 
-> +	depends on ARCH_AT91
+Regards,
+Sudeep
 
-I believe that it should be also "default y" here to preserve the old
-behavior (the driver was always built-in for CONFIG_CPU_IDLE=y).
+[1] http://www.spinics.net/lists/devicetree/msg04855.html
 
-> +	help
-> +	  Select this to enable cpuidle for AT91 processors
-> +
->  config CPU_IDLE_BIG_LITTLE
->  	bool "Support for ARM big.LITTLE processors"
->  	depends on ARCH_VEXPRESS_TC2_PM
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index cea5ef5..60c4ae5 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -11,4 +11,5 @@ obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
->  obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
->  obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
->  obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
-> +obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
->  obj-$(CONFIG_CPU_IDLE_BIG_LITTLE)	+= cpuidle-big_little.o
-> diff --git a/drivers/cpuidle/cpuidle-at91.c b/drivers/cpuidle/cpuidle-at91.c
-> new file mode 100644
-> index 0000000..6cdc76d
-> --- /dev/null
-> +++ b/drivers/cpuidle/cpuidle-at91.c
-> @@ -0,0 +1,69 @@
-> +/*
-> + * based on arch/arm/mach-kirkwood/cpuidle.c
-> + *
-> + * CPU idle support for AT91 SoC
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + *
-> + * The cpu idle uses wait-for-interrupt and RAM self refresh in order
-> + * to implement two idle states -
-> + * #1 wait-for-interrupt
-> + * #2 wait-for-interrupt and RAM self refresh
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/cpuidle.h>
-> +#include <linux/io.h>
-> +#include <linux/export.h>
-> +#include <asm/proc-fns.h>
-> +#include <asm/cpuidle.h>
-> +
-> +#define AT91_MAX_STATES	2
-> +
-> +static void (*at91_standby)(void);
-> +
-> +/* Actual code that puts the SoC in different idle states */
-> +static int at91_enter_idle(struct cpuidle_device *dev,
-> +			struct cpuidle_driver *drv,
-> +			       int index)
-> +{
-> +	at91_standby();
-> +	return index;
-> +}
-> +
-> +static struct cpuidle_driver at91_idle_driver = {
-> +	.name			= "at91_idle",
-> +	.owner			= THIS_MODULE,
-> +	.states[0]		= ARM_CPUIDLE_WFI_STATE,
-> +	.states[1]		= {
-> +		.enter			= at91_enter_idle,
-> +		.exit_latency		= 10,
-> +		.target_residency	= 10000,
-> +		.flags			= CPUIDLE_FLAG_TIME_VALID,
-> +		.name			= "RAM_SR",
-> +		.desc			= "WFI and DDR Self Refresh",
-> +	},
-> +	.state_count = AT91_MAX_STATES,
-> +};
-> +
-> +/* Initialize CPU idle by registering the idle states */
-> +static int __init at91_cpuidle_probe(struct platform_device *dev)
-> +{
-> +	at91_standby = (void *)(dev->dev.platform_data);
-> +	
-> +	return cpuidle_register(&at91_idle_driver, NULL);
-> +}
-> +
-> +static struct platform_driver at91_cpuidle_driver = {
-> +	.driver = {
-> +		.name = "cpuidle-at91",
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.probe = at91_cpuidle_probe,
-> +};
-> +
-> +module_platform_driver(at91_cpuidle_driver);
 
-Best regards,
 --
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
