@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 24/92] cpufreq: ppc-corenet: Use generic cpufreq routines
-Date: Thu,  3 Oct 2013 20:28:18 +0530
-Message-ID: <228a829591fd77fa0c5ed353f1cbb79b566dc612.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 25/92] cpufreq: ppc_cbe: Use generic cpufreq routines
+Date: Thu,  3 Oct 2013 20:28:19 +0530
+Message-ID: <5c5a71b25d99d54f534ea8d44bd9cb1b4484db89.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
@@ -20,51 +20,44 @@ This patch uses these generic routines for this driver.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/ppc-corenet-cpufreq.c | 17 ++---------------
- 1 file changed, 2 insertions(+), 15 deletions(-)
+ drivers/cpufreq/ppc_cbe_cpufreq.c | 15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-index 5716b44..befd489 100644
---- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -252,14 +252,6 @@ static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 	return 0;
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
+index 6c5be63..38540d1 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
+@@ -128,17 +128,6 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	return cpufreq_table_validate_and_show(policy, cbe_freqs);
  }
  
--static int corenet_cpufreq_verify(struct cpufreq_policy *policy)
+-static int cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
 -{
--	struct cpufreq_frequency_table *table =
--		per_cpu(cpu_data, policy->cpu)->table;
--
--	return cpufreq_frequency_table_verify(policy, table);
+-	cpufreq_frequency_table_put_attr(policy->cpu);
+-	return 0;
 -}
 -
- static int corenet_cpufreq_target(struct cpufreq_policy *policy,
- 		unsigned int target_freq, unsigned int relation)
- {
-@@ -292,20 +284,15 @@ static int corenet_cpufreq_target(struct cpufreq_policy *policy,
- 	return ret;
+-static int cbe_cpufreq_verify(struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy, cbe_freqs);
+-}
+-
+ static int cbe_cpufreq_target(struct cpufreq_policy *policy,
+ 			      unsigned int target_freq,
+ 			      unsigned int relation)
+@@ -174,10 +163,10 @@ static int cbe_cpufreq_target(struct cpufreq_policy *policy,
  }
  
--static struct freq_attr *corenet_cpufreq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
- 	.name		= "ppc_cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
- 	.init		= corenet_cpufreq_cpu_init,
- 	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
--	.verify		= corenet_cpufreq_verify,
+ static struct cpufreq_driver cbe_cpufreq_driver = {
+-	.verify		= cbe_cpufreq_verify,
 +	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= corenet_cpufreq_target,
- 	.get		= corenet_cpufreq_get_speed,
--	.attr		= corenet_cpufreq_attr,
-+	.attr		= cpufreq_generic_attr,
+ 	.target		= cbe_cpufreq_target,
+ 	.init		= cbe_cpufreq_cpu_init,
+-	.exit		= cbe_cpufreq_cpu_exit,
++	.exit		= cpufreq_generic_exit,
+ 	.name		= "cbe-cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
  };
- 
- static const struct of_device_id node_matches[] __initdata = {
 -- 
 1.7.12.rc2.18.g61b472e
 
