@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 11/92] cpufreq: elanfreq: Use generic cpufreq routines
-Date: Thu,  3 Oct 2013 20:28:05 +0530
-Message-ID: <20cbb7c70b1768eabec111b0687b58ecead9718f.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 12/92] cpufreq: exynos: Use generic cpufreq routines
+Date: Thu,  3 Oct 2013 20:28:06 +0530
+Message-ID: <f633ecaf509543ca3ea22c7952a470eccd5ec7ae.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:58443 "EHLO
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:46396 "EHLO
 	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753933Ab3JCPAz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:00:55 -0400
-Received: by mail-pd0-f171.google.com with SMTP id g10so2589236pdj.2
-        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:00:55 -0700 (PDT)
+	with ESMTP id S1753933Ab3JCPBA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:01:00 -0400
+Received: by mail-pd0-f171.google.com with SMTP id g10so2589389pdj.2
+        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:01:00 -0700 (PDT)
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
@@ -24,73 +24,100 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
+Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/elanfreq.c | 32 +++-----------------------------
- 1 file changed, 3 insertions(+), 29 deletions(-)
+ drivers/cpufreq/exynos-cpufreq.c     | 23 +++--------------------
+ drivers/cpufreq/exynos5440-cpufreq.c | 16 ++--------------
+ 2 files changed, 5 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
-index 4000c34..fe7053c 100644
---- a/drivers/cpufreq/elanfreq.c
-+++ b/drivers/cpufreq/elanfreq.c
-@@ -165,19 +165,6 @@ static void elanfreq_set_cpu_state(struct cpufreq_policy *policy,
- };
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 954baed..08338d4 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -31,12 +31,6 @@ static unsigned int locking_frequency;
+ static bool frequency_locked;
+ static DEFINE_MUTEX(cpufreq_lock);
  
- 
--/**
-- *	elanfreq_validatespeed: test if frequency range is valid
-- *	@policy: the policy to validate
-- *
-- *	This function checks if a given frequency range in kHz is valid
-- *	for the hardware supported by the driver.
-- */
--
--static int elanfreq_verify(struct cpufreq_policy *policy)
+-static int exynos_verify_speed(struct cpufreq_policy *policy)
 -{
--	return cpufreq_frequency_table_verify(policy, &elanfreq_table[0]);
+-	return cpufreq_frequency_table_verify(policy,
+-					      exynos_info->freq_table);
 -}
 -
- static int elanfreq_target(struct cpufreq_policy *policy,
- 			    unsigned int target_freq,
- 			    unsigned int relation)
-@@ -226,13 +213,6 @@ static int elanfreq_cpu_init(struct cpufreq_policy *policy)
+ static unsigned int exynos_getspeed(unsigned int cpu)
+ {
+ 	return clk_get_rate(exynos_info->cpu_clk) / 1000;
+@@ -257,26 +251,15 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	return cpufreq_table_validate_and_show(policy, exynos_info->freq_table);
  }
  
- 
--static int elanfreq_cpu_exit(struct cpufreq_policy *policy)
+-static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
 -{
 -	cpufreq_frequency_table_put_attr(policy->cpu);
 -	return 0;
 -}
 -
--
- #ifndef MODULE
- /**
-  * elanfreq_setup - elanfreq command line parameter parsing
-@@ -255,20 +235,14 @@ __setup("elanfreq=", elanfreq_setup);
- #endif
- 
- 
--static struct freq_attr *elanfreq_attr[] = {
+-static struct freq_attr *exynos_cpufreq_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
--
- static struct cpufreq_driver elanfreq_driver = {
- 	.get		= elanfreq_get_cpu_frequency,
--	.verify		= elanfreq_verify,
+ static struct cpufreq_driver exynos_driver = {
+ 	.flags		= CPUFREQ_STICKY,
+-	.verify		= exynos_verify_speed,
 +	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= elanfreq_target,
- 	.init		= elanfreq_cpu_init,
--	.exit		= elanfreq_cpu_exit,
+ 	.target		= exynos_target,
+ 	.get		= exynos_getspeed,
+ 	.init		= exynos_cpufreq_cpu_init,
+-	.exit		= exynos_cpufreq_cpu_exit,
 +	.exit		= cpufreq_generic_exit,
- 	.name		= "elanfreq",
--	.attr		= elanfreq_attr,
+ 	.name		= "exynos_cpufreq",
+-	.attr		= exynos_cpufreq_attr,
 +	.attr		= cpufreq_generic_attr,
+ #ifdef CONFIG_PM
+ 	.suspend	= exynos_cpufreq_suspend,
+ 	.resume		= exynos_cpufreq_resume,
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index 24df155..bce6f74 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -209,12 +209,6 @@ static void exynos_enable_dvfs(void)
+ 				dvfs_info->base + XMU_DVFS_CTRL);
+ }
+ 
+-static int exynos_verify_speed(struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy,
+-					      dvfs_info->freq_table);
+-}
+-
+ static unsigned int exynos_getspeed(unsigned int cpu)
+ {
+ 	return dvfs_info->cur_frequency;
+@@ -339,19 +333,13 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
+-static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+-{
+-	cpufreq_frequency_table_put_attr(policy->cpu);
+-	return 0;
+-}
+-
+ static struct cpufreq_driver exynos_driver = {
+ 	.flags		= CPUFREQ_STICKY,
+-	.verify		= exynos_verify_speed,
++	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target		= exynos_target,
+ 	.get		= exynos_getspeed,
+ 	.init		= exynos_cpufreq_cpu_init,
+-	.exit		= exynos_cpufreq_cpu_exit,
++	.exit		= cpufreq_generic_exit,
+ 	.name		= CPUFREQ_NAME,
  };
  
- static const struct x86_cpu_id elan_id[] = {
 -- 
 1.7.12.rc2.18.g61b472e
 
