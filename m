@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 48/92] cpufreq: exynos: don't initialize part of policy that is set by core too
-Date: Thu,  3 Oct 2013 20:28:42 +0530
-Message-ID: <c2d176072570aad990f705a90a5cda2b893e407d.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 51/92] cpufreq: imx6q: don't initialize part of policy that is set by core too
+Date: Thu,  3 Oct 2013 20:28:45 +0530
+Message-ID: <ab136c34501b74165979d5abc0f3e2b3c1c5c4a0.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 Many common initializations of struct policy are moved to core now and hence
@@ -18,39 +18,24 @@ this driver doesn't need to do it. This patch removes such code.
 Most recent of those changes is to call ->get() in the core after calling
 ->init().
 
-Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/exynos-cpufreq.c     | 2 --
- drivers/cpufreq/exynos5440-cpufreq.c | 1 -
- 2 files changed, 3 deletions(-)
+ drivers/cpufreq/imx6q-cpufreq.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 08338d4..5244086 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -241,8 +241,6 @@ static struct notifier_block exynos_cpufreq_nb = {
- 
- static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	policy->cur = policy->min = policy->max = exynos_getspeed(policy->cpu);
--
- 	/* set the transition latency value */
- 	policy->cpuinfo.transition_latency = 100000;
- 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index bce6f74..9b7fdec 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -326,7 +326,6 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		return ret;
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index d839657..9d22dfa 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -163,7 +163,6 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
  	}
  
--	policy->cur = dvfs_info->cur_frequency;
- 	policy->cpuinfo.transition_latency = dvfs_info->latency;
+ 	policy->cpuinfo.transition_latency = transition_latency;
+-	policy->cur = clk_get_rate(arm_clk) / 1000;
  	cpumask_setall(policy->cpus);
  
+ 	return 0;
 -- 
 1.7.12.rc2.18.g61b472e
 
