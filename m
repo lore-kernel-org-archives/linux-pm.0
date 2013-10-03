@@ -1,37 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 4/5] cpufreq: arm_big_little_dt: enhance OPP error checking
-Date: Thu, 3 Oct 2013 10:25:12 +0530
-Message-ID: <CAKohpon+b1rAYj2+UDhm=abAy7a1XOc1GhLd=RkPVKP-d8fPeQ@mail.gmail.com>
+Subject: Re: [PATCH v2 3/5] PM / OPP: check for existing OPP list when
+ initialising from device tree
+Date: Thu, 3 Oct 2013 10:24:58 +0530
+Message-ID: <CAKohpomi_+YY53nL-uj50Qc5LCZZFtBz25Bu7ZEuA==WUMZENg@mail.gmail.com>
 References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-	<1380634382-15609-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+	<1380634382-15609-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f171.google.com ([209.85.216.171]:63907 "EHLO
-	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756404Ab3JCEzN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 00:55:13 -0400
-Received: by mail-qc0-f171.google.com with SMTP id x19so1260985qcw.2
-        for <linux-pm@vger.kernel.org>; Wed, 02 Oct 2013 21:55:13 -0700 (PDT)
-In-Reply-To: <1380634382-15609-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1380634382-15609-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+List-Id: linux-pm@vger.kernel.org
 
 On 1 October 2013 19:03, Sudeep KarkadaNagesha
 <Sudeep.KarkadaNagesha@arm.com> wrote:
 > From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 >
-> Since the OPPs can be specified either through 'operating-points'
-> as tuples or through 'operating-points-phandle' as phandle to the
-> node containing tuples, we need to check for both the properties.
+> CPUs are registered as devices and their OPPs can be initialised from
+> the device tree. Whenever CPUs are hotplugged out, the corresponding
+> cpu devices are not removed. As a result all their OPPs remain intact
+> even when they are offlined.
 >
+> But when they are hotplugged back-in, the cpufreq along with other cpu
+> related subsystem gets re-initialised. Since its almost same as secondary
+> cpu being brought up, no special consideration is taken in the hotplug
+> path. This may result in cpufreq trying to initialise the OPPs again though
+> the cpu device already contains the OPPs.
+>
+> This patch checks if there exist an OPP list associated with the device,
+> before attempting to initialise it.
+>
+> Cc: Nishanth Menon <nm@ti.com>
 > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 > Cc: Viresh Kumar <viresh.kumar@linaro.org>
 > Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > ---
->  drivers/cpufreq/arm_big_little_dt.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  drivers/base/power/opp.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
