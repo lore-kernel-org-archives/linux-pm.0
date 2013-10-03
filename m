@@ -1,65 +1,36 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v3 2/2] PM / Hibernate: use name_to_dev_t to parse resume
-Date: Thu,  3 Oct 2013 14:10:38 -0700
-Message-ID: <1380834638-24035-3-git-send-email-sebastian.capella@linaro.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in
+ name_to_dev_t
+Date: Thu, 3 Oct 2013 14:15:23 -0700
+Message-ID: <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
 References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+	<1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:58151 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755234Ab3JCVPZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 17:15:25 -0400
+In-Reply-To: <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org, "Eric W. Biederman" <ebiederm@xmission.com>, Serge Hallyn <serge.hallyn@canonical.com>, Stephen Warren <swarren@nvidia.com>, Jens Axboe <axboe@kernel.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Al Viro <viro@zeniv.linux.org.uk>
 
-Use the name_to_dev_t call to parse the device name echo'd to
-to /sys/power/resume.  This imitates the method used in hibernate.c
-in software_resume, and allows the resume partition to be specified
-using other equivalent device formats as well.  By allowing
-/sys/debug/resume to accept the same syntax as the resume=device
-parameter, we can parse the resume=device in the init script and
-use the resume device directly from the kernel command line.
+On Thu,  3 Oct 2013 14:10:37 -0700 Sebastian Capella <sebastian.capella@linaro.org> wrote:
 
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
----
- kernel/power/hibernate.c |   15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+> Enhance name_to_dev_t to handle trailing newline characters
+> on device paths.  Some inputs to name_to_dev_t may come from
+> userspace where oftentimes a '\n' is appended to the path.
+> Added const to the name buffer in both the function
+> declaration and the prototype to reflect input buffer
+> handling.
+> 
+> By handling trailing newlines in name_to_dev_t, userspace
+> buffers may be directly passed to name_to_dev_t without
+> modification.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index c9c759d..a29d2a7 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -972,16 +972,11 @@ static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
- static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			    const char *buf, size_t n)
- {
--	unsigned int maj, min;
- 	dev_t res;
--	int ret = -EINVAL;
- 
--	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
--		goto out;
--
--	res = MKDEV(maj,min);
--	if (maj != MAJOR(res) || min != MINOR(res))
--		goto out;
-+	res = name_to_dev_t(buf);
-+	if (res == 0)
-+		return -EINVAL;
- 
- 	lock_system_sleep();
- 	swsusp_resume_device = res;
-@@ -989,9 +984,7 @@ static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
- 	printk(KERN_INFO "PM: Starting manual resume from disk\n");
- 	noresume = 0;
- 	software_resume();
--	ret = n;
-- out:
--	return ret;
-+	return n;
- }
- 
- power_attr(resume);
--- 
-1.7.9.5
+We have lib/string.c:strim() - perhaps this patch would be
+neater if it were to use it?
