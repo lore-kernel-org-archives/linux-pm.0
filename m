@@ -1,104 +1,67 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
- of another node for OPP
-Date: Thu, 03 Oct 2013 14:05:07 +0100
-Message-ID: <524D6B83.5030308@arm.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <524D65A3.5090906@ti.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 0/6] thermal: exynos: Fixes for v3.12
+Date: Thu, 03 Oct 2013 15:29:47 +0200
+Message-ID: <20131003152947.7c39a16b@amdc308.digital.local>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <524D65A3.5090906-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:49761 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754104Ab3JCN34 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 09:29:56 -0400
+In-reply-to: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 
-Hi Nishanth,
+Dear All,
 
-Thanks for reviewing it.
+> This patch series is divided into two parts:
+> 1. Device tree node definition and enabelement for TMU at Exynos4412
+> (Trats2) 2. Exynos thermal subsystem regressions for v3.12-rc1.
+> Several commits were necessary to properly fix regression for TMU
+> test MUX address setting after reset.
 
-On 03/10/13 13:40, Nishanth Menon wrote:
-> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
-[...]
->> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
->> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
->> +   the clock domain.
->> +
->> +	cpu0: cpu@0 {
->> +		compatible = "arm,cortex-a15";
->> +		reg = <0>;
->> +		operating-points-phandle = <&cluster0_opp>;
->> +	};
->> +
->> +	cpu1: cpu@1 {
->> +		compatible = "arm,cortex-a15";
->> +		reg = <1>;
->> +		operating-points-phandle = <&cluster0_opp>;
->> +	};
->> +
->> +	cpu2: cpu@100 {
->> +		compatible = "arm,cortex-a7";
->> +		reg = <100>;
->> +		operating-points-phandle = <&cluster1_opp>;
->> +	};
->> +
->> +	cpu3: cpu@101 {
->> +		compatible = "arm,cortex-a7";
->> +		reg = <101>;
->> +		operating-points-phandle = <&cluster1_opp>;
->> +	};
->> +
->> +	opps-table {
->> +		cluster0_opp: cluster0_opp {
->> +			operating-points = <
->> +				/* kHz    uV */
->> +				792000  1100000
->> +				396000  950000
->> +				198000  850000
->> +			>;
->> +		};
-> Style comment - add an EOL
-Ok will fix up.
+Zhang or Eduardo - will you find time to review those changes?
+They have already been reviewed by Amit.
 
->> +		cluster1_opp: cluster1_opp {
->> +			operating-points = <
->> +				/* kHz    uV */
->> +				792000  950000
->> +				396000  750000
->> +				198000  450000
->> +			>;
->> +		};
->> +		... /* other device OPP nodes */
->> +	}
->> +
->> +Container Node
->> +--------------
->> +	- It's highly recommended to place all the shared OPPs under single
->> +	  node for consistency and better readability
->> +	- It's quite similar to clocks or pinmux container nodes
->> +	- In the above examples, "opps-table" is the container node
->>
+Now we have -rc3 and there is no feedback for regression/critical
+patches (posted for -rc1).
+
 > 
-> in short, I love this - thanks for doing this.
+> Test HW:
+> - Exynos4412 - TRATS2 board (Linux v3.12-rc1)
 > 
-> However, could you squash this to patch #2 -> having implementation
-> and binding together is better for git log history.
+> Lukasz Majewski (6):
+>   thermal: exynos: fix: Return from exynos_report_trigger() when
+>     therm_dev is NULL
+>   thermal: exynos: Provide separate TMU data for Exynos4412
+>   thermal: exynos: Provide initial setting for TMU's test MUX address
+>     at Exynos4412
+>   thermal: exynos: Replace SOC_ARCH_EXYNOS with SOC_ARCH_EXYNOS5250
+>   ARM: dts: exynos4x12: Device tree node definition for TMU on
+>     Exynos4x12
+>   ARM: dts: exynos4412-trats2: Enable TMU support at Trats2
 > 
-Based on some arguments on the other threads[1] on devicetree list, I thought
-having separate patches for binding and driver changes is preferred. Hence the
-split, I am OK either way.
+>  arch/arm/boot/dts/exynos4412-trats2.dts         |    5 +++++
+>  arch/arm/boot/dts/exynos4x12.dtsi               |   10 +++++++++
+>  drivers/thermal/samsung/exynos_thermal_common.c |    2 +-
+>  drivers/thermal/samsung/exynos_tmu.c            |   12 +++++++----
+>  drivers/thermal/samsung/exynos_tmu.h            |    3 ++-
+>  drivers/thermal/samsung/exynos_tmu_data.c       |   26
+> +++++++++++++++++------
+> drivers/thermal/samsung/exynos_tmu_data.h       |   13 +++++++++++- 7
+> files changed, 58 insertions(+), 13 deletions(-)
+> 
 
-Can I add your ACK/Reviewed-by otherwise ?
-
-Regards,
-Sudeep
-
-[1] http://www.spinics.net/lists/devicetree/msg04855.html
 
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
