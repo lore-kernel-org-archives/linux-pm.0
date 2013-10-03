@@ -1,51 +1,71 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH RESEND 04/11] cpufreq: Remove extra blank line
-Date: Thu, 03 Oct 2013 12:56:39 +0530
-Message-ID: <524D1C2F.6060600@linux.vnet.ibm.com>
-References: <cover.1380703248.git.viresh.kumar@linaro.org> <f70f2486e3107448d1d3b835b78ad20724fdd252.1380703248.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH RESEND 09/11] cpufreq: rewrite cpufreq_driver->flags using
+ shift operator
+Date: Thu, 03 Oct 2013 13:02:45 +0530
+Message-ID: <524D1D9D.9080908@linux.vnet.ibm.com>
+References: <cover.1380703248.git.viresh.kumar@linaro.org> <7b34bf61846bed19e4a7e8ee18a55e717c570fef.1380703248.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:41026 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751561Ab3JCHau (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 03:30:50 -0400
+Received: from e28smtp03.in.ibm.com ([122.248.162.3]:41608 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274Ab3JCHg5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 03:36:57 -0400
 Received: from /spool/local
-	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 3 Oct 2013 13:00:47 +0530
-In-Reply-To: <f70f2486e3107448d1d3b835b78ad20724fdd252.1380703248.git.viresh.kumar@linaro.org>
+	Thu, 3 Oct 2013 13:06:54 +0530
+In-Reply-To: <7b34bf61846bed19e4a7e8ee18a55e717c570fef.1380703248.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
 On 10/02/2013 02:13 PM, Viresh Kumar wrote:
-> We don't need a blank line just at start of a block, lets remove it.
+> Currently cpufreq_driver's flags are defined directly using 0x1, 0x2, 0x4, 0x8,
+> etc.. As the list grows it doesn't stays much readable..
+> 
+> Lets use bitwise shift operator << to generate these numbers for respective
+> positions.
 > 
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
 Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
 Regards,
 Srivatsa S. Bhat
 
-> ---
->  drivers/cpufreq/cpufreq.c | 1 -
->  1 file changed, 1 deletion(-)
+>  include/linux/cpufreq.h | 15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index d80cbe6..d149caa 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1155,7 +1155,6 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->  		if (!frozen)
->  			sysfs_remove_link(&dev->kobj, "cpufreq");
->  	} else if (cpus > 1) {
-> -
->  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
->  		if (new_cpu >= 0) {
->  			update_policy_cpu(policy, new_cpu);
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index a72bac2..9321059 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -225,13 +225,14 @@ struct cpufreq_driver {
+>  };
 > 
+>  /* flags */
+> -#define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if
+> -					 * all ->init() calls failed */
+> -#define CPUFREQ_CONST_LOOPS	0x02	/* loops_per_jiffy or other kernel
+> -					 * "constants" aren't affected by
+> -					 * frequency transitions */
+> -#define CPUFREQ_PM_NO_WARN	0x04	/* don't warn on suspend/resume speed
+> -					 * mismatches */
+> +#define CPUFREQ_STICKY		(1 << 0)	/* driver isn't removed even if
+> +						   all ->init() calls failed */
+> +#define CPUFREQ_CONST_LOOPS	(1 << 1)	/* loops_per_jiffy or other
+> +						   kernel "constants" aren't
+> +						   affected by frequency
+> +						   transitions */
+> +#define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
+> +						   speed mismatches */
+> 
+>  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+>  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+> 
+
 
