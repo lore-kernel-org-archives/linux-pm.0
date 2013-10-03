@@ -1,59 +1,61 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH V2 00/16] CPUIdle: Minor cleanups for 3.13
-Date: Thu, 03 Oct 2013 14:07:31 -0700
-Message-ID: <87vc1et65o.fsf@linaro.org>
-References: <cover.1380815504.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org> (Viresh Kumar's
-	message of "Thu, 3 Oct 2013 21:26:39 +0530")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, daniel.lezcano@linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v3 0/2] PM / Hibernate: sysfs resume
+Date: Thu,  3 Oct 2013 14:10:36 -0700
+Message-ID: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:38528 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755472Ab3JCVKr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 17:10:47 -0400
+Received: by mail-pd0-f172.google.com with SMTP id z10so3031873pdj.17
+        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 14:10:47 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+Patchsets related to hibernation resume:
+  - enhancement to make the use of an existing resume file more general
+  - enhance name_to_dev_t to ignore trailing newlines coming from userspace.
 
-> Hi Rafael,
->
-> These are V2 of my CPUIdle cleanup series.. Few patches are dropped as they
-> required further modifications. Last one is rewritten as suggested by Daniel.
-> Most of them are already Acked by Daniel.
+Both patches are based on the 3.12-rc3 tag.  This was tested on a
+Pandaboard with partial hibernation support, and compiled for x86.
 
-I gave these a spin on OMAP3 and both full-chip retention and off-mode
-during idle are still working fine.
+[PATCH 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
+  init/do_mounts.c |   23 ++++++++++++++++++-----
+  1 file changed, 18 insertions(+), 5 deletions(-)
 
-Tested-by: Kevin Hilman <khilman@linaro.org>
+  Changes name_to_dev_t to handle a trailing newline in the
+  input buffer, which will allow name_to_dev_t to be used
+  directly with user buffers without requiring a copy.
+  Also adds a const to the name parameter which reflects
+  how name_to_dev_t is treating the input buffer currently.
+  This also allows direct use of user buffers
+  (from resume_store for example).
 
-Kevin
+[PATCH 2/2] PM / Hibernate: use name_to_dev_t to parse resume
+  kernel/power/hibernate.c |   15 ++++-----------
+  1 file changed, 4 insertions(+), 11 deletions(-)
 
-> Viresh Kumar (16):
->   cpuidle: fix indentation of cpumask
->   cpuidle: Fix comments in cpuidle core
->   cpuidle: make __cpuidle_get_cpu_driver() inline
->   cpuidle: make __cpuidle_device_init() return void
->   cpuidle: make __cpuidle_driver_init() return void
->   cpuidle: rearrange code in __cpuidle_driver_init()
->   cpuidle: rearrange __cpuidle_register_device() to keep minimal exit
->     points
->   cpuidle: merge two if() statements for checking error cases
->   cpuidle: reduce code duplication inside cpuidle_idle_call()
->   cpuidle: replace multiline statements with single line in
->     cpuidle_idle_call()
->   cpuidle: call cpuidle_get_driver() from after taking
->     cpuidle_driver_lock
->   cpuidle: use drv instead of cpuidle_driver in show_current_driver()
->   cpuidle: free all state kobjects from cpuidle_free_state_kobj()
->   cpuidle: don't calculate time-diff if entered_state < 0
->   cpuidle: don't call poll_idle_init() for every cpu
->   cpuidle: remove cpuidle_unregister_governor()
->
->  Documentation/cpuidle/governor.txt |  1 -
->  drivers/cpuidle/coupled.c          |  2 +-
->  drivers/cpuidle/cpuidle.c          | 95 ++++++++++----------------------------
->  drivers/cpuidle/driver.c           | 69 ++++++++++++++++++++-------
->  drivers/cpuidle/governor.c         | 43 -----------------
->  drivers/cpuidle/sysfs.c            | 30 ++++++------
->  include/linux/cpuidle.h            |  8 +---
->  7 files changed, 94 insertions(+), 154 deletions(-)
+  Use name_to_dev_t to parse the /sys/power/resume file making the
+  syntax more flexible.  It supports the previous use syntax
+  and additionally can support other formats such as
+  /dev/devicenode and UUID= formats.
+
+  By changing /sys/debug/resume to accept the same syntax as
+  the resume=device parameter, we can parse the resume=device
+  in the initrd init script and use the resume device directly
+  from the kernel command line.
+
+Changes in v3:
+--------------
+* Dropped documentation patch as it went in through trivial
+* Added patch for name_to_dev_t to support directly parsing userspace
+  buffer
+
+Changes in v2:
+--------------
+* Added check for null return of kstrndup in hibernate.c
+
+Thanks,
+
+Sebastian
