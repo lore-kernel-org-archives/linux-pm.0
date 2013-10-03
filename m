@@ -1,111 +1,79 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 4/6] thermal: exynos: Replace SOC_ARCH_EXYNOS with SOC_ARCH_EXYNOS5250
-Date: Thu, 3 Oct 2013 18:08:45 -0400
-Message-ID: <524DEAED.4030905@ti.com>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com> <1380010102-25817-5-git-send-email-l.majewski@samsung.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
+Date: Thu, 03 Oct 2013 16:47:35 -0700
+Message-ID: <20131003234735.19051.84583@capellas-linux>
+References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
+ <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
+ <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
+ <20131003214246.24540.99218@capellas-linux>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="V8GaVGtHSjeacEeEBNBxR66VnrkDC7eFq"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:35134 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755453Ab3JCWJH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Oct 2013 18:09:07 -0400
-In-Reply-To: <1380010102-25817-5-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20131003214246.24540.99218@capellas-linux>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Serge Hallyn <serge.hallyn@canonical.com>, linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, patches@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-arm-kernel@lists.infradead.org, Al Viro <viro@zeniv.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 
---V8GaVGtHSjeacEeEBNBxR66VnrkDC7eFq
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Quoting Sebastian Capella (2013-10-03 14:42:46)
+> Quoting Andrew Morton (2013-10-03 14:15:23)
+> > On Thu,  3 Oct 2013 14:10:37 -0700 Sebastian Capella <sebastian.capella@linaro.org> wrote:
+> > 
+> > > Enhance name_to_dev_t to handle trailing newline characters
+> > > on device paths.  Some inputs to name_to_dev_t may come from
+> > > userspace where oftentimes a '\n' is appended to the path.
+> > > Added const to the name buffer in both the function
+> > > declaration and the prototype to reflect input buffer
+> > > handling.
+> > > 
+> > > By handling trailing newlines in name_to_dev_t, userspace
+> > > buffers may be directly passed to name_to_dev_t without
+> > > modification.
+> > 
+> > We have lib/string.c:strim() - perhaps this patch would be
+> > neater if it were to use it?
+> 
+> Hi Morton,
+> 
+> I was intending to respect the const handling of the input buffer.
+> 
+> The actual buffer in this case is not really const as it comes from
+> the file buffering, but removing the const requires changing the
+> store function defined in the kobj_attribute, and would propagate
+> to many areas in the kernel.
+> 
+> Modifying the buffer and removing the const was also suggested by Pavel.
+> After some discussion I posted this version which did not change the
+> buffer or the prototype.
+> 
+> Please let me know if the preference is to modify the store function
+> definition.
+> 
+> I'll prepare a patchset that removes the consts to see how much is
+> changed.
+> 
+> Thanks,
+> 
+> Sebastian
 
-On 24-09-2013 04:08, Lukasz Majewski wrote:
-> The TMU data definition is now separated to Exynos4412 and Exynos5250.
->=20
-> Now SOC_ARCH_EXYNOS only refers to Exynos5250. Hence the name
-> SOC_ARCH_EXYNOS has been changed to SOC_ARCH_EXYNOS5250.
->=20
+Hi Andrew,
 
-How about merging this one with patch 02?
+Sorry for calling you Morton earlier.
 
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> ---
->  drivers/thermal/samsung/exynos_tmu.c      |    4 ++--
->  drivers/thermal/samsung/exynos_tmu.h      |    2 +-
->  drivers/thermal/samsung/exynos_tmu_data.c |    2 +-
->  3 files changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
-sung/exynos_tmu.c
-> index 21b89e4..037cd46 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -632,9 +632,9 @@ static int exynos_tmu_probe(struct platform_device =
-*pdev)
->  	if (ret)
->  		return ret;
-> =20
-> -	if (pdata->type =3D=3D SOC_ARCH_EXYNOS ||
-> -	    pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
-> +	if (pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
->  	    pdata->type =3D=3D SOC_ARCH_EXYNOS4412 ||
-> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS5250 ||
->  	    pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
->  		data->soc =3D pdata->type;
->  	else {
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sam=
-sung/exynos_tmu.h
-> index db37df0..b42ece4 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -42,7 +42,7 @@ enum calibration_mode {
->  enum soc_type {
->  	SOC_ARCH_EXYNOS4210 =3D 1,
->  	SOC_ARCH_EXYNOS4412,
-> -	SOC_ARCH_EXYNOS,
-> +	SOC_ARCH_EXYNOS5250,
->  	SOC_ARCH_EXYNOS5440,
->  };
-> =20
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
-l/samsung/exynos_tmu_data.c
-> index bd08093..188223f 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -183,7 +183,7 @@ struct exynos_tmu_init_data const exynos4412_defaul=
-t_tmu_data =3D {
->  struct exynos_tmu_init_data const exynos5250_default_tmu_data =3D {
->  	.tmu_data =3D {
->  		{ EXYNOS4412_TMU_DATA,
-> -		.type =3D SOC_ARCH_EXYNOS,
-> +		.type =3D SOC_ARCH_EXYNOS5250,
->  		},
->  	},
->  	.tmu_count =3D 1,
->=20
+I looked into removing the const from the store function, but I'm not sure
+this is the right idea, so I'm going to shelf that for now.
 
+Please let me know your thoughts.
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+Thanks,
 
-Eduardo Valentin
-
-
---V8GaVGtHSjeacEeEBNBxR66VnrkDC7eFq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJN6vAACgkQCXcVR3XQvP2zOAD+KHplqiVgYO/xoivdybLo7bRc
-iyf16hw1pQan8fN1KJoA/jbk+7ABAF7565vSu1XVjl4TPxfDNbeKYJ5TN99JOVEw
-=MhCh
------END PGP SIGNATURE-----
-
---V8GaVGtHSjeacEeEBNBxR66VnrkDC7eFq--
+Sebastian
