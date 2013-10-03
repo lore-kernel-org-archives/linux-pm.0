@@ -1,64 +1,217 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
-Date: Thu, 03 Oct 2013 14:42:46 -0700
-Message-ID: <20131003214246.24540.99218@capellas-linux>
-References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
- <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
- <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 2/6] thermal: exynos: Provide separate TMU data for Exynos4412
+Date: Thu, 3 Oct 2013 18:01:40 -0400
+Message-ID: <524DE944.8030603@ti.com>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com> <1380010102-25817-3-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Serge Hallyn <serge.hallyn@canonical.com>, linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, patches@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-arm-kernel@lists.infradead.org, Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="ctPpqo7gjkOEnAFcX0J6R6pgcxIOTvLe6"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1380010102-25817-3-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Andrew Morton (2013-10-03 14:15:23)
-> On Thu,  3 Oct 2013 14:10:37 -0700 Sebastian Capella <sebastian.capella@linaro.org> wrote:
-> 
-> > Enhance name_to_dev_t to handle trailing newline characters
-> > on device paths.  Some inputs to name_to_dev_t may come from
-> > userspace where oftentimes a '\n' is appended to the path.
-> > Added const to the name buffer in both the function
-> > declaration and the prototype to reflect input buffer
-> > handling.
-> > 
-> > By handling trailing newlines in name_to_dev_t, userspace
-> > buffers may be directly passed to name_to_dev_t without
-> > modification.
-> 
-> We have lib/string.c:strim() - perhaps this patch would be
-> neater if it were to use it?
+--ctPpqo7gjkOEnAFcX0J6R6pgcxIOTvLe6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi Morton,
+Lukasz,
 
-I was intending to respect the const handling of the input buffer.
+Just minor comments.
 
-The actual buffer in this case is not really const as it comes from
-the file buffering, but removing the const requires changing the
-store function defined in the kobj_attribute, and would propagate
-to many areas in the kernel.
+On 24-09-2013 04:08, Lukasz Majewski wrote:
+> Up till now Exynos5250 and Exynos4412 had the same definitions for TMU
+> data. Following commit changes that, by introducing separate
+> exynos4412_default_tmu_data structure.
+>=20
+> Since Exynos4412 was chronologically first, the corresponding name for
+> TMU registers and default data was renamed.
+>=20
+> Additionally, new SOC_ARCH_EXYNOS4412 type has been defined.
 
-Modifying the buffer and removing the const was also suggested by Pavel.
-After some discussion I posted this version which did not change the
-buffer or the prototype.
+It is not clear the objective of the patch itself. Was it just to make
+the code more readable or are you fixing something?
 
-Please let me know if the preference is to modify the store function
-definition.
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+> ---
+>  drivers/thermal/samsung/exynos_tmu.c      |    7 ++++---
+>  drivers/thermal/samsung/exynos_tmu.h      |    1 +
+>  drivers/thermal/samsung/exynos_tmu_data.c |   26 ++++++++++++++++++++-=
+-----
+>  drivers/thermal/samsung/exynos_tmu_data.h |    9 ++++++++-
+>  4 files changed, 33 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
+sung/exynos_tmu.c
+> index b43afda..a858cc4 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -488,7 +488,7 @@ static const struct of_device_id exynos_tmu_match[]=
+ =3D {
+>  	},
+>  	{
+>  		.compatible =3D "samsung,exynos4412-tmu",
+> -		.data =3D (void *)EXYNOS5250_TMU_DRV_DATA,
+> +		.data =3D (void *)EXYNOS4412_TMU_DRV_DATA,
+>  	},
+>  	{
+>  		.compatible =3D "samsung,exynos5250-tmu",
+> @@ -630,8 +630,9 @@ static int exynos_tmu_probe(struct platform_device =
+*pdev)
+>  		return ret;
+> =20
+>  	if (pdata->type =3D=3D SOC_ARCH_EXYNOS ||
+> -		pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
+> -				pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
+> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
+> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS4412 ||
+> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
+>  		data->soc =3D pdata->type;
+>  	else {
+>  		ret =3D -EINVAL;
+> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sam=
+sung/exynos_tmu.h
+> index b364c9e..db37df0 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.h
+> +++ b/drivers/thermal/samsung/exynos_tmu.h
+> @@ -41,6 +41,7 @@ enum calibration_mode {
+> =20
+>  enum soc_type {
+>  	SOC_ARCH_EXYNOS4210 =3D 1,
+> +	SOC_ARCH_EXYNOS4412,
+>  	SOC_ARCH_EXYNOS,
+>  	SOC_ARCH_EXYNOS5440,
+>  };
 
-I'll prepare a patchset that removes the consts to see how much is
-changed.
+I believe the above enum needs some documentation. SOC_ARCH_EXYNOS seams
+to be a bit confusing.
 
-Thanks,
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
+l/samsung/exynos_tmu_data.c
+> index 9002499..bd08093 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -90,8 +90,8 @@ struct exynos_tmu_init_data const exynos4210_default_=
+tmu_data =3D {
+>  };
+>  #endif
+> =20
+> -#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
+> -static const struct exynos_tmu_registers exynos5250_tmu_registers =3D =
+{
+> +#if defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250)
+> +static const struct exynos_tmu_registers exynos4412_tmu_registers =3D =
+{
+>  	.triminfo_data =3D EXYNOS_TMU_REG_TRIMINFO,
+>  	.triminfo_25_shift =3D EXYNOS_TRIMINFO_25_SHIFT,
+>  	.triminfo_85_shift =3D EXYNOS_TRIMINFO_85_SHIFT,
+> @@ -128,7 +128,7 @@ static const struct exynos_tmu_registers exynos5250=
+_tmu_registers =3D {
+>  	.emul_time_mask =3D EXYNOS_EMUL_TIME_MASK,
+>  };
+> =20
+> -#define EXYNOS5250_TMU_DATA \
+> +#define EXYNOS4412_TMU_DATA \
+>  	.threshold_falling =3D 10, \
+>  	.trigger_levels[0] =3D 85, \
+>  	.trigger_levels[1] =3D 103, \
+> @@ -162,15 +162,29 @@ static const struct exynos_tmu_registers exynos52=
+50_tmu_registers =3D {
+>  		.temp_level =3D 103, \
+>  	}, \
+>  	.freq_tab_count =3D 2, \
+> -	.type =3D SOC_ARCH_EXYNOS, \
+> -	.registers =3D &exynos5250_tmu_registers, \
+> +	.registers =3D &exynos4412_tmu_registers, \
+>  	.features =3D (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+>  			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+>  			TMU_SUPPORT_EMUL_TIME)
+> +#endif
+> =20
+> +#if defined(CONFIG_SOC_EXYNOS4412)
+> +struct exynos_tmu_init_data const exynos4412_default_tmu_data =3D {
+> +	.tmu_data =3D {
+> +		{ EXYNOS4412_TMU_DATA,
+> +		.type =3D SOC_ARCH_EXYNOS4412,
+> +		},
+> +	},
+> +	.tmu_count =3D 1,
+> +};
+> +#endif
+> +
+> +#if defined(CONFIG_SOC_EXYNOS5250)
+>  struct exynos_tmu_init_data const exynos5250_default_tmu_data =3D {
+>  	.tmu_data =3D {
+> -		{ EXYNOS5250_TMU_DATA },
+> +		{ EXYNOS4412_TMU_DATA,
+> +		.type =3D SOC_ARCH_EXYNOS,
+> +		},
 
-Sebastian
+Please add a comment on this initialization, specially because we start
+to mix macros with inline initialization. Starts to be hard to follow.
+
+Besides, I believe
++		{
++			EXYNOS4412_TMU_DATA,
++			.type =3D SOC_ARCH_EXYNOS,
++		},
+
+is a much more common style.
+
+
+>  	},
+>  	.tmu_count =3D 1,
+>  };
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/therma=
+l/samsung/exynos_tmu_data.h
+> index dc7feb5..b130b1e 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+> @@ -138,7 +138,14 @@ extern struct exynos_tmu_init_data const exynos421=
+0_default_tmu_data;
+>  #define EXYNOS4210_TMU_DRV_DATA (NULL)
+>  #endif
+> =20
+> -#if (defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412))=
+
+> +#if defined(CONFIG_SOC_EXYNOS4412)
+> +extern struct exynos_tmu_init_data const exynos4412_default_tmu_data;
+> +#define EXYNOS4412_TMU_DRV_DATA (&exynos4412_default_tmu_data)
+> +#else
+> +#define EXYNOS4412_TMU_DRV_DATA (NULL)
+> +#endif
+> +
+> +#if defined(CONFIG_SOC_EXYNOS5250)
+>  extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
+>  #define EXYNOS5250_TMU_DRV_DATA (&exynos5250_default_tmu_data)
+>  #else
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--ctPpqo7gjkOEnAFcX0J6R6pgcxIOTvLe6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlJN6UcACgkQCXcVR3XQvP2JMAEA9LFqKMnC0Izrnf9fDAeuykqB
+BD0Qr0+4Ri3yREgu5awA/RMigHCxddWxu/Cit3Oi/pBIvK1+uazpMeqs8lBhpfaH
+=ytK4
+-----END PGP SIGNATURE-----
+
+--ctPpqo7gjkOEnAFcX0J6R6pgcxIOTvLe6--
