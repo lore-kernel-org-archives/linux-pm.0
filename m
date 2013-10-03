@@ -1,22 +1,22 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 20/92] cpufreq: p4-clockmod: Use generic cpufreq routines
-Date: Thu,  3 Oct 2013 20:28:14 +0530
-Message-ID: <b9d0668b8f2c0fbe462c8d1011343f756a29aa25.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 21/92] cpufreq: pasemi: Use generic cpufreq routines
+Date: Thu,  3 Oct 2013 20:28:15 +0530
+Message-ID: <036307d29a5417ca3e64fba301a2e16f96afdaa1.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:37477 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754279Ab3JCPBq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:01:46 -0400
-Received: by mail-pa0-f41.google.com with SMTP id bj1so2746060pad.0
-        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:01:45 -0700 (PDT)
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:53720 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648Ab3JCPBv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:01:51 -0400
+Received: by mail-pd0-f178.google.com with SMTP id w10so2610336pde.9
+        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:01:51 -0700 (PDT)
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
 Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
 and .attr. So its better if we have generic routines for them which can be used
@@ -24,65 +24,51 @@ by cpufreq drivers then.
 
 This patch uses these generic routines for this driver.
 
-Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/p4-clockmod.c | 23 +++--------------------
- 1 file changed, 3 insertions(+), 20 deletions(-)
+ drivers/cpufreq/pasemi-cpufreq.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
-index 03478bf..4fe6d4c 100644
---- a/drivers/cpufreq/p4-clockmod.c
-+++ b/drivers/cpufreq/p4-clockmod.c
-@@ -140,12 +140,6 @@ static int cpufreq_p4_target(struct cpufreq_policy *policy,
- }
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index 23bc8a82..16f2508 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -69,11 +69,6 @@ static struct cpufreq_frequency_table pas_freqs[] = {
+ 	{0,	CPUFREQ_TABLE_END},
+ };
  
- 
--static int cpufreq_p4_verify(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, &p4clockmod_table[0]);
--}
--
--
- static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
- {
- 	if (c->x86 == 0x06) {
-@@ -242,12 +236,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- }
- 
- 
--static int cpufreq_p4_cpu_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--	return 0;
--}
--
- static unsigned int cpufreq_p4_get(unsigned int cpu)
- {
- 	u32 l, h;
-@@ -266,19 +254,14 @@ static unsigned int cpufreq_p4_get(unsigned int cpu)
- 	return stock_freq;
- }
- 
--static struct freq_attr *p4clockmod_attr[] = {
+-static struct freq_attr *pas_cpu_freqs_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
- static struct cpufreq_driver p4clockmod_driver = {
--	.verify		= cpufreq_p4_verify,
+ /*
+  * hardware specific functions
+  */
+@@ -251,11 +246,6 @@ static int pas_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
+-static int pas_cpufreq_verify(struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy, pas_freqs);
+-}
+-
+ static int pas_cpufreq_target(struct cpufreq_policy *policy,
+ 			      unsigned int target_freq,
+ 			      unsigned int relation)
+@@ -298,9 +288,9 @@ static struct cpufreq_driver pas_cpufreq_driver = {
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+ 	.init		= pas_cpufreq_cpu_init,
+ 	.exit		= pas_cpufreq_cpu_exit,
+-	.verify		= pas_cpufreq_verify,
 +	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target		= cpufreq_p4_target,
- 	.init		= cpufreq_p4_cpu_init,
--	.exit		= cpufreq_p4_cpu_exit,
-+	.exit		= cpufreq_generic_exit,
- 	.get		= cpufreq_p4_get,
- 	.name		= "p4-clockmod",
--	.attr		= p4clockmod_attr,
+ 	.target		= pas_cpufreq_target,
+-	.attr		= pas_cpu_freqs_attr,
 +	.attr		= cpufreq_generic_attr,
  };
  
- static const struct x86_cpu_id cpufreq_p4_id[] = {
+ /*
 -- 
 1.7.12.rc2.18.g61b472e
 
