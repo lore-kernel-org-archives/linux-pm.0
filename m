@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 06/16] cpuidle: rearrange code in __cpuidle_driver_init()
-Date: Thu,  3 Oct 2013 21:26:45 +0530
-Message-ID: <77dcb6954b52386106a0ba262b093e6718e0fd7b.1380815504.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 09/16] cpuidle: reduce code duplication inside cpuidle_idle_call()
+Date: Thu,  3 Oct 2013 21:26:48 +0530
+Message-ID: <fcc808789f01e07d7ce93c9959df50a667390c7c.1380815504.git.viresh.kumar@linaro.org>
 References: <cover.1380815504.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org>
@@ -12,35 +12,50 @@ To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is trivial patch that just reorders few statements in
-__cpuidle_driver_init() routine, so that we don't need both 'continue' and
-'break' in the for loop. Functionally it shouldn't change anything.
+We are doing this twice in cpuidle_idle_call() routine:
+	drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP
 
+Would be better if we actually store this in a local variable and use that. That
+would remove code duplication as well as make this piece of code run fast (in
+case compiler wasn't able to optimize it earlier)
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/driver.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/cpuidle/cpuidle.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index ebc6b0f..58077a9 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -170,12 +170,10 @@ static void __cpuidle_driver_init(struct cpuidle_driver *drv)
- 	 * order, because usually one of the deeper states have this flag set.
- 	 */
- 	for (i = drv->state_count - 1; i >= 0 ; i--) {
--
--		if (!(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP))
--			continue;
--
--		drv->bctimer = 1;
--		break;
-+		if (drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP) {
-+			drv->bctimer = 1;
-+			break;
-+		}
- 	}
- }
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 518b542..ffc637a 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -118,6 +118,7 @@ int cpuidle_idle_call(void)
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv;
+ 	int next_state, entered_state;
++	bool broadcast;
+ 
+ 	if (off || !initialized)
+ 		return -ENODEV;
+@@ -141,7 +142,9 @@ int cpuidle_idle_call(void)
+ 
+ 	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+ 
+-	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
++	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
++
++	if (broadcast)
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+ 				   &dev->cpu);
+ 
+@@ -151,7 +154,7 @@ int cpuidle_idle_call(void)
+ 	else
+ 		entered_state = cpuidle_enter_state(dev, drv, next_state);
+ 
+-	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
++	if (broadcast)
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+ 				   &dev->cpu);
  
 -- 
 1.7.12.rc2.18.g61b472e
