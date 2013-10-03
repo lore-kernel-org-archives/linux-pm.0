@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 36/92] cpufreq: call cpufreq_driver->get() after calling ->init()
-Date: Thu,  3 Oct 2013 20:28:30 +0530
-Message-ID: <c10dca2086f401ff5f33902c2b00f39a185e3ffa.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 37/92] cpufreq: acpi: don't initialize part of policy that is set by core too
+Date: Thu,  3 Oct 2013 20:28:31 +0530
+Message-ID: <8fa3d4a49724fc9a298c0b2f0b266b37d4a13310.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:63036 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753947Ab3JCPDZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:03:25 -0400
-Received: by mail-pd0-f178.google.com with SMTP id w10so2592134pde.37
-        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:03:25 -0700 (PDT)
+Received: from mail-pb0-f47.google.com ([209.85.160.47]:40248 "EHLO
+	mail-pb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754164Ab3JCPDg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:03:36 -0400
+Received: by mail-pb0-f47.google.com with SMTP id rr4so2586126pbb.34
+        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:03:36 -0700 (PDT)
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
@@ -18,47 +18,29 @@ List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Almost all drivers set policy->cur with current cpu frequency in their ->init()
-part. This can be done for all of them at core level and so they wouldn't need
-to do it.
+Many common initializations of struct policy are moved to core now and hence
+this driver doesn't need to do it. This patch removes such code.
 
-This patch adds supporting code in cpufreq core for calling get() after we have
-called init() for a policy.
+Most recent of those changes is to call ->get() in the core after calling
+->init().
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/cpufreq/acpi-cpufreq.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 04548f7..1a944f7 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1053,6 +1053,14 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		goto err_set_policy_cpu;
- 	}
- 
-+	if (cpufreq_driver->get) {
-+		policy->cur = cpufreq_driver->get(policy->cpu);
-+		if (!policy->cur) {
-+			pr_err("%s: ->get() failed\n", __func__);
-+			goto err_get_freq;
-+		}
-+	}
-+
- 	/* related cpus should atleast have policy->cpus */
- 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
- 
-@@ -1107,6 +1115,9 @@ err_out_unregister:
- 		per_cpu(cpufreq_cpu_data, j) = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+err_get_freq:
-+	if (cpufreq_driver->exit)
-+		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
- 	cpufreq_policy_free(policy);
- nomem_out:
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 94a5a1d..a8dac7b 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -842,7 +842,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		break;
+ 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
+ 		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
+-		policy->cur = get_cur_freq_on_cpu(cpu);
+ 		break;
+ 	default:
+ 		break;
 -- 
 1.7.12.rc2.18.g61b472e
 
