@@ -1,38 +1,29 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 03/16] cpuidle: make __cpuidle_get_cpu_driver() inline
-Date: Thu,  3 Oct 2013 21:26:42 +0530
-Message-ID: <d95bfe847f8c6a89442004d0897f8f9ef5a53300.1380815504.git.viresh.kumar@linaro.org>
-References: <cover.1380815504.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org>
-References: <cover.1380815504.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl, daniel.lezcano@linaro.org
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Aijaz Lending <yin01@aijaz527.onmicrosoft.com>
+Subject: looking for loan
+Date: Fri, 4 Oct 2013 01:34:20 +0530
+Message-ID: <4f3bb785-6618-4e83-960b-88ee5ed0668c__2494.55704256452$1380830712$gmane$org@HKXPR02MB213.apcprd02.prod.outlook.com>
+Reply-To: <sg.loan.sg@outlook.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from emea01-db3-ndr.ptr.protection.outlook.com ([157.56.120.101]:64239
+	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754893Ab3JCUE7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 16:04:59 -0400
+Content-Description: Mail message body
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Recipients <yin01@aijaz527.onmicrosoft.com>
 
-__cpuidle_get_cpu_driver() is a single line function and so deserves to be
-marked inline.
+Do you have a firm or company that need loan to start up a business or need,personal loan, Debt consolidation? For more information,Contact us now for a guarantee loan with low interest rate. We will provide you with loan to meet your needs. For more information contact us with the following information's.
+Full name:
+country:
+Address:
+Phone Number:
+Amount needed:
+Duration of loan:
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpuidle/driver.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index ced1df6..25455e8 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -29,7 +29,7 @@ static DEFINE_PER_CPU(struct cpuidle_driver *, cpuidle_drivers);
-  * Returns a pointer to struct cpuidle_driver or NULL if no driver has been
-  * registered for @cpu.
-  */
--static struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
-+static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
- {
- 	return per_cpu(cpuidle_drivers, cpu);
- }
--- 
-1.7.12.rc2.18.g61b472e
+sg.loan.sg@outlook.com
+Kind regards
