@@ -1,84 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 88/92] cpufreq: s3c: use cpufreq_generic_init() routine
-Date: Thu,  3 Oct 2013 20:29:22 +0530
-Message-ID: <adbd39ee6117ce5a5745fb38b91f024d83199c35.1380783079.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 89/92] cpufreq: s5pv210: use cpufreq_generic_init() routine
+Date: Thu,  3 Oct 2013 20:29:23 +0530
+Message-ID: <802380c71397b83bce659fb36e06c7ba1100ba93.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:56504 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754371Ab3JCPIm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2013 11:08:42 -0400
+Received: by mail-pd0-f177.google.com with SMTP id y10so2587971pdj.36
+        for <linux-pm@vger.kernel.org>; Thu, 03 Oct 2013 08:08:41 -0700 (PDT)
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
 References: <cover.1380783079.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
 Use generic cpufreq_generic_init() routine instead of replicating the same code
 here.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/s3c2416-cpufreq.c |  6 ++----
- drivers/cpufreq/s3c24xx-cpufreq.c | 13 +------------
- drivers/cpufreq/s3c64xx-cpufreq.c |  5 ++---
- 3 files changed, 5 insertions(+), 19 deletions(-)
+ drivers/cpufreq/s5pv210-cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
-index 22c4c2d..26a35d1 100644
---- a/drivers/cpufreq/s3c2416-cpufreq.c
-+++ b/drivers/cpufreq/s3c2416-cpufreq.c
-@@ -479,10 +479,8 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	/* Datasheet says PLL stabalisation time must be at least 300us,
- 	 * so but add some fudge. (reference in LOCKCON0 register description)
- 	 */
--	policy->cpuinfo.transition_latency = (500 * 1000) +
--					     s3c_freq->regulator_latency;
--
--	ret = cpufreq_table_validate_and_show(policy, s3c_freq->freq_table);
-+	ret = cpufreq_generic_init(policy, s3c_freq->freq_table,
-+			(500 * 1000) + s3c_freq->regulator_latency);
- 	if (ret)
- 		goto err_freq_table;
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index 30d9bb7..600b4f4 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -543,9 +543,7 @@ static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
+ 	s5pv210_dram_conf[1].refresh = (__raw_readl(S5P_VA_DMC1 + 0x30) * 1000);
+ 	s5pv210_dram_conf[1].freq = clk_get_rate(dmc1_clk);
  
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index e0fbaef..4850882 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -373,18 +373,7 @@ struct clk *s3c_cpufreq_clk_get(struct device *dev, const char *name)
+-	policy->cpuinfo.transition_latency = 40000;
+-
+-	return cpufreq_table_validate_and_show(policy, s5pv210_freq_table);
++	return cpufreq_generic_init(policy, s5pv210_freq_table, 40000);
  
- static int s3c_cpufreq_init(struct cpufreq_policy *policy)
- {
--	printk(KERN_INFO "%s: initialising policy %p\n", __func__, policy);
--
--	if (policy->cpu != 0)
--		return -EINVAL;
--
--	/* feed the latency information from the cpu driver */
--	policy->cpuinfo.transition_latency = cpu_cur.info->latency;
--
--	if (ftab)
--		return cpufreq_table_validate_and_show(policy, ftab);
--
--	return 0;
-+	return cpufreq_generic_init(policy, ftab, cpu_cur.info->latency);
- }
- 
- static int __init s3c_cpufreq_initclks(void)
-diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-index a66cfa3..16dc315 100644
---- a/drivers/cpufreq/s3c64xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-@@ -239,9 +239,8 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	 * the PLLs, which we don't currently) is ~300us worst case,
- 	 * but add some fudge.
- 	 */
--	policy->cpuinfo.transition_latency = (500 * 1000) + regulator_latency;
--
--	ret = cpufreq_table_validate_and_show(policy, s3c64xx_freq_table);
-+	ret = cpufreq_generic_init(policy, s3c64xx_freq_table,
-+			(500 * 1000) + regulator_latency);
- 	if (ret != 0) {
- 		pr_err("Failed to configure frequency table: %d\n",
- 		       ret);
+ out_dmc1:
+ 	clk_put(dmc0_clk);
 -- 
 1.7.12.rc2.18.g61b472e
 
