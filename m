@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 08/16] cpuidle: merge two if() statements for checking error cases
-Date: Thu,  3 Oct 2013 21:26:47 +0530
-Message-ID: <2e680462629529a569ab67dbd9ea4071f01f115c.1380815504.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 07/16] cpuidle: rearrange __cpuidle_register_device() to keep minimal exit points
+Date: Thu,  3 Oct 2013 21:26:46 +0530
+Message-ID: <e3db30c0352ecc92850c72b5be07d6429869c508.1380815504.git.viresh.kumar@linaro.org>
 References: <cover.1380815504.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org>
@@ -12,29 +12,35 @@ To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Both return same error message and so better write them in a single line.
+This patch rearranges __cpuidle_register_device() a bit in order to reduce the
+number of exit points of this function.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/cpuidle.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/cpuidle/cpuidle.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 8c91bad..518b542 100644
+index 211e504..8c91bad 100644
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
-@@ -119,10 +119,7 @@ int cpuidle_idle_call(void)
- 	struct cpuidle_driver *drv;
- 	int next_state, entered_state;
+@@ -383,13 +383,12 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ 	list_add(&dev->device_list, &cpuidle_detected_devices);
  
--	if (off)
--		return -ENODEV;
--
--	if (!initialized)
-+	if (off || !initialized)
- 		return -ENODEV;
+ 	ret = cpuidle_coupled_register_device(dev);
+-	if (ret) {
++	if (ret)
+ 		__cpuidle_unregister_device(dev);
+-		return ret;
+-	}
++	else
++		dev->registered = 1;
  
- 	/* check if the device is ready */
+-	dev->registered = 1;
+-	return 0;
++	return ret;
+ }
+ 
+ /**
 -- 
 1.7.12.rc2.18.g61b472e
