@@ -1,51 +1,59 @@
-From: Paul Walmsley <pwalmsley@nvidia.com>
-Subject: Re: [PATCH V2 03/16] cpuidle: make __cpuidle_get_cpu_driver() inline
-Date: Thu, 3 Oct 2013 13:14:44 -0700
-Message-ID: <524DD034.30906@nvidia.com>
-References: <cover.1380815504.git.viresh.kumar@linaro.org> <d95bfe847f8c6a89442004d0897f8f9ef5a53300.1380815504.git.viresh.kumar@linaro.org>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH V2 00/16] CPUIdle: Minor cleanups for 3.13
+Date: Thu, 03 Oct 2013 14:07:31 -0700
+Message-ID: <87vc1et65o.fsf@linaro.org>
+References: <cover.1380815504.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d95bfe847f8c6a89442004d0897f8f9ef5a53300.1380815504.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org> (Viresh Kumar's
+	message of "Thu, 3 Oct 2013 21:26:39 +0530")
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: rjw@sisk.pl, daniel.lezcano@linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-a comment on this one (and any similar patch)
-
-On 10/03/2013 08:56 AM, Viresh Kumar wrote:
-> __cpuidle_get_cpu_driver() is a single line function and so deserves to be
-> marked inline.
-
-In general, this is a violation of Documentation/CodingStyle - see 
-Chapter 15.
-
-Unless this produces a significant benefit, it's probably best to just 
-let the compiler do this if it wants.
-
-- Paul
-
-
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->   drivers/cpuidle/driver.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> Hi Rafael,
 >
-> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-> index ced1df6..25455e8 100644
-> --- a/drivers/cpuidle/driver.c
-> +++ b/drivers/cpuidle/driver.c
-> @@ -29,7 +29,7 @@ static DEFINE_PER_CPU(struct cpuidle_driver *, cpuidle_drivers);
->    * Returns a pointer to struct cpuidle_driver or NULL if no driver has been
->    * registered for @cpu.
->    */
-> -static struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
-> +static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
->   {
->   	return per_cpu(cpuidle_drivers, cpu);
->   }
+> These are V2 of my CPUIdle cleanup series.. Few patches are dropped as they
+> required further modifications. Last one is rewritten as suggested by Daniel.
+> Most of them are already Acked by Daniel.
+
+I gave these a spin on OMAP3 and both full-chip retention and off-mode
+during idle are still working fine.
+
+Tested-by: Kevin Hilman <khilman@linaro.org>
+
+Kevin
+
+> Viresh Kumar (16):
+>   cpuidle: fix indentation of cpumask
+>   cpuidle: Fix comments in cpuidle core
+>   cpuidle: make __cpuidle_get_cpu_driver() inline
+>   cpuidle: make __cpuidle_device_init() return void
+>   cpuidle: make __cpuidle_driver_init() return void
+>   cpuidle: rearrange code in __cpuidle_driver_init()
+>   cpuidle: rearrange __cpuidle_register_device() to keep minimal exit
+>     points
+>   cpuidle: merge two if() statements for checking error cases
+>   cpuidle: reduce code duplication inside cpuidle_idle_call()
+>   cpuidle: replace multiline statements with single line in
+>     cpuidle_idle_call()
+>   cpuidle: call cpuidle_get_driver() from after taking
+>     cpuidle_driver_lock
+>   cpuidle: use drv instead of cpuidle_driver in show_current_driver()
+>   cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+>   cpuidle: don't calculate time-diff if entered_state < 0
+>   cpuidle: don't call poll_idle_init() for every cpu
+>   cpuidle: remove cpuidle_unregister_governor()
+>
+>  Documentation/cpuidle/governor.txt |  1 -
+>  drivers/cpuidle/coupled.c          |  2 +-
+>  drivers/cpuidle/cpuidle.c          | 95 ++++++++++----------------------------
+>  drivers/cpuidle/driver.c           | 69 ++++++++++++++++++++-------
+>  drivers/cpuidle/governor.c         | 43 -----------------
+>  drivers/cpuidle/sysfs.c            | 30 ++++++------
+>  include/linux/cpuidle.h            |  8 +---
+>  7 files changed, 94 insertions(+), 154 deletions(-)
