@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 09/16] cpuidle: reduce code duplication inside cpuidle_idle_call()
-Date: Thu,  3 Oct 2013 21:26:48 +0530
-Message-ID: <fcc808789f01e07d7ce93c9959df50a667390c7c.1380815504.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 08/16] cpuidle: merge two if() statements for checking error cases
+Date: Thu,  3 Oct 2013 21:26:47 +0530
+Message-ID: <2e680462629529a569ab67dbd9ea4071f01f115c.1380815504.git.viresh.kumar@linaro.org>
 References: <cover.1380815504.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org>
@@ -12,50 +12,29 @@ To: rjw@sisk.pl, daniel.lezcano@linaro.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-We are doing this twice in cpuidle_idle_call() routine:
-	drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP
-
-Would be better if we actually store this in a local variable and use that. That
-would remove code duplication as well as make this piece of code run fast (in
-case compiler wasn't able to optimize it earlier)
+Both return same error message and so better write them in a single line.
 
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpuidle/cpuidle.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/cpuidle/cpuidle.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 518b542..ffc637a 100644
+index 8c91bad..518b542 100644
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
-@@ -118,6 +118,7 @@ int cpuidle_idle_call(void)
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+@@ -119,10 +119,7 @@ int cpuidle_idle_call(void)
  	struct cpuidle_driver *drv;
  	int next_state, entered_state;
-+	bool broadcast;
  
- 	if (off || !initialized)
+-	if (off)
+-		return -ENODEV;
+-
+-	if (!initialized)
++	if (off || !initialized)
  		return -ENODEV;
-@@ -141,7 +142,9 @@ int cpuidle_idle_call(void)
  
- 	trace_cpu_idle_rcuidle(next_state, dev->cpu);
- 
--	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
-+	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
-+
-+	if (broadcast)
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
- 				   &dev->cpu);
- 
-@@ -151,7 +154,7 @@ int cpuidle_idle_call(void)
- 	else
- 		entered_state = cpuidle_enter_state(dev, drv, next_state);
- 
--	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
-+	if (broadcast)
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
- 				   &dev->cpu);
- 
+ 	/* check if the device is ready */
 -- 
 1.7.12.rc2.18.g61b472e
