@@ -1,326 +1,226 @@
-From: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
-Subject: Re: [PATCH 3/3] thermal: samsung: Add TMU support for Exynos5420 SoCs
-Date: Thu, 3 Oct 2013 17:31:42 +0530
-Message-ID: <CAHfPSqBTXUt78OJjp00RO_hPwA-n1+PDRZKGQfmYU4io78w6bQ@mail.gmail.com>
-References: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
- <1378268629-2886-1-git-send-email-ch.naveen@samsung.com> <1378268629-2886-3-git-send-email-ch.naveen@samsung.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Thu, 3 Oct 2013 07:40:03 -0500
+Message-ID: <524D65A3.5090906@ti.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1378268629-2886-3-git-send-email-ch.naveen@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, devicetree@vger.kernel.org, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 4 September 2013 09:53, Naveen Krishna Chatradhi
-<ch.naveen@samsung.com> wrote:
-> This patch adds the neccessary register changes and arch information
-> to support Exynos5420 SoCs
-> Exynos5420 has 5 TMU channels one for each CPU 0, 1, 2 and 3 and GPU
->
-> Also updated the Documentation at
-> Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->
-> Note: The platform data structure will be handled properly once the driver
->  moves to complete device driver solution.
->
-> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> If more than one similar devices share the same operating points(OPPs)
+> being in the same clock domain, currently we need to replicate the
+> OPP entries in all the nodes.
+> 
+> This patch extends existing binding by adding a new property named
+> 'operating-points-phandle' to specify the phandle in any device node
+> pointing to another node which contains the actual OPP tuples.
+> This helps to avoid replication if multiple devices share the OPPs.
+> 
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > ---
-> Changes since v1:
-> 1. modified the platform data structure in order to pass SHARED flag
->    for channels that need sharing of address space.
-> 2. https://lkml.org/lkml/2013/8/1/38 is merged into this patch.
->    As the changes are minimum and can be added here.
->
->  .../devicetree/bindings/thermal/exynos-thermal.txt |   39 ++++++
->  drivers/thermal/samsung/exynos_tmu.c               |   14 ++-
->  drivers/thermal/samsung/exynos_tmu.h               |    1 +
->  drivers/thermal/samsung/exynos_tmu_data.c          |  130 ++++++++++++++++++++
->  drivers/thermal/samsung/exynos_tmu_data.h          |    7 ++
->  5 files changed, 189 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> index 116cca0..d70f2a4 100644
-> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -7,12 +7,23 @@
->                "samsung,exynos4210-tmu"
->                "samsung,exynos5250-tmu"
->                "samsung,exynos5440-tmu"
-> +              "samsung,exynos5420-tmu"
->  - interrupt-parent : The phandle for the interrupt controller
->  - reg : Address range of the thermal registers. For soc's which has multiple
->         instances of TMU and some registers are shared across all TMU's like
->         interrupt related then 2 set of register has to supplied. First set
->         belongs to each instance of TMU and second set belongs to second set
->         of common TMU registers.
-> +  NOTE: On Exynos5420, the TRIMINFO register is misplaced for TMU
-> +       channels 2, 3 and 4
+>  Documentation/devicetree/bindings/power/opp.txt | 161 ++++++++++++++++++++++--
+>  1 file changed, 149 insertions(+), 12 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+> index 74499e5..f59b878 100644
+> --- a/Documentation/devicetree/bindings/power/opp.txt
+> +++ b/Documentation/devicetree/bindings/power/opp.txt
+> @@ -4,22 +4,159 @@ SoCs have a standard set of tuples consisting of frequency and
+>  voltage pairs that the device will support per voltage domain. These
+>  are called Operating Performance Points or OPPs.
+>  
+> -Properties:
+> +Required Properties:
+>  - operating-points: An array of 2-tuples items, and each item consists
+>    of frequency and voltage like <freq-kHz vol-uV>.
+>  	freq: clock frequency in kHz
+>  	vol: voltage in microvolt
+>  
+> +- operating-points-phandle: phandle to the device tree node which contains
+> +	the operating points tuples(recommended to be used if multiple
+> +	devices are in the same clock domain and hence share OPPs, as it
+> +	avoids replication of OPPs)
 > +
-> +       TRIMINFO at 0x1006c000 contains data for TMU channel 3
-> +       TRIMINFO at 0x100a0000 contains data for TMU channel 4
-> +       TRIMINFO at 0x10068000 contains data for TMU channel 2
+> +  operating-points and operating-points-phandle are mutually exclusive, only
+> +  one of them can be present in any device node.
 > +
-> +       The misplaced register address is passed through devicetree as the
-> +       second base
+>  Examples:
+>  
+> -cpu@0 {
+> -	compatible = "arm,cortex-a9";
+> -	reg = <0>;
+> -	next-level-cache = <&L2>;
+> -	operating-points = <
+> -		/* kHz    uV */
+> -		792000  1100000
+> -		396000  950000
+> -		198000  850000
+> -	>;
+> -};
+> +1. A uniprocessor system (phandle not required)
 > +
->  - interrupts : Should contain interrupt for thermal system
->  - clocks : The main clock for TMU device
->  - clock-names : Thermal system clock name
-> @@ -43,6 +54,34 @@ Example 2):
->                 clock-names = "tmu_apbif";
->         };
->
-> +Example 3): (In case of Exynos5420)
-> +       /* tmu for CPU2 */
-> +       tmu@10068000 {
-> +               compatible = "samsung,exynos5420-tmu";
-> +               reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-> +               interrupts = <0 184 0>;
-> +               clocks = <&clock 318>;
-> +               clock-names = "tmu_apbif";
-> +       };
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <0>;
+> +		operating-points = <
+> +			/* kHz    uV */
+> +			792000  1100000
+> +			396000  950000
+> +			198000  850000
+> +		>;
+> +	};
 > +
-> +       /* tmu for CPU3 */
-> +       tmu@1006c000 {
-> +               compatible = "samsung,exynos5420-tmu";
-> +               reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-> +               interrupts = <0 185 0>;
-> +               clocks = <&clock 318>;
-> +               clock-names = "tmu_apbif";
-> +       };
+> +2a. Consider a SMP system with 4 CPUs in the same clock domain(no phandle)
+> +    Some existing DTs describe homogenous SMP systems by only listing the
+> +    OPPs in the cpu@0 node. For compatiblity with existing DTs, an
+> +    operating system may handle this case specially.
 > +
-> +       /* tmu for GPU */
-> +       tmu@100a0000 {
-> +               compatible = "samsung,exynos5420-tmu";
-> +               reg = <0x100a0000 0x100>, <0x10068000 0x4>;
-> +               interrupts = <0 215 0>;
-> +               clocks = <&clock 318>;
-> +               clock-names = "tmu_apbif";
-> +       };
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <0>;
+> +		operating-points = <
+> +			/* kHz    uV */
+> +			792000  1100000
+> +			396000  950000
+> +			198000  850000
+> +		>;
+> +	};
 > +
->  Note: For multi-instance tmu each instance should have an alias correctly
->  numbered in "aliases" node.
->
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 3a55caf..6d34652 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -186,7 +186,12 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->                         EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
->                 }
->         } else {
-> -               trim_info = readl(data->base + reg->triminfo_data);
-> +               /* On exynos5420 the triminfo register is in the shared space */
-> +               if (data->base_second && (data->soc == SOC_ARCH_EXYNOS5420))
-> +                       trim_info = readl(data->base_second +
-> +                                                       reg->triminfo_data);
-> +               else
-> +                       trim_info = readl(data->base + reg->triminfo_data);
->         }
->         data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
->         data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
-> @@ -499,6 +504,10 @@ static const struct of_device_id exynos_tmu_match[] = {
->                 .compatible = "samsung,exynos5440-tmu",
->                 .data = (void *)EXYNOS5440_TMU_DRV_DATA,
->         },
-> +       {
-> +               .compatible = "samsung,exynos5420-tmu",
-> +               .data = (void *)EXYNOS5420_TMU_DRV_DATA,
-> +       },
->         {},
->  };
->  MODULE_DEVICE_TABLE(of, exynos_tmu_match);
-> @@ -637,7 +646,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->
->         if (pdata->type == SOC_ARCH_EXYNOS ||
->                 pdata->type == SOC_ARCH_EXYNOS4210 ||
-> -                               pdata->type == SOC_ARCH_EXYNOS5440)
-> +                               pdata->type == SOC_ARCH_EXYNOS5440 ||
-> +                               pdata->type == SOC_ARCH_EXYNOS5420)
->                 data->soc = pdata->type;
->         else {
->                 ret = -EINVAL;
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-> index ebd2ec1..774ab03 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -43,6 +43,7 @@ enum soc_type {
->         SOC_ARCH_EXYNOS4210 = 1,
->         SOC_ARCH_EXYNOS,
->         SOC_ARCH_EXYNOS5440,
-> +       SOC_ARCH_EXYNOS5420,
->  };
->
->  /**
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> index 58570d0..a6d5cb5 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -177,6 +177,136 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
->  };
->  #endif
->
-> +#if defined(CONFIG_SOC_EXYNOS5420)
-> +static const struct exynos_tmu_registers exynos5420_tmu_registers = {
-> +       .triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
-> +       .triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
-> +       .triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
-> +       .tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
-> +       .buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
-> +       .buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
-> +       .therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
-> +       .therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
-> +       .therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
-> +       .buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
-> +       .buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-> +       .core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
-> +       .tmu_status = EXYNOS_TMU_REG_STATUS,
-> +       .tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
-> +       .threshold_th0 = EXYNOS_THD_TEMP_RISE,
-> +       .threshold_th1 = EXYNOS_THD_TEMP_FALL,
-> +       .tmu_inten = EXYNOS_TMU_REG_INTEN,
-> +       .inten_rise_mask = EXYNOS_TMU_RISE_INT_MASK,
-> +       .inten_rise_shift = EXYNOS_TMU_RISE_INT_SHIFT,
-> +       .inten_fall_mask = EXYNOS_TMU_FALL_INT_MASK,
-> +       .inten_fall_shift = EXYNOS_TMU_FALL_INT_SHIFT,
-> +       .inten_rise0_shift = EXYNOS_TMU_INTEN_RISE0_SHIFT,
-> +       .inten_rise1_shift = EXYNOS_TMU_INTEN_RISE1_SHIFT,
-> +       .inten_rise2_shift = EXYNOS_TMU_INTEN_RISE2_SHIFT,
-> +       /* INTEN_RISE3 Not availble in exynos5420 */
-> +       .inten_rise3_shift = EXYNOS_TMU_INTEN_RISE3_SHIFT,
-> +       .inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
-> +       .tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
-> +       .tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
-> +       .intclr_fall_shift = EXYNOS_TMU_FALL_INT_SHIFT,
-> +       .emul_con = EXYNOS_EMUL_CON,
-> +       .emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
-> +       .emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
-> +       .emul_time_mask = EXYNOS_EMUL_TIME_MASK,
-> +};
+> +	cpu1: cpu@1 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <1>;
+> +	};
 > +
-> +#define EXYNOS5420_TMU_DATA \
-> +       .threshold_falling = 10, \
-> +       .trigger_levels[0] = 85, \
-> +       .trigger_levels[1] = 103, \
-> +       .trigger_levels[2] = 110, \
-> +       .trigger_levels[3] = 120, \
-> +       .trigger_enable[0] = true, \
-> +       .trigger_enable[1] = true, \
-> +       .trigger_enable[2] = true, \
-> +       .trigger_enable[3] = false, \
-> +       .trigger_type[0] = THROTTLE_ACTIVE, \
-> +       .trigger_type[1] = THROTTLE_ACTIVE, \
-> +       .trigger_type[2] = SW_TRIP, \
-> +       .trigger_type[3] = HW_TRIP, \
-> +       .max_trigger_level = 4, \
-> +       .gain = 8, \
-> +       .reference_voltage = 16, \
-> +       .noise_cancel_mode = 4, \
-> +       .cal_type = TYPE_ONE_POINT_TRIMMING, \
-> +       .efuse_value = 55, \
-> +       .min_efuse_value = 40, \
-> +       .max_efuse_value = 100, \
-> +       .first_point_trim = 25, \
-> +       .second_point_trim = 85, \
-> +       .default_temp_offset = 50, \
-> +       .freq_tab[0] = { \
-> +               .freq_clip_max = 800 * 1000, \
-> +               .temp_level = 85, \
-> +       }, \
-> +       .freq_tab[1] = { \
-> +               .freq_clip_max = 200 * 1000, \
-> +               .temp_level = 103, \
-> +       }, \
-> +       .freq_tab_count = 2, \
-> +       .type = SOC_ARCH_EXYNOS5420, \
-> +       .registers = &exynos5420_tmu_registers, \
-> +       .features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
-> +                       TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-> +                       TMU_SUPPORT_EMUL_TIME)
+> +	cpu2: cpu@2 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <2>;
+> +	};
 > +
-> +#define EXYNOS5420_TMU_DATA_SHARED \
-> +       .threshold_falling = 10, \
-> +       .trigger_levels[0] = 85, \
-> +       .trigger_levels[1] = 103, \
-> +       .trigger_levels[2] = 110, \
-> +       .trigger_levels[3] = 120, \
-> +       .trigger_enable[0] = true, \
-> +       .trigger_enable[1] = true, \
-> +       .trigger_enable[2] = true, \
-> +       .trigger_enable[3] = false, \
-> +       .trigger_type[0] = THROTTLE_ACTIVE, \
-> +       .trigger_type[1] = THROTTLE_ACTIVE, \
-> +       .trigger_type[2] = SW_TRIP, \
-> +       .trigger_type[3] = HW_TRIP, \
-> +       .max_trigger_level = 4, \
-> +       .gain = 8, \
-> +       .reference_voltage = 16, \
-> +       .noise_cancel_mode = 4, \
-> +       .cal_type = TYPE_ONE_POINT_TRIMMING, \
-> +       .efuse_value = 55, \
-> +       .min_efuse_value = 40, \
-> +       .max_efuse_value = 100, \
-> +       .first_point_trim = 25, \
-> +       .second_point_trim = 85, \
-> +       .default_temp_offset = 50, \
-> +       .freq_tab[0] = { \
-> +               .freq_clip_max = 800 * 1000, \
-> +               .temp_level = 85, \
-> +       }, \
-> +       .freq_tab[1] = { \
-> +               .freq_clip_max = 200 * 1000, \
-> +               .temp_level = 103, \
-> +       }, \
-> +       .freq_tab_count = 2, \
-> +       .type = SOC_ARCH_EXYNOS5420, \
-> +       .registers = &exynos5420_tmu_registers, \
-> +       .features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
-> +                       TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-> +                       TMU_SUPPORT_EMUL_TIME | TMU_SUPPORT_ADDRESS_MULTIPLE)
+> +	cpu3: cpu@3 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <3>;
+> +	};
 > +
-> +struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
-> +       .tmu_data = {
-> +               { EXYNOS5420_TMU_DATA },
-> +               { EXYNOS5420_TMU_DATA },
-> +               { EXYNOS5420_TMU_DATA_SHARED },
-> +               { EXYNOS5420_TMU_DATA_SHARED },
-> +               { EXYNOS5420_TMU_DATA_SHARED },
-> +       },
-> +       .tmu_count = 5,
-> +};
-> +#endif
+> +2b. Consider a SMP system with 4 CPUs in the same clock domain(with phandle)
+> +    If more than one device of same type share the same OPPs, for example
+> +    all the CPUs on a SoC or in a single cluster on a SoC, then we can avoid
+> +    replicating the OPPs in all the nodes. We can specify the phandle of
+> +    the node which contains the OPP tuples instead.
 > +
->  #if defined(CONFIG_SOC_EXYNOS5440)
->  static const struct exynos_tmu_registers exynos5440_tmu_registers = {
->         .triminfo_data = EXYNOS5440_TMU_S0_7_TRIM,
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-> index 8788a87..3ce94cd 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -153,4 +153,11 @@ extern struct exynos_tmu_init_data const exynos5440_default_tmu_data;
->  #define EXYNOS5440_TMU_DRV_DATA (NULL)
->  #endif
->
-> +#if defined(CONFIG_SOC_EXYNOS5420)
-> +extern struct exynos_tmu_init_data const exynos5420_default_tmu_data;
-> +#define EXYNOS5420_TMU_DRV_DATA (&exynos5420_default_tmu_data)
-> +#else
-> +#define EXYNOS5420_TMU_DRV_DATA (NULL)
-> +#endif
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <0>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
 > +
->  #endif /*_EXYNOS_TMU_DATA_H*/
-> --
-> 1.7.9.5
-Hello All,
+> +	cpu1: cpu@1 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <1>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
+> +
+> +	cpu2: cpu@2 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <2>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
+> +
+> +	cpu3: cpu@3 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <3>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
+> +
+> +	opps-table {
+> +		cpu_opp: cpu_opp {
+> +			operating-points = <
+> +				/* kHz    uV */
+> +				792000  1100000
+> +				396000  950000
+> +				198000  850000
+> +			>;
+> +		};
+> +		... /* other device OPP nodes */
+> +	}
+> +
+> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
+> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
+> +   the clock domain.
+> +
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a15";
+> +		reg = <0>;
+> +		operating-points-phandle = <&cluster0_opp>;
+> +	};
+> +
+> +	cpu1: cpu@1 {
+> +		compatible = "arm,cortex-a15";
+> +		reg = <1>;
+> +		operating-points-phandle = <&cluster0_opp>;
+> +	};
+> +
+> +	cpu2: cpu@100 {
+> +		compatible = "arm,cortex-a7";
+> +		reg = <100>;
+> +		operating-points-phandle = <&cluster1_opp>;
+> +	};
+> +
+> +	cpu3: cpu@101 {
+> +		compatible = "arm,cortex-a7";
+> +		reg = <101>;
+> +		operating-points-phandle = <&cluster1_opp>;
+> +	};
+> +
+> +	opps-table {
+> +		cluster0_opp: cluster0_opp {
+> +			operating-points = <
+> +				/* kHz    uV */
+> +				792000  1100000
+> +				396000  950000
+> +				198000  850000
+> +			>;
+> +		};
+Style comment - add an EOL
+> +		cluster1_opp: cluster1_opp {
+> +			operating-points = <
+> +				/* kHz    uV */
+> +				792000  950000
+> +				396000  750000
+> +				198000  450000
+> +			>;
+> +		};
+> +		... /* other device OPP nodes */
+> +	}
+> +
+> +Container Node
+> +--------------
+> +	- It's highly recommended to place all the shared OPPs under single
+> +	  node for consistency and better readability
+> +	- It's quite similar to clocks or pinmux container nodes
+> +	- In the above examples, "opps-table" is the container node
+> 
 
-Amit Daniel, has Acked these patches a while ago
-Any other review comments or updates on this patch ??
->
+in short, I love this - thanks for doing this.
 
+However, could you squash this to patch #2 -> having implementation
+and binding together is better for git log history.
 
-Thanks & Regards,
 -- 
-Shine bright,
-(: Nav :)
+Regards,
+Nishanth Menon
