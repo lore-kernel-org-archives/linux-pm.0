@@ -1,107 +1,64 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 3/6] PowerCap: Added to drivers build
-Date: Fri, 04 Oct 2013 13:55:40 -0700
-Message-ID: <524F2B4C.7080702@linux.intel.com>
-References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com> <201310041524.20634.gheskett@wdtv.com> <524F192A.7050908@linux.intel.com> <201310041622.29259.gheskett@wdtv.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v2 6/6] Introduce Intel RAPL power capping driver
+Date: Fri, 04 Oct 2013 15:14:22 -0700
+Message-ID: <1380924862.2081.118.camel@joe-AO722>
+References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1380904616-17519-7-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1380910065.2081.117.camel@joe-AO722> <20131004131228.54eb7098@ultegra>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1256; format=flowed
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:43747 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408Ab3JDUzw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Oct 2013 16:55:52 -0400
-In-Reply-To: <201310041622.29259.gheskett@wdtv.com>
+Received: from smtprelay0230.hostedemail.com ([216.40.44.230]:39146 "EHLO
+	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752945Ab3JDWO0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Oct 2013 18:14:26 -0400
+In-Reply-To: <20131004131228.54eb7098@ultegra>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gene Heskett <gheskett@wdtv.com>, Arjan van de Ven <arjan@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com
 
-On 10/04/2013 01:22 PM, Gene Heskett wrote:
-> On Friday 04 October 2013, Srinivas Pandruvada wrote:
->> On 10/04/2013 12:24 PM, Gene Heskett wrote:
->>> On Friday 04 October 2013, Srinivas Pandruvada wrote:
->>>> Added changes to Makefile and Kconfig to include in driver build.
->>>>
->>>> Signed-off-by: Srinivas Pandruvada
->>>> <srinivas.pandruvada@linux.intel.com> Signed-off-by: Jacob Pan
->>>> <jacob.jun.pan@linux.intel.com>
->>>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>> ---
->>>> drivers/Kconfig  | 2 ++
->>>> drivers/Makefile | 1 +
->>>> 2 files changed, 3 insertions(+)
->>>>
->>>> diff --git a/drivers/Kconfig b/drivers/Kconfig
->>>> index aa43b91..969e987 100644
->>>> --- a/drivers/Kconfig
->>>> +++ b/drivers/Kconfig
->>>> @@ -166,4 +166,6 @@ source "drivers/reset/Kconfig"
->>>>
->>>> source "drivers/fmc/Kconfig"
->>>>
->>>> +source "drivers/powercap/Kconfig"
->>>> +
->>>> endmenu
->>>> diff --git a/drivers/Makefile b/drivers/Makefile
->>>> index ab93de8..34c1d55 100644
->>>> --- a/drivers/Makefile
->>>> +++ b/drivers/Makefile
->>>> @@ -152,3 +152,4 @@ obj-$(CONFIG_VME_BUS)		+= vme/
->>>> obj-$(CONFIG_IPACK_BUS)		+= ipack/
->>>> obj-$(CONFIG_NTB)		+= ntb/
->>>> obj-$(CONFIG_FMC)		+= fmc/
->>>> +obj-$(CONFIG_POWERCAP)		+= powercap/
->>> I would object to this whole premise if it is not under the absolute
->>> control of the users program. Linuxcnc for instance is intimately
->>> married to a parport whose status for writes is absolutely stable from
->>> write to write, and whose status may be in some cases, read at sub 20
->>> u-second intervals.  Anything which would imped this, puts the
->>> operator of a 50+ ton piece of machinery's life in jeopardy because
->>> its status is not readable in as close to real time as possible as it
->>> may be required to initiate a stop from some alarm condition before it
->>> has moved far enough to injure, maim or kill. 50 thousandths of an
->>> inch in further movement while moving a 70 ton milling machines table
->>> at 150 inches a minute is not an unreasonable expectation for us.
->> <Sorry, I didn't understand. Are you pointing any problem in this patch
->> or patch-set in general?
-> Not that my relatively untrained eyes can spot.
->
->> This change added powercap directory to the kernel build. Is something
->> wrong with it or any other way to do that?
-> The prospect of having a poorly configured way to power down a port that is
-> running heavy machinery under real time control scares me.  And that is
-> what this patch series seems to be leading up to if I am reading the patch
-> headers correctly.  If I am not reading it correctly, then assume I am
-> issuing a pre-emptive strike just to make sure you folks trying to save a
-> milliwatt here and there, and there is not a thing wrong with the basic
-> idea, are made aware of the potential for maiming mischief should you
-> decide to power down a port just because its last access was 5 milliseconds
-> ago.  Even a completely servo driven configuration will tickle it faster
-> than that, however an e-stop condition, which might shut down a charge pump
-> pulse generator must be maintained until cleared by the operator, which
-> means the control channel to the machine, whatever port it is, must be kept
-> alive to be human safe around the machine.  The capability to do that to a
-> given port should therefore be made a kernel .config selection incapable of
-> being overridden by some other perceived dependency in kconfig.
->
-> I hope this is a better explanation. :)
-The idea of power capping is to cap total power not power down and also 
-need root level access to modify.
-There is a minimum and maximum values is also defined, which should make 
-sure that the system is
-running with reduced performance, not power down.
-This patch is not affecting Linux PM. Power down a port trigger 
-generated by PM framework in coordination
-with the driver controlling the port.
-If some port is capable of powercapping and implemented a client driver 
-for this, they can disable the whole
-power capping by setting CONFIG_POWERCAP=n for such systems.
-> And please, lets keep such discussion on the list where it belongs.
->
-I am still doing reply to all to keep everyone in the mailing list in loop.
+On Fri, 2013-10-04 at 13:12 -0700, Jacob Pan wrote:
+> On Fri, 04 Oct 2013 11:07:45 -0700
+> Joe Perches <joe@perches.com> wrote:
+> 
+> > On Fri, 2013-10-04 at 09:36 -0700, Srinivas Pandruvada wrote:
+> > > The Intel Running Average Power Limit(RAPL) technology provides
+> > > platform software with the ability to monitor, control, and get
+> > > notifications on power usage.
+> > []
+> > > diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
+> > []
+> > > +/* bitmasks for RAPL MSRs, used by primitive access functions */
+> > > +#define ENERGY_STATUS_MASK      0xffffffff
+> > > +
+> > > +#define POWER_LIMIT1_MASK       0x7FFF
+> > > +#define POWER_LIMIT1_ENABLE     BIT(15)
+> > > +#define POWER_LIMIT1_CLAMP      BIT(16)
+> > > +
+> > > +#define POWER_LIMIT2_MASK       (0x7FFFULL<<32)
+> > > +#define POWER_LIMIT2_ENABLE     BIT_ULL(47)
+> > > +#define POWER_LIMIT2_CLAMP      BIT_ULL(48)
+> > > +#define POWER_PACKAGE_LOCK      BIT_ULL(63)
+> > > +#define POWER_PP_LOCK           BIT(31)
+> > > +
+> > > +#define TIME_WINDOW1_MASK       (0x7F<<17)
+> > > +#define TIME_WINDOW2_MASK       (0x7FULL<<49)
+> > 
+> > 
+> > Is there a reason why these masks aren't all ULL?
+> > 
+> > 
+> 
+> are you referring to this line below not being ULL?
+> > > +#define TIME_WINDOW1_MASK       (0x7F<<17)
+> if this is the case, I did that because it is not more than 32 bit.
+> 
+> Thanks,
+> 
+> Jacob
 
+Isn't LIMIT1/WINDOW1 used as ull anyway?
+It doesn't hurt to show that the value is also ull.
 
-
-Thanks,
-Srinivas
