@@ -1,101 +1,94 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Subject: Re: [PATCH 4/6] thermal: exynos: Replace SOC_ARCH_EXYNOS with
  SOC_ARCH_EXYNOS5250
-Date: Fri, 04 Oct 2013 12:23:30 +0200
-Message-ID: <20131004122330.47e21d24@amdc308.digital.local>
+Date: Fri, 04 Oct 2013 12:47:19 +0200
+Message-ID: <2265935.YcHunKd7UC@amdc1032>
 References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
- <1380010102-25817-5-git-send-email-l.majewski@samsung.com>
- <524DEAED.4030905@ti.com>
+ <524DEAED.4030905@ti.com> <20131004122330.47e21d24@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:19766 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149Ab3JDKYO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Oct 2013 06:24:14 -0400
-In-reply-to: <524DEAED.4030905@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20131004122330.47e21d24@amdc308.digital.local>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 
-Hi Eduardo,
-
-> On 24-09-2013 04:08, Lukasz Majewski wrote:
-> > The TMU data definition is now separated to Exynos4412 and
-> > Exynos5250.
-> > 
-> > Now SOC_ARCH_EXYNOS only refers to Exynos5250. Hence the name
-> > SOC_ARCH_EXYNOS has been changed to SOC_ARCH_EXYNOS5250.
-> > 
+On Friday, October 04, 2013 12:23:30 PM Lukasz Majewski wrote:
+> Hi Eduardo,
 > 
-> How about merging this one with patch 02?
-
-I wanted to show how the work was logically split - patch 02
-extracts Exynos4412 from Exynos5250. Then this patch changes the name.
-
-I will merge those two patches. No problem.
-
-> 
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > ---
-> >  drivers/thermal/samsung/exynos_tmu.c      |    4 ++--
-> >  drivers/thermal/samsung/exynos_tmu.h      |    2 +-
-> >  drivers/thermal/samsung/exynos_tmu_data.c |    2 +-
-> >  3 files changed, 4 insertions(+), 4 deletions(-)
+> > On 24-09-2013 04:08, Lukasz Majewski wrote:
+> > > The TMU data definition is now separated to Exynos4412 and
+> > > Exynos5250.
+> > > 
+> > > Now SOC_ARCH_EXYNOS only refers to Exynos5250. Hence the name
+> > > SOC_ARCH_EXYNOS has been changed to SOC_ARCH_EXYNOS5250.
+> > > 
 > > 
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> > b/drivers/thermal/samsung/exynos_tmu.c index 21b89e4..037cd46 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> > @@ -632,9 +632,9 @@ static int exynos_tmu_probe(struct
-> > platform_device *pdev) if (ret)
-> >  		return ret;
-> >  
-> > -	if (pdata->type == SOC_ARCH_EXYNOS ||
-> > -	    pdata->type == SOC_ARCH_EXYNOS4210 ||
-> > +	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
-> >  	    pdata->type == SOC_ARCH_EXYNOS4412 ||
-> > +	    pdata->type == SOC_ARCH_EXYNOS5250 ||
-> >  	    pdata->type == SOC_ARCH_EXYNOS5440)
-> >  		data->soc = pdata->type;
-> >  	else {
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.h
-> > b/drivers/thermal/samsung/exynos_tmu.h index db37df0..b42ece4 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu.h
-> > +++ b/drivers/thermal/samsung/exynos_tmu.h
-> > @@ -42,7 +42,7 @@ enum calibration_mode {
-> >  enum soc_type {
-> >  	SOC_ARCH_EXYNOS4210 = 1,
-> >  	SOC_ARCH_EXYNOS4412,
-> > -	SOC_ARCH_EXYNOS,
-> > +	SOC_ARCH_EXYNOS5250,
-> >  	SOC_ARCH_EXYNOS5440,
-> >  };
-> >  
-> > diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
-> > b/drivers/thermal/samsung/exynos_tmu_data.c index bd08093..188223f
-> > 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> > @@ -183,7 +183,7 @@ struct exynos_tmu_init_data const
-> > exynos4412_default_tmu_data = { struct exynos_tmu_init_data const
-> > exynos5250_default_tmu_data = { .tmu_data = {
-> >  		{ EXYNOS4412_TMU_DATA,
-> > -		.type = SOC_ARCH_EXYNOS,
-> > +		.type = SOC_ARCH_EXYNOS5250,
-> >  		},
-> >  	},
-> >  	.tmu_count = 1,
-> > 
+> > How about merging this one with patch 02?
 > 
+> I wanted to show how the work was logically split - patch 02
+> extracts Exynos4412 from Exynos5250. Then this patch changes the name.
 > 
+> I will merge those two patches. No problem.
 
+Oh, well. Looking at the patch #2 again the merge can be done without
+sacrificing backportability.
 
-
--- 
 Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> > 
+> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > > ---
+> > >  drivers/thermal/samsung/exynos_tmu.c      |    4 ++--
+> > >  drivers/thermal/samsung/exynos_tmu.h      |    2 +-
+> > >  drivers/thermal/samsung/exynos_tmu_data.c |    2 +-
+> > >  3 files changed, 4 insertions(+), 4 deletions(-)
+> > > 
+> > > diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> > > b/drivers/thermal/samsung/exynos_tmu.c index 21b89e4..037cd46 100644
+> > > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > > @@ -632,9 +632,9 @@ static int exynos_tmu_probe(struct
+> > > platform_device *pdev) if (ret)
+> > >  		return ret;
+> > >  
+> > > -	if (pdata->type == SOC_ARCH_EXYNOS ||
+> > > -	    pdata->type == SOC_ARCH_EXYNOS4210 ||
+> > > +	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
+> > >  	    pdata->type == SOC_ARCH_EXYNOS4412 ||
+> > > +	    pdata->type == SOC_ARCH_EXYNOS5250 ||
+> > >  	    pdata->type == SOC_ARCH_EXYNOS5440)
+> > >  		data->soc = pdata->type;
+> > >  	else {
+> > > diff --git a/drivers/thermal/samsung/exynos_tmu.h
+> > > b/drivers/thermal/samsung/exynos_tmu.h index db37df0..b42ece4 100644
+> > > --- a/drivers/thermal/samsung/exynos_tmu.h
+> > > +++ b/drivers/thermal/samsung/exynos_tmu.h
+> > > @@ -42,7 +42,7 @@ enum calibration_mode {
+> > >  enum soc_type {
+> > >  	SOC_ARCH_EXYNOS4210 = 1,
+> > >  	SOC_ARCH_EXYNOS4412,
+> > > -	SOC_ARCH_EXYNOS,
+> > > +	SOC_ARCH_EXYNOS5250,
+> > >  	SOC_ARCH_EXYNOS5440,
+> > >  };
+> > >  
+> > > diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
+> > > b/drivers/thermal/samsung/exynos_tmu_data.c index bd08093..188223f
+> > > 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> > > +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> > > @@ -183,7 +183,7 @@ struct exynos_tmu_init_data const
+> > > exynos4412_default_tmu_data = { struct exynos_tmu_init_data const
+> > > exynos5250_default_tmu_data = { .tmu_data = {
+> > >  		{ EXYNOS4412_TMU_DATA,
+> > > -		.type = SOC_ARCH_EXYNOS,
+> > > +		.type = SOC_ARCH_EXYNOS5250,
+> > >  		},
+> > >  	},
+> > >  	.tmu_count = 1,
