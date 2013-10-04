@@ -1,119 +1,141 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 2/2] thermal: TI: always register sensor driver with core
- thermal framework
-Date: Fri, 04 Oct 2013 14:40:51 +0200
-Message-ID: <1466554.jrelSVKzU4@amdc1032>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 4/6] thermal: exynos: Replace SOC_ARCH_EXYNOS with SOC_ARCH_EXYNOS5250
+Date: Fri, 4 Oct 2013 11:07:00 -0400
+Message-ID: <524ED994.7020600@ti.com>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com> <524DEAED.4030905@ti.com> <20131004122330.47e21d24@amdc308.digital.local> <2265935.YcHunKd7UC@amdc1032>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="VxriV23ILdJdStvRGSMKosPtajFoJ5uWu"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:15763 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754Ab3JDMnL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Oct 2013 08:43:11 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:54569 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755138Ab3JDPH0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Oct 2013 11:07:26 -0400
+In-Reply-To: <2265935.YcHunKd7UC@amdc1032>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 
-There is little sense in having separate config option for
-registering the sensor driver with the core thermal framework.
-Fix it by integrating TI_THERMAL config option with TI_SOC_THERMAL
-one.
+--VxriV23ILdJdStvRGSMKosPtajFoJ5uWu
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/thermal/ti-soc-thermal/Kconfig      | 15 +++-----------
- drivers/thermal/ti-soc-thermal/Makefile     |  2 +-
- drivers/thermal/ti-soc-thermal/ti-thermal.h | 31 -----------------------------
- 3 files changed, 4 insertions(+), 44 deletions(-)
+On 04-10-2013 06:47, Bartlomiej Zolnierkiewicz wrote:
+> On Friday, October 04, 2013 12:23:30 PM Lukasz Majewski wrote:
+>> Hi Eduardo,
+>>
+>>> On 24-09-2013 04:08, Lukasz Majewski wrote:
+>>>> The TMU data definition is now separated to Exynos4412 and
+>>>> Exynos5250.
+>>>>
+>>>> Now SOC_ARCH_EXYNOS only refers to Exynos5250. Hence the name
+>>>> SOC_ARCH_EXYNOS has been changed to SOC_ARCH_EXYNOS5250.
+>>>>
+>>>
+>>> How about merging this one with patch 02?
+>>
+>> I wanted to show how the work was logically split - patch 02
+>> extracts Exynos4412 from Exynos5250. Then this patch changes the name.=
 
-diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
-index bf5d6e4..c64e78b 100644
---- a/drivers/thermal/ti-soc-thermal/Kconfig
-+++ b/drivers/thermal/ti-soc-thermal/Kconfig
-@@ -7,18 +7,9 @@ config TI_SOC_THERMAL
- 	  OMAP4460+ on die bandgap temperature sensor support. The register
- 	  set is part of system control module.
- 
--	  This includes alert interrupts generation and also the TSHUT
--	  support.
--
--config TI_THERMAL
--	bool "Texas Instruments SoCs thermal framework support"
--	depends on TI_SOC_THERMAL
--	help
--	  If you say yes here you want to get support for generic thermal
--	  framework for the Texas Instruments on die bandgap temperature sensor.
--
--	  This includes trip points definitions, extrapolation rules and
--	  CPU cooling device bindings.
-+	  This includes alert interrupts generation, the TSHUT support,
-+	  trip points definitions, extrapolation rules and CPU cooling
-+	  device bindings.
- 
- config OMAP4_THERMAL
- 	bool "Texas Instruments OMAP4 thermal support"
-diff --git a/drivers/thermal/ti-soc-thermal/Makefile b/drivers/thermal/ti-soc-thermal/Makefile
-index 1226b24..c75cc91 100644
---- a/drivers/thermal/ti-soc-thermal/Makefile
-+++ b/drivers/thermal/ti-soc-thermal/Makefile
-@@ -1,6 +1,6 @@
- obj-$(CONFIG_TI_SOC_THERMAL)		+= ti-soc-thermal.o
- ti-soc-thermal-y			:= ti-bandgap.o
--ti-soc-thermal-$(CONFIG_TI_THERMAL)	+= ti-thermal-common.o
-+ti-soc-thermal-y			+= ti-thermal-common.o
- ti-soc-thermal-$(CONFIG_DRA752_THERMAL)	+= dra752-thermal-data.o
- ti-soc-thermal-$(CONFIG_OMAP4_THERMAL)	+= omap4-thermal-data.o
- ti-soc-thermal-$(CONFIG_OMAP5_THERMAL)	+= omap5-thermal-data.o
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal.h b/drivers/thermal/ti-soc-thermal/ti-thermal.h
-index f8b7ffe..5fb427c 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal.h
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal.h
-@@ -83,41 +83,10 @@
- #define ti_thermal_is_valid_trip(trip)				\
- 	((trip) >= 0 && (trip) < OMAP_TRIP_NUMBER)
- 
--#ifdef CONFIG_TI_THERMAL
- int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id, char *domain);
- int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id);
- int ti_thermal_report_sensor_temperature(struct ti_bandgap *bgp, int id);
- int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id);
- int ti_thermal_unregister_cpu_cooling(struct ti_bandgap *bgp, int id);
--#else
--static inline
--int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id, char *domain)
--{
--	return 0;
--}
- 
--static inline
--int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id)
--{
--	return 0;
--}
--
--static inline
--int ti_thermal_report_sensor_temperature(struct ti_bandgap *bgp, int id)
--{
--	return 0;
--}
--
--static inline
--int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
--{
--	return 0;
--}
--
--static inline
--int ti_thermal_unregister_cpu_cooling(struct ti_bandgap *bgp, int id)
--{
--	return 0;
--}
--#endif
- #endif
--- 
-1.8.2.3
+>>
+>> I will merge those two patches. No problem.
+>=20
+> Oh, well. Looking at the patch #2 again the merge can be done without
+> sacrificing backportability.
+
+Please, merge them and describe that you are reworking the type and the
+enum definition. Also add your reasonings, specially if you found bugs.
+The way the descriptions are being presented, the bugs you found do not
+get properly explained.
+
+>=20
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+>=20
+>>>
+>>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>>>> ---
+>>>>  drivers/thermal/samsung/exynos_tmu.c      |    4 ++--
+>>>>  drivers/thermal/samsung/exynos_tmu.h      |    2 +-
+>>>>  drivers/thermal/samsung/exynos_tmu_data.c |    2 +-
+>>>>  3 files changed, 4 insertions(+), 4 deletions(-)
+>>>>
+>>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c
+>>>> b/drivers/thermal/samsung/exynos_tmu.c index 21b89e4..037cd46 100644=
+
+>>>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>>>> @@ -632,9 +632,9 @@ static int exynos_tmu_probe(struct
+>>>> platform_device *pdev) if (ret)
+>>>>  		return ret;
+>>>> =20
+>>>> -	if (pdata->type =3D=3D SOC_ARCH_EXYNOS ||
+>>>> -	    pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
+>>>> +	if (pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
+>>>>  	    pdata->type =3D=3D SOC_ARCH_EXYNOS4412 ||
+>>>> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS5250 ||
+>>>>  	    pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
+>>>>  		data->soc =3D pdata->type;
+>>>>  	else {
+>>>> diff --git a/drivers/thermal/samsung/exynos_tmu.h
+>>>> b/drivers/thermal/samsung/exynos_tmu.h index db37df0..b42ece4 100644=
+
+>>>> --- a/drivers/thermal/samsung/exynos_tmu.h
+>>>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>>>> @@ -42,7 +42,7 @@ enum calibration_mode {
+>>>>  enum soc_type {
+>>>>  	SOC_ARCH_EXYNOS4210 =3D 1,
+>>>>  	SOC_ARCH_EXYNOS4412,
+>>>> -	SOC_ARCH_EXYNOS,
+>>>> +	SOC_ARCH_EXYNOS5250,
+>>>>  	SOC_ARCH_EXYNOS5440,
+>>>>  };
+>>>> =20
+>>>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
+>>>> b/drivers/thermal/samsung/exynos_tmu_data.c index bd08093..188223f
+>>>> 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
+>>>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+>>>> @@ -183,7 +183,7 @@ struct exynos_tmu_init_data const
+>>>> exynos4412_default_tmu_data =3D { struct exynos_tmu_init_data const
+>>>> exynos5250_default_tmu_data =3D { .tmu_data =3D {
+>>>>  		{ EXYNOS4412_TMU_DATA,
+>>>> -		.type =3D SOC_ARCH_EXYNOS,
+>>>> +		.type =3D SOC_ARCH_EXYNOS5250,
+>>>>  		},
+>>>>  	},
+>>>>  	.tmu_count =3D 1,
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
+>=20
 
 
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--VxriV23ILdJdStvRGSMKosPtajFoJ5uWu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlJO2ZoACgkQCXcVR3XQvP0sDQD7B52MD2xoWPbCYvVisLgvmobk
+MuRwecQ+owTvny7WD/0A/1T6FMBw/dgmv5ouYybMEElHRaNuD3WYksqvtdweaUDR
+=UoWf
+-----END PGP SIGNATURE-----
+
+--VxriV23ILdJdStvRGSMKosPtajFoJ5uWu--
