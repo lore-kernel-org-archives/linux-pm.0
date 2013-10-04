@@ -1,64 +1,49 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 3/6] PowerCap: Added to drivers build
-Date: Fri, 04 Oct 2013 12:38:18 -0700
-Message-ID: <524F192A.7050908@linux.intel.com>
-References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1380904616-17519-4-git-send-email-srinivas.pandruvada@linux.intel.com> <201310041524.20634.gheskett@wdtv.com>
+Subject: Re: [PATCH v2 2/6] PowerCap: Add class driver
+Date: Fri, 04 Oct 2013 13:06:59 -0700
+Message-ID: <524F1FE3.50404@linux.intel.com>
+References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1380904616-17519-3-git-send-email-srinivas.pandruvada@linux.intel.com> <20131004165120.GA19892@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1256; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201310041524.20634.gheskett@wdtv.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Gene Heskett <gheskett@wdtv.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:51668 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751544Ab3JDUHh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Oct 2013 16:07:37 -0400
+In-Reply-To: <20131004165120.GA19892@kroah.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com
 
-On 10/04/2013 12:24 PM, Gene Heskett wrote:
-> On Friday 04 October 2013, Srinivas Pandruvada wrote:
->> Added changes to Makefile and Kconfig to include in driver build.
->>
->> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
->> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
->> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->> drivers/Kconfig  | 2 ++
->> drivers/Makefile | 1 +
->> 2 files changed, 3 insertions(+)
->>
->> diff --git a/drivers/Kconfig b/drivers/Kconfig
->> index aa43b91..969e987 100644
->> --- a/drivers/Kconfig
->> +++ b/drivers/Kconfig
->> @@ -166,4 +166,6 @@ source "drivers/reset/Kconfig"
->>
->> source "drivers/fmc/Kconfig"
->>
->> +source "drivers/powercap/Kconfig"
+On 10/04/2013 09:51 AM, Greg KH wrote:
+> On Fri, Oct 04, 2013 at 09:36:52AM -0700, Srinivas Pandruvada wrote:
+>> +/* Power zone ro attributes define */
+>> +#define powercap_attr_ro(_name)		\
+>> +	static DEVICE_ATTR(_name, 0444, show_##_name, NULL)
 >> +
->> endmenu
->> diff --git a/drivers/Makefile b/drivers/Makefile
->> index ab93de8..34c1d55 100644
->> --- a/drivers/Makefile
->> +++ b/drivers/Makefile
->> @@ -152,3 +152,4 @@ obj-$(CONFIG_VME_BUS)		+= vme/
->> obj-$(CONFIG_IPACK_BUS)		+= ipack/
->> obj-$(CONFIG_NTB)		+= ntb/
->> obj-$(CONFIG_FMC)		+= fmc/
->> +obj-$(CONFIG_POWERCAP)		+= powercap/
-> I would object to this whole premise if it is not under the absolute
-> control of the users program. Linuxcnc for instance is intimately married
-> to a parport whose status for writes is absolutely stable from write to
-> write, and whose status may be in some cases, read at sub 20 u-second
-> intervals.  Anything which would imped this, puts the operator of a 50+ ton
-> piece of machinery's life in jeopardy because its status is not readable in
-> as close to real time as possible as it may be required to initiate a stop
-> from some alarm condition before it has moved far enough to injure, maim or
-> kill. 50 thousandths of an inch in further movement while moving a 70 ton
-> milling machines table at 150 inches a minute is not an unreasonable
-> expectation for us.
-<Sorry, I didn't understand. Are you pointing any problem in this patch 
-or patch-set in general?
-This change added powercap directory to the kernel build. Is something 
-wrong with it or any other way to do that?
- >
-> Cheers, Gene
+>> +/* Power zone rw attributes define */
+>> +#define powercap_attr_rw(_name)		\
+>> +	static DEVICE_ATTR(_name, 0644, show_##_name, store_##_name)
+>> +
+>> +/* constraint attributes define rw */
+>> +#define powercap_const_attr_rw(_name)		\
+>> +	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, \
+>> +				store_constraint_##_name)
+>> +/* constraint attributes define ro */
+>> +#define powercap_const_attr_ro(_name)		\
+>> +	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, NULL)
+> Minor nit:
+>
+> Why are you using your own defines, why not just use the
+> DEVICE_ATTR_RO() and DEVICE_ATTR_RW() macros?  That way it makes it
+> easier to grep for attributes, and ensure they have set the mode bits
+> properly.
+I will replace in the next patchset.
+
+Thanks,
+Srinivas
+
+
+
