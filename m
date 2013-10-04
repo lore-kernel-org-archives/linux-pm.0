@@ -1,47 +1,84 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2 2/6] PowerCap: Add class driver
-Date: Fri, 4 Oct 2013 09:51:20 -0700
-Message-ID: <20131004165120.GA19892@kroah.com>
-References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1380904616-17519-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [GIT PULL] ACPI and power management fixes for v3.12-rc4
+Date: Fri, 04 Oct 2013 19:21:45 +0200
+Message-ID: <1629188.tfKsCbhlKT@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:37096 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995Ab3JDQvV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Oct 2013 12:51:21 -0400
-Content-Disposition: inline
-In-Reply-To: <1380904616-17519-3-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com
 
-On Fri, Oct 04, 2013 at 09:36:52AM -0700, Srinivas Pandruvada wrote:
-> +/* Power zone ro attributes define */
-> +#define powercap_attr_ro(_name)		\
-> +	static DEVICE_ATTR(_name, 0444, show_##_name, NULL)
-> +
-> +/* Power zone rw attributes define */
-> +#define powercap_attr_rw(_name)		\
-> +	static DEVICE_ATTR(_name, 0644, show_##_name, store_##_name)
-> +
-> +/* constraint attributes define rw */
-> +#define powercap_const_attr_rw(_name)		\
-> +	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, \
-> +				store_constraint_##_name)
-> +/* constraint attributes define ro */
-> +#define powercap_const_attr_ro(_name)		\
-> +	static DEVICE_ATTR(_name, 0644, show_constraint_##_name, NULL)
+Hi Linus,
 
-Minor nit:
+Please pull from the git repository at
 
-Why are you using your own defines, why not just use the
-DEVICE_ATTR_RO() and DEVICE_ATTR_RW() macros?  That way it makes it
-easier to grep for attributes, and ensure they have set the mode bits
-properly.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.12-rc4
 
-thanks,
+to receive ACPI and power management fixes for v3.12-rc4 with
+top-most commit 726dcbe5f5d88080b9106f3a55b95d358b2aa140
 
-greg k-h
+  Merge branch 'pm-fixes'
+
+on top of commit 15c03dd4859ab16f9212238f29dd315654aa94f6
+
+  Linux 3.12-rc3
+
+These fix a recent hibernation breakage, the export of an ACPI function
+used by binary modules, a mistake in one of recent cpufreq-cpu0 driver
+patches, the intel_pstate's handling of one of its sysfs attributes and
+an error code path bug in the SPEAr cpufreq driver.
+
+Specifics:
+
+ 1) The resume part of user space driven hibernation (s2disk) is now
+    broken after the change that moved the creation of memory bitmaps
+    to after the freezing of tasks, because I forgot that the resume
+    utility loaded the image before freezing tasks and needed the
+    bitmaps for that.  The fix adds special handling for that case.
+
+ 2) One of recent commits changed the export of acpi_bus_get_device()
+    to EXPORT_SYMBOL_GPL(), which was technically correct but broke
+    existing binary modules using that function including one in
+    particularly widespread use.  Change it back to EXPORT_SYMBOL().
+
+ 3) The intel_pstate driver sometimes fails to disable turbo if its
+    no_turbo sysfs attribute is set.  Fix from Srinivas Pandruvada.
+
+ 4) One of recent cpufreq fixes forgot to update a check in cpufreq-cpu0 
+    which still (incorrectly) treats non-NULL as non-error.  Fix from
+    Philipp Zabel.
+
+ 5) The SPEAr cpufreq driver uses a wrong variable type in one place
+    preventing it from catching errors returned by one of the functions
+    called by it.  Fix from Sachin Kamat.
+
+Thanks!
+
+
+---------------
+
+Philipp Zabel (1):
+      cpufreq: cpufreq-cpu0: NULL is a valid regulator, part 2
+
+Rafael J. Wysocki (2):
+      PM / hibernate: Fix user space driven resume regression
+      ACPI: Use EXPORT_SYMBOL() for acpi_bus_get_device()
+
+Sachin Kamat (1):
+      cpufreq: SPEAr: Fix incorrect variable type
+
+Srinivas Pandruvada (1):
+      intel_pstate: fix no_turbo
+
+---------------
+
+ drivers/acpi/scan.c             | 2 +-
+ drivers/cpufreq/cpufreq-cpu0.c  | 2 +-
+ drivers/cpufreq/intel_pstate.c  | 5 ++++-
+ drivers/cpufreq/spear-cpufreq.c | 2 +-
+ kernel/power/snapshot.c         | 5 ++++-
+ kernel/power/user.c             | 8 ++++++++
+ 6 files changed, 19 insertions(+), 5 deletions(-)
