@@ -1,29 +1,44 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] Thermal: Tidy up error handling in powerclamp_init
-Date: Fri, 4 Oct 2013 09:37:15 -0700
-Message-ID: <20131004093715.5a3e43c6@ultegra>
-References: <1380903804-18913-1-git-send-email-durgadoss.r@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:38063 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754530Ab3JDQhP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Oct 2013 12:37:15 -0400
-In-Reply-To: <1380903804-18913-1-git-send-email-durgadoss.r@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 3/6] PowerCap: Added to drivers build
+Date: Fri,  4 Oct 2013 09:36:53 -0700
+Message-ID: <1380904616-17519-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
 
-On Fri,  4 Oct 2013 21:53:24 +0530
-Durgadoss R <durgadoss.r@intel.com> wrote:
+Added changes to Makefile and Kconfig to include in driver build.
 
-> This patch
->  * adds missing kfree() for cpu_clamping_mask
->  * adds return value checking for alloc_percpu()
->  * unregister hotcpu notifier in exit path
-looks good. thanks for the fix.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/Kconfig  | 2 ++
+ drivers/Makefile | 1 +
+ 2 files changed, 3 insertions(+)
 
-Jacob
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index aa43b91..969e987 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -166,4 +166,6 @@ source "drivers/reset/Kconfig"
+ 
+ source "drivers/fmc/Kconfig"
+ 
++source "drivers/powercap/Kconfig"
++
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index ab93de8..34c1d55 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -152,3 +152,4 @@ obj-$(CONFIG_VME_BUS)		+= vme/
+ obj-$(CONFIG_IPACK_BUS)		+= ipack/
+ obj-$(CONFIG_NTB)		+= ntb/
+ obj-$(CONFIG_FMC)		+= fmc/
++obj-$(CONFIG_POWERCAP)		+= powercap/
+-- 
+1.8.3.1
