@@ -1,95 +1,75 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] thermal: offer TI thermal support only when ARCH_OMAP2PLUS
- is defined
-Date: Fri, 4 Oct 2013 14:26:54 -0400
-Message-ID: <524F086E.4020608@ti.com>
-References: <3702969.8rn3SOscJE@amdc1032> <524F0766.8070302@ti.com>
+From: Gene Heskett <gheskett@wdtv.com>
+Subject: Re: [PATCH v2 3/6] PowerCap: Added to drivers build
+Date: Fri, 4 Oct 2013 15:24:20 -0400
+Message-ID: <201310041524.20634.gheskett@wdtv.com>
+References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1380904616-17519-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="0IEhg0ricjKXxCOJSLJjch1s1OGWFlMC9"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <524F0766.8070302@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
+Content-Type: Text/Plain;
+  charset="windows-1256"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.wdtv.com ([66.118.69.84]:33250 "EHLO mail.wdtv.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752167Ab3JDTbD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Oct 2013 15:31:03 -0400
+In-Reply-To: <1380904616-17519-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com
 
---0IEhg0ricjKXxCOJSLJjch1s1OGWFlMC9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Friday 04 October 2013, Srinivas Pandruvada wrote:
+>Added changes to Makefile and Kconfig to include in driver build.
+>
+>Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+>Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>---
+> drivers/Kconfig  | 2 ++
+> drivers/Makefile | 1 +
+> 2 files changed, 3 insertions(+)
+>
+>diff --git a/drivers/Kconfig b/drivers/Kconfig
+>index aa43b91..969e987 100644
+>--- a/drivers/Kconfig
+>+++ b/drivers/Kconfig
+>@@ -166,4 +166,6 @@ source "drivers/reset/Kconfig"
+>
+> source "drivers/fmc/Kconfig"
+>
+>+source "drivers/powercap/Kconfig"
+>+
+> endmenu
+>diff --git a/drivers/Makefile b/drivers/Makefile
+>index ab93de8..34c1d55 100644
+>--- a/drivers/Makefile
+>+++ b/drivers/Makefile
+>@@ -152,3 +152,4 @@ obj-$(CONFIG_VME_BUS)		+= vme/
+> obj-$(CONFIG_IPACK_BUS)		+= ipack/
+> obj-$(CONFIG_NTB)		+= ntb/
+> obj-$(CONFIG_FMC)		+= fmc/
+>+obj-$(CONFIG_POWERCAP)		+= powercap/
 
-On 04-10-2013 14:22, Eduardo Valentin wrote:
-> On 04-10-2013 08:35, Bartlomiej Zolnierkiewicz wrote:
->> Menu for Texas Instruments thermal support is visible on all
->> platforms and TI_SOC_THERMAL + TI_THERMAL config options can
->> be selected also on EXYNOS platform (on which ARCH_HAS_BANDGAP
->> config option is selected by SoCs config options to fulfill
->> EXYNOS_THERMAL config option dependency). Thus the code which
->> is never used can be build. Fix it by making TI menu dependent
->> on ARCH_OMAP2PLUS config option.
->>
+I would object to this whole premise if it is not under the absolute 
+control of the users program. Linuxcnc for instance is intimately married 
+to a parport whose status for writes is absolutely stable from write to 
+write, and whose status may be in some cases, read at sub 20 u-second 
+intervals.  Anything which would imped this, puts the operator of a 50+ ton 
+piece of machinery's life in jeopardy because its status is not readable in 
+as close to real time as possible as it may be required to initiate a stop 
+from some alarm condition before it has moved far enough to injure, maim or 
+kill. 50 thousandths of an inch in further movement while moving a 70 ton 
+milling machines table at 150 inches a minute is not an unreasonable 
+expectation for us.
 
+Cheers, Gene
+-- 
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
 
-Besides, you can always disable the driver if you are not interested in
-compiling it.
-
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->> ---
->>  drivers/thermal/Kconfig | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 57e06a9..a709c63 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -193,6 +193,7 @@ config X86_PKG_TEMP_THERMAL
->>  	  notification methods.
->> =20
->>  menu "Texas Instruments thermal drivers"
->> +depends on ARCH_OMAP2PLUS
->=20
-> No, this driver is not for ARCH_OMAP*, but for TI bandgap, with the
-> option to offer thermal control. So, the HW supported is TI bandgap IP,=
-
-> not ARCH_OMAP*. It happens to be so that OMAP2PLUS all have a
-> (different) version of this device.
->=20
-> However, DRA7 devices, for instance, also feature the bandgap IP
-> (different version of those present in OMAP devices), and it is not
-> ARCH_OMAP2PLUS.
->=20
-> And because of that, the design of this driver is different. It is not
-> expected to depend on an arch, but the arch code is expected to select
-> ARCH_HAS_BANDGAP.
->=20
->>  source "drivers/thermal/ti-soc-thermal/Kconfig"
->>  endmenu
->> =20
->>
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---0IEhg0ricjKXxCOJSLJjch1s1OGWFlMC9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJPCG4ACgkQCXcVR3XQvP02+wEAiF/OtHWy//+0Nb91PmqMr9qh
-B7nml+Zfy/ctltDgbyEA/0c1y/Ckp/sgrk5SU+Zvvy125hqLBDexW4yAcbpwFOYC
-=4UA2
------END PGP SIGNATURE-----
-
---0IEhg0ricjKXxCOJSLJjch1s1OGWFlMC9--
+Q: What does the CE in Windows CE stand for?
+A: Caveat Emptor.
+A pen in the hand of this president is far more
+dangerous than 200 million guns in the hands of
+         law-abiding citizens.
