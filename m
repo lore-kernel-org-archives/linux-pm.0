@@ -1,74 +1,86 @@
-From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCH] Thermal: Tidy up error handling in powerclamp_init
-Date: Fri,  4 Oct 2013 21:53:24 +0530
-Message-ID: <1380903804-18913-1-git-send-email-durgadoss.r@intel.com>
+From: Ethan Zhao <ethan.kernel@gmail.com>
+Subject: Re: [PATCH V3]hrtimer: Fix a performance regression by disable
+ reprogramming in remove_hrtimer
+Date: Fri, 4 Oct 2013 20:06:55 +0800
+Message-ID: <CABawtvMo+NtTv3a3jj=YTg-Om=MzHhVDARdtTA-DtTMzNeNAJA@mail.gmail.com>
+References: <24EECBCC-F655-404F-8946-73CC36095A5F@gmail.com>
+	<1378362989.18435.2.camel@marge.simpson.net>
+	<20130905111428.GB23362@gmail.com>
+	<1378386697.6567.9.camel@marge.simpson.net>
+	<20130905133750.GA26637@gmail.com>
+	<1378445942.5434.31.camel@marge.simpson.net>
+	<20130909122325.GX31370@twins.programming.kicks-ass.net>
+	<1378730538.5586.30.camel@marge.simpson.net>
+	<20130909133044.GB31370@twins.programming.kicks-ass.net>
+	<20130909134635.GB26785@twins.programming.kicks-ass.net>
+	<20130911085643.GS26785@twins.programming.kicks-ass.net>
+	<1378895123.5476.83.camel@marge.simpson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:20973 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752431Ab3JDKze (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Oct 2013 06:55:34 -0400
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:53777 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741Ab3JDMG4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Oct 2013 08:06:56 -0400
+In-Reply-To: <1378895123.5476.83.camel@marge.simpson.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
-Cc: jacob.jun.pan@linux.intel.com, Durgadoss R <durgadoss.r@intel.com>
+To: Mike Galbraith <bitbucket@online.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, lenb@kernel.org
 
-This patch
- * adds missing kfree() for cpu_clamping_mask
- * adds return value checking for alloc_percpu()
- * unregister hotcpu notifier in exit path
+Mike, Peter,
+   Seems lots of work has been done these days, studious guys. those
+patches merged in last stable/dev branch (fix performance regression
+caused by extra rtimer programming and rescheduling IPI,confusing
+idle... etc) ? So I could just do a lazy pull for test with my
+environment.  I need catch up with other mail loops with my vacation
+again.
 
-Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
----
- drivers/thermal/intel_powerclamp.c |   24 +++++++++++++++++++++---
- 1 file changed, 21 insertions(+), 3 deletions(-)
+Thanks,
+Ethan
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index b40b37c..a7cd170 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -758,21 +758,39 @@ static int powerclamp_init(void)
- 	/* probe cpu features and ids here */
- 	retval = powerclamp_probe();
- 	if (retval)
--		return retval;
-+		goto exit_free;
-+
- 	/* set default limit, maybe adjusted during runtime based on feedback */
- 	window_size = 2;
- 	register_hotcpu_notifier(&powerclamp_cpu_notifier);
-+
- 	powerclamp_thread = alloc_percpu(struct task_struct *);
-+	if (!powerclamp_thread) {
-+		retval = -ENOMEM;
-+		goto exit_unregister;
-+	}
-+
- 	cooling_dev = thermal_cooling_device_register("intel_powerclamp", NULL,
- 						&powerclamp_cooling_ops);
--	if (IS_ERR(cooling_dev))
--		return -ENODEV;
-+	if (IS_ERR(cooling_dev)) {
-+		retval = -ENODEV;
-+		goto exit_free_thread;
-+	}
- 
- 	if (!duration)
- 		duration = jiffies_to_msecs(DEFAULT_DURATION_JIFFIES);
-+
- 	powerclamp_create_debug_files();
- 
- 	return 0;
-+
-+exit_free_thread:
-+	free_percpu(powerclamp_thread);
-+exit_unregister:
-+	unregister_hotcpu_notifier(&powerclamp_cpu_notifier);
-+exit_free:
-+	kfree(cpu_clamping_mask);
-+	return retval;
- }
- module_init(powerclamp_init);
- 
--- 
-1.7.9.5
-
+On Wed, Sep 11, 2013 at 6:25 PM, Mike Galbraith <bitbucket@online.de> wrote:
+> On Wed, 2013-09-11 at 10:56 +0200, Peter Zijlstra wrote:
+>> On Mon, Sep 09, 2013 at 03:46:35PM +0200, Peter Zijlstra wrote:
+>> > On Mon, Sep 09, 2013 at 03:30:44PM +0200, Peter Zijlstra wrote:
+>> > > diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+>> > > index fa6964d..486c0ba 100644
+>> > > --- a/drivers/idle/intel_idle.c
+>> > > +++ b/drivers/idle/intel_idle.c
+>> > > @@ -359,6 +359,14 @@ static int intel_idle(struct cpuidle_device *dev,
+>> > >   if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>> > >           clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+>> > >
+>> > > + current_thread_into()->status |= TS_POLLING;
+>> > > +
+>> > > + /*
+>> > > +  * Order against setting of TS_POLLING against the reading of
+>> > > +  * NEED_RESCHED, matched by resched_task().
+>> > > +  */
+>> > > + smp_mb();
+>> > > +
+>> > >   if (!need_resched()) {
+>> > >
+>> > >           __monitor((void *)&current_thread_info()->flags, 0, 0);
+>> > > @@ -367,6 +375,8 @@ static int intel_idle(struct cpuidle_device *dev,
+>> > >                   __mwait(eax, ecx);
+>> > >   }
+>> > >
+>> > > + current_thread_into()->status &= ~TS_POLLING;
+>> > > +
+>> > >   if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>> > >           clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+>> >
+>> > Hmm, arguably it would be better to set this from
+>> > intel_idle_cpuidle_driver_init() and clear it whenever this goes away.
+>> > Not sure how all that works, the cpuidle driver framework seems 'weird'.
+>>
+>> OK, so I went over the idle stuff again, and we do set TS_POLLING like
+>> stuff, it got hidden in current_{clr,set}_polling().
+>>
+>> Still if that patch causes extra IPIs its bound to be broken in some
+>> creative way.. I'll prod.
+>
+> (thanks, when I get a break from testing/poking this'n'that, I'll take a
+> peek too...  well, good_intentions++ anyway;)
+>
