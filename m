@@ -1,141 +1,76 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 4/6] thermal: exynos: Replace SOC_ARCH_EXYNOS with SOC_ARCH_EXYNOS5250
-Date: Fri, 4 Oct 2013 11:07:00 -0400
-Message-ID: <524ED994.7020600@ti.com>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com> <524DEAED.4030905@ti.com> <20131004122330.47e21d24@amdc308.digital.local> <2265935.YcHunKd7UC@amdc1032>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="VxriV23ILdJdStvRGSMKosPtajFoJ5uWu"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:54569 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755138Ab3JDPH0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Oct 2013 11:07:26 -0400
-In-Reply-To: <2265935.YcHunKd7UC@amdc1032>
-Sender: linux-pm-owner@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 0/6] Power Capping Framework and RAPL Driver
+Date: Fri,  4 Oct 2013 09:36:50 -0700
+Message-ID: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 
---VxriV23ILdJdStvRGSMKosPtajFoJ5uWu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Overview
+With the evolution of technologies, which enables power monitoring and limiting,
+more and more devices are able to constrain their power consumption under certain
+limits. There are several use cases for such technologies:
+- Power monitoring: Each device can report its power consumption.
+- Power Limiting: Setting power limits on the devices allows users to guard against
+platform reaching max system power level.
+- Maximize performance: While staying below a power limit, it allows devices to
+automatically adjust performance to meet demands
+- Dynamic control and re-budgeting: If each device can be constrained to some power,
+extra power can redistributed to other devices, which needs additional performance.
 
-On 04-10-2013 06:47, Bartlomiej Zolnierkiewicz wrote:
-> On Friday, October 04, 2013 12:23:30 PM Lukasz Majewski wrote:
->> Hi Eduardo,
->>
->>> On 24-09-2013 04:08, Lukasz Majewski wrote:
->>>> The TMU data definition is now separated to Exynos4412 and
->>>> Exynos5250.
->>>>
->>>> Now SOC_ARCH_EXYNOS only refers to Exynos5250. Hence the name
->>>> SOC_ARCH_EXYNOS has been changed to SOC_ARCH_EXYNOS5250.
->>>>
->>>
->>> How about merging this one with patch 02?
->>
->> I wanted to show how the work was logically split - patch 02
->> extracts Exynos4412 from Exynos5250. Then this patch changes the name.=
+One such example of technologies is RAPL (Running Average Power Limit) mechanism
+available in the latest Intel processors. Intel is slowly adding many devices under
+RAPL control. Also there are other technologies available, for power capping various
+devices. Soon it is very likely that other vendors are also adding or considering
+such implementation.
 
->>
->> I will merge those two patches. No problem.
->=20
-> Oh, well. Looking at the patch #2 again the merge can be done without
-> sacrificing backportability.
+Power Capping framework is an effort to have a uniform interface available to Linux
+drivers, which will enable
+- A uniform sysfs interface for all devices which can offer power capping
+- A common API for drivers, which will avoid code duplication and easy
+implementation of client drivers.
 
-Please, merge them and describe that you are reworking the type and the
-enum definition. Also add your reasonings, specially if you found bugs.
-The way the descriptions are being presented, the bugs you found do not
-get properly explained.
+Also submitting Intel RAPL driver using power capping framework.
 
->=20
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->=20
->>>
->>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->>>> ---
->>>>  drivers/thermal/samsung/exynos_tmu.c      |    4 ++--
->>>>  drivers/thermal/samsung/exynos_tmu.h      |    2 +-
->>>>  drivers/thermal/samsung/exynos_tmu_data.c |    2 +-
->>>>  3 files changed, 4 insertions(+), 4 deletions(-)
->>>>
->>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c
->>>> b/drivers/thermal/samsung/exynos_tmu.c index 21b89e4..037cd46 100644=
+History:
+v2
+As suggested, added BIT_ULL_MASK and BIT_ULL_WORD
 
->>>> --- a/drivers/thermal/samsung/exynos_tmu.c
->>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>>> @@ -632,9 +632,9 @@ static int exynos_tmu_probe(struct
->>>> platform_device *pdev) if (ret)
->>>>  		return ret;
->>>> =20
->>>> -	if (pdata->type =3D=3D SOC_ARCH_EXYNOS ||
->>>> -	    pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
->>>> +	if (pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
->>>>  	    pdata->type =3D=3D SOC_ARCH_EXYNOS4412 ||
->>>> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS5250 ||
->>>>  	    pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
->>>>  		data->soc =3D pdata->type;
->>>>  	else {
->>>> diff --git a/drivers/thermal/samsung/exynos_tmu.h
->>>> b/drivers/thermal/samsung/exynos_tmu.h index db37df0..b42ece4 100644=
+v1
+Incorporated changes suggested during RFC stage
 
->>>> --- a/drivers/thermal/samsung/exynos_tmu.h
->>>> +++ b/drivers/thermal/samsung/exynos_tmu.h
->>>> @@ -42,7 +42,7 @@ enum calibration_mode {
->>>>  enum soc_type {
->>>>  	SOC_ARCH_EXYNOS4210 =3D 1,
->>>>  	SOC_ARCH_EXYNOS4412,
->>>> -	SOC_ARCH_EXYNOS,
->>>> +	SOC_ARCH_EXYNOS5250,
->>>>  	SOC_ARCH_EXYNOS5440,
->>>>  };
->>>> =20
->>>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
->>>> b/drivers/thermal/samsung/exynos_tmu_data.c index bd08093..188223f
->>>> 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
->>>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
->>>> @@ -183,7 +183,7 @@ struct exynos_tmu_init_data const
->>>> exynos4412_default_tmu_data =3D { struct exynos_tmu_init_data const
->>>> exynos5250_default_tmu_data =3D { .tmu_data =3D {
->>>>  		{ EXYNOS4412_TMU_DATA,
->>>> -		.type =3D SOC_ARCH_EXYNOS,
->>>> +		.type =3D SOC_ARCH_EXYNOS5250,
->>>>  		},
->>>>  	},
->>>>  	.tmu_count =3D 1,
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
->=20
+Jacob Pan (2):
+  x86/msr: add 64bit _on_cpu access functions
+  Introduce Intel RAPL power capping driver
 
+Srinivas Pandruvada (4):
+  PowerCap: Documentation
+  PowerCap: Add class driver
+  PowerCap: Added to drivers build
+  bitops: Introduce BIT_ULL
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+ Documentation/ABI/testing/sysfs-class-powercap |  152 +++
+ Documentation/power/powercap/powercap.txt      |  236 ++++
+ arch/x86/include/asm/msr.h                     |   22 +
+ arch/x86/lib/msr-smp.c                         |   62 ++
+ drivers/Kconfig                                |    2 +
+ drivers/Makefile                               |    1 +
+ drivers/powercap/Kconfig                       |   31 +
+ drivers/powercap/Makefile                      |    2 +
+ drivers/powercap/intel_rapl.c                  | 1395 ++++++++++++++++++++++++
+ drivers/powercap/powercap_sys.c                |  699 ++++++++++++
+ include/linux/bitops.h                         |    3 +
+ include/linux/powercap.h                       |  325 ++++++
+ 12 files changed, 2930 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-powercap
+ create mode 100644 Documentation/power/powercap/powercap.txt
+ create mode 100644 drivers/powercap/Kconfig
+ create mode 100644 drivers/powercap/Makefile
+ create mode 100644 drivers/powercap/intel_rapl.c
+ create mode 100644 drivers/powercap/powercap_sys.c
+ create mode 100644 include/linux/powercap.h
 
-Eduardo Valentin
-
-
---VxriV23ILdJdStvRGSMKosPtajFoJ5uWu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJO2ZoACgkQCXcVR3XQvP0sDQD7B52MD2xoWPbCYvVisLgvmobk
-MuRwecQ+owTvny7WD/0A/1T6FMBw/dgmv5ouYybMEElHRaNuD3WYksqvtdweaUDR
-=UoWf
------END PGP SIGNATURE-----
-
---VxriV23ILdJdStvRGSMKosPtajFoJ5uWu--
+-- 
+1.8.3.1
