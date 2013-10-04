@@ -1,134 +1,33 @@
-From: Gene Heskett <gheskett@wdtv.com>
-Subject: Re: [PATCH v2 3/6] PowerCap: Added to drivers build
-Date: Fri, 4 Oct 2013 19:17:00 -0400
-Message-ID: <201310041917.01126.gheskett@wdtv.com>
-References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com> <201310041622.29259.gheskett@wdtv.com> <524F2B4C.7080702@linux.intel.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v2 6/6] Introduce Intel RAPL power capping driver
+Date: Fri, 4 Oct 2013 16:25:03 -0700
+Message-ID: <20131004162503.07ec349a@ultegra>
+References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	<1380904616-17519-7-git-send-email-srinivas.pandruvada@linux.intel.com>
+	<1380910065.2081.117.camel@joe-AO722>
+	<20131004131228.54eb7098@ultegra>
+	<1380924862.2081.118.camel@joe-AO722>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="windows-1256"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wdtv.com ([66.118.69.84]:35668 "EHLO mail.wdtv.com"
+Received: from mga03.intel.com ([143.182.124.21]:16695 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196Ab3JDXRD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Oct 2013 19:17:03 -0400
-In-Reply-To: <524F2B4C.7080702@linux.intel.com>
+	id S1751126Ab3JDXZW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Oct 2013 19:25:22 -0400
+In-Reply-To: <1380924862.2081.118.camel@joe-AO722>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Joe Perches <joe@perches.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com
 
-On Friday 04 October 2013, Srinivas Pandruvada wrote:
->On 10/04/2013 01:22 PM, Gene Heskett wrote:
+On Fri, 04 Oct 2013 15:14:22 -0700
+Joe Perches <joe@perches.com> wrote:
 
-[and snipped]
+> Isn't LIMIT1/WINDOW1 used as ull anyway?
+> It doesn't hurt to show that the value is also ull.
+sure, I will make that change in the next set.
 
->>> <Sorry, I didn't understand. Are you pointing any problem in this
->>> patch or patch-set in general?
->> 
->> Not that my relatively untrained eyes can spot.
->> 
->>> This change added powercap directory to the kernel build. Is something
->>> wrong with it or any other way to do that?
->> 
->> The prospect of having a poorly configured way to power down a port
->> that is running heavy machinery under real time control scares me. 
->> And that is what this patch series seems to be leading up to if I am
->> reading the patch headers correctly.  If I am not reading it
->> correctly, then assume I am issuing a pre-emptive strike just to make
->> sure you folks trying to save a milliwatt here and there, and there is
->> not a thing wrong with the basic idea, are made aware of the potential
->> for maiming mischief should you decide to power down a port just
->> because its last access was 5 milliseconds ago.  Even a completely
->> servo driven configuration will tickle it faster than that, however an
->> e-stop condition, which might shut down a charge pump pulse generator
->> must be maintained until cleared by the operator, which means the
->> control channel to the machine, whatever port it is, must be kept
->> alive to be human safe around the machine.  The capability to do that
->> to a given port should therefore be made a kernel .config selection
->> incapable of being overridden by some other perceived dependency in
->> kconfig.
->> 
->> I hope this is a better explanation. :)
->
->The idea of power capping is to cap total power not power down and also
->need root level access to modify.
+thanks,
 
-No.  Restricting it to root control only is NOT an option.  There has to be 
-some mechanism whereby the users non-root program can control it.  We don't 
-run this software as root, ever.  And the part of this software that needs 
-the parport (or a pci card access) is running on a cpu core that has been 
-isolated for its use by an isocpus= statement, not visible to top or any 
-other system monitoring utility, so you would never know we are pounding on 
-that port, both reads and multiple writes, at least 3 times every 23 
-microseconds.  So you might see it as idle and turn it off.
-
->There is a minimum and maximum values is also defined, which should make
->sure that the system is
->running with reduced performance, not power down.
-
-When cutting steel, or anything else for that matter, power used is not a 
-consideration as long as there is enough, so in this case, reduced 
-performance is not a viable option particularly if stepper motors are 
-involved as they need a very steady heartbeat. And its just as important in 
-the cpu driving the machine as it is in the motors driving the machine.  
-Right now, there are only about 4 or 5 motherboards on the planet that can 
-do this job fairly well for stepper based systems.
-
-2 of them are your atom powered boards.  One of them is the BeagleBone 
-Black but we are still designing the I/O cape for that so its not cutting 
-steel daily, yet.  Had you not disco'd the D-525-MW boards, the market 
-channel for those could easily absorb 10 or more per week for a nearly 
-indefinite period.  You accidentally made the nearly ideal board and its 
-not a power hog.  The BIG Reason? IRQ latency is 2 to 3 microseconds, and 
-there is nothing else x86 based that can touch that figure that we have 
-found so far.
-
-When I say you, I am of course referring to Intel, since you are coming in 
-from an Intel address. :)
-
->This patch is not affecting Linux PM. Power down a port trigger
->generated by PM framework in coordination
->with the driver controlling the port.
-
-But what if you cannot detect that driver, and its port use, because its 
-behind an isolcpus=0 statement on the kernel command line in grub?
-
-This is what scares me spitless.  It could get somebody injured/killed, or 
-wreck a $500,000 machine.
-
->If some port is capable of powercapping and implemented a client driver
->for this, they can disable the whole
->power capping by setting CONFIG_POWERCAP=n for such systems.
-
-Good.
-
->> And please, lets keep such discussion on the list where it belongs.
-
-I clicked on reply to list and got no To: line contents at all.  KMail does 
-that to me when its a PM. Only been using it since '98, I really should 
-learn to use it right someday. :)
-
->I am still doing reply to all to keep everyone in the mailing list in
->loop.
-
-So am I, now.
->
->
->
->Thanks,
->Srinivas
-
-
-Cheers, Gene
--- 
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-
-Of course power tools and alcohol don't mix.  Everyone knows power
-tools aren't soluble in alcohol...
-		-- Crazy Nigel
-A pen in the hand of this president is far more
-dangerous than 200 million guns in the hands of
-         law-abiding citizens.
+Jacob
