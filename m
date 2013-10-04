@@ -1,94 +1,74 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 4/6] thermal: exynos: Replace SOC_ARCH_EXYNOS with
- SOC_ARCH_EXYNOS5250
-Date: Fri, 04 Oct 2013 12:47:19 +0200
-Message-ID: <2265935.YcHunKd7UC@amdc1032>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
- <524DEAED.4030905@ti.com> <20131004122330.47e21d24@amdc308.digital.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20131004122330.47e21d24@amdc308.digital.local>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+From: Durgadoss R <durgadoss.r@intel.com>
+Subject: [PATCH] Thermal: Tidy up error handling in powerclamp_init
+Date: Fri,  4 Oct 2013 21:53:24 +0530
+Message-ID: <1380903804-18913-1-git-send-email-durgadoss.r@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:20973 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752431Ab3JDKze (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Oct 2013 06:55:34 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
+Cc: jacob.jun.pan@linux.intel.com, Durgadoss R <durgadoss.r@intel.com>
 
-On Friday, October 04, 2013 12:23:30 PM Lukasz Majewski wrote:
-> Hi Eduardo,
-> 
-> > On 24-09-2013 04:08, Lukasz Majewski wrote:
-> > > The TMU data definition is now separated to Exynos4412 and
-> > > Exynos5250.
-> > > 
-> > > Now SOC_ARCH_EXYNOS only refers to Exynos5250. Hence the name
-> > > SOC_ARCH_EXYNOS has been changed to SOC_ARCH_EXYNOS5250.
-> > > 
-> > 
-> > How about merging this one with patch 02?
-> 
-> I wanted to show how the work was logically split - patch 02
-> extracts Exynos4412 from Exynos5250. Then this patch changes the name.
-> 
-> I will merge those two patches. No problem.
+This patch
+ * adds missing kfree() for cpu_clamping_mask
+ * adds return value checking for alloc_percpu()
+ * unregister hotcpu notifier in exit path
 
-Oh, well. Looking at the patch #2 again the merge can be done without
-sacrificing backportability.
+Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+---
+ drivers/thermal/intel_powerclamp.c |   24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index b40b37c..a7cd170 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -758,21 +758,39 @@ static int powerclamp_init(void)
+ 	/* probe cpu features and ids here */
+ 	retval = powerclamp_probe();
+ 	if (retval)
+-		return retval;
++		goto exit_free;
++
+ 	/* set default limit, maybe adjusted during runtime based on feedback */
+ 	window_size = 2;
+ 	register_hotcpu_notifier(&powerclamp_cpu_notifier);
++
+ 	powerclamp_thread = alloc_percpu(struct task_struct *);
++	if (!powerclamp_thread) {
++		retval = -ENOMEM;
++		goto exit_unregister;
++	}
++
+ 	cooling_dev = thermal_cooling_device_register("intel_powerclamp", NULL,
+ 						&powerclamp_cooling_ops);
+-	if (IS_ERR(cooling_dev))
+-		return -ENODEV;
++	if (IS_ERR(cooling_dev)) {
++		retval = -ENODEV;
++		goto exit_free_thread;
++	}
+ 
+ 	if (!duration)
+ 		duration = jiffies_to_msecs(DEFAULT_DURATION_JIFFIES);
++
+ 	powerclamp_create_debug_files();
+ 
+ 	return 0;
++
++exit_free_thread:
++	free_percpu(powerclamp_thread);
++exit_unregister:
++	unregister_hotcpu_notifier(&powerclamp_cpu_notifier);
++exit_free:
++	kfree(cpu_clamping_mask);
++	return retval;
+ }
+ module_init(powerclamp_init);
+ 
+-- 
+1.7.9.5
 
-> > 
-> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > > ---
-> > >  drivers/thermal/samsung/exynos_tmu.c      |    4 ++--
-> > >  drivers/thermal/samsung/exynos_tmu.h      |    2 +-
-> > >  drivers/thermal/samsung/exynos_tmu_data.c |    2 +-
-> > >  3 files changed, 4 insertions(+), 4 deletions(-)
-> > > 
-> > > diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> > > b/drivers/thermal/samsung/exynos_tmu.c index 21b89e4..037cd46 100644
-> > > --- a/drivers/thermal/samsung/exynos_tmu.c
-> > > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> > > @@ -632,9 +632,9 @@ static int exynos_tmu_probe(struct
-> > > platform_device *pdev) if (ret)
-> > >  		return ret;
-> > >  
-> > > -	if (pdata->type == SOC_ARCH_EXYNOS ||
-> > > -	    pdata->type == SOC_ARCH_EXYNOS4210 ||
-> > > +	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
-> > >  	    pdata->type == SOC_ARCH_EXYNOS4412 ||
-> > > +	    pdata->type == SOC_ARCH_EXYNOS5250 ||
-> > >  	    pdata->type == SOC_ARCH_EXYNOS5440)
-> > >  		data->soc = pdata->type;
-> > >  	else {
-> > > diff --git a/drivers/thermal/samsung/exynos_tmu.h
-> > > b/drivers/thermal/samsung/exynos_tmu.h index db37df0..b42ece4 100644
-> > > --- a/drivers/thermal/samsung/exynos_tmu.h
-> > > +++ b/drivers/thermal/samsung/exynos_tmu.h
-> > > @@ -42,7 +42,7 @@ enum calibration_mode {
-> > >  enum soc_type {
-> > >  	SOC_ARCH_EXYNOS4210 = 1,
-> > >  	SOC_ARCH_EXYNOS4412,
-> > > -	SOC_ARCH_EXYNOS,
-> > > +	SOC_ARCH_EXYNOS5250,
-> > >  	SOC_ARCH_EXYNOS5440,
-> > >  };
-> > >  
-> > > diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
-> > > b/drivers/thermal/samsung/exynos_tmu_data.c index bd08093..188223f
-> > > 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> > > +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> > > @@ -183,7 +183,7 @@ struct exynos_tmu_init_data const
-> > > exynos4412_default_tmu_data = { struct exynos_tmu_init_data const
-> > > exynos5250_default_tmu_data = { .tmu_data = {
-> > >  		{ EXYNOS4412_TMU_DATA,
-> > > -		.type = SOC_ARCH_EXYNOS,
-> > > +		.type = SOC_ARCH_EXYNOS5250,
-> > >  		},
-> > >  	},
-> > >  	.tmu_count = 1,
