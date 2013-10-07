@@ -1,60 +1,229 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH v2 3/6] PowerCap: Added to drivers build
-Date: Mon, 07 Oct 2013 08:46:26 -0700
-Message-ID: <5252D752.90401@linux.intel.com>
-References: <1380904616-17519-1-git-send-email-srinivas.pandruvada@linux.intel.com> <201310041917.01126.gheskett@wdtv.com> <525186B2.1000205@linux.intel.com> <201310061616.00303.gheskett@wdtv.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Mon, 07 Oct 2013 11:01:23 -0500
+Message-ID: <5252DAD3.6040903@gmail.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1256; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:56135 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755376Ab3JGPrR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Oct 2013 11:47:17 -0400
-In-Reply-To: <201310061616.00303.gheskett@wdtv.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Gene Heskett <gheskett@wdtv.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 10/6/2013 1:15 PM, Gene Heskett wrote:
->> and if you wonder what linux does today without the framework; there are
->> mechanisms that kick in at the very end of the range, that are very
->> draconian like taking the 3.0Ghz processor down to effectively 100MHz,
->> or even a system reboot. The point of what Jacob and Srinivas are trying
->> to add is to intervene slightly earlier (these failsafe mechanisms are
->> still there) but much much more gently.
->
-> First off, we are not using the type of boards for controllers that would
-> burn anything up sans its normal cooling, which is entirely passive on an
-> atom powered board as you well know.  So there is no fan to fail and start
-> your doomsday scenario in abut 30% of the cases now, but there are a rather
-> dukes mixture of other boards being used yet.  Those will be replaced in
-> due time as they fail, or the IRQ latency finally starts costing the shop
-> owner money because the machine can't be run at the optimum speed with that
-> poorly architect-ed board, probably with Atoms or BBB's.
+On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> If more than one similar devices share the same operating points(OPPs)
+> being in the same clock domain, currently we need to replicate the
+> OPP entries in all the nodes.
+> 
+> This patch extends existing binding by adding a new property named
+> 'operating-points-phandle' to specify the phandle in any device node
+> pointing to another node which contains the actual OPP tuples.
+> This helps to avoid replication if multiple devices share the OPPs.
+> 
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> ---
+>  Documentation/devicetree/bindings/power/opp.txt | 161 ++++++++++++++++++++++--
+>  1 file changed, 149 insertions(+), 12 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+> index 74499e5..f59b878 100644
+> --- a/Documentation/devicetree/bindings/power/opp.txt
+> +++ b/Documentation/devicetree/bindings/power/opp.txt
+> @@ -4,22 +4,159 @@ SoCs have a standard set of tuples consisting of frequency and
+>  voltage pairs that the device will support per voltage domain. These
+>  are called Operating Performance Points or OPPs.
+>  
+> -Properties:
+> +Required Properties:
+>  - operating-points: An array of 2-tuples items, and each item consists
+>    of frequency and voltage like <freq-kHz vol-uV>.
+>  	freq: clock frequency in kHz
+>  	vol: voltage in microvolt
+>  
+> +- operating-points-phandle: phandle to the device tree node which contains
+> +	the operating points tuples(recommended to be used if multiple
+> +	devices are in the same clock domain and hence share OPPs, as it
+> +	avoids replication of OPPs)
+> +
+> +  operating-points and operating-points-phandle are mutually exclusive, only
+> +  one of them can be present in any device node.
+> +
+>  Examples:
+>  
+> -cpu@0 {
+> -	compatible = "arm,cortex-a9";
+> -	reg = <0>;
+> -	next-level-cache = <&L2>;
+> -	operating-points = <
+> -		/* kHz    uV */
+> -		792000  1100000
+> -		396000  950000
+> -		198000  850000
+> -	>;
+> -};
+> +1. A uniprocessor system (phandle not required)
+> +
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <0>;
+> +		operating-points = <
+> +			/* kHz    uV */
+> +			792000  1100000
+> +			396000  950000
+> +			198000  850000
+> +		>;
+> +	};
+> +
+> +2a. Consider a SMP system with 4 CPUs in the same clock domain(no phandle)
+> +    Some existing DTs describe homogenous SMP systems by only listing the
+> +    OPPs in the cpu@0 node. For compatiblity with existing DTs, an
+> +    operating system may handle this case specially.
+> +
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <0>;
+> +		operating-points = <
+> +			/* kHz    uV */
+> +			792000  1100000
+> +			396000  950000
+> +			198000  850000
+> +		>;
+> +	};
+> +
+> +	cpu1: cpu@1 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <1>;
+> +	};
+> +
+> +	cpu2: cpu@2 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <2>;
+> +	};
+> +
+> +	cpu3: cpu@3 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <3>;
+> +	};
+> +
+> +2b. Consider a SMP system with 4 CPUs in the same clock domain(with phandle)
+> +    If more than one device of same type share the same OPPs, for example
+> +    all the CPUs on a SoC or in a single cluster on a SoC, then we can avoid
+> +    replicating the OPPs in all the nodes. We can specify the phandle of
+> +    the node which contains the OPP tuples instead.
+> +
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <0>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
+> +
+> +	cpu1: cpu@1 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <1>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
+> +
+> +	cpu2: cpu@2 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <2>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
+> +
+> +	cpu3: cpu@3 {
+> +		compatible = "arm,cortex-a9";
+> +		reg = <3>;
+> +		operating-points-phandle = <&cpu_opp>;
+> +	};
+> +
+> +	opps-table {
+> +		cpu_opp: cpu_opp {
+> +			operating-points = <
+> +				/* kHz    uV */
+> +				792000  1100000
+> +				396000  950000
+> +				198000  850000
+> +			>;
+> +		};
+> +		... /* other device OPP nodes */
 
-so if your system today never hits the thermal shutdown...
-... you're not going to hit anything powercapping either.
+But this is a subnode of /cpus. IMO, OPPs should be located near what
+they control.
 
 
+> +	}
+> +
+> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
+> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
+> +   the clock domain.
+> +
+> +	cpu0: cpu@0 {
+> +		compatible = "arm,cortex-a15";
+> +		reg = <0>;
+> +		operating-points-phandle = <&cluster0_opp>;
+> +	};
+> +
+> +	cpu1: cpu@1 {
+> +		compatible = "arm,cortex-a15";
+> +		reg = <1>;
+> +		operating-points-phandle = <&cluster0_opp>;
+> +	};
+> +
+> +	cpu2: cpu@100 {
+> +		compatible = "arm,cortex-a7";
+> +		reg = <100>;
+> +		operating-points-phandle = <&cluster1_opp>;
+> +	};
+> +
+> +	cpu3: cpu@101 {
+> +		compatible = "arm,cortex-a7";
+> +		reg = <101>;
+> +		operating-points-phandle = <&cluster1_opp>;
+> +	};
+> +
+> +	opps-table {
+> +		cluster0_opp: cluster0_opp {
 
-> If you insist on doing this, in the face of ample evidence its nothing but
-> a feel good action on your part, then the least we ask is for a tally
-> signal output, far enough in advance, say 0.25 seconds, to do a graceful,
-
-btw one thing to note that this is just the kernel mechanism; the actual
-knobs that it provides get turned by some userspace daemon..
-I would fully expect that if you even ship such a daemon on your realtime device,
-that you build in the notification for sure.
+Why not use the cpu topology? Then the operating point can apply to
+cores based on the position in the topology. You don't even need a
+phandle in that case. You can look for OPPs in either a cpu node or in
+the topology.
 
 
-> In fact, I'd go so far as to say that any hardware capable of self-
-> destructing in normal operation, does not need to guarded by this proposed
-> function, but blacklisted instead, it is patently a defective design from
-> square one regardless of the brand name on the box.  Or just let it burn
-> up, the warranty returns will educate the maker/designer soon enough.
-
-self-destruct or reboot... either case you will not like it.
-
+> +			operating-points = <
+> +				/* kHz    uV */
+> +				792000  1100000
+> +				396000  950000
+> +				198000  850000
+> +			>;
+> +		};
+> +		cluster1_opp: cluster1_opp {
+> +			operating-points = <
+> +				/* kHz    uV */
+> +				792000  950000
+> +				396000  750000
+> +				198000  450000
+> +			>;
+> +		};
+> +		... /* other device OPP nodes */
+> +	}
+> +
+> +Container Node
+> +--------------
+> +	- It's highly recommended to place all the shared OPPs under single
+> +	  node for consistency and better readability
+> +	- It's quite similar to clocks or pinmux container nodes
+> +	- In the above examples, "opps-table" is the container node
+> 
 
