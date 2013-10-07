@@ -1,69 +1,62 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [GIT PULL] cpuidle ARM: new material for 3.13
-Date: Mon, 07 Oct 2013 16:51:04 +0200
-Message-ID: <5252CA58.700@linaro.org>
+Subject: Re: [PATCH] ARM: ux500: u8500_defconfig: add missing cpuidle option
+Date: Mon, 07 Oct 2013 16:52:05 +0200
+Message-ID: <5252CA95.8000405@linaro.org>
+References: <1380540996-18521-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:38460 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794Ab3JGOvE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Oct 2013 10:51:04 -0400
-Received: by mail-wi0-f176.google.com with SMTP id cb5so4928960wib.15
-        for <linux-pm@vger.kernel.org>; Mon, 07 Oct 2013 07:51:03 -0700 (PDT)
+Received: from mail-wg0-f53.google.com ([74.125.82.53]:58894 "EHLO
+	mail-wg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823Ab3JGOwG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Oct 2013 10:52:06 -0400
+Received: by mail-wg0-f53.google.com with SMTP id x12so7473646wgg.32
+        for <linux-pm@vger.kernel.org>; Mon, 07 Oct 2013 07:52:04 -0700 (PDT)
+In-Reply-To: <1380540996-18521-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: linus.walleij@linaro.org, olof@lixom.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, patches@linao.org
 
+On 09/30/2013 01:36 PM, Daniel Lezcano wrote:
+> With the commit d3f2950f2adeea3da0317e952914b59adaa4cdb3, the option
+> ARM_U8500_CPUIDLE was added to the Kconfig but not reflected in the
+> default config file, hence the cpuidle driver is no longer enabled
+> since this commit.
+>
+> Enable it again by adding the missing option in the default config fi=
+le.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
 
-Hi Rafael,
+Hi Olof, Linus,
 
-this pull request based on 3.12-rc4 contains the following changes:
-
-- Daniel Lezcano converted the zynq cpuidle driver to the platform=20
-driver and fixed a section mismatch for ux500
-
-- Lorenzo Pieralisi fixed the Makefile format for ARM
-
+any comment on this patch ? Are you willing to pick it in your tree ?
 
 Thanks
--- Daniel
+   -- Daniel
 
-
-The following changes since commit d0e639c9e06d44e713170031fe05fb60ebe6=
-80af:
-
-Linux 3.12-rc4 (2013-10-06 14:00:20 -0700)
-
-are available in the git repository at:
-
-git://git.linaro.org/people/dlezcano/linux.git cpuidle/arm-next
-
-for you to fetch changes up to 2c2b24d9c3e96d5cf974be4559a936e7f3b50225=
-:
-
-ARM: ux500: cpuidle: fix section mismatch (2013-10-07 16:47:07 +0200)
-
-----------------------------------------------------------------
-Daniel Lezcano (3):
-ARM: zynq: cpuidle: Remove useless compatibility string
-ARM: zynq: cpuidle: convert to platform driver
-ARM: ux500: cpuidle: fix section mismatch
-
-Lorenzo Pieralisi (1):
-drivers: cpuidle: rename ARM big.LITTLE driver config and makefile entr=
-ies
-
-arch/arm/mach-zynq/common.c | 6 ++++++
-drivers/cpuidle/Kconfig.arm | 22 +++++++++++-----------
-drivers/cpuidle/Makefile | 2 +-
-drivers/cpuidle/cpuidle-ux500.c | 2 +-
-drivers/cpuidle/cpuidle-zynq.c | 17 +++++++++++------
-5 files changed, 30 insertions(+), 19 deletions(-)
-
+>   arch/arm/configs/u8500_defconfig |    1 +
+>   1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u850=
+0_defconfig
+> index a0025dc..4bd93bf 100644
+> --- a/arch/arm/configs/u8500_defconfig
+> +++ b/arch/arm/configs/u8500_defconfig
+> @@ -20,6 +20,7 @@ CONFIG_CMDLINE=3D"root=3D/dev/ram0 console=3DttyAMA=
+2,115200n8"
+>   CONFIG_CPU_FREQ=3Dy
+>   CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=3Dy
+>   CONFIG_CPU_IDLE=3Dy
+> +CONFIG_ARM_U8500_CPUIDLE=3Dy
+>   CONFIG_VFP=3Dy
+>   CONFIG_NEON=3Dy
+>   CONFIG_PM_RUNTIME=3Dy
+>
 
 
 --=20
