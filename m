@@ -1,486 +1,225 @@
-From: "Wendy Ng" <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH 1/3] thermal: bcm281xx: Add thermal driver
-Date: Mon, 7 Oct 2013 16:11:06 -0700
-Message-ID: <52533F8A.4010704@broadcom.com>
-References: <1379958698-7554-1-git-send-email-wendy.ng@broadcom.com>
- <1379958698-7554-2-git-send-email-wendy.ng@broadcom.com>
- <52408648.7040301@ti.com> <5240C42A.3030705@broadcom.com>
- <5240D2CC.1070403@ti.com> <524F3E6D.1010308@broadcom.com>
- <5252CA97.6060601@ti.com> <5252DD6B.6020707@ti.com>
- <5252F4D5.3060400@broadcom.com> <52533692.5090703@ti.com>
+From: Rongjun Ying <Rongjun.Ying@csr.com>
+Subject: =?utf-8?B?562U5aSNOiBbUEFUQ0hdIGNwdWlkbGU6IHNpcmYgOiBBZGQgY3B1aWRsZSBm?=
+ =?utf-8?Q?or_SiRFprimaII_and_SiRFatlasVI?=
+Date: Tue, 8 Oct 2013 07:44:18 +0000
+Message-ID: <86130EF012BDF348AA0D464A4F4494780129539EE4@SHAASIEXM01.ASIA.ROOT.PRI>
+References: <1381033577-19818-1-git-send-email-Baohua.Song@csr.com>
+ <52526F8B.6030905@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <52533692.5090703-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Cc: Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Christian Daudt <bcm-xK7y4jjYLqYh9ZMKESR00Q@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cluster-d.mailcontrol.com ([85.115.60.190]:60860 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752045Ab3JHHoh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 03:44:37 -0400
+In-Reply-To: <52526F8B.6030905@linaro.org>
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Barry Song <21cnbao@gmail.com>, "rjw@sisk.pl" <rjw@sisk.pl>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, DL-SHA-WorkGroupLinux <DL-SHA-WorkGroupLinux@internal.csr.com>, Barry Song <Barry.Song@csr.com>
 
-
-On 10/7/2013 3:32 PM, Eduardo Valentin wrote:
-> On 07-10-2013 13:52, Wendy Ng wrote:
->> On 10/7/2013 9:12 AM, Eduardo Valentin wrote:
->>> On 07-10-2013 10:52, Eduardo Valentin wrote:
->>>> On 04-10-2013 18:17, Wendy Ng wrote:
->>>>> Hello Eduardo,
->>>>>
->>>> Hello Wendy,
->>>>
->>>>> I have rebased my work on the top of yours and tried out the new way of
->>>>> registering the thermal zone.    The new method is certainly making
->>>>> things easier for me to create a new thermal zone device driver.  But I
->>>>> have some questions and I hope to hear back from you before I upload my
->>>>> new patch set that is based on your changes.
->>>> Great that you gave it a shot. Thanks for that.
->>>>
->>>>> 1. I found that the hwmon sysfs interface is no longer created when I
->>>>> call thermal_zone_of_sensor_register() to register my thermal
->>>>> sensor.  I
->>>>> believe it is because you purposely hard-coded 'no_hwmon' to true.
->>>>> Would it be possible to let the users to control this option as part of
->>>>> the sensor register function?
->>>> Hmmm.. I also thought of allowing the thermal to hwmon interface
->>>> configurable. But the interface gets created in different path from the
->>>> sensor registration, which makes things a bit harder. The zones are
->>>> probed while parsing the DT file. While the sensors get linked,
->>>> thermal_zone_of_sensor_register(), typically when sensors are probed.
->>>>
->>>> Do you have a real use case for using the thermal to hwmon interface?
->>>> Durgadoss (original author) and Rui were considering deprecating and
->>>> finally removing it. If yes, it is time to rise your voice here.
->>>>
->>>>> 2. The of_thermal_get_temp() output parameter 'temp' is an unsigned
->>>>> value in order to conforms with the thermal framework 'get_temp'
->>>>> function prototype.  But the new sensor interface 'get_temp' callback
->>>>> function (defined in __thermal_zone struct) expects 'temp' to be
->>>>> signed.  So technically, a negative value can be returned from the
->>>>> underlying sensor function.  Should some checks be added to
->>>>> of_thermal_get_temp() to ensure that a negative value (i.e. a very
->>>>> large
->>>>> unsigned value) won't be passed back to the thermal framework?  Or
->>>>> should the 'get_temp' function prototype in __thermal_zone struct be
->>>>> changed with 'unsigned' temperature value and it will be the
->>>>> responsibility of the underlying function to do the check?
->>>>>
->>>> I could for sure, add a warning inside of_thermal_get_temp(). But in
->>>> general, I believe the thermal framework has to cover for signed
->>>> temperature values, even if typical usage is on positive temperature
->>>> range. Mainly for correct temperature representation.
->>>>
->>>>
->>>>> 3. Your documentation (thermal.txt) seems to suggest that the
->>>>> 'cooling-attachments' are one of the required properties for
->>>>> 'thermal-zones' node in the device tree binding files.  However, I
->>>>> don't
->>>> Hmm... That was not the intention.
->>>>
->>>>> have any cooling device ready in my current patch series yet and
->>>>> therefore I tried to leave out the 'cooling-attachments' node from the
->>>>> 'thermal-zones' node.  It seems to be working just find and I can
->>>>> register the sensor and read out the temperature once the target
->>>>> platform has been booted up.  Is this your expectation that people can
->>>>> leave the 'cooling-attachments' node out?    I want to make sure I can
->>>>> still submit a new patch set for this series with just the
->>>>> functionality
->>>>> of reading out the temperature from the thermal sensor.
->>>> So, let me try to clarify a couple of things. First thing is that the
->>>> cooling-attachments has been renamed to cooling-maps, just a new naming
->>>> convention.  Also, there are thermal zones that do not have
->>>> cooling-maps, they just describe thermal shutdown by software, thermal
->>>> zones with only CRITICAL trip points, for instance. For this reason,
->>>> thermal zones must be probed properly without cooling-maps. I need to
->>>> double check the documentation in this case, I believe.
->>> Just to clarify a bit, this does not mean we should allow having thermal
->>> zones only for monitoring. If you are generating a thermal zone, it
->>> means you want to cover thermal limits. The example I gave was a thermal
->>> zone that does not have cooling-maps, but it does have a thermal
->>> constraint, a trip point which is CRITICAL, meaning, the silicon state
->>> is not reliable anymore.
->> Hi Eduardo,
->>
->> Thanks for your clarification.    Yes, there are thermal limits that I
->> need to specify through the trip points.  The issue I am facing is that
->> I don't have the cooling device that needs to be associated with the
->> trip point in this patch series yet.  I was hoping to get the thermal
->> sensor driver code into the mainline first.  The addition for the
->> cooling device and the "cooling-maps" node will be added in another
->> patch series.
-> Wendy,
->
-> Let me try to understand it properly. What cooling device is missing? Is
-> it only the kernel code or the its DT bindings too? Does it prevent you
-> to define the bindings? I believe it should be fine to have the bindings
-> without the kernel code (as long as the bindings are correct).
->
-> I have also tried this patch series on top of a systems with missing
-> cpufreq support. That means, I had all the thermal bindings, but the
-> cooling device was not loaded in the system. Unfortunately, the zones
-> would only have the critical trip points as runtime effect. But nothing
-> really broke dramatically.
->
-Hi Eduardo,
-
-Sorry, I probably have confused you.   You are correct -- things seem to 
-work just fine for me when I have all the thermal binding specified in 
-the device tree file (*.dts/dtsi) despite the missing cpufreq support in 
-my kernel code.
-
-I even tried to remove the 'cooling-attachments' (a.k.a cooling-maps) 
-from the device tree files and the thermal sensor can still be 
-registered to the thermal zone.  So my original question about the 
-documentation is  just to get a clarification on what is the expected 
-behavior when I left out what is specified as the *required* properties 
-in the thermal-zones node in the device tree file.
-
->
->> Since this patch series is now gated by your work, I am wondering if you
->> are targeting to get your patch series
->> (http://lkml.org/lkml/2013/9/15/122) into 3.13?  I would like to get an
->> idea of the timeline such that I can plan out my work as well.
-> Regarding timing, I cannot promise you that my patch series is making
-> 3.13, because I cannot proceed / queue this work without a proper review
-> and acks from device tree maintainers. I would really appreciate if we
-> could make it for 3.13, but that is not only on my hands. As Mark R.
-> said, it is a bit complex binding and it is better to have more than one
-> device tree maintainer review/ack.
->
-> Regarding your driver, my major concern on it is just the fact that you
-> are using one driver specific device tree property, which will get soon
-> deprecated. That is why I have kindly requested you to wait on my work,
-> this way we avoid compatibility issues between DT and kernel version.
->> Thanks!
->>>>> Thanks,
->>>>> -Wendy
->>>>>
->>>>> On 9/23/2013 4:46 PM, Eduardo Valentin wrote:
->>>>>> On 23-09-2013 18:43, Wendy Ng wrote:
->>>>>>> On 9/23/2013 11:19 AM, Eduardo Valentin wrote:
->>>>>>>> On 23-09-2013 13:51, Wendy Ng wrote:
->>>>>>>>> This adds the support for reading out temperature from Broadcom
->>>>>>>>> bcm281xx
->>>>>>>>> SoCs.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Wendy Ng <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->>>>>>>>> Reviewed-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->>>>>>>>> Reviewed-by: Christian Daudt <csd-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->>>>>>>>> ---
->>>>>>>>>      .../bindings/thermal/bcm-kona-thermal.txt          |   18 +++
->>>>>>>>>      drivers/thermal/Kconfig                            |   10 ++
->>>>>>>>>      drivers/thermal/Makefile                           |    1 +
->>>>>>>>>      drivers/thermal/bcm_thermal.c                      |  170
->>>>>>>>> ++++++++++++++++++++
->>>>>>>>>      4 files changed, 199 insertions(+)
->>>>>>>>>      create mode 100644
->>>>>>>>> Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>>>>>>>>      create mode 100644 drivers/thermal/bcm_thermal.c
->>>>>>>>>
->>>>>>>>> diff --git
->>>>>>>>> a/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>>>>>>>> b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>>>>>>>> new file mode 100644
->>>>>>>>> index 0000000..acca99e
->>>>>>>>> --- /dev/null
->>>>>>>>> +++
->>>>>>>>> b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->>>>>>>>> @@ -0,0 +1,18 @@
->>>>>>>>> +* Broadcom Kona Thermal Management Unit
->>>>>>>>> +
->>>>>>>>> +This version is for the BCM281xx family of SoCs.
->>>>>>>>> +
->>>>>>>>> +Required properties:
->>>>>>>>> +- compatible : "brcm,bcm11351-thermal", "brcm,kona-thermal"
->>>>>>>>> +- reg : Address range of the thermal register
->>>>>>>>> +- thermal-name: this entry must be specified and it will be passed
->>>>>>>>> into
->>>>>>>>> +thermal_zone_device_register().  This name will also be reported
->>>>>>>>> under Hwmon
->>>>>>>>> +sysfs 'name' attribute.
->>>>>>>>> +
->>>>>>>>> +Example:
->>>>>>>>> +    thermal@34008000 {
->>>>>>>>> +        compatible = "brcm,bcm11351-thermal", "brcm,kona-thermal";
->>>>>>>>> +        reg = <0x34008000 0x0024>;
->>>>>>>>> +        thermal-name = "bcm_kona_therm";
->>>>>>>>> +        status = "disabled";
->>>>>>>>> +    };
->>>>>>>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->>>>>>>>> index dbfc390..7f823f0 100644
->>>>>>>>> --- a/drivers/thermal/Kconfig
->>>>>>>>> +++ b/drivers/thermal/Kconfig
->>>>>>>>> @@ -134,6 +134,16 @@ config KIRKWOOD_THERMAL
->>>>>>>>>            Support for the Kirkwood thermal sensor driver into
->>>>>>>>> the Linux
->>>>>>>>> thermal
->>>>>>>>>            framework. Only kirkwood 88F6282 and 88F6283 have this
->>>>>>>>> sensor.
->>>>>>>>>      +config BCM_THERMAL
->>>>>>>>> +    tristate "Temperature sensor on Broadcom BCM281xx family of
->>>>>>>>> SoCs"
->>>>>>>>> +    depends on ARCH_BCM
->>>>>>>>> +    default y
->>>>>>>>> +    help
->>>>>>>>> +      If you say yes here you get support for TMU (Thermal
->>>>>>>>> Management
->>>>>>>>> +      Unit) on Broadcom BCM281xx family of SoCs. This provides
->>>>>>>>> thermal
->>>>>>>>> +      monitoring of CPU clusters, graphics, and SoC glue, but does
->>>>>>>>> not
->>>>>>>>> +      include monitoring of charger temperature.
->>>>>>>>> +
->>>>>>>>>      config DOVE_THERMAL
->>>>>>>>>          tristate "Temperature sensor on Marvell Dove SoCs"
->>>>>>>>>          depends on ARCH_DOVE
->>>>>>>>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
->>>>>>>>> index 584b363..3ea8c1c 100644
->>>>>>>>> --- a/drivers/thermal/Makefile
->>>>>>>>> +++ b/drivers/thermal/Makefile
->>>>>>>>> @@ -21,6 +21,7 @@ obj-$(CONFIG_SPEAR_THERMAL)    += spear_thermal.o
->>>>>>>>>      obj-$(CONFIG_RCAR_THERMAL)    += rcar_thermal.o
->>>>>>>>>      obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
->>>>>>>>>      obj-y                += samsung/
->>>>>>>>> +obj-$(CONFIG_BCM_THERMAL)       += bcm_thermal.o
->>>>>>>>>      obj-$(CONFIG_DOVE_THERMAL)      += dove_thermal.o
->>>>>>>>>      obj-$(CONFIG_DB8500_THERMAL)    += db8500_thermal.o
->>>>>>>>>      obj-$(CONFIG_ARMADA_THERMAL)    += armada_thermal.o
->>>>>>>>> diff --git a/drivers/thermal/bcm_thermal.c
->>>>>>>>> b/drivers/thermal/bcm_thermal.c
->>>>>>>>> new file mode 100644
->>>>>>>>> index 0000000..131d3c4
->>>>>>>>> --- /dev/null
->>>>>>>>> +++ b/drivers/thermal/bcm_thermal.c
->>>>>>>>> @@ -0,0 +1,170 @@
->>>>>>>>> +/*
->>>>>>>>> + * Copyright 2013 Broadcom Corporation.
->>>>>>>>> + *
->>>>>>>>> + * This program is free software; you can redistribute it and/or
->>>>>>>>> modify
->>>>>>>>> + * it under the terms of the GNU General Public License,
->>>>>>>>> version 2,
->>>>>>>>> + * as published by the Free Software Foundation (the "GPL").
->>>>>>>>> + *
->>>>>>>>> + * This program is distributed in the hope that it will be useful,
->>>>>>>>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->>>>>>>>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->>>>>>>>> + * GNU General Public License for more details.
->>>>>>>>> + *
->>>>>>>>> + * A copy of the GPL is available at
->>>>>>>>> http://www.broadcom.com/licenses/GPLv2.php,
->>>>>>>>> + * or by writing to the Free Software Foundation, Inc.,
->>>>>>>>> + * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
->>>>>>>>> + */
->>>>>>>>> +
->>>>>>>>> +/**
->>>>>>>>> +*  Broadcom Thermal Management Unit - bcm_tmu
->>>>>>>>> +*/
->>>>>>>>> +#include <linux/module.h>
->>>>>>>>> +#include <linux/err.h>
->>>>>>>>> +#include <linux/kernel.h>
->>>>>>>>> +#include <linux/platform_device.h>
->>>>>>>>> +#include <linux/io.h>
->>>>>>>>> +#include <linux/thermal.h>
->>>>>>>>> +#include <linux/of.h>
->>>>>>>>> +
->>>>>>>>> +/* From TMON Register Database */
->>>>>>>>> +#define TMON_TEMP_VAL_OFFSET            0x0000001c
->>>>>>>>> +#define TMON_TEMP_VAL_TEMP_VAL_SHIFT        0
->>>>>>>>> +#define TMON_TEMP_VAL_TEMP_VAL_MASK        0x000003ff
->>>>>>>>> +
->>>>>>>>> +/* Broadcom Thermal Zone Device Structure */
->>>>>>>>> +struct bcm_thermal_zone_priv {
->>>>>>>>> +    char name[THERMAL_NAME_LENGTH];
->>>>>>>>> +    void __iomem *base;
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +/* Temperature conversion function for TMON block */
->>>>>>>>> +static long raw_to_mcelsius(u32 raw)
->>>>>>>>> +{
->>>>>>>>> +    /*
->>>>>>>>> +     * According to Broadcom internal Analog Module Specification
->>>>>>>>> +     * the formula for converting TMON block output to
->>>>>>>>> temperature in
->>>>>>>>> +     * degree Celsius is:
->>>>>>>>> +     *    T = 428 - (0.561 * raw)
->>>>>>>>> +     * Note: the valid operating range for the TMON block is
->>>>>>>>> -40C to
->>>>>>>>> 125C
->>>>>>>>> +     */
->>>>>>>>> +    return 428000 - (561 * (long)raw);
->>>>>>>>> +}
->>>>>>>>> +
->>>>>>>>> +/* Get temperature callback function for thermal zone */
->>>>>>>>> +static int bcm_get_temp(struct thermal_zone_device *thermal,
->>>>>>>>> +            unsigned long *temp)
->>>>>>>>> +{
->>>>>>>>> +    u32 raw;
->>>>>>>>> +    long mcelsius;
->>>>>>>>> +    struct bcm_thermal_zone_priv *priv = thermal->devdata;
->>>>>>>>> +
->>>>>>>>> +    if (!priv) {
->>>>>>>>> +        pr_err("%s: thermal zone number %d devdata not
->>>>>>>>> initialized.\n",
->>>>>>>>> +            __func__, thermal->id);
->>>>>>>>> +        return -EINVAL;
->>>>>>>>> +    }
->>>>>>>>> +
->>>>>>>>> +    raw = (readl(priv->base + TMON_TEMP_VAL_OFFSET)
->>>>>>>>> +        & TMON_TEMP_VAL_TEMP_VAL_MASK) >>
->>>>>>>>> TMON_TEMP_VAL_TEMP_VAL_SHIFT;
->>>>>>>>> +
->>>>>>>>> +    pr_debug("%s: thermal zone number %d raw temp 0x%x\n",
->>>>>>>>> __func__,
->>>>>>>>> +        thermal->id, raw);
->>>>>>>>> +
->>>>>>>>> +    mcelsius = raw_to_mcelsius(raw);
->>>>>>>>> +
->>>>>>>>> +    /*
->>>>>>>>> +     * Since 'mcelsius' might be negative, we need to limit it to
->>>>>>>>> smallest
->>>>>>>>> +     * unsigned value before returning it to thermal framework.
->>>>>>>>> +     */
->>>>>>>>> +    if (mcelsius < 0)
->>>>>>>>> +        *temp = 0;
->>>>>>>>> +    else
->>>>>>>>> +        *temp = mcelsius;
->>>>>>>>> +
->>>>>>>>> +    pr_debug("%s: thermal zone number %d final temp %d\n",
->>>>>>>>> __func__,
->>>>>>>>> +        thermal->id, (int) *temp);
->>>>>>>>> +
->>>>>>>>> +    return 0;
->>>>>>>>> +}
->>>>>>>>> +
->>>>>>>>> +/* Operation callback functions for thermal zone */
->>>>>>>>> +static struct thermal_zone_device_ops bcm_dev_ops = {
->>>>>>>>> +    .get_temp = bcm_get_temp,
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +static const struct of_device_id bcm_tmu_match_table[] = {
->>>>>>>>> +    { .compatible = "brcm,kona-thermal" },
->>>>>>>>> +    {},
->>>>>>>>> +};
->>>>>>>>> +MODULE_DEVICE_TABLE(of, bcm_tmu_match_table);
->>>>>>>>> +
->>>>>>>>> +static int bcm_tmu_probe(struct platform_device *pdev)
->>>>>>>>> +{
->>>>>>>>> +    struct thermal_zone_device *thermal = NULL;
->>>>>>>>> +    struct bcm_thermal_zone_priv *priv;
->>>>>>>>> +    struct resource *res;
->>>>>>>>> +    const char *str;
->>>>>>>>> +
->>>>>>>>> +    priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
->>>>>>>>> +    if (!priv) {
->>>>>>>>> +        dev_err(&pdev->dev, "Failed to malloc priv.\n");
->>>>>>>>> +        return -ENOMEM;
->>>>>>>>> +    }
->>>>>>>>> +
->>>>>>>>> +    /* Obtain the tmu name from device tree file */
->>>>>>>>> +    if (of_property_read_string(pdev->dev.of_node, "thermal-name",
->>>>>>>> Hello Wendy,
->>>>>>>>
->>>>>>>> I would prefer we wait until the work for thermal data [1] gets
->>>>>>>> accepted
->>>>>>>> before accepting this driver, specially because you are adding
->>>>>>>> device
->>>>>>>> specific DT entry to help in your registration with the thermal
->>>>>>>> framework. With the mentioned work you wont need it at all.
->>>>>>>>
->>>>>>>> All best,
->>>>>>>>
->>>>>>>> [1] - http://lkml.org/lkml/2013/9/15/122
->>>>>>> Hello Eduardo,
->>>>>>>
->>>>>>> Since your changes are quite extensive, would you recommend me to get
->>>>>>> your 16 patches into my local workspace and try to integrate the code
->>>>>>> from my patches on the top of your patches at this time?  Or should I
->>>>>>> wait until your patches get accepted.
->>>>>> Hello again Wendy,
->>>>>>
->>>>>> The only part I am concerned is the device tree entry you are creating
->>>>>> for your device/driver. That could be obsolete in near future with the
->>>>>> work I am doing currently.
->>>>>>
->>>>>> The work is, as you mentioned, quite extensive, but should make things
->>>>>> easier for device driver writer. If you want, of course, it would be
->>>>>> great if you could rebase your work on top of mine and try it out on
->>>>>> your side and let me know the outcome.
->>>>>>
->>>>>> Comments on the proposed binding and documentation is also welcome.
->>>>>> Let
->>>>>> me know if there is something that it is not clear.
->>>>>>
->>>>>>> Thanks,
->>>>>>> -Wendy
->>>>>>>>> +            &str) == 0) {
->>>>>>>>> +        strlcpy(priv->name, str, sizeof(priv->name));
->>>>>>>>> +    } else {
->>>>>>>>> +        dev_err(&pdev->dev, "Failed to get thermal-name from
->>>>>>>>> DT.\n");
->>>>>>>>> +        return -EINVAL;
->>>>>>>>> +    }
->>>>>>>>> +
->>>>>>>>> +    res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->>>>>>>>> +    priv->base = devm_ioremap_resource(&pdev->dev, res);
->>>>>>>>> +    if (IS_ERR(priv->base))
->>>>>>>>> +        return PTR_ERR(priv->base);
->>>>>>>>> +
->>>>>>>>> +    thermal = thermal_zone_device_register(priv->name, 0, 0, priv,
->>>>>>>>> +                        &bcm_dev_ops, NULL, 0, 0);
->>>>>>>>> +    if (IS_ERR(thermal)) {
->>>>>>>>> +        dev_err(&pdev->dev,
->>>>>>>>> +            "Failed to register Broadcom thermal zone device.\n");
->>>>>>>>> +        return PTR_ERR(thermal);
->>>>>>>>> +    }
->>>>>>>>> +
->>>>>>>>> +    platform_set_drvdata(pdev, thermal);
->>>>>>>>> +
->>>>>>>>> +    dev_info(&pdev->dev, "Broadcom Thermal Monitor
->>>>>>>>> Initialized.\n");
->>>>>>>>> +
->>>>>>>>> +    return 0;
->>>>>>>>> +}
->>>>>>>>> +
->>>>>>>>> +static int bcm_tmu_remove(struct platform_device *pdev)
->>>>>>>>> +{
->>>>>>>>> +    struct thermal_zone_device *broadcom_thermal =
->>>>>>>>> +        platform_get_drvdata(pdev);
->>>>>>>>> +
->>>>>>>>> +    thermal_zone_device_unregister(broadcom_thermal);
->>>>>>>>> +
->>>>>>>>> +    dev_info(&pdev->dev, "Broadcom Thermal Monitor
->>>>>>>>> Uninitialized.\n");
->>>>>>>>> +
->>>>>>>>> +    return 0;
->>>>>>>>> +}
->>>>>>>>> +
->>>>>>>>> +static struct platform_driver bcm_tmu_driver = {
->>>>>>>>> +    .driver = {
->>>>>>>>> +        .name = "bcm-thermal",
->>>>>>>>> +        .owner = THIS_MODULE,
->>>>>>>>> +        .of_match_table = bcm_tmu_match_table,
->>>>>>>>> +    },
->>>>>>>>> +    .probe = bcm_tmu_probe,
->>>>>>>>> +    .remove = bcm_tmu_remove,
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +module_platform_driver(bcm_tmu_driver);
->>>>>>>>> +
->>>>>>>>> +MODULE_DESCRIPTION("Broadcom Thermal Driver");
->>>>>>>>> +MODULE_AUTHOR("Broadcom");
->>>>>>>>> +MODULE_LICENSE("GPL v2");
->>>>>>>>> +MODULE_ALIAS("platform:bcm-thermal");
->>>>>>>>>
->
-
--- 
-Best regards,
--Wendy
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS3pgq7ku7bljp/ku7YtLS0tLQ0KPiDlj5Hku7bkuro6IERh
+bmllbCBMZXpjYW5vIFttYWlsdG86ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9y
+Z10NCj4g5Y+R6YCB5pe26Ze0OiBNb25kYXksIE9jdG9iZXIgMDcsIDIwMTMg
+NDoyNCBQTQ0KPiDmlLbku7bkuro6IEJhcnJ5IFNvbmc7IHJqd0BzaXNrLnBs
+DQo+IOaKhOmAgTogbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBETC1TSEEt
+V29ya0dyb3VwTGludXg7IFJvbmdqdW4gWWluZzsgQmFycnkNCj4gU29uZw0K
+PiDkuLvpopg6IFJlOiBbUEFUQ0hdIGNwdWlkbGU6IHNpcmYgOiBBZGQgY3B1
+aWRsZSBmb3IgU2lSRnByaW1hSUkgYW5kIFNpUkZhdGxhc1ZJDQo+IA0KPiAN
+Cj4gSGkgQmFycnksDQo+IA0KPiBPbiAxMC8wNi8yMDEzIDA2OjI2IEFNLCBC
+YXJyeSBTb25nIHdyb3RlOg0KPiA+IEZyb206IFJvbmdqdW4gWWluZyA8Um9u
+Z2p1bi5ZaW5nQGNzci5jb20+DQo+ID4NCj4gPiBUaGlzIHBhdGNoIGFkZHMg
+c3VwcG9ydCBjcHVpZGxlIGZvciBDU1IgU2lSRnByaW1hSUkgYW5kIFNpUkZh
+dGxhc1ZJDQo+ID4gdW5pY29yZSBBUk0gQ29ydGV4LUE5IFNvQ3MuDQo+IA0K
+PiBBIG5ldyBkcml2ZXIgZGVzZXJ2ZXMgYSBiZXR0ZXIgZGVzY3JpcHRpb24u
+DQo+IA0KPiA+IFNpZ25lZC1vZmYtYnk6IFJvbmdqdW4gWWluZyA8Um9uZ2p1
+bi5ZaW5nQGNzci5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogQmFycnkgU29u
+ZyA8QmFvaHVhLlNvbmdAY3NyLmNvbT4NCj4gPiAtLS0NCj4gDQo+IElzIHRo
+ZXJlIGEgdGVjaG5pY2FsIHJlZmVyZW5jZSBtYW51YWwgYWNjZXNzaWJsZSBz
+b21ld2hlcmUgPw0KDQpObywgSSBoYXZlIG5vdC4gSWYgc3lzdGVtIG5lZWQg
+ZW50ZXIgaWRsZSBtb2RlLCBOb3QgbmVlZCBvcGVyYXRlIGFueSBTb0MgcmVn
+aXN0ZXIuIFNpUkYgU29DIGVudGVyIGNwdWlkbGUgbW9kZSBpcyB2ZXJ5IHNp
+bXBsZSwNCldoaWNoIG9ubHkgc2V0IHRoZSBwYXJlbnQgY2xvY2sgdG8gT1ND
+KDI2TUh6KSAgYW5kIGFkanVzdCB2b2x0YWdlIHRvIG1pbi4NCg0KPiANCj4g
+PiAgIC0gdGhpcyBwYXRjaCBkZXBlbnMgb24gIFJvbmdqdW4gWWluZydzICJb
+UEFUQ0hdIGNwdWZyZXE6IHNpcmY6IEFkZCBjcHVmcmVxDQo+ID4gICBmb3Ig
+U2lSRnByaW1hSUkgYW5kIFNpUkZhdGxhc1ZJIiBhdDoNCj4gPiAgIGh0dHA6
+Ly9tYXJjLmluZm8vP2w9bGludXgtcG0mbT0xMzgxMDMwNDIxMDYwODkmdz0y
+DQo+ID4NCj4gPiAgIGFyY2gvYXJtL2NvbmZpZ3MvcHJpbWEyX2RlZmNvbmZp
+ZyB8ICAgMiArDQo+ID4gICBkcml2ZXJzL2NwdWlkbGUvS2NvbmZpZy5hcm0g
+ICAgICAgfCAgIDYgKysNCj4gPiAgIGRyaXZlcnMvY3B1aWRsZS9NYWtlZmls
+ZSAgICAgICAgICB8ICAgMSArDQo+ID4gICBkcml2ZXJzL2NwdWlkbGUvY3B1
+aWRsZS1zaXJmLmMgICAgfCAxMzENCj4gKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysNCj4gPiAgIDQgZmlsZXMgY2hhbmdlZCwgMTQw
+IGluc2VydGlvbnMoKykNCj4gPiAgIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2
+ZXJzL2NwdWlkbGUvY3B1aWRsZS1zaXJmLmMNCj4gPg0KPiA+IGRpZmYgLS1n
+aXQgYS9hcmNoL2FybS9jb25maWdzL3ByaW1hMl9kZWZjb25maWcNCj4gPiBi
+L2FyY2gvYXJtL2NvbmZpZ3MvcHJpbWEyX2RlZmNvbmZpZw0KPiA+IGluZGV4
+IDUxM2Q3NWUuLmJjMGJmMWYgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9hcm0v
+Y29uZmlncy9wcmltYTJfZGVmY29uZmlnDQo+ID4gKysrIGIvYXJjaC9hcm0v
+Y29uZmlncy9wcmltYTJfZGVmY29uZmlnDQo+ID4gQEAgLTE4LDYgKzE4LDgg
+QEAgQ09ORklHX1BSRUVNUFQ9eQ0KPiA+ICAgQ09ORklHX0FFQUJJPXkNCj4g
+PiAgIENPTkZJR19LRVhFQz15DQo+ID4gICBDT05GSUdfQ1BVX0ZSRVE9eQ0K
+PiA+ICtDT05GSUdfQ1BVX0lETEU9eQ0KPiA+ICtDT05GSUdfQVJNX1NJUkZf
+Q1BVSURMRT15DQo+ID4gICBDT05GSUdfQklORk1UX01JU0M9eQ0KPiA+ICAg
+Q09ORklHX1BNX1JVTlRJTUU9eQ0KPiA+ICAgQ09ORklHX1VFVkVOVF9IRUxQ
+RVJfUEFUSD0iL3NiaW4vaG90cGx1ZyINCj4gPiBkaWZmIC0tZ2l0IGEvZHJp
+dmVycy9jcHVpZGxlL0tjb25maWcuYXJtIGIvZHJpdmVycy9jcHVpZGxlL0tj
+b25maWcuYXJtDQo+ID4gaW5kZXggOGUzNjYwMy4uYzFmNWZiZiAxMDA2NDQN
+Cj4gPiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUvS2NvbmZpZy5hcm0NCj4gPiAr
+KysgYi9kcml2ZXJzL2NwdWlkbGUvS2NvbmZpZy5hcm0NCj4gPiBAQCAtMTUs
+NiArMTUsMTIgQEAgY29uZmlnIEFSTV9LSVJLV09PRF9DUFVJRExFDQo+ID4g
+ICAJaGVscA0KPiA+ICAgCSAgVGhpcyBhZGRzIHRoZSBDUFUgSWRsZSBkcml2
+ZXIgZm9yIE1hcnZlbGwgS2lya3dvb2QgU29Dcy4NCj4gPg0KPiA+ICtjb25m
+aWcgQVJNX1NJUkZfQ1BVSURMRQ0KPiA+ICsJYm9vbCAiQ1BVIElkbGUgRHJp
+dmVyIGZvciBDU1IgU2lSRnByaW1hSUkgYW5kIENTUmF0bGFzVkkgU29DcyIN
+Cj4gPiArCWRlcGVuZHMgb24gQVJDSF9TSVJGDQo+ID4gKwloZWxwDQo+ID4g
+KwkgIFRoaXMgYWRkcyB0aGUgQ1BVIElkbGUgZHJpdmVyIGZvciBDU1IgU2lS
+RiBTb0NzLg0KPiA+ICsNCj4gPiAgIGNvbmZpZyBBUk1fWllOUV9DUFVJRExF
+DQo+ID4gICAJYm9vbCAiQ1BVIElkbGUgRHJpdmVyIGZvciBYaWxpbnggWnlu
+cSBwcm9jZXNzb3JzIg0KPiA+ICAgCWRlcGVuZHMgb24gQVJDSF9aWU5RDQo+
+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9NYWtlZmlsZSBiL2Ry
+aXZlcnMvY3B1aWRsZS9NYWtlZmlsZSBpbmRleA0KPiA+IGNlYTVlZjUuLmY4
+Y2NlMTYgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVpZGxlL01ha2Vm
+aWxlDQo+ID4gKysrIGIvZHJpdmVycy9jcHVpZGxlL01ha2VmaWxlDQo+ID4g
+QEAgLTksNiArOSw3IEBAIG9iai0kKENPTkZJR19BUkNIX05FRURTX0NQVV9J
+RExFX0NPVVBMRUQpICs9DQo+IGNvdXBsZWQubw0KPiA+ICAgIyBBUk0gU29D
+IGRyaXZlcnMNCj4gPiAgIG9iai0kKENPTkZJR19BUk1fSElHSEJBTktfQ1BV
+SURMRSkJKz0gY3B1aWRsZS1jYWx4ZWRhLm8NCj4gPiAgIG9iai0kKENPTkZJ
+R19BUk1fS0lSS1dPT0RfQ1BVSURMRSkJKz0gY3B1aWRsZS1raXJrd29vZC5v
+DQo+ID4gK29iai0kKENPTkZJR19BUk1fU0lSRl9DUFVJRExFKQkJKz0gY3B1
+aWRsZS1zaXJmLm8NCj4gPiAgIG9iai0kKENPTkZJR19BUk1fWllOUV9DUFVJ
+RExFKQkJKz0gY3B1aWRsZS16eW5xLm8NCj4gPiAgIG9iai0kKENPTkZJR19B
+Uk1fVTg1MDBfQ1BVSURMRSkgICAgICAgICArPSBjcHVpZGxlLXV4NTAwLm8N
+Cj4gPiAgIG9iai0kKENPTkZJR19DUFVfSURMRV9CSUdfTElUVExFKQkrPSBj
+cHVpZGxlLWJpZ19saXR0bGUubw0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJz
+L2NwdWlkbGUvY3B1aWRsZS1zaXJmLmMNCj4gPiBiL2RyaXZlcnMvY3B1aWRs
+ZS9jcHVpZGxlLXNpcmYuYyBuZXcgZmlsZSBtb2RlIDEwMDY0NCBpbmRleA0K
+PiA+IDAwMDAwMDAuLmZjMWY3MWUNCj4gPiAtLS0gL2Rldi9udWxsDQo+ID4g
+KysrIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUtc2lyZi5jDQo+ID4gQEAg
+LTAsMCArMSwxMzEgQEANCj4gPiArLyoNCj4gPiArICogQ1BVIGlkbGUgZHJp
+dmVycyBmb3IgQ1NSIFNpUkZwcmltYUlJDQo+ID4gKyAqDQo+ID4gKyAqIENv
+cHlyaWdodCAoYykgMjAxMSBDYW1icmlkZ2UgU2lsaWNvbiBSYWRpbyBMaW1p
+dGVkLCBhIENTUiBwbGMgZ3JvdXANCj4gY29tcGFueS4NCj4gPiArICoNCj4g
+PiArICogTGljZW5zZWQgdW5kZXIgR1BMdjIgb3IgbGF0ZXIuDQo+ID4gKyAq
+Lw0KPiA+ICsNCj4gPiArI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPg0KPiA+
+ICsjaW5jbHVkZSA8bGludXgvaW5pdC5oPg0KPiA+ICsjaW5jbHVkZSA8bGlu
+dXgvY3B1aWRsZS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvaW8uaD4NCj4g
+PiArI2luY2x1ZGUgPGxpbnV4L3RpbWUuaD4NCj4gPiArI2luY2x1ZGUgPGFz
+bS9wcm9jLWZucy5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvY2xrLmg+DQo+
+ID4gKyNpbmNsdWRlIDxsaW51eC9lcnIuaD4NCj4gPiArI2luY2x1ZGUgPGFz
+bS9jcHVpZGxlLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9yZWd1bGF0b3Iv
+Y29uc3VtZXIuaD4gI2luY2x1ZGUgPGxpbnV4L2NwdS5oPiAjaW5jbHVkZQ0K
+PiA+ICs8bGludXgvb3BwLmg+DQo+ID4gKw0KPiA+ICsjZGVmaW5lIFNJUkZT
+T0NfTUFYX1ZPTFRBR0UJMTIwMDAwMA0KPiA+ICsNCj4gPiArLyoNCj4gPiAr
+ICogbm93IHdlIGhhdmUgb25seSAyIEMgc3RhdGUgV0ZJDQo+ID4gKyAqIDEu
+IEFSTSBXRkkNCj4gPiArICogMi4gV0ZJICsgc3dpdGNoIHRvIDI2TWh6IGNs
+b2NrIHNvdXJjZSArIGxvd2VyIHZvbGF0Z2UgICovDQo+ID4gKw0KPiA+ICtz
+dGF0aWMgc3RydWN0IHsNCj4gPiArCXN0cnVjdCBjbGsJCSpjcHVfY2xrOw0K
+PiA+ICsJc3RydWN0IGNsawkJKm9zY19jbGs7DQo+ID4gKwlzdHJ1Y3QgcmVn
+dWxhdG9yCSp2Y29yZV9yZWd1bGF0b3I7DQo+ID4gKwlzdHJ1Y3QgZGV2aWNl
+CQkqY3B1X2RldjsNCj4gPiArfSBzaXJmX2NwdWlkbGU7DQo+ID4gKw0KPiA+
+ICtzdGF0aWMgaW50IHNpcmZfZW50ZXJfaWRsZShzdHJ1Y3QgY3B1aWRsZV9k
+ZXZpY2UgKmRldiwNCj4gPiArCQkJCXN0cnVjdCBjcHVpZGxlX2RyaXZlciAq
+ZHJ2LA0KPiA+ICsJCQkJaW50IGluZGV4KQ0KPiA+ICt7DQo+ID4gKwlzdHJ1
+Y3QgY2xrICpwYXJlbnRfY2xrOw0KPiA+ICsJdW5zaWduZWQgbG9uZyB2b2x0
+X29sZCA9IDAsIHZvbHRfbmV3LCBmcmVxOw0KPiA+ICsJc3RydWN0IG9wcCAq
+b3BwOw0KPiA+ICsNCj4gPiArCWxvY2FsX2lycV9kaXNhYmxlKCk7DQo+IA0K
+PiBEb24ndCB1c2UgbG9jYWxfaXJxX2Rpc2FibGUgaW4gdGhlIGRyaXZlciBp
+dCBpcyBkb25lIGJ5IHRoZSBjYWxsZXIuDQoNClllcywgSSB3aWxsIHJlbW92
+ZSBpdC4NCg0KPiANCj4gPiArCXBhcmVudF9jbGsgPSBjbGtfZ2V0X3BhcmVu
+dChzaXJmX2NwdWlkbGUuY3B1X2Nsayk7DQo+ID4gKwljbGtfc2V0X3BhcmVu
+dChzaXJmX2NwdWlkbGUuY3B1X2Nsaywgc2lyZl9jcHVpZGxlLm9zY19jbGsp
+Ow0KPiA+ICsNCj4gPiArCWlmIChzaXJmX2NwdWlkbGUudmNvcmVfcmVndWxh
+dG9yKSB7DQo+ID4gKwkJdm9sdF9vbGQgPSByZWd1bGF0b3JfZ2V0X3ZvbHRh
+Z2Uoc2lyZl9jcHVpZGxlLnZjb3JlX3JlZ3VsYXRvcik7DQo+ID4gKw0KPiA+
+ICsJCWZyZXEgPSBjbGtfZ2V0X3JhdGUoc2lyZl9jcHVpZGxlLm9zY19jbGsp
+Ow0KPiA+ICsJCXJjdV9yZWFkX2xvY2soKTsNCj4gDQo+IFVzaW5nIHJjdSBp
+biB0aGUgaWRsZSBwYXRoIGlzIG5vdCBhbGxvd2VkLg0KDQpZZXMsIEkgd2ls
+bCByZW1vdmUgaXQuDQoNCj4gDQo+ID4gKwkJb3BwID0gb3BwX2ZpbmRfZnJl
+cV9jZWlsKHNpcmZfY3B1aWRsZS5jcHVfZGV2LCAmZnJlcSk7DQo+ID4gKwkJ
+aWYgKElTX0VSUihvcHApKSB7DQo+ID4gKwkJCXJjdV9yZWFkX3VubG9jaygp
+Ow0KPiA+ICsJCQlyZXR1cm4gLUVJTlZBTDsNCj4gPiArCQl9DQo+ID4gKw0K
+PiA+ICsJCXZvbHRfbmV3ID0gb3BwX2dldF92b2x0YWdlKG9wcCk7DQo+ID4g
+KwkJcmN1X3JlYWRfdW5sb2NrKCk7DQo+ID4gKw0KPiA+ICsJCXJlZ3VsYXRv
+cl9zZXRfdm9sdGFnZShzaXJmX2NwdWlkbGUudmNvcmVfcmVndWxhdG9yLCB2
+b2x0X25ldywNCj4gPiArCQkJCVNJUkZTT0NfTUFYX1ZPTFRBR0UpOw0KPiA+
+ICsJfQ0KPiA+ICsJLyogV2FpdCBmb3IgaW50ZXJydXB0IHN0YXRlICovDQo+
+ID4gKwljcHVfZG9faWRsZSgpOw0KPiA+ICsNCj4gPiArCWlmIChzaXJmX2Nw
+dWlkbGUudmNvcmVfcmVndWxhdG9yKQ0KPiA+ICsJCXJlZ3VsYXRvcl9zZXRf
+dm9sdGFnZShzaXJmX2NwdWlkbGUudmNvcmVfcmVndWxhdG9yLCB2b2x0X29s
+ZCwNCj4gPiArCQkJCVNJUkZTT0NfTUFYX1ZPTFRBR0UpOw0KPiA+ICsNCj4g
+PiArCWNsa19zZXRfcGFyZW50KHNpcmZfY3B1aWRsZS5jcHVfY2xrLCBwYXJl
+bnRfY2xrKTsNCj4gPiArCS8qIFRvZG86IG90aGVyIEMgc3RhdGVzICovDQo+
+IA0KPiBJdCBzb3VuZHMgdmVyeSB3ZWlyZCB5b3UgaGF2ZSB0aGlzIGZyZXEv
+dm9sdC9vcHAgY29kZSBoZXJlLg0KPiANCj4gSWYgeW91IGhpdCBpZGxlLCB0
+aGUgY3B1ZnJlcSBkcml2ZXIgZGlkbid0IHB1dCB0aGUgY3B1IGluIHRoZSBz
+dGF0ZSB5b3UgYXJlIHRyeWluZyB0bw0KPiBicmluZyBoZXJlID8NCj4gDQo+
+IFRoZXJlIGlzbid0IGEgcG93ZXIgbWFuYWdlbWVudCB1bml0IG9uIHRoaXMg
+Ym9hcmQgPw0KPiANCg0KQnkgU2lSRiBTb0MsIHdoZW4gZW50ZXIgaWRsZSBt
+b2RlLCBJIHNldCB0aGUgZnJlcSB0byAyNk1IeiBhbmQgbWluIHZvbHRhZ2Uu
+IA0KVGhhdCdzIHdpbGwgc2F2ZSB0aGUgcG93ZXIgY29uc3VtZSBhbmQgcmVk
+dWNlIGxlYWthZ2UgY3VycmVudC4NCg0KPiA+ICsJbG9jYWxfaXJxX2VuYWJs
+ZSgpOw0KPiANCj4gRG9uZSBieSB0aGUgY2FsbGVyLg0KPiANCg0KWWVzLiBJ
+IHdpbGwgcmVtb3ZlIGl0Lg0KDQo+ID4gKwlyZXR1cm4gaW5kZXg7DQo+ID4g
+K30NCj4gPiArDQo+ID4gK3N0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIg
+c2lyZl9jcHVpZGxlX2RyaXZlciA9IHsNCj4gPiArCS5uYW1lID0gInNpcmZf
+Y3B1aWRsZSIsDQo+ID4gKwkuc3RhdGVzID0gew0KPiA+ICsJCUFSTV9DUFVJ
+RExFX1dGSV9TVEFURSwNCj4gPiArCQl7DQo+ID4gKwkJCS5uYW1lID0gIldG
+SS1MUCIsDQo+ID4gKwkJCS5kZXNjID0gIldGSSBsb3cgcG93ZXIiLA0KPiA+
+ICsJCQkuZmxhZ3MgPSBDUFVJRExFX0ZMQUdfVElNRV9WQUxJRCwNCj4gPiAr
+CQkJLmV4aXRfbGF0ZW5jeSA9IDEwLA0KPiA+ICsJCQkudGFyZ2V0X3Jlc2lk
+ZW5jeSA9IDEwMDAwLA0KPiA+ICsJCQkuZW50ZXIgPSBzaXJmX2VudGVyX2lk
+bGUsDQo+ID4gKwkJfSwNCj4gPiArCX0sDQo+ID4gKwkuc3RhdGVfY291bnQg
+PSAyLA0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArLyogSW5pdGlhbGl6ZSBDUFUg
+aWRsZSBieSByZWdpc3RlcmluZyB0aGUgaWRsZSBzdGF0ZXMgKi8gc3RhdGlj
+IGludA0KPiA+ICtzaXJmc29jX2luaXRfY3B1aWRsZSh2b2lkKSB7DQo+ID4g
+KwlpbnQgcmV0ID0gMDsNCj4gPiArDQo+ID4gKwlzaXJmX2NwdWlkbGUuY3B1
+X2NsayA9IGNsa19nZXRfc3lzKCJjcHUiLCBOVUxMKTsNCj4gPiArCWlmIChJ
+U19FUlIoc2lyZl9jcHVpZGxlLmNwdV9jbGspKQ0KPiA+ICsJCXJldHVybiBQ
+VFJfRVJSKHNpcmZfY3B1aWRsZS5jcHVfY2xrKTsNCj4gPiArDQo+ID4gKwlz
+aXJmX2NwdWlkbGUub3NjX2NsayA9IGNsa19nZXRfc3lzKCJvc2MiLCBOVUxM
+KTsNCj4gPiArCWlmIChJU19FUlIoc2lyZl9jcHVpZGxlLm9zY19jbGspKSB7
+DQo+ID4gKwkJcmV0ID0gUFRSX0VSUihzaXJmX2NwdWlkbGUub3NjX2Nsayk7
+DQo+ID4gKwkJZ290byBvdXRfcHV0X29zY19jbGs7DQo+ID4gKwl9DQo+ID4g
+Kw0KPiA+ICsJc2lyZl9jcHVpZGxlLnZjb3JlX3JlZ3VsYXRvciA9IHJlZ3Vs
+YXRvcl9nZXQoTlVMTCwgInZjb3JlIik7DQo+ID4gKwlpZiAoSVNfRVJSKHNp
+cmZfY3B1aWRsZS52Y29yZV9yZWd1bGF0b3IpKQ0KPiA+ICsJCXNpcmZfY3B1
+aWRsZS52Y29yZV9yZWd1bGF0b3IgPSBOVUxMOw0KPiA+ICsNCj4gPiArCXNp
+cmZfY3B1aWRsZS5jcHVfZGV2ID0gZ2V0X2NwdV9kZXZpY2UoMCk7DQo+ID4g
+KwlpZiAoSVNfRVJSKHNpcmZfY3B1aWRsZS5jcHVfZGV2KSkgew0KPiA+ICsJ
+CXJldCA9IFBUUl9FUlIoc2lyZl9jcHVpZGxlLmNwdV9kZXYpOw0KPiA+ICsJ
+CWdvdG8gb3V0X3B1dF9jbGs7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJcmV0
+ID0gY3B1aWRsZV9yZWdpc3Rlcigmc2lyZl9jcHVpZGxlX2RyaXZlciwgTlVM
+TCk7DQo+ID4gKwlpZiAoIXJldCkNCj4gPiArCQlyZXR1cm4gcmV0Ow0KPiA+
+ICsNCj4gPiArb3V0X3B1dF9jbGs6DQo+ID4gKwljbGtfcHV0KHNpcmZfY3B1
+aWRsZS5jcHVfY2xrKTsNCj4gPiArb3V0X3B1dF9vc2NfY2xrOg0KPiA+ICsJ
+Y2xrX3B1dChzaXJmX2NwdWlkbGUub3NjX2Nsayk7DQo+ID4gKwlyZXR1cm4g
+cmV0Ow0KPiA+ICt9DQo+ID4gK2xhdGVfaW5pdGNhbGwoc2lyZnNvY19pbml0
+X2NwdWlkbGUpOw0KPiANCj4gUGxlYXNlIGNvbnZlcnQgaXQgdG8gcGxhdGZv
+cm1fZHJpdmVyIGFzIHRoZSBvdGhlciBkcml2ZXJzIGFyZSBtb3ZpbmcgdG8g
+KGNmLg0KPiBjcHVpZGxlLWtpcmt3b29kLCBjcHVpZGxlLXV4NTAwKS4NCj4g
+DQoNCkkgdGhpbmsgY3B1aWRsZSBpcyBub3QgYWN0dWFsIGRldmljZSB3aGlj
+aCBjYW4ndCBiZSBhZGRlZCB0byBkZXZpY2UgdHJlZSBzeXN0ZW0uDQpTbyB3
+aGVyZSByZWdpc3RlciB0aGlzIGRldmljZT8NCg0KPiBUaGFua3MNCj4gICAg
+LS0gRGFuaWVsDQo+IA0KPiAtLQ0KPiAgIDxodHRwOi8vd3d3LmxpbmFyby5v
+cmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3Ig
+QVJNDQo+IFNvQ3MNCj4gDQo+IEZvbGxvdyBMaW5hcm86ICA8aHR0cDovL3d3
+dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8DQo+IDxo
+dHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwNCj4g
+PGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cNCj4g
+DQo+IA0KPiANCj4gIFRvIHJlcG9ydCB0aGlzIGVtYWlsIGFzIHNwYW0gY2xp
+Y2sNCj4gaHR0cHM6Ly93d3cubWFpbGNvbnRyb2wuY29tL3NyL01aYnF2WXM1
+UXdKdnBlYWV0VXdoQ1E9PQ0KPiBTZmJMdnNHbmdja2d1V1hGbWx0S0J6clp3
+TEh4VWFUUkRVWDU1V09adFFVekdXWXNkUT09IC4NCg0KVGhhbmtzDQpSb25n
+SnVuIFlpbmcNCgoKTWVtYmVyIG9mIHRoZSBDU1IgcGxjIGdyb3VwIG9mIGNv
+bXBhbmllcy4gQ1NSIHBsYyByZWdpc3RlcmVkIGluIEVuZ2xhbmQgYW5kIFdh
+bGVzLCByZWdpc3RlcmVkIG51bWJlciA0MTg3MzQ2LCByZWdpc3RlcmVkIG9m
+ZmljZSBDaHVyY2hpbGwgSG91c2UsIENhbWJyaWRnZSBCdXNpbmVzcyBQYXJr
+LCBDb3dsZXkgUm9hZCwgQ2FtYnJpZGdlLCBDQjQgMFdaLCBVbml0ZWQgS2lu
+Z2RvbQpNb3JlIGluZm9ybWF0aW9uIGNhbiBiZSBmb3VuZCBhdCB3d3cuY3Ny
+LmNvbS4gRm9sbG93IENTUiBvbiBUd2l0dGVyIGF0IGh0dHA6Ly90d2l0dGVy
+LmNvbS9DU1JfUExDIGFuZCByZWFkIG91ciBibG9nIGF0IHd3dy5jc3IuY29t
+L2Jsb2cK
