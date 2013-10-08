@@ -1,190 +1,230 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: [PATCH v2] platform: x86: asus-wmi: add fan control
-Date: Tue,  8 Oct 2013 07:48:44 -0500
-Message-ID: <1381236524-19633-1-git-send-email-felipe.contreras@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:42137 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753635Ab3JHMyq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 08:54:46 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Tue, 08 Oct 2013 13:55:16 +0100
+Message-ID: <525400B4.8060203@arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <5252DAD3.6040903@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5252DAD3.6040903@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: platform-driver-x86@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org, Matthew Garrett <matthew.garrett@nebula.com>, Corentin Chary <corentin.chary@gmail.com>, Felipe Contreras <felipe.contreras@gmail.com>
 
-Simple driver to enable control of the fan in ASUS laptops. So far this
-has only been tested in ASUS Zenbook Prime UX31A, but according to some
-online reference [1], it should work in other models as well.
+On 07/10/13 17:01, Rob Herring wrote:
+> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> If more than one similar devices share the same operating points(OPPs)
+>> being in the same clock domain, currently we need to replicate the
+>> OPP entries in all the nodes.
+>>
+>> This patch extends existing binding by adding a new property named
+>> 'operating-points-phandle' to specify the phandle in any device node
+>> pointing to another node which contains the actual OPP tuples.
+>> This helps to avoid replication if multiple devices share the OPPs.
+>>
+>> Cc: Rob Herring <rob.herring@calxeda.com>
+>> Cc: Pawel Moll <pawel.moll@arm.com>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
+>> Cc: Stephen Warren <swarren@wwwdotorg.org>
+>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>> Cc: Nishanth Menon <nm@ti.com>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>> ---
+>>  Documentation/devicetree/bindings/power/opp.txt | 161 ++++++++++++++++++++++--
+>>  1 file changed, 149 insertions(+), 12 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+>> index 74499e5..f59b878 100644
+>> --- a/Documentation/devicetree/bindings/power/opp.txt
+>> +++ b/Documentation/devicetree/bindings/power/opp.txt
+>> @@ -4,22 +4,159 @@ SoCs have a standard set of tuples consisting of frequency and
+>>  voltage pairs that the device will support per voltage domain. These
+>>  are called Operating Performance Points or OPPs.
+>>  
+>> -Properties:
+>> +Required Properties:
+>>  - operating-points: An array of 2-tuples items, and each item consists
+>>    of frequency and voltage like <freq-kHz vol-uV>.
+>>  	freq: clock frequency in kHz
+>>  	vol: voltage in microvolt
+>>  
+>> +- operating-points-phandle: phandle to the device tree node which contains
+>> +	the operating points tuples(recommended to be used if multiple
+>> +	devices are in the same clock domain and hence share OPPs, as it
+>> +	avoids replication of OPPs)
+>> +
+>> +  operating-points and operating-points-phandle are mutually exclusive, only
+>> +  one of them can be present in any device node.
+>> +
+>>  Examples:
+>>  
+>> -cpu@0 {
+>> -	compatible = "arm,cortex-a9";
+>> -	reg = <0>;
+>> -	next-level-cache = <&L2>;
+>> -	operating-points = <
+>> -		/* kHz    uV */
+>> -		792000  1100000
+>> -		396000  950000
+>> -		198000  850000
+>> -	>;
+>> -};
+>> +1. A uniprocessor system (phandle not required)
+>> +
+>> +	cpu0: cpu@0 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <0>;
+>> +		operating-points = <
+>> +			/* kHz    uV */
+>> +			792000  1100000
+>> +			396000  950000
+>> +			198000  850000
+>> +		>;
+>> +	};
+>> +
+>> +2a. Consider a SMP system with 4 CPUs in the same clock domain(no phandle)
+>> +    Some existing DTs describe homogenous SMP systems by only listing the
+>> +    OPPs in the cpu@0 node. For compatiblity with existing DTs, an
+>> +    operating system may handle this case specially.
+>> +
+>> +	cpu0: cpu@0 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <0>;
+>> +		operating-points = <
+>> +			/* kHz    uV */
+>> +			792000  1100000
+>> +			396000  950000
+>> +			198000  850000
+>> +		>;
+>> +	};
+>> +
+>> +	cpu1: cpu@1 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <1>;
+>> +	};
+>> +
+>> +	cpu2: cpu@2 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <2>;
+>> +	};
+>> +
+>> +	cpu3: cpu@3 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <3>;
+>> +	};
+>> +
+>> +2b. Consider a SMP system with 4 CPUs in the same clock domain(with phandle)
+>> +    If more than one device of same type share the same OPPs, for example
+>> +    all the CPUs on a SoC or in a single cluster on a SoC, then we can avoid
+>> +    replicating the OPPs in all the nodes. We can specify the phandle of
+>> +    the node which contains the OPP tuples instead.
+>> +
+>> +	cpu0: cpu@0 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <0>;
+>> +		operating-points-phandle = <&cpu_opp>;
+>> +	};
+>> +
+>> +	cpu1: cpu@1 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <1>;
+>> +		operating-points-phandle = <&cpu_opp>;
+>> +	};
+>> +
+>> +	cpu2: cpu@2 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <2>;
+>> +		operating-points-phandle = <&cpu_opp>;
+>> +	};
+>> +
+>> +	cpu3: cpu@3 {
+>> +		compatible = "arm,cortex-a9";
+>> +		reg = <3>;
+>> +		operating-points-phandle = <&cpu_opp>;
+>> +	};
+>> +
+>> +	opps-table {
+>> +		cpu_opp: cpu_opp {
+>> +			operating-points = <
+>> +				/* kHz    uV */
+>> +				792000  1100000
+>> +				396000  950000
+>> +				198000  850000
+>> +			>;
+>> +		};
+>> +		... /* other device OPP nodes */
+> 
+> But this is a subnode of /cpus. IMO, OPPs should be located near what
+> they control.
+> 
+No, the idea was to group all the shared OPPs in a container node like clocks or
+pinmux. So opps-table in above example need not be subnode of /cpus.
 
-The implementation is very straight-forward, the only caveat is that the
-fan speed needs to be saved after it has been manually changed because
-it won't be reported properly until it goes back to 'auto' mode.
+> 
+>> +	}
+>> +
+>> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
+>> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
+>> +   the clock domain.
+>> +
+>> +	cpu0: cpu@0 {
+>> +		compatible = "arm,cortex-a15";
+>> +		reg = <0>;
+>> +		operating-points-phandle = <&cluster0_opp>;
+>> +	};
+>> +
+>> +	cpu1: cpu@1 {
+>> +		compatible = "arm,cortex-a15";
+>> +		reg = <1>;
+>> +		operating-points-phandle = <&cluster0_opp>;
+>> +	};
+>> +
+>> +	cpu2: cpu@100 {
+>> +		compatible = "arm,cortex-a7";
+>> +		reg = <100>;
+>> +		operating-points-phandle = <&cluster1_opp>;
+>> +	};
+>> +
+>> +	cpu3: cpu@101 {
+>> +		compatible = "arm,cortex-a7";
+>> +		reg = <101>;
+>> +		operating-points-phandle = <&cluster1_opp>;
+>> +	};
+>> +
+>> +	opps-table {
+>> +		cluster0_opp: cluster0_opp {
+> 
+> Why not use the cpu topology? Then the operating point can apply to
+> cores based on the position in the topology. You don't even need a
+> phandle in that case. You can look for OPPs in either a cpu node or in
+> the topology.
+> 
+Agreed but few thoughts behind this binding:
 
-[1] http://forum.notebookreview.com/asus/705656-fan-control-asus-prime-ux31-ux31a-ux32a-ux32vd.html
+1. OPPs are not just cpu specific:
+   How do we share OPPs for 2 devices in the same clock domain ?
+   Also moving the OPP into cpu-topo makes parsing specific to cpu.
+   Currently the OPP library fetches the of_node from the device struct
+   which is applicable to any devices.
 
-Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
----
- drivers/platform/x86/asus-wmi.c | 105 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+2. Should cpu topology(i.e. cpu-map) just contain the topology info ? and
+   phandles to these nodes should be used to setup any affinity ?
 
-diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
-index 19c313b..5fdfed6 100644
---- a/drivers/platform/x86/asus-wmi.c
-+++ b/drivers/platform/x86/asus-wmi.c
-@@ -78,6 +78,7 @@ MODULE_LICENSE("GPL");
- #define ASUS_WMI_METHODID_GPID		0x44495047 /* Get Panel ID?? (Resol) */
- #define ASUS_WMI_METHODID_QMOD		0x444F4D51 /* Quiet MODe */
- #define ASUS_WMI_METHODID_SPLV		0x4C425053 /* Set Panel Light Value */
-+#define ASUS_WMI_METHODID_AGFN		0x4E464741
- #define ASUS_WMI_METHODID_SFUN		0x4E554653 /* FUNCtionalities */
- #define ASUS_WMI_METHODID_SDSP		0x50534453 /* Set DiSPlay output */
- #define ASUS_WMI_METHODID_GDSP		0x50534447 /* Get DiSPlay output */
-@@ -155,6 +156,16 @@ struct bios_args {
- 	u32 arg1;
- } __packed;
- 
-+struct fan_args {
-+	u16 mfun;
-+	u16 sfun;
-+	u16 len;
-+	u8 stas;
-+	u8 err;
-+	u8 fan;
-+	u32 speed;
-+} __packed;
-+
- /*
-  * <platform>/    - debugfs root directory
-  *   dev_id      - current dev_id
-@@ -205,6 +216,9 @@ struct asus_wmi {
- 	struct asus_rfkill gps;
- 	struct asus_rfkill uwb;
- 
-+	struct thermal_cooling_device *fan;
-+	int fan_speed;
-+
- 	struct hotplug_slot *hotplug_slot;
- 	struct mutex hotplug_lock;
- 	struct mutex wmi_lock;
-@@ -1022,6 +1036,90 @@ exit:
- }
- 
- /*
-+ * Fan
-+ */
-+
-+static int fan_speed(struct asus_wmi *asus, int write, int fan, unsigned long *speed)
-+{
-+	struct fan_args args = {
-+		.len = sizeof(args),
-+		.mfun = 0x13,
-+		.sfun = write ? 0x07 : 0x06,
-+		.fan = fan,
-+		.speed = write ? *speed : 0,
-+	};
-+	int r;
-+	u32 value;
-+
-+	if (!write && asus->fan_speed >= 0) {
-+		*speed = asus->fan_speed;
-+		return 0;
-+	}
-+
-+	r = asus_wmi_evaluate_method(ASUS_WMI_METHODID_AGFN, virt_to_phys(&args), 0, &value);
-+	if (r || value || args.err)
-+		return -1;
-+
-+	if (write)
-+		asus->fan_speed = fan > 0 ? *speed : -1;
-+	else
-+		*speed = args.speed;
-+
-+	return 0;
-+}
-+
-+static int fan_set_auto(struct asus_wmi *asus)
-+{
-+	unsigned long speed = 0;
-+	return fan_speed(asus, 1, 0, &speed);
-+}
-+
-+static int fan_get_max_state(struct thermal_cooling_device *cdev, unsigned long *state)
-+{
-+	*state = 0xff;
-+	return 0;
-+}
-+
-+static int fan_get_cur_state(struct thermal_cooling_device *cdev, unsigned long *state)
-+{
-+	return fan_speed(cdev->devdata, 0, 1, state);
-+}
-+
-+static int fan_set_cur_state(struct thermal_cooling_device *cdev, unsigned long state)
-+{
-+	return fan_speed(cdev->devdata, 1, 1, &state);
-+}
-+
-+static const struct thermal_cooling_device_ops fan_cooling_ops = {
-+	.get_max_state = fan_get_max_state,
-+	.get_cur_state = fan_get_cur_state,
-+	.set_cur_state = fan_set_cur_state,
-+};
-+
-+static int asus_wmi_fan_init(struct asus_wmi *asus)
-+{
-+	struct thermal_cooling_device *cdev;
-+
-+	if (fan_set_auto(asus))
-+		return 0;
-+
-+	cdev = thermal_cooling_device_register("Fan", asus, &fan_cooling_ops);
-+	if (IS_ERR(cdev))
-+		return PTR_ERR(cdev);
-+	asus->fan = cdev;
-+	return 0;
-+}
-+
-+static void asus_wmi_fan_exit(struct asus_wmi *asus)
-+{
-+	if (!asus->fan)
-+		return;
-+	fan_set_auto(asus);
-+	thermal_cooling_device_unregister(asus->fan);
-+	asus->fan = NULL;
-+}
-+
-+/*
-  * Hwmon device
-  */
- static ssize_t asus_hwmon_pwm1(struct device *dev,
-@@ -1796,6 +1894,10 @@ static int asus_wmi_add(struct platform_device *pdev)
- 	if (err)
- 		goto fail_rfkill;
- 
-+	err = asus_wmi_fan_init(asus);
-+	if (err)
-+		goto fail_fan;
-+
- 	if (asus->driver->quirks->wmi_backlight_power)
- 		acpi_video_dmi_promote_vendor();
- 	if (!acpi_video_backlight_support()) {
-@@ -1830,6 +1932,8 @@ fail_debugfs:
- fail_wmi_handler:
- 	asus_wmi_backlight_exit(asus);
- fail_backlight:
-+	asus_wmi_fan_exit(asus);
-+fail_fan:
- 	asus_wmi_rfkill_exit(asus);
- fail_rfkill:
- 	asus_wmi_led_exit(asus);
-@@ -1855,6 +1959,7 @@ static int asus_wmi_remove(struct platform_device *device)
- 	asus_wmi_hwmon_exit(asus);
- 	asus_wmi_led_exit(asus);
- 	asus_wmi_rfkill_exit(asus);
-+	asus_wmi_fan_exit(asus);
- 	asus_wmi_debugfs_exit(asus);
- 	asus_wmi_platform_exit(asus);
- 
--- 
-1.8.4-fc
+3. As part of RFC[1][2], it was also discussed that on some SoCs we need
+   multiple OPP profiles/options which it provides but only one of them can
+   be used based on the board design. phandle to OPP will also help resolve
+   that issue.
+
+Let me know your thoughts.
+
+Regards,
+Sudeep
+
+[1] http://www.spinics.net/lists/cpufreq/msg06556.html
+[2] http://www.spinics.net/lists/cpufreq/msg06685.html
 
