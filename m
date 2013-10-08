@@ -1,169 +1,403 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv6 02/16] drivers: thermal: introduce device tree parser
-Date: Tue, 8 Oct 2013 10:25:06 -0400
-Message-ID: <525415C2.7000302@ti.com>
-References: <1379537849-28425-1-git-send-email-eduardo.valentin@ti.com> <1379540136-28378-1-git-send-email-eduardo.valentin@ti.com> <52428D13.7080007@freescale.com> <5242F011.4090607@ti.com> <5253C63D.5030904@freescale.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] thermal: offer TI thermal support only when ARCH_OMAP2PLUS
+ is defined
+Date: Tue, 08 Oct 2013 16:47:10 +0200
+Message-ID: <345331503.cxDWWY2SGj@amdc1032>
+References: <3702969.8rn3SOscJE@amdc1032> <1985237.ukkgSmGrTt@amdc1032>
+ <1588308.i5Ha5A8RHe@amdc1032>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:36386 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754546Ab3JHO00 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 10:26:26 -0400
-In-Reply-To: <5253C63D.5030904@freescale.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:17930 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755526Ab3JHOrX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 10:47:23 -0400
+In-reply-to: <1588308.i5Ha5A8RHe@amdc1032>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hongbo Zhang <hongbo.zhang@freescale.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, joe@perches.com, grant.likely@linaro.org, durgadoss.r@intel.com, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-
---0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 08-10-2013 04:45, Hongbo Zhang wrote:
-> On 09/25/2013 10:15 PM, Eduardo Valentin wrote:
->> On 25-09-2013 03:13, Hongbo Zhang wrote:
->>> On 09/19/2013 05:35 AM, Eduardo Valentin wrote:
->>>>    [...]
->>>> +
->>>> +/***   sensor API   ***/
->>>> +
->>> You are introducing new concept here, the original framework and driv=
-ers
->>> cannot use this, right? any further plan to update original framework=
-
->>> for this new feature?
->>>
->> Well, not new as such. Just a specific way to register sensors to
->> thermal framework. What is really new is the fact that we really need =
-to
->> have sensors decoupled from thermal zone devices, and today we have
->> these concepts pretty merged together.
->> To answer your question, for now I am more concerned with the bindings=
-
->> definition. Once that is at least agreed, then we can follow up with t=
-he
->> migration of existing drivers. For now, there are two examples in this=
-
->> series, first one is using one existing thermal driver, which is the T=
-I
->> SoC thermal driver, and the second one is the hwmon drivers, which are=
-
->> existing sensor drivers, but are not thermal drivers.
->>
->> The plan forward, once this series is accepted is to migrate existing
->> drivers, yes, so that they can use device tree uniformly. Of course,
->> this needs help from driver authors.
->>
->> My proposal will be to follow up this series with a two fold migration=
-=2E
->> First step to change the existing thermal drivers to have both, the
->> current support and the device tree support. And second step, for thos=
-e
->> who wish to, we could remove the old code containing thermal data and
->> have only dt support. Of course, this requires drivers authors input.
->>
->>
->>
->>>> +static struct thermal_zone_device *
->>>> +thermal_zone_of_add_sensor(struct device_node *zone,
->>>> +               struct device_node *sensor, void *data,
->>>> +               int (*get_temp)(void *, long *),
->>>> +               int (*get_trend)(void *, long *))
->>>> +{
->>>> +    struct thermal_zone_device *tzd;
->>>> +    struct __thermal_zone *tz;
->>>> +
->>>> +    tzd =3D thermal_zone_get_zone_by_name(zone->name);
->>>> +    if (IS_ERR(tzd))
->>>> +        return ERR_PTR(-EPROBE_DEFER);
->>>> +
->>>> [...]
->>>> +
->>>> +/*
->>>> + * Here are the thermal trip types. This must
->>>> + * match with enum thermal_trip_type at
->>>> + * include/linux/thermal.h
->>>> + */
->>>> +#define THERMAL_TRIP_ACTIVE        0
->>>> +#define THERMAL_TRIP_PASSIVE        1
->>>> +#define THERMAL_TRIP_HOT        2
->>>> +#define THERMAL_TRIP_CRITICAL        3
->>>> +
->>> These macros seem duplicated with enum thermal_trip_type in thermal.h=
-,
->>> do you have further plan to merge them?
->>> Or by using string "active",  "passive" etc in the dts, then you can
->>> reuse the original enum definition.
->> I am changing this so that in DT we have string constants, and we keep=
- a
->> map from string to enum, just like we have for phy-mode, as suggested =
-by
->> Mark.
->>
->> You can have a taste of it here:
->> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/commit=
-/?h=3Dthermal_work/thermal_core/dt_parser_rfc_v4&id=3D73f16c27fc763495188=
-fba7d6e17b9c986efc6ac
->>
->>
->> I will be reposting this version once we are done with this thread
->> discussion and I am finished with my current test.
->>
->> If you have the time, I would appreciate if you could try the series o=
-n
->> your board, as I am don't have access to your hardware. It would be
->> really nice to see how this work is behaving in other environments the=
-n
->> the one I have.
->=20
-> We have thermal management plan in next year, currently I don't have
-> proper board to test this.
-> I would like to do it when I have time and board, but I will track thes=
-e
-> thermal treads.
-
-OK Zhang, no worries then.
-
->>
->> Thanks for your interest in this work.
->>
->>>> +/* On cooling devices upper and lower limits */
->>>> +#define THERMAL_NO_LIMIT        (-1UL)
->>>> +
->>>> +#endif
->>>> [...]
->>>
->>>
->>>
->>
->=20
->=20
->=20
->=20
->=20
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+Hi Eduardo,
 
-Eduardo Valentin
+On Monday, October 07, 2013 04:10:29 PM Bartlomiej Zolnierkiewicz wrote:
+> On Monday, October 07, 2013 12:50:54 PM Bartlomiej Zolnierkiewicz wrote:
+> > On Monday, October 07, 2013 11:57:16 AM Bartlomiej Zolnierkiewicz wrote:
+> > > 
+> > > Hi,
+> > > 
+> > > On Friday, October 04, 2013 02:22:30 PM Eduardo Valentin wrote:
+> > > > On 04-10-2013 08:35, Bartlomiej Zolnierkiewicz wrote:
+> > > > > Menu for Texas Instruments thermal support is visible on all
+> > > > > platforms and TI_SOC_THERMAL + TI_THERMAL config options can
+> > > > > be selected also on EXYNOS platform (on which ARCH_HAS_BANDGAP
+> > > > > config option is selected by SoCs config options to fulfill
+> > > > > EXYNOS_THERMAL config option dependency). Thus the code which
+> > > > > is never used can be build. Fix it by making TI menu dependent
+> > > > > on ARCH_OMAP2PLUS config option.
+> > > > > 
+> > > > > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > > > > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > > > > ---
+> > > > >  drivers/thermal/Kconfig | 1 +
+> > > > >  1 file changed, 1 insertion(+)
+> > > > > 
+> > > > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > > > index 57e06a9..a709c63 100644
+> > > > > --- a/drivers/thermal/Kconfig
+> > > > > +++ b/drivers/thermal/Kconfig
+> > > > > @@ -193,6 +193,7 @@ config X86_PKG_TEMP_THERMAL
+> > > > >  	  notification methods.
+> > > > >  
+> > > > >  menu "Texas Instruments thermal drivers"
+> > > > > +depends on ARCH_OMAP2PLUS
+> > > > 
+> > > > No, this driver is not for ARCH_OMAP*, but for TI bandgap, with the
+> > > > option to offer thermal control. So, the HW supported is TI bandgap IP,
+> > > > not ARCH_OMAP*. It happens to be so that OMAP2PLUS all have a
+> > > > (different) version of this device.
+> > > > 
+> > > > However, DRA7 devices, for instance, also feature the bandgap IP
+> > > > (different version of those present in OMAP devices), and it is not
+> > > > ARCH_OMAP2PLUS.
+> > > 
+> > > Then you have wrong dependencies anyway since ARCH_BANDGAP is selected
+> > 
+> > s/ARCH_BANDGAP/ARCH_HAS_BANDGAP/
+> > 
+> > > currently only by ARCH_OMAP2PLUS and EXYNOS SoCs.
+> 
+> It seems that SOC_DRA7xx config option is dependent on ARCH_OMAP2PLUS one
+> *anyway* (thus it doesn't need to select ARCH_HAS_BANDGAP on its own). Thus
+> my patch is correct and sufficient for the current TI bandgap IP support.
+> 
+> if ARCH_OMAP2PLUS
+> 
+> menu "TI OMAP2/3/4 Specific Features"
+> 
+> config ARCH_OMAP2PLUS_TYPICAL
+> 	bool "Typical OMAP configuration"
+> 	default y
+> 	select AEABI
+> 	select HIGHMEM
+> 	select I2C
+> 	select I2C_OMAP
+> 	select MENELAUS if ARCH_OMAP2
+> 	select NEON if CPU_V7
+> 	select PM_RUNTIME
+> 	select REGULATOR
+> 	select TWL4030_CORE if ARCH_OMAP3 || ARCH_OMAP4
+> 	select TWL4030_POWER if ARCH_OMAP3 || ARCH_OMAP4
+> 	select VFP
+> 	help
+> 	  Compile a kernel suitable for booting most boards
+> 
+> config SOC_HAS_OMAP2_SDRC
+> 	bool "OMAP2 SDRAM Controller support"
+> 
+> config SOC_HAS_REALTIME_COUNTER
+> 	bool "Real time free running counter"
+> 	depends on SOC_OMAP5 || SOC_DRA7XX
+> 	default y
+> 
+> config SOC_DRA7XX
+> 	bool "TI DRA7XX"
+> 	select ARM_ARCH_TIMER
+> 	select CPU_V7
+> 	select ARM_GIC
+> 	select HAVE_SMP
+> 	select COMMON_CLK
+> ...
+> 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> > > arch/arm/mach-omap2/Kconfig (next-20130927):
+> > > 
+> > > config ARCH_OMAP2PLUS
+> > >         bool
+> > >         select ARCH_HAS_BANDGAP
+> > >         select ARCH_HAS_CPUFREQ
+> > >         select ARCH_HAS_HOLES_MEMORYMODEL
+> > >         select ARCH_OMAP
+> > >         select ARCH_REQUIRE_GPIOLIB
+> > >         select CLKDEV_LOOKUP
+> > >         select CLKSRC_MMIO
+> > >         select GENERIC_CLOCKEVENTS
+> > >         select GENERIC_IRQ_CHIP
+> > >         select HAVE_CLK
+> > >         select OMAP_DM_TIMER
+> > >         select PINCTRL
+> > >         select PROC_DEVICETREE if PROC_FS
+> > >         select SOC_BUS
+> > >         select SPARSE_IRQ
+> > >         select TI_PRIV_EDMA
+> > >         select USE_OF
+> > >         help
+> > >           Systems based on OMAP2, OMAP3, OMAP4 or OMAP5
+> > > 
+> > > drivers/thermal/ti-soc-thermal/Kconfig (next-20130927):
+> > > 
+> > > config TI_SOC_THERMAL
+> > >         tristate "Texas Instruments SoCs temperature sensor driver"
+> > >         depends on THERMAL
+> > >         depends on ARCH_HAS_BANDGAP
+> > >         help
+> > >           If you say yes here you get support for the Texas Instruments
+> > >           OMAP4460+ on die bandgap temperature sensor support. The register
+> > >           set is part of system control module.
+> > > 
+> > >           This includes alert interrupts generation and also the TSHUT
+> > >           support.
+> > 
+> > and for EXYNOS it looks like that (next-20130927):
+> > 
+> > arch/arm/mach-exynos/Kconfig:
+> > 
+> > config CPU_EXYNOS4210
+> > 	bool "SAMSUNG EXYNOS4210"
+> > 	default y
+> > 	depends on ARCH_EXYNOS4
+> > 	select ARCH_HAS_BANDGAP
+> > 	select ARM_CPU_SUSPEND if PM
+> > 	select PINCTRL_EXYNOS
+> > 	select PM_GENERIC_DOMAINS if PM
+> > 	select S5P_PM if PM
+> > 	select S5P_SLEEP if PM
+> > 	select SAMSUNG_DMADEV
+> > 	help
+> > 	  Enable EXYNOS4210 CPU support
+> > 
+> > config SOC_EXYNOS4212
+> > 	bool "SAMSUNG EXYNOS4212"
+> > 	default y
+> > 	depends on ARCH_EXYNOS4
+> > 	select ARCH_HAS_BANDGAP
+> > 	select PINCTRL_EXYNOS
+> > 	select PM_GENERIC_DOMAINS if PM
+> > 	select S5P_PM if PM
+> > 	select S5P_SLEEP if PM
+> > 	select SAMSUNG_DMADEV
+> > 	help
+> > 	  Enable EXYNOS4212 SoC support
+> > 
+> > config SOC_EXYNOS4412
+> > 	bool "SAMSUNG EXYNOS4412"
+> > 	default y
+> > 	depends on ARCH_EXYNOS4
+> > 	select ARCH_HAS_BANDGAP
+> > 	select PINCTRL_EXYNOS
+> > 	select PM_GENERIC_DOMAINS if PM
+> > 	select SAMSUNG_DMADEV
+> > 	help
+> > 	  Enable EXYNOS4412 SoC support
+> > 
+> > config SOC_EXYNOS5250
+> > 	bool "SAMSUNG EXYNOS5250"
+> > 	default y
+> > 	depends on ARCH_EXYNOS5
+> > 	select ARCH_HAS_BANDGAP
+> > 	select PINCTRL_EXYNOS
+> > 	select PM_GENERIC_DOMAINS if PM
+> > 	select S5P_PM if PM
+> > 	select S5P_SLEEP if PM
+> > 	select S5P_DEV_MFC
+> > 	select SAMSUNG_DMADEV
+> > 	help
+> > 	  Enable EXYNOS5250 SoC support
+> > 
+> > config SOC_EXYNOS5420
+> > 	bool "SAMSUNG EXYNOS5420"
+> > 	default y
+> > 	depends on ARCH_EXYNOS5
+> > 	select PM_GENERIC_DOMAINS if PM
+> > 	select S5P_PM if PM
+> > 	select S5P_SLEEP if PM
+> > 	help
+> > 	  Enable EXYNOS5420 SoC support
+> > 
+> > config SOC_EXYNOS5440
+> > 	bool "SAMSUNG EXYNOS5440"
+> > 	default y
+> > 	depends on ARCH_EXYNOS5
+> > 	select ARCH_DMA_ADDR_T_64BIT if ARM_LPAE
+> > 	select ARCH_HAS_BANDGAP
+> > 	select ARCH_HAS_OPP
+> > 	select HAVE_ARM_ARCH_TIMER
+> > 	select AUTO_ZRELADDR
+> > 	select MIGHT_HAVE_PCI
+> > 	select PCI_DOMAINS if PCI
+> > 	select PINCTRL_EXYNOS5440
+> > 	select PM_OPP
+> > 	help
+> > 	  Enable EXYNOS5440 SoC support
+> > 
+> > drivers/thermal/Kconfig:
+> > 
+> > menu "Samsung thermal drivers"
+> > depends on PLAT_SAMSUNG
+> > source "drivers/thermal/samsung/Kconfig"
+> > endmenu
+> > 
+> > drivers/thermal/samsung/Kconfig
+> > 
+> > config EXYNOS_THERMAL
+> > 	tristate "Exynos thermal management unit driver"
+> > 	depends on ARCH_HAS_BANDGAP && OF
+> > 	help
+> > 	  If you say yes here you get support for the TMU (Thermal Management
+> > 	  Unit) driver for SAMSUNG EXYNOS series of SoCs. This driver initialises
+> > 	  the TMU, reports temperature and handles cooling action if defined.
+> > 	  This driver uses the Exynos core thermal APIs and TMU configuration
+> > 	  data from the supported SoCs.
+> > 
+> > 
+> > > > And because of that, the design of this driver is different. It is not
+> > > > expected to depend on an arch, but the arch code is expected to select
+> > > > ARCH_HAS_BANDGAP.
+> > > 
+> > > There should be additional dependencies beside ARCH_BANDGAP, i.e. on
+> > 
+> > s/ARCH_BANDGAP/ARCH_HAS_BANDGAP/
+> > 
+> > > EXYNOS platforms we currently also have dependency on PLAT_SAMSUNG
+> > > (should be ARCH_EXYNOS instead, my other patch fixes it).
 
+There is more to it. Description of commit 4a1b573 ("ARM: 7758/1: introduce
+config HAS_BANDGAP") which introduced ARCH_HAS_BANDGAP says that "This config
+entry follows the same idea behind ARCH_HAS_CPUFREQ." but in practice it does
+currently something completely different than ARCH_HAS_CPUFREQ.
 
---0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+For ARCH_HAS_CPUFREQ in arch/arm/Kconfig we first have:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+...
+config ARCH_HAS_CPUFREQ
+        bool
+        help
+          Internal node to signify that the ARCH has CPUFREQ support
+          and that the relevant menu configurations are displayed for
+          it.
+...
 
-iF4EAREIAAYFAlJUFcYACgkQCXcVR3XQvP0k8wD+MjEa/5LMbrPDrFTLIppk2Lfd
-ZgQxeYEmhkvE55VVlKwBAJt/vomBnCgYT3HFvxScyx2wg1hRN+yKtXd/EQ1EuD/2
-=K6Op
------END PGP SIGNATURE-----
+then later we have sub-archs/SoCs selecting it:
 
---0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj--
+...
+config ARCH_EXYNOS
+        bool "Samsung EXYNOS"
+        select ARCH_HAS_CPUFREQ
+...
+
+(for OMAP arch/arm/Kconfig includes arch/arm/mach-omap2/Kconfig in which
+ARCH_OMAP2PLUS is defined and which selects ARCH_HAS_CPUFREQ)
+
+and finally we have the check on the _whole_ CPUFREQ support menu (not on
+particular sub-arch/SoCs specific driver config options):
+
+...
+if ARCH_HAS_CPUFREQ
+source "drivers/cpufreq/Kconfig"
+endif
+...
+
+Also when we take a look at drivers/cpufreq/Kconfig.arm we can see that
+particular sub-arch/SoCs specific drivers have correct dependencies on
+sub-arch/SoC, i.e.:
+
+...
+config ARM_EXYNOS4210_CPUFREQ
+        bool "SAMSUNG EXYNOS4210"
+        depends on CPU_EXYNOS4210
+        default y
+        select ARM_EXYNOS_CPUFREQ
+...
+config ARM_OMAP2PLUS_CPUFREQ
+        bool "TI OMAP2+"
+        depends on ARCH_OMAP2PLUS
+...
+
+Now lets take a look at ARCH_HAS_BANDGAP usage. In arch/arm/Kconfig we have:
+
+...
+config ARCH_HAS_BANDGAP
+        bool
+...
+
+then in arch/arm/mach-exynos/Kconfig:
+
+...
+config CPU_EXYNOS4210
+        bool "SAMSUNG EXYNOS4210"
+        default y
+        depends on ARCH_EXYNOS4
+        select ARCH_HAS_BANDGAP
+...
+
+and in arch/arm/mach-omap2/Kconfig:
+
+...
+config ARCH_OMAP2PLUS
+        bool
+        select ARCH_HAS_BANDGAP
+...
+
+but finally we don't have the ARCH_HAS_BANDGAP check on the whole thermal
+support menu but on _particular_ sub-arch/SoC specific driver config options.
+
+In drivers/thermal/samsung/Kconfig:
+
+...
+config EXYNOS_THERMAL
+        tristate "Exynos thermal management unit driver"
+        depends on ARCH_HAS_BANDGAP && OF
+...
+
+and in drivers/thermal/ti-soc-thermal/Kconfig:
+
+...
+config TI_SOC_THERMAL
+        tristate "Texas Instruments SoCs temperature sensor driver"
+        depends on THERMAL
+        depends on ARCH_HAS_BANDGAP
+...
+
+Therefore the current usage of ARCH_HAS_BANDGAP is wrong and results in
+sub-arch/SoC specific driver config options being visible/selectable by user
+on other completely unrelated sub-archs/SoCs configs. Please note that this
+is incorrect for various reasons: it causes user confusion, unnecessary code
+can be build into kernel and build breakages potentially can happen. Just
+having the possibility to disable such unneeded drivers is not scalable and
+is not enough in the long-term (we have to consider people doing things
+like "make randconfig" and "make allyesconfig"). This should be fixed by
+removal of ARCH_HAS_BANDGAP dependency from sub-arch/SoC specific driver
+config options and replacing them by correct dependencies on sub-arch/SoC.
+Then we can go and fix all archs/sub-archs/SoCs that have specific thermal
+drivers available on them to select ARCH_HAS_BANDGAP and finally put
+ARCH_HAS_BANDGAP dependency on the whole thermal support menu. I can later
+look into fixing ARCH_HAS_BANDGAP usage if you are fine with it.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> > > > >  source "drivers/thermal/ti-soc-thermal/Kconfig"
+> > > > >  endmenu
+> > > 
+> > > Best regards,
+> > > --
+> > > Bartlomiej Zolnierkiewicz
+> > > Samsung R&D Institute Poland
+> > > Samsung Electronics
+> > 
+> > Best regards,
+> > --
+> > Bartlomiej Zolnierkiewicz
+> > Samsung R&D Institute Poland
+> > Samsung Electronics
+
