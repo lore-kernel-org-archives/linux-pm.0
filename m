@@ -1,109 +1,56 @@
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
-Subject: Re: [PATCHv6 02/16] drivers: thermal: introduce device tree parser
-Date: Tue, 8 Oct 2013 16:45:49 +0800
-Message-ID: <5253C63D.5030904@freescale.com>
-References: <1379537849-28425-1-git-send-email-eduardo.valentin@ti.com> <1379540136-28378-1-git-send-email-eduardo.valentin@ti.com> <52428D13.7080007@freescale.com> <5242F011.4090607@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5242F011.4090607@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, joe@perches.com, grant.likely@linaro.org, durgadoss.r@intel.com, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Subject: [PATCH] cpufreq: Add dummy cpufreq_cpu_get/put for CONFIG_CPU_FREQ=n
+Date: Tue,  8 Oct 2013 10:56:11 +0200
+Message-ID: <1381222571-20317-1-git-send-email-daniel.vetter@ffwll.ch>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+Cc: Chris Wilson <chris@chris-wilson.co.uk>, Daniel Vetter <daniel.vetter@ffwll.ch>, kbuild test robot <fengguang.wu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/25/2013 10:15 PM, Eduardo Valentin wrote:
-> On 25-09-2013 03:13, Hongbo Zhang wrote:
->> On 09/19/2013 05:35 AM, Eduardo Valentin wrote:
->>>    [...]
->>> +
->>> +/***   sensor API   ***/
->>> +
->> You are introducing new concept here, the original framework and drivers
->> cannot use this, right? any further plan to update original framework
->> for this new feature?
->>
-> Well, not new as such. Just a specific way to register sensors to
-> thermal framework. What is really new is the fact that we really need to
-> have sensors decoupled from thermal zone devices, and today we have
-> these concepts pretty merged together.
-> To answer your question, for now I am more concerned with the bindings
-> definition. Once that is at least agreed, then we can follow up with the
-> migration of existing drivers. For now, there are two examples in this
-> series, first one is using one existing thermal driver, which is the TI
-> SoC thermal driver, and the second one is the hwmon drivers, which are
-> existing sensor drivers, but are not thermal drivers.
->
-> The plan forward, once this series is accepted is to migrate existing
-> drivers, yes, so that they can use device tree uniformly. Of course,
-> this needs help from driver authors.
->
-> My proposal will be to follow up this series with a two fold migration.
-> First step to change the existing thermal drivers to have both, the
-> current support and the device tree support. And second step, for those
-> who wish to, we could remove the old code containing thermal data and
-> have only dt support. Of course, this requires drivers authors input.
->
->
->
->>> +static struct thermal_zone_device *
->>> +thermal_zone_of_add_sensor(struct device_node *zone,
->>> +               struct device_node *sensor, void *data,
->>> +               int (*get_temp)(void *, long *),
->>> +               int (*get_trend)(void *, long *))
->>> +{
->>> +    struct thermal_zone_device *tzd;
->>> +    struct __thermal_zone *tz;
->>> +
->>> +    tzd = thermal_zone_get_zone_by_name(zone->name);
->>> +    if (IS_ERR(tzd))
->>> +        return ERR_PTR(-EPROBE_DEFER);
->>> +
->>> [...]
->>> +
->>> +/*
->>> + * Here are the thermal trip types. This must
->>> + * match with enum thermal_trip_type at
->>> + * include/linux/thermal.h
->>> + */
->>> +#define THERMAL_TRIP_ACTIVE        0
->>> +#define THERMAL_TRIP_PASSIVE        1
->>> +#define THERMAL_TRIP_HOT        2
->>> +#define THERMAL_TRIP_CRITICAL        3
->>> +
->> These macros seem duplicated with enum thermal_trip_type in thermal.h,
->> do you have further plan to merge them?
->> Or by using string "active",  "passive" etc in the dts, then you can
->> reuse the original enum definition.
-> I am changing this so that in DT we have string constants, and we keep a
-> map from string to enum, just like we have for phy-mode, as suggested by
-> Mark.
->
-> You can have a taste of it here:
-> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/commit/?h=thermal_work/thermal_core/dt_parser_rfc_v4&id=73f16c27fc763495188fba7d6e17b9c986efc6ac
->
-> I will be reposting this version once we are done with this thread
-> discussion and I am finished with my current test.
->
-> If you have the time, I would appreciate if you could try the series on
-> your board, as I am don't have access to your hardware. It would be
-> really nice to see how this work is behaving in other environments then
-> the one I have.
+The drm/i915 driver wants to adjust it's own power policies using the
+cpu policies as a guideline (we can implicitly boost the cpus through
+the gpus on some platforms). To avoid a dreaded select (since a
+depends will leave users wondering where where their driver has gone
+too) add dummy functions.
 
-We have thermal management plan in next year, currently I don't have 
-proper board to test this.
-I would like to do it when I have time and board, but I will track these 
-thermal treads.
->
-> Thanks for your interest in this work.
->
->>> +/* On cooling devices upper and lower limits */
->>> +#define THERMAL_NO_LIMIT        (-1UL)
->>> +
->>> +#endif
->>> [...]
->>
->>
->>
->
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
+Cc: kbuild test robot <fengguang.wu@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+A quick ack for merging this this through the drm-intel tree is
+probably the simplest way forward.
+-Daniel
+---
+ include/linux/cpufreq.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index fcabc42..5ad9a4e 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -93,8 +93,16 @@ struct cpufreq_policy {
+ #define CPUFREQ_SHARED_TYPE_ALL	 (2) /* All dependent CPUs should set freq */
+ #define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
+ 
++#ifdef CONFIG_CPU_FREQ
+ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
+ void cpufreq_cpu_put(struct cpufreq_policy *policy);
++#else
++static inline struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
++{
++	return NULL;
++}
++static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
++#endif
+ 
+ static inline bool policy_is_shared(struct cpufreq_policy *policy)
+ {
+-- 
+1.8.4.rc3
+
