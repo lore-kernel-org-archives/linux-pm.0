@@ -1,81 +1,169 @@
-From: Barry Song <21cnbao@gmail.com>
-Subject: =?UTF-8?Q?Re=3A_=E7=AD=94=E5=A4=8D=3A_=5BPATCH=5D_cpuidle=3A_sirf_=3A_Add_cpuidle_for_?=
-	=?UTF-8?Q?SiRFprimaII_and_SiRFatlasVI?=
-Date: Tue, 8 Oct 2013 21:27:13 +0800
-Message-ID: <CAGsJ_4xeUBnudhmoXjQ03QbQ4PH4QVDRgFmYGY7kP6S_6qKv=A@mail.gmail.com>
-References: <1381033577-19818-1-git-send-email-Baohua.Song@csr.com>
- <52526F8B.6030905@linaro.org> <86130EF012BDF348AA0D464A4F4494780129539EE4@SHAASIEXM01.ASIA.ROOT.PRI>
- <5253DD3C.90008@linaro.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv6 02/16] drivers: thermal: introduce device tree parser
+Date: Tue, 8 Oct 2013 10:25:06 -0400
+Message-ID: <525415C2.7000302@ti.com>
+References: <1379537849-28425-1-git-send-email-eduardo.valentin@ti.com> <1379540136-28378-1-git-send-email-eduardo.valentin@ti.com> <52428D13.7080007@freescale.com> <5242F011.4090607@ti.com> <5253C63D.5030904@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f180.google.com ([209.85.216.180]:33721 "EHLO
-	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603Ab3JHN1f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 09:27:35 -0400
-Received: by mail-qc0-f180.google.com with SMTP id p19so5885429qcv.25
-        for <linux-pm@vger.kernel.org>; Tue, 08 Oct 2013 06:27:34 -0700 (PDT)
-In-Reply-To: <5253DD3C.90008@linaro.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:36386 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546Ab3JHO00 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 10:26:26 -0400
+In-Reply-To: <5253C63D.5030904@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Rongjun Ying <Rongjun.Ying@csr.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, DL-SHA-WorkGroupLinux <DL-SHA-WorkGroupLinux@internal.csr.com>, Barry Song <Barry.Song@csr.com>
+To: Hongbo Zhang <hongbo.zhang@freescale.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, joe@perches.com, grant.likely@linaro.org, durgadoss.r@intel.com, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
->>>> +       if (sirf_cpuidle.vcore_regulator)
->>>> +               regulator_set_voltage(sirf_cpuidle.vcore_regulator,
->>>> volt_old,
->>>> +                               SIRFSOC_MAX_VOLTAGE);
+--0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 08-10-2013 04:45, Hongbo Zhang wrote:
+> On 09/25/2013 10:15 PM, Eduardo Valentin wrote:
+>> On 25-09-2013 03:13, Hongbo Zhang wrote:
+>>> On 09/19/2013 05:35 AM, Eduardo Valentin wrote:
+>>>>    [...]
 >>>> +
->>>> +       clk_set_parent(sirf_cpuidle.cpu_clk, parent_clk);
->>>> +       /* Todo: other C states */
+>>>> +/***   sensor API   ***/
+>>>> +
+>>> You are introducing new concept here, the original framework and driv=
+ers
+>>> cannot use this, right? any further plan to update original framework=
+
+>>> for this new feature?
+>>>
+>> Well, not new as such. Just a specific way to register sensors to
+>> thermal framework. What is really new is the fact that we really need =
+to
+>> have sensors decoupled from thermal zone devices, and today we have
+>> these concepts pretty merged together.
+>> To answer your question, for now I am more concerned with the bindings=
+
+>> definition. Once that is at least agreed, then we can follow up with t=
+he
+>> migration of existing drivers. For now, there are two examples in this=
+
+>> series, first one is using one existing thermal driver, which is the T=
+I
+>> SoC thermal driver, and the second one is the hwmon drivers, which are=
+
+>> existing sensor drivers, but are not thermal drivers.
+>>
+>> The plan forward, once this series is accepted is to migrate existing
+>> drivers, yes, so that they can use device tree uniformly. Of course,
+>> this needs help from driver authors.
+>>
+>> My proposal will be to follow up this series with a two fold migration=
+=2E
+>> First step to change the existing thermal drivers to have both, the
+>> current support and the device tree support. And second step, for thos=
+e
+>> who wish to, we could remove the old code containing thermal data and
+>> have only dt support. Of course, this requires drivers authors input.
+>>
+>>
+>>
+>>>> +static struct thermal_zone_device *
+>>>> +thermal_zone_of_add_sensor(struct device_node *zone,
+>>>> +               struct device_node *sensor, void *data,
+>>>> +               int (*get_temp)(void *, long *),
+>>>> +               int (*get_trend)(void *, long *))
+>>>> +{
+>>>> +    struct thermal_zone_device *tzd;
+>>>> +    struct __thermal_zone *tz;
+>>>> +
+>>>> +    tzd =3D thermal_zone_get_zone_by_name(zone->name);
+>>>> +    if (IS_ERR(tzd))
+>>>> +        return ERR_PTR(-EPROBE_DEFER);
+>>>> +
+>>>> [...]
+>>>> +
+>>>> +/*
+>>>> + * Here are the thermal trip types. This must
+>>>> + * match with enum thermal_trip_type at
+>>>> + * include/linux/thermal.h
+>>>> + */
+>>>> +#define THERMAL_TRIP_ACTIVE        0
+>>>> +#define THERMAL_TRIP_PASSIVE        1
+>>>> +#define THERMAL_TRIP_HOT        2
+>>>> +#define THERMAL_TRIP_CRITICAL        3
+>>>> +
+>>> These macros seem duplicated with enum thermal_trip_type in thermal.h=
+,
+>>> do you have further plan to merge them?
+>>> Or by using string "active",  "passive" etc in the dts, then you can
+>>> reuse the original enum definition.
+>> I am changing this so that in DT we have string constants, and we keep=
+ a
+>> map from string to enum, just like we have for phy-mode, as suggested =
+by
+>> Mark.
+>>
+>> You can have a taste of it here:
+>> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/commit=
+/?h=3Dthermal_work/thermal_core/dt_parser_rfc_v4&id=3D73f16c27fc763495188=
+fba7d6e17b9c986efc6ac
+>>
+>>
+>> I will be reposting this version once we are done with this thread
+>> discussion and I am finished with my current test.
+>>
+>> If you have the time, I would appreciate if you could try the series o=
+n
+>> your board, as I am don't have access to your hardware. It would be
+>> really nice to see how this work is behaving in other environments the=
+n
+>> the one I have.
+>=20
+> We have thermal management plan in next year, currently I don't have
+> proper board to test this.
+> I would like to do it when I have time and board, but I will track thes=
+e
+> thermal treads.
+
+OK Zhang, no worries then.
+
+>>
+>> Thanks for your interest in this work.
+>>
+>>>> +/* On cooling devices upper and lower limits */
+>>>> +#define THERMAL_NO_LIMIT        (-1UL)
+>>>> +
+>>>> +#endif
+>>>> [...]
 >>>
 >>>
->>> It sounds very weird you have this freq/volt/opp code here.
->>>
->>> If you hit idle, the cpufreq driver didn't put the cpu in the state you
->>> are trying to
->>> bring here ?
->>>
->>> There isn't a power management unit on this board ?
 >>>
 >>
->> By SiRF SoC, when enter idle mode, I set the freq to 26MHz and min
->> voltage.
->> That's will save the power consume and reduce leakage current.
->
->
-> Really ? :)
->
-> You didn't answer the questions.
->
-> 1. this code shouldn't be here but in cpufreq which is already the case with
-> the other patch you sent with this one. So I am convinced if you remove the
-> OPP here and let cpufreq to handle that, and keep the cpu_do_idle, you won't
-> see any difference with the current code.
->
-> 2. Moreover, removing the OPP, there is only the WFI state which is the
-> default idle function. Hence the cpuidle driver itself has no interest and
-> you can simply remove it, except if you bring another idle state with the
-> driver.
->
-> 3. More idle states are often handled through a PMU (Power Management Unit)
-> giving cpu power off, retention, cluster power down, etc ... Is there one on
-> this board ?
->
-> The TRM can help to answer these questions.
->
-Hi Daniel,
-here the codes actually want to put cpu into lowest freq and lowest
-voltage. because according to our test, power leakage will be much
-lower when cpu is in the status than we put it into WFI directly in a
-higher freq.
+>=20
+>=20
+>=20
+>=20
+>=20
 
-here it is difficult to say cpufreq will do that automatically as it
-is decided by cpufreq policy.
 
-there is no power management unit which can put prima2 into a
-different idle status except WFI.
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-any suggestion from you about this chip issue?
+Eduardo Valentin
 
--barry
+
+--0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlJUFcYACgkQCXcVR3XQvP0k8wD+MjEa/5LMbrPDrFTLIppk2Lfd
+ZgQxeYEmhkvE55VVlKwBAJt/vomBnCgYT3HFvxScyx2wg1hRN+yKtXd/EQ1EuD/2
+=K6Op
+-----END PGP SIGNATURE-----
+
+--0FBoxoVbJ0hPlqnk9EUrDIOGevpplwMHj--
