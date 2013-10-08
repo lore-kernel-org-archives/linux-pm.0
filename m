@@ -1,225 +1,190 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: =?UTF-8?B?562U5aSNOiBbUEFUQ0hdIGNwdWlkbGU6IHNpcmYgOiBBZGQgY3A=?=
- =?UTF-8?B?dWlkbGUgZm9yIFNpUkZwcmltYUlJIGFuZCBTaVJGYXRsYXNWSQ==?=
-Date: Tue, 08 Oct 2013 12:23:56 +0200
-Message-ID: <5253DD3C.90008@linaro.org>
-References: <1381033577-19818-1-git-send-email-Baohua.Song@csr.com> <52526F8B.6030905@linaro.org> <86130EF012BDF348AA0D464A4F4494780129539EE4@SHAASIEXM01.ASIA.ROOT.PRI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: [PATCH v2] platform: x86: asus-wmi: add fan control
+Date: Tue,  8 Oct 2013 07:48:44 -0500
+Message-ID: <1381236524-19633-1-git-send-email-felipe.contreras@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f51.google.com ([74.125.82.51]:62183 "EHLO
-	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756923Ab3JHKX7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 06:23:59 -0400
-Received: by mail-wg0-f51.google.com with SMTP id c11so8455388wgh.6
-        for <linux-pm@vger.kernel.org>; Tue, 08 Oct 2013 03:23:57 -0700 (PDT)
-In-Reply-To: <86130EF012BDF348AA0D464A4F4494780129539EE4@SHAASIEXM01.ASIA.ROOT.PRI>
+Received: from mail-ob0-f171.google.com ([209.85.214.171]:42137 "EHLO
+	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753635Ab3JHMyq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 08:54:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rongjun Ying <Rongjun.Ying@csr.com>, Barry Song <21cnbao@gmail.com>, "rjw@sisk.pl" <rjw@sisk.pl>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, DL-SHA-WorkGroupLinux <DL-SHA-WorkGroupLinux@internal.csr.com>, Barry Song <Barry.Song@csr.com>
+To: linux-kernel@vger.kernel.org
+Cc: platform-driver-x86@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org, Matthew Garrett <matthew.garrett@nebula.com>, Corentin Chary <corentin.chary@gmail.com>, Felipe Contreras <felipe.contreras@gmail.com>
 
-On 10/08/2013 09:44 AM, Rongjun Ying wrote:
->
->
->> -----=E9=82=AE=E4=BB=B6=E5=8E=9F=E4=BB=B6-----
->> =E5=8F=91=E4=BB=B6=E4=BA=BA: Daniel Lezcano [mailto:daniel.lezcano@l=
-inaro.org]
->> =E5=8F=91=E9=80=81=E6=97=B6=E9=97=B4: Monday, October 07, 2013 4:24 =
-PM
->> =E6=94=B6=E4=BB=B6=E4=BA=BA: Barry Song; rjw@sisk.pl
->> =E6=8A=84=E9=80=81: linux-pm@vger.kernel.org; DL-SHA-WorkGroupLinux;=
- Rongjun Ying; Barry
->> Song
->> =E4=B8=BB=E9=A2=98: Re: [PATCH] cpuidle: sirf : Add cpuidle for SiRF=
-primaII and SiRFatlasVI
->>
->>
->> Hi Barry,
->>
->> On 10/06/2013 06:26 AM, Barry Song wrote:
->>> From: Rongjun Ying <Rongjun.Ying@csr.com>
->>>
->>> This patch adds support cpuidle for CSR SiRFprimaII and SiRFatlasVI
->>> unicore ARM Cortex-A9 SoCs.
->>
->> A new driver deserves a better description.
->>
->>> Signed-off-by: Rongjun Ying <Rongjun.Ying@csr.com>
->>> Signed-off-by: Barry Song <Baohua.Song@csr.com>
->>> ---
->>
->> Is there a technical reference manual accessible somewhere ?
->
-> No, I have not.
+Simple driver to enable control of the fan in ASUS laptops. So far this
+has only been tested in ASUS Zenbook Prime UX31A, but according to some
+online reference [1], it should work in other models as well.
 
-You haven't one ? How can you write a cpuidle driver without it ?
+The implementation is very straight-forward, the only caveat is that the
+fan speed needs to be saved after it has been manually changed because
+it won't be reported properly until it goes back to 'auto' mode.
 
-You didn't answer my question:
+[1] http://forum.notebookreview.com/asus/705656-fan-control-asus-prime-ux31-ux31a-ux32a-ux32vd.html
 
-Is there a technical reference manual accessible somewhere ?
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+---
+ drivers/platform/x86/asus-wmi.c | 105 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 105 insertions(+)
 
-> If system need enter idle mode, Not need operate any SoC register. Si=
-RF SoC enter cpuidle mode is very simple,
-> Which only set the parent clock to OSC(26MHz)  and adjust voltage to =
-min.
-
-This is up to cpufreq.
-
-[ ... ]
-
->>> +static int sirf_enter_idle(struct cpuidle_device *dev,
->>> +				struct cpuidle_driver *drv,
->>> +				int index)
->>> +{
->>> +	struct clk *parent_clk;
->>> +	unsigned long volt_old =3D 0, volt_new, freq;
->>> +	struct opp *opp;
->>> +
->>> +	local_irq_disable();
->>
->> Don't use local_irq_disable in the driver it is done by the caller.
->
-> Yes, I will remove it.
->
->>
->>> +	parent_clk =3D clk_get_parent(sirf_cpuidle.cpu_clk);
->>> +	clk_set_parent(sirf_cpuidle.cpu_clk, sirf_cpuidle.osc_clk);
->>> +
->>> +	if (sirf_cpuidle.vcore_regulator) {
->>> +		volt_old =3D regulator_get_voltage(sirf_cpuidle.vcore_regulator)=
-;
->>> +
->>> +		freq =3D clk_get_rate(sirf_cpuidle.osc_clk);
->>> +		rcu_read_lock();
->>
->> Using rcu in the idle path is not allowed.
->
-> Yes, I will remove it.
->
->>
->>> +		opp =3D opp_find_freq_ceil(sirf_cpuidle.cpu_dev, &freq);
->>> +		if (IS_ERR(opp)) {
->>> +			rcu_read_unlock();
->>> +			return -EINVAL;
->>> +		}
->>> +
->>> +		volt_new =3D opp_get_voltage(opp);
->>> +		rcu_read_unlock();
->>> +
->>> +		regulator_set_voltage(sirf_cpuidle.vcore_regulator, volt_new,
->>> +				SIRFSOC_MAX_VOLTAGE);
->>> +	}
->>> +	/* Wait for interrupt state */
->>> +	cpu_do_idle();
->>> +
->>> +	if (sirf_cpuidle.vcore_regulator)
->>> +		regulator_set_voltage(sirf_cpuidle.vcore_regulator, volt_old,
->>> +				SIRFSOC_MAX_VOLTAGE);
->>> +
->>> +	clk_set_parent(sirf_cpuidle.cpu_clk, parent_clk);
->>> +	/* Todo: other C states */
->>
->> It sounds very weird you have this freq/volt/opp code here.
->>
->> If you hit idle, the cpufreq driver didn't put the cpu in the state =
-you are trying to
->> bring here ?
->>
->> There isn't a power management unit on this board ?
->>
->
-> By SiRF SoC, when enter idle mode, I set the freq to 26MHz and min vo=
-ltage.
-> That's will save the power consume and reduce leakage current.
-
-Really ? :)
-
-You didn't answer the questions.
-
-1. this code shouldn't be here but in cpufreq which is already the case=
-=20
-with the other patch you sent with this one. So I am convinced if you=20
-remove the OPP here and let cpufreq to handle that, and keep the=20
-cpu_do_idle, you won't see any difference with the current code.
-
-2. Moreover, removing the OPP, there is only the WFI state which is the=
-=20
-default idle function. Hence the cpuidle driver itself has no interest=20
-and you can simply remove it, except if you bring another idle state=20
-with the driver.
-
-3. More idle states are often handled through a PMU (Power Management=20
-Unit) giving cpu power off, retention, cluster power down, etc ... Is=20
-there one on this board ?
-
-The TRM can help to answer these questions.
-
->>> +	local_irq_enable();
->>
->> Done by the caller.
->>
->
-> Yes. I will remove it.
->
->>> +	return index;
->>> +}
->>> +
->>> +static struct cpuidle_driver sirf_cpuidle_driver =3D {
->>> +	.name =3D "sirf_cpuidle",
->>> +	.states =3D {
->>> +		ARM_CPUIDLE_WFI_STATE,
->>> +		{
->>> +			.name =3D "WFI-LP",
->>> +			.desc =3D "WFI low power",
->>> +			.flags =3D CPUIDLE_FLAG_TIME_VALID,
->>> +			.exit_latency =3D 10,
->>> +			.target_residency =3D 10000,
-
-By the way, why 10000 ? Is it measured ?
-
->>> +			.enter =3D sirf_enter_idle,
->>> +		},
->>> +	},
->>> +	.state_count =3D 2,
-
-[ cut ]
-
->>> +
->>> +	ret =3D cpuidle_register(&sirf_cpuidle_driver, NULL);
->>> +	if (!ret)
->>> +		return ret;
->>> +
->>> +out_put_clk:
->>> +	clk_put(sirf_cpuidle.cpu_clk);
->>> +out_put_osc_clk:
->>> +	clk_put(sirf_cpuidle.osc_clk);
->>> +	return ret;
->>> +}
->>> +late_initcall(sirfsoc_init_cpuidle);
->>
->> Please convert it to platform_driver as the other drivers are moving=
- to (cf.
->> cpuidle-kirkwood, cpuidle-ux500).
->>
->
-> I think cpuidle is not actual device which can't be added to device t=
-ree system.
-> So where register this device?
-
-I gave you a couple of examples above, you can rely on it to implement=20
-something similar.
-
-Thanks
-   -- Daniel
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index 19c313b..5fdfed6 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -78,6 +78,7 @@ MODULE_LICENSE("GPL");
+ #define ASUS_WMI_METHODID_GPID		0x44495047 /* Get Panel ID?? (Resol) */
+ #define ASUS_WMI_METHODID_QMOD		0x444F4D51 /* Quiet MODe */
+ #define ASUS_WMI_METHODID_SPLV		0x4C425053 /* Set Panel Light Value */
++#define ASUS_WMI_METHODID_AGFN		0x4E464741
+ #define ASUS_WMI_METHODID_SFUN		0x4E554653 /* FUNCtionalities */
+ #define ASUS_WMI_METHODID_SDSP		0x50534453 /* Set DiSPlay output */
+ #define ASUS_WMI_METHODID_GDSP		0x50534447 /* Get DiSPlay output */
+@@ -155,6 +156,16 @@ struct bios_args {
+ 	u32 arg1;
+ } __packed;
+ 
++struct fan_args {
++	u16 mfun;
++	u16 sfun;
++	u16 len;
++	u8 stas;
++	u8 err;
++	u8 fan;
++	u32 speed;
++} __packed;
++
+ /*
+  * <platform>/    - debugfs root directory
+  *   dev_id      - current dev_id
+@@ -205,6 +216,9 @@ struct asus_wmi {
+ 	struct asus_rfkill gps;
+ 	struct asus_rfkill uwb;
+ 
++	struct thermal_cooling_device *fan;
++	int fan_speed;
++
+ 	struct hotplug_slot *hotplug_slot;
+ 	struct mutex hotplug_lock;
+ 	struct mutex wmi_lock;
+@@ -1022,6 +1036,90 @@ exit:
+ }
+ 
+ /*
++ * Fan
++ */
++
++static int fan_speed(struct asus_wmi *asus, int write, int fan, unsigned long *speed)
++{
++	struct fan_args args = {
++		.len = sizeof(args),
++		.mfun = 0x13,
++		.sfun = write ? 0x07 : 0x06,
++		.fan = fan,
++		.speed = write ? *speed : 0,
++	};
++	int r;
++	u32 value;
++
++	if (!write && asus->fan_speed >= 0) {
++		*speed = asus->fan_speed;
++		return 0;
++	}
++
++	r = asus_wmi_evaluate_method(ASUS_WMI_METHODID_AGFN, virt_to_phys(&args), 0, &value);
++	if (r || value || args.err)
++		return -1;
++
++	if (write)
++		asus->fan_speed = fan > 0 ? *speed : -1;
++	else
++		*speed = args.speed;
++
++	return 0;
++}
++
++static int fan_set_auto(struct asus_wmi *asus)
++{
++	unsigned long speed = 0;
++	return fan_speed(asus, 1, 0, &speed);
++}
++
++static int fan_get_max_state(struct thermal_cooling_device *cdev, unsigned long *state)
++{
++	*state = 0xff;
++	return 0;
++}
++
++static int fan_get_cur_state(struct thermal_cooling_device *cdev, unsigned long *state)
++{
++	return fan_speed(cdev->devdata, 0, 1, state);
++}
++
++static int fan_set_cur_state(struct thermal_cooling_device *cdev, unsigned long state)
++{
++	return fan_speed(cdev->devdata, 1, 1, &state);
++}
++
++static const struct thermal_cooling_device_ops fan_cooling_ops = {
++	.get_max_state = fan_get_max_state,
++	.get_cur_state = fan_get_cur_state,
++	.set_cur_state = fan_set_cur_state,
++};
++
++static int asus_wmi_fan_init(struct asus_wmi *asus)
++{
++	struct thermal_cooling_device *cdev;
++
++	if (fan_set_auto(asus))
++		return 0;
++
++	cdev = thermal_cooling_device_register("Fan", asus, &fan_cooling_ops);
++	if (IS_ERR(cdev))
++		return PTR_ERR(cdev);
++	asus->fan = cdev;
++	return 0;
++}
++
++static void asus_wmi_fan_exit(struct asus_wmi *asus)
++{
++	if (!asus->fan)
++		return;
++	fan_set_auto(asus);
++	thermal_cooling_device_unregister(asus->fan);
++	asus->fan = NULL;
++}
++
++/*
+  * Hwmon device
+  */
+ static ssize_t asus_hwmon_pwm1(struct device *dev,
+@@ -1796,6 +1894,10 @@ static int asus_wmi_add(struct platform_device *pdev)
+ 	if (err)
+ 		goto fail_rfkill;
+ 
++	err = asus_wmi_fan_init(asus);
++	if (err)
++		goto fail_fan;
++
+ 	if (asus->driver->quirks->wmi_backlight_power)
+ 		acpi_video_dmi_promote_vendor();
+ 	if (!acpi_video_backlight_support()) {
+@@ -1830,6 +1932,8 @@ fail_debugfs:
+ fail_wmi_handler:
+ 	asus_wmi_backlight_exit(asus);
+ fail_backlight:
++	asus_wmi_fan_exit(asus);
++fail_fan:
+ 	asus_wmi_rfkill_exit(asus);
+ fail_rfkill:
+ 	asus_wmi_led_exit(asus);
+@@ -1855,6 +1959,7 @@ static int asus_wmi_remove(struct platform_device *device)
+ 	asus_wmi_hwmon_exit(asus);
+ 	asus_wmi_led_exit(asus);
+ 	asus_wmi_rfkill_exit(asus);
++	asus_wmi_fan_exit(asus);
+ 	asus_wmi_debugfs_exit(asus);
+ 	asus_wmi_platform_exit(asus);
+ 
+-- 
+1.8.4-fc
 
