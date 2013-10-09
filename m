@@ -1,125 +1,167 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 3/5] thermal: exynos: Provide initial setting for TMU's test
- MUX address at Exynos4412
-Date: Wed, 09 Oct 2013 08:29:52 +0200
-Message-ID: <1381300194-13134-4-git-send-email-l.majewski@samsung.com>
+From: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v2 2/5] thermal: exynos: Provide separate TMU data for
+ Exynos4412
+Date: Wed, 09 Oct 2013 08:29:51 +0200
+Message-ID: <1381300194-13134-3-git-send-email-l.majewski@samsung.com>
 References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
  <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, kgene.kim@samsung.com
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1381300194-13134-1-git-send-email-l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jonghwa Lee <jonghwa3.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lukasz Majewski <l.majewski-AM3owJQeAb5mR6Xm/wNWPw@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Myungjoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Amit Daniel Kachhap <amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The commit d0a0ce3e77c795258d47f9163e92d5031d0c5221 ("thermal: exynos: Add
-missing definations and code cleanup") has removed setting of test MUX address
-value at TMU configuration setting.
+Up till now Exynos5250 and Exynos4412 had the same definitions for TMU
+data. Following commit changes that, by introducing separate
+exynos4412_default_tmu_data structure.
 
-This field is not present on Exynos4210 and Exynos5 SoCs. However on Exynos4412
-SoC it is required to set this field after reset because without it TMU shows
-maximal available temperature, which causes immediate platform shutdown.
+Since Exynos4412 was chronologically first, the corresponding name for
+TMU registers and default data was renamed.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Additionally, new SOC_ARCH_EXYNOS4412 type has been defined.
+
+Moreover, the SOC_ARCH_EXYNOS name has been changed to SOC_ARCH_EXYNOS5250.
+
+Signed-off-by: Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Reviewed-by: Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
 ---
 Changes for v2:
-- Define test_mux and test_mux_addr_shift to not use direct register access
-- Remove pdata->type == SOC_ARCH_EXYNOS4412 check at exynos_tmu_control() and
-  use only generic code
+- Replace SOC_ARCH_EXYNOS with SOC_ARCH_EXYNOS5250
+- Fix coding style for tmu_data elements definition
 
- drivers/thermal/samsung/exynos_tmu.c      |    3 +++
- drivers/thermal/samsung/exynos_tmu.h      |    4 ++++
- drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
- drivers/thermal/samsung/exynos_tmu_data.h |    4 ++++
- 4 files changed, 13 insertions(+)
+ drivers/thermal/samsung/exynos_tmu.c      |    9 +++++----
+ drivers/thermal/samsung/exynos_tmu.h      |    3 ++-
+ drivers/thermal/samsung/exynos_tmu_data.c |   28 ++++++++++++++++++++++------
+ drivers/thermal/samsung/exynos_tmu_data.h |    9 ++++++++-
+ 4 files changed, 37 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 1312b34..32f38b9 100644
+index b43afda..1312b34 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -317,6 +317,9 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
+@@ -488,7 +488,7 @@ static const struct of_device_id exynos_tmu_match[] = {
+ 	},
+ 	{
+ 		.compatible = "samsung,exynos4412-tmu",
+-		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
++		.data = (void *)EXYNOS4412_TMU_DRV_DATA,
+ 	},
+ 	{
+ 		.compatible = "samsung,exynos5250-tmu",
+@@ -629,9 +629,10 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
- 	con = readl(data->base + reg->tmu_ctrl);
- 
-+	if (pdata->test_mux)
-+		con |= (pdata->test_mux << reg->test_mux_addr_shift);
-+
- 	if (pdata->reference_voltage) {
- 		con &= ~(reg->buf_vref_sel_mask << reg->buf_vref_sel_shift);
- 		con |= pdata->reference_voltage << reg->buf_vref_sel_shift;
+-	if (pdata->type == SOC_ARCH_EXYNOS ||
+-		pdata->type == SOC_ARCH_EXYNOS4210 ||
+-				pdata->type == SOC_ARCH_EXYNOS5440)
++	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
++	    pdata->type == SOC_ARCH_EXYNOS4412 ||
++	    pdata->type == SOC_ARCH_EXYNOS5250 ||
++	    pdata->type == SOC_ARCH_EXYNOS5440)
+ 		data->soc = pdata->type;
+ 	else {
+ 		ret = -EINVAL;
 diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index b42ece4..3fb6554 100644
+index b364c9e..b42ece4 100644
 --- a/drivers/thermal/samsung/exynos_tmu.h
 +++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -85,6 +85,7 @@ enum soc_type {
-  * @triminfo_reload_shift: shift of triminfo reload enable bit in triminfo_ctrl
- 	reg.
-  * @tmu_ctrl: TMU main controller register.
-+ * @test_mux_addr_shift: shift bits of test mux address.
-  * @buf_vref_sel_shift: shift bits of reference voltage in tmu_ctrl register.
-  * @buf_vref_sel_mask: mask bits of reference voltage in tmu_ctrl register.
-  * @therm_trip_mode_shift: shift bits of tripping mode in tmu_ctrl register.
-@@ -151,6 +152,7 @@ struct exynos_tmu_registers {
- 	u32	triminfo_reload_shift;
+@@ -41,7 +41,8 @@ enum calibration_mode {
  
- 	u32	tmu_ctrl;
-+	u32     test_mux_addr_shift;
- 	u32	buf_vref_sel_shift;
- 	u32	buf_vref_sel_mask;
- 	u32	therm_trip_mode_shift;
-@@ -258,6 +260,7 @@ struct exynos_tmu_registers {
-  * @first_point_trim: temp value of the first point trimming
-  * @second_point_trim: temp value of the second point trimming
-  * @default_temp_offset: default temperature offset in case of no trimming
-+ * @test_mux; information if SoC supports test MUX
-  * @cal_type: calibration type for temperature
-  * @cal_mode: calibration mode for temperature
-  * @freq_clip_table: Table representing frequency reduction percentage.
-@@ -287,6 +290,7 @@ struct exynos_tmu_platform_data {
- 	u8 first_point_trim;
- 	u8 second_point_trim;
- 	u8 default_temp_offset;
-+	u8 test_mux;
+ enum soc_type {
+ 	SOC_ARCH_EXYNOS4210 = 1,
+-	SOC_ARCH_EXYNOS,
++	SOC_ARCH_EXYNOS4412,
++	SOC_ARCH_EXYNOS5250,
+ 	SOC_ARCH_EXYNOS5440,
+ };
  
- 	enum calibration_type cal_type;
- 	enum calibration_mode cal_mode;
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index d8de5c1..073c292 100644
+index 9002499..d8de5c1 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -98,6 +98,7 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
- 	.triminfo_ctrl = EXYNOS_TMU_TRIMINFO_CON,
- 	.triminfo_reload_shift = EXYNOS_TRIMINFO_RELOAD_SHIFT,
- 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
-+	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
- 	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
- 	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
- 	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
-@@ -174,6 +175,7 @@ struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
- 		{
- 			EXYNOS4412_TMU_DATA,
- 			.type = SOC_ARCH_EXYNOS4412,
-+			.test_mux = EXYNOS4412_MUX_ADDR_VALUE,
- 		},
+@@ -90,8 +90,8 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
+ };
+ #endif
+ 
+-#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
+-static const struct exynos_tmu_registers exynos5250_tmu_registers = {
++#if defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250)
++static const struct exynos_tmu_registers exynos4412_tmu_registers = {
+ 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
+ 	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+ 	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+@@ -128,7 +128,7 @@ static const struct exynos_tmu_registers exynos5250_tmu_registers = {
+ 	.emul_time_mask = EXYNOS_EMUL_TIME_MASK,
+ };
+ 
+-#define EXYNOS5250_TMU_DATA \
++#define EXYNOS4412_TMU_DATA \
+ 	.threshold_falling = 10, \
+ 	.trigger_levels[0] = 85, \
+ 	.trigger_levels[1] = 103, \
+@@ -162,15 +162,31 @@ static const struct exynos_tmu_registers exynos5250_tmu_registers = {
+ 		.temp_level = 103, \
+ 	}, \
+ 	.freq_tab_count = 2, \
+-	.type = SOC_ARCH_EXYNOS, \
+-	.registers = &exynos5250_tmu_registers, \
++	.registers = &exynos4412_tmu_registers, \
+ 	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+ 			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+ 			TMU_SUPPORT_EMUL_TIME)
++#endif
+ 
++#if defined(CONFIG_SOC_EXYNOS4412)
++struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
++	.tmu_data = {
++		{
++			EXYNOS4412_TMU_DATA,
++			.type = SOC_ARCH_EXYNOS4412,
++		},
++	},
++	.tmu_count = 1,
++};
++#endif
++
++#if defined(CONFIG_SOC_EXYNOS5250)
+ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
+ 	.tmu_data = {
+-		{ EXYNOS5250_TMU_DATA },
++		{
++			EXYNOS4412_TMU_DATA,
++			.type = SOC_ARCH_EXYNOS5250,
++		},
  	},
  	.tmu_count = 1,
+ };
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-index b130b1e..a1ea19d 100644
+index dc7feb5..b130b1e 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.h
 +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -95,6 +95,10 @@
+@@ -138,7 +138,14 @@ extern struct exynos_tmu_init_data const exynos4210_default_tmu_data;
+ #define EXYNOS4210_TMU_DRV_DATA (NULL)
+ #endif
  
- #define EXYNOS_MAX_TRIGGER_PER_REG	4
- 
-+/* Exynos4412 specific */
-+#define EXYNOS4412_MUX_ADDR_VALUE          6
-+#define EXYNOS4412_MUX_ADDR_SHIFT          20
+-#if (defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412))
++#if defined(CONFIG_SOC_EXYNOS4412)
++extern struct exynos_tmu_init_data const exynos4412_default_tmu_data;
++#define EXYNOS4412_TMU_DRV_DATA (&exynos4412_default_tmu_data)
++#else
++#define EXYNOS4412_TMU_DRV_DATA (NULL)
++#endif
 +
- /*exynos5440 specific registers*/
- #define EXYNOS5440_TMU_S0_7_TRIM		0x000
- #define EXYNOS5440_TMU_S0_7_CTRL		0x020
++#if defined(CONFIG_SOC_EXYNOS5250)
+ extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
+ #define EXYNOS5250_TMU_DRV_DATA (&exynos5250_default_tmu_data)
+ #else
 -- 
 1.7.10.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
