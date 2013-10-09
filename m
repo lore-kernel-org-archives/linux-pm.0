@@ -1,25 +1,29 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
 Subject: Re: [PATCH] tools/thermal: Introduce tmon, a tool for thermal subsystem
-Date: Wed, 9 Oct 2013 19:30:51 -0400
-Message-ID: <5255E72B.4070702@ti.com>
-References: <1381259024-25433-1-git-send-email-jacob.jun.pan@linux.intel.com> <52558535.3010506@ti.com> <20131009100722.5f2e10a8@ultegra>
+Date: Wed, 9 Oct 2013 19:37:08 -0400
+Message-ID: <5255E8A4.6030400@ti.com>
+References: <1381259024-25433-1-git-send-email-jacob.jun.pan@linux.intel.com> <5254AB6A.1090600@ti.com> <20131009105217.0b23a6c3@ultegra>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="bQm6eQceVeLThXjebqh7PwVVKspDImL7S"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20131009100722.5f2e10a8@ultegra>
-Sender: linux-kernel-owner@vger.kernel.org
+	boundary="hwuJORj32HNeAtVoEQDsDKgaF5edWrGdA"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:53305 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753951Ab3JIXhZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Oct 2013 19:37:25 -0400
+In-Reply-To: <20131009105217.0b23a6c3@ultegra>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Jacob Pan <jacob.jun.pan@linux.intel.com>
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
---bQm6eQceVeLThXjebqh7PwVVKspDImL7S
-Content-Type: text/plain; charset=ISO-8859-1
+--hwuJORj32HNeAtVoEQDsDKgaF5edWrGdA
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 09-10-2013 13:07, Jacob Pan wrote:
-> On Wed, 9 Oct 2013 12:32:53 -0400
+On 09-10-2013 13:52, Jacob Pan wrote:
+> On Tue, 8 Oct 2013 21:03:38 -0400
 > Eduardo Valentin <eduardo.valentin@ti.com> wrote:
 >=20
 >> On 08-10-2013 15:03, Jacob Pan wrote:
@@ -42,86 +46,165 @@ On 09-10-2013 13:07, Jacob Pan wrote:
 >>>
 >>> TMON is conceived as a tool to help visualize, tune, and test the
 >>> complex thermal subsystem.
+>>
+>> Jacob,
+>>
+>> Very nice initiative. Thanks for providing tools on thermal area. We
+>> are lacking them. I have been using the linaro thermal testing
+>> scripts for smoking testing the systems I am working on. But I have
+>> been considering writing a ncurses based tool for long time. It is
+>> good anyway that you have started and even shared it already.
+>>
+>> I gave a very quick shot on my OMAP4460 panda board and tmon is
+>> crashing with segfault:
+>>>     TMON v1.0
+>>>
+>>> =E2=94=8C=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=90
+>>> =E2=94=82Thermal Zones:
+>>> cpu_therm00                                    =E2=94=82 =E2=94=82Tri=
+p
+>>> Points:
+>>> CP                                             =E2=94=82
+>>> =E2=94=94=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=98
+>>> =E2=94=8C=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=90
+>>> =E2=94=82ID  Cooling Dev   Cur    Max   Thermal Zone
+>>> Binding                           =E2=94=82 =E2=94=8200 thermal-cpuf =
+    0      3
+>>> Segmentation fault                             =E2=94=82
+>>> =E2=94=94=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80[root@(none) ~]#
+>>> =E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=98 [root@(none) ~]# ./tmont=
+mon
+>>> =E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=90
+>>> =E2=94=82                         10        20        30        40
+>>> 50        60 =E2=94=82 =E2=94=82cpu_th
+>>> 0:[  0][>
+>>> =E2=94=82
+>>> =E2=94=94=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
+=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
+=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
+=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=98
+>>>
 >>>
 >>
->> Jacob, I have a major point for discussion on the concept you are
->> presenting and the target of this tool. The tool, based on its name
->> and this patch description is target to monitor, visualize and test
->> the thermal aspects. But in fact you are also adding a PID controller
->> embedded in this tool, which is contradicting to your proposal, don't
->> you agree?
+>> I believe it is while updating the progress bar you've written to
+>> represent temperature on the thermal zone temperature.
 >>
-> I agree, it was started as monitoring only. any suggestions? perhaps
-> call it thermaltop?
+> Sorry about the crash, I admit i only tested on x86 systesm. I just
+> borrowed a Panda board. Could you tell me where you get the image to
+> run it on?
 
-I was more into splitting the control and handing it off to kernel, as a
-pid based thermal governor. Name would be tmon still.
-
->> However, I am not saying a PID is a bad thing, in fact, it is the
->> opposite. I have on my todo list create a thermal governor based on a
->> simple PID controller. Perhaps we should work together on that fron.
->> Have you considered posting the PID part as a thermal governor?
->>
-> That is a good suggestion. The challenge of PID is the tuning of its
-> parameters which are platform specific. Leaving it completely with
-
-Can you please elaborate a bit more on which platform parameters we are
-talking about? I am currently working defining thermal data with device
-tree [1]. Maybe this does not apply on ACPI systems, Rui may comment
-here, but I would be really interested to known which kind of platform
-parameters we could need. I believe we could reuse the coefficients
-property I already wrote.
-
-[1] -
-https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux.git/diff/Docu=
-mentation/devicetree/bindings/thermal/thermal.txt?h=3Dthermal_work/therma=
-l_core/dt_parser_rfc_v4&id=3Da6eba0ee032eb03d7c7cdf8c3ad603c18974dbf3
-
-> userspace will make it hard to use and not practical. We can tune PID a=
-t
-
-I agree with the impracticality.
-
-> runtime automatically with stimulus such as step response but must be
-> done with user discretion.
-> My thinking is that we take a stepped approach.
-> 1. Make a tool such as TMON which can be used for tuning PID parameters=
-
-> 2. Introduce a PID governor which can accept TMON's tuning results
-> 3. some userspace scheme to make the tuning results persistent across
-> boots.
-
-This means we can remove the control from the userspace right?
-
-I think the persistence needs to be discussed. If it is hardware
-description, then we need to use the proper means to describe it.
-
->> Another side question is how you are testing or what are the test
->> cases you are using to validate your PID.
->>
-> I am using two test cases
-> 1. step response test
-> with a step type stimulus (cpu busy spin test) to see the response with=
-
-> using one cooling device. e.g. use powerclamp to control CPU
-> temperature.
-> 2. dynamic test, compile a kernel under 60C
->=20
-
-Right.
-
-> I look at the rise time, steady state error, over shoot etc. I have
-> attached a graph of TMON data ploted with Rscript.
->=20
-
-cool.
-
-> But the tuning of PID parameters need to be done in the future. Right
-> now, it is fixed.
-
-In fact, we need to proper elaborate on this.
+I am using a busybox based filesystem. And I have statically compiled
+tmon. It is against 3.12-rc1.
 
 >=20
+> At the same time, could you help me debug with showing me the result of=
+
+> " tree -l -L 2 /sys/class/thermal/"
+
+I tried also on my x86 dell laptop. I gave up on this track to because
+tmon does not progress when there is no thermal zone.
+ebv@besouro:/sys/class/thermal$
+$ tree
+=2E
+=E2=94=9C=E2=94=80=E2=94=80 cooling_device0 -> ../../devices/virtual/ther=
+mal/cooling_device0
+=E2=94=9C=E2=94=80=E2=94=80 cooling_device1 -> ../../devices/virtual/ther=
+mal/cooling_device1
+=E2=94=9C=E2=94=80=E2=94=80 cooling_device2 -> ../../devices/virtual/ther=
+mal/cooling_device2
+=E2=94=9C=E2=94=80=E2=94=80 cooling_device3 -> ../../devices/virtual/ther=
+mal/cooling_device3
+=E2=94=94=E2=94=80=E2=94=80 cooling_device4 -> ../../devices/virtual/ther=
+mal/cooling_device4
+
+5 directories, 0 files
+
+The only problem is that tmon exists silently. I would be nice to have
+at least a message saying why it is not continuing.
+
+On Panda, I have only one thermal zone:
+[root@(none) ~]# ls /sys/class/thermal/
+cooling_device0@  thermal_zone0@
+[root@(none) ~]# ls /sys/class/thermal/thermal_zone0/
+emul_temp  power/      trip_point_0_hyst  trip_point_1_hyst  type
+mode       subsystem@  trip_point_0_temp  trip_point_1_temp  uevent
+policy     temp        trip_point_0_type  trip_point_1_type
+[root@(none) ~]# ls /sys/class/thermal/cooling_device0/
+cur_state  max_state  power/  subsystem@  type  uevent
+
+
+>=20
+>> I still need to have a proper look on your code though. Looks like you=
+
+>> do not add it to tools/Makefile?
+>>
+> i missed that.
+
+no issues.
+
+>> Also, please copy people that get_maintainer.pl -f tools/ outputs:
+>> ./scripts/get_maintainer.pl -f tools/
+>> Arnaldo Carvalho de Melo <acme@redhat.com> (commit_signer:724/902=3D80=
+%)
+>> Namhyung Kim <namhyung@kernel.org> (commit_signer:237/902=3D26%)
+>> Jiri Olsa <jolsa@redhat.com> (commit_signer:219/902=3D24%)
+>> David Ahern <dsahern@gmail.com> (commit_signer:69/902=3D8%)
+>> Adrian Hunter <adrian.hunter@intel.com> (commit_signer:59/902=3D
+>>
+> I did run get_maintainer.pl on the patch but it did not find any. I
+> guess it is because I missed the Makefile.
+> Will fix it in the next round.
+
+ok
+
+
+>>>
 >>> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 >>> ---
 >>>  tools/thermal/tmon/Makefile |   47 ++++
@@ -129,16 +212,9 @@ In fact, we need to proper elaborate on this.
 >>>  tools/thermal/tmon/pid.c    |  131 +++++++++
 >>>  tools/thermal/tmon/sysfs.c  |  585
 >>> +++++++++++++++++++++++++++++++++++++++ tools/thermal/tmon/tmon.8
->>> |  142 ++++++++++
->>
->> What is this file? It does not seam to be used at all and it is not
->> documented.
-> this is a man page file.
-> see how to use tmon with "man tmon.8"
->>
->>>  tools/thermal/tmon/tmon.c   |  350 ++++++++++++++++++++++++
->>>  tools/thermal/tmon/tmon.h   |  204 ++++++++++++++
->>>  tools/thermal/tmon/tui.c    |  631
+>>> |  142 ++++++++++ tools/thermal/tmon/tmon.c   |  350
+>>> ++++++++++++++++++++++++ tools/thermal/tmon/tmon.h   |  204
+>>> ++++++++++++++ tools/thermal/tmon/tui.c    |  631
 >>> +++++++++++++++++++++++++++++++++++++++++++ 8 files changed, 2140
 >>> insertions(+) create mode 100644 tools/thermal/tmon/Makefile
 >>>  create mode 100644 tools/thermal/tmon/README
@@ -2528,6 +2604,7 @@ In fact, we need to proper elaborate on this.
 >=20
 > [Jacob Pan]
 >=20
+>=20
 
 
 --=20
@@ -2536,7 +2613,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---bQm6eQceVeLThXjebqh7PwVVKspDImL7S
+--hwuJORj32HNeAtVoEQDsDKgaF5edWrGdA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -2545,9 +2622,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlJV5y4ACgkQCXcVR3XQvP3vQAD/c5ogtrL1AlL3vTn/qhfEfEoz
-5mR+dUvIDupbRb9Jmn4A/1Irwvyhbum/t7YCDP7/AJoLhcJpK0gQyz4KrYHnWeAb
-=SSYu
+iF4EAREIAAYFAlJV6KgACgkQCXcVR3XQvP21EwD/bmM0ynGdtmawPk6wV/oBOAF6
+FMFEdSs+vv2ha4jvEO8BANechnCIcvHszcQfaWZ0UaTwMqSiTTiJ9kix2klrhsed
+=L/TQ
 -----END PGP SIGNATURE-----
 
---bQm6eQceVeLThXjebqh7PwVVKspDImL7S--
+--hwuJORj32HNeAtVoEQDsDKgaF5edWrGdA--
