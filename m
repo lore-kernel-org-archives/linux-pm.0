@@ -1,85 +1,49 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] Thermal: Tidy up error handling in powerclamp_init
-Date: Wed, 09 Oct 2013 12:18:47 +0800
-Message-ID: <1381292327.2133.39.camel@rzhang1-mobl4>
-References: <1380903804-18913-1-git-send-email-durgadoss.r@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v2 0/5] thermal: exynos: Fixes for v3.12
+Date: Wed, 09 Oct 2013 08:29:49 +0200
+Message-ID: <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:33779 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993Ab3JIESv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Oct 2013 00:18:51 -0400
-In-Reply-To: <1380903804-18913-1-git-send-email-durgadoss.r@intel.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:37377 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601Ab3JIGan (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Oct 2013 02:30:43 -0400
+In-reply-to: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: eduardo.valentin@ti.com, linux-pm@vger.kernel.org, jacob.jun.pan@linux.intel.com
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, kgene.kim@samsung.com
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org
 
-On Fri, 2013-10-04 at 21:53 +0530, Durgadoss R wrote:
-> This patch
->  * adds missing kfree() for cpu_clamping_mask
->  * adds return value checking for alloc_percpu()
->  * unregister hotcpu notifier in exit path
-> 
-> Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+This patch series is divided into two parts:
+1. Device tree node definition and enabelement for TMU at Exynos4412 (Trats2)
+2. Exynos thermal subsystem regressions for v3.12-rc4. Several commits were 
+   necessary to properly fix regression for TMU test MUX address setting after
+   reset.
 
-applied to thermal -next.
+Test HW:
+- Exynos4412 - TRATS2 board (Linux v3.12-rc4)
+SHA1: 8b5ede69d24db939f52b47effff2f6fe1e83e08b
 
-thanks,
-rui
 
-> ---
->  drivers/thermal/intel_powerclamp.c |   24 +++++++++++++++++++++---
->  1 file changed, 21 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-> index b40b37c..a7cd170 100644
-> --- a/drivers/thermal/intel_powerclamp.c
-> +++ b/drivers/thermal/intel_powerclamp.c
-> @@ -758,21 +758,39 @@ static int powerclamp_init(void)
->  	/* probe cpu features and ids here */
->  	retval = powerclamp_probe();
->  	if (retval)
-> -		return retval;
-> +		goto exit_free;
-> +
->  	/* set default limit, maybe adjusted during runtime based on feedback */
->  	window_size = 2;
->  	register_hotcpu_notifier(&powerclamp_cpu_notifier);
-> +
->  	powerclamp_thread = alloc_percpu(struct task_struct *);
-> +	if (!powerclamp_thread) {
-> +		retval = -ENOMEM;
-> +		goto exit_unregister;
-> +	}
-> +
->  	cooling_dev = thermal_cooling_device_register("intel_powerclamp", NULL,
->  						&powerclamp_cooling_ops);
-> -	if (IS_ERR(cooling_dev))
-> -		return -ENODEV;
-> +	if (IS_ERR(cooling_dev)) {
-> +		retval = -ENODEV;
-> +		goto exit_free_thread;
-> +	}
->  
->  	if (!duration)
->  		duration = jiffies_to_msecs(DEFAULT_DURATION_JIFFIES);
-> +
->  	powerclamp_create_debug_files();
->  
->  	return 0;
-> +
-> +exit_free_thread:
-> +	free_percpu(powerclamp_thread);
-> +exit_unregister:
-> +	unregister_hotcpu_notifier(&powerclamp_cpu_notifier);
-> +exit_free:
-> +	kfree(cpu_clamping_mask);
-> +	return retval;
->  }
->  module_init(powerclamp_init);
->  
+Lukasz Majewski (5):
+  thermal: exynos: Remove check for thermal device pointer at
+    exynos_report_trigger()
+  thermal: exynos: Provide separate TMU data for Exynos4412
+  thermal: exynos: Provide initial setting for TMU's test MUX address
+    at Exynos4412
+  ARM: dts: exynos4x12: Device tree node definition for TMU on
+    Exynos4x12
+  ARM: dts: exynos4412-trats2: Enable TMU support at Trats2
 
+ arch/arm/boot/dts/exynos4412-trats2.dts         |    5 ++++
+ arch/arm/boot/dts/exynos4x12.dtsi               |   10 ++++++++
+ drivers/thermal/samsung/exynos_thermal_common.c |    2 --
+ drivers/thermal/samsung/exynos_tmu.c            |   12 ++++++---
+ drivers/thermal/samsung/exynos_tmu.h            |    7 +++++-
+ drivers/thermal/samsung/exynos_tmu_data.c       |   30 ++++++++++++++++++-----
+ drivers/thermal/samsung/exynos_tmu_data.h       |   13 +++++++++-
+ 7 files changed, 65 insertions(+), 14 deletions(-)
+
+-- 
+1.7.10.4
 
