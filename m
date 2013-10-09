@@ -1,152 +1,128 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 2/2] cpufreq: exynos4210: Use the common clock framework to
- set APLL clock rate
-Date: Wed, 09 Oct 2013 14:08:43 +0200
-Message-ID: <1381320523-28183-3-git-send-email-l.majewski@samsung.com>
-References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com>
- <1381320523-28183-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:20245 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971Ab3JIMLI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Oct 2013 08:11:08 -0400
-In-reply-to: <1381320523-28183-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 1/3 v4] thermal: samsung: correct the fall interrupt en,
+ status bit fields
+Date: Wed, 09 Oct 2013 16:03:54 +0200
+Message-ID: <2386580.3V2pzai3k2@amdc1032>
+References: <1378268629-2886-3-git-send-email-ch.naveen@samsung.com>
+ <1381320509-23967-1-git-send-email-ch.naveen@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1381320509-23967-1-git-send-email-ch.naveen@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Cc: linux-pm@vger.kernel.org, naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Yadwinder Singh Brar <yadi.brar01@gmail.com>, Tomasz Figa <t.figa@samsung.com>
 
-In the exynos4210_set_apll() function, the APLL frequency is set with
-direct register manipulation.
 
-Such approach is not allowed in the common clock framework. The frequency
-is changed, but the corresponding clock value is not updated. This causes
-wrong frequency read from cpufreq's cpuinfo_cur_freq sysfs attribute.
+Hi,
 
-Also direct manipulation with PLL's S parameter has been removed. It is
-already done at PLL35xx code.
+All patches (#1-#3) look good to me, FWIW you can add:
 
-Tested at:
-- Exynos4210 - Trats board (linux 3.12-rc4)
+	Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Please note that (at least) patch #3 conflicts with Lukasz's EXYNOS4412
+fixup patchset:
 
-Changes for v2:
-- Remove PLL's S parameter setting via registers. It is now done with PLL35xx
-  code.
-- Remove exynos4210_pms_change() function
+	https://lkml.org/lkml/2013/10/9/35
 
-Change-Id: Ie5fb3c7946ba77b6f3d5e91af72eef2fd06770c1
----
- drivers/cpufreq/exynos4210-cpufreq.c |   67 ++++------------------------------
- 1 file changed, 8 insertions(+), 59 deletions(-)
+It is up to Eduardo to resolve this but it probably would be better to
+merge EXYNOS4412 fixes first and then add EXYNOS5420 support. This would
+require you to port patch #3 over Lukasz's patchset though.
 
-diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
-index add7fbe..f2c7506 100644
---- a/drivers/cpufreq/exynos4210-cpufreq.c
-+++ b/drivers/cpufreq/exynos4210-cpufreq.c
-@@ -81,9 +81,9 @@ static void exynos4210_set_clkdiv(unsigned int div_index)
- 
- static void exynos4210_set_apll(unsigned int index)
- {
--	unsigned int tmp;
-+	unsigned int tmp, freq = apll_freq_4210[index].freq;
- 
--	/* 1. MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
-+	/* MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
- 	clk_set_parent(moutcore, mout_mpll);
- 
- 	do {
-@@ -92,21 +92,9 @@ static void exynos4210_set_apll(unsigned int index)
- 		tmp &= 0x7;
- 	} while (tmp != 0x2);
- 
--	/* 2. Set APLL Lock time */
--	__raw_writel(EXYNOS4_APLL_LOCKTIME, EXYNOS4_APLL_LOCK);
--
--	/* 3. Change PLL PMS values */
--	tmp = __raw_readl(EXYNOS4_APLL_CON0);
--	tmp &= ~((0x3ff << 16) | (0x3f << 8) | (0x7 << 0));
--	tmp |= apll_freq_4210[index].mps;
--	__raw_writel(tmp, EXYNOS4_APLL_CON0);
-+	clk_set_rate(mout_apll, freq * 1000);
- 
--	/* 4. wait_lock_time */
--	do {
--		tmp = __raw_readl(EXYNOS4_APLL_CON0);
--	} while (!(tmp & (0x1 << EXYNOS4_APLLCON0_LOCKED_SHIFT)));
--
--	/* 5. MUX_CORE_SEL = APLL */
-+	/* MUX_CORE_SEL = APLL */
- 	clk_set_parent(moutcore, mout_apll);
- 
- 	do {
-@@ -115,53 +103,15 @@ static void exynos4210_set_apll(unsigned int index)
- 	} while (tmp != (0x1 << EXYNOS4_CLKSRC_CPU_MUXCORE_SHIFT));
- }
- 
--static bool exynos4210_pms_change(unsigned int old_index, unsigned int new_index)
--{
--	unsigned int old_pm = apll_freq_4210[old_index].mps >> 8;
--	unsigned int new_pm = apll_freq_4210[new_index].mps >> 8;
--
--	return (old_pm == new_pm) ? 0 : 1;
--}
--
- static void exynos4210_set_frequency(unsigned int old_index,
- 				     unsigned int new_index)
- {
--	unsigned int tmp;
--
- 	if (old_index > new_index) {
--		if (!exynos4210_pms_change(old_index, new_index)) {
--			/* 1. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--
--			/* 2. Change just s value in apll m,p,s value */
--			tmp = __raw_readl(EXYNOS4_APLL_CON0);
--			tmp &= ~(0x7 << 0);
--			tmp |= apll_freq_4210[new_index].mps & 0x7;
--			__raw_writel(tmp, EXYNOS4_APLL_CON0);
--		} else {
--			/* Clock Configuration Procedure */
--			/* 1. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--			/* 2. Change the apll m,p,s value */
--			exynos4210_set_apll(new_index);
--		}
-+		exynos4210_set_clkdiv(new_index);
-+		exynos4210_set_apll(new_index);
- 	} else if (old_index < new_index) {
--		if (!exynos4210_pms_change(old_index, new_index)) {
--			/* 1. Change just s value in apll m,p,s value */
--			tmp = __raw_readl(EXYNOS4_APLL_CON0);
--			tmp &= ~(0x7 << 0);
--			tmp |= apll_freq_4210[new_index].mps & 0x7;
--			__raw_writel(tmp, EXYNOS4_APLL_CON0);
--
--			/* 2. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--		} else {
--			/* Clock Configuration Procedure */
--			/* 1. Change the apll m,p,s value */
--			exynos4210_set_apll(new_index);
--			/* 2. Change the system clock divider values */
--			exynos4210_set_clkdiv(new_index);
--		}
-+		exynos4210_set_apll(new_index);
-+		exynos4210_set_clkdiv(new_index);
- 	}
- }
- 
-@@ -194,7 +144,6 @@ int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
- 	info->volt_table = exynos4210_volt_table;
- 	info->freq_table = exynos4210_freq_table;
- 	info->set_freq = exynos4210_set_frequency;
--	info->need_apll_change = exynos4210_pms_change;
- 
- 	return 0;
- 
--- 
-1.7.10.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
+On Wednesday, October 09, 2013 05:38:27 PM Naveen Krishna Chatradhi wrote:
+> The FALL interrupt related en, status bits are available at an offset of
+> 16 on INTEN, INTSTAT registers and at an offset of
+> 12 on INTCLEAR register.
+> 
+> This patch corrects the same for exyns5250 and exynos5440
+> 
+> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+> ---
+> Changes since v1:
+> Changes since v2:
+> Changes since v3:
+>   None
+> 
+>  drivers/thermal/samsung/exynos_tmu.c      |    2 +-
+>  drivers/thermal/samsung/exynos_tmu.h      |    2 ++
+>  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
+>  drivers/thermal/samsung/exynos_tmu_data.h |    3 ++-
+>  4 files changed, 7 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> index b43afda..af69209 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -265,7 +265,7 @@ skip_calib_data:
+>  				data->base + reg->threshold_th1);
+>  
+>  		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
+> -			(reg->inten_fall_mask << reg->inten_fall_shift),
+> +			(reg->inten_fall_mask << reg->intclr_fall_shift),
+>  				data->base + reg->tmu_intclear);
+>  
+>  		/* if last threshold limit is also present */
+> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+> index b364c9e..7c6c34a 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.h
+> +++ b/drivers/thermal/samsung/exynos_tmu.h
+> @@ -134,6 +134,7 @@ enum soc_type {
+>   * @inten_fall3_shift: shift bits of falling 3 interrupt bits.
+>   * @tmu_intstat: Register containing the interrupt status values.
+>   * @tmu_intclear: Register for clearing the raised interrupt status.
+> + * @intclr_fall_shift: shift bits for interrupt clear fall 0
+>   * @emul_con: TMU emulation controller register.
+>   * @emul_temp_shift: shift bits of emulation temperature.
+>   * @emul_time_shift: shift bits of emulation time.
+> @@ -204,6 +205,7 @@ struct exynos_tmu_registers {
+>  	u32	tmu_intstat;
+>  
+>  	u32	tmu_intclear;
+> +	u32	intclr_fall_shift;
+>  
+>  	u32	emul_con;
+>  	u32	emul_temp_shift;
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+> index 9002499..23fea23 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -122,6 +122,7 @@ static const struct exynos_tmu_registers exynos5250_tmu_registers = {
+>  	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
+>  	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
+>  	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
+> +	.intclr_fall_shift = EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
+>  	.emul_con = EXYNOS_EMUL_CON,
+>  	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
+>  	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+> @@ -210,6 +211,7 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
+>  	.inten_fall0_shift = EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
+>  	.tmu_intstat = EXYNOS5440_TMU_S0_7_IRQ,
+>  	.tmu_intclear = EXYNOS5440_TMU_S0_7_IRQ,
+> +	.intclr_fall_shift = EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
+>  	.tmu_irqstatus = EXYNOS5440_TMU_IRQ_STATUS,
+>  	.emul_con = EXYNOS5440_TMU_S0_7_DEBUG,
+>  	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
+> index dc7feb5..8788a87 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+> @@ -69,9 +69,10 @@
+>  #define EXYNOS_TMU_RISE_INT_MASK	0x111
+>  #define EXYNOS_TMU_RISE_INT_SHIFT	0
+>  #define EXYNOS_TMU_FALL_INT_MASK	0x111
+> -#define EXYNOS_TMU_FALL_INT_SHIFT	12
+> +#define EXYNOS_TMU_FALL_INT_SHIFT	16
+>  #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
+>  #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
+> +#define EXYNOS_TMU_CLEAR_FALL_INT_SHIFT	12
+>  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
+>  #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
+>  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
