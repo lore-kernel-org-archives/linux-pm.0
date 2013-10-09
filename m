@@ -1,76 +1,51 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2] thermal: Kconfig: cosmetic fixes
-Date: Wed, 09 Oct 2013 11:52:40 +0800
-Message-ID: <1381290760.2133.37.camel@rzhang1-mobl4>
-References: <1380306033-20325-1-git-send-email-luka@openwrt.org>
+Subject: Re: [PATCH] thermal/intel_powerclamp: Add newer CPU models
+Date: Wed, 09 Oct 2013 12:18:10 +0800
+Message-ID: <1381292290.2133.38.camel@rzhang1-mobl4>
+References: <1380195205-32646-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:6554 "EHLO mga01.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:32551 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752431Ab3JIDwo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Oct 2013 23:52:44 -0400
-In-Reply-To: <1380306033-20325-1-git-send-email-luka@openwrt.org>
+	id S1751044Ab3JIESN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Oct 2013 00:18:13 -0400
+In-Reply-To: <1380195205-32646-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Luka Perkov <luka@openwrt.org>
-Cc: linux-pm@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>
 
-On Fri, 2013-09-27 at 20:20 +0200, Luka Perkov wrote:
-> Fix typo, finish sentence and add missing dots.
+On Thu, 2013-09-26 at 04:33 -0700, Jacob Pan wrote:
+> This will enable intel_powerclamp driver on newer Intel CPUs
+> including some Ivy Bridge and Haswell processors.
 > 
-> Signed-off-by: Luka Perkov <luka@openwrt.org>
-> CC: Randy Dunlap <rdunlap@infradead.org>
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
 applied to thermal -next.
 
 thanks,
 rui
 > ---
->  drivers/thermal/Kconfig | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+>  drivers/thermal/intel_powerclamp.c |    5 +++++
+>  1 file changed, 5 insertions(+)
 > 
-> v1 -> v2:
-> * address Randy's comment about unfinished sentence
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index dbfc390..3910b09 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -56,7 +56,7 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
->  	select THERMAL_GOV_USER_SPACE
->  	help
->  	  Select this if you want to let the user space manage the
-> -	  lpatform thermals.
-> +	  platform thermals.
->  
->  endchoice
->  
-> @@ -69,6 +69,7 @@ config THERMAL_GOV_STEP_WISE
->  	bool "Step_wise thermal governor"
->  	help
->  	  Enable this to manage platform thermals using a simple linear
-> +	  governor.
->  
->  config THERMAL_GOV_USER_SPACE
->  	bool "User_space thermal governor"
-> @@ -117,14 +118,14 @@ config SPEAR_THERMAL
->  	depends on OF
->  	help
->  	  Enable this to plug the SPEAr thermal sensor driver into the Linux
-> -	  thermal framework
-> +	  thermal framework.
->  
->  config RCAR_THERMAL
->  	tristate "Renesas R-Car thermal driver"
->  	depends on ARCH_SHMOBILE
->  	help
->  	  Enable this to plug the R-Car thermal sensor driver into the Linux
-> -	  thermal framework
-> +	  thermal framework.
->  
->  config KIRKWOOD_THERMAL
->  	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+> index b40b37c..6e3b061 100644
+> --- a/drivers/thermal/intel_powerclamp.c
+> +++ b/drivers/thermal/intel_powerclamp.c
+> @@ -675,6 +675,11 @@ static const struct x86_cpu_id intel_powerclamp_ids[] = {
+>  	{ X86_VENDOR_INTEL, 6, 0x2e},
+>  	{ X86_VENDOR_INTEL, 6, 0x2f},
+>  	{ X86_VENDOR_INTEL, 6, 0x3a},
+> +	{ X86_VENDOR_INTEL, 6, 0x3c},
+> +	{ X86_VENDOR_INTEL, 6, 0x3e},
+> +	{ X86_VENDOR_INTEL, 6, 0x3f},
+> +	{ X86_VENDOR_INTEL, 6, 0x45},
+> +	{ X86_VENDOR_INTEL, 6, 0x46},
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
 
 
