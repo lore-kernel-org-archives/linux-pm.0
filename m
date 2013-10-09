@@ -1,25 +1,25 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
 Subject: Re: [PATCH] tools/thermal: Introduce tmon, a tool for thermal subsystem
-Date: Tue, 8 Oct 2013 21:03:38 -0400
-Message-ID: <5254AB6A.1090600@ti.com>
+Date: Tue, 8 Oct 2013 21:08:15 -0400
+Message-ID: <5254AC7F.8010909@ti.com>
 References: <1381259024-25433-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="cN8aQWkQ45O1Gk9eRTO73W1fnG19E503p"
+	boundary="3IMRoiGF1KCQ8To7oNi86Idd4m6VhIXq5"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:54803 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753986Ab3JIBDy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Oct 2013 21:03:54 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:34295 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317Ab3JIBIa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2013 21:08:30 -0400
 In-Reply-To: <1381259024-25433-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jacob Pan <jacob.jun.pan@linux.intel.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <eduardo.valentin@ti.com>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
 
---cN8aQWkQ45O1Gk9eRTO73W1fnG19E503p
-Content-Type: text/plain; charset=UTF-8
+--3IMRoiGF1KCQ8To7oNi86Idd4m6VhIXq5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
 On 08-10-2013 15:03, Jacob Pan wrote:
@@ -48,103 +48,6 @@ er
 >=20
 > TMON is conceived as a tool to help visualize, tune, and test the
 > complex thermal subsystem.
-
-Jacob,
-
-Very nice initiative. Thanks for providing tools on thermal area. We are
-lacking them. I have been using the linaro thermal testing scripts for
-smoking testing the systems I am working on. But I have been considering
-writing a ncurses based tool for long time. It is good anyway that you
-have started and even shared it already.
-
-I gave a very quick shot on my OMAP4460 panda board and tmon is crashing
-with segfault:
->     TMON v1.0
->=20
-> =E2=94=8C=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=90
-> =E2=94=82Thermal Zones:                 cpu_therm00                    =
-                =E2=94=82
-> =E2=94=82Trip Points:                   CP                             =
-                =E2=94=82
-> =E2=94=94=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=98
-> =E2=94=8C=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=90
-> =E2=94=82ID  Cooling Dev   Cur    Max   Thermal Zone Binding           =
-                =E2=94=82
-> =E2=94=8200 thermal-cpuf     0      3   Segmentation fault             =
-                =E2=94=82
-> =E2=94=94=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80[root@(none) ~]# =E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=98
-> [root@(none) ~]# ./tmontmon =E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=90
-> =E2=94=82                         10        20        30        40     =
-   50        60 =E2=94=82
-> =E2=94=82cpu_th 0:[  0][>                                              =
-                =E2=94=82
-> =E2=94=94=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=
-=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=
-=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=
-=80=E2=94=80=E2=94=80=E2=94=80=E2=94=80=E2=94=98
->=20
->=20
-
-I believe it is while updating the progress bar you've written to
-represent temperature on the thermal zone temperature.
-
-I still need to have a proper look on your code though. Looks like you
-do not add it to tools/Makefile?
-
-Also, please copy people that get_maintainer.pl -f tools/ outputs:
-=2E/scripts/get_maintainer.pl -f tools/
-Arnaldo Carvalho de Melo <acme@redhat.com> (commit_signer:724/902=3D80%)
-Namhyung Kim <namhyung@kernel.org> (commit_signer:237/902=3D26%)
-Jiri Olsa <jolsa@redhat.com> (commit_signer:219/902=3D24%)
-David Ahern <dsahern@gmail.com> (commit_signer:69/902=3D8%)
-Adrian Hunter <adrian.hunter@intel.com> (commit_signer:59/902=3D
-
 >=20
 > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 > ---
@@ -200,6 +103,15 @@ Adrian Hunter <adrian.hunter@intel.com> (commit_signer:59/902=3D
 > +tmon: $(OBJS) Makefile tmon.h
 > +	$(CC) ${CFLAGS} $(LDFLAGS) $(OBJS)  -o $(TARGET) -lncursesw -lm -lpan=
 el -lpthread
+
+I actually tried static linking tmon. There seams to be some
+interdependency with libpanel and libncurses and while static linking
+them, we need to first specify libpanel. So I suggest you to do:
++	$(CC) ${CFLAGS} $(LDFLAGS) $(OBJS)  -o $(TARGET) -lm -lpanel
+-lncursesw -lpthread
+
+
+
 > +
 > +valgrind: tmon
 > +	 sudo valgrind -v --track-origins=3Dyes --tool=3Dmemcheck --leak-chec=
@@ -2444,7 +2356,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---cN8aQWkQ45O1Gk9eRTO73W1fnG19E503p
+--3IMRoiGF1KCQ8To7oNi86Idd4m6VhIXq5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -2453,9 +2365,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlJUq20ACgkQCXcVR3XQvP13qgD/RIEIYkLxqd03ULk1jh5WQWme
-x+/a/hCKYM9oCx18ihEA/0/nkTz5IzZrTHE+gUhUuyHxDMzihMr8vO0xxLezoY4f
-=KYdE
+iF4EAREIAAYFAlJUrH8ACgkQCXcVR3XQvP1THAEAzYSYmLbaOmPrQQ1W05EmcFua
+GWh+Q+4WIGMLNvsx+/sBAOFn+bHlXjrJLenX7ZtAMibbvl/WZSKxJzOUkruxzF/f
+=R7qo
 -----END PGP SIGNATURE-----
 
---cN8aQWkQ45O1Gk9eRTO73W1fnG19E503p--
+--3IMRoiGF1KCQ8To7oNi86Idd4m6VhIXq5--
