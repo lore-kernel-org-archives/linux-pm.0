@@ -1,37 +1,61 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 0/2] mmc: core: Favor autosuspend at runtime idle
-Date: Thu, 10 Oct 2013 12:01:45 +0200
-Message-ID: <1381399307-21534-1-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 1/2] PM / Runtime: Add helper function to get value of use_autosuspend
+Date: Thu, 10 Oct 2013 12:01:46 +0200
+Message-ID: <1381399307-21534-2-git-send-email-ulf.hansson@linaro.org>
+References: <1381399307-21534-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f42.google.com ([209.85.214.42]:54887 "EHLO
-	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076Ab3JJKB5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 06:01:57 -0400
-Received: by mail-bk0-f42.google.com with SMTP id my10so885619bkb.29
-        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2013 03:01:56 -0700 (PDT)
+Received: from mail-bk0-f54.google.com ([209.85.214.54]:55410 "EHLO
+	mail-bk0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752327Ab3JJKCC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 06:02:02 -0400
+Received: by mail-bk0-f54.google.com with SMTP id mz12so879138bkb.27
+        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2013 03:02:01 -0700 (PDT)
+In-Reply-To: <1381399307-21534-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>
 Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, " Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-Runtime idle is typically triggered after resume and probe. In these
-cases we would like to make use of autosuspend if we have enabled it
-earlier, otherwise the device will more or less immediately be
-requested to go into in-active state.
+In some cases it will be useful to know whether a device has the
+autosuspend mode enabled. Provide a helper function that returns the
+current setting.
 
-As a part of this patchset a new helper function has been added to the
-runtime PM API. My suggestion is to collect acks and let Chris merge
-the completet patchset through the mmc tree, if that seems acceptable
-to everyone.
-
-Ulf Hansson (2):
-  PM / Runtime: Add helper function to get value of use_autosuspend
-  mmc: core: Use autosuspend at runtime idle
-
- drivers/mmc/core/bus.c     |    6 ++++++
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
  include/linux/pm_runtime.h |    6 ++++++
- 2 files changed, 12 insertions(+)
+ 1 file changed, 6 insertions(+)
 
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 6fa7cea..bcc2ad4 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -91,6 +91,11 @@ static inline bool pm_runtime_status_suspended(struct device *dev)
+ 	return dev->power.runtime_status == RPM_SUSPENDED;
+ }
+ 
++static inline bool pm_runtime_autosuspend_used(struct device *dev)
++{
++	return dev->power.use_autosuspend;
++}
++
+ static inline bool pm_runtime_enabled(struct device *dev)
+ {
+ 	return !dev->power.disable_depth;
+@@ -140,6 +145,7 @@ static inline void device_set_run_wake(struct device *dev, bool enable) {}
+ static inline bool pm_runtime_suspended(struct device *dev) { return false; }
+ static inline bool pm_runtime_active(struct device *dev) { return true; }
+ static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
++static inline bool pm_runtime_autosuspend_used(struct device *dev) { return false; }
+ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+ static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
 -- 
 1.7.9.5
 
