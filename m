@@ -1,119 +1,74 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
-Date: Thu, 10 Oct 2013 10:50:10 -0700
-Message-ID: <20131010175010.17870.58060@capellas-linux>
-References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
- <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
- <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
- <20131003214246.24540.99218@capellas-linux>
- <20131003234735.19051.84583@capellas-linux>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] mmc: core: Use autosuspend when applicable at runtime idle
+Date: Thu, 10 Oct 2013 22:48:05 +0200
+Message-ID: <3714500.PZMTsOAJDT@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1310101313570.845-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20131003234735.19051.84583@capellas-linux>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Capella <sebastian.capella@linaro.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Serge Hallyn <serge.hallyn@canonical.com>, linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, patches@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-arm-kernel@lists.infradead.org, Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1310101313570.845-100000@iolanthe.rowland.org>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <cjb@laptop.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Sebastian Capella (2013-10-03 16:47:35)
-> Quoting Sebastian Capella (2013-10-03 14:42:46)
-> > Quoting Andrew Morton (2013-10-03 14:15:23)
-> > > On Thu,  3 Oct 2013 14:10:37 -0700 Sebastian Capella <sebastian.capella@linaro.org> wrote:
-> > > 
-> > > > Enhance name_to_dev_t to handle trailing newline characters
-> > > > on device paths.  Some inputs to name_to_dev_t may come from
-> > > > userspace where oftentimes a '\n' is appended to the path.
-> > > > Added const to the name buffer in both the function
-> > > > declaration and the prototype to reflect input buffer
-> > > > handling.
-> > > > 
-> > > > By handling trailing newlines in name_to_dev_t, userspace
-> > > > buffers may be directly passed to name_to_dev_t without
-> > > > modification.
-> > > 
-> > > We have lib/string.c:strim() - perhaps this patch would be
-> > > neater if it were to use it?
-> > 
-> > Hi Morton,
-> > 
-> > I was intending to respect the const handling of the input buffer.
-> > 
-> > The actual buffer in this case is not really const as it comes from
-> > the file buffering, but removing the const requires changing the
-> > store function defined in the kobj_attribute, and would propagate
-> > to many areas in the kernel.
-> > 
-> > Modifying the buffer and removing the const was also suggested by Pavel.
-> > After some discussion I posted this version which did not change the
-> > buffer or the prototype.
-> > 
-> > Please let me know if the preference is to modify the store function
-> > definition.
-> > 
-> > I'll prepare a patchset that removes the consts to see how much is
-> > changed.
-> > 
-> > Thanks,
-> > 
-> > Sebastian
+On Thursday, October 10, 2013 01:21:53 PM Alan Stern wrote:
+> On Thu, 10 Oct 2013, Ulf Hansson wrote:
 > 
-> Hi Andrew,
+> > Hi Alan,
+> > 
+> > Thanks for response!
 > 
-> Sorry for calling you Morton earlier.
+> You're welcome.
 > 
-> I looked into removing the const from the store function, but I'm not sure
-> this is the right idea, so I'm going to shelf that for now.
+> > > I would greatly prefer to see the core rpm_idle() routine changed
+> > > instead.  Currently the last line says:
+> > >
+> > >         return retval ? retval : rpm_suspend(dev, rpmflags);
+> > >
+> > > The second argument to rpm_suspend should be rpmflags | RPM_AUTO.  That
+> > > way, if the runtime-idle callback returns 0, we will automatically do
+> > > either a normal suspend or an autosuspend, whichever is appropriate.
+> > 
+> > I know you guys, Mika and Rafael had a discussion around this feature
+> > a few month ago. Were thinking of you sending this response. :-)
+> > 
+> > At that time, Rafael suggested to go ahead using similar method as I
+> > implemented here, which is also what Mika proposed for
+> > drivers/i2c/busses/i2c-designware-platdrv.c, not sure he finally sent
+> > a formal patch though.
 > 
-> Please let me know your thoughts.
+> Maybe Rafael wanted to avoid changing a core routine too close to the 
+> start of an upcoming merge window.  At any rate, IMO it should be 
+> changed and now seems like a good time to try it.
+
+I agree, so I'd say go for it (but please remember to update the docs).
+
+> > Anyway, just wanted us all to be aligned on the best way forward. I am
+> > also in favour of fixing this in the  runtime PM core. How do you
+> > think we shall handle drivers that not have the runtime_idle
+> > callbacks? I guess we want to use the RPM_AUTO flag here as well?
 > 
-> Thanks,
+> Currently, retval gets set to 0 before the callback is invoked.  If 
+> there is no callback routine then retval will remain 0.  I agree we 
+> want to treat this case the same as if the callback had returned 0.
+
+Yup.
+
+> > > As an added benefit, with this change there's no need to add the
+> > > pm_runtime_autosuspend_used() function.
+> > 
+> > In my patch I am also checking if I should update the last busy mark,
+> > do you mean it should be okay to do this even if not needed?
 > 
-> Sebastian
- 
-Ping...
+> If the use_autosuspend flag isn't set then the last_busy flag isn't 
+> used for anything, so updating it won't hurt.
 
-Hi Andrew,
+Agreed.
 
-Do you have any feedback on this?
+Thanks!
 
-Below are the three options considered thus far.  Do
-you have any additional suggestions or preferences?
-
-Thanks,
-
-Sebastian
-
-
-1) copy buffer, remove \n.
-  - v1 patch did this
-  - alternatively could use an array on the stack or a preallocated global
-    Pros:
-     . cleanest change
-    Cons:
-     . adds memcpy
-2) make name_to_dev_t work with readonly buffer to ignore \n
-  - v2 and v3 patches do this
-    Pros:
-     . no memcpy, no big modifications to unrelated code
-    Cons:
-     . seems more appropriate to harden store functions to user input
-       than name_to_dev_t.
-     . a little complicated
-3) remove const from buffer and modify contents in place to remove \n
-  - remove const from sysfs_ops.store, modify dependent definitions
-  - remove const from kobj_attribute.store, modify dependent definitions
-    Pros:
-     . no memcpy
-    Cons:
-     . a lot of modifications
-     . const contract to not modify the input buffer seems the right way.
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
