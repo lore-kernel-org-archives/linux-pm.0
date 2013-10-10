@@ -1,68 +1,229 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/2] mmc: core: Use autosuspend when applicable at runtime
- idle
-Date: Thu, 10 Oct 2013 13:21:53 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1310101313570.845-100000@iolanthe.rowland.org>
-References: <CAPDyKFqnY9rrwgsQmFFu04oSDCtb7GN264sj7wdJs_t6CpOFKw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: [PATCHv5] drivers: power: Detect device suspend/resume lockup and log event in pstore.
+Date: Thu, 10 Oct 2013 10:34:25 -0700
+Message-ID: <1381426465-30191-1-git-send-email-zoran.markovic@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:38266 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755910Ab3JJRVy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 13:21:54 -0400
-In-Reply-To: <CAPDyKFqnY9rrwgsQmFFu04oSDCtb7GN264sj7wdJs_t6CpOFKw@mail.gmail.com>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:43122 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754321Ab3JJRfV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 13:35:21 -0400
+Received: by mail-pb0-f46.google.com with SMTP id rq2so2921193pbb.33
+        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2013 10:35:20 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <cjb@laptop.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>
 
-On Thu, 10 Oct 2013, Ulf Hansson wrote:
+From: Benoit Goby <benoit@android.com>
 
-> Hi Alan,
-> 
-> Thanks for response!
+Rather than hard-lock the kernel, dump the suspend/resume thread stack and
+panic() to capture a message in pstore when a driver takes too long to
+suspend/resume. Default suspend/resume watchdog timeout is set to 12
+seconds to be longer than the usbhid 10 second timeout, but could be
+changed at compile time.
 
-You're welcome.
+Exclude from the watchdog the time spent waiting for children that
+are resumed asynchronously and time every device, whether or not they
+resumed synchronously.
 
-> > I would greatly prefer to see the core rpm_idle() routine changed
-> > instead.  Currently the last line says:
-> >
-> >         return retval ? retval : rpm_suspend(dev, rpmflags);
-> >
-> > The second argument to rpm_suspend should be rpmflags | RPM_AUTO.  That
-> > way, if the runtime-idle callback returns 0, we will automatically do
-> > either a normal suspend or an autosuspend, whichever is appropriate.
-> 
-> I know you guys, Mika and Rafael had a discussion around this feature
-> a few month ago. Were thinking of you sending this response. :-)
-> 
-> At that time, Rafael suggested to go ahead using similar method as I
-> implemented here, which is also what Mika proposed for
-> drivers/i2c/busses/i2c-designware-platdrv.c, not sure he finally sent
-> a formal patch though.
+This patch is targeted for mobile devices where a suspend/resume lockup
+could cause a system reboot. Information about failing device can be
+retrieved in subsequent boot session by mounting pstore and inspecting
+the log. Laptops with EFI-enabled pstore could also benefit from
+this feature.
 
-Maybe Rafael wanted to avoid changing a core routine too close to the 
-start of an upcoming merge window.  At any rate, IMO it should be 
-changed and now seems like a good time to try it.
+The hardware watchdog timer is likely suspended during this time and
+couldn't be relied upon. The soft-lockup detector would eventually tell
+that tasks are not scheduled, but would provide little context as to why.
+The patch hence uses system timer and assumes it is still active while the
+devices are suspended/resumed.
 
-> Anyway, just wanted us all to be aligned on the best way forward. I am
-> also in favour of fixing this in the  runtime PM core. How do you
-> think we shall handle drivers that not have the runtime_idle
-> callbacks? I guess we want to use the RPM_AUTO flag here as well?
+This feature can be enabled/disabled during kernel configuration.
 
-Currently, retval gets set to 0 before the callback is invoked.  If 
-there is no callback routine then retval will remain 0.  I agree we 
-want to treat this case the same as if the callback had returned 0.
+Cc: Android Kernel Team <kernel-team@android.com>
+Cc: Colin Cross <ccross@android.com>
+Cc: Todd Poynor <toddpoynor@google.com>
+Cc: San Mehat <san@google.com>
+Cc: Benoit Goby <benoit@android.com>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Original-author: San Mehat <san@google.com>
+Signed-off-by: Benoit Goby <benoit@android.com>
+[zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
+tweaked commit message. Moved call to dpm_wd_set() before device_lock() in
+device_resume(). Minor changes to add compile-time inclusion of the feature.
+Renamed 'dpm_wd...' to 'dpm_watchdog...'.]
+Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
+---
+ drivers/base/power/main.c |   68 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/Kconfig      |   16 +++++++++++
+ 2 files changed, 84 insertions(+)
 
-> > As an added benefit, with this change there's no need to add the
-> > pm_runtime_autosuspend_used() function.
-> 
-> In my patch I am also checking if I should update the last busy mark,
-> do you mean it should be okay to do this even if not needed?
-
-If the use_autosuspend flag isn't set then the last_busy flag isn't 
-used for anything, so updating it won't hurt.
-
-Alan Stern
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 9f098a8..06fbc62 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -30,6 +30,8 @@
+ #include <linux/suspend.h>
+ #include <trace/events/power.h>
+ #include <linux/cpuidle.h>
++#include <linux/timer.h>
++
+ #include "../base.h"
+ #include "power.h"
+ 
+@@ -55,6 +57,12 @@ struct suspend_stats suspend_stats;
+ static DEFINE_MUTEX(dpm_list_mtx);
+ static pm_message_t pm_transition;
+ 
++struct dpm_watchdog {
++	struct device		*dev;
++	struct task_struct	*tsk;
++	struct timer_list	timer;
++};
++
+ static int async_error;
+ 
+ static char *pm_verb(int event)
+@@ -390,6 +398,60 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	return error;
+ }
+ 
++#ifdef CONFIG_DPM_WATCHDOG
++/**
++ * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
++ *
++ * Called when a driver has timed out suspending or resuming.
++ * There's not much we can do here to recover so panic() to
++ * capture a crash-dump in pstore.
++ */
++static void dpm_watchdog_handler(unsigned long data)
++{
++	struct dpm_watchdog *wd = (void *)data;
++
++	dev_emerg(wd->dev, "**** DPM device timeout ****\n");
++	show_stack(wd->tsk, NULL);
++	panic("%s %s: unrecoverable failure\n",
++		dev_driver_string(wd->dev), dev_name(wd->dev));
++}
++
++/**
++ * dpm_watchdog_set - Enable pm watchdog for given device.
++ * @wd: Watchdog. Must be allocated on the stack.
++ * @dev: Device to handle.
++ */
++static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
++{
++	struct timer_list *timer = &wd->timer;
++
++	wd->dev = dev;
++	wd->tsk = get_current();
++
++	init_timer_on_stack(timer);
++	/* use same timeout value for both suspend and resume */
++	timer->expires = jiffies + HZ * CONFIG_DPM_WATCHDOG_TIMEOUT;
++	timer->function = dpm_watchdog_handler;
++	timer->data = (unsigned long)wd;
++	add_timer(timer);
++}
++
++/**
++ * dpm_watchdog_clear - Disable suspend/resume watchdog.
++ * @wd: Watchdog to disable.
++ */
++static void dpm_watchdog_clear(struct dpm_watchdog *wd)
++{
++	struct timer_list *timer = &wd->timer;
++
++	del_timer_sync(timer);
++	destroy_timer_on_stack(timer);
++}
++#else
++#define dpm_watchdog_set(x, y)
++#define dpm_watchdog_clear(x)
++#endif
++
+ /*------------------------- Resume routines -------------------------*/
+ 
+ /**
+@@ -576,6 +638,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+ 	int error = 0;
++	struct dpm_watchdog wd;
+ 
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
+@@ -584,6 +647,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 		goto Complete;
+ 
+ 	dpm_wait(dev->parent, async);
++	dpm_watchdog_set(&wd, dev);
+ 	device_lock(dev);
+ 
+ 	/*
+@@ -642,6 +706,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 
+  Unlock:
+ 	device_unlock(dev);
++	dpm_watchdog_clear(&wd);
+ 
+  Complete:
+ 	complete_all(&dev->power.completion);
+@@ -1060,6 +1125,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+ 	int error = 0;
++	struct dpm_watchdog wd;
+ 
+ 	dpm_wait_for_children(dev, async);
+ 
+@@ -1083,6 +1149,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	if (dev->power.syscore)
+ 		goto Complete;
+ 
++	dpm_watchdog_set(&wd, dev);
+ 	device_lock(dev);
+ 
+ 	if (dev->pm_domain) {
+@@ -1139,6 +1206,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	}
+ 
+ 	device_unlock(dev);
++	dpm_watchdog_clear(&wd);
+ 
+  Complete:
+ 	complete_all(&dev->power.completion);
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index d444c4e..2fac9cc 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -178,6 +178,22 @@ config PM_SLEEP_DEBUG
+ 	def_bool y
+ 	depends on PM_DEBUG && PM_SLEEP
+ 
++config DPM_WATCHDOG
++	bool "Device suspend/resume watchdog"
++	depends on PM_DEBUG && PSTORE
++	---help---
++	  Sets up a watchdog timer to capture drivers that are
++	  locked up attempting to suspend/resume a device.
++	  A detected lockup causes system panic with message
++	  captured in pstore device for inspection in subsequent
++	  boot session.
++
++config DPM_WATCHDOG_TIMEOUT
++	int "Watchdog timeout in seconds"
++	range 1 120
++	default 12
++	depends on DPM_WATCHDOG
++
+ config PM_TRACE
+ 	bool
+ 	help
+-- 
+1.7.9.5
 
