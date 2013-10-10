@@ -1,229 +1,119 @@
-From: Zoran Markovic <zoran.markovic@linaro.org>
-Subject: [PATCHv5] drivers: power: Detect device suspend/resume lockup and log event in pstore.
-Date: Thu, 10 Oct 2013 10:34:25 -0700
-Message-ID: <1381426465-30191-1-git-send-email-zoran.markovic@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:43122 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754321Ab3JJRfV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 13:35:21 -0400
-Received: by mail-pb0-f46.google.com with SMTP id rq2so2921193pbb.33
-        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2013 10:35:20 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
+Date: Thu, 10 Oct 2013 10:50:10 -0700
+Message-ID: <20131010175010.17870.58060@capellas-linux>
+References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
+ <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
+ <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
+ <20131003214246.24540.99218@capellas-linux>
+ <20131003234735.19051.84583@capellas-linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20131003234735.19051.84583@capellas-linux>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Serge Hallyn <serge.hallyn@canonical.com>, linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, patches@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-arm-kernel@lists.infradead.org, Al Viro <viro@zeniv.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>
 
-From: Benoit Goby <benoit@android.com>
+Quoting Sebastian Capella (2013-10-03 16:47:35)
+> Quoting Sebastian Capella (2013-10-03 14:42:46)
+> > Quoting Andrew Morton (2013-10-03 14:15:23)
+> > > On Thu,  3 Oct 2013 14:10:37 -0700 Sebastian Capella <sebastian.capella@linaro.org> wrote:
+> > > 
+> > > > Enhance name_to_dev_t to handle trailing newline characters
+> > > > on device paths.  Some inputs to name_to_dev_t may come from
+> > > > userspace where oftentimes a '\n' is appended to the path.
+> > > > Added const to the name buffer in both the function
+> > > > declaration and the prototype to reflect input buffer
+> > > > handling.
+> > > > 
+> > > > By handling trailing newlines in name_to_dev_t, userspace
+> > > > buffers may be directly passed to name_to_dev_t without
+> > > > modification.
+> > > 
+> > > We have lib/string.c:strim() - perhaps this patch would be
+> > > neater if it were to use it?
+> > 
+> > Hi Morton,
+> > 
+> > I was intending to respect the const handling of the input buffer.
+> > 
+> > The actual buffer in this case is not really const as it comes from
+> > the file buffering, but removing the const requires changing the
+> > store function defined in the kobj_attribute, and would propagate
+> > to many areas in the kernel.
+> > 
+> > Modifying the buffer and removing the const was also suggested by Pavel.
+> > After some discussion I posted this version which did not change the
+> > buffer or the prototype.
+> > 
+> > Please let me know if the preference is to modify the store function
+> > definition.
+> > 
+> > I'll prepare a patchset that removes the consts to see how much is
+> > changed.
+> > 
+> > Thanks,
+> > 
+> > Sebastian
+> 
+> Hi Andrew,
+> 
+> Sorry for calling you Morton earlier.
+> 
+> I looked into removing the const from the store function, but I'm not sure
+> this is the right idea, so I'm going to shelf that for now.
+> 
+> Please let me know your thoughts.
+> 
+> Thanks,
+> 
+> Sebastian
+ 
+Ping...
 
-Rather than hard-lock the kernel, dump the suspend/resume thread stack and
-panic() to capture a message in pstore when a driver takes too long to
-suspend/resume. Default suspend/resume watchdog timeout is set to 12
-seconds to be longer than the usbhid 10 second timeout, but could be
-changed at compile time.
+Hi Andrew,
 
-Exclude from the watchdog the time spent waiting for children that
-are resumed asynchronously and time every device, whether or not they
-resumed synchronously.
+Do you have any feedback on this?
 
-This patch is targeted for mobile devices where a suspend/resume lockup
-could cause a system reboot. Information about failing device can be
-retrieved in subsequent boot session by mounting pstore and inspecting
-the log. Laptops with EFI-enabled pstore could also benefit from
-this feature.
+Below are the three options considered thus far.  Do
+you have any additional suggestions or preferences?
 
-The hardware watchdog timer is likely suspended during this time and
-couldn't be relied upon. The soft-lockup detector would eventually tell
-that tasks are not scheduled, but would provide little context as to why.
-The patch hence uses system timer and assumes it is still active while the
-devices are suspended/resumed.
+Thanks,
 
-This feature can be enabled/disabled during kernel configuration.
+Sebastian
 
-Cc: Android Kernel Team <kernel-team@android.com>
-Cc: Colin Cross <ccross@android.com>
-Cc: Todd Poynor <toddpoynor@google.com>
-Cc: San Mehat <san@google.com>
-Cc: Benoit Goby <benoit@android.com>
-Cc: John Stultz <john.stultz@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Original-author: San Mehat <san@google.com>
-Signed-off-by: Benoit Goby <benoit@android.com>
-[zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
-tweaked commit message. Moved call to dpm_wd_set() before device_lock() in
-device_resume(). Minor changes to add compile-time inclusion of the feature.
-Renamed 'dpm_wd...' to 'dpm_watchdog...'.]
-Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
----
- drivers/base/power/main.c |   68 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/Kconfig      |   16 +++++++++++
- 2 files changed, 84 insertions(+)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9f098a8..06fbc62 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -30,6 +30,8 @@
- #include <linux/suspend.h>
- #include <trace/events/power.h>
- #include <linux/cpuidle.h>
-+#include <linux/timer.h>
-+
- #include "../base.h"
- #include "power.h"
- 
-@@ -55,6 +57,12 @@ struct suspend_stats suspend_stats;
- static DEFINE_MUTEX(dpm_list_mtx);
- static pm_message_t pm_transition;
- 
-+struct dpm_watchdog {
-+	struct device		*dev;
-+	struct task_struct	*tsk;
-+	struct timer_list	timer;
-+};
-+
- static int async_error;
- 
- static char *pm_verb(int event)
-@@ -390,6 +398,60 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	return error;
- }
- 
-+#ifdef CONFIG_DPM_WATCHDOG
-+/**
-+ * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
-+ *
-+ * Called when a driver has timed out suspending or resuming.
-+ * There's not much we can do here to recover so panic() to
-+ * capture a crash-dump in pstore.
-+ */
-+static void dpm_watchdog_handler(unsigned long data)
-+{
-+	struct dpm_watchdog *wd = (void *)data;
-+
-+	dev_emerg(wd->dev, "**** DPM device timeout ****\n");
-+	show_stack(wd->tsk, NULL);
-+	panic("%s %s: unrecoverable failure\n",
-+		dev_driver_string(wd->dev), dev_name(wd->dev));
-+}
-+
-+/**
-+ * dpm_watchdog_set - Enable pm watchdog for given device.
-+ * @wd: Watchdog. Must be allocated on the stack.
-+ * @dev: Device to handle.
-+ */
-+static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
-+{
-+	struct timer_list *timer = &wd->timer;
-+
-+	wd->dev = dev;
-+	wd->tsk = get_current();
-+
-+	init_timer_on_stack(timer);
-+	/* use same timeout value for both suspend and resume */
-+	timer->expires = jiffies + HZ * CONFIG_DPM_WATCHDOG_TIMEOUT;
-+	timer->function = dpm_watchdog_handler;
-+	timer->data = (unsigned long)wd;
-+	add_timer(timer);
-+}
-+
-+/**
-+ * dpm_watchdog_clear - Disable suspend/resume watchdog.
-+ * @wd: Watchdog to disable.
-+ */
-+static void dpm_watchdog_clear(struct dpm_watchdog *wd)
-+{
-+	struct timer_list *timer = &wd->timer;
-+
-+	del_timer_sync(timer);
-+	destroy_timer_on_stack(timer);
-+}
-+#else
-+#define dpm_watchdog_set(x, y)
-+#define dpm_watchdog_clear(x)
-+#endif
-+
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-@@ -576,6 +638,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 	int error = 0;
-+	struct dpm_watchdog wd;
- 
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
-@@ -584,6 +647,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 		goto Complete;
- 
- 	dpm_wait(dev->parent, async);
-+	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
- 	/*
-@@ -642,6 +706,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 
-  Unlock:
- 	device_unlock(dev);
-+	dpm_watchdog_clear(&wd);
- 
-  Complete:
- 	complete_all(&dev->power.completion);
-@@ -1060,6 +1125,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 	int error = 0;
-+	struct dpm_watchdog wd;
- 
- 	dpm_wait_for_children(dev, async);
- 
-@@ -1083,6 +1149,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->power.syscore)
- 		goto Complete;
- 
-+	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
- 	if (dev->pm_domain) {
-@@ -1139,6 +1206,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	}
- 
- 	device_unlock(dev);
-+	dpm_watchdog_clear(&wd);
- 
-  Complete:
- 	complete_all(&dev->power.completion);
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index d444c4e..2fac9cc 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -178,6 +178,22 @@ config PM_SLEEP_DEBUG
- 	def_bool y
- 	depends on PM_DEBUG && PM_SLEEP
- 
-+config DPM_WATCHDOG
-+	bool "Device suspend/resume watchdog"
-+	depends on PM_DEBUG && PSTORE
-+	---help---
-+	  Sets up a watchdog timer to capture drivers that are
-+	  locked up attempting to suspend/resume a device.
-+	  A detected lockup causes system panic with message
-+	  captured in pstore device for inspection in subsequent
-+	  boot session.
-+
-+config DPM_WATCHDOG_TIMEOUT
-+	int "Watchdog timeout in seconds"
-+	range 1 120
-+	default 12
-+	depends on DPM_WATCHDOG
-+
- config PM_TRACE
- 	bool
- 	help
--- 
-1.7.9.5
-
+1) copy buffer, remove \n.
+  - v1 patch did this
+  - alternatively could use an array on the stack or a preallocated global
+    Pros:
+     . cleanest change
+    Cons:
+     . adds memcpy
+2) make name_to_dev_t work with readonly buffer to ignore \n
+  - v2 and v3 patches do this
+    Pros:
+     . no memcpy, no big modifications to unrelated code
+    Cons:
+     . seems more appropriate to harden store functions to user input
+       than name_to_dev_t.
+     . a little complicated
+3) remove const from buffer and modify contents in place to remove \n
+  - remove const from sysfs_ops.store, modify dependent definitions
+  - remove const from kobj_attribute.store, modify dependent definitions
+    Pros:
+     . no memcpy
+    Cons:
+     . a lot of modifications
+     . const contract to not modify the input buffer seems the right way.
