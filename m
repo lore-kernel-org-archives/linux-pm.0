@@ -1,58 +1,37 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH] Thermal: Fix Step-wise governor Kconfig help text
-Date: Thu, 10 Oct 2013 08:55:11 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B90926301185773@SHSMSX101.ccr.corp.intel.com>
-References: <1381308587-25460-1-git-send-email-aricart@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1381308587-25460-1-git-send-email-aricart@gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Abelardo Ricart <aricart@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "trivial@kernel.org" <trivial@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/2] mmc: core: Favor autosuspend at runtime idle
+Date: Thu, 10 Oct 2013 12:01:45 +0200
+Message-ID: <1381399307-21534-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f42.google.com ([209.85.214.42]:54887 "EHLO
+	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076Ab3JJKB5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 06:01:57 -0400
+Received: by mail-bk0-f42.google.com with SMTP id my10so885619bkb.29
+        for <linux-pm@vger.kernel.org>; Thu, 10 Oct 2013 03:01:56 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, " Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-Hi, Abelardo,
+Runtime idle is typically triggered after resume and probe. In these
+cases we would like to make use of autosuspend if we have enabled it
+earlier, otherwise the device will more or less immediately be
+requested to go into in-active state.
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Abelardo Ricart
-> Sent: Wednesday, October 09, 2013 4:50 PM
-> To: linux-pm@vger.kernel.org
-> Cc: trivial@kernel.org; linux-kernel@vger.kernel.org; Abelardo Ricart
-> Subject: [PATCH] Thermal: Fix Step-wise governor Kconfig help text
-> 
-> Trivial fix for the help text of THERMAL_GOV_STEP_WISE.
-> 
-> Signed-off-by: Abelardo Ricart <aricart@gmail.com>
+As a part of this patchset a new helper function has been added to the
+runtime PM API. My suggestion is to collect acks and let Chris merge
+the completet patchset through the mmc tree, if that seems acceptable
+to everyone.
 
-Thanks for your patch, but we've already have a fix here
-https://patchwork.kernel.org/patch/2956561/
+Ulf Hansson (2):
+  PM / Runtime: Add helper function to get value of use_autosuspend
+  mmc: core: Use autosuspend at runtime idle
 
-thanks,
-rui
-> ---
->  drivers/thermal/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
-> dbfc390..29007bd 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -69,6 +69,7 @@ config THERMAL_GOV_STEP_WISE
->  	bool "Step_wise thermal governor"
->  	help
->  	  Enable this to manage platform thermals using a simple linear
-> +	  throttling algorithm.
-> 
->  config THERMAL_GOV_USER_SPACE
->  	bool "User_space thermal governor"
-> --
-> 1.8.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org More majordomo info
-> at  http://vger.kernel.org/majordomo-info.html
+ drivers/mmc/core/bus.c     |    6 ++++++
+ include/linux/pm_runtime.h |    6 ++++++
+ 2 files changed, 12 insertions(+)
+
+-- 
+1.7.9.5
+
