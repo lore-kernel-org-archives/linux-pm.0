@@ -1,52 +1,69 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: any global parameter to know system power state
-Date: Thu, 10 Oct 2013 10:35:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1310101032110.1307-100000@iolanthe.rowland.org>
-References: <CANudz+ur37HRgygXrzgDPHrg-2LCRfR23sPZ4DWo_R5bRjetxg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] mmc: core: Use autosuspend when applicable at runtime
+ idle
+Date: Thu, 10 Oct 2013 10:45:09 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1310101035230.1307-100000@iolanthe.rowland.org>
+References: <1381399307-21534-3-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:56800 "HELO
+Received: from iolanthe.rowland.org ([192.131.102.54]:56820 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754751Ab3JJOfS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 10:35:18 -0400
-In-Reply-To: <CANudz+ur37HRgygXrzgDPHrg-2LCRfR23sPZ4DWo_R5bRjetxg@mail.gmail.com>
+	with SMTP id S1755334Ab3JJOpK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 10:45:10 -0400
+In-Reply-To: <1381399307-21534-3-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: loody <miloody@gmail.com>
-Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, " Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org
 
-On matters concerning xHCI, you really should CC: the xHCI maintainer.
+On Thu, 10 Oct 2013, Ulf Hansson wrote:
 
-On Thu, 10 Oct 2013, loody wrote:
-
-> in xhci_resume, we will do xhci_halt usually.
-> But our embedded system has something wrong and xhci_halt will make it
-> core dump during resume.
+> Typically the runtime idle function is triggered after resume and
+> probe. Instead of immediately requesting the device to go into
+> in-active state we make use of the autosuspend, if we have enabled
+> it earlier.
 > 
-> I try to know whether there is any global parameter to let us do the
-> sw workaround.
-> (just like below + line)
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/mmc/core/bus.c |    6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> 
-> int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
-> {
->     u32            command, temp = 0;
->     struct usb_hcd        *hcd = xhci_to_hcd(xhci);
->     struct usb_hcd        *secondary_hcd;
->     int            retval = 0;
->     ....
->     ......
->     xhci_dbg(xhci, "Stop HCD\n");
-> +    if (global_pm_state !=resume){
->         xhci_halt(xhci);
-> +    }
->     xhci_reset(xhci);
->     spin_unlock_irq(&xhci->lock);
->     ......
+> diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+> index cdca8a7..7f0e900 100644
+> --- a/drivers/mmc/core/bus.c
+> +++ b/drivers/mmc/core/bus.c
+> @@ -205,6 +205,12 @@ static int mmc_runtime_resume(struct device *dev)
+>  
+>  static int mmc_runtime_idle(struct device *dev)
+>  {
+> +	if (pm_runtime_autosuspend_used(dev)) {
+> +		pm_runtime_mark_last_busy(dev);
+> +		pm_runtime_autosuspend(dev);
+> +		return -EBUSY;
+> +	}
+> +
+>  	return 0;
+>  }
 
-Wouldn't it be better to test the platform?  Then the xhci_halt() could 
-be skipped on your embedded systems but nowhere else.
+I would greatly prefer to see the core rpm_idle() routine changed 
+instead.  Currently the last line says:
+
+	return retval ? retval : rpm_suspend(dev, rpmflags);
+
+The second argument to rpm_suspend should be rpmflags | RPM_AUTO.  That
+way, if the runtime-idle callback returns 0, we will automatically do
+either a normal suspend or an autosuspend, whichever is appropriate.
+
+As an added benefit, with this change there's no need to add the 
+pm_runtime_autosuspend_used() function.
 
 Alan Stern
 
