@@ -1,63 +1,58 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: block layer runtime pm and udisks
-Date: Thu, 10 Oct 2013 09:52:57 +0800
-Message-ID: <52560879.8000001@intel.com>
-References: <1364010148-8584-1-git-send-email-aaron.lu@intel.com> <5256058F.3010802@ubuntu.com>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH] Thermal: Fix Step-wise governor Kconfig help text
+Date: Thu, 10 Oct 2013 08:55:11 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B90926301185773@SHSMSX101.ccr.corp.intel.com>
+References: <1381308587-25460-1-git-send-email-aricart@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:53047 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318Ab3JJBw0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Oct 2013 21:52:26 -0400
-In-Reply-To: <5256058F.3010802@ubuntu.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1381308587-25460-1-git-send-email-aricart@gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Abelardo Ricart <aricart@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "trivial@kernel.org" <trivial@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Phillip Susi <psusi@ubuntu.com>, Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, Tejun Heo <tj@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, Oliver Neukum <oneukum@suse.de>
 
-On 10/10/2013 09:40 AM, Phillip Susi wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA512
-> 
-> I have been trying out the new block layer runtime pm, and run into a
-> problem: udisks keeps waking up the disk.  Every 10 minutes it tries
-> to poll the SMART status of the drive, but it does first issue an ata
-> CHECK POWER command to see if it is in standby, and skips the check to
-> avoid waking the disk.  The problem with runtime pm is that *any*
-> request brings the drive out of suspend, and the suspend wake path
-> forces the drive to spin up by issuing a verify command on sector 0.
-> 
-> Is there a reason that the wakeup path forces the drive to spin up, or
-> could this be removed and rely on the drive waking up automatically if
-> the request requires it?
-> 
-> Or would it be possible to notice that the command being sent is a
-> check power command, and fake the reply instead of resuming the device?
-> 
-> Or does udisks just need to check the runtime pm status before trying
-> the check power command?
+Hi, Abelardo,
 
-I think the udisks can be modified to check if the drive is runtime
-suspended and if so, avoid poll the SMART status.
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Abelardo Ricart
+> Sent: Wednesday, October 09, 2013 4:50 PM
+> To: linux-pm@vger.kernel.org
+> Cc: trivial@kernel.org; linux-kernel@vger.kernel.org; Abelardo Ricart
+> Subject: [PATCH] Thermal: Fix Step-wise governor Kconfig help text
+> 
+> Trivial fix for the help text of THERMAL_GOV_STEP_WISE.
+> 
+> Signed-off-by: Abelardo Ricart <aricart@gmail.com>
 
-Thanks,
-Aaron
+Thanks for your patch, but we've already have a fix here
+https://patchwork.kernel.org/patch/2956561/
 
+thanks,
+rui
+> ---
+>  drivers/thermal/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
 > 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
+> dbfc390..29007bd 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -69,6 +69,7 @@ config THERMAL_GOV_STEP_WISE
+>  	bool "Step_wise thermal governor"
+>  	help
+>  	  Enable this to manage platform thermals using a simple linear
+> +	  throttling algorithm.
 > 
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.14 (GNU/Linux)
-> Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+>  config THERMAL_GOV_USER_SPACE
+>  	bool "User_space thermal governor"
+> --
+> 1.8.4
 > 
-> iQEcBAEBCgAGBQJSVgWPAAoJEJrBOlT6nu75k/cH+gMAb9YtMS21rEt94umJpBYj
-> BcNoyGoK39tAKZHW7pXfP2hRIm1+kPTPi44Wp7kQHu7m6BSp4YetmDkqjNv+6yAy
-> 8SUvPcqRsJVbF1oBXN09phBEnk/JfxqID7n6hB1lT6NqYV72VVVUEUOlnSnpHtDJ
-> gszV+TLH37uhd5/KiDFja3J2bJC0R/klzDF1x1clc53tGJd1NZ+h9tZZBLszIdnS
-> EnjukLA02Q7ooq+445WyWth2cypTXKfRbigZW+FfCI3hfAKOShVevodlGmmrQb7Z
-> 0xzhSoO5JTpNqJPLaNL3+JZFdXwANd+7PuO9v2XVKKUkydQ9+Vl4CfydSFhqo5U=
-> =iuSZ
-> -----END PGP SIGNATURE-----
-> 
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org More majordomo info
+> at  http://vger.kernel.org/majordomo-info.html
