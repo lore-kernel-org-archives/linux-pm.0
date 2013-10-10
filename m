@@ -1,48 +1,68 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: "1 lock held by file-storage" while in idle thread
-Date: Thu, 10 Oct 2013 13:12:38 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1310101305300.845-100000@iolanthe.rowland.org>
-References: <20131010164043.GA20301@linutronix.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 2/2] mmc: core: Use autosuspend when applicable at runtime
+ idle
+Date: Thu, 10 Oct 2013 13:21:53 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1310101313570.845-100000@iolanthe.rowland.org>
+References: <CAPDyKFqnY9rrwgsQmFFu04oSDCtb7GN264sj7wdJs_t6CpOFKw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20131010164043.GA20301-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Andrzej Siewior <bigeasy-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
-Cc: linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Michal Nazarewicz <mina86-deATy8a+UHjQT0dZR+AlfA@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:38266 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755910Ab3JJRVy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2013 13:21:54 -0400
+In-Reply-To: <CAPDyKFqnY9rrwgsQmFFu04oSDCtb7GN264sj7wdJs_t6CpOFKw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <cjb@laptop.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, 10 Oct 2013, Sebastian Andrzej Siewior wrote:
+On Thu, 10 Oct 2013, Ulf Hansson wrote:
 
-> Since commit 0f9548ca1 ("lockdep: check that no locks held at freeze
-> time") I see the following backtrace in the file storage gadget [0]:
-> |=====================================
-> |[ BUG: file-storage/662 still has locks held! ]
-> |3.12.0-rc4+ #2 Not tainted
-> |-------------------------------------
-> |1 lock held by file-storage/662:
-> | #0:  (&common->file_lock){+.+...}, at: [<f84cf3af>] fsg_main_thread+0x34f/0x14b0 [g_multi]
-> |
-> |Call Trace:
-> | [<c14ef9c9>] dump_stack+0x4b/0x79
-> | [<c10a2ca1>] debug_check_no_locks_held+0x91/0xa0
-> | [<f84ce1b9>] sleep_thread.isra.29+0x79/0xc0 [g_multi]
-> | [<f84ceb53>] do_write+0x213/0x440 [g_multi]
-> | [<f84cf715>] fsg_main_thread+0x6b5/0x14b0 [g_multi]
+> Hi Alan,
 > 
-> The lock acquired in do_scsi_command() and do_write() calls sleep_thread()
-> until date is written (I guess).
-> Any recommendations on getting rid of this? Should sleep_thread() skip
-> calling try_to_freeze() if the lock is held and "just" scheduling away?
+> Thanks for response!
 
-I think that's the best approach.  Maybe have the caller pass a flag to
-sleep_thread() indicating whether it is safe to call try_to_freeze().
-It looks like the only places where it's not safe to freeze are the
-calls in do_read() and do_write().
+You're welcome.
+
+> > I would greatly prefer to see the core rpm_idle() routine changed
+> > instead.  Currently the last line says:
+> >
+> >         return retval ? retval : rpm_suspend(dev, rpmflags);
+> >
+> > The second argument to rpm_suspend should be rpmflags | RPM_AUTO.  That
+> > way, if the runtime-idle callback returns 0, we will automatically do
+> > either a normal suspend or an autosuspend, whichever is appropriate.
+> 
+> I know you guys, Mika and Rafael had a discussion around this feature
+> a few month ago. Were thinking of you sending this response. :-)
+> 
+> At that time, Rafael suggested to go ahead using similar method as I
+> implemented here, which is also what Mika proposed for
+> drivers/i2c/busses/i2c-designware-platdrv.c, not sure he finally sent
+> a formal patch though.
+
+Maybe Rafael wanted to avoid changing a core routine too close to the 
+start of an upcoming merge window.  At any rate, IMO it should be 
+changed and now seems like a good time to try it.
+
+> Anyway, just wanted us all to be aligned on the best way forward. I am
+> also in favour of fixing this in the  runtime PM core. How do you
+> think we shall handle drivers that not have the runtime_idle
+> callbacks? I guess we want to use the RPM_AUTO flag here as well?
+
+Currently, retval gets set to 0 before the callback is invoked.  If 
+there is no callback routine then retval will remain 0.  I agree we 
+want to treat this case the same as if the callback had returned 0.
+
+> > As an added benefit, with this change there's no need to add the
+> > pm_runtime_autosuspend_used() function.
+> 
+> In my patch I am also checking if I should update the last busy mark,
+> do you mean it should be okay to do this even if not needed?
+
+If the use_autosuspend flag isn't set then the last_busy flag isn't 
+used for anything, so updating it won't hurt.
 
 Alan Stern
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
