@@ -1,74 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] mmc: core: Use autosuspend when applicable at runtime idle
-Date: Thu, 10 Oct 2013 22:48:05 +0200
-Message-ID: <3714500.PZMTsOAJDT@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1310101313570.845-100000@iolanthe.rowland.org>
+Subject: [PATCH] ACPI / PM / Documentation: Replace outdated project links and addresses
+Date: Thu, 10 Oct 2013 23:37:13 +0200
+Message-ID: <5673332.e1GqhHJQBY@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1310101313570.845-100000@iolanthe.rowland.org>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <cjb@laptop.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, October 10, 2013 01:21:53 PM Alan Stern wrote:
-> On Thu, 10 Oct 2013, Ulf Hansson wrote:
-> 
-> > Hi Alan,
-> > 
-> > Thanks for response!
-> 
-> You're welcome.
-> 
-> > > I would greatly prefer to see the core rpm_idle() routine changed
-> > > instead.  Currently the last line says:
-> > >
-> > >         return retval ? retval : rpm_suspend(dev, rpmflags);
-> > >
-> > > The second argument to rpm_suspend should be rpmflags | RPM_AUTO.  That
-> > > way, if the runtime-idle callback returns 0, we will automatically do
-> > > either a normal suspend or an autosuspend, whichever is appropriate.
-> > 
-> > I know you guys, Mika and Rafael had a discussion around this feature
-> > a few month ago. Were thinking of you sending this response. :-)
-> > 
-> > At that time, Rafael suggested to go ahead using similar method as I
-> > implemented here, which is also what Mika proposed for
-> > drivers/i2c/busses/i2c-designware-platdrv.c, not sure he finally sent
-> > a formal patch though.
-> 
-> Maybe Rafael wanted to avoid changing a core routine too close to the 
-> start of an upcoming merge window.  At any rate, IMO it should be 
-> changed and now seems like a good time to try it.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I agree, so I'd say go for it (but please remember to update the docs).
+Some links to projects web pages and e-mail addresses in ACPI/PM
+documentation and Kconfig are outdated, so update them.
 
-> > Anyway, just wanted us all to be aligned on the best way forward. I am
-> > also in favour of fixing this in the  runtime PM core. How do you
-> > think we shall handle drivers that not have the runtime_idle
-> > callbacks? I guess we want to use the RPM_AUTO flag here as well?
-> 
-> Currently, retval gets set to 0 before the callback is invoked.  If 
-> there is no callback routine then retval will remain 0.  I agree we 
-> want to treat this case the same as if the callback had returned 0.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/ABI/stable/sysfs-bus-usb |    8 ++++----
+ Documentation/acpi/dsdt-override.txt   |    2 +-
+ drivers/acpi/Kconfig                   |    2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-Yup.
+Index: linux-pm/Documentation/ABI/stable/sysfs-bus-usb
+===================================================================
+--- linux-pm.orig/Documentation/ABI/stable/sysfs-bus-usb
++++ linux-pm/Documentation/ABI/stable/sysfs-bus-usb
+@@ -37,8 +37,8 @@ Description:
+ 		that the USB device has been connected to the machine.  This
+ 		file is read-only.
+ Users:
+-		PowerTOP <power@bughost.org>
+-		http://www.lesswatts.org/projects/powertop/
++		PowerTOP <powertop@lists.01.org>
++		https://01.org/powertop/
+ 
+ What:		/sys/bus/usb/device/.../power/active_duration
+ Date:		January 2008
+@@ -57,8 +57,8 @@ Description:
+ 		will give an integer percentage.  Note that this does not
+ 		account for counter wrap.
+ Users:
+-		PowerTOP <power@bughost.org>
+-		http://www.lesswatts.org/projects/powertop/
++		PowerTOP <powertop@lists.01.org>
++		https://01.org/powertop/
+ 
+ What:		/sys/bus/usb/devices/<busnum>-<port[.port]>...:<config num>-<interface num>/supports_autosuspend
+ Date:		January 2008
+Index: linux-pm/Documentation/acpi/dsdt-override.txt
+===================================================================
+--- linux-pm.orig/Documentation/acpi/dsdt-override.txt
++++ linux-pm/Documentation/acpi/dsdt-override.txt
+@@ -4,4 +4,4 @@ CONFIG_ACPI_CUSTOM_DSDT builds the image
+ 
+ When to use this method is described in detail on the
+ Linux/ACPI home page:
+-http://www.lesswatts.org/projects/acpi/overridingDSDT.php
++https://01.org/linux-acpi/documentation/overriding-dsdt
+Index: linux-pm/drivers/acpi/Kconfig
+===================================================================
+--- linux-pm.orig/drivers/acpi/Kconfig
++++ linux-pm/drivers/acpi/Kconfig
+@@ -24,7 +24,7 @@ menuconfig ACPI
+ 	  are configured, ACPI is used.
+ 
+ 	  The project home page for the Linux ACPI subsystem is here:
+-	  <http://www.lesswatts.org/projects/acpi/>
++	  <https://01.org/linux-acpi>
+ 
+ 	  Linux support for ACPI is based on Intel Corporation's ACPI
+ 	  Component Architecture (ACPI CA).  For more information on the
 
-> > > As an added benefit, with this change there's no need to add the
-> > > pm_runtime_autosuspend_used() function.
-> > 
-> > In my patch I am also checking if I should update the last busy mark,
-> > do you mean it should be okay to do this even if not needed?
-> 
-> If the use_autosuspend flag isn't set then the last_busy flag isn't 
-> used for anything, so updating it won't hurt.
-
-Agreed.
-
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
