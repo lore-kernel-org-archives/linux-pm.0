@@ -1,85 +1,41 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 0/6] Power Capping Framework and RAPL Driver
-Date: Fri, 11 Oct 2013 16:54:54 -0700
-Message-ID: <1381535700-2408-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:18957 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752129Ab3JKXzJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 11 Oct 2013 19:55:09 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v3 5/6] bitops: Introduce BIT_ULL
+Date: Fri, 11 Oct 2013 16:54:59 -0700
+Message-ID: <1381535700-2408-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1381535700-2408-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1381535700-2408-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Overview
-With the evolution of technologies, which enables power monitoring and limiting,
-more and more devices are able to constrain their power consumption under certain
-limits. There are several use cases for such technologies:
-- Power monitoring: Each device can report its power consumption.
-- Power Limiting: Setting power limits on the devices allows users to guard against
-platform reaching max system power level.
-- Maximize performance: While staying below a power limit, it allows devices to
-automatically adjust performance to meet demands
-- Dynamic control and re-budgeting: If each device can be constrained to some power,
-extra power can redistributed to other devices, which needs additional performance.
+Adding BIT(x) equivalent for unsigned long long type, BIT_ULL(x). Also
+added BIT_ULL_MASK and BIT_ULL_WORD.
 
-One such example of technologies is RAPL (Running Average Power Limit) mechanism
-available in the latest Intel processors. Intel is slowly adding many devices under
-RAPL control. Also there are other technologies available, for power capping various
-devices. Soon it is very likely that other vendors are also adding or considering
-such implementation.
+Suggested-by: Joe Perches <joe@perches.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/bitops.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Power Capping framework is an effort to have a uniform interface available to Linux
-drivers, which will enable
-- A uniform sysfs interface for all devices which can offer power capping
-- A common API for drivers, which will avoid code duplication and easy
-implementation of client drivers.
-
-Also submitting Intel RAPL driver using power capping framework.
-
-History:
-v3
-As suggested changed DEVICE_ATTR to DEVICE_ATTR_RO/RW
-Minor change in RAPL driver for TIME_WINDOW1_MASK to change to ULL
-
-v2
-As suggested, added BIT_ULL_MASK and BIT_ULL_WORD
-
-v1
-Incorporated changes suggested during RFC stage
-
-Jacob Pan (2):
-  x86/msr: add 64bit _on_cpu access functions
-  Introduce Intel RAPL power capping driver
-
-Srinivas Pandruvada (4):
-  PowerCap: Documentation
-  PowerCap: Add class driver
-  PowerCap: Added to drivers build
-  bitops: Introduce BIT_ULL
-
- Documentation/ABI/testing/sysfs-class-powercap |  152 +++
- Documentation/power/powercap/powercap.txt      |  236 ++++
- arch/x86/include/asm/msr.h                     |   22 +
- arch/x86/lib/msr-smp.c                         |   62 ++
- drivers/Kconfig                                |    2 +
- drivers/Makefile                               |    1 +
- drivers/powercap/Kconfig                       |   31 +
- drivers/powercap/Makefile                      |    2 +
- drivers/powercap/intel_rapl.c                  | 1395 ++++++++++++++++++++++++
- drivers/powercap/powercap_sys.c                |  683 ++++++++++++
- include/linux/bitops.h                         |    3 +
- include/linux/powercap.h                       |  325 ++++++
- 12 files changed, 2914 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-powercap
- create mode 100644 Documentation/power/powercap/powercap.txt
- create mode 100644 drivers/powercap/Kconfig
- create mode 100644 drivers/powercap/Makefile
- create mode 100644 drivers/powercap/intel_rapl.c
- create mode 100644 drivers/powercap/powercap_sys.c
- create mode 100644 include/linux/powercap.h
-
+diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+index a3b6b82..5a1c8b7 100644
+--- a/include/linux/bitops.h
++++ b/include/linux/bitops.h
+@@ -4,8 +4,11 @@
+ 
+ #ifdef	__KERNEL__
+ #define BIT(nr)			(1UL << (nr))
++#define BIT_ULL(nr)		(1ULL << (nr))
+ #define BIT_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
+ #define BIT_WORD(nr)		((nr) / BITS_PER_LONG)
++#define BIT_ULL_MASK(nr)	(1ULL << ((nr) % BITS_PER_LONG_LONG))
++#define BIT_ULL_WORD(nr)	((nr) / BITS_PER_LONG_LONG)
+ #define BITS_PER_BYTE		8
+ #define BITS_TO_LONGS(nr)	DIV_ROUND_UP(nr, BITS_PER_BYTE * sizeof(long))
+ #endif
 -- 
 1.8.3.1
-
