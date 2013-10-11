@@ -1,66 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 Resend 00/92] CPUFreq Cleanup Series: Part II
-Date: Fri, 11 Oct 2013 15:27:28 +0200
-Message-ID: <4259753.v7BpD2vKia@vostro.rjw.lan>
-References: <cover.1380783079.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / Runtime: Respect autosuspend when idle triggers suspend
+Date: Fri, 11 Oct 2013 15:31:27 +0200
+Message-ID: <1653858.2VDpYs11lr@vostro.rjw.lan>
+References: <1381483420-18864-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61255 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:58538 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757893Ab3JKNPp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 09:15:45 -0400
-In-Reply-To: <cover.1380783079.git.viresh.kumar@linaro.org>
+	with SMTP id S1756824Ab3JKNTp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 09:19:45 -0400
+In-Reply-To: <1381483420-18864-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Kevin Hilman <khilman@linaro.org>, Rob Landley <rob@landley.net>, Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org
 
-On Thursday, October 03, 2013 08:27:54 PM Viresh Kumar wrote:
-> Hi Rafael,
+On Friday, October 11, 2013 11:23:40 AM Ulf Hansson wrote:
+> For devices which don't have a .runtime_idle callback or if it returns
+> 0, rpm_idle will end up in triggering a call to rpm_suspend, thus
+> trying to carry out a runtime_suspend directly from runtime_idle.
 > 
-> As discussed earlier, Part I is now part of your linux-next branch and so
-> sending Part II for inclusion in bleeding-edge..
+> In the above situation we want to respect devices which has enabled
+> autosuspend, we therfore append the flag sent to rpm_suspend with
+> RPM_AUTO.
 > 
-> These are mostly oriented towards using generic .attr, .init(), .exit() and
-> .verify() and are so clubbed together.
+> Do note that driver's still needs to update the device last busy mark,
+> to control the delay for this circumstance.
+
+This last sentence should be there in the doc too.
+
+> Updated runtime PM documentation accordingly.
 > 
-> These doesn't conflict mostly with the other 11 cpufreq core cleanup patches
-> that are floating around:
-> http://www.spinics.net/lists/cpufreq/msg07920.html
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Rob Landley <rob@landley.net>
+> Cc: Chris Ball <cjb@laptop.org>
+> Cc: linux-mmc@vger.kernel.org
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  Documentation/power/runtime_pm.txt |    9 ++++-----
+>  drivers/base/power/runtime.c       |    6 ++++--
+>  2 files changed, 8 insertions(+), 7 deletions(-)
 > 
-> Only a minor conflict with following patch of that series for arm_big_little.c
-> file:
-> http://www.spinics.net/lists/cpufreq/msg07929.html
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 71d8fe4..80df87a 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -145,11 +145,10 @@ The action performed by the idle callback is totally dependent on the subsystem
+>  if the device can be suspended (i.e. if all of the conditions necessary for
+>  suspending the device are satisfied) and to queue up a suspend request for the
+>  device in that case.  If there is no idle callback, or if the callback returns
+> -0, then the PM core will attempt to carry out a runtime suspend of the device;
+> -in essence, it will call pm_runtime_suspend() directly.  To prevent this (for
+> -example, if the callback routine has started a delayed suspend), the routine
+> -should return a non-zero value.  Negative error return codes are ignored by the
+> -PM core.
+> +0, then the PM core will attempt to carry out a runtime suspend of the device,
+> +also respecting devices configured for autosuspend. In essence it means a call
+> +to pm_runtime_autosuspend(). To prevent this, the routine must return a non-zero
+> +value. Negative error return codes are ignored by the PM core.
+>  
+>  The helper functions provided by the PM core, described in Section 4, guarantee
+>  that the following constraints are met with respect to runtime PM callbacks for
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 268a350..4edb2a0 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -258,7 +258,9 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
+>   * Check if the device's runtime PM status allows it to be suspended.  If
+>   * another idle notification has been started earlier, return immediately.  If
+>   * the RPM_ASYNC flag is set then queue an idle-notification request; otherwise
+> - * run the ->runtime_idle() callback directly.
+> + * run the ->runtime_idle() callback directly. If the ->runtime_idle callback
+> + * does'nt exist or if it returns 0, run rpm_suspend with RPM_AUTO flag to
+> + * respect drivers using autosuspend.
+>   *
+>   * This function must be called under dev->power.lock with interrupts disabled.
+>   */
+> @@ -331,7 +333,7 @@ static int rpm_idle(struct device *dev, int rpmflags)
+>  
+>   out:
+>  	trace_rpm_return_int(dev, _THIS_IP_, retval);
+> -	return retval ? retval : rpm_suspend(dev, rpmflags);
+> +	return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
+>  }
+>  
+>  /**
 > 
-> You can resolve it easily, pretty straight forward.
-> 
-> These are based of your linux-next branch:
-> ba93c78 Merge branch 'pm-cpufreq-next' into linux-next
-
-So I've just added this to bleeding-edge, but I have a couple complaints.
-
-First off, this is three patch sets in one.  The first part is the generic
-.attr(), exit() and .verify() one, the second part is the duplicated
-initialization and the third one is about cpufreq_generic_init().  They
-really should have been posted and reviewed separately.
-
-And while I'm basically OK with the first and the third part, I'm concerned
-about the second one, because it has potential to introduce some subtle
-initialization issues (initializing something twice is not a bug per se,
-although it is inefficient, but failing to initialize that or initializing it
-with an incorrect value *is* a bug).
-
-Second, can you please make your own patch sets apply on top of each other
-next time?
-
-Besides, I'm not going to apply any patchset with more than 40 patches in it
-in one go any more unless I'm seriously convinced that this is the only way
-to go.
-
-Thanks!
-
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
