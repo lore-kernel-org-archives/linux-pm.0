@@ -1,59 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: exynos: Show a list of available frequencies
-Date: Fri, 11 Oct 2013 19:57:28 +0530
-Message-ID: <CAKohpok6Pbq-ykeWKEfUo3=eC8bzkAUo_FTPN2zMMu44R-vuOA@mail.gmail.com>
-References: <00bd01cec641$b4dbf150$1e93d3f0$%lee@samsung.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM / Runtime: Respect autosuspend when idle triggers
+ suspend
+Date: Fri, 11 Oct 2013 10:28:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1310111027170.1052-100000@iolanthe.rowland.org>
+References: <1381483420-18864-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f178.google.com ([209.85.216.178]:35103 "EHLO
-	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753834Ab3JKO13 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 10:27:29 -0400
-Received: by mail-qc0-f178.google.com with SMTP id r5so2959665qcx.23
-        for <linux-pm@vger.kernel.org>; Fri, 11 Oct 2013 07:27:29 -0700 (PDT)
-In-Reply-To: <00bd01cec641$b4dbf150$1e93d3f0$%lee@samsung.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:47540 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755594Ab3JKO2B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 10:28:01 -0400
+In-Reply-To: <1381483420-18864-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jungseok Lee <jays.lee@samsung.com>
-Cc: rjw@sisk.pl, amit.daniel@samsung.com, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kgene.kim@samsung.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>, Kevin Hilman <khilman@linaro.org>, Rob Landley <rob@landley.net>, Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org
 
-On 11/10/2013, Jungseok Lee <jays.lee@samsung.com> wrote:
-> This patch adds freq_attr to show a list of exynos5440 scaling
-> available frequencies through sysfs. Common exynos driver already
-> supports this attribute.
->
-> Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
-> ---
->  drivers/cpufreq/exynos5440-cpufreq.c |    6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c
-> b/drivers/cpufreq/exynos5440-cpufreq.c
-> index 24df155..2cc4797 100644
-> --- a/drivers/cpufreq/exynos5440-cpufreq.c
-> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> @@ -345,6 +345,11 @@ static int exynos_cpufreq_cpu_exit(struct
-> cpufreq_policy *policy)
->  	return 0;
->  }
->
-> +static struct freq_attr *exynos_cpufreq_attr[] = {
-> +	&cpufreq_freq_attr_scaling_available_freqs,
-> +	NULL,
-> +};
-> +
->  static struct cpufreq_driver exynos_driver = {
->  	.flags		= CPUFREQ_STICKY,
->  	.verify		= exynos_verify_speed,
-> @@ -353,6 +358,7 @@ static struct cpufreq_driver exynos_driver = {
->  	.init		= exynos_cpufreq_cpu_init,
->  	.exit		= exynos_cpufreq_cpu_exit,
->  	.name		= CPUFREQ_NAME,
-> +	.attr		= exynos_cpufreq_attr,
->  };
->
->  static const struct of_device_id exynos_cpufreq_match[] = {
+On Fri, 11 Oct 2013, Ulf Hansson wrote:
 
-Use cpufreq_generic_attr instead from rafael's bleeding-edge
-branch
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -258,7 +258,9 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
+>   * Check if the device's runtime PM status allows it to be suspended.  If
+>   * another idle notification has been started earlier, return immediately.  If
+>   * the RPM_ASYNC flag is set then queue an idle-notification request; otherwise
+> - * run the ->runtime_idle() callback directly.
+> + * run the ->runtime_idle() callback directly. If the ->runtime_idle callback
+> + * does'nt exist or if it returns 0, run rpm_suspend with RPM_AUTO flag to
+
+s/does'nt/doesn't/
+
+Alan Stern
+
