@@ -1,47 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/2] cpufreq: exynos: Fixes for v3.12
-Date: Fri, 11 Oct 2013 14:10:53 +0200
-Message-ID: <2822925.9aRTDAMrLp@vostro.rjw.lan>
-References: <1380108138-30402-1-git-send-email-l.majewski@samsung.com> <1381320523-28183-1-git-send-email-l.majewski@samsung.com> <1457107.oQjJi4YKRz@vostro.rjw.lan>
+Subject: Re: [PATCH V2 Resend 37/92] cpufreq: acpi: don't initialize part of policy that is set by core too
+Date: Fri, 11 Oct 2013 14:51:05 +0200
+Message-ID: <1531860.snE8AY6g9s@vostro.rjw.lan>
+References: <cover.1380783079.git.viresh.kumar@linaro.org> <8fa3d4a49724fc9a298c0b2f0b266b37d4a13310.1380783079.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64316 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755764Ab3JKL7J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 07:59:09 -0400
-In-Reply-To: <1457107.oQjJi4YKRz@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <8fa3d4a49724fc9a298c0b2f0b266b37d4a13310.1380783079.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Yadwinder Singh Brar <yadi.brar01@gmail.com>, Tomasz Figa <t.figa@samsung.com>
 
-On Friday, October 11, 2013 01:22:57 PM Rafael J. Wysocki wrote:
-> On Wednesday, October 09, 2013 02:08:41 PM Lukasz Majewski wrote:
-> > Attached commits provide cpufreq regression fixes for Trats and Trats2
-> > Exynos4 boards.
-> > Since v3.12 Exynos4 uses common clock framework for clock manipulation.
-> > Those patches restore correct output for cpuinfo_cur_freq [1] sysfs
-> > attribute.
-> > Without them, the [1] provides default frequency (800 MHz) set at driver
-> > initialization.
-> > 
-> > 
-> > Lukasz Majewski (2):
-> >   cpufreq: exynos4x12: Use the common clock framework to set APLL clock
-> >     rate
-> >   cpufreq: exynos4210: Use the common clock framework to set APLL clock
-> >     rate
-> > 
-> >  drivers/cpufreq/exynos4210-cpufreq.c |   67 ++++-----------------------------
-> >  drivers/cpufreq/exynos4x12-cpufreq.c |   69 ++++------------------------------
-> >  2 files changed, 16 insertions(+), 120 deletions(-)
+On Thursday, October 03, 2013 08:28:31 PM Viresh Kumar wrote:
+> Many common initializations of struct policy are moved to core now and hence
+> this driver doesn't need to do it. This patch removes such code.
 > 
-> Can you please resend [1/2], it got lost somewhere (at least I can't see it
-> now)?
+> Most recent of those changes is to call ->get() in the core after calling
+> ->init().
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 94a5a1d..a8dac7b 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -842,7 +842,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  		break;
+>  	case ACPI_ADR_SPACE_FIXED_HARDWARE:
+>  		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
+> -		policy->cur = get_cur_freq_on_cpu(cpu);
+>  		break;
+>  	default:
+>  		break;
 
-Scratch this, it's there in patchwork.
+I'm wondering what happens if space_id is ACPI_ADR_SPACE_SYSTEM_IO?  I suppose
+that the core will set policy->cur first and then it will be overwritten here?
 
 -- 
 I speak only for myself.
