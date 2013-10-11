@@ -1,62 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 Resend 37/92] cpufreq: acpi: don't initialize part of policy that is set by core too
-Date: Fri, 11 Oct 2013 23:16:45 +0200
-Message-ID: <81290019.MGQtGSb5X1@vostro.rjw.lan>
-References: <cover.1380783079.git.viresh.kumar@linaro.org> <1531860.snE8AY6g9s@vostro.rjw.lan> <CAKohpokjEZKhkFAWo7NPEaz-cK_zC3VCzdv8HT3Yk5kUWxa=Lg@mail.gmail.com>
+Subject: Re: [PATCH V2 Resend 00/92] CPUFreq Cleanup Series: Part II
+Date: Sat, 12 Oct 2013 00:17:30 +0200
+Message-ID: <4804152.VMEEXS0eqL@vostro.rjw.lan>
+References: <cover.1380783079.git.viresh.kumar@linaro.org> <4259753.v7BpD2vKia@vostro.rjw.lan> <CAKohponVmnQr-QuPAW-aHyVJYpWX9ODdF5x-RbTdtjrVjn807A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokjEZKhkFAWo7NPEaz-cK_zC3VCzdv8HT3Yk5kUWxa=Lg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53332 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754792Ab3JKWFp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 18:05:45 -0400
+In-Reply-To: <CAKohponVmnQr-QuPAW-aHyVJYpWX9ODdF5x-RbTdtjrVjn807A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday, October 11, 2013 08:07:37 PM Viresh Kumar wrote:
+On Friday, October 11, 2013 07:27:44 PM Viresh Kumar wrote:
 > On 11/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Thursday, October 03, 2013 08:28:31 PM Viresh Kumar wrote:
-> >> Many common initializations of struct policy are moved to core now and
-> >> hence
-> >> this driver doesn't need to do it. This patch removes such code.
-> >>
-> >> Most recent of those changes is to call ->get() in the core after calling
-> >> ->init().
-> >>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >> ---
-> >>  drivers/cpufreq/acpi-cpufreq.c | 1 -
-> >>  1 file changed, 1 deletion(-)
-> >>
-> >> diff --git a/drivers/cpufreq/acpi-cpufreq.c
-> >> b/drivers/cpufreq/acpi-cpufreq.c
-> >> index 94a5a1d..a8dac7b 100644
-> >> --- a/drivers/cpufreq/acpi-cpufreq.c
-> >> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> >> @@ -842,7 +842,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy
-> >> *policy)
-> >>  		break;
-> >>  	case ACPI_ADR_SPACE_FIXED_HARDWARE:
-> >>  		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
-> >> -		policy->cur = get_cur_freq_on_cpu(cpu);
-> >>  		break;
-> >>  	default:
-> >>  		break;
-> >
-> > I'm wondering what happens if space_id is ACPI_ADR_SPACE_SYSTEM_IO?  I
-> > suppose
-> > that the core will set policy->cur first and then it will be overwritten
-> > here?
+> > So I've just added this to bleeding-edge, but I have a couple complaints.
 > 
-> No. First ->init() is called and then core sets policy->cur. And it sets
-> it only if there is a valid ->get() available.. Which wouldn't be available
-> in case of ACPI_ADR_SPACE_SYSTEM_IO..
+> Thanks..
+> 
+> > First off, this is three patch sets in one.  The first part is the generic
+> > .attr(), exit() and .verify() one, the second part is the duplicated
+> > initialization and the third one is about cpufreq_generic_init().  They
+> > really should have been posted and reviewed separately.
+> 
+> They were posted and reviewed separately earlier.. Only this time
+> I have merged them together for applying..
+> 
+> > And while I'm basically OK with the first and the third part, I'm concerned
+> > about the second one, because it has potential to introduce some subtle
+> > initialization issues (initializing something twice is not a bug per se,
+> > although it is inefficient, but failing to initialize that or initializing
+> > it
+> > with an incorrect value *is* a bug).
+> 
+> I agree.. Lets see if it breaks anything... I will get it fixed as soon as
+> possible.. (BTW, there was a fixup for the last series that you missed
+> to apply: fixup! cpufreq: sa11x0: Expose frequency table)
 
-OK
+Any links?
 
-Care to send a patch adding a comment under the ACPI_ADR_SPACE_SYSTEM_IO case
-explaining that policy->cur it sets won't be clobbered by the core because etc.?
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
