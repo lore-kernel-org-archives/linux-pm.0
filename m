@@ -1,46 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 Resend 00/92] CPUFreq Cleanup Series: Part II
-Date: Sat, 12 Oct 2013 00:17:30 +0200
-Message-ID: <4804152.VMEEXS0eqL@vostro.rjw.lan>
-References: <cover.1380783079.git.viresh.kumar@linaro.org> <4259753.v7BpD2vKia@vostro.rjw.lan> <CAKohponVmnQr-QuPAW-aHyVJYpWX9ODdF5x-RbTdtjrVjn807A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v3 0/6] Power Capping Framework and RAPL Driver
+Date: Fri, 11 Oct 2013 16:54:54 -0700
+Message-ID: <1381535700-2408-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53332 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754792Ab3JKWFp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 18:05:45 -0400
-In-Reply-To: <CAKohponVmnQr-QuPAW-aHyVJYpWX9ODdF5x-RbTdtjrVjn807A@mail.gmail.com>
+Received: from mga02.intel.com ([134.134.136.20]:18957 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752129Ab3JKXzJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Oct 2013 19:55:09 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, len.brown@intel.com, rjw@sisk.pl, arjan@linux.intel.com, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Friday, October 11, 2013 07:27:44 PM Viresh Kumar wrote:
-> On 11/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > So I've just added this to bleeding-edge, but I have a couple complaints.
-> 
-> Thanks..
-> 
-> > First off, this is three patch sets in one.  The first part is the generic
-> > .attr(), exit() and .verify() one, the second part is the duplicated
-> > initialization and the third one is about cpufreq_generic_init().  They
-> > really should have been posted and reviewed separately.
-> 
-> They were posted and reviewed separately earlier.. Only this time
-> I have merged them together for applying..
-> 
-> > And while I'm basically OK with the first and the third part, I'm concerned
-> > about the second one, because it has potential to introduce some subtle
-> > initialization issues (initializing something twice is not a bug per se,
-> > although it is inefficient, but failing to initialize that or initializing
-> > it
-> > with an incorrect value *is* a bug).
-> 
-> I agree.. Lets see if it breaks anything... I will get it fixed as soon as
-> possible.. (BTW, there was a fixup for the last series that you missed
-> to apply: fixup! cpufreq: sa11x0: Expose frequency table)
+Overview
+With the evolution of technologies, which enables power monitoring and limiting,
+more and more devices are able to constrain their power consumption under certain
+limits. There are several use cases for such technologies:
+- Power monitoring: Each device can report its power consumption.
+- Power Limiting: Setting power limits on the devices allows users to guard against
+platform reaching max system power level.
+- Maximize performance: While staying below a power limit, it allows devices to
+automatically adjust performance to meet demands
+- Dynamic control and re-budgeting: If each device can be constrained to some power,
+extra power can redistributed to other devices, which needs additional performance.
 
-Any links?
+One such example of technologies is RAPL (Running Average Power Limit) mechanism
+available in the latest Intel processors. Intel is slowly adding many devices under
+RAPL control. Also there are other technologies available, for power capping various
+devices. Soon it is very likely that other vendors are also adding or considering
+such implementation.
+
+Power Capping framework is an effort to have a uniform interface available to Linux
+drivers, which will enable
+- A uniform sysfs interface for all devices which can offer power capping
+- A common API for drivers, which will avoid code duplication and easy
+implementation of client drivers.
+
+Also submitting Intel RAPL driver using power capping framework.
+
+History:
+v3
+As suggested changed DEVICE_ATTR to DEVICE_ATTR_RO/RW
+Minor change in RAPL driver for TIME_WINDOW1_MASK to change to ULL
+
+v2
+As suggested, added BIT_ULL_MASK and BIT_ULL_WORD
+
+v1
+Incorporated changes suggested during RFC stage
+
+Jacob Pan (2):
+  x86/msr: add 64bit _on_cpu access functions
+  Introduce Intel RAPL power capping driver
+
+Srinivas Pandruvada (4):
+  PowerCap: Documentation
+  PowerCap: Add class driver
+  PowerCap: Added to drivers build
+  bitops: Introduce BIT_ULL
+
+ Documentation/ABI/testing/sysfs-class-powercap |  152 +++
+ Documentation/power/powercap/powercap.txt      |  236 ++++
+ arch/x86/include/asm/msr.h                     |   22 +
+ arch/x86/lib/msr-smp.c                         |   62 ++
+ drivers/Kconfig                                |    2 +
+ drivers/Makefile                               |    1 +
+ drivers/powercap/Kconfig                       |   31 +
+ drivers/powercap/Makefile                      |    2 +
+ drivers/powercap/intel_rapl.c                  | 1395 ++++++++++++++++++++++++
+ drivers/powercap/powercap_sys.c                |  683 ++++++++++++
+ include/linux/bitops.h                         |    3 +
+ include/linux/powercap.h                       |  325 ++++++
+ 12 files changed, 2914 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-powercap
+ create mode 100644 Documentation/power/powercap/powercap.txt
+ create mode 100644 drivers/powercap/Kconfig
+ create mode 100644 drivers/powercap/Makefile
+ create mode 100644 drivers/powercap/intel_rapl.c
+ create mode 100644 drivers/powercap/powercap_sys.c
+ create mode 100644 include/linux/powercap.h
+
+-- 
+1.8.3.1
 
