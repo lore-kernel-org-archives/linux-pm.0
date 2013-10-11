@@ -1,35 +1,54 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM / Runtime: Respect autosuspend when idle triggers
- suspend
-Date: Fri, 11 Oct 2013 10:28:00 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1310111027170.1052-100000@iolanthe.rowland.org>
-References: <1381483420-18864-1-git-send-email-ulf.hansson@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 Resend 37/92] cpufreq: acpi: don't initialize part of
+ policy that is set by core too
+Date: Fri, 11 Oct 2013 20:07:37 +0530
+Message-ID: <CAKohpokjEZKhkFAWo7NPEaz-cK_zC3VCzdv8HT3Yk5kUWxa=Lg@mail.gmail.com>
+References: <cover.1380783079.git.viresh.kumar@linaro.org>
+	<8fa3d4a49724fc9a298c0b2f0b266b37d4a13310.1380783079.git.viresh.kumar@linaro.org>
+	<1531860.snE8AY6g9s@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:47540 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755594Ab3JKO2B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Oct 2013 10:28:01 -0400
-In-Reply-To: <1381483420-18864-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1531860.snE8AY6g9s@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>, Kevin Hilman <khilman@linaro.org>, Rob Landley <rob@landley.net>, Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org
 
-On Fri, 11 Oct 2013, Ulf Hansson wrote:
+On 11/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, October 03, 2013 08:28:31 PM Viresh Kumar wrote:
+>> Many common initializations of struct policy are moved to core now and
+>> hence
+>> this driver doesn't need to do it. This patch removes such code.
+>>
+>> Most recent of those changes is to call ->get() in the core after calling
+>> ->init().
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/cpufreq/acpi-cpufreq.c | 1 -
+>>  1 file changed, 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/acpi-cpufreq.c
+>> b/drivers/cpufreq/acpi-cpufreq.c
+>> index 94a5a1d..a8dac7b 100644
+>> --- a/drivers/cpufreq/acpi-cpufreq.c
+>> +++ b/drivers/cpufreq/acpi-cpufreq.c
+>> @@ -842,7 +842,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy
+>> *policy)
+>>  		break;
+>>  	case ACPI_ADR_SPACE_FIXED_HARDWARE:
+>>  		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
+>> -		policy->cur = get_cur_freq_on_cpu(cpu);
+>>  		break;
+>>  	default:
+>>  		break;
+>
+> I'm wondering what happens if space_id is ACPI_ADR_SPACE_SYSTEM_IO?  I
+> suppose
+> that the core will set policy->cur first and then it will be overwritten
+> here?
 
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -258,7 +258,9 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
->   * Check if the device's runtime PM status allows it to be suspended.  If
->   * another idle notification has been started earlier, return immediately.  If
->   * the RPM_ASYNC flag is set then queue an idle-notification request; otherwise
-> - * run the ->runtime_idle() callback directly.
-> + * run the ->runtime_idle() callback directly. If the ->runtime_idle callback
-> + * does'nt exist or if it returns 0, run rpm_suspend with RPM_AUTO flag to
-
-s/does'nt/doesn't/
-
-Alan Stern
-
+No. First ->init() is called and then core sets policy->cur. And it sets
+it only if there is a valid ->get() available.. Which wouldn't be available
+in case of ACPI_ADR_SPACE_SYSTEM_IO..
