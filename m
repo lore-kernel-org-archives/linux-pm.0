@@ -1,101 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
-Date: Sat, 12 Oct 2013 22:41:08 +0200
-Message-ID: <1402816.XYNGOIhCWR@vostro.rjw.lan>
-References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org> <1922770.iubCDBg3Zg@vostro.rjw.lan> <CAKohpokJkcsNN_vnQOuu2=arsiQCGPaCxpRL_TRAQYFg+LmR+w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [GIT PULL] ACPI and power management fixes for v3.12-rc5
+Date: Sat, 12 Oct 2013 23:09:03 +0200
+Message-ID: <2749952.3MjEW76cA8@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokJkcsNN_vnQOuu2=arsiQCGPaCxpRL_TRAQYFg+LmR+w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57510 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753744Ab3JLU5R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Oct 2013 16:57:17 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Saturday, October 12, 2013 08:58:10 PM Viresh Kumar wrote:
-> On 12/10/2013, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Well, please merge it with the existing comment and use the usual format
-> > for comments that are longer than two lines.
-> 
-> I thought these are separate comments and so keeping them separate
-> might be better,
+Hi Linus,
 
-No, comments that go like
+Please pull from the git repository at
 
-	/* Comment 1. */
-	/* Comment 2. */
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.12-rc5
 
-do not even *look* separate.
+to receive ACPI and power management fixes for v3.12-rc5 with
+top-most commit 2c5bfce855ead529e2ea6f33757aa26a651d4460
 
-In general you can do something like
+  Merge branch 'acpi-pci-hotplug'
 
-	/*
-	 * Comment 1.
-	 *
-	 * Comment 2.
-	 */
+on top of commit d0e639c9e06d44e713170031fe05fb60ebe680af
 
-in such cases, but again in this particular case the comments aren't even
-logically separate in my opinion. ->
+  Linux 3.12-rc4
 
-> so that this one doesn't get deleted in case somebody
-> is removing the other one.. and vice versa..
-> 
-> Anyway its fixed in attached commit now :)
-> 
-> commit ecb9ef81b50eb5e8559f7d132ef46803c8272091
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Sat Oct 12 07:00:01 2013 +0530
-> 
->     cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
-> 
->     policy->cur is now set by cpufreq core when cpufreq_driver->get()
-> is defined and
->     so drivers aren't required to set it. When space_id is
-> ACPI_ADR_SPACE_SYSTEM_IO
->     for acpi cpufreq driver it doesn't set ->get to a valid function
-> pointer and so
->     policy->cur is required to be set by driver.
-> 
->     This is already followed in acpi-cpufreq driver. This patch adds a comment
->     describing why we need to set policy->cur from driver.
-> 
->     Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index a8dac7b..d2df543 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -837,7 +837,12 @@ static int acpi_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
-> 
->         switch (perf->control_register.space_id) {
->         case ACPI_ADR_SPACE_SYSTEM_IO:
-> -               /* Current speed is unknown and not detectable by IO port */
-> +               /*
-> +                * Current speed is unknown and not detectable by IO port.
-> +                * policy->cur wouldn't be set by core as cpufreq_driver->get()
-> +                * is NULL for this space_id and so we need to set policy->cur
-> +                * here.
-> +                */
+These fix two recent bugs in ACPIPHP (ACPI-based PCI hotplug) and
+update a bunch of web links and e-mail addresses in MAINTAINERS, docs
+and Kconfig that either are stale or will expire soon.
 
--> What about this:
+Specifics:
 
-	/*
-	 * The core will not set policy->cur, because cpufreq_driver->get is NULL,
-	 * so we need to set it here.  However, we have to guess it, because the
-	 * current speed is unknown and not detectable via IO ports.
-	 */
+ - The WARN_ON() in acpiphp_enumerate_slots() triggers as a false
+   positive in some cases, so drop it.
 
->                 policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
->                 break;
->         case ACPI_ADR_SPACE_FIXED_HARDWARE:
+ - Add a missing pci_dev_put() to an error code path in
+   acpiphp_enumerate_slots().
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+ - Replace my old e-mail address that's going to expire with a new one.
+
+ - Update ACPI web links and git tree information in MAINTAINERS.
+
+ - Update links to the Linux-ACPI project's page in MAINTAINERS.
+
+ - Update some stale links and e-mail addresses under Documentation
+   and in the ACPI Kconfig file.
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (6):
+      MAINTAINERS / Documentation: Update Rafael's e-mail address
+      MAINTAINERS / ACPI: Update links and git tree information
+      MAINTAINERS / ACPI: Update links to the Linux-ACPI project web page
+      ACPI / PM / Documentation: Replace outdated project links and addresses
+      ACPI / hotplug / PCI: Fix error code path in acpiphp_enumerate_slots()
+      ACPI / hotplug / PCI: Drop WARN_ON() from acpiphp_enumerate_slots()
+
+---------------
+
+ Documentation/ABI/stable/sysfs-bus-usb        |    8 +++----
+ Documentation/ABI/testing/sysfs-devices-power |   32 ++++++++++++-------------
+ Documentation/ABI/testing/sysfs-power         |   22 ++++++++---------
+ Documentation/acpi/dsdt-override.txt          |    2 +-
+ MAINTAINERS                                   |   26 ++++++++++----------
+ drivers/acpi/Kconfig                          |    2 +-
+ drivers/pci/hotplug/acpiphp_glue.c            |    8 ++++---
+ 7 files changed, 51 insertions(+), 49 deletions(-)
+
