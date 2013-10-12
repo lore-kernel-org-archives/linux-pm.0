@@ -1,53 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
-Date: Sat, 12 Oct 2013 15:38:15 +0200
-Message-ID: <1922770.iubCDBg3Zg@vostro.rjw.lan>
-References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 Resend 00/92] CPUFreq Cleanup Series: Part II
+Date: Sat, 12 Oct 2013 15:46:09 +0200
+Message-ID: <2275177.Q2M8STIc5R@vostro.rjw.lan>
+References: <cover.1380783079.git.viresh.kumar@linaro.org> <4804152.VMEEXS0eqL@vostro.rjw.lan> <CAKohpokPUFGsecbhTQV++Efw1SCNcvC_drhD5=nQUmbVJEhi4g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org>
+In-Reply-To: <CAKohpokPUFGsecbhTQV++Efw1SCNcvC_drhD5=nQUmbVJEhi4g@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, October 12, 2013 07:06:03 AM Viresh Kumar wrote:
-> policy->cur is now set by cpufreq core when cpufreq_driver->get() is defined and
-> so drivers aren't required to set it. When space_id is ACPI_ADR_SPACE_SYSTEM_IO
-> for acpi cpufreq driver it doesn't set ->get to a valid function pointer and so
-> policy->cur is required to be set by driver.
+On Saturday, October 12, 2013 06:55:59 AM Viresh Kumar wrote:
+> On 12/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Friday, October 11, 2013 07:27:44 PM Viresh Kumar wrote:
+> >> On 11/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > So I've just added this to bleeding-edge, but I have a couple
+> >> > complaints.
+> >>
+> >> Thanks..
+> >>
+> >> > First off, this is three patch sets in one.  The first part is the
+> >> > generic
+> >> > .attr(), exit() and .verify() one, the second part is the duplicated
+> >> > initialization and the third one is about cpufreq_generic_init().  They
+> >> > really should have been posted and reviewed separately.
+> >>
+> >> They were posted and reviewed separately earlier.. Only this time
+> >> I have merged them together for applying..
+> >>
+> >> > And while I'm basically OK with the first and the third part, I'm
+> >> > concerned
+> >> > about the second one, because it has potential to introduce some subtle
+> >> > initialization issues (initializing something twice is not a bug per
+> >> > se,
+> >> > although it is inefficient, but failing to initialize that or
+> >> > initializing
+> >> > it
+> >> > with an incorrect value *is* a bug).
+> >>
+> >> I agree.. Lets see if it breaks anything... I will get it fixed as soon
+> >> as
+> >> possible.. (BTW, there was a fixup for the last series that you missed
+> >> to apply: fixup! cpufreq: sa11x0: Expose frequency table)
+> >
+> > Any links?
 > 
-> This is already followed in acpi-cpufreq driver. This patch adds a comment
-> describing why we need to set policy->cur from driver.
-> 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> This change was requested by Rafael here:
-> http://www.spinics.net/lists/linux-acpi/msg46748.html
-> 
->  drivers/cpufreq/acpi-cpufreq.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index a8dac7b..8ecd74e 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -838,6 +838,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	switch (perf->control_register.space_id) {
->  	case ACPI_ADR_SPACE_SYSTEM_IO:
->  		/* Current speed is unknown and not detectable by IO port */
-> +		/* ->cur wouldn't be set by core as ->get() is NULL */
+> https://lkml.org/lkml/2013/10/4/7
 
-Well, please merge it with the existing comment and use the usual format for
-comments that are longer than two lines.
+OK, so which commit introduced the breakage?
 
->  		policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
->  		break;
->  	case ACPI_ADR_SPACE_FIXED_HARDWARE:
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
