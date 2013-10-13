@@ -1,77 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [GIT PULL] ACPI and power management fixes for v3.12-rc5
-Date: Sat, 12 Oct 2013 23:09:03 +0200
-Message-ID: <2749952.3MjEW76cA8@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
+Date: Sun, 13 Oct 2013 06:07:32 +0530
+Message-ID: <CAKohpo=wHN1wTsh-UfYMO-XBDtj0=SFuxjTPqw9aZAG6iRJ0mQ@mail.gmail.com>
+References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org>
+	<1922770.iubCDBg3Zg@vostro.rjw.lan>
+	<CAKohpokJkcsNN_vnQOuu2=arsiQCGPaCxpRL_TRAQYFg+LmR+w@mail.gmail.com>
+	<1402816.XYNGOIhCWR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/mixed; boundary=001a11c221089b48ac04e8948ebd
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57510 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753744Ab3JLU5R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Oct 2013 16:57:17 -0400
+Received: from mail-qa0-f47.google.com ([209.85.216.47]:43463 "EHLO
+	mail-qa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752922Ab3JMAhc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Oct 2013 20:37:32 -0400
+Received: by mail-qa0-f47.google.com with SMTP id k15so1442840qaq.20
+        for <linux-pm@vger.kernel.org>; Sat, 12 Oct 2013 17:37:32 -0700 (PDT)
+In-Reply-To: <1402816.XYNGOIhCWR@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Linus,
+--001a11c221089b48ac04e8948ebd
+Content-Type: text/plain; charset=ISO-8859-1
 
-Please pull from the git repository at
+On 13/10/2013, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> -> What about this:
+>
+> 	/*
+> 	 * The core will not set policy->cur, because cpufreq_driver->get is NULL,
+> 	 * so we need to set it here.  However, we have to guess it, because the
+> 	 * current speed is unknown and not detectable via IO ports.
+> 	 */
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.12-rc5
+Far better. Attached again. Thanks.
 
-to receive ACPI and power management fixes for v3.12-rc5 with
-top-most commit 2c5bfce855ead529e2ea6f33757aa26a651d4460
+--001a11c221089b48ac04e8948ebd
+Content-Type: text/x-patch; charset=US-ASCII;
+	name="0001-cpufreq-acpi-Add-comment-under-ACPI_ADR_SPACE_SYSTEM.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-acpi-Add-comment-under-ACPI_ADR_SPACE_SYSTEM.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: file0
 
-  Merge branch 'acpi-pci-hotplug'
-
-on top of commit d0e639c9e06d44e713170031fe05fb60ebe680af
-
-  Linux 3.12-rc4
-
-These fix two recent bugs in ACPIPHP (ACPI-based PCI hotplug) and
-update a bunch of web links and e-mail addresses in MAINTAINERS, docs
-and Kconfig that either are stale or will expire soon.
-
-Specifics:
-
- - The WARN_ON() in acpiphp_enumerate_slots() triggers as a false
-   positive in some cases, so drop it.
-
- - Add a missing pci_dev_put() to an error code path in
-   acpiphp_enumerate_slots().
-
- - Replace my old e-mail address that's going to expire with a new one.
-
- - Update ACPI web links and git tree information in MAINTAINERS.
-
- - Update links to the Linux-ACPI project's page in MAINTAINERS.
-
- - Update some stale links and e-mail addresses under Documentation
-   and in the ACPI Kconfig file.
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (6):
-      MAINTAINERS / Documentation: Update Rafael's e-mail address
-      MAINTAINERS / ACPI: Update links and git tree information
-      MAINTAINERS / ACPI: Update links to the Linux-ACPI project web page
-      ACPI / PM / Documentation: Replace outdated project links and addresses
-      ACPI / hotplug / PCI: Fix error code path in acpiphp_enumerate_slots()
-      ACPI / hotplug / PCI: Drop WARN_ON() from acpiphp_enumerate_slots()
-
----------------
-
- Documentation/ABI/stable/sysfs-bus-usb        |    8 +++----
- Documentation/ABI/testing/sysfs-devices-power |   32 ++++++++++++-------------
- Documentation/ABI/testing/sysfs-power         |   22 ++++++++---------
- Documentation/acpi/dsdt-override.txt          |    2 +-
- MAINTAINERS                                   |   26 ++++++++++----------
- drivers/acpi/Kconfig                          |    2 +-
- drivers/pci/hotplug/acpiphp_glue.c            |    8 ++++---
- 7 files changed, 51 insertions(+), 49 deletions(-)
-
+RnJvbSAwNTViNWQ3M2JlZjA4OThkNDc3MTg4MzcyYjIxNWNkMmVjODJmZTgxIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MDU1YjVkNzNiZWYwODk4ZDQ3NzE4ODM3MmIyMTVj
+ZDJlYzgyZmU4MS4xMzgxNjI0NjAyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCAxMiBPY3Qg
+MjAxMyAwNzowMDowMSArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFjcGk6IEFkZCBj
+b21tZW50IHVuZGVyIEFDUElfQURSX1NQQUNFX1NZU1RFTV9JTwogY2FzZQoKcG9saWN5LT5jdXIg
+aXMgbm93IHNldCBieSBjcHVmcmVxIGNvcmUgd2hlbiBjcHVmcmVxX2RyaXZlci0+Z2V0KCkgaXMg
+ZGVmaW5lZCBhbmQKc28gZHJpdmVycyBhcmVuJ3QgcmVxdWlyZWQgdG8gc2V0IGl0LiBXaGVuIHNw
+YWNlX2lkIGlzIEFDUElfQURSX1NQQUNFX1NZU1RFTV9JTwpmb3IgYWNwaSBjcHVmcmVxIGRyaXZl
+ciBpdCBkb2Vzbid0IHNldCAtPmdldCB0byBhIHZhbGlkIGZ1bmN0aW9uIHBvaW50ZXIgYW5kIHNv
+CnBvbGljeS0+Y3VyIGlzIHJlcXVpcmVkIHRvIGJlIHNldCBieSBkcml2ZXIuCgpUaGlzIGlzIGFs
+cmVhZHkgZm9sbG93ZWQgaW4gYWNwaS1jcHVmcmVxIGRyaXZlci4gVGhpcyBwYXRjaCBhZGRzIGEg
+Y29tbWVudApkZXNjcmliaW5nIHdoeSB3ZSBuZWVkIHRvIHNldCBwb2xpY3ktPmN1ciBmcm9tIGRy
+aXZlci4KClN1Z2dlc3RlZC1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lA
+aW50ZWwuY29tPgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5h
+cm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYyB8IDcgKysrKysrLQog
+MSBmaWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9hY3Bp
+LWNwdWZyZXEuYwppbmRleCBhOGRhYzdiLi5hMTcxN2Q3IDEwMDY0NAotLS0gYS9kcml2ZXJzL2Nw
+dWZyZXEvYWNwaS1jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5j
+CkBAIC04MzcsNyArODM3LDEyIEBAIHN0YXRpYyBpbnQgYWNwaV9jcHVmcmVxX2NwdV9pbml0KHN0
+cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogCiAJc3dpdGNoIChwZXJmLT5jb250cm9sX3Jl
+Z2lzdGVyLnNwYWNlX2lkKSB7CiAJY2FzZSBBQ1BJX0FEUl9TUEFDRV9TWVNURU1fSU86Ci0JCS8q
+IEN1cnJlbnQgc3BlZWQgaXMgdW5rbm93biBhbmQgbm90IGRldGVjdGFibGUgYnkgSU8gcG9ydCAq
+LworCQkvKgorCQkgKiBUaGUgY29yZSB3aWxsIG5vdCBzZXQgcG9saWN5LT5jdXIsIGJlY2F1c2UK
+KwkJICogY3B1ZnJlcV9kcml2ZXItPmdldCBpcyBOVUxMLCBzbyB3ZSBuZWVkIHRvIHNldCBpdCBo
+ZXJlLgorCQkgKiBIb3dldmVyLCB3ZSBoYXZlIHRvIGd1ZXNzIGl0LCBiZWNhdXNlIHRoZSBjdXJy
+ZW50IHNwZWVkIGlzCisJCSAqIHVua25vd24gYW5kIG5vdCBkZXRlY3RhYmxlIHZpYSBJTyBwb3J0
+cy4KKwkJICovCiAJCXBvbGljeS0+Y3VyID0gYWNwaV9jcHVmcmVxX2d1ZXNzX2ZyZXEoZGF0YSwg
+cG9saWN5LT5jcHUpOwogCQlicmVhazsKIAljYXNlIEFDUElfQURSX1NQQUNFX0ZJWEVEX0hBUkRX
+QVJFOgotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
+--001a11c221089b48ac04e8948ebd--
