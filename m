@@ -1,35 +1,36 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 2/2] ARM: at91: cpuidle: Move driver to drivers/cpuidle
-Date: Sun, 13 Oct 2013 11:19:45 +0200
-Message-ID: <20131013111945.0251a3cc@skate>
-References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>
-	<1381593099-1184-2-git-send-email-daniel.lezcano@linaro.org>
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: Re: [PATCH v2] platform: x86: asus-wmi: add fan control
+Date: Sun, 13 Oct 2013 04:29:34 -0500
+Message-ID: <CAMP44s04+_aP7KpVMTUjdNcRWMg6PC6HBaNhF_uhAHm=fhmTcw@mail.gmail.com>
+References: <1381236524-19633-1-git-send-email-felipe.contreras@gmail.com>
+	<CAHR064ge8zew7uMeD+_LXR3ju5ARGG1y8utLOFzOLexny_DPLA@mail.gmail.com>
+	<1381421199.4248.2.camel@x230.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:56525 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753816Ab3JMJUA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Oct 2013 05:20:00 -0400
-In-Reply-To: <1381593099-1184-2-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1381421199.4248.2.camel@x230.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Matthew Garrett <matthew.garrett@nebula.com>
+Cc: "corentin.chary@gmail.com" <corentin.chary@gmail.com>, "acpi4asus-user@lists.sourceforge.net" <acpi4asus-user@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, patches@linaro.org
 
-Dear Daniel Lezcano,
+On Thu, Oct 10, 2013 at 11:06 AM, Matthew Garrett
+<matthew.garrett@nebula.com> wrote:
+> On Thu, 2013-10-10 at 16:59 +0100, Corentin Chary wrote:
+>
+>>
+>> This doesn't really seems to be related to wmi, and is likely to be
+>> available only on a subset of models. Maybe it should a separate
+>> driver instead ?
+>
+> This version seems to be implemented entirely in WMI, and it's using the
+> same WMI GUID as asus-wmi - implementing it here seems appropriate. I am
+> concerned about the phys/virt thing, though. The ACPI interpreter is
+> running in the kernel, not the hardware - are we artificially limiting
+> SystemMemory opregions to physical addresses?
 
-On Sat, 12 Oct 2013 17:51:39 +0200, Daniel Lezcano wrote:
+I don't see anything in acpi_ex_system_memory_space_handler() that
+takes into consideration virtual addresses.
 
-> +config ARM_AT91_CPUIDLE
-> +        bool "Cpu Idle Driver for the AT91 processors"
-
-Nitpick: indentation is done with spaces here, while it should be one
-tab.
-
-Thomas
 -- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Felipe Contreras
