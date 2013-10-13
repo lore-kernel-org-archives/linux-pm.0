@@ -1,77 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
-Date: Sun, 13 Oct 2013 06:07:32 +0530
-Message-ID: <CAKohpo=wHN1wTsh-UfYMO-XBDtj0=SFuxjTPqw9aZAG6iRJ0mQ@mail.gmail.com>
-References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org>
-	<1922770.iubCDBg3Zg@vostro.rjw.lan>
-	<CAKohpokJkcsNN_vnQOuu2=arsiQCGPaCxpRL_TRAQYFg+LmR+w@mail.gmail.com>
-	<1402816.XYNGOIhCWR@vostro.rjw.lan>
+Subject: Re: [PATCH V2 Resend 00/92] CPUFreq Cleanup Series: Part II
+Date: Sun, 13 Oct 2013 06:11:04 +0530
+Message-ID: <CAKohpok7wkiFNwBAEQByJfgJ+O121qMBiGizMmxBsd26MRDM7g@mail.gmail.com>
+References: <cover.1380783079.git.viresh.kumar@linaro.org>
+	<2275177.Q2M8STIc5R@vostro.rjw.lan>
+	<CAKohpon+F3Y_azLaU80u=QKkmY_f5P2kM0cz-z9bZRSj55=Qcg@mail.gmail.com>
+	<1786792.VSPfic7BzP@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=001a11c221089b48ac04e8948ebd
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f47.google.com ([209.85.216.47]:43463 "EHLO
-	mail-qa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752922Ab3JMAhc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Oct 2013 20:37:32 -0400
-Received: by mail-qa0-f47.google.com with SMTP id k15so1442840qaq.20
-        for <linux-pm@vger.kernel.org>; Sat, 12 Oct 2013 17:37:32 -0700 (PDT)
-In-Reply-To: <1402816.XYNGOIhCWR@vostro.rjw.lan>
+Received: from mail-qc0-f180.google.com ([209.85.216.180]:40653 "EHLO
+	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971Ab3JMAlG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Oct 2013 20:41:06 -0400
+Received: by mail-qc0-f180.google.com with SMTP id p19so4075733qcv.11
+        for <linux-pm@vger.kernel.org>; Sat, 12 Oct 2013 17:41:04 -0700 (PDT)
+In-Reply-To: <1786792.VSPfic7BzP@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
---001a11c221089b48ac04e8948ebd
-Content-Type: text/plain; charset=ISO-8859-1
-
-On 13/10/2013, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> -> What about this:
+On 13/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Applied.
 >
-> 	/*
-> 	 * The core will not set policy->cur, because cpufreq_driver->get is NULL,
-> 	 * so we need to set it here.  However, we have to guess it, because the
-> 	 * current speed is unknown and not detectable via IO ports.
-> 	 */
+> Next time please respin the original patch instead of posting "fixups",
 
-Far better. Attached again. Thanks.
+Sure
 
---001a11c221089b48ac04e8948ebd
-Content-Type: text/x-patch; charset=US-ASCII;
-	name="0001-cpufreq-acpi-Add-comment-under-ACPI_ADR_SPACE_SYSTEM.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-acpi-Add-comment-under-ACPI_ADR_SPACE_SYSTEM.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: file0
+> because that is less than helpful.
 
-RnJvbSAwNTViNWQ3M2JlZjA4OThkNDc3MTg4MzcyYjIxNWNkMmVjODJmZTgxIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MDU1YjVkNzNiZWYwODk4ZDQ3NzE4ODM3MmIyMTVj
-ZDJlYzgyZmU4MS4xMzgxNjI0NjAyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCAxMiBPY3Qg
-MjAxMyAwNzowMDowMSArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFjcGk6IEFkZCBj
-b21tZW50IHVuZGVyIEFDUElfQURSX1NQQUNFX1NZU1RFTV9JTwogY2FzZQoKcG9saWN5LT5jdXIg
-aXMgbm93IHNldCBieSBjcHVmcmVxIGNvcmUgd2hlbiBjcHVmcmVxX2RyaXZlci0+Z2V0KCkgaXMg
-ZGVmaW5lZCBhbmQKc28gZHJpdmVycyBhcmVuJ3QgcmVxdWlyZWQgdG8gc2V0IGl0LiBXaGVuIHNw
-YWNlX2lkIGlzIEFDUElfQURSX1NQQUNFX1NZU1RFTV9JTwpmb3IgYWNwaSBjcHVmcmVxIGRyaXZl
-ciBpdCBkb2Vzbid0IHNldCAtPmdldCB0byBhIHZhbGlkIGZ1bmN0aW9uIHBvaW50ZXIgYW5kIHNv
-CnBvbGljeS0+Y3VyIGlzIHJlcXVpcmVkIHRvIGJlIHNldCBieSBkcml2ZXIuCgpUaGlzIGlzIGFs
-cmVhZHkgZm9sbG93ZWQgaW4gYWNwaS1jcHVmcmVxIGRyaXZlci4gVGhpcyBwYXRjaCBhZGRzIGEg
-Y29tbWVudApkZXNjcmliaW5nIHdoeSB3ZSBuZWVkIHRvIHNldCBwb2xpY3ktPmN1ciBmcm9tIGRy
-aXZlci4KClN1Z2dlc3RlZC1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lA
-aW50ZWwuY29tPgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5h
-cm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYyB8IDcgKysrKysrLQog
-MSBmaWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9hY3Bp
-LWNwdWZyZXEuYwppbmRleCBhOGRhYzdiLi5hMTcxN2Q3IDEwMDY0NAotLS0gYS9kcml2ZXJzL2Nw
-dWZyZXEvYWNwaS1jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5j
-CkBAIC04MzcsNyArODM3LDEyIEBAIHN0YXRpYyBpbnQgYWNwaV9jcHVmcmVxX2NwdV9pbml0KHN0
-cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogCiAJc3dpdGNoIChwZXJmLT5jb250cm9sX3Jl
-Z2lzdGVyLnNwYWNlX2lkKSB7CiAJY2FzZSBBQ1BJX0FEUl9TUEFDRV9TWVNURU1fSU86Ci0JCS8q
-IEN1cnJlbnQgc3BlZWQgaXMgdW5rbm93biBhbmQgbm90IGRldGVjdGFibGUgYnkgSU8gcG9ydCAq
-LworCQkvKgorCQkgKiBUaGUgY29yZSB3aWxsIG5vdCBzZXQgcG9saWN5LT5jdXIsIGJlY2F1c2UK
-KwkJICogY3B1ZnJlcV9kcml2ZXItPmdldCBpcyBOVUxMLCBzbyB3ZSBuZWVkIHRvIHNldCBpdCBo
-ZXJlLgorCQkgKiBIb3dldmVyLCB3ZSBoYXZlIHRvIGd1ZXNzIGl0LCBiZWNhdXNlIHRoZSBjdXJy
-ZW50IHNwZWVkIGlzCisJCSAqIHVua25vd24gYW5kIG5vdCBkZXRlY3RhYmxlIHZpYSBJTyBwb3J0
-cy4KKwkJICovCiAJCXBvbGljeS0+Y3VyID0gYWNwaV9jcHVmcmVxX2d1ZXNzX2ZyZXEoZGF0YSwg
-cG9saWN5LT5jcHUpOwogCQlicmVhazsKIAljYXNlIEFDUElfQURSX1NQQUNFX0ZJWEVEX0hBUkRX
-QVJFOgotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
---001a11c221089b48ac04e8948ebd--
+I though you will merge it with offending commit and so posted fixup.
+I will post separate commits in future and will leave this to you to merge
+or apply separately.
+
+Thanks.
