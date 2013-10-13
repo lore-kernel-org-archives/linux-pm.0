@@ -1,37 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 Resend 00/92] CPUFreq Cleanup Series: Part II
-Date: Sun, 13 Oct 2013 06:11:04 +0530
-Message-ID: <CAKohpok7wkiFNwBAEQByJfgJ+O121qMBiGizMmxBsd26MRDM7g@mail.gmail.com>
-References: <cover.1380783079.git.viresh.kumar@linaro.org>
-	<2275177.Q2M8STIc5R@vostro.rjw.lan>
-	<CAKohpon+F3Y_azLaU80u=QKkmY_f5P2kM0cz-z9bZRSj55=Qcg@mail.gmail.com>
-	<1786792.VSPfic7BzP@vostro.rjw.lan>
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: Re: [PATCH v2] platform: x86: asus-wmi: add fan control
+Date: Sun, 13 Oct 2013 03:49:41 -0500
+Message-ID: <CAMP44s3KVJwTwpxG14k22Q47UXGYFHLQ9ZmWcEdHWiUkbahoaA@mail.gmail.com>
+References: <1381236524-19633-1-git-send-email-felipe.contreras@gmail.com>
+	<CAHR064ge8zew7uMeD+_LXR3ju5ARGG1y8utLOFzOLexny_DPLA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f180.google.com ([209.85.216.180]:40653 "EHLO
-	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971Ab3JMAlG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Oct 2013 20:41:06 -0400
-Received: by mail-qc0-f180.google.com with SMTP id p19so4075733qcv.11
-        for <linux-pm@vger.kernel.org>; Sat, 12 Oct 2013 17:41:04 -0700 (PDT)
-In-Reply-To: <1786792.VSPfic7BzP@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <CAHR064ge8zew7uMeD+_LXR3ju5ARGG1y8utLOFzOLexny_DPLA@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, acpi4asus-user <acpi4asus-user@lists.sourceforge.net>, Linux PM <linux-pm@vger.kernel.org>, Matthew Garrett <matthew.garrett@nebula.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 13/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Applied.
+On Thu, Oct 10, 2013 at 10:59 AM, Corentin Chary
+<corentin.chary@gmail.com> wrote:
 >
-> Next time please respin the original patch instead of posting "fixups",
+>
+>
+> On Tue, Oct 8, 2013 at 1:48 PM, Felipe Contreras
+> <felipe.contreras@gmail.com> wrote:
+>>
+>> Simple driver to enable control of the fan in ASUS laptops. So far this
+>> has only been tested in ASUS Zenbook Prime UX31A, but according to some
+>> online reference [1], it should work in other models as well.
+>>
+>> The implementation is very straight-forward, the only caveat is that the
+>> fan speed needs to be saved after it has been manually changed because
+>> it won't be reported properly until it goes back to 'auto' mode.
+>
+> This doesn't really seems to be related to wmi, and is likely to be
+> available only on a subset of models. Maybe it should a separate driver
+> instead ?
 
-Sure
+The first patch I sent was standalone, and you said it should be wmi,
+and now I do it wmi, and you said it should be separate. Which is it?
 
-> because that is less than helpful.
-
-I though you will merge it with offending commit and so posted fixup.
-I will post separate commits in future and will leave this to you to merge
-or apply separately.
-
-Thanks.
+-- 
+Felipe Contreras
