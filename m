@@ -1,47 +1,30 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] ARM: at91: cpuidle: Move driver to drivers/cpuidle
-Date: Sun, 13 Oct 2013 12:17:17 +0200
-Message-ID: <525A732D.3080708@linaro.org>
-References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>	<1381593099-1184-2-git-send-email-daniel.lezcano@linaro.org> <20131013111945.0251a3cc@skate>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH v2] platform: x86: asus-wmi: add fan control
+Date: Sun, 13 Oct 2013 16:17:29 +0100
+Message-ID: <20131013151729.GA4028@srcf.ucam.org>
+References: <1381236524-19633-1-git-send-email-felipe.contreras@gmail.com>
+ <CAHR064ge8zew7uMeD+_LXR3ju5ARGG1y8utLOFzOLexny_DPLA@mail.gmail.com>
+ <1381421199.4248.2.camel@x230.lan>
+ <CAMP44s04+_aP7KpVMTUjdNcRWMg6PC6HBaNhF_uhAHm=fhmTcw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:51561 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754152Ab3JMKRT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Oct 2013 06:17:19 -0400
-Received: by mail-wi0-f173.google.com with SMTP id h11so945247wiv.0
-        for <linux-pm@vger.kernel.org>; Sun, 13 Oct 2013 03:17:18 -0700 (PDT)
-In-Reply-To: <20131013111945.0251a3cc@skate>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMP44s04+_aP7KpVMTUjdNcRWMg6PC6HBaNhF_uhAHm=fhmTcw@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: "corentin.chary@gmail.com" <corentin.chary@gmail.com>, "acpi4asus-user@lists.sourceforge.net" <acpi4asus-user@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, patches@linaro.org
 
-On 10/13/2013 11:19 AM, Thomas Petazzoni wrote:
-> Dear Daniel Lezcano,
->
-> On Sat, 12 Oct 2013 17:51:39 +0200, Daniel Lezcano wrote:
->
->> +config ARM_AT91_CPUIDLE
->> +        bool "Cpu Idle Driver for the AT91 processors"
->
-> Nitpick: indentation is done with spaces here, while it should be one
-> tab.
+On Sun, Oct 13, 2013 at 04:29:34AM -0500, Felipe Contreras wrote:
 
-Ah, right. Fixed for the V2.
+> I don't see anything in acpi_ex_system_memory_space_handler() that
+> takes into consideration virtual addresses.
 
-Thanks !
-   -- Daniel
+The spec doesn't seem to constrain it to physical addresses (it just 
+refers to "Control Methods read and write data to locations in address 
+spaces (for example, System memory and System I/O)", so I'd lean towards 
+changing the behaviour of acpica rather than adding virt_to_phys().
 
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
