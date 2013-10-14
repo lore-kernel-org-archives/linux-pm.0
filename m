@@ -1,226 +1,136 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v2 02/13] arm64: kernel: build MPIDR_EL1 hash function data structure
-Date: Mon, 14 Oct 2013 12:02:59 +0100
-Message-ID: <1381748590-14279-3-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH v2 00/13] arm64: suspend/resume implementation
+Date: Mon, 14 Oct 2013 12:02:57 +0100
+Message-ID: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:56714 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:56568 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754785Ab3JNLCa (ORCPT
+	with ESMTP id S1754652Ab3JNLCa (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:30 -0400
-In-Reply-To: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On ARM64 SMP systems, cores are identified by their MPIDR_EL1 register.
-The MPIDR_EL1 guidelines in the ARM ARM do not provide strict enforcement o=
-f
-MPIDR_EL1 layout, only recommendations that, if followed, split the MPIDR_E=
-L1
-on ARM 64 bit platforms in four affinity levels. In multi-cluster
-systems like big.LITTLE, if the affinity guidelines are followed, the
-MPIDR_EL1 can not be considered a linear index. This means that the
-association between logical CPU in the kernel and the HW CPU identifier
-becomes somewhat more complicated requiring methods like hashing to
-associate a given MPIDR_EL1 to a CPU logical index, in order for the look-u=
-p
-to be carried out in an efficient and scalable way.
+This series is v2 of a previous posting:
 
-This patch provides a function in the kernel that starting from the
-cpu_logical_map, implement collision-free hashing of MPIDR_EL1 values by
-checking all significative bits of MPIDR_EL1 affinity level bitfields.
-The hashing can then be carried out through bits shifting and ORing; the
-resulting hash algorithm is a collision-free though not minimal hash that c=
-an
-be executed with few assembly instructions. The mpidr_el1 is filtered throu=
-gh a
-mpidr mask that is built by checking all bits that toggle in the set of
-MPIDR_EL1s corresponding to possible CPUs. Bits that do not toggle do not
-carry information so they do not contribute to the resulting hash.
+http://lists.infradead.org/pipermail/linux-arm-kernel/2013-August/195267.ht=
+ml
 
-Pseudo code:
+Patchset depends on M.Rutland arm64 CPU hotplug series:
 
-/* check all bits that toggle, so they are required */
-for (i =3D 1, mpidr_el1_mask =3D 0; i < num_possible_cpus(); i++)
-=09mpidr_el1_mask |=3D (cpu_logical_map(i) ^ cpu_logical_map(0));
+http://lists.infradead.org/pipermail/linux-arm-kernel/2013-October/204154.h=
+tml
 
-/*
- * Build shifts to be applied to aff0, aff1, aff2, aff3 values to hash the
- * mpidr_el1
- * fls() returns the last bit set in a word, 0 if none
- * ffs() returns the first bit set in a word, 0 if none
- */
-fs0 =3D mpidr_el1_mask[7:0] ? ffs(mpidr_el1_mask[7:0]) - 1 : 0;
-fs1 =3D mpidr_el1_mask[15:8] ? ffs(mpidr_el1_mask[15:8]) - 1 : 0;
-fs2 =3D mpidr_el1_mask[23:16] ? ffs(mpidr_el1_mask[23:16]) - 1 : 0;
-fs3 =3D mpidr_el1_mask[39:32] ? ffs(mpidr_el1_mask[39:32]) - 1 : 0;
-ls0 =3D fls(mpidr_el1_mask[7:0]);
-ls1 =3D fls(mpidr_el1_mask[15:8]);
-ls2 =3D fls(mpidr_el1_mask[23:16]);
-ls3 =3D fls(mpidr_el1_mask[39:32]);
-bits0 =3D ls0 - fs0;
-bits1 =3D ls1 - fs1;
-bits2 =3D ls2 - fs2;
-bits3 =3D ls3 - fs3;
-aff0_shift =3D fs0;
-aff1_shift =3D 8 + fs1 - bits0;
-aff2_shift =3D 16 + fs2 - (bits0 + bits1);
-aff3_shift =3D 32 + fs3 - (bits0 + bits1 + bits2);
-u32 hash(u64 mpidr_el1) {
-=09u32 l[4];
-=09u64 mpidr_el1_masked =3D mpidr_el1 & mpidr_el1_mask;
-=09l[0] =3D mpidr_el1_masked & 0xff;
-=09l[1] =3D mpidr_el1_masked & 0xff00;
-=09l[2] =3D mpidr_el1_masked & 0xff0000;
-=09l[3] =3D mpidr_el1_masked & 0xff00000000;
-=09return (l[0] >> aff0_shift | l[1] >> aff1_shift | l[2] >> aff2_shift |
-=09=09l[3] >> aff3_shift);
-}
+CPU idle driver and PSCI suspend implementation used for testing are not
+published as part of this series since they depend on standardization
+of PSCI bindings for C-states; code can be made available on a separate bra=
+nch
+if required.
 
-The hashing algorithm relies on the inherent properties set in the ARM ARM
-recommendations for the MPIDR_EL1. Exotic configurations, where for instanc=
-e
-the MPIDR_EL1 values at a given affinity level have large holes, can end up
-requiring big hash tables since the compression of values that can be achie=
-ved
-through shifting is somewhat crippled when holes are present. Kernel warns =
-if
-the number of buckets of the resulting hash table exceeds the number of
-possible CPUs by a factor of 4, which is a symptom of a very sparse HW
-MPIDR_EL1 configuration.
+v2 changes:
 
-The hash algorithm is quite simple and can easily be implemented in assembl=
-y
-code, to be used in code paths where the kernel virtual address space is
-not set-up (ie cpu_resume) and instruction and data fetches are strongly
-ordered so code must be compact and must carry out few data accesses.
+- Rebased to 3.12-rc4
+- Changed cpu_suspend prototype
+- Added macros to save/restore CPU registers
+- Improved register/load/store scheduling in context save/restore
+- Changed Kconfig option
+- Refactored the stack allocation and context struct layout
+- Fixed a bug in cpu_suspend return path
+- Added tick broadcast support
+- Dropped RFC tag
 
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- arch/arm64/include/asm/smp_plat.h | 13 ++++++++
- arch/arm64/kernel/setup.c         | 70 +++++++++++++++++++++++++++++++++++=
-++++
- 2 files changed, 83 insertions(+)
+This patch series provides an implementation of suspend/resume and
+related CPU PM notifiers for the arm64 architecture. The implementation
+has been tweaked and code made a bit more generic wrt ARM 32 bits
+version. The cpu_suspend call prototype accepts a single parameter that
+is translated by the CPU operations suspend protocol backend into a
+series of protocol (eg PSCI) specific parameters and function calls.
+This allows for generic suspend-to-RAM and CPU idle drivers, where the
+platform complexity is hidden behind the CPU ops suspend protocol
+implementation.
 
-diff --git a/arch/arm64/include/asm/smp_plat.h b/arch/arm64/include/asm/smp=
-_plat.h
-index ed43a0d..59e2823 100644
---- a/arch/arm64/include/asm/smp_plat.h
-+++ b/arch/arm64/include/asm/smp_plat.h
-@@ -21,6 +21,19 @@
-=20
- #include <asm/types.h>
-=20
-+struct mpidr_hash {
-+=09u64=09mask;
-+=09u32=09shift_aff[4];
-+=09u32=09bits;
-+};
+The context restore split between processor specific functions and
+generic code has been kept similar to arm32 as well, since this makes
+sense from a functionality perspective, even though there is just a
+an architecture specific save/restore implementation for arm64, for v8.
+Code that deals with turning on the MMU and returning from suspend is kept
+in the same file as the the suspend method itself, so that assembly code is
+self contained in a single file and separated from the interface.
+
+The CPU register context is allocated on the stack; this behaviour is
+the same as in the arm 32-bit port, even though context could have been
+allocated statically as a NR_CPUS array of struct and the context
+addresses stored once of all in the context pointers array after virtual
+to physical conversion. Current solution uses the stack, since there is
+no need to allocate additional context space for context that can be
+easily saved on the suspend threads stacks, with no additional memory
+requirement.
+
+Cache flushing is kept to a minimum; the cpu_suspend method cleans only the
+few bytes of context to DRAM that need to be retrieved with the MMU off,
+the remainder of cache cleaning is delegated to suspend finishers.
+
+The series also provides patches to simplify the MPIDR_EL1 management
+and MPIDR_EL1 hashing that are integrated to the series but are also useful
+as stand alone code.
+
+Code has been tested on AEM v8 models and a simple CPU idle driver that
+enables a C-state where CPUs are shutdown when wfi is hit.
+
+KVM CPU PM notifier has been tested using kvm-tools, and by booting a KVM g=
+uest
+on a host with deep idle states enabled.
+
+HW breakpoint CPU PM notifier has been tested using a simple perf test that
+sets up per-cpu watchpoints and checks the proper behaviour when deep idle
+states are enabled.
+
+Lorenzo Pieralisi (13):
+  arm64: kernel: add MPIDR_EL1 accessors macros
+  arm64: kernel: build MPIDR_EL1 hash function data structure
+  arm64: kernel: suspend/resume registers save/restore
+  arm64: kernel: cpu_{suspend/resume} implementation
+  arm64: add CPU PM infrastructure selection
+  arm64: kernel: implement fpsimd CPU PM notifier
+  arm: kvm: implement CPU PM notifier
+  arm64: kernel: implement debug monitors CPU PM notifiers
+  arm64: kernel: refactor code to install/uninstall breakpoints
+  arm64: kernel: implement HW breakpoints CPU PM notifier
+  arm64: enable generic clockevent broadcast
+  arm64: kernel: add CPU idle call
+  arm64: add CPU power management menu/entries
+
+ arch/arm/kvm/arm.c                     |  30 +++++
+ arch/arm64/Kconfig                     |  21 ++++
+ arch/arm64/include/asm/cpu_ops.h       |   6 +
+ arch/arm64/include/asm/cputype.h       |  10 ++
+ arch/arm64/include/asm/hardirq.h       |   2 +-
+ arch/arm64/include/asm/proc-fns.h      |   3 +
+ arch/arm64/include/asm/smp_plat.h      |  13 +++
+ arch/arm64/include/asm/suspend.h       |  36 ++++++
+ arch/arm64/include/asm/suspendmacros.h |  75 ++++++++++++
+ arch/arm64/kernel/Makefile             |   1 +
+ arch/arm64/kernel/asm-offsets.c        |  11 ++
+ arch/arm64/kernel/debug-monitors.c     |  38 ++++++
+ arch/arm64/kernel/fpsimd.c             |  36 ++++++
+ arch/arm64/kernel/hw_breakpoint.c      | 205 ++++++++++++++++++++++++-----=
+----
+ arch/arm64/kernel/process.c            |   7 +-
+ arch/arm64/kernel/setup.c              |  70 +++++++++++
+ arch/arm64/kernel/sleep.S              | 191 +++++++++++++++++++++++++++++=
 +
-+extern struct mpidr_hash mpidr_hash;
-+
-+static inline u32 mpidr_hash_size(void)
-+{
-+=09return 1 << mpidr_hash.bits;
-+}
-+
- /*
-  * Logical CPU mapping.
-  */
-diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
-index b65c132..9313ea4 100644
---- a/arch/arm64/kernel/setup.c
-+++ b/arch/arm64/kernel/setup.c
-@@ -98,6 +98,75 @@ void __init early_print(const char *str, ...)
- =09printk("%s", buf);
- }
-=20
-+struct mpidr_hash mpidr_hash;
-+#ifdef CONFIG_SMP
-+/**
-+ * smp_build_mpidr_hash - Pre-compute shifts required at each affinity
-+ *=09=09=09  level in order to build a linear index from an
-+ *=09=09=09  MPIDR value. Resulting algorithm is a collision
-+ *=09=09=09  free hash carried out through shifting and ORing
-+ */
-+static void __init smp_build_mpidr_hash(void)
-+{
-+=09u32 i, affinity, fs[4], bits[4], ls;
-+=09u64 mask =3D 0;
-+=09/*
-+=09 * Pre-scan the list of MPIDRS and filter out bits that do
-+=09 * not contribute to affinity levels, ie they never toggle.
-+=09 */
-+=09for_each_possible_cpu(i)
-+=09=09mask |=3D (cpu_logical_map(i) ^ cpu_logical_map(0));
-+=09pr_debug("mask of set bits %#llx\n", mask);
-+=09/*
-+=09 * Find and stash the last and first bit set at all affinity levels to
-+=09 * check how many bits are required to represent them.
-+=09 */
-+=09for (i =3D 0; i < 4; i++) {
-+=09=09affinity =3D MPIDR_AFFINITY_LEVEL(mask, i);
-+=09=09/*
-+=09=09 * Find the MSB bit and LSB bits position
-+=09=09 * to determine how many bits are required
-+=09=09 * to express the affinity level.
-+=09=09 */
-+=09=09ls =3D fls(affinity);
-+=09=09fs[i] =3D affinity ? ffs(affinity) - 1 : 0;
-+=09=09bits[i] =3D ls - fs[i];
-+=09}
-+=09/*
-+=09 * An index can be created from the MPIDR_EL1 by isolating the
-+=09 * significant bits at each affinity level and by shifting
-+=09 * them in order to compress the 32 bits values space to a
-+=09 * compressed set of values. This is equivalent to hashing
-+=09 * the MPIDR_EL1 through shifting and ORing. It is a collision free
-+=09 * hash though not minimal since some levels might contain a number
-+=09 * of CPUs that is not an exact power of 2 and their bit
-+=09 * representation might contain holes, eg MPIDR_EL1[7:0] =3D {0x2, 0x80=
-}.
-+=09 */
-+=09mpidr_hash.shift_aff[0] =3D MPIDR_LEVEL_SHIFT(0) + fs[0];
-+=09mpidr_hash.shift_aff[1] =3D MPIDR_LEVEL_SHIFT(1) + fs[1] - bits[0];
-+=09mpidr_hash.shift_aff[2] =3D MPIDR_LEVEL_SHIFT(2) + fs[2] -
-+=09=09=09=09=09=09(bits[1] + bits[0]);
-+=09mpidr_hash.shift_aff[3] =3D MPIDR_LEVEL_SHIFT(3) +
-+=09=09=09=09  fs[3] - (bits[2] + bits[1] + bits[0]);
-+=09mpidr_hash.mask =3D mask;
-+=09mpidr_hash.bits =3D bits[3] + bits[2] + bits[1] + bits[0];
-+=09pr_debug("MPIDR hash: aff0[%u] aff1[%u] aff2[%u] aff3[%u] mask[%#llx] b=
-its[%u]\n",
-+=09=09mpidr_hash.shift_aff[0],
-+=09=09mpidr_hash.shift_aff[1],
-+=09=09mpidr_hash.shift_aff[2],
-+=09=09mpidr_hash.shift_aff[3],
-+=09=09mpidr_hash.mask,
-+=09=09mpidr_hash.bits);
-+=09/*
-+=09 * 4x is an arbitrary value used to warn on a hash table much bigger
-+=09 * than expected on most systems.
-+=09 */
-+=09if (mpidr_hash_size() > 4 * num_possible_cpus())
-+=09=09pr_warn("Large number of MPIDR hash buckets detected\n");
-+=09__flush_dcache_area(&mpidr_hash, sizeof(struct mpidr_hash));
-+}
-+#endif
-+
- static void __init setup_processor(void)
- {
- =09struct cpu_info *cpu_info;
-@@ -268,6 +337,7 @@ void __init setup_arch(char **cmdline_p)
- =09cpu_read_bootcpu_ops();
- #ifdef CONFIG_SMP
- =09smp_init_cpus();
-+=09smp_build_mpidr_hash();
- #endif
-=20
- #ifdef CONFIG_VT
+ arch/arm64/kernel/smp.c                |  17 +++
+ arch/arm64/kernel/suspend.c            |  93 +++++++++++++++
+ arch/arm64/mm/proc.S                   |  30 +++++
+ 20 files changed, 836 insertions(+), 59 deletions(-)
+ create mode 100644 arch/arm64/include/asm/suspend.h
+ create mode 100644 arch/arm64/include/asm/suspendmacros.h
+ create mode 100644 arch/arm64/kernel/sleep.S
+ create mode 100644 arch/arm64/kernel/suspend.c
+
 --=20
 1.8.4
 
