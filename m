@@ -1,212 +1,156 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 2/3 v4] thermal: samsung: change base_common to more meaningful
- base_second
-Date: Mon, 14 Oct 2013 09:47:06 -0400
-Message-ID: <525BF5DA.5020807@ti.com>
-References: <1378268629-2886-3-git-send-email-ch.naveen@samsung.com> <1381320509-23967-1-git-send-email-ch.naveen@samsung.com> <1381320509-23967-2-git-send-email-ch.naveen@samsung.com>
+Subject: Re: [PATCH 1/3 v4] thermal: samsung: correct the fall interrupt en,
+ status bit fields
+Date: Mon, 14 Oct 2013 09:56:37 -0400
+Message-ID: <525BF815.2030604@ti.com>
+References: <1378268629-2886-3-git-send-email-ch.naveen@samsung.com> <1381320509-23967-1-git-send-email-ch.naveen@samsung.com> <2386580.3V2pzai3k2@amdc1032>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="pwosi7DSjgeBCI6xsC10EiQpfMCgP5iXK"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:47572 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750933Ab3JNNrW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Oct 2013 09:47:22 -0400
-In-Reply-To: <1381320509-23967-2-git-send-email-ch.naveen@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+	boundary="alS4v14A89j7t0ojtcWorSOPkkrtwOgSA"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2386580.3V2pzai3k2@amdc1032>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-pm@vger.kernel.org, naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: linux-pm@vger.kernel.org, naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com
 
---pwosi7DSjgeBCI6xsC10EiQpfMCgP5iXK
+--alS4v14A89j7t0ojtcWorSOPkkrtwOgSA
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 09-10-2013 08:08, Naveen Krishna Chatradhi wrote:
-> On Exynos5440 and Exynos5420 there are registers common
-> across the TMU channels.
+
+Naveen,
+
+On 09-10-2013 10:03, Bartlomiej Zolnierkiewicz wrote:
 >=20
-> To support that, we introduced a ADDRESS_MULTIPLE flag in the
-> driver and the 2nd set of register base and size are provided
-> in the "reg" property of the node.
+> Hi,
 >=20
-> As per Amit's suggestion, this patch changes the base_common
-> to base_second and SHARED_MEMORY to ADDRESS_MULTIPLE.
+> All patches (#1-#3) look good to me, FWIW you can add:
 >=20
-> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-> ---
-> Changes since v1:
->  None
-> Changes since v2:
->  Changed the flag name from SHARED_MEMORY to ADDRESS_MULTIPLE.
->  https://lkml.org/lkml/2013/8/1/38
-> Changes since v3:
->  None
-
- This patch generates build error:
- CC [M]  drivers/thermal/samsung/exynos_tmu.o
- drivers/thermal/samsung/exynos_tmu.c: In function 'exynos_map_dt_data':
- drivers/thermal/samsung/exynos_tmu.c:592:11: error: 'struct
-exynos_tmu_data' has no member named 'base_common'
- make[3]: *** [drivers/thermal/samsung/exynos_tmu.o] Error 1
- make[2]: *** [drivers/thermal/samsung] Error 2
- make[1]: *** [drivers/thermal] Error 2
- make[1]: *** Waiting for unfinished jobs....
-
-
-You've missed one occurrence while renaming the symbol:
-diff --git a/drivers/thermal/samsung/exynos_tmu.c
-b/drivers/thermal/samsung/exynos_tmu.c
-index cd8dc12..ae80a87 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -589,7 +589,7 @@ static int exynos_map_dt_data(struct platform_device
-*pdev)
-
-        data->base_second =3D devm_ioremap(&pdev->dev, res.start,
-                                        resource_size(&res));
--       if (!data->base_common) {
-+       if (!data->base_second) {
-                dev_err(&pdev->dev, "Failed to ioremap memory\n");
-                return -ENOMEM;
-        }
-
-Please compile test your patch before submitting!
-
+> 	Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 >=20
->  .../devicetree/bindings/thermal/exynos-thermal.txt         |    4 ++--=
+> Please note that (at least) patch #3 conflicts with Lukasz's EXYNOS4412=
 
->  drivers/thermal/samsung/exynos_tmu.c                       |   12 ++++=
-++------
->  drivers/thermal/samsung/exynos_tmu.h                       |    4 ++--=
-
->  drivers/thermal/samsung/exynos_tmu_data.c                  |    2 +-
->  4 files changed, 11 insertions(+), 11 deletions(-)
+> fixup patchset:
 >=20
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.t=
-xt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> index 284f530..116cca0 100644
-> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -11,8 +11,8 @@
->  - reg : Address range of the thermal registers. For soc's which has mu=
-ltiple
->  	instances of TMU and some registers are shared across all TMU's like
->  	interrupt related then 2 set of register has to supplied. First set
-> -	belongs	to each instance of TMU and second set belongs to common TMU
-> -	registers.
-> +	belongs	to each instance of TMU and second set belongs to second set
-> +	of common TMU registers.
->  - interrupts : Should contain interrupt for thermal system
->  - clocks : The main clock for TMU device
->  - clock-names : Thermal system clock name
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
-sung/exynos_tmu.c
-> index af69209..40c4243 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -41,7 +41,7 @@
->   * @id: identifier of the one instance of the TMU controller.
->   * @pdata: pointer to the tmu platform/configuration data
->   * @base: base address of the single instance of the TMU controller.
-> - * @base_common: base address of the common registers of the TMU contr=
-oller.
-> + * @base_second: base address of the common registers of the TMU contr=
-oller.
->   * @irq: irq number of the TMU controller.
->   * @soc: id of the SOC type.
->   * @irq_work: pointer to the irq work structure.
-> @@ -56,7 +56,7 @@ struct exynos_tmu_data {
->  	int id;
->  	struct exynos_tmu_platform_data *pdata;
->  	void __iomem *base;
-> -	void __iomem *base_common;
-> +	void __iomem *base_second;
->  	int irq;
->  	enum soc_type soc;
->  	struct work_struct irq_work;
-> @@ -297,7 +297,7 @@ skip_calib_data:
->  	}
->  	/*Clear the PMIN in the common TMU register*/
->  	if (reg->tmu_pmin && !data->id)
-> -		writel(0, data->base_common + reg->tmu_pmin);
-> +		writel(0, data->base_second + reg->tmu_pmin);
->  out:
->  	clk_disable(data->clk);
->  	mutex_unlock(&data->lock);
-> @@ -451,7 +451,7 @@ static void exynos_tmu_work(struct work_struct *wor=
-k)
-> =20
->  	/* Find which sensor generated this interrupt */
->  	if (reg->tmu_irqstatus) {
-> -		val_type =3D readl(data->base_common + reg->tmu_irqstatus);
-> +		val_type =3D readl(data->base_second + reg->tmu_irqstatus);
->  		if (!((val_type >> data->id) & 0x1))
->  			goto out;
->  	}
-> @@ -576,7 +576,7 @@ static int exynos_map_dt_data(struct platform_devic=
-e *pdev)
->  	 * Check if the TMU shares some registers and then try to map the
->  	 * memory of common registers.
->  	 */
-> -	if (!TMU_SUPPORTS(pdata, SHARED_MEMORY))
-> +	if (!TMU_SUPPORTS(pdata, ADDRESS_MULTIPLE))
->  		return 0;
-> =20
->  	if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
-> @@ -584,7 +584,7 @@ static int exynos_map_dt_data(struct platform_devic=
-e *pdev)
->  		return -ENODEV;
->  	}
-> =20
-> -	data->base_common =3D devm_ioremap(&pdev->dev, res.start,
-> +	data->base_second =3D devm_ioremap(&pdev->dev, res.start,
->  					resource_size(&res));
->  	if (!data->base_common) {
->  		dev_err(&pdev->dev, "Failed to ioremap memory\n");
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sam=
-sung/exynos_tmu.h
-> index 7c6c34a..ebd2ec1 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -59,7 +59,7 @@ enum soc_type {
->   *			state(active/idle) can be checked.
->   * TMU_SUPPORT_EMUL_TIME - This features allows to set next temp emula=
-tion
->   *			sample time.
-> - * TMU_SUPPORT_SHARED_MEMORY - This feature tells that the different T=
-MU
-> + * TMU_SUPPORT_ADDRESS_MULTIPLE - This feature tells that the differen=
-t TMU
->   *			sensors shares some common registers.
->   * TMU_SUPPORT - macro to compare the above features with the supplied=
-=2E
->   */
-> @@ -69,7 +69,7 @@ enum soc_type {
->  #define TMU_SUPPORT_FALLING_TRIP		BIT(3)
->  #define TMU_SUPPORT_READY_STATUS		BIT(4)
->  #define TMU_SUPPORT_EMUL_TIME			BIT(5)
-> -#define TMU_SUPPORT_SHARED_MEMORY		BIT(6)
-> +#define TMU_SUPPORT_ADDRESS_MULTIPLE		BIT(6)
-> =20
->  #define TMU_SUPPORTS(a, b)	(a->features & TMU_SUPPORT_ ## b)
-> =20
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
-l/samsung/exynos_tmu_data.c
-> index 23fea23..58570d0 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -239,7 +239,7 @@ static const struct exynos_tmu_registers exynos5440=
-_tmu_registers =3D {
->  	.type =3D SOC_ARCH_EXYNOS5440, \
->  	.registers =3D &exynos5440_tmu_registers, \
->  	.features =3D (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
-> -			TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_SHARED_MEMORY),
-> +			TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_ADDRESS_MULTIPLE),
-> =20
->  struct exynos_tmu_init_data const exynos5440_default_tmu_data =3D {
->  	.tmu_data =3D {
+> 	https://lkml.org/lkml/2013/10/9/35
+>=20
+> It is up to Eduardo to resolve this but it probably would be better to
+> merge EXYNOS4412 fixes first and then add EXYNOS5420 support. This woul=
+d
+> require you to port patch #3 over Lukasz's patchset though.
+>=20
+
+Please rebase your patch set on top of Lukasz'. There are conflicts
+while applying patch 3. Please also compile test it before posting,
+check comment I made on patch 2.
+
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+>=20
+> On Wednesday, October 09, 2013 05:38:27 PM Naveen Krishna Chatradhi wro=
+te:
+>> The FALL interrupt related en, status bits are available at an offset =
+of
+>> 16 on INTEN, INTSTAT registers and at an offset of
+>> 12 on INTCLEAR register.
+>>
+>> This patch corrects the same for exyns5250 and exynos5440
+>>
+>> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+>> ---
+>> Changes since v1:
+>> Changes since v2:
+>> Changes since v3:
+>>   None
+>>
+>>  drivers/thermal/samsung/exynos_tmu.c      |    2 +-
+>>  drivers/thermal/samsung/exynos_tmu.h      |    2 ++
+>>  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
+>>  drivers/thermal/samsung/exynos_tmu_data.h |    3 ++-
+>>  4 files changed, 7 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sa=
+msung/exynos_tmu.c
+>> index b43afda..af69209 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> @@ -265,7 +265,7 @@ skip_calib_data:
+>>  				data->base + reg->threshold_th1);
+>> =20
+>>  		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
+>> -			(reg->inten_fall_mask << reg->inten_fall_shift),
+>> +			(reg->inten_fall_mask << reg->intclr_fall_shift),
+>>  				data->base + reg->tmu_intclear);
+>> =20
+>>  		/* if last threshold limit is also present */
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sa=
+msung/exynos_tmu.h
+>> index b364c9e..7c6c34a 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>> @@ -134,6 +134,7 @@ enum soc_type {
+>>   * @inten_fall3_shift: shift bits of falling 3 interrupt bits.
+>>   * @tmu_intstat: Register containing the interrupt status values.
+>>   * @tmu_intclear: Register for clearing the raised interrupt status.
+>> + * @intclr_fall_shift: shift bits for interrupt clear fall 0
+>>   * @emul_con: TMU emulation controller register.
+>>   * @emul_temp_shift: shift bits of emulation temperature.
+>>   * @emul_time_shift: shift bits of emulation time.
+>> @@ -204,6 +205,7 @@ struct exynos_tmu_registers {
+>>  	u32	tmu_intstat;
+>> =20
+>>  	u32	tmu_intclear;
+>> +	u32	intclr_fall_shift;
+>> =20
+>>  	u32	emul_con;
+>>  	u32	emul_temp_shift;
+>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therm=
+al/samsung/exynos_tmu_data.c
+>> index 9002499..23fea23 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+>> @@ -122,6 +122,7 @@ static const struct exynos_tmu_registers exynos525=
+0_tmu_registers =3D {
+>>  	.inten_fall0_shift =3D EXYNOS_TMU_INTEN_FALL0_SHIFT,
+>>  	.tmu_intstat =3D EXYNOS_TMU_REG_INTSTAT,
+>>  	.tmu_intclear =3D EXYNOS_TMU_REG_INTCLEAR,
+>> +	.intclr_fall_shift =3D EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
+>>  	.emul_con =3D EXYNOS_EMUL_CON,
+>>  	.emul_temp_shift =3D EXYNOS_EMUL_DATA_SHIFT,
+>>  	.emul_time_shift =3D EXYNOS_EMUL_TIME_SHIFT,
+>> @@ -210,6 +211,7 @@ static const struct exynos_tmu_registers exynos544=
+0_tmu_registers =3D {
+>>  	.inten_fall0_shift =3D EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
+>>  	.tmu_intstat =3D EXYNOS5440_TMU_S0_7_IRQ,
+>>  	.tmu_intclear =3D EXYNOS5440_TMU_S0_7_IRQ,
+>> +	.intclr_fall_shift =3D EXYNOS_TMU_CLEAR_FALL_INT_SHIFT,
+>>  	.tmu_irqstatus =3D EXYNOS5440_TMU_IRQ_STATUS,
+>>  	.emul_con =3D EXYNOS5440_TMU_S0_7_DEBUG,
+>>  	.emul_temp_shift =3D EXYNOS_EMUL_DATA_SHIFT,
+>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/therm=
+al/samsung/exynos_tmu_data.h
+>> index dc7feb5..8788a87 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+>> @@ -69,9 +69,10 @@
+>>  #define EXYNOS_TMU_RISE_INT_MASK	0x111
+>>  #define EXYNOS_TMU_RISE_INT_SHIFT	0
+>>  #define EXYNOS_TMU_FALL_INT_MASK	0x111
+>> -#define EXYNOS_TMU_FALL_INT_SHIFT	12
+>> +#define EXYNOS_TMU_FALL_INT_SHIFT	16
+>>  #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
+>>  #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
+>> +#define EXYNOS_TMU_CLEAR_FALL_INT_SHIFT	12
+>>  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
+>>  #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
+>>  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
+>=20
+>=20
 >=20
 
 
@@ -216,7 +160,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---pwosi7DSjgeBCI6xsC10EiQpfMCgP5iXK
+--alS4v14A89j7t0ojtcWorSOPkkrtwOgSA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -225,9 +169,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlJb9d0ACgkQCXcVR3XQvP1IZAD+MfG4mhfhQyz41+aM79bZ0jE3
-aeai9ar+Z4ME36Y1I0sA/3pRw3yqWqtKfwymNXv7TwOvR1GwDsLpmtJbl33zpuYf
-=t6/A
+iF4EAREIAAYFAlJb+BgACgkQCXcVR3XQvP33bAEA+TvC0CzHsDA0FOFZiSffXNo4
+sEnJ+BhLsXeiA9wyds4A/0kR9MLg89ZKsceLQuH6xf73QjUm9+Rb2wuFkMif/TJ1
+=BQrI
 -----END PGP SIGNATURE-----
 
---pwosi7DSjgeBCI6xsC10EiQpfMCgP5iXK--
+--alS4v14A89j7t0ojtcWorSOPkkrtwOgSA--
