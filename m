@@ -1,182 +1,142 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 3/5] thermal: exynos: Provide initial setting for TMU's
- test MUX address at Exynos4412
-Date: Mon, 14 Oct 2013 17:00:32 +0200
-Message-ID: <20131014170032.7ed18cad@amdc308.digital.local>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
- <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
- <1381300194-13134-4-git-send-email-l.majewski@samsung.com>
- <525BFEB0.9080609@ti.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 11/12] cpuidle: mvebu: Add initial CPU idle support
+ for Armada 370/XP SoC
+Date: Mon, 14 Oct 2013 16:06:46 +0100
+Message-ID: <20131014150646.GC9996@e102568-lin.cambridge.arm.com>
+References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+ <1379066801-16276-12-git-send-email-gregory.clement@free-electrons.com>
+ <20130913161654.GA5408@e102568-lin.cambridge.arm.com>
+ <525BFC34.6020300@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <525BFEB0.9080609@ti.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, kgene.kim@samsung.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <525BFC34.6020300@free-electrons.com>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, "dann.frazier@canonical.com" <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <Leif.Lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "jcm@redhat.com" <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, nicolas.pitre@linaro.org, Hironobu Shibata <h-shibata@plathome.c>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+Hi Gregory,
 
-> On 09-10-2013 02:29, Lukasz Majewski wrote:
-> > The commit d0a0ce3e77c795258d47f9163e92d5031d0c5221 ("thermal:
-> > exynos: Add missing definations and code cleanup") has removed
-> > setting of test MUX address value at TMU configuration setting.
+[CC'ed Nico for the cache cleaning inline asm macros]
+
+On Mon, Oct 14, 2013 at 03:14:12PM +0100, Gregory CLEMENT wrote:
+
+[...]
+
+> >> +ENTRY(armada_370_xp_cpu_suspend)
+> >> +/* Save ARM registers */
+> >> +       stmfd   sp!, {r4 - r11, lr}     @ save registers on stack
+> >> +
+> >> +       bl armada_370_xp_pmsu_idle_prepare
+> >> +       /*
+> >> +        * Invalidate L1 data cache. Even though only invalidate is
+> >> +        * necessary exported flush API is used here. Doing clean
+> >> +        * on already clean cache would be almost NOP.
+> >> +        */
+> >> +       bl v7_flush_dcache_all
+> >> +
+> >> +       /*
+> >> +        * Clear the SCTLR.C bit to prevent further data cache
+> >> +        * allocation. Clearing SCTLR.C would make all the data accesses
+> >> +        * strongly ordered and would not hit the cache.
+> >> +        */
+> >> +       mrc     p15, 0, r0, c1, c0, 0
+> >> +       bic     r0, r0, #(1 << 2)       @ Disable the C bit
+> >> +       mcr     p15, 0, r0, c1, c0, 0
+> >> +       isb
+> >> +
+> >> +       bl v7_flush_dcache_all
+> >> +
 > > 
-> > This field is not present on Exynos4210 and Exynos5 SoCs. However
-> > on Exynos4412 SoC it is required to set this field after reset
-> > because without it TMU shows maximal available temperature, which
-> > causes immediate platform shutdown.
+> > This code looks familiar and the first cache flush is not needed.
 > > 
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+> > look at arch/arm/mach-vexpress/tc2_pm.c -> tc2_pm_down()
 > > 
-> > ---
-> > Changes for v2:
-> > - Define test_mux and test_mux_addr_shift to not use direct
-> > register access
-> > - Remove pdata->type == SOC_ARCH_EXYNOS4412 check at
-> > exynos_tmu_control() and use only generic code
+> > I know that probably the SMP bit in ACTLR is managed differently in this
+> > architecture but still, cache flushing should still apply and the TC2
+> > sequence is the proper one, unless you explain to me why that does not
+> > work on this chipset.
+> 
+> Here we follow the advices you gave in your presentation at Linaro Connect
+> Q2-2012: "Idling ARMs in a Busy World: Linux Power Management for ARM
+> multi-cluster systems"
+> http://www.linaro.org/documents/download/84a5990d6f227c90e3d3a3ad2af0e22c4fd1d0bd4a6c7
+> at p21.
+> 
+> Quoting the author of the original version od the code :
+> "Since the second flush is almost NOPs, I preferred to keep them both in the same sequence."
+>
+
+This code comes from arch/arm/mach-omap2/sleep44xx.S
+
+First flush is not necessary and should be removed, from here and from
+the file above as well; the proper sequence is in:
+
+arch/arm/mach-vexpress/tc2_pm.c
+
+(which is described in the presentation link you provided)
+
+and Nico also managed to write inline assembly macros that are meant
+to be upstreamed soon to carry out the cache cleaning ops you need
+here.
+
+I understand that the second clean is _almost_ NOPs, but that's no good
+reason to write the sequence this way. I will repeat myself: first flush
+is not necessary and as such should be removed.
+
 > > 
-> >  drivers/thermal/samsung/exynos_tmu.c      |    3 +++
-> >  drivers/thermal/samsung/exynos_tmu.h      |    4 ++++
-> >  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
-> >  drivers/thermal/samsung/exynos_tmu_data.h |    4 ++++
-> >  4 files changed, 13 insertions(+)
+> >> +       /* Data memory barrier and Data sync barrier */
+> >> +       dsb
+> >> +       dmb
+> >> +
+> >> +       bl armada_370_xp_disable_snoop_ena
+> >> +
+> >> +       dsb                             @ Data Synchronization Barrier
+> >> +
+> >> +/*
+> >> + * ===================================
+> >> + * == WFI instruction => Enter idle ==
+> >> + * ===================================
+> >> + */
+> >> +
+> >> +       wfi                             @ wait for interrupt
 > > 
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> > b/drivers/thermal/samsung/exynos_tmu.c index 1312b34..32f38b9 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> > @@ -317,6 +317,9 @@ static void exynos_tmu_control(struct
-> > platform_device *pdev, bool on) 
-> >  	con = readl(data->base + reg->tmu_ctrl);
-> >  
-> > +	if (pdata->test_mux)
-> 
-> 
-> test_mux field is in fact an address, correct? Can 0 be a valid
-> address?
-
-No it isn't an address. It is the value which shall be written to
-test_mux field of TMU_CONTROL register.
-
-> 
-> Why not using the feature flags to test for capabilities,
-
-It is easier to assign value to test_mux tmu_data struct, than write
-separate set of features for Exynos4412 and Exynos5250, which share the
-code.
-
-Also .features seems to define SoC independent features of TMU IP (like
-TMU_SUPPORT_EMULATION).
-
-The TEST_MUX setting is platform dependent (only Exynos4412 uses it),
-so this is the rationale to define it at tmu platform data.
-
-> features and
-> required configurations instead of assuming obscure domain and address
-> ranges?
-
-TMU_MUX only uses 
-
-(test_mux << test_mux_addr_shift) at tmu_ctrl register.
-
-
-> 
-> 
-> > +		con |= (pdata->test_mux <<
-> > reg->test_mux_addr_shift); +
-> >  	if (pdata->reference_voltage) {
-> >  		con &= ~(reg->buf_vref_sel_mask <<
-> > reg->buf_vref_sel_shift); con |= pdata->reference_voltage <<
-> > reg->buf_vref_sel_shift; diff --git
-> > a/drivers/thermal/samsung/exynos_tmu.h
-> > b/drivers/thermal/samsung/exynos_tmu.h index b42ece4..3fb6554
-> > 100644 --- a/drivers/thermal/samsung/exynos_tmu.h +++
-> > b/drivers/thermal/samsung/exynos_tmu.h @@ -85,6 +85,7 @@ enum
-> > soc_type {
-> >   * @triminfo_reload_shift: shift of triminfo reload enable bit in
-> > triminfo_ctrl reg.
-> >   * @tmu_ctrl: TMU main controller register.
-> > + * @test_mux_addr_shift: shift bits of test mux address.
-> >   * @buf_vref_sel_shift: shift bits of reference voltage in
-> > tmu_ctrl register.
-> >   * @buf_vref_sel_mask: mask bits of reference voltage in tmu_ctrl
-> > register.
-> >   * @therm_trip_mode_shift: shift bits of tripping mode in tmu_ctrl
-> > register. @@ -151,6 +152,7 @@ struct exynos_tmu_registers {
-> >  	u32	triminfo_reload_shift;
-> >  
-> >  	u32	tmu_ctrl;
-> > +	u32     test_mux_addr_shift;
-> >  	u32	buf_vref_sel_shift;
-> >  	u32	buf_vref_sel_mask;
-> >  	u32	therm_trip_mode_shift;
-> > @@ -258,6 +260,7 @@ struct exynos_tmu_registers {
-> >   * @first_point_trim: temp value of the first point trimming
-> >   * @second_point_trim: temp value of the second point trimming
-> >   * @default_temp_offset: default temperature offset in case of no
-> > trimming
-> > + * @test_mux; information if SoC supports test MUX
-> >   * @cal_type: calibration type for temperature
-> >   * @cal_mode: calibration mode for temperature
-> >   * @freq_clip_table: Table representing frequency reduction
-> > percentage. @@ -287,6 +290,7 @@ struct exynos_tmu_platform_data {
-> >  	u8 first_point_trim;
-> >  	u8 second_point_trim;
-> >  	u8 default_temp_offset;
-> > +	u8 test_mux;
-> >  
-> >  	enum calibration_type cal_type;
-> >  	enum calibration_mode cal_mode;
-> > diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
-> > b/drivers/thermal/samsung/exynos_tmu_data.c index d8de5c1..073c292
-> > 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> > @@ -98,6 +98,7 @@ static const struct exynos_tmu_registers
-> > exynos4412_tmu_registers = { .triminfo_ctrl =
-> > EXYNOS_TMU_TRIMINFO_CON, .triminfo_reload_shift =
-> > EXYNOS_TRIMINFO_RELOAD_SHIFT, .tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
-> > +	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
-> >  	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
-> >  	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
-> >  	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
-> > @@ -174,6 +175,7 @@ struct exynos_tmu_init_data const
-> > exynos4412_default_tmu_data = { {
-> >  			EXYNOS4412_TMU_DATA,
-> >  			.type = SOC_ARCH_EXYNOS4412,
-> > +			.test_mux = EXYNOS4412_MUX_ADDR_VALUE,
-> >  		},
-> >  	},
-> >  	.tmu_count = 1,
-> > diff --git a/drivers/thermal/samsung/exynos_tmu_data.h
-> > b/drivers/thermal/samsung/exynos_tmu_data.h index b130b1e..a1ea19d
-> > 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> > +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> > @@ -95,6 +95,10 @@
-> >  
-> >  #define EXYNOS_MAX_TRIGGER_PER_REG	4
-> >  
-> > +/* Exynos4412 specific */
-> > +#define EXYNOS4412_MUX_ADDR_VALUE          6
-> 
-> > +#define EXYNOS4412_MUX_ADDR_SHIFT          20
-> > +
-> >  /*exynos5440 specific registers*/
-> >  #define EXYNOS5440_TMU_S0_7_TRIM		0x000
-> >  #define EXYNOS5440_TMU_S0_7_CTRL		0x020
+> > Here core is running out of coherency and I do not see any tlb invalidation in
+> > the resume path from non-OFF mode. Please can you elaborate on this ?
 > > 
 > 
+> The TLB invalidation should take place in /arch/arm/kernel/suspend.c  cpu_suspend( )
+> in case the return value is 0 caused by cpu_suspend_abort.
+> Did we missed something?
+
+Yes, you did, cpu_suspend_abort returns 1 (ie failure), so no tlb invalidation
+is carried out in cpu_suspend(); tlbs are invalidated only when core resumes
+through cpu_resume. I do not have details of the coherent interconnect used
+in this board/chip, but if the power down procedure fails and the core has
+run outside coherency in the idle thread, tlbs must be invalidated.
+
+> > I have further comments on the set (in particular on the inner workings
+> > of coherency and how CPUs get in and out of idle - ie how this is
+> > managed by the power controller) but I will keep them for next version,
+> > when the first set of review comments is addressed.
+> > 
 > 
+> You can make your comments on the last version I have just sent.
 
+Ok, cheers.
 
+> Thanks for your review
 
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Thank you,
+Lorenzo
