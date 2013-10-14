@@ -1,290 +1,238 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCHv4 2/9] Thermal: Create sensor level APIs
-Date: Mon, 14 Oct 2013 16:21:52 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59DADB0B@BGSMSX101.gar.corp.intel.com>
-References: <1380652688-5787-1-git-send-email-durgadoss.r@intel.com>
-	 <1380652688-5787-3-git-send-email-durgadoss.r@intel.com>
- <1381742769.2034.26.camel@rzhang1-mobl4>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH v3 11/14] ARM: mvebu: Add CPU idle low level support for
+ Marvell Armada XP
+Date: Mon, 14 Oct 2013 18:28:13 +0200
+Message-ID: <20131014182813.677ca24e@skate>
+References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
+	<1381759106-15004-12-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:44186 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755583Ab3JNQV5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Oct 2013 12:21:57 -0400
-In-Reply-To: <1381742769.2034.26.camel@rzhang1-mobl4>
-Content-Language: en-US
+Received: from top.free-electrons.com ([176.31.233.9]:33983 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756196Ab3JNQ2T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 12:28:19 -0400
+In-Reply-To: <1381759106-15004-12-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@freescale.com" <hongbo.zhang@freescale.com>, "wni@nvidia.com" <wni@nvidia.com>
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
 
-SGkgUnVpLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGxpbnV4LXBt
-LW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBtLQ0KPiBvd25lckB2Z2VyLmtl
-cm5lbC5vcmddIE9uIEJlaGFsZiBPZiBaaGFuZyBSdWkNCj4gU2VudDogTW9uZGF5LCBPY3RvYmVy
-IDE0LCAyMDEzIDI6NTYgUE0NCj4gVG86IFIsIER1cmdhZG9zcw0KPiBDYzogZWR1YXJkby52YWxl
-bnRpbkB0aS5jb207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2
-Z2VyLmtlcm5lbC5vcmc7IGhvbmdiby56aGFuZ0BmcmVlc2NhbGUuY29tOyB3bmlAbnZpZGlhLmNv
-bQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIdjQgMi85XSBUaGVybWFsOiBDcmVhdGUgc2Vuc29yIGxl
-dmVsIEFQSXMNCj4gDQo+IE9uIFdlZCwgMjAxMy0xMC0wMiBhdCAwMDowOCArMDUzMCwgRHVyZ2Fk
-b3NzIFIgd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCBjcmVhdGVzIHNlbnNvciBsZXZlbCBBUElzLCBp
-biB0aGUNCj4gPiBnZW5lcmljIHRoZXJtYWwgZnJhbWV3b3JrLg0KPiA+DQo+ID4gQSBUaGVybWFs
-IHNlbnNvciBpcyBhIHBpZWNlIG9mIGhhcmR3YXJlIHRoYXQgY2FuIHJlcG9ydA0KPiA+IHRlbXBl
-cmF0dXJlIG9mIHRoZSBzcG90IGluIHdoaWNoIGl0IGlzIHBsYWNlZC4gQSB0aGVybWFsDQo+ID4g
-c2Vuc29yIGRyaXZlciByZWFkcyB0aGUgdGVtcGVyYXR1cmUgZnJvbSB0aGlzIHNlbnNvcg0KPiA+
-IGFuZCByZXBvcnRzIGl0IG91dC4gVGhpcyBraW5kIG9mIGRyaXZlciBjYW4gYmUgaW4NCj4gPiBh
-bnkgc3Vic3lzdGVtLiBJZiB0aGUgc2Vuc29yIG5lZWRzIHRvIHBhcnRpY2lwYXRlDQo+ID4gaW4g
-cGxhdGZvcm0gdGhlcm1hbCBtYW5hZ2VtZW50LCB0aGUgY29ycmVzcG9uZGluZw0KPiA+IGRyaXZl
-ciBjYW4gdXNlIHRoZSBBUElzIGludHJvZHVjZWQgaW4gdGhpcyBwYXRjaCwgdG8NCj4gPiByZWdp
-c3RlcihvciB1bnJlZ2lzdGVyKSB3aXRoIHRoZSB0aGVybWFsIGZyYW1ld29yay4NCj4gPg0KPiA+
-IFNpZ25lZC1vZmYtYnk6IER1cmdhZG9zcyBSIDxkdXJnYWRvc3MuckBpbnRlbC5jb20+DQo+ID4g
-LS0tDQo+ID4gIGRyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYyB8ICAyODQNCj4gKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ICBpbmNsdWRlL2xpbnV4L3Ro
-ZXJtYWwuaCAgICAgICAgfCAgIDI5ICsrKysNCj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCAzMTMgaW5z
-ZXJ0aW9ucygrKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC90aGVybWFs
-X2NvcmUuYyBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYw0KPiA+IGluZGV4IDhjNTEz
-MWQuLjhjNDY1NjcgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29y
-ZS5jDQo+ID4gKysrIGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jDQo+ID4gQEAgLTQ1
-LDEzICs0NSwxNiBAQCBNT0RVTEVfTElDRU5TRSgiR1BMIHYyIik7DQo+ID4NCj4gPiAgc3RhdGlj
-IERFRklORV9JRFIodGhlcm1hbF90el9pZHIpOw0KPiA+ICBzdGF0aWMgREVGSU5FX0lEUih0aGVy
-bWFsX2NkZXZfaWRyKTsNCj4gPiArc3RhdGljIERFRklORV9JRFIodGhlcm1hbF9zZW5zb3JfaWRy
-KTsNCj4gPiAgc3RhdGljIERFRklORV9NVVRFWCh0aGVybWFsX2lkcl9sb2NrKTsNCj4gPg0KPiA+
-ICBzdGF0aWMgTElTVF9IRUFEKHRoZXJtYWxfdHpfbGlzdCk7DQo+ID4gK3N0YXRpYyBMSVNUX0hF
-QUQodGhlcm1hbF9zZW5zb3JfbGlzdCk7DQo+ID4gIHN0YXRpYyBMSVNUX0hFQUQodGhlcm1hbF9j
-ZGV2X2xpc3QpOw0KPiA+ICBzdGF0aWMgTElTVF9IRUFEKHRoZXJtYWxfZ292ZXJub3JfbGlzdCk7
-DQo+ID4NCj4gPiAgc3RhdGljIERFRklORV9NVVRFWCh0aGVybWFsX2xpc3RfbG9jayk7DQo+ID4g
-K3N0YXRpYyBERUZJTkVfTVVURVgoc2Vuc29yX2xpc3RfbG9jayk7DQo+ID4gIHN0YXRpYyBERUZJ
-TkVfTVVURVgodGhlcm1hbF9nb3Zlcm5vcl9sb2NrKTsNCj4gPg0KPiA+ICBzdGF0aWMgc3RydWN0
-IHRoZXJtYWxfZ292ZXJub3IgKl9fZmluZF9nb3Zlcm5vcihjb25zdCBjaGFyICpuYW1lKQ0KPiA+
-IEBAIC00NjMsNiArNDY2LDEwMyBAQCBzdGF0aWMgdm9pZCB0aGVybWFsX3pvbmVfZGV2aWNlX2No
-ZWNrKHN0cnVjdA0KPiB3b3JrX3N0cnVjdCAqd29yaykNCj4gPiAgI2RlZmluZSB0b190aGVybWFs
-X3pvbmUoX2RldikgXA0KPiA+ICAJY29udGFpbmVyX29mKF9kZXYsIHN0cnVjdCB0aGVybWFsX3pv
-bmVfZGV2aWNlLCBkZXZpY2UpDQo+ID4NCj4gPiArI2RlZmluZSB0b190aGVybWFsX3NlbnNvcihf
-ZGV2KSBcDQo+ID4gKwljb250YWluZXJfb2YoX2Rldiwgc3RydWN0IHRoZXJtYWxfc2Vuc29yLCBk
-ZXZpY2UpDQo+ID4gKw0KPiA+ICtzdGF0aWMgc3NpemVfdA0KPiA+ICtzZW5zb3JfbmFtZV9zaG93
-KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIN
-Cj4gKmJ1ZikNCj4gPiArew0KPiA+ICsJc3RydWN0IHRoZXJtYWxfc2Vuc29yICp0cyA9IHRvX3Ro
-ZXJtYWxfc2Vuc29yKGRldik7DQo+ID4gKw0KPiA+ICsJcmV0dXJuIHNwcmludGYoYnVmLCAiJXNc
-biIsIHRzLT5uYW1lKTsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHNzaXplX3QNCj4gPiAr
-c2Vuc29yX3RlbXBfc2hvdyhzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBkZXZpY2VfYXR0cmli
-dXRlICphdHRyLCBjaGFyDQo+ICpidWYpDQo+ID4gK3sNCj4gPiArCWludCByZXQ7DQo+ID4gKwls
-b25nIHZhbDsNCj4gPiArCXN0cnVjdCB0aGVybWFsX3NlbnNvciAqdHMgPSB0b190aGVybWFsX3Nl
-bnNvcihkZXYpOw0KPiA+ICsNCj4gPiArCXJldCA9IHRzLT5vcHMtPmdldF90ZW1wKHRzLCAmdmFs
-KTsNCj4gPiArDQo+ID4gKwlyZXR1cm4gcmV0ID8gcmV0IDogc3ByaW50ZihidWYsICIlbGRcbiIs
-IHZhbCk7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBzc2l6ZV90DQo+ID4gK2h5c3Rfc2hv
-dyhzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLCBjaGFy
-ICpidWYpDQo+ID4gK3sNCj4gPiArCWludCBpbmR4LCByZXQ7DQo+ID4gKwlsb25nIHZhbDsNCj4g
-PiArCXN0cnVjdCB0aGVybWFsX3NlbnNvciAqdHMgPSB0b190aGVybWFsX3NlbnNvcihkZXYpOw0K
-PiA+ICsNCj4gPiArCWlmICghc3NjYW5mKGF0dHItPmF0dHIubmFtZSwgInRocmVzaG9sZCVkX2h5
-c3QiLCAmaW5keCkpDQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4gKw0KPiA+ICsJcmV0ID0g
-dHMtPm9wcy0+Z2V0X2h5c3QodHMsIGluZHgsICZ2YWwpOw0KPiA+ICsNCj4gPiArCXJldHVybiBy
-ZXQgPyByZXQgOiBzcHJpbnRmKGJ1ZiwgIiVsZFxuIiwgdmFsKTsNCj4gPiArfQ0KPiA+ICsNCj4g
-PiArc3RhdGljIHNzaXplX3QNCj4gPiAraHlzdF9zdG9yZShzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0
-cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLA0KPiA+ICsJCQkJICAgY29uc3QgY2hhciAqYnVm
-LCBzaXplX3QgY291bnQpDQo+ID4gK3sNCj4gPiArCWludCBpbmR4LCByZXQ7DQo+ID4gKwlsb25n
-IHZhbDsNCj4gPiArCXN0cnVjdCB0aGVybWFsX3NlbnNvciAqdHMgPSB0b190aGVybWFsX3NlbnNv
-cihkZXYpOw0KPiA+ICsNCj4gPiArCWlmICghdHMtPm9wcy0+c2V0X2h5c3QpDQo+ID4gKwkJcmV0
-dXJuIC1FUEVSTTsNCj4gPiArDQo+ID4gKwlpZiAoIXNzY2FuZihhdHRyLT5hdHRyLm5hbWUsICJ0
-aHJlc2hvbGQlZF9oeXN0IiwgJmluZHgpKQ0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsN
-Cj4gPiArCWlmIChrc3RydG9sKGJ1ZiwgMTAsICZ2YWwpKQ0KPiA+ICsJCXJldHVybiAtRUlOVkFM
-Ow0KPiA+ICsNCj4gPiArCXJldCA9IHRzLT5vcHMtPnNldF9oeXN0KHRzLCBpbmR4LCB2YWwpOw0K
-PiA+ICsNCj4gPiArCXJldHVybiByZXQgPyByZXQgOiBjb3VudDsNCj4gPiArfQ0KPiA+ICsNCj4g
-PiArc3RhdGljIHNzaXplX3QNCj4gPiArdGhyZXNob2xkX3Nob3coc3RydWN0IGRldmljZSAqZGV2
-LCBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQ0KPiA+ICt7DQo+ID4g
-KwlpbnQgaW5keCwgcmV0Ow0KPiA+ICsJbG9uZyB2YWw7DQo+ID4gKwlzdHJ1Y3QgdGhlcm1hbF9z
-ZW5zb3IgKnRzID0gdG9fdGhlcm1hbF9zZW5zb3IoZGV2KTsNCj4gPiArDQo+ID4gKwlpZiAoIXNz
-Y2FuZihhdHRyLT5hdHRyLm5hbWUsICJ0aHJlc2hvbGQlZCIsICZpbmR4KSkNCj4gPiArCQlyZXR1
-cm4gLUVJTlZBTDsNCj4gPiArDQo+ID4gKwlyZXQgPSB0cy0+b3BzLT5nZXRfdGhyZXNob2xkKHRz
-LCBpbmR4LCAmdmFsKTsNCj4gPiArDQo+ID4gKwlyZXR1cm4gcmV0ID8gcmV0IDogc3ByaW50Zihi
-dWYsICIlbGRcbiIsIHZhbCk7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBzc2l6ZV90DQo+
-ID4gK3RocmVzaG9sZF9zdG9yZShzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBkZXZpY2VfYXR0
-cmlidXRlICphdHRyLA0KPiA+ICsJCQkJICAgY29uc3QgY2hhciAqYnVmLCBzaXplX3QgY291bnQp
-DQo+ID4gK3sNCj4gPiArCWludCBpbmR4LCByZXQ7DQo+ID4gKwlsb25nIHZhbDsNCj4gPiArCXN0
-cnVjdCB0aGVybWFsX3NlbnNvciAqdHMgPSB0b190aGVybWFsX3NlbnNvcihkZXYpOw0KPiA+ICsN
-Cj4gPiArCWlmICghdHMtPm9wcy0+c2V0X3RocmVzaG9sZCkNCj4gPiArCQlyZXR1cm4gLUVQRVJN
-Ow0KPiA+ICsNCj4gPiArCWlmICghc3NjYW5mKGF0dHItPmF0dHIubmFtZSwgInRocmVzaG9sZCVk
-IiwgJmluZHgpKQ0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsNCj4gPiArCWlmIChrc3Ry
-dG9sKGJ1ZiwgMTAsICZ2YWwpKQ0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsNCj4gPiAr
-CXJldCA9IHRzLT5vcHMtPnNldF90aHJlc2hvbGQodHMsIGluZHgsIHZhbCk7DQo+ID4gKw0KPiA+
-ICsJcmV0dXJuIHJldCA/IHJldCA6IGNvdW50Ow0KPiA+ICt9DQo+ID4gKw0KPiA+ICBzdGF0aWMg
-c3NpemVfdA0KPiA+ICB0eXBlX3Nob3coc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2aWNl
-X2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQ0KPiA+ICB7DQo+ID4gQEAgLTc3Miw2ICs4NzIs
-MTAgQEAgc3RhdGljIERFVklDRV9BVFRSKG1vZGUsIDA2NDQsIG1vZGVfc2hvdywNCj4gbW9kZV9z
-dG9yZSk7DQo+ID4gIHN0YXRpYyBERVZJQ0VfQVRUUihwYXNzaXZlLCBTX0lSVUdPIHwgU19JV1VT
-UiwgcGFzc2l2ZV9zaG93LA0KPiBwYXNzaXZlX3N0b3JlKTsNCj4gPiAgc3RhdGljIERFVklDRV9B
-VFRSKHBvbGljeSwgU19JUlVHTyB8IFNfSVdVU1IsIHBvbGljeV9zaG93LCBwb2xpY3lfc3RvcmUp
-Ow0KPiA+DQo+ID4gKy8qIFRoZXJtYWwgc2Vuc29yIGF0dHJpYnV0ZXMgKi8NCj4gPiArc3RhdGlj
-IERFVklDRV9BVFRSKHNlbnNvcl9uYW1lLCAwNDQ0LCBzZW5zb3JfbmFtZV9zaG93LCBOVUxMKTsN
-Cj4gDQo+IHRoaXMgYXR0cmlidXRlIGlzIHVuZGVyIHNlbnNvclgvIGRpcmVjdG9yeSwgdGh1cyBJ
-IHRoaW5rICJuYW1lIiBpcyBjbGVhcg0KPiBlbm91Z2guDQo+IHdoYXQgZG8geW91IHRoaW5rPw0K
-DQpZZXMuIFRoYXQgbWFrZXMgc2Vuc2UuIEkgd2lsbCBnaXZlIHRoaXMgYSB0cnkgaW4gbmV4dCB2
-ZXJzaW9uLg0KDQo+IA0KPiA+ICtzdGF0aWMgREVWSUNFX0FUVFIodGVtcF9pbnB1dCwgMDQ0NCwg
-c2Vuc29yX3RlbXBfc2hvdywgTlVMTCk7DQo+ID4gKw0KPiB3aGF0IGFib3V0ICJ0ZW1wIj8gdG8g
-YmUgY29uc2lzdGVudCB3aXRoIHRoZSBjdXJyZW50IG5hbWluZy4NCg0KSSB0aGluayBJIHRyaWVk
-IHRoaXMsIGJ1dCB3ZSBhbHJlYWR5IGhhZCBhICd0ZW1wJyBhdHRyaWJ1dGUuIFNvLCB3YXMgY29t
-cGVsbGVkDQp0byBnaXZlIGFub3RoZXIgbmFtZS4NCg0KSSB3aWxsIHRyeSB0aGlzIG9uZSBhZ2Fp
-biBhbmQgbGV0IHlvdSBrbm93Lg0KDQo+IA0KPiA+ICAvKiBzeXMgSS9GIGZvciBjb29saW5nIGRl
-dmljZSAqLw0KPiA+ICAjZGVmaW5lIHRvX2Nvb2xpbmdfZGV2aWNlKF9kZXYpCVwNCj4gPiAgCWNv
-bnRhaW5lcl9vZihfZGV2LCBzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSwgZGV2aWNlKQ0K
-PiA+IEBAIC0xNTg1LDYgKzE2ODksMTg2IEBAIHN0YXRpYyB2b2lkIHJlbW92ZV90cmlwX2F0dHJz
-KHN0cnVjdA0KPiB0aGVybWFsX3pvbmVfZGV2aWNlICp0eikNCj4gPiAgCWtmcmVlKHR6LT50cmlw
-X2h5c3RfYXR0cnMpOw0KPiA+ICB9DQo+ID4NCj4gPiArIC8qKg0KPiA+ICsgKiBlbmFibGVfc2Vu
-c29yX3RocmVzaG9sZHMgLSBjcmVhdGUgc3lzZnMgbm9kZXMgZm9yIHRocmVzaG9sZFgNCj4gSU1P
-LCB0aGlzIG5hbWUgaXMgY29uZnVzaW5nLiBJdCBsb29rcyBsaWtlIHRoYXQgeW91IGFyZSBlbmFi
-bGluZyB0aGUNCj4gc2Vuc29yIGhhcmR3YXJlIGhlcmUuDQo+IHNvIHdoeSBub3QgInRoZXJtYWxf
-c2Vuc29yX3N5c2ZzX2FkZCIsIGFuZCB5b3UgY2FuIGFkZCB0aGUgIm5hbWUiIGFuZA0KPiAidGVt
-cCIgYXR0cmlidXRlIGluIHRoaXMgZnVuY3Rpb24gYXMgd2VsbC4NCg0KT2theS4gV2lsbCBkby4N
-Cg0KPiANCj4gPiArICogQHRzOgkJdGhlIHRoZXJtYWwgc2Vuc29yDQo+ID4gKyAqIEBjb3VudDoJ
-TnVtYmVyIG9mIHRocmVzaG9sZHMgc3VwcG9ydGVkIGJ5IHNlbnNvciBoYXJkd2FyZQ0KPiA+ICsg
-Kg0KPiA+ICsgKiAnVGhyZXNob2xkcycgYXJlIHRlbXBlcmF0dXJlcyBwcm9ncmFtbWVkIGludG8g
-dGhlIHNlbnNvciBoYXJkd2FyZSwNCj4gPiArICogb24gY3Jvc3Npbmcgd2hpY2ggdGhlIHNlbnNv
-ciBjYW4gZ2VuZXJhdGUgYW4gaW50ZXJydXB0Lg0KPiA+ICsgKi8NCj4gPiArc3RhdGljIGludCBl
-bmFibGVfc2Vuc29yX3RocmVzaG9sZHMoc3RydWN0IHRoZXJtYWxfc2Vuc29yICp0cywgaW50IGNv
-dW50KQ0KPiA+ICt7DQo+ID4gKwlpbnQgaTsNCj4gPiArCWludCBzaXplID0gc2l6ZW9mKHN0cnVj
-dCB0aGVybWFsX2F0dHIpICogY291bnQ7DQo+ID4gKw0KPiA+ICsJdHMtPnRocmVzaF9hdHRycyA9
-IGRldm1fa3phbGxvYygmdHMtPmRldmljZSwgc2l6ZSwgR0ZQX0tFUk5FTCk7DQo+ID4gKwlpZiAo
-IXRzLT50aHJlc2hfYXR0cnMpDQo+ID4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ID4gKw0KPiA+ICsJ
-aWYgKHRzLT5vcHMtPmdldF9oeXN0KSB7DQo+ID4gKwkJdHMtPmh5c3RfYXR0cnMgPSBkZXZtX2t6
-YWxsb2MoJnRzLT5kZXZpY2UsIHNpemUsIEdGUF9LRVJORUwpOw0KPiA+ICsJCWlmICghdHMtPmh5
-c3RfYXR0cnMpDQo+ID4gKwkJCXJldHVybiAtRU5PTUVNOw0KPiA+ICsJfQ0KPiA+ICsNCj4gSSBk
-byBub3QgdGhpbmsgeW91IGNhbiB1c2UgZGV2bV9remFsbG9jIGhlcmUuDQoNCkFueSBzcGVjaWZp
-YyByZWFzb24gPw0KSSB0aG91Z2h0IHRoaXMgbWVtb3J5IHdpbGwgYmUgZnJlZWQgd2hlbiB3ZSBk
-byBkZXZpY2VfdW5yZWdpc3RlciBvbiAndHMnLg0KUGxlYXNlIGVubGlnaHRlbiBtZSBpZiB0aGlz
-IGlzIG5vdCB0aGUgY2FzZS4NCg0KPiANCj4gPiArCXRzLT50aHJlc2hvbGRzID0gY291bnQ7DQo+
-ID4gKw0KPiA+ICsJLyogQ3JlYXRlIHRocmVzaG9sZCBhdHRyaWJ1dGVzICovDQo+ID4gKwlmb3Ig
-KGkgPSAwOyBpIDwgY291bnQ7IGkrKykgew0KPiA+ICsJCXNucHJpbnRmKHRzLT50aHJlc2hfYXR0
-cnNbaV0ubmFtZSwgVEhFUk1BTF9OQU1FX0xFTkdUSCwNCj4gPiArCQkJCQkJICJ0aHJlc2hvbGQl
-ZCIsIGkpOw0KPiA+ICsNCj4gPiArCQlzeXNmc19hdHRyX2luaXQoJnRzLT50aHJlc2hfYXR0cnNb
-aV0uYXR0ci5hdHRyKTsNCj4gPiArCQl0cy0+dGhyZXNoX2F0dHJzW2ldLmF0dHIuYXR0ci5uYW1l
-ID0gdHMtPnRocmVzaF9hdHRyc1tpXS5uYW1lOw0KPiA+ICsJCXRzLT50aHJlc2hfYXR0cnNbaV0u
-YXR0ci5hdHRyLm1vZGUgPSBTX0lSVUdPIHwgU19JV1VTUjsNCj4gPiArCQl0cy0+dGhyZXNoX2F0
-dHJzW2ldLmF0dHIuc2hvdyA9IHRocmVzaG9sZF9zaG93Ow0KPiA+ICsJCXRzLT50aHJlc2hfYXR0
-cnNbaV0uYXR0ci5zdG9yZSA9IHRocmVzaG9sZF9zdG9yZTsNCj4gPiArDQo+ID4gKwkJZGV2aWNl
-X2NyZWF0ZV9maWxlKCZ0cy0+ZGV2aWNlLCAmdHMtPnRocmVzaF9hdHRyc1tpXS5hdHRyKTsNCj4g
-PiArDQo+ID4gKwkJLyogQ3JlYXRlIHRocmVzaG9sZF9oeXN0IGF0dHJpYnV0ZXMgKi8NCj4gPiAr
-CQlpZiAoIXRzLT5vcHMtPmdldF9oeXN0KQ0KPiA+ICsJCQljb250aW51ZTsNCj4gPiArDQo+ID4g
-KwkJc25wcmludGYodHMtPmh5c3RfYXR0cnNbaV0ubmFtZSwgVEhFUk1BTF9OQU1FX0xFTkdUSCwN
-Cj4gPiArCQkJCQkJICJ0aHJlc2hvbGQlZF9oeXN0IiwgaSk7DQo+ID4gKw0KPiA+ICsJCXN5c2Zz
-X2F0dHJfaW5pdCgmdHMtPmh5c3RfYXR0cnNbaV0uYXR0ci5hdHRyKTsNCj4gPiArCQl0cy0+aHlz
-dF9hdHRyc1tpXS5hdHRyLmF0dHIubmFtZSA9IHRzLT5oeXN0X2F0dHJzW2ldLm5hbWU7DQo+ID4g
-KwkJdHMtPmh5c3RfYXR0cnNbaV0uYXR0ci5hdHRyLm1vZGUgPSBTX0lSVUdPIHwgU19JV1VTUjsN
-Cj4gPiArCQl0cy0+aHlzdF9hdHRyc1tpXS5hdHRyLnNob3cgPSBoeXN0X3Nob3c7DQo+ID4gKwkJ
-dHMtPmh5c3RfYXR0cnNbaV0uYXR0ci5zdG9yZSA9IGh5c3Rfc3RvcmU7DQo+ID4gKw0KPiA+ICsJ
-CWRldmljZV9jcmVhdGVfZmlsZSgmdHMtPmRldmljZSwgJnRzLT5oeXN0X2F0dHJzW2ldLmF0dHIp
-Ow0KPiA+ICsJfQ0KPiA+ICsJcmV0dXJuIDA7DQo+ID4gK30NCj4gPiArDQo+ID4gKy8qKg0KPiA+
-ICsgKiB0aGVybWFsX3NlbnNvcl9yZWdpc3RlciAtIHJlZ2lzdGVyIGEgbmV3IHRoZXJtYWwgc2Vu
-c29yDQo+ID4gKyAqIEBuYW1lOgluYW1lIG9mIHRoZSB0aGVybWFsIHNlbnNvcg0KPiA+ICsgKiBA
-Y291bnQ6CU51bWJlciBvZiB0aHJlc2hvbGRzIHN1cHBvcnRlZCBieSBoYXJkd2FyZQ0KPiA+ICsg
-KiBAb3BzOglzdGFuZGFyZCB0aGVybWFsIHNlbnNvciBjYWxsYmFja3MNCj4gPiArICogQGRldmRh
-dGE6CXByaXZhdGUgZGV2aWNlIGRhdGENCj4gPiArICoNCj4gPiArICogT24gU3VjY2VzcyByZXR1
-cm5zIGEgdGhlcm1hbCBzZW5zb3IgcmVmZXJlbmNlLCBvdGhlcndpc2U6DQo+ID4gKyAqIC1FSU5W
-QUwgZm9yIGludmFsaWQgcGFyYW1ldGVycywNCj4gPiArICogLUVOT01FTSBmb3IgaW5zdWZmaWNp
-ZW50IG1lbW9yeSBjYXNlcywNCj4gPiArKi8NCj4gPiArc3RydWN0IHRoZXJtYWxfc2Vuc29yICp0
-aGVybWFsX3NlbnNvcl9yZWdpc3Rlcihjb25zdCBjaGFyICpuYW1lLCBpbnQgY291bnQsDQo+ID4g
-KwkJCXN0cnVjdCB0aGVybWFsX3NlbnNvcl9vcHMgKm9wcywgdm9pZCAqZGV2ZGF0YSkNCj4gPiAr
-ew0KPiA+ICsJc3RydWN0IHRoZXJtYWxfc2Vuc29yICp0czsNCj4gPiArCWludCByZXQ7DQo+ID4g
-Kw0KPiA+ICsJaWYgKCFuYW1lIHx8IChuYW1lICYmIHN0cmxlbihuYW1lKSA+PSBUSEVSTUFMX05B
-TUVfTEVOR1RIKSkNCj4gPiArCQlyZXR1cm4gRVJSX1BUUigtRUlOVkFMKTsNCj4gPiArDQo+ID4g
-KwlpZiAoIW9wcyB8fCAhb3BzLT5nZXRfdGVtcCkNCj4gPiArCQlyZXR1cm4gRVJSX1BUUigtRUlO
-VkFMKTsNCj4gPiArDQo+ID4gKwl0cyA9IGt6YWxsb2Moc2l6ZW9mKCp0cyksIEdGUF9LRVJORUwp
-Ow0KPiA+ICsJaWYgKCF0cykNCj4gPiArCQlyZXR1cm4gRVJSX1BUUigtRU5PTUVNKTsNCj4gPiAr
-DQo+ID4gKwlpZHJfaW5pdCgmdHMtPmlkcik7DQo+ID4gKwlyZXQgPSBnZXRfaWRyKCZ0aGVybWFs
-X3NlbnNvcl9pZHIsICZ0aGVybWFsX2lkcl9sb2NrLCAmdHMtPmlkKTsNCj4gPiArCWlmIChyZXQp
-DQo+ID4gKwkJZ290byBleGl0X2ZyZWU7DQo+ID4gKw0KPiA+ICsJc3RybGNweSh0cy0+bmFtZSwg
-bmFtZSwgc2l6ZW9mKHRzLT5uYW1lKSk7DQo+ID4gKwl0cy0+b3BzID0gb3BzOw0KPiA+ICsJdHMt
-PmRldmRhdGEgPSBkZXZkYXRhOw0KPiA+ICsJdHMtPmRldmljZS5jbGFzcyA9ICZ0aGVybWFsX2Ns
-YXNzOw0KPiA+ICsNCj4gPiArCWRldl9zZXRfbmFtZSgmdHMtPmRldmljZSwgInNlbnNvciVkIiwg
-dHMtPmlkKTsNCj4gPiArCXJldCA9IGRldmljZV9yZWdpc3RlcigmdHMtPmRldmljZSk7DQo+ID4g
-KwlpZiAocmV0KQ0KPiA+ICsJCWdvdG8gZXhpdF9pZHI7DQo+ID4gKw0KPiA+ICsJcmV0ID0gZGV2
-aWNlX2NyZWF0ZV9maWxlKCZ0cy0+ZGV2aWNlLCAmZGV2X2F0dHJfc2Vuc29yX25hbWUpOw0KPiA+
-ICsJaWYgKHJldCkNCj4gPiArCQlnb3RvIGV4aXRfdW5yZWdpc3RlcjsNCj4gPiArDQo+ID4gKwly
-ZXQgPSBkZXZpY2VfY3JlYXRlX2ZpbGUoJnRzLT5kZXZpY2UsICZkZXZfYXR0cl90ZW1wX2lucHV0
-KTsNCj4gPiArCWlmIChyZXQpDQo+ID4gKwkJZ290byBleGl0X25hbWU7DQo+ID4gKw0KPiA+ICsJ
-aWYgKGNvdW50ID4gMCAmJiB0cy0+b3BzLT5nZXRfdGhyZXNob2xkKSB7DQo+ID4gKwkJcmV0ID0g
-ZW5hYmxlX3NlbnNvcl90aHJlc2hvbGRzKHRzLCBjb3VudCk7DQo+ID4gKwkJaWYgKHJldCkNCj4g
-PiArCQkJZ290byBleGl0X3RlbXA7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJLyogQWRkIHRoaXMg
-c2Vuc29yIHRvIHRoZSBnbG9iYWwgbGlzdCBvZiBzZW5zb3JzICovDQo+ID4gKwltdXRleF9sb2Nr
-KCZzZW5zb3JfbGlzdF9sb2NrKTsNCj4gPiArCWxpc3RfYWRkX3RhaWwoJnRzLT5ub2RlLCAmdGhl
-cm1hbF9zZW5zb3JfbGlzdCk7DQo+ID4gKwltdXRleF91bmxvY2soJnNlbnNvcl9saXN0X2xvY2sp
-Ow0KPiA+ICsNCj4gPiArCXJldHVybiB0czsNCj4gPiArDQo+ID4gK2V4aXRfdGVtcDoNCj4gPiAr
-CWRldmljZV9yZW1vdmVfZmlsZSgmdHMtPmRldmljZSwgJmRldl9hdHRyX3RlbXBfaW5wdXQpOw0K
-PiA+ICtleGl0X25hbWU6DQo+ID4gKwlkZXZpY2VfcmVtb3ZlX2ZpbGUoJnRzLT5kZXZpY2UsICZk
-ZXZfYXR0cl9zZW5zb3JfbmFtZSk7DQo+ID4gK2V4aXRfdW5yZWdpc3RlcjoNCj4gPiArCWRldmlj
-ZV91bnJlZ2lzdGVyKCZ0cy0+ZGV2aWNlKTsNCj4gPiArZXhpdF9pZHI6DQo+ID4gKwlyZWxlYXNl
-X2lkcigmdGhlcm1hbF9zZW5zb3JfaWRyLCAmdGhlcm1hbF9pZHJfbG9jaywgdHMtPmlkKTsNCj4g
-PiArZXhpdF9mcmVlOg0KPiA+ICsJa2ZyZWUodHMpOw0KPiA+ICsJcmV0dXJuIEVSUl9QVFIocmV0
-KTsNCj4gPiArfQ0KPiA+ICtFWFBPUlRfU1lNQk9MKHRoZXJtYWxfc2Vuc29yX3JlZ2lzdGVyKTsN
-Cj4gPiArDQo+ID4gKy8qKg0KPiA+ICsgKiByZW1vdmVfdGhlcm1hbF96b25lIC0gcmVtb3ZlcyB0
-aGUgc3lzZnMgbm9kZXMgZm9yIGdpdmVuIHNlbnNvcg0KPiANCj4gcy9yZW1vdmVfdGhlcm1hbF96
-b25lL3RoZXJtYWxfc2Vuc29yX3VucmVnaXN0ZXINCj4gDQo+ID4gKyAqIEB0czoJVGhlcm1hbCBz
-ZW5zb3IgdG8gYmUgcmVtb3ZlZC4NCj4gPiArICovDQo+ID4gK3ZvaWQgdGhlcm1hbF9zZW5zb3Jf
-dW5yZWdpc3RlcihzdHJ1Y3QgdGhlcm1hbF9zZW5zb3IgKnRzKQ0KPiA+ICt7DQo+ID4gKwlpbnQg
-aTsNCj4gPiArCXN0cnVjdCB0aGVybWFsX3NlbnNvciAqcG9zLCAqbmV4dDsNCj4gPiArCWJvb2wg
-Zm91bmQgPSBmYWxzZTsNCj4gPiArDQo+ID4gKwlpZiAoIXRzKQ0KPiA+ICsJCXJldHVybjsNCj4g
-PiArDQo+ID4gKwltdXRleF9sb2NrKCZzZW5zb3JfbGlzdF9sb2NrKTsNCj4gPiArCWxpc3RfZm9y
-X2VhY2hfZW50cnlfc2FmZShwb3MsIG5leHQsICZ0aGVybWFsX3NlbnNvcl9saXN0LCBub2RlKSB7
-DQo+ID4gKwkJaWYgKHBvcyA9PSB0cykgew0KPiA+ICsJCQlsaXN0X2RlbCgmdHMtPm5vZGUpOw0K
-PiA+ICsJCQlmb3VuZCA9IHRydWU7DQo+ID4gKwkJCWJyZWFrOw0KPiA+ICsJCX0NCj4gPiArCX0N
-Cj4gPiArCW11dGV4X3VubG9jaygmc2Vuc29yX2xpc3RfbG9jayk7DQo+ID4gKw0KPiA+ICsJaWYg
-KCFmb3VuZCkNCj4gPiArCQlyZXR1cm47DQo+ID4gKw0KPiA+ICsJZm9yIChpID0gMDsgaSA8IHRz
-LT50aHJlc2hvbGRzOyBpKyspIHsNCj4gPiArCQlkZXZpY2VfcmVtb3ZlX2ZpbGUoJnRzLT5kZXZp
-Y2UsICZ0cy0+dGhyZXNoX2F0dHJzW2ldLmF0dHIpOw0KPiA+ICsJCWlmICh0cy0+b3BzLT5nZXRf
-aHlzdCkgew0KPiA+ICsJCQlkZXZpY2VfcmVtb3ZlX2ZpbGUoJnRzLT5kZXZpY2UsDQo+ID4gKwkJ
-CQkJJnRzLT5oeXN0X2F0dHJzW2ldLmF0dHIpOw0KPiA+ICsJCX0NCj4gPiArCX0NCj4gPiArDQo+
-ID4gKwlkZXZpY2VfcmVtb3ZlX2ZpbGUoJnRzLT5kZXZpY2UsICZkZXZfYXR0cl9zZW5zb3JfbmFt
-ZSk7DQo+ID4gKwlkZXZpY2VfcmVtb3ZlX2ZpbGUoJnRzLT5kZXZpY2UsICZkZXZfYXR0cl90ZW1w
-X2lucHV0KTsNCj4gPiArDQo+IGhtbW0sIEknZCBwcmVmZXIgeW91IHRvIGludHJvZHVjZSBhIHNl
-cGFyYXRlIGZ1bmN0aW9uIGZvciB0aGUgc3lzZnMNCj4gY2xlYW51cCBjb2RlLg0KDQpGcm9tIHRo
-ZSBhYm92ZSBjb21tZW50LCB3ZSBjYW4gaGF2ZSBhIHNpbWlsYXIgDQp0aGVybWFsX3NlbnNvcl9z
-eXNmc19yZW1vdmUgZnVuY3Rpb24uDQoNClRoYW5rcywNCkR1cmdhDQoNCj4gDQo+IHRoYW5rcywN
-Cj4gcnVpDQo+ID4gKwlyZWxlYXNlX2lkcigmdGhlcm1hbF9zZW5zb3JfaWRyLCAmdGhlcm1hbF9p
-ZHJfbG9jaywgdHMtPmlkKTsNCj4gPiArCWlkcl9kZXN0cm95KCZ0cy0+aWRyKTsNCj4gPiArDQo+
-ID4gKwlkZXZpY2VfdW5yZWdpc3RlcigmdHMtPmRldmljZSk7DQo+ID4gKw0KPiA+ICsJa2ZyZWUo
-dHMpOw0KPiA+ICsJcmV0dXJuOw0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0wodGhlcm1hbF9z
-ZW5zb3JfdW5yZWdpc3Rlcik7DQo+ID4gKw0KPiA+ICAvKioNCj4gPiAgICogdGhlcm1hbF96b25l
-X2RldmljZV9yZWdpc3RlcigpIC0gcmVnaXN0ZXIgYSBuZXcgdGhlcm1hbCB6b25lIGRldmljZQ0K
-PiA+ICAgKiBAdHlwZToJdGhlIHRoZXJtYWwgem9uZSBkZXZpY2UgdHlwZQ0KPiA+IGRpZmYgLS1n
-aXQgYS9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaCBiL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oDQo+
-ID4gaW5kZXggYTM4NmExYy4uMjVmYzU2MiAxMDA2NDQNCj4gPiAtLS0gYS9pbmNsdWRlL2xpbnV4
-L3RoZXJtYWwuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oDQo+ID4gQEAgLTU4
-LDYgKzU4LDcgQEANCj4gPiAgI2RlZmluZSBERUZBVUxUX1RIRVJNQUxfR09WRVJOT1IgICAgICAg
-InVzZXJfc3BhY2UiDQo+ID4gICNlbmRpZg0KPiA+DQo+ID4gK3N0cnVjdCB0aGVybWFsX3NlbnNv
-cjsNCj4gPiAgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2U7DQo+ID4gIHN0cnVjdCB0aGVybWFs
-X2Nvb2xpbmdfZGV2aWNlOw0KPiA+DQo+ID4gQEAgLTEzOSw2ICsxNDAsMTUgQEAgc3RydWN0IHRo
-ZXJtYWxfY29vbGluZ19kZXZpY2Vfb3BzIHsNCj4gPiAgCWludCAoKnNldF9jdXJfc3RhdGUpIChz
-dHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAqLCB1bnNpZ25lZCBsb25nKTsNCj4gPiAgfTsN
-Cj4gPg0KPiA+ICtzdHJ1Y3QgdGhlcm1hbF9zZW5zb3Jfb3BzIHsNCj4gPiArCWludCAoKmdldF90
-ZW1wKSAoc3RydWN0IHRoZXJtYWxfc2Vuc29yICosIGxvbmcgKik7DQo+ID4gKwlpbnQgKCpnZXRf
-dHJlbmQpIChzdHJ1Y3QgdGhlcm1hbF9zZW5zb3IgKiwgaW50LCBlbnVtIHRoZXJtYWxfdHJlbmQg
-Kik7DQo+ID4gKwlpbnQgKCpzZXRfdGhyZXNob2xkKSAoc3RydWN0IHRoZXJtYWxfc2Vuc29yICos
-IGludCwgbG9uZyk7DQo+ID4gKwlpbnQgKCpnZXRfdGhyZXNob2xkKSAoc3RydWN0IHRoZXJtYWxf
-c2Vuc29yICosIGludCwgbG9uZyAqKTsNCj4gPiArCWludCAoKnNldF9oeXN0KSAoc3RydWN0IHRo
-ZXJtYWxfc2Vuc29yICosIGludCwgbG9uZyk7DQo+ID4gKwlpbnQgKCpnZXRfaHlzdCkgKHN0cnVj
-dCB0aGVybWFsX3NlbnNvciAqLCBpbnQsIGxvbmcgKik7DQo+ID4gK307DQo+ID4gKw0KPiA+ICBz
-dHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSB7DQo+ID4gIAlpbnQgaWQ7DQo+ID4gIAljaGFy
-IHR5cGVbVEhFUk1BTF9OQU1FX0xFTkdUSF07DQo+ID4gQEAgLTE1Niw2ICsxNjYsMjEgQEAgc3Ry
-dWN0IHRoZXJtYWxfYXR0ciB7DQo+ID4gIAljaGFyIG5hbWVbVEhFUk1BTF9OQU1FX0xFTkdUSF07
-DQo+ID4gIH07DQo+ID4NCj4gPiArc3RydWN0IHRoZXJtYWxfc2Vuc29yIHsNCj4gPiArCWNoYXIg
-bmFtZVtUSEVSTUFMX05BTUVfTEVOR1RIXTsNCj4gPiArCWludCBpZDsNCj4gPiArCWludCB0ZW1w
-Ow0KPiA+ICsJaW50IHByZXZfdGVtcDsNCj4gPiArCWludCB0aHJlc2hvbGRzOw0KPiA+ICsJdm9p
-ZCAqZGV2ZGF0YTsNCj4gPiArCXN0cnVjdCBpZHIgaWRyOw0KPiA+ICsJc3RydWN0IGRldmljZSBk
-ZXZpY2U7DQo+ID4gKwlzdHJ1Y3QgbGlzdF9oZWFkIG5vZGU7DQo+ID4gKwlzdHJ1Y3QgdGhlcm1h
-bF9zZW5zb3Jfb3BzICpvcHM7DQo+ID4gKwlzdHJ1Y3QgdGhlcm1hbF9hdHRyICp0aHJlc2hfYXR0
-cnM7DQo+ID4gKwlzdHJ1Y3QgdGhlcm1hbF9hdHRyICpoeXN0X2F0dHJzOw0KPiA+ICt9Ow0KPiA+
-ICsNCj4gPiAgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2Ugew0KPiA+ICAJaW50IGlkOw0KPiA+
-ICAJY2hhciB0eXBlW1RIRVJNQUxfTkFNRV9MRU5HVEhdOw0KPiA+IEBAIC0yNDgsNiArMjczLDEw
-IEBAIHN0cnVjdCB0aGVybWFsX2luc3RhbmNlICpnZXRfdGhlcm1hbF9pbnN0YW5jZShzdHJ1Y3QN
-Cj4gdGhlcm1hbF96b25lX2RldmljZSAqLA0KPiA+ICB2b2lkIHRoZXJtYWxfY2Rldl91cGRhdGUo
-c3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKik7DQo+ID4gIHZvaWQgdGhlcm1hbF9ub3Rp
-ZnlfZnJhbWV3b3JrKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosIGludCk7DQo+ID4NCj4g
-PiArc3RydWN0IHRoZXJtYWxfc2Vuc29yICp0aGVybWFsX3NlbnNvcl9yZWdpc3Rlcihjb25zdCBj
-aGFyICosIGludCwNCj4gPiArCQkJCXN0cnVjdCB0aGVybWFsX3NlbnNvcl9vcHMgKiwgdm9pZCAq
-KTsNCj4gPiArdm9pZCB0aGVybWFsX3NlbnNvcl91bnJlZ2lzdGVyKHN0cnVjdCB0aGVybWFsX3Nl
-bnNvciAqKTsNCj4gPiArDQo+ID4gICNpZmRlZiBDT05GSUdfTkVUDQo+ID4gIGV4dGVybiBpbnQg
-dGhlcm1hbF9nZW5lcmF0ZV9uZXRsaW5rX2V2ZW50KHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNl
-ICp0eiwNCj4gPiAgCQkJCQkJZW51bSBldmVudHMgZXZlbnQpOw0KPiANCj4gDQo+IC0tDQo+IFRv
-IHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBs
-aW51eC1wbSIgaW4NCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtl
-cm5lbC5vcmcNCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9y
-Zy9tYWpvcmRvbW8taW5mby5odG1sDQo=
+Dear Gregory CLEMENT,
+
+On Mon, 14 Oct 2013 15:58:23 +0200, Gregory CLEMENT wrote:
+> This commit adds the low level implementation of CPU Idle.
+> Currently only Armada XP is supported, but the support
+> will be extended for Armada 370.
+> 
+> Based on the work of Nadav Haklai.
+> 
+> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> ---
+>  arch/arm/mach-mvebu/Makefile                |  1 +
+>  arch/arm/mach-mvebu/suspend-armada-370-xp.S | 90 +++++++++++++++++++++++++++++
+
+I know Daniel rejected this file from being part of drivers/cpuidle/,
+but this seems weird to me. We're trying to put as much driver code as
+possible to the respective drivers/ directory, and this code is really
+part of the cpuidle driver itself. I know there isn't a single .S file
+for now in drivers/cpuidle, but at least the cpuidle-calxeda.c file
+already has some inline assembly statements.
+
+>  2 files changed, 91 insertions(+)
+>  create mode 100644 arch/arm/mach-mvebu/suspend-armada-370-xp.S
+> 
+> diff --git a/arch/arm/mach-mvebu/Makefile b/arch/arm/mach-mvebu/Makefile
+> index 2d04f0e..9cd2705 100644
+> --- a/arch/arm/mach-mvebu/Makefile
+> +++ b/arch/arm/mach-mvebu/Makefile
+> @@ -8,3 +8,4 @@ obj-$(CONFIG_MACH_ARMADA_370_XP) += armada-370-xp.o
+>  obj-$(CONFIG_ARCH_MVEBU)	 += coherency.o coherency_ll.o pmsu.o
+>  obj-$(CONFIG_SMP)                += platsmp.o headsmp.o
+>  obj-$(CONFIG_HOTPLUG_CPU)        += hotplug.o
+> +obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) += suspend-armada-370-xp.o
+
+I find it weird to have a Kconfig option from drivers/cpuidle/
+affecting the build of things in arch/arm/mach-mvebu/, no?
+
+> diff --git a/arch/arm/mach-mvebu/suspend-armada-370-xp.S b/arch/arm/mach-mvebu/suspend-armada-370-xp.S
+> new file mode 100644
+> index 0000000..5f01a68
+> --- /dev/null
+> +++ b/arch/arm/mach-mvebu/suspend-armada-370-xp.S
+> @@ -0,0 +1,90 @@
+> +/*
+> + * CPU idle low level implementation for Marvell Armada 370 and Armada XP SoCs
+
+But the Armada 370 implementation is not there yet, maybe worth
+updating the comment to mention that (but keep the indication that
+Armada 370 support should come, otherwise the name of the source file
+seems a bit strange).
+
+> + *
+> + * Copyright (C) 2013 Marvell
+> + *
+> + * Nadav Haklai <nadavh@marvell.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without any
+> + * warranty of any kind, whether express or implied.
+> + *
+> + */
+> +#include <linux/linkage.h>
+> +
+> +/*
+> +* armadaxp_cpu_suspend: enter cpu deepIdle state
+
+The name of the function in this comment doesn't match the name of the
+function you've chosen below. Please don't re-use vendor code without
+checking and rewording the comments as appropriate.
+
+> +* input:
+> +*/
+> +ENTRY(armada_370_xp_cpu_suspend)
+
+To me "cpu_suspend" sounds like "suspend/resume", not like cpuidle. Is
+this routine also going to be used during a suspend/resume cycle, which
+would explain its name?
+
+> +/* Save ARM registers */
+> +	stmfd	sp!, {r4 - r11, lr}	@ save registers on stack
+
+The first comment is badly aligned, and duplicates the comment after
+the @. Generally speaking, this file seems to hesitate between using @
+and /* ... */ for comments. Make a decision, and stick to it, if
+possible.
+
+> +
+> +	bl armada_370_xp_pmsu_idle_prepare
+> +	/*
+
+I'd like to have one empty line before comments.
+
+> +	 * Invalidate L1 data cache. Even though only invalidate is
+> +	 * necessary exported flush API is used here. Doing clean
+> +	 * on already clean cache would be almost NOP.
+> +	 */
+> +	bl v7_flush_dcache_all
+> +
+> +	/*
+> +	 * Clear the SCTLR.C bit to prevent further data cache
+> +	 * allocation. Clearing SCTLR.C would make all the data accesses
+> +	 * strongly ordered and would not hit the cache.
+> +	 */
+> +	mrc	p15, 0, r0, c1, c0, 0
+> +	bic	r0, r0, #(1 << 2)	@ Disable the C bit
+> +	mcr	p15, 0, r0, c1, c0, 0
+> +	isb
+> +
+> +	bl v7_flush_dcache_all
+> +
+> +	/* Data memory barrier and Data sync barrier */
+> +	dsb
+> +	dmb
+
+They are not in the order of the comment, and the comment seems quite
+useless: instead of saying *what* the code is doing, it should explain
+*why* the code is doing this. The fact that a dmb is a Data Memory
+Barrier and a dsb is a Data Sync Barrier is already carried by the
+instruction names themselves.
+
+> +
+> +	bl armada_370_xp_disable_snoop_ena
+> +
+> +	dsb				@ Data Synchronization Barrier
+
+Same comment as above.
+
+> +
+> +/*
+> + * ===================================
+> + * == WFI instruction => Enter idle ==
+> + * ===================================
+> + */
+
+This comment doesn't really look like mainline style, but vendor-style.
+Please get rid of this, especially since we know what the wfi
+instruction is, or just a:
+
+	/* Enter idle now */
+	wfi
+
+> +
+> +	wfi				@ wait for interrupt
+> +/*
+> + * ===================================
+> + * == Resume path for non-OFF modes ==
+> + * ===================================
+> + */
+
+Ditto, just something like:
+
+	/*
+         * For all non-OFF modes, we're getting out of idle here. For
+	 * OFF modes, what happens is ...
+	 */
+
+this is a little bit more useful.
+
+> +
+> +/* Enable SnoopEna - Exclusive */
+
+Please align comment and code.
+
+> +	mov	r0, #1			@ r0!=0 means use virtual address
+> +	mov	r1, #0			@ Do not add CPU to SMP group
+> +	bl ll_set_cpu_coherent
+
+As per comments on the previous patches, I'm not happy with this. Just
+make ll_set_cpu_coherent only add to the coherency fabric and not to
+the SMP group, and make it detect automatically if it needs to use the
+virtual address or not.
+
+Also, intend the name of the function with the other arguments of
+assembly instructions.
+
+> +/* Re-enable C-bit if needed */
+
+Please align comment and code.
+
+> +	mrc	p15, 0, r0, c1, c0, 0
+> +	tst	r0, #(1 << 2)		@ Check C bit enabled?
+> +	orreq	r0, r0, #(1 << 2)	@ Enable the C bit if cleared
+> +	mcreq	p15, 0, r0, c1, c0, 0
+> +	isb
+> +
+> +	ldmfd	sp!, {r4 - r11, pc}	@ restore regs and return
+> +ENDPROC(armada_370_xp_cpu_suspend)
+> +
+> +/*
+> +* armada_370_xp_cpu_resume: exit cpu deepIdle state
+> +*/
+
+So I guess this is where we're ending if we enter one of those "OFF"
+idle states. Probably worth mentioning it here.
+
+> +ENTRY(armada_370_xp_cpu_resume)
+> +	mov	r0, #0			@ r0==0 means use physical address
+> +	mov	r1, #1			@ Add CPU to SMP group
+> +	bl ll_set_cpu_coherent
+
+Same comment as above + intend the name of the function with the other
+arguments of assembly instructions.
+
+> +
+> +	/* Now branch to the common CPU resume function */
+> +	b	cpu_resume
+> +
+> +ENDPROC(armada_370_xp_cpu_resume)
+
+Thanks,
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
