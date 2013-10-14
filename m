@@ -1,185 +1,105 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v2 3/5] thermal: exynos: Provide initial setting for TMU's
- test MUX address at Exynos4412
-Date: Mon, 14 Oct 2013 10:24:48 -0400
-Message-ID: <525BFEB0.9080609@ti.com>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com> <1381300194-13134-1-git-send-email-l.majewski@samsung.com> <1381300194-13134-4-git-send-email-l.majewski@samsung.com>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Subject: Re: [PATCH 1/2] ARM: at91: cpuidle: convert to platform driver
+Date: Mon, 14 Oct 2013 16:27:19 +0200
+Message-ID: <20131014142719.GI11420@ns203013.ovh.net>
+References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>
+ <20131014140406.GH11420@ns203013.ovh.net>
+ <525BFD31.3020406@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="kaJwQAgMKePoiALPutGqcHJIBSBNNFdbC"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1381300194-13134-4-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, kgene.kim@samsung.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <525BFD31.3020406@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, nicolas.ferre@atmel.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
---kaJwQAgMKePoiALPutGqcHJIBSBNNFdbC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 09-10-2013 02:29, Lukasz Majewski wrote:
-> The commit d0a0ce3e77c795258d47f9163e92d5031d0c5221 ("thermal: exynos: =
-Add
-> missing definations and code cleanup") has removed setting of test MUX =
-address
-> value at TMU configuration setting.
->=20
-> This field is not present on Exynos4210 and Exynos5 SoCs. However on Ex=
-ynos4412
-> SoC it is required to set this field after reset because without it TMU=
- shows
-> maximal available temperature, which causes immediate platform shutdown=
-=2E
->=20
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
->=20
-> ---
-> Changes for v2:
-> - Define test_mux and test_mux_addr_shift to not use direct register ac=
-cess
-> - Remove pdata->type =3D=3D SOC_ARCH_EXYNOS4412 check at exynos_tmu_con=
-trol() and
->   use only generic code
->=20
->  drivers/thermal/samsung/exynos_tmu.c      |    3 +++
->  drivers/thermal/samsung/exynos_tmu.h      |    4 ++++
->  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
->  drivers/thermal/samsung/exynos_tmu_data.h |    4 ++++
->  4 files changed, 13 insertions(+)
->=20
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
-sung/exynos_tmu.c
-> index 1312b34..32f38b9 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -317,6 +317,9 @@ static void exynos_tmu_control(struct platform_devi=
-ce *pdev, bool on)
-> =20
->  	con =3D readl(data->base + reg->tmu_ctrl);
-> =20
-> +	if (pdata->test_mux)
-
-
-test_mux field is in fact an address, correct? Can 0 be a valid address?
-
-Why not using the feature flags to test for capabilities, features and
-required configurations instead of assuming obscure domain and address
-ranges?
-
-
-> +		con |=3D (pdata->test_mux << reg->test_mux_addr_shift);
-> +
->  	if (pdata->reference_voltage) {
->  		con &=3D ~(reg->buf_vref_sel_mask << reg->buf_vref_sel_shift);
->  		con |=3D pdata->reference_voltage << reg->buf_vref_sel_shift;
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sam=
-sung/exynos_tmu.h
-> index b42ece4..3fb6554 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -85,6 +85,7 @@ enum soc_type {
->   * @triminfo_reload_shift: shift of triminfo reload enable bit in trim=
-info_ctrl
->  	reg.
->   * @tmu_ctrl: TMU main controller register.
-> + * @test_mux_addr_shift: shift bits of test mux address.
->   * @buf_vref_sel_shift: shift bits of reference voltage in tmu_ctrl re=
-gister.
->   * @buf_vref_sel_mask: mask bits of reference voltage in tmu_ctrl regi=
-ster.
->   * @therm_trip_mode_shift: shift bits of tripping mode in tmu_ctrl reg=
-ister.
-> @@ -151,6 +152,7 @@ struct exynos_tmu_registers {
->  	u32	triminfo_reload_shift;
-> =20
->  	u32	tmu_ctrl;
-> +	u32     test_mux_addr_shift;
->  	u32	buf_vref_sel_shift;
->  	u32	buf_vref_sel_mask;
->  	u32	therm_trip_mode_shift;
-> @@ -258,6 +260,7 @@ struct exynos_tmu_registers {
->   * @first_point_trim: temp value of the first point trimming
->   * @second_point_trim: temp value of the second point trimming
->   * @default_temp_offset: default temperature offset in case of no trim=
-ming
-> + * @test_mux; information if SoC supports test MUX
->   * @cal_type: calibration type for temperature
->   * @cal_mode: calibration mode for temperature
->   * @freq_clip_table: Table representing frequency reduction percentage=
-=2E
-> @@ -287,6 +290,7 @@ struct exynos_tmu_platform_data {
->  	u8 first_point_trim;
->  	u8 second_point_trim;
->  	u8 default_temp_offset;
-> +	u8 test_mux;
-> =20
->  	enum calibration_type cal_type;
->  	enum calibration_mode cal_mode;
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
-l/samsung/exynos_tmu_data.c
-> index d8de5c1..073c292 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -98,6 +98,7 @@ static const struct exynos_tmu_registers exynos4412_t=
-mu_registers =3D {
->  	.triminfo_ctrl =3D EXYNOS_TMU_TRIMINFO_CON,
->  	.triminfo_reload_shift =3D EXYNOS_TRIMINFO_RELOAD_SHIFT,
->  	.tmu_ctrl =3D EXYNOS_TMU_REG_CONTROL,
-> +	.test_mux_addr_shift =3D EXYNOS4412_MUX_ADDR_SHIFT,
->  	.buf_vref_sel_shift =3D EXYNOS_TMU_REF_VOLTAGE_SHIFT,
->  	.buf_vref_sel_mask =3D EXYNOS_TMU_REF_VOLTAGE_MASK,
->  	.therm_trip_mode_shift =3D EXYNOS_TMU_TRIP_MODE_SHIFT,
-> @@ -174,6 +175,7 @@ struct exynos_tmu_init_data const exynos4412_defaul=
-t_tmu_data =3D {
->  		{
->  			EXYNOS4412_TMU_DATA,
->  			.type =3D SOC_ARCH_EXYNOS4412,
-> +			.test_mux =3D EXYNOS4412_MUX_ADDR_VALUE,
->  		},
->  	},
->  	.tmu_count =3D 1,
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/therma=
-l/samsung/exynos_tmu_data.h
-> index b130b1e..a1ea19d 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -95,6 +95,10 @@
-> =20
->  #define EXYNOS_MAX_TRIGGER_PER_REG	4
-> =20
-> +/* Exynos4412 specific */
-> +#define EXYNOS4412_MUX_ADDR_VALUE          6
-
-> +#define EXYNOS4412_MUX_ADDR_SHIFT          20
-> +
->  /*exynos5440 specific registers*/
->  #define EXYNOS5440_TMU_S0_7_TRIM		0x000
->  #define EXYNOS5440_TMU_S0_7_CTRL		0x020
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---kaJwQAgMKePoiALPutGqcHJIBSBNNFdbC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJb/rEACgkQCXcVR3XQvP1NPwEAy/+oc1CMkcEd0d1+0hDFH/kj
-wjWGVBkkePaM0gqyLPsA+wVBdxYl0dRD/8G/gCfq4i4jRqb2NMi252EXPC4utCHC
-=vJOJ
------END PGP SIGNATURE-----
-
---kaJwQAgMKePoiALPutGqcHJIBSBNNFdbC--
+T24gMTY6MTggTW9uIDE0IE9jdCAgICAgLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiBPbiAxMC8x
+NC8yMDEzIDA0OjA0IFBNLCBKZWFuLUNocmlzdG9waGUgUExBR05JT0wtVklMTEFSRCB3cm90ZToK
+PiA+T24gMTc6NTEgU2F0IDEyIE9jdCAgICAgLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiA+PlVz
+ZSB0aGUgcGxhdGZvcm0gZHJpdmVyIG1vZGVsIHRvIHNlcGFyYXRlIHRoZSBjcHVpZGxlIHNwZWNp
+ZmljIGNvZGUgZnJvbQo+ID4+dGhlIGxvdyBsZXZlbCBwbSBjb2RlLiBJdCBhbGxvd3MgdG8gcmVt
+b3ZlIHRoZSBkZXBlbmRlbmN5IGJldHdlZW4KPiA+PnRoZXNlIHR3byBjb21wb25lbnRzLgo+ID4+
+Cj4gPj5UZXN0ZWQtb24gdXNiLWE5MjYzIChhdDkxc2FtOTI2MykKPiA+Pgo+ID4+U2lnbmVkLW9m
+Zi1ieTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+Cj4gPj4tLS0K
+PiA+PiAgYXJjaC9hcm0vbWFjaC1hdDkxL2NwdWlkbGUuYyB8ICAgMjkgKysrKysrKysrKysrKysr
+LS0tLS0tLS0tLS0tLS0KPiA+PiAgYXJjaC9hcm0vbWFjaC1hdDkxL3BtLmMgICAgICB8ICAgMTYg
+KysrKysrKysrKysrKysrLQo+ID4+ICAyIGZpbGVzIGNoYW5nZWQsIDMwIGluc2VydGlvbnMoKyks
+IDE1IGRlbGV0aW9ucygtKQo+ID4+Cj4gPj5kaWZmIC0tZ2l0IGEvYXJjaC9hcm0vbWFjaC1hdDkx
+L2NwdWlkbGUuYyBiL2FyY2gvYXJtL21hY2gtYXQ5MS9jcHVpZGxlLmMKPiA+PmluZGV4IDRlYzZh
+NmQuLjZjZGM3NmQgMTAwNjQ0Cj4gPj4tLS0gYS9hcmNoL2FybS9tYWNoLWF0OTEvY3B1aWRsZS5j
+Cj4gPj4rKysgYi9hcmNoL2FybS9tYWNoLWF0OTEvY3B1aWRsZS5jCj4gPj5AQCAtMjEsMjYgKzIx
+LDE3IEBACj4gPj4gICNpbmNsdWRlIDxsaW51eC9leHBvcnQuaD4KPiA+PiAgI2luY2x1ZGUgPGFz
+bS9wcm9jLWZucy5oPgo+ID4+ICAjaW5jbHVkZSA8YXNtL2NwdWlkbGUuaD4KPiA+Pi0jaW5jbHVk
+ZSA8bWFjaC9jcHUuaD4KPiA+Pi0KPiA+Pi0jaW5jbHVkZSAicG0uaCIKPiA+Pgo+ID4+ICAjZGVm
+aW5lIEFUOTFfTUFYX1NUQVRFUwkyCj4gPj4KPiA+PitzdGF0aWMgdm9pZCAoKmF0OTFfc3RhbmRi
+eSkodm9pZCk7Cj4gPj4rCj4gPj4gIC8qIEFjdHVhbCBjb2RlIHRoYXQgcHV0cyB0aGUgU29DIGlu
+IGRpZmZlcmVudCBpZGxlIHN0YXRlcyAqLwo+ID4+ICBzdGF0aWMgaW50IGF0OTFfZW50ZXJfaWRs
+ZShzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiwKPiA+PiAgCQkJc3RydWN0IGNwdWlkbGVfZHJp
+dmVyICpkcnYsCj4gPj4gIAkJCSAgICAgICBpbnQgaW5kZXgpCj4gPj4gIHsKPiA+Pi0JaWYgKGNw
+dV9pc19hdDkxcm05MjAwKCkpCj4gPj4tCQlhdDkxcm05MjAwX3N0YW5kYnkoKTsKPiA+Pi0JZWxz
+ZSBpZiAoY3B1X2lzX2F0OTFzYW05ZzQ1KCkpCj4gPj4tCQlhdDkxc2FtOWc0NV9zdGFuZGJ5KCk7
+Cj4gPj4tCWVsc2UgaWYgKGNwdV9pc19hdDkxc2FtOTI2MygpKQo+ID4+LQkJYXQ5MXNhbTkyNjNf
+c3RhbmRieSgpOwo+ID4+LQllbHNlCj4gPj4tCQlhdDkxc2FtOV9zdGFuZGJ5KCk7Cj4gPj4tCj4g
+Pj4rCWF0OTFfc3RhbmRieSgpOwo+ID4+ICAJcmV0dXJuIGluZGV4Owo+ID4+ICB9Cj4gPj4KPiA+
+PkBAIC02MCw5ICs1MSwxOSBAQCBzdGF0aWMgc3RydWN0IGNwdWlkbGVfZHJpdmVyIGF0OTFfaWRs
+ZV9kcml2ZXIgPSB7Cj4gPj4gIH07Cj4gPj4KPiA+PiAgLyogSW5pdGlhbGl6ZSBDUFUgaWRsZSBi
+eSByZWdpc3RlcmluZyB0aGUgaWRsZSBzdGF0ZXMgKi8KPiA+Pi1zdGF0aWMgaW50IF9faW5pdCBh
+dDkxX2luaXRfY3B1aWRsZSh2b2lkKQo+ID4+K3N0YXRpYyBpbnQgX19pbml0IGF0OTFfY3B1aWRs
+ZV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYpCj4gPj4gIHsKPiA+PisJYXQ5MV9z
+dGFuZGJ5ID0gKHZvaWQgKikoZGV2LT5kZXYucGxhdGZvcm1fZGF0YSk7Cj4gPj4rCQo+ID4+ICAJ
+cmV0dXJuIGNwdWlkbGVfcmVnaXN0ZXIoJmF0OTFfaWRsZV9kcml2ZXIsIE5VTEwpOwo+ID4+ICB9
+Cj4gPj4KPiA+Pi1kZXZpY2VfaW5pdGNhbGwoYXQ5MV9pbml0X2NwdWlkbGUpOwo+ID4+K3N0YXRp
+YyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGF0OTFfY3B1aWRsZV9kcml2ZXIgPSB7Cj4gPj4rCS5k
+cml2ZXIgPSB7Cj4gPj4rCQkubmFtZSA9ICJjcHVpZGxlLWF0OTEiLAo+ID4+KwkJLm93bmVyID0g
+VEhJU19NT0RVTEUsCj4gPj4rCX0sCj4gPj4rCS5wcm9iZSA9IGF0OTFfY3B1aWRsZV9wcm9iZSwK
+PiA+Pit9Owo+ID4+Kwo+ID4+K21vZHVsZV9wbGF0Zm9ybV9kcml2ZXIoYXQ5MV9jcHVpZGxlX2Ry
+aXZlcik7Cj4gPj5kaWZmIC0tZ2l0IGEvYXJjaC9hcm0vbWFjaC1hdDkxL3BtLmMgYi9hcmNoL2Fy
+bS9tYWNoLWF0OTEvcG0uYwo+ID4+aW5kZXggMTVhZmI1ZC4uZGViZGJmOCAxMDA2NDQKPiA+Pi0t
+LSBhL2FyY2gvYXJtL21hY2gtYXQ5MS9wbS5jCj4gPj4rKysgYi9hcmNoL2FybS9tYWNoLWF0OTEv
+cG0uYwo+ID4+QEAgLTMxNCw2ICszMTQsMTAgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBwbGF0Zm9y
+bV9zdXNwZW5kX29wcyBhdDkxX3BtX29wcyA9IHsKPiA+PiAgCS5lbmQJPSBhdDkxX3BtX2VuZCwK
+PiA+PiAgfTsKPiA+Pgo+ID4+K3N0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlIGF0OTFfY3B1
+aWRsZV9kZXZpY2UgPSB7Cj4gPj4rCS5uYW1lID0gImNwdWlkbGUtYXQ5MSIsCj4gPj4rfTsKPiA+
+PisKPiA+PiAgc3RhdGljIGludCBfX2luaXQgYXQ5MV9wbV9pbml0KHZvaWQpCj4gPj4gIHsKPiA+
+PiAgI2lmZGVmIENPTkZJR19BVDkxX1NMT1dfQ0xPQ0sKPiA+PkBAIC0zMjMsOCArMzI3LDE4IEBA
+IHN0YXRpYyBpbnQgX19pbml0IGF0OTFfcG1faW5pdCh2b2lkKQo+ID4+ICAJcHJfaW5mbygiQVQ5
+MTogUG93ZXIgTWFuYWdlbWVudCVzXG4iLCAoc2xvd19jbG9jayA/ICIgKHdpdGggc2xvdyBjbG9j
+ayBtb2RlKSIgOiAiIikpOwo+ID4+Cj4gPj4gIAkvKiBBVDkxUk05MjAwIFNEUkFNIGxvdy1wb3dl
+ciBtb2RlIGNhbm5vdCBiZSB1c2VkIHdpdGggc2VsZi1yZWZyZXNoLiAqLwo+ID4+LQlpZiAoY3B1
+X2lzX2F0OTFybTkyMDAoKSkKPiA+PisJaWYgKGNwdV9pc19hdDkxcm05MjAwKCkpIHsKPiA+PisJ
+CWF0OTFfY3B1aWRsZV9kZXZpY2UuZGV2LnBsYXRmb3JtX2RhdGEgPSBhdDkxcm05MjAwX3N0YW5k
+Ynk7Cj4gPj4gIAkJYXQ5MV9yYW1jX3dyaXRlKDAsIEFUOTFSTTkyMDBfU0RSQU1DX0xQUiwgMCk7
+Cj4gPj4rCX0gZWxzZSBpZiAoY3B1X2lzX2F0OTFzYW05ZzQ1KCkpIHsKPiA+PisJCWF0OTFfY3B1
+aWRsZV9kZXZpY2UuZGV2LnBsYXRmb3JtX2RhdGEgPSBhdDkxc2FtOWc0NV9zdGFuZGJ5Owo+ID4+
+Kwl9IGVsc2UgaWYgKGNwdV9pc19hdDkxc2FtOTI2MygpKSB7Cj4gPj4rCQlhdDkxX2NwdWlkbGVf
+ZGV2aWNlLmRldi5wbGF0Zm9ybV9kYXRhID0gYXQ5MXNhbTkyNjNfc3RhbmRieTsKPiA+PisJfSBl
+bHNlIHsKPiA+PisJCWF0OTFfY3B1aWRsZV9kZXZpY2UuZGV2LnBsYXRmb3JtX2RhdGEgPSBhdDkx
+c2FtOV9zdGFuZGJ5Owo+ID5ubyB0aGlzIGlzIHRvbyBkYW5nZXJvdXMgd2hlbiBhZGRpbmcgbmV3
+IFNvQwo+ID4KPiA+eW91IG11c3QgbGlzdCB0aGUgc3VwcG9ydGVkIFNvQwo+ID4KPiA+YW5kIEkg
+cHJlZmVyIHRvIG1vdmUgdGhpcyBjb2RlIHRvIHRoZSBTb0MgaW5pdCBzdHJ1Y3R1cmUKPiAKPiBE
+byB5b3UgbWVhbiByZWdpc3RlciB0aGUgcGxhdGZvcm1fZGV2aWNlIGluIGVnLgo+IGF0OTFybTky
+MDBfaW5pdGlhbGl6ZSB3aXRoIHRoZSByaWdodCBwbGF0Zm9ybSBkYXRhID8KPiAKeWVzIGFzIGV4
+YW1wbGUKCkJlc3QgUmVnYXJkcywKSi4KPiAKPiA+c28gd2UgY2FuIGRyb3AgdGhlIGlmL2Vsc2Ug
+aWYvZWxzZWUKPiA+Cj4gPmFuZCBkcm9wIHRoZSBpc3N1ZSBvZiBhZGRpbmcgbmV3IGFuZCB0aGUg
+YXJjaF9pbml0Y2FsbAo+ID4KPiA+QmVzdCBSZWdhcmRzLAo+ID5KLgo+ID4+Kwl9Cj4gPj4rCQo+
+ID4+KwlwbGF0Zm9ybV9kZXZpY2VfcmVnaXN0ZXIoJmF0OTFfY3B1aWRsZV9kZXZpY2UpOwo+ID4+
+Cj4gPj4gIAlzdXNwZW5kX3NldF9vcHMoJmF0OTFfcG1fb3BzKTsKPiA+Pgo+ID4+LS0KPiA+PjEu
+Ny45LjUKPiA+Pgo+IAo+IAo+IC0tIAo+ICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJv
+Lm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCj4gCj4gRm9sbG93IExp
+bmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwK
+PiA8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8Cj4gPGh0dHA6Ly93
+d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKPiAKCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
+CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
+ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
