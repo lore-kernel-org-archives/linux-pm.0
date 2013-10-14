@@ -1,34 +1,83 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH v3 07/14] ARM: mvebu: Add a new set of registers for
- pmsu
-Date: Mon, 14 Oct 2013 10:36:06 -0400
-Message-ID: <20131014143606.GJ5402@titan.lakedaemon.net>
-References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
- <1381759106-15004-8-git-send-email-gregory.clement@free-electrons.com>
- <20131014163449.5944e087@skate>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v2 11/12] cpuidle: mvebu: Add initial CPU idle support
+ for Armada 370/XP SoC
+Date: Mon, 14 Oct 2013 16:01:36 +0200
+Message-ID: <525BF940.2010403@free-electrons.com>
+References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+ <1379066801-16276-12-git-send-email-gregory.clement@free-electrons.com>
+ <52333112.2050003@linaro.org> <5235C587.4030802@free-electrons.com>
+ <5235EEE1.8020501@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:58664 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933Ab3JNOgW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 10:36:22 -0400
-Content-Disposition: inline
-In-Reply-To: <20131014163449.5944e087@skate>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <5235EEE1.8020501@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Dan Frazier <dann.frazier@canonical.com>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <leif.lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Chris Van Hoof <van>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Andrew Lunn <andrew@lunn.ch>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
 
-On Mon, Oct 14, 2013 at 04:34:49PM +0200, Thomas Petazzoni wrote:
-...
-> I believe the Device Tree binding documentation should be updated in
-> this patch (which actually changes the driver offering the binding),
-> rather than in PATCH 14/14 (which updates the particular DT of a given
-> platform to use this new binding).
+On 15/09/2013 19:31, Daniel Lezcano wrote:
+Hi Daniel,
 
-Agreed.
+>>>> +	.state_count = ARMADA_370_XP_MAX_STATES,
+>>>> +};
+>>>
+>>> What about the local timers ? Are they shutdown ?
+>>
+>> I need to chekc it.
+> 
+> Ok, if it is the case, there is the flag CPUIDLE_FLAG_TIMER_STOP to tell
+> the cpuidle framework to switch to the broadcast timer with this state.
 
-thx,
+I have just sent a new version taking into account all your remarks, expect
+this one. The timers used on Armada 370/XP are only the locale timer then
+they are not shutdown when the CPUs go to idle.
 
-Jason.
+Regards,
+
+Gregory
+
+> 
+>>>> +static int __init armada_370_xp_cpuidle_init(void)
+>>>> +{
+>>>> +	if (!of_find_compatible_node(NULL, NULL, "marvell,armada-370-xp-pmsu"))
+>>>> +		return -ENODEV;
+>>>> +
+>>>> +	if (!of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric"))
+>>>> +		return -ENODEV;
+>>>> +
+>>>> +	pr_info("Initializing Armada-XP CPU power management ");
+>>>> +
+>>>> +	armada_370_xp_pmsu_enable_l2_powerdown_onidle();
+>>>> +
+>>>> +	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
+>>>> +}
+>>>> +
+>>>> +module_init(armada_370_xp_cpuidle_init);
+>>>
+>>> Isn't it possible to replace it by module_platform_driver ? like ux500
+>>> or kirkwood ?
+>>
+>> It should be possible indeed, I will check it.
+> 
+> That would be great. It is a nicer approach for the single zImage IMHO.
+> 
+> Thanks !
+>   -- Daniel
+> 
+
+
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
