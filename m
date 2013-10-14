@@ -1,55 +1,47 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [GIT PULL] thermal-soc: urgent fixes for 3.12
-Date: Mon, 14 Oct 2013 18:00:01 -0400
-Message-ID: <1381788001-3508-1-git-send-email-eduardo.valentin@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH v1] TMON thermal monitoring/tuning tool
+Date: Mon, 14 Oct 2013 16:02:26 -0700
+Message-ID: <1381791747-7458-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:41306 "EHLO arroyo.ext.ti.com"
+Received: from mga14.intel.com ([143.182.124.37]:52064 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757189Ab3JNWAP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Oct 2013 18:00:15 -0400
+	id S932083Ab3JNXCb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Oct 2013 19:02:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: amit.daniel@samsung.com, l.majewski@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <eduardo.valentin@ti.com>, LKML <linux-kernel@vger.kernel.org>, acme@redhat.com, dhowells@redhat.com, bp@suse.de, gthelen@google.com
+Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Hello Rui,
+Changes since v0
+	- fix seg fault on arm mvprintw() call
+	- give out warning to console instead of syslog when
+	  no thermal zones are detected
+	- draw sub window title on top of border line
+	- add entry to tools/Makefile
+	- change linking order to put libpanel before ncurses
 
-Please pull the following changes. It contains fixes for 3.12 on Exynos
-thermal driver, which is currently broken, Exynos4412 is the main affected.
-Thanks Lukasz for his persistence on getting this done for 3.12.
+Jacob Pan (1):
+  tools/thermal: Introduce tmon, a tool for thermal subsystem
 
-Lukasz, you need to queue the remaining changes on DT via your platform tree.
+ tools/Makefile              |   15 +-
+ tools/thermal/tmon/Makefile |   47 ++++
+ tools/thermal/tmon/README   |   50 ++++
+ tools/thermal/tmon/pid.c    |  131 +++++++++
+ tools/thermal/tmon/sysfs.c  |  596 ++++++++++++++++++++++++++++++++++++++++
+ tools/thermal/tmon/tmon.8   |  142 ++++++++++
+ tools/thermal/tmon/tmon.c   |  352 ++++++++++++++++++++++++
+ tools/thermal/tmon/tmon.h   |  204 ++++++++++++++
+ tools/thermal/tmon/tui.c    |  638 +++++++++++++++++++++++++++++++++++++++++++
+ 9 files changed, 2173 insertions(+), 2 deletions(-)
+ create mode 100644 tools/thermal/tmon/Makefile
+ create mode 100644 tools/thermal/tmon/README
+ create mode 100644 tools/thermal/tmon/pid.c
+ create mode 100644 tools/thermal/tmon/sysfs.c
+ create mode 100644 tools/thermal/tmon/tmon.8
+ create mode 100644 tools/thermal/tmon/tmon.c
+ create mode 100644 tools/thermal/tmon/tmon.h
+ create mode 100644 tools/thermal/tmon/tui.c
 
-It contains also a fix on the extrapolation rules for TI SoCs.
+-- 
+1.7.9.5
 
-The following changes since commit 74ae45a3d656d3e86bb8e776634ebdfd3f39f37c:
-
-  Merge branches 'x86_pkg_temp' and 'misc' of .git into next (2013-09-25 21:41:44 +0800)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next
-
-for you to fetch changes up to 848a3b2b91a45f6b7814e2779f58cc0461d88fce:
-
-  drivers: thermal: allow ti-soc-thermal run without pcb zone (2013-10-14 17:48:33 -0400)
-
-----------------------------------------------------------------
-Eduardo Valentin (1):
-      drivers: thermal: allow ti-soc-thermal run without pcb zone
-
-Lukasz Majewski (3):
-      thermal: exynos: Remove check for thermal device pointer at exynos_report_trigger()
-      thermal: exynos: Provide separate TMU data for Exynos4412
-      thermal: exynos: Provide initial setting for TMU's test MUX address at Exynos4412
-
- drivers/thermal/samsung/exynos_thermal_common.c    |  2 --
- drivers/thermal/samsung/exynos_tmu.c               | 12 ++++++---
- drivers/thermal/samsung/exynos_tmu.h               |  7 ++++-
- drivers/thermal/samsung/exynos_tmu_data.c          | 30 +++++++++++++++++-----
- drivers/thermal/samsung/exynos_tmu_data.h          | 13 +++++++++-
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  1 +
- 6 files changed, 51 insertions(+), 14 deletions(-)
