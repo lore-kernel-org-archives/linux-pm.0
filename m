@@ -1,141 +1,151 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Subject: Re: [PATCH 1/2] ARM: at91: cpuidle: convert to platform driver
-Date: Mon, 14 Oct 2013 16:04:06 +0200
-Message-ID: <20131014140406.GH11420@ns203013.ovh.net>
-References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v2 11/12] cpuidle: mvebu: Add initial CPU idle support
+ for Armada 370/XP SoC
+Date: Mon, 14 Oct 2013 16:14:12 +0200
+Message-ID: <525BFC34.6020300@free-electrons.com>
+References: <1379066801-16276-1-git-send-email-gregory.clement@free-electrons.com>
+ <1379066801-16276-12-git-send-email-gregory.clement@free-electrons.com>
+ <20130913161654.GA5408@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 18.mo3.mail-out.ovh.net ([87.98.172.162]:36239 "EHLO
-	mo3.mail-out.ovh.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751070Ab3JNONF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 10:13:05 -0400
-Received: from mail423.ha.ovh.net (b6.ovh.net [213.186.33.56])
-	by mo3.mail-out.ovh.net (Postfix) with SMTP id EFE7F1000669
-	for <linux-pm@vger.kernel.org>; Mon, 14 Oct 2013 16:02:34 +0200 (CEST)
-Content-Disposition: inline
-In-Reply-To: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20130913161654.GA5408@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Ike Pan <ike.pan@canonical.com>, Atsushi Yamagata <yamagata@plathome.co.jp>, Nadav Haklai <nadavh@marvell.com>, David Marlin <dmarlin@redhat.com>, Yehuda Yitschak <yehuday@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, "dann.frazier@canonical.com" <dann.frazier@canonical.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eran Ben-Avi <benavi@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Leif Lindholm <Leif.Lindholm@arm.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Tomonori Kimura <kimura@plathome.co.jp>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "jcm@redhat.com" <jcm@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Hironobu Shibata <h-shibata@plathome.co.jp>, linux-arm-kernel@
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On 17:51 Sat 12 Oct     , Daniel Lezcano wrote:
-> Use the platform driver model to separate the cpuidle specific code from
-> the low level pm code. It allows to remove the dependency between
-> these two components.
+Hi Lorenzo,
+[...]
+>> +       if (index == MV_CPU_DEEP_IDLE)
+>> +               deepidle = true;
+>> +
+>> +       cpu_suspend(deepidle, armada_370_xp_cpu_suspend);
+>> +
+>> +       cpu_init();
 > 
-> Tested-on usb-a9263 (at91sam9263)
+> I do not think cpu_init() is needed. Either core resumes through
+> cpu_resume, and there cpu_init() is called for you, or there is no
+> reason to call cpu_init() since CPU was not shutdown.
+
+You're right: I have removed it on the new version I have just sent.
+
+
+[...]
+
+>> @@ -0,0 +1,91 @@
+>> +/*
+>> + * CPU idle low level implementation for Marvell Armada 370 and Armada XP SoCs
+>> + *
+>> + * Copyright (C) 2013 Marvell
+>> + *
+>> + * Nadav Haklai <nadavh@marvell.com>
+>> + *
+>> + * This file is licensed under the terms of the GNU General Public
+>> + * License version 2.  This program is licensed "as is" without any
+>> + * warranty of any kind, whether express or implied.
+>> + *
+>> + */
+>> +#include <linux/linkage.h>
+>> +
+>> +
+>> +/*
+>> +* armadaxp_cpu_suspend: enter cpu deepIdle state
+>> +* input:
+>> +*/
+>> +ENTRY(armada_370_xp_cpu_suspend)
+>> +/* Save ARM registers */
+>> +       stmfd   sp!, {r4 - r11, lr}     @ save registers on stack
+>> +
+>> +       bl armada_370_xp_pmsu_idle_prepare
+>> +       /*
+>> +        * Invalidate L1 data cache. Even though only invalidate is
+>> +        * necessary exported flush API is used here. Doing clean
+>> +        * on already clean cache would be almost NOP.
+>> +        */
+>> +       bl v7_flush_dcache_all
+>> +
+>> +       /*
+>> +        * Clear the SCTLR.C bit to prevent further data cache
+>> +        * allocation. Clearing SCTLR.C would make all the data accesses
+>> +        * strongly ordered and would not hit the cache.
+>> +        */
+>> +       mrc     p15, 0, r0, c1, c0, 0
+>> +       bic     r0, r0, #(1 << 2)       @ Disable the C bit
+>> +       mcr     p15, 0, r0, c1, c0, 0
+>> +       isb
+>> +
+>> +       bl v7_flush_dcache_all
+>> +
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  arch/arm/mach-at91/cpuidle.c |   29 +++++++++++++++--------------
->  arch/arm/mach-at91/pm.c      |   16 +++++++++++++++-
->  2 files changed, 30 insertions(+), 15 deletions(-)
+> This code looks familiar and the first cache flush is not needed.
 > 
-> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
-> index 4ec6a6d..6cdc76d 100644
-> --- a/arch/arm/mach-at91/cpuidle.c
-> +++ b/arch/arm/mach-at91/cpuidle.c
-> @@ -21,26 +21,17 @@
->  #include <linux/export.h>
->  #include <asm/proc-fns.h>
->  #include <asm/cpuidle.h>
-> -#include <mach/cpu.h>
-> -
-> -#include "pm.h"
->  
->  #define AT91_MAX_STATES	2
->  
-> +static void (*at91_standby)(void);
-> +
->  /* Actual code that puts the SoC in different idle states */
->  static int at91_enter_idle(struct cpuidle_device *dev,
->  			struct cpuidle_driver *drv,
->  			       int index)
->  {
-> -	if (cpu_is_at91rm9200())
-> -		at91rm9200_standby();
-> -	else if (cpu_is_at91sam9g45())
-> -		at91sam9g45_standby();
-> -	else if (cpu_is_at91sam9263())
-> -		at91sam9263_standby();
-> -	else
-> -		at91sam9_standby();
-> -
-> +	at91_standby();
->  	return index;
->  }
->  
-> @@ -60,9 +51,19 @@ static struct cpuidle_driver at91_idle_driver = {
->  };
->  
->  /* Initialize CPU idle by registering the idle states */
-> -static int __init at91_init_cpuidle(void)
-> +static int __init at91_cpuidle_probe(struct platform_device *dev)
->  {
-> +	at91_standby = (void *)(dev->dev.platform_data);
-> +	
->  	return cpuidle_register(&at91_idle_driver, NULL);
->  }
->  
-> -device_initcall(at91_init_cpuidle);
-> +static struct platform_driver at91_cpuidle_driver = {
-> +	.driver = {
-> +		.name = "cpuidle-at91",
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.probe = at91_cpuidle_probe,
-> +};
-> +
-> +module_platform_driver(at91_cpuidle_driver);
-> diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-> index 15afb5d..debdbf8 100644
-> --- a/arch/arm/mach-at91/pm.c
-> +++ b/arch/arm/mach-at91/pm.c
-> @@ -314,6 +314,10 @@ static const struct platform_suspend_ops at91_pm_ops = {
->  	.end	= at91_pm_end,
->  };
->  
-> +static struct platform_device at91_cpuidle_device = {
-> +	.name = "cpuidle-at91",
-> +};
-> +
->  static int __init at91_pm_init(void)
->  {
->  #ifdef CONFIG_AT91_SLOW_CLOCK
-> @@ -323,8 +327,18 @@ static int __init at91_pm_init(void)
->  	pr_info("AT91: Power Management%s\n", (slow_clock ? " (with slow clock mode)" : ""));
->  
->  	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
-> -	if (cpu_is_at91rm9200())
-> +	if (cpu_is_at91rm9200()) {
-> +		at91_cpuidle_device.dev.platform_data = at91rm9200_standby;
->  		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
-> +	} else if (cpu_is_at91sam9g45()) {
-> +		at91_cpuidle_device.dev.platform_data = at91sam9g45_standby;
-> +	} else if (cpu_is_at91sam9263()) {
-> +		at91_cpuidle_device.dev.platform_data = at91sam9263_standby;
-> +	} else {
-> +		at91_cpuidle_device.dev.platform_data = at91sam9_standby;
-no this is too dangerous when adding new SoC
-
-you must list the supported SoC
-
-and I prefer to move this code to the SoC init structure
-
-so we can drop the if/else if/elsee
-
-and drop the issue of adding new and the arch_initcall
-
-Best Regards,
-J.
-> +	}
-> +	
-> +	platform_device_register(&at91_cpuidle_device);
->  
->  	suspend_set_ops(&at91_pm_ops);
->  
-> -- 
-> 1.7.9.5
+> look at arch/arm/mach-vexpress/tc2_pm.c -> tc2_pm_down()
 > 
+> I know that probably the SMP bit in ACTLR is managed differently in this
+> architecture but still, cache flushing should still apply and the TC2
+> sequence is the proper one, unless you explain to me why that does not
+> work on this chipset.
+
+Here we follow the advices you gave in your presentation at Linaro Connect
+Q2-2012: "Idling ARMs in a Busy World: Linux Power Management for ARM
+multi-cluster systems"
+http://www.linaro.org/documents/download/84a5990d6f227c90e3d3a3ad2af0e22c4fd1d0bd4a6c7
+at p21.
+
+Quoting the author of the original version od the code :
+"Since the second flush is almost NOPs, I preferred to keep them both in the same sequence."
+
+
+> 
+>> +       /* Data memory barrier and Data sync barrier */
+>> +       dsb
+>> +       dmb
+>> +
+>> +       bl armada_370_xp_disable_snoop_ena
+>> +
+>> +       dsb                             @ Data Synchronization Barrier
+>> +
+>> +/*
+>> + * ===================================
+>> + * == WFI instruction => Enter idle ==
+>> + * ===================================
+>> + */
+>> +
+>> +       wfi                             @ wait for interrupt
+> 
+> Here core is running out of coherency and I do not see any tlb invalidation in
+> the resume path from non-OFF mode. Please can you elaborate on this ?
+> 
+
+The TLB invalidation should take place in /arch/arm/kernel/suspend.c  cpu_suspend( )
+in case the return value is 0 caused by cpu_suspend_abort.
+Did we missed something?
+
+[...]
+> 
+> I have further comments on the set (in particular on the inner workings
+> of coherency and how CPUs get in and out of idle - ie how this is
+> managed by the power controller) but I will keep them for next version,
+> when the first set of review comments is addressed.
+> 
+
+You can make your comments on the last version I have just sent.
+
+Thanks for your review
+
+Gregory
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
