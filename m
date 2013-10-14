@@ -1,123 +1,104 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v3 02/14] ARM: mvebu: ll_set_cpu_coherent no more uses the coherency address as parameter
-Date: Mon, 14 Oct 2013 15:58:14 +0200
-Message-ID: <1381759106-15004-3-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v3 01/14] ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
+Date: Mon, 14 Oct 2013 15:58:13 +0200
+Message-ID: <1381759106-15004-2-git-send-email-gregory.clement@free-electrons.com>
 References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:60758 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:60741 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756536Ab3JNN6o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 09:58:44 -0400
+	with ESMTP id S1756676Ab3JNN6n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 09:58:43 -0400
 In-Reply-To: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>, Russell King <linux@arm.linux.org.uk>
 
-Until now the calling functions of ll_set_cpu_coherent() have to know
-the base address of the coherency registers. This commit doesn't
-expose anymore this address, and replace the argument by a flag to
-indicate if we have to use the physical or the virtual address.
+PJ4B needs extra instructions for suspend and resume, so instead of
+using the armv7 version, this commit introduces specific versions for
+PJ4B.
 
+Cc: Russell King <linux@arm.linux.org.uk>
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mach-mvebu/coherency.c    |  6 +++---
- arch/arm/mach-mvebu/coherency_ll.S | 18 +++++++++++++++++-
- arch/arm/mach-mvebu/headsmp.S      | 10 ++--------
- 3 files changed, 22 insertions(+), 12 deletions(-)
+ arch/arm/mm/proc-v7.S | 64 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 61 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
-index 58adf2f..d492fb3 100644
---- a/arch/arm/mach-mvebu/coherency.c
-+++ b/arch/arm/mach-mvebu/coherency.c
-@@ -29,7 +29,7 @@
- #include "armada-370-xp.h"
- 
- unsigned long coherency_phys_base;
--static void __iomem *coherency_base;
-+void __iomem *coherency_base;
- static void __iomem *coherency_cpu_base;
- 
- /* Coherency fabric registers */
-@@ -43,7 +43,7 @@ static struct of_device_id of_coherency_table[] = {
- };
- 
- /* Function defined in coherency_ll.S */
--int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
-+int ll_set_cpu_coherent(bool use_virt_addr, unsigned int hw_cpu_id);
- 
- int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
- {
-@@ -53,7 +53,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
- 		return 1;
- 	}
- 
--	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
-+	return ll_set_cpu_coherent(true, hw_cpu_id);
- }
- 
- static inline void mvebu_hwcc_sync_io_barrier(void)
-diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-index 5476669..8d4e22f 100644
---- a/arch/arm/mach-mvebu/coherency_ll.S
-+++ b/arch/arm/mach-mvebu/coherency_ll.S
-@@ -22,10 +22,22 @@
- 
- 	.text
- /*
-- * r0: Coherency fabric base register address
-+ * r0: if r0==0 => physical addres, else virtual address
-  * r1: HW CPU id
-  */
- ENTRY(ll_set_cpu_coherent)
-+	cmp	r0, #0
-+	bne	1f
-+    /* use physical address */
-+	adr	r0, 3f
-+	ldr	r3, [r0]
-+	ldr	r0, [r0, r3]
-+	b	2f
-+1:
-+    /* use virtual address */
-+	ldr	r0, =(coherency_base)
-+	ldr	r0, [r0]
-+2:
- 	/* Create bit by cpu index */
- 	mov	r3, #(1 << 24)
- 	lsl	r1, r3, r1
-@@ -53,3 +65,7 @@ ENTRY(ll_set_cpu_coherent)
- 	mov	r0, #0
- 	mov	pc, lr
- ENDPROC(ll_set_cpu_coherent)
+diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
+index c63d9bd..b14801b 100644
+--- a/arch/arm/mm/proc-v7.S
++++ b/arch/arm/mm/proc-v7.S
+@@ -162,9 +162,67 @@ ENDPROC(cpu_pj4b_do_idle)
+ 	globl_equ	cpu_pj4b_do_idle,  	cpu_v7_do_idle
+ #endif
+ 	globl_equ	cpu_pj4b_dcache_clean_area,	cpu_v7_dcache_clean_area
+-	globl_equ	cpu_pj4b_do_suspend,	cpu_v7_do_suspend
+-	globl_equ	cpu_pj4b_do_resume,	cpu_v7_do_resume
+-	globl_equ	cpu_pj4b_suspend_size,	cpu_v7_suspend_size
++#ifdef CONFIG_ARM_CPU_SUSPEND
++ENTRY(cpu_pj4b_do_suspend)
++	stmfd	sp!, {r4 - r10, lr}
++	mrc	p15, 0, r4, c13, c0, 0	@ FCSE/PID
++	mrc	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
++	stmia	r0!, {r4 - r5}
++	mrc	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
++	mrc	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
++	mrc	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
++	mrc	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
++	mrc	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
++	stmia	r0!, {r6 - r10}
++	mrc	p15, 0, r6, c3, c0, 0	@ Domain ID
++	mrc	p15, 0, r7, c2, c0, 1	@ TTB 1
++	mrc	p15, 0, r11, c2, c0, 2	@ TTB control register
++	mrc	p15, 0, r8, c1, c0, 0	@ Control register
++	mrc	p15, 0, r9, c1, c0, 1	@ Auxiliary control register
++	mrc	p15, 0, r10, c1, c0, 2	@ Co-processor access control
++	stmia	r0, {r6 - r11}
++	ldmfd	sp!, {r4 - r10, pc}
++ENDPROC(cpu_pj4b_do_suspend)
 +
-+	.align 2
-+3:
-+	.long	coherency_phys_base - .
-diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
-index 8a1b0c9..bffaabc 100644
---- a/arch/arm/mach-mvebu/headsmp.S
-+++ b/arch/arm/mach-mvebu/headsmp.S
-@@ -27,10 +27,8 @@
-  * startup
-  */
- ENTRY(armada_xp_secondary_startup)
--	/* Get coherency fabric base physical address */
--	adr	r0, 1f
--	ldr	r1, [r0]
--	ldr	r0, [r0, r1]
-+	/* Use physical addrss */
-+	mov	r0, #0
++ENTRY(cpu_pj4b_do_resume)
++	mov	ip, #0
++	mcr	p15, 0, ip, c7, c5, 0	@ invalidate I cache
++	mcr	p15, 0, ip, c13, c0, 1	@ set reserved context ID
++	ldmia	r0!, {r4 - r5}
++	mcr	p15, 0, r4, c13, c0, 0	@ FCSE/PID
++	mcr	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
++	ldmia	r0!, {r6 - r10}
++	mcr	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
++	mcr	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
++	mcr	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
++	mcr	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
++	mcr	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
++	ldmia	r0, {r6 - r11}
++	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
++	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
++#ifndef CONFIG_ARM_LPAE
++	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
++	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
++#endif
++	mcr	p15, 0, r1, c2, c0, 0	@ TTB 0
++	mcr	p15, 0, r7, c2, c0, 1	@ TTB 1
++	mcr	p15, 0, r11, c2, c0, 2	@ TTB control register
++	ldr	r4, =PRRR		@ PRRR
++	ldr	r5, =NMRR		@ NMRR
++	mcr	p15, 0, r4, c10, c2, 0	@ write PRRR
++	mcr	p15, 0, r5, c10, c2, 1	@ write NMRR
++	mrc	p15, 0, r4, c1, c0, 1	@ Read Auxiliary control register
++	teq	r4, r9			@ Is it already set?
++	mcrne	p15, 0, r9, c1, c0, 1	@ No, so write it
++	mcr	p15, 0, r10, c1, c0, 2	@ Co-processor access control
++	isb
++	dsb
++	mov	r0, r8			@ control register
++	b	cpu_resume_mmu
++ENDPROC(cpu_pj4b_do_resume)
++#endif
++.globl	cpu_pj4b_suspend_size
++.equ	cpu_pj4b_suspend_size, 4 * 13
  
- 	/* Read CPU id */
- 	mrc     p15, 0, r1, c0, c0, 5
-@@ -41,7 +39,3 @@ ENTRY(armada_xp_secondary_startup)
- 	b	secondary_startup
+ #endif
  
- ENDPROC(armada_xp_secondary_startup)
--
--	.align 2
--1:
--	.long	coherency_phys_base - .
 -- 
 1.8.1.2
 
