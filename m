@@ -1,60 +1,54 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] ARM: at91: cpuidle: Move driver to drivers/cpuidle
-Date: Mon, 14 Oct 2013 12:53:42 +0200
-Message-ID: <525BCD36.5050401@linaro.org>
-References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org> <20131013111945.0251a3cc@skate> <525A732D.3080708@linaro.org> <3135182.xhXUMRLLGy@amdc1032>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH v2 01/13] arm64: kernel: add MPIDR_EL1 accessors macros
+Date: Mon, 14 Oct 2013 12:02:58 +0100
+Message-ID: <1381748590-14279-2-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f182.google.com ([74.125.82.182]:48923 "EHLO
-	mail-we0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756100Ab3JNKxo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 06:53:44 -0400
-Received: by mail-we0-f182.google.com with SMTP id t61so6924919wes.13
-        for <linux-pm@vger.kernel.org>; Mon, 14 Oct 2013 03:53:43 -0700 (PDT)
-In-Reply-To: <3135182.xhXUMRLLGy@amdc1032>
+Received: from service87.mimecast.com ([91.220.42.44]:56751 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754367Ab3JNLCb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:31 -0400
+In-Reply-To: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, patches@linaro.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 10/14/2013 12:20 PM, Bartlomiej Zolnierkiewicz wrote:
->
-> Hi Daniel,
->
-> On Sunday, October 13, 2013 12:17:17 PM Daniel Lezcano wrote:
->> On 10/13/2013 11:19 AM, Thomas Petazzoni wrote:
->>> Dear Daniel Lezcano,
->>>
->>> On Sat, 12 Oct 2013 17:51:39 +0200, Daniel Lezcano wrote:
->>>
->>>> +config ARM_AT91_CPUIDLE
->>>> +        bool "Cpu Idle Driver for the AT91 processors"
->>>
->>> Nitpick: indentation is done with spaces here, while it should be o=
-ne
->>> tab.
->>
->> Ah, right. Fixed for the V2.
->
-> Could you also please add 'default y' to preserve the old behavior?
-> (the at91 cpuidle support was always built-in for CONFIG_CPU_IDLE=3Dy=
-)
+In order to simplify access to different affinity levels within the
+MPIDR_EL1 register values, this patch implements some preprocessor
+macros that allow to retrieve the MPIDR_EL1 affinity level value according
+to the level passed as input parameter.
 
-Yes, sure.
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ arch/arm64/include/asm/cputype.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Thanks for the review.
-
-   -- Daniel
-
-
+diff --git a/arch/arm64/include/asm/cputype.h b/arch/arm64/include/asm/cput=
+ype.h
+index 5fe138e..2c9e295 100644
+--- a/arch/arm64/include/asm/cputype.h
++++ b/arch/arm64/include/asm/cputype.h
+@@ -30,6 +30,16 @@
+=20
+ #define MPIDR_HWID_BITMASK=090xff00ffffff
+=20
++#define MPIDR_LEVEL_BITS 8
++#define MPIDR_LEVEL_MASK ((1 << MPIDR_LEVEL_BITS) - 1)
++
++#define MPIDR_LEVEL_SHIFT(level) ({=09=09=09=09=09\
++=09(level =3D=3D 3) ? 32 : MPIDR_LEVEL_BITS * level;=09=09=09\
++})
++
++#define MPIDR_AFFINITY_LEVEL(mpidr, level)=09=09=09=09\
++=09((mpidr >> MPIDR_LEVEL_SHIFT(level)) & MPIDR_LEVEL_MASK)=09\
++
+ #define read_cpuid(reg) ({=09=09=09=09=09=09\
+ =09u64 __val;=09=09=09=09=09=09=09\
+ =09asm("mrs=09%0, " reg : "=3Dr" (__val));=09=09=09\
 --=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+1.8.4
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
