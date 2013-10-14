@@ -1,238 +1,470 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH v3 11/14] ARM: mvebu: Add CPU idle low level support for
- Marvell Armada XP
-Date: Mon, 14 Oct 2013 18:28:13 +0200
-Message-ID: <20131014182813.677ca24e@skate>
-References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
-	<1381759106-15004-12-git-send-email-gregory.clement@free-electrons.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] ARM: at91: cpuidle: convert to platform driver
+Date: Mon, 14 Oct 2013 18:30:56 +0200
+Message-ID: <525C1C40.7010508@linaro.org>
+References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org> <20131014140406.GH11420@ns203013.ovh.net> <525BFD31.3020406@linaro.org> <20131014142719.GI11420@ns203013.ovh.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:33983 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756196Ab3JNQ2T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 12:28:19 -0400
-In-Reply-To: <1381759106-15004-12-git-send-email-gregory.clement@free-electrons.com>
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:50641 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756671Ab3JNQbA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 12:31:00 -0400
+Received: by mail-wg0-f54.google.com with SMTP id c11so1725974wgh.33
+        for <linux-pm@vger.kernel.org>; Mon, 14 Oct 2013 09:30:58 -0700 (PDT)
+In-Reply-To: <20131014142719.GI11420@ns203013.ovh.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-Dear Gregory CLEMENT,
+On 10/14/2013 04:27 PM, Jean-Christophe PLAGNIOL-VILLARD wrote:
+> On 16:18 Mon 14 Oct     , Daniel Lezcano wrote:
+>> On 10/14/2013 04:04 PM, Jean-Christophe PLAGNIOL-VILLARD wrote:
+>>> On 17:51 Sat 12 Oct     , Daniel Lezcano wrote:
+>>>> Use the platform driver model to separate the cpuidle specific cod=
+e from
+>>>> the low level pm code. It allows to remove the dependency between
+>>>> these two components.
+>>>>
+>>>> Tested-on usb-a9263 (at91sam9263)
+>>>>
+>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Mon, 14 Oct 2013 15:58:23 +0200, Gregory CLEMENT wrote:
-> This commit adds the low level implementation of CPU Idle.
-> Currently only Armada XP is supported, but the support
-> will be extended for Armada 370.
-> 
-> Based on the work of Nadav Haklai.
-> 
-> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->  arch/arm/mach-mvebu/Makefile                |  1 +
->  arch/arm/mach-mvebu/suspend-armada-370-xp.S | 90 +++++++++++++++++++++++++++++
+[ ... ]
 
-I know Daniel rejected this file from being part of drivers/cpuidle/,
-but this seems weird to me. We're trying to put as much driver code as
-possible to the respective drivers/ directory, and this code is really
-part of the cpuidle driver itself. I know there isn't a single .S file
-for now in drivers/cpuidle, but at least the cpuidle-calxeda.c file
-already has some inline assembly statements.
+>>>> ---
+>>>>   	/* AT91RM9200 SDRAM low-power mode cannot be used with self-ref=
+resh. */
+>>>> -	if (cpu_is_at91rm9200())
+>>>> +	if (cpu_is_at91rm9200()) {
+>>>> +		at91_cpuidle_device.dev.platform_data =3D at91rm9200_standby;
+>>>>   		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
+>>>> +	} else if (cpu_is_at91sam9g45()) {
+>>>> +		at91_cpuidle_device.dev.platform_data =3D at91sam9g45_standby;
+>>>> +	} else if (cpu_is_at91sam9263()) {
+>>>> +		at91_cpuidle_device.dev.platform_data =3D at91sam9263_standby;
+>>>> +	} else {
+>>>> +		at91_cpuidle_device.dev.platform_data =3D at91sam9_standby;
+>>> no this is too dangerous when adding new SoC
+>>>
+>>> you must list the supported SoC
+>>>
+>>> and I prefer to move this code to the SoC init structure
+>>
+>> Do you mean register the platform_device in eg.
+>> at91rm9200_initialize with the right platform data ?
+>>
+> yes as example
+>
+> Best Regards,
 
->  2 files changed, 91 insertions(+)
->  create mode 100644 arch/arm/mach-mvebu/suspend-armada-370-xp.S
-> 
-> diff --git a/arch/arm/mach-mvebu/Makefile b/arch/arm/mach-mvebu/Makefile
-> index 2d04f0e..9cd2705 100644
-> --- a/arch/arm/mach-mvebu/Makefile
-> +++ b/arch/arm/mach-mvebu/Makefile
-> @@ -8,3 +8,4 @@ obj-$(CONFIG_MACH_ARMADA_370_XP) += armada-370-xp.o
->  obj-$(CONFIG_ARCH_MVEBU)	 += coherency.o coherency_ll.o pmsu.o
->  obj-$(CONFIG_SMP)                += platsmp.o headsmp.o
->  obj-$(CONFIG_HOTPLUG_CPU)        += hotplug.o
-> +obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) += suspend-armada-370-xp.o
+Hi Jean-Christophe,
 
-I find it weird to have a Kconfig option from drivers/cpuidle/
-affecting the build of things in arch/arm/mach-mvebu/, no?
+I did the changes but there are different drawbacks with the approach.
+The first one is the AT91_SOC_START is too early to call the=20
+platform_device_register. The second one is we have multiple declaratio=
+n=20
+of the platform_device which is not really nice.
 
-> diff --git a/arch/arm/mach-mvebu/suspend-armada-370-xp.S b/arch/arm/mach-mvebu/suspend-armada-370-xp.S
-> new file mode 100644
-> index 0000000..5f01a68
-> --- /dev/null
-> +++ b/arch/arm/mach-mvebu/suspend-armada-370-xp.S
-> @@ -0,0 +1,90 @@
-> +/*
-> + * CPU idle low level implementation for Marvell Armada 370 and Armada XP SoCs
+I found the following solution:
 
-But the Armada 370 implementation is not there yet, maybe worth
-updating the comment to mention that (but keep the indication that
-Armada 370 support should come, otherwise the name of the source file
-seems a bit strange).
+The platform_device is static in pm.c, there is a at91_pm_set_standby=20
+function. All AT91_SOC_START call at91_pm_set_standby with the right=20
+standby function callback, which in turns set the platform data for the=
+=20
+cpuidle platform device. When the init call for pm is made, it register=
+s=20
+the platform device.
 
-> + *
-> + * Copyright (C) 2013 Marvell
-> + *
-> + * Nadav Haklai <nadavh@marvell.com>
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + *
-> + */
-> +#include <linux/linkage.h>
-> +
-> +/*
-> +* armadaxp_cpu_suspend: enter cpu deepIdle state
+That has the benefit to encapsulate the platform device and having it i=
+n=20
+a single place and also we have the information to remove the { if then=
+=20
+else } statements we have in 'at91_pm_enter's case block for=20
+PM_SUSPEND_STANDBY.
 
-The name of the function in this comment doesn't match the name of the
-function you've chosen below. Please don't re-use vendor code without
-checking and rewording the comments as appropriate.
+Does it sound ok for you ?
 
-> +* input:
-> +*/
-> +ENTRY(armada_370_xp_cpu_suspend)
+Thanks
+   -- Daniel
 
-To me "cpu_suspend" sounds like "suspend/resume", not like cpuidle. Is
-this routine also going to be used during a suspend/resume cycle, which
-would explain its name?
+diff --git a/arch/arm/mach-at91/at91rm9200.c=20
+b/arch/arm/mach-at91/at91rm9200.c
+index 4aad93d..0d234f2 100644
+--- a/arch/arm/mach-at91/at91rm9200.c
++++ b/arch/arm/mach-at91/at91rm9200.c
+@@ -27,6 +27,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-> +/* Save ARM registers */
-> +	stmfd	sp!, {r4 - r11, lr}	@ save registers on stack
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -337,6 +338,8 @@ static void __init at91rm9200_initialize(void)
+  	/* Initialize GPIO subsystem */
+  	at91_gpio_init(at91rm9200_gpio,
+  		cpu_is_at91rm9200_bga() ? AT91RM9200_BGA : AT91RM9200_PQFP);
++
++	at91_pm_set_standby(at91rm9200_standby);
+  }
 
-The first comment is badly aligned, and duplicates the comment after
-the @. Generally speaking, this file seems to hesitate between using @
-and /* ... */ for comments. Make a decision, and stick to it, if
-possible.
 
-> +
-> +	bl armada_370_xp_pmsu_idle_prepare
-> +	/*
+diff --git a/arch/arm/mach-at91/at91sam9260.c=20
+b/arch/arm/mach-at91/at91sam9260.c
+index 5de6074..9fd7aa6 100644
+--- a/arch/arm/mach-at91/at91sam9260.c
++++ b/arch/arm/mach-at91/at91sam9260.c
+@@ -28,6 +28,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-I'd like to have one empty line before comments.
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -307,7 +308,6 @@ static struct at91_gpio_bank at91sam9260_gpio[]=20
+__initdata =3D {
+  /* ------------------------------------------------------------------=
+--
+   *  AT91SAM9260 processor initialization
+   * ------------------------------------------------------------------=
+-- */
+-
+  static void __init at91sam9xe_map_io(void)
+  {
+  	unsigned long sram_size;
+@@ -351,6 +351,8 @@ static void __init at91sam9260_initialize(void)
 
-> +	 * Invalidate L1 data cache. Even though only invalidate is
-> +	 * necessary exported flush API is used here. Doing clean
-> +	 * on already clean cache would be almost NOP.
-> +	 */
-> +	bl v7_flush_dcache_all
-> +
-> +	/*
-> +	 * Clear the SCTLR.C bit to prevent further data cache
-> +	 * allocation. Clearing SCTLR.C would make all the data accesses
-> +	 * strongly ordered and would not hit the cache.
-> +	 */
-> +	mrc	p15, 0, r0, c1, c0, 0
-> +	bic	r0, r0, #(1 << 2)	@ Disable the C bit
-> +	mcr	p15, 0, r0, c1, c0, 0
-> +	isb
-> +
-> +	bl v7_flush_dcache_all
-> +
-> +	/* Data memory barrier and Data sync barrier */
-> +	dsb
-> +	dmb
+  	/* Register GPIO subsystem */
+  	at91_gpio_init(at91sam9260_gpio, 3);
++
++	at91_pm_set_standby(at91sam9_standby);
+  }
 
-They are not in the order of the comment, and the comment seems quite
-useless: instead of saying *what* the code is doing, it should explain
-*why* the code is doing this. The fact that a dmb is a Data Memory
-Barrier and a dsb is a Data Sync Barrier is already carried by the
-instruction names themselves.
+  /* ------------------------------------------------------------------=
+--
+diff --git a/arch/arm/mach-at91/at91sam9261.c=20
+b/arch/arm/mach-at91/at91sam9261.c
+index 0e07932..1edbb6f 100644
+--- a/arch/arm/mach-at91/at91sam9261.c
++++ b/arch/arm/mach-at91/at91sam9261.c
+@@ -27,6 +27,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-> +
-> +	bl armada_370_xp_disable_snoop_ena
-> +
-> +	dsb				@ Data Synchronization Barrier
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -293,6 +294,8 @@ static void __init at91sam9261_initialize(void)
 
-Same comment as above.
+  	/* Register GPIO subsystem */
+  	at91_gpio_init(at91sam9261_gpio, 3);
++
++	at91_pm_set_sandby(at91sam9_standby);
+  }
 
-> +
-> +/*
-> + * ===================================
-> + * == WFI instruction => Enter idle ==
-> + * ===================================
-> + */
+  /* ------------------------------------------------------------------=
+--
+diff --git a/arch/arm/mach-at91/at91sam9263.c=20
+b/arch/arm/mach-at91/at91sam9263.c
+index 6ce7d18..b222d59 100644
+--- a/arch/arm/mach-at91/at91sam9263.c
++++ b/arch/arm/mach-at91/at91sam9263.c
+@@ -26,6 +26,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-This comment doesn't really look like mainline style, but vendor-style.
-Please get rid of this, especially since we know what the wfi
-instruction is, or just a:
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -304,7 +305,6 @@ static struct at91_gpio_bank at91sam9263_gpio[]=20
+__initdata =3D {
+  /* ------------------------------------------------------------------=
+--
+   *  AT91SAM9263 processor initialization
+   * ------------------------------------------------------------------=
+-- */
+-
+  static void __init at91sam9263_map_io(void)
+  {
+  	at91_init_sram(0, AT91SAM9263_SRAM0_BASE, AT91SAM9263_SRAM0_SIZE);
+@@ -330,6 +330,8 @@ static void __init at91sam9263_initialize(void)
 
-	/* Enter idle now */
-	wfi
+  	/* Register GPIO subsystem */
+  	at91_gpio_init(at91sam9263_gpio, 5);
++
++	at91_pm_set_standby(at91sam9263_standby);
+  }
 
-> +
-> +	wfi				@ wait for interrupt
-> +/*
-> + * ===================================
-> + * == Resume path for non-OFF modes ==
-> + * ===================================
-> + */
+  /* ------------------------------------------------------------------=
+--
+diff --git a/arch/arm/mach-at91/at91sam9g45.c=20
+b/arch/arm/mach-at91/at91sam9g45.c
+index 474ee04..4186f37 100644
+--- a/arch/arm/mach-at91/at91sam9g45.c
++++ b/arch/arm/mach-at91/at91sam9g45.c
+@@ -26,6 +26,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-Ditto, just something like:
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -355,7 +356,6 @@ static struct at91_gpio_bank at91sam9g45_gpio[]=20
+__initdata =3D {
+  /* ------------------------------------------------------------------=
+--
+   *  AT91SAM9G45 processor initialization
+   * ------------------------------------------------------------------=
+-- */
+-
+  static void __init at91sam9g45_map_io(void)
+  {
+  	at91_init_sram(0, AT91SAM9G45_SRAM_BASE, AT91SAM9G45_SRAM_SIZE);
+@@ -379,6 +379,8 @@ static void __init at91sam9g45_initialize(void)
 
-	/*
-         * For all non-OFF modes, we're getting out of idle here. For
-	 * OFF modes, what happens is ...
-	 */
+  	/* Register GPIO subsystem */
+  	at91_gpio_init(at91sam9g45_gpio, 5);
++
++	at91_pm_set_standby(at91sam9g45_standby);
+  }
 
-this is a little bit more useful.
+  /* ------------------------------------------------------------------=
+--
+diff --git a/arch/arm/mach-at91/at91sam9n12.c=20
+b/arch/arm/mach-at91/at91sam9n12.c
+index c7d670d..cc61e09 100644
+--- a/arch/arm/mach-at91/at91sam9n12.c
++++ b/arch/arm/mach-at91/at91sam9n12.c
+@@ -21,6 +21,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-> +
-> +/* Enable SnoopEna - Exclusive */
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -217,13 +218,18 @@ static void __init at91sam9n12_register_clocks(vo=
+id)
+  /* ------------------------------------------------------------------=
+--
+   *  AT91SAM9N12 processor initialization
+   * ------------------------------------------------------------------=
+-- */
+-
+  static void __init at91sam9n12_map_io(void)
+  {
+  	at91_init_sram(0, AT91SAM9N12_SRAM_BASE, AT91SAM9N12_SRAM_SIZE);
+  }
 
-Please align comment and code.
++static void __init at91sam9n12_initialize(void)
++{
++	at91_pm_set_standby(at91sam9_standby);
++}
++
+  AT91_SOC_START(at91sam9n12)
+  	.map_io =3D at91sam9n12_map_io,
+  	.register_clocks =3D at91sam9n12_register_clocks,
++	.init =3D at91sam9n12_initialize,
+  AT91_SOC_END
+diff --git a/arch/arm/mach-at91/at91sam9rl.c=20
+b/arch/arm/mach-at91/at91sam9rl.c
+index d4ec0d9..b0c8cb6 100644
+--- a/arch/arm/mach-at91/at91sam9rl.c
++++ b/arch/arm/mach-at91/at91sam9rl.c
+@@ -27,6 +27,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-> +	mov	r0, #1			@ r0!=0 means use virtual address
-> +	mov	r1, #0			@ Do not add CPU to SMP group
-> +	bl ll_set_cpu_coherent
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -261,7 +262,6 @@ static struct at91_gpio_bank at91sam9rl_gpio[]=20
+__initdata =3D {
+  /* ------------------------------------------------------------------=
+--
+   *  AT91SAM9RL processor initialization
+   * ------------------------------------------------------------------=
+-- */
+-
+  static void __init at91sam9rl_map_io(void)
+  {
+  	unsigned long sram_size;
+@@ -296,6 +296,8 @@ static void __init at91sam9rl_initialize(void)
 
-As per comments on the previous patches, I'm not happy with this. Just
-make ll_set_cpu_coherent only add to the coherency fabric and not to
-the SMP group, and make it detect automatically if it needs to use the
-virtual address or not.
+  	/* Register GPIO subsystem */
+  	at91_gpio_init(at91sam9rl_gpio, 4);
++
++	at91_pm_set_standby(at91sam9_standby);
+  }
 
-Also, intend the name of the function with the other arguments of
-assembly instructions.
+  /* ------------------------------------------------------------------=
+--
+diff --git a/arch/arm/mach-at91/at91sam9x5.c=20
+b/arch/arm/mach-at91/at91sam9x5.c
+index 916e5a1..9ef7bc6 100644
+--- a/arch/arm/mach-at91/at91sam9x5.c
++++ b/arch/arm/mach-at91/at91sam9x5.c
+@@ -21,6 +21,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-> +/* Re-enable C-bit if needed */
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -316,12 +317,15 @@ static void __init at91sam9x5_register_clocks(voi=
+d)
+  /* ------------------------------------------------------------------=
+--
+   *  AT91SAM9x5 processor initialization
+   * ------------------------------------------------------------------=
+-- */
+-
+  static void __init at91sam9x5_map_io(void)
+  {
+  	at91_init_sram(0, AT91SAM9X5_SRAM_BASE, AT91SAM9X5_SRAM_SIZE);
+  }
 
-Please align comment and code.
++static void __init at91sam9x5_initialize(void)
++{
++	at91_pm_set_standby(at91sam9_standby);
++}
+  /* ------------------------------------------------------------------=
+--
+   *  Interrupt initialization
+   * ------------------------------------------------------------------=
+-- */
+@@ -329,4 +333,5 @@ static void __init at91sam9x5_map_io(void)
+  AT91_SOC_START(at91sam9x5)
+  	.map_io =3D at91sam9x5_map_io,
+  	.register_clocks =3D at91sam9x5_register_clocks,
++	.init =3D at91sam9x5_initialize,
+  AT91_SOC_END
+diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+index debdbf8..42b955c 100644
+--- a/arch/arm/mach-at91/pm.c
++++ b/arch/arm/mach-at91/pm.c
+@@ -318,6 +318,11 @@ static struct platform_device at91_cpuidle_device =
+=3D {
+  	.name =3D "cpuidle-at91",
+  };
 
-> +	mrc	p15, 0, r0, c1, c0, 0
-> +	tst	r0, #(1 << 2)		@ Check C bit enabled?
-> +	orreq	r0, r0, #(1 << 2)	@ Enable the C bit if cleared
-> +	mcreq	p15, 0, r0, c1, c0, 0
-> +	isb
-> +
-> +	ldmfd	sp!, {r4 - r11, pc}	@ restore regs and return
-> +ENDPROC(armada_370_xp_cpu_suspend)
-> +
-> +/*
-> +* armada_370_xp_cpu_resume: exit cpu deepIdle state
-> +*/
++void at91_pm_set_standby(void (*at91_standby)(void))
++{
++	at91_cpuidle_device.dev.platform_data =3D at91_standby;=09
++}
++
+  static int __init at91_pm_init(void)
+  {
+  #ifdef CONFIG_AT91_SLOW_CLOCK
+@@ -327,16 +332,8 @@ static int __init at91_pm_init(void)
+  	pr_info("AT91: Power Management%s\n", (slow_clock ? " (with slow=20
+clock mode)" : ""));
 
-So I guess this is where we're ending if we enter one of those "OFF"
-idle states. Probably worth mentioning it here.
+  	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh.=
+ */
+-	if (cpu_is_at91rm9200()) {
+-		at91_cpuidle_device.dev.platform_data =3D at91rm9200_standby;
++	if (cpu_is_at91rm9200())
+  		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
+-	} else if (cpu_is_at91sam9g45()) {
+-		at91_cpuidle_device.dev.platform_data =3D at91sam9g45_standby;
+-	} else if (cpu_is_at91sam9263()) {
+-		at91_cpuidle_device.dev.platform_data =3D at91sam9263_standby;
+-	} else {
+-		at91_cpuidle_device.dev.platform_data =3D at91sam9_standby;
+-	}
+  =09
+  	platform_device_register(&at91_cpuidle_device);
 
-> +ENTRY(armada_370_xp_cpu_resume)
-> +	mov	r0, #0			@ r0==0 means use physical address
-> +	mov	r1, #1			@ Add CPU to SMP group
-> +	bl ll_set_cpu_coherent
+diff --git a/arch/arm/mach-at91/pm.h b/arch/arm/mach-at91/pm.h
+index 2f5908f..76dd1a7 100644
+--- a/arch/arm/mach-at91/pm.h
++++ b/arch/arm/mach-at91/pm.h
+@@ -11,9 +11,13 @@
+  #ifndef __ARCH_ARM_MACH_AT91_PM
+  #define __ARCH_ARM_MACH_AT91_PM
 
-Same comment as above + intend the name of the function with the other
-arguments of assembly instructions.
++#include <asm/proc-fns.h>
++
+  #include <mach/at91_ramc.h>
+  #include <mach/at91rm9200_sdramc.h>
 
-> +
-> +	/* Now branch to the common CPU resume function */
-> +	b	cpu_resume
-> +
-> +ENDPROC(armada_370_xp_cpu_resume)
++extern void at91_pm_set_standby(void (*at91_standby)(void));
++
+  /*
+   * The AT91RM9200 goes into self-refresh mode with this command, and =
+will
+   * terminate self-refresh automatically on the next SDRAM access.
+diff --git a/arch/arm/mach-at91/sama5d3.c b/arch/arm/mach-at91/sama5d3.=
+c
+index 4012797..9a53db6 100644
+--- a/arch/arm/mach-at91/sama5d3.c
++++ b/arch/arm/mach-at91/sama5d3.c
+@@ -21,6 +21,7 @@
+  #include "generic.h"
+  #include "clock.h"
+  #include "sam9_smc.h"
++#include "pm.h"
 
-Thanks,
+  /* ------------------------------------------------------------------=
+--
+   *  Clocks
+@@ -365,13 +366,18 @@ static void __init sama5d3_register_clocks(void)
+  /* ------------------------------------------------------------------=
+--
+   *  AT91SAM9x5 processor initialization
+   * ------------------------------------------------------------------=
+-- */
+-
+  static void __init sama5d3_map_io(void)
+  {
+  	at91_init_sram(0, SAMA5D3_SRAM_BASE, SAMA5D3_SRAM_SIZE);
+  }
 
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
++static void __init sama5d3_initialize(void)
++{
++	at91_set_standby(at91sam9_standby);
++}
++
+  AT91_SOC_START(sama5d3)
+  	.map_io =3D sama5d3_map_io,
+  	.register_clocks =3D sama5d3_register_clocks,
++	.init =3D sama5d3_initialize,
+  AT91_SOC_END
+
+
+>>   <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software=
+ for ARM SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
+>>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
