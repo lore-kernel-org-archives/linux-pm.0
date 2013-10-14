@@ -1,42 +1,62 @@
-From: Jungseok Lee <jays.lee@samsung.com>
-Subject: [PATCH V2] cpufreq: exynos: Show a list of available frequencies
-Date: Tue, 15 Oct 2013 08:31:13 +0900
-Message-ID: <00a301cec935$786cf7e0$6946e7a0$%lee@samsung.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH v2] platform: x86: asus-wmi: add fan control
+Date: Tue, 15 Oct 2013 00:34:16 +0100
+Message-ID: <20131014233416.GA29878@srcf.ucam.org>
+References: <1381236524-19633-1-git-send-email-felipe.contreras@gmail.com>
+ <CAHR064ge8zew7uMeD+_LXR3ju5ARGG1y8utLOFzOLexny_DPLA@mail.gmail.com>
+ <1381421199.4248.2.camel@x230.lan>
+ <CAMP44s04+_aP7KpVMTUjdNcRWMg6PC6HBaNhF_uhAHm=fhmTcw@mail.gmail.com>
+ <20131013151729.GA4028@srcf.ucam.org>
+ <CAMP44s0utW0ABWgFicDH=vDMxZbQudeM6D13RL8BfPnr55hR8Q@mail.gmail.com>
+ <20131014155254.GB20187@srcf.ucam.org>
+ <CAMP44s3O6z6-gVCqhCps7fKSKMbL9JSakZLfBUxqUYytrWFWKw@mail.gmail.com>
+ <20131014232239.GA29716@srcf.ucam.org>
+ <CAMP44s0vo+XAF_6Q9S2KGNyuEEPtn99qynuqcbE_=RYe3xM71g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-language: ko
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl, viresh.kumar@linaro.org, amit.daniel@samsung.com
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kgene.kim@samsung.com
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMP44s0vo+XAF_6Q9S2KGNyuEEPtn99qynuqcbE_=RYe3xM71g@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: "corentin.chary@gmail.com" <corentin.chary@gmail.com>, "acpi4asus-user@lists.sourceforge.net" <acpi4asus-user@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds freq_attr to show a list of exynos5440 scaling
-available frequencies through sysfs. Common exynos driver already
-supports this attribute.
+On Mon, Oct 14, 2013 at 06:27:33PM -0500, Felipe Contreras wrote:
+> On Mon, Oct 14, 2013 at 6:22 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > The easiest is to just do it from userspace. I think Intel have some
+> > code for doing this, but I haven't looked at the thermal code for years.
+> 
+> That defeats the purpose of the whole thermal binding infrastructure.
 
-Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
----
-Changes since v1:
-- Used a generic attribute, not a specific one.
+Not really, but I agree it's not ideal. If there's a mechanism to get 
+the system temperature via WMI then you could easily construct your own 
+thermal zone and associated cooling device, but otherwise you'd have to 
+provide a mechanism for exporting either the CPU information from 
+coretemp or the thermal zones from ACPI.
 
- drivers/cpufreq/exynos5440-cpufreq.c |    1 +
- 1 file changed, 1 insertion(+)
+> >> > I don't think you can easily register multiple drivers for the same WMI
+> >> > device.
+> >>
+> >> I don't mean this one, I mean the standalone one. Actually, the first
+> >> one I sent doesn't require all this system memory stuff.
+> >
+> > Banging EC registers directly is the wrong thing to do. Going via WMI is
+> > correct.
+> 
+> I'm not going to bother arguing against your absolutist rhetoric. The
+> fact is one patch can be applied, the other can't. Besides, nobody
+> said anything about banging EC registers directly.
 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index 06b73e8..fecc3da 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -330,6 +330,7 @@ static struct cpufreq_driver exynos_driver = {
- 	.init		= exynos_cpufreq_cpu_init,
- 	.exit		= cpufreq_generic_exit,
- 	.name		= CPUFREQ_NAME,
-+	.attr		= cpufreq_generic_attr,
- };
- 
- static const struct of_device_id exynos_cpufreq_match[] = {
+I'm sorry, you're right - you're calling ACPI methods directly instead. 
+This is still incorrect. The platform provides an exported interface, 
+and you should use that exported interface.
+
+As long as Corentin doesn't object, I'm happy to merge this driver in 
+its current form (including virt_to_phys()) providing that it's wrapped 
+in CONFIG_STAGING, and assuming that you'll do the supporting work in 
+acpica. I'll pull it out again in 6 months or so if that hasn't been 
+fixed up. Fair?
+
 -- 
-1.7.10.4
-
-
+Matthew Garrett | mjg59@srcf.ucam.org
