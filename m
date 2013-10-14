@@ -1,136 +1,98 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v2 00/13] arm64: suspend/resume implementation
-Date: Mon, 14 Oct 2013 12:02:57 +0100
-Message-ID: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH v2 08/13] arm64: kernel: implement debug monitors CPU PM notifiers
+Date: Mon, 14 Oct 2013 12:03:05 +0100
+Message-ID: <1381748590-14279-9-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:56568 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:57239 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754652Ab3JNLCa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:30 -0400
+	with ESMTP id S1755933Ab3JNLCg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:36 -0400
+In-Reply-To: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-This series is v2 of a previous posting:
+When a CPU is shutdown either through CPU idle or suspend to RAM, the
+content of debug monitor registers must be reset or restored to proper
+values when CPU resume from low power states. This patch implements a
+CPU PM notifier that allows to restore the content of debug monitor
+registers to allow proper suspend/resume operations.
 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2013-August/195267.ht=
-ml
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ arch/arm64/kernel/debug-monitors.c | 38 ++++++++++++++++++++++++++++++++++=
+++++
+ 1 file changed, 38 insertions(+)
 
-Patchset depends on M.Rutland arm64 CPU hotplug series:
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2013-October/204154.h=
-tml
-
-CPU idle driver and PSCI suspend implementation used for testing are not
-published as part of this series since they depend on standardization
-of PSCI bindings for C-states; code can be made available on a separate bra=
-nch
-if required.
-
-v2 changes:
-
-- Rebased to 3.12-rc4
-- Changed cpu_suspend prototype
-- Added macros to save/restore CPU registers
-- Improved register/load/store scheduling in context save/restore
-- Changed Kconfig option
-- Refactored the stack allocation and context struct layout
-- Fixed a bug in cpu_suspend return path
-- Added tick broadcast support
-- Dropped RFC tag
-
-This patch series provides an implementation of suspend/resume and
-related CPU PM notifiers for the arm64 architecture. The implementation
-has been tweaked and code made a bit more generic wrt ARM 32 bits
-version. The cpu_suspend call prototype accepts a single parameter that
-is translated by the CPU operations suspend protocol backend into a
-series of protocol (eg PSCI) specific parameters and function calls.
-This allows for generic suspend-to-RAM and CPU idle drivers, where the
-platform complexity is hidden behind the CPU ops suspend protocol
-implementation.
-
-The context restore split between processor specific functions and
-generic code has been kept similar to arm32 as well, since this makes
-sense from a functionality perspective, even though there is just a
-an architecture specific save/restore implementation for arm64, for v8.
-Code that deals with turning on the MMU and returning from suspend is kept
-in the same file as the the suspend method itself, so that assembly code is
-self contained in a single file and separated from the interface.
-
-The CPU register context is allocated on the stack; this behaviour is
-the same as in the arm 32-bit port, even though context could have been
-allocated statically as a NR_CPUS array of struct and the context
-addresses stored once of all in the context pointers array after virtual
-to physical conversion. Current solution uses the stack, since there is
-no need to allocate additional context space for context that can be
-easily saved on the suspend threads stacks, with no additional memory
-requirement.
-
-Cache flushing is kept to a minimum; the cpu_suspend method cleans only the
-few bytes of context to DRAM that need to be retrieved with the MMU off,
-the remainder of cache cleaning is delegated to suspend finishers.
-
-The series also provides patches to simplify the MPIDR_EL1 management
-and MPIDR_EL1 hashing that are integrated to the series but are also useful
-as stand alone code.
-
-Code has been tested on AEM v8 models and a simple CPU idle driver that
-enables a C-state where CPUs are shutdown when wfi is hit.
-
-KVM CPU PM notifier has been tested using kvm-tools, and by booting a KVM g=
-uest
-on a host with deep idle states enabled.
-
-HW breakpoint CPU PM notifier has been tested using a simple perf test that
-sets up per-cpu watchpoints and checks the proper behaviour when deep idle
-states are enabled.
-
-Lorenzo Pieralisi (13):
-  arm64: kernel: add MPIDR_EL1 accessors macros
-  arm64: kernel: build MPIDR_EL1 hash function data structure
-  arm64: kernel: suspend/resume registers save/restore
-  arm64: kernel: cpu_{suspend/resume} implementation
-  arm64: add CPU PM infrastructure selection
-  arm64: kernel: implement fpsimd CPU PM notifier
-  arm: kvm: implement CPU PM notifier
-  arm64: kernel: implement debug monitors CPU PM notifiers
-  arm64: kernel: refactor code to install/uninstall breakpoints
-  arm64: kernel: implement HW breakpoints CPU PM notifier
-  arm64: enable generic clockevent broadcast
-  arm64: kernel: add CPU idle call
-  arm64: add CPU power management menu/entries
-
- arch/arm/kvm/arm.c                     |  30 +++++
- arch/arm64/Kconfig                     |  21 ++++
- arch/arm64/include/asm/cpu_ops.h       |   6 +
- arch/arm64/include/asm/cputype.h       |  10 ++
- arch/arm64/include/asm/hardirq.h       |   2 +-
- arch/arm64/include/asm/proc-fns.h      |   3 +
- arch/arm64/include/asm/smp_plat.h      |  13 +++
- arch/arm64/include/asm/suspend.h       |  36 ++++++
- arch/arm64/include/asm/suspendmacros.h |  75 ++++++++++++
- arch/arm64/kernel/Makefile             |   1 +
- arch/arm64/kernel/asm-offsets.c        |  11 ++
- arch/arm64/kernel/debug-monitors.c     |  38 ++++++
- arch/arm64/kernel/fpsimd.c             |  36 ++++++
- arch/arm64/kernel/hw_breakpoint.c      | 205 ++++++++++++++++++++++++-----=
-----
- arch/arm64/kernel/process.c            |   7 +-
- arch/arm64/kernel/setup.c              |  70 +++++++++++
- arch/arm64/kernel/sleep.S              | 191 +++++++++++++++++++++++++++++=
+diff --git a/arch/arm64/kernel/debug-monitors.c b/arch/arm64/kernel/debug-m=
+onitors.c
+index cbfacf7..28ce685 100644
+--- a/arch/arm64/kernel/debug-monitors.c
++++ b/arch/arm64/kernel/debug-monitors.c
+@@ -19,6 +19,7 @@
+  */
+=20
+ #include <linux/cpu.h>
++#include <linux/cpu_pm.h>
+ #include <linux/debugfs.h>
+ #include <linux/hardirq.h>
+ #include <linux/init.h>
+@@ -154,6 +155,42 @@ static struct notifier_block os_lock_nb =3D {
+ =09.notifier_call =3D os_lock_notify,
+ };
+=20
++#ifdef CONFIG_CPU_PM
++static DEFINE_PER_CPU(u32, mdscr);
 +
- arch/arm64/kernel/smp.c                |  17 +++
- arch/arm64/kernel/suspend.c            |  93 +++++++++++++++
- arch/arm64/mm/proc.S                   |  30 +++++
- 20 files changed, 836 insertions(+), 59 deletions(-)
- create mode 100644 arch/arm64/include/asm/suspend.h
- create mode 100644 arch/arm64/include/asm/suspendmacros.h
- create mode 100644 arch/arm64/kernel/sleep.S
- create mode 100644 arch/arm64/kernel/suspend.c
-
++static int dm_cpu_pm_notify(struct notifier_block *self, unsigned long act=
+ion,
++=09=09=09    void *v)
++{
++=09switch (action) {
++=09case CPU_PM_ENTER:
++=09=09__get_cpu_var(mdscr) =3D mdscr_read();
++=09=09break;
++=09case CPU_PM_EXIT:
++=09=09clear_os_lock(NULL);
++=09=09mdscr_write(__get_cpu_var(mdscr));
++=09=09break;
++=09case CPU_PM_ENTER_FAILED:
++=09default:
++=09=09return NOTIFY_DONE;
++=09}
++
++=09return NOTIFY_OK;
++}
++
++static struct notifier_block dm_cpu_pm_nb =3D {
++=09.notifier_call =3D dm_cpu_pm_notify,
++};
++
++static void __init debug_monitors_pm_init(void)
++{
++=09cpu_pm_register_notifier(&dm_cpu_pm_nb);
++}
++#else
++static inline void debug_monitors_pm_init(void)
++{
++}
++#endif
++
+ static int debug_monitors_init(void)
+ {
+ =09/* Clear the OS lock. */
+@@ -162,6 +199,7 @@ static int debug_monitors_init(void)
+=20
+ =09/* Register hotplug handler. */
+ =09register_cpu_notifier(&os_lock_nb);
++=09debug_monitors_pm_init();
+ =09return 0;
+ }
+ postcore_initcall(debug_monitors_init);
 --=20
 1.8.4
 
