@@ -1,123 +1,123 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v3 00/14] CPU idle for Armada XP
-Date: Mon, 14 Oct 2013 15:58:12 +0200
-Message-ID: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v3 02/14] ARM: mvebu: ll_set_cpu_coherent no more uses the coherency address as parameter
+Date: Mon, 14 Oct 2013 15:58:14 +0200
+Message-ID: <1381759106-15004-3-git-send-email-gregory.clement@free-electrons.com>
+References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:60732 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:60758 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756207Ab3JNN6m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 09:58:42 -0400
+	with ESMTP id S1756536Ab3JNN6o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 09:58:44 -0400
+In-Reply-To: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
 
-Hello,
+Until now the calling functions of ll_set_cpu_coherent() have to know
+the base address of the coherency registers. This commit doesn't
+expose anymore this address, and replace the argument by a flag to
+indicate if we have to use the physical or the virtual address.
 
-This patch set adds the CPU idle support for Armada XP and prepares
-the support for Armada 370. This was based on the work of Nadav
-Haklai.
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+---
+ arch/arm/mach-mvebu/coherency.c    |  6 +++---
+ arch/arm/mach-mvebu/coherency_ll.S | 18 +++++++++++++++++-
+ arch/arm/mach-mvebu/headsmp.S      | 10 ++--------
+ 3 files changed, 22 insertions(+), 12 deletions(-)
 
-Most of the patches modify the mvebu code in order to prepare the
-support for CPU idle, hence the patches 2 to 10 should go to mvebu
-subsystem (and then arm-soc).
-
-The first patch should go through ARM subsystem and should be taken
-by Russell King.
-
-The 11th patch "ARM: mvebu: Add CPU idle low level support for Marvell
-Armada XP" was the low level part of the cpuidle support, it will be
-under mach-mvebu/ and hence should go to mvebu subsystem but it should
-received an acked-by from Daniel Lezcano or Rafael J. Wysocki.
-
-The 12th patch 'cpuidle: mvebu: Add initial cpu idle support for
-Armada 370/XP SoC' is the only one who should go to the cpuidle
-subsystem. But of course I would like that Daniel Lezcano or Rafael
-J. Wysocki have a look on the whole series.
-
-The 13th patch should go to mvebu subsystem.
-
-The last patch should also go to mvebu subsystem (and then arm-soc)
-but with an Acked-by from on of the device tree maintainer.
-
-The whole series is also available in the branch CPU-idle-ArmadaXP-v3
-at https://github.com/MISL-EBU-System-SW/mainline-public.git
-
-Thanks,
-
-Changelog:
-v2 -> v3:
-
-* Converted the driver to use module_platform_driver. This lead to the
-  introduction of a new patch (PATCH 11). Pointed by Daniel Lezcano.
-
-* Used PUIDLE_DRIVER_FLAGS_MASK to store the deep idle information,
-  suggested by Daniel Lezcano.
-
-* Removed cpu_init call from armada_370_xp_enter_idle
-  function. Pointed by Lorenzo Pieralisi.
-
-* Rebased on v3.12-rc5
-
-
-v1 -> v2:
-
-* Removed the pm_level kernel parameter. As Kevin Hilman pointed, its
-  usage can be replaced by using
-  /sys/devices/system/cpu/cpu*/cpuidle/state*/disable or the kernel
-  parameter cpuidle.off.
-
-* Used BIT() macro (reported by Ezequiel)
-
-* Made the function more readable the
-  armada_370_xp_pmsu_idle_prepare() function (reported by Thomas)
-
-* Moved the config entry in Kconfig.arm, and rename the config symbol
-  according the pattern used by other arm cpu: ARM_"soc name"_CPUIDLE
-
-* Moved the build rule under the new ARM SoC section in the Makefile
-
-* Rebased on Linus Torvalds master branch of Thursday September 12
-
-
-Gregory CLEMENT (14):
-  ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
-  ARM: mvebu: ll_set_cpu_coherent no more uses the coherency address as
-    parameter
-  ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
-  ARM: mvebu: Remove the unused argument of set_cpu_coherent()
-  ARM: mvebu: Make ll_set_cpu_coherent() more configurable
-  ARM: mvebu: Low level functions to disable cache snooping
-  ARM: mvebu: Add a new set of registers for pmsu
-  ARM: mvebu: Allow to power down L2 cache controller in idle mode
-  ARM: mvebu: Add the PMSU related part of the cpu idle functions
-  ARM: mvebu: Set the start address of a CPU in a separate function
-  ARM: mvebu: Add CPU idle low level support for Marvell Armada XP
-  cpuidle: mvebu: Add initial CPU idle support for Armada 370/XP SoC
-  ARM: mvebu: register the cpuidle driver for the Armada XP SoCs
-  ARM: dts: mvebu: Add a new set of registers to the PMSU node
-
- .../devicetree/bindings/arm/armada-370-xp-pmsu.txt |  12 ++-
- arch/arm/boot/dts/armada-xp.dtsi                   |   2 +-
- arch/arm/mach-mvebu/Makefile                       |   1 +
- arch/arm/mach-mvebu/armada-370-xp.c                |   6 ++
- arch/arm/mach-mvebu/coherency.c                    |  12 +--
- arch/arm/mach-mvebu/coherency.h                    |   2 +-
- arch/arm/mach-mvebu/coherency_ll.S                 |  69 +++++++++---
- arch/arm/mach-mvebu/headsmp.S                      |  15 +--
- arch/arm/mach-mvebu/platsmp.c                      |   2 +-
- arch/arm/mach-mvebu/pmsu.c                         | 102 +++++++++++++++++-
- arch/arm/mach-mvebu/suspend-armada-370-xp.S        |  90 ++++++++++++++++
- arch/arm/mm/proc-v7.S                              |  64 ++++++++++-
- drivers/cpuidle/Kconfig.arm                        |   5 +
- drivers/cpuidle/Makefile                           |   1 +
- drivers/cpuidle/cpuidle-armada-370-xp.c            | 117 +++++++++++++++++++++
- include/linux/armada-370-xp-pmsu.h                 |  19 ++++
- 16 files changed, 477 insertions(+), 42 deletions(-)
- create mode 100644 arch/arm/mach-mvebu/suspend-armada-370-xp.S
- create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
- create mode 100644 include/linux/armada-370-xp-pmsu.h
-
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index 58adf2f..d492fb3 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -29,7 +29,7 @@
+ #include "armada-370-xp.h"
+ 
+ unsigned long coherency_phys_base;
+-static void __iomem *coherency_base;
++void __iomem *coherency_base;
+ static void __iomem *coherency_cpu_base;
+ 
+ /* Coherency fabric registers */
+@@ -43,7 +43,7 @@ static struct of_device_id of_coherency_table[] = {
+ };
+ 
+ /* Function defined in coherency_ll.S */
+-int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
++int ll_set_cpu_coherent(bool use_virt_addr, unsigned int hw_cpu_id);
+ 
+ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ {
+@@ -53,7 +53,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ 		return 1;
+ 	}
+ 
+-	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
++	return ll_set_cpu_coherent(true, hw_cpu_id);
+ }
+ 
+ static inline void mvebu_hwcc_sync_io_barrier(void)
+diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
+index 5476669..8d4e22f 100644
+--- a/arch/arm/mach-mvebu/coherency_ll.S
++++ b/arch/arm/mach-mvebu/coherency_ll.S
+@@ -22,10 +22,22 @@
+ 
+ 	.text
+ /*
+- * r0: Coherency fabric base register address
++ * r0: if r0==0 => physical addres, else virtual address
+  * r1: HW CPU id
+  */
+ ENTRY(ll_set_cpu_coherent)
++	cmp	r0, #0
++	bne	1f
++    /* use physical address */
++	adr	r0, 3f
++	ldr	r3, [r0]
++	ldr	r0, [r0, r3]
++	b	2f
++1:
++    /* use virtual address */
++	ldr	r0, =(coherency_base)
++	ldr	r0, [r0]
++2:
+ 	/* Create bit by cpu index */
+ 	mov	r3, #(1 << 24)
+ 	lsl	r1, r3, r1
+@@ -53,3 +65,7 @@ ENTRY(ll_set_cpu_coherent)
+ 	mov	r0, #0
+ 	mov	pc, lr
+ ENDPROC(ll_set_cpu_coherent)
++
++	.align 2
++3:
++	.long	coherency_phys_base - .
+diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
+index 8a1b0c9..bffaabc 100644
+--- a/arch/arm/mach-mvebu/headsmp.S
++++ b/arch/arm/mach-mvebu/headsmp.S
+@@ -27,10 +27,8 @@
+  * startup
+  */
+ ENTRY(armada_xp_secondary_startup)
+-	/* Get coherency fabric base physical address */
+-	adr	r0, 1f
+-	ldr	r1, [r0]
+-	ldr	r0, [r0, r1]
++	/* Use physical addrss */
++	mov	r0, #0
+ 
+ 	/* Read CPU id */
+ 	mrc     p15, 0, r1, c0, c0, 5
+@@ -41,7 +39,3 @@ ENTRY(armada_xp_secondary_startup)
+ 	b	secondary_startup
+ 
+ ENDPROC(armada_xp_secondary_startup)
+-
+-	.align 2
+-1:
+-	.long	coherency_phys_base - .
 -- 
 1.8.1.2
 
