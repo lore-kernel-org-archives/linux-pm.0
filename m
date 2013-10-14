@@ -1,57 +1,42 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: Re: [PATCH v2] platform: x86: asus-wmi: add fan control
-Date: Mon, 14 Oct 2013 18:27:33 -0500
-Message-ID: <CAMP44s0vo+XAF_6Q9S2KGNyuEEPtn99qynuqcbE_=RYe3xM71g@mail.gmail.com>
-References: <1381236524-19633-1-git-send-email-felipe.contreras@gmail.com>
-	<CAHR064ge8zew7uMeD+_LXR3ju5ARGG1y8utLOFzOLexny_DPLA@mail.gmail.com>
-	<1381421199.4248.2.camel@x230.lan>
-	<CAMP44s04+_aP7KpVMTUjdNcRWMg6PC6HBaNhF_uhAHm=fhmTcw@mail.gmail.com>
-	<20131013151729.GA4028@srcf.ucam.org>
-	<CAMP44s0utW0ABWgFicDH=vDMxZbQudeM6D13RL8BfPnr55hR8Q@mail.gmail.com>
-	<20131014155254.GB20187@srcf.ucam.org>
-	<CAMP44s3O6z6-gVCqhCps7fKSKMbL9JSakZLfBUxqUYytrWFWKw@mail.gmail.com>
-	<20131014232239.GA29716@srcf.ucam.org>
+From: Jungseok Lee <jays.lee@samsung.com>
+Subject: [PATCH V2] cpufreq: exynos: Show a list of available frequencies
+Date: Tue, 15 Oct 2013 08:31:13 +0900
+Message-ID: <00a301cec935$786cf7e0$6946e7a0$%lee@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f48.google.com ([209.85.215.48]:42867 "EHLO
-	mail-la0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757913Ab3JNX1f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 19:27:35 -0400
-In-Reply-To: <20131014232239.GA29716@srcf.ucam.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-language: ko
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, viresh.kumar@linaro.org, amit.daniel@samsung.com
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kgene.kim@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "corentin.chary@gmail.com" <corentin.chary@gmail.com>, "acpi4asus-user@lists.sourceforge.net" <acpi4asus-user@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Oct 14, 2013 at 6:22 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Mon, Oct 14, 2013 at 06:18:36PM -0500, Felipe Contreras wrote:
->> On Mon, Oct 14, 2013 at 10:52 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->> > It wouldn't be appropriate to alter the firmware behaviour by default,
->> > but yeah, that's the kind of thing that the thermal framework exists to
->> > do.
->>
->> Well, how do I do that? The driver is up and running, and I can
->> manually set different fan speeds, however nothing seems to happen
->> automatically when the temperature increases.
->
-> The easiest is to just do it from userspace. I think Intel have some
-> code for doing this, but I haven't looked at the thermal code for years.
+This patch adds freq_attr to show a list of exynos5440 scaling
+available frequencies through sysfs. Common exynos driver already
+supports this attribute.
 
-That defeats the purpose of the whole thermal binding infrastructure.
+Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
+---
+Changes since v1:
+- Used a generic attribute, not a specific one.
 
->> > I don't think you can easily register multiple drivers for the same WMI
->> > device.
->>
->> I don't mean this one, I mean the standalone one. Actually, the first
->> one I sent doesn't require all this system memory stuff.
->
-> Banging EC registers directly is the wrong thing to do. Going via WMI is
-> correct.
+ drivers/cpufreq/exynos5440-cpufreq.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-I'm not going to bother arguing against your absolutist rhetoric. The
-fact is one patch can be applied, the other can't. Besides, nobody
-said anything about banging EC registers directly.
-
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index 06b73e8..fecc3da 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -330,6 +330,7 @@ static struct cpufreq_driver exynos_driver = {
+ 	.init		= exynos_cpufreq_cpu_init,
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= CPUFREQ_NAME,
++	.attr		= cpufreq_generic_attr,
+ };
+ 
+ static const struct of_device_id exynos_cpufreq_match[] = {
 -- 
-Felipe Contreras
+1.7.10.4
+
+
