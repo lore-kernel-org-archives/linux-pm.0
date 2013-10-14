@@ -1,140 +1,275 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v2 0/5] thermal: exynos: Fixes for v3.12
-Date: Mon, 14 Oct 2013 15:22:47 -0400
-Message-ID: <525C4487.2030502@ti.com>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com> <1381300194-13134-1-git-send-email-l.majewski@samsung.com> <20131014074635.77fd9f6e@amdc308.digital.local> <744357E9AAD1214791ACBA4B0B90926301190077@SHSMSX101.ccr.corp.intel.com> <525C4242.2050306@ti.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="Hx5JMLHSnMBrj35brmWa2QDMcRJX6lVoQ"
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V2 1/2] ARM: at91: cpuidle: convert to platform driver
+Date: Mon, 14 Oct 2013 22:15:20 +0200
+Message-ID: <1381781721-11866-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:35328 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756057Ab3JNTXR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Oct 2013 15:23:17 -0400
-In-Reply-To: <525C4242.2050306@ti.com>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:35305 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757530Ab3JNUPZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 16:15:25 -0400
+Received: by mail-wg0-f47.google.com with SMTP id c11so2799773wgh.2
+        for <linux-pm@vger.kernel.org>; Mon, 14 Oct 2013 13:15:23 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, Lukasz Majewski <l.majewski@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+To: plagnioj@jcrosoft.com, linux@maxim.org.za, nicolas.ferre@atmel.com
+Cc: linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, thomas.petazzoni@free-electrons.com, b.zolnierkie@samsung.com
 
---Hx5JMLHSnMBrj35brmWa2QDMcRJX6lVoQ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Using the platform driver model is a good way to separate the cpuidle specific
+code from the low level pm code. It allows to remove the dependency between
+these two components.
 
-On 14-10-2013 15:13, Eduardo Valentin wrote:
-> On 14-10-2013 01:52, Zhang, Rui wrote:
->> Eduardo,
->>
->> What's your opinion on this patch set?
->> BTW, please send me all the urgent fixes for thermal soc drivers that
-> you think should go to 3.12.
->>
->=20
-> I will be sending these + one fix on ti soc thermal for 3.12 soon.
->=20
-> The new chip support on exynos needs to be reworked and there are coupl=
-e
-> of new drivers that needs to be reworked too. But those I don't think
-> are ready to go now.
->=20
+The platform_device is located in the pm code and a 'set' function has been
+added to set the standby function from the AT91_SOC_START initialization
+function. Each SoC with a cpuidle driver will set the standby function in the
+platform_data field at init time. Then pm code will register the cpuidle
+platform device.
 
-Just to be clear, on this patch set obviously I wont be sending the DT
-changes. Those should go via the correct tree.
+The cpuidle driver will register the platform_driver and use the device's
+platform_data as a standby callback in the idle path.
 
->> Thanks,
->> rui
->>> -----Original Message-----
->>> From: Lukasz Majewski [mailto:l.majewski@samsung.com]
->>> Sent: Monday, October 14, 2013 1:47 PM
->>> To: Zhang, Rui; Eduardo Valentin; kgene.kim@samsung.com
->>> Cc: Lukasz Majewski; Linux PM list; Lukasz Majewski; linux-kernel;
->>> Bartlomiej Zolnierkiewicz; devicetree@vger.kernel.org; Amit Daniel
->>> Kachhap; linux-samsung-soc@vger.kernel.org
->>> Subject: Re: [PATCH v2 0/5] thermal: exynos: Fixes for v3.12
->>> Importance: High
->>>
->>> Hi Zhang, Eduardo,
->>>
->>>> This patch series is divided into two parts:
->>>> 1. Device tree node definition and enabelement for TMU at Exynos4412=
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/mach-at91/at91rm9200.c  |    3 +++
+ arch/arm/mach-at91/at91sam9260.c |    3 +++
+ arch/arm/mach-at91/at91sam9261.c |    3 +++
+ arch/arm/mach-at91/at91sam9263.c |    3 +++
+ arch/arm/mach-at91/at91sam9g45.c |    3 +++
+ arch/arm/mach-at91/at91sam9rl.c  |    3 +++
+ arch/arm/mach-at91/cpuidle.c     |   29 +++++++++++++++--------------
+ arch/arm/mach-at91/pm.c          |   12 ++++++++++++
+ arch/arm/mach-at91/pm.h          |    4 ++++
+ 9 files changed, 49 insertions(+), 14 deletions(-)
 
->>>> (Trats2) 2. Exynos thermal subsystem regressions for v3.12-rc4.
->>>> Several commits were necessary to properly fix regression for TMU
->>> test
->>>> MUX address setting after reset.
->>>>
->>>> Test HW:
->>>> - Exynos4412 - TRATS2 board (Linux v3.12-rc4)
->>>> SHA1: 8b5ede69d24db939f52b47effff2f6fe1e83e08b
->>>>
->>>>
->>>> Lukasz Majewski (5):
->>>>   thermal: exynos: Remove check for thermal device pointer at
->>>>     exynos_report_trigger()
->>>>   thermal: exynos: Provide separate TMU data for Exynos4412
->>>>   thermal: exynos: Provide initial setting for TMU's test MUX addres=
-s
->>>>     at Exynos4412
->>>>   ARM: dts: exynos4x12: Device tree node definition for TMU on
->>>>     Exynos4x12
->>>>   ARM: dts: exynos4412-trats2: Enable TMU support at Trats2
->>>>
->>>
->>> Zhang, Eduardo - any comments?
->>>
->>> Would it be possible to add them to v3.12 since they do fix critical
->>> error and regression on Exynos4412.
->>>
->>>
->>>>  arch/arm/boot/dts/exynos4412-trats2.dts         |    5 ++++
->>>>  arch/arm/boot/dts/exynos4x12.dtsi               |   10 ++++++++
->>>>  drivers/thermal/samsung/exynos_thermal_common.c |    2 --
->>>>  drivers/thermal/samsung/exynos_tmu.c            |   12 ++++++---
->>>>  drivers/thermal/samsung/exynos_tmu.h            |    7 +++++-
->>>>  drivers/thermal/samsung/exynos_tmu_data.c       |   30
->>>> ++++++++++++++++++-----
->>>> drivers/thermal/samsung/exynos_tmu_data.h       |   13 +++++++++- 7
->>>> files changed, 65 insertions(+), 14 deletions(-)
->>>>
->>>
->>>
->>>
->>> --
->>> Best regards,
->>>
->>> Lukasz Majewski
->>>
->>> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in=
+diff --git a/arch/arm/mach-at91/at91rm9200.c b/arch/arm/mach-at91/at91rm9200.c
+index 4aad93d..0d234f2 100644
+--- a/arch/arm/mach-at91/at91rm9200.c
++++ b/arch/arm/mach-at91/at91rm9200.c
+@@ -27,6 +27,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -337,6 +338,8 @@ static void __init at91rm9200_initialize(void)
+ 	/* Initialize GPIO subsystem */
+ 	at91_gpio_init(at91rm9200_gpio,
+ 		cpu_is_at91rm9200_bga() ? AT91RM9200_BGA : AT91RM9200_PQFP);
++
++	at91_pm_set_standby(at91rm9200_standby);
+ }
+ 
+ 
+diff --git a/arch/arm/mach-at91/at91sam9260.c b/arch/arm/mach-at91/at91sam9260.c
+index 5de6074..ffe9ce7 100644
+--- a/arch/arm/mach-at91/at91sam9260.c
++++ b/arch/arm/mach-at91/at91sam9260.c
+@@ -28,6 +28,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -351,6 +352,8 @@ static void __init at91sam9260_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9260_gpio, 3);
++
++	at91_pm_set_standby(at91sam9_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
+index 0e07932..1edbb6f 100644
+--- a/arch/arm/mach-at91/at91sam9261.c
++++ b/arch/arm/mach-at91/at91sam9261.c
+@@ -27,6 +27,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -293,6 +294,8 @@ static void __init at91sam9261_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9261_gpio, 3);
++
++	at91_pm_set_sandby(at91sam9_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
+index 6ce7d18..8c81c89 100644
+--- a/arch/arm/mach-at91/at91sam9263.c
++++ b/arch/arm/mach-at91/at91sam9263.c
+@@ -26,6 +26,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -330,6 +331,8 @@ static void __init at91sam9263_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9263_gpio, 5);
++
++	at91_pm_set_standby(at91sam9263_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
+index 474ee04..8460f52 100644
+--- a/arch/arm/mach-at91/at91sam9g45.c
++++ b/arch/arm/mach-at91/at91sam9g45.c
+@@ -26,6 +26,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -379,6 +380,8 @@ static void __init at91sam9g45_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9g45_gpio, 5);
++
++	at91_pm_set_standby(at91sam9g45_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9rl.c b/arch/arm/mach-at91/at91sam9rl.c
+index d4ec0d9..c7986e4 100644
+--- a/arch/arm/mach-at91/at91sam9rl.c
++++ b/arch/arm/mach-at91/at91sam9rl.c
+@@ -27,6 +27,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -296,6 +297,8 @@ static void __init at91sam9rl_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9rl_gpio, 4);
++
++	at91_pm_set_standby(at91sam9_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+index 4ec6a6d..a077437 100644
+--- a/arch/arm/mach-at91/cpuidle.c
++++ b/arch/arm/mach-at91/cpuidle.c
+@@ -21,26 +21,17 @@
+ #include <linux/export.h>
+ #include <asm/proc-fns.h>
+ #include <asm/cpuidle.h>
+-#include <mach/cpu.h>
+-
+-#include "pm.h"
+ 
+ #define AT91_MAX_STATES	2
+ 
++static void (*at91_standby)(void);
++
+ /* Actual code that puts the SoC in different idle states */
+ static int at91_enter_idle(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			       int index)
+ {
+-	if (cpu_is_at91rm9200())
+-		at91rm9200_standby();
+-	else if (cpu_is_at91sam9g45())
+-		at91sam9g45_standby();
+-	else if (cpu_is_at91sam9263())
+-		at91sam9263_standby();
+-	else
+-		at91sam9_standby();
+-
++	at91_standby();
+ 	return index;
+ }
+ 
+@@ -60,9 +51,19 @@ static struct cpuidle_driver at91_idle_driver = {
+ };
+ 
+ /* Initialize CPU idle by registering the idle states */
+-static int __init at91_init_cpuidle(void)
++static int at91_cpuidle_probe(struct platform_device *dev)
+ {
++	at91_standby = (void *)(dev->dev.platform_data);
++	
+ 	return cpuidle_register(&at91_idle_driver, NULL);
+ }
+ 
+-device_initcall(at91_init_cpuidle);
++static struct platform_driver at91_cpuidle_driver = {
++	.driver = {
++		.name = "cpuidle-at91",
++		.owner = THIS_MODULE,
++	},
++	.probe = at91_cpuidle_probe,
++};
++
++module_platform_driver(at91_cpuidle_driver);
+diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+index 15afb5d..f753ace 100644
+--- a/arch/arm/mach-at91/pm.c
++++ b/arch/arm/mach-at91/pm.c
+@@ -314,6 +314,15 @@ static const struct platform_suspend_ops at91_pm_ops = {
+ 	.end	= at91_pm_end,
+ };
+ 
++static struct platform_device at91_cpuidle_device = {
++	.name = "cpuidle-at91",
++};
++
++void at91_pm_set_standby(void (*at91_standby)(void))
++{
++	at91_cpuidle_device.dev.platform_data = at91_standby;	
++}
++
+ static int __init at91_pm_init(void)
+ {
+ #ifdef CONFIG_AT91_SLOW_CLOCK
+@@ -325,6 +334,9 @@ static int __init at91_pm_init(void)
+ 	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
+ 	if (cpu_is_at91rm9200())
+ 		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
++	
++	if (at91_cpuidle_device.dev.platform_data)
++		platform_device_register(&at91_cpuidle_device);
+ 
+ 	suspend_set_ops(&at91_pm_ops);
+ 
+diff --git a/arch/arm/mach-at91/pm.h b/arch/arm/mach-at91/pm.h
+index 2f5908f..76dd1a7 100644
+--- a/arch/arm/mach-at91/pm.h
++++ b/arch/arm/mach-at91/pm.h
+@@ -11,9 +11,13 @@
+ #ifndef __ARCH_ARM_MACH_AT91_PM
+ #define __ARCH_ARM_MACH_AT91_PM
+ 
++#include <asm/proc-fns.h>
++
+ #include <mach/at91_ramc.h>
+ #include <mach/at91rm9200_sdramc.h>
+ 
++extern void at91_pm_set_standby(void (*at91_standby)(void));
++
+ /*
+  * The AT91RM9200 goes into self-refresh mode with this command, and will
+  * terminate self-refresh automatically on the next SDRAM access.
+-- 
+1.7.9.5
 
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->>
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---Hx5JMLHSnMBrj35brmWa2QDMcRJX6lVoQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJcRIcACgkQCXcVR3XQvP3fIQD9GQhnysF0but2Ykmw3iJ68uSO
-8NWW55hd3+sUgke7ZroBALx8fDNM0J2PM9UAK3UEpchsb8/7dun/vn+maQtvFdiC
-=DC9P
------END PGP SIGNATURE-----
-
---Hx5JMLHSnMBrj35brmWa2QDMcRJX6lVoQ--
