@@ -1,178 +1,214 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH v3 02/14] ARM: mvebu: ll_set_cpu_coherent no more uses
- the coherency address as parameter
-Date: Mon, 14 Oct 2013 16:20:41 +0200
-Message-ID: <20131014162041.185d797a@skate>
-References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
-	<1381759106-15004-3-git-send-email-gregory.clement@free-electrons.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v2 2/5] thermal: exynos: Provide separate TMU data for
+ Exynos4412
+Date: Mon, 14 Oct 2013 10:20:53 -0400
+Message-ID: <525BFDC5.4000109@ti.com>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com> <1381300194-13134-1-git-send-email-l.majewski@samsung.com> <1381300194-13134-3-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="8QTIFGTxN50L5nUipJ46sVoC4PwddkdTs"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:32913 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755535Ab3JNOUp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 10:20:45 -0400
-In-Reply-To: <1381759106-15004-3-git-send-email-gregory.clement@free-electrons.com>
+Received: from devils.ext.ti.com ([198.47.26.153]:57347 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755651Ab3JNOVS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 10:21:18 -0400
+In-Reply-To: <1381300194-13134-3-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, kgene.kim@samsung.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org
 
-Dear Gregory CLEMENT,
+--8QTIFGTxN50L5nUipJ46sVoC4PwddkdTs
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 14 Oct 2013 15:58:14 +0200, Gregory CLEMENT wrote:
-> Until now the calling functions of ll_set_cpu_coherent() have to know
-> the base address of the coherency registers. This commit doesn't
-> expose anymore this address, and replace the argument by a flag to
-> indicate if we have to use the physical or the virtual address.
-
-Why is this necessary? Passing the base address (either physical or
-virtual) seems much better than the boolean you're introducing.
-
-The title of the commit is also badly worded I believe, "no more uses"
-is not a really great way of expressing what it is doing. It should
-probably be:
-
-	ARM: mvebu: make ll_set_cpu_coherent use a boolean to choose coherency fabric address
-
-Nonetheless, a few comments below.
-
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+On 09-10-2013 02:29, Lukasz Majewski wrote:
+> Up till now Exynos5250 and Exynos4412 had the same definitions for TMU
+> data. Following commit changes that, by introducing separate
+> exynos4412_default_tmu_data structure.
+>=20
+> Since Exynos4412 was chronologically first, the corresponding name for
+> TMU registers and default data was renamed.
+>=20
+> Additionally, new SOC_ARCH_EXYNOS4412 type has been defined.
+>=20
+> Moreover, the SOC_ARCH_EXYNOS name has been changed to SOC_ARCH_EXYNOS5=
+250.
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+>=20
 > ---
->  arch/arm/mach-mvebu/coherency.c    |  6 +++---
->  arch/arm/mach-mvebu/coherency_ll.S | 18 +++++++++++++++++-
->  arch/arm/mach-mvebu/headsmp.S      | 10 ++--------
->  3 files changed, 22 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
-> index 58adf2f..d492fb3 100644
-> --- a/arch/arm/mach-mvebu/coherency.c
-> +++ b/arch/arm/mach-mvebu/coherency.c
-> @@ -29,7 +29,7 @@
->  #include "armada-370-xp.h"
->  
->  unsigned long coherency_phys_base;
-> -static void __iomem *coherency_base;
-> +void __iomem *coherency_base;
->  static void __iomem *coherency_cpu_base;
->  
->  /* Coherency fabric registers */
-> @@ -43,7 +43,7 @@ static struct of_device_id of_coherency_table[] = {
+> Changes for v2:
+> - Replace SOC_ARCH_EXYNOS with SOC_ARCH_EXYNOS5250
+> - Fix coding style for tmu_data elements definition
+>=20
+>  drivers/thermal/samsung/exynos_tmu.c      |    9 +++++----
+>  drivers/thermal/samsung/exynos_tmu.h      |    3 ++-
+>  drivers/thermal/samsung/exynos_tmu_data.c |   28 +++++++++++++++++++++=
++------
+>  drivers/thermal/samsung/exynos_tmu_data.h |    9 ++++++++-
+>  4 files changed, 37 insertions(+), 12 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
+sung/exynos_tmu.c
+> index b43afda..1312b34 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -488,7 +488,7 @@ static const struct of_device_id exynos_tmu_match[]=
+ =3D {
+>  	},
+>  	{
+>  		.compatible =3D "samsung,exynos4412-tmu",
+> -		.data =3D (void *)EXYNOS5250_TMU_DRV_DATA,
+> +		.data =3D (void *)EXYNOS4412_TMU_DRV_DATA,
+>  	},
+>  	{
+>  		.compatible =3D "samsung,exynos5250-tmu",
+> @@ -629,9 +629,10 @@ static int exynos_tmu_probe(struct platform_device=
+ *pdev)
+>  	if (ret)
+>  		return ret;
+> =20
+> -	if (pdata->type =3D=3D SOC_ARCH_EXYNOS ||
+> -		pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
+> -				pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
+> +	if (pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
+> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS4412 ||
+> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS5250 ||
+> +	    pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
+>  		data->soc =3D pdata->type;
+>  	else {
+>  		ret =3D -EINVAL;
+> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sam=
+sung/exynos_tmu.h
+> index b364c9e..b42ece4 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.h
+> +++ b/drivers/thermal/samsung/exynos_tmu.h
+> @@ -41,7 +41,8 @@ enum calibration_mode {
+> =20
+>  enum soc_type {
+>  	SOC_ARCH_EXYNOS4210 =3D 1,
+> -	SOC_ARCH_EXYNOS,
+> +	SOC_ARCH_EXYNOS4412,
+> +	SOC_ARCH_EXYNOS5250,
+>  	SOC_ARCH_EXYNOS5440,
 >  };
->  
->  /* Function defined in coherency_ll.S */
-> -int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
-> +int ll_set_cpu_coherent(bool use_virt_addr, unsigned int hw_cpu_id);
->  
->  int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
->  {
-> @@ -53,7 +53,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
->  		return 1;
->  	}
->  
-> -	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
-> +	return ll_set_cpu_coherent(true, hw_cpu_id);
->  }
->  
->  static inline void mvebu_hwcc_sync_io_barrier(void)
-> diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-> index 5476669..8d4e22f 100644
-> --- a/arch/arm/mach-mvebu/coherency_ll.S
-> +++ b/arch/arm/mach-mvebu/coherency_ll.S
-> @@ -22,10 +22,22 @@
->  
->  	.text
->  /*
-> - * r0: Coherency fabric base register address
-> + * r0: if r0==0 => physical addres, else virtual address
+> =20
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
+l/samsung/exynos_tmu_data.c
+> index 9002499..d8de5c1 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -90,8 +90,8 @@ struct exynos_tmu_init_data const exynos4210_default_=
+tmu_data =3D {
+>  };
+>  #endif
+> =20
+> -#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
+> -static const struct exynos_tmu_registers exynos5250_tmu_registers =3D =
+{
+> +#if defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250)
 
-address, not addres. Also, which address are we talking about?
+Below will be only 4412 definitions,right? Why should we test for 5250?
 
- * r0: if r0 equal 0, then the function will use access the coherency
-   fabric through its physical address (to be used when the MMU is
-   disabled). Otherwise, the virtual address at which the coherency
-   fabric has been mapped will be used (to be used when the MMU is
-   enabled).
-
-But I still complain that the original solution of passing the address
-was better. If you really have a strong explanation to switch to this
-boolean, then don't use a boolean at all: test if the MMU is enabled,
-and if not, use the physical address automatically, otherwise, use the
-virtual address automatically.
-
->   * r1: HW CPU id
->   */
->  ENTRY(ll_set_cpu_coherent)
-> +	cmp	r0, #0
-> +	bne	1f
-> +    /* use physical address */
-
-Bad indentation for the comment: it should be one tab and not spaces,
-not match the other code around.
-
-> +	adr	r0, 3f
-
-> +	ldr	r3, [r0]
-> +	ldr	r0, [r0, r3]
-> +	b	2f
-> +1:
-> +    /* use virtual address */
-
-Same comment for the indentation.
-
-> +	ldr	r0, =(coherency_base)
-
-Are the parenthesis needed?
-
-> +	ldr	r0, [r0]
-> +2:
->  	/* Create bit by cpu index */
->  	mov	r3, #(1 << 24)
->  	lsl	r1, r3, r1
-> @@ -53,3 +65,7 @@ ENTRY(ll_set_cpu_coherent)
->  	mov	r0, #0
->  	mov	pc, lr
->  ENDPROC(ll_set_cpu_coherent)
+> +static const struct exynos_tmu_registers exynos4412_tmu_registers =3D =
+{
+>  	.triminfo_data =3D EXYNOS_TMU_REG_TRIMINFO,
+>  	.triminfo_25_shift =3D EXYNOS_TRIMINFO_25_SHIFT,
+>  	.triminfo_85_shift =3D EXYNOS_TRIMINFO_85_SHIFT,
+> @@ -128,7 +128,7 @@ static const struct exynos_tmu_registers exynos5250=
+_tmu_registers =3D {
+>  	.emul_time_mask =3D EXYNOS_EMUL_TIME_MASK,
+>  };
+> =20
+> -#define EXYNOS5250_TMU_DATA \
+> +#define EXYNOS4412_TMU_DATA \
+>  	.threshold_falling =3D 10, \
+>  	.trigger_levels[0] =3D 85, \
+>  	.trigger_levels[1] =3D 103, \
+> @@ -162,15 +162,31 @@ static const struct exynos_tmu_registers exynos52=
+50_tmu_registers =3D {
+>  		.temp_level =3D 103, \
+>  	}, \
+>  	.freq_tab_count =3D 2, \
+> -	.type =3D SOC_ARCH_EXYNOS, \
+> -	.registers =3D &exynos5250_tmu_registers, \
+> +	.registers =3D &exynos4412_tmu_registers, \
+>  	.features =3D (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+>  			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+>  			TMU_SUPPORT_EMUL_TIME)
+> +#endif
+> =20
+> +#if defined(CONFIG_SOC_EXYNOS4412)
+> +struct exynos_tmu_init_data const exynos4412_default_tmu_data =3D {
+> +	.tmu_data =3D {
+> +		{
+> +			EXYNOS4412_TMU_DATA,
+> +			.type =3D SOC_ARCH_EXYNOS4412,
+> +		},
+> +	},
+> +	.tmu_count =3D 1,
+> +};
+> +#endif
 > +
-> +	.align 2
-> +3:
-> +	.long	coherency_phys_base - .
-> diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
-> index 8a1b0c9..bffaabc 100644
-> --- a/arch/arm/mach-mvebu/headsmp.S
-> +++ b/arch/arm/mach-mvebu/headsmp.S
-> @@ -27,10 +27,8 @@
->   * startup
->   */
->  ENTRY(armada_xp_secondary_startup)
-> -	/* Get coherency fabric base physical address */
-> -	adr	r0, 1f
-> -	ldr	r1, [r0]
-> -	ldr	r0, [r0, r1]
-> +	/* Use physical addrss */
+> +#if defined(CONFIG_SOC_EXYNOS5250)
+>  struct exynos_tmu_init_data const exynos5250_default_tmu_data =3D {
+>  	.tmu_data =3D {
+> -		{ EXYNOS5250_TMU_DATA },
+> +		{
+> +			EXYNOS4412_TMU_DATA,
+> +			.type =3D SOC_ARCH_EXYNOS5250,
+> +		},
+>  	},
+>  	.tmu_count =3D 1,
+>  };
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/therma=
+l/samsung/exynos_tmu_data.h
+> index dc7feb5..b130b1e 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+> @@ -138,7 +138,14 @@ extern struct exynos_tmu_init_data const exynos421=
+0_default_tmu_data;
+>  #define EXYNOS4210_TMU_DRV_DATA (NULL)
+>  #endif
+> =20
+> -#if (defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412))=
 
-addrss -> address. Please pay attention to typos, there are such typos
-everywhere.
-
-Also, address of what?
-
-> +	mov	r0, #0
->  
->  	/* Read CPU id */
->  	mrc     p15, 0, r1, c0, c0, 5
-> @@ -41,7 +39,3 @@ ENTRY(armada_xp_secondary_startup)
->  	b	secondary_startup
->  
->  ENDPROC(armada_xp_secondary_startup)
-> -
-> -	.align 2
-> -1:
-> -	.long	coherency_phys_base - .
+> +#if defined(CONFIG_SOC_EXYNOS4412)
+> +extern struct exynos_tmu_init_data const exynos4412_default_tmu_data;
+> +#define EXYNOS4412_TMU_DRV_DATA (&exynos4412_default_tmu_data)
+> +#else
+> +#define EXYNOS4412_TMU_DRV_DATA (NULL)
+> +#endif
+> +
+> +#if defined(CONFIG_SOC_EXYNOS5250)
+>  extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
+>  #define EXYNOS5250_TMU_DRV_DATA (&exynos5250_default_tmu_data)
+>  #else
+>=20
 
 
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Eduardo Valentin
+
+
+--8QTIFGTxN50L5nUipJ46sVoC4PwddkdTs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlJb/c0ACgkQCXcVR3XQvP1AugEAh+JL1Uf3PyuM1lpmTYD4uIAE
+GTjhHQFUWTLC9mhYvtcA/250f0nxseUo8V34NabOXuxy+7rDkCTvbDvcXKeoTrlQ
+=sLzO
+-----END PGP SIGNATURE-----
+
+--8QTIFGTxN50L5nUipJ46sVoC4PwddkdTs--
