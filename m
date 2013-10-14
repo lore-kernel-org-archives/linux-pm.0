@@ -1,51 +1,141 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v3 13/14] ARM: mvebu: register the cpuidle driver for the Armada XP SoCs
-Date: Mon, 14 Oct 2013 15:58:25 +0200
-Message-ID: <1381759106-15004-14-git-send-email-gregory.clement@free-electrons.com>
-References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Subject: Re: [PATCH 1/2] ARM: at91: cpuidle: convert to platform driver
+Date: Mon, 14 Oct 2013 16:04:06 +0200
+Message-ID: <20131014140406.GH11420@ns203013.ovh.net>
+References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:60892 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756737Ab3JNN67 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 09:58:59 -0400
-In-Reply-To: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
+Received: from 18.mo3.mail-out.ovh.net ([87.98.172.162]:36239 "EHLO
+	mo3.mail-out.ovh.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751070Ab3JNONF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 10:13:05 -0400
+Received: from mail423.ha.ovh.net (b6.ovh.net [213.186.33.56])
+	by mo3.mail-out.ovh.net (Postfix) with SMTP id EFE7F1000669
+	for <linux-pm@vger.kernel.org>; Mon, 14 Oct 2013 16:02:34 +0200 (CEST)
+Content-Disposition: inline
+In-Reply-To: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-The cpuidle is a platform driver so we have to register the device
-during the initialization of the boards.
+On 17:51 Sat 12 Oct     , Daniel Lezcano wrote:
+> Use the platform driver model to separate the cpuidle specific code from
+> the low level pm code. It allows to remove the dependency between
+> these two components.
+> 
+> Tested-on usb-a9263 (at91sam9263)
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  arch/arm/mach-at91/cpuidle.c |   29 +++++++++++++++--------------
+>  arch/arm/mach-at91/pm.c      |   16 +++++++++++++++-
+>  2 files changed, 30 insertions(+), 15 deletions(-)
+> 
+> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+> index 4ec6a6d..6cdc76d 100644
+> --- a/arch/arm/mach-at91/cpuidle.c
+> +++ b/arch/arm/mach-at91/cpuidle.c
+> @@ -21,26 +21,17 @@
+>  #include <linux/export.h>
+>  #include <asm/proc-fns.h>
+>  #include <asm/cpuidle.h>
+> -#include <mach/cpu.h>
+> -
+> -#include "pm.h"
+>  
+>  #define AT91_MAX_STATES	2
+>  
+> +static void (*at91_standby)(void);
+> +
+>  /* Actual code that puts the SoC in different idle states */
+>  static int at91_enter_idle(struct cpuidle_device *dev,
+>  			struct cpuidle_driver *drv,
+>  			       int index)
+>  {
+> -	if (cpu_is_at91rm9200())
+> -		at91rm9200_standby();
+> -	else if (cpu_is_at91sam9g45())
+> -		at91sam9g45_standby();
+> -	else if (cpu_is_at91sam9263())
+> -		at91sam9263_standby();
+> -	else
+> -		at91sam9_standby();
+> -
+> +	at91_standby();
+>  	return index;
+>  }
+>  
+> @@ -60,9 +51,19 @@ static struct cpuidle_driver at91_idle_driver = {
+>  };
+>  
+>  /* Initialize CPU idle by registering the idle states */
+> -static int __init at91_init_cpuidle(void)
+> +static int __init at91_cpuidle_probe(struct platform_device *dev)
+>  {
+> +	at91_standby = (void *)(dev->dev.platform_data);
+> +	
+>  	return cpuidle_register(&at91_idle_driver, NULL);
+>  }
+>  
+> -device_initcall(at91_init_cpuidle);
+> +static struct platform_driver at91_cpuidle_driver = {
+> +	.driver = {
+> +		.name = "cpuidle-at91",
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.probe = at91_cpuidle_probe,
+> +};
+> +
+> +module_platform_driver(at91_cpuidle_driver);
+> diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+> index 15afb5d..debdbf8 100644
+> --- a/arch/arm/mach-at91/pm.c
+> +++ b/arch/arm/mach-at91/pm.c
+> @@ -314,6 +314,10 @@ static const struct platform_suspend_ops at91_pm_ops = {
+>  	.end	= at91_pm_end,
+>  };
+>  
+> +static struct platform_device at91_cpuidle_device = {
+> +	.name = "cpuidle-at91",
+> +};
+> +
+>  static int __init at91_pm_init(void)
+>  {
+>  #ifdef CONFIG_AT91_SLOW_CLOCK
+> @@ -323,8 +327,18 @@ static int __init at91_pm_init(void)
+>  	pr_info("AT91: Power Management%s\n", (slow_clock ? " (with slow clock mode)" : ""));
+>  
+>  	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
+> -	if (cpu_is_at91rm9200())
+> +	if (cpu_is_at91rm9200()) {
+> +		at91_cpuidle_device.dev.platform_data = at91rm9200_standby;
+>  		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
+> +	} else if (cpu_is_at91sam9g45()) {
+> +		at91_cpuidle_device.dev.platform_data = at91sam9g45_standby;
+> +	} else if (cpu_is_at91sam9263()) {
+> +		at91_cpuidle_device.dev.platform_data = at91sam9263_standby;
+> +	} else {
+> +		at91_cpuidle_device.dev.platform_data = at91sam9_standby;
+no this is too dangerous when adding new SoC
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
----
- arch/arm/mach-mvebu/armada-370-xp.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+you must list the supported SoC
 
-diff --git a/arch/arm/mach-mvebu/armada-370-xp.c b/arch/arm/mach-mvebu/armada-370-xp.c
-index e2acff9..885d511 100644
---- a/arch/arm/mach-mvebu/armada-370-xp.c
-+++ b/arch/arm/mach-mvebu/armada-370-xp.c
-@@ -29,6 +29,10 @@
- #include "common.h"
- #include "coherency.h"
- 
-+static struct platform_device armada_xp_cpuidle_device = {
-+	.name = "cpuidle-armada-370-xp",
-+};
-+
- static void __init armada_370_xp_map_io(void)
- {
- 	debug_ll_io_init();
-@@ -48,6 +52,8 @@ static void __init armada_370_xp_timer_and_clk_init(void)
- static void __init armada_370_xp_dt_init(void)
- {
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-+	if (of_machine_is_compatible("marvell,armadaxp"))
-+		platform_device_register(&armada_xp_cpuidle_device);
- }
- 
- static const char * const armada_370_xp_dt_compat[] = {
--- 
-1.8.1.2
+and I prefer to move this code to the SoC init structure
 
+so we can drop the if/else if/elsee
+
+and drop the issue of adding new and the arch_initcall
+
+Best Regards,
+J.
+> +	}
+> +	
+> +	platform_device_register(&at91_cpuidle_device);
+>  
+>  	suspend_set_ops(&at91_pm_ops);
+>  
+> -- 
+> 1.7.9.5
+> 
