@@ -1,18 +1,19 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v9 6/7] Documentation:cpufreq:boost: Update BOOST documentation
-Date: Mon, 14 Oct 2013 14:17:49 +0200
-Message-ID: <1381753070-2853-7-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v9 5/7] cpufreq:exynos:Extend Exynos cpufreq driver to support
+ boost framework
+Date: Mon, 14 Oct 2013 14:17:48 +0200
+Message-ID: <1381753070-2853-6-git-send-email-l.majewski@samsung.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
  <1381753070-2853-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-reply-to: <1381753070-2853-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Since the support for software and hardware controlled boosting has been
-added, the corresponding Documentation entry had been updated.
+The cpufreq_driver's boost_supported flag is true only when boost
+support is explicitly enabled.
 
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
@@ -20,73 +21,54 @@ Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 ---
 Changes for v9:
-- None
+- The exynos_cpufreq_attr[] has been replaced by generic_cpufreq_attr[],
+  therefore the cpufreq_freq_attr_scaling_boost_freqs is now added at
+  freq_table.c file.
 
 Changes for v8:
 - None
 
 Changes for v7:
-- None
+- Replace CONFIG_CPU_FREQ_BOOST_SW with CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
+- Move boost_supported initialization to struct cpufreq_driver exynos_driver
 
 Changes for v6:
-- None
+- Replace exynos_driver.boost_supported = 1 to = true
+- Protect boost attributes export with CONFIG_CPU_FREQ_BOOST_SW
 
 Changes for v5:
-- New patch
+- None
 
- Documentation/cpu-freq/boost.txt |   26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+Changes for v4:
+- None
 
-diff --git a/Documentation/cpu-freq/boost.txt b/Documentation/cpu-freq/boost.txt
-index 9b4edfc..dd62e13 100644
---- a/Documentation/cpu-freq/boost.txt
-+++ b/Documentation/cpu-freq/boost.txt
-@@ -17,8 +17,8 @@ Introduction
- Some CPUs support a functionality to raise the operating frequency of
- some cores in a multi-core package if certain conditions apply, mostly
- if the whole chip is not fully utilized and below it's intended thermal
--budget. This is done without operating system control by a combination
--of hardware and firmware.
-+budget. The decision about boost disable/enable is made either at hardware
-+(e.g. x86) or software (e.g ARM).
- On Intel CPUs this is called "Turbo Boost", AMD calls it "Turbo-Core",
- in technical documentation "Core performance boost". In Linux we use
- the term "boost" for convenience.
-@@ -48,24 +48,24 @@ be desirable:
- User controlled switch
- ----------------------
- 
--To allow the user to toggle the boosting functionality, the acpi-cpufreq
--driver exports a sysfs knob to disable it. There is a file:
-+To allow the user to toggle the boosting functionality, the cpufreq core
-+driver exports a sysfs knob to enable or disable it. There is a file:
- /sys/devices/system/cpu/cpufreq/boost
- which can either read "0" (boosting disabled) or "1" (boosting enabled).
--Reading the file is always supported, even if the processor does not
--support boosting. In this case the file will be read-only and always
--reads as "0". Explicitly changing the permissions and writing to that
--file anyway will return EINVAL.
-+The file is exported only when cpufreq driver supports boosting.
-+Explicitly changing the permissions and writing to that file anyway will
-+return EINVAL.
- 
- On supported CPUs one can write either a "0" or a "1" into this file.
- This will either disable the boost functionality on all cores in the
--whole system (0) or will allow the hardware to boost at will (1).
-+whole system (0) or will allow the software or hardware to boost at will
-+(1).
- 
- Writing a "1" does not explicitly boost the system, but just allows the
--CPU (and the firmware) to boost at their discretion. Some implementations
--take external factors like the chip's temperature into account, so
--boosting once does not necessarily mean that it will occur every time
--even using the exact same software setup.
-+CPU to boost at their discretion. Some implementations take external
-+factors like the chip's temperature into account, so boosting once does
-+not necessarily mean that it will occur every time even using the exact
-+same software setup.
- 
- 
- AMD legacy cpb switch
+Changes for v3:
+- Remove low level boost code
+- Move boost management code to cpufreq core code
+- Use boost_supported flag to indicate if driver supports over clocking
+
+Changes for v2:
+- Removal of struct cpufreq_boost
+- Removal of the CONFIG_CPU_FREQ_BOOST flag
+- low_level_boost with valid address when boost is supported
+
+ drivers/cpufreq/exynos-cpufreq.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index b96fcc8..77a0aed 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -253,6 +253,9 @@ static struct cpufreq_driver exynos_driver = {
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= "exynos_cpufreq",
+ 	.attr		= cpufreq_generic_attr,
++#ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
++	.boost_supported = true,
++#endif
+ #ifdef CONFIG_PM
+ 	.suspend	= exynos_cpufreq_suspend,
+ 	.resume		= exynos_cpufreq_resume,
 -- 
 1.7.10.4
+
