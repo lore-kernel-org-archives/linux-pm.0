@@ -1,93 +1,120 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v2 06/13] arm64: kernel: implement fpsimd CPU PM notifier
-Date: Mon, 14 Oct 2013 12:03:03 +0100
-Message-ID: <1381748590-14279-7-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH v2 11/13] arm64: enable generic clockevent broadcast
+Date: Mon, 14 Oct 2013 12:03:08 +0100
+Message-ID: <1381748590-14279-12-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:57058 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:57553 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755857Ab3JNLCd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:33 -0400
+	with ESMTP id S1755979Ab3JNLCk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:40 -0400
 In-Reply-To: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-When a CPU enters a low power state, its FP register content is lost.
-This patch adds a notifier to save the FP context on CPU shutdown
-and restore it on CPU resume. The context is saved and restored only
-if the suspending thread is not a kernel thread, mirroring the current
-context switch behaviour.
+On platforms with power management capabilities, timers that are shut
+down when a CPU enters deep C-states must be emulated using an always-on
+timer and a timer IPI to relay the timer IRQ to target CPUs on an SMP
+system.
+
+This patch enables the generic clockevents broadcast infrastructure for
+arm64, by providing the required Kconfig entries and adding the timer
+IPI infrastructure.
 
 Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- arch/arm64/kernel/fpsimd.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ arch/arm64/Kconfig               |  2 ++
+ arch/arm64/include/asm/hardirq.h |  2 +-
+ arch/arm64/kernel/smp.c          | 17 +++++++++++++++++
+ 3 files changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kernel/fpsimd.c b/arch/arm64/kernel/fpsimd.c
-index bb785d2..4aef42a 100644
---- a/arch/arm64/kernel/fpsimd.c
-+++ b/arch/arm64/kernel/fpsimd.c
-@@ -17,6 +17,7 @@
-  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  */
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index bcf88e4..be88acd 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -1,6 +1,7 @@
+ config ARM64
+ =09def_bool y
+ =09select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
++=09select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ =09select ARCH_WANT_OPTIONAL_GPIOLIB
+ =09select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
+ =09select ARCH_WANT_FRAME_POINTERS
+@@ -12,6 +13,7 @@ config ARM64
+ =09select COMMON_CLK
+ =09select CPU_PM if (SUSPEND || CPU_IDLE)
+ =09select GENERIC_CLOCKEVENTS
++=09select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+ =09select GENERIC_IOMAP
+ =09select GENERIC_IRQ_PROBE
+ =09select GENERIC_IRQ_SHOW
+diff --git a/arch/arm64/include/asm/hardirq.h b/arch/arm64/include/asm/hard=
+irq.h
+index 990c051..ae4801d 100644
+--- a/arch/arm64/include/asm/hardirq.h
++++ b/arch/arm64/include/asm/hardirq.h
+@@ -20,7 +20,7 @@
+ #include <linux/threads.h>
+ #include <asm/irq.h>
 =20
-+#include <linux/cpu_pm.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/sched.h>
-@@ -113,6 +114,39 @@ EXPORT_SYMBOL(kernel_neon_end);
+-#define NR_IPI=094
++#define NR_IPI=095
 =20
- #endif /* CONFIG_KERNEL_MODE_NEON */
+ typedef struct {
+ =09unsigned int __softirq_pending;
+diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+index d5488f8..2ed691e 100644
+--- a/arch/arm64/kernel/smp.c
++++ b/arch/arm64/kernel/smp.c
+@@ -61,6 +61,7 @@ enum ipi_msg_type {
+ =09IPI_CALL_FUNC,
+ =09IPI_CALL_FUNC_SINGLE,
+ =09IPI_CPU_STOP,
++=09IPI_TIMER,
+ };
 =20
-+#ifdef CONFIG_CPU_PM
-+static int fpsimd_cpu_pm_notifier(struct notifier_block *self,
-+=09=09=09=09  unsigned long cmd, void *v)
-+{
-+=09switch (cmd) {
-+=09case CPU_PM_ENTER:
-+=09=09if (current->mm)
-+=09=09=09fpsimd_save_state(&current->thread.fpsimd_state);
-+=09=09break;
-+=09case CPU_PM_EXIT:
-+=09=09if (current->mm)
-+=09=09=09fpsimd_load_state(&current->thread.fpsimd_state);
-+=09=09break;
-+=09case CPU_PM_ENTER_FAILED:
-+=09default:
-+=09=09return NOTIFY_DONE;
-+=09}
-+=09return NOTIFY_OK;
-+}
-+
-+static struct notifier_block fpsimd_cpu_pm_notifier_block =3D {
-+=09.notifier_call =3D fpsimd_cpu_pm_notifier,
-+};
-+
-+static void fpsimd_pm_init(void)
-+{
-+=09cpu_pm_register_notifier(&fpsimd_cpu_pm_notifier_block);
-+}
-+
-+#else
-+static inline void fpsimd_pm_init(void) { }
-+#endif /* CONFIG_CPU_PM */
-+
  /*
-  * FP/SIMD support code initialisation.
-  */
-@@ -131,6 +165,8 @@ static int __init fpsimd_init(void)
- =09else
- =09=09elf_hwcap |=3D HWCAP_ASIMD;
+@@ -447,6 +448,7 @@ static const char *ipi_types[NR_IPI] =3D {
+ =09S(IPI_CALL_FUNC, "Function call interrupts"),
+ =09S(IPI_CALL_FUNC_SINGLE, "Single function call interrupts"),
+ =09S(IPI_CPU_STOP, "CPU stop interrupts"),
++=09S(IPI_TIMER, "Timer broadcast interrupts"),
+ };
 =20
-+=09fpsimd_pm_init();
+ void show_ipi_list(struct seq_file *p, int prec)
+@@ -532,6 +534,14 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
+ =09=09irq_exit();
+ =09=09break;
+=20
++#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
++=09case IPI_TIMER:
++=09=09irq_enter();
++=09=09tick_receive_broadcast();
++=09=09irq_exit();
++=09=09break;
++#endif
 +
- =09return 0;
+ =09default:
+ =09=09pr_crit("CPU%u: Unknown IPI message 0x%x\n", cpu, ipinr);
+ =09=09break;
+@@ -544,6 +554,13 @@ void smp_send_reschedule(int cpu)
+ =09smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);
  }
- late_initcall(fpsimd_init);
+=20
++#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
++void tick_broadcast(const struct cpumask *mask)
++{
++=09smp_cross_call(mask, IPI_TIMER);
++}
++#endif
++
+ void smp_send_stop(void)
+ {
+ =09unsigned long timeout;
 --=20
 1.8.4
 
