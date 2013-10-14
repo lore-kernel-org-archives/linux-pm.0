@@ -1,105 +1,53 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Subject: Re: [PATCH 1/2] ARM: at91: cpuidle: convert to platform driver
-Date: Mon, 14 Oct 2013 16:27:19 +0200
-Message-ID: <20131014142719.GI11420@ns203013.ovh.net>
-References: <1381593099-1184-1-git-send-email-daniel.lezcano@linaro.org>
- <20131014140406.GH11420@ns203013.ovh.net>
- <525BFD31.3020406@linaro.org>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH v3 05/14] ARM: mvebu: Make ll_set_cpu_coherent() more
+ configurable
+Date: Mon, 14 Oct 2013 16:26:36 +0200
+Message-ID: <20131014162636.1f486053@skate>
+References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com>
+	<1381759106-15004-6-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <525BFD31.3020406@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, nicolas.ferre@atmel.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:33007 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754084Ab3JNO0j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 10:26:39 -0400
+In-Reply-To: <1381759106-15004-6-git-send-email-gregory.clement@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
 
-T24gMTY6MTggTW9uIDE0IE9jdCAgICAgLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiBPbiAxMC8x
-NC8yMDEzIDA0OjA0IFBNLCBKZWFuLUNocmlzdG9waGUgUExBR05JT0wtVklMTEFSRCB3cm90ZToK
-PiA+T24gMTc6NTEgU2F0IDEyIE9jdCAgICAgLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiA+PlVz
-ZSB0aGUgcGxhdGZvcm0gZHJpdmVyIG1vZGVsIHRvIHNlcGFyYXRlIHRoZSBjcHVpZGxlIHNwZWNp
-ZmljIGNvZGUgZnJvbQo+ID4+dGhlIGxvdyBsZXZlbCBwbSBjb2RlLiBJdCBhbGxvd3MgdG8gcmVt
-b3ZlIHRoZSBkZXBlbmRlbmN5IGJldHdlZW4KPiA+PnRoZXNlIHR3byBjb21wb25lbnRzLgo+ID4+
-Cj4gPj5UZXN0ZWQtb24gdXNiLWE5MjYzIChhdDkxc2FtOTI2MykKPiA+Pgo+ID4+U2lnbmVkLW9m
-Zi1ieTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+Cj4gPj4tLS0K
-PiA+PiAgYXJjaC9hcm0vbWFjaC1hdDkxL2NwdWlkbGUuYyB8ICAgMjkgKysrKysrKysrKysrKysr
-LS0tLS0tLS0tLS0tLS0KPiA+PiAgYXJjaC9hcm0vbWFjaC1hdDkxL3BtLmMgICAgICB8ICAgMTYg
-KysrKysrKysrKysrKysrLQo+ID4+ICAyIGZpbGVzIGNoYW5nZWQsIDMwIGluc2VydGlvbnMoKyks
-IDE1IGRlbGV0aW9ucygtKQo+ID4+Cj4gPj5kaWZmIC0tZ2l0IGEvYXJjaC9hcm0vbWFjaC1hdDkx
-L2NwdWlkbGUuYyBiL2FyY2gvYXJtL21hY2gtYXQ5MS9jcHVpZGxlLmMKPiA+PmluZGV4IDRlYzZh
-NmQuLjZjZGM3NmQgMTAwNjQ0Cj4gPj4tLS0gYS9hcmNoL2FybS9tYWNoLWF0OTEvY3B1aWRsZS5j
-Cj4gPj4rKysgYi9hcmNoL2FybS9tYWNoLWF0OTEvY3B1aWRsZS5jCj4gPj5AQCAtMjEsMjYgKzIx
-LDE3IEBACj4gPj4gICNpbmNsdWRlIDxsaW51eC9leHBvcnQuaD4KPiA+PiAgI2luY2x1ZGUgPGFz
-bS9wcm9jLWZucy5oPgo+ID4+ICAjaW5jbHVkZSA8YXNtL2NwdWlkbGUuaD4KPiA+Pi0jaW5jbHVk
-ZSA8bWFjaC9jcHUuaD4KPiA+Pi0KPiA+Pi0jaW5jbHVkZSAicG0uaCIKPiA+Pgo+ID4+ICAjZGVm
-aW5lIEFUOTFfTUFYX1NUQVRFUwkyCj4gPj4KPiA+PitzdGF0aWMgdm9pZCAoKmF0OTFfc3RhbmRi
-eSkodm9pZCk7Cj4gPj4rCj4gPj4gIC8qIEFjdHVhbCBjb2RlIHRoYXQgcHV0cyB0aGUgU29DIGlu
-IGRpZmZlcmVudCBpZGxlIHN0YXRlcyAqLwo+ID4+ICBzdGF0aWMgaW50IGF0OTFfZW50ZXJfaWRs
-ZShzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiwKPiA+PiAgCQkJc3RydWN0IGNwdWlkbGVfZHJp
-dmVyICpkcnYsCj4gPj4gIAkJCSAgICAgICBpbnQgaW5kZXgpCj4gPj4gIHsKPiA+Pi0JaWYgKGNw
-dV9pc19hdDkxcm05MjAwKCkpCj4gPj4tCQlhdDkxcm05MjAwX3N0YW5kYnkoKTsKPiA+Pi0JZWxz
-ZSBpZiAoY3B1X2lzX2F0OTFzYW05ZzQ1KCkpCj4gPj4tCQlhdDkxc2FtOWc0NV9zdGFuZGJ5KCk7
-Cj4gPj4tCWVsc2UgaWYgKGNwdV9pc19hdDkxc2FtOTI2MygpKQo+ID4+LQkJYXQ5MXNhbTkyNjNf
-c3RhbmRieSgpOwo+ID4+LQllbHNlCj4gPj4tCQlhdDkxc2FtOV9zdGFuZGJ5KCk7Cj4gPj4tCj4g
-Pj4rCWF0OTFfc3RhbmRieSgpOwo+ID4+ICAJcmV0dXJuIGluZGV4Owo+ID4+ICB9Cj4gPj4KPiA+
-PkBAIC02MCw5ICs1MSwxOSBAQCBzdGF0aWMgc3RydWN0IGNwdWlkbGVfZHJpdmVyIGF0OTFfaWRs
-ZV9kcml2ZXIgPSB7Cj4gPj4gIH07Cj4gPj4KPiA+PiAgLyogSW5pdGlhbGl6ZSBDUFUgaWRsZSBi
-eSByZWdpc3RlcmluZyB0aGUgaWRsZSBzdGF0ZXMgKi8KPiA+Pi1zdGF0aWMgaW50IF9faW5pdCBh
-dDkxX2luaXRfY3B1aWRsZSh2b2lkKQo+ID4+K3N0YXRpYyBpbnQgX19pbml0IGF0OTFfY3B1aWRs
-ZV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYpCj4gPj4gIHsKPiA+PisJYXQ5MV9z
-dGFuZGJ5ID0gKHZvaWQgKikoZGV2LT5kZXYucGxhdGZvcm1fZGF0YSk7Cj4gPj4rCQo+ID4+ICAJ
-cmV0dXJuIGNwdWlkbGVfcmVnaXN0ZXIoJmF0OTFfaWRsZV9kcml2ZXIsIE5VTEwpOwo+ID4+ICB9
-Cj4gPj4KPiA+Pi1kZXZpY2VfaW5pdGNhbGwoYXQ5MV9pbml0X2NwdWlkbGUpOwo+ID4+K3N0YXRp
-YyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGF0OTFfY3B1aWRsZV9kcml2ZXIgPSB7Cj4gPj4rCS5k
-cml2ZXIgPSB7Cj4gPj4rCQkubmFtZSA9ICJjcHVpZGxlLWF0OTEiLAo+ID4+KwkJLm93bmVyID0g
-VEhJU19NT0RVTEUsCj4gPj4rCX0sCj4gPj4rCS5wcm9iZSA9IGF0OTFfY3B1aWRsZV9wcm9iZSwK
-PiA+Pit9Owo+ID4+Kwo+ID4+K21vZHVsZV9wbGF0Zm9ybV9kcml2ZXIoYXQ5MV9jcHVpZGxlX2Ry
-aXZlcik7Cj4gPj5kaWZmIC0tZ2l0IGEvYXJjaC9hcm0vbWFjaC1hdDkxL3BtLmMgYi9hcmNoL2Fy
-bS9tYWNoLWF0OTEvcG0uYwo+ID4+aW5kZXggMTVhZmI1ZC4uZGViZGJmOCAxMDA2NDQKPiA+Pi0t
-LSBhL2FyY2gvYXJtL21hY2gtYXQ5MS9wbS5jCj4gPj4rKysgYi9hcmNoL2FybS9tYWNoLWF0OTEv
-cG0uYwo+ID4+QEAgLTMxNCw2ICszMTQsMTAgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBwbGF0Zm9y
-bV9zdXNwZW5kX29wcyBhdDkxX3BtX29wcyA9IHsKPiA+PiAgCS5lbmQJPSBhdDkxX3BtX2VuZCwK
-PiA+PiAgfTsKPiA+Pgo+ID4+K3N0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlIGF0OTFfY3B1
-aWRsZV9kZXZpY2UgPSB7Cj4gPj4rCS5uYW1lID0gImNwdWlkbGUtYXQ5MSIsCj4gPj4rfTsKPiA+
-PisKPiA+PiAgc3RhdGljIGludCBfX2luaXQgYXQ5MV9wbV9pbml0KHZvaWQpCj4gPj4gIHsKPiA+
-PiAgI2lmZGVmIENPTkZJR19BVDkxX1NMT1dfQ0xPQ0sKPiA+PkBAIC0zMjMsOCArMzI3LDE4IEBA
-IHN0YXRpYyBpbnQgX19pbml0IGF0OTFfcG1faW5pdCh2b2lkKQo+ID4+ICAJcHJfaW5mbygiQVQ5
-MTogUG93ZXIgTWFuYWdlbWVudCVzXG4iLCAoc2xvd19jbG9jayA/ICIgKHdpdGggc2xvdyBjbG9j
-ayBtb2RlKSIgOiAiIikpOwo+ID4+Cj4gPj4gIAkvKiBBVDkxUk05MjAwIFNEUkFNIGxvdy1wb3dl
-ciBtb2RlIGNhbm5vdCBiZSB1c2VkIHdpdGggc2VsZi1yZWZyZXNoLiAqLwo+ID4+LQlpZiAoY3B1
-X2lzX2F0OTFybTkyMDAoKSkKPiA+PisJaWYgKGNwdV9pc19hdDkxcm05MjAwKCkpIHsKPiA+PisJ
-CWF0OTFfY3B1aWRsZV9kZXZpY2UuZGV2LnBsYXRmb3JtX2RhdGEgPSBhdDkxcm05MjAwX3N0YW5k
-Ynk7Cj4gPj4gIAkJYXQ5MV9yYW1jX3dyaXRlKDAsIEFUOTFSTTkyMDBfU0RSQU1DX0xQUiwgMCk7
-Cj4gPj4rCX0gZWxzZSBpZiAoY3B1X2lzX2F0OTFzYW05ZzQ1KCkpIHsKPiA+PisJCWF0OTFfY3B1
-aWRsZV9kZXZpY2UuZGV2LnBsYXRmb3JtX2RhdGEgPSBhdDkxc2FtOWc0NV9zdGFuZGJ5Owo+ID4+
-Kwl9IGVsc2UgaWYgKGNwdV9pc19hdDkxc2FtOTI2MygpKSB7Cj4gPj4rCQlhdDkxX2NwdWlkbGVf
-ZGV2aWNlLmRldi5wbGF0Zm9ybV9kYXRhID0gYXQ5MXNhbTkyNjNfc3RhbmRieTsKPiA+PisJfSBl
-bHNlIHsKPiA+PisJCWF0OTFfY3B1aWRsZV9kZXZpY2UuZGV2LnBsYXRmb3JtX2RhdGEgPSBhdDkx
-c2FtOV9zdGFuZGJ5Owo+ID5ubyB0aGlzIGlzIHRvbyBkYW5nZXJvdXMgd2hlbiBhZGRpbmcgbmV3
-IFNvQwo+ID4KPiA+eW91IG11c3QgbGlzdCB0aGUgc3VwcG9ydGVkIFNvQwo+ID4KPiA+YW5kIEkg
-cHJlZmVyIHRvIG1vdmUgdGhpcyBjb2RlIHRvIHRoZSBTb0MgaW5pdCBzdHJ1Y3R1cmUKPiAKPiBE
-byB5b3UgbWVhbiByZWdpc3RlciB0aGUgcGxhdGZvcm1fZGV2aWNlIGluIGVnLgo+IGF0OTFybTky
-MDBfaW5pdGlhbGl6ZSB3aXRoIHRoZSByaWdodCBwbGF0Zm9ybSBkYXRhID8KPiAKeWVzIGFzIGV4
-YW1wbGUKCkJlc3QgUmVnYXJkcywKSi4KPiAKPiA+c28gd2UgY2FuIGRyb3AgdGhlIGlmL2Vsc2Ug
-aWYvZWxzZWUKPiA+Cj4gPmFuZCBkcm9wIHRoZSBpc3N1ZSBvZiBhZGRpbmcgbmV3IGFuZCB0aGUg
-YXJjaF9pbml0Y2FsbAo+ID4KPiA+QmVzdCBSZWdhcmRzLAo+ID5KLgo+ID4+Kwl9Cj4gPj4rCQo+
-ID4+KwlwbGF0Zm9ybV9kZXZpY2VfcmVnaXN0ZXIoJmF0OTFfY3B1aWRsZV9kZXZpY2UpOwo+ID4+
-Cj4gPj4gIAlzdXNwZW5kX3NldF9vcHMoJmF0OTFfcG1fb3BzKTsKPiA+Pgo+ID4+LS0KPiA+PjEu
-Ny45LjUKPiA+Pgo+IAo+IAo+IC0tIAo+ICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJv
-Lm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCj4gCj4gRm9sbG93IExp
-bmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwK
-PiA8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8Cj4gPGh0dHA6Ly93
-d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKPiAKCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
-CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
-ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+Dear Gregory CLEMENT,
+
+On Mon, 14 Oct 2013 15:58:17 +0200, Gregory CLEMENT wrote:
+> ll_set_cpu_coherent does two things to set the coherency for a CPU:
+> 
+> - Adding the CPU to the SMP group 0
+> - Enabling the snooping on the CPU
+> 
+> Only the second part is needed when coming back from a CPU Idle. This
+> commit allows to choose to do the first part or not.
+
+I am not a fan of this change: those two boolean arguments are really
+mystical. If a function does do things, and sometimes must be called to
+do one thing, and sometimes for two things, it is really calling for a
+split of the functions (with potentially the second function calling the
+first, or the two functions being called in a row when needed).
+
+Let's have two functions:
+
+	ll_set_cpu_smp_group();
+	ll_set_cpu_coherent();
+
+at initialization time, both functions are called. On the exit path of
+idle, only the second one is called.
+
+Best regards,
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
