@@ -1,120 +1,87 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v2 11/13] arm64: enable generic clockevent broadcast
-Date: Mon, 14 Oct 2013 12:03:08 +0100
-Message-ID: <1381748590-14279-12-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH v2 07/13] arm: kvm: implement CPU PM notifier
+Date: Mon, 14 Oct 2013 12:03:04 +0100
+Message-ID: <1381748590-14279-8-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:57553 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:57146 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755979Ab3JNLCk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:40 -0400
+	with ESMTP id S1755971Ab3JNLCe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Oct 2013 07:02:34 -0400
 In-Reply-To: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On platforms with power management capabilities, timers that are shut
-down when a CPU enters deep C-states must be emulated using an always-on
-timer and a timer IPI to relay the timer IRQ to target CPUs on an SMP
-system.
-
-This patch enables the generic clockevents broadcast infrastructure for
-arm64, by providing the required Kconfig entries and adding the timer
-IPI infrastructure.
+Upon CPU shutdown and consequent warm-reboot, the hypervisor CPU state
+must be re-initialized. This patch implements a CPU PM notifier that
+upon warm-boot calls a KVM hook to reinitialize properly the hypervisor
+state so that the CPU can be safely resumed.
 
 Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Acked-by: Marc Zyngier <marc.zyngier@arm.com>
 ---
- arch/arm64/Kconfig               |  2 ++
- arch/arm64/include/asm/hardirq.h |  2 +-
- arch/arm64/kernel/smp.c          | 17 +++++++++++++++++
- 3 files changed, 20 insertions(+), 1 deletion(-)
+ arch/arm/kvm/arm.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index bcf88e4..be88acd 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -1,6 +1,7 @@
- config ARM64
- =09def_bool y
- =09select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
-+=09select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
- =09select ARCH_WANT_OPTIONAL_GPIOLIB
- =09select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
- =09select ARCH_WANT_FRAME_POINTERS
-@@ -12,6 +13,7 @@ config ARM64
- =09select COMMON_CLK
- =09select CPU_PM if (SUSPEND || CPU_IDLE)
- =09select GENERIC_CLOCKEVENTS
-+=09select GENERIC_CLOCKEVENTS_BROADCAST if SMP
- =09select GENERIC_IOMAP
- =09select GENERIC_IRQ_PROBE
- =09select GENERIC_IRQ_SHOW
-diff --git a/arch/arm64/include/asm/hardirq.h b/arch/arm64/include/asm/hard=
-irq.h
-index 990c051..ae4801d 100644
---- a/arch/arm64/include/asm/hardirq.h
-+++ b/arch/arm64/include/asm/hardirq.h
-@@ -20,7 +20,7 @@
- #include <linux/threads.h>
- #include <asm/irq.h>
+diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+index 9c697db..8fc60da 100644
+--- a/arch/arm/kvm/arm.c
++++ b/arch/arm/kvm/arm.c
+@@ -17,6 +17,7 @@
+  */
 =20
--#define NR_IPI=094
-+#define NR_IPI=095
-=20
- typedef struct {
- =09unsigned int __softirq_pending;
-diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
-index d5488f8..2ed691e 100644
---- a/arch/arm64/kernel/smp.c
-+++ b/arch/arm64/kernel/smp.c
-@@ -61,6 +61,7 @@ enum ipi_msg_type {
- =09IPI_CALL_FUNC,
- =09IPI_CALL_FUNC_SINGLE,
- =09IPI_CPU_STOP,
-+=09IPI_TIMER,
+ #include <linux/cpu.h>
++#include <linux/cpu_pm.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
+@@ -839,6 +840,33 @@ static struct notifier_block hyp_init_cpu_nb =3D {
+ =09.notifier_call =3D hyp_init_cpu_notify,
  };
 =20
- /*
-@@ -447,6 +448,7 @@ static const char *ipi_types[NR_IPI] =3D {
- =09S(IPI_CALL_FUNC, "Function call interrupts"),
- =09S(IPI_CALL_FUNC_SINGLE, "Single function call interrupts"),
- =09S(IPI_CPU_STOP, "CPU stop interrupts"),
-+=09S(IPI_TIMER, "Timer broadcast interrupts"),
- };
-=20
- void show_ipi_list(struct seq_file *p, int prec)
-@@ -532,6 +534,14 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
- =09=09irq_exit();
- =09=09break;
-=20
-+#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
-+=09case IPI_TIMER:
-+=09=09irq_enter();
-+=09=09tick_receive_broadcast();
-+=09=09irq_exit();
-+=09=09break;
-+#endif
-+
- =09default:
- =09=09pr_crit("CPU%u: Unknown IPI message 0x%x\n", cpu, ipinr);
- =09=09break;
-@@ -544,6 +554,13 @@ void smp_send_reschedule(int cpu)
- =09smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);
- }
-=20
-+#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
-+void tick_broadcast(const struct cpumask *mask)
++#ifdef CONFIG_CPU_PM
++static int hyp_init_cpu_pm_notifier(struct notifier_block *self,
++=09=09=09=09    unsigned long cmd,
++=09=09=09=09    void *v)
 +{
-+=09smp_cross_call(mask, IPI_TIMER);
++=09if (cmd =3D=3D CPU_PM_EXIT) {
++=09=09cpu_init_hyp_mode(NULL);
++=09=09return NOTIFY_OK;
++=09}
++
++=09return NOTIFY_DONE;
++}
++
++static struct notifier_block hyp_init_cpu_pm_nb =3D {
++=09.notifier_call =3D hyp_init_cpu_pm_notifier,
++};
++
++static void __init hyp_cpu_pm_init(void)
++{
++=09cpu_pm_register_notifier(&hyp_init_cpu_pm_nb);
++}
++#else
++static inline void hyp_cpu_pm_init(void)
++{
 +}
 +#endif
 +
- void smp_send_stop(void)
- {
- =09unsigned long timeout;
+ /**
+  * Inits Hyp-mode on all online CPUs
+  */
+@@ -999,6 +1027,8 @@ int kvm_arch_init(void *opaque)
+ =09=09goto out_err;
+ =09}
+=20
++=09hyp_cpu_pm_init();
++
+ =09kvm_coproc_table_init();
+ =09return 0;
+ out_err:
 --=20
 1.8.4
 
