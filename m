@@ -1,310 +1,261 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V4 1/2] ARM: at91: cpuidle: convert to platform driver
-Date: Tue, 15 Oct 2013 11:41:48 +0200
-Message-ID: <1381830109-1398-1-git-send-email-daniel.lezcano@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: RE: [PATCHv4 2/9] Thermal: Create sensor level APIs
+Date: Tue, 15 Oct 2013 17:45:00 +0800
+Message-ID: <1381830300.2080.36.camel@rzhang1-mobl4>
+References: <1380652688-5787-1-git-send-email-durgadoss.r@intel.com>
+	 <1380652688-5787-3-git-send-email-durgadoss.r@intel.com>
+	 <1381742769.2034.26.camel@rzhang1-mobl4>
+	 <4D68720C2E767A4AA6A8796D42C8EB59DADB0B@BGSMSX101.gar.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:62349 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757855Ab3JOJl4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 05:41:56 -0400
-Received: by mail-wi0-f180.google.com with SMTP id i19so641308wiw.13
-        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2013 02:41:55 -0700 (PDT)
+Received: from mga03.intel.com ([143.182.124.21]:4176 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753669Ab3JOJpF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Oct 2013 05:45:05 -0400
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59DADB0B@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: plagnioj@jcrosoft.com, linux@maxim.org.za, nicolas.ferre@atmel.com
-Cc: linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, thomas.petazzoni@free-electrons.com, b.zolnierkie@samsung.com
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@freescale.com" <hongbo.zhang@freescale.com>, "wni@nvidia.com" <wni@nvidia.com>
 
-Using the platform driver model is a good way to separate the cpuidle specific
-code from the low level pm code. It allows to remove the dependency between
-these two components.
+On Mon, 2013-10-14 at 10:21 -0600, R, Durgadoss wrote:
+> Hi Rui,
+> 
+> > -----Original Message-----
+> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> > owner@vger.kernel.org] On Behalf Of Zhang Rui
+> > Sent: Monday, October 14, 2013 2:56 PM
+> > To: R, Durgadoss
+> > Cc: eduardo.valentin@ti.com; linux-pm@vger.kernel.org; linux-
+> > kernel@vger.kernel.org; hongbo.zhang@freescale.com; wni@nvidia.com
+> > Subject: Re: [PATCHv4 2/9] Thermal: Create sensor level APIs
+> > 
+> > On Wed, 2013-10-02 at 00:08 +0530, Durgadoss R wrote:
+> > > This patch creates sensor level APIs, in the
+> > > generic thermal framework.
+> > >
+> > > A Thermal sensor is a piece of hardware that can report
+> > > temperature of the spot in which it is placed. A thermal
+> > > sensor driver reads the temperature from this sensor
+> > > and reports it out. This kind of driver can be in
+> > > any subsystem. If the sensor needs to participate
+> > > in platform thermal management, the corresponding
+> > > driver can use the APIs introduced in this patch, to
+> > > register(or unregister) with the thermal framework.
+> > >
+> > > Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+> > > ---
+> > >  drivers/thermal/thermal_core.c |  284
+> > ++++++++++++++++++++++++++++++++++++++++
+> > >  include/linux/thermal.h        |   29 ++++
+> > >  2 files changed, 313 insertions(+)
+> > >
+> > > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > > index 8c5131d..8c46567 100644
+> > > --- a/drivers/thermal/thermal_core.c
+> > > +++ b/drivers/thermal/thermal_core.c
+> > > @@ -45,13 +45,16 @@ MODULE_LICENSE("GPL v2");
+> > >
+> > >  static DEFINE_IDR(thermal_tz_idr);
+> > >  static DEFINE_IDR(thermal_cdev_idr);
+> > > +static DEFINE_IDR(thermal_sensor_idr);
+> > >  static DEFINE_MUTEX(thermal_idr_lock);
+> > >
+> > >  static LIST_HEAD(thermal_tz_list);
+> > > +static LIST_HEAD(thermal_sensor_list);
+> > >  static LIST_HEAD(thermal_cdev_list);
+> > >  static LIST_HEAD(thermal_governor_list);
+> > >
+> > >  static DEFINE_MUTEX(thermal_list_lock);
+> > > +static DEFINE_MUTEX(sensor_list_lock);
+> > >  static DEFINE_MUTEX(thermal_governor_lock);
+> > >
+> > >  static struct thermal_governor *__find_governor(const char *name)
+> > > @@ -463,6 +466,103 @@ static void thermal_zone_device_check(struct
+> > work_struct *work)
+> > >  #define to_thermal_zone(_dev) \
+> > >  	container_of(_dev, struct thermal_zone_device, device)
+> > >
+> > > +#define to_thermal_sensor(_dev) \
+> > > +	container_of(_dev, struct thermal_sensor, device)
+> > > +
+> > > +static ssize_t
+> > > +sensor_name_show(struct device *dev, struct device_attribute *attr, char
+> > *buf)
+> > > +{
+> > > +	struct thermal_sensor *ts = to_thermal_sensor(dev);
+> > > +
+> > > +	return sprintf(buf, "%s\n", ts->name);
+> > > +}
+> > > +
+> > > +static ssize_t
+> > > +sensor_temp_show(struct device *dev, struct device_attribute *attr, char
+> > *buf)
+> > > +{
+> > > +	int ret;
+> > > +	long val;
+> > > +	struct thermal_sensor *ts = to_thermal_sensor(dev);
+> > > +
+> > > +	ret = ts->ops->get_temp(ts, &val);
+> > > +
+> > > +	return ret ? ret : sprintf(buf, "%ld\n", val);
+> > > +}
+> > > +
+> > > +static ssize_t
+> > > +hyst_show(struct device *dev, struct device_attribute *attr, char *buf)
+> > > +{
+> > > +	int indx, ret;
+> > > +	long val;
+> > > +	struct thermal_sensor *ts = to_thermal_sensor(dev);
+> > > +
+> > > +	if (!sscanf(attr->attr.name, "threshold%d_hyst", &indx))
+> > > +		return -EINVAL;
+> > > +
+> > > +	ret = ts->ops->get_hyst(ts, indx, &val);
+> > > +
+> > > +	return ret ? ret : sprintf(buf, "%ld\n", val);
+> > > +}
+> > > +
+> > > +static ssize_t
+> > > +hyst_store(struct device *dev, struct device_attribute *attr,
+> > > +				   const char *buf, size_t count)
+> > > +{
+> > > +	int indx, ret;
+> > > +	long val;
+> > > +	struct thermal_sensor *ts = to_thermal_sensor(dev);
+> > > +
+> > > +	if (!ts->ops->set_hyst)
+> > > +		return -EPERM;
+> > > +
+> > > +	if (!sscanf(attr->attr.name, "threshold%d_hyst", &indx))
+> > > +		return -EINVAL;
+> > > +
+> > > +	if (kstrtol(buf, 10, &val))
+> > > +		return -EINVAL;
+> > > +
+> > > +	ret = ts->ops->set_hyst(ts, indx, val);
+> > > +
+> > > +	return ret ? ret : count;
+> > > +}
+> > > +
+> > > +static ssize_t
+> > > +threshold_show(struct device *dev, struct device_attribute *attr, char *buf)
+> > > +{
+> > > +	int indx, ret;
+> > > +	long val;
+> > > +	struct thermal_sensor *ts = to_thermal_sensor(dev);
+> > > +
+> > > +	if (!sscanf(attr->attr.name, "threshold%d", &indx))
+> > > +		return -EINVAL;
+> > > +
+> > > +	ret = ts->ops->get_threshold(ts, indx, &val);
+> > > +
+> > > +	return ret ? ret : sprintf(buf, "%ld\n", val);
+> > > +}
+> > > +
+> > > +static ssize_t
+> > > +threshold_store(struct device *dev, struct device_attribute *attr,
+> > > +				   const char *buf, size_t count)
+> > > +{
+> > > +	int indx, ret;
+> > > +	long val;
+> > > +	struct thermal_sensor *ts = to_thermal_sensor(dev);
+> > > +
+> > > +	if (!ts->ops->set_threshold)
+> > > +		return -EPERM;
+> > > +
+> > > +	if (!sscanf(attr->attr.name, "threshold%d", &indx))
+> > > +		return -EINVAL;
+> > > +
+> > > +	if (kstrtol(buf, 10, &val))
+> > > +		return -EINVAL;
+> > > +
+> > > +	ret = ts->ops->set_threshold(ts, indx, val);
+> > > +
+> > > +	return ret ? ret : count;
+> > > +}
+> > > +
+> > >  static ssize_t
+> > >  type_show(struct device *dev, struct device_attribute *attr, char *buf)
+> > >  {
+> > > @@ -772,6 +872,10 @@ static DEVICE_ATTR(mode, 0644, mode_show,
+> > mode_store);
+> > >  static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show,
+> > passive_store);
+> > >  static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+> > >
+> > > +/* Thermal sensor attributes */
+> > > +static DEVICE_ATTR(sensor_name, 0444, sensor_name_show, NULL);
+> > 
+> > this attribute is under sensorX/ directory, thus I think "name" is clear
+> > enough.
+> > what do you think?
+> 
+> Yes. That makes sense. I will give this a try in next version.
+> 
+> > 
+> > > +static DEVICE_ATTR(temp_input, 0444, sensor_temp_show, NULL);
+> > > +
+> > what about "temp"? to be consistent with the current naming.
+> 
+> I think I tried this, but we already had a 'temp' attribute. So, was compelled
+> to give another name.
+> 
+> I will try this one again and let you know.
+> 
+> > 
+> > >  /* sys I/F for cooling device */
+> > >  #define to_cooling_device(_dev)	\
+> > >  	container_of(_dev, struct thermal_cooling_device, device)
+> > > @@ -1585,6 +1689,186 @@ static void remove_trip_attrs(struct
+> > thermal_zone_device *tz)
+> > >  	kfree(tz->trip_hyst_attrs);
+> > >  }
+> > >
+> > > + /**
+> > > + * enable_sensor_thresholds - create sysfs nodes for thresholdX
+> > IMO, this name is confusing. It looks like that you are enabling the
+> > sensor hardware here.
+> > so why not "thermal_sensor_sysfs_add", and you can add the "name" and
+> > "temp" attribute in this function as well.
+> 
+> Okay. Will do.
+> 
+> > 
+> > > + * @ts:		the thermal sensor
+> > > + * @count:	Number of thresholds supported by sensor hardware
+> > > + *
+> > > + * 'Thresholds' are temperatures programmed into the sensor hardware,
+> > > + * on crossing which the sensor can generate an interrupt.
+> > > + */
+> > > +static int enable_sensor_thresholds(struct thermal_sensor *ts, int count)
+> > > +{
+> > > +	int i;
+> > > +	int size = sizeof(struct thermal_attr) * count;
+> > > +
+> > > +	ts->thresh_attrs = devm_kzalloc(&ts->device, size, GFP_KERNEL);
+> > > +	if (!ts->thresh_attrs)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	if (ts->ops->get_hyst) {
+> > > +		ts->hyst_attrs = devm_kzalloc(&ts->device, size, GFP_KERNEL);
+> > > +		if (!ts->hyst_attrs)
+> > > +			return -ENOMEM;
+> > > +	}
+> > > +
+> > I do not think you can use devm_kzalloc here.
+> 
+> Any specific reason ?
+> I thought this memory will be freed when we do device_unregister on 'ts'.
+> Please enlighten me if this is not the case.
+> 
+yes, you're right. It is me misunderstood your code.
+Sorry about the noise.
 
-The platform_device is located in the pm code and a 'set' function has been
-added to set the standby function from the AT91_SOC_START initialization
-function. Each SoC with a cpuidle driver will set the standby function in the
-platform_data field at init time. Then pm code will register the cpuidle
-platform device.
+thanks,
+rui
 
-The cpuidle driver will register the platform_driver and use the device's
-platform_data as a standby callback in the idle path.
 
-The at91_pm_enter function contains a { if then else } based on cpu_is_xx
-similar to what was in cpuidle. This is considered dangerous when adding a new
-SoC. Like the cpuidle driver, a standby ops is defined and assigned when the
-SoC init function specifies what is its standby function and reused in the
-at91_pm_enter's 'case' block.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/mach-at91/at91rm9200.c  |    3 +++
- arch/arm/mach-at91/at91sam9260.c |    3 +++
- arch/arm/mach-at91/at91sam9261.c |    3 +++
- arch/arm/mach-at91/at91sam9263.c |    3 +++
- arch/arm/mach-at91/at91sam9g45.c |    3 +++
- arch/arm/mach-at91/at91sam9rl.c  |    3 +++
- arch/arm/mach-at91/cpuidle.c     |   29 +++++++++++++++--------------
- arch/arm/mach-at91/pm.c          |   27 +++++++++++++++++++--------
- arch/arm/mach-at91/pm.h          |    4 ++++
- 9 files changed, 56 insertions(+), 22 deletions(-)
-
-diff --git a/arch/arm/mach-at91/at91rm9200.c b/arch/arm/mach-at91/at91rm9200.c
-index 4aad93d..0d234f2 100644
---- a/arch/arm/mach-at91/at91rm9200.c
-+++ b/arch/arm/mach-at91/at91rm9200.c
-@@ -27,6 +27,7 @@
- #include "generic.h"
- #include "clock.h"
- #include "sam9_smc.h"
-+#include "pm.h"
- 
- /* --------------------------------------------------------------------
-  *  Clocks
-@@ -337,6 +338,8 @@ static void __init at91rm9200_initialize(void)
- 	/* Initialize GPIO subsystem */
- 	at91_gpio_init(at91rm9200_gpio,
- 		cpu_is_at91rm9200_bga() ? AT91RM9200_BGA : AT91RM9200_PQFP);
-+
-+	at91_pm_set_standby(at91rm9200_standby);
- }
- 
- 
-diff --git a/arch/arm/mach-at91/at91sam9260.c b/arch/arm/mach-at91/at91sam9260.c
-index 5de6074..ffe9ce7 100644
---- a/arch/arm/mach-at91/at91sam9260.c
-+++ b/arch/arm/mach-at91/at91sam9260.c
-@@ -28,6 +28,7 @@
- #include "generic.h"
- #include "clock.h"
- #include "sam9_smc.h"
-+#include "pm.h"
- 
- /* --------------------------------------------------------------------
-  *  Clocks
-@@ -351,6 +352,8 @@ static void __init at91sam9260_initialize(void)
- 
- 	/* Register GPIO subsystem */
- 	at91_gpio_init(at91sam9260_gpio, 3);
-+
-+	at91_pm_set_standby(at91sam9_standby);
- }
- 
- /* --------------------------------------------------------------------
-diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
-index 0e07932..1edbb6f 100644
---- a/arch/arm/mach-at91/at91sam9261.c
-+++ b/arch/arm/mach-at91/at91sam9261.c
-@@ -27,6 +27,7 @@
- #include "generic.h"
- #include "clock.h"
- #include "sam9_smc.h"
-+#include "pm.h"
- 
- /* --------------------------------------------------------------------
-  *  Clocks
-@@ -293,6 +294,8 @@ static void __init at91sam9261_initialize(void)
- 
- 	/* Register GPIO subsystem */
- 	at91_gpio_init(at91sam9261_gpio, 3);
-+
-+	at91_pm_set_sandby(at91sam9_standby);
- }
- 
- /* --------------------------------------------------------------------
-diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
-index 6ce7d18..8c81c89 100644
---- a/arch/arm/mach-at91/at91sam9263.c
-+++ b/arch/arm/mach-at91/at91sam9263.c
-@@ -26,6 +26,7 @@
- #include "generic.h"
- #include "clock.h"
- #include "sam9_smc.h"
-+#include "pm.h"
- 
- /* --------------------------------------------------------------------
-  *  Clocks
-@@ -330,6 +331,8 @@ static void __init at91sam9263_initialize(void)
- 
- 	/* Register GPIO subsystem */
- 	at91_gpio_init(at91sam9263_gpio, 5);
-+
-+	at91_pm_set_standby(at91sam9263_standby);
- }
- 
- /* --------------------------------------------------------------------
-diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
-index 474ee04..8460f52 100644
---- a/arch/arm/mach-at91/at91sam9g45.c
-+++ b/arch/arm/mach-at91/at91sam9g45.c
-@@ -26,6 +26,7 @@
- #include "generic.h"
- #include "clock.h"
- #include "sam9_smc.h"
-+#include "pm.h"
- 
- /* --------------------------------------------------------------------
-  *  Clocks
-@@ -379,6 +380,8 @@ static void __init at91sam9g45_initialize(void)
- 
- 	/* Register GPIO subsystem */
- 	at91_gpio_init(at91sam9g45_gpio, 5);
-+
-+	at91_pm_set_standby(at91sam9g45_standby);
- }
- 
- /* --------------------------------------------------------------------
-diff --git a/arch/arm/mach-at91/at91sam9rl.c b/arch/arm/mach-at91/at91sam9rl.c
-index d4ec0d9..c7986e4 100644
---- a/arch/arm/mach-at91/at91sam9rl.c
-+++ b/arch/arm/mach-at91/at91sam9rl.c
-@@ -27,6 +27,7 @@
- #include "generic.h"
- #include "clock.h"
- #include "sam9_smc.h"
-+#include "pm.h"
- 
- /* --------------------------------------------------------------------
-  *  Clocks
-@@ -296,6 +297,8 @@ static void __init at91sam9rl_initialize(void)
- 
- 	/* Register GPIO subsystem */
- 	at91_gpio_init(at91sam9rl_gpio, 4);
-+
-+	at91_pm_set_standby(at91sam9_standby);
- }
- 
- /* --------------------------------------------------------------------
-diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
-index 4ec6a6d..a077437 100644
---- a/arch/arm/mach-at91/cpuidle.c
-+++ b/arch/arm/mach-at91/cpuidle.c
-@@ -21,26 +21,17 @@
- #include <linux/export.h>
- #include <asm/proc-fns.h>
- #include <asm/cpuidle.h>
--#include <mach/cpu.h>
--
--#include "pm.h"
- 
- #define AT91_MAX_STATES	2
- 
-+static void (*at91_standby)(void);
-+
- /* Actual code that puts the SoC in different idle states */
- static int at91_enter_idle(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			       int index)
- {
--	if (cpu_is_at91rm9200())
--		at91rm9200_standby();
--	else if (cpu_is_at91sam9g45())
--		at91sam9g45_standby();
--	else if (cpu_is_at91sam9263())
--		at91sam9263_standby();
--	else
--		at91sam9_standby();
--
-+	at91_standby();
- 	return index;
- }
- 
-@@ -60,9 +51,19 @@ static struct cpuidle_driver at91_idle_driver = {
- };
- 
- /* Initialize CPU idle by registering the idle states */
--static int __init at91_init_cpuidle(void)
-+static int at91_cpuidle_probe(struct platform_device *dev)
- {
-+	at91_standby = (void *)(dev->dev.platform_data);
-+	
- 	return cpuidle_register(&at91_idle_driver, NULL);
- }
- 
--device_initcall(at91_init_cpuidle);
-+static struct platform_driver at91_cpuidle_driver = {
-+	.driver = {
-+		.name = "cpuidle-at91",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = at91_cpuidle_probe,
-+};
-+
-+module_platform_driver(at91_cpuidle_driver);
-diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-index 15afb5d..9986542 100644
---- a/arch/arm/mach-at91/pm.c
-+++ b/arch/arm/mach-at91/pm.c
-@@ -39,6 +39,8 @@
- #include "at91_rstc.h"
- #include "at91_shdwc.h"
- 
-+static void (*at91_pm_standby)(void);
-+
- static void __init show_reset_status(void)
- {
- 	static char reset[] __initdata = "reset";
-@@ -266,14 +268,8 @@ static int at91_pm_enter(suspend_state_t state)
- 			 * For ARM 926 based chips, this requirement is weaker
- 			 * as at91sam9 can access a RAM in self-refresh mode.
- 			 */
--			if (cpu_is_at91rm9200())
--				at91rm9200_standby();
--			else if (cpu_is_at91sam9g45())
--				at91sam9g45_standby();
--			else if (cpu_is_at91sam9263())
--				at91sam9263_standby();
--			else
--				at91sam9_standby();
-+			if (at91_pm_standby)
-+				at91_pm_standby();
- 			break;
- 
- 		case PM_SUSPEND_ON:
-@@ -314,6 +310,18 @@ static const struct platform_suspend_ops at91_pm_ops = {
- 	.end	= at91_pm_end,
- };
- 
-+static struct platform_device at91_cpuidle_device = {
-+	.name = "cpuidle-at91",
-+};
-+
-+void at91_pm_set_standby(void (*at91_standby)(void))
-+{
-+	if (at91_standby) {
-+		at91_cpuidle_device.dev.platform_data = at91_standby;
-+		at91_pm_standby = at91_standby;
-+	}
-+}
-+
- static int __init at91_pm_init(void)
- {
- #ifdef CONFIG_AT91_SLOW_CLOCK
-@@ -325,6 +333,9 @@ static int __init at91_pm_init(void)
- 	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
- 	if (cpu_is_at91rm9200())
- 		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
-+	
-+	if (at91_cpuidle_device.dev.platform_data)
-+		platform_device_register(&at91_cpuidle_device);
- 
- 	suspend_set_ops(&at91_pm_ops);
- 
-diff --git a/arch/arm/mach-at91/pm.h b/arch/arm/mach-at91/pm.h
-index 2f5908f..76dd1a7 100644
---- a/arch/arm/mach-at91/pm.h
-+++ b/arch/arm/mach-at91/pm.h
-@@ -11,9 +11,13 @@
- #ifndef __ARCH_ARM_MACH_AT91_PM
- #define __ARCH_ARM_MACH_AT91_PM
- 
-+#include <asm/proc-fns.h>
-+
- #include <mach/at91_ramc.h>
- #include <mach/at91rm9200_sdramc.h>
- 
-+extern void at91_pm_set_standby(void (*at91_standby)(void));
-+
- /*
-  * The AT91RM9200 goes into self-refresh mode with this command, and will
-  * terminate self-refresh automatically on the next SDRAM access.
--- 
-1.7.9.5
 
