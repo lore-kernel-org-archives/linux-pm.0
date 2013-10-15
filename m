@@ -1,59 +1,115 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [GIT PULL v2] thermal-soc: urgent fixes for 3.12
-Date: Tue, 15 Oct 2013 10:22:32 -0400
-Message-ID: <1381846952-17654-1-git-send-email-eduardo.valentin@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH V2] PM / Runtime: Respect autosuspend when idle triggers
+ suspend
+Date: Tue, 15 Oct 2013 11:07:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1310151057100.1377-100000@iolanthe.rowland.org>
+References: <1381735264-3077-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:47599 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759191Ab3JOOWn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Oct 2013 10:22:43 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:58567 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932203Ab3JOPHB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 11:07:01 -0400
+In-Reply-To: <1381735264-3077-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, l.majewski@samsung.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>, Kevin Hilman <khilman@linaro.org>, Rob Landley <rob@landley.net>, Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org
 
-Hello Rui,
+On Mon, 14 Oct 2013, Ulf Hansson wrote:
 
-Here is the urgent fixes on thermal-soc drivers, only difference from v1 is
-that now it is based on the right branch (your master branch) so that it
-does not include any changes for 3.13.
+> For devices which don't have a .runtime_idle callback or if it returns
+> 0, rpm_idle will end up in triggering a call to rpm_suspend, thus
+> trying to carry out a runtime_suspend directly from runtime_idle.
+> 
+> In the above situation we want to respect devices which has enabled
+> autosuspend, we therfore append the flag sent to rpm_suspend with
+> RPM_AUTO.
+> 
+> Do note that driver's still needs to update the device last busy mark,
+> to control the delay for this circumstance.
+> 
+> Updated runtime PM documentation accordingly.
+> 
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Rob Landley <rob@landley.net>
+> Cc: Chris Ball <cjb@laptop.org>
+> Cc: linux-mmc@vger.kernel.org
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  Documentation/power/runtime_pm.txt |   13 +++++++------
+>  drivers/base/power/runtime.c       |    6 ++++--
+>  2 files changed, 11 insertions(+), 8 deletions(-)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 71d8fe4..236d9f4 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
 
-Short changelog:
-- Several fixes on exynos driver: exynos 4412 regressions
-- Minor fix on ti-soc-thermal: extrapolation with pcb sensor fixed
+Note that the style in this file is to use _two_ spaces after the 
+period at the end of each sentence.
 
-V1:
-http://www.spinics.net/lists/kernel/msg1619642.html
+> @@ -145,11 +145,12 @@ The action performed by the idle callback is totally dependent on the subsystem
+>  if the device can be suspended (i.e. if all of the conditions necessary for
+>  suspending the device are satisfied) and to queue up a suspend request for the
+>  device in that case.  If there is no idle callback, or if the callback returns
+> -0, then the PM core will attempt to carry out a runtime suspend of the device;
+> -in essence, it will call pm_runtime_suspend() directly.  To prevent this (for
+> -example, if the callback routine has started a delayed suspend), the routine
+> -should return a non-zero value.  Negative error return codes are ignored by the
+> -PM core.
+> +0, then the PM core will attempt to carry out a runtime suspend of the device,
+> +also respecting devices configured for autosuspend. In essence it means a call
 
-All best,
+s/it/this/
 
-The following changes since commit 22356f447ceb8d97a4885792e7d9e4607f712e1b:
+> +to pm_runtime_autosuspend(). Do note that driver's still needs to update the
 
-  mm: Place preemption point in do_mlockall() loop (2013-09-24 19:44:40 -0700)
+s/driver's still needs/drivers need/
 
-are available in the git repository at:
+This entire sentence should be inside parentheses.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git fixes
+> +device last busy mark (pm_runtime_mark_last_busy), to control the delay under
+> +this circumstance. To prevent this, the routine must return a non-zero value.
 
-for you to fetch changes up to df8f13476443b70608c64b3e91f3876a06fa739c:
+Don't remove the phrase "(for example, if the callback function has 
+started a delayed suspend)".
 
-  drivers: thermal: allow ti-soc-thermal run without pcb zone (2013-10-15 10:10:43 -0400)
+> +Negative error return codes are ignored by the PM core.
+>  
+>  The helper functions provided by the PM core, described in Section 4, guarantee
+>  that the following constraints are met with respect to runtime PM callbacks for
+> @@ -308,7 +309,7 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>      - execute the subsystem-level idle callback for the device; returns an
+>        error code on failure, where -EINPROGRESS means that ->runtime_idle() is
+>        already being executed; if there is no callback or the callback returns 0
+> -      then run pm_runtime_suspend(dev) and return its result
+> +      then run pm_runtime_autosuspend(dev) and return its result
+>  
+>    int pm_runtime_suspend(struct device *dev);
+>      - execute the subsystem-level suspend callback for the device; returns 0 on
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 268a350..e6867d4 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -258,7 +258,9 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
+>   * Check if the device's runtime PM status allows it to be suspended.  If
+>   * another idle notification has been started earlier, return immediately.  If
+>   * the RPM_ASYNC flag is set then queue an idle-notification request; otherwise
+> - * run the ->runtime_idle() callback directly.
+> + * run the ->runtime_idle() callback directly. If the ->runtime_idle callback
+> + * doesn't exist or if it returns 0, run rpm_suspend with RPM_AUTO flag to
 
-----------------------------------------------------------------
-Eduardo Valentin (1):
-      drivers: thermal: allow ti-soc-thermal run without pcb zone
+s/run rpm_suspend with/call rpm_suspend() with the/
 
-Lukasz Majewski (3):
-      thermal: exynos: Remove check for thermal device pointer at exynos_report_trigger()
-      thermal: exynos: Provide separate TMU data for Exynos4412
-      thermal: exynos: Provide initial setting for TMU's test MUX address at Exynos4412
+> + * respect drivers using autosuspend.
 
- drivers/thermal/samsung/exynos_thermal_common.c    |  2 --
- drivers/thermal/samsung/exynos_tmu.c               | 12 ++++++---
- drivers/thermal/samsung/exynos_tmu.h               |  7 ++++-
- drivers/thermal/samsung/exynos_tmu_data.c          | 30 +++++++++++++++++-----
- drivers/thermal/samsung/exynos_tmu_data.h          | 13 +++++++++-
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  1 +
- 6 files changed, 51 insertions(+), 14 deletions(-)
+I think you can end the sentence after "flag".  Otherwise it sounds 
+like the only reason for calling rpm_suspend() is to respect drivers 
+using autosuspend, which is not accurate.
+
+Alan Stern
+
