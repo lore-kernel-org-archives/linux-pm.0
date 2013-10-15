@@ -1,275 +1,206 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCHv4 4/9] Thermal: Add APIs to bind cdev to new zone
- structure
-Date: Tue, 15 Oct 2013 18:27:50 +0800
-Message-ID: <1381832870.2080.42.camel@rzhang1-mobl4>
-References: <1380652688-5787-1-git-send-email-durgadoss.r@intel.com>
-	 <1380652688-5787-5-git-send-email-durgadoss.r@intel.com>
+From: Will Deacon <will.deacon@arm.com>
+Subject: Re: [PATCH v2 03/13] arm64: kernel: suspend/resume registers
+ save/restore
+Date: Tue, 15 Oct 2013 11:59:07 +0100
+Message-ID: <20131015105907.GB30411@mudshark.cambridge.arm.com>
+References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1381748590-14279-4-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:61130 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758273Ab3JOK1z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Oct 2013 06:27:55 -0400
-In-Reply-To: <1380652688-5787-5-git-send-email-durgadoss.r@intel.com>
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:42264 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756771Ab3JOK7L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 06:59:11 -0400
+Content-Disposition: inline
+In-Reply-To: <1381748590-14279-4-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hongbo.zhang@freescale.com, wni@nvidia.com
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Wed, 2013-10-02 at 00:08 +0530, Durgadoss R wrote:
-> This patch creates new APIs to add/remove a
-> cdev to/from a zone. This patch does not change
-> the old cooling device implementation.
+On Mon, Oct 14, 2013 at 12:03:00PM +0100, Lorenzo Pieralisi wrote:
+> Power management software requires the kernel to save and restore
+> CPU registers while going through suspend and resume operations
+> triggered by kernel subsystems like CPU idle and suspend to RAM.
 > 
-> Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
-I'm okay with this patch except the API naming.
-
-thanks,
-rui
+> This patch implements code that provides save and restore mechanism
+> for the arm v8 implementation. Memory for the context is passed as
+> parameter to both cpu_do_suspend and cpu_do_resume functions, and allows
+> the callers to implement context allocation as they deem fit.
+> 
+> The registers that are saved and restored correspond to the registers set
+> actually required by the kernel to be up and running which represents a
+> subset of v8 ISA.
+> 
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 > ---
->  drivers/thermal/thermal_core.c |  136 ++++++++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h        |    9 +++
->  2 files changed, 145 insertions(+)
+>  arch/arm64/include/asm/proc-fns.h      |  3 ++
+>  arch/arm64/include/asm/suspend.h       | 27 ++++++++++++
+>  arch/arm64/include/asm/suspendmacros.h | 75 ++++++++++++++++++++++++++++++++++
+>  arch/arm64/mm/proc.S                   | 30 ++++++++++++++
+>  4 files changed, 135 insertions(+)
+>  create mode 100644 arch/arm64/include/asm/suspend.h
+>  create mode 100644 arch/arm64/include/asm/suspendmacros.h
 > 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index a053b60..3c4ef62 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -58,6 +58,7 @@ static LIST_HEAD(thermal_governor_list);
->  static DEFINE_MUTEX(thermal_list_lock);
->  static DEFINE_MUTEX(sensor_list_lock);
->  static DEFINE_MUTEX(zone_list_lock);
-> +static DEFINE_MUTEX(cdev_list_lock);
->  static DEFINE_MUTEX(thermal_governor_lock);
+> diff --git a/arch/arm64/include/asm/proc-fns.h b/arch/arm64/include/asm/proc-fns.h
+> index 7cdf466..0c657bb 100644
+> --- a/arch/arm64/include/asm/proc-fns.h
+> +++ b/arch/arm64/include/asm/proc-fns.h
+> @@ -26,11 +26,14 @@
+>  #include <asm/page.h>
 >  
->  #define for_each_thermal_sensor(pos) \
-> @@ -86,6 +87,9 @@ static DEFINE_MUTEX(thermal_governor_lock);
->  	ret;						\
->  })
+>  struct mm_struct;
+> +struct cpu_suspend_ctx;
 >  
-> +#define for_each_cdev(pos) \
-> +	list_for_each_entry(pos, &thermal_cdev_list, node)
-> +
->  static struct thermal_governor *__find_governor(const char *name)
->  {
->  	struct thermal_governor *pos;
-> @@ -511,6 +515,27 @@ static void remove_sensor_from_zone(struct thermal_zone *tz,
->  	mutex_unlock(&tz->lock);
->  }
+>  extern void cpu_cache_off(void);
+>  extern void cpu_do_idle(void);
+>  extern void cpu_do_switch_mm(unsigned long pgd_phys, struct mm_struct *mm);
+>  extern void cpu_reset(unsigned long addr) __attribute__((noreturn));
+> +extern void cpu_do_suspend(struct cpu_suspend_ctx *ptr);
+> +extern u64 cpu_do_resume(phys_addr_t ptr, u64 idmap_ttbr);
 >  
-> +static void remove_cdev_from_zone(struct thermal_zone *tz,
-> +				struct thermal_cooling_device *cdev)
-> +{
-> +	int j, indx;
-> +
-> +	indx = GET_INDEX(tz, cdev, cdev);
-> +	if (indx < 0)
-> +		return;
-> +
-> +	sysfs_remove_link(&tz->device.kobj, kobject_name(&cdev->device.kobj));
-> +
-> +	mutex_lock(&tz->lock);
-> +
-> +	/* Shift the entries in the tz->cdevs array */
-> +	for (j = indx; j < MAX_CDEVS_PER_ZONE - 1; j++)
-> +		tz->cdevs[j] = tz->cdevs[j + 1];
-> +
-> +	tz->cdev_indx--;
-> +	mutex_unlock(&tz->lock);
-> +}
-> +
->  /* sys I/F for thermal zone */
+>  #include <asm/memory.h>
 >  
->  #define to_thermal_zone(_dev) \
-> @@ -1555,6 +1580,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
->  	int i;
->  	const struct thermal_zone_params *tzp;
->  	struct thermal_zone_device *tz;
-> +	struct thermal_zone *tmp_tz;
->  	struct thermal_cooling_device *pos = NULL;
->  
->  	if (!cdev)
-> @@ -1592,6 +1618,13 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
->  
->  	mutex_unlock(&thermal_list_lock);
->  
-> +	mutex_lock(&zone_list_lock);
+> diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
+> new file mode 100644
+> index 0000000..2b9f1a9
+> --- /dev/null
+> +++ b/arch/arm64/include/asm/suspend.h
+> @@ -0,0 +1,27 @@
+> +#ifndef __ASM_SUSPEND_H
+> +#define __ASM_SUSPEND_H
 > +
-> +	for_each_thermal_zone(tmp_tz)
-> +		remove_cdev_from_zone(tmp_tz, cdev);
-> +
-> +	mutex_unlock(&zone_list_lock);
-> +
->  	if (cdev->type[0])
->  		device_remove_file(&cdev->device, &dev_attr_cdev_type);
->  	device_remove_file(&cdev->device, &dev_attr_max_state);
-> @@ -1873,6 +1906,7 @@ void remove_thermal_zone(struct thermal_zone *tz)
->  {
->  	struct thermal_zone *pos, *next;
->  	struct thermal_sensor *ts;
-> +	struct thermal_cooling_device *cdev;
->  	bool found = false;
->  
->  	if (!tz)
-> @@ -1894,6 +1928,9 @@ void remove_thermal_zone(struct thermal_zone *tz)
->  	for_each_thermal_sensor(ts)
->  		remove_sensor_from_zone(tz, ts);
->  
-> +	for_each_cdev(cdev)
-> +		remove_cdev_from_zone(tz, cdev);
-> +
->  	device_remove_file(&tz->device, &dev_attr_zone_name);
->  
->  	mutex_destroy(&tz->lock);
-> @@ -1909,6 +1946,47 @@ exit:
->  EXPORT_SYMBOL(remove_thermal_zone);
->  
->  /**
-> + * get_cdev_by_name() - search for a cdev and returns its reference
-> + * @name: cooling device name to fetch the reference
-> + *
-> + * On success returns a reference to an unique cdev with
-> + * the name matching that of @name, an ERR_PTR otherwise:
-> + * -EINVAL for invalid paramenters
-> + * -ENODEV for cdev not found
-> + * -EEXIST for multiple matches
+> +/*
+> + * struct cpu_suspend_ctx must be 16-byte aligned since it is allocated on
+> + * the stack, which must be 16-byte aligned on v8
 > + */
-> +struct thermal_cooling_device *get_cdev_by_name(const char *name)
-> +{
-> +	int found = 0;
-> +	struct thermal_cooling_device *pos;
-> +	struct thermal_cooling_device *cdev = ERR_PTR(-EINVAL);
-> +
-> +	if (!name)
-> +		return cdev;
-> +
-> +	mutex_lock(&cdev_list_lock);
-> +	for_each_cdev(pos) {
-> +		if (!strnicmp(pos->type, name, THERMAL_NAME_LENGTH)) {
-> +			found++;
-> +			cdev = pos;
-> +		}
-> +	}
-> +	mutex_unlock(&cdev_list_lock);
-> +
+> +struct cpu_suspend_ctx {
 > +	/*
-> +	 * Nothing has been found; return an error code for it.
-> +	 * Return success only when an unique cdev is found.
+> +	 * This struct must be kept in sync with
+> +	 * suspend_save_ctx/suspend_restore_ctx
+> +	 * macros in asm/suspendmacros.h
 > +	 */
-> +	if (found == 0)
-> +		cdev = ERR_PTR(-ENODEV);
-> +	else if (found > 1)
-> +		cdev = ERR_PTR(-EEXIST);
-> +
-> +	return cdev;
-> +}
-> +EXPORT_SYMBOL(get_cdev_by_name);
-> +
-> +/**
->   * get_sensor_by_name() - search for a sensor and returns its reference
->   * @name: thermal sensor name to fetch the reference
->   *
-> @@ -2003,6 +2081,64 @@ exit_zone:
->  EXPORT_SYMBOL(add_sensor_to_zone);
->  
->  /**
-> + * add_cdev_to_zone - Add @cdev to thermal zone @tz
-> + * @tz:		Thermal zone reference
-> + * @cdev:	Cooling device reference
+> +	struct {
+> +		u64 tpidr_el0;
+> +		u64 tpidrro_el0;
+> +		u64 contextidr_el1;
+> +		u64 mair_el1;
+> +		u64 cpacr_el1;
+> +		u64 ttbr1_el1;
+> +		u64 tcr_el1;
+> +		u64 vbar_el1;
+> +		u64 sctlr_el1;
+> +	} ctx_regs;
+
+There doesn't look like a lot of state here. What about EL2 registers used
+by KVM? (in fact, I don't see how this interacts with KVM at all).
+
+> +	u64 sp;
+> +} __aligned(16);
+> +#endif
+> diff --git a/arch/arm64/include/asm/suspendmacros.h b/arch/arm64/include/asm/suspendmacros.h
+> new file mode 100644
+> index 0000000..9203e76
+> --- /dev/null
+> +++ b/arch/arm64/include/asm/suspendmacros.h
+> @@ -0,0 +1,75 @@
+> +/*
+> + * suspend state saving and restoring macros
 > + *
-> + * Returns 0 on success, otherwise
-> + * -EINVAL for invalid paramenters
-> + * -EINVAL when trying to add more cdevs than MAX_CDEVS_PER_ZONE
-> + * -EEXIST when trying add existing cdev again
+> + * Copyright (C) 2013 ARM Ltd.
+> + * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 > + */
-> +int add_cdev_to_zone(struct thermal_zone *tz,
-> +			struct thermal_cooling_device *cdev)
-> +{
-> +	int ret;
 > +
-> +	if (!tz || !cdev)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&zone_list_lock);
-> +
-> +	/* Ensure we are not adding the same cdev again!! */
-> +	ret = GET_INDEX(tz, cdev, cdev);
-> +	if (ret >= 0) {
-> +		ret = -EEXIST;
-> +		goto exit_zone;
-> +	}
-> +
-> +	/* Protect against 'cdev' being unregistered */
-> +	mutex_lock(&cdev_list_lock);
-> +
-> +	ret = sysfs_create_link(&tz->device.kobj, &cdev->device.kobj,
-> +				kobject_name(&cdev->device.kobj));
-> +	if (ret)
-> +		goto exit_cdev;
-> +
-> +	mutex_lock(&tz->lock);
-> +
-> +	if (tz->cdev_indx >= MAX_CDEVS_PER_ZONE - 1) {
-> +		dev_err(&tz->device, "Only %d cdevs allowed per zone\n",
-> +					MAX_CDEVS_PER_ZONE);
-> +		sysfs_remove_link(&tz->device.kobj,
-> +				kobject_name(&cdev->device.kobj));
-> +		ret = -EINVAL;
-> +		goto exit_indx_check;
-> +	}
-> +
-> +	tz->cdevs[tz->cdev_indx++] = cdev;
-> +
-> +exit_indx_check:
-> +	mutex_unlock(&tz->lock);
-> +exit_cdev:
-> +	mutex_unlock(&cdev_list_lock);
-> +exit_zone:
-> +	mutex_unlock(&zone_list_lock);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(add_cdev_to_zone);
+> +/*
+> + * suspend_save_ctx - save registers required to suspend a cpu
+> + *
+> + * x0: register where context base address is stored
+> + * macro clobbers {x2 - x10}
+> + *
+> + * Registers to be saved must be kept consistent with
+> + * struct cpu_suspend_ctx
+> + */
+> +.macro suspend_save_ctx
+> +	mrs	x2, tpidr_el0
+> +	mrs	x3, tpidrro_el0
+> +	mrs	x4, contextidr_el1
+> +	mrs	x5, mair_el1
+> +	mrs	x6, cpacr_el1
+> +	mrs	x7, ttbr1_el1
+> +	mrs	x8, tcr_el1
+> +	mrs	x9, vbar_el1
+> +	mrs	x10, sctlr_el1
+> +	stp	x2, x3, [x0]
+> +	stp	x4, x5, [x0, #16]
+> +	stp	x6, x7, [x0, #32]
+> +	stp	x8, x9, [x0, #48]
+> +	str	x10, [x0, #64]
+> +.endm
+
+You only need to care about contextidr_el1 if CONFIG_PID_IN_CONTEXTIDR. Then
+again, you're not saving ttbr0, so you could rely on switch_mm to deal with
+contextidr_el1 for you, no?
+
+> diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
+> index b1b31bb..6ee3b99 100644
+> --- a/arch/arm64/mm/proc.S
+> +++ b/arch/arm64/mm/proc.S
+> @@ -25,6 +25,7 @@
+>  #include <asm/hwcap.h>
+>  #include <asm/pgtable-hwdef.h>
+>  #include <asm/pgtable.h>
+> +#include <asm/suspendmacros.h>
+>  
+>  #include "proc-macros.S"
+>  
+> @@ -80,6 +81,35 @@ ENTRY(cpu_do_idle)
+>  	ret
+>  ENDPROC(cpu_do_idle)
+>  
+> +#ifdef CONFIG_ARM64_CPU_SUSPEND
+> +/**
+> + * cpu_do_suspend - save CPU registers context
+> + * x0: virtual address of context pointer
+> + */
+> +ENTRY(cpu_do_suspend)
+> +	suspend_save_ctx
+> +	ret
+> +ENDPROC(cpu_do_suspend)
 > +
 > +/**
->   * thermal_sensor_register - register a new thermal sensor
->   * @name:	name of the thermal sensor
->   * @count:	Number of thresholds supported by hardware
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 2e12321..da7520c 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -60,6 +60,8 @@
->  
->  #define MAX_SENSORS_PER_ZONE		5
->  
-> +#define MAX_CDEVS_PER_ZONE		5
-> +
->  struct thermal_sensor;
->  struct thermal_zone_device;
->  struct thermal_cooling_device;
-> @@ -223,6 +225,10 @@ struct thermal_zone {
->  	/* Sensor level information */
->  	int sensor_indx; /* index into 'sensors' array */
->  	struct thermal_sensor *sensors[MAX_SENSORS_PER_ZONE];
-> +
-> +	/* cdev level information */
-> +	int cdev_indx; /* index into 'cdevs' array */
-> +	struct thermal_cooling_device *cdevs[MAX_CDEVS_PER_ZONE];
->  };
->  
->  /* Structure that holds thermal governor information */
-> @@ -300,6 +306,9 @@ void remove_thermal_zone(struct thermal_zone *);
->  int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
->  struct thermal_sensor *get_sensor_by_name(const char *);
->  
-> +int add_cdev_to_zone(struct thermal_zone *, struct thermal_cooling_device *);
-> +struct thermal_cooling_device *get_cdev_by_name(const char *);
-> +
->  #ifdef CONFIG_NET
->  extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
->  						enum events event);
+> + * cpu_do_resume - restore CPU register context
+> + *
+> + *
+> + * x0: Physical address of context pointer
+> + * x1: ttbr0_el1 to be restored
+> + *
+> + * Returns:
+> + *	sctlr_el1 value in x0
+> + */
+> +ENTRY(cpu_do_resume)
+> +	tlbi	vmalle1is	// make sure tlb entries are invalidated
 
+Why? Is this just to be sure that the local TLB is invalid before enabling
+the MMU? If so, you can use the non-shareable variant...
 
+> +	suspend_restore_ctx
+> +	isb
+> +	dsb	sy
+
+and make this a dsb nsh. Also, aren't the dsb and the isb the wrong way
+round here?
+
+Will
