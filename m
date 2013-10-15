@@ -1,73 +1,130 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 1/2] ARM: at91: cpuidle: convert to platform driver
-Date: Tue, 15 Oct 2013 08:16:31 +0200
-Message-ID: <525CDDBF.3060500@linaro.org>
-References: <1381781721-11866-1-git-send-email-daniel.lezcano@linaro.org> <20131014232539.GM11420@ns203013.ovh.net>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 0/5] thermal: exynos: Fixes for v3.12
+Date: Tue, 15 Oct 2013 08:23:03 +0200
+Message-ID: <20131015082303.3ec02e2a@amdc308.digital.local>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
+ <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
+ <20131014074635.77fd9f6e@amdc308.digital.local>
+ <744357E9AAD1214791ACBA4B0B90926301190077@SHSMSX101.ccr.corp.intel.com>
+ <525C4242.2050306@ti.com> <525C4487.2030502@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:56391 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752797Ab3JOGQe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 02:16:34 -0400
-Received: by mail-wi0-f174.google.com with SMTP id cb5so4495047wib.1
-        for <linux-pm@vger.kernel.org>; Mon, 14 Oct 2013 23:16:33 -0700 (PDT)
-In-Reply-To: <20131014232539.GM11420@ns203013.ovh.net>
+Received: from mailout3.samsung.com ([203.254.224.33]:37060 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965Ab3JOGXK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 02:23:10 -0400
+In-reply-to: <525C4487.2030502@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, thomas.petazzoni@free-electrons.com, b.zolnierkie@samsung.com
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 
-On 10/15/2013 01:25 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> On 22:15 Mon 14 Oct     , Daniel Lezcano wrote:
->> Using the platform driver model is a good way to separate the cpuidl=
-e specific
->> code from the low level pm code. It allows to remove the dependency =
-between
->> these two components.
->>
->> The platform_device is located in the pm code and a 'set' function h=
-as been
->> added to set the standby function from the AT91_SOC_START initializa=
-tion
->> function. Each SoC with a cpuidle driver will set the standby functi=
-on in the
->> platform_data field at init time. Then pm code will register the cpu=
-idle
->> platform device.
->>
->> The cpuidle driver will register the platform_driver and use the dev=
-ice's
->> platform_data as a standby callback in the idle path.
->
-> I've an issue while re-reading the pm code
->
-> we use the xx_standby for 2 drivers cpuidle and suspend/resume
->
-> with all the cpu_is_xxxx
->
-> so you need to do one more step in this series
-> by cleaning up the PM_SUSPEND_STANDBY to as you put a function pointe=
-r with
-> the correct one in pm.c
+Hi Eduardo,
 
-I was plannning to send it as a separate patch.
+> On 14-10-2013 15:13, Eduardo Valentin wrote:
+> > On 14-10-2013 01:52, Zhang, Rui wrote:
+> >> Eduardo,
+> >>
+> >> What's your opinion on this patch set?
+> >> BTW, please send me all the urgent fixes for thermal soc drivers
+> >> that
+> > you think should go to 3.12.
+> >>
+> > 
+> > I will be sending these + one fix on ti soc thermal for 3.12 soon.
+> > 
+> > The new chip support on exynos needs to be reworked and there are
+> > couple of new drivers that needs to be reworked too. But those I
+> > don't think are ready to go now.
+> > 
+> 
+> Just to be clear, on this patch set obviously I wont be sending the DT
+> changes. Those should go via the correct tree.
 
-> otherwise looks good
+I understand. I will ask Mr. Kukjin Kim to take the DT changes.
 
-Cool. Thanks for the review.
+> 
+> >> Thanks,
+> >> rui
+> >>> -----Original Message-----
+> >>> From: Lukasz Majewski [mailto:l.majewski@samsung.com]
+> >>> Sent: Monday, October 14, 2013 1:47 PM
+> >>> To: Zhang, Rui; Eduardo Valentin; kgene.kim@samsung.com
+> >>> Cc: Lukasz Majewski; Linux PM list; Lukasz Majewski; linux-kernel;
+> >>> Bartlomiej Zolnierkiewicz; devicetree@vger.kernel.org; Amit Daniel
+> >>> Kachhap; linux-samsung-soc@vger.kernel.org
+> >>> Subject: Re: [PATCH v2 0/5] thermal: exynos: Fixes for v3.12
+> >>> Importance: High
+> >>>
+> >>> Hi Zhang, Eduardo,
+> >>>
+> >>>> This patch series is divided into two parts:
+> >>>> 1. Device tree node definition and enabelement for TMU at
+> >>>> Exynos4412 (Trats2) 2. Exynos thermal subsystem regressions for
+> >>>> v3.12-rc4. Several commits were necessary to properly fix
+> >>>> regression for TMU
+> >>> test
+> >>>> MUX address setting after reset.
+> >>>>
+> >>>> Test HW:
+> >>>> - Exynos4412 - TRATS2 board (Linux v3.12-rc4)
+> >>>> SHA1: 8b5ede69d24db939f52b47effff2f6fe1e83e08b
+> >>>>
+> >>>>
+> >>>> Lukasz Majewski (5):
+> >>>>   thermal: exynos: Remove check for thermal device pointer at
+> >>>>     exynos_report_trigger()
+> >>>>   thermal: exynos: Provide separate TMU data for Exynos4412
+> >>>>   thermal: exynos: Provide initial setting for TMU's test MUX
+> >>>> address at Exynos4412
+> >>>>   ARM: dts: exynos4x12: Device tree node definition for TMU on
+> >>>>     Exynos4x12
+> >>>>   ARM: dts: exynos4412-trats2: Enable TMU support at Trats2
+> >>>>
+> >>>
+> >>> Zhang, Eduardo - any comments?
+> >>>
+> >>> Would it be possible to add them to v3.12 since they do fix
+> >>> critical error and regression on Exynos4412.
+> >>>
+> >>>
+> >>>>  arch/arm/boot/dts/exynos4412-trats2.dts         |    5 ++++
+> >>>>  arch/arm/boot/dts/exynos4x12.dtsi               |   10 ++++++++
+> >>>>  drivers/thermal/samsung/exynos_thermal_common.c |    2 --
+> >>>>  drivers/thermal/samsung/exynos_tmu.c            |   12 ++++++---
+> >>>>  drivers/thermal/samsung/exynos_tmu.h            |    7 +++++-
+> >>>>  drivers/thermal/samsung/exynos_tmu_data.c       |   30
+> >>>> ++++++++++++++++++-----
+> >>>> drivers/thermal/samsung/exynos_tmu_data.h       |   13
+> >>>> +++++++++- 7 files changed, 65 insertions(+), 14 deletions(-)
+> >>>>
+> >>>
+> >>>
+> >>>
+> >>> --
+> >>> Best regards,
+> >>>
+> >>> Lukasz Majewski
+> >>>
+> >>> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe
+> >> linux-pm" in the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >>
+> >>
+> > 
+> > 
+> 
+> 
 
-   -- Daniel
 
-[ ... ]
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+-- 
+Best regards,
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Lukasz Majewski
 
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
