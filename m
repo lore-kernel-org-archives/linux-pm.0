@@ -1,79 +1,69 @@
-From: Will Deacon <will.deacon@arm.com>
-Subject: Re: [PATCH v2 08/13] arm64: kernel: implement debug monitors CPU PM
- notifiers
-Date: Tue, 15 Oct 2013 12:27:15 +0100
-Message-ID: <20131015112715.GC30411@mudshark.cambridge.arm.com>
-References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1381748590-14279-9-git-send-email-lorenzo.pieralisi@arm.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [GIT PULL] thermal-soc: urgent fixes for 3.12
+Date: Tue, 15 Oct 2013 19:36:48 +0800
+Message-ID: <1381837008.2080.61.camel@rzhang1-mobl4>
+References: <1381788001-3508-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:42909 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753201Ab3JOL1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 07:27:19 -0400
-Content-Disposition: inline
-In-Reply-To: <1381748590-14279-9-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mga01.intel.com ([192.55.52.88]:53392 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757912Ab3JOLgw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Oct 2013 07:36:52 -0400
+In-Reply-To: <1381788001-3508-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: amit.daniel@samsung.com, l.majewski@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, Oct 14, 2013 at 12:03:05PM +0100, Lorenzo Pieralisi wrote:
-> When a CPU is shutdown either through CPU idle or suspend to RAM, the
-> content of debug monitor registers must be reset or restored to proper
-> values when CPU resume from low power states. This patch implements a
-> CPU PM notifier that allows to restore the content of debug monitor
-> registers to allow proper suspend/resume operations.
+Hi, Eduardo,
 
-How do you deal with pstate in this series? In particular, the single-step
-state machine is partially driven by bits in the SPSR, so you need to be
-careful with preserving that (may even require a dummy exception return...
-not sure).
-
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> ---
->  arch/arm64/kernel/debug-monitors.c | 38 ++++++++++++++++++++++++++++++++++++++
->  1 file changed, 38 insertions(+)
+On Mon, 2013-10-14 at 18:00 -0400, Eduardo Valentin wrote:
+> Hello Rui,
 > 
-> diff --git a/arch/arm64/kernel/debug-monitors.c b/arch/arm64/kernel/debug-monitors.c
-> index cbfacf7..28ce685 100644
-> --- a/arch/arm64/kernel/debug-monitors.c
-> +++ b/arch/arm64/kernel/debug-monitors.c
-> @@ -19,6 +19,7 @@
->   */
->  
->  #include <linux/cpu.h>
-> +#include <linux/cpu_pm.h>
->  #include <linux/debugfs.h>
->  #include <linux/hardirq.h>
->  #include <linux/init.h>
-> @@ -154,6 +155,42 @@ static struct notifier_block os_lock_nb = {
->  	.notifier_call = os_lock_notify,
->  };
->  
-> +#ifdef CONFIG_CPU_PM
-> +static DEFINE_PER_CPU(u32, mdscr);
-> +
-> +static int dm_cpu_pm_notify(struct notifier_block *self, unsigned long action,
-> +			    void *v)
-> +{
-> +	switch (action) {
-> +	case CPU_PM_ENTER:
-> +		__get_cpu_var(mdscr) = mdscr_read();
+> Please pull the following changes. It contains fixes for 3.12 on Exynos
+> thermal driver, which is currently broken, Exynos4412 is the main affected.
+> Thanks Lukasz for his persistence on getting this done for 3.12.
+> 
+> Lukasz, you need to queue the remaining changes on DT via your platform tree.
+> 
+> It contains also a fix on the extrapolation rules for TI SoCs.
+> 
+> The following changes since commit 74ae45a3d656d3e86bb8e776634ebdfd3f39f37c:
+> 
+>   Merge branches 'x86_pkg_temp' and 'misc' of .git into next (2013-09-25 21:41:44 +0800)
+> 
+please rebase your tree on top of my master branch or Linus' tree.
+Or else I'll pull in some thermal changes in my next branch that are
+targeted for 3.13.
 
-I'm concerned about simply saving/restoring the mdscr. Both the MDE and KDE
-bits are ref-counted for each CPU, so we'd need to guarantee no context
-switching between the CPU_PM_ENTER and CPU_PM_EXIT invocations of this
-notifier. Is that the case?
+thanks,
+rui
+> are available in the git repository at:
+> 
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next
+> 
+> for you to fetch changes up to 848a3b2b91a45f6b7814e2779f58cc0461d88fce:
+> 
+>   drivers: thermal: allow ti-soc-thermal run without pcb zone (2013-10-14 17:48:33 -0400)
+> 
+> ----------------------------------------------------------------
+> Eduardo Valentin (1):
+>       drivers: thermal: allow ti-soc-thermal run without pcb zone
+> 
+> Lukasz Majewski (3):
+>       thermal: exynos: Remove check for thermal device pointer at exynos_report_trigger()
+>       thermal: exynos: Provide separate TMU data for Exynos4412
+>       thermal: exynos: Provide initial setting for TMU's test MUX address at Exynos4412
+> 
+>  drivers/thermal/samsung/exynos_thermal_common.c    |  2 --
+>  drivers/thermal/samsung/exynos_tmu.c               | 12 ++++++---
+>  drivers/thermal/samsung/exynos_tmu.h               |  7 ++++-
+>  drivers/thermal/samsung/exynos_tmu_data.c          | 30 +++++++++++++++++-----
+>  drivers/thermal/samsung/exynos_tmu_data.h          | 13 +++++++++-
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  1 +
+>  6 files changed, 51 insertions(+), 14 deletions(-)
 
-> +		break;
-> +	case CPU_PM_EXIT:
-> +		clear_os_lock(NULL);
-> +		mdscr_write(__get_cpu_var(mdscr));
 
-I think you should do this the other way round. Also, back to PSTATE, you
-need to take care when clearing the D bit, since you definitely want to
-either restore or zero the mdscr first.
-
-Will
