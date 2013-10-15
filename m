@@ -1,78 +1,275 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V3 2/3] ARM: at91: cpuidle: Move driver to drivers/cpuidle
-Date: Tue, 15 Oct 2013 09:50:31 +0200
-Message-ID: <1381823432-24944-2-git-send-email-daniel.lezcano@linaro.org>
-References: <1381823432-24944-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V3 1/3] ARM: at91: cpuidle: convert to platform driver
+Date: Tue, 15 Oct 2013 09:50:30 +0200
+Message-ID: <1381823432-24944-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:53113 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754651Ab3JOHut (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 03:50:49 -0400
-Received: by mail-wi0-f178.google.com with SMTP id hn9so1092555wib.11
-        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2013 00:50:48 -0700 (PDT)
-In-Reply-To: <1381823432-24944-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-we0-f182.google.com ([74.125.82.182]:34650 "EHLO
+	mail-we0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965Ab3JOHuq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 03:50:46 -0400
+Received: by mail-we0-f182.google.com with SMTP id t61so8249311wes.27
+        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2013 00:50:45 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: plagnioj@jcrosoft.com, linux@maxim.org.za, nicolas.ferre@atmel.com
 Cc: linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, thomas.petazzoni@free-electrons.com, b.zolnierkie@samsung.com
 
-As the cpuidle driver code has no more the dependency with the pm code, the
-'standby' callback being passed as a parameter to the device's platform data,
-we can move the cpuidle driver in the drivers/cpuidle directory.
+Using the platform driver model is a good way to separate the cpuidle specific
+code from the low level pm code. It allows to remove the dependency between
+these two components.
+
+The platform_device is located in the pm code and a 'set' function has been
+added to set the standby function from the AT91_SOC_START initialization
+function. Each SoC with a cpuidle driver will set the standby function in the
+platform_data field at init time. Then pm code will register the cpuidle
+platform device.
+
+The cpuidle driver will register the platform_driver and use the device's
+platform_data as a standby callback in the idle path.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-at91/Makefile                        |    1 -
- drivers/cpuidle/Kconfig.arm                        |    7 +++++++
- drivers/cpuidle/Makefile                           |    1 +
- .../cpuidle.c => drivers/cpuidle/cpuidle-at91.c    |    0
- 4 files changed, 8 insertions(+), 1 deletion(-)
- rename arch/arm/mach-at91/cpuidle.c => drivers/cpuidle/cpuidle-at91.c (100%)
+ arch/arm/mach-at91/at91rm9200.c  |    3 +++
+ arch/arm/mach-at91/at91sam9260.c |    3 +++
+ arch/arm/mach-at91/at91sam9261.c |    3 +++
+ arch/arm/mach-at91/at91sam9263.c |    3 +++
+ arch/arm/mach-at91/at91sam9g45.c |    3 +++
+ arch/arm/mach-at91/at91sam9rl.c  |    3 +++
+ arch/arm/mach-at91/cpuidle.c     |   29 +++++++++++++++--------------
+ arch/arm/mach-at91/pm.c          |   12 ++++++++++++
+ arch/arm/mach-at91/pm.h          |    4 ++++
+ 9 files changed, 49 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
-index 3b0a953..c1b7370 100644
---- a/arch/arm/mach-at91/Makefile
-+++ b/arch/arm/mach-at91/Makefile
-@@ -98,7 +98,6 @@ obj-y				+= leds.o
- # Power Management
- obj-$(CONFIG_PM)		+= pm.o
- obj-$(CONFIG_AT91_SLOW_CLOCK)	+= pm_slowclock.o
--obj-$(CONFIG_CPU_IDLE)	+= cpuidle.o
+diff --git a/arch/arm/mach-at91/at91rm9200.c b/arch/arm/mach-at91/at91rm9200.c
+index 4aad93d..0d234f2 100644
+--- a/arch/arm/mach-at91/at91rm9200.c
++++ b/arch/arm/mach-at91/at91rm9200.c
+@@ -27,6 +27,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
  
- ifeq ($(CONFIG_PM_DEBUG),y)
- CFLAGS_pm.o += -DDEBUG
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 8e36603..33a745e 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -27,6 +27,13 @@ config ARM_U8500_CPUIDLE
- 	help
- 	  Select this to enable cpuidle for ST-E u8500 processors
- 
-+config ARM_AT91_CPUIDLE
-+	bool "Cpu Idle Driver for the AT91 processors"
-+	default y
-+	depends on ARCH_AT91
-+	help
-+	  Select this to enable cpuidle for AT91 processors
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -337,6 +338,8 @@ static void __init at91rm9200_initialize(void)
+ 	/* Initialize GPIO subsystem */
+ 	at91_gpio_init(at91rm9200_gpio,
+ 		cpu_is_at91rm9200_bga() ? AT91RM9200_BGA : AT91RM9200_PQFP);
 +
- config CPU_IDLE_BIG_LITTLE
- 	bool "Support for ARM big.LITTLE processors"
- 	depends on ARCH_VEXPRESS_TC2_PM
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index cea5ef5..60c4ae5 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -11,4 +11,5 @@ obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
- obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
- obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
- obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
-+obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
- obj-$(CONFIG_CPU_IDLE_BIG_LITTLE)	+= cpuidle-big_little.o
-diff --git a/arch/arm/mach-at91/cpuidle.c b/drivers/cpuidle/cpuidle-at91.c
-similarity index 100%
-rename from arch/arm/mach-at91/cpuidle.c
-rename to drivers/cpuidle/cpuidle-at91.c
++	at91_pm_set_standby(at91rm9200_standby);
+ }
+ 
+ 
+diff --git a/arch/arm/mach-at91/at91sam9260.c b/arch/arm/mach-at91/at91sam9260.c
+index 5de6074..ffe9ce7 100644
+--- a/arch/arm/mach-at91/at91sam9260.c
++++ b/arch/arm/mach-at91/at91sam9260.c
+@@ -28,6 +28,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -351,6 +352,8 @@ static void __init at91sam9260_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9260_gpio, 3);
++
++	at91_pm_set_standby(at91sam9_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
+index 0e07932..1edbb6f 100644
+--- a/arch/arm/mach-at91/at91sam9261.c
++++ b/arch/arm/mach-at91/at91sam9261.c
+@@ -27,6 +27,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -293,6 +294,8 @@ static void __init at91sam9261_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9261_gpio, 3);
++
++	at91_pm_set_sandby(at91sam9_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
+index 6ce7d18..8c81c89 100644
+--- a/arch/arm/mach-at91/at91sam9263.c
++++ b/arch/arm/mach-at91/at91sam9263.c
+@@ -26,6 +26,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -330,6 +331,8 @@ static void __init at91sam9263_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9263_gpio, 5);
++
++	at91_pm_set_standby(at91sam9263_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
+index 474ee04..8460f52 100644
+--- a/arch/arm/mach-at91/at91sam9g45.c
++++ b/arch/arm/mach-at91/at91sam9g45.c
+@@ -26,6 +26,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -379,6 +380,8 @@ static void __init at91sam9g45_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9g45_gpio, 5);
++
++	at91_pm_set_standby(at91sam9g45_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/at91sam9rl.c b/arch/arm/mach-at91/at91sam9rl.c
+index d4ec0d9..c7986e4 100644
+--- a/arch/arm/mach-at91/at91sam9rl.c
++++ b/arch/arm/mach-at91/at91sam9rl.c
+@@ -27,6 +27,7 @@
+ #include "generic.h"
+ #include "clock.h"
+ #include "sam9_smc.h"
++#include "pm.h"
+ 
+ /* --------------------------------------------------------------------
+  *  Clocks
+@@ -296,6 +297,8 @@ static void __init at91sam9rl_initialize(void)
+ 
+ 	/* Register GPIO subsystem */
+ 	at91_gpio_init(at91sam9rl_gpio, 4);
++
++	at91_pm_set_standby(at91sam9_standby);
+ }
+ 
+ /* --------------------------------------------------------------------
+diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+index 4ec6a6d..a077437 100644
+--- a/arch/arm/mach-at91/cpuidle.c
++++ b/arch/arm/mach-at91/cpuidle.c
+@@ -21,26 +21,17 @@
+ #include <linux/export.h>
+ #include <asm/proc-fns.h>
+ #include <asm/cpuidle.h>
+-#include <mach/cpu.h>
+-
+-#include "pm.h"
+ 
+ #define AT91_MAX_STATES	2
+ 
++static void (*at91_standby)(void);
++
+ /* Actual code that puts the SoC in different idle states */
+ static int at91_enter_idle(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			       int index)
+ {
+-	if (cpu_is_at91rm9200())
+-		at91rm9200_standby();
+-	else if (cpu_is_at91sam9g45())
+-		at91sam9g45_standby();
+-	else if (cpu_is_at91sam9263())
+-		at91sam9263_standby();
+-	else
+-		at91sam9_standby();
+-
++	at91_standby();
+ 	return index;
+ }
+ 
+@@ -60,9 +51,19 @@ static struct cpuidle_driver at91_idle_driver = {
+ };
+ 
+ /* Initialize CPU idle by registering the idle states */
+-static int __init at91_init_cpuidle(void)
++static int at91_cpuidle_probe(struct platform_device *dev)
+ {
++	at91_standby = (void *)(dev->dev.platform_data);
++	
+ 	return cpuidle_register(&at91_idle_driver, NULL);
+ }
+ 
+-device_initcall(at91_init_cpuidle);
++static struct platform_driver at91_cpuidle_driver = {
++	.driver = {
++		.name = "cpuidle-at91",
++		.owner = THIS_MODULE,
++	},
++	.probe = at91_cpuidle_probe,
++};
++
++module_platform_driver(at91_cpuidle_driver);
+diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+index 15afb5d..76f8cbf 100644
+--- a/arch/arm/mach-at91/pm.c
++++ b/arch/arm/mach-at91/pm.c
+@@ -314,6 +314,15 @@ static const struct platform_suspend_ops at91_pm_ops = {
+ 	.end	= at91_pm_end,
+ };
+ 
++static struct platform_device at91_cpuidle_device = {
++	.name = "cpuidle-at91",
++};
++
++void at91_pm_set_standby(void (*at91_standby)(void))
++{
++	at91_cpuidle_device.dev.platform_data = at91_standby;
++}
++
+ static int __init at91_pm_init(void)
+ {
+ #ifdef CONFIG_AT91_SLOW_CLOCK
+@@ -325,6 +334,9 @@ static int __init at91_pm_init(void)
+ 	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
+ 	if (cpu_is_at91rm9200())
+ 		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
++	
++	if (at91_cpuidle_device.dev.platform_data)
++		platform_device_register(&at91_cpuidle_device);
+ 
+ 	suspend_set_ops(&at91_pm_ops);
+ 
+diff --git a/arch/arm/mach-at91/pm.h b/arch/arm/mach-at91/pm.h
+index 2f5908f..76dd1a7 100644
+--- a/arch/arm/mach-at91/pm.h
++++ b/arch/arm/mach-at91/pm.h
+@@ -11,9 +11,13 @@
+ #ifndef __ARCH_ARM_MACH_AT91_PM
+ #define __ARCH_ARM_MACH_AT91_PM
+ 
++#include <asm/proc-fns.h>
++
+ #include <mach/at91_ramc.h>
+ #include <mach/at91rm9200_sdramc.h>
+ 
++extern void at91_pm_set_standby(void (*at91_standby)(void));
++
+ /*
+  * The AT91RM9200 goes into self-refresh mode with this command, and will
+  * terminate self-refresh automatically on the next SDRAM access.
 -- 
 1.7.9.5
 
