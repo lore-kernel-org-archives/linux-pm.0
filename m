@@ -1,61 +1,78 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 5/5] ARM: dts: exynos4412-trats2: Enable TMU support at
- Trats2
-Date: Tue, 15 Oct 2013 08:29:35 +0200
-Message-ID: <20131015082935.3d33eee7@amdc308.digital.local>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
- <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
- <1381300194-13134-6-git-send-email-l.majewski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1381300194-13134-6-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, kgene.kim@samsung.com
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, devicetree@vger.kernel.org, Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-samsung-soc@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V3 2/3] ARM: at91: cpuidle: Move driver to drivers/cpuidle
+Date: Tue, 15 Oct 2013 09:50:31 +0200
+Message-ID: <1381823432-24944-2-git-send-email-daniel.lezcano@linaro.org>
+References: <1381823432-24944-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:53113 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754651Ab3JOHut (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2013 03:50:49 -0400
+Received: by mail-wi0-f178.google.com with SMTP id hn9so1092555wib.11
+        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2013 00:50:48 -0700 (PDT)
+In-Reply-To: <1381823432-24944-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: plagnioj@jcrosoft.com, linux@maxim.org.za, nicolas.ferre@atmel.com
+Cc: linux-arm-kernel@lists.infradead.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, thomas.petazzoni@free-electrons.com, b.zolnierkie@samsung.com
 
-Hi Kukjin,
+As the cpuidle driver code has no more the dependency with the pm code, the
+'standby' callback being passed as a parameter to the device's platform data,
+we can move the cpuidle driver in the drivers/cpuidle directory.
 
-> This patch enables support for TMU at Exynos4412 based Trats2 board.
-> 
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
-> 
-> ---
-> Changes for v2:
-> - None
-> 
->  arch/arm/boot/dts/exynos4412-trats2.dts |    5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts
-> b/arch/arm/boot/dts/exynos4412-trats2.dts index fb7b9ae..57136f8
-> 100644 --- a/arch/arm/boot/dts/exynos4412-trats2.dts
-> +++ b/arch/arm/boot/dts/exynos4412-trats2.dts
-> @@ -467,6 +467,11 @@
->  		status = "okay";
->  	};
->  
-> +	tmu@100C0000 {
-> +		vtmu-supply = <&ldo10_reg>;
-> +		status = "okay";
-> +	};
-> +
->  	i2c_ak8975: i2c-gpio-0 {
->  		compatible = "i2c-gpio";
->  		gpios = <&gpy2 4 0>, <&gpy2 5 0>;
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/mach-at91/Makefile                        |    1 -
+ drivers/cpuidle/Kconfig.arm                        |    7 +++++++
+ drivers/cpuidle/Makefile                           |    1 +
+ .../cpuidle.c => drivers/cpuidle/cpuidle-at91.c    |    0
+ 4 files changed, 8 insertions(+), 1 deletion(-)
+ rename arch/arm/mach-at91/cpuidle.c => drivers/cpuidle/cpuidle-at91.c (100%)
 
-Can you pull this DT node definition for TMU (as a fix to v3.12)?
-
-It is crucial for Exynos4412. Other patches from this patch set were
-already pulled as v3.12 fixes.
-
+diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
+index 3b0a953..c1b7370 100644
+--- a/arch/arm/mach-at91/Makefile
++++ b/arch/arm/mach-at91/Makefile
+@@ -98,7 +98,6 @@ obj-y				+= leds.o
+ # Power Management
+ obj-$(CONFIG_PM)		+= pm.o
+ obj-$(CONFIG_AT91_SLOW_CLOCK)	+= pm_slowclock.o
+-obj-$(CONFIG_CPU_IDLE)	+= cpuidle.o
+ 
+ ifeq ($(CONFIG_PM_DEBUG),y)
+ CFLAGS_pm.o += -DDEBUG
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index 8e36603..33a745e 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -27,6 +27,13 @@ config ARM_U8500_CPUIDLE
+ 	help
+ 	  Select this to enable cpuidle for ST-E u8500 processors
+ 
++config ARM_AT91_CPUIDLE
++	bool "Cpu Idle Driver for the AT91 processors"
++	default y
++	depends on ARCH_AT91
++	help
++	  Select this to enable cpuidle for AT91 processors
++
+ config CPU_IDLE_BIG_LITTLE
+ 	bool "Support for ARM big.LITTLE processors"
+ 	depends on ARCH_VEXPRESS_TC2_PM
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index cea5ef5..60c4ae5 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -11,4 +11,5 @@ obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
+ obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
+ obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
+ obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
++obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
+ obj-$(CONFIG_CPU_IDLE_BIG_LITTLE)	+= cpuidle-big_little.o
+diff --git a/arch/arm/mach-at91/cpuidle.c b/drivers/cpuidle/cpuidle-at91.c
+similarity index 100%
+rename from arch/arm/mach-at91/cpuidle.c
+rename to drivers/cpuidle/cpuidle-at91.c
 -- 
-Best regards,
+1.7.9.5
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
