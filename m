@@ -1,63 +1,206 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH] intel_pstate: Fix type mismatch warning
-Date: Wed, 16 Oct 2013 14:53:56 +0200
-Message-ID: <2582369.lNhAMrrx8s@vostro.rjw.lan>
-References: <9494730.EGV2mTSpNl@vostro.rjw.lan>
+Subject: [PATCH] ACPI / power: Drop automaitc resume of power resource dependent devices
+Date: Wed, 16 Oct 2013 15:25:05 +0200
+Message-ID: <4814451.BPLed2xxbP@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55753 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932406Ab3JPMmH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 08:42:07 -0400
-In-Reply-To: <9494730.EGV2mTSpNl@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Aaron Lu <aaron.lu@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The expression in line 398 of intel_pstate.c causes the following
-warning to be emitted:
+The mechanism causing devices depending on a given power resource
+(that is, devices that can be in D0 only if that power resource is
+on) to be resumed automatically when the power resource is turned
+on (and their "inferred" power state becomes D0 as a result) is
+inherently racy and in fact unnecessary.
 
-drivers/cpufreq/intel_pstate.c:398:3: warning: left shift count >= width of type
+It is racy, because if the power resources is turned on and then
+immediately off, the device resume triggered by the first transition
+to "on" may still happen, causing the power resource to be turned
+on again.  That again will trigger the "resume of dependent devices"
+mechanism, but if the devices in question are not in use, they will
+be suspended in the meantime causing the power resource to be turned
+off.  However, the "resume of dependent devices" will next resume
+them again and so on.  In some cases (USB port PM in particular) that
+leads to an endless busy loop of flipping the resource on and off
+continuously.
 
-which happens because unsigned long is 32-bit on some architectures.
-Fix that by using a helper u64 variable and simplify the code
-slightly.
+It is needless, because whoever turns a power resource on will most
+likely turn it off at some point and the devices that go into "D0"
+as a result of turning it on will then go back into D3cold.
+Moreover, turning all power resources a device needs to go into
+D0 is not sufficient for a full transition into D0 in general.
+Namely, _PS0 may need to be executed in addition to that in some
+cases.  This means that the whole rationale of the "resume of
+dependent devices" mechanism was incorrect to begin with and it's
+best to remove it entirely.
 
+Reported-by: Lan Tianyu <tianyu.lan@intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/acpi/power.c |  100 ---------------------------------------------------
+ 1 file changed, 1 insertion(+), 99 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
+Index: linux-pm/drivers/acpi/power.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -383,6 +383,7 @@ static void intel_pstate_get_min_max(str
- static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
- {
- 	int max_perf, min_perf;
-+	u64 val;
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -59,16 +59,9 @@ ACPI_MODULE_NAME("power");
+ #define ACPI_POWER_RESOURCE_STATE_ON	0x01
+ #define ACPI_POWER_RESOURCE_STATE_UNKNOWN 0xFF
  
- 	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
- 
-@@ -394,11 +395,11 @@ static void intel_pstate_set_pstate(stru
- 	trace_cpu_frequency(pstate * 100000, cpu->cpu);
- 
- 	cpu->pstate.current_pstate = pstate;
-+	val = pstate << 8;
- 	if (limits.no_turbo)
--		wrmsrl(MSR_IA32_PERF_CTL, BIT(32) | (pstate << 8));
--	else
--		wrmsrl(MSR_IA32_PERF_CTL, pstate << 8);
-+		val |= (u64)1 << 32;
- 
-+	wrmsrl(MSR_IA32_PERF_CTL, val);
+-struct acpi_power_dependent_device {
+-	struct list_head node;
+-	struct acpi_device *adev;
+-	struct work_struct work;
+-};
+-
+ struct acpi_power_resource {
+ 	struct acpi_device device;
+ 	struct list_head list_node;
+-	struct list_head dependent;
+ 	char *name;
+ 	u32 system_level;
+ 	u32 order;
+@@ -233,32 +226,6 @@ static int acpi_power_get_list_state(str
+ 	return 0;
  }
  
- static inline void intel_pstate_pstate_increase(struct cpudata *cpu, int steps)
+-static void acpi_power_resume_dependent(struct work_struct *work)
+-{
+-	struct acpi_power_dependent_device *dep;
+-	struct acpi_device_physical_node *pn;
+-	struct acpi_device *adev;
+-	int state;
+-
+-	dep = container_of(work, struct acpi_power_dependent_device, work);
+-	adev = dep->adev;
+-	if (acpi_power_get_inferred_state(adev, &state))
+-		return;
+-
+-	if (state > ACPI_STATE_D0)
+-		return;
+-
+-	mutex_lock(&adev->physical_node_lock);
+-
+-	list_for_each_entry(pn, &adev->physical_node_list, node)
+-		pm_request_resume(pn->dev);
+-
+-	list_for_each_entry(pn, &adev->power_dependent, node)
+-		pm_request_resume(pn->dev);
+-
+-	mutex_unlock(&adev->physical_node_lock);
+-}
+-
+ static int __acpi_power_on(struct acpi_power_resource *resource)
+ {
+ 	acpi_status status = AE_OK;
+@@ -283,14 +250,8 @@ static int acpi_power_on_unlocked(struct
+ 				  resource->name));
+ 	} else {
+ 		result = __acpi_power_on(resource);
+-		if (result) {
++		if (result)
+ 			resource->ref_count--;
+-		} else {
+-			struct acpi_power_dependent_device *dep;
+-
+-			list_for_each_entry(dep, &resource->dependent, node)
+-				schedule_work(&dep->work);
+-		}
+ 	}
+ 	return result;
+ }
+@@ -390,52 +351,6 @@ static int acpi_power_on_list(struct lis
+ 	return result;
+ }
+ 
+-static void acpi_power_add_dependent(struct acpi_power_resource *resource,
+-				     struct acpi_device *adev)
+-{
+-	struct acpi_power_dependent_device *dep;
+-
+-	mutex_lock(&resource->resource_lock);
+-
+-	list_for_each_entry(dep, &resource->dependent, node)
+-		if (dep->adev == adev)
+-			goto out;
+-
+-	dep = kzalloc(sizeof(*dep), GFP_KERNEL);
+-	if (!dep)
+-		goto out;
+-
+-	dep->adev = adev;
+-	INIT_WORK(&dep->work, acpi_power_resume_dependent);
+-	list_add_tail(&dep->node, &resource->dependent);
+-
+- out:
+-	mutex_unlock(&resource->resource_lock);
+-}
+-
+-static void acpi_power_remove_dependent(struct acpi_power_resource *resource,
+-					struct acpi_device *adev)
+-{
+-	struct acpi_power_dependent_device *dep;
+-	struct work_struct *work = NULL;
+-
+-	mutex_lock(&resource->resource_lock);
+-
+-	list_for_each_entry(dep, &resource->dependent, node)
+-		if (dep->adev == adev) {
+-			list_del(&dep->node);
+-			work = &dep->work;
+-			break;
+-		}
+-
+-	mutex_unlock(&resource->resource_lock);
+-
+-	if (work) {
+-		cancel_work_sync(work);
+-		kfree(dep);
+-	}
+-}
+-
+ static struct attribute *attrs[] = {
+ 	NULL,
+ };
+@@ -524,8 +439,6 @@ static void acpi_power_expose_hide(struc
+ 
+ void acpi_power_add_remove_device(struct acpi_device *adev, bool add)
+ {
+-	struct acpi_device_power_state *ps;
+-	struct acpi_power_resource_entry *entry;
+ 	int state;
+ 
+ 	if (adev->wakeup.flags.valid)
+@@ -535,16 +448,6 @@ void acpi_power_add_remove_device(struct
+ 	if (!adev->power.flags.power_resources)
+ 		return;
+ 
+-	ps = &adev->power.states[ACPI_STATE_D0];
+-	list_for_each_entry(entry, &ps->resources, node) {
+-		struct acpi_power_resource *resource = entry->resource;
+-
+-		if (add)
+-			acpi_power_add_dependent(resource, adev);
+-		else
+-			acpi_power_remove_dependent(resource, adev);
+-	}
+-
+ 	for (state = ACPI_STATE_D0; state <= ACPI_STATE_D3_HOT; state++)
+ 		acpi_power_expose_hide(adev,
+ 				       &adev->power.states[state].resources,
+@@ -882,7 +785,6 @@ int acpi_add_power_resource(acpi_handle
+ 	acpi_init_device_object(device, handle, ACPI_BUS_TYPE_POWER,
+ 				ACPI_STA_DEFAULT);
+ 	mutex_init(&resource->resource_lock);
+-	INIT_LIST_HEAD(&resource->dependent);
+ 	INIT_LIST_HEAD(&resource->list_node);
+ 	resource->name = device->pnp.bus_id;
+ 	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
 
