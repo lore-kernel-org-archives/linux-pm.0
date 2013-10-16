@@ -1,49 +1,169 @@
 From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH 1/5] cpufreq: arm-big-little: use clk_get instead of clk_get_sys
-Date: Wed, 16 Oct 2013 14:52:39 +0100
-Message-ID: <1381931563-16785-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH 3/5] ARM: vexpress/TC2: add cpu clock support
+Date: Wed, 16 Oct 2013 14:52:41 +0100
+Message-ID: <1381931563-16785-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:54921 "EHLO
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:54922 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934581Ab3JPNxJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 09:53:09 -0400
+	by vger.kernel.org with ESMTP id S934379Ab3JPNxL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 09:53:11 -0400
 In-Reply-To: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Pawel Moll <pawel.moll@arm.com>, Nicolas Pitre <nico@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Cc: Sudeep.KarkadaNagesha@arm.com, Pawel Moll <pawel.moll@arm.com>, Nicolas Pitre <nico@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Pawel Moll <Pawel.Moll@arm.com>
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Currently clk_get_sys is used with cpu-cluster.<n> as the device id
-which is incorrect. It should be connection/consumer ID instead.
+On TC2, the cpu clocks are controlled by the external M3 microcontroller
+and SPC provides the interface between the CPU and the power controller.
 
-It is possible to specify input clock in the cpu device node along
-with the optional clock-name. clk_get_sys can't handle that.
-
-This patch replaces clk_get_sys with clk_get to extend support for
-clocks specified in the device tree cpu node.
+The generic cpufreq drivers use the clock APIs to get the cpu clocks.
+This patch add virtual spc clocks for all the cpus to control the cpu
+operating frequency via the clock framework.
 
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Pawel Moll <Pawel.Moll@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/arm_big_little.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/mach-vexpress/spc.c | 119 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 119 insertions(+)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 3549f07..501a091 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -127,7 +127,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 	}
+diff --git a/arch/arm/mach-vexpress/spc.c b/arch/arm/mach-vexpress/spc.c
+index ef7e652..a8b8310 100644
+--- a/arch/arm/mach-vexpress/spc.c
++++ b/arch/arm/mach-vexpress/spc.c
+@@ -17,6 +17,9 @@
+  * GNU General Public License for more details.
+  */
  
- 	name[12] = cluster + '0';
--	clk[cluster] = clk_get_sys(name, NULL);
-+	clk[cluster] = clk_get(cpu_dev, name);
- 	if (!IS_ERR(clk[cluster])) {
- 		dev_dbg(cpu_dev, "%s: clk: %p & freq table: %p, cluster: %d\n",
- 				__func__, clk[cluster], freq_table[cluster],
++#include <linux/clk-provider.h>
++#include <linux/clkdev.h>
++#include <linux/cpu.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/interrupt.h>
+@@ -416,3 +419,119 @@ int __init ve_spc_init(void __iomem *baseaddr, u32 a15_clusid, int irq)
+ 
+ 	return 0;
+ }
++
++struct clk_spc {
++	struct clk_hw hw;
++	int cluster;
++};
++
++#define to_clk_spc(spc) container_of(spc, struct clk_spc, hw)
++static unsigned long spc_recalc_rate(struct clk_hw *hw,
++		unsigned long parent_rate)
++{
++	struct clk_spc *spc = to_clk_spc(hw);
++	u32 freq;
++
++	if (ve_spc_get_performance(spc->cluster, &freq))
++		return -EIO;
++
++	return freq * 1000;
++}
++
++static long spc_round_rate(struct clk_hw *hw, unsigned long drate,
++		unsigned long *parent_rate)
++{
++	struct clk_spc *spc = to_clk_spc(hw);
++
++	return ve_spc_round_performance(spc->cluster, drate);
++}
++
++static int spc_set_rate(struct clk_hw *hw, unsigned long rate,
++		unsigned long parent_rate)
++{
++	struct clk_spc *spc = to_clk_spc(hw);
++
++	return ve_spc_set_performance(spc->cluster, rate / 1000);
++}
++
++static struct clk_ops clk_spc_ops = {
++	.recalc_rate = spc_recalc_rate,
++	.round_rate = spc_round_rate,
++	.set_rate = spc_set_rate,
++};
++
++static struct clk *ve_spc_clk_register(struct device *cpu_dev)
++{
++	struct clk_init_data init;
++	struct clk_spc *spc;
++
++	spc = kzalloc(sizeof(*spc), GFP_KERNEL);
++	if (!spc) {
++		pr_err("could not allocate spc clk\n");
++		return ERR_PTR(-ENOMEM);
++	}
++
++	spc->hw.init = &init;
++	spc->cluster = topology_physical_package_id(cpu_dev->id);
++
++	init.name = dev_name(cpu_dev);
++	init.ops = &clk_spc_ops;
++	init.flags = CLK_IS_ROOT | CLK_GET_RATE_NOCACHE;
++	init.num_parents = 0;
++
++	return devm_clk_register(cpu_dev, &spc->hw);
++}
++
++static int ve_init_opp_table(struct device *cpu_dev)
++{
++	int cluster = topology_physical_package_id(cpu_dev->id);
++	int idx, ret = 0, max_opp = info->num_opps[cluster];
++	struct ve_spc_opp *opps = info->opps[cluster];
++
++	for (idx = 0; idx < max_opp; idx++, opps++) {
++		ret = opp_add(cpu_dev, opps->freq * 1000, opps->u_volt);
++		if (ret) {
++			dev_warn(cpu_dev, "failed to add opp %lu %lu\n",
++				 opps->freq, opps->u_volt);
++			return ret;
++		}
++	}
++	return ret;
++}
++
++static int __init ve_spc_clk_init(void)
++{
++	int cpu;
++	struct clk *clk;
++
++	if (!info)
++		return 0; /* Continue only if SPC is initialised */
++
++	if (ve_spc_populate_opps(0) || ve_spc_populate_opps(1)) {
++		pr_err("failed to build OPP table\n");
++		return -ENODEV;
++	}
++
++	for_each_possible_cpu(cpu) {
++		struct device *cpu_dev = get_cpu_device(cpu);
++		if (!cpu_dev) {
++			pr_warn("failed to get cpu%d device\n", cpu);
++			continue;
++		}
++		clk = ve_spc_clk_register(cpu_dev);
++		if (IS_ERR(clk)) {
++			pr_warn("failed to register cpu%d clock\n", cpu);
++			continue;
++		}
++		if (clk_register_clkdev(clk, NULL, dev_name(cpu_dev))) {
++			pr_warn("failed to register cpu%d clock lookup\n", cpu);
++			continue;
++		}
++
++		if (ve_init_opp_table(cpu_dev))
++			pr_warn("failed to initialise cpu%d opp table\n", cpu);
++	}
++
++	return 0;
++}
++module_init(ve_spc_clk_init);
 -- 
 1.8.1.2
 
