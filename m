@@ -1,67 +1,38 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Add dummy cpufreq_cpu_get/put for CONFIG_CPU_FREQ=n
-Date: Thu, 17 Oct 2013 01:00:42 +0200
-Message-ID: <3064536.Uv6oZedeVB@vostro.rjw.lan>
-References: <1381222571-20317-1-git-send-email-daniel.vetter@ffwll.ch>
+Subject: Re: [PATCH v2 RESEND 0/3] cpufreq/ondemand support for Xserve G5 & iMac G5 iSight
+Date: Thu, 17 Oct 2013 01:09:50 +0200
+Message-ID: <2001270.akeXIGSPAx@vostro.rjw.lan>
+References: <1380573873-14448-1-git-send-email-aaro.koskinen@iki.fi> <1381465935.5630.53.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1381222571-20317-1-git-send-email-daniel.vetter@ffwll.ch>
-Sender: cpufreq-owner@vger.kernel.org
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Chris Wilson <chris@chris-wilson.co.uk>, kbuild test robot <fengguang.wu@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:51444 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753468Ab3JPW6A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Oct 2013 18:58:00 -0400
+In-Reply-To: <1381465935.5630.53.camel@pasglop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-On Tuesday, October 08, 2013 10:56:11 AM Daniel Vetter wrote:
-> The drm/i915 driver wants to adjust it's own power policies using the
-> cpu policies as a guideline (we can implicitly boost the cpus through
-> the gpus on some platforms). To avoid a dreaded select (since a
-> depends will leave users wondering where where their driver has gone
-> too) add dummy functions.
+On Friday, October 11, 2013 03:32:15 PM Benjamin Herrenschmidt wrote:
+> On Mon, 2013-09-30 at 23:44 +0300, Aaro Koskinen wrote:
+> > Hi,
+> > 
+> > This is a resend of the v2 patchset:
+> > 
+> > 	http://marc.info/?t=137797013200001&r=1&w=2
+> > 
+> > No changes except rebasing. Any chance to get these into v3.13?
 > 
-> Reported-by: kbuild test robot <fengguang.wu@intel.com>
-> Cc: kbuild test robot <fengguang.wu@intel.com>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> ---
-> A quick ack for merging this this through the drm-intel tree is
-> probably the simplest way forward.
+> BTW. Ack from me, Rafael feel free to merge these.
 
-Well, ACK, or please let me know if you want me to take this.
+Queued up for 3.13, sorry for the delay.
 
 Thanks!
 
-> ---
->  include/linux/cpufreq.h | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index fcabc42..5ad9a4e 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -93,8 +93,16 @@ struct cpufreq_policy {
->  #define CPUFREQ_SHARED_TYPE_ALL	 (2) /* All dependent CPUs should set freq */
->  #define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
->  
-> +#ifdef CONFIG_CPU_FREQ
->  struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
->  void cpufreq_cpu_put(struct cpufreq_policy *policy);
-> +#else
-> +static inline struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
-> +{
-> +	return NULL;
-> +}
-> +static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
-> +#endif
->  
->  static inline bool policy_is_shared(struct cpufreq_policy *policy)
->  {
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
