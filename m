@@ -1,112 +1,76 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: [PATCH] cpufreq: exynos: Convert exynos-cpufreq to platform driver
-Date: Wed, 16 Oct 2013 18:00:38 +0200
-Message-ID: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] ARM: highbank: cpuidle: convert to platform driver
+Date: Wed, 16 Oct 2013 18:01:04 +0200
+Message-ID: <525EB840.5050607@linaro.org>
+References: <1380278865-27457-1-git-send-email-daniel.lezcano@linaro.org>	<CAL_Jsq+PoqWf5oAQosPg8N0WWHm-7c+JgDzpGD8OfMyKtvPJ0w@mail.gmail.com>	<52457F21.3030502@linaro.org>	<525E9652.6060103@linaro.org> <CAL_Jsq+8ykh6xcwbuS+5gCZHv6zEKU4yEW_us+w_1+BoTOuisQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:10857 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756018Ab3JPQA4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 12:00:56 -0400
+Received: from mail-ee0-f49.google.com ([74.125.83.49]:55452 "EHLO
+	mail-ee0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756018Ab3JPQBH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 12:01:07 -0400
+Received: by mail-ee0-f49.google.com with SMTP id d41so461458eek.22
+        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2013 09:01:06 -0700 (PDT)
+In-Reply-To: <CAL_Jsq+8ykh6xcwbuS+5gCZHv6zEKU4yEW_us+w_1+BoTOuisQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukasz Majewski <l.majewski@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Rob Herring <robherring2@gmail.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-From: Lukasz Majewski <l.majewski@samsung.com>
+On 10/16/2013 05:56 PM, Rob Herring wrote:
+> On Wed, Oct 16, 2013 at 8:36 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>> On 09/27/2013 02:50 PM, Daniel Lezcano wrote:
+>>>
+>>> On 09/27/2013 02:29 PM, Rob Herring wrote:
+>>>>
+>>>> On Fri, Sep 27, 2013 at 5:47 AM, Daniel Lezcano
+>>>> <daniel.lezcano@linaro.org> wrote:
+>>>>>
+>>>>> As the ux500 and the kirkwood driver, make the calxeda driver a
+>>>>> platform driver
+>>>>>
+>>>>> [Compiled only]
+>>>>>
+>>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>>> ---
+>>>>>    arch/arm/mach-highbank/highbank.c |    8 ++++++++
+>>>>>    drivers/cpuidle/cpuidle-calxeda.c |   18 ++++++++++++------
+>>>>>    2 files changed, 20 insertions(+), 6 deletions(-)
+>>>>
+>>>>
+>>>> Looks fine to me, but this will conflict with my series. Perhaps I=
+ can
+>>>> pick this up as part of that.
+>>>
+>>>
+>>> Yes I agree, it makes sense.
+>>
+>>
+>> Hi Rob,
+>>
+>> were you able to take the patch ? Where is the higbank git tree wher=
+e I can
+>> see these patches ? I looked at git://sources.calxeda.com/kernel/lin=
+ux.git
+>> #fox-next but they don't appear, is it the right one ?
+>
+> I still need to send this series to arm-soc. I plan to do so this wee=
+k.
 
-To make the driver multiplatform-friendly, unconditional initialization
-in an initcall is replaced with a platform driver probed only if
-respective platform device is registered.
+Ok, thanks.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/mach-exynos/common.c          |  5 +++++
- arch/arm/mach-exynos/common.h          |  1 +
- arch/arm/mach-exynos/mach-exynos4-dt.c |  1 +
- arch/arm/mach-exynos/mach-exynos5-dt.c |  1 +
- drivers/cpufreq/exynos-cpufreq.c       | 11 ++++++++++-
- 5 files changed, 18 insertions(+), 1 deletion(-)
+   -- Daniel
 
-diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
-index c17407b..4414d70 100644
---- a/arch/arm/mach-exynos/common.c
-+++ b/arch/arm/mach-exynos/common.c
-@@ -305,6 +305,11 @@ void __init exynos_cpuidle_init(void)
- 	platform_device_register(&exynos_cpuidle);
- }
- 
-+void __init exynos_cpufreq_init(void)
-+{
-+	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
-+}
-+
- void __init exynos_init_late(void)
- {
- 	if (of_machine_is_compatible("samsung,exynos5440"))
-diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-index b2ac188..61e5f3a 100644
---- a/arch/arm/mach-exynos/common.h
-+++ b/arch/arm/mach-exynos/common.h
-@@ -23,6 +23,7 @@ void exynos_init_io(void);
- void exynos4_restart(enum reboot_mode mode, const char *cmd);
- void exynos5_restart(enum reboot_mode mode, const char *cmd);
- void exynos_cpuidle_init(void);
-+void exynos_cpufreq_init(void);
- void exynos_init_late(void);
- 
- void exynos_firmware_init(void);
-diff --git a/arch/arm/mach-exynos/mach-exynos4-dt.c b/arch/arm/mach-exynos/mach-exynos4-dt.c
-index 53a3dc3..2cbaf63 100644
---- a/arch/arm/mach-exynos/mach-exynos4-dt.c
-+++ b/arch/arm/mach-exynos/mach-exynos4-dt.c
-@@ -26,6 +26,7 @@
- static void __init exynos4_dt_machine_init(void)
- {
- 	exynos_cpuidle_init();
-+	exynos_cpufreq_init();
- 
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
-diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
-index c9f7dd1..9144549 100644
---- a/arch/arm/mach-exynos/mach-exynos5-dt.c
-+++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
-@@ -48,6 +48,7 @@ static void __init exynos5_dt_machine_init(void)
- 	}
- 
- 	exynos_cpuidle_init();
-+	exynos_cpufreq_init();
- 
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 0ef13e8..706570e 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -17,6 +17,7 @@
- #include <linux/regulator/consumer.h>
- #include <linux/cpufreq.h>
- #include <linux/suspend.h>
-+#include <linux/platform_device.h>
- 
- #include <plat/cpu.h>
- 
-@@ -277,4 +278,12 @@ err_vdd_arm:
- 	kfree(exynos_info);
- 	return -EINVAL;
- }
--late_initcall(exynos_cpufreq_init);
-+
-+static struct platform_driver exynos_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "exynos-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe = exynos_cpufreq_init,
-+};
-+module_platform_driver(exynos_cpufreq_platdrv);
--- 
-1.8.3.2
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
