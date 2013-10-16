@@ -1,73 +1,63 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] PM/AVS: SmartReflex: fix fake probe success on debugfs
- fail
-Date: Wed, 16 Oct 2013 08:24:16 -0500
-Message-ID: <525E9380.7090905@ti.com>
-References: <1381923650-7556-1-git-send-email-manishv.b@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] ARM: highbank: cpuidle: convert to platform driver
+Date: Wed, 16 Oct 2013 15:36:18 +0200
+Message-ID: <525E9652.6060103@linaro.org>
+References: <1380278865-27457-1-git-send-email-daniel.lezcano@linaro.org> <CAL_Jsq+PoqWf5oAQosPg8N0WWHm-7c+JgDzpGD8OfMyKtvPJ0w@mail.gmail.com> <52457F21.3030502@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1381923650-7556-1-git-send-email-manishv.b@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Vishwanathrao Badarkhe, Manish" <manishv.b@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: khilman@kernel.org, anton@enomsg.org, dwmw2@infradead.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:40146 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934280Ab3JPNgX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 09:36:23 -0400
+Received: by mail-wi0-f171.google.com with SMTP id h11so2384032wiv.4
+        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2013 06:36:22 -0700 (PDT)
+In-Reply-To: <52457F21.3030502@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 10/16/2013 06:40 AM, Vishwanathrao Badarkhe, Manish wrote:
-> From: "Vishwanathrao Badarkhe, Manish" <manishv.b@ti.com>
-> 
-> Currently, probe returns success(0) on "debugfs_create_dir"
-> function call failed. Return proper error on "debugfs_create_dir"
-> call failed.
-> 
-> Signed-off-by: Vishwanathrao Badarkhe, Manish <manishv.b@ti.com>
-> ---
-> Not tested on any EVM. Bug has been found while doing static review.
-> Please confirm.
+On 09/27/2013 02:50 PM, Daniel Lezcano wrote:
+> On 09/27/2013 02:29 PM, Rob Herring wrote:
+>> On Fri, Sep 27, 2013 at 5:47 AM, Daniel Lezcano
+>> <daniel.lezcano@linaro.org> wrote:
+>>> As the ux500 and the kirkwood driver, make the calxeda driver a
+>>> platform driver
+>>>
+>>> [Compiled only]
+>>>
+>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> ---
+>>>   arch/arm/mach-highbank/highbank.c |    8 ++++++++
+>>>   drivers/cpuidle/cpuidle-calxeda.c |   18 ++++++++++++------
+>>>   2 files changed, 20 insertions(+), 6 deletions(-)
+>>
+>> Looks fine to me, but this will conflict with my series. Perhaps I c=
+an
+>> pick this up as part of that.
+>
+> Yes I agree, it makes sense.
+
+Hi Rob,
+
+were you able to take the patch ? Where is the higbank git tree where I=
+=20
+can see these patches ? I looked at=20
+git://sources.calxeda.com/kernel/linux.git #fox-next but they don't=20
+appear, is it the right one ?
+
+Thanks
+   -- Daniel
 
 
-IMHO, fail of creation of debugfs is not reason enough to fail the
-probe - further, this code needs a major revamp to work with device tree.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-> 
-> :100644 100644 db9973b... 7b101c1... M	drivers/power/avs/smartreflex.c
->  drivers/power/avs/smartreflex.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-> index db9973b..7b101c1 100644
-> --- a/drivers/power/avs/smartreflex.c
-> +++ b/drivers/power/avs/smartreflex.c
-> @@ -921,7 +921,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
->  	if (!sr_dbg_dir) {
->  		sr_dbg_dir = debugfs_create_dir("smartreflex", NULL);
->  		if (IS_ERR_OR_NULL(sr_dbg_dir)) {
-> -			ret = PTR_ERR(sr_dbg_dir);
-> +			ret = sr_dbg_dir ? PTR_ERR(sr_dbg_dir) : -EIO;
->  			pr_err("%s:sr debugfs dir creation failed(%d)\n",
->  				__func__, ret);
->  			goto err_list_del;
-> @@ -932,7 +932,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
->  	if (IS_ERR_OR_NULL(sr_info->dbg_dir)) {
->  		dev_err(&pdev->dev, "%s: Unable to create debugfs directory\n",
->  			__func__);
-> -		ret = PTR_ERR(sr_info->dbg_dir);
-> +		ret = sr_info->dbg_dir ? PTR_ERR(sr_info->dbg_dir) : -EIO;
->  		goto err_debugfs;
->  	}
->  
-> @@ -947,7 +947,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
->  	if (IS_ERR_OR_NULL(nvalue_dir)) {
->  		dev_err(&pdev->dev, "%s: Unable to create debugfs directory"
->  			"for n-values\n", __func__);
-> -		ret = PTR_ERR(nvalue_dir);
-> +		ret = nvalue_dir ? PTR_ERR(nvalue_dir) : -EIO;
->  		goto err_debugfs;
->  	}
->  
-> 
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
--- 
-Regards,
-Nishanth Menon
