@@ -1,286 +1,220 @@
-From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH 3/3 v5] thermal: samsung: Add TMU support for Exynos5420 SoCs
-Date: Wed, 16 Oct 2013 08:22:48 +0530
-Message-ID: <1381891968-30251-1-git-send-email-ch.naveen@samsung.com>
-References: <1377668719-8602-3-git-send-email-ch.naveen@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1377668719-8602-3-git-send-email-ch.naveen@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, l.majewski@samsung.com, cpgs@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq-next opps with cpufreq-bench
+Date: Wed, 16 Oct 2013 09:49:02 +0530
+Message-ID: <CAKohponEEagXGYOXYXrAqdDJn23Po6=sVhpZEO_+Sta8MUY-XA@mail.gmail.com>
+References: <20131013090159.GB24566@lunn.ch>
+	<20131013211436.GB24927@lunn.ch>
+	<20131013214547.GC24927@lunn.ch>
+	<2502389.2uE805jDh9@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=047d7b6d91a050552f04e8d40024
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:41822 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844Ab3JPETE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 00:19:04 -0400
+Received: by mail-qa0-f50.google.com with SMTP id cm18so283719qab.16
+        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2013 21:19:02 -0700 (PDT)
+In-Reply-To: <2502389.2uE805jDh9@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 
-This patch adds the neccessary register changes and arch information
-to support Exynos5420 SoCs
-Exynos5420 has 5 TMU channels one for each CPU 0, 1, 2 and 3 and GPU
+--047d7b6d91a050552f04e8d40024
+Content-Type: text/plain; charset=ISO-8859-1
 
-Also updated the Documentation at
-Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+On 16/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Well, I've dropped the offending commit from my queue.  Hopefully, it still
+> builds on all targets it used to build on.
 
-Note: The platform data structure will be handled properly once the driver
- moves to complete device driver solution.
+Thanks!!
 
-Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+I tried to reproduce it 2 days back and my laptop was almost completely
+discharged and I have left my charger at a friends place last week :(
+So couldn't really do anything until then.. Got my charger today and so
+coming back on this..
+
+I couldn't run and find cpufreq-bench on ubuntu (Is it available?)..
+But I think I have found the problem..
+
+@Andrew: Can you give this a try please? (Use attached commit)..
+
+commit 0c5d6493fe02606512e94fad3ea075bc4f56b7e7
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Wed Oct 16 09:39:18 2013 +0530
+
+    cpufreq: Use correct rwsem in cpufreq_set_policy()
+
+    Recent commit "cpufreq: create per policy rwsem instead of per CPU
+    cpu_policy_rwsem" introduced a bug where kernel crashes when we run
+    cpufreq-bench. Crash looks like this:
+
+    Unable to handle kernel NULL pointer dereference at virtual address 00000000
+    pgd = cfa60000
+    [00000000] *pgd=0d7c9831, *pte=00000000, *ppte=00000000
+    Internal error: Oops: 17 [#1] PREEMPT ARM
+    Modules linked in:
+    CPU: 0 PID: 2427 Comm: cpufreq-bench Not tainted
+3.12.0-rc4-00708-g1546af5 #86
+    task: cfa98e60 ti: ce58a000 task.ti: ce58a000
+    PC is at wake_up_process+0xc/0x48
+    LR is at __up_write+0x158/0x164
+    pc : [<c0040a14>]    lr : [<c0209630>]    psr: 60000093
+    sp : ce58bd90  ip : ce58bda8  fp : ce58bda4
+    r10: cfb3aa28  r9 : ce58bea8  r8 : ce58beb8
+    r7 : ce58beac  r6 : 00000000  r5 : cfb3a9c0  r4 : ce58be10
+    r3 : cfb3aa5c  r2 : cfb3aa5c  r1 : 00000000  r0 : 00000000
+    Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
+    Control: 0005397f  Table: 0fa60000  DAC: 00000015
+    Process cpufreq-bench (pid: 2427, stack limit = 0xce58a1c0)
+    Stack: (0xce58bd90 to 0xce58c000)
+
+    <snip>
+
+    Backtrace:
+    [<c0040a08>] (wake_up_process+0x0/0x48) from [<c0209630>]
+(__up_write+0x158/0x164)
+     r5:cfb3a9c0 r4:ce58be10
+    [<c02094d8>] (__up_write+0x0/0x164) from [<c0039fe8>] (up_write+0x10/0x14)
+    [<c0039fd8>] (up_write+0x0/0x14) from [<c03578a0>]
+(cpufreq_set_policy+0x120/0x1cc)
+    [<c0357780>] (cpufreq_set_policy+0x0/0x1cc) from [<c0358efc>]
+(store_scaling_governor+0xac/0x1a4)
+     r7:0000000b r6:00000000 r5:ce58be10 r4:cfb3a9c0
+    [<c0358e50>] (store_scaling_governor+0x0/0x1a4) from [<c03576e8>]
+(store+0x88/0xa4)
+     r8:c04d6e3c r7:cfae6a80 r6:ce58bf78 r5:cfb3a9c0 r4:cfb3aa58
+    [<c0357660>] (store+0x0/0xa4) from [<c011a078>]
+(sysfs_write_file+0x108/0x188)
+     r5:cfa12f58 r4:cfa12f40
+    [<c0119f70>] (sysfs_write_file+0x0/0x188) from [<c00bb340>]
+(vfs_write+0xcc/0x198)
+    [<c00bb274>] (vfs_write+0x0/0x198) from [<c00bb4f0>] (SyS_write+0x4c/0x78)
+    [<c00bb4a4>] (SyS_write+0x0/0x78) from [<c0009480>]
+(ret_fast_syscall+0x0/0x2c)
+     r8:c00095e4 r7:00000004 r6:bedcfaf0 r5:00000006 r4:0000000b
+    Code: e89da800 e1a0c00d e92dd830 e24cb004 (e5903000)
+    ---[ end trace a412cb5cfd5edab9 ]---
+    note: cpufreq-bench[2427] exited with preempt_count 1
+
+    This happened because we used rwsem of new policy structure instead of the
+    existing one. And that one was never initialized.
+
+    Reported-by: Andrew Lunn <andrew@lunn.ch>
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-Changes since v1:
-1. modified the platform data structure in order to pass SHARED flag
-   for channels that need sharing of address space.
-2. https://lkml.org/lkml/2013/8/1/38 is merged into this patch.
-   As the changes are minimum and can be added here.
-Changes since v3:
-   a. Rearraged the code alphabetically, make exynso5420 come before exynso5440
-   b. Reduce code duplication in passing platform data by introducing a common macro
-      Bartlomiej Zolnierkiewicz Thanks for review and suggestions
-Changes since v4i
- None
+ drivers/cpufreq/cpufreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
- .../devicetree/bindings/thermal/exynos-thermal.txt |   39 ++++++++
- drivers/thermal/samsung/exynos_tmu.c               |   12 ++-
- drivers/thermal/samsung/exynos_tmu.h               |    1 +
- drivers/thermal/samsung/exynos_tmu_data.c          |   99 ++++++++++++++++++++
- drivers/thermal/samsung/exynos_tmu_data.h          |    7 ++
- 5 files changed, 157 insertions(+), 1 deletion(-)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8a3914b..5c9be08 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1902,10 +1902,10 @@ static int cpufreq_set_policy(struct
+cpufreq_policy *policy,
+                        /* end old governor */
+                        if (policy->governor) {
+                                __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-                               up_write(&new_policy->rwsem);
++                               up_write(&policy->rwsem);
+                                __cpufreq_governor(policy,
+                                                CPUFREQ_GOV_POLICY_EXIT);
+-                               down_write(&new_policy->rwsem);
++                               down_write(&policy->rwsem);
+                        }
 
-diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-index 116cca0..c5f9a74 100644
---- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-@@ -6,6 +6,7 @@
- 	       "samsung,exynos4412-tmu"
- 	       "samsung,exynos4210-tmu"
- 	       "samsung,exynos5250-tmu"
-+	       "samsung,exynos5420-tmu"
- 	       "samsung,exynos5440-tmu"
- - interrupt-parent : The phandle for the interrupt controller
- - reg : Address range of the thermal registers. For soc's which has multiple
-@@ -13,6 +14,16 @@
- 	interrupt related then 2 set of register has to supplied. First set
- 	belongs	to each instance of TMU and second set belongs to second set
- 	of common TMU registers.
-+  NOTE: On Exynos5420, the TRIMINFO register is misplaced for TMU
-+	channels 2, 3 and 4
-+
-+	TRIMINFO at 0x1006c000 contains data for TMU channel 3
-+	TRIMINFO at 0x100a0000 contains data for TMU channel 4
-+	TRIMINFO at 0x10068000 contains data for TMU channel 2
-+
-+	The misplaced register address is passed through devicetree as the
-+	second base
-+
- - interrupts : Should contain interrupt for thermal system
- - clocks : The main clock for TMU device
- - clock-names : Thermal system clock name
-@@ -43,6 +54,34 @@ Example 2):
- 		clock-names = "tmu_apbif";
- 	};
- 
-+Example 3): (In case of Exynos5420)
-+	/* tmu for CPU2 */
-+	tmu@10068000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-+		interrupts = <0 184 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU3 */
-+	tmu@1006c000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-+		interrupts = <0 185 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for GPU */
-+	tmu@100a0000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x100a0000 0x100>, <0x10068000 0x4>;
-+		interrupts = <0 215 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
- Note: For multi-instance tmu each instance should have an alias correctly
- numbered in "aliases" node.
- 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index ae80a87..b54825a 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -186,7 +186,12 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
- 		}
- 	} else {
--		trim_info = readl(data->base + reg->triminfo_data);
-+		/* On exynos5420 the triminfo register is in the shared space */
-+		if (data->base_second && (data->soc == SOC_ARCH_EXYNOS5420))
-+			trim_info = readl(data->base_second +
-+							reg->triminfo_data);
-+		else
-+			trim_info = readl(data->base + reg->triminfo_data);
- 	}
- 	data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
- 	data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
-@@ -498,6 +503,10 @@ static const struct of_device_id exynos_tmu_match[] = {
- 		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
- 	},
- 	{
-+		.compatible = "samsung,exynos5420-tmu",
-+		.data = (void *)EXYNOS5420_TMU_DRV_DATA,
-+	},
-+	{
- 		.compatible = "samsung,exynos5440-tmu",
- 		.data = (void *)EXYNOS5440_TMU_DRV_DATA,
- 	},
-@@ -635,6 +644,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
- 	    pdata->type == SOC_ARCH_EXYNOS4412 ||
- 	    pdata->type == SOC_ARCH_EXYNOS5250 ||
-+	    pdata->type == SOC_ARCH_EXYNOS5420 ||
- 	    pdata->type == SOC_ARCH_EXYNOS5440)
- 		data->soc = pdata->type;
- 	else {
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index d79264f..4b9be23 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -43,6 +43,7 @@ enum soc_type {
- 	SOC_ARCH_EXYNOS4210 = 1,
- 	SOC_ARCH_EXYNOS4412,
- 	SOC_ARCH_EXYNOS5250,
-+	SOC_ARCH_EXYNOS5420,
- 	SOC_ARCH_EXYNOS5440,
- };
- 
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 3d9ade5..7ad8248 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -195,6 +195,105 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
- };
- #endif
- 
-+#if defined(CONFIG_SOC_EXYNOS5420)
-+static const struct exynos_tmu_registers exynos5420_tmu_registers = {
-+	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
-+	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
-+	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
-+	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
-+	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
-+	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
-+	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
-+	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
-+	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
-+	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
-+	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-+	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
-+	.tmu_status = EXYNOS_TMU_REG_STATUS,
-+	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
-+	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
-+	.threshold_th1 = EXYNOS_THD_TEMP_FALL,
-+	.tmu_inten = EXYNOS_TMU_REG_INTEN,
-+	.inten_rise_mask = EXYNOS_TMU_RISE_INT_MASK,
-+	.inten_rise_shift = EXYNOS_TMU_RISE_INT_SHIFT,
-+	.inten_fall_mask = EXYNOS_TMU_FALL_INT_MASK,
-+	.inten_fall_shift = EXYNOS_TMU_FALL_INT_SHIFT,
-+	.inten_rise0_shift = EXYNOS_TMU_INTEN_RISE0_SHIFT,
-+	.inten_rise1_shift = EXYNOS_TMU_INTEN_RISE1_SHIFT,
-+	.inten_rise2_shift = EXYNOS_TMU_INTEN_RISE2_SHIFT,
-+	/* INTEN_RISE3 Not availble in exynos5420 */
-+	.inten_rise3_shift = EXYNOS_TMU_INTEN_RISE3_SHIFT,
-+	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
-+	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
-+	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
-+	.intclr_fall_shift = EXYNOS_TMU_FALL_INT_SHIFT,
-+	.emul_con = EXYNOS_EMUL_CON,
-+	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
-+	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
-+	.emul_time_mask = EXYNOS_EMUL_TIME_MASK,
-+};
-+
-+#define __EXYNOS5420_TMU_DATA	\
-+	.threshold_falling = 10, \
-+	.trigger_levels[0] = 85, \
-+	.trigger_levels[1] = 103, \
-+	.trigger_levels[2] = 110, \
-+	.trigger_levels[3] = 120, \
-+	.trigger_enable[0] = true, \
-+	.trigger_enable[1] = true, \
-+	.trigger_enable[2] = true, \
-+	.trigger_enable[3] = false, \
-+	.trigger_type[0] = THROTTLE_ACTIVE, \
-+	.trigger_type[1] = THROTTLE_ACTIVE, \
-+	.trigger_type[2] = SW_TRIP, \
-+	.trigger_type[3] = HW_TRIP, \
-+	.max_trigger_level = 4, \
-+	.gain = 8, \
-+	.reference_voltage = 16, \
-+	.noise_cancel_mode = 4, \
-+	.cal_type = TYPE_ONE_POINT_TRIMMING, \
-+	.efuse_value = 55, \
-+	.min_efuse_value = 40, \
-+	.max_efuse_value = 100, \
-+	.first_point_trim = 25, \
-+	.second_point_trim = 85, \
-+	.default_temp_offset = 50, \
-+	.freq_tab[0] = { \
-+		.freq_clip_max = 800 * 1000, \
-+		.temp_level = 85, \
-+	}, \
-+	.freq_tab[1] = { \
-+		.freq_clip_max = 200 * 1000, \
-+		.temp_level = 103, \
-+	}, \
-+	.freq_tab_count = 2, \
-+	.type = SOC_ARCH_EXYNOS5420, \
-+	.registers = &exynos5420_tmu_registers, \
-+
-+#define EXYNOS5420_TMU_DATA \
-+	__EXYNOS5420_TMU_DATA \
-+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
-+			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-+			TMU_SUPPORT_EMUL_TIME)
-+
-+#define EXYNOS5420_TMU_DATA_SHARED \
-+	__EXYNOS5420_TMU_DATA \
-+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
-+			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-+			TMU_SUPPORT_EMUL_TIME | TMU_SUPPORT_ADDRESS_MULTIPLE)
-+
-+struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
-+	.tmu_data = {
-+		{ EXYNOS5420_TMU_DATA },
-+		{ EXYNOS5420_TMU_DATA },
-+		{ EXYNOS5420_TMU_DATA_SHARED },
-+		{ EXYNOS5420_TMU_DATA_SHARED },
-+		{ EXYNOS5420_TMU_DATA_SHARED },
-+	},
-+	.tmu_count = 5,
-+};
-+#endif
-+
- #if defined(CONFIG_SOC_EXYNOS5440)
- static const struct exynos_tmu_registers exynos5440_tmu_registers = {
- 	.triminfo_data = EXYNOS5440_TMU_S0_7_TRIM,
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-index 9c1e2c8..87ab693 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.h
-+++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -158,6 +158,13 @@ extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
- #define EXYNOS5250_TMU_DRV_DATA (NULL)
- #endif
- 
-+#if defined(CONFIG_SOC_EXYNOS5420)
-+extern struct exynos_tmu_init_data const exynos5420_default_tmu_data;
-+#define EXYNOS5420_TMU_DRV_DATA (&exynos5420_default_tmu_data)
-+#else
-+#define EXYNOS5420_TMU_DRV_DATA (NULL)
-+#endif
-+
- #if defined(CONFIG_SOC_EXYNOS5440)
- extern struct exynos_tmu_init_data const exynos5440_default_tmu_data;
- #define EXYNOS5440_TMU_DRV_DATA (&exynos5440_default_tmu_data)
--- 
-1.7.10.4
+                        /* start new governor */
+@@ -1914,10 +1914,10 @@ static int cpufreq_set_policy(struct
+cpufreq_policy *policy,
+                                if (!__cpufreq_governor(policy,
+CPUFREQ_GOV_START)) {
+                                        failed = 0;
+                                } else {
+-                                       up_write(&new_policy->rwsem);
++                                       up_write(&policy->rwsem);
+                                        __cpufreq_governor(policy,
+
+CPUFREQ_GOV_POLICY_EXIT);
+-                                       down_write(&new_policy->rwsem);
++                                       down_write(&policy->rwsem);
+                                }
+                        }
+
+--047d7b6d91a050552f04e8d40024
+Content-Type: text/x-patch; charset=US-ASCII;
+	name="0001-cpufreq-Use-correct-rwsem-in-cpufreq_set_policy.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-Use-correct-rwsem-in-cpufreq_set_policy.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: file0
+
+RnJvbSAwYzVkNjQ5M2ZlMDI2MDY1MTJlOTRmYWQzZWEwNzViYzRmNTZiN2U3IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MGM1ZDY0OTNmZTAyNjA2NTEyZTk0ZmFkM2VhMDc1
+YmM0ZjU2YjdlNy4xMzgxODk2ODg0LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogV2VkLCAxNiBPY3Qg
+MjAxMyAwOTozOToxOCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IFVzZSBjb3JyZWN0
+IHJ3c2VtIGluIGNwdWZyZXFfc2V0X3BvbGljeSgpCgpSZWNlbnQgY29tbWl0ICJjcHVmcmVxOiBj
+cmVhdGUgcGVyIHBvbGljeSByd3NlbSBpbnN0ZWFkIG9mIHBlciBDUFUKY3B1X3BvbGljeV9yd3Nl
+bSIgaW50cm9kdWNlZCBhIGJ1ZyB3aGVyZSBrZXJuZWwgY3Jhc2hlcyB3aGVuIHdlIHJ1bgpjcHVm
+cmVxLWJlbmNoLiBDcmFzaCBsb29rcyBsaWtlIHRoaXM6CgpVbmFibGUgdG8gaGFuZGxlIGtlcm5l
+bCBOVUxMIHBvaW50ZXIgZGVyZWZlcmVuY2UgYXQgdmlydHVhbCBhZGRyZXNzIDAwMDAwMDAwCnBn
+ZCA9IGNmYTYwMDAwClswMDAwMDAwMF0gKnBnZD0wZDdjOTgzMSwgKnB0ZT0wMDAwMDAwMCwgKnBw
+dGU9MDAwMDAwMDAKSW50ZXJuYWwgZXJyb3I6IE9vcHM6IDE3IFsjMV0gUFJFRU1QVCBBUk0KTW9k
+dWxlcyBsaW5rZWQgaW46CkNQVTogMCBQSUQ6IDI0MjcgQ29tbTogY3B1ZnJlcS1iZW5jaCBOb3Qg
+dGFpbnRlZCAzLjEyLjAtcmM0LTAwNzA4LWcxNTQ2YWY1ICM4Ngp0YXNrOiBjZmE5OGU2MCB0aTog
+Y2U1OGEwMDAgdGFzay50aTogY2U1OGEwMDAKUEMgaXMgYXQgd2FrZV91cF9wcm9jZXNzKzB4Yy8w
+eDQ4CkxSIGlzIGF0IF9fdXBfd3JpdGUrMHgxNTgvMHgxNjQKcGMgOiBbPGMwMDQwYTE0Pl0gICAg
+bHIgOiBbPGMwMjA5NjMwPl0gICAgcHNyOiA2MDAwMDA5MwpzcCA6IGNlNThiZDkwICBpcCA6IGNl
+NThiZGE4ICBmcCA6IGNlNThiZGE0CnIxMDogY2ZiM2FhMjggIHI5IDogY2U1OGJlYTggIHI4IDog
+Y2U1OGJlYjgKcjcgOiBjZTU4YmVhYyAgcjYgOiAwMDAwMDAwMCAgcjUgOiBjZmIzYTljMCAgcjQg
+OiBjZTU4YmUxMApyMyA6IGNmYjNhYTVjICByMiA6IGNmYjNhYTVjICByMSA6IDAwMDAwMDAwICBy
+MCA6IDAwMDAwMDAwCkZsYWdzOiBuWkN2ICBJUlFzIG9mZiAgRklRcyBvbiAgTW9kZSBTVkNfMzIg
+IElTQSBBUk0gIFNlZ21lbnQgdXNlcgpDb250cm9sOiAwMDA1Mzk3ZiAgVGFibGU6IDBmYTYwMDAw
+ICBEQUM6IDAwMDAwMDE1ClByb2Nlc3MgY3B1ZnJlcS1iZW5jaCAocGlkOiAyNDI3LCBzdGFjayBs
+aW1pdCA9IDB4Y2U1OGExYzApClN0YWNrOiAoMHhjZTU4YmQ5MCB0byAweGNlNThjMDAwKQoKPHNu
+aXA+CgpCYWNrdHJhY2U6Cls8YzAwNDBhMDg+XSAod2FrZV91cF9wcm9jZXNzKzB4MC8weDQ4KSBm
+cm9tIFs8YzAyMDk2MzA+XSAoX191cF93cml0ZSsweDE1OC8weDE2NCkKIHI1OmNmYjNhOWMwIHI0
+OmNlNThiZTEwCls8YzAyMDk0ZDg+XSAoX191cF93cml0ZSsweDAvMHgxNjQpIGZyb20gWzxjMDAz
+OWZlOD5dICh1cF93cml0ZSsweDEwLzB4MTQpCls8YzAwMzlmZDg+XSAodXBfd3JpdGUrMHgwLzB4
+MTQpIGZyb20gWzxjMDM1NzhhMD5dIChjcHVmcmVxX3NldF9wb2xpY3krMHgxMjAvMHgxY2MpCls8
+YzAzNTc3ODA+XSAoY3B1ZnJlcV9zZXRfcG9saWN5KzB4MC8weDFjYykgZnJvbSBbPGMwMzU4ZWZj
+Pl0gKHN0b3JlX3NjYWxpbmdfZ292ZXJub3IrMHhhYy8weDFhNCkKIHI3OjAwMDAwMDBiIHI2OjAw
+MDAwMDAwIHI1OmNlNThiZTEwIHI0OmNmYjNhOWMwCls8YzAzNThlNTA+XSAoc3RvcmVfc2NhbGlu
+Z19nb3Zlcm5vcisweDAvMHgxYTQpIGZyb20gWzxjMDM1NzZlOD5dIChzdG9yZSsweDg4LzB4YTQp
+CiByODpjMDRkNmUzYyByNzpjZmFlNmE4MCByNjpjZTU4YmY3OCByNTpjZmIzYTljMCByNDpjZmIz
+YWE1OApbPGMwMzU3NjYwPl0gKHN0b3JlKzB4MC8weGE0KSBmcm9tIFs8YzAxMWEwNzg+XSAoc3lz
+ZnNfd3JpdGVfZmlsZSsweDEwOC8weDE4OCkKIHI1OmNmYTEyZjU4IHI0OmNmYTEyZjQwCls8YzAx
+MTlmNzA+XSAoc3lzZnNfd3JpdGVfZmlsZSsweDAvMHgxODgpIGZyb20gWzxjMDBiYjM0MD5dICh2
+ZnNfd3JpdGUrMHhjYy8weDE5OCkKWzxjMDBiYjI3ND5dICh2ZnNfd3JpdGUrMHgwLzB4MTk4KSBm
+cm9tIFs8YzAwYmI0ZjA+XSAoU3lTX3dyaXRlKzB4NGMvMHg3OCkKWzxjMDBiYjRhND5dIChTeVNf
+d3JpdGUrMHgwLzB4NzgpIGZyb20gWzxjMDAwOTQ4MD5dIChyZXRfZmFzdF9zeXNjYWxsKzB4MC8w
+eDJjKQogcjg6YzAwMDk1ZTQgcjc6MDAwMDAwMDQgcjY6YmVkY2ZhZjAgcjU6MDAwMDAwMDYgcjQ6
+MDAwMDAwMGIKQ29kZTogZTg5ZGE4MDAgZTFhMGMwMGQgZTkyZGQ4MzAgZTI0Y2IwMDQgKGU1OTAz
+MDAwKQotLS1bIGVuZCB0cmFjZSBhNDEyY2I1Y2ZkNWVkYWI5IF0tLS0Kbm90ZTogY3B1ZnJlcS1i
+ZW5jaFsyNDI3XSBleGl0ZWQgd2l0aCBwcmVlbXB0X2NvdW50IDEKClRoaXMgaGFwcGVuZWQgYmVj
+YXVzZSB3ZSB1c2VkIHJ3c2VtIG9mIG5ldyBwb2xpY3kgc3RydWN0dXJlIGluc3RlYWQgb2YgdGhl
+CmV4aXN0aW5nIG9uZS4gQW5kIHRoYXQgb25lIHdhcyBuZXZlciBpbml0aWFsaXplZC4KClJlcG9y
+dGVkLWJ5OiBBbmRyZXcgTHVubiA8YW5kcmV3QGx1bm4uY2g+ClNpZ25lZC1vZmYtYnk6IFZpcmVz
+aCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+Ci0tLQogZHJpdmVycy9jcHVmcmVxL2Nw
+dWZyZXEuYyB8IDggKysrKy0tLS0KIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDQg
+ZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYyBiL2Ry
+aXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKaW5kZXggOGEzOTE0Yi4uNWM5YmUwOCAxMDA2NDQKLS0t
+IGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJl
+cS5jCkBAIC0xOTAyLDEwICsxOTAyLDEwIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9zZXRfcG9saWN5
+KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LAogCQkJLyogZW5kIG9sZCBnb3Zlcm5vciAq
+LwogCQkJaWYgKHBvbGljeS0+Z292ZXJub3IpIHsKIAkJCQlfX2NwdWZyZXFfZ292ZXJub3IocG9s
+aWN5LCBDUFVGUkVRX0dPVl9TVE9QKTsKLQkJCQl1cF93cml0ZSgmbmV3X3BvbGljeS0+cndzZW0p
+OworCQkJCXVwX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsKIAkJCQlfX2NwdWZyZXFfZ292ZXJub3Io
+cG9saWN5LAogCQkJCQkJQ1BVRlJFUV9HT1ZfUE9MSUNZX0VYSVQpOwotCQkJCWRvd25fd3JpdGUo
+Jm5ld19wb2xpY3ktPnJ3c2VtKTsKKwkJCQlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsKIAkJ
+CX0KIAogCQkJLyogc3RhcnQgbmV3IGdvdmVybm9yICovCkBAIC0xOTE0LDEwICsxOTE0LDEwIEBA
+IHN0YXRpYyBpbnQgY3B1ZnJlcV9zZXRfcG9saWN5KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9s
+aWN5LAogCQkJCWlmICghX19jcHVmcmVxX2dvdmVybm9yKHBvbGljeSwgQ1BVRlJFUV9HT1ZfU1RB
+UlQpKSB7CiAJCQkJCWZhaWxlZCA9IDA7CiAJCQkJfSBlbHNlIHsKLQkJCQkJdXBfd3JpdGUoJm5l
+d19wb2xpY3ktPnJ3c2VtKTsKKwkJCQkJdXBfd3JpdGUoJnBvbGljeS0+cndzZW0pOwogCQkJCQlf
+X2NwdWZyZXFfZ292ZXJub3IocG9saWN5LAogCQkJCQkJCUNQVUZSRVFfR09WX1BPTElDWV9FWElU
+KTsKLQkJCQkJZG93bl93cml0ZSgmbmV3X3BvbGljeS0+cndzZW0pOworCQkJCQlkb3duX3dyaXRl
+KCZwb2xpY3ktPnJ3c2VtKTsKIAkJCQl9CiAJCQl9CiAKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3
+MmUKCg==
+--047d7b6d91a050552f04e8d40024--
