@@ -1,37 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 RESEND 0/3] cpufreq/ondemand support for Xserve G5 & iMac G5 iSight
-Date: Thu, 17 Oct 2013 01:09:50 +0200
-Message-ID: <2001270.akeXIGSPAx@vostro.rjw.lan>
-References: <1380573873-14448-1-git-send-email-aaro.koskinen@iki.fi> <1381465935.5630.53.camel@pasglop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/5] PM / OPP: updates to enable sharing OPPs info
+Date: Thu, 17 Oct 2013 01:12:50 +0200
+Message-ID: <3220965.oF35vmiThF@vostro.rjw.lan>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:51444 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468Ab3JPW6A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Oct 2013 18:58:00 -0400
-In-Reply-To: <1381465935.5630.53.camel@pasglop>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-On Friday, October 11, 2013 03:32:15 PM Benjamin Herrenschmidt wrote:
-> On Mon, 2013-09-30 at 23:44 +0300, Aaro Koskinen wrote:
-> > Hi,
-> > 
-> > This is a resend of the v2 patchset:
-> > 
-> > 	http://marc.info/?t=137797013200001&r=1&w=2
-> > 
-> > No changes except rebasing. Any chance to get these into v3.13?
+On Tuesday, October 01, 2013 02:32:57 PM Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> BTW. Ack from me, Rafael feel free to merge these.
+> Hi,
+> 
+> These are few updates to existing device tree binding and the PM/OPP
+> library to support sharing of OPPs between different device nodes.
+> 
+> Currently all the cpu nodes are parsed until the OPPs are found. This
+> is essential to support cpuhotplug without having to replicate OPP
+> information in all the cpu nodes.
+> 
+> However in systems with multiple cpu power domain, its better to have
+> OPP entry for each cpu. To avoid replication, phandle can be specified
+> to the node which contains the full OPP information.
+> 
+> The table node containing all the OPPs and device nodes pointing to an
+> entry into it through phandle might also solve the problem of describing
+> multiple OPP profiles.
 
-Queued up for 3.13, sorry for the delay.
+It looks like this still is under discussion, isn't it?
 
-Thanks!
+If not, care to obtain ACKs from the people involved and resubmit?
 
 -- 
 I speak only for myself.
