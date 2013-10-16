@@ -1,72 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Update][PATCH] intel_pstate: Fix type mismatch warning
-Date: Wed, 16 Oct 2013 22:52:07 +0200
-Message-ID: <6066628.GFlsXWZgCI@vostro.rjw.lan>
-References: <9494730.EGV2mTSpNl@vostro.rjw.lan> <2582369.lNhAMrrx8s@vostro.rjw.lan> <525ECBDE.5000801@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RESEND] cpuidle for ARM pull request
+Date: Wed, 16 Oct 2013 23:01:04 +0200
+Message-ID: <4820597.aXYQsJePoA@vostro.rjw.lan>
+References: <51E536C5.1020609@linaro.org> <2224191.VjCA0rsPcU@vostro.rjw.lan> <525EC04C.8020507@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51855 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933857Ab3JPUkS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 16:40:18 -0400
-In-Reply-To: <525ECBDE.5000801@linux.intel.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:51412 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755718Ab3JPUtS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Oct 2013 16:49:18 -0400
+In-Reply-To: <525EC04C.8020507@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linus Walleij <linus.walleij@linaro.org>, keun-o.park@windriver.com, "nsekhar@ti.com >> Sekhar Nori" <nsekhar@ti.com>
 
-On Wednesday, October 16, 2013 10:24:46 AM Srinivas Pandruvada wrote:
-> On 10/16/2013 05:53 AM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wednesday, October 16, 2013 06:35:24 PM Daniel Lezcano wrote:
+> On 07/27/2013 02:37 PM, Rafael J. Wysocki wrote:
+> > On Saturday, July 27, 2013 08:13:31 AM Daniel Lezcano wrote:
+> >> On 07/26/2013 02:07 AM, Rafael J. Wysocki wrote:
+> >>> On Friday, July 26, 2013 12:41:09 AM Rafael J. Wysocki wrote:
+> >>>> On Friday, July 26, 2013 12:29:08 AM Rafael J. Wysocki wrote:
+> >>>>> On Friday, July 26, 2013 12:07:03 AM Daniel Lezcano wrote:
+> >>>>>> On 07/16/2013 02:04 PM, Daniel Lezcano wrote:
+> >>>>>>>
+> 
+> [ ... ]
+> 
+> > Next time, can you please add a general description of what the patches do and
+> > why they do that to the pull request?
 > >
-> > The expression in line 398 of intel_pstate.c causes the following
-> > warning to be emitted:
+> >> I thought it would have been easier for us if I could based my PRs on
+> >> top of your linux-next branch, so acting as a proxy for ARM patches. I
+> >> am maintaining the clocksource drivers and I am basing my tree on top of
+> >> tip/core.
+> >>
+> >> I guess you are rebasing your tree often and this is an issue for you,
+> >> right ?
 > >
-> > drivers/cpufreq/intel_pstate.c:398:3: warning: left shift count >= width of type
+> > Yes, my linux-next branch may contain commits that will be modified later
+> > (e.g. ACKs added, fixes folded in etc.).
 > >
-> > which happens because unsigned long is 32-bit on some architectures.
-> > Fix that by using a helper u64 variable and simplify the code
-> > slightly.
+> > Anyway, as I said, as long as the material you have for me doesn't depend on
+> > anything new in my tree, it's better to base it on top of an -rc kernel.
 > >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >   drivers/cpufreq/intel_pstate.c |    7 ++++---
-> >   1 file changed, 4 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> > @@ -383,6 +383,7 @@ static void intel_pstate_get_min_max(str
-> >   static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
-> >   {
-> >   	int max_perf, min_perf;
-> > +	u64 val;
-> >   
-> >   	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-> >   
-> > @@ -394,11 +395,11 @@ static void intel_pstate_set_pstate(stru
-> >   	trace_cpu_frequency(pstate * 100000, cpu->cpu);
-> >   
-> >   	cpu->pstate.current_pstate = pstate;
-> > +	val = pstate << 8;
-> >   	if (limits.no_turbo)
-> > -		wrmsrl(MSR_IA32_PERF_CTL, BIT(32) | (pstate << 8));
-> > -	else
-> > -		wrmsrl(MSR_IA32_PERF_CTL, pstate << 8);
-> > +		val |= (u64)1 << 32;
-> >   
-> > +	wrmsrl(MSR_IA32_PERF_CTL, val);
-> >   }
-> >   
-> >   static inline void intel_pstate_pstate_increase(struct cpudata *cpu, int steps)
-> >
-> >
-> Tested with this change.
+> > In case it does depend on that, I've put the entire outstanding cpuidle
+> > material into my pm-cpuidle branch (including your ARM commits just pulled).
+> 
+> Hi Rafael,
+> 
+> is it possible to update the pm-cpuidle branch ? so I can base my pull 
+> request on it. There will be a (trivial) conflict in the Makefile and 
+> Kconfig.arm if I base my PR on v3.12-rc5.
 
-Cool, thanks!
+Updated, but you can base it on 3.12-rc5 if you need to.
+
+Thanks!
 
 -- 
 I speak only for myself.
