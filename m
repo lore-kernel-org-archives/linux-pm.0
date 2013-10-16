@@ -1,38 +1,53 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] PM/AVS: SmartReflex: fix fake probe success on debugfs fail
-Date: Wed, 16 Oct 2013 09:43:01 -0500
-Message-ID: <CAGo_u6rNJyzxtxn=0o-RC4487O+QuL5xE+vb+sP8_QxMg7g4yw@mail.gmail.com>
-References: <1381923650-7556-1-git-send-email-manishv.b@ti.com>
-	<525E9380.7090905@ti.com>
-	<CAKDJKT7W-1S_KzZ5XEYJQuMnQEu17xbRjeNmZgj=-73Z0Kz_Qg@mail.gmail.com>
+From: Guru Prasad <gurupras@buffalo.edu>
+Subject: Linux - Android power consumption in suspend
+Date: Wed, 16 Oct 2013 11:40:17 -0400
+Message-ID: <CAMefCkCAsuzQiHgX3wHj78ESL13SOU_=m4psohUtALTjbofh-Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:56470 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180Ab3JPOnD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 10:43:03 -0400
-In-Reply-To: <CAKDJKT7W-1S_KzZ5XEYJQuMnQEu17xbRjeNmZgj=-73Z0Kz_Qg@mail.gmail.com>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:44905 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753251Ab3JPPkS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 11:40:18 -0400
+Received: by mail-ob0-f178.google.com with SMTP id uz6so719111obc.23
+        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2013 08:40:18 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Manish Badarkhe <badarkhe.manish@gmail.com>
-Cc: "Vishwanathrao Badarkhe, Manish" <manishv.b@ti.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, khilman@kernel.org, Anton Vorontsov <anton@enomsg.org>, David Woodhouse <dwmw2@infradead.org>
+To: linux-pm@vger.kernel.org
 
-On Wed, Oct 16, 2013 at 9:24 AM, Manish Badarkhe
-<badarkhe.manish@gmail.com> wrote:
->
->>
->> IMHO, fail of creation of debugfs is not reason enough to fail the
->> probe - further, this code needs a major revamp to work with device tree.
->
-> Yes, fail of debugfs creation should not be enough reason to fail probe. But as
-> per current implementation of code, on debugfs failure smart reflex node is
-> getting deleted and probe get failed. This patch not made any changes in
-> logic of code but only makes proper use of  "IS_ERR_OR_NULL".
+Hi,
 
-Thanks for the clarification, it was not obvious from the commit
-message. Further, I would rather prefer to see a proper cleanup that
-handles error completely, since IS_ERR_OR_NULL is not really
-recommended anymore.
-Regards,
-Nishanth Menon
+I'm currently trying to compare the overhead of running Android over
+bare linux on the Nexus S.
+Towards this, I've built a TINY_ANDROID image that I'm using to
+compare against stock AOSP (4.1.1_r4).
+
+I noticed a discrepancy in the power consumption while the phone is suspended.
+stock AOSP consumes ~1.2mA when suspended, whereas TINY_ANDROID consumes ~9mA.
+
+The one change that was made to stock AOSP was that it was set to
+airplane mode which disables the radio.
+Initially I believed that the TINY_ANDROID build still has the radio
+turned on and this is leading to the increased current draw.
+
+I then put together a quick hack of the samsung_modemctl driver
+(drivers/misc/samsung_modemctl) where I replaced existing
+IOCTL_MODEM_RESET with calls to
+dpram_modem_pwroff(mc);
+modem_off(mc);
+
+I'm not sure if this is sufficient to ensure that the radio consumes
+no power, but despite doing this, I notice that the device continues
+to draw ~9mA.
+
+>From my understanding, the Android platform automatically suspends (by
+using echo mem >/sys/power/state I presume) when it sees that there
+are no wakelocks of the SUSPEND type being held. If the user pushes
+the power button, then I believe it forcibly releases wakelocks to try
+and suspend (eventually).
+
+
+Could someone shed some light on what I'm missing or doing incorrectly?
+
+
+Thanks
