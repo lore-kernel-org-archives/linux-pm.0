@@ -1,122 +1,185 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V3] PM / Runtime: Respect autosuspend when idle triggers suspend
-Date: Wed, 16 Oct 2013 09:56:25 +0200
-Message-ID: <CAPDyKFrL6HbC_XKmBoA3LXxvd2dZ7jLkC1+ehiUjEaLGuNJN+Q@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1310151643240.1377-100000@iolanthe.rowland.org>
-	<5764286.HPu6e8VtQu@vostro.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 03/13] arm64: kernel: suspend/resume registers
+ save/restore
+Date: Wed, 16 Oct 2013 09:59:29 +0100
+Message-ID: <20131016085929.GB4815@e102568-lin.cambridge.arm.com>
+References: <1381748590-14279-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1381748590-14279-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <20131015105907.GB30411@mudshark.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f180.google.com ([209.85.220.180]:57356 "EHLO
-	mail-vc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379Ab3JPH40 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 03:56:26 -0400
-Received: by mail-vc0-f180.google.com with SMTP id ld13so163813vcb.25
-        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2013 00:56:25 -0700 (PDT)
-In-Reply-To: <5764286.HPu6e8VtQu@vostro.rjw.lan>
+Received: from service87.mimecast.com ([91.220.42.44]:39352 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760546Ab3JPI7g convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 04:59:36 -0400
+In-Reply-To: <20131015105907.GB30411@mudshark.cambridge.arm.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Kevin Hilman <khilman@linaro.org>, Rob Landley <rob@landley.net>, Chris Ball <cjb@laptop.org>, linux-mmc <linux-mmc@vger.kernel.org>
+To: Will Deacon <will.deacon@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 16 October 2013 02:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 15, 2013 04:43:38 PM Alan Stern wrote:
->> On Tue, 15 Oct 2013, Ulf Hansson wrote:
->>
->> > For devices which don't have a .runtime_idle callback or if it returns
->> > 0, rpm_idle will end up in triggering a call to rpm_suspend, thus
->> > trying to carry out a runtime_suspend directly from runtime_idle.
->> >
->> > In the above situation we want to respect devices which has enabled
->> > autosuspend, we therfore append the flag sent to rpm_suspend with
->> > RPM_AUTO.
->> >
->> > Do note that drivers still needs to update the device last busy mark,
->> > to control the delay for this circumstance.
->> >
->> > Updated runtime PM documentation accordingly.
->> >
->> > Cc: Alan Stern <stern@rowland.harvard.edu>
->> > Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
->> > Cc: Kevin Hilman <khilman@linaro.org>
->> > Cc: Rob Landley <rob@landley.net>
->> > Cc: Chris Ball <cjb@laptop.org>
->> > Cc: linux-mmc@vger.kernel.org
->> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> > Acked-by: Kevin Hilman <khilman@linaro.org>
->> > ---
->> >  Documentation/power/runtime_pm.txt |   14 ++++++++------
->> >  drivers/base/power/runtime.c       |    5 +++--
->> >  2 files changed, 11 insertions(+), 8 deletions(-)
->> >
->> > diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
->> > index 71d8fe4..0f54333 100644
->> > --- a/Documentation/power/runtime_pm.txt
->> > +++ b/Documentation/power/runtime_pm.txt
->> > @@ -145,11 +145,13 @@ The action performed by the idle callback is totally dependent on the subsystem
->> >  if the device can be suspended (i.e. if all of the conditions necessary for
->> >  suspending the device are satisfied) and to queue up a suspend request for the
->> >  device in that case.  If there is no idle callback, or if the callback returns
->> > -0, then the PM core will attempt to carry out a runtime suspend of the device;
->> > -in essence, it will call pm_runtime_suspend() directly.  To prevent this (for
->> > -example, if the callback routine has started a delayed suspend), the routine
->> > -should return a non-zero value.  Negative error return codes are ignored by the
->> > -PM core.
->> > +0, then the PM core will attempt to carry out a runtime suspend of the device,
->> > +also respecting devices configured for autosuspend.  In essence this means a
->> > +call to pm_runtime_autosuspend() (do note that drivers needs to update the
->> > +device last busy mark, pm_runtime_mark_last_busy(), to control the delay under
->> > +this circumstance).  To prevent this (for example, if the callback routine has
->> > +started a delayed suspend), the routine must return a non-zero value.  Negative
->> > +error return codes are ignored by the PM core.
->> >
->> >  The helper functions provided by the PM core, described in Section 4, guarantee
->> >  that the following constraints are met with respect to runtime PM callbacks for
->> > @@ -308,7 +310,7 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
->> >      - execute the subsystem-level idle callback for the device; returns an
->> >        error code on failure, where -EINPROGRESS means that ->runtime_idle() is
->> >        already being executed; if there is no callback or the callback returns 0
->> > -      then run pm_runtime_suspend(dev) and return its result
->> > +      then run pm_runtime_autosuspend(dev) and return its result
->> >
->> >    int pm_runtime_suspend(struct device *dev);
->> >      - execute the subsystem-level suspend callback for the device; returns 0 on
->> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> > index 268a350..72e00e6 100644
->> > --- a/drivers/base/power/runtime.c
->> > +++ b/drivers/base/power/runtime.c
->> > @@ -258,7 +258,8 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
->> >   * Check if the device's runtime PM status allows it to be suspended.  If
->> >   * another idle notification has been started earlier, return immediately.  If
->> >   * the RPM_ASYNC flag is set then queue an idle-notification request; otherwise
->> > - * run the ->runtime_idle() callback directly.
->> > + * run the ->runtime_idle() callback directly. If the ->runtime_idle callback
->> > + * doesn't exist or if it returns 0, call rpm_suspend with the RPM_AUTO flag.
->> >   *
->> >   * This function must be called under dev->power.lock with interrupts disabled.
->> >   */
->> > @@ -331,7 +332,7 @@ static int rpm_idle(struct device *dev, int rpmflags)
->> >
->> >   out:
->> >     trace_rpm_return_int(dev, _THIS_IP_, retval);
->> > -   return retval ? retval : rpm_suspend(dev, rpmflags);
->> > +   return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
->> >  }
->> >
->> >  /**
->>
->> Acked-by: Alan Stern <stern@rowland.harvard.edu>
->
-> I've queued up this patch for 3.13.
->
-> Thanks!
+On Tue, Oct 15, 2013 at 11:59:07AM +0100, Will Deacon wrote:
+> On Mon, Oct 14, 2013 at 12:03:00PM +0100, Lorenzo Pieralisi wrote:
 
-Rafael, Alan - thanks a lot for helping out around this patch!
+[...]
 
-Kind regards
-Ulf Hansson
+> > +/*
+> > + * struct cpu_suspend_ctx must be 16-byte aligned since it is allocated on
+> > + * the stack, which must be 16-byte aligned on v8
+> > + */
+> > +struct cpu_suspend_ctx {
+> > +	/*
+> > +	 * This struct must be kept in sync with
+> > +	 * suspend_save_ctx/suspend_restore_ctx
+> > +	 * macros in asm/suspendmacros.h
+> > +	 */
+> > +	struct {
+> > +		u64 tpidr_el0;
+> > +		u64 tpidrro_el0;
+> > +		u64 contextidr_el1;
+> > +		u64 mair_el1;
+> > +		u64 cpacr_el1;
+> > +		u64 ttbr1_el1;
+> > +		u64 tcr_el1;
+> > +		u64 vbar_el1;
+> > +		u64 sctlr_el1;
+> > +	} ctx_regs;
+> 
+> There doesn't look like a lot of state here. What about EL2 registers used
+> by KVM? (in fact, I don't see how this interacts with KVM at all).
 
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+Patch 7 implements a CPU PM notifier to restore KVM EL2 state upon resume from
+shutdown states, we discussed that with Marc and I think that's sufficient;
+KVM survives after successful shutdown and consequent save/restore cycle.
+
+> > +	u64 sp;
+> > +} __aligned(16);
+> > +#endif
+> > diff --git a/arch/arm64/include/asm/suspendmacros.h b/arch/arm64/include/asm/suspendmacros.h
+> > new file mode 100644
+> > index 0000000..9203e76
+> > --- /dev/null
+> > +++ b/arch/arm64/include/asm/suspendmacros.h
+> > @@ -0,0 +1,75 @@
+> > +/*
+> > + * suspend state saving and restoring macros
+> > + *
+> > + * Copyright (C) 2013 ARM Ltd.
+> > + * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + * You should have received a copy of the GNU General Public License
+> > + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+> > + */
+> > +
+> > +/*
+> > + * suspend_save_ctx - save registers required to suspend a cpu
+> > + *
+> > + * x0: register where context base address is stored
+> > + * macro clobbers {x2 - x10}
+> > + *
+> > + * Registers to be saved must be kept consistent with
+> > + * struct cpu_suspend_ctx
+> > + */
+> > +.macro suspend_save_ctx
+> > +	mrs	x2, tpidr_el0
+> > +	mrs	x3, tpidrro_el0
+> > +	mrs	x4, contextidr_el1
+> > +	mrs	x5, mair_el1
+> > +	mrs	x6, cpacr_el1
+> > +	mrs	x7, ttbr1_el1
+> > +	mrs	x8, tcr_el1
+> > +	mrs	x9, vbar_el1
+> > +	mrs	x10, sctlr_el1
+> > +	stp	x2, x3, [x0]
+> > +	stp	x4, x5, [x0, #16]
+> > +	stp	x6, x7, [x0, #32]
+> > +	stp	x8, x9, [x0, #48]
+> > +	str	x10, [x0, #64]
+> > +.endm
+> 
+> You only need to care about contextidr_el1 if CONFIG_PID_IN_CONTEXTIDR. Then
+> again, you're not saving ttbr0, so you could rely on switch_mm to deal with
+> contextidr_el1 for you, no?
+
+Is contextidr_el1 "restored" in switch_mm or in contexidr_thread_switch() ?
+It seems to be the latter, so if I do not save/restore it, the idle or suspend
+thread might be running with the wrong contextidr_el1 until a context switch
+is executed in the resume path, or I misunderstood it.
+
+Yes, cpu_suspend() relies on switch_mm to restore the ttbr0_el1, and I use
+the identity map page tables to enable the MMU in cpu_resume().
+
+> > diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
+> > index b1b31bb..6ee3b99 100644
+> > --- a/arch/arm64/mm/proc.S
+> > +++ b/arch/arm64/mm/proc.S
+> > @@ -25,6 +25,7 @@
+> >  #include <asm/hwcap.h>
+> >  #include <asm/pgtable-hwdef.h>
+> >  #include <asm/pgtable.h>
+> > +#include <asm/suspendmacros.h>
+> >  
+> >  #include "proc-macros.S"
+> >  
+> > @@ -80,6 +81,35 @@ ENTRY(cpu_do_idle)
+> >  	ret
+> >  ENDPROC(cpu_do_idle)
+> >  
+> > +#ifdef CONFIG_ARM64_CPU_SUSPEND
+> > +/**
+> > + * cpu_do_suspend - save CPU registers context
+> > + * x0: virtual address of context pointer
+> > + */
+> > +ENTRY(cpu_do_suspend)
+> > +	suspend_save_ctx
+> > +	ret
+> > +ENDPROC(cpu_do_suspend)
+> > +
+> > +/**
+> > + * cpu_do_resume - restore CPU register context
+> > + *
+> > + *
+> > + * x0: Physical address of context pointer
+> > + * x1: ttbr0_el1 to be restored
+> > + *
+> > + * Returns:
+> > + *	sctlr_el1 value in x0
+> > + */
+> > +ENTRY(cpu_do_resume)
+> > +	tlbi	vmalle1is	// make sure tlb entries are invalidated
+> 
+> Why? Is this just to be sure that the local TLB is invalid before enabling
+> the MMU? If so, you can use the non-shareable variant...
+
+Yes, that's what I thought in the first place, but then we went for the same
+semantics as flush_tlb_all() which is not really needed here, as you
+said it can be a non-shareable variant.
+
+> > +	suspend_restore_ctx
+> > +	isb
+> > +	dsb	sy
+> 
+> and make this a dsb nsh. Also, aren't the dsb and the isb the wrong way
+> round here?
+
+Yes, I should swap them even if with the MMU off things do not change much
+(actually arm32 v7 resume code has them the wrong way around too so for
+consistency they should be swapped there too since the order is wrong).
+
+Ok for the dsb nsh, that's what it is meant to be.
+
+Thanks a lot,
+Lorenzo
+
