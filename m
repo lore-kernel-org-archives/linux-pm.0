@@ -1,169 +1,78 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: [PATCH 3/5] ARM: vexpress/TC2: add cpu clock support
-Date: Wed, 16 Oct 2013 14:52:41 +0100
-Message-ID: <1381931563-16785-4-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:54922 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934379Ab3JPNxL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 09:53:11 -0400
-In-Reply-To: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Manish Badarkhe <badarkhe.manish@gmail.com>
+Subject: Re: [PATCH] PM/AVS: SmartReflex: fix fake probe success on debugfs fail
+Date: Wed, 16 Oct 2013 19:54:52 +0530
+Message-ID: <CAKDJKT7W-1S_KzZ5XEYJQuMnQEu17xbRjeNmZgj=-73Z0Kz_Qg@mail.gmail.com>
+References: <1381923650-7556-1-git-send-email-manishv.b@ti.com>
+	<525E9380.7090905@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <525E9380.7090905@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Vishwanathrao Badarkhe, Manish" <manishv.b@ti.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap@vger.kernel.org, khilman@kernel.org, Anton Vorontsov <anton@enomsg.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Sudeep.KarkadaNagesha@arm.com, Pawel Moll <pawel.moll@arm.com>, Nicolas Pitre <nico@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Pawel Moll <Pawel.Moll@arm.com>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Hi Nishanth
 
-On TC2, the cpu clocks are controlled by the external M3 microcontroller
-and SPC provides the interface between the CPU and the power controller.
+On Wed, Oct 16, 2013 at 6:54 PM, Nishanth Menon <nm@ti.com> wrote:
+> On 10/16/2013 06:40 AM, Vishwanathrao Badarkhe, Manish wrote:
+>> From: "Vishwanathrao Badarkhe, Manish" <manishv.b@ti.com>
+>>
+>> Currently, probe returns success(0) on "debugfs_create_dir"
+>> function call failed. Return proper error on "debugfs_create_dir"
+>> call failed.
+>>
+>> Signed-off-by: Vishwanathrao Badarkhe, Manish <manishv.b@ti.com>
+>> ---
+>> Not tested on any EVM. Bug has been found while doing static review.
+>> Please confirm.
+>
+>
+> IMHO, fail of creation of debugfs is not reason enough to fail the
+> probe - further, this code needs a major revamp to work with device tree.
 
-The generic cpufreq drivers use the clock APIs to get the cpu clocks.
-This patch add virtual spc clocks for all the cpus to control the cpu
-operating frequency via the clock framework.
+Yes, fail of debugfs creation should not be enough reason to fail probe. But as
+per current implementation of code, on debugfs failure smart reflex node is
+getting deleted and probe get failed. This patch not made any changes in
+logic of code but only makes proper use of  "IS_ERR_OR_NULL".
 
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-Cc: Pawel Moll <Pawel.Moll@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
----
- arch/arm/mach-vexpress/spc.c | 119 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 119 insertions(+)
 
-diff --git a/arch/arm/mach-vexpress/spc.c b/arch/arm/mach-vexpress/spc.c
-index ef7e652..a8b8310 100644
---- a/arch/arm/mach-vexpress/spc.c
-+++ b/arch/arm/mach-vexpress/spc.c
-@@ -17,6 +17,9 @@
-  * GNU General Public License for more details.
-  */
- 
-+#include <linux/clk-provider.h>
-+#include <linux/clkdev.h>
-+#include <linux/cpu.h>
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/interrupt.h>
-@@ -416,3 +419,119 @@ int __init ve_spc_init(void __iomem *baseaddr, u32 a15_clusid, int irq)
- 
- 	return 0;
- }
-+
-+struct clk_spc {
-+	struct clk_hw hw;
-+	int cluster;
-+};
-+
-+#define to_clk_spc(spc) container_of(spc, struct clk_spc, hw)
-+static unsigned long spc_recalc_rate(struct clk_hw *hw,
-+		unsigned long parent_rate)
-+{
-+	struct clk_spc *spc = to_clk_spc(hw);
-+	u32 freq;
-+
-+	if (ve_spc_get_performance(spc->cluster, &freq))
-+		return -EIO;
-+
-+	return freq * 1000;
-+}
-+
-+static long spc_round_rate(struct clk_hw *hw, unsigned long drate,
-+		unsigned long *parent_rate)
-+{
-+	struct clk_spc *spc = to_clk_spc(hw);
-+
-+	return ve_spc_round_performance(spc->cluster, drate);
-+}
-+
-+static int spc_set_rate(struct clk_hw *hw, unsigned long rate,
-+		unsigned long parent_rate)
-+{
-+	struct clk_spc *spc = to_clk_spc(hw);
-+
-+	return ve_spc_set_performance(spc->cluster, rate / 1000);
-+}
-+
-+static struct clk_ops clk_spc_ops = {
-+	.recalc_rate = spc_recalc_rate,
-+	.round_rate = spc_round_rate,
-+	.set_rate = spc_set_rate,
-+};
-+
-+static struct clk *ve_spc_clk_register(struct device *cpu_dev)
-+{
-+	struct clk_init_data init;
-+	struct clk_spc *spc;
-+
-+	spc = kzalloc(sizeof(*spc), GFP_KERNEL);
-+	if (!spc) {
-+		pr_err("could not allocate spc clk\n");
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	spc->hw.init = &init;
-+	spc->cluster = topology_physical_package_id(cpu_dev->id);
-+
-+	init.name = dev_name(cpu_dev);
-+	init.ops = &clk_spc_ops;
-+	init.flags = CLK_IS_ROOT | CLK_GET_RATE_NOCACHE;
-+	init.num_parents = 0;
-+
-+	return devm_clk_register(cpu_dev, &spc->hw);
-+}
-+
-+static int ve_init_opp_table(struct device *cpu_dev)
-+{
-+	int cluster = topology_physical_package_id(cpu_dev->id);
-+	int idx, ret = 0, max_opp = info->num_opps[cluster];
-+	struct ve_spc_opp *opps = info->opps[cluster];
-+
-+	for (idx = 0; idx < max_opp; idx++, opps++) {
-+		ret = opp_add(cpu_dev, opps->freq * 1000, opps->u_volt);
-+		if (ret) {
-+			dev_warn(cpu_dev, "failed to add opp %lu %lu\n",
-+				 opps->freq, opps->u_volt);
-+			return ret;
-+		}
-+	}
-+	return ret;
-+}
-+
-+static int __init ve_spc_clk_init(void)
-+{
-+	int cpu;
-+	struct clk *clk;
-+
-+	if (!info)
-+		return 0; /* Continue only if SPC is initialised */
-+
-+	if (ve_spc_populate_opps(0) || ve_spc_populate_opps(1)) {
-+		pr_err("failed to build OPP table\n");
-+		return -ENODEV;
-+	}
-+
-+	for_each_possible_cpu(cpu) {
-+		struct device *cpu_dev = get_cpu_device(cpu);
-+		if (!cpu_dev) {
-+			pr_warn("failed to get cpu%d device\n", cpu);
-+			continue;
-+		}
-+		clk = ve_spc_clk_register(cpu_dev);
-+		if (IS_ERR(clk)) {
-+			pr_warn("failed to register cpu%d clock\n", cpu);
-+			continue;
-+		}
-+		if (clk_register_clkdev(clk, NULL, dev_name(cpu_dev))) {
-+			pr_warn("failed to register cpu%d clock lookup\n", cpu);
-+			continue;
-+		}
-+
-+		if (ve_init_opp_table(cpu_dev))
-+			pr_warn("failed to initialise cpu%d opp table\n", cpu);
-+	}
-+
-+	return 0;
-+}
-+module_init(ve_spc_clk_init);
--- 
-1.8.1.2
+>> :100644 100644 db9973b... 7b101c1... M        drivers/power/avs/smartreflex.c
+>>  drivers/power/avs/smartreflex.c |    6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
+>> index db9973b..7b101c1 100644
+>> --- a/drivers/power/avs/smartreflex.c
+>> +++ b/drivers/power/avs/smartreflex.c
+>> @@ -921,7 +921,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
+>>       if (!sr_dbg_dir) {
+>>               sr_dbg_dir = debugfs_create_dir("smartreflex", NULL);
+>>               if (IS_ERR_OR_NULL(sr_dbg_dir)) {
+>> -                     ret = PTR_ERR(sr_dbg_dir);
+>> +                     ret = sr_dbg_dir ? PTR_ERR(sr_dbg_dir) : -EIO;
+>>                       pr_err("%s:sr debugfs dir creation failed(%d)\n",
+>>                               __func__, ret);
+>>                       goto err_list_del;
+>> @@ -932,7 +932,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
+>>       if (IS_ERR_OR_NULL(sr_info->dbg_dir)) {
+>>               dev_err(&pdev->dev, "%s: Unable to create debugfs directory\n",
+>>                       __func__);
+>> -             ret = PTR_ERR(sr_info->dbg_dir);
+>> +             ret = sr_info->dbg_dir ? PTR_ERR(sr_info->dbg_dir) : -EIO;
+>>               goto err_debugfs;
+>>       }
+>>
+>> @@ -947,7 +947,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
+>>       if (IS_ERR_OR_NULL(nvalue_dir)) {
+>>               dev_err(&pdev->dev, "%s: Unable to create debugfs directory"
+>>                       "for n-values\n", __func__);
+>> -             ret = PTR_ERR(nvalue_dir);
+>> +             ret = nvalue_dir ? PTR_ERR(nvalue_dir) : -EIO;
+>>               goto err_debugfs;
+>>       }
+>>
 
+Regards
+Manish Baarkhe
