@@ -1,160 +1,122 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: cpufreq-next opps with cpufreq-bench
-Date: Wed, 16 Oct 2013 12:34:38 +0530
-Message-ID: <525E3A86.205@linux.vnet.ibm.com>
-References: <20131013090159.GB24566@lunn.ch>	<20131013211436.GB24927@lunn.ch> <20131013214547.GC24927@lunn.ch>	<2502389.2uE805jDh9@vostro.rjw.lan> <CAKohponEEagXGYOXYXrAqdDJn23Po6=sVhpZEO_+Sta8MUY-XA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3] PM / Runtime: Respect autosuspend when idle triggers suspend
+Date: Wed, 16 Oct 2013 09:56:25 +0200
+Message-ID: <CAPDyKFrL6HbC_XKmBoA3LXxvd2dZ7jLkC1+ehiUjEaLGuNJN+Q@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1310151643240.1377-100000@iolanthe.rowland.org>
+	<5764286.HPu6e8VtQu@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:48726 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585Ab3JPHJN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 03:09:13 -0400
-Received: from /spool/local
-	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 16 Oct 2013 17:09:04 +1000
-In-Reply-To: <CAKohponEEagXGYOXYXrAqdDJn23Po6=sVhpZEO_+Sta8MUY-XA@mail.gmail.com>
+Received: from mail-vc0-f180.google.com ([209.85.220.180]:57356 "EHLO
+	mail-vc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752379Ab3JPH40 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2013 03:56:26 -0400
+Received: by mail-vc0-f180.google.com with SMTP id ld13so163813vcb.25
+        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2013 00:56:25 -0700 (PDT)
+In-Reply-To: <5764286.HPu6e8VtQu@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Kevin Hilman <khilman@linaro.org>, Rob Landley <rob@landley.net>, Chris Ball <cjb@laptop.org>, linux-mmc <linux-mmc@vger.kernel.org>
 
-On 10/16/2013 09:49 AM, Viresh Kumar wrote:
-> On 16/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> Well, I've dropped the offending commit from my queue.  Hopefully, it still
->> builds on all targets it used to build on.
-> 
-> Thanks!!
-> 
-> I tried to reproduce it 2 days back and my laptop was almost completely
-> discharged and I have left my charger at a friends place last week :(
-> So couldn't really do anything until then.. Got my charger today and so
-> coming back on this..
-> 
-> I couldn't run and find cpufreq-bench on ubuntu (Is it available?)..
-> But I think I have found the problem..
-> 
-> @Andrew: Can you give this a try please? (Use attached commit)..
-> 
-> commit 0c5d6493fe02606512e94fad3ea075bc4f56b7e7
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Wed Oct 16 09:39:18 2013 +0530
-> 
->     cpufreq: Use correct rwsem in cpufreq_set_policy()
-> 
->     Recent commit "cpufreq: create per policy rwsem instead of per CPU
->     cpu_policy_rwsem" introduced a bug where kernel crashes when we run
->     cpufreq-bench. Crash looks like this:
-> 
->     Unable to handle kernel NULL pointer dereference at virtual address 00000000
->     pgd = cfa60000
->     [00000000] *pgd=0d7c9831, *pte=00000000, *ppte=00000000
->     Internal error: Oops: 17 [#1] PREEMPT ARM
->     Modules linked in:
->     CPU: 0 PID: 2427 Comm: cpufreq-bench Not tainted
-> 3.12.0-rc4-00708-g1546af5 #86
->     task: cfa98e60 ti: ce58a000 task.ti: ce58a000
->     PC is at wake_up_process+0xc/0x48
->     LR is at __up_write+0x158/0x164
->     pc : [<c0040a14>]    lr : [<c0209630>]    psr: 60000093
->     sp : ce58bd90  ip : ce58bda8  fp : ce58bda4
->     r10: cfb3aa28  r9 : ce58bea8  r8 : ce58beb8
->     r7 : ce58beac  r6 : 00000000  r5 : cfb3a9c0  r4 : ce58be10
->     r3 : cfb3aa5c  r2 : cfb3aa5c  r1 : 00000000  r0 : 00000000
->     Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
->     Control: 0005397f  Table: 0fa60000  DAC: 00000015
->     Process cpufreq-bench (pid: 2427, stack limit = 0xce58a1c0)
->     Stack: (0xce58bd90 to 0xce58c000)
-> 
->     <snip>
-> 
->     Backtrace:
->     [<c0040a08>] (wake_up_process+0x0/0x48) from [<c0209630>]
-> (__up_write+0x158/0x164)
->      r5:cfb3a9c0 r4:ce58be10
->     [<c02094d8>] (__up_write+0x0/0x164) from [<c0039fe8>] (up_write+0x10/0x14)
->     [<c0039fd8>] (up_write+0x0/0x14) from [<c03578a0>]
-> (cpufreq_set_policy+0x120/0x1cc)
->     [<c0357780>] (cpufreq_set_policy+0x0/0x1cc) from [<c0358efc>]
-> (store_scaling_governor+0xac/0x1a4)
->      r7:0000000b r6:00000000 r5:ce58be10 r4:cfb3a9c0
->     [<c0358e50>] (store_scaling_governor+0x0/0x1a4) from [<c03576e8>]
-> (store+0x88/0xa4)
->      r8:c04d6e3c r7:cfae6a80 r6:ce58bf78 r5:cfb3a9c0 r4:cfb3aa58
->     [<c0357660>] (store+0x0/0xa4) from [<c011a078>]
-> (sysfs_write_file+0x108/0x188)
->      r5:cfa12f58 r4:cfa12f40
->     [<c0119f70>] (sysfs_write_file+0x0/0x188) from [<c00bb340>]
-> (vfs_write+0xcc/0x198)
->     [<c00bb274>] (vfs_write+0x0/0x198) from [<c00bb4f0>] (SyS_write+0x4c/0x78)
->     [<c00bb4a4>] (SyS_write+0x0/0x78) from [<c0009480>]
-> (ret_fast_syscall+0x0/0x2c)
->      r8:c00095e4 r7:00000004 r6:bedcfaf0 r5:00000006 r4:0000000b
->     Code: e89da800 e1a0c00d e92dd830 e24cb004 (e5903000)
->     ---[ end trace a412cb5cfd5edab9 ]---
->     note: cpufreq-bench[2427] exited with preempt_count 1
-> 
->     This happened because we used rwsem of new policy structure instead of the
->     existing one. And that one was never initialized.
+On 16 October 2013 02:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, October 15, 2013 04:43:38 PM Alan Stern wrote:
+>> On Tue, 15 Oct 2013, Ulf Hansson wrote:
+>>
+>> > For devices which don't have a .runtime_idle callback or if it returns
+>> > 0, rpm_idle will end up in triggering a call to rpm_suspend, thus
+>> > trying to carry out a runtime_suspend directly from runtime_idle.
+>> >
+>> > In the above situation we want to respect devices which has enabled
+>> > autosuspend, we therfore append the flag sent to rpm_suspend with
+>> > RPM_AUTO.
+>> >
+>> > Do note that drivers still needs to update the device last busy mark,
+>> > to control the delay for this circumstance.
+>> >
+>> > Updated runtime PM documentation accordingly.
+>> >
+>> > Cc: Alan Stern <stern@rowland.harvard.edu>
+>> > Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+>> > Cc: Kevin Hilman <khilman@linaro.org>
+>> > Cc: Rob Landley <rob@landley.net>
+>> > Cc: Chris Ball <cjb@laptop.org>
+>> > Cc: linux-mmc@vger.kernel.org
+>> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> > Acked-by: Kevin Hilman <khilman@linaro.org>
+>> > ---
+>> >  Documentation/power/runtime_pm.txt |   14 ++++++++------
+>> >  drivers/base/power/runtime.c       |    5 +++--
+>> >  2 files changed, 11 insertions(+), 8 deletions(-)
+>> >
+>> > diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+>> > index 71d8fe4..0f54333 100644
+>> > --- a/Documentation/power/runtime_pm.txt
+>> > +++ b/Documentation/power/runtime_pm.txt
+>> > @@ -145,11 +145,13 @@ The action performed by the idle callback is totally dependent on the subsystem
+>> >  if the device can be suspended (i.e. if all of the conditions necessary for
+>> >  suspending the device are satisfied) and to queue up a suspend request for the
+>> >  device in that case.  If there is no idle callback, or if the callback returns
+>> > -0, then the PM core will attempt to carry out a runtime suspend of the device;
+>> > -in essence, it will call pm_runtime_suspend() directly.  To prevent this (for
+>> > -example, if the callback routine has started a delayed suspend), the routine
+>> > -should return a non-zero value.  Negative error return codes are ignored by the
+>> > -PM core.
+>> > +0, then the PM core will attempt to carry out a runtime suspend of the device,
+>> > +also respecting devices configured for autosuspend.  In essence this means a
+>> > +call to pm_runtime_autosuspend() (do note that drivers needs to update the
+>> > +device last busy mark, pm_runtime_mark_last_busy(), to control the delay under
+>> > +this circumstance).  To prevent this (for example, if the callback routine has
+>> > +started a delayed suspend), the routine must return a non-zero value.  Negative
+>> > +error return codes are ignored by the PM core.
+>> >
+>> >  The helper functions provided by the PM core, described in Section 4, guarantee
+>> >  that the following constraints are met with respect to runtime PM callbacks for
+>> > @@ -308,7 +310,7 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>> >      - execute the subsystem-level idle callback for the device; returns an
+>> >        error code on failure, where -EINPROGRESS means that ->runtime_idle() is
+>> >        already being executed; if there is no callback or the callback returns 0
+>> > -      then run pm_runtime_suspend(dev) and return its result
+>> > +      then run pm_runtime_autosuspend(dev) and return its result
+>> >
+>> >    int pm_runtime_suspend(struct device *dev);
+>> >      - execute the subsystem-level suspend callback for the device; returns 0 on
+>> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+>> > index 268a350..72e00e6 100644
+>> > --- a/drivers/base/power/runtime.c
+>> > +++ b/drivers/base/power/runtime.c
+>> > @@ -258,7 +258,8 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
+>> >   * Check if the device's runtime PM status allows it to be suspended.  If
+>> >   * another idle notification has been started earlier, return immediately.  If
+>> >   * the RPM_ASYNC flag is set then queue an idle-notification request; otherwise
+>> > - * run the ->runtime_idle() callback directly.
+>> > + * run the ->runtime_idle() callback directly. If the ->runtime_idle callback
+>> > + * doesn't exist or if it returns 0, call rpm_suspend with the RPM_AUTO flag.
+>> >   *
+>> >   * This function must be called under dev->power.lock with interrupts disabled.
+>> >   */
+>> > @@ -331,7 +332,7 @@ static int rpm_idle(struct device *dev, int rpmflags)
+>> >
+>> >   out:
+>> >     trace_rpm_return_int(dev, _THIS_IP_, retval);
+>> > -   return retval ? retval : rpm_suspend(dev, rpmflags);
+>> > +   return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
+>> >  }
+>> >
+>> >  /**
+>>
+>> Acked-by: Alan Stern <stern@rowland.harvard.edu>
 >
+> I've queued up this patch for 3.13.
+>
+> Thanks!
 
-Hmm, so the problem is that we lock one policy structure in store() whereas we
-unlock a totally different one in __cpufreq_set_policy(). I would have expected
-lockdep to complain about this before we hit the NULL pointer dereference.
-Andrew, can you enable lockdep on your system and confirm this please, just to
-be sure?
+Rafael, Alan - thanks a lot for helping out around this patch!
 
-And in the previous locking design, since the policy structure was per-cpu,
-it wouldn't cause this problem because, as long as the cpu parameter passed
-was the same, both the lock and unlock operations would happen on the same
-policy structure.
+Kind regards
+Ulf Hansson
 
-The fix looks good to me.
-
-Regards,
-Srivatsa S. Bhat
-
- 
->     Reported-by: Andrew Lunn <andrew@lunn.ch>
->     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 8a3914b..5c9be08 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1902,10 +1902,10 @@ static int cpufreq_set_policy(struct
-> cpufreq_policy *policy,
->                         /* end old governor */
->                         if (policy->governor) {
->                                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> -                               up_write(&new_policy->rwsem);
-> +                               up_write(&policy->rwsem);
->                                 __cpufreq_governor(policy,
->                                                 CPUFREQ_GOV_POLICY_EXIT);
-> -                               down_write(&new_policy->rwsem);
-> +                               down_write(&policy->rwsem);
->                         }
-> 
->                         /* start new governor */
-> @@ -1914,10 +1914,10 @@ static int cpufreq_set_policy(struct
-> cpufreq_policy *policy,
->                                 if (!__cpufreq_governor(policy,
-> CPUFREQ_GOV_START)) {
->                                         failed = 0;
->                                 } else {
-> -                                       up_write(&new_policy->rwsem);
-> +                                       up_write(&policy->rwsem);
->                                         __cpufreq_governor(policy,
-> 
-> CPUFREQ_GOV_POLICY_EXIT);
-> -                                       down_write(&new_policy->rwsem);
-> +                                       down_write(&policy->rwsem);
->                                 }
->                         }
-> 
-
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
