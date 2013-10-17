@@ -1,331 +1,120 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH v9 3/7] thermal:boost: Automatic enable/disable of BOOST
- feature
-Date: Thu, 17 Oct 2013 15:09:05 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B90926301192A50@SHSMSX101.ccr.corp.intel.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1381753070-2853-1-git-send-email-l.majewski@samsung.com>
- <1381753070-2853-4-git-send-email-l.majewski@samsung.com>
- <1381829571.2080.34.camel@rzhang1-mobl4>
- <20131015174324.0abda071@amdc308.digital.local>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Thu, 17 Oct 2013 18:22:21 +0100
+Message-ID: <52601CCD.9020705@arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>	<1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>	<5252DAD3.6040903@gmail.com>	<525400B4.8060203@arm.com> <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131015174324.0abda071@amdc308.digital.local>
-Content-Language: en-US
+In-Reply-To: <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+To: Rob Herring <robherring2@gmail.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 17/10/13 14:22, Rob Herring wrote:
+> On Tue, Oct 8, 2013 at 7:55 AM, Sudeep KarkadaNagesha
+> <Sudeep.KarkadaNagesha@arm.com> wrote:
+>> On 07/10/13 17:01, Rob Herring wrote:
+>>> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+>>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>>
+>>>> If more than one similar devices share the same operating points(OPPs)
+>>>> being in the same clock domain, currently we need to replicate the
+>>>> OPP entries in all the nodes.
+>>>>
+>>>> This patch extends existing binding by adding a new property named
+>>>> 'operating-points-phandle' to specify the phandle in any device node
+>>>> pointing to another node which contains the actual OPP tuples.
+>>>> This helps to avoid replication if multiple devices share the OPPs.
+>>>>
+> 
+> [snip]
+> 
+>>>> +    opps-table {
+>>>> +            cpu_opp: cpu_opp {
+>>>> +                    operating-points = <
+>>>> +                            /* kHz    uV */
+>>>> +                            792000  1100000
+>>>> +                            396000  950000
+>>>> +                            198000  850000
+>>>> +                    >;
+>>>> +            };
+>>>> +            ... /* other device OPP nodes */
+>>>
+>>> But this is a subnode of /cpus. IMO, OPPs should be located near what
+>>> they control.
+>>>
+>> No, the idea was to group all the shared OPPs in a container node like clocks or
+>> pinmux. So opps-table in above example need not be subnode of /cpus.
+> 
+> Clocks are typically defined in a clock controller node. pinmux
+> doesn't fit anywhere well so it is an exception. We don't want to
+> expand on that. OPP's at least for cpu's would typically follow the
+> topology, so put them there.
+> 
+I agree we don't want OPP to be another exception like pin-mux.
 
+>>>> +    cpu3: cpu@101 {
+>>>> +            compatible = "arm,cortex-a7";
+>>>> +            reg = <101>;
+>>>> +            operating-points-phandle = <&cluster1_opp>;
+>>>> +    };
+>>>> +
+>>>> +    opps-table {
+>>>> +            cluster0_opp: cluster0_opp {
+>>>
+>>> Why not use the cpu topology? Then the operating point can apply to
+>>> cores based on the position in the topology. You don't even need a
+>>> phandle in that case. You can look for OPPs in either a cpu node or in
+>>> the topology.
+>>>
+>> Agreed but few thoughts behind this binding:
+>>
+>> 1. OPPs are not just cpu specific:
+>>    How do we share OPPs for 2 devices in the same clock domain ?
+>>    Also moving the OPP into cpu-topo makes parsing specific to cpu.
+>>    Currently the OPP library fetches the of_node from the device struct
+>>    which is applicable to any devices.
+> 
+> But an OPP for a cpu is cpu specific, so put it there. For devices, we
+> may need something different. Perhaps it should be part of the clock
+> binding in some way.
+> 
 
-> -----Original Message-----
-> From: Lukasz Majewski [mailto:l.majewski@samsung.com]
-> Sent: Tuesday, October 15, 2013 11:43 PM
-> To: Zhang, Rui
-> Cc: Viresh Kumar; Rafael J. Wysocki; Eduardo Valentin;
-> cpufreq@vger.kernel.org; Linux PM list; Jonghwa Lee; Lukasz Majewski;
-> linux-kernel; Bartlomiej Zolnierkiewicz; Myungjoo Ham; R, Durgadoss
-> Subject: Re: [PATCH v9 3/7] thermal:boost: Automatic enable/disable of
-> BOOST feature
-> Importance: High
-> 
-> Hi Zhang,
-> 
-> > Hi, Lukasz,
-> >
-> > thanks for the patch, sorry that I didn't look into this one earlier.
-> 
-> Yes, I would _really_ appreciate _earlier_ feedback from thermal
-> maintainers :-)
-> 
-> >
-> > On Mon, 2013-10-14 at 14:17 +0200, Lukasz Majewski wrote:
-> > > This patch provides auto disable/enable operation for boost. When
-> > > any defined trip point is passed, the boost is disabled.
-> >
-> > Do you mean boost is disabled if the system is in a overheating state?
-> 
-> In short - Yes.
-> 
-> 
-> To be more precise - the thermal here is a "safe" valve.
-> 
-> Its role is to provide hysteresis similar to the one available for
-> Intel processors.
-> 
-> Intel does it in HW. Here I'm trying to do the same with SW for ARM.
-> 
-> >
-> > > In that moment thermal monitor workqueue is woken up and it
-> monitors
-> > > if the device temperature drops below 75% of the smallest trip
-> > > point.
-> >
-> > Just FYI, the smallest trip point does not equal the trip point with
-> > lowest temperature value.
-> 
-> Thermal processors to which I've looked (exynos 4/5, ste-snowball) had
-> trip points defined monotonically with smallest value defined first.
-> 
-> This was the rationale for choosing thermal trip point 0.
-> 
-But this is not a hard rule for all thermal drivers, thus you can't make this assumption.
- 
-> 
-> >
-> > Say, here is a platform with an active trip point at 40C, and an
-> > critical trip point at 100C, you want to enable boost only if the
-> > temperature is under 30C, right?
-> 
-> In short: no (please read below explanation).
-> 
-> 
-> The boost rough idea:
-> 1. I enable boost from cpufreq (no matter what is the state of thermal)
-> 2. If temperature is too high, then thermal interrupt would trigger and
-> disable boost 3. If device cools down - I enable the boost again
-> 
-> 
-> >
-> > > When device cools down, the boost is enabled again.
-> > >
-> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> > >
-> > > ---
-> > > Changes for v9:
-> > > - None
-> > >
-> > > Changes for v8:
-> > > - Move cpufreq_boost_* stub functions definition (needed when
-> > > cpufreq is not compiled in) to cpufreq.h at cpufreq core support
-> > > commit
-> > >
-> > > Changes for v7:
-> > > - None
-> > >
-> > > Changes for v6:
-> > > - Disable boost only when supported and enabled
-> > > - Protect boost related thermal_zone_device struct fields with
-> mutex
-> > > - Evaluate temperature trend during boost enable decision
-> > > - Create separate methods to handle boost enable/disable
-> > >   (thermal_boost_{enable|disable}) operations
-> > > - Boost is disabled at any trip point passage (not only the non
-> > > critical one)
-> > > - Add stub definitions for cpufreq boost functions used when
-> > >   CONFIG_CPU_FREQ is NOT defined.
-> > >
-> > > Changes for v5:
-> > > - Move boost disable code from cpu_cooling.c to thermal_core.c
-> > >   (to handle_non_critical_trips)
-> > > - Extent struct thermal_zone_device by adding overheated bool flag
-> > > - Implement auto enable of boost after device cools down
-> > > - Introduce boost_polling flag, which indicates if thermal uses
-> it's
-> > > predefined pool delay or has woken up thermal workqueue only to
-> wait
-> > > until device cools down.
-> > >
-> > > Changes for v4:
-> > > - New patch
-> > >
-> > >  drivers/thermal/thermal_core.c |   55
-> > > ++++++++++++++++++++++++++++++++++++++++
-> > > include/linux/thermal.h        |    2 ++ 2 files changed, 57
-> > > insertions(+)
-> > >
-> > > diff --git a/drivers/thermal/thermal_core.c
-> > > b/drivers/thermal/thermal_core.c index 4962a6a..a167ab9 100644
-> > > --- a/drivers/thermal/thermal_core.c
-> > > +++ b/drivers/thermal/thermal_core.c
-> > > @@ -34,6 +34,7 @@
-> > >  #include <linux/thermal.h>
-> > >  #include <linux/reboot.h>
-> > >  #include <linux/string.h>
-> > > +#include <linux/cpufreq.h>
-> >
-> > Actually, I do not like to see this as thermal_core.c.
-> > Because it is the platform thermal driver that owns the thermal
-> > policy, e.g. it tells the thermal core to take what action at what
-> > temperature.
-> > And this cpufreq boost support should be part of the thermal policy.
-> 
-> 
-> Boost is defined as policy independent at cpufreq.
+I still don't understand why we need to handle cpu and other devices
+differently. If you think that the devices sharing OPPs can be handled through
+clock binding in some way, it should be equally applicable for CPUs too ?
+In fact when I started this thread, even I had a similar thought and has asked
+on the list[1]
 
+>> 2. Should cpu topology(i.e. cpu-map) just contain the topology info ? and
+>>    phandles to these nodes should be used to setup any affinity ?
+> 
+> Can't the OPP just be in the topology nodes at the appropriate level.
+> Then the kernel can look for the OPPs in either place. Perhaps Lorenzo
+> has thoughts on this.
+> 
 
-> So I believe that
-> it shall be also thermal policy independent.
+Ok will check with Lorenzo. I agree that we can extend topology binding so that
+we add OPPs there. But I would like to avoid that if we think we can solve it
+through clock bindings as mentioned above.
 
-Boost mode support itself is policy independent, but when to use it is kind of a policy, right?
-Say, if you introduce boost support in cpufreq cooling code, either as a cooling device or as a special cooling state, it is thermal policy independent, but when to use this cooling device/state is surely part of thermal policy.
+>> 3. As part of RFC[1][2], it was also discussed that on some SoCs we need
+>>    multiple OPP profiles/options which it provides but only one of them can
+>>    be used based on the board design. phandle to OPP will also help resolve
+>>    that issue.
+> 
+> Then include the OPP required for that board design. You could have
+> dtsi files of OPPs that can be included based on the board.
+> 
 
-> In the end thermal shall
-> help cpufreq to not burn the device.
-> 
-> 
-> >
-> > For example, here is a platform that supports boost. And it has a
-> > passive trip point at 40C, which means the platform driver wants to
-> > reduce the processor frequency when the temperature at 40C.
-> > And what you're trying to add in this patch is to turn on boost mode
-> > when the temperature is under 30C, right?
-> 
-> In short: yes.
-> 
-> I want to add code which would disable boost when detected temperature
-> is more than 40C.
-> 
-> First, boost must be enabled at cpufreq. Only then it can be disabled
-> (if temp > 40C) at thermal.
-> 
-> During boost disablement I also setup the thermal zone for
-> polling (if we already poll it - no settings are changed).
-> 
-> The boost is re-enabled only when temperature drops to 30C AND the
-> tz->overheated is set (which means that we are at overheated state
-> caused by boost).
-> 
-> 
-> > If yes, then I'd prefer to
-> > 1. introduce a separate cpu cooling device that just has two cooling
-> > state, 0 means boost mode enabled, and 1 means boost mode disabled.
-> > 2. For any platform thermal driver that wants this support, introduce
-> > a new trip point (30C) to the platform thermal driver,
-> > and bind the
-> > cpufreq boost cooling device to this trip point.
-> 
-> >
-> > And IMO, Step 1 can be an enhancement of cpufreq cooling feature. You
-> > just need to introduce two new APIs for registering/unregistering an
-> > cpu boost cooling device, without changing the current cpufreq
-> > cooling code.
-> >
-> > Further more, cpufreq_boost_trigger_state(1) just make it possible to
-> > enter boost mode, it does not mean the cpu will be put into boost
-> mode
-> > immediately, right?
-> 
-> Yes, correct.
-> 
-> > can we make it transparent to thermal core, say,
-> > always enable it when the cpu is in cooling state 0 (p0)?
-> 
-> Thanks for presenting possible solution.
->
-No problem. 
+I will let Nishanth comment on this.
 
-Thanks,
-rui
-> I will investigate it for boost.
-> 
-Thanks,
-rui
-> >
-> > thanks,
-> > rui
-> > >  #include <net/netlink.h>
-> > >  #include <net/genetlink.h>
-> > >
-> > > @@ -366,9 +367,59 @@ static void handle_critical_trips(struct
-> > > thermal_zone_device *tz, }
-> > >  }
-> > >
-> > > +static int thermal_boost_enable(struct thermal_zone_device *tz)
-> > > +{
-> > > +	enum thermal_trend trend = get_tz_trend(tz, 0);
-> > > +	long trip_temp;
-> > > +
-> > > +	if (!tz->ops->get_trip_temp || !tz->overheated)
-> > > +		return -EPERM;
-> > > +	if (trend == THERMAL_TREND_RAISING || trend ==
-> > > THERMAL_TREND_RAISE_FULL)
-> > > +		return -EBUSY;
-> > > +
-> > > +	tz->ops->get_trip_temp(tz, 0, &trip_temp);
-> > > +	/*
-> > > +	 * Enable boost again only when current temperature is less
-> > > +	 * than 75% of trip_temp[0]
-> > > +	 */
-> > > +	if ((tz->temperature + (trip_temp >> 2)) < trip_temp) {
-> > > +		mutex_lock(&tz->lock);
-> > > +		tz->overheated = false;
-> > > +		if (tz->boost_polling) {
-> > > +			tz->boost_polling = false;
-> > > +			tz->polling_delay = 0;
-> > > +		}
-> > > +		mutex_unlock(&tz->lock);
-> > > +		cpufreq_boost_trigger_state(1);
-> > > +		return 0;
-> > > +	}
-> > > +	return -EBUSY;
-> > > +}
-> > > +
-> > > +static void thermal_boost_disable(struct thermal_zone_device *tz)
-> > > +{
-> > > +	cpufreq_boost_trigger_state(0);
-> > > +
-> > > +	/*
-> > > +	 * If no workqueue for monitoring is running - start one
-> > > with
-> > > +	 * 1000 ms monitoring period
-> > > +	 * If workqueue already running - do not change its period
-> > > and only
-> > > +	 * test if target CPU has cooled down
-> > > +	 */
-> > > +	mutex_lock(&tz->lock);
-> > > +	if (!tz->polling_delay) {
-> > > +		tz->boost_polling = true;
-> > > +		tz->polling_delay = 1000;
-> > > +	}
-> > > +	tz->overheated = true;
-> > > +	mutex_unlock(&tz->lock);
-> > > +}
-> > > +
-> > >  static void handle_thermal_trip(struct thermal_zone_device *tz,
-> > > int trip) {
-> > >  	enum thermal_trip_type type;
-> > > +	if (cpufreq_boost_supported() && cpufreq_boost_enabled())
-> > > +		thermal_boost_disable(tz);
-> > >
-> > >  	tz->ops->get_trip_type(tz, trip, &type);
-> > >
-> > > @@ -467,6 +518,10 @@ static void thermal_zone_device_check(struct
-> > > work_struct *work) struct thermal_zone_device *tz =
-> > > container_of(work, struct thermal_zone_device,
-> > >  						      poll_queue.work);
-> > > +	if (cpufreq_boost_supported())
-> > > +		if (!thermal_boost_enable(tz))
-> > > +			return;
-> > > +
-> > >  	thermal_zone_device_update(tz);
-> > >  }
-> > >
-> > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > > index b268d3c..b316bdf 100644
-> > > --- a/include/linux/thermal.h
-> > > +++ b/include/linux/thermal.h
-> > > @@ -172,6 +172,8 @@ struct thermal_zone_device {
-> > >  	int emul_temperature;
-> > >  	int passive;
-> > >  	unsigned int forced_passive;
-> > > +	bool overheated;
-> > > +	bool boost_polling;
-> > >  	const struct thermal_zone_device_ops *ops;
-> > >  	const struct thermal_zone_params *tzp;
-> > >  	struct thermal_governor *governor;
-> >
-> >
-> 
-> 
-> 
-> --
-> Best regards,
-> 
-> Lukasz Majewski
-> 
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Regards,
+Sudeep
+
+[1] http://marc.info/?l=linux-pm&m=137449807414601&w=4
+
