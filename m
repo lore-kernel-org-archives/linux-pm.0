@@ -1,147 +1,233 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 1/3 v6] thermal: samsung: add intclr_fall_shift bit in
- exynos_tmu_register
-Date: Thu, 17 Oct 2013 12:03:50 +0200
-Message-ID: <2064487.sPVcMNRS4J@amdc1032>
-References: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
- <1381979473-7079-1-git-send-email-ch.naveen@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 12/14] cpuidle: mvebu: Add initial CPU idle support
+ for Armada 370/XP SoC
+Date: Thu, 17 Oct 2013 12:15:49 +0200
+Message-ID: <525FB8D5.1050106@linaro.org>
+References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com> <1381759106-15004-13-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1381979473-7079-1-git-send-email-ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Naveen Krishna Chatradhi <ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, naveenkrishna.ch-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, eduardo.valentin-l0cyMroinI0@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpgs-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f52.google.com ([74.125.82.52]:64452 "EHLO
+	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754155Ab3JQKPy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2013 06:15:54 -0400
+Received: by mail-wg0-f52.google.com with SMTP id f12so2020533wgh.31
+        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2013 03:15:53 -0700 (PDT)
+In-Reply-To: <1381759106-15004-13-git-send-email-gregory.clement@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
 
-
-Hi Naveen,
-
-On Thursday, October 17, 2013 08:41:13 AM Naveen Krishna Chatradhi wrote:
-> On Exynos5250, the FALL interrupt related en, status and clear bits are
-> available at an offset of
-> 16 in INTEN, INTSTAT registers and at an offset of
-> 12 in INTCLEAR register.
-> 
-> On Exynos5420, the FALL interrupt related en, status and clear bits are
-> available at an offset of
-> 16 in INTEN, INTSTAT and INTCLEAR registers.
-> 
-> On Exynos5440,
-> the FALL_IRQEN bits are at an offset of 4
-> and the RISE_IRQEN bits are at an offset of 0
-> 
-> This patch introduces a new bit field intclr_fall_shift to handle the
-> offset for exyns5250 and exynos5440
-> 
-> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+On 10/14/2013 03:58 PM, Gregory CLEMENT wrote:
+> Add the wfi, cpu idle and cpu deep idle power states support for the
+> Armada XP SoCs.
+>
+> All the latencies and the power consumption values used at the
+> "armada_370_xp_idle_driver" structure are preliminary and will be
+> modified in the future after running some measurements and analysis.
+>
+> Based on the work of Nadav Haklai.
+>
+> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 > ---
-> Changes since v1:
-> Changes since v2:
-> Changes since v3:
->   None
-> Changes since v4:
->  Correct the CLEAR_FALL_INT_SHIFT for Exynos5250/Exynos5440
-> Changes since v5:
->  Modify the commit message
+>   drivers/cpuidle/Kconfig.arm             |   5 ++
+>   drivers/cpuidle/Makefile                |   1 +
+>   drivers/cpuidle/cpuidle-armada-370-xp.c | 117 +++++++++++++++++++++=
++++++++++++
+>   3 files changed, 123 insertions(+)
+>   create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
+>
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
+m
+> index 8e36603..071d960 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -1,6 +1,11 @@
+>   #
+>   # ARM CPU Idle drivers
+>   #
+> +config ARM_ARMADA_370_XP_CPUIDLE
+> +	bool "CPU Idle Driver for Armada 370/XP family processors"
+> +	depends on ARCH_MVEBU
+> +	help
+> +	  Select this to enable cpuidle on Armada 370/XP processors.
+>
+>   config ARM_HIGHBANK_CPUIDLE
+>   	bool "CPU Idle Driver for Calxeda processors"
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index cea5ef5..395dab6 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -7,6 +7,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D couple=
+d.o
+>
+>   ###################################################################=
+###############
+>   # ARM SoC drivers
+> +obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) +=3D cpuidle-armada-370-xp.o
+>   obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+=3D cpuidle-calxeda.o
+>   obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+=3D cpuidle-kirkwood.o
+>   obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+=3D cpuidle-zynq.o
+> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidl=
+e/cpuidle-armada-370-xp.c
+> new file mode 100644
+> index 0000000..3fa005e
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-armada-370-xp.c
+> @@ -0,0 +1,117 @@
+> +/*
+> + * Marvell Armada 370 and Armada XP SoC cpuidle driver
+> + *
+> + * Copyright (C) 2013 Marvell
+> + *
+> + * Nadav Haklai <nadavh@marvell.com>
+> + * Gregory CLEMENT <gregory.clement@free-electrons.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without any
+> + * warranty of any kind, whether express or implied.
+> + *
+> + * Maintainer: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> + */
+> +
+> +#include <linux/cpuidle.h>
+> +#include <linux/module.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/suspend.h>
+> +#include <asm/suspend.h>
+> +#include <linux/smp.h>
+> +#include <asm/cpuidle.h>
+> +#include <asm/smp_plat.h>
+> +#include <linux/armada-370-xp-pmsu.h>
+> +#include <linux/platform_device.h>
+> +
+> +#define ARMADA_370_XP_MAX_STATES	3
+> +#define ARMADA_370_XP_FLAG_DEEP_IDLE	0x10000
+> +
+> +extern void v7_flush_dcache_all(void);
+> +
+> +/* Functions defined in suspend-armada-370-xp.S */
+> +int armada_370_xp_cpu_resume(unsigned long);
+> +int armada_370_xp_cpu_suspend(unsigned long);
+> +
+> +static int armada_370_xp_enter_idle(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv,
+> +				int index)
+> +{
+> +	bool deepidle =3D false;
+> +	unsigned int hw_cpu =3D cpu_logical_map(smp_processor_id());
+ >
+> +	armada_370_xp_pmsu_set_start_addr(armada_370_xp_cpu_resume, hw_cpu)=
+;
 
-Thank you but v5 had more issues which are not fixed yet. Please see below.
+What about using cpu_pm_enter() here and move the function above to a=20
+notifier callback for CPU_PM_ENTER inside the marvell pm code ? The cod=
+e=20
+will be more encapsulated, no ?
 
->  drivers/thermal/samsung/exynos_tmu.c      |    2 +-
->  drivers/thermal/samsung/exynos_tmu.h      |    2 ++
->  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
->  drivers/thermal/samsung/exynos_tmu_data.h |    4 +++-
->  4 files changed, 8 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 32f38b9..b2202fa 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -265,7 +265,7 @@ skip_calib_data:
->  				data->base + reg->threshold_th1);
->  
->  		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
-> -			(reg->inten_fall_mask << reg->inten_fall_shift),
-> +			(reg->inten_fall_mask << reg->intclr_fall_shift),
->  				data->base + reg->tmu_intclear);
->  
->  		/* if last threshold limit is also present */
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-> index 3fb6554..5f4fe6c 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -136,6 +136,7 @@ enum soc_type {
->   * @inten_fall3_shift: shift bits of falling 3 interrupt bits.
->   * @tmu_intstat: Register containing the interrupt status values.
->   * @tmu_intclear: Register for clearing the raised interrupt status.
-> + * @intclr_fall_shift: shift bits for interrupt clear fall 0
->   * @emul_con: TMU emulation controller register.
->   * @emul_temp_shift: shift bits of emulation temperature.
->   * @emul_time_shift: shift bits of emulation time.
-> @@ -207,6 +208,7 @@ struct exynos_tmu_registers {
->  	u32	tmu_intstat;
->  
->  	u32	tmu_intclear;
-> +	u32	intclr_fall_shift;
->  
->  	u32	emul_con;
->  	u32	emul_temp_shift;
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> index 073c292..09a8a27 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -123,6 +123,7 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
->  	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
->  	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
->  	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
-> +	.intclr_fall_shift = EXYNOS5250_TMU_CLEAR_FALL_INT_SHIFT,
->  	.emul_con = EXYNOS_EMUL_CON,
->  	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
->  	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
-> @@ -228,6 +229,7 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
->  	.inten_fall0_shift = EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
->  	.tmu_intstat = EXYNOS5440_TMU_S0_7_IRQ,
->  	.tmu_intclear = EXYNOS5440_TMU_S0_7_IRQ,
-> +	.intclr_fall_shift = EXYNOS5440_TMU_CLEAR_FALL_INT_SHIFT,
->  	.tmu_irqstatus = EXYNOS5440_TMU_IRQ_STATUS,
->  	.emul_con = EXYNOS5440_TMU_S0_7_DEBUG,
->  	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-> index a1ea19d..9c1e2c8 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -69,9 +69,11 @@
->  #define EXYNOS_TMU_RISE_INT_MASK	0x111
->  #define EXYNOS_TMU_RISE_INT_SHIFT	0
->  #define EXYNOS_TMU_FALL_INT_MASK	0x111
-> -#define EXYNOS_TMU_FALL_INT_SHIFT	12
-> +#define EXYNOS_TMU_FALL_INT_SHIFT	16
->  #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
->  #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
-> +#define EXYNOS5250_TMU_CLEAR_FALL_INT_SHIFT	12
+> +
+> +	if (drv->states[index].flags & ARMADA_370_XP_FLAG_DEEP_IDLE)
+> +		deepidle =3D true;
+> +
+> +	cpu_suspend(deepidle, armada_370_xp_cpu_suspend);
+> +
+> +	armada_370_xp_pmsu_idle_restore();
 
-The better name would be EXYNOS_TMU_CLEAR_FALL_INT_SHIFT because it is
-also used on EXYNOS4412.
+Same comment by using cpu_pm_exit.
 
-Also in patch #3 you should define EXYNOS5420_TMU_CLEAR_FALL_INT_SHIFT
-instead of re-using EXYNOS_TMU_FALL_INT_SHIFT.
+> +
+> +	return index;
+> +}
+> +
+> +static struct cpuidle_driver armada_370_xp_idle_driver =3D {
+> +	.name			=3D "armada_370_xp_idle",
+> +	.states[0]		=3D ARM_CPUIDLE_WFI_STATE,
+> +	.states[1]		=3D {
+> +		.enter			=3D armada_370_xp_enter_idle,
+> +		.exit_latency		=3D 10,
+> +		.power_usage		=3D 50,
+> +		.target_residency	=3D 100,
+> +		.flags			=3D CPUIDLE_FLAG_TIME_VALID,
+> +		.name			=3D "MV CPU IDLE",
+> +		.desc			=3D "CPU power down",
+> +	},
+> +	.states[2]		=3D {
+> +		.enter			=3D armada_370_xp_enter_idle,
+> +		.exit_latency		=3D 100,
+> +		.power_usage		=3D 5,
+> +		.target_residency	=3D 1000,
+> +		.flags			=3D CPUIDLE_FLAG_TIME_VALID |
+> +						ARMADA_370_XP_FLAG_DEEP_IDLE,
+> +		.name			=3D "MV CPU DEEP IDLE",
+> +		.desc			=3D "CPU and L2 Fabric power down",
+> +	},
+> +	.state_count =3D ARMADA_370_XP_MAX_STATES,
+> +};
+> +
+> +static int armada_370_xp_cpuidle_probe(struct platform_device *pdev)
+> +{
+> +	if (!of_find_compatible_node(NULL, NULL, "marvell,armada-370-xp-pms=
+u"))
+> +		return -ENODEV;
+> +
+> +	if (!of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric"=
+))
+> +		return -ENODEV;
+> +
+> +	pr_info("Initializing Armada-XP CPU power management ");
+> +
+> +	armada_370_xp_pmsu_enable_l2_powerdown_onidle();
 
-Finally please remove no longer used inten_fall_shift field and related
-defines (EXYNOS_TMU_FALL_INT_MASK and EXYNOS5440_TMU_FALL_INT_MASK).
+Isn't possible to move this function inside pmsu.c ? as well as the=20
+of_find_compatible functions ?
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+> +
+> +	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
+> +}
+> +
+> +static int armada_370_xp_cpuidle_remove(struct platform_device *pdev=
+)
+> +{
+> +	cpuidle_unregister(&armada_370_xp_idle_driver);
+> +	return 0;
+> +}
+> +
+> +
+> +static struct platform_driver armada_370_xp_cpuidle_plat_driver =3D =
+{
+> +	.driver =3D {
+> +		.name =3D "cpuidle-armada-370-xp",
+> +		.owner =3D THIS_MODULE,
+> +	},
+> +	.probe =3D armada_370_xp_cpuidle_probe,
+> +	.remove =3D armada_370_xp_cpuidle_remove,
+> +};
+> +
+> +
+> +module_platform_driver(armada_370_xp_cpuidle_plat_driver);
+> +
+> +MODULE_AUTHOR("Gregory CLEMENT <gregory.clement@free-electrons.com>"=
+);
+> +MODULE_DESCRIPTION("Armada 370/XP cpu idle driver");
+> +MODULE_LICENSE("GPL");
 
-> +#define EXYNOS5440_TMU_CLEAR_FALL_INT_SHIFT	4
->  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
->  #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
->  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
+The driver is statically compiled in the kernel, removal of the driver=20
+is pointless.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks
+   -- Daniel
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
