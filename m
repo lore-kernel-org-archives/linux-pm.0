@@ -1,247 +1,310 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq-next opps with cpufreq-bench
-Date: Thu, 17 Oct 2013 10:34:03 +0530
-Message-ID: <CAKohpomiFqgSz3=C0_XyG8wqA8puPqxbkNo+rvYbUypcfrsukQ@mail.gmail.com>
-References: <20131013090159.GB24566@lunn.ch>
-	<2502389.2uE805jDh9@vostro.rjw.lan>
-	<CAKohponEEagXGYOXYXrAqdDJn23Po6=sVhpZEO_+Sta8MUY-XA@mail.gmail.com>
-	<2640083.dKj7t8UqiF@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH] ACPI / power: Drop automaitc resume of power resource
+ dependent devices
+Date: Thu, 17 Oct 2013 14:57:12 +0800
+Message-ID: <525F8A48.9020007@intel.com>
+References: <4814451.BPLed2xxbP@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=001a11c2c2fc24a84204e8e8bf5d
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f174.google.com ([209.85.216.174]:41325 "EHLO
-	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747Ab3JQFEF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2013 01:04:05 -0400
-Received: by mail-qc0-f174.google.com with SMTP id v1so1206810qcw.19
-        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2013 22:04:03 -0700 (PDT)
-In-Reply-To: <2640083.dKj7t8UqiF@vostro.rjw.lan>
+Received: from mga02.intel.com ([134.134.136.20]:21335 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750863Ab3JQG4f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Oct 2013 02:56:35 -0400
+In-Reply-To: <4814451.BPLed2xxbP@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>
 
---001a11c2c2fc24a84204e8e8bf5d
-Content-Type: text/plain; charset=ISO-8859-1
+On 10/16/2013 09:25 PM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The mechanism causing devices depending on a given power resource
+> (that is, devices that can be in D0 only if that power resource is
+> on) to be resumed automatically when the power resource is turned
+> on (and their "inferred" power state becomes D0 as a result) is
+> inherently racy and in fact unnecessary.
+> 
+> It is racy, because if the power resources is turned on and then
+> immediately off, the device resume triggered by the first transition
+> to "on" may still happen, causing the power resource to be turned
+> on again.  That again will trigger the "resume of dependent devices"
+> mechanism, but if the devices in question are not in use, they will
+> be suspended in the meantime causing the power resource to be turned
+> off.  However, the "resume of dependent devices" will next resume
+> them again and so on.  In some cases (USB port PM in particular) that
+> leads to an endless busy loop of flipping the resource on and off
+> continuously.
+> 
+> It is needless, because whoever turns a power resource on will most
+> likely turn it off at some point and the devices that go into "D0"
+> as a result of turning it on will then go back into D3cold.
+> Moreover, turning all power resources a device needs to go into
+> D0 is not sufficient for a full transition into D0 in general.
+> Namely, _PS0 may need to be executed in addition to that in some
+> cases.  This means that the whole rationale of the "resume of
+> dependent devices" mechanism was incorrect to begin with and it's
+> best to remove it entirely.
 
-On 16/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, October 16, 2013 09:49:02 AM Viresh Kumar wrote:
+With this patch, your previous patch could also be applied now:
+https://lkml.org/lkml/2013/6/14/173
+[PATCH 4/4] ACPI / PM: Drop two functions that are not used any more
 
->> @Andrew: Can you give this a try please? (Use attached commit)..
->
-> No.
->
-> Please resumbit the original commit *with* the fix folded into it.
->
-> Since I have dropped the broken one from linux-next, this "fixup" doesn't
-> apply to it any more.
+And the following ATA patch at the same time:
 
-I thought of adding following lines to my last email and then dropped it
-for some reason:
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH] ata: acpi: remove power dependent device handling
 
-"After you have tested it, I will resend a single patch for both these for
-Rafael to include as he has already dropped this offending commit"
+Previously, we want the SCSI device corrsponding to ATA device gets
+runtime resumed when the power resource for that ATA device is turned
+on by some other device, so we added the SCSI device to the dependent
+device list of the ATA device's ACPI node. Since now we decided this
+behavior is troublesome and hard to avoid race, this behavior has been
+dropped. This patch cleans up the corresponding code in ATA ACPI layer.
 
-:)
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/ata/libata-acpi.c | 14 --------------
+ drivers/ata/libata-scsi.c |  3 ---
+ drivers/ata/libata.h      |  4 ----
+ 3 files changed, 21 deletions(-)
 
-I have merged both the commits now and rebased over your latest
-linux-next..
+diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+index 4ba8b04..ab714d2 100644
+--- a/drivers/ata/libata-acpi.c
++++ b/drivers/ata/libata-acpi.c
+@@ -1035,17 +1035,3 @@ void ata_acpi_on_disable(struct ata_device *dev)
+ {
+ 	ata_acpi_clear_gtf(dev);
+ }
+-
+-void ata_scsi_acpi_bind(struct ata_device *dev)
+-{
+-	acpi_handle handle = ata_dev_acpi_handle(dev);
+-	if (handle)
+-		acpi_dev_pm_add_dependent(handle, &dev->sdev->sdev_gendev);
+-}
+-
+-void ata_scsi_acpi_unbind(struct ata_device *dev)
+-{
+-	acpi_handle handle = ata_dev_acpi_handle(dev);
+-	if (handle)
+-		acpi_dev_pm_remove_dependent(handle, &dev->sdev->sdev_gendev);
+-}
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 97a0cef..db6dfcf 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -3679,7 +3679,6 @@ void ata_scsi_scan_host(struct ata_port *ap, int sync)
+ 			if (!IS_ERR(sdev)) {
+ 				dev->sdev = sdev;
+ 				scsi_device_put(sdev);
+-				ata_scsi_acpi_bind(dev);
+ 			} else {
+ 				dev->sdev = NULL;
+ 			}
+@@ -3767,8 +3766,6 @@ static void ata_scsi_remove_dev(struct ata_device *dev)
+ 	struct scsi_device *sdev;
+ 	unsigned long flags;
+ 
+-	ata_scsi_acpi_unbind(dev);
+-
+ 	/* Alas, we need to grab scan_mutex to ensure SCSI device
+ 	 * state doesn't change underneath us and thus
+ 	 * scsi_device_get() always succeeds.  The mutex locking can
+diff --git a/drivers/ata/libata.h b/drivers/ata/libata.h
+index eeeb778..45b5ab3 100644
+--- a/drivers/ata/libata.h
++++ b/drivers/ata/libata.h
+@@ -121,8 +121,6 @@ extern void ata_acpi_set_state(struct ata_port *ap, pm_message_t state);
+ extern void ata_acpi_bind_port(struct ata_port *ap);
+ extern void ata_acpi_bind_dev(struct ata_device *dev);
+ extern acpi_handle ata_dev_acpi_handle(struct ata_device *dev);
+-extern void ata_scsi_acpi_bind(struct ata_device *dev);
+-extern void ata_scsi_acpi_unbind(struct ata_device *dev);
+ #else
+ static inline void ata_acpi_dissociate(struct ata_host *host) { }
+ static inline int ata_acpi_on_suspend(struct ata_port *ap) { return 0; }
+@@ -133,8 +131,6 @@ static inline void ata_acpi_set_state(struct ata_port *ap,
+ 				      pm_message_t state) { }
+ static inline void ata_acpi_bind_port(struct ata_port *ap) {}
+ static inline void ata_acpi_bind_dev(struct ata_device *dev) {}
+-static inline void ata_scsi_acpi_bind(struct ata_device *dev) {}
+-static inline void ata_scsi_acpi_unbind(struct ata_device *dev) {}
+ #endif
+ 
+ /* libata-scsi.c */
+-- 
+1.8.4.39.ga0d3f10
 
-@Andrew: Can you please test this now?
+Thanks,
+Aaron
 
-I will then resend it formally to the list again with your Tested-by :)
+> 
+> Reported-by: Lan Tianyu <tianyu.lan@intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/acpi/power.c |  100 ---------------------------------------------------
+>  1 file changed, 1 insertion(+), 99 deletions(-)
+> 
+> Index: linux-pm/drivers/acpi/power.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/power.c
+> +++ linux-pm/drivers/acpi/power.c
+> @@ -59,16 +59,9 @@ ACPI_MODULE_NAME("power");
+>  #define ACPI_POWER_RESOURCE_STATE_ON	0x01
+>  #define ACPI_POWER_RESOURCE_STATE_UNKNOWN 0xFF
+>  
+> -struct acpi_power_dependent_device {
+> -	struct list_head node;
+> -	struct acpi_device *adev;
+> -	struct work_struct work;
+> -};
+> -
+>  struct acpi_power_resource {
+>  	struct acpi_device device;
+>  	struct list_head list_node;
+> -	struct list_head dependent;
+>  	char *name;
+>  	u32 system_level;
+>  	u32 order;
+> @@ -233,32 +226,6 @@ static int acpi_power_get_list_state(str
+>  	return 0;
+>  }
+>  
+> -static void acpi_power_resume_dependent(struct work_struct *work)
+> -{
+> -	struct acpi_power_dependent_device *dep;
+> -	struct acpi_device_physical_node *pn;
+> -	struct acpi_device *adev;
+> -	int state;
+> -
+> -	dep = container_of(work, struct acpi_power_dependent_device, work);
+> -	adev = dep->adev;
+> -	if (acpi_power_get_inferred_state(adev, &state))
+> -		return;
+> -
+> -	if (state > ACPI_STATE_D0)
+> -		return;
+> -
+> -	mutex_lock(&adev->physical_node_lock);
+> -
+> -	list_for_each_entry(pn, &adev->physical_node_list, node)
+> -		pm_request_resume(pn->dev);
+> -
+> -	list_for_each_entry(pn, &adev->power_dependent, node)
+> -		pm_request_resume(pn->dev);
+> -
+> -	mutex_unlock(&adev->physical_node_lock);
+> -}
+> -
+>  static int __acpi_power_on(struct acpi_power_resource *resource)
+>  {
+>  	acpi_status status = AE_OK;
+> @@ -283,14 +250,8 @@ static int acpi_power_on_unlocked(struct
+>  				  resource->name));
+>  	} else {
+>  		result = __acpi_power_on(resource);
+> -		if (result) {
+> +		if (result)
+>  			resource->ref_count--;
+> -		} else {
+> -			struct acpi_power_dependent_device *dep;
+> -
+> -			list_for_each_entry(dep, &resource->dependent, node)
+> -				schedule_work(&dep->work);
+> -		}
+>  	}
+>  	return result;
+>  }
+> @@ -390,52 +351,6 @@ static int acpi_power_on_list(struct lis
+>  	return result;
+>  }
+>  
+> -static void acpi_power_add_dependent(struct acpi_power_resource *resource,
+> -				     struct acpi_device *adev)
+> -{
+> -	struct acpi_power_dependent_device *dep;
+> -
+> -	mutex_lock(&resource->resource_lock);
+> -
+> -	list_for_each_entry(dep, &resource->dependent, node)
+> -		if (dep->adev == adev)
+> -			goto out;
+> -
+> -	dep = kzalloc(sizeof(*dep), GFP_KERNEL);
+> -	if (!dep)
+> -		goto out;
+> -
+> -	dep->adev = adev;
+> -	INIT_WORK(&dep->work, acpi_power_resume_dependent);
+> -	list_add_tail(&dep->node, &resource->dependent);
+> -
+> - out:
+> -	mutex_unlock(&resource->resource_lock);
+> -}
+> -
+> -static void acpi_power_remove_dependent(struct acpi_power_resource *resource,
+> -					struct acpi_device *adev)
+> -{
+> -	struct acpi_power_dependent_device *dep;
+> -	struct work_struct *work = NULL;
+> -
+> -	mutex_lock(&resource->resource_lock);
+> -
+> -	list_for_each_entry(dep, &resource->dependent, node)
+> -		if (dep->adev == adev) {
+> -			list_del(&dep->node);
+> -			work = &dep->work;
+> -			break;
+> -		}
+> -
+> -	mutex_unlock(&resource->resource_lock);
+> -
+> -	if (work) {
+> -		cancel_work_sync(work);
+> -		kfree(dep);
+> -	}
+> -}
+> -
+>  static struct attribute *attrs[] = {
+>  	NULL,
+>  };
+> @@ -524,8 +439,6 @@ static void acpi_power_expose_hide(struc
+>  
+>  void acpi_power_add_remove_device(struct acpi_device *adev, bool add)
+>  {
+> -	struct acpi_device_power_state *ps;
+> -	struct acpi_power_resource_entry *entry;
+>  	int state;
+>  
+>  	if (adev->wakeup.flags.valid)
+> @@ -535,16 +448,6 @@ void acpi_power_add_remove_device(struct
+>  	if (!adev->power.flags.power_resources)
+>  		return;
+>  
+> -	ps = &adev->power.states[ACPI_STATE_D0];
+> -	list_for_each_entry(entry, &ps->resources, node) {
+> -		struct acpi_power_resource *resource = entry->resource;
+> -
+> -		if (add)
+> -			acpi_power_add_dependent(resource, adev);
+> -		else
+> -			acpi_power_remove_dependent(resource, adev);
+> -	}
+> -
+>  	for (state = ACPI_STATE_D0; state <= ACPI_STATE_D3_HOT; state++)
+>  		acpi_power_expose_hide(adev,
+>  				       &adev->power.states[state].resources,
+> @@ -882,7 +785,6 @@ int acpi_add_power_resource(acpi_handle
+>  	acpi_init_device_object(device, handle, ACPI_BUS_TYPE_POWER,
+>  				ACPI_STA_DEFAULT);
+>  	mutex_init(&resource->resource_lock);
+> -	INIT_LIST_HEAD(&resource->dependent);
+>  	INIT_LIST_HEAD(&resource->list_node);
+>  	resource->name = device->pnp.bus_id;
+>  	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
+> 
 
---
-viresh
-
---001a11c2c2fc24a84204e8e8bf5d
-Content-Type: text/x-patch; charset=US-ASCII;
-	name="0001-cpufreq-create-per-policy-rwsem-instead-of-per-CPU-c.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-create-per-policy-rwsem-instead-of-per-CPU-c.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: file0
-
-RnJvbSA4MGE5ZTVhMTNiZDVlMmNjYTc5M2U0YWNkNDk4MWRiNmQ0Y2E0YmQ1IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ODBhOWU1YTEzYmQ1ZTJjY2E3OTNlNGFjZDQ5ODFk
-YjZkNGNhNGJkNS4xMzgxOTg2MDQ5LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogV2VkLCAyIE9jdCAy
-MDEzIDE0OjEzOjEwICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogY3JlYXRlIHBlciBw
-b2xpY3kgcndzZW0gaW5zdGVhZCBvZiBwZXIgQ1BVCiBjcHVfcG9saWN5X3J3c2VtCgpXZSBoYXZl
-IHBlci1DUFUgY3B1X3BvbGljeV9yd3NlbSBmb3IgY3B1ZnJlcSBjb3JlLCBidXQgd2UgbmV2ZXIg
-dXNlCmFsbCBvZiB0aGVtLiBXZSBhbHdheXMgdXNlIHJ3c2VtIG9mIHBvbGljeS0+Y3B1IGFuZCBz
-byB3ZSBjYW4KYWN0dWFsbHkgbWFrZSB0aGlzIHJ3c2VtIHBlciBwb2xpY3kgaW5zdGVhZC4KClRo
-aXMgcGF0Y2ggZG9lcyB0aGlzIGNoYW5nZS4gV2l0aCB0aGlzIGNoYW5nZSBvdGhlciB0cmlja3kg
-c2l0dWF0aW9ucwphcmUgYWxzbyBhdm9pZGVkIG5vdywgbGlrZSB3aGljaCBsb2NrIHRvIHRha2Ug
-d2hpbGUgd2UgYXJlIGNoYW5naW5nCnBvbGljeS0+Y3B1LCBldGMuCgpTdWdnZXN0ZWQtYnk6IFNy
-aXZhdHNhIFMuIEJoYXQgPHNyaXZhdHNhLmJoYXRAbGludXgudm5ldC5pYm0uY29tPgpTaWduZWQt
-b2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgpSZXZpZXdlZC1i
-eTogU3JpdmF0c2EgUy4gQmhhdCA8c3JpdmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5jb20+ClNp
-Z25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNv
-bT4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgMTEwICsrKysrKysrKysrKystLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIGluY2x1ZGUvbGludXgvY3B1ZnJlcS5oICAg
-fCAgMTQgKysrKysrCiAyIGZpbGVzIGNoYW5nZWQsIDQ1IGluc2VydGlvbnMoKyksIDc5IGRlbGV0
-aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJz
-L2NwdWZyZXEvY3B1ZnJlcS5jCmluZGV4IGYwODk3YzcuLjVjOWJlMDggMTAwNjQ0Ci0tLSBhL2Ry
-aXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwpA
-QCAtNDgsNDcgKzQ4LDYgQEAgc3RhdGljIERFRklORV9QRVJfQ1BVKGNoYXJbQ1BVRlJFUV9OQU1F
-X0xFTl0sIGNwdWZyZXFfY3B1X2dvdmVybm9yKTsKICNlbmRpZgogCiAvKgotICogY3B1X3BvbGlj
-eV9yd3NlbSBpcyBhIHBlciBDUFUgcmVhZGVyLXdyaXRlciBzZW1hcGhvcmUgZGVzaWduZWQgdG8g
-Y3VyZQotICogYWxsIGNwdWZyZXEvaG90cGx1Zy93b3JrcXVldWUvZXRjIHJlbGF0ZWQgbG9jayBp
-c3N1ZXMuCi0gKgotICogVGhlIHJ1bGVzIGZvciB0aGlzIHNlbWFwaG9yZToKLSAqIC0gQW55IHJv
-dXRpbmUgdGhhdCB3YW50cyB0byByZWFkIGZyb20gdGhlIHBvbGljeSBzdHJ1Y3R1cmUgd2lsbAot
-ICogICBkbyBhIGRvd25fcmVhZCBvbiB0aGlzIHNlbWFwaG9yZS4KLSAqIC0gQW55IHJvdXRpbmUg
-dGhhdCB3aWxsIHdyaXRlIHRvIHRoZSBwb2xpY3kgc3RydWN0dXJlIGFuZC9vciBtYXkgdGFrZSBh
-d2F5Ci0gKiAgIHRoZSBwb2xpY3kgYWx0b2dldGhlciAoZWcuIENQVSBob3RwbHVnKSwgd2lsbCBo
-b2xkIHRoaXMgbG9jayBpbiB3cml0ZQotICogICBtb2RlIGJlZm9yZSBkb2luZyBzby4KLSAqCi0g
-KiBBZGRpdGlvbmFsIHJ1bGVzOgotICogLSBHb3Zlcm5vciByb3V0aW5lcyB0aGF0IGNhbiBiZSBj
-YWxsZWQgaW4gY3B1ZnJlcSBob3RwbHVnIHBhdGggc2hvdWxkIG5vdAotICogICB0YWtlIHRoaXMg
-c2VtIGFzIHRvcCBsZXZlbCBob3RwbHVnIG5vdGlmaWVyIGhhbmRsZXIgdGFrZXMgdGhpcy4KLSAq
-IC0gTG9jayBzaG91bGQgbm90IGJlIGhlbGQgYWNyb3NzCi0gKiAgICAgX19jcHVmcmVxX2dvdmVy
-bm9yKGRhdGEsIENQVUZSRVFfR09WX1NUT1ApOwotICovCi1zdGF0aWMgREVGSU5FX1BFUl9DUFUo
-c3RydWN0IHJ3X3NlbWFwaG9yZSwgY3B1X3BvbGljeV9yd3NlbSk7Ci0KLSNkZWZpbmUgbG9ja19w
-b2xpY3lfcndzZW0obW9kZSwgY3B1KQkJCQkJXAotc3RhdGljIHZvaWQgbG9ja19wb2xpY3lfcndz
-ZW1fIyNtb2RlKGludCBjcHUpCQkJCVwKLXsJCQkJCQkJCQlcCi0Jc3RydWN0IGNwdWZyZXFfcG9s
-aWN5ICpwb2xpY3kgPSBwZXJfY3B1KGNwdWZyZXFfY3B1X2RhdGEsIGNwdSk7CVwKLQlCVUdfT04o
-IXBvbGljeSk7CQkJCQkJXAotCWRvd25fIyNtb2RlKCZwZXJfY3B1KGNwdV9wb2xpY3lfcndzZW0s
-IHBvbGljeS0+Y3B1KSk7CQlcCi19Ci0KLWxvY2tfcG9saWN5X3J3c2VtKHJlYWQsIGNwdSk7Ci1s
-b2NrX3BvbGljeV9yd3NlbSh3cml0ZSwgY3B1KTsKLQotI2RlZmluZSB1bmxvY2tfcG9saWN5X3J3
-c2VtKG1vZGUsIGNwdSkJCQkJCVwKLXN0YXRpYyB2b2lkIHVubG9ja19wb2xpY3lfcndzZW1fIyNt
-b2RlKGludCBjcHUpCQkJCVwKLXsJCQkJCQkJCQlcCi0Jc3RydWN0IGNwdWZyZXFfcG9saWN5ICpw
-b2xpY3kgPSBwZXJfY3B1KGNwdWZyZXFfY3B1X2RhdGEsIGNwdSk7CVwKLQlCVUdfT04oIXBvbGlj
-eSk7CQkJCQkJXAotCXVwXyMjbW9kZSgmcGVyX2NwdShjcHVfcG9saWN5X3J3c2VtLCBwb2xpY3kt
-PmNwdSkpOwkJXAotfQotCi11bmxvY2tfcG9saWN5X3J3c2VtKHJlYWQsIGNwdSk7Ci11bmxvY2tf
-cG9saWN5X3J3c2VtKHdyaXRlLCBjcHUpOwotCi0vKgogICogcndzZW0gdG8gZ3VhcmFudGVlIHRo
-YXQgY3B1ZnJlcSBkcml2ZXIgbW9kdWxlIGRvZXNuJ3QgdW5sb2FkIGR1cmluZyBjcml0aWNhbAog
-ICogc2VjdGlvbnMKICAqLwpAQCAtNjgzLDE0ICs2NDIsMTQgQEAgc3RhdGljIHNzaXplX3Qgc2hv
-dyhzdHJ1Y3Qga29iamVjdCAqa29iaiwgc3RydWN0IGF0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVm
-KQogCWlmICghZG93bl9yZWFkX3RyeWxvY2soJmNwdWZyZXFfcndzZW0pKQogCQlyZXR1cm4gLUVJ
-TlZBTDsKIAotCWxvY2tfcG9saWN5X3J3c2VtX3JlYWQocG9saWN5LT5jcHUpOworCWRvd25fcmVh
-ZCgmcG9saWN5LT5yd3NlbSk7CiAKIAlpZiAoZmF0dHItPnNob3cpCiAJCXJldCA9IGZhdHRyLT5z
-aG93KHBvbGljeSwgYnVmKTsKIAllbHNlCiAJCXJldCA9IC1FSU87CiAKLQl1bmxvY2tfcG9saWN5
-X3J3c2VtX3JlYWQocG9saWN5LT5jcHUpOworCXVwX3JlYWQoJnBvbGljeS0+cndzZW0pOwogCXVw
-X3JlYWQoJmNwdWZyZXFfcndzZW0pOwogCiAJcmV0dXJuIHJldDsKQEAgLTcxMSwxNCArNjcwLDE0
-IEBAIHN0YXRpYyBzc2l6ZV90IHN0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2JqLCBzdHJ1Y3QgYXR0
-cmlidXRlICphdHRyLAogCWlmICghZG93bl9yZWFkX3RyeWxvY2soJmNwdWZyZXFfcndzZW0pKQog
-CQlnb3RvIHVubG9jazsKIAotCWxvY2tfcG9saWN5X3J3c2VtX3dyaXRlKHBvbGljeS0+Y3B1KTsK
-Kwlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsKIAogCWlmIChmYXR0ci0+c3RvcmUpCiAJCXJl
-dCA9IGZhdHRyLT5zdG9yZShwb2xpY3ksIGJ1ZiwgY291bnQpOwogCWVsc2UKIAkJcmV0ID0gLUVJ
-TzsKIAotCXVubG9ja19wb2xpY3lfcndzZW1fd3JpdGUocG9saWN5LT5jcHUpOworCXVwX3dyaXRl
-KCZwb2xpY3ktPnJ3c2VtKTsKIAogCXVwX3JlYWQoJmNwdWZyZXFfcndzZW0pOwogdW5sb2NrOgpA
-QCAtODk1LDcgKzg1NCw3IEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfcG9saWN5X2NwdShzdHJ1
-Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKIAkJfQogCX0KIAotCWxvY2tfcG9saWN5X3J3c2Vt
-X3dyaXRlKHBvbGljeS0+Y3B1KTsKKwlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsKIAogCXdy
-aXRlX2xvY2tfaXJxc2F2ZSgmY3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOwogCkBAIC05MDMs
-NyArODYyLDcgQEAgc3RhdGljIGludCBjcHVmcmVxX2FkZF9wb2xpY3lfY3B1KHN0cnVjdCBjcHVm
-cmVxX3BvbGljeSAqcG9saWN5LAogCXBlcl9jcHUoY3B1ZnJlcV9jcHVfZGF0YSwgY3B1KSA9IHBv
-bGljeTsKIAl3cml0ZV91bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxh
-Z3MpOwogCi0JdW5sb2NrX3BvbGljeV9yd3NlbV93cml0ZShwb2xpY3ktPmNwdSk7CisJdXBfd3Jp
-dGUoJnBvbGljeS0+cndzZW0pOwogCiAJaWYgKGhhc190YXJnZXQpIHsKIAkJaWYgKChyZXQgPSBf
-X2NwdWZyZXFfZ292ZXJub3IocG9saWN5LCBDUFVGUkVRX0dPVl9TVEFSVCkpIHx8CkBAIC05NTAs
-NiArOTA5LDggQEAgc3RhdGljIHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqY3B1ZnJlcV9wb2xpY3lf
-YWxsb2Modm9pZCkKIAkJZ290byBlcnJfZnJlZV9jcHVtYXNrOwogCiAJSU5JVF9MSVNUX0hFQUQo
-JnBvbGljeS0+cG9saWN5X2xpc3QpOworCWluaXRfcndzZW0oJnBvbGljeS0+cndzZW0pOworCiAJ
-cmV0dXJuIHBvbGljeTsKIAogZXJyX2ZyZWVfY3B1bWFzazoKQEAgLTk3MiwxOSArOTMzLDEyIEBA
-IHN0YXRpYyB2b2lkIHVwZGF0ZV9wb2xpY3lfY3B1KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9s
-aWN5LCB1bnNpZ25lZCBpbnQgY3B1KQogCWlmIChjcHUgPT0gcG9saWN5LT5jcHUpCiAJCXJldHVy
-bjsKIAotCS8qCi0JICogVGFrZSBkaXJlY3QgbG9ja3MgYXMgbG9ja19wb2xpY3lfcndzZW1fd3Jp
-dGUgd291bGRuJ3Qgd29yayBoZXJlLgotCSAqIEFsc28gbG9jayBmb3IgbGFzdCBjcHUgaXMgZW5v
-dWdoIGhlcmUgYXMgY29udGVudGlvbiB3aWxsIGhhcHBlbiBvbmx5Ci0JICogYWZ0ZXIgcG9saWN5
-LT5jcHUgaXMgY2hhbmdlZCBhbmQgYWZ0ZXIgaXQgaXMgY2hhbmdlZCwgb3RoZXIgdGhyZWFkcwot
-CSAqIHdpbGwgdHJ5IHRvIGFjcXVpcmUgbG9jayBmb3IgbmV3IGNwdS4gQW5kIHBvbGljeSBpcyBh
-bHJlYWR5IHVwZGF0ZWQKLQkgKiBieSB0aGVuLgotCSAqLwotCWRvd25fd3JpdGUoJnBlcl9jcHUo
-Y3B1X3BvbGljeV9yd3NlbSwgcG9saWN5LT5jcHUpKTsKKwlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3
-c2VtKTsKIAogCXBvbGljeS0+bGFzdF9jcHUgPSBwb2xpY3ktPmNwdTsKIAlwb2xpY3ktPmNwdSA9
-IGNwdTsKIAotCXVwX3dyaXRlKCZwZXJfY3B1KGNwdV9wb2xpY3lfcndzZW0sIHBvbGljeS0+bGFz
-dF9jcHUpKTsKKwl1cF93cml0ZSgmcG9saWN5LT5yd3NlbSk7CiAKIAljcHVmcmVxX2ZyZXF1ZW5j
-eV90YWJsZV91cGRhdGVfcG9saWN5X2NwdShwb2xpY3kpOwogCWJsb2NraW5nX25vdGlmaWVyX2Nh
-bGxfY2hhaW4oJmNwdWZyZXFfcG9saWN5X25vdGlmaWVyX2xpc3QsCkBAIC0xMTc2LDkgKzExMzAs
-OSBAQCBzdGF0aWMgaW50IGNwdWZyZXFfbm9taW5hdGVfbmV3X3BvbGljeV9jcHUoc3RydWN0IGNw
-dWZyZXFfcG9saWN5ICpwb2xpY3ksCiAJaWYgKHJldCkgewogCQlwcl9lcnIoIiVzOiBGYWlsZWQg
-dG8gbW92ZSBrb2JqOiAlZCIsIF9fZnVuY19fLCByZXQpOwogCi0JCWxvY2tfcG9saWN5X3J3c2Vt
-X3dyaXRlKG9sZF9jcHUpOworCQlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsKIAkJY3B1bWFz
-a19zZXRfY3B1KG9sZF9jcHUsIHBvbGljeS0+Y3B1cyk7Ci0JCXVubG9ja19wb2xpY3lfcndzZW1f
-d3JpdGUob2xkX2NwdSk7CisJCXVwX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsKIAogCQlyZXQgPSBz
-eXNmc19jcmVhdGVfbGluaygmY3B1X2Rldi0+a29iaiwgJnBvbGljeS0+a29iaiwKIAkJCQkJImNw
-dWZyZXEiKTsKQEAgLTEyMjksOSArMTE4Myw5IEBAIHN0YXRpYyBpbnQgX19jcHVmcmVxX3JlbW92
-ZV9kZXZfcHJlcGFyZShzdHJ1Y3QgZGV2aWNlICpkZXYsCiAJCQlwb2xpY3ktPmdvdmVybm9yLT5u
-YW1lLCBDUFVGUkVRX05BTUVfTEVOKTsKICNlbmRpZgogCi0JbG9ja19wb2xpY3lfcndzZW1fcmVh
-ZChjcHUpOworCWRvd25fcmVhZCgmcG9saWN5LT5yd3NlbSk7CiAJY3B1cyA9IGNwdW1hc2tfd2Vp
-Z2h0KHBvbGljeS0+Y3B1cyk7Ci0JdW5sb2NrX3BvbGljeV9yd3NlbV9yZWFkKGNwdSk7CisJdXBf
-cmVhZCgmcG9saWN5LT5yd3NlbSk7CiAKIAlpZiAoY3B1ICE9IHBvbGljeS0+Y3B1KSB7CiAJCWlm
-ICghZnJvemVuKQpAQCAtMTI3MSwxMiArMTIyNSwxMiBAQCBzdGF0aWMgaW50IF9fY3B1ZnJlcV9y
-ZW1vdmVfZGV2X2ZpbmlzaChzdHJ1Y3QgZGV2aWNlICpkZXYsCiAJCXJldHVybiAtRUlOVkFMOwog
-CX0KIAotCWxvY2tfcG9saWN5X3J3c2VtX3dyaXRlKGNwdSk7CisJZG93bl93cml0ZSgmcG9saWN5
-LT5yd3NlbSk7CiAJY3B1cyA9IGNwdW1hc2tfd2VpZ2h0KHBvbGljeS0+Y3B1cyk7CiAKIAlpZiAo
-Y3B1cyA+IDEpCiAJCWNwdW1hc2tfY2xlYXJfY3B1KGNwdSwgcG9saWN5LT5jcHVzKTsKLQl1bmxv
-Y2tfcG9saWN5X3J3c2VtX3dyaXRlKGNwdSk7CisJdXBfd3JpdGUoJnBvbGljeS0+cndzZW0pOwog
-CiAJLyogSWYgY3B1IGlzIGxhc3QgdXNlciBvZiBwb2xpY3ksIGZyZWUgcG9saWN5ICovCiAJaWYg
-KGNwdXMgPT0gMSkgewpAQCAtMTI5MSwxMCArMTI0NSwxMCBAQCBzdGF0aWMgaW50IF9fY3B1ZnJl
-cV9yZW1vdmVfZGV2X2ZpbmlzaChzdHJ1Y3QgZGV2aWNlICpkZXYsCiAJCX0KIAogCQlpZiAoIWZy
-b3plbikgewotCQkJbG9ja19wb2xpY3lfcndzZW1fcmVhZChjcHUpOworCQkJZG93bl9yZWFkKCZw
-b2xpY3ktPnJ3c2VtKTsKIAkJCWtvYmogPSAmcG9saWN5LT5rb2JqOwogCQkJY21wID0gJnBvbGlj
-eS0+a29ial91bnJlZ2lzdGVyOwotCQkJdW5sb2NrX3BvbGljeV9yd3NlbV9yZWFkKGNwdSk7CisJ
-CQl1cF9yZWFkKCZwb2xpY3ktPnJ3c2VtKTsKIAkJCWtvYmplY3RfcHV0KGtvYmopOwogCiAJCQkv
-KgpAQCAtMTQ3NCwxOSArMTQyOCwyMiBAQCBzdGF0aWMgdW5zaWduZWQgaW50IF9fY3B1ZnJlcV9n
-ZXQodW5zaWduZWQgaW50IGNwdSkKICAqLwogdW5zaWduZWQgaW50IGNwdWZyZXFfZ2V0KHVuc2ln
-bmVkIGludCBjcHUpCiB7CisJc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kgPSBwZXJfY3B1
-KGNwdWZyZXFfY3B1X2RhdGEsIGNwdSk7CiAJdW5zaWduZWQgaW50IHJldF9mcmVxID0gMDsKIAog
-CWlmIChjcHVmcmVxX2Rpc2FibGVkKCkgfHwgIWNwdWZyZXFfZHJpdmVyKQogCQlyZXR1cm4gLUVO
-T0VOVDsKIAorCUJVR19PTighcG9saWN5KTsKKwogCWlmICghZG93bl9yZWFkX3RyeWxvY2soJmNw
-dWZyZXFfcndzZW0pKQogCQlyZXR1cm4gMDsKIAotCWxvY2tfcG9saWN5X3J3c2VtX3JlYWQoY3B1
-KTsKKwlkb3duX3JlYWQoJnBvbGljeS0+cndzZW0pOwogCiAJcmV0X2ZyZXEgPSBfX2NwdWZyZXFf
-Z2V0KGNwdSk7CiAKLQl1bmxvY2tfcG9saWN5X3J3c2VtX3JlYWQoY3B1KTsKKwl1cF9yZWFkKCZw
-b2xpY3ktPnJ3c2VtKTsKIAl1cF9yZWFkKCZjcHVmcmVxX3J3c2VtKTsKIAogCXJldHVybiByZXRf
-ZnJlcTsKQEAgLTE3MTAsMTEgKzE2NjcsMTEgQEAgaW50IGNwdWZyZXFfZHJpdmVyX3RhcmdldChz
-dHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKIHsKIAlpbnQgcmV0ID0gLUVJTlZBTDsKIAot
-CWxvY2tfcG9saWN5X3J3c2VtX3dyaXRlKHBvbGljeS0+Y3B1KTsKKwlkb3duX3dyaXRlKCZwb2xp
-Y3ktPnJ3c2VtKTsKIAogCXJldCA9IF9fY3B1ZnJlcV9kcml2ZXJfdGFyZ2V0KHBvbGljeSwgdGFy
-Z2V0X2ZyZXEsIHJlbGF0aW9uKTsKIAotCXVubG9ja19wb2xpY3lfcndzZW1fd3JpdGUocG9saWN5
-LT5jcHUpOworCXVwX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsKIAogCXJldHVybiByZXQ7CiB9CkBA
-IC0xOTQ1LDEwICsxOTAyLDEwIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9zZXRfcG9saWN5KHN0cnVj
-dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LAogCQkJLyogZW5kIG9sZCBnb3Zlcm5vciAqLwogCQkJ
-aWYgKHBvbGljeS0+Z292ZXJub3IpIHsKIAkJCQlfX2NwdWZyZXFfZ292ZXJub3IocG9saWN5LCBD
-UFVGUkVRX0dPVl9TVE9QKTsKLQkJCQl1bmxvY2tfcG9saWN5X3J3c2VtX3dyaXRlKG5ld19wb2xp
-Y3ktPmNwdSk7CisJCQkJdXBfd3JpdGUoJnBvbGljeS0+cndzZW0pOwogCQkJCV9fY3B1ZnJlcV9n
-b3Zlcm5vcihwb2xpY3ksCiAJCQkJCQlDUFVGUkVRX0dPVl9QT0xJQ1lfRVhJVCk7Ci0JCQkJbG9j
-a19wb2xpY3lfcndzZW1fd3JpdGUobmV3X3BvbGljeS0+Y3B1KTsKKwkJCQlkb3duX3dyaXRlKCZw
-b2xpY3ktPnJ3c2VtKTsKIAkJCX0KIAogCQkJLyogc3RhcnQgbmV3IGdvdmVybm9yICovCkBAIC0x
-OTU3LDEwICsxOTE0LDEwIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9zZXRfcG9saWN5KHN0cnVjdCBj
-cHVmcmVxX3BvbGljeSAqcG9saWN5LAogCQkJCWlmICghX19jcHVmcmVxX2dvdmVybm9yKHBvbGlj
-eSwgQ1BVRlJFUV9HT1ZfU1RBUlQpKSB7CiAJCQkJCWZhaWxlZCA9IDA7CiAJCQkJfSBlbHNlIHsK
-LQkJCQkJdW5sb2NrX3BvbGljeV9yd3NlbV93cml0ZShuZXdfcG9saWN5LT5jcHUpOworCQkJCQl1
-cF93cml0ZSgmcG9saWN5LT5yd3NlbSk7CiAJCQkJCV9fY3B1ZnJlcV9nb3Zlcm5vcihwb2xpY3ks
-CiAJCQkJCQkJQ1BVRlJFUV9HT1ZfUE9MSUNZX0VYSVQpOwotCQkJCQlsb2NrX3BvbGljeV9yd3Nl
-bV93cml0ZShuZXdfcG9saWN5LT5jcHUpOworCQkJCQlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2Vt
-KTsKIAkJCQl9CiAJCQl9CiAKQEAgLTIwMDYsNyArMTk2Myw3IEBAIGludCBjcHVmcmVxX3VwZGF0
-ZV9wb2xpY3kodW5zaWduZWQgaW50IGNwdSkKIAkJZ290byBub19wb2xpY3k7CiAJfQogCi0JbG9j
-a19wb2xpY3lfcndzZW1fd3JpdGUoY3B1KTsKKwlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2VtKTsK
-IAogCXByX2RlYnVnKCJ1cGRhdGluZyBwb2xpY3kgZm9yIENQVSAldVxuIiwgY3B1KTsKIAltZW1j
-cHkoJm5ld19wb2xpY3ksIHBvbGljeSwgc2l6ZW9mKCpwb2xpY3kpKTsKQEAgLTIwMzMsNyArMTk5
-MCw3IEBAIGludCBjcHVmcmVxX3VwZGF0ZV9wb2xpY3kodW5zaWduZWQgaW50IGNwdSkKIAogCXJl
-dCA9IGNwdWZyZXFfc2V0X3BvbGljeShwb2xpY3ksICZuZXdfcG9saWN5KTsKIAotCXVubG9ja19w
-b2xpY3lfcndzZW1fd3JpdGUoY3B1KTsKKwl1cF93cml0ZSgmcG9saWN5LT5yd3NlbSk7CiAKIAlj
-cHVmcmVxX2NwdV9wdXQocG9saWN5KTsKIG5vX3BvbGljeToKQEAgLTIxOTAsMTQgKzIxNDcsOSBA
-QCBFWFBPUlRfU1lNQk9MX0dQTChjcHVmcmVxX3VucmVnaXN0ZXJfZHJpdmVyKTsKIAogc3RhdGlj
-IGludCBfX2luaXQgY3B1ZnJlcV9jb3JlX2luaXQodm9pZCkKIHsKLQlpbnQgY3B1OwotCiAJaWYg
-KGNwdWZyZXFfZGlzYWJsZWQoKSkKIAkJcmV0dXJuIC1FTk9ERVY7CiAKLQlmb3JfZWFjaF9wb3Nz
-aWJsZV9jcHUoY3B1KQotCQlpbml0X3J3c2VtKCZwZXJfY3B1KGNwdV9wb2xpY3lfcndzZW0sIGNw
-dSkpOwotCiAJY3B1ZnJlcV9nbG9iYWxfa29iamVjdCA9IGtvYmplY3RfY3JlYXRlKCk7CiAJQlVH
-X09OKCFjcHVmcmVxX2dsb2JhbF9rb2JqZWN0KTsKIAlyZWdpc3Rlcl9zeXNjb3JlX29wcygmY3B1
-ZnJlcV9zeXNjb3JlX29wcyk7CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaCBi
-L2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oCmluZGV4IDBhYmEyYTZjLi42YjQ1N2QwIDEwMDY0NAot
-LS0gYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAorKysgYi9pbmNsdWRlL2xpbnV4L2NwdWZyZXEu
-aApAQCAtODUsNiArODUsMjAgQEAgc3RydWN0IGNwdWZyZXFfcG9saWN5IHsKIAlzdHJ1Y3QgbGlz
-dF9oZWFkICAgICAgICBwb2xpY3lfbGlzdDsKIAlzdHJ1Y3Qga29iamVjdAkJa29iajsKIAlzdHJ1
-Y3QgY29tcGxldGlvbglrb2JqX3VucmVnaXN0ZXI7CisKKwkvKgorCSAqIFRoZSBydWxlcyBmb3Ig
-dGhpcyBzZW1hcGhvcmU6CisJICogLSBBbnkgcm91dGluZSB0aGF0IHdhbnRzIHRvIHJlYWQgZnJv
-bSB0aGUgcG9saWN5IHN0cnVjdHVyZSB3aWxsCisJICogICBkbyBhIGRvd25fcmVhZCBvbiB0aGlz
-IHNlbWFwaG9yZS4KKwkgKiAtIEFueSByb3V0aW5lIHRoYXQgd2lsbCB3cml0ZSB0byB0aGUgcG9s
-aWN5IHN0cnVjdHVyZSBhbmQvb3IgbWF5IHRha2UgYXdheQorCSAqICAgdGhlIHBvbGljeSBhbHRv
-Z2V0aGVyIChlZy4gQ1BVIGhvdHBsdWcpLCB3aWxsIGhvbGQgdGhpcyBsb2NrIGluIHdyaXRlCisJ
-ICogICBtb2RlIGJlZm9yZSBkb2luZyBzby4KKwkgKgorCSAqIEFkZGl0aW9uYWwgcnVsZXM6CisJ
-ICogLSBMb2NrIHNob3VsZCBub3QgYmUgaGVsZCBhY3Jvc3MKKwkgKiAgICAgX19jcHVmcmVxX2dv
-dmVybm9yKGRhdGEsIENQVUZSRVFfR09WX1BPTElDWV9FWElUKTsKKwkgKi8KKwlzdHJ1Y3Qgcndf
-c2VtYXBob3JlCXJ3c2VtOwogfTsKIAogLyogT25seSBmb3IgQUNQSSAqLwotLSAKMS43LjEyLnJj
-Mi4xOC5nNjFiNDcyZQoK
---001a11c2c2fc24a84204e8e8bf5d--
