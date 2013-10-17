@@ -1,233 +1,246 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 12/14] cpuidle: mvebu: Add initial CPU idle support
- for Armada 370/XP SoC
-Date: Thu, 17 Oct 2013 12:15:49 +0200
-Message-ID: <525FB8D5.1050106@linaro.org>
-References: <1381759106-15004-1-git-send-email-gregory.clement@free-electrons.com> <1381759106-15004-13-git-send-email-gregory.clement@free-electrons.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Thu, 17 Oct 2013 12:15:45 +0100
+Message-ID: <525FC6E1.5060401@arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <5252DAD3.6040903@gmail.com> <525400B4.8060203@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f52.google.com ([74.125.82.52]:64452 "EHLO
-	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155Ab3JQKPy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2013 06:15:54 -0400
-Received: by mail-wg0-f52.google.com with SMTP id f12so2020533wgh.31
-        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2013 03:15:53 -0700 (PDT)
-In-Reply-To: <1381759106-15004-13-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <525400B4.8060203@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Kumar Gala <galak@codeaurora.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lorenzo.pieralisi@arm.com, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-kernel@lists.infradead.org, Nicolas Pitre <nico@fluxnic.net>, Lior Amsalem <alior@marvell.com>, Maen Suleiman <maen@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Eran Ben-Avi <benavi@marvell.com>, Yehuda Yitschak <yehuday@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ike Pan <ike.pan@canonical.com>, Dan Frazier <dann.frazier@canonical.com>, Leif Lindholm <leif.lindholm@arm.com>, Jon Masters <jcm@redhat.com>, David Marlin <dmarlin@redhat.com>
 
-On 10/14/2013 03:58 PM, Gregory CLEMENT wrote:
-> Add the wfi, cpu idle and cpu deep idle power states support for the
-> Armada XP SoCs.
->
-> All the latencies and the power consumption values used at the
-> "armada_370_xp_idle_driver" structure are preliminary and will be
-> modified in the future after running some measurements and analysis.
->
-> Based on the work of Nadav Haklai.
->
-> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->   drivers/cpuidle/Kconfig.arm             |   5 ++
->   drivers/cpuidle/Makefile                |   1 +
->   drivers/cpuidle/cpuidle-armada-370-xp.c | 117 +++++++++++++++++++++=
-+++++++++++
->   3 files changed, 123 insertions(+)
->   create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
->
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
-m
-> index 8e36603..071d960 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -1,6 +1,11 @@
->   #
->   # ARM CPU Idle drivers
->   #
-> +config ARM_ARMADA_370_XP_CPUIDLE
-> +	bool "CPU Idle Driver for Armada 370/XP family processors"
-> +	depends on ARCH_MVEBU
-> +	help
-> +	  Select this to enable cpuidle on Armada 370/XP processors.
->
->   config ARM_HIGHBANK_CPUIDLE
->   	bool "CPU Idle Driver for Calxeda processors"
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index cea5ef5..395dab6 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -7,6 +7,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D couple=
-d.o
->
->   ###################################################################=
-###############
->   # ARM SoC drivers
-> +obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) +=3D cpuidle-armada-370-xp.o
->   obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+=3D cpuidle-calxeda.o
->   obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+=3D cpuidle-kirkwood.o
->   obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+=3D cpuidle-zynq.o
-> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidl=
-e/cpuidle-armada-370-xp.c
-> new file mode 100644
-> index 0000000..3fa005e
-> --- /dev/null
-> +++ b/drivers/cpuidle/cpuidle-armada-370-xp.c
-> @@ -0,0 +1,117 @@
-> +/*
-> + * Marvell Armada 370 and Armada XP SoC cpuidle driver
-> + *
-> + * Copyright (C) 2013 Marvell
-> + *
-> + * Nadav Haklai <nadavh@marvell.com>
-> + * Gregory CLEMENT <gregory.clement@free-electrons.com>
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without any
-> + * warranty of any kind, whether express or implied.
-> + *
-> + * Maintainer: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> + */
-> +
-> +#include <linux/cpuidle.h>
-> +#include <linux/module.h>
-> +#include <linux/io.h>
-> +#include <linux/of.h>
-> +#include <linux/suspend.h>
-> +#include <asm/suspend.h>
-> +#include <linux/smp.h>
-> +#include <asm/cpuidle.h>
-> +#include <asm/smp_plat.h>
-> +#include <linux/armada-370-xp-pmsu.h>
-> +#include <linux/platform_device.h>
-> +
-> +#define ARMADA_370_XP_MAX_STATES	3
-> +#define ARMADA_370_XP_FLAG_DEEP_IDLE	0x10000
-> +
-> +extern void v7_flush_dcache_all(void);
-> +
-> +/* Functions defined in suspend-armada-370-xp.S */
-> +int armada_370_xp_cpu_resume(unsigned long);
-> +int armada_370_xp_cpu_suspend(unsigned long);
-> +
-> +static int armada_370_xp_enter_idle(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv,
-> +				int index)
-> +{
-> +	bool deepidle =3D false;
-> +	unsigned int hw_cpu =3D cpu_logical_map(smp_processor_id());
- >
-> +	armada_370_xp_pmsu_set_start_addr(armada_370_xp_cpu_resume, hw_cpu)=
-;
+Hi DT-folks,
 
-What about using cpu_pm_enter() here and move the function above to a=20
-notifier callback for CPU_PM_ENTER inside the marvell pm code ? The cod=
-e=20
-will be more encapsulated, no ?
+On 08/10/13 13:55, Sudeep KarkadaNagesha wrote:
+> On 07/10/13 17:01, Rob Herring wrote:
+>> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>
+>>> If more than one similar devices share the same operating points(OPPs)
+>>> being in the same clock domain, currently we need to replicate the
+>>> OPP entries in all the nodes.
+>>>
+>>> This patch extends existing binding by adding a new property named
+>>> 'operating-points-phandle' to specify the phandle in any device node
+>>> pointing to another node which contains the actual OPP tuples.
+>>> This helps to avoid replication if multiple devices share the OPPs.
+>>>
+>>> Cc: Rob Herring <rob.herring@calxeda.com>
+>>> Cc: Pawel Moll <pawel.moll@arm.com>
+>>> Cc: Mark Rutland <mark.rutland@arm.com>
+>>> Cc: Stephen Warren <swarren@wwwdotorg.org>
+>>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>>> Cc: Nishanth Menon <nm@ti.com>
+>>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>> ---
+>>>  Documentation/devicetree/bindings/power/opp.txt | 161 ++++++++++++++++++++++--
+>>>  1 file changed, 149 insertions(+), 12 deletions(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+>>> index 74499e5..f59b878 100644
+>>> --- a/Documentation/devicetree/bindings/power/opp.txt
+>>> +++ b/Documentation/devicetree/bindings/power/opp.txt
+>>> @@ -4,22 +4,159 @@ SoCs have a standard set of tuples consisting of frequency and
+>>>  voltage pairs that the device will support per voltage domain. These
+>>>  are called Operating Performance Points or OPPs.
+>>>  
+>>> -Properties:
+>>> +Required Properties:
+>>>  - operating-points: An array of 2-tuples items, and each item consists
+>>>    of frequency and voltage like <freq-kHz vol-uV>.
+>>>  	freq: clock frequency in kHz
+>>>  	vol: voltage in microvolt
+>>>  
+>>> +- operating-points-phandle: phandle to the device tree node which contains
+>>> +	the operating points tuples(recommended to be used if multiple
+>>> +	devices are in the same clock domain and hence share OPPs, as it
+>>> +	avoids replication of OPPs)
+>>> +
+>>> +  operating-points and operating-points-phandle are mutually exclusive, only
+>>> +  one of them can be present in any device node.
+>>> +
+>>>  Examples:
+>>>  
+>>> -cpu@0 {
+>>> -	compatible = "arm,cortex-a9";
+>>> -	reg = <0>;
+>>> -	next-level-cache = <&L2>;
+>>> -	operating-points = <
+>>> -		/* kHz    uV */
+>>> -		792000  1100000
+>>> -		396000  950000
+>>> -		198000  850000
+>>> -	>;
+>>> -};
+>>> +1. A uniprocessor system (phandle not required)
+>>> +
+>>> +	cpu0: cpu@0 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <0>;
+>>> +		operating-points = <
+>>> +			/* kHz    uV */
+>>> +			792000  1100000
+>>> +			396000  950000
+>>> +			198000  850000
+>>> +		>;
+>>> +	};
+>>> +
+>>> +2a. Consider a SMP system with 4 CPUs in the same clock domain(no phandle)
+>>> +    Some existing DTs describe homogenous SMP systems by only listing the
+>>> +    OPPs in the cpu@0 node. For compatiblity with existing DTs, an
+>>> +    operating system may handle this case specially.
+>>> +
+>>> +	cpu0: cpu@0 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <0>;
+>>> +		operating-points = <
+>>> +			/* kHz    uV */
+>>> +			792000  1100000
+>>> +			396000  950000
+>>> +			198000  850000
+>>> +		>;
+>>> +	};
+>>> +
+>>> +	cpu1: cpu@1 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <1>;
+>>> +	};
+>>> +
+>>> +	cpu2: cpu@2 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <2>;
+>>> +	};
+>>> +
+>>> +	cpu3: cpu@3 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <3>;
+>>> +	};
+>>> +
+>>> +2b. Consider a SMP system with 4 CPUs in the same clock domain(with phandle)
+>>> +    If more than one device of same type share the same OPPs, for example
+>>> +    all the CPUs on a SoC or in a single cluster on a SoC, then we can avoid
+>>> +    replicating the OPPs in all the nodes. We can specify the phandle of
+>>> +    the node which contains the OPP tuples instead.
+>>> +
+>>> +	cpu0: cpu@0 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <0>;
+>>> +		operating-points-phandle = <&cpu_opp>;
+>>> +	};
+>>> +
+>>> +	cpu1: cpu@1 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <1>;
+>>> +		operating-points-phandle = <&cpu_opp>;
+>>> +	};
+>>> +
+>>> +	cpu2: cpu@2 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <2>;
+>>> +		operating-points-phandle = <&cpu_opp>;
+>>> +	};
+>>> +
+>>> +	cpu3: cpu@3 {
+>>> +		compatible = "arm,cortex-a9";
+>>> +		reg = <3>;
+>>> +		operating-points-phandle = <&cpu_opp>;
+>>> +	};
+>>> +
+>>> +	opps-table {
+>>> +		cpu_opp: cpu_opp {
+>>> +			operating-points = <
+>>> +				/* kHz    uV */
+>>> +				792000  1100000
+>>> +				396000  950000
+>>> +				198000  850000
+>>> +			>;
+>>> +		};
+>>> +		... /* other device OPP nodes */
+>>
+>> But this is a subnode of /cpus. IMO, OPPs should be located near what
+>> they control.
+>>
+> No, the idea was to group all the shared OPPs in a container node like clocks or
+> pinmux. So opps-table in above example need not be subnode of /cpus.
+> 
+>>
+>>> +	}
+>>> +
+>>> +4. Consider an AMP(asymmetric multi-processor) sytem with 2 clusters of
+>>> +   CPUs. Each cluster has 2 CPUs and all the CPUs within the cluster share
+>>> +   the clock domain.
+>>> +
+>>> +	cpu0: cpu@0 {
+>>> +		compatible = "arm,cortex-a15";
+>>> +		reg = <0>;
+>>> +		operating-points-phandle = <&cluster0_opp>;
+>>> +	};
+>>> +
+>>> +	cpu1: cpu@1 {
+>>> +		compatible = "arm,cortex-a15";
+>>> +		reg = <1>;
+>>> +		operating-points-phandle = <&cluster0_opp>;
+>>> +	};
+>>> +
+>>> +	cpu2: cpu@100 {
+>>> +		compatible = "arm,cortex-a7";
+>>> +		reg = <100>;
+>>> +		operating-points-phandle = <&cluster1_opp>;
+>>> +	};
+>>> +
+>>> +	cpu3: cpu@101 {
+>>> +		compatible = "arm,cortex-a7";
+>>> +		reg = <101>;
+>>> +		operating-points-phandle = <&cluster1_opp>;
+>>> +	};
+>>> +
+>>> +	opps-table {
+>>> +		cluster0_opp: cluster0_opp {
+>>
+>> Why not use the cpu topology? Then the operating point can apply to
+>> cores based on the position in the topology. You don't even need a
+>> phandle in that case. You can look for OPPs in either a cpu node or in
+>> the topology.
+>>
+> Agreed but few thoughts behind this binding:
+> 
+> 1. OPPs are not just cpu specific:
+>    How do we share OPPs for 2 devices in the same clock domain ?
+>    Also moving the OPP into cpu-topo makes parsing specific to cpu.
+>    Currently the OPP library fetches the of_node from the device struct
+>    which is applicable to any devices.
+> 
+> 2. Should cpu topology(i.e. cpu-map) just contain the topology info ? and
+>    phandles to these nodes should be used to setup any affinity ?
+> 
+> 3. As part of RFC[1][2], it was also discussed that on some SoCs we need
+>    multiple OPP profiles/options which it provides but only one of them can
+>    be used based on the board design. phandle to OPP will also help resolve
+>    that issue.
+> 
+> Let me know your thoughts.
+> 
 
-> +
-> +	if (drv->states[index].flags & ARMADA_370_XP_FLAG_DEEP_IDLE)
-> +		deepidle =3D true;
-> +
-> +	cpu_suspend(deepidle, armada_370_xp_cpu_suspend);
-> +
-> +	armada_370_xp_pmsu_idle_restore();
+(pinging to get this discussion alive again)
+Is this extension to the binding to support shared OPPs acceptable ?
+If not, any ideas to progress on this is helpful.
 
-Same comment by using cpu_pm_exit.
+Regards,
+Sudeep
 
-> +
-> +	return index;
-> +}
-> +
-> +static struct cpuidle_driver armada_370_xp_idle_driver =3D {
-> +	.name			=3D "armada_370_xp_idle",
-> +	.states[0]		=3D ARM_CPUIDLE_WFI_STATE,
-> +	.states[1]		=3D {
-> +		.enter			=3D armada_370_xp_enter_idle,
-> +		.exit_latency		=3D 10,
-> +		.power_usage		=3D 50,
-> +		.target_residency	=3D 100,
-> +		.flags			=3D CPUIDLE_FLAG_TIME_VALID,
-> +		.name			=3D "MV CPU IDLE",
-> +		.desc			=3D "CPU power down",
-> +	},
-> +	.states[2]		=3D {
-> +		.enter			=3D armada_370_xp_enter_idle,
-> +		.exit_latency		=3D 100,
-> +		.power_usage		=3D 5,
-> +		.target_residency	=3D 1000,
-> +		.flags			=3D CPUIDLE_FLAG_TIME_VALID |
-> +						ARMADA_370_XP_FLAG_DEEP_IDLE,
-> +		.name			=3D "MV CPU DEEP IDLE",
-> +		.desc			=3D "CPU and L2 Fabric power down",
-> +	},
-> +	.state_count =3D ARMADA_370_XP_MAX_STATES,
-> +};
-> +
-> +static int armada_370_xp_cpuidle_probe(struct platform_device *pdev)
-> +{
-> +	if (!of_find_compatible_node(NULL, NULL, "marvell,armada-370-xp-pms=
-u"))
-> +		return -ENODEV;
-> +
-> +	if (!of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric"=
-))
-> +		return -ENODEV;
-> +
-> +	pr_info("Initializing Armada-XP CPU power management ");
-> +
-> +	armada_370_xp_pmsu_enable_l2_powerdown_onidle();
+> 
+> [1] http://www.spinics.net/lists/cpufreq/msg06556.html
+> [2] http://www.spinics.net/lists/cpufreq/msg06685.html
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Isn't possible to move this function inside pmsu.c ? as well as the=20
-of_find_compatible functions ?
-
-> +
-> +	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
-> +}
-> +
-> +static int armada_370_xp_cpuidle_remove(struct platform_device *pdev=
-)
-> +{
-> +	cpuidle_unregister(&armada_370_xp_idle_driver);
-> +	return 0;
-> +}
-> +
-> +
-> +static struct platform_driver armada_370_xp_cpuidle_plat_driver =3D =
-{
-> +	.driver =3D {
-> +		.name =3D "cpuidle-armada-370-xp",
-> +		.owner =3D THIS_MODULE,
-> +	},
-> +	.probe =3D armada_370_xp_cpuidle_probe,
-> +	.remove =3D armada_370_xp_cpuidle_remove,
-> +};
-> +
-> +
-> +module_platform_driver(armada_370_xp_cpuidle_plat_driver);
-> +
-> +MODULE_AUTHOR("Gregory CLEMENT <gregory.clement@free-electrons.com>"=
-);
-> +MODULE_DESCRIPTION("Armada 370/XP cpu idle driver");
-> +MODULE_LICENSE("GPL");
-
-The driver is statically compiled in the kernel, removal of the driver=20
-is pointless.
-
-Thanks
-   -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
