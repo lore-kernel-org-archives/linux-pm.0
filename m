@@ -1,84 +1,61 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
- of another node for OPP
-Date: Thu, 17 Oct 2013 13:36:42 -0500
-Message-ID: <52602E3A.6080000@ti.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>	<1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>	<5252DAD3.6040903@gmail.com>	<525400B4.8060203@arm.com> <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com> <52601CCD.9020705@arm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: support for software direct frequency throttling?
+Date: Thu, 17 Oct 2013 22:28:13 +0200
+Message-ID: <1748637.gcTIfKF45Q@vostro.rjw.lan>
+References: <5202A24F.6040506@calxeda.com> <2466745.skqnolQonv@vostro.rjw.lan> <526020CA.1080605@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:54178 "EHLO comal.ext.ti.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:51578 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757861Ab3JQSgu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Oct 2013 14:36:50 -0400
-In-Reply-To: <52601CCD.9020705@arm.com>
+	id S1756787Ab3JQUQY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Oct 2013 16:16:24 -0400
+In-Reply-To: <526020CA.1080605@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Rob Herring <robherring2@gmail.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 10/17/2013 12:22 PM, Sudeep KarkadaNagesha wrote:
-> On 17/10/13 14:22, Rob Herring wrote:
->> On Tue, Oct 8, 2013 at 7:55 AM, Sudeep KarkadaNagesha
->> <Sudeep.KarkadaNagesha@arm.com> wrote:
->>> On 07/10/13 17:01, Rob Herring wrote:
->>>> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
-[...]
->>> 3. As part of RFC[1][2], it was also discussed that on some SoCs we need
->>>    multiple OPP profiles/options which it provides but only one of them can
->>>    be used based on the board design. phandle to OPP will also help resolve
->>>    that issue.
->>
->> Then include the OPP required for that board design. You could have
->> dtsi files of OPPs that can be included based on the board.
->>
+On Thursday, October 17, 2013 12:39:22 PM Mark Langsdorf wrote:
+> On 08/07/2013 06:37 PM, Rafael J. Wysocki wrote:
+> > On Wednesday, August 07, 2013 02:38:55 PM Mark Langsdorf wrote:
+> >> Is there an easy way to dynamically limit the maximum or minimum
+> >> frequencies available to a governor? I'm trying to support frequency
+> >> throttling in response to a thermal event (or theoretically to allow a
+> >> BMC to set a minimum frequency regardless of current load).
+> >>
+> >> I looked into doing this last year and it required some QoS patches that
+> >> I don't think ever made it into the kernel.
+> >>
+> >> Is there a straightforward way to do this right now?
+> > 
+> > Have you looked at drivers/thermal/cpu_cooling.c ?
 > 
-> I will let Nishanth comment on this.
+> Yes, and I'm not sure how to use it get what I want.
+> 
+> I have a mailbox interrupt on my system that will trigger with a message
+> when the BMC monitoring the thermal sensor notices that the temperature
+> passes a trip point; the message will include the new maximum frequency.
+> I want to pass that new maximum frequency to the cpufreq governor so it
+> can reassess the current frequency against the maximum and lower it if
+> need be.
+> 
+> I don't know in advance what the trip points or maximum frequencies are;
+> the BMC managing the thermal sensor has that information but doesn't
+> provide it to Linux.
+> 
+> The most appealing solution would be to just copy
+> cpufreq_apply_cooling() and cpufreq_thermal_modifier() from
+> drivers/thermal/cpu_cooling.c in the highbank_cpufreq.c driver, as
+> they're the core logic of what I need. I don't know if that would be
+> acceptable, though. I've looked at setting up a full thermal_zone
+> solution, and its more than I need without actually giving me a good way
+> to set the frequencies when I need to.
 
-there are couple of angles to this[1] that Sudeep already pointed at:
+I see.
 
-A) SoCs like OMAP3430, 3630, 3530, 3730, omap4430, omap4460, omap4470,
-omap5430, omap5432, there will at least be 2 dtsi *per* OPPset dtsi
-per chip - and we have OPP sets per device inside the SoC - one for
-CPU, one for GPU, one for IVA(accelerator), one for l3 (interconnect).
-Further, when we go to newer variants like AM335x,AM437x,DRA7 - the
-opp sets can increase to around 4/5 per domain per chip. Most of these
-are deterministic based on Efused bit fields.
--> On this angle, arch/arm/mach-imx/mach-imx6q.c is a good example of
-a similar challenge - here OPP enable/disable of hardcoded frequency
-is kept in kernel, but data is picked up from SoC dts - not a good
-story when we want to maintain old dtb compatibility - if frequency
-changes in either dts/kernel, we wont function.
--> We are working internally to a potentially generic solution to
-address this - not yet in a stage even for RFC -> if that is possible
-to be done, then we dont need profiles to handle things, instead an
-alternative constraint description is provided in dts. or we could
-force folks to use specific dtsis OR allow generic handling based on
-profiles.
+Rui, any advice on that?
 
-B) now we can have a chip which can support a high frequency (efuse
-will say so), however board characteristics(Power Distribution Network
-requirements) may not be capable of allowing the chip to perform. We
-can argue saying that "why would anyone put a higher performing chip
-on a not-capable board?" - but we all know the reality of marketting
-folks and cost of chip story.. but this is a real constraint when we
-try to support our SoCs on as many platforms as possible and enabling
-Linux on all those platforms.
--> We could use profiles to deal with this.
--> we could use dtsi override with OPP to deal with this
-OR
--> we could use custom properties (something like
-ti,non-optimal-board-design ;) ).
+Rafael
 
-My personal preference is to state hardware capability solely in dts
-and kernel is just operations on the dts data. OPP profiles did seem
-to me to be the intutive way to do that job as it does describe
-exactly wha the hardware capabilities were. Creating n different dtsis
-is possible per device, but it essentially does describe the same
-information.
-
-[1] http://www.spinics.net/lists/cpufreq/msg06685.html
--- 
-Regards,
-Nishanth Menon
