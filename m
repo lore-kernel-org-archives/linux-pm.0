@@ -1,63 +1,47 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] ACPI / power: Drop automaitc resume of power resource dependent devices
-Date: Thu, 17 Oct 2013 15:47 +0200
-Message-ID: <2220996.Balj6KfZAP@vostro.rjw.lan>
-References: <4814451.BPLed2xxbP@vostro.rjw.lan> <525F8A48.9020007@intel.com> <3517410.N1Ot4TpM2j@vostro.rjw.lan>
+Subject: Re: cpufreq-next opps with cpufreq-bench
+Date: Thu, 17 Oct 2013 16:06:36 +0200
+Message-ID: <2877026.HBynBTHMf8@vostro.rjw.lan>
+References: <20131013090159.GB24566@lunn.ch> <2640083.dKj7t8UqiF@vostro.rjw.lan> <CAKohpomiFqgSz3=C0_XyG8wqA8puPqxbkNo+rvYbUypcfrsukQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60331 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:50124 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755015Ab3JQNfK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2013 09:35:10 -0400
-In-Reply-To: <3517410.N1Ot4TpM2j@vostro.rjw.lan>
+	with SMTP id S1755500Ab3JQNyp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2013 09:54:45 -0400
+In-Reply-To: <CAKohpomiFqgSz3=C0_XyG8wqA8puPqxbkNo+rvYbUypcfrsukQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-pm@vger.kernel.org
 
-On Thursday, October 17, 2013 01:56:23 PM Rafael J. Wysocki wrote:
-> On Thursday, October 17, 2013 02:57:12 PM Aaron Lu wrote:
-> > On 10/16/2013 09:25 PM, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > The mechanism causing devices depending on a given power resource
-> > > (that is, devices that can be in D0 only if that power resource is
-> > > on) to be resumed automatically when the power resource is turned
-> > > on (and their "inferred" power state becomes D0 as a result) is
-> > > inherently racy and in fact unnecessary.
-> > > 
-> > > It is racy, because if the power resources is turned on and then
-> > > immediately off, the device resume triggered by the first transition
-> > > to "on" may still happen, causing the power resource to be turned
-> > > on again.  That again will trigger the "resume of dependent devices"
-> > > mechanism, but if the devices in question are not in use, they will
-> > > be suspended in the meantime causing the power resource to be turned
-> > > off.  However, the "resume of dependent devices" will next resume
-> > > them again and so on.  In some cases (USB port PM in particular) that
-> > > leads to an endless busy loop of flipping the resource on and off
-> > > continuously.
-> > > 
-> > > It is needless, because whoever turns a power resource on will most
-> > > likely turn it off at some point and the devices that go into "D0"
-> > > as a result of turning it on will then go back into D3cold.
-> > > Moreover, turning all power resources a device needs to go into
-> > > D0 is not sufficient for a full transition into D0 in general.
-> > > Namely, _PS0 may need to be executed in addition to that in some
-> > > cases.  This means that the whole rationale of the "resume of
-> > > dependent devices" mechanism was incorrect to begin with and it's
-> > > best to remove it entirely.
-> > 
-> > With this patch, your previous patch could also be applied now:
-> > https://lkml.org/lkml/2013/6/14/173
-> > [PATCH 4/4] ACPI / PM: Drop two functions that are not used any more
+On Thursday, October 17, 2013 10:34:03 AM Viresh Kumar wrote:
+> On 16/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, October 16, 2013 09:49:02 AM Viresh Kumar wrote:
 > 
-> Good catch and that code is dead anyway AFAICS, because power_dependent is only
-> used in device_pm.c (in those two functions) and in scan.c (where it is
-> initialized).
+> >> @Andrew: Can you give this a try please? (Use attached commit)..
+> >
+> > No.
+> >
+> > Please resumbit the original commit *with* the fix folded into it.
+> >
+> > Since I have dropped the broken one from linux-next, this "fixup" doesn't
+> > apply to it any more.
+> 
+> I thought of adding following lines to my last email and then dropped it
+> for some reason:
+> 
+> "After you have tested it, I will resend a single patch for both these for
+> Rafael to include as he has already dropped this offending commit"
+> 
+> :)
 
-That obviously is with the $subject patch applied.
+That really isn't helpful, because even if the fixup is tested, you can still
+make a mistake when folding it into the original patch (while I believe that
+that is unlikely, things like that have happened in the kernel history).  So,
+it is always better to test the final patch altogether.
 
 Thanks!
 
