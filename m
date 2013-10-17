@@ -1,220 +1,84 @@
-From: Zoran Markovic <zoran.markovic@linaro.org>
-Subject: [PATCHv6] drivers: power: Detect device suspend/resume lockup and log event in pstore.
-Date: Thu, 17 Oct 2013 10:48:46 -0700
-Message-ID: <1382032126-28477-1-git-send-email-zoran.markovic@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle
+ of another node for OPP
+Date: Thu, 17 Oct 2013 13:36:42 -0500
+Message-ID: <52602E3A.6080000@ti.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>	<1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>	<5252DAD3.6040903@gmail.com>	<525400B4.8060203@arm.com> <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com> <52601CCD.9020705@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:54178 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757861Ab3JQSgu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Oct 2013 14:36:50 -0400
+In-Reply-To: <52601CCD.9020705@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Rob Herring <robherring2@gmail.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-From: Benoit Goby <benoit@android.com>
+On 10/17/2013 12:22 PM, Sudeep KarkadaNagesha wrote:
+> On 17/10/13 14:22, Rob Herring wrote:
+>> On Tue, Oct 8, 2013 at 7:55 AM, Sudeep KarkadaNagesha
+>> <Sudeep.KarkadaNagesha@arm.com> wrote:
+>>> On 07/10/13 17:01, Rob Herring wrote:
+>>>> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
+[...]
+>>> 3. As part of RFC[1][2], it was also discussed that on some SoCs we need
+>>>    multiple OPP profiles/options which it provides but only one of them can
+>>>    be used based on the board design. phandle to OPP will also help resolve
+>>>    that issue.
+>>
+>> Then include the OPP required for that board design. You could have
+>> dtsi files of OPPs that can be included based on the board.
+>>
+> 
+> I will let Nishanth comment on this.
 
-Rather than hard-lock the kernel, dump the suspend/resume thread stack and
-panic() to capture a message in pstore when a driver takes too long to
-suspend/resume. Default suspend/resume watchdog timeout is set to 12
-seconds to be longer than the usbhid 10 second timeout, but could be
-changed at compile time.
+there are couple of angles to this[1] that Sudeep already pointed at:
 
-Exclude from the watchdog the time spent waiting for children that
-are resumed asynchronously and time every device, whether or not they
-resumed synchronously.
+A) SoCs like OMAP3430, 3630, 3530, 3730, omap4430, omap4460, omap4470,
+omap5430, omap5432, there will at least be 2 dtsi *per* OPPset dtsi
+per chip - and we have OPP sets per device inside the SoC - one for
+CPU, one for GPU, one for IVA(accelerator), one for l3 (interconnect).
+Further, when we go to newer variants like AM335x,AM437x,DRA7 - the
+opp sets can increase to around 4/5 per domain per chip. Most of these
+are deterministic based on Efused bit fields.
+-> On this angle, arch/arm/mach-imx/mach-imx6q.c is a good example of
+a similar challenge - here OPP enable/disable of hardcoded frequency
+is kept in kernel, but data is picked up from SoC dts - not a good
+story when we want to maintain old dtb compatibility - if frequency
+changes in either dts/kernel, we wont function.
+-> We are working internally to a potentially generic solution to
+address this - not yet in a stage even for RFC -> if that is possible
+to be done, then we dont need profiles to handle things, instead an
+alternative constraint description is provided in dts. or we could
+force folks to use specific dtsis OR allow generic handling based on
+profiles.
 
-This patch is targeted for mobile devices where a suspend/resume lockup
-could cause a system reboot. Information about failing device can be
-retrieved in subsequent boot session by mounting pstore and inspecting
-the log. Laptops with EFI-enabled pstore could also benefit from
-this feature.
+B) now we can have a chip which can support a high frequency (efuse
+will say so), however board characteristics(Power Distribution Network
+requirements) may not be capable of allowing the chip to perform. We
+can argue saying that "why would anyone put a higher performing chip
+on a not-capable board?" - but we all know the reality of marketting
+folks and cost of chip story.. but this is a real constraint when we
+try to support our SoCs on as many platforms as possible and enabling
+Linux on all those platforms.
+-> We could use profiles to deal with this.
+-> we could use dtsi override with OPP to deal with this
+OR
+-> we could use custom properties (something like
+ti,non-optimal-board-design ;) ).
 
-The hardware watchdog timer is likely suspended during this time and
-couldn't be relied upon. The soft-lockup detector would eventually tell
-that tasks are not scheduled, but would provide little context as to why.
-The patch hence uses system timer and assumes it is still active while the
-devices are suspended/resumed.
+My personal preference is to state hardware capability solely in dts
+and kernel is just operations on the dts data. OPP profiles did seem
+to me to be the intutive way to do that job as it does describe
+exactly wha the hardware capabilities were. Creating n different dtsis
+is possible per device, but it essentially does describe the same
+information.
 
-This feature can be enabled/disabled during kernel configuration.
-
-Cc: Android Kernel Team <kernel-team@android.com>
-Cc: Colin Cross <ccross@android.com>
-Cc: Todd Poynor <toddpoynor@google.com>
-Cc: San Mehat <san@google.com>
-Cc: Benoit Goby <benoit@android.com>
-Cc: John Stultz <john.stultz@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Original-author: San Mehat <san@google.com>
-Signed-off-by: Benoit Goby <benoit@android.com>
-[zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
-tweaked commit message. Moved call to dpm_wd_set() before device_lock() in
-device_resume(). Minor changes to add compile-time inclusion of the feature.
-Renamed 'dpm_wd...' to 'dpm_watchdog...'. Fixed compile errors/warnings for
-x86_64 and s390.]
-Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
----
- drivers/base/power/main.c |   72 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/Kconfig      |   16 ++++++++++
- 2 files changed, 88 insertions(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9f098a8..f2633da 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -30,6 +30,8 @@
- #include <linux/suspend.h>
- #include <trace/events/power.h>
- #include <linux/cpuidle.h>
-+#include <linux/timer.h>
-+
- #include "../base.h"
- #include "power.h"
- 
-@@ -390,6 +392,70 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	return error;
- }
- 
-+#ifdef CONFIG_DPM_WATCHDOG
-+struct dpm_watchdog {
-+	struct device		*dev;
-+	struct task_struct	*tsk;
-+	struct timer_list	timer;
-+};
-+
-+#define DECLARE_DPM_WATCHDOG_ON_STACK(wd) \
-+	struct dpm_watchdog wd
-+
-+/**
-+ * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
-+ *
-+ * Called when a driver has timed out suspending or resuming.
-+ * There's not much we can do here to recover so panic() to
-+ * capture a crash-dump in pstore.
-+ */
-+static void dpm_watchdog_handler(unsigned long data)
-+{
-+	struct dpm_watchdog *wd = (void *)data;
-+
-+	dev_emerg(wd->dev, "**** DPM device timeout ****\n");
-+	show_stack(wd->tsk, NULL);
-+	panic("%s %s: unrecoverable failure\n",
-+		dev_driver_string(wd->dev), dev_name(wd->dev));
-+}
-+
-+/**
-+ * dpm_watchdog_set - Enable pm watchdog for given device.
-+ * @wd: Watchdog. Must be allocated on the stack.
-+ * @dev: Device to handle.
-+ */
-+static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
-+{
-+	struct timer_list *timer = &wd->timer;
-+
-+	wd->dev = dev;
-+	wd->tsk = current;
-+
-+	init_timer_on_stack(timer);
-+	/* use same timeout value for both suspend and resume */
-+	timer->expires = jiffies + HZ * CONFIG_DPM_WATCHDOG_TIMEOUT;
-+	timer->function = dpm_watchdog_handler;
-+	timer->data = (unsigned long)wd;
-+	add_timer(timer);
-+}
-+
-+/**
-+ * dpm_watchdog_clear - Disable suspend/resume watchdog.
-+ * @wd: Watchdog to disable.
-+ */
-+static void dpm_watchdog_clear(struct dpm_watchdog *wd)
-+{
-+	struct timer_list *timer = &wd->timer;
-+
-+	del_timer_sync(timer);
-+	destroy_timer_on_stack(timer);
-+}
-+#else
-+#define DECLARE_DPM_WATCHDOG_ON_STACK(wd)
-+#define dpm_watchdog_set(x, y)
-+#define dpm_watchdog_clear(x)
-+#endif
-+
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-@@ -576,6 +642,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 	int error = 0;
-+	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
- 
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
-@@ -584,6 +651,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 		goto Complete;
- 
- 	dpm_wait(dev->parent, async);
-+	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
- 	/*
-@@ -642,6 +710,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 
-  Unlock:
- 	device_unlock(dev);
-+	dpm_watchdog_clear(&wd);
- 
-  Complete:
- 	complete_all(&dev->power.completion);
-@@ -1060,6 +1129,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 	int error = 0;
-+	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
- 
- 	dpm_wait_for_children(dev, async);
- 
-@@ -1083,6 +1153,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->power.syscore)
- 		goto Complete;
- 
-+	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
- 	if (dev->pm_domain) {
-@@ -1139,6 +1210,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	}
- 
- 	device_unlock(dev);
-+	dpm_watchdog_clear(&wd);
- 
-  Complete:
- 	complete_all(&dev->power.completion);
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index d444c4e..2fac9cc 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -178,6 +178,22 @@ config PM_SLEEP_DEBUG
- 	def_bool y
- 	depends on PM_DEBUG && PM_SLEEP
- 
-+config DPM_WATCHDOG
-+	bool "Device suspend/resume watchdog"
-+	depends on PM_DEBUG && PSTORE
-+	---help---
-+	  Sets up a watchdog timer to capture drivers that are
-+	  locked up attempting to suspend/resume a device.
-+	  A detected lockup causes system panic with message
-+	  captured in pstore device for inspection in subsequent
-+	  boot session.
-+
-+config DPM_WATCHDOG_TIMEOUT
-+	int "Watchdog timeout in seconds"
-+	range 1 120
-+	default 12
-+	depends on DPM_WATCHDOG
-+
- config PM_TRACE
- 	bool
- 	help
+[1] http://www.spinics.net/lists/cpufreq/msg06685.html
 -- 
-1.7.9.5
+Regards,
+Nishanth Menon
