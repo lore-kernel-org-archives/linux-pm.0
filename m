@@ -1,50 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: cpufreq-next opps with cpufreq-bench
-Date: Thu, 17 Oct 2013 16:06:36 +0200
-Message-ID: <2877026.HBynBTHMf8@vostro.rjw.lan>
-References: <20131013090159.GB24566@lunn.ch> <2640083.dKj7t8UqiF@vostro.rjw.lan> <CAKohpomiFqgSz3=C0_XyG8wqA8puPqxbkNo+rvYbUypcfrsukQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC V4 PATCH 00/15] Signature verification of hibernate snapshot
+Date: Thu, 17 Oct 2013 16:18:47 +0200
+Message-ID: <3744955.cCTmoQ1ejp@vostro.rjw.lan>
+References: <1379206621-18639-1-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50124 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755500Ab3JQNyp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2013 09:54:45 -0400
-In-Reply-To: <CAKohpomiFqgSz3=C0_XyG8wqA8puPqxbkNo+rvYbUypcfrsukQ@mail.gmail.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:51543 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755754Ab3JQOHD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Oct 2013 10:07:03 -0400
+In-Reply-To: <1379206621-18639-1-git-send-email-jlee@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-pm@vger.kernel.org
+To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, opensuse-kernel@opensuse.org, David Howells <dhowells@redhat.com>, Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, James Bottomley <james.bottomley@hansenpartnership.com>, Greg KH <gregkh@linuxfoundation.org>, JKosina@suse.com, Rusty Russell <rusty@rustcorp.com.au>, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Gary Lin <GLin@suse.com>, Vivek Goyal <vgoyal@redhat.com>, "Lee, Chun-Yi" <jlee@suse.com>
 
-On Thursday, October 17, 2013 10:34:03 AM Viresh Kumar wrote:
-> On 16/10/2013, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Wednesday, October 16, 2013 09:49:02 AM Viresh Kumar wrote:
+On Sunday, September 15, 2013 08:56:46 AM Lee, Chun-Yi wrote:
+> Hi experts,
 > 
-> >> @Andrew: Can you give this a try please? (Use attached commit)..
-> >
-> > No.
-> >
-> > Please resumbit the original commit *with* the fix folded into it.
-> >
-> > Since I have dropped the broken one from linux-next, this "fixup" doesn't
-> > apply to it any more.
+> This patchset is the implementation for signature verification of hibernate
+> snapshot image. The origin idea is from Jiri Kosina: Let EFI bootloader
+> generate key-pair in UEFI secure boot environment, then pass it to kernel
+> for sign/verify S4 image.
 > 
-> I thought of adding following lines to my last email and then dropped it
-> for some reason:
+> Due to there have potential threat from the S4 image hacked, it may causes
+> kernel lost the trust in UEFI secure boot. Hacker attack the S4 snapshot
+> image in swap partition through whatever exploit from another trusted OS,
+> and the exploit may don't need physical access machine.
 > 
-> "After you have tested it, I will resend a single patch for both these for
-> Rafael to include as he has already dropped this offending commit"
-> 
-> :)
+> So, this patchset give the ability to kernel for parsing RSA private key
+> from EFI bootloader, then using the private key to generate the signature
+> of S4 snapshot image. Kernel put the signature to snapshot header, and
+> verify the signature when kernel try to recover snapshot image to memory.
 
-That really isn't helpful, because even if the fixup is tested, you can still
-make a mistake when folding it into the original patch (while I believe that
-that is unlikely, things like that have happened in the kernel history).  So,
-it is always better to test the final patch altogether.
+I wonder what the status of this work is?  Is it considered ready for inclusion
+or are you still going to work on it and resubmit?
 
-Thanks!
+Rafael
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
