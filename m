@@ -1,100 +1,66 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle of
- another node for OPP
-Date: Thu, 17 Oct 2013 08:22:44 -0500
-Message-ID: <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com>
-References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-	<1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-	<5252DAD3.6040903@gmail.com>
-	<525400B4.8060203@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] ACPI / power: Drop automaitc resume of power resource dependent devices
+Date: Thu, 17 Oct 2013 15:47 +0200
+Message-ID: <2220996.Balj6KfZAP@vostro.rjw.lan>
+References: <4814451.BPLed2xxbP@vostro.rjw.lan> <525F8A48.9020007@intel.com> <3517410.N1Ot4TpM2j@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <525400B4.8060203@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60331 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755015Ab3JQNfK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2013 09:35:10 -0400
+In-Reply-To: <3517410.N1Ot4TpM2j@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>
 
-On Tue, Oct 8, 2013 at 7:55 AM, Sudeep KarkadaNagesha
-<Sudeep.KarkadaNagesha@arm.com> wrote:
-> On 07/10/13 17:01, Rob Herring wrote:
->> On 10/01/2013 08:32 AM, Sudeep KarkadaNagesha wrote:
->>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>
->>> If more than one similar devices share the same operating points(OPPs)
->>> being in the same clock domain, currently we need to replicate the
->>> OPP entries in all the nodes.
->>>
->>> This patch extends existing binding by adding a new property named
->>> 'operating-points-phandle' to specify the phandle in any device node
->>> pointing to another node which contains the actual OPP tuples.
->>> This helps to avoid replication if multiple devices share the OPPs.
->>>
+On Thursday, October 17, 2013 01:56:23 PM Rafael J. Wysocki wrote:
+> On Thursday, October 17, 2013 02:57:12 PM Aaron Lu wrote:
+> > On 10/16/2013 09:25 PM, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > The mechanism causing devices depending on a given power resource
+> > > (that is, devices that can be in D0 only if that power resource is
+> > > on) to be resumed automatically when the power resource is turned
+> > > on (and their "inferred" power state becomes D0 as a result) is
+> > > inherently racy and in fact unnecessary.
+> > > 
+> > > It is racy, because if the power resources is turned on and then
+> > > immediately off, the device resume triggered by the first transition
+> > > to "on" may still happen, causing the power resource to be turned
+> > > on again.  That again will trigger the "resume of dependent devices"
+> > > mechanism, but if the devices in question are not in use, they will
+> > > be suspended in the meantime causing the power resource to be turned
+> > > off.  However, the "resume of dependent devices" will next resume
+> > > them again and so on.  In some cases (USB port PM in particular) that
+> > > leads to an endless busy loop of flipping the resource on and off
+> > > continuously.
+> > > 
+> > > It is needless, because whoever turns a power resource on will most
+> > > likely turn it off at some point and the devices that go into "D0"
+> > > as a result of turning it on will then go back into D3cold.
+> > > Moreover, turning all power resources a device needs to go into
+> > > D0 is not sufficient for a full transition into D0 in general.
+> > > Namely, _PS0 may need to be executed in addition to that in some
+> > > cases.  This means that the whole rationale of the "resume of
+> > > dependent devices" mechanism was incorrect to begin with and it's
+> > > best to remove it entirely.
+> > 
+> > With this patch, your previous patch could also be applied now:
+> > https://lkml.org/lkml/2013/6/14/173
+> > [PATCH 4/4] ACPI / PM: Drop two functions that are not used any more
+> 
+> Good catch and that code is dead anyway AFAICS, because power_dependent is only
+> used in device_pm.c (in those two functions) and in scan.c (where it is
+> initialized).
 
-[snip]
+That obviously is with the $subject patch applied.
 
->>> +    opps-table {
->>> +            cpu_opp: cpu_opp {
->>> +                    operating-points = <
->>> +                            /* kHz    uV */
->>> +                            792000  1100000
->>> +                            396000  950000
->>> +                            198000  850000
->>> +                    >;
->>> +            };
->>> +            ... /* other device OPP nodes */
->>
->> But this is a subnode of /cpus. IMO, OPPs should be located near what
->> they control.
->>
-> No, the idea was to group all the shared OPPs in a container node like clocks or
-> pinmux. So opps-table in above example need not be subnode of /cpus.
+Thanks!
 
-Clocks are typically defined in a clock controller node. pinmux
-doesn't fit anywhere well so it is an exception. We don't want to
-expand on that. OPP's at least for cpu's would typically follow the
-topology, so put them there.
-
->>> +    cpu3: cpu@101 {
->>> +            compatible = "arm,cortex-a7";
->>> +            reg = <101>;
->>> +            operating-points-phandle = <&cluster1_opp>;
->>> +    };
->>> +
->>> +    opps-table {
->>> +            cluster0_opp: cluster0_opp {
->>
->> Why not use the cpu topology? Then the operating point can apply to
->> cores based on the position in the topology. You don't even need a
->> phandle in that case. You can look for OPPs in either a cpu node or in
->> the topology.
->>
-> Agreed but few thoughts behind this binding:
->
-> 1. OPPs are not just cpu specific:
->    How do we share OPPs for 2 devices in the same clock domain ?
->    Also moving the OPP into cpu-topo makes parsing specific to cpu.
->    Currently the OPP library fetches the of_node from the device struct
->    which is applicable to any devices.
-
-But an OPP for a cpu is cpu specific, so put it there. For devices, we
-may need something different. Perhaps it should be part of the clock
-binding in some way.
-
-> 2. Should cpu topology(i.e. cpu-map) just contain the topology info ? and
->    phandles to these nodes should be used to setup any affinity ?
-
-Can't the OPP just be in the topology nodes at the appropriate level.
-Then the kernel can look for the OPPs in either place. Perhaps Lorenzo
-has thoughts on this.
-
-> 3. As part of RFC[1][2], it was also discussed that on some SoCs we need
->    multiple OPP profiles/options which it provides but only one of them can
->    be used based on the board design. phandle to OPP will also help resolve
->    that issue.
-
-Then include the OPP required for that board design. You could have
-dtsi files of OPPs that can be included based on the board.
-
-Rob
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
