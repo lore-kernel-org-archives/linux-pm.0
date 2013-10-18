@@ -1,93 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Suspend-devel] [BUG] 3.7-rc regression bisected: s2disk fails to resume image: Processes could not be frozen, cannot continue resuming
-Date: Thu, 17 Oct 2013 23:35:12 +0200
-Message-ID: <2906897.X51K0zWBHo@vostro.rjw.lan>
-References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com> <20130918191607.GO13318@ZenIV.linux.org.uk> <20130924002111.GB31569@amd.pavel.ucw.cz>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 1/5] PM / OPP: extend DT binding to specify phandle of
+ another node for OPP
+Date: Fri, 18 Oct 2013 09:40:41 +0100
+Message-ID: <20131018084041.GC398@e102568-lin.cambridge.arm.com>
+References: <1380634382-15609-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1380634382-15609-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <5252DAD3.6040903@gmail.com>
+ <525400B4.8060203@arm.com>
+ <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:51612 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932115Ab3JQVXT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Oct 2013 17:23:19 -0400
-In-Reply-To: <20130924002111.GB31569@amd.pavel.ucw.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAL_JsqKPprCKorvfgCH3usvX6hw5moypQYvKTdAznFVoTV-pyg@mail.gmail.com>
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Al Viro <viro@zeniv.linux.org.uk>
-Cc: Andrew Savchenko <bircoph@gmail.com>, suspend-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Sorry for the huge delay.
+On Thu, Oct 17, 2013 at 02:22:44PM +0100, Rob Herring wrote:
 
-On Tuesday, September 24, 2013 02:21:11 AM Pavel Machek wrote:
-> Hi!
+[...]
+
+> >>> +    cpu3: cpu@101 {
+> >>> +            compatible = "arm,cortex-a7";
+> >>> +            reg = <101>;
+> >>> +            operating-points-phandle = <&cluster1_opp>;
+> >>> +    };
+> >>> +
+> >>> +    opps-table {
+> >>> +            cluster0_opp: cluster0_opp {
+> >>
+> >> Why not use the cpu topology? Then the operating point can apply to
+> >> cores based on the position in the topology. You don't even need a
+> >> phandle in that case. You can look for OPPs in either a cpu node or in
+> >> the topology.
+> >>
+> > Agreed but few thoughts behind this binding:
+> >
+> > 1. OPPs are not just cpu specific:
+> >    How do we share OPPs for 2 devices in the same clock domain ?
+> >    Also moving the OPP into cpu-topo makes parsing specific to cpu.
+> >    Currently the OPP library fetches the of_node from the device struct
+> >    which is applicable to any devices.
 > 
-> > > And from suspend_ioctls.h:
-> > > #define SNAPSHOT_IOC_MAGIC      '3'
-> > > #define SNAPSHOT_FREEZE                 _IO(SNAPSHOT_IOC_MAGIC, 1)
-> > > 
-> > > My mistake, should be '3' instead of 3.
-> > 
-> > OK...  The thing to test, then, is what does __usermodehelper_disable()
-> > return to freeze_processes().  If that's where this -EAGAIN comes from,
-> > we at least have a plausible theory re what's going on.
-> > 
-> > freeze_processes() uses __usermodehelper_disable() to stop any new userland
-> > processes spawned by UMH (modprobe, etc.) and waits for ones it might be
-> > waiting for to complete.  Then it does try_to_freeze_tasks(), which
-> > freezes remaining userland, carefully skipping the current thread.
-> > However, it misses the possibility that current thread might have been
-> > spawned by something that had been launched by UMH, with UMH waiting
-> > for it.  Which is the case of everything spawned by linuxrc.
-> > 
-> > I'd try something like diff below, but I'm *NOT* familiar with swsusp at
-> > all; it's not for mainline until ACKed by swsusp folks.
-> > 
-> > diff --git a/kernel/kmod.c b/kernel/kmod.c
-> > index fb32636..d968882 100644
-> > --- a/kernel/kmod.c
-> > +++ b/kernel/kmod.c
-> > @@ -571,7 +571,8 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
-> >  	DECLARE_COMPLETION_ONSTACK(done);
-> >  	int retval = 0;
-> >  
-> > -	helper_lock();
-> > +	if (!(current->flags & PF_FREEZER_SKIP))
-> > +		helper_lock();
-> >  	if (!khelper_wq || usermodehelper_disabled) {
-> >  		retval = -EBUSY;
-> >  		goto out;
-> > @@ -611,7 +612,8 @@ wait_done:
-> >  out:
-> >  	call_usermodehelper_freeinfo(sub_info);
-> >  unlock:
-> > -	helper_unlock();
-> > +	if (!(current->flags & PF_FREEZER_SKIP))
-> > +		helper_unlock();
-> >  	return retval;
-> >  }
-> >  EXPORT_SYMBOL(call_usermodehelper_exec);
+> But an OPP for a cpu is cpu specific, so put it there. For devices, we
+> may need something different. Perhaps it should be part of the clock
+> binding in some way.
 > 
-> PF_FREEZER_SKIP flag is manipulated at about 1000 places, so I'm not
-> sure this will nest correctly.
-
-This is not exactly correct unless 1000 is about 50.  And none of them leads to
-call_usermodehelper_exec() as far as I can say.
-
-> They seem to be in form of 
+> > 2. Should cpu topology(i.e. cpu-map) just contain the topology info ? and
+> >    phandles to these nodes should be used to setup any affinity ?
 > 
-> |= FREEZER_SKIP
-> schedule()
-> &= ~FREEZER_SKIP
-> 
-> so this should be safe, but...
+> Can't the OPP just be in the topology nodes at the appropriate level.
+> Then the kernel can look for the OPPs in either place. Perhaps Lorenzo
+> has thoughts on this.
 
-I think the patch is correct, so
+The reason we introduced the topology nodes (ie cpu-map) was to provide
+a topology description of the system with leaf nodes linked to cpu
+nodes; nodes in the topology do not map to HW entities.
+Put it differently, IMHO we should attach no HW meaning to nodes in the
+cpu-map so we should not add eg OPPs under cluster nodes because those
+nodes do not represent HW entities, I would like to keep cpu-map a pure
+DT representation of the topology, no more, but debate is open.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Lorenzo
 
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
