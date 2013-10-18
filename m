@@ -1,52 +1,97 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH] thermal: Fix binding problem when there is thermal zone params
-Date: Fri, 18 Oct 2013 18:03:06 +0800
-Message-ID: <1382090587-9602-1-git-send-email-wni@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / Hibernate: Use bool for boolean fields of struct snapshot_data
+Date: Fri, 18 Oct 2013 13:58:45 +0200
+Message-ID: <3456387.pM1vmRfZ0X@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Jinyoung Park <jinyoungp-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52663 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752740Ab3JRLqx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2013 07:46:53 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-The thermal zone params can be used to set governor
-to specific thermal governor for thermal zone device.
-But if the thermal zone params has only governor name
-without thermal bind params, then the thermal zone device
-will not be binding to cooling device. Because tz->ops->bind
-operator is not invoked in bind_tz() and bind_cdev() when
-there is thermal zone params.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Signed-off-by: Jinyoung Park <jinyoungp-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+The snapshot_data structure used internally by the hibernate user
+space interface code in user.c has three char fields that are used
+to store boolean values.  Change their data type to bool and use
+true and false instead of 1 and 0, respectively, in assignments
+involving those fields.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ kernel/power/user.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4962a6a..2ea41d3 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -247,7 +247,7 @@ static void bind_cdev(struct thermal_cooling_device *cdev)
- 		if (!pos->tzp && !pos->ops->bind)
- 			continue;
+Index: linux-pm/kernel/power/user.c
+===================================================================
+--- linux-pm.orig/kernel/power/user.c
++++ linux-pm/kernel/power/user.c
+@@ -36,9 +36,9 @@ static struct snapshot_data {
+ 	struct snapshot_handle handle;
+ 	int swap;
+ 	int mode;
+-	char frozen;
+-	char ready;
+-	char platform_support;
++	bool frozen;
++	bool ready;
++	bool platform_support;
+ 	bool free_bitmaps;
+ } snapshot_state;
  
--		if (!pos->tzp && pos->ops->bind) {
-+		if (pos->ops->bind) {
- 			ret = pos->ops->bind(pos, cdev);
- 			if (ret)
- 				print_bind_err_msg(pos, cdev, ret);
-@@ -282,8 +282,8 @@ static void bind_tz(struct thermal_zone_device *tz)
+@@ -93,9 +93,9 @@ static int snapshot_open(struct inode *i
+ 	if (error)
+ 		atomic_inc(&snapshot_device_available);
  
- 	mutex_lock(&thermal_list_lock);
+-	data->frozen = 0;
+-	data->ready = 0;
+-	data->platform_support = 0;
++	data->frozen = false;
++	data->ready = false;
++	data->platform_support = false;
  
--	/* If there is no platform data, try to use ops->bind */
--	if (!tzp && tz->ops->bind) {
-+	/* If there is ops->bind, try to use ops->bind */
-+	if (tz->ops->bind) {
- 		list_for_each_entry(pos, &thermal_cdev_list, node) {
- 			ret = tz->ops->bind(tz, pos);
- 			if (ret)
--- 
-1.7.9.5
+  Unlock:
+ 	unlock_system_sleep();
+@@ -229,7 +229,7 @@ static long snapshot_ioctl(struct file *
+ 		if (error)
+ 			thaw_processes();
+ 		else
+-			data->frozen = 1;
++			data->frozen = true;
+ 
+ 		break;
+ 
+@@ -240,7 +240,7 @@ static long snapshot_ioctl(struct file *
+ 		free_basic_memory_bitmaps();
+ 		data->free_bitmaps = false;
+ 		thaw_processes();
+-		data->frozen = 0;
++		data->frozen = false;
+ 		break;
+ 
+ 	case SNAPSHOT_CREATE_IMAGE:
+@@ -270,7 +270,7 @@ static long snapshot_ioctl(struct file *
+ 	case SNAPSHOT_FREE:
+ 		swsusp_free();
+ 		memset(&data->handle, 0, sizeof(struct snapshot_handle));
+-		data->ready = 0;
++		data->ready = false;
+ 		/*
+ 		 * It is necessary to thaw kernel threads here, because
+ 		 * SNAPSHOT_CREATE_IMAGE may be invoked directly after
+@@ -334,7 +334,7 @@ static long snapshot_ioctl(struct file *
+ 		 * PM_HIBERNATION_PREPARE
+ 		 */
+ 		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
+-		data->ready = 0;
++		data->ready = false;
+ 		break;
+ 
+ 	case SNAPSHOT_PLATFORM_SUPPORT:
+
