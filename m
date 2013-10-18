@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 25/34] cpufreq: pxa: Convert to light weight ->target_index() routine
-Date: Fri, 18 Oct 2013 19:29:48 +0530
-Message-ID: <e90fadf2cd9e5cada068abc4e2a2de3ce541212c.1382104515.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 27/34] cpufreq: s3c64xx: Convert to light weight ->target_index() routine
+Date: Fri, 18 Oct 2013 19:29:50 +0530
+Message-ID: <5aee7290ead2f319d523ecdc99912b1ce99890c9.1382104515.git.viresh.kumar@linaro.org>
 References: <cover.1382104514.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
 References: <cover.1382104514.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eric Miao <eric.y.miao@gmail.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,104 +18,54 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Eric Miao <eric.y.miao@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pxa2xx-cpufreq.c | 13 ++-----------
- drivers/cpufreq/pxa3xx-cpufreq.c | 17 +++--------------
- 2 files changed, 5 insertions(+), 25 deletions(-)
+ drivers/cpufreq/s3c64xx-cpufreq.c | 18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-index 29aca57..183bc13 100644
---- a/drivers/cpufreq/pxa2xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-@@ -267,14 +267,11 @@ static unsigned int pxa_cpufreq_get(unsigned int cpu)
- 	return get_clk_frequency_khz(0);
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index 4616173..8bdcf32 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -63,26 +63,16 @@ static unsigned int s3c64xx_cpufreq_get_speed(unsigned int cpu)
  }
  
--static int pxa_set_target(struct cpufreq_policy *policy,
--			  unsigned int target_freq,
--			  unsigned int relation)
-+static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
+ static int s3c64xx_cpufreq_set_target(struct cpufreq_policy *policy,
+-				      unsigned int target_freq,
+-				      unsigned int relation)
++				      unsigned int index)
  {
- 	struct cpufreq_frequency_table *pxa_freqs_table;
- 	pxa_freqs_t *pxa_freq_settings;
+ 	int ret;
+-	unsigned int i;
  	struct cpufreq_freqs freqs;
--	unsigned int idx;
- 	unsigned long flags;
- 	unsigned int new_freq_cpu, new_freq_mem;
- 	unsigned int unused, preset_mdrefr, postset_mdrefr, cclkcfg;
-@@ -283,12 +280,6 @@ static int pxa_set_target(struct cpufreq_policy *policy,
- 	/* Get the current policy */
- 	find_freq_tables(&pxa_freqs_table, &pxa_freq_settings);
+ 	struct s3c64xx_dvfs *dvfs;
  
--	/* Lookup the next frequency */
--	if (cpufreq_frequency_table_target(policy, pxa_freqs_table,
--					   target_freq, relation, &idx)) {
--		return -EINVAL;
--	}
+-	ret = cpufreq_frequency_table_target(policy, s3c64xx_freq_table,
+-					     target_freq, relation, &i);
+-	if (ret != 0)
+-		return ret;
 -
- 	new_freq_cpu = pxa_freq_settings[idx].khz;
- 	new_freq_mem = pxa_freq_settings[idx].membus;
- 	freqs.old = policy->cur;
-@@ -448,7 +439,7 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
- 
- static struct cpufreq_driver pxa_cpufreq_driver = {
- 	.verify	= cpufreq_generic_frequency_table_verify,
--	.target	= pxa_set_target,
-+	.target_index = pxa_set_target,
- 	.init	= pxa_cpufreq_init,
- 	.exit	= cpufreq_generic_exit,
- 	.get	= pxa_cpufreq_get,
-diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
-index 47fbee4..132e37d 100644
---- a/drivers/cpufreq/pxa3xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa3xx-cpufreq.c
-@@ -155,24 +155,16 @@ static unsigned int pxa3xx_cpufreq_get(unsigned int cpu)
- 	return pxa3xx_get_clk_frequency_khz(0);
- }
- 
--static int pxa3xx_cpufreq_set(struct cpufreq_policy *policy,
--			      unsigned int target_freq,
--			      unsigned int relation)
-+static int pxa3xx_cpufreq_set(struct cpufreq_policy *policy, unsigned int index)
- {
- 	struct pxa3xx_freq_info *next;
- 	struct cpufreq_freqs freqs;
- 	unsigned long flags;
--	int idx;
- 
- 	if (policy->cpu != 0)
- 		return -EINVAL;
- 
--	/* Lookup the next frequency */
--	if (cpufreq_frequency_table_target(policy, pxa3xx_freqs_table,
--				target_freq, relation, &idx))
--		return -EINVAL;
+ 	freqs.old = clk_get_rate(armclk) / 1000;
+-	freqs.new = s3c64xx_freq_table[i].frequency;
++	freqs.new = s3c64xx_freq_table[index].frequency;
+ 	freqs.flags = 0;
+-	dvfs = &s3c64xx_dvfs_table[s3c64xx_freq_table[i].driver_data];
 -
--	next = &pxa3xx_freqs[idx];
-+	next = &pxa3xx_freqs[index];
- 
- 	freqs.old = policy->cur;
- 	freqs.new = next->cpufreq_mhz * 1000;
-@@ -181,9 +173,6 @@ static int pxa3xx_cpufreq_set(struct cpufreq_policy *policy,
- 			freqs.old / 1000, freqs.new / 1000,
- 			(freqs.old == freqs.new) ? " (skipped)" : "");
- 
--	if (freqs.old == target_freq)
+-	if (freqs.old == freqs.new)
 -		return 0;
--
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
++	dvfs = &s3c64xx_dvfs_table[s3c64xx_freq_table[index].driver_data];
  
- 	local_irq_save(flags);
-@@ -225,7 +214,7 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
+ 	pr_debug("Transition %d-%dkHz\n", freqs.old, freqs.new);
  
- static struct cpufreq_driver pxa3xx_cpufreq_driver = {
+@@ -254,7 +244,7 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
+ static struct cpufreq_driver s3c64xx_cpufreq_driver = {
+ 	.flags          = 0,
  	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= pxa3xx_cpufreq_set,
-+	.target_index	= pxa3xx_cpufreq_set,
- 	.init		= pxa3xx_cpufreq_init,
- 	.exit		= cpufreq_generic_exit,
- 	.get		= pxa3xx_cpufreq_get,
+-	.target		= s3c64xx_cpufreq_set_target,
++	.target_index	= s3c64xx_cpufreq_set_target,
+ 	.get		= s3c64xx_cpufreq_get_speed,
+ 	.init		= s3c64xx_cpufreq_driver_init,
+ 	.name		= "s3c",
 -- 
 1.7.12.rc2.18.g61b472e
