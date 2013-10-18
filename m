@@ -1,146 +1,99 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 4/5] cpufreq: arm_big_little: add vexpress SPC interface
- driver
-Date: Fri, 18 Oct 2013 14:59:55 -0400 (EDT)
-Message-ID: <alpine.LFD.2.03.1310181459320.1951@syhkavp.arg>
-References: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1381931563-16785-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [GIT PULL] ACPI and power management fixes for v3.12-rc6
+Date: Fri, 18 Oct 2013 21:51:13 +0200
+Message-ID: <2799827.4Qn62kYzMV@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1381931563-16785-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Oct 2013, Sudeep KarkadaNagesha wrote:
+Hi Linus,
 
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> The TC2(i.e. CA15_A7) Versatile Express has external Cortex M3 based
-> power controller which is responsible for CPU DVFS and SPC provides
-> the interface for the same.
-> 
-> This patch adds a tiny interface driver to check if OPPs are
-> initialised by SPC platform code and register the arm_big_little
-> cpufreq driver.
-> 
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Please pull from the git repository at
 
-Acked-by: Nicolas Pitre <nico@linaro.org>
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.12-rc6
+
+to receive ACPI and power management fixes for v3.12-rc6 with
+top-most commit 981984cbd09e41c05b4ec6260e3f68591354cd54
+
+  Merge branch Merge branch 'acpi-fixes'
+
+on top of commit 35f9162d67c3e20a82b4bd6ec538f3e9c14fb055
+
+  Merge tag 'pm+acpi-3.12-rc5' of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+
+These fix a bug related to system suspend/resume in intel_pstate and fix it
+up after a recent change, make a forgotten structure field change in one of
+cpufreq drivers, remove a leftover reference to /proc/acpi/event in Kconfig
+help, add a missing mutex unlock to an error code path in ACPI power resources
+code and drop a pile of unuseful code related to power resources that causes
+problems to happen on real systems.
+
+Specifics:
+
+ - intel_pstate fix for misbehavior after system resume if sysfs
+   attributes are set in a specific way before the corresponding
+   suspend from Dirk Brandewie.
+
+ - A recent intel_pstate fix has no effect if unsigned long is 32-bit,
+   so fix it up to cover that case as well.
+
+ - The s3c64xx cpufreq driver was not updated when the index field of
+   struct cpufreq_frequency_table was replaced with driver_data, so
+   update it now.  From Charles Keepax.
+
+ - The Kconfig help text for ACPI_BUTTON still refers to /proc/acpi/event
+   that has been dropped recently, so modify it to remove that reference.
+   From Krzysztof Mazur.
+
+ - A Lan Tianyu's change adds a missing mutex unlock to an error code
+   path in acpi_resume_power_resources().
+
+ - Some code related to ACPI power resources, whose very purpose is
+   questionable to put it lightly, turns out to cause problems to
+   happen during testing on real systems, so remove it completely
+   (we may revisit that in the future if there's a compelling enough
+   reason).  From yours truly and Aaron Lu.
+
+Thanks!
 
 
-> ---
->  drivers/cpufreq/Kconfig.arm            |  8 ++++
->  drivers/cpufreq/Makefile               |  1 +
->  drivers/cpufreq/vexpress-spc-cpufreq.c | 69 ++++++++++++++++++++++++++++++++++
->  3 files changed, 78 insertions(+)
->  create mode 100644 drivers/cpufreq/vexpress-spc-cpufreq.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 0fa204b..d3bf733 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -235,3 +235,11 @@ config ARM_TEGRA_CPUFREQ
->  	default y
->  	help
->  	  This adds the CPUFreq driver support for TEGRA SOCs.
-> +
-> +config ARM_VEXPRESS_SPC_CPUFREQ
-> +        tristate "Versatile Express SPC based CPUfreq driver"
-> +        select ARM_BIG_LITTLE_CPUFREQ
-> +        depends on ARCH_VEXPRESS_TC2_PM
-> +        help
-> +          This add the CPUfreq driver support for Versatile Express
-> +	  big.LITTLE platforms using SPC for power management.
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index ad5866c..a1c390f 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -77,6 +77,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)	+= sa1100-cpufreq.o
->  obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
-> +obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
->  
->  ##################################################################################
->  # PowerPC platform drivers
-> diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-> new file mode 100644
-> index 0000000..f0508bf
-> --- /dev/null
-> +++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-> @@ -0,0 +1,69 @@
-> +/*
-> + * Versatile Express SPC CPUFreq Interface driver
-> + *
-> + * It provides necessary ops to arm_big_little cpufreq driver.
-> + *
-> + * Copyright (C) 2013 ARM Ltd.
-> + * Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/cpufreq.h>
-> +#include <linux/opp.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/types.h>
-> +#include "arm_big_little.h"
-> +
-> +static int ve_spc_init_opp_table(struct device *cpu_dev)
-> +{
-> +	/*
-> +	 * platform specific SPC code must initialise the opp table
-> +	 * so just check if the OPP count is non-zero
-> +	 */
-> +	return opp_get_opp_count(cpu_dev) <= 0;
-> +}
-> +
-> +static int ve_spc_get_transition_latency(struct device *cpu_dev)
-> +{
-> +	return 1000000; /* 1 ms */
-> +}
-> +
-> +static struct cpufreq_arm_bL_ops ve_spc_cpufreq_ops = {
-> +	.name	= "vexpress-spc",
-> +	.get_transition_latency = ve_spc_get_transition_latency,
-> +	.init_opp_table = ve_spc_init_opp_table,
-> +};
-> +
-> +static int ve_spc_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +	return bL_cpufreq_register(&ve_spc_cpufreq_ops);
-> +}
-> +
-> +static int ve_spc_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +	bL_cpufreq_unregister(&ve_spc_cpufreq_ops);
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver ve_spc_cpufreq_platdrv = {
-> +	.driver = {
-> +		.name	= "vexpress-spc-cpufreq",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.probe		= ve_spc_cpufreq_probe,
-> +	.remove		= ve_spc_cpufreq_remove,
-> +};
-> +module_platform_driver(ve_spc_cpufreq_platdrv);
-> +
-> +MODULE_LICENSE("GPL");
-> -- 
-> 1.8.1.2
-> 
+---------------
+
+Aaron Lu (1):
+      ATA / ACPI: remove power dependent device handling
+
+Charles Keepax (1):
+      cpufreq: s3c64xx: Rename index to driver_data
+
+Dirk Brandewie (1):
+      cpufreq / intel_pstate: Fix max_perf_pct on resume
+
+Krzysztof Mazur (1):
+      ACPI: remove /proc/acpi/event from ACPI_BUTTON help
+
+Lan Tianyu (1):
+      ACPI / power: Release resource_lock after acpi_power_get_state() return error
+
+Rafael J. Wysocki (3):
+      intel_pstate: Fix type mismatch warning
+      ACPI / power: Drop automaitc resume of power resource dependent devices
+      ACPI / PM: Drop two functions that are not used any more
+
+---------------
+
+ drivers/acpi/Kconfig              |    6 +--
+ drivers/acpi/device_pm.c          |   56 --------------------
+ drivers/acpi/power.c              |  104 ++-----------------------------------
+ drivers/acpi/scan.c               |    1 -
+ drivers/ata/libata-acpi.c         |   14 -----
+ drivers/ata/libata-scsi.c         |    3 --
+ drivers/ata/libata.h              |    4 --
+ drivers/cpufreq/intel_pstate.c    |   14 ++---
+ drivers/cpufreq/s3c64xx-cpufreq.c |    2 +-
+ include/acpi/acpi_bus.h           |    7 ---
+ 10 files changed, 15 insertions(+), 196 deletions(-)
