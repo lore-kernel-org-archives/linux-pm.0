@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 19/34] cpufreq: omap: Convert to light weight ->target_index() routine
-Date: Fri, 18 Oct 2013 19:29:42 +0530
-Message-ID: <2955c345b6a55c0ead2c98f4a53ff4479233b905.1382104515.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 22/34] cpufreq: pmac32: Convert to light weight ->target_index() routine
+Date: Fri, 18 Oct 2013 19:29:45 +0530
+Message-ID: <2b47de3028a78c247f12521f42d3257556edc632.1382104515.git.viresh.kumar@linaro.org>
 References: <cover.1382104514.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
 References: <cover.1382104514.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,67 +18,88 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/omap-cpufreq.c | 31 +++----------------------------
- 1 file changed, 3 insertions(+), 28 deletions(-)
+ drivers/cpufreq/pmac32-cpufreq.c | 12 +++---------
+ drivers/cpufreq/pmac64-cpufreq.c | 17 ++++-------------
+ 2 files changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index ac552d0..b551271 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -51,40 +51,15 @@ static unsigned int omap_getspeed(unsigned int cpu)
- 	return rate;
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 6eac1e2..05f705e 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -374,17 +374,11 @@ static unsigned int pmac_cpufreq_get_speed(unsigned int cpu)
  }
  
--static int omap_target(struct cpufreq_policy *policy,
--		       unsigned int target_freq,
--		       unsigned int relation)
-+static int omap_target(struct cpufreq_policy *policy, unsigned int index)
+ static int pmac_cpufreq_target(	struct cpufreq_policy *policy,
+-					unsigned int target_freq,
+-					unsigned int relation)
++					unsigned int index)
  {
--	unsigned int i;
- 	int r, ret = 0;
+-	unsigned int    newstate = 0;
+ 	int		rc;
+ 
+-	if (cpufreq_frequency_table_target(policy, pmac_cpu_freqs,
+-			target_freq, relation, &newstate))
+-		return -EINVAL;
+-
+-	rc = do_set_cpu_speed(policy, newstate, 1);
++	rc = do_set_cpu_speed(policy, index, 1);
+ 
+ 	ppc_proc_freq = cur_freq * 1000ul;
+ 	return rc;
+@@ -453,7 +447,7 @@ static int pmac_cpufreq_resume(struct cpufreq_policy *policy)
+ 
+ static struct cpufreq_driver pmac_cpufreq_driver = {
+ 	.verify 	= cpufreq_generic_frequency_table_verify,
+-	.target 	= pmac_cpufreq_target,
++	.target_index	= pmac_cpufreq_target,
+ 	.get		= pmac_cpufreq_get_speed,
+ 	.init		= pmac_cpufreq_cpu_init,
+ 	.suspend	= pmac_cpufreq_suspend,
+diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+index 5261b92..234b598 100644
+--- a/drivers/cpufreq/pmac64-cpufreq.c
++++ b/drivers/cpufreq/pmac64-cpufreq.c
+@@ -312,27 +312,18 @@ static int g5_pfunc_query_freq(void)
+  * Common interface to the cpufreq core
+  */
+ 
+-static int g5_cpufreq_target(struct cpufreq_policy *policy,
+-	unsigned int target_freq, unsigned int relation)
++static int g5_cpufreq_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+-	unsigned int newstate = 0;
  	struct cpufreq_freqs freqs;
- 	struct dev_pm_opp *opp;
- 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
+ 	int rc;
  
--	if (!freq_table) {
--		dev_err(mpu_dev, "%s: cpu%d: no freq table!\n", __func__,
--				policy->cpu);
+-	if (cpufreq_frequency_table_target(policy, g5_cpu_freqs,
+-			target_freq, relation, &newstate))
 -		return -EINVAL;
--	}
 -
--	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
--			relation, &i);
--	if (ret) {
--		dev_dbg(mpu_dev, "%s: cpu%d: no freq match for %d(ret=%d)\n",
--			__func__, policy->cpu, target_freq, ret);
--		return ret;
--	}
--	freqs.new = freq_table[i].frequency;
--	if (!freqs.new) {
--		dev_err(mpu_dev, "%s: cpu%d: no match for freq %d\n", __func__,
--			policy->cpu, target_freq);
--		return -EINVAL;
--	}
+-	if (g5_pmode_cur == newstate)
+-		return 0;
 -
- 	freqs.old = omap_getspeed(policy->cpu);
--
--	if (freqs.old == freqs.new && policy->cur == freqs.new)
--		return ret;
-+	freqs.new = freq_table[index].frequency;
+ 	mutex_lock(&g5_switch_mutex);
  
- 	freq = freqs.new * 1000;
- 	ret = clk_round_rate(mpu_clk, freq);
-@@ -200,7 +175,7 @@ static int omap_cpu_exit(struct cpufreq_policy *policy)
- static struct cpufreq_driver omap_driver = {
- 	.flags		= CPUFREQ_STICKY,
+ 	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
+-	freqs.new = g5_cpu_freqs[newstate].frequency;
++	freqs.new = g5_cpu_freqs[index].frequency;
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+-	rc = g5_switch_freq(newstate);
++	rc = g5_switch_freq(index);
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 
+ 	mutex_unlock(&g5_switch_mutex);
+@@ -355,7 +346,7 @@ static struct cpufreq_driver g5_cpufreq_driver = {
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+ 	.init		= g5_cpufreq_cpu_init,
  	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= omap_target,
-+	.target_index	= omap_target,
- 	.get		= omap_getspeed,
- 	.init		= omap_cpu_init,
- 	.exit		= omap_cpu_exit,
+-	.target		= g5_cpufreq_target,
++	.target_index	= g5_cpufreq_target,
+ 	.get		= g5_cpufreq_get_speed,
+ 	.attr 		= cpufreq_generic_attr,
+ };
 -- 
 1.7.12.rc2.18.g61b472e
