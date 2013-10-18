@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 21/34] cpufreq: pasemi: Convert to light weight ->target_index() routine
-Date: Fri, 18 Oct 2013 19:29:44 +0530
-Message-ID: <f2a6b629c5064af19fdd4815729eb581263f5e91.1382104515.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 19/34] cpufreq: omap: Convert to light weight ->target_index() routine
+Date: Fri, 18 Oct 2013 19:29:42 +0530
+Message-ID: <2955c345b6a55c0ead2c98f4a53ff4479233b905.1382104515.git.viresh.kumar@linaro.org>
 References: <cover.1382104514.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
 References: <cover.1382104514.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
 This patch converts existing .target() to newly defined light weight
@@ -18,45 +18,67 @@ This patch converts existing .target() to newly defined light weight
 CPUFreq core will call cpufreq_frequency_table_target() before calling this
 routine and will pass index to it.
 
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pasemi-cpufreq.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ drivers/cpufreq/omap-cpufreq.c | 31 +++----------------------------
+ 1 file changed, 3 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 1cca332..17424dd 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -240,19 +240,11 @@ static int pas_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index ac552d0..b551271 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -51,40 +51,15 @@ static unsigned int omap_getspeed(unsigned int cpu)
+ 	return rate;
  }
  
- static int pas_cpufreq_target(struct cpufreq_policy *policy,
--			      unsigned int target_freq,
--			      unsigned int relation)
-+			      unsigned int pas_astate_new)
+-static int omap_target(struct cpufreq_policy *policy,
+-		       unsigned int target_freq,
+-		       unsigned int relation)
++static int omap_target(struct cpufreq_policy *policy, unsigned int index)
  {
+-	unsigned int i;
+ 	int r, ret = 0;
  	struct cpufreq_freqs freqs;
--	int pas_astate_new;
- 	int i;
+ 	struct dev_pm_opp *opp;
+ 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
  
--	cpufreq_frequency_table_target(policy,
--				       pas_freqs,
--				       target_freq,
--				       relation,
--				       &pas_astate_new);
+-	if (!freq_table) {
+-		dev_err(mpu_dev, "%s: cpu%d: no freq table!\n", __func__,
+-				policy->cpu);
+-		return -EINVAL;
+-	}
 -
- 	freqs.old = policy->cur;
- 	freqs.new = pas_freqs[pas_astate_new].frequency;
+-	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
+-			relation, &i);
+-	if (ret) {
+-		dev_dbg(mpu_dev, "%s: cpu%d: no freq match for %d(ret=%d)\n",
+-			__func__, policy->cpu, target_freq, ret);
+-		return ret;
+-	}
+-	freqs.new = freq_table[i].frequency;
+-	if (!freqs.new) {
+-		dev_err(mpu_dev, "%s: cpu%d: no match for freq %d\n", __func__,
+-			policy->cpu, target_freq);
+-		return -EINVAL;
+-	}
+-
+ 	freqs.old = omap_getspeed(policy->cpu);
+-
+-	if (freqs.old == freqs.new && policy->cur == freqs.new)
+-		return ret;
++	freqs.new = freq_table[index].frequency;
  
-@@ -282,7 +274,7 @@ static struct cpufreq_driver pas_cpufreq_driver = {
- 	.init		= pas_cpufreq_cpu_init,
- 	.exit		= pas_cpufreq_cpu_exit,
+ 	freq = freqs.new * 1000;
+ 	ret = clk_round_rate(mpu_clk, freq);
+@@ -200,7 +175,7 @@ static int omap_cpu_exit(struct cpufreq_policy *policy)
+ static struct cpufreq_driver omap_driver = {
+ 	.flags		= CPUFREQ_STICKY,
  	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= pas_cpufreq_target,
-+	.target_index	= pas_cpufreq_target,
- 	.attr		= cpufreq_generic_attr,
- };
- 
+-	.target		= omap_target,
++	.target_index	= omap_target,
+ 	.get		= omap_getspeed,
+ 	.init		= omap_cpu_init,
+ 	.exit		= omap_cpu_exit,
 -- 
 1.7.12.rc2.18.g61b472e
-
