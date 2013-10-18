@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 32/34] cpufreq: SPEAr: Convert to light weight ->target_index() routine
-Date: Fri, 18 Oct 2013 19:29:55 +0530
-Message-ID: <fc822a73c899f2846e1cf8a112eff24b8f08ea6c.1382104515.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 30/34] cpufreq: sc520: Convert to light weight ->target_index() routine
+Date: Fri, 18 Oct 2013 19:29:53 +0530
+Message-ID: <a8a7719e1d1f47cebc23f188bc85d04a0d0ea953.1382104515.git.viresh.kumar@linaro.org>
 References: <cover.1382104514.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1382104514.git.viresh.kumar@linaro.org>
@@ -20,45 +20,56 @@ routine and will pass index to it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/spear-cpufreq.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/cpufreq/sc520_freq.c | 19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 8841366..11a65be 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -105,20 +105,16 @@ static int spear1340_set_cpu_rate(struct clk *sys_pclk, unsigned long newfreq)
+diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
+index 9047ab1..6c86452 100644
+--- a/drivers/cpufreq/sc520_freq.c
++++ b/drivers/cpufreq/sc520_freq.c
+@@ -53,8 +53,7 @@ static unsigned int sc520_freq_get_cpu_frequency(unsigned int cpu)
+ 	}
  }
  
- static int spear_cpufreq_target(struct cpufreq_policy *policy,
--		unsigned int target_freq, unsigned int relation)
-+		unsigned int index)
+-static void sc520_freq_set_cpu_state(struct cpufreq_policy *policy,
+-		unsigned int state)
++static int sc520_freq_target(struct cpufreq_policy *policy, unsigned int state)
  {
- 	struct cpufreq_freqs freqs;
- 	long newfreq;
- 	struct clk *srcclk;
--	int index, ret, mult = 1;
--
--	if (cpufreq_frequency_table_target(policy, spear_cpufreq.freq_tbl,
--				target_freq, relation, &index))
--		return -EINVAL;
-+	int ret, mult = 1;
  
- 	freqs.old = spear_cpufreq_get(0);
+ 	struct cpufreq_freqs	freqs;
+@@ -76,24 +75,10 @@ static void sc520_freq_set_cpu_state(struct cpufreq_policy *policy,
+ 	local_irq_enable();
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-};
 -
- 	newfreq = spear_cpufreq.freq_tbl[index].frequency * 1000;
-+
- 	if (of_machine_is_compatible("st,spear1340")) {
- 		/*
- 		 * SPEAr1340 is special in the sense that due to the possibility
-@@ -179,7 +175,7 @@ static struct cpufreq_driver spear_cpufreq_driver = {
- 	.name		= "cpufreq-spear",
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= cpufreq_generic_frequency_table_verify,
--	.target		= spear_cpufreq_target,
-+	.target_index	= spear_cpufreq_target,
- 	.get		= spear_cpufreq_get,
- 	.init		= spear_cpufreq_init,
- 	.exit		= cpufreq_generic_exit,
+-static int sc520_freq_target(struct cpufreq_policy *policy,
+-			    unsigned int target_freq,
+-			    unsigned int relation)
+-{
+-	unsigned int newstate = 0;
+-
+-	if (cpufreq_frequency_table_target(policy, sc520_freq_table,
+-				target_freq, relation, &newstate))
+-		return -EINVAL;
+-
+-	sc520_freq_set_cpu_state(policy, newstate);
+ 
+ 	return 0;
+ }
+ 
+-
+ /*
+  *	Module init and exit code
+  */
+@@ -117,7 +102,7 @@ static int sc520_freq_cpu_init(struct cpufreq_policy *policy)
+ static struct cpufreq_driver sc520_freq_driver = {
+ 	.get	= sc520_freq_get_cpu_frequency,
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+-	.target	= sc520_freq_target,
++	.target_index = sc520_freq_target,
+ 	.init	= sc520_freq_cpu_init,
+ 	.exit	= cpufreq_generic_exit,
+ 	.name	= "sc520_freq",
 -- 
 1.7.12.rc2.18.g61b472e
