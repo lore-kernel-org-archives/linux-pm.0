@@ -1,32 +1,39 @@
-From: Saumya Ranjan Kuanr <saumyakuanr@gmail.com>
-Subject: [PATCH] cpu-idle: cpuidle-ux500: fixed a coding style issue
-Date: Sat, 19 Oct 2013 00:28:48 -0700
-Message-ID: <1382167729-21232-1-git-send-email-saumyakuanr@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, saumyakuanr@gmail.com
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: [PATCH 3/4] mvebu: Dove: Enable cpufreq driver in defconfig
+Date: Sat, 19 Oct 2013 14:37:40 +0200
+Message-ID: <1382186261-14482-4-git-send-email-andrew@lunn.ch>
+References: <1382186261-14482-1-git-send-email-andrew@lunn.ch>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from vps0.lunn.ch ([178.209.37.122]:42458 "EHLO vps0.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752128Ab3JSMmY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 19 Oct 2013 08:42:24 -0400
+In-Reply-To: <1382186261-14482-1-git-send-email-andrew@lunn.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, Andrew Lunn <andrew@lunn.ch>
 
-Fixed a coding style issue
+Add cpufreq to dove_defconfig, so it is built by default.
 
-Signed-off-by: Saumya Ranjan Kuanr<saumyakuanr@gmail.com>
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/cpuidle/cpuidle-ux500.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/configs/dove_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuidle-ux500.c
-index e056465..746d716 100644
---- a/drivers/cpuidle/cpuidle-ux500.c
-+++ b/drivers/cpuidle/cpuidle-ux500.c
-@@ -102,7 +102,7 @@ static struct cpuidle_driver ux500_idle_driver = {
- 			.exit_latency	  = 70,
- 			.target_residency = 260,
- 			.flags		  = CPUIDLE_FLAG_TIME_VALID |
--			                    CPUIDLE_FLAG_TIMER_STOP,
-+						CPUIDLE_FLAG_TIMER_STOP,
- 			.name		  = "ApIdle",
- 			.desc		  = "ARM Retention",
- 		},
---
-1.7.9.5
+diff --git a/arch/arm/configs/dove_defconfig b/arch/arm/configs/dove_defconfig
+index 1101054..3d92350 100644
+--- a/arch/arm/configs/dove_defconfig
++++ b/arch/arm/configs/dove_defconfig
+@@ -22,6 +22,8 @@ CONFIG_ZBOOT_ROM_TEXT=0x0
+ CONFIG_ZBOOT_ROM_BSS=0x0
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
++CONFIG_CPU_FREQ=y
++CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+ CONFIG_VFP=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+-- 
+1.8.4.rc3
+
