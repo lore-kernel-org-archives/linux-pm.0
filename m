@@ -1,64 +1,136 @@
-From: arno@natisbad.org (Arnaud Ebalard)
-Subject: [REGRESSION?] sensors and fancontrol not seeing armada_thermal on
- 3.12-rc series
-Date: Sun, 20 Oct 2013 20:10:41 +0200
-Message-ID: <87ppqzolsu.fsf@natisbad.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [REGRESSION?] sensors and fancontrol not seeing armada_thermal
+ on 3.12-rc series
+Date: Sun, 20 Oct 2013 12:23:27 -0700
+Message-ID: <52642DAF.8080301@roeck-us.net>
+References: <87ppqzolsu.fsf@natisbad.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Gregory Clement <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.active-venture.com ([67.228.131.205]:53878 "EHLO
+	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450Ab3JTTXf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Oct 2013 15:23:35 -0400
+In-Reply-To: <87ppqzolsu.fsf@natisbad.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnaud Ebalard <arno@natisbad.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>
+Cc: linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>
 
-SGksCgpXaXRoIDMuMTItcmMgc2VyaWVzLCBzeXNmcyBzdXBwb3J0IGZvciB0aGVybWFsIHN1c2Jz
-eXRlbSAoYW5kL29yIGh3bW9uCm9uZSkgd2FzIG1vZGlmaWVkIGluIHN1Y2ggYSB3YXkgdGhhdCBz
-ZW5zb3JzIHV0aWxpdHkgKGN1cnJlbnQgMy4zLjQKdmVyc2lvbiB3aXRoIDMuMy40IHZlcnNpb24g
-b2YgbGlic2Vuc29ycyBmcm9tIGxtLXNlbnNvcnMgcGFja2FnZSBvbgpEZWJpYW4gdW5zdGFibGUp
-IGRvZXMgbm90IHNlZSB0aGUgdGVtcGVyYXR1cmUgc2Vuc29yIGFueW1vcmUgb24gYXJtYWRhCjM3
-MCBwbGF0Zm9ybXMgKG5vdCB0ZXN0ZWQgb24gb3RoZXJzKS4gQWRkaXRpb25hbGx5LCB0aGUgY2hh
-bmdlcyBicmVhawpleGlzdGluZyBjb25maWd1cmF0aW9ucyBvZiBmYW5jb250cm9sIHV0aWxpdHks
-IHdoaWNoIHByZXZlbnRzIHRoZSAKZmFuIHRvIGJlIHJlZ3VsYXRlZCBjb3JyZWN0bHkgdy9vIHJl
-Y3JlYXRpbmcgYW4gL2V0Yy9mYW5jb250cm9sIHcvCnB3bWNvbmZpZy4KCkhlcmUgaXMgd2hhdCBJ
-IGhhdmUgb24gbXkgQXJtYWRhIDM3MC1iYXNlZCBzeXN0ZW0gb24gYSAzLjExLjU6CgojIHNlbnNv
-cnMKZzc2Mi1pMmMtMC0zZQpBZGFwdGVyOiBtdjY0eHh4X2kyYyBhZGFwdGVyCmZhbjE6ICAgICAg
-ICAyNDU3IFJQTSAgKGRpdiA9IDEpCgphcm1hZGFfdGhlcm1hbC12aXJ0dWFsLTAKQWRhcHRlcjog
-VmlydHVhbCBkZXZpY2UKdGVtcDE6ICAgICAgICArNDUuN8KwQyAgCgpBbmQgd2hhdCBJIGdldCBv
-biAzLjEyLXJjNjoKCiMgc2Vuc29ycwpnNzYyLWkyYy0wLTNlCkFkYXB0ZXI6IG12NjR4eHhfaTJj
-IGFkYXB0ZXIKZmFuMTogICAgICAgIDEzNTAgUlBNICAoZGl2ID0gMSkKCgpNb25pdG9yaW5nIHdo
-YXQgc2Vuc29ycyBkb2VzIHcvIHN0cmFjZSwgSSBzdGFydGVkIGxvb2tpbmcgYXQgdGhlIGNoYW5n
-ZXMKdG8gL3N5cy9jbGFzcy9od21vbi9od21vbjEvOgoKT24gMy4xMS41OgoKIyBmaW5kIC9zeXMv
-Y2xhc3MvaHdtb24vaHdtb24xLwovc3lzL2NsYXNzL2h3bW9uL2h3bW9uMS8KL3N5cy9jbGFzcy9o
-d21vbi9od21vbjEvbmFtZQovc3lzL2NsYXNzL2h3bW9uL2h3bW9uMS9zdWJzeXN0ZW0KL3N5cy9j
-bGFzcy9od21vbi9od21vbjEvdWV2ZW50Ci9zeXMvY2xhc3MvaHdtb24vaHdtb24xL3RlbXAxX2lu
-cHV0CgpPbiAzLjEyLXJjNjoKCiMgZmluZCAvc3lzL2NsYXNzL2h3bW9uL2h3bW9uMS8KL3N5cy9j
-bGFzcy9od21vbi9od21vbjEvCi9zeXMvY2xhc3MvaHdtb24vaHdtb24xL25hbWUKL3N5cy9jbGFz
-cy9od21vbi9od21vbjEvZGV2aWNlCi9zeXMvY2xhc3MvaHdtb24vaHdtb24xL3N1YnN5c3RlbQov
-c3lzL2NsYXNzL2h3bW9uL2h3bW9uMS91ZXZlbnQKL3N5cy9jbGFzcy9od21vbi9od21vbjEvdGVt
-cDFfaW5wdXQKCiMgZmluZCAvc3lzL2NsYXNzL2h3bW9uL2h3bW9uMS9kZXZpY2UvCi9zeXMvY2xh
-c3MvaHdtb24vaHdtb24xL2RldmljZS8KL3N5cy9jbGFzcy9od21vbi9od21vbjEvZGV2aWNlL3Rl
-bXAKL3N5cy9jbGFzcy9od21vbi9od21vbjEvZGV2aWNlL3R5cGUKL3N5cy9jbGFzcy9od21vbi9o
-d21vbjEvZGV2aWNlL2h3bW9uMQovc3lzL2NsYXNzL2h3bW9uL2h3bW9uMS9kZXZpY2UvaHdtb24x
-L25hbWUKL3N5cy9jbGFzcy9od21vbi9od21vbjEvZGV2aWNlL2h3bW9uMS9kZXZpY2UKL3N5cy9j
-bGFzcy9od21vbi9od21vbjEvZGV2aWNlL2h3bW9uMS9zdWJzeXN0ZW0KL3N5cy9jbGFzcy9od21v
-bi9od21vbjEvZGV2aWNlL2h3bW9uMS91ZXZlbnQKL3N5cy9jbGFzcy9od21vbi9od21vbjEvZGV2
-aWNlL2h3bW9uMS90ZW1wMV9pbnB1dAovc3lzL2NsYXNzL2h3bW9uL2h3bW9uMS9kZXZpY2Uvc3Vi
-c3lzdGVtCi9zeXMvY2xhc3MvaHdtb24vaHdtb24xL2RldmljZS9wb2xpY3kKL3N5cy9jbGFzcy9o
-d21vbi9od21vbjEvZGV2aWNlL3VldmVudAovc3lzL2NsYXNzL2h3bW9uL2h3bW9uMS9kZXZpY2Uv
-cGFzc2l2ZQoKSXMgdGhhdCBleHBlY3RlZD8gQXMgZm9yIHNlbnNvcnMsIGl0ICpzZWVtcyogdG8g
-YmUgYm90aGVyZWQgdG8gZmluZCBhCmRldmljZS8gZm9sZGVyIGluIC9zeXMvY2xhc3MvaHdtb24v
-aHdtb24xLyB3L28gbm8gbmFtZSBlbnRyeSBpbiBpdC4KCkNoZWVycywKCmErCgpwczogSSBjYW4g
-dGVzdCBpZiB0aGlzIGlzIHRoZSBzYW1lIG9uIGtpcmt3b29kIGlmIHRoZXJlIGlzIGEgbmVlZC4K
-Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFy
-bS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9y
-ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1r
-ZXJuZWwK
+On 10/20/2013 11:10 AM, Arnaud Ebalard wrote:
+> Hi,
+>
+> With 3.12-rc series, sysfs support for thermal susbsytem (and/or hwmo=
+n
+> one) was modified in such a way that sensors utility (current 3.3.4
+> version with 3.3.4 version of libsensors from lm-sensors package on
+> Debian unstable) does not see the temperature sensor anymore on armad=
+a
+> 370 platforms (not tested on others). Additionally, the changes break
+> existing configurations of fancontrol utility, which prevents the
+> fan to be regulated correctly w/o recreating an /etc/fancontrol w/
+> pwmconfig.
+>
+> Here is what I have on my Armada 370-based system on a 3.11.5:
+>
+> # sensors
+> g762-i2c-0-3e
+> Adapter: mv64xxx_i2c adapter
+> fan1:        2457 RPM  (div =3D 1)
+>
+> armada_thermal-virtual-0
+> Adapter: Virtual device
+> temp1:        +45.7=C2=B0C
+>
+> And what I get on 3.12-rc6:
+>
+> # sensors
+> g762-i2c-0-3e
+> Adapter: mv64xxx_i2c adapter
+> fan1:        1350 RPM  (div =3D 1)
+>
+>
+> Monitoring what sensors does w/ strace, I started looking at the chan=
+ges
+> to /sys/class/hwmon/hwmon1/:
+>
+> On 3.11.5:
+>
+> # find /sys/class/hwmon/hwmon1/
+> /sys/class/hwmon/hwmon1/
+> /sys/class/hwmon/hwmon1/name
+> /sys/class/hwmon/hwmon1/subsystem
+> /sys/class/hwmon/hwmon1/uevent
+> /sys/class/hwmon/hwmon1/temp1_input
+>
+> On 3.12-rc6:
+>
+> # find /sys/class/hwmon/hwmon1/
+> /sys/class/hwmon/hwmon1/
+> /sys/class/hwmon/hwmon1/name
+> /sys/class/hwmon/hwmon1/device
+> /sys/class/hwmon/hwmon1/subsystem
+> /sys/class/hwmon/hwmon1/uevent
+> /sys/class/hwmon/hwmon1/temp1_input
+>
+> # find /sys/class/hwmon/hwmon1/device/
+> /sys/class/hwmon/hwmon1/device/
+> /sys/class/hwmon/hwmon1/device/temp
+> /sys/class/hwmon/hwmon1/device/type
+> /sys/class/hwmon/hwmon1/device/hwmon1
+> /sys/class/hwmon/hwmon1/device/hwmon1/name
+> /sys/class/hwmon/hwmon1/device/hwmon1/device
+> /sys/class/hwmon/hwmon1/device/hwmon1/subsystem
+> /sys/class/hwmon/hwmon1/device/hwmon1/uevent
+> /sys/class/hwmon/hwmon1/device/hwmon1/temp1_input
+> /sys/class/hwmon/hwmon1/device/subsystem
+> /sys/class/hwmon/hwmon1/device/policy
+> /sys/class/hwmon/hwmon1/device/uevent
+> /sys/class/hwmon/hwmon1/device/passive
+>
+> Is that expected? As for sensors, it *seems* to be bothered to find a
+> device/ folder in /sys/class/hwmon/hwmon1/ w/o no name entry in it.
+>
+
+The 'name' attribute should not be the problem, since there is a 'name'
+attribute in the /sys/class/hwmon/hwmon1/ directory.
+
+Key difference is that there is now a 'device' subdirectory, which resu=
+lts
+in different handling by libsensors; the entry is no longer a virtual e=
+ntry
+but is expected to have a real device attached to it. For this device,
+libsensors tries to scan the 'subsystem' entry which in turn must be we=
+ll
+defined and known. My suspicion is that the reported subsystem may not =
+be
+recognized by libsensors.
+
+One question is why there is now a device entry, even though this is st=
+ill as
+virtual as it was before. You'll have to ask the thermal subsystem main=
+tainers
+for an answer.
+
+I am also concerned about the 'hwmon1' subdirectory underneath hwmon1/d=
+evice;
+that suggests that hwmon1 may be declared to be a child of itself, whic=
+h would
+obviously not be a good idea.
+
+Also, note that the thermal subsystem creates (or may create) sensor at=
+tributes
+after registering the hwmon device, which means you can not rely on the=
+ udev
+event that comes with the hwmon device creation and assume that all sen=
+sor
+attributes exist at that time. I don't currently know how to handle thi=
+s situation.
+This is not unique, though; the coretemp driver does the same. Just som=
+ething
+to keep in mind.
+
+Guenter
+
