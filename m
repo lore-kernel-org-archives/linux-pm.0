@@ -1,136 +1,78 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [REGRESSION?] sensors and fancontrol not seeing armada_thermal
- on 3.12-rc series
-Date: Sun, 20 Oct 2013 12:23:27 -0700
-Message-ID: <52642DAF.8080301@roeck-us.net>
-References: <87ppqzolsu.fsf@natisbad.org>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
+Date: Mon, 21 Oct 2013 05:51:42 +0900
+Message-ID: <5264425E.4040301@samsung.com>
+References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com> <1816869.ggMDlA1qNY@flatron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.active-venture.com ([67.228.131.205]:53878 "EHLO
-	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450Ab3JTTXf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Oct 2013 15:23:35 -0400
-In-Reply-To: <87ppqzolsu.fsf@natisbad.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:36724 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654Ab3JTUvu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Oct 2013 16:51:50 -0400
+In-Reply-To: <1816869.ggMDlA1qNY@flatron>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnaud Ebalard <arno@natisbad.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>
-Cc: linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: rjw@sisk.pl, kgene.kim@samsung.com, mturquette@linaro.org, mark.rutland@arm.com, swarren@wwwdotorg.org, linux-doc@vger.kernel.org, viresh.kumar@linaro.org, s.nawrocki@samsung.com, m.szyprowski@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, thomas.abraham@linaro.org, b.zolnierkie@samsung.com, t.stanislaws@samsung.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, rob.herring@calxeda.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, rob@landley.net
 
-On 10/20/2013 11:10 AM, Arnaud Ebalard wrote:
-> Hi,
+On 10/20/13 01:03, Tomasz Figa wrote:
+> Hi Mike, Kukjin, Rafael,
 >
-> With 3.12-rc series, sysfs support for thermal susbsytem (and/or hwmo=
-n
-> one) was modified in such a way that sensors utility (current 3.3.4
-> version with 3.3.4 version of libsensors from lm-sensors package on
-> Debian unstable) does not see the temperature sensor anymore on armad=
-a
-> 370 platforms (not tested on others). Additionally, the changes break
-> existing configurations of fancontrol utility, which prevents the
-> fan to be regulated correctly w/o recreating an /etc/fancontrol w/
-> pwmconfig.
+> On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
+>> This patch series is the new s5pv210 clock implementation
+>> (using common clk framework).
+>>
+>> This implementation is compatible with device tree definition and board
+>> files.
+>>
+>> This patch series is based on linux-next and has been tested on goni and
+>> aquila
+>> boards using board file.
+>>
+>> Since v4:
+>> Corrected mux flags for finpll.
+>>
+>> Since v3:
+>>
+>> Replace s5pv210_clk_register_finpll, by creating mux finpll
+>> with xusbxti and xxti as parrents.
+>>
+>>
+>> Mateusz Krawczuk (3):
+>>    clk: samsung: Add clock driver for s5pc110/s5pv210
+>>    Cpufreq: s5pv210 cpufreq fixes for CCF
+>>    ARM: s5pv210: Migrate clock handling to Common Clock Framework
+>>
+>>   .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+>>   arch/arm/mach-s5pv210/Kconfig                      |   9 +
+>>   arch/arm/mach-s5pv210/Makefile                     |   4 +-
+>>   arch/arm/mach-s5pv210/common.c                     |  17 +
+>>   arch/arm/mach-s5pv210/common.h                     |  10 +
+>>   arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+>>   arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+>>   arch/arm/plat-samsung/Kconfig                      |   2 +-
+>>   drivers/clk/samsung/Makefile                       |   3 +
+>>   drivers/clk/samsung/clk-s5pv210.c                  | 673
+>> +++++++++++++++++++++ drivers/cpufreq/s5pv210-cpufreq.c
+>>   |   6 +-
+>>   include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+>>   12 files changed, 1019 insertions(+), 8 deletions(-)
+>>   create mode 100644
+>> Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+>> create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+>>   create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
 >
-> Here is what I have on my Armada 370-based system on a 3.11.5:
+> I believe this series is reasonable to be applied. Could we agree on
+> the tree it would go through and get all tne required acks?
 >
-> # sensors
-> g762-i2c-0-3e
-> Adapter: mv64xxx_i2c adapter
-> fan1:        2457 RPM  (div =3D 1)
->
-> armada_thermal-virtual-0
-> Adapter: Virtual device
-> temp1:        +45.7=C2=B0C
->
-> And what I get on 3.12-rc6:
->
-> # sensors
-> g762-i2c-0-3e
-> Adapter: mv64xxx_i2c adapter
-> fan1:        1350 RPM  (div =3D 1)
->
->
-> Monitoring what sensors does w/ strace, I started looking at the chan=
-ges
-> to /sys/class/hwmon/hwmon1/:
->
-> On 3.11.5:
->
-> # find /sys/class/hwmon/hwmon1/
-> /sys/class/hwmon/hwmon1/
-> /sys/class/hwmon/hwmon1/name
-> /sys/class/hwmon/hwmon1/subsystem
-> /sys/class/hwmon/hwmon1/uevent
-> /sys/class/hwmon/hwmon1/temp1_input
->
-> On 3.12-rc6:
->
-> # find /sys/class/hwmon/hwmon1/
-> /sys/class/hwmon/hwmon1/
-> /sys/class/hwmon/hwmon1/name
-> /sys/class/hwmon/hwmon1/device
-> /sys/class/hwmon/hwmon1/subsystem
-> /sys/class/hwmon/hwmon1/uevent
-> /sys/class/hwmon/hwmon1/temp1_input
->
-> # find /sys/class/hwmon/hwmon1/device/
-> /sys/class/hwmon/hwmon1/device/
-> /sys/class/hwmon/hwmon1/device/temp
-> /sys/class/hwmon/hwmon1/device/type
-> /sys/class/hwmon/hwmon1/device/hwmon1
-> /sys/class/hwmon/hwmon1/device/hwmon1/name
-> /sys/class/hwmon/hwmon1/device/hwmon1/device
-> /sys/class/hwmon/hwmon1/device/hwmon1/subsystem
-> /sys/class/hwmon/hwmon1/device/hwmon1/uevent
-> /sys/class/hwmon/hwmon1/device/hwmon1/temp1_input
-> /sys/class/hwmon/hwmon1/device/subsystem
-> /sys/class/hwmon/hwmon1/device/policy
-> /sys/class/hwmon/hwmon1/device/uevent
-> /sys/class/hwmon/hwmon1/device/passive
->
-> Is that expected? As for sensors, it *seems* to be bothered to find a
-> device/ folder in /sys/class/hwmon/hwmon1/ w/o no name entry in it.
->
+> Best regards,
+> Tomasz
 
-The 'name' attribute should not be the problem, since there is a 'name'
-attribute in the /sys/class/hwmon/hwmon1/ directory.
+I agree.
 
-Key difference is that there is now a 'device' subdirectory, which resu=
-lts
-in different handling by libsensors; the entry is no longer a virtual e=
-ntry
-but is expected to have a real device attached to it. For this device,
-libsensors tries to scan the 'subsystem' entry which in turn must be we=
-ll
-defined and known. My suspicion is that the reported subsystem may not =
-be
-recognized by libsensors.
+Mike, how do you think the common clk stuff for s5pv210?
 
-One question is why there is now a device entry, even though this is st=
-ill as
-virtual as it was before. You'll have to ask the thermal subsystem main=
-tainers
-for an answer.
-
-I am also concerned about the 'hwmon1' subdirectory underneath hwmon1/d=
-evice;
-that suggests that hwmon1 may be declared to be a child of itself, whic=
-h would
-obviously not be a good idea.
-
-Also, note that the thermal subsystem creates (or may create) sensor at=
-tributes
-after registering the hwmon device, which means you can not rely on the=
- udev
-event that comes with the hwmon device creation and assume that all sen=
-sor
-attributes exist at that time. I don't currently know how to handle thi=
-s situation.
-This is not unique, though; the coretemp driver does the same. Just som=
-ething
-to keep in mind.
-
-Guenter
+- Kukjin
 
