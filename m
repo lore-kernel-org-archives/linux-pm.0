@@ -1,157 +1,199 @@
-From: "Huang, Adrian (ISS Linux TW)" <adrian.huang@hp.com>
-Subject: RE: [PATCH 1/1] Skip the driver if ACPI has power mgmt option
-Date: Mon, 21 Oct 2013 05:18:03 +0000
-Message-ID: <A245C843D1F08E4C80DF76CC249D4B374DE73D09@G4W3206.americas.hpqcorp.net>
-References: <1379662368-6580-1-git-send-email-adrian.huang@hp.com>
- <4334478.yhzGFGWLbQ@vostro.rjw.lan>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [REGRESSION?] sensors and fancontrol not seeing armada_thermal
+ on 3.12-rc series
+Date: Sun, 20 Oct 2013 22:19:10 -0700
+Message-ID: <5264B94E.9090805@roeck-us.net>
+References: <87ppqzolsu.fsf@natisbad.org> <52642DAF.8080301@roeck-us.net> <1382322502.2410.12.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Knippers, Linda" <linda.knippers@hp.com>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.active-venture.com ([67.228.131.205]:58994 "EHLO
+	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752490Ab3JUFTS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 01:19:18 -0400
+In-Reply-To: <1382322502.2410.12.camel@rzhang1-mobl4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Arnaud Ebalard <arno@natisbad.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Jean Delvare <khali@linux-fr.org>, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>
 
-UGxlYXNlIGlnbm9yZSB0aGlzIGVtYWlsIHRocmVhZC4gSSdsbCByZS1jcmVhdGUgYSBuZXcgZW1h
-aWwgdGhyZWFkIGJhc2VkIG9uIFJhZmFlbCdzIHN1Z2dlc3Rpb24uIA0KDQoNCi0tIEFkcmlhbg0K
-DQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogSHVhbmcsIEFkcmlhbiAoSVNTIExp
-bnV4IFRXKSANClNlbnQ6IE1vbmRheSwgT2N0b2JlciAyMSwgMjAxMyAxMjoxOCBBTQ0KVG86ICdS
-YWZhZWwgSi4gV3lzb2NraScNCkNjOiBWaXJlc2ggS3VtYXI7IGNwdWZyZXFAdmdlci5rZXJuZWwu
-b3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IEtuaXBwZXJzLCBMaW5kYTsgSHVhbmcsIEFk
-cmlhbiAoSVNTIExpbnV4IFRXKQ0KU3ViamVjdDogUkU6IFtQQVRDSCAxLzFdIFNraXAgdGhlIGRy
-aXZlciBpZiBBQ1BJIGhhcyBwb3dlciBtZ210IG9wdGlvbg0KDQpIaSBSYWZhZWwsDQoNClRoYW5r
-cyBmb3IgdGhlIHN1Z2dlc3Rpb24uIFRoZSBjb2RlIHNuaXBwZXQgd2FzIHJlLXdyaXR0ZW4gYWNj
-b3JkaW5nbHkuIFBsZWFzZSBoYXZlIGEgcmV2aWV3LiANCg0KDQpTaWduZWQtb2ZmLWJ5OiBBZHJp
-YW4gSHVhbmcgPGFkcmlhbi5odWFuZ0BocC5jb20+DQotLS0NCiBkcml2ZXJzL2NwdWZyZXEvaW50
-ZWxfcHN0YXRlLmMgfCA4MCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysNCiAxIGZpbGUgY2hhbmdlZCwgODAgaW5zZXJ0aW9ucygrKQ0KDQpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0
-ZS5jIGluZGV4IGJhZGY2MjAuLmMwMzkxNWUgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2NwdWZyZXEv
-aW50ZWxfcHN0YXRlLmMNCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYw0KQEAg
-LTI2LDYgKzI2LDggQEANCiAjaW5jbHVkZSA8bGludXgvZnMuaD4NCiAjaW5jbHVkZSA8bGludXgv
-ZGVidWdmcy5oPg0KICNpbmNsdWRlIDx0cmFjZS9ldmVudHMvcG93ZXIuaD4NCisjaW5jbHVkZSA8
-bGludXgvYWNwaS5oPg0KKyNpbmNsdWRlIDxhY3BpL3Byb2Nlc3Nvci5oPg0KIA0KICNpbmNsdWRl
-IDxhc20vZGl2NjQuaD4NCiAjaW5jbHVkZSA8YXNtL21zci5oPg0KQEAgLTEyOSw2ICsxMzEsMTgg
-QEAgc3RhdGljIHN0cnVjdCBwZXJmX2xpbWl0cyBsaW1pdHMgPSB7DQogCS5tYXhfc3lzZnNfcGN0
-ID0gMTAwLA0KIH07DQogDQorc3RydWN0IGh3X3ZlbmRvcl9pbmZvIHsNCisJdTE2ICB2YWxpZDsN
-CisJY2hhciBvZW1faWRbQUNQSV9PRU1fSURfU0laRV07DQorCWNoYXIgb2VtX3RhYmxlX2lkW0FD
-UElfT0VNX1RBQkxFX0lEX1NJWkVdOw0KK307DQorDQorLyogSGFyZHdhcmUgdmVuZG9yLXNwZWNp
-ZmljIGluZm8gdGhhdCBoYXMgaXRzIG93biBwb3dlciBtYW5hZ2VtZW50IA0KK21vZGVzICovIHN0
-YXRpYyBzdHJ1Y3QgaHdfdmVuZG9yX2luZm8gdmVuZG9yX2luZm9bXSA9IHsNCisJezEsICJIUCAg
-ICAiLCAiUHJvTGlhbnQifSwNCisJezAsICIiLCAiIn0sDQorfTsNCisNCiBzdGF0aWMgaW5saW5l
-IHZvaWQgcGlkX3Jlc2V0KHN0cnVjdCBfcGlkICpwaWQsIGludCBzZXRwb2ludCwgaW50IGJ1c3ks
-DQogCQkJaW50IGRlYWRiYW5kLCBpbnQgaW50ZWdyYWwpIHsNCiAJcGlkLT5zZXRwb2ludCA9IHNl
-dHBvaW50Ow0KQEAgLTcwMCw2ICs3MTQsNjMgQEAgc3RhdGljIGludCBpbnRlbF9wc3RhdGVfbXNy
-c19ub3RfdmFsaWQodm9pZCkNCiANCiAJcmV0dXJuIDA7DQogfQ0KKw0KK3N0YXRpYyBib29sIGlu
-dGVsX3BzdGF0ZV9ub19hY3BpX3Bzcyh2b2lkKSB7DQorCXN0cnVjdCBhY3BpX3Byb2Nlc3NvciAq
-cHI7DQorCXVuaW9uIGFjcGlfb2JqZWN0ICpwc3MgPSBOVUxMOw0KKwlpbnQgaTsNCisNCisJZm9y
-X2VhY2hfcG9zc2libGVfY3B1KGkpIHsNCisNCisJCXByID0gcGVyX2NwdShwcm9jZXNzb3JzLCBp
-KTsNCisNCisJCWlmIChwcikgew0KKwkJCXN0cnVjdCBhY3BpX2J1ZmZlciBidWZmZXIgPSB7IEFD
-UElfQUxMT0NBVEVfQlVGRkVSLA0KKwkJCQkJCQlOVUxMIH07DQorDQorCQkJaWYgKEFDUElfU1VD
-Q0VTUyhhY3BpX2V2YWx1YXRlX29iamVjdChwci0+aGFuZGxlLA0KKwkJCQkJCSJfUFNTIiwgTlVM
-TCwgJmJ1ZmZlcikpKSB7DQorDQorCQkJCXBzcyA9IGJ1ZmZlci5wb2ludGVyOw0KKw0KKwkJCQlp
-ZiAocHNzICYmIHBzcy0+dHlwZSA9PSBBQ1BJX1RZUEVfUEFDS0FHRSkgew0KKwkJCQkJa2ZyZWUo
-YnVmZmVyLnBvaW50ZXIpOw0KKwkJCQkJcmV0dXJuIGZhbHNlOw0KKwkJCQl9DQorDQorCQkJCWtm
-cmVlKGJ1ZmZlci5wb2ludGVyKTsNCisJCQl9DQorCQl9DQorCX0NCisNCisJcmV0dXJuIHRydWU7
-DQorfQ0KKw0KK3N0YXRpYyBib29sIGludGVsX3BzdGF0ZV9wbGF0Zm9ybV9wd3JfbWdtdF9leGlz
-dHModm9pZCkNCit7DQorCXN0cnVjdCBhY3BpX3RhYmxlX2hlYWRlciBoZHI7DQorCXN0cnVjdCBo
-d192ZW5kb3JfaW5mbyAqdl9pbmZvOw0KKw0KKwlpZiAoYWNwaV9nZXRfdGFibGVfaGVhZGVyKEFD
-UElfU0lHX0ZBRFQsIDAsICZoZHIpID09IEFFX09LKSB7DQorCQlmb3IgKHZfaW5mbyA9IHZlbmRv
-cl9pbmZvOyB2X2luZm8tPnZhbGlkOyB2X2luZm8rKykgew0KKwkJCS8qDQorCQkJICogQ2hlY2sg
-aWYgdGhlIGhhcmR3YXJlL3BsYXRmb3JtIGlzIGluIHRoZQ0KKwkJCSAqIHByZWRlZmluZWQgdmVu
-ZG9yIGRhdGEuDQorCQkJICovDQorCQkJaWYgKCFzdHJuY21wKGhkci5vZW1faWQsIHZfaW5mby0+
-b2VtX2lkLA0KKwkJCQkgICAgIEFDUElfT0VNX0lEX1NJWkUpICYmDQorCQkJICAgICFzdHJuY21w
-KGhkci5vZW1fdGFibGVfaWQsIHZfaW5mby0+b2VtX3RhYmxlX2lkLA0KKwkJCQkgICAgIEFDUElf
-T0VNX1RBQkxFX0lEX1NJWkUpKSB7DQorCQkJCWlmIChpbnRlbF9wc3RhdGVfbm9fYWNwaV9wc3Mo
-KSkNCisJCQkJCXJldHVybiB0cnVlOw0KKwkJCX0NCisJCX0NCisJfQ0KKw0KKwlyZXR1cm4gZmFs
-c2U7DQorfQ0KKw0KIHN0YXRpYyBpbnQgX19pbml0IGludGVsX3BzdGF0ZV9pbml0KHZvaWQpICB7
-DQogCWludCBjcHUsIHJjID0gMDsNCkBAIC03MDgsNiArNzc5LDE1IEBAIHN0YXRpYyBpbnQgX19p
-bml0IGludGVsX3BzdGF0ZV9pbml0KHZvaWQpDQogCWlmIChub19sb2FkKQ0KIAkJcmV0dXJuIC1F
-Tk9ERVY7DQogDQorCWlmICghYWNwaV9kaXNhYmxlZCkgew0KKwkJLyoNCisJCSAqIENoZWNrIGlm
-IHRoZSBwbGF0Zm9ybSBoYXMgaXRzIG93biBwb3dlciBtYW5hZ2VtZW50IG1vZGVzLg0KKwkJICog
-SWYgc28sIHRoZSBwc3RhdGUgY3B1ZnJlcSBkcml2ZXIgd2lsbCBiZSBpZ25vcmVkLg0KKwkJICov
-DQorCQlpZiAoaW50ZWxfcHN0YXRlX3BsYXRmb3JtX3B3cl9tZ210X2V4aXN0cygpKQ0KKwkJCXJl
-dHVybiAwOw0KKwl9DQorDQogCWlkID0geDg2X21hdGNoX2NwdShpbnRlbF9wc3RhdGVfY3B1X2lk
-cyk7DQogCWlmICghaWQpDQogCQlyZXR1cm4gLUVOT0RFVjsNCi0tDQoxLjguMS4yDQoNCi0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJq
-d0BzaXNrLnBsXQ0KU2VudDogRnJpZGF5LCBPY3RvYmVyIDE4LCAyMDEzIDU6MjEgQU0NClRvOiBI
-dWFuZywgQWRyaWFuIChJU1MgTGludXggVFcpDQpDYzogVmlyZXNoIEt1bWFyOyBjcHVmcmVxQHZn
-ZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBLbmlwcGVycywgTGluZGEN
-ClN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8xXSBTa2lwIHRoZSBkcml2ZXIgaWYgQUNQSSBoYXMgcG93
-ZXIgbWdtdCBvcHRpb24NCg0KT24gRnJpZGF5LCBTZXB0ZW1iZXIgMjAsIDIwMTMgMDM6MzI6NDgg
-UE0gQWRyaWFuIEh1YW5nIHdyb3RlOg0KPiBJIHJlLXNlbnQgdGhpcyBlbWFpbCBiZWN1YXNlIG15
-IHN5c3RlbSB0aW1lIHdhcyBpbmNvcnJlY3QgZm9yIG15IGZpcnN0IHN1Ym1pc3Npb24gKFRoZSBz
-ZW50IHRpbWUgb2YgdGhlIGZpcnN0IHN1Ym1pc3Npb24gc2hvd2VkICIyMDEyLzgvMTYgIDA4OjEy
-UE0iKS4gU29ycnkgZm9yIGFueSBpbmNvbnZlbmllbmNlLiANCj4gDQo+IERvIG5vdCBsb2FkIHRo
-ZSBJbnRlbCBwc3RhdGUgZHJpdmVyIGlmIHRoZSBwbGF0Zm9ybSBmaXJtd2FyZSAoQUNQSQ0KPiBC
-SU9TKSBzdXBwb3J0cyB0aGUgcG93ZXIgbWFuYWdlbWVudCBhbHRlcm5hdGl2ZXMuDQo+IFRoZSBB
-Q1BJIEJJT1MgaW5kaWNhdGVzIHRoYXQgdGhlIE9TIGNvbnRyb2wgbW9kZSBjYW4gYmUgdXNlZCBp
-ZiB0aGUgDQo+IF9QU1MgKFBlcmZvcm1hbmNlIFN1cHBvcnRlZCBTdGF0ZXMpIGlzIGRlZmluZWQg
-aW4gQUNQSSB0YWJsZS4gRm9yIHRoZSANCj4gT1MgY29udHJvbCBtb2RlLCB0aGUgSW50ZWwgcHN0
-YXRlIGRyaXZlciB3aWxsIGJlIGxvYWRlZC4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEFkcmlhbiBI
-dWFuZyA8YWRyaWFuLmh1YW5nQGhwLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2NwdWZyZXEvaW50
-ZWxfcHN0YXRlLmMgfCA4NA0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysNCj4gIDEgZmlsZSBjaGFuZ2VkLCA4NCBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jIA0KPiBiL2RyaXZlcnMvY3B1ZnJl
-cS9pbnRlbF9wc3RhdGUuYyBpbmRleCA2ZWZkOTZjLi5jMTgxMTA5IDEwMDY0NA0KPiAtLS0gYS9k
-cml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMNCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2lu
-dGVsX3BzdGF0ZS5jDQo+IEBAIC0yNSw2ICsyNSw5IEBADQo+ICAjaW5jbHVkZSA8bGludXgvdHlw
-ZXMuaD4NCj4gICNpbmNsdWRlIDxsaW51eC9mcy5oPg0KPiAgI2luY2x1ZGUgPGxpbnV4L2RlYnVn
-ZnMuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9hY3BpLmg+DQo+ICsjaW5jbHVkZSA8YWNwaS9wcm9j
-ZXNzb3IuaD4NCj4gKw0KPiAgI2luY2x1ZGUgPHRyYWNlL2V2ZW50cy9wb3dlci5oPg0KPiAgDQo+
-ICAjaW5jbHVkZSA8YXNtL2RpdjY0Lmg+DQo+IEBAIC0xMjksNiArMTMyLDE4IEBAIHN0YXRpYyBz
-dHJ1Y3QgcGVyZl9saW1pdHMgbGltaXRzID0gew0KPiAgCS5tYXhfc3lzZnNfcGN0ID0gMTAwLA0K
-PiAgfTsNCj4gIA0KPiArc3RydWN0IGh3X3ZlbmRvcl9pbmZvIHsNCj4gKwl1MTYgIHZhbGlkOw0K
-PiArCWNoYXIgb2VtX2lkW0FDUElfT0VNX0lEX1NJWkVdOw0KPiArCWNoYXIgb2VtX3RhYmxlX2lk
-W0FDUElfT0VNX1RBQkxFX0lEX1NJWkVdOw0KPiArfTsNCj4gKw0KPiArLyogSGFyZHdhcmUgdmVu
-ZG9yLXNwZWNpZmljIGluZm8gdGhhdCBoYXMgaXRzIG93biBwb3dlciBtYW5hZ2VtZW50IA0KPiAr
-bW9kZXMgKi8gc3RhdGljIHN0cnVjdCBod192ZW5kb3JfaW5mbyB2ZW5kb3JfaW5mb1tdID0gew0K
-PiArCXsxLCAiSFAgICAgIiwgIlByb0xpYW50In0sDQo+ICsJezAsICIiLCAiIn0sDQo+ICt9Ow0K
-PiArDQo+ICBzdGF0aWMgaW5saW5lIHZvaWQgcGlkX3Jlc2V0KHN0cnVjdCBfcGlkICpwaWQsIGlu
-dCBzZXRwb2ludCwgaW50IGJ1c3ksDQo+ICAJCQlpbnQgZGVhZGJhbmQsIGludCBpbnRlZ3JhbCkg
-ew0KPiAgCXBpZC0+c2V0cG9pbnQgPSBzZXRwb2ludDsNCj4gQEAgLTY5Miw2ICs3MDcsNjYgQEAg
-c3RhdGljIGludCBpbnRlbF9wc3RhdGVfbXNyc19ub3RfdmFsaWQodm9pZCkNCj4gIA0KPiAgCXJl
-dHVybiAwOw0KPiAgfQ0KPiArDQo+ICtzdGF0aWMgYm9vbCBpbnRlbF9wc3RhdGVfbm9fYWNwaV9w
-c3Modm9pZCkgew0KPiArCXN0cnVjdCBhY3BpX3Byb2Nlc3NvciAqcHI7DQo+ICsJYWNwaV9zdGF0
-dXMgc3RhdHVzID0gQUVfT0s7DQo+ICsJdW5pb24gYWNwaV9vYmplY3QgKnBzcyA9IE5VTEw7DQo+
-ICsJc3RydWN0IGFjcGlfYnVmZmVyIGJ1ZmZlciA9IHsgQUNQSV9BTExPQ0FURV9CVUZGRVIsIE5V
-TEwgfTsNCj4gKwlpbnQgaTsNCj4gKw0KPiArCWZvcl9lYWNoX3Bvc3NpYmxlX2NwdShpKSB7DQo+
-ICsJCXByID0gcGVyX2NwdShwcm9jZXNzb3JzLCBpKTsNCj4gKw0KPiArCQlpZiAocHIpIHsNCj4g
-KwkJCXN0YXR1cyA9IGFjcGlfZXZhbHVhdGVfb2JqZWN0KHByLT5oYW5kbGUsICJfUFNTIiwNCj4g
-KwkJCQkJCSAgICAgIE5VTEwsICZidWZmZXIpOw0KPiArDQo+ICsJCQlwc3MgPSBidWZmZXIucG9p
-bnRlcjsNCj4gKw0KPiArCQkJaWYgKEFDUElfU1VDQ0VTUyhzdGF0dXMpICYmIHBzcykgew0KPiAr
-CQkJCS8qIEZvdW5kIF9QU1MgKi8NCj4gKwkJCQlpZiAocHNzLT50eXBlID09IEFDUElfVFlQRV9Q
-QUNLQUdFKQ0KPiArCQkJCQlyZXR1cm4gZmFsc2U7DQo+ICsJCQl9DQoNCmJ1ZmZlci5wb2ludGVy
-IGhhcyBiZWVuIGR5bmFtaWNhbGx5IGFsbG9jYXRlZCBieSBhY3BpX2V2YWx1YXRlX29iamVjdCgp
-LCBzbyBpdCBzaG91bGQgYmUgZnJlZWQgaGVyZS4gIEJlc2lkZXMsIHlvdSBuZWVkIHRvIGRlZmlu
-ZSB0aGUgYnVmZmVyIHZhcmlhYmxlIGluc2lkZSB0aGUgbG9vcCBzbyB0aGF0IGl0IGlzIGluaXRp
-YWxpemVkIG9uIGV2ZXJ5IGl0ZXJhdGlvbiBhbmQgbm90IGp1c3Qgb25jZS4NCg0KPiArCQl9DQo+
-ICsJfQ0KPiArDQo+ICsJLyogTm8gX1BTUyAqLw0KPiArCXJldHVybiB0cnVlOw0KPiArfQ0KPiAr
-DQo+ICtzdGF0aWMgYm9vbCBpbnRlbF9wc3RhdGVfY2hlY2tfcGxhdGZvcm1fcHdyX21nbXQodm9p
-ZCkNCj4gK3sNCj4gKwlzdHJ1Y3QgYWNwaV90YWJsZV9oZWFkZXIgaGRyOw0KPiArCXN0cnVjdCBo
-d192ZW5kb3JfaW5mbyAqdl9pbmZvOw0KPiArDQo+ICsJaWYgKGFjcGlfZ2V0X3RhYmxlX2hlYWRl
-cihBQ1BJX1NJR19GQURULCAwLCAmaGRyKSA9PSBBRV9PSykgew0KPiArCQlmb3IgKHZfaW5mbyA9
-IHZlbmRvcl9pbmZvOyB2X2luZm8tPnZhbGlkOyB2X2luZm8rKykgew0KPiArCQkJLyoNCj4gKwkJ
-CSAqIENoZWNrIGlmIHRoZSBoYXJkd2FyZS9wbGF0Zm9ybSBpcyBpbiB0aGUNCj4gKwkJCSAqIHBy
-ZWRlZmluZWQgdmVuZG9yIGRhdGEuDQo+ICsJCQkgKi8NCj4gKwkJCWlmICghc3RybmNtcChoZHIu
-b2VtX2lkLCB2X2luZm8tPm9lbV9pZCwNCj4gKwkJCQkgICAgIEFDUElfT0VNX0lEX1NJWkUpICYm
-DQo+ICsJCQkgICAgIXN0cm5jbXAoaGRyLm9lbV90YWJsZV9pZCwgdl9pbmZvLT5vZW1fdGFibGVf
-aWQsDQo+ICsJCQkJICAgICBBQ1BJX09FTV9UQUJMRV9JRF9TSVpFKSkgew0KPiArDQo+ICsJCQkJ
-LyoNCj4gKwkJCQkgKiBObyBfUFNTIGRlZmludGlvbiBpbiBBQ1BJIEJJT1MgbWVhbnMgdGhhdA0K
-PiArCQkJCSAqIHRoZSBwbGF0Zm9ybSBmaXJtd2FyZSBoYXMgaXRzIG93biBwb3dlcg0KPiArCQkJ
-CSAqIG1hbmFnZW1lbnQgbW9kZXMuDQo+ICsJCQkJICovDQo+ICsJCQkJaWYgKGludGVsX3BzdGF0
-ZV9ub19hY3BpX3BzcygpKQ0KPiArCQkJCQlyZXR1cm4gdHJ1ZTsNCj4gKwkJCX0NCj4gKwkJfQ0K
-PiArCX0NCj4gKw0KPiArCXJldHVybiBmYWxzZTsNCj4gK30NCj4gKw0KPiAgc3RhdGljIGludCBf
-X2luaXQgaW50ZWxfcHN0YXRlX2luaXQodm9pZCkgIHsNCj4gIAlpbnQgY3B1LCByYyA9IDA7DQo+
-IEBAIC03MDAsNiArNzc1LDE1IEBAIHN0YXRpYyBpbnQgX19pbml0IGludGVsX3BzdGF0ZV9pbml0
-KHZvaWQpDQo+ICAJaWYgKG5vX2xvYWQpDQo+ICAJCXJldHVybiAtRU5PREVWOw0KPiAgDQo+ICsJ
-aWYgKCFhY3BpX2Rpc2FibGVkKSB7DQo+ICsJCS8qDQo+ICsJCSAqIENoZWNrIGlmIHRoZSBwbGF0
-Zm9ybSBoYXMgaXRzIG93biBwb3dlciBtYW5hZ2VtZW50IG1vZGVzLg0KPiArCQkgKiBJZiBzbywg
-dGhlIHBzdGF0ZSBjcHVmcmVxIGRyaXZlciB3aWxsIGJlIGlnbm9yZWQuDQo+ICsJCSAqLw0KPiAr
-CQlpZiAoaW50ZWxfcHN0YXRlX2NoZWNrX3BsYXRmb3JtX3B3cl9tZ210KCkpDQo+ICsJCQlyZXR1
-cm4gMDsNCj4gKwl9DQo+ICsNCj4gIAlpZCA9IHg4Nl9tYXRjaF9jcHUoaW50ZWxfcHN0YXRlX2Nw
-dV9pZHMpOw0KPiAgCWlmICghaWQpDQo+ICAJCXJldHVybiAtRU5PREVWOw0KPiANCg0KVGhhbmtz
-IQ0KDQotLQ0KSSBzcGVhayBvbmx5IGZvciBteXNlbGYuDQpSYWZhZWwgSi4gV3lzb2NraSwgSW50
-ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo=
+On 10/20/2013 07:28 PM, Zhang Rui wrote:
+> Hi,
+>
+> On Sun, 2013-10-20 at 12:23 -0700, Guenter Roeck wrote:
+>> On 10/20/2013 11:10 AM, Arnaud Ebalard wrote:
+>>> Hi,
+>>>
+>>> With 3.12-rc series, sysfs support for thermal susbsytem (and/or hw=
+mon
+>>> one) was modified in such a way that sensors utility (current 3.3.4
+>>> version with 3.3.4 version of libsensors from lm-sensors package on
+>>> Debian unstable) does not see the temperature sensor anymore on arm=
+ada
+>>> 370 platforms (not tested on others). Additionally, the changes bre=
+ak
+>>> existing configurations of fancontrol utility, which prevents the
+>>> fan to be regulated correctly w/o recreating an /etc/fancontrol w/
+>>> pwmconfig.
+>>>
+>>> Here is what I have on my Armada 370-based system on a 3.11.5:
+>>>
+>>> # sensors
+>>> g762-i2c-0-3e
+>>> Adapter: mv64xxx_i2c adapter
+>>> fan1:        2457 RPM  (div =3D 1)
+>>>
+>>> armada_thermal-virtual-0
+>>> Adapter: Virtual device
+>>> temp1:        +45.7=C2=B0C
+>>>
+>>> And what I get on 3.12-rc6:
+>>>
+>>> # sensors
+>>> g762-i2c-0-3e
+>>> Adapter: mv64xxx_i2c adapter
+>>> fan1:        1350 RPM  (div =3D 1)
+>>>
+>>>
+>>> Monitoring what sensors does w/ strace, I started looking at the ch=
+anges
+>>> to /sys/class/hwmon/hwmon1/:
+>>>
+>>> On 3.11.5:
+>>>
+>>> # find /sys/class/hwmon/hwmon1/
+>>> /sys/class/hwmon/hwmon1/
+>>> /sys/class/hwmon/hwmon1/name
+>>> /sys/class/hwmon/hwmon1/subsystem
+>>> /sys/class/hwmon/hwmon1/uevent
+>>> /sys/class/hwmon/hwmon1/temp1_input
+>>>
+>>> On 3.12-rc6:
+>>>
+>>> # find /sys/class/hwmon/hwmon1/
+>>> /sys/class/hwmon/hwmon1/
+>>> /sys/class/hwmon/hwmon1/name
+>>> /sys/class/hwmon/hwmon1/device
+>>> /sys/class/hwmon/hwmon1/subsystem
+>>> /sys/class/hwmon/hwmon1/uevent
+>>> /sys/class/hwmon/hwmon1/temp1_input
+>>>
+>>> # find /sys/class/hwmon/hwmon1/device/
+>>> /sys/class/hwmon/hwmon1/device/
+>>> /sys/class/hwmon/hwmon1/device/temp
+>>> /sys/class/hwmon/hwmon1/device/type
+>>> /sys/class/hwmon/hwmon1/device/hwmon1
+>>> /sys/class/hwmon/hwmon1/device/hwmon1/name
+>>> /sys/class/hwmon/hwmon1/device/hwmon1/device
+>>> /sys/class/hwmon/hwmon1/device/hwmon1/subsystem
+>>> /sys/class/hwmon/hwmon1/device/hwmon1/uevent
+>>> /sys/class/hwmon/hwmon1/device/hwmon1/temp1_input
+>>> /sys/class/hwmon/hwmon1/device/subsystem
+>>> /sys/class/hwmon/hwmon1/device/policy
+>>> /sys/class/hwmon/hwmon1/device/uevent
+>>> /sys/class/hwmon/hwmon1/device/passive
+>>>
+>>> Is that expected? As for sensors, it *seems* to be bothered to find=
+ a
+>>> device/ folder in /sys/class/hwmon/hwmon1/ w/o no name entry in it.
+>>>
+>
+> I agree. And it should be caused by this commit.
+>
+> commit b82715fdd4a5407f56853b24d387d484dd9c3b5b
+> Author: Eduardo Valentin <eduardo.valentin@ti.com>
+> Date:   Fri Aug 23 17:07:58 2013 -0400
+>
+>      drivers: thermal: parent virtual hwmon with thermal zone
+>
+>      When  creating virtual hwmon devices based out of thermal
+>      zone devices, the virtual devices won't have parents.
+>
+>      This patch changes the code so that the parent of virtual
+>      hwmon devices is the thermal zone device that they are
+>      based of.
+>
+>      Cc: Zhang Rui <rui.zhang@intel.com>
+>      Cc: linux-pm@vger.kernel.org
+>      Cc: linux-kernel@vger.kernel.org
+>      Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>
+>>
+>> The 'name' attribute should not be the problem, since there is a 'na=
+me'
+>> attribute in the /sys/class/hwmon/hwmon1/ directory.
+>>
+>> Key difference is that there is now a 'device' subdirectory,
+>
+> Right.
+>
+>>   which results
+>> in different handling by libsensors;
+> Oh, I'm not aware of this before.
+> There is no such statement in the comments of hwmon_device_register()=
+,
+> or anywhere else.
+> Could you show me some tutorials about how the sysfs I/F misleads
+> libsensors?
+>
+
+I looked into the libsensors source code. I don't think there is a tuto=
+rial,
+or at least I am not aware of one.
+
+Still, I don't entirely understand how the above commit results in what=
+ seems
+to be recursive parents (or, from looking into the code, how that happe=
+ns in
+the first place).
+
+Guenter
+
+> But anyway, I will revert this patch first.
+> Thanks for reporting the problem, Arnaud!
+>
+> thanks,
+> rui
+>>   the entry is no longer a virtual entry
+>> but is expected to have a real device attached to it. For this devic=
+e,
+>> libsensors tries to scan the 'subsystem' entry which in turn must be=
+ well
+>> defined and known. My suspicion is that the reported subsystem may n=
+ot be
+>> recognized by libsensors.
+>
+>>
+>> One question is why there is now a device entry, even though this is=
+ still as
+>> virtual as it was before. You'll have to ask the thermal subsystem m=
+aintainers
+>> for an answer.
+>
+>> I am also concerned about the 'hwmon1' subdirectory underneath hwmon=
+1/device;
+>> that suggests that hwmon1 may be declared to be a child of itself, w=
+hich would
+>> obviously not be a good idea.
+>>
+>> Also, note that the thermal subsystem creates (or may create) sensor=
+ attributes
+>> after registering the hwmon device, which means you can not rely on =
+the udev
+>> event that comes with the hwmon device creation and assume that all =
+sensor
+>> attributes exist at that time. I don't currently know how to handle =
+this situation.
+>> This is not unique, though; the coretemp driver does the same. Just =
+something
+>> to keep in mind.
+>>
+>> Guenter
+>>
+>
+>
+>
+>
+
