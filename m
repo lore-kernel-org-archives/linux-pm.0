@@ -1,78 +1,56 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
-Date: Mon, 21 Oct 2013 05:51:42 +0900
-Message-ID: <5264425E.4040301@samsung.com>
-References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com> <1816869.ggMDlA1qNY@flatron>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: [PATCH 1/2] ARM: EXYNOS: Use dev_err() instead of printk() for cpuidle
+ driver
+Date: Mon, 21 Oct 2013 10:52:15 +0900
+Message-ID: <003601cece00$2affeba0$80ffc2e0$%han@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:36724 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751654Ab3JTUvu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Oct 2013 16:51:50 -0400
-In-Reply-To: <1816869.ggMDlA1qNY@flatron>
+Received: from mailout1.samsung.com ([203.254.224.24]:55414 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101Ab3JUBwX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Oct 2013 21:52:23 -0400
+Content-language: ko
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: rjw@sisk.pl, kgene.kim@samsung.com, mturquette@linaro.org, mark.rutland@arm.com, swarren@wwwdotorg.org, linux-doc@vger.kernel.org, viresh.kumar@linaro.org, s.nawrocki@samsung.com, m.szyprowski@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, thomas.abraham@linaro.org, b.zolnierkie@samsung.com, t.stanislaws@samsung.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, rob.herring@calxeda.com, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, rob@landley.net
+To: "'Rafael J. Wysocki'" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+Cc: 'Kukjin Kim' <kgene.kim@samsung.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Tomasz Figa' <t.figa@samsung.com>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 'Jingoo Han' <jg1.han@samsung.com>
 
-On 10/20/13 01:03, Tomasz Figa wrote:
-> Hi Mike, Kukjin, Rafael,
->
-> On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
->> This patch series is the new s5pv210 clock implementation
->> (using common clk framework).
->>
->> This implementation is compatible with device tree definition and board
->> files.
->>
->> This patch series is based on linux-next and has been tested on goni and
->> aquila
->> boards using board file.
->>
->> Since v4:
->> Corrected mux flags for finpll.
->>
->> Since v3:
->>
->> Replace s5pv210_clk_register_finpll, by creating mux finpll
->> with xusbxti and xxti as parrents.
->>
->>
->> Mateusz Krawczuk (3):
->>    clk: samsung: Add clock driver for s5pc110/s5pv210
->>    Cpufreq: s5pv210 cpufreq fixes for CCF
->>    ARM: s5pv210: Migrate clock handling to Common Clock Framework
->>
->>   .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
->>   arch/arm/mach-s5pv210/Kconfig                      |   9 +
->>   arch/arm/mach-s5pv210/Makefile                     |   4 +-
->>   arch/arm/mach-s5pv210/common.c                     |  17 +
->>   arch/arm/mach-s5pv210/common.h                     |  10 +
->>   arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
->>   arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
->>   arch/arm/plat-samsung/Kconfig                      |   2 +-
->>   drivers/clk/samsung/Makefile                       |   3 +
->>   drivers/clk/samsung/clk-s5pv210.c                  | 673
->> +++++++++++++++++++++ drivers/cpufreq/s5pv210-cpufreq.c
->>   |   6 +-
->>   include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
->>   12 files changed, 1019 insertions(+), 8 deletions(-)
->>   create mode 100644
->> Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
->> create mode 100644 drivers/clk/samsung/clk-s5pv210.c
->>   create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
->
-> I believe this series is reasonable to be applied. Could we agree on
-> the tree it would go through and get all tne required acks?
->
-> Best regards,
-> Tomasz
+Change raw printk() call to dev_err() to provide a better message
+to userspace so it can properly identify the device.
 
-I agree.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+- Based against pm-cpuidle branch
+- Tested on Exynos5440
 
-Mike, how do you think the common clk stuff for s5pv210?
+ arch/arm/mach-exynos/cpuidle.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-- Kukjin
+diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
+index 1bde6ad..6616e0f 100644
+--- a/arch/arm/mach-exynos/cpuidle.c
++++ b/arch/arm/mach-exynos/cpuidle.c
+@@ -206,7 +206,7 @@ static int __init exynos_cpuidle_probe(struct platform_device *pdev)
+ 
+ 	ret = cpuidle_register_driver(&exynos4_idle_driver);
+ 	if (ret) {
+-		printk(KERN_ERR "CPUidle failed to register driver\n");
++		dev_err(&pdev->dev, "failed to register cpuidle driver\n");
+ 		return ret;
+ 	}
+ 
+@@ -220,7 +220,7 @@ static int __init exynos_cpuidle_probe(struct platform_device *pdev)
+ 
+ 		ret = cpuidle_register_device(device);
+ 		if (ret) {
+-			printk(KERN_ERR "CPUidle register device failed\n");
++			dev_err(&pdev->dev, "failed to register cpuidle device\n");
+ 			return ret;
+ 		}
+ 	}
+-- 
+1.7.10.4
+
 
