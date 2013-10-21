@@ -1,53 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: s3c64xx: Rename index to driver_data
-Date: Tue, 22 Oct 2013 00:58:58 +0200
-Message-ID: <14557635.AKI3PpiVcs@vostro.rjw.lan>
-References: <1381775807-20144-1-git-send-email-ckeepax@opensource.wolfsonmicro.com> <CAKohpom-KBME6fa3BUmKfZSgJxYngD7RG+CD3vHHKdtWtrtOxA@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: fix possible integer overflow
+Date: Tue, 22 Oct 2013 01:06:02 +0200
+Message-ID: <7950903.3bCg8Tn2fH@vostro.rjw.lan>
+References: <1382239876-12688-1-git-send-email-geyslan@gmail.com> <1734089.XZ0ga7sQd1@vostro.rjw.lan> <5265AE27.90600@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom-KBME6fa3BUmKfZSgJxYngD7RG+CD3vHHKdtWtrtOxA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, patches@opensource.wolfsonmicro.com
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5265AE27.90600@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Geyslan G. Bem" <geyslan@gmail.com>, kernel-br@googlegroups.com, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "open list:CPU FREQUENCY DRI..." <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 21, 2013 12:59:30 PM Viresh Kumar wrote:
-> On 15 October 2013 00:06, Charles Keepax
-> <ckeepax@opensource.wolfsonmicro.com> wrote:
-> > The index field of cpufreq_frequency_table has been renamed to driver
-> > data in this commit:
+On Monday, October 21, 2013 03:43:51 PM Dirk Brandewie wrote:
+> On 10/21/2013 03:47 PM, Rafael J. Wysocki wrote:
+> > On Monday, October 21, 2013 08:56:22 AM Dirk Brandewie wrote:
+> >> On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
+> >>> The expression 'pstate << 8' is evaluated using 32-bit arithmetic while
+> >>> 'val' expects an expression of type u64.
+> >>>
+> >>> Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+> >> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > >
-> > commit 5070158804b5339c71809f5e673cea1cfacd804d
-> > cpufreq: rename index as driver_data in cpufreq_frequency_table
+> > Actually, isn't (pstate << 8) guaranteed not to overflow?
 > >
-> > This patch updates the s3c64xx driver to match.
-> >
-> > Signed-off-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-> > ---
-> >  drivers/cpufreq/s3c64xx-cpufreq.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-> > index 8a72b0c..15631f9 100644
-> > --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> > +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> > @@ -166,7 +166,7 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
-> >                 if (freq->frequency == CPUFREQ_ENTRY_INVALID)
-> >                         continue;
-> >
-> > -               dvfs = &s3c64xx_dvfs_table[freq->index];
-> > +               dvfs = &s3c64xx_dvfs_table[freq->driver_data];
-> >                 found = 0;
-> >
-> >                 for (i = 0; i < count; i++) {
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> @Rafael: Can you please get this in 3.12 as a bug fix?
+> Yes, I was assuming this was caught by a static checking tool.
 
-It went in already, didn't it?
+What was caught by the tool was the fact that 1UL << 32 might overflow on
+32-bit, so using BIT(32) wasn't correct.
+
+> I didn't see a downside to giving the compilier complete information.
+
+Well, in that case the function's argument should be u64 rather than int.
+
+Either you know that it won't overflow, in which case the explicit type
+casting doesn't change anything, or you are not sure, in which case it's
+better to use u64 as the original type anyway in my opinion.
+
+Thanks!
 
 -- 
 I speak only for myself.
