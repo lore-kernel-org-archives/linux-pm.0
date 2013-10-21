@@ -1,43 +1,33 @@
-From: arno@natisbad.org (Arnaud Ebalard)
-Subject: Re: [REGRESSION?] sensors and fancontrol not seeing armada_thermal on 3.12-rc series
-Date: Mon, 21 Oct 2013 20:49:39 +0200
-Message-ID: <87y55mpigs.fsf@natisbad.org>
-References: <87ppqzolsu.fsf@natisbad.org> <52642DAF.8080301@roeck-us.net>
-	<1382322502.2410.12.camel@rzhang1-mobl4>
+From: Brennan Shacklett <bp.shacklett@gmail.com>
+Subject: Re: [PATCH 1/4] cpufreq: intel_pstate: Improve accuracy by not
+ truncating until final result
+Date: Mon, 21 Oct 2013 13:53:15 -0700
+Message-ID: <20131021205315.GA29918@hulk.osd.wednet.edu>
+References: <1382372435-29778-1-git-send-email-dirk.j.brandewie@intel.com>
+ <1382372435-29778-2-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mic92-1-81-57-185-249.fbx.proxad.net ([81.57.185.249]:58643
-	"EHLO smtp.natisbad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751617Ab3JUSuA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 14:50:00 -0400
-In-Reply-To: <1382322502.2410.12.camel@rzhang1-mobl4> (Zhang Rui's message of
-	"Mon, 21 Oct 2013 10:28:22 +0800")
+Received: from mail-pb0-f48.google.com ([209.85.160.48]:59302 "EHLO
+	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110Ab3JUUww (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 16:52:52 -0400
+Received: by mail-pb0-f48.google.com with SMTP id ma3so7472136pbc.7
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2013 13:52:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1382372435-29778-2-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Eduardo Valentin <eduardo.valentin@ti.com>, Jean Delvare <khali@linux-fr.org>, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>
+To: dirk.brandewie@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc: eric.ernst@linux.intel.com
 
-Hi,
+On Mon, Oct 21, 2013 at 09:20:32AM -0700, dirk.brandewie@gmail.com wrote:
+> Signed-off-by: Brennan Shacklet <bpshacklett@gmail.com>
 
-Zhang Rui <rui.zhang@intel.com> writes:
+Apologies for the ambiguity in my name and email, the sign off should be:
+Signed-off-by: Brennan Shacklett <bpshacklett@gmail.com>
 
->> > Is that expected? As for sensors, it *seems* to be bothered to find a
->> > device/ folder in /sys/class/hwmon/hwmon1/ w/o no name entry in it.
->> >
->
-> I agree. And it should be caused by this commit.
->
-> commit b82715fdd4a5407f56853b24d387d484dd9c3b5b
-> Author: Eduardo Valentin <eduardo.valentin@ti.com>
-> Date:   Fri Aug 23 17:07:58 2013 -0400
->
->     drivers: thermal: parent virtual hwmon with thermal zone
-
-FWIW, the one-liner reverting this commit in your tree (6ddcb7e635
-Revert "drivers: thermal: parent virtual hwmon with thermal zone")
-does indeed makes sensors and fancontrol happy again.
-
-Cheers,
-
-a+
+and you can disregard CCing to brennan@genyes.org (forgot to switch git
+settings away from work).
+Thanks,
+--Brennan
