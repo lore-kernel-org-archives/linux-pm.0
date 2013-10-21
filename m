@@ -1,37 +1,29 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
-Date: Tue, 22 Oct 2013 00:39:45 +0200
-Message-ID: <4207904.oBhTxYOkzS@vostro.rjw.lan>
-References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org> <CAKohpo=wHN1wTsh-UfYMO-XBDtj0=SFuxjTPqw9aZAG6iRJ0mQ@mail.gmail.com> <CAKohpomXxodtUvGyo3SXRAVE8W9nZiYSU9Zak+zDt9+rOjonxw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/4] intel_pstate updates
+Date: Tue, 22 Oct 2013 00:46:27 +0200
+Message-ID: <4839646.Ilm2lvf4gq@vostro.rjw.lan>
+References: <1382372435-29778-1-git-send-email-dirk.j.brandewie@intel.com> <52655686.7000406@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomXxodtUvGyo3SXRAVE8W9nZiYSU9Zak+zDt9+rOjonxw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51085 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752394Ab3JUWec (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 18:34:32 -0400
+In-Reply-To: <52655686.7000406@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-On Monday, October 21, 2013 12:43:32 PM Viresh Kumar wrote:
-> On 13 October 2013 06:07, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 13/10/2013, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> -> What about this:
-> >>
-> >>       /*
-> >>        * The core will not set policy->cur, because cpufreq_driver->get is NULL,
-> >>        * so we need to set it here.  However, we have to guess it, because the
-> >>        * current speed is unknown and not detectable via IO ports.
-> >>        */
-> >
-> > Far better. Attached again. Thanks.
-> 
-> Have you missed applying this one? Attached again..
+On Monday, October 21, 2013 09:29:58 AM Dirk Brandewie wrote:
+> Forgot to add this patch set is based on linux-pm/bleeding-edge
+> commit 1a1da369261c3ee2c3caa078b6ace46adcdffbb6
 
-I don't think I've missed it.  It should be commit 1bab64d in my tree.
+So do I assume correctly that is is all 3.13 material?
 
-Thanks!
+Or are patches [1-2/4] for 3.12?
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Rafael
+
