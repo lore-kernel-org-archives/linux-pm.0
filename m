@@ -1,52 +1,47 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: s3c64xx: Rename index to driver_data
-Date: Mon, 21 Oct 2013 12:59:30 +0530
-Message-ID: <CAKohpom-KBME6fa3BUmKfZSgJxYngD7RG+CD3vHHKdtWtrtOxA@mail.gmail.com>
-References: <1381775807-20144-1-git-send-email-ckeepax@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH V2] cpufreq: exynos: Show a list of available frequencies
+Date: Mon, 21 Oct 2013 13:00:02 +0530
+Message-ID: <CAKohponOQ=FB6vY+6J+qNCd8+gNn4sCwzdNV56_VtVdwavWOwg@mail.gmail.com>
+References: <00a301cec935$786cf7e0$6946e7a0$%lee@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f182.google.com ([209.85.216.182]:50129 "EHLO
-	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876Ab3JUH3c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 03:29:32 -0400
-Received: by mail-qc0-f182.google.com with SMTP id n7so2554632qcx.27
-        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2013 00:29:31 -0700 (PDT)
-In-Reply-To: <1381775807-20144-1-git-send-email-ckeepax@opensource.wolfsonmicro.com>
+Received: from mail-qa0-f52.google.com ([209.85.216.52]:37007 "EHLO
+	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752444Ab3JUHaD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 03:30:03 -0400
+Received: by mail-qa0-f52.google.com with SMTP id w8so2232759qac.18
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2013 00:30:03 -0700 (PDT)
+In-Reply-To: <00a301cec935$786cf7e0$6946e7a0$%lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, patches@opensource.wolfsonmicro.com
+To: Jungseok Lee <jays.lee@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-On 15 October 2013 00:06, Charles Keepax
-<ckeepax@opensource.wolfsonmicro.com> wrote:
-> The index field of cpufreq_frequency_table has been renamed to driver
-> data in this commit:
+On 15 October 2013 05:01, Jungseok Lee <jays.lee@samsung.com> wrote:
+> This patch adds freq_attr to show a list of exynos5440 scaling
+> available frequencies through sysfs. Common exynos driver already
+> supports this attribute.
 >
-> commit 5070158804b5339c71809f5e673cea1cfacd804d
-> cpufreq: rename index as driver_data in cpufreq_frequency_table
->
-> This patch updates the s3c64xx driver to match.
->
-> Signed-off-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+> Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
 > ---
->  drivers/cpufreq/s3c64xx-cpufreq.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> Changes since v1:
+> - Used a generic attribute, not a specific one.
 >
-> diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-> index 8a72b0c..15631f9 100644
-> --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> @@ -166,7 +166,7 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
->                 if (freq->frequency == CPUFREQ_ENTRY_INVALID)
->                         continue;
+>  drivers/cpufreq/exynos5440-cpufreq.c |    1 +
+>  1 file changed, 1 insertion(+)
 >
-> -               dvfs = &s3c64xx_dvfs_table[freq->index];
-> +               dvfs = &s3c64xx_dvfs_table[freq->driver_data];
->                 found = 0;
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> index 06b73e8..fecc3da 100644
+> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> @@ -330,6 +330,7 @@ static struct cpufreq_driver exynos_driver = {
+>         .init           = exynos_cpufreq_cpu_init,
+>         .exit           = cpufreq_generic_exit,
+>         .name           = CPUFREQ_NAME,
+> +       .attr           = cpufreq_generic_attr,
+>  };
 >
->                 for (i = 0; i < count; i++) {
+>  static const struct of_device_id exynos_cpufreq_match[] = {
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-@Rafael: Can you please get this in 3.12 as a bug fix?
