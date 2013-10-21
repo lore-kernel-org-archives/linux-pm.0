@@ -1,47 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: fix possible integer overflow
-Date: Tue, 22 Oct 2013 00:47:18 +0200
-Message-ID: <1734089.XZ0ga7sQd1@vostro.rjw.lan>
-References: <1382239876-12688-1-git-send-email-geyslan@gmail.com> <52654EA6.6020805@gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 0/4] intel_pstate updates
+Date: Mon, 21 Oct 2013 15:40:04 -0700
+Message-ID: <5265AD44.6010805@gmail.com>
+References: <1382372435-29778-1-git-send-email-dirk.j.brandewie@intel.com> <52655686.7000406@intel.com> <4839646.Ilm2lvf4gq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52654EA6.6020805@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "Geyslan G. Bem" <geyslan@gmail.com>, kernel-br@googlegroups.com, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "open list:CPU FREQUENCY DRI..." <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:46944 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128Ab3JUWkH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 18:40:07 -0400
+Received: by mail-pa0-f53.google.com with SMTP id kq14so8730490pab.40
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2013 15:40:07 -0700 (PDT)
+In-Reply-To: <4839646.Ilm2lvf4gq@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 
-On Monday, October 21, 2013 08:56:22 AM Dirk Brandewie wrote:
-> On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
-> > The expression 'pstate << 8' is evaluated using 32-bit arithmetic while
-> > 'val' expects an expression of type u64.
-> >
-> > Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
-> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 10/21/2013 03:46 PM, Rafael J. Wysocki wrote:
+> On Monday, October 21, 2013 09:29:58 AM Dirk Brandewie wrote:
+>> Forgot to add this patch set is based on linux-pm/bleeding-edge
+>> commit 1a1da369261c3ee2c3caa078b6ace46adcdffbb6
+>
+> So do I assume correctly that is is all 3.13 material?
+>
+> Or are patches [1-2/4] for 3.12?
+>
 
-Actually, isn't (pstate << 8) guaranteed not to overflow?
+1-2 are for 3.12
 
-> > ---
-> >   drivers/cpufreq/intel_pstate.c | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index badf620..43446b5 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -395,7 +395,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
-> >   	trace_cpu_frequency(pstate * 100000, cpu->cpu);
-> >
-> >   	cpu->pstate.current_pstate = pstate;
-> > -	val = pstate << 8;
-> > +	val = (u64)pstate << 8;
-> >   	if (limits.no_turbo)
-> >   		val |= (u64)1 << 32;
-> >
-> >
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+3-4 are for 3.13 Baytrail support requires ther refactoring to take
+into account that the P state enumeration is different on Baytrail.
+
+
+
+> Rafael
+>
+
