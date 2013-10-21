@@ -1,137 +1,81 @@
-From: Adrian Huang <adrian.huang@hp.com>
-Subject: [PATCH 1/1] cpufreq: intel_pstate: skip the driver if ACPI has power mgmt option
-Date: Mon, 21 Oct 2013 13:27:07 +0800
-Message-ID: <1382333227-28231-1-git-send-email-adrian.huang@hp.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com, Adrian Huang <adrian.huang@hp.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: acpi: Add comment under ACPI_ADR_SPACE_SYSTEM_IO case
+Date: Mon, 21 Oct 2013 12:43:32 +0530
+Message-ID: <CAKohpomXxodtUvGyo3SXRAVE8W9nZiYSU9Zak+zDt9+rOjonxw@mail.gmail.com>
+References: <6334c0aed4840857944d1b267871ada4d7014d57.1381541632.git.viresh.kumar@linaro.org>
+	<1922770.iubCDBg3Zg@vostro.rjw.lan>
+	<CAKohpokJkcsNN_vnQOuu2=arsiQCGPaCxpRL_TRAQYFg+LmR+w@mail.gmail.com>
+	<1402816.XYNGOIhCWR@vostro.rjw.lan>
+	<CAKohpo=wHN1wTsh-UfYMO-XBDtj0=SFuxjTPqw9aZAG6iRJ0mQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=047d7b5daca09a18b404e93b0578
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qe0-f53.google.com ([209.85.128.53]:63865 "EHLO
+	mail-qe0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723Ab3JUHNe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 03:13:34 -0400
+Received: by mail-qe0-f53.google.com with SMTP id cy11so3513891qeb.26
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2013 00:13:33 -0700 (PDT)
+In-Reply-To: <CAKohpo=wHN1wTsh-UfYMO-XBDtj0=SFuxjTPqw9aZAG6iRJ0mQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Do not load the Intel pstate driver if the platform firmware
-(ACPI BIOS) supports the power management alternatives.
-The ACPI BIOS indicates that the OS control mode can be used
-if the _PSS (Performance Supported States) object is defined
-in ACPI table. For the OS control mode, the Intel pstate
-driver will be loaded.
+--047d7b5daca09a18b404e93b0578
+Content-Type: text/plain; charset=ISO-8859-1
 
-Signed-off-by: Adrian Huang <adrian.huang@hp.com>
----
- drivers/cpufreq/intel_pstate.c | 80 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 80 insertions(+)
+On 13 October 2013 06:07, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 13/10/2013, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> -> What about this:
+>>
+>>       /*
+>>        * The core will not set policy->cur, because cpufreq_driver->get is NULL,
+>>        * so we need to set it here.  However, we have to guess it, because the
+>>        * current speed is unknown and not detectable via IO ports.
+>>        */
+>
+> Far better. Attached again. Thanks.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index badf620..c03915e 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -26,6 +26,8 @@
- #include <linux/fs.h>
- #include <linux/debugfs.h>
- #include <trace/events/power.h>
-+#include <linux/acpi.h>
-+#include <acpi/processor.h>
- 
- #include <asm/div64.h>
- #include <asm/msr.h>
-@@ -129,6 +131,18 @@ static struct perf_limits limits = {
- 	.max_sysfs_pct = 100,
- };
- 
-+struct hw_vendor_info {
-+	u16  valid;
-+	char oem_id[ACPI_OEM_ID_SIZE];
-+	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-+};
-+
-+/* Hardware vendor-specific info that has its own power management modes */
-+static struct hw_vendor_info vendor_info[] = {
-+	{1, "HP    ", "ProLiant"},
-+	{0, "", ""},
-+};
-+
- static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
- 			int deadband, int integral) {
- 	pid->setpoint = setpoint;
-@@ -700,6 +714,63 @@ static int intel_pstate_msrs_not_valid(void)
- 
- 	return 0;
- }
-+
-+static bool intel_pstate_no_acpi_pss(void)
-+{
-+	struct acpi_processor *pr;
-+	union acpi_object *pss = NULL;
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+
-+		pr = per_cpu(processors, i);
-+
-+		if (pr) {
-+			struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER,
-+							NULL };
-+
-+			if (ACPI_SUCCESS(acpi_evaluate_object(pr->handle,
-+						"_PSS", NULL, &buffer))) {
-+
-+				pss = buffer.pointer;
-+
-+				if (pss && pss->type == ACPI_TYPE_PACKAGE) {
-+					kfree(buffer.pointer);
-+					return false;
-+				}
-+
-+				kfree(buffer.pointer);
-+			}
-+		}
-+	}
-+
-+	return true;
-+}
-+
-+static bool intel_pstate_platform_pwr_mgmt_exists(void)
-+{
-+	struct acpi_table_header hdr;
-+	struct hw_vendor_info *v_info;
-+
-+	if (acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr) == AE_OK) {
-+		for (v_info = vendor_info; v_info->valid; v_info++) {
-+			/*
-+			 * Check if the hardware/platform is in the
-+			 * predefined vendor data.
-+			 */
-+			if (!strncmp(hdr.oem_id, v_info->oem_id,
-+				     ACPI_OEM_ID_SIZE) &&
-+			    !strncmp(hdr.oem_table_id, v_info->oem_table_id,
-+				     ACPI_OEM_TABLE_ID_SIZE)) {
-+				if (intel_pstate_no_acpi_pss())
-+					return true;
-+			}
-+		}
-+	}
-+
-+	return false;
-+}
-+
- static int __init intel_pstate_init(void)
- {
- 	int cpu, rc = 0;
-@@ -708,6 +779,15 @@ static int __init intel_pstate_init(void)
- 	if (no_load)
- 		return -ENODEV;
- 
-+	if (!acpi_disabled) {
-+		/*
-+		 * Check if the platform has its own power management modes.
-+		 * If so, the pstate cpufreq driver will be ignored.
-+		 */
-+		if (intel_pstate_platform_pwr_mgmt_exists())
-+			return 0;
-+	}
-+
- 	id = x86_match_cpu(intel_pstate_cpu_ids);
- 	if (!id)
- 		return -ENODEV;
--- 
-1.8.1.2
+Have you missed applying this one? Attached again..
 
+--047d7b5daca09a18b404e93b0578
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-acpi-Add-comment-under-ACPI_ADR_SPACE_SYSTEM.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-acpi-Add-comment-under-ACPI_ADR_SPACE_SYSTEM.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hn1db64x1
+
+RnJvbSAwNTViNWQ3M2JlZjA4OThkNDc3MTg4MzcyYjIxNWNkMmVjODJmZTgxIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MDU1YjVkNzNiZWYwODk4ZDQ3NzE4ODM3MmIyMTVj
+ZDJlYzgyZmU4MS4xMzgxNjI0NjAyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCAxMiBPY3Qg
+MjAxMyAwNzowMDowMSArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFjcGk6IEFkZCBj
+b21tZW50IHVuZGVyIEFDUElfQURSX1NQQUNFX1NZU1RFTV9JTwogY2FzZQoKcG9saWN5LT5jdXIg
+aXMgbm93IHNldCBieSBjcHVmcmVxIGNvcmUgd2hlbiBjcHVmcmVxX2RyaXZlci0+Z2V0KCkgaXMg
+ZGVmaW5lZCBhbmQKc28gZHJpdmVycyBhcmVuJ3QgcmVxdWlyZWQgdG8gc2V0IGl0LiBXaGVuIHNw
+YWNlX2lkIGlzIEFDUElfQURSX1NQQUNFX1NZU1RFTV9JTwpmb3IgYWNwaSBjcHVmcmVxIGRyaXZl
+ciBpdCBkb2Vzbid0IHNldCAtPmdldCB0byBhIHZhbGlkIGZ1bmN0aW9uIHBvaW50ZXIgYW5kIHNv
+CnBvbGljeS0+Y3VyIGlzIHJlcXVpcmVkIHRvIGJlIHNldCBieSBkcml2ZXIuCgpUaGlzIGlzIGFs
+cmVhZHkgZm9sbG93ZWQgaW4gYWNwaS1jcHVmcmVxIGRyaXZlci4gVGhpcyBwYXRjaCBhZGRzIGEg
+Y29tbWVudApkZXNjcmliaW5nIHdoeSB3ZSBuZWVkIHRvIHNldCBwb2xpY3ktPmN1ciBmcm9tIGRy
+aXZlci4KClN1Z2dlc3RlZC1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lA
+aW50ZWwuY29tPgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5h
+cm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYyB8IDcgKysrKysrLQog
+MSBmaWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9hY3Bp
+LWNwdWZyZXEuYwppbmRleCBhOGRhYzdiLi5hMTcxN2Q3IDEwMDY0NAotLS0gYS9kcml2ZXJzL2Nw
+dWZyZXEvYWNwaS1jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2FjcGktY3B1ZnJlcS5j
+CkBAIC04MzcsNyArODM3LDEyIEBAIHN0YXRpYyBpbnQgYWNwaV9jcHVmcmVxX2NwdV9pbml0KHN0
+cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogCiAJc3dpdGNoIChwZXJmLT5jb250cm9sX3Jl
+Z2lzdGVyLnNwYWNlX2lkKSB7CiAJY2FzZSBBQ1BJX0FEUl9TUEFDRV9TWVNURU1fSU86Ci0JCS8q
+IEN1cnJlbnQgc3BlZWQgaXMgdW5rbm93biBhbmQgbm90IGRldGVjdGFibGUgYnkgSU8gcG9ydCAq
+LworCQkvKgorCQkgKiBUaGUgY29yZSB3aWxsIG5vdCBzZXQgcG9saWN5LT5jdXIsIGJlY2F1c2UK
+KwkJICogY3B1ZnJlcV9kcml2ZXItPmdldCBpcyBOVUxMLCBzbyB3ZSBuZWVkIHRvIHNldCBpdCBo
+ZXJlLgorCQkgKiBIb3dldmVyLCB3ZSBoYXZlIHRvIGd1ZXNzIGl0LCBiZWNhdXNlIHRoZSBjdXJy
+ZW50IHNwZWVkIGlzCisJCSAqIHVua25vd24gYW5kIG5vdCBkZXRlY3RhYmxlIHZpYSBJTyBwb3J0
+cy4KKwkJICovCiAJCXBvbGljeS0+Y3VyID0gYWNwaV9jcHVmcmVxX2d1ZXNzX2ZyZXEoZGF0YSwg
+cG9saWN5LT5jcHUpOwogCQlicmVhazsKIAljYXNlIEFDUElfQURSX1NQQUNFX0ZJWEVEX0hBUkRX
+QVJFOgotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
+--047d7b5daca09a18b404e93b0578--
