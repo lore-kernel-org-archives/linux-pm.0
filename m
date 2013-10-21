@@ -1,81 +1,44 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
-Date: Mon, 21 Oct 2013 17:42:39 +0200
-Message-ID: <20131021154239.GB23593@lunn.ch>
-References: <1382186261-14482-1-git-send-email-andrew@lunn.ch>
- <1382186261-14482-2-git-send-email-andrew@lunn.ch>
- <52650523.80400@gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: fix possible integer overflow
+Date: Mon, 21 Oct 2013 08:56:22 -0700
+Message-ID: <52654EA6.6020805@gmail.com>
+References: <1382239876-12688-1-git-send-email-geyslan@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:42902 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753626Ab3JUPrA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Oct 2013 11:47:00 -0400
-Content-Disposition: inline
-In-Reply-To: <52650523.80400@gmail.com>
+Received: from mail-pb0-f48.google.com ([209.85.160.48]:42862 "EHLO
+	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752729Ab3JUP4Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 11:56:25 -0400
+In-Reply-To: <1382239876-12688-1-git-send-email-geyslan@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>
+To: "Geyslan G. Bem" <geyslan@gmail.com>, kernel-br@googlegroups.com
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY DRI..." <cpufreq@vger.kernel.org>, "open list:CPU FREQUENCY DRI..." <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-> >+	if (freqs.old != freqs.new) {
-> >+		local_irq_disable();
-> >+
-> >+		/* Mask IRQ and FIQ to CPU */
-> >+		cr = readl(priv.pmu_cr);
-> >+		cr |= MASK_IRQ | MASK_FIQ;
-> >+		writel(cr, priv.pmu_cr);
-> >+
-> >+		/* Set/Clear the CPU_SLOW_EN bit */
-> >+		reg = readl_relaxed(priv.dfs + DFS_CR);
-> >+		reg &= ~L2_RATIO_MASK;
-> >+
-> >+		switch (state) {
-> >+		case STATE_CPU_FREQ:
-> >+			reg |= priv.xpratio;
-> >+			reg &= ~CPU_SLOW_EN;
-> >+			break;
-> >+		case STATE_DDR_FREQ:
-> >+			reg |= (priv.dpratio | CPU_SLOW_EN);
-> 
-> Does slow mode really (only) depend on the value written into CPUL2CR?
-> Dove FS isn't that chatty about it and I cannot really test right now.
-> But reading it, I think there is two CPU PLL to {L2,DDR} ratios that you
-> can switch between by (de-)asserting CPU_SLOW_EN.
+On 10/19/2013 08:31 PM, Geyslan G. Bem wrote:
+> The expression 'pstate << 8' is evaluated using 32-bit arithmetic while
+> 'val' expects an expression of type u64.
+>
+> Signed-off-by: Geyslan G. Bem <geyslan@gmail.com>
+Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> ---
+>   drivers/cpufreq/intel_pstate.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index badf620..43446b5 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -395,7 +395,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+>   	trace_cpu_frequency(pstate * 100000, cpu->cpu);
+>
+>   	cpu->pstate.current_pstate = pstate;
+> -	val = pstate << 8;
+> +	val = (u64)pstate << 8;
+>   	if (limits.no_turbo)
+>   		val |= (u64)1 << 32;
+>
+>
 
-Hi Sebastian
-
-The lack of details in the datasheet was very annoying. I spent many
-evenings looking at a frozen up cubox. In the end i had to risk eye
-cancer and look at the Marvell vendor code. It always sets these
-values on each transition, and it even calculated one of the ratios
-each time the frequency changed. I never actually tried setting them
-once and then leaving them alone. Worth a try once i have the hardware
-available.
-
-> >+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> >+	priv.dfs = devm_ioremap_resource(&pdev->dev, res);
-> >+	if (IS_ERR(priv.dfs))
-> >+		return PTR_ERR(priv.dfs);
-> >+
-> >+	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> >+	priv.pmu_cr = devm_ioremap_resource(&pdev->dev, res);
-> >+	if (IS_ERR(priv.pmu_cr))
-> 
-> Cleanup path for most of the resources here and below is kind of
-> missing. 
-
-Well, i'm using devm_ioremap_resources().  The cleanup for that should
-happen automagically. And platform_get_resource() is just a lookup
-function.
-
-> Also, maybe give names to the different areas and not depend
-> on ordering?
-
-Actually, they already have names, but you probably have not go to
-that patch yet. So swapping to platform_get_resource_byname() would be
-simple.
-
-Thanks
-	Andrew
