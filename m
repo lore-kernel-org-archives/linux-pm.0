@@ -1,47 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: exynos: Show a list of available frequencies
-Date: Mon, 21 Oct 2013 13:00:02 +0530
-Message-ID: <CAKohponOQ=FB6vY+6J+qNCd8+gNn4sCwzdNV56_VtVdwavWOwg@mail.gmail.com>
-References: <00a301cec935$786cf7e0$6946e7a0$%lee@samsung.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH 5/5] ARM: vexpress/TC2: register vexpress-spc cpufreq
+ device
+Date: Mon, 21 Oct 2013 10:19:30 +0100
+Message-ID: <5264F1A2.8040802@arm.com>
+References: <1381931563-16785-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1381931563-16785-6-git-send-email-Sudeep.KarkadaNagesha@arm.com> <alpine.LFD.2.03.1310181457010.1951@syhkavp.arg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f52.google.com ([209.85.216.52]:37007 "EHLO
-	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444Ab3JUHaD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 03:30:03 -0400
-Received: by mail-qa0-f52.google.com with SMTP id w8so2232759qac.18
-        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2013 00:30:03 -0700 (PDT)
-In-Reply-To: <00a301cec935$786cf7e0$6946e7a0$%lee@samsung.com>
+Received: from service87.mimecast.com ([91.220.42.44]:35584 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753802Ab3JUJTN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 05:19:13 -0400
+In-Reply-To: <alpine.LFD.2.03.1310181457010.1951@syhkavp.arg>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jungseok Lee <jays.lee@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On 15 October 2013 05:01, Jungseok Lee <jays.lee@samsung.com> wrote:
-> This patch adds freq_attr to show a list of exynos5440 scaling
-> available frequencies through sysfs. Common exynos driver already
-> supports this attribute.
->
-> Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
-> ---
-> Changes since v1:
-> - Used a generic attribute, not a specific one.
->
->  drivers/cpufreq/exynos5440-cpufreq.c |    1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-> index 06b73e8..fecc3da 100644
-> --- a/drivers/cpufreq/exynos5440-cpufreq.c
-> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> @@ -330,6 +330,7 @@ static struct cpufreq_driver exynos_driver = {
->         .init           = exynos_cpufreq_cpu_init,
->         .exit           = cpufreq_generic_exit,
->         .name           = CPUFREQ_NAME,
-> +       .attr           = cpufreq_generic_attr,
->  };
->
->  static const struct of_device_id exynos_cpufreq_match[] = {
+Hi Nico,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 18/10/13 19:58, Nicolas Pitre wrote:
+> On Wed, 16 Oct 2013, Sudeep KarkadaNagesha wrote:
+> 
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> This patch adds vexpress-spc platform device to enables the vexpress
+>> SPC cpufreq interface driver.
+>>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>> Cc: Pawel Moll <Pawel.Moll@arm.com>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  arch/arm/mach-vexpress/spc.c | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/arch/arm/mach-vexpress/spc.c b/arch/arm/mach-vexpress/spc.c
+>> index a8b8310..4ddfbfe 100644
+>> --- a/arch/arm/mach-vexpress/spc.c
+>> +++ b/arch/arm/mach-vexpress/spc.c
+>> @@ -25,6 +25,7 @@
+>>  #include <linux/interrupt.h>
+>>  #include <linux/io.h>
+>>  #include <linux/opp.h>
+>> +#include <linux/platform_device.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/semaphore.h>
+>>  
+>> @@ -532,6 +533,7 @@ static int __init ve_spc_clk_init(void)
+>>  			pr_warn("failed to initialise cpu%d opp table\n", cpu);
+>>  	}
+>>  
+>> +	platform_device_register_simple("vexpress-spc-cpufreq", -1, NULL, 0);
+>>  	return 0;
+>>  }
+>>  module_init(ve_spc_clk_init);
+> 
+> OK... this solves my concern about initcall ordering.  Please just 
+> disregard my suggestions on patch #3.  I'd suggest folding this patch 
+> into patch 3/5 though.
+>
+Thanks for the review. All the comments provided in other patches are fixed.
+Since this would not cause any ordering issue, do you still think it needs to be
+folded in PATCH 3/5. One concern I have with that is we will be adding device
+first and then the driver. Either I will have to reorder patch 3 and 4 after
+folding this patch or leave it as it is now.
+
+Regards,
+Sudeep
+
