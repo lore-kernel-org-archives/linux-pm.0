@@ -1,199 +1,137 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [REGRESSION?] sensors and fancontrol not seeing armada_thermal
- on 3.12-rc series
-Date: Sun, 20 Oct 2013 22:19:10 -0700
-Message-ID: <5264B94E.9090805@roeck-us.net>
-References: <87ppqzolsu.fsf@natisbad.org> <52642DAF.8080301@roeck-us.net> <1382322502.2410.12.camel@rzhang1-mobl4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.active-venture.com ([67.228.131.205]:58994 "EHLO
-	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490Ab3JUFTS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2013 01:19:18 -0400
-In-Reply-To: <1382322502.2410.12.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+From: Adrian Huang <adrian.huang@hp.com>
+Subject: [PATCH 1/1] cpufreq: intel_pstate: skip the driver if ACPI has power mgmt option
+Date: Mon, 21 Oct 2013 13:27:07 +0800
+Message-ID: <1382333227-28231-1-git-send-email-adrian.huang@hp.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com, Adrian Huang <adrian.huang@hp.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Arnaud Ebalard <arno@natisbad.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Jean Delvare <khali@linux-fr.org>, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>
 
-On 10/20/2013 07:28 PM, Zhang Rui wrote:
-> Hi,
->
-> On Sun, 2013-10-20 at 12:23 -0700, Guenter Roeck wrote:
->> On 10/20/2013 11:10 AM, Arnaud Ebalard wrote:
->>> Hi,
->>>
->>> With 3.12-rc series, sysfs support for thermal susbsytem (and/or hw=
-mon
->>> one) was modified in such a way that sensors utility (current 3.3.4
->>> version with 3.3.4 version of libsensors from lm-sensors package on
->>> Debian unstable) does not see the temperature sensor anymore on arm=
-ada
->>> 370 platforms (not tested on others). Additionally, the changes bre=
-ak
->>> existing configurations of fancontrol utility, which prevents the
->>> fan to be regulated correctly w/o recreating an /etc/fancontrol w/
->>> pwmconfig.
->>>
->>> Here is what I have on my Armada 370-based system on a 3.11.5:
->>>
->>> # sensors
->>> g762-i2c-0-3e
->>> Adapter: mv64xxx_i2c adapter
->>> fan1:        2457 RPM  (div =3D 1)
->>>
->>> armada_thermal-virtual-0
->>> Adapter: Virtual device
->>> temp1:        +45.7=C2=B0C
->>>
->>> And what I get on 3.12-rc6:
->>>
->>> # sensors
->>> g762-i2c-0-3e
->>> Adapter: mv64xxx_i2c adapter
->>> fan1:        1350 RPM  (div =3D 1)
->>>
->>>
->>> Monitoring what sensors does w/ strace, I started looking at the ch=
-anges
->>> to /sys/class/hwmon/hwmon1/:
->>>
->>> On 3.11.5:
->>>
->>> # find /sys/class/hwmon/hwmon1/
->>> /sys/class/hwmon/hwmon1/
->>> /sys/class/hwmon/hwmon1/name
->>> /sys/class/hwmon/hwmon1/subsystem
->>> /sys/class/hwmon/hwmon1/uevent
->>> /sys/class/hwmon/hwmon1/temp1_input
->>>
->>> On 3.12-rc6:
->>>
->>> # find /sys/class/hwmon/hwmon1/
->>> /sys/class/hwmon/hwmon1/
->>> /sys/class/hwmon/hwmon1/name
->>> /sys/class/hwmon/hwmon1/device
->>> /sys/class/hwmon/hwmon1/subsystem
->>> /sys/class/hwmon/hwmon1/uevent
->>> /sys/class/hwmon/hwmon1/temp1_input
->>>
->>> # find /sys/class/hwmon/hwmon1/device/
->>> /sys/class/hwmon/hwmon1/device/
->>> /sys/class/hwmon/hwmon1/device/temp
->>> /sys/class/hwmon/hwmon1/device/type
->>> /sys/class/hwmon/hwmon1/device/hwmon1
->>> /sys/class/hwmon/hwmon1/device/hwmon1/name
->>> /sys/class/hwmon/hwmon1/device/hwmon1/device
->>> /sys/class/hwmon/hwmon1/device/hwmon1/subsystem
->>> /sys/class/hwmon/hwmon1/device/hwmon1/uevent
->>> /sys/class/hwmon/hwmon1/device/hwmon1/temp1_input
->>> /sys/class/hwmon/hwmon1/device/subsystem
->>> /sys/class/hwmon/hwmon1/device/policy
->>> /sys/class/hwmon/hwmon1/device/uevent
->>> /sys/class/hwmon/hwmon1/device/passive
->>>
->>> Is that expected? As for sensors, it *seems* to be bothered to find=
- a
->>> device/ folder in /sys/class/hwmon/hwmon1/ w/o no name entry in it.
->>>
->
-> I agree. And it should be caused by this commit.
->
-> commit b82715fdd4a5407f56853b24d387d484dd9c3b5b
-> Author: Eduardo Valentin <eduardo.valentin@ti.com>
-> Date:   Fri Aug 23 17:07:58 2013 -0400
->
->      drivers: thermal: parent virtual hwmon with thermal zone
->
->      When  creating virtual hwmon devices based out of thermal
->      zone devices, the virtual devices won't have parents.
->
->      This patch changes the code so that the parent of virtual
->      hwmon devices is the thermal zone device that they are
->      based of.
->
->      Cc: Zhang Rui <rui.zhang@intel.com>
->      Cc: linux-pm@vger.kernel.org
->      Cc: linux-kernel@vger.kernel.org
->      Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->
->>
->> The 'name' attribute should not be the problem, since there is a 'na=
-me'
->> attribute in the /sys/class/hwmon/hwmon1/ directory.
->>
->> Key difference is that there is now a 'device' subdirectory,
->
-> Right.
->
->>   which results
->> in different handling by libsensors;
-> Oh, I'm not aware of this before.
-> There is no such statement in the comments of hwmon_device_register()=
-,
-> or anywhere else.
-> Could you show me some tutorials about how the sysfs I/F misleads
-> libsensors?
->
+Do not load the Intel pstate driver if the platform firmware
+(ACPI BIOS) supports the power management alternatives.
+The ACPI BIOS indicates that the OS control mode can be used
+if the _PSS (Performance Supported States) object is defined
+in ACPI table. For the OS control mode, the Intel pstate
+driver will be loaded.
 
-I looked into the libsensors source code. I don't think there is a tuto=
-rial,
-or at least I am not aware of one.
+Signed-off-by: Adrian Huang <adrian.huang@hp.com>
+---
+ drivers/cpufreq/intel_pstate.c | 80 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 80 insertions(+)
 
-Still, I don't entirely understand how the above commit results in what=
- seems
-to be recursive parents (or, from looking into the code, how that happe=
-ns in
-the first place).
-
-Guenter
-
-> But anyway, I will revert this patch first.
-> Thanks for reporting the problem, Arnaud!
->
-> thanks,
-> rui
->>   the entry is no longer a virtual entry
->> but is expected to have a real device attached to it. For this devic=
-e,
->> libsensors tries to scan the 'subsystem' entry which in turn must be=
- well
->> defined and known. My suspicion is that the reported subsystem may n=
-ot be
->> recognized by libsensors.
->
->>
->> One question is why there is now a device entry, even though this is=
- still as
->> virtual as it was before. You'll have to ask the thermal subsystem m=
-aintainers
->> for an answer.
->
->> I am also concerned about the 'hwmon1' subdirectory underneath hwmon=
-1/device;
->> that suggests that hwmon1 may be declared to be a child of itself, w=
-hich would
->> obviously not be a good idea.
->>
->> Also, note that the thermal subsystem creates (or may create) sensor=
- attributes
->> after registering the hwmon device, which means you can not rely on =
-the udev
->> event that comes with the hwmon device creation and assume that all =
-sensor
->> attributes exist at that time. I don't currently know how to handle =
-this situation.
->> This is not unique, though; the coretemp driver does the same. Just =
-something
->> to keep in mind.
->>
->> Guenter
->>
->
->
->
->
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index badf620..c03915e 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -26,6 +26,8 @@
+ #include <linux/fs.h>
+ #include <linux/debugfs.h>
+ #include <trace/events/power.h>
++#include <linux/acpi.h>
++#include <acpi/processor.h>
+ 
+ #include <asm/div64.h>
+ #include <asm/msr.h>
+@@ -129,6 +131,18 @@ static struct perf_limits limits = {
+ 	.max_sysfs_pct = 100,
+ };
+ 
++struct hw_vendor_info {
++	u16  valid;
++	char oem_id[ACPI_OEM_ID_SIZE];
++	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
++};
++
++/* Hardware vendor-specific info that has its own power management modes */
++static struct hw_vendor_info vendor_info[] = {
++	{1, "HP    ", "ProLiant"},
++	{0, "", ""},
++};
++
+ static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+ 			int deadband, int integral) {
+ 	pid->setpoint = setpoint;
+@@ -700,6 +714,63 @@ static int intel_pstate_msrs_not_valid(void)
+ 
+ 	return 0;
+ }
++
++static bool intel_pstate_no_acpi_pss(void)
++{
++	struct acpi_processor *pr;
++	union acpi_object *pss = NULL;
++	int i;
++
++	for_each_possible_cpu(i) {
++
++		pr = per_cpu(processors, i);
++
++		if (pr) {
++			struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER,
++							NULL };
++
++			if (ACPI_SUCCESS(acpi_evaluate_object(pr->handle,
++						"_PSS", NULL, &buffer))) {
++
++				pss = buffer.pointer;
++
++				if (pss && pss->type == ACPI_TYPE_PACKAGE) {
++					kfree(buffer.pointer);
++					return false;
++				}
++
++				kfree(buffer.pointer);
++			}
++		}
++	}
++
++	return true;
++}
++
++static bool intel_pstate_platform_pwr_mgmt_exists(void)
++{
++	struct acpi_table_header hdr;
++	struct hw_vendor_info *v_info;
++
++	if (acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr) == AE_OK) {
++		for (v_info = vendor_info; v_info->valid; v_info++) {
++			/*
++			 * Check if the hardware/platform is in the
++			 * predefined vendor data.
++			 */
++			if (!strncmp(hdr.oem_id, v_info->oem_id,
++				     ACPI_OEM_ID_SIZE) &&
++			    !strncmp(hdr.oem_table_id, v_info->oem_table_id,
++				     ACPI_OEM_TABLE_ID_SIZE)) {
++				if (intel_pstate_no_acpi_pss())
++					return true;
++			}
++		}
++	}
++
++	return false;
++}
++
+ static int __init intel_pstate_init(void)
+ {
+ 	int cpu, rc = 0;
+@@ -708,6 +779,15 @@ static int __init intel_pstate_init(void)
+ 	if (no_load)
+ 		return -ENODEV;
+ 
++	if (!acpi_disabled) {
++		/*
++		 * Check if the platform has its own power management modes.
++		 * If so, the pstate cpufreq driver will be ignored.
++		 */
++		if (intel_pstate_platform_pwr_mgmt_exists())
++			return 0;
++	}
++
+ 	id = x86_match_cpu(intel_pstate_cpu_ids);
+ 	if (!id)
+ 		return -ENODEV;
+-- 
+1.8.1.2
 
