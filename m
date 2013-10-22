@@ -1,81 +1,96 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [REGRESSION?] sensors and fancontrol not seeing armada_thermal
-  on 3.12-rc series
-Date: Tue, 22 Oct 2013 14:04:25 +0200
-Message-ID: <20131022140425.10afc26c@endymion.delvare>
-References: <87ppqzolsu.fsf@natisbad.org>
-	<20131021091739.739142e8@endymion.delvare>
-	<20131021151616.GA17598@roeck-us.net>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
+Date: Tue, 22 Oct 2013 17:57:58 +0200
+Message-ID: <20131022155758.GA26694@lunn.ch>
+References: <1382186261-14482-1-git-send-email-andrew@lunn.ch>
+ <1382186261-14482-2-git-send-email-andrew@lunn.ch>
+ <CAKohpok2scsSU7eFOP5LYmQar8xfOqG4-b3z4sVS6JOgnxVcpw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zoneX.GCU-Squad.org ([194.213.125.0]:48343 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751950Ab3JVMEo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Oct 2013 08:04:44 -0400
-In-Reply-To: <20131021151616.GA17598@roeck-us.net>
+Received: from vps0.lunn.ch ([178.209.37.122]:43103 "EHLO vps0.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753054Ab3JVQC3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 22 Oct 2013 12:02:29 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpok2scsSU7eFOP5LYmQar8xfOqG4-b3z4sVS6JOgnxVcpw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Arnaud Ebalard <arno@natisbad.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-arm-kernel@lists.infradead.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-Hi Guenter,
+Hi Viresh
 
-On Mon, 21 Oct 2013 08:16:16 -0700, Guenter Roeck wrote:
-> I think it is more likely that the problem is related to parsing the 'subsystem'
-> link. If I understand the code in lib/sysfs.c correctly, it doesn't recognize
-> 'thermal' (which I think is the subsystem name, but I may be wrong) and ignores
-> the device as unknown.
+Thanks for your comments. I will include them in the next version.
 
-Yes, you are right, that's exactly what is happening here.
+> > +static irqreturn_t dove_cpufreq_irq(int irq, void *dev)
+> > +{
+> > +       return IRQ_HANDLED;
+> > +}
+> 
+> what is this for?
 
-> Question is if we can come up with some more generic code to handle that case.
-> Define SENSORS_BUS_TYPE_OTHER and treat it similar to virtual, maybe ?
-> But then there can be more than one of those, so you would need some means
-> for enumerating bus and chip numbers, so I don't know if that is feasible.
+The hardware raises an interrupt when the change is complete. This
+interrupt is what brings the CPU out of the WFI. I don't know the
+interrupt code too well, but i think it is necessary for the driver to
+acknowledged it. The interrupt core code counts interrupts which
+nobody acknowledges, and after 1000 are received, it disables the
+interrupt. That would probably result in the machine locking solid,
+never coming out of the WFI. So i'm playing it safe and handling the
+interrupt.
 
-The whole point of identifying the subsystem is because we want to
-assign a unique, stable identifier to each chip, and the naming scheme
-depends on the subsystem. If we start treating all unsupported
-subsystems as "other", we simply won't be able to give these devices
-unique names. Developers and users are unlikely to care and report the
-problem to us if libsensors shows them their "foo-other-0" device. This
-is why libsensors ignores these devices: developers and users will
-report about the missing device and we can add proper support to
-libsensors. That way we can get the naming scheme right immediately
-instead of later when this will break running configurations.
+> > +static int dove_cpufreq_probe(struct platform_device *pdev)
+> > +{
+> > +       struct device_node *np;
+> > +       struct resource *res;
+> > +       int err;
+> > +       int irq;
+> 
+> Above two can be merged.
 
-Commit b82715fdd4a5407f56853b24d387d484dd9c3b5b is simply wrong, so it
-should be reverted. It assumes that there's a 1:1 mapping between
-thermal zones and hwmon devices, which is not the case. See this
-comment near the top of thermal_hwmon.c:
+Well, i was told the exact opposite by the USB serial maintainer :-) 
+I will use your coding style here, and his for USB code, and try to
+keep everybody happy.
 
-/* thermal zone devices with the same type share one hwmon device */
+ 
+> > +       priv.dev = &pdev->dev;
+> > +
+> > +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +       priv.dfs = devm_ioremap_resource(&pdev->dev, res);
+> > +       if (IS_ERR(priv.dfs))
+> > +               return PTR_ERR(priv.dfs);
+> > +
+> > +       res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> > +       priv.pmu_cr = devm_ioremap_resource(&pdev->dev, res);
+> > +       if (IS_ERR(priv.pmu_cr))
+> > +               return PTR_ERR(priv.pmu_cr);
+> > +
+> > +       res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
+> > +       priv.pmu_clk_div = devm_ioremap_resource(&pdev->dev, res);
+> > +       if (IS_ERR(priv.pmu_clk_div))
+> > +               return PTR_ERR(priv.pmu_clk_div);
+> > +
+> > +       np = of_find_node_by_path("/cpus/cpu@0");
+> > +       if (!np)
+> > +               return -ENODEV;
+> > +
+> > +       priv.cpu_clk = of_clk_get_by_name(np, "cpu_clk");
+> > +       if (IS_ERR(priv.cpu_clk)) {
+> > +               dev_err(priv.dev, "Unable to get cpuclk");
+> > +               return PTR_ERR(priv.cpu_clk);
+> > +       }
+> > +
+> > +       clk_prepare_enable(priv.cpu_clk);
+> 
+> this can fail..
 
-So associating the hwmon device with the first registered thermal zone
-of its kind is arbitrary and asymmetric and makes no sense. I don't
-know what the goal of that change was, but that will have to be
-achieved in a different way.
+In theory yes. In practice no. It is a fixed rate clock. prepare and
+enable are actually NOPs for this type of clock. However the API
+documentation explicitly states you need to call prepare and enable
+before you can call clk_get_rate(). But i can add error checking if
+you want.
 
-Note that merging all thermal zones of one kind into a single hwmon
-device is exactly what makes it possible to treat it as a virtual
-device and still guarantee uniqueness of the identifier (e.g.
-acpitz-virtual-0.) It has the drawback of leaving the input ordering
-stability up to the kernel, but back then it was not considered an
-issue.
+> 
+> > +       dove_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
 
-If we now want to have one hwmon device per thermal zone, then the
-kernel must provide a way for libsensors to give each of them a unique
-and stable identifier. Naming scheme is relatively free.
-
-Note that I am not necessarily in favor of such a change, as 1* it
-could lead to a huge number of hwmon devices, making the output of
-"sensors" harder to read, and 2* the change could break existing
-configurations. So if anyone wants to change this, a really really good
-reason must be provided, i.e. you will have to demonstrate that the
-benefits outweigh the pain.
-
-Hope it helps,
--- 
-Jean Delvare
+  Andrew
