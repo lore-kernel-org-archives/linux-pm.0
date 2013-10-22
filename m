@@ -1,267 +1,161 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
-Date: Tue, 22 Oct 2013 14:31:03 +0530
-Message-ID: <CAKohpok2scsSU7eFOP5LYmQar8xfOqG4-b3z4sVS6JOgnxVcpw@mail.gmail.com>
-References: <1382186261-14482-1-git-send-email-andrew@lunn.ch>
-	<1382186261-14482-2-git-send-email-andrew@lunn.ch>
+Subject: Re: [PATCH] cpufreq: sirf : Add cpufreq for SiRFprimaII and SiRFatlasVI
+Date: Tue, 22 Oct 2013 14:51:48 +0530
+Message-ID: <CAKohpok8GvukpTMyscjhn17UbcNSYpEzVMfv4JNg1Us=Gx39cg@mail.gmail.com>
+References: <1381030393-10452-1-git-send-email-Baohua.Song@csr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:43951 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988Ab3JVJBE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Oct 2013 05:01:04 -0400
-Received: by mail-ob0-f174.google.com with SMTP id vb8so2608728obc.19
-        for <linux-pm@vger.kernel.org>; Tue, 22 Oct 2013 02:01:03 -0700 (PDT)
-In-Reply-To: <1382186261-14482-2-git-send-email-andrew@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1381030393-10452-1-git-send-email-Baohua.Song@csr.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Barry Song <21cnbao@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, workgroup.linux@csr.com, Rongjun Ying <Rongjun.Ying@csr.com>, Barry Song <Baohua.Song@csr.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 19 October 2013 18:07, Andrew Lunn <andrew@lunn.ch> wrote:
+On 6 October 2013 09:03, Barry Song <21cnbao@gmail.com> wrote:
+> From: Rongjun Ying <Rongjun.Ying@csr.com>
+>
+> This patch adds support cpufreq for CSR SiRFprimaII and SiRFatlasVI unicore
+> ARM Cortex-A9 SoCs.
+>
+> Signed-off-by: Rongjun Ying <Rongjun.Ying@csr.com>
+> Signed-off-by: Barry Song <Baohua.Song@csr.com>
+> ---
+>  arch/arm/boot/dts/atlas6.dtsi     |   8 ++
+>  arch/arm/boot/dts/prima2.dtsi     |   8 ++
+>  arch/arm/configs/prima2_defconfig |   1 +
+>  arch/arm/mach-prima2/Kconfig      |   1 +
+>  drivers/cpufreq/Kconfig.arm       |  11 +++
+>  drivers/cpufreq/Makefile          |   1 +
+>  drivers/cpufreq/sirf-cpufreq.c    | 197 ++++++++++++++++++++++++++++++++++++++
+>  7 files changed, 227 insertions(+)
+>  create mode 100644 drivers/cpufreq/sirf-cpufreq.c
 
-> +config ARM_DOVE_CPUFREQ
-> +       def_bool ARCH_DOVE && OF
+Shouldn't this be broken into several patches?
+- One for drivers/cpufreq
+- dts and mach
+- defconfig
+
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 0fa204b..4cfbb18 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -220,6 +220,17 @@ config ARM_SA1100_CPUFREQ
+>  config ARM_SA1110_CPUFREQ
+>         bool
+>
+> +config ARM_SIRF_CPUFREQ
+> +       bool "CSR SiRFprimaII and SiRFatlasVI"
+> +       depends on ARCH_SIRF
 > +       select CPU_FREQ_TABLE
 
 Refer:
 3bc28ab cpufreq: remove CONFIG_CPU_FREQ_TABLE
 
+> +       default y
 > +       help
-> +         This adds the CPUFreq driver for Marvell Dove
-> +         SoCs.
-
-Above can come in one line?
-
+> +         This adds the CPUFreq driver for CSR SiRFprimaII and
+> +         SiRFatlasVI SoCs.
 > +
->  config ARM_DT_BL_CPUFREQ
->         tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
->         depends on ARM_BIG_LITTLE_CPUFREQ && OF
+> +         If in doubt, say N.
 
+> diff --git a/drivers/cpufreq/sirf-cpufreq.c b/drivers/cpufreq/sirf-cpufreq.c
 
-> diff --git a/drivers/cpufreq/dove-cpufreq.c b/drivers/cpufreq/dove-cpufreq.c
-
-> +#include <linux/kernel.h>
 > +#include <linux/module.h>
+> +#include <linux/err.h>
 > +#include <linux/clk.h>
-> +#include <linux/clk-provider.h>
-
-why do you need this one?
-
+> +#include <linux/regulator/consumer.h>
 > +#include <linux/cpufreq.h>
-> +#include <linux/interrupt.h>
 > +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/io.h>
-> +#include <linux/of_irq.h>
+> +#include <linux/slab.h>
+> +#include <linux/cpu.h>
+> +#include <linux/opp.h>
 
-Can you add them in ascending order please?
+Can you please add them in ascending order?
 
-> +#include <asm/proc-fns.h>
+> +#define SIRFSOC_MAX_VOLTAGE    1200000
 > +
-> +#define DFS_CR                 0x00
-> +#define         DFS_EN                 BIT(0)
-> +#define         CPU_SLOW_EN            BIT(1)
-> +#define         L2_RATIO_OFFS          9
-> +#define         L2_RATIO_MASK          (0x3F << L2_RATIO_OFFS)
-> +#define DFS_SR                 0x04
-> +#define         CPU_SLOW_MODE_STTS     BIT(1)
+> +static struct {
+> +       struct clk                      *cpu_clk;
+> +       struct device                   *cpu_dev;
+> +       struct cpufreq_freqs            freqs;
+> +       struct cpufreq_frequency_table  *freq_tbl;
+> +       unsigned int                    transition_latency;
+> +       struct regulator                *regulator;
+> +} sirf_cpufreq;
 > +
-> +/* PMU_CR */
-> +#define         MASK_FIQ               BIT(28)
-> +#define         MASK_IRQ               BIT(24) /* PMU_CR */
-
-Use space after #define instead of tabs. And then use tabs
-consistently after Macro name to keep macro values aligned.
-
-> +/* CPU Clock Divider Control 0 Register */
-> +#define DPRATIO_OFFS           24
-> +#define DPRATIO_MASK           (0x3F << DPRATIO_OFFS)
-> +#define XPRATIO_OFFS           16
-> +#define XPRATIO_MASK           (0x3F << XPRATIO_OFFS)
-
-Here as well.. aligning with earlier macro's might look better.
-
-> +static struct priv
+> +static void update_voltage(int min_uV, int max_uV)
 > +{
-> +       struct clk *cpu_clk;
-> +       struct clk *ddr_clk;
-> +       struct device *dev;
-> +       unsigned long dpratio;
-> +       unsigned long xpratio;
-> +       void __iomem *dfs;
-> +       void __iomem *pmu_cr;
-> +       void __iomem *pmu_clk_div;
-> +} priv;
+> +       if (sirf_cpufreq.regulator == NULL)
+
+maybe
+if (sirf_cpufreq.regulator)
+    regulator_set_voltage(sirf_cpufreq.regulator, min_uV, max_uV);
+
+> +               return;
 > +
-> +#define STATE_CPU_FREQ 0x01
-> +#define STATE_DDR_FREQ 0x02
-> +
-> +/*
-> + * Dove can swap the clock to the CPU between two clocks:
-> + *
-> + * - cpu clk
-> + * - ddr clk
-> + *
-> + * The frequencies are set at runtime before registering this
-> + * table.
-> + */
-> +static struct cpufreq_frequency_table dove_freq_table[] = {
-> +       {STATE_CPU_FREQ,        0}, /* CPU uses cpuclk */
-> +       {STATE_DDR_FREQ,        0}, /* CPU uses ddrclk */
-> +       {0,                     CPUFREQ_TABLE_END},
-> +};
-> +
-> +static unsigned int dove_cpufreq_get_cpu_frequency(unsigned int cpu)
-> +{
-> +       unsigned long reg = readl_relaxed(priv.dfs + DFS_SR);
-> +
-> +       if (reg & CPU_SLOW_MODE_STTS)
-> +               return dove_freq_table[1].frequency;
-> +       return dove_freq_table[0].frequency;
+> +       regulator_set_voltage(sirf_cpufreq.regulator, min_uV, max_uV);
 > +}
 > +
-> +static void dove_cpufreq_set_cpu_state(struct cpufreq_policy *policy,
-> +                                      unsigned int index)
+> +static int sirf_verify_speed(struct cpufreq_policy *policy)
 > +{
-> +       struct cpufreq_freqs freqs;
-> +       unsigned int state = dove_freq_table[index].driver_data;
-> +       unsigned long reg, cr;
-> +
-> +       freqs.old = dove_cpufreq_get_cpu_frequency(0);
-> +       freqs.new = dove_freq_table[index].frequency;
-> +
-> +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-> +
-> +       if (freqs.old != freqs.new) {
+> +       if (sirf_cpufreq.freq_tbl)
 
-If this is false, why should we start sending notifications?
+Why will this be null ever?
 
-> +               local_irq_disable();
-> +
-> +               /* Mask IRQ and FIQ to CPU */
-> +               cr = readl(priv.pmu_cr);
-> +               cr |= MASK_IRQ | MASK_FIQ;
-> +               writel(cr, priv.pmu_cr);
-> +
-> +               /* Set/Clear the CPU_SLOW_EN bit */
-> +               reg = readl_relaxed(priv.dfs + DFS_CR);
-> +               reg &= ~L2_RATIO_MASK;
-> +
-> +               switch (state) {
-> +               case STATE_CPU_FREQ:
-> +                       reg |= priv.xpratio;
-> +                       reg &= ~CPU_SLOW_EN;
-> +                       break;
-> +               case STATE_DDR_FREQ:
-> +                       reg |= (priv.dpratio | CPU_SLOW_EN);
-> +                       break;
-> +               }
-> +
-> +               /* Start the DFS process */
-> +               reg |= DFS_EN;
-> +
-> +               writel(reg, priv.dfs + DFS_CR);
-> +
-> +               /* Wait-for-Interrupt, while the hardware changes frequency */
-> +               cpu_do_idle();
-> +
-> +               local_irq_enable();
-> +       }
-> +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-> +}
-> +
-> +static int dove_cpufreq_target(struct cpufreq_policy *policy,
-> +                           unsigned int target_freq,
-> +                           unsigned int relation)
-
-there are few patches floating in making target light weight.. This part will
-change significantly ones those are in..
-
-> +{
-> +       unsigned int index = 0;
-> +
-> +       if (cpufreq_frequency_table_target(policy, dove_freq_table,
-> +                               target_freq, relation, &index))
-> +               return -EINVAL;
-> +
-> +       dove_cpufreq_set_cpu_state(policy, index);
-> +
+> +               return cpufreq_frequency_table_verify(policy,
+> +                       sirf_cpufreq.freq_tbl);
 > +       return 0;
 > +}
 > +
-> +static int dove_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +static unsigned int sirf_getspeed(unsigned int cpu)
 > +{
-> +       return cpufreq_generic_init(policy, dove_freq_table, 5000);
-> +}
-> +
-> +static irqreturn_t dove_cpufreq_irq(int irq, void *dev)
-> +{
-> +       return IRQ_HANDLED;
+> +       return clk_get_rate(sirf_cpufreq.cpu_clk) / 1000;
 > +}
 
-what is this for?
+There are many optimizations added in cpufreq linux-next branch..
+please follow them for latest updates.
 
-> +static struct cpufreq_driver dove_cpufreq_driver = {
-> +       .get    = dove_cpufreq_get_cpu_frequency,
-> +       .verify = cpufreq_generic_frequency_table_verify,
-> +       .target = dove_cpufreq_target,
-> +       .init   = dove_cpufreq_cpu_init,
-> +       .exit   = cpufreq_generic_exit,
-> +       .name   = "dove-cpufreq",
-> +       .attr   = cpufreq_generic_attr,
-> +};
-> +
-> +static int dove_cpufreq_probe(struct platform_device *pdev)
+> +static int sirf_target(struct cpufreq_policy *policy,
+> +                         unsigned int target_freq,
+> +                         unsigned int relation)
+
+With another patchset (to be applied very soon), this prototype
+will change. Probably you better target your driver for 3.14.. There
+are too many updates for 3.13..
+
 > +{
-> +       struct device_node *np;
-> +       struct resource *res;
-> +       int err;
-> +       int irq;
+> +       unsigned long freq, volt = 0;
+> +       struct opp *opp;
+> +       unsigned int index, old_index;
+> +
+> +       if (!sirf_cpufreq.freq_tbl)
 
-Above two can be merged.
+??
 
-> +       priv.dev = &pdev->dev;
+> +               return -EINVAL;
 > +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       priv.dfs = devm_ioremap_resource(&pdev->dev, res);
-> +       if (IS_ERR(priv.dfs))
-> +               return PTR_ERR(priv.dfs);
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> +       priv.pmu_cr = devm_ioremap_resource(&pdev->dev, res);
-> +       if (IS_ERR(priv.pmu_cr))
-> +               return PTR_ERR(priv.pmu_cr);
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
-> +       priv.pmu_clk_div = devm_ioremap_resource(&pdev->dev, res);
-> +       if (IS_ERR(priv.pmu_clk_div))
-> +               return PTR_ERR(priv.pmu_clk_div);
-> +
-> +       np = of_find_node_by_path("/cpus/cpu@0");
-> +       if (!np)
-> +               return -ENODEV;
-> +
-> +       priv.cpu_clk = of_clk_get_by_name(np, "cpu_clk");
-> +       if (IS_ERR(priv.cpu_clk)) {
-> +               dev_err(priv.dev, "Unable to get cpuclk");
-> +               return PTR_ERR(priv.cpu_clk);
-> +       }
-> +
-> +       clk_prepare_enable(priv.cpu_clk);
+> +       sirf_cpufreq.freqs.old = sirf_getspeed(policy->cpu);
 
-this can fail..
+what about policy->cur?
 
-> +       dove_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
 > +
-> +       priv.ddr_clk = of_clk_get_by_name(np, "ddrclk");
-> +       if (IS_ERR(priv.ddr_clk)) {
-> +               dev_err(priv.dev, "Unable to get ddrclk");
-> +               err = PTR_ERR(priv.ddr_clk);
-> +               goto out_cpu;
-> +       }
+> +       if (cpufreq_frequency_table_target(policy, sirf_cpufreq.freq_tbl,
+> +                                       sirf_cpufreq.freqs.old,
+> +                                       relation, &old_index))
+> +               return -EINVAL;
 > +
-> +       clk_prepare_enable(priv.ddr_clk);
+> +       if (cpufreq_frequency_table_target(policy, sirf_cpufreq.freq_tbl,
+> +                                          target_freq, relation, &index))
+> +               return -EINVAL;
+> +
+> +       sirf_cpufreq.freqs.new = sirf_cpufreq.freq_tbl[index].frequency;
+> +       sirf_cpufreq.freqs.cpu = policy->cpu;
+> +
+> +       if (sirf_cpufreq.freqs.new == sirf_cpufreq.freqs.old)
+> +               return 0;
 
-and so can this..
+All this is highly simplified in latest linux-next..
+
+Any particular reason why you aren't reusing cpufreq-cpu0 ?? I can't
+see any special stuff in this driver, that can't be handled by cpu0..
