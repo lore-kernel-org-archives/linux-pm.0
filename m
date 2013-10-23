@@ -1,39 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: arm_big_little: reconfigure switcher
- behavior at run time
-Date: Wed, 23 Oct 2013 10:19:06 +0530
-Message-ID: <CAKohpo=-nxsqJuo7RTf8q-P5caTSuNqFWjX6ncf+GmQvL1-Q9g@mail.gmail.com>
-References: <1382500691-634-1-git-send-email-nicolas.pitre@linaro.org>
-	<1382500691-634-3-git-send-email-nicolas.pitre@linaro.org>
+Subject: Re: [PATCH V2 00/16] CPUIdle: Minor cleanups for 3.13
+Date: Wed, 23 Oct 2013 11:11:02 +0530
+Message-ID: <CAKohponte=P4NBM66yexeavcAoehDfzgOmYhZvxJoMzTnXd=mw@mail.gmail.com>
+References: <cover.1380815504.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:55037 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870Ab3JWEtH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2013 00:49:07 -0400
-Received: by mail-oa0-f44.google.com with SMTP id l20so301689oag.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Oct 2013 21:49:07 -0700 (PDT)
-In-Reply-To: <1382500691-634-3-git-send-email-nicolas.pitre@linaro.org>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:33067 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903Ab3JWFlE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2013 01:41:04 -0400
+Received: by mail-ob0-f182.google.com with SMTP id va2so399266obc.27
+        for <linux-pm@vger.kernel.org>; Tue, 22 Oct 2013 22:41:03 -0700 (PDT)
+In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Dave P Martin <dave.martin@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 23 October 2013 09:28, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-> The b.L switcher can be turned on/off at run time.  It is therefore
-> necessary to change the cpufreq driver behavior accordingly.
+On 3 October 2013 21:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> These are V2 of my CPUIdle cleanup series.. Few patches are dropped as they
+> required further modifications. Last one is rewritten as suggested by Daniel.
+> Most of them are already Acked by Daniel.
 >
-> The driver must be unregistered/registered with the cpufreq core
-> to reconfigure freq tables for the virtual or actual CPUs. This is
-> accomplished via the b.L switcher notifier callback.
->
-> Signed-off-by: Nicolas Pitre <nicolas.pitre@linaro.org>
+> Viresh Kumar (16):
+>   cpuidle: fix indentation of cpumask
+>   cpuidle: Fix comments in cpuidle core
+>   cpuidle: make __cpuidle_get_cpu_driver() inline
+>   cpuidle: make __cpuidle_device_init() return void
+>   cpuidle: make __cpuidle_driver_init() return void
+>   cpuidle: rearrange code in __cpuidle_driver_init()
+>   cpuidle: rearrange __cpuidle_register_device() to keep minimal exit
+>     points
+>   cpuidle: merge two if() statements for checking error cases
+>   cpuidle: reduce code duplication inside cpuidle_idle_call()
+>   cpuidle: replace multiline statements with single line in
+>     cpuidle_idle_call()
+>   cpuidle: call cpuidle_get_driver() from after taking
+>     cpuidle_driver_lock
+>   cpuidle: use drv instead of cpuidle_driver in show_current_driver()
+>   cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+>   cpuidle: don't calculate time-diff if entered_state < 0
+>   cpuidle: don't call poll_idle_init() for every cpu
+>   cpuidle: remove cpuidle_unregister_governor()
 
-Got really confused on what should I reply with,
-Ack/Tested/Reviewed/Signed-off :)
+Hi Rafael,
 
-Because we have worked closely on these patches, maybe
-this suits best :)
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Any chance this can get in 3.13 ??
