@@ -1,51 +1,83 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
-Date: Wed, 23 Oct 2013 16:59:15 +0200
-Message-ID: <20131023145915.GA31745@lunn.ch>
-References: <1382533461-31021-1-git-send-email-andrew@lunn.ch>
- <CAKohpombg7mAmgxxvUg8kz1MaFwcycR1eL0UrgELY2WdGfrAag@mail.gmail.com>
- <20131023135116.GC31126@lunn.ch>
- <CAKohpokTgCz0c=PeaJHKiZEiYc0jPVq-vwkhP5pM0hh1-0QnLA@mail.gmail.com>
- <20131023143657.GA31536@lunn.ch>
- <CAKohpomedpd8XBPcdZX2vHy6b5=FMtbSVpNTG-eVLK1YPyPaMA@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v4 06/40] mm: Demarcate and maintain pageblocks in
+ region-order in the zones' freelists
+Date: Wed, 23 Oct 2013 21:39:46 +0530
+Message-ID: <5267F4CA.3070106@linux.vnet.ibm.com>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <20130925231454.26184.19783.stgit@srivatsabhat.in.ibm.com> <20131023101703.GC2043@cmpxchg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:43463 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363Ab3JWPDn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 23 Oct 2013 11:03:43 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKohpomedpd8XBPcdZX2vHy6b5=FMtbSVpNTG-eVLK1YPyPaMA@mail.gmail.com>
+Received: from e28smtp01.in.ibm.com ([122.248.162.1]:33680 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208Ab3JWQOT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2013 12:14:19 -0400
+Received: from /spool/local
+	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 23 Oct 2013 21:44:17 +0530
+In-Reply-To: <20131023101703.GC2043@cmpxchg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, dave@sr71.net, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, mark.gross@intel.com
 
-On Wed, Oct 23, 2013 at 08:30:02PM +0530, Viresh Kumar wrote:
-> On 23 October 2013 20:06, Andrew Lunn <andrew@lunn.ch> wrote:
-> >> So, you have actually tested your code without interrupt handler?
-> >
-> > No.
+On 10/23/2013 03:47 PM, Johannes Weiner wrote:
+> On Thu, Sep 26, 2013 at 04:44:56AM +0530, Srivatsa S. Bhat wrote:
+>> --- a/mm/page_alloc.c
+>> +++ b/mm/page_alloc.c
+>> @@ -517,6 +517,111 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
+>>  	return 0;
+>>  }
+>>  
+>> +static void add_to_freelist(struct page *page, struct free_list *free_list)
+>> +{
+>> +	struct list_head *prev_region_list, *lru;
+>> +	struct mem_region_list *region;
+>> +	int region_id, i;
+>> +
+>> +	lru = &page->lru;
+>> +	region_id = page_zone_region_id(page);
+>> +
+>> +	region = &free_list->mr_list[region_id];
+>> +	region->nr_free++;
+>> +
+>> +	if (region->page_block) {
+>> +		list_add_tail(lru, region->page_block);
+>> +		return;
+>> +	}
+>> +
+>> +#ifdef CONFIG_DEBUG_PAGEALLOC
+>> +	WARN(region->nr_free != 1, "%s: nr_free is not unity\n", __func__);
+>> +#endif
+>> +
+>> +	if (!list_empty(&free_list->list)) {
+>> +		for (i = region_id - 1; i >= 0; i--) {
+>> +			if (free_list->mr_list[i].page_block) {
+>> +				prev_region_list =
+>> +					free_list->mr_list[i].page_block;
+>> +				goto out;
+>> +			}
+>> +		}
+>> +	}
+>> +
+>> +	/* This is the first region, so add to the head of the list */
+>> +	prev_region_list = &free_list->list;
+>> +
+>> +out:
+>> +	list_add(lru, prev_region_list);
+>> +
+>> +	/* Save pointer to page block of this region */
+>> +	region->page_block = lru;
 > 
-> It would be better if you atleast try this and confirm that this dummy
-> handler is required.
+> "Pageblock" has a different meaning in the allocator already.
 > 
-> >> What exactly happens in that case?
-> >
-> > Take a look at request_threaded_irq(). It contains:
-> >
-> > 1421         if (!handler) {
-> > 1422                 if (!thread_fn)
-> > 1423                         return -EINVAL;
-> >
-> > So devm_request_irq() will fail, and so the probe function will fail.
+> The things you string up here are just called pages, regardless of
+> which order they are in and how many pages they can be split into.
 > 
-> Obviously I wanted you to remove all irq specific code and hence
-> devm_request_irq() :)
 
-So you want to know if WFI exits without an interrupt being delivered?
-The Marvell documentation says the interrupt should be enabled, but we
-can try it with it disabled.
+Ah, yes. I'll fix that.
 
-    Andrew
+Regards,
+Srivatsa S. Bhat
+
