@@ -1,43 +1,131 @@
 From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH 4/4] mvebu: Dove: Add clocks and DFS interrupt to cpu node in DT.
-Date: Wed, 23 Oct 2013 15:04:21 +0200
-Message-ID: <1382533461-31021-4-git-send-email-andrew@lunn.ch>
+Subject: [PATCH 2/4] mvebu: Dove: Instantiate cpufreq driver.
+Date: Wed, 23 Oct 2013 15:04:19 +0200
+Message-ID: <1382533461-31021-2-git-send-email-andrew@lunn.ch>
 References: <1382533461-31021-1-git-send-email-andrew@lunn.ch>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:43371 "EHLO vps0.lunn.ch"
+Received: from vps0.lunn.ch ([178.209.37.122]:43379 "EHLO vps0.lunn.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753792Ab3JWNJU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 23 Oct 2013 09:09:20 -0400
+	id S1753792Ab3JWNJa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 23 Oct 2013 09:09:30 -0400
 In-Reply-To: <1382533461-31021-1-git-send-email-andrew@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, rjw@rjwysocki.net, viresh.kumar@linaro.org
 Cc: linux-pm@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, Andrew Lunn <andrew@lunn.ch>
 
-The dove-cpufreq driver needs access to the DDR and CPU clock.  There
-is also an interrupt generated when the DFS hardware completes a
-change of frequencey. Add these to the cpu node in DT.
+Add a platform driver definition to instantiate the dove cpufreq
+driver. Also indicate the ARCH has cpufreq support, so allowing the
+cpufreq framework to be enabled.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Tested-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
- arch/arm/boot/dts/dove.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
+Make resource names consistent.
+Fix length of ranges
+---
+ arch/arm/Kconfig                       |  1 +
+ arch/arm/mach-dove/board-dt.c          |  2 ++
+ arch/arm/mach-dove/common.c            | 36 ++++++++++++++++++++++++++++++++++
+ arch/arm/mach-dove/common.h            |  1 +
+ arch/arm/mach-dove/include/mach/dove.h |  1 +
+ 5 files changed, 41 insertions(+)
 
-diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
-index 1fd615d..e96d7a6 100644
---- a/arch/arm/boot/dts/dove.dtsi
-+++ b/arch/arm/boot/dts/dove.dtsi
-@@ -19,6 +19,10 @@
- 			device_type = "cpu";
- 			next-level-cache = <&l2>;
- 			reg = <0>;
-+			clocks = <&core_clk 1>, <&core_clk 3>;
-+			clock-names = "cpu_clk", "ddrclk";
-+			interrupt-parent = <&pmu_intc>;
-+			interrupts = <0>;
- 		};
- 	};
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 1ad6fb6..7744415 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -495,6 +495,7 @@ config ARCH_IXP4XX
+ 
+ config ARCH_DOVE
+ 	bool "Marvell Dove"
++	select ARCH_HAS_CPUFREQ
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select CPU_PJ4
+ 	select GENERIC_CLOCKEVENTS
+diff --git a/arch/arm/mach-dove/board-dt.c b/arch/arm/mach-dove/board-dt.c
+index 49f72a8..98202de 100644
+--- a/arch/arm/mach-dove/board-dt.c
++++ b/arch/arm/mach-dove/board-dt.c
+@@ -70,6 +70,8 @@ static void __init dove_dt_init(void)
+ 	/* Setup clocks for legacy devices */
+ 	dove_legacy_clk_init();
+ 
++	dove_cpufreq_init();
++
+ 	/* Internal devices not ported to DT yet */
+ 	dove_pcie_init(1, 1);
+ 
+diff --git a/arch/arm/mach-dove/common.c b/arch/arm/mach-dove/common.c
+index c122bcf..323fcd4 100644
+--- a/arch/arm/mach-dove/common.c
++++ b/arch/arm/mach-dove/common.c
+@@ -344,6 +344,42 @@ void __init dove_sdio1_init(void)
+ 	platform_device_register(&dove_sdio1);
+ }
+ 
++/*****************************************************************************
++ * CPU Frequency
++ ****************************************************************************/
++static struct resource dove_cpufreq_resources[] = {
++	[0] = {
++		.start  = DOVE_PMU_PHYS_BASE,
++		.end    = DOVE_PMU_PHYS_BASE + 0x7,
++		.flags  = IORESOURCE_MEM,
++		.name   = "cpufreq: DFS"
++	},
++	[1] = {
++		.start  = DOVE_PMU_PHYS_BASE + 0x8000,
++		.end    = DOVE_PMU_PHYS_BASE + 0x8003,
++		.flags  = IORESOURCE_MEM,
++		.name   = "cpufreq: PMU CR"
++	},
++	[2] = {
++		.start  = DOVE_PMU_PHYS_BASE + 0x0044,
++		.end    = DOVE_PMU_PHYS_BASE + 0x0047,
++		.flags  = IORESOURCE_MEM,
++		.name   = "cpufreq: PMU Clk Div"
++	},
++};
++
++static struct platform_device dove_cpufreq_device = {
++	.name		= "dove-cpufreq",
++	.id		= -1,
++	.num_resources	= ARRAY_SIZE(dove_cpufreq_resources),
++	.resource	= dove_cpufreq_resources,
++};
++
++void __init dove_cpufreq_init(void)
++{
++	platform_device_register(&dove_cpufreq_device);
++}
++
+ void __init dove_setup_cpu_wins(void)
+ {
+ 	/*
+diff --git a/arch/arm/mach-dove/common.h b/arch/arm/mach-dove/common.h
+index 1d72522..5c9a77b 100644
+--- a/arch/arm/mach-dove/common.h
++++ b/arch/arm/mach-dove/common.h
+@@ -44,6 +44,7 @@ void dove_spi1_init(void);
+ void dove_i2c_init(void);
+ void dove_sdio0_init(void);
+ void dove_sdio1_init(void);
++void dove_cpufreq_init(void);
+ void dove_restart(enum reboot_mode, const char *);
+ 
+ #endif
+diff --git a/arch/arm/mach-dove/include/mach/dove.h b/arch/arm/mach-dove/include/mach/dove.h
+index 0c4b35f..48db186 100644
+--- a/arch/arm/mach-dove/include/mach/dove.h
++++ b/arch/arm/mach-dove/include/mach/dove.h
+@@ -144,6 +144,7 @@
+ #define  DOVE_SD0_GPIO_SEL		(1 << 0)
+ 
+ /* Power Management */
++#define DOVE_PMU_PHYS_BASE	(DOVE_SB_REGS_PHYS_BASE + 0xd0000)
+ #define DOVE_PMU_VIRT_BASE	(DOVE_SB_REGS_VIRT_BASE + 0xd0000)
+ #define DOVE_PMU_SIG_CTRL	(DOVE_PMU_VIRT_BASE + 0x802c)
  
 -- 
 1.8.4.rc3
