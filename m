@@ -1,49 +1,117 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 00/16] CPUIdle: Minor cleanups for 3.13
-Date: Wed, 23 Oct 2013 11:11:02 +0530
-Message-ID: <CAKohponte=P4NBM66yexeavcAoehDfzgOmYhZvxJoMzTnXd=mw@mail.gmail.com>
-References: <cover.1380815504.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
+Date: Wed, 23 Oct 2013 14:43:12 +0530
+Message-ID: <CAKohpomWjBZfLLqYjnP=n059bTC6pDseqfWbJmZy894fqHW7Nw@mail.gmail.com>
+References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org>
+	<793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
+	<1791712.tJBFGgQvyI@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:33067 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903Ab3JWFlE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2013 01:41:04 -0400
-Received: by mail-ob0-f182.google.com with SMTP id va2so399266obc.27
-        for <linux-pm@vger.kernel.org>; Tue, 22 Oct 2013 22:41:03 -0700 (PDT)
-In-Reply-To: <cover.1380815504.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1791712.tJBFGgQvyI@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 3 October 2013 21:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> These are V2 of my CPUIdle cleanup series.. Few patches are dropped as they
-> required further modifications. Last one is rewritten as suggested by Daniel.
-> Most of them are already Acked by Daniel.
+On 26 September 2013 00:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> So the problem is real, but the fix seems to be of a "quick and dirty" kind.
 >
-> Viresh Kumar (16):
->   cpuidle: fix indentation of cpumask
->   cpuidle: Fix comments in cpuidle core
->   cpuidle: make __cpuidle_get_cpu_driver() inline
->   cpuidle: make __cpuidle_device_init() return void
->   cpuidle: make __cpuidle_driver_init() return void
->   cpuidle: rearrange code in __cpuidle_driver_init()
->   cpuidle: rearrange __cpuidle_register_device() to keep minimal exit
->     points
->   cpuidle: merge two if() statements for checking error cases
->   cpuidle: reduce code duplication inside cpuidle_idle_call()
->   cpuidle: replace multiline statements with single line in
->     cpuidle_idle_call()
->   cpuidle: call cpuidle_get_driver() from after taking
->     cpuidle_driver_lock
->   cpuidle: use drv instead of cpuidle_driver in show_current_driver()
->   cpuidle: free all state kobjects from cpuidle_free_state_kobj()
->   cpuidle: don't calculate time-diff if entered_state < 0
->   cpuidle: don't call poll_idle_init() for every cpu
->   cpuidle: remove cpuidle_unregister_governor()
+> First of all, it looks like we need a clear "begin transition" call that
+> I suppose drivers should execute from their .target() methods once they have
+> decided to do a transition.  That would increment the "ongoing" counter etc.
+>
+> Second, we need a corresponding "end transition" call that would be executed
+> whenever appropriate from the driver's perspective.
+>
+> Clearly, these two things should be independent of the notifiers and the
+> notifications should only be done between "begin transition" and "end
+> transition" and only by whoever called the "begin transition" to start with.
+>
+> Now, question is what should happen if "begin transition" is called when
+> the previous transition hasn't been completed yet, should it block or should
+> it fail?  There seem to be arguments for both, but I suppose blocking would be
+> easier to implement.
 
-Hi Rafael,
+I got another solution which is much simpler, and I really can't believe
+(psychologically) that it will solve all the problems we were talking about..
+Please see if there is any loophole in there..
 
-Any chance this can get in 3.13 ??
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index ec391d7..e4ed89a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -340,6 +340,13 @@ static void __cpufreq_notify_transition(struct
+cpufreq_policy *policy,
+        }
+ }
+
++void cpufreq_notify_transition_each_cpu(struct cpufreq_policy *policy,
++               struct cpufreq_freqs *freqs, unsigned int state)
++{
++       for_each_cpu(freqs->cpu, policy->cpus)
++               __cpufreq_notify_transition(policy, freqs, state);
++}
++
+ /**
+  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
+  * on frequency transition.
+@@ -351,8 +358,34 @@ static void __cpufreq_notify_transition(struct
+cpufreq_policy *policy,
+ void cpufreq_notify_transition(struct cpufreq_policy *policy,
+                struct cpufreq_freqs *freqs, unsigned int state)
+ {
+-       for_each_cpu(freqs->cpu, policy->cpus)
+-               __cpufreq_notify_transition(policy, freqs, state);
++       if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
++               return cpufreq_notify_transition_each_cpu(policy, freqs, state);
++
++       /* Serialize pre-post notifications */
++       mutex_lock(&policy->transition_lock);
++       if (unlikely(WARN_ON(!policy->transition_ongoing &&
++                               (state == CPUFREQ_POSTCHANGE)))) {
++               mutex_unlock(&policy->transition_lock);
++               return;
++       }
++
++       if (state == CPUFREQ_PRECHANGE) {
++               while (policy->transition_ongoing) {
++                       mutex_unlock(&policy->transition_lock);
++                       cpu_relax();
++                       mutex_lock(&policy->transition_lock);
++               }
++
++               policy->transition_ongoing = true;
++               mutex_unlock(&policy->transition_lock);
++       }
++
++       cpufreq_notify_transition_each_cpu(policy, freqs, state);
++
++       if (state == CPUFREQ_POSTCHANGE) {
++               policy->transition_ongoing = false;
++               mutex_unlock(&policy->transition_lock);
++       }
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
+
+@@ -950,6 +983,8 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
+                goto err_free_cpumask;
+
+        INIT_LIST_HEAD(&policy->policy_list);
++       mutex_init(&policy->transition_lock);
++
+        return policy;
+
+ err_free_cpumask:
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 0aba2a6c..bb76909 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -85,6 +85,8 @@ struct cpufreq_policy {
+        struct list_head        policy_list;
+        struct kobject          kobj;
+        struct completion       kobj_unregister;
++       bool                    transition_ongoing; /* Tracks
+transition status */
++       struct mutex            transition_lock;
+ };
