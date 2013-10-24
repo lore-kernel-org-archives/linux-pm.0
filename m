@@ -1,77 +1,172 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: powersave governor runs programs faster and uses more power than
- performance governor
-Date: Thu, 24 Oct 2013 10:58:52 +0530
-Message-ID: <CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
+From: adrian <adrian.huang@hp.com>
+Subject: Re: [PATCH 1/1] cpufreq: intel_pstate: skip the driver if ACPI has
+ power mgmt option
+Date: Thu, 24 Oct 2013 21:23:08 +0800
+Message-ID: <1382620988.6298.2.camel@adrian-F6S>
+References: <1382333227-28231-1-git-send-email-adrian.huang@hp.com>
+	 <5265503B.7000804@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
+In-Reply-To: <5265503B.7000804@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Melanie Kambadur <melanie@cs.columbia.edu>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 24, 2013 at 4:47 AM, Melanie Kambadur
-<melanie@cs.columbia.edu> wrote:
-> I am trying to understand some strange results I've observed using the
-> 3.9.11 kernel version of the powersave cpufreq governor on a Intel
-> Xeon machine, and hoping you all can help.
->
-> More specifically, I am using a 24 core Intel Xeon 2430 machine
-> running Ubuntu 12.04 and v 3.9.11 of the kernel. As I understand it,
-> this configuration affords me two cpufreq scaling governors, powersave
-> and performance. At least these are the options I get by running:
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
->
-> Here's the issue. When I turn on the powersave governor, I have
-> measured the power consumed to INCREASE relative to the performance
-> governor. More surprisingly, I consistently see BETTER performance
-> (i.e., shorter runtimes) with the powersave governor than with the
-> performance governor for many applications out of a few sets of
-> commonly used benchmark applications.  I repeated my experiments
-> several times, even trying different cpuidle governors, and observed
-> the same trends. To toggle between governors, I have been using the
-> cpufreq-set -g command and confirming the updates by checking
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor.
->
-> From what I've read (e.g., here:
-> www.kernel.org/doc/Documentation/cpu-freq/governors.txt), the
-> powersave governor's policy is to statically set the cpu frequency at
-> the system minimum, whereas the performance governor aims to set the
-> cpu frequency higher (or, depending on the documentation, at maximum).
-> However, the fact that applications sped up for the powersave vs. the
-> performance governor with these policies seemed incorrect to me, so I
-> investigated further...
->
-> I profiled the current system frequency by periodically polling
-> /sys/devices/system/cpu/cpu${N}/cpufreq/cpuinfo_cur_freq
-> for all the available "N" values (0-23) on my machine.  I found that
-> not only does the powersave governor not seem to be running at the
-> system minimum, it actually seems to be running at a frequency higher
-> than the performance governor. This would explain why I am seeing
-> better performance and higher power for the powersave governor, but it
-> certainly doesn't fit the policy descriptions in the documentation.
-> Here are the results of my mini experiment:
->
-> -Minimum system frequency=1.20 * 10^6
-> -Maximum system frequency=2.70 * 10^6
->
-> Avg. cpu frequency across all CPUs for 30 seconds of...
-> -Powersave governor with no applications running = 1.77 * 10^6
-> -Powersave governor with a benchmark app running = 2.23 * 10^6
-> -Performance governor with no apps running = 1.23 * 10^6
-> -Performance governor with a benchmark app running = 1.34 * 10^6
->
-> Am I misunderstanding the policies of the powersave vs. performance
-> governor, or is this possibly a system bug?
+Thanks, Dirk. The patch has been modified accordingly.=20
 
-There is something really long in your machine.. Any chance you can
-try latest v3.12-rc kernel?
+Signed-off-by: Adrian Huang <adrian.huang@hp.com>
+---
+ drivers/cpufreq/intel_pstate.c | 80 ++++++++++++++++++++++++++++++++++=
+++++++++
+ 1 file changed, 80 insertions(+)
 
-Also, please provide values of related and affected CPUs, for all CPUs..
-Also, just to confirm, you are changing governor to powersave or
-performance for all the CPUs??
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pst=
+ate.c
+index badf620..8c00394 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -26,6 +26,8 @@
+ #include <linux/fs.h>
+ #include <linux/debugfs.h>
+ #include <trace/events/power.h>
++#include <linux/acpi.h>
++#include <acpi/processor.h>
+=20
+ #include <asm/div64.h>
+ #include <asm/msr.h>
+@@ -129,6 +131,18 @@ static struct perf_limits limits =3D {
+ 	.max_sysfs_pct =3D 100,
+ };
+=20
++struct hw_vendor_info {
++	u16  valid;
++	char oem_id[ACPI_OEM_ID_SIZE];
++	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
++};
++
++/* Hardware vendor-specific info that has its own power management mod=
+es */
++static struct hw_vendor_info vendor_info[] =3D {
++	{1, "HP    ", "ProLiant"},
++	{0, "", ""},
++};
++
+ static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+ 			int deadband, int integral) {
+ 	pid->setpoint =3D setpoint;
+@@ -700,6 +714,63 @@ static int intel_pstate_msrs_not_valid(void)
+=20
+ 	return 0;
+ }
++
++static bool intel_pstate_no_acpi_pss(void)
++{
++	struct acpi_processor *pr;
++	union acpi_object *pss =3D NULL;
++	int i;
++
++	for_each_possible_cpu(i) {
++
++		pr =3D per_cpu(processors, i);
++
++		if (pr) {
++			struct acpi_buffer buffer =3D { ACPI_ALLOCATE_BUFFER,
++							NULL };
++
++			if (ACPI_SUCCESS(acpi_evaluate_object(pr->handle,
++						"_PSS", NULL, &buffer))) {
++
++				pss =3D buffer.pointer;
++
++				if (pss && pss->type =3D=3D ACPI_TYPE_PACKAGE) {
++					kfree(buffer.pointer);
++					return false;
++				}
++
++				kfree(buffer.pointer);
++			}
++		}
++	}
++
++	return true;
++}
++
++static bool intel_pstate_platform_pwr_mgmt_exists(void)
++{
++	struct acpi_table_header hdr;
++	struct hw_vendor_info *v_info;
++
++	if (acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr) =3D=3D AE_OK) {
++		for (v_info =3D vendor_info; v_info->valid; v_info++) {
++			/*
++			 * Check if the hardware/platform is in the
++			 * predefined vendor data.
++			 */
++			if (!strncmp(hdr.oem_id, v_info->oem_id,
++				     ACPI_OEM_ID_SIZE) &&
++			    !strncmp(hdr.oem_table_id, v_info->oem_table_id,
++				     ACPI_OEM_TABLE_ID_SIZE)) {
++				if (intel_pstate_no_acpi_pss())
++					return true;
++			}
++		}
++	}
++
++	return false;
++}
++
+ static int __init intel_pstate_init(void)
+ {
+ 	int cpu, rc =3D 0;
+@@ -708,6 +779,15 @@ static int __init intel_pstate_init(void)
+ 	if (no_load)
+ 		return -ENODEV;
+=20
++	if (!acpi_disabled) {
++		/*
++		 * Check if the platform has its own power management modes.
++		 * If so, the pstate cpufreq driver will be ignored.
++		 */
++		if (intel_pstate_platform_pwr_mgmt_exists())
++			return -ENODEV;
++	}
++
+ 	id =3D x86_match_cpu(intel_pstate_cpu_ids);
+ 	if (!id)
+ 		return -ENODEV;
+--=20
+1.8.1.2
 
-Otherwise there is no valid reason why this should happen :)
+
+=E6=96=BC =E4=B8=80=EF=BC=8C2013-10-21 =E6=96=BC 09:03 -0700=EF=BC=8CDi=
+rk Brandewie =E6=8F=90=E5=88=B0=EF=BC=9A=20
+> On 10/20/2013 10:27 PM, Adrian Huang wrote:
+> >   static int __init intel_pstate_init(void)
+> >   {
+> >   	int cpu, rc =3D 0;
+> > @@ -708,6 +779,15 @@ static int __init intel_pstate_init(void)
+> >   	if (no_load)
+> >   		return -ENODEV;
+> >
+> > +	if (!acpi_disabled) {
+> > +		/*
+> > +		 * Check if the platform has its own power management modes.
+> > +		 * If so, the pstate cpufreq driver will be ignored.
+> > +		 */
+> > +		if (intel_pstate_platform_pwr_mgmt_exists())
+> > +			return 0;
+>=20
+> Please return -ENODEV here instead of 0
+>=20
+> > +	}
+> > +
+> >   	id =3D x86_match_cpu(intel_pstate_cpu_ids);
+> >   	if (!id)
+> >   		return -ENODEV;
+> >
+>=20
+
+
