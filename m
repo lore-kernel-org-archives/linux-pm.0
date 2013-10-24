@@ -1,74 +1,36 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v4 16/40] mm: Introduce a "Region Allocator" to manage
- entire memory regions
-Date: Wed, 23 Oct 2013 21:52:15 +0530
-Message-ID: <5267F7B7.5060203@linux.vnet.ibm.com>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <20130925231730.26184.19552.stgit@srivatsabhat.in.ibm.com> <20131023101012.GB2043@cmpxchg.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
+Date: Thu, 24 Oct 2013 07:47:35 +0530
+Message-ID: <CAKohpokz2SJnB1_uejtE1opmJ1ReSGO8urjMV7v3ihNX6N-qZg@mail.gmail.com>
+References: <1382533461-31021-1-git-send-email-andrew@lunn.ch>
+	<CAKohpombg7mAmgxxvUg8kz1MaFwcycR1eL0UrgELY2WdGfrAag@mail.gmail.com>
+	<20131023135116.GC31126@lunn.ch>
+	<CAKohpokTgCz0c=PeaJHKiZEiYc0jPVq-vwkhP5pM0hh1-0QnLA@mail.gmail.com>
+	<20131023143657.GA31536@lunn.ch>
+	<CAKohpomedpd8XBPcdZX2vHy6b5=FMtbSVpNTG-eVLK1YPyPaMA@mail.gmail.com>
+	<20131023145915.GA31745@lunn.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:43821 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034Ab3JWQ0w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2013 12:26:52 -0400
-Received: from /spool/local
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 24 Oct 2013 02:26:49 +1000
-In-Reply-To: <20131023101012.GB2043@cmpxchg.org>
+Received: from mail-oa0-f52.google.com ([209.85.219.52]:35838 "EHLO
+	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472Ab3JXCRg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2013 22:17:36 -0400
+Received: by mail-oa0-f52.google.com with SMTP id n10so1778433oag.39
+        for <linux-pm@vger.kernel.org>; Wed, 23 Oct 2013 19:17:36 -0700 (PDT)
+In-Reply-To: <20131023145915.GA31745@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, dave@sr71.net, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, mark.gross@intel.com
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 10/23/2013 03:40 PM, Johannes Weiner wrote:
-> On Thu, Sep 26, 2013 at 04:47:34AM +0530, Srivatsa S. Bhat wrote:
->> Today, the MM subsystem uses the buddy 'Page Allocator' to manage memory
->> at a 'page' granularity. But this allocator has no notion of the physical
->> topology of the underlying memory hardware, and hence it is hard to
->> influence memory allocation decisions keeping the platform constraints
->> in mind.
-> 
-> This is no longer true after patches 1-15 introduce regions and have
-> the allocator try to stay within the lowest possible region (patch
-> 15).
+On 23 October 2013 20:29, Andrew Lunn <andrew@lunn.ch> wrote:
+> So you want to know if WFI exits without an interrupt being delivered?
 
-Sorry, the changelog is indeed misleading. What I really meant to say
-here is that there is no way to keep an entire region homogeneous with
-respect to allocation types: ie., have only a single type of allocations
-(like movable). Patches 1-15 don't address that problem. The later ones
-do.
+Yeah..
 
->  Which leaves the question what the following patches are for.
-> 
+> The Marvell documentation says the interrupt should be enabled, but we
+> can try it with it disabled.
 
-The region allocator is meant to help in keeping entire memory regions
-homogeneous with respect to allocations. This helps in increasing the
-success rate of targeted region evacuation. For example, if we know
-that the region has only unmovable allocations, we can completely skip
-compaction/evac on that region. And this can be determined just by looking
-at the pageblock migratetype of *one* of the pages of that region; thus
-its very cheap. Similarly, if we know that the region has only movable
-allocations, we can try compaction on that when its lightly allocated.
-And we won't have horrible scenarios where we moved say 15 pages and then
-found out that there is an unmovable page stuck in that region, making
-all that previous work go waste.
-
-> This patch only adds a data structure and I gave up finding where
-> among the helpers, statistics, and optimization patches an actual
-> implementation is.
-> 
-
-I hope the patch-wise explanation that I gave in the other mail will
-help make this understandable. Please do let me know if you need any
-other clarifications.
-
-> Again, please try to make every single a patch a complete logical
-> change to the code base.
-
-Sure, I'll strive for that in the next postings.
-
-Regards,
-Srivatsa S. Bhat
-
+Yes, that will work.. So we will not explicitly disable interrupt but let kernel
+do it for us (i.e. by not registering an interrupt handler)..
