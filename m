@@ -1,36 +1,77 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
-Date: Thu, 24 Oct 2013 07:47:35 +0530
-Message-ID: <CAKohpokz2SJnB1_uejtE1opmJ1ReSGO8urjMV7v3ihNX6N-qZg@mail.gmail.com>
-References: <1382533461-31021-1-git-send-email-andrew@lunn.ch>
-	<CAKohpombg7mAmgxxvUg8kz1MaFwcycR1eL0UrgELY2WdGfrAag@mail.gmail.com>
-	<20131023135116.GC31126@lunn.ch>
-	<CAKohpokTgCz0c=PeaJHKiZEiYc0jPVq-vwkhP5pM0hh1-0QnLA@mail.gmail.com>
-	<20131023143657.GA31536@lunn.ch>
-	<CAKohpomedpd8XBPcdZX2vHy6b5=FMtbSVpNTG-eVLK1YPyPaMA@mail.gmail.com>
-	<20131023145915.GA31745@lunn.ch>
+Subject: Re: powersave governor runs programs faster and uses more power than
+ performance governor
+Date: Thu, 24 Oct 2013 10:58:52 +0530
+Message-ID: <CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
+References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f52.google.com ([209.85.219.52]:35838 "EHLO
-	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472Ab3JXCRg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2013 22:17:36 -0400
-Received: by mail-oa0-f52.google.com with SMTP id n10so1778433oag.39
-        for <linux-pm@vger.kernel.org>; Wed, 23 Oct 2013 19:17:36 -0700 (PDT)
-In-Reply-To: <20131023145915.GA31745@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Melanie Kambadur <melanie@cs.columbia.edu>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 23 October 2013 20:29, Andrew Lunn <andrew@lunn.ch> wrote:
-> So you want to know if WFI exits without an interrupt being delivered?
+On Thu, Oct 24, 2013 at 4:47 AM, Melanie Kambadur
+<melanie@cs.columbia.edu> wrote:
+> I am trying to understand some strange results I've observed using the
+> 3.9.11 kernel version of the powersave cpufreq governor on a Intel
+> Xeon machine, and hoping you all can help.
+>
+> More specifically, I am using a 24 core Intel Xeon 2430 machine
+> running Ubuntu 12.04 and v 3.9.11 of the kernel. As I understand it,
+> this configuration affords me two cpufreq scaling governors, powersave
+> and performance. At least these are the options I get by running:
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+>
+> Here's the issue. When I turn on the powersave governor, I have
+> measured the power consumed to INCREASE relative to the performance
+> governor. More surprisingly, I consistently see BETTER performance
+> (i.e., shorter runtimes) with the powersave governor than with the
+> performance governor for many applications out of a few sets of
+> commonly used benchmark applications.  I repeated my experiments
+> several times, even trying different cpuidle governors, and observed
+> the same trends. To toggle between governors, I have been using the
+> cpufreq-set -g command and confirming the updates by checking
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor.
+>
+> From what I've read (e.g., here:
+> www.kernel.org/doc/Documentation/cpu-freq/governors.txt), the
+> powersave governor's policy is to statically set the cpu frequency at
+> the system minimum, whereas the performance governor aims to set the
+> cpu frequency higher (or, depending on the documentation, at maximum).
+> However, the fact that applications sped up for the powersave vs. the
+> performance governor with these policies seemed incorrect to me, so I
+> investigated further...
+>
+> I profiled the current system frequency by periodically polling
+> /sys/devices/system/cpu/cpu${N}/cpufreq/cpuinfo_cur_freq
+> for all the available "N" values (0-23) on my machine.  I found that
+> not only does the powersave governor not seem to be running at the
+> system minimum, it actually seems to be running at a frequency higher
+> than the performance governor. This would explain why I am seeing
+> better performance and higher power for the powersave governor, but it
+> certainly doesn't fit the policy descriptions in the documentation.
+> Here are the results of my mini experiment:
+>
+> -Minimum system frequency=1.20 * 10^6
+> -Maximum system frequency=2.70 * 10^6
+>
+> Avg. cpu frequency across all CPUs for 30 seconds of...
+> -Powersave governor with no applications running = 1.77 * 10^6
+> -Powersave governor with a benchmark app running = 2.23 * 10^6
+> -Performance governor with no apps running = 1.23 * 10^6
+> -Performance governor with a benchmark app running = 1.34 * 10^6
+>
+> Am I misunderstanding the policies of the powersave vs. performance
+> governor, or is this possibly a system bug?
 
-Yeah..
+There is something really long in your machine.. Any chance you can
+try latest v3.12-rc kernel?
 
-> The Marvell documentation says the interrupt should be enabled, but we
-> can try it with it disabled.
+Also, please provide values of related and affected CPUs, for all CPUs..
+Also, just to confirm, you are changing governor to powersave or
+performance for all the CPUs??
 
-Yes, that will work.. So we will not explicitly disable interrupt but let kernel
-do it for us (i.e. by not registering an interrupt handler)..
+Otherwise there is no valid reason why this should happen :)
