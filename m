@@ -1,123 +1,36 @@
-From: Melanie Kambadur <melanie@cs.columbia.edu>
+From: David C Niemi <dniemi@verisign.com>
 Subject: Re: powersave governor runs programs faster and uses more power than
  performance governor
-Date: Fri, 25 Oct 2013 12:35:27 -0400
-Message-ID: <CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
-	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
-	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
-	<526A82CC.1040709@gmail.com>
-	<CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com>
-	<526A9092.5000800@gmail.com>
+Date: Fri, 25 Oct 2013 14:27:31 -0400
+Message-ID: <526AB813.1080708@verisign.com>
+References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com> <CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com> <CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com> <526A82CC.1040709@gmail.com> <CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com> <526A9092.5000800@gmail.com> <CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <526A9092.5000800@gmail.com>
+In-Reply-To: <CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, David C Niemi <dniemi@verisign.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Melanie Kambadur <melanie@cs.columbia.edu>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-If I disable intel_pstate on my kernel command line, I end up with
-access only to the speedstep and p4-clockmod drivers, and no
-acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
-driver? I've tried a couple of things without success.
 
-BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
-sysadmin).
--Melanie
+I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
 
-On Fri, Oct 25, 2013 at 11:38 AM, Dirk Brandewie
-<dirk.brandewie@gmail.com> wrote:
-> On 10/25/2013 08:13 AM, Melanie Kambadur wrote:
->>
->> I appreciate you all taking the time to walk me through this.  Let me
->> see if I understand the new comments. Intel p-states is a HW-based
->> power manager,
+speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
+
+It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
+
+Meanwhile, can you rmmod intel-pstate?
+
+DCN
+
+On 10/25/13 12:35, Melanie Kambadur wrote:
+> If I disable intel_pstate on my kernel command line, I end up with
+> access only to the speedstep and p4-clockmod drivers, and no
+> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
+> driver? I've tried a couple of things without success.
 >
->
-> Not hardware based but specific to Intel CPUs SandyBridge+
->
->
->> and strictly an alternative to (i.e., it cannot be
->> combined with) OS governors and drivers.
->
->
-> Correct
->
->
->> If I want to use ondemand with my Dell server I need to:
->
->
-> Add intel_pstate=disable on your kernel commond line, this will take
-> intel_pstate out of the picture.  For the rest of the config on the
-> dell system I am no help sorry.
->
->
->>
->> 1) Modify the BIOS to give the OS exclusive power management control
->> because otherwise an OS driver won't be able to work properly. (I
->> think I know how to do this now after some more reading, e.g. here
->>
->> http://en.community.dell.com/techcenter/power-cooling/w/wiki/best-practices-in-power-management.aspx
->> if anyone is curious.)
->> 2) Set the O/S cpufreq driver to acpi_cpufreq, and
->> 3) Set the O/S cpufreq governor to ondemand.
->>
->> Is that correct?
->>
->> Also, which driver should I try to use if I want to test the
->> performance & powersave governors again (or if I replicate the
->> behavior of the performance governor by manually modifying the
->> min_perf_pct value as Dirk suggested)? Will it still be acpi_cpufreq?
->
->
-> If intel_pstate is being used acpi_cpufreq will not be loaded.  Setting
-> performance with intel_pstate should work I will look to see where the
-> bug is.
->
->
->>
->> Finally, the behavior of the C-states is totally independent of
->> P-states and any kind of OS-based frequency tuning policy, correct?
->
->
-> Correct
->
->
->> However, David recommends that leaving C1E on rarely hurts performance
->> while significantly improving power.
->>
->> -Melanie
->>
->> On Fri, Oct 25, 2013 at 10:40 AM, Dirk Brandewie
->> <dirk.brandewie@gmail.com> wrote:
->>>
->>> On 10/24/2013 12:42 PM, Melanie Kambadur wrote:
->>>>
->>>>
->>>>
->>>>   From /sys/devices/system/cpu/cpuN/cpufreq/scaling_driver I get that
->>>> the current p-state driver is called "intel_pstate". David, you
->>>> mention that the firmware governors are not very efficient, do you
->>>> suggest replacing the intel_pstate driver with a different driver?
->>>
->>>
->>>
->>> I will need to look and see why changing to performance isn't working
->>> correctly.
->>>
->>> To get the behavior of the performance governor you can use
->>>
->>>     echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>>
->>> This will force intel_pstate to select the highest P state and
->>> leave it there.
->>>
->>> Turbostat is useful for collecting frequency (P state) and idle (C state)
->>> information.
->>>
->>> --Dirk
->>>
->>>
->
+> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
+> sysadmin).
+> -Melanie
