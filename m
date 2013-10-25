@@ -1,53 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [BUG 3.12.rc4] Oops: unable to handle kernel paging request
- during shutdown
-Date: Fri, 25 Oct 2013 19:19:57 +0530
-Message-ID: <CAKohpo=QV831nP1WcdrWRCB7vkAtKPiSvSujbeE3usM+LCZpTg@mail.gmail.com>
-References: <525BD08C.2080101@t-online.de>
-	<3005031.0yf0g1BPEE@vostro.rjw.lan>
-	<CA+55aFy3dFGsN_Ckaq8egmaEi_JV_qAVOjR6h3gojyBWwA-jpA@mail.gmail.com>
-	<1529148.xq0P7G6L83@vostro.rjw.lan>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH] devfreq: fix return value check in devfreq_init()
+Date: Fri, 25 Oct 2013 21:52:16 +0800
+Message-ID: <CAPgLHd9J4LL9SvxN1FeibN-gaCsoFu6o=PSGZDnzS4Ha1yN69w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:33401 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110Ab3JYNt6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Oct 2013 09:49:58 -0400
-Received: by mail-ob0-f178.google.com with SMTP id wm4so923852obc.23
-        for <linux-pm@vger.kernel.org>; Fri, 25 Oct 2013 06:49:57 -0700 (PDT)
-In-Reply-To: <1529148.xq0P7G6L83@vostro.rjw.lan>
+Received: from mail-ee0-f48.google.com ([74.125.83.48]:64404 "EHLO
+	mail-ee0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753949Ab3JYNwS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Oct 2013 09:52:18 -0400
+Received: by mail-ee0-f48.google.com with SMTP id e50so1973318eek.35
+        for <linux-pm@vger.kernel.org>; Fri, 25 Oct 2013 06:52:17 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Knut Petersen <Knut_Petersen@t-online.de>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-On 25 October 2013 16:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> ---
->  drivers/cpufreq/acpi-cpufreq.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
-> +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> @@ -986,12 +986,12 @@ static int __init acpi_cpufreq_init(void
->  {
->         int ret;
->
-> +       if (acpi_disabled)
-> +               return -ENODEV;
-> +
->         /* don't keep reloading if cpufreq_driver exists */
->         if (cpufreq_get_current_driver())
-> -               return 0;
-> -
-> -       if (acpi_disabled)
-> -               return 0;
-> +               return -EEXIST;
->
->         pr_debug("acpi_cpufreq_init\n");
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Even better,
+In case of error, the function create_freezable_workqueue() returns
+NULL pointer not ERR_PTR(). The IS_ERR() test in the return value check
+should be replaced with NULL test.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+ drivers/devfreq/devfreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index c99c00d..22e5d2f 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -993,10 +993,10 @@ static int __init devfreq_init(void)
+ 	}
+ 
+ 	devfreq_wq = create_freezable_workqueue("devfreq_wq");
+-	if (IS_ERR(devfreq_wq)) {
++	if (!devfreq_wq) {
+ 		class_destroy(devfreq_class);
+ 		pr_err("%s: couldn't create workqueue\n", __FILE__);
+-		return PTR_ERR(devfreq_wq);
++		return -ENOMEM;
+ 	}
+ 	devfreq_class->dev_groups = devfreq_groups;
+ 
+
