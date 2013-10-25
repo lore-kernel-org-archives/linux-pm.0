@@ -1,47 +1,31 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH] thermal: cpu_cooling: fix return value check in cpufreq_cooling_register()
-Date: Fri, 25 Oct 2013 21:55:42 +0800
-Message-ID: <CAPgLHd8_-oLvW7ps5way80S10asaN6uy8imjtUaqysQNNTXb7A@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 Resend 00/34] CPUFreq Cleanup Part III
+Date: Fri, 25 Oct 2013 19:25:45 +0530
+Message-ID: <CAKohpokJrj_ZbCPUw4ZpfOWgsDvqxLH9j41eQVC7V7Ny4xE8mA@mail.gmail.com>
+References: <cover.1382104514.git.viresh.kumar@linaro.org>
+	<14730355.7hm7UiW5IU@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f175.google.com ([209.85.215.175]:33432 "EHLO
-	mail-ea0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753791Ab3JYNzo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Oct 2013 09:55:44 -0400
-Received: by mail-ea0-f175.google.com with SMTP id l15so519818eak.6
-        for <linux-pm@vger.kernel.org>; Fri, 25 Oct 2013 06:55:42 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <14730355.7hm7UiW5IU@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com
-Cc: yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On 25 October 2013 18:26, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Having considered that a bit I think that I'd prefer one patch doing all of
+> these changes in one go (and with all applicable ACKs collected), one of the
+> reasons being that if it is necessary to revert that stuff, whatever the
+> reason, it will be much easier to do that with just one commit than with
+> 34 of them.
 
-In case of error, the function thermal_cooling_device_register() returns
-ERR_PTR() and never returns NULL. The NULL test in the return value check
-should be replaced with IS_ERR().
+With a similar reason I think the probability is more that a revert might
+be required for individual drivers as they may need to switch back to
+->target() instead of ->target_index() and so keeping them separate
+might be better.
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- drivers/thermal/cpu_cooling.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+In case we need to revert all patches due to some breakage, we can
+always do that in a single commit if required.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index d179028..02a46f2 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -469,10 +469,10 @@ cpufreq_cooling_register(const struct cpumask *clip_cpus)
- 
- 	cool_dev = thermal_cooling_device_register(dev_name, cpufreq_dev,
- 						   &cpufreq_cooling_ops);
--	if (!cool_dev) {
-+	if (IS_ERR(cool_dev)) {
- 		release_idr(&cpufreq_idr, cpufreq_dev->id);
- 		kfree(cpufreq_dev);
--		return ERR_PTR(-EINVAL);
-+		return cool_dev;
- 	}
- 	cpufreq_dev->cool_dev = cool_dev;
- 	cpufreq_dev->cpufreq_state = 0;
-
+What do you say?
