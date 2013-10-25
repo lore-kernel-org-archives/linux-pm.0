@@ -1,171 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] cpufreq: intel_pstate: skip the driver if ACPI has power mgmt option
-Date: Sat, 26 Oct 2013 00:15:08 +0200
-Message-ID: <2169245.5j9Xk20sM5@vostro.rjw.lan>
-References: <1382333227-28231-1-git-send-email-adrian.huang@hp.com> <5265503B.7000804@gmail.com> <1382620988.6298.2.camel@adrian-F6S>
+From: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH] battery: max17042: Fix temperature unit to milli
+ centigrade.
+Date: Fri, 25 Oct 2013 16:17:20 -0700
+Message-ID: <20131025231720.GB9015@teo>
+References: <1382676798-27835-1-git-send-email-jonghwa3.lee@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65182 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751963Ab3JYWDG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Oct 2013 18:03:06 -0400
-In-Reply-To: <1382620988.6298.2.camel@adrian-F6S>
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:63241 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751935Ab3JYXRY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Oct 2013 19:17:24 -0400
+Received: by mail-pd0-f174.google.com with SMTP id y13so5883995pdi.33
+        for <linux-pm@vger.kernel.org>; Fri, 25 Oct 2013 16:17:24 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1382676798-27835-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: adrian <adrian.huang@hp.com>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com
+To: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Cc: linux-pm@vger.kernel.org, dwmw2@infradead.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 
-On Thursday, October 24, 2013 09:23:08 PM adrian wrote:
-> Thanks, Dirk. The patch has been modified accordingly. 
-> 
-> Signed-off-by: Adrian Huang <adrian.huang@hp.com>
+On Fri, Oct 25, 2013 at 01:53:18PM +0900, Jonghwa Lee wrote:
+> Standard temp node represents temperature of power supply class
+> in milli centigrade. So fix max17042 fuel gauge driver to follow
+> the standard. (deci-centigrade --> milli-centigrade)
+
+Maybe I am confused, but the doc says:
+
+ * All voltages, currents, charges, energies, time and temperatures in =
+uV,     =20
+ * =C2=B5A, =C2=B5Ah, =C2=B5Wh, seconds and tenths of degree Celsius un=
+less otherwise         =20
+ * stated
+
+So, the current code seems to be correct.
+
+Thanks,
+
+Anton
+
+> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 > ---
->  drivers/cpufreq/intel_pstate.c | 80 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 80 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index badf620..8c00394 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -26,6 +26,8 @@
->  #include <linux/fs.h>
->  #include <linux/debugfs.h>
->  #include <trace/events/power.h>
-> +#include <linux/acpi.h>
-> +#include <acpi/processor.h>
->  
->  #include <asm/div64.h>
->  #include <asm/msr.h>
-> @@ -129,6 +131,18 @@ static struct perf_limits limits = {
->  	.max_sysfs_pct = 100,
->  };
->  
-> +struct hw_vendor_info {
-> +	u16  valid;
-> +	char oem_id[ACPI_OEM_ID_SIZE];
-> +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
-> +};
-> +
-> +/* Hardware vendor-specific info that has its own power management modes */
-> +static struct hw_vendor_info vendor_info[] = {
-> +	{1, "HP    ", "ProLiant"},
-> +	{0, "", ""},
-> +};
-> +
->  static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
->  			int deadband, int integral) {
->  	pid->setpoint = setpoint;
-> @@ -700,6 +714,63 @@ static int intel_pstate_msrs_not_valid(void)
->  
->  	return 0;
->  }
-> +
-> +static bool intel_pstate_no_acpi_pss(void)
-> +{
-> +	struct acpi_processor *pr;
-> +	union acpi_object *pss = NULL;
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-
-Can you possibly reduce the max indentation level of this function,
-perhaps using the continue instruction?
-
-Also please move the definition of pss to the block in which that
-variable is used.
-
-> +
-> +		pr = per_cpu(processors, i);
-> +
-> +		if (pr) {
-> +			struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER,
-> +							NULL };
-> +
-> +			if (ACPI_SUCCESS(acpi_evaluate_object(pr->handle,
-> +						"_PSS", NULL, &buffer))) {
-> +
-> +				pss = buffer.pointer;
-> +
-> +				if (pss && pss->type == ACPI_TYPE_PACKAGE) {
-> +					kfree(buffer.pointer);
-> +					return false;
-> +				}
-> +
-> +				kfree(buffer.pointer);
-> +			}
-> +		}
-> +	}
-> +
-> +	return true;
-> +}
-> +
-> +static bool intel_pstate_platform_pwr_mgmt_exists(void)
-> +{
-> +	struct acpi_table_header hdr;
-> +	struct hw_vendor_info *v_info;
-> +
-> +	if (acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr) == AE_OK) {
-
-I'd do
-
-	if (ACPI_FAILURE(acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr))
-		return false;
-
-and then the indentation level can be reduced.
-
-> +		for (v_info = vendor_info; v_info->valid; v_info++) {
-> +			/*
-> +			 * Check if the hardware/platform is in the
-> +			 * predefined vendor data.
-> +			 */
-> +			if (!strncmp(hdr.oem_id, v_info->oem_id,
-> +				     ACPI_OEM_ID_SIZE) &&
-> +			    !strncmp(hdr.oem_table_id, v_info->oem_table_id,
-> +				     ACPI_OEM_TABLE_ID_SIZE)) {
-> +				if (intel_pstate_no_acpi_pss())
-> +					return true;
-
-I think the above should be
-
-	if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE)
-	    && !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM_TABLE_ID_SIZE)
-	    && intel_pstate_no_acpi_pss())
-		return true;
-
-(you don't need to break the lines longer than 80 characters if that makes
-the code less readable).
-
-> +			}
-> +		}
-> +	}
-> +
-> +	return false;
-> +}
-> +
->  static int __init intel_pstate_init(void)
->  {
->  	int cpu, rc = 0;
-> @@ -708,6 +779,15 @@ static int __init intel_pstate_init(void)
->  	if (no_load)
->  		return -ENODEV;
->  
-> +	if (!acpi_disabled) {
-> +		/*
-> +		 * Check if the platform has its own power management modes.
-> +		 * If so, the pstate cpufreq driver will be ignored.
-> +		 */
-> +		if (intel_pstate_platform_pwr_mgmt_exists())
-> +			return -ENODEV;
-> +	}
-> +
->  	id = x86_match_cpu(intel_pstate_cpu_ids);
->  	if (!id)
->  		return -ENODEV;
-
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>  drivers/power/max17042_battery.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max1704=
+2_battery.c
+> index d664ef5..892ecfc 100644
+> --- a/drivers/power/max17042_battery.c
+> +++ b/drivers/power/max17042_battery.c
+> @@ -220,9 +220,9 @@ static int max17042_get_property(struct power_sup=
+ply *psy,
+>  			val->intval =3D (0x7fff & ~val->intval) + 1;
+>  			val->intval *=3D -1;
+>  		}
+> -		/* The value is converted into deci-centigrade scale */
+> +		/* The value is converted into milli-centigrade scale */
+>  		/* Units of LSB =3D 1 / 256 degree Celsius */
+> -		val->intval =3D val->intval * 10 / 256;
+> +		val->intval =3D val->intval * 1000 / 256;
+>  		break;
+>  	case POWER_SUPPLY_PROP_CURRENT_NOW:
+>  		if (chip->pdata->enable_current_sense) {
+> --=20
+> 1.7.9.5
