@@ -1,36 +1,76 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: powersave governor runs programs faster and uses more power than
- performance governor
-Date: Fri, 25 Oct 2013 14:27:31 -0400
-Message-ID: <526AB813.1080708@verisign.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com> <CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com> <CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com> <526A82CC.1040709@gmail.com> <CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com> <526A9092.5000800@gmail.com> <CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [GIT PULL] ACPI and power management fixes for v3.12-rc7
+Date: Fri, 25 Oct 2013 22:22:22 +0200
+Message-ID: <6158196.euy954eKxG@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Melanie Kambadur <melanie@cs.columbia.edu>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53090 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751641Ab3JYUKU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Oct 2013 16:10:20 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+
+Hi Linus,
+
+Please pull from the git repository at
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.12-rc7
+
+to receive ACPI and power management fixes for v3.12-rc7 with
+top-most commit 75c0758137c7ac647927b4b12bb5cfca96a0e4e6
+
+  acpi-cpufreq: Fail initialization if driver cannot be registered
+
+on top of commit 31d141e3a666269a3b6fcccddb0351caf7454240
+
+  Linux 3.12-rc6
+
+These fix two bugs in the intel_pstate driver, a hibernate bug leading
+to nasty resume failures sometimes and acpi-cpufreq initialization bug
+that causes problems to happen during module unload when intel_pstate
+is in use.
+
+Specifics:
+
+ - Fix for rounding errors in intel_pstate causing CPU utilization to
+   be underestimated from Brennan Shacklett.
+
+ - intel_pstate fix to always use the correct max pstate value when
+   computing the min pstate from Dirk Brandewie.
+
+ - Hibernation fix for deadlocking resume in cases when the probing
+   of the device containing the image is deferred from Russ Dill.
+
+ - acpi-cpufreq fix to prevent the module from staying in memory
+   when the driver cannot be registered and then attempting to
+   unregister things that have never been registered on exit.
+
+Thanks!
 
 
-I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
+---------------
 
-speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
+Brennan Shacklett (1):
+      intel_pstate: Improve accuracy by not truncating until final result
 
-It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
+Dirk Brandewie (1):
+      intel_pstate: Correct calculation of min pstate value
 
-Meanwhile, can you rmmod intel-pstate?
+Rafael J. Wysocki (1):
+      acpi-cpufreq: Fail initialization if driver cannot be registered
 
-DCN
+Russ Dill (1):
+      PM / hibernate: Move software_resume to late_initcall_sync
 
-On 10/25/13 12:35, Melanie Kambadur wrote:
-> If I disable intel_pstate on my kernel command line, I end up with
-> access only to the speedstep and p4-clockmod drivers, and no
-> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
-> driver? I've tried a couple of things without success.
->
-> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
-> sysadmin).
-> -Melanie
+---------------
+
+ drivers/cpufreq/acpi-cpufreq.c |  8 ++++----
+ drivers/cpufreq/intel_pstate.c | 38 ++++++++++++++++++--------------------
+ kernel/power/hibernate.c       |  2 +-
+ 3 files changed, 23 insertions(+), 25 deletions(-)
+
