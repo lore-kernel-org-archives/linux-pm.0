@@ -1,35 +1,51 @@
-From: Anton Vorontsov <anton@enomsg.org>
-Subject: Re: [PATCH] fuelguage: max17042: Support regmap to access device's
- registers.
-Date: Fri, 25 Oct 2013 16:55:08 -0700
-Message-ID: <20131025235508.GA19447@teo>
-References: <1382676902-28077-1-git-send-email-jonghwa3.lee@samsung.com>
+From: "Wendy Ng" <wendy.ng@broadcom.com>
+Subject: [PATCH 0/3] thermal: bcm281xx: Add Temperature Monitor driver
+Date: Fri, 25 Oct 2013 17:00:26 -0700
+Message-ID: <1382745629-1123-1-git-send-email-wendy.ng@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:38082 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752406Ab3JYXzL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Oct 2013 19:55:11 -0400
-Received: by mail-pd0-f174.google.com with SMTP id y13so5826846pdi.5
-        for <linux-pm@vger.kernel.org>; Fri, 25 Oct 2013 16:55:10 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1382676902-28077-1-git-send-email-jonghwa3.lee@samsung.com>
+Received: from mms3.broadcom.com ([216.31.210.19]:4153 "EHLO mms3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751918Ab3JZABq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 25 Oct 2013 20:01:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: linux-pm@vger.kernel.org, dwmw2@infradead.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com
+To: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>, Tim Kryger <tim.kryger@linaro.org>, Matt Porter <matt.porter@linaro.org>, Wendy Ng <wendy.ng@broadcom.com>
 
-On Fri, Oct 25, 2013 at 01:55:02PM +0900, Jonghwa Lee wrote:
-> This patch makes max17042 fuelguage driver uses regmap API to access
-> its device's registers.
-> 
-> It's based on linux-next.
-> 
-> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> ---
+This patch series adds the support of the Temperature Monitor driver
+for Broadcom bcm281xx SoCs. This TMON driver can be used with the
+Thermal Framework.
 
-Applied, thanks!
+This patch series incoporates the feedback from the old series:
+V1: https://lkml.org/lkml/2013/9/23/424
+V2: https://lkml.org/lkml/2013/9/27/555
 
-Anton
+Note that this patch series is dependent on the following patches:
+https://lkml.org/lkml/2013/9/26/787
+http://www.spinics.net/lists/arm-kernel/msg274963.html
+https://lkml.org/lkml/2013/10/3/645
+
+Wendy Ng (3):
+  thermal: bcm281xx: Add Temperature Monitor driver
+  ARM: configs:enable thermal framework for bcm281xx
+  ARM: dts: Add TMON driver support to bcm281xx
+
+ .../bindings/thermal/bcm-kona-thermal.txt          |   24 +++
+ arch/arm/boot/dts/bcm11351-brt.dts                 |    4 +
+ arch/arm/boot/dts/bcm11351.dtsi                    |   29 ++++
+ arch/arm/boot/dts/bcm28155-ap.dts                  |    4 +
+ arch/arm/configs/bcm_defconfig                     |    4 +-
+ drivers/thermal/Kconfig                            |   11 ++
+ drivers/thermal/Makefile                           |    1 +
+ drivers/thermal/bcm_kona_tmon.c                    |  173 ++++++++++++++++++++
+ 8 files changed, 249 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
+ create mode 100644 drivers/thermal/bcm_kona_tmon.c
+
+-- 
+1.7.9.5
+
+
