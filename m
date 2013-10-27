@@ -1,296 +1,35 @@
-From: Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>
-Subject: Re: [PATCH 1/3] thermal: bcm281xx: Add Temperature Monitor driver
-Date: Sun, 27 Oct 2013 13:48:29 +0000
-Message-ID: <20131027134829.3F1C7C4039D@trevor.secretlab.ca>
-References: <1382745629-1123-1-git-send-email-wendy.ng@broadcom.com> <1382745629-1123-2-git-send-email-wendy.ng@broadcom.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1382745629-1123-2-git-send-email-wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Christian Daudt <bcm-xK7y4jjYLqYh9ZMKESR00Q@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Tim Kryger <tim.kryger-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matt Porter <matt.porter-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Wendy Ng <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+From: Ian Malone <ibmalone@gmail.com>
+Subject: Re: kernels 3.9.5 to 3.10.6 fail to boot on battery, vaio vgn-c2m/w
+Date: Sun, 27 Oct 2013 21:54:53 +0000
+Message-ID: <CAL3-7MrExuRWc-ugzU4c4y-trQaCfO_UU2c6tt+P4-8fwiWmUg@mail.gmail.com>
+References: <CAL3-7MrW0p-YuJBpiguoG7f0j7vgyJALhdSnh81uRM_5TR50Xg@mail.gmail.com>
+	<CAOLK0pxpsRWR+oiQjLSpbPWefptZeEx76P+okTSLeYW1qGZ4Vw@mail.gmail.com>
+	<CAL3-7Mp4ncq4Q=uxmLR6ykExqu1BTzhJjX3UcyBTfZUPrLUCdA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vb0-f49.google.com ([209.85.212.49]:54134 "EHLO
+	mail-vb0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753521Ab3J0Vyy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Oct 2013 17:54:54 -0400
+Received: by mail-vb0-f49.google.com with SMTP id w16so3901838vbb.36
+        for <linux-pm@vger.kernel.org>; Sun, 27 Oct 2013 14:54:53 -0700 (PDT)
+In-Reply-To: <CAL3-7Mp4ncq4Q=uxmLR6ykExqu1BTzhJjX3UcyBTfZUPrLUCdA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Fri, 25 Oct 2013 17:00:27 -0700, "Wendy Ng" <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org> wrote:
-> This adds the support for Temperature Monitor (TMON) driver for
-> Broadcom bcm281xx SoCs. This driver plugs into the Thermal Framework.
-> 
-> Note that this version of the TMON driver does support interrupt-driven
-> mode -- only polling-mode of the thermal framework can be used.
-> 
-> Signed-off-by: Wendy Ng <wendy.ng-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-> Reviewed-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-> Reviewed-by: Christian Daudt <csd-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-> Reviewed-by: Matt Porter <matt.porter-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Reviewed-by: Tim Kryger <tim.kryger-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->  .../bindings/thermal/bcm-kona-thermal.txt          |   24 +++
->  drivers/thermal/Kconfig                            |   11 ++
->  drivers/thermal/Makefile                           |    1 +
->  drivers/thermal/bcm_kona_tmon.c                    |  173 ++++++++++++++++++++
->  4 files changed, 209 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
->  create mode 100644 drivers/thermal/bcm_kona_tmon.c
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
-> new file mode 100644
-> index 0000000..225b898
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/bcm-kona-thermal.txt
-> @@ -0,0 +1,24 @@
-> +* Broadcom Kona TMON bindings
-> +
-> +This version is for the Kona family of SoCs.  The TMON (Temperature Monitor)
-> +block in a Kona SoC device is used to measure the chip temperature at constant
-> +intervals.
-> +The TMON block asserts an interrupt if temperature exceeds a user programmed
-> +threshold value.  The TMON block would reset the entire device once it
-> +reaches a critical temperature which is also a programmable setting.
-> +
-> +Required properties:
-> +- compatible : "brcm,bcm11351-tmon", "brcm,kona-tmon"
-> +- reg : Address range of the thermal register
-> +- clocks : the clock signal that drives the TMON block
-> +- interrupts: the interrupt signal associated with the TMON block
-> +
-> +
-> +Example:
-> +	tmon@34008000 {
-> +		compatible = "brcm,bcm11351-tmon", "brcm,kona-tmon";
-> +		reg = <0x34008000 0x0024>;
-> +		clocks = <&tmon_1m_clk>;
-> +		interrupts = <GIC_SPI 183 IRQ_TYPE_LEVEL_HIGH>;
-> +		status = "disabled";
+Hi,
 
-I would drop the status="disabled" from the example, but otherwise the
-binding looks fine.
+Is there anything I can do that will help to resolve this bug?
 
-g.
+> https://bugzilla.kernel.org/show_bug.cgi?id=60770
+>
 
-> +	};
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 9e7cc3f..02200ad 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -166,6 +166,17 @@ config DB8500_THERMAL
->  	  created. Cooling devices can be bound to the trip points to cool this
->  	  thermal zone if trip points reached.
->  
-> +config BCM_KONA_TMON_THERMAL
-> +	tristate "Temperature Monitor driver on Broadcom Kona family of SoCs"
-> +	depends on ARCH_BCM_MOBILE
-> +	depends on THERMAL_OF
-> +	default y
-> +	help
-> +	  If you say yes here you get support for the TMON
-> +	  (Temperature Monitor) in Broadcom Kona family of SoCs.
-> +	  This also provides the generic support of the Thermal Framework
-> +	  for Broadcom Kona family of SoCs.
-> +
->  config ARMADA_THERMAL
->  	tristate "Armada 370/XP thermal management"
->  	depends on ARCH_MVEBU
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 4b03956..5e85354 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -22,6 +22,7 @@ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
->  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
->  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
->  obj-y				+= samsung/
-> +obj-$(CONFIG_BCM_KONA_TMON_THERMAL)	+= bcm_kona_tmon.o
->  obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
->  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
->  obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
-> diff --git a/drivers/thermal/bcm_kona_tmon.c b/drivers/thermal/bcm_kona_tmon.c
-> new file mode 100644
-> index 0000000..69ae0b2
-> --- /dev/null
-> +++ b/drivers/thermal/bcm_kona_tmon.c
-> @@ -0,0 +1,173 @@
-> +/*
-> + * Copyright 2013 Broadcom Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License, version 2,
-> + * as published by the Free Software Foundation (the "GPL").
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php,
-> + * or by writing to the Free Software Foundation, Inc.,
-> + * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-> + */
-> +
-> +/**
-> +*  Broadcom Kona Temperature Monitor (TMON) driver
-> +*
-> +*  Note: The TMON hardware monitors a single sensor.
-> +*/
-> +
-> +#include <linux/clk.h>
-> +#include <linux/err.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/thermal.h>
-> +
-> +
-> +/* From TMON Register Database */
-> +#define TMON_TEMP_VAL_OFFSET			0x0000001c
-> +#define TMON_TEMP_VAL_TEMP_VAL_SHIFT		0
-> +#define TMON_TEMP_VAL_TEMP_VAL_MASK		0x000003ff
-> +
-> +/* Broadcom TMON Private Data Structure */
-> +struct bcm_tmon_data_priv {
-> +	void __iomem *base;
-> +	struct clk *external_clk;
-> +	struct thermal_zone_device *therm_dev;
-> +};
-> +
-> +/* Temperature conversion function for TMON block */
-> +static long raw_to_mcelsius(u32 raw)
-> +{
-> +	/*
-> +	 * According to Broadcom internal Analog Module Specification
-> +	 * the formula for converting TMON block output to temperature in
-> +	 * degree Celsius is:
-> +	 *	T = 428 - (0.561 * raw)
-> +	 * Note: the valid operating range for the TMON block is -40C to 125C
-> +	 */
-> +	return 428000 - (561 * (long)raw);
-> +}
-> +
-> +/* Get temperature callback function for thermal zone */
-> +static int bcm_get_temp(void *sensor_data, long *temp)
-> +{
-> +	u32 raw;
-> +	long mcelsius;
-> +	struct bcm_tmon_data_priv *priv = sensor_data;
-> +
-> +	if (!priv) {
-> +		pr_err("%s: input sensor_data not initialized.\n", __func__);
-> +		return -EINVAL;
-> +	}
-> +
-> +	raw = (readl(priv->base + TMON_TEMP_VAL_OFFSET)
-> +		& TMON_TEMP_VAL_TEMP_VAL_MASK) >> TMON_TEMP_VAL_TEMP_VAL_SHIFT;
-> +
-> +	pr_debug("%s: raw temp 0x%x\n", __func__, raw);
-> +
-> +	mcelsius = raw_to_mcelsius(raw);
-> +
-> +	/*
-> +	 * Since 'mcelsius' might be negative, we need to limit it to smallest
-> +	 * unsigned value before returning it to thermal framework.
-> +	 */
-> +	if (mcelsius < 0)
-> +		*temp = 0;
-> +	else
-> +		*temp = mcelsius;
-> +
-> +	pr_debug("%s: final temp %d\n", __func__, (int) *temp);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id bcm_kona_tmon_match_table[] = {
-> +	{ .compatible = "brcm,kona-tmon" },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, bcm_kona_tmon_match_table);
-> +
-> +static int bcm_kona_tmon_probe(struct platform_device *pdev)
-> +{
-> +	struct thermal_zone_device *thermal = NULL;
-> +	struct bcm_tmon_data_priv *priv;
-> +	struct resource *res;
-> +
-> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv) {
-> +		dev_err(&pdev->dev, "Failed to malloc priv.\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	priv->base = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv->base))
-> +		return PTR_ERR(priv->base);
-> +
-> +	priv->external_clk = devm_clk_get(&pdev->dev, NULL);
-> +	if (IS_ERR(priv->external_clk))
-> +		return -ENODEV;
-> +
-> +	if (clk_prepare_enable(priv->external_clk) != 0)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * Note that get_trend() function is NULL.  This is OK for now as
-> +	 * we can rely on the get_tz_trend() from the Thermal Framework until
-> +	 * we come up with a better way to determine the trend.
-> +	 */
-> +	thermal = thermal_zone_of_sensor_register(&pdev->dev, 0, priv,
-> +						bcm_get_temp, NULL);
-> +
-> +	if (IS_ERR(thermal)) {
-> +		dev_err(&pdev->dev, "Failed to register BCM Kona TMON.\n");
-> +		clk_disable_unprepare(priv->external_clk);
-> +		return PTR_ERR(thermal);
-> +	}
-> +
-> +	priv->therm_dev = thermal;
-> +
-> +	platform_set_drvdata(pdev, priv);
-> +
-> +	dev_info(&pdev->dev, "BCM Kona TMON Initialized.\n");
-> +
-> +	return 0;
-> +}
-> +
-> +static int bcm_kona_tmon_remove(struct platform_device *pdev)
-> +{
-> +	struct bcm_tmon_data_priv *priv = platform_get_drvdata(pdev);
-> +
-> +	thermal_zone_of_sensor_unregister(&pdev->dev, priv->therm_dev);
-> +
-> +	clk_disable_unprepare(priv->external_clk);
-> +
-> +	dev_info(&pdev->dev, "BCM Kona TMON Uninitialized.\n");
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver bcm_kona_tmon_driver = {
-> +	.driver = {
-> +		.name = "bcm-kona-tmon",
-> +		.owner = THIS_MODULE,
-> +		.of_match_table = bcm_kona_tmon_match_table,
-> +	},
-> +	.probe = bcm_kona_tmon_probe,
-> +	.remove = bcm_kona_tmon_remove,
-> +};
-> +
-> +module_platform_driver(bcm_kona_tmon_driver);
-> +
-> +MODULE_DESCRIPTION("Broadcom Kona Temperature Monitor Driver");
-> +MODULE_AUTHOR("Broadcom Corporation");
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_ALIAS("platform:bcm-kona-tmon");
-> -- 
-> 1.7.9.5
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Quick summary: removal of idle=mwait has led to laptop failing to boot
+on battery. Only known workaround so far is to use idle=poll which
+drains battery at an amazing rate.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+imalone
+http://ibmalone.blogspot.co.uk
