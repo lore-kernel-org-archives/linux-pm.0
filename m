@@ -1,90 +1,105 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / processor: Do not request ACPI cpufreq module directly
-Date: Mon, 28 Oct 2013 02:21 +0100
-Message-ID: <2252332.6pcuA4s7xa@vostro.rjw.lan>
+From: jonghwa3.lee@samsung.com
+Subject: Re: [PATCH] battery: max17042: Fix temperature unit to milli
+ centigrade.
+Date: Mon, 28 Oct 2013 11:00:52 +0900
+Message-ID: <526DC554.30506@samsung.com>
+References: <1382676798-27835-1-git-send-email-jonghwa3.lee@samsung.com>
+ <20131025231720.GB9015@teo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:59940 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546Ab3J1CAz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Oct 2013 22:00:55 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MVC00FHRW92F7D0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 28 Oct 2013 11:00:53 +0900 (KST)
+In-reply-to: <20131025231720.GB9015@teo>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anton Vorontsov <anton@enomsg.org>
+Cc: linux-pm@vger.kernel.org, dwmw2@infradead.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
+On 2013=EB=85=84 10=EC=9B=94 26=EC=9D=BC 08:17, Anton Vorontsov wrote:
 
-Function acpi_processor_load_module() used by the ACPI processor
-driver can only really work if the acpi-cpufreq module is available
-when acpi_processor_start() is executed which usually is not the case
-for systems loading the processor driver module from an initramfs.
+> On Fri, Oct 25, 2013 at 01:53:18PM +0900, Jonghwa Lee wrote:
+>> Standard temp node represents temperature of power supply class
+>> in milli centigrade. So fix max17042 fuel gauge driver to follow
+>> the standard. (deci-centigrade --> milli-centigrade)
+>=20
+> Maybe I am confused, but the doc says:
+>=20
+>  * All voltages, currents, charges, energies, time and temperatures i=
+n uV,     =20
+>  * =C2=B5A, =C2=B5Ah, =C2=B5Wh, seconds and tenths of degree Celsius =
+unless otherwise         =20
+>  * stated
+>=20
+> So, the current code seems to be correct.
+>=20
 
-Moreover, that used to be a hackish workaround for module autoloading
-issues, but udev loads acpi-cpufreq just fine nowadays, so that
-function isn't really necessary any more.  For this reason, drop
-acpi_processor_load_module() entirely.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/processor_driver.c  |    1 -
- drivers/acpi/processor_perflib.c |   22 ----------------------
- include/acpi/processor.h         |    1 -
- 3 files changed, 24 deletions(-)
+Honestly, I missed the above paragraph you showed rather I read followi=
+ng one.
 
-Index: linux-pm/drivers/acpi/processor_driver.c
-===================================================================
---- linux-pm.orig/drivers/acpi/processor_driver.c
-+++ linux-pm/drivers/acpi/processor_driver.c
-@@ -171,7 +171,6 @@ static int __acpi_processor_start(struct
- 
- #ifdef CONFIG_CPU_FREQ
- 	acpi_processor_ppc_has_changed(pr, 0);
--	acpi_processor_load_module(pr);
- #endif
- 	acpi_processor_get_throttling_info(pr);
- 
-Index: linux-pm/drivers/acpi/processor_perflib.c
-===================================================================
---- linux-pm.orig/drivers/acpi/processor_perflib.c
-+++ linux-pm/drivers/acpi/processor_perflib.c
-@@ -235,28 +235,6 @@ void acpi_processor_ppc_exit(void)
- 	acpi_processor_ppc_status &= ~PPC_REGISTERED;
- }
- 
--/*
-- * Do a quick check if the systems looks like it should use ACPI
-- * cpufreq. We look at a _PCT method being available, but don't
-- * do a whole lot of sanity checks.
-- */
--void acpi_processor_load_module(struct acpi_processor *pr)
--{
--	static int requested;
--	acpi_status status = 0;
--	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
--
--	if (!arch_has_acpi_pdc() || requested)
--		return;
--	status = acpi_evaluate_object(pr->handle, "_PCT", NULL, &buffer);
--	if (!ACPI_FAILURE(status)) {
--		printk(KERN_INFO PREFIX "Requesting acpi_cpufreq\n");
--		request_module_nowait("acpi_cpufreq");
--		requested = 1;
--	}
--	kfree(buffer.pointer);
--}
--
- static int acpi_processor_get_performance_control(struct acpi_processor *pr)
- {
- 	int result = 0;
-Index: linux-pm/include/acpi/processor.h
-===================================================================
---- linux-pm.orig/include/acpi/processor.h
-+++ linux-pm/include/acpi/processor.h
-@@ -225,7 +225,6 @@ struct acpi_processor_errata {
- 	} piix4;
- };
- 
--extern void acpi_processor_load_module(struct acpi_processor *pr);
- extern int acpi_processor_preregister_performance(struct
- 						  acpi_processor_performance
- 						  __percpu *performance);
+TEMP - temperature of the power supply.
+TEMP_ALERT_MIN - minimum battery temperature alert value in milli centi=
+grade.
+TEMP_ALERT_MAX - maximum battery temperature alert value in milli centi=
+grade.
+TEMP_AMBIENT - ambient temperature.
+TEMP_AMBIENT_ALERT_MIN - minimum ambient temperature alert value in mil=
+li
+centigrade.
+TEMP_AMBIENT_ALERT_MAX - maximum ambient temperature alert value in mil=
+li
+centigrade.
+
+So, we use different unit for properties related temperature, right?
+current temperature is in tenth of centigrade and threshold temperature=
+s and
+ambient temperature are in milli centigrade. Wouldn't it have to be in =
+same unit?
+
+Thanks,
+Jonghwa
+
+> Thanks,
+>=20
+> Anton
+>=20
+>> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+>> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>> ---
+>>  drivers/power/max17042_battery.c |    4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max170=
+42_battery.c
+>> index d664ef5..892ecfc 100644
+>> --- a/drivers/power/max17042_battery.c
+>> +++ b/drivers/power/max17042_battery.c
+>> @@ -220,9 +220,9 @@ static int max17042_get_property(struct power_su=
+pply *psy,
+>>  			val->intval =3D (0x7fff & ~val->intval) + 1;
+>>  			val->intval *=3D -1;
+>>  		}
+>> -		/* The value is converted into deci-centigrade scale */
+>> +		/* The value is converted into milli-centigrade scale */
+>>  		/* Units of LSB =3D 1 / 256 degree Celsius */
+>> -		val->intval =3D val->intval * 10 / 256;
+>> +		val->intval =3D val->intval * 1000 / 256;
+>>  		break;
+>>  	case POWER_SUPPLY_PROP_CURRENT_NOW:
+>>  		if (chip->pdata->enable_current_sense) {
+>> --=20
+>> 1.7.9.5
+>=20
+
 
