@@ -1,127 +1,67 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Subject: [PATCH 00/19] Enable various Renesas drivers on all ARM platforms
-Date: Tue, 29 Oct 2013 00:46:48 +0100
-Message-ID: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: Any news on Runtime Interpreted Power Sequences
+Date: Mon, 28 Oct 2013 16:53:44 -0700
+Message-ID: <20131028235344.GB16686@sirena.org.uk>
+References: <20131025112224.6e5265e6@notabene.brown>
+ <526A0E71.100@nvidia.com>
+ <20131025183345.2b963e13@notabene.brown>
+ <526E3605.9080002@nvidia.com>
+ <20131028221004.3294c1ea@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mtd>,
- <mailto:linux-mtd-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mtd/>
-List-Post: <mailto:linux-mtd@lists.infradead.org>
-List-Help: <mailto:linux-mtd-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mtd>,
- <mailto:linux-mtd-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-mtd" <linux-mtd-bounces@lists.infradead.org>
-Errors-To: linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org
-To: linux-sh@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, Linus Walleij <linus.walleij@linaro.org>, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>, Joerg Roedel <joro@8bytes.org>, Magnus Damm <magnus.damm@gmail.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Chris Ball <cjb@laptop.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>, linux-pm@vger.kernel.org, Ian Molton <ian@mnementh.co.uk>, Mark Brown <broonie@kernel.org>, linux-arm-kernel@lists.infradead.org, Sergei Shtylyov <sergei.shtyly>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="eAbsdosE1cNLO4uF"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:36579 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753546Ab3J1XyU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Oct 2013 19:54:20 -0400
+Content-Disposition: inline
+In-Reply-To: <20131028221004.3294c1ea@notabene.brown>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Hello,
-
-This patch series, based on v3.12-rc7, prepares various Renesas drivers
-for migration to multiplatform kernels by enabling their compilation or
-otherwise fixing them on all ARM platforms. The patches are pretty
-straightforward and are described in their commit message.
-
-I'd like to get all these patches merged in v3.14. As they will need to go
-through their respective subsystems' trees, I would appreciate if all
-maintainers involved could notify me when they merge patches from this series
-in their tree to help me tracking the merge status. I don't plan to send pull
-requests individually for these patches, and I will repost patches
-individually if changes are requested during review.
-
-If you believe the issue should be solved in a different way (for instance by
-removing the architecture dependency completely) please reply to the cover
-letter to let other maintainers chime in.
-
-Cc: Chris Ball <cjb@laptop.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: dmaengine@vger.kernel.org
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-Cc: Ian Molton <ian@mnementh.co.uk>
-Cc: iommu@lists.linux-foundation.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Joerg Roedel <joro@8bytes.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-i2c@vger.kernel.org
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: linux-mmc@vger.kernel.org
-Cc: linux-mtd@lists.infradead.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-pwm@vger.kernel.org
-Cc: linux-serial@vger.kernel.org
-Cc: linux-spi@vger.kernel.org
-Cc: Magnus Damm <magnus.damm@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Mauro Carvalho Chehab <m.chehab@samsung.com>
-Cc: netdev@vger.kernel.org
-Cc: Samuel Ortiz <samuel@sortiz.org>
-Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Vinod Koul <vinod.koul@intel.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>
-Cc: Zhang Rui <rui.zhang@intel.com>
-
-Laurent Pinchart (19):
-  serial: sh-sci: Enable the driver on all ARM platforms
-  DMA: shdma: Enable the driver on all ARM platforms
-  i2c: sh_mobile: Enable the driver on all ARM platforms
-  input: sh_keysc: Enable the driver on all ARM platforms
-  iommu: shmobile: Enable the driver on all ARM platforms
-  i2c: rcar: Enable the driver on all ARM platforms
-  v4l: sh_vou: Enable the driver on all ARM platforms
-  mmc: sdhi: Enable the driver on all ARM platforms
-  mmc: sh_mmcif: Enable the driver on all ARM platforms
-  mtd: sh_flctl: Enable the driver on all ARM platforms
-  net: sh_eth: Set receive alignment correctly on all ARM platforms
-  irda: sh_irda: Enable the driver on all ARM platforms
-  pinctrl: sh-pfc: Enable the driver on all ARM platforms
-  pwm: pwm-renesas-tpu: Enable the driver on all ARM platforms
-  sh: intc: Enable the driver on all ARM platforms
-  spi: sh_msiof: Enable the driver on all ARM platforms
-  spi: sh_hspi: Enable the driver on all ARM platforms
-  thermal: rcar-thermal: Enable the driver on all ARM platforms
-  fbdev: sh-mobile-lcdcfb: Enable the driver on all ARM platforms
-
- drivers/dma/sh/Kconfig                | 2 +-
- drivers/dma/sh/shdmac.c               | 6 +++---
- drivers/i2c/busses/Kconfig            | 4 ++--
- drivers/input/keyboard/Kconfig        | 2 +-
- drivers/iommu/Kconfig                 | 2 +-
- drivers/media/platform/Kconfig        | 2 +-
- drivers/mmc/host/Kconfig              | 4 ++--
- drivers/mmc/host/tmio_mmc_dma.c       | 2 +-
- drivers/mtd/nand/Kconfig              | 2 +-
- drivers/net/ethernet/renesas/sh_eth.c | 2 +-
- drivers/net/ethernet/renesas/sh_eth.h | 2 +-
- drivers/net/irda/Kconfig              | 2 +-
- drivers/pinctrl/Makefile              | 2 +-
- drivers/pinctrl/sh-pfc/Kconfig        | 2 +-
- drivers/pwm/Kconfig                   | 2 +-
- drivers/sh/intc/Kconfig               | 2 +-
- drivers/spi/Kconfig                   | 4 ++--
- drivers/thermal/Kconfig               | 2 +-
- drivers/tty/serial/Kconfig            | 2 +-
- drivers/video/Kconfig                 | 6 +++---
- 20 files changed, 27 insertions(+), 27 deletions(-)
-
--- 
-Regards,
-
-Laurent Pinchart
+To: NeilBrown <neilb@suse.de>
+Cc: Alex Courbot <acourbot@nvidia.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thierry Reding <thierry.reding@avionic-design.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
 
-______________________________________________________
-Linux MTD discussion mailing list
-http://lists.infradead.org/mailman/listinfo/linux-mtd/
+--eAbsdosE1cNLO4uF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Mon, Oct 28, 2013 at 10:10:04PM +1100, NeilBrown wrote:
+
+> I agree that this power-up sequence should be a property of the device.
+> However until the device has been powered up, Linux doesn't know about it.
+> Neither a board file or a devicetree can (as far as I can tell), tell the
+> MMC port that a particular card is attached.  Rather the host probes the card
+> to see what it is.
+> So there isn't any way for the device driver to get control at the
+> appropriate time to effect the proper sequencing.
+
+If it is a genuinely pluggable MMC slot then I'd expect the sequence to
+be implementing whatever is required for standard MMC enumeration to
+work.  If the device is a soldered down one with extra control (as is
+quite common) then there shouldn't be a problem describing it?
+
+--eAbsdosE1cNLO4uF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSbvj/AAoJELSic+t+oim9IS8P/3WjzQfhO5hssgCAj8rHvX6a
+VMA4o4CgegM3cBpxxbje77w+R4FlEdQ77eUvghBov5mRVAplJ6y8CRnG54Kt0Gvq
+Z+LH4h4VbbvO60jtNonPnSKOIk50MDvGS/qRKWKzK0BV3mMiioq8XW8i9ida/XCc
+SbWRJJqpovlGUVhG+9K2r+kBfcIEqy86nvzVp8BL5dX24ePr8knZfxaiTjh+9hwX
+9Fh+COVTWpwZADwnjBxYiDVvNk7H8hqVrdDZOpFIT/kGDO6HRHI60a06S6h0sHK/
+QHI0cZ7yvNCOOscc6q6rE8GMANUlU5ge7r+Xp9TpylRmkrsG63dEU/GyFOt25yR2
+M6FBhah79rxh8wYyE4EVzxmh3vbK5YVuuXcf0PzkU+7ibPfN59Oki0aN1Spj56Vi
+EKbJR4ohmIxpmaZ6fAsYk5WQV1M77tdFMSrscOirls+Lkx7YiwgLpx62P6TNZpeg
+bWzBXgdud0s/DT7OGNl3/nmgM+yZaCyObkai1dEhs03US90Ob78ed50jmcfXEEFe
+MVu7wA6pdsePWK5+bqKCUlN0KDUxViFyYzESTBSGazQBiwUDKLe6yQ3M/Upl0Arp
+0nsECibK9vW5v3dnU7AFKsTpd+ociagCMvDt1UkYzoze33P0r/nQb0dkfXR7emfL
+EdyuW8gSqmZK5he9A0WZ
+=nOdO
+-----END PGP SIGNATURE-----
+
+--eAbsdosE1cNLO4uF--
