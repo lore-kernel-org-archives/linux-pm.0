@@ -1,41 +1,36 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
-Date: Mon, 28 Oct 2013 12:31:04 +0100
-Message-ID: <20131028113104.GE27015@lunn.ch>
-References: <1382533461-31021-1-git-send-email-andrew@lunn.ch>
- <CAKohpombg7mAmgxxvUg8kz1MaFwcycR1eL0UrgELY2WdGfrAag@mail.gmail.com>
- <20131023135116.GC31126@lunn.ch>
- <CAKohpokTgCz0c=PeaJHKiZEiYc0jPVq-vwkhP5pM0hh1-0QnLA@mail.gmail.com>
- <20131023143657.GA31536@lunn.ch>
- <CAKohpomedpd8XBPcdZX2vHy6b5=FMtbSVpNTG-eVLK1YPyPaMA@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: kernels 3.9.5 to 3.10.6 fail to boot on battery, vaio vgn-c2m/w
+Date: Mon, 28 Oct 2013 10:33:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1310281033090.1246-100000@iolanthe.rowland.org>
+References: <CAL3-7MrExuRWc-ugzU4c4y-trQaCfO_UU2c6tt+P4-8fwiWmUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:44536 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755773Ab3J1Lfz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Oct 2013 07:35:55 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKohpomedpd8XBPcdZX2vHy6b5=FMtbSVpNTG-eVLK1YPyPaMA@mail.gmail.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:60323 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756595Ab3J1Od4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Oct 2013 10:33:56 -0400
+In-Reply-To: <CAL3-7MrExuRWc-ugzU4c4y-trQaCfO_UU2c6tt+P4-8fwiWmUg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Ian Malone <ibmalone@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-On Wed, Oct 23, 2013 at 08:30:02PM +0530, Viresh Kumar wrote:
-> On 23 October 2013 20:06, Andrew Lunn <andrew@lunn.ch> wrote:
-> >> So, you have actually tested your code without interrupt handler?
-> >
-> > No.
+On Sun, 27 Oct 2013, Ian Malone wrote:
+
+> Hi,
 > 
-> It would be better if you atleast try this and confirm that this dummy
-> handler is required.
+> Is there anything I can do that will help to resolve this bug?
+> 
+> > https://bugzilla.kernel.org/show_bug.cgi?id=60770
+> >
+> 
+> Quick summary: removal of idle=mwait has led to laptop failing to boot
+> on battery. Only known workaround so far is to use idle=poll which
+> drains battery at an amazing rate.
 
-Hi Viresh
+You can try bringing this to the attention of the person who wrote the 
+commit removing idle=mwait.
 
-I have tested this now. The dummy handler is required. Without it, it
-seems like the WFI exits at the next timer tick, not immediately once
-the cpufreq change has finished. I get poor numbers out of
-cpufreq-bench without the handler.
+Alan Stern
 
-	      Andrew
