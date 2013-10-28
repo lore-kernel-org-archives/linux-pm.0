@@ -1,119 +1,60 @@
-From: jonghwa3.lee@samsung.com
-Subject: Re: [PATCH] power_supply: Fix documentation for TEMP_*ALERT* properties
-Date: Mon, 28 Oct 2013 15:22:53 +0900
-Message-ID: <526E02BD.5080107@samsung.com>
-References: <1382676798-27835-1-git-send-email-jonghwa3.lee@samsung.com>
- <20131025231720.GB9015@teo> <526DC554.30506@samsung.com>
- <20131028052743.GA31070@teo>
+From: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH 2/3] charger-manager : Add default battery temperature
+ checking funtion.
+Date: Sun, 27 Oct 2013 23:31:12 -0700
+Message-ID: <20131028063112.GB31266@teo>
+References: <1382669253-23629-1-git-send-email-jonghwa3.lee@samsung.com>
+ <1382669253-23629-3-git-send-email-jonghwa3.lee@samsung.com>
+ <20131025234436.GC13859@teo>
+ <526DCB4A.5010009@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:19394 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488Ab3J1GW4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Oct 2013 02:22:56 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MVD00EC78DEO220@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 28 Oct 2013 15:22:54 +0900 (KST)
-In-reply-to: <20131028052743.GA31070@teo>
+Received: from mail-pb0-f51.google.com ([209.85.160.51]:47939 "EHLO
+	mail-pb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002Ab3J1GbP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Oct 2013 02:31:15 -0400
+Received: by mail-pb0-f51.google.com with SMTP id wz7so5999339pbc.24
+        for <linux-pm@vger.kernel.org>; Sun, 27 Oct 2013 23:31:15 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <526DCB4A.5010009@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anton Vorontsov <anton@enomsg.org>
-Cc: "Mark A. Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, dwmw2@infradead.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+To: jonghwa3.lee@samsung.com
+Cc: linux-pm@vger.kernel.org, dwmw2@infradead.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 
-On 2013=EB=85=84 10=EC=9B=94 28=EC=9D=BC 14:27, Anton Vorontsov wrote:
+On Mon, Oct 28, 2013 at 11:26:18AM +0900, jonghwa3.lee@samsung.com wrote:
+> >> During the charger manager driver's probing time, it can't succeed
+> >> if there's no pre-defined .temperature_out_of_range callback function.
+> >> But if fuel gauge supports battery temperature measurement, we
+> >> can use it directly. That's what cm_default_get_temp() function does.
+> >>
+> >> With flag measure_batter_temp ON, we normally use cm_default_get_temp()
+> >> for .temperature_out_of_range callback funtion.
+> >> The TEMP_AMBIENT property is only used for pre-defined one.
+> >>
+> >> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> >> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> >> ---
+> > ...
+> >> +static int cm_default_get_temp(struct charger_manager *cm)
+> >> +{
+> >> +	struct charger_desc *desc = cm->desc;
+> >> +	union power_supply_propval val;
+> >> +	static int temp_alert_min = 0;
+> >
+> > No. Never.
+> 
+> Can I assume that you worried about initialization of a variable which would be
+> used to hold minimum value to zero not INT_MAX or something big?
 
-> All temperatures should be in tenth degrees Celsius.
->=20
+Nah, it's just any static variable inside a function is a big no-no. :)
+With a very rare exceptions (mostly boot/arch code, which is not the case
+here).
 
-
-Let me tell you one thing that thermal framework uses milli centigrade =
-for
-temperature. And also we have some relation with thermal framework alre=
-ady in
-power suppply core. So, what do think of using milli centigrade in powe=
-r supply
-class either?
+Basically, if you have to use static variables inside a function, it means
+that you just broke device-driver separation.
 
 Thanks,
-Jonghwa
 
-> bq24190_charger.c probably should be fixed.
->=20
-> Reported-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Cc: Mark A. Greer <mgreer@animalcreek.com>
-> Signed-off-by: Anton Vorontsov <anton@enomsg.org>
-> ---
->=20
-> On Mon, Oct 28, 2013 at 11:00:52AM +0900, jonghwa3.lee@samsung.com wr=
-ote:
->>>  * All voltages, currents, charges, energies, time and temperatures=
- in uV,     =20
->>>  * =C2=B5A, =C2=B5Ah, =C2=B5Wh, seconds and tenths of degree Celsiu=
-s unless otherwise         =20
->>>  * stated
->>>
->>> So, the current code seems to be correct.
->>
->> Honestly, I missed the above paragraph you showed rather I read foll=
-owing one.
->>
->> TEMP - temperature of the power supply.
->> TEMP_ALERT_MIN - minimum battery temperature alert value in milli ce=
-ntigrade.
->> TEMP_ALERT_MAX - maximum battery temperature alert value in milli ce=
-ntigrade.
->> TEMP_AMBIENT - ambient temperature.
->> TEMP_AMBIENT_ALERT_MIN - minimum ambient temperature alert value in =
-milli
->> centigrade.
->> TEMP_AMBIENT_ALERT_MAX - maximum ambient temperature alert value in =
-milli
->> centigrade.
->>
->> So, we use different unit for properties related temperature, right?
->> current temperature is in tenth of centigrade and threshold temperat=
-ures and
->> ambient temperature are in milli centigrade. Wouldn't it have to be =
-in same unit?
->=20
-> :( They should. Thanks for spotting.
->=20
-> The patch down below should fix the issue...
->=20
-> Documentation/power/power_supply_class.txt | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/Documentation/power/power_supply_class.txt b/Documentati=
-on/power/power_supply_class.txt
-> index 3f10b39..89a8816 100644
-> --- a/Documentation/power/power_supply_class.txt
-> +++ b/Documentation/power/power_supply_class.txt
-> @@ -135,11 +135,11 @@ CAPACITY_LEVEL - capacity level. This correspon=
-ds to
->  POWER_SUPPLY_CAPACITY_LEVEL_*.
-> =20
->  TEMP - temperature of the power supply.
-> -TEMP_ALERT_MIN - minimum battery temperature alert value in milli ce=
-ntigrade.
-> -TEMP_ALERT_MAX - maximum battery temperature alert value in milli ce=
-ntigrade.
-> +TEMP_ALERT_MIN - minimum battery temperature alert.
-> +TEMP_ALERT_MAX - maximum battery temperature alert.
->  TEMP_AMBIENT - ambient temperature.
-> -TEMP_AMBIENT_ALERT_MIN - minimum ambient temperature alert value in =
-milli centigrade.
-> -TEMP_AMBIENT_ALERT_MAX - maximum ambient temperature alert value in =
-milli centigrade.
-> +TEMP_AMBIENT_ALERT_MIN - minimum ambient temperature alert.
-> +TEMP_AMBIENT_ALERT_MAX - maximum ambient temperature alert.
-> =20
->  TIME_TO_EMPTY - seconds left for battery to be considered empty (i.e=
-=2E
->  while battery powers a load)
-
-
+Anton
