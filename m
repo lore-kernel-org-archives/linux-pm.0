@@ -1,83 +1,40 @@
-From: NeilBrown <neilb@suse.de>
-Subject: Re: Any news on Runtime Interpreted Power Sequences
-Date: Tue, 29 Oct 2013 11:10:37 +1100
-Message-ID: <20131029111037.6e59499d@notabene.brown>
-References: <20131025112224.6e5265e6@notabene.brown>
-	<526A0E71.100@nvidia.com>
-	<20131025183345.2b963e13@notabene.brown>
-	<526E3605.9080002@nvidia.com>
-	<20131028221004.3294c1ea@notabene.brown>
-	<20131028235344.GB16686@sirena.org.uk>
+From: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH] power_supply: Fix documentation for TEMP_*ALERT*
+ properties
+Date: Mon, 28 Oct 2013 20:13:33 -0700
+Message-ID: <20131029031333.GA4269@teo>
+References: <1382676798-27835-1-git-send-email-jonghwa3.lee@samsung.com>
+ <20131025231720.GB9015@teo>
+ <526DC554.30506@samsung.com>
+ <20131028052743.GA31070@teo>
+ <20131028172008.GA29544@animalcreek.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/b3VR9kQfisD2E9rJ_6neAcX"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:60707 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756691Ab3J2AKv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Oct 2013 20:10:51 -0400
-In-Reply-To: <20131028235344.GB16686@sirena.org.uk>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:46030 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756783Ab3J2DNh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Oct 2013 23:13:37 -0400
+Received: by mail-pa0-f54.google.com with SMTP id fa1so6307286pad.27
+        for <linux-pm@vger.kernel.org>; Mon, 28 Oct 2013 20:13:36 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20131028172008.GA29544@animalcreek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Alex Courbot <acourbot@nvidia.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thierry Reding <thierry.reding@avionic-design.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Mark A. Greer" <mgreer@animalcreek.com>
+Cc: jonghwa3.lee@samsung.com, linux-pm@vger.kernel.org, dwmw2@infradead.org, myungjoo.ham@samsung.com, cw00.choi@samsung.com, Ramakrishna Pallala <ramakrishna.pallala@intel.com>
 
---Sig_/b3VR9kQfisD2E9rJ_6neAcX
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Mon, Oct 28, 2013 at 10:20:08AM -0700, Mark A. Greer wrote:
+> On Sun, Oct 27, 2013 at 10:27:43PM -0700, Anton Vorontsov wrote:
+> > All temperatures should be in tenth degrees Celsius.
+> 
+> > bq24190_charger.c probably should be fixed.
+...
+> I missed the beginning of this thread so I may be missing something but
+> the bq24190_charger driver already uses tenth of degrees Celcius for
+> POWER_SUPPLY_PROP_TEMP_ALERT_MAX.  IIUC, that's correct so there's is
+> nothing to fix in the bq24190_charger.c driver, correct?
 
-On Mon, 28 Oct 2013 16:53:44 -0700 Mark Brown <broonie@kernel.org> wrote:
+Yup, correct. Thanks a lot for confirming!
 
-> On Mon, Oct 28, 2013 at 10:10:04PM +1100, NeilBrown wrote:
->=20
-> > I agree that this power-up sequence should be a property of the device.
-> > However until the device has been powered up, Linux doesn't know about =
-it.
-> > Neither a board file or a devicetree can (as far as I can tell), tell t=
-he
-> > MMC port that a particular card is attached.  Rather the host probes th=
-e card
-> > to see what it is.
-> > So there isn't any way for the device driver to get control at the
-> > appropriate time to effect the proper sequencing.
->=20
-> If it is a genuinely pluggable MMC slot then I'd expect the sequence to
-> be implementing whatever is required for standard MMC enumeration to
-> work.  If the device is a soldered down one with extra control (as is
-> quite common) then there shouldn't be a problem describing it?
-
-Yes, the device is soldered down and has a reset line that needs to be puls=
-ed
-low at about the same time that the MMC port enables the regulator.
-
-How do you propose that I describe this?  Which driver should know about the
-reset GPIO, how to I tell it about the GPIO, and which function should do t=
-he
-pulsing?
-
-Thanks,
-NeilBrown
-
---Sig_/b3VR9kQfisD2E9rJ_6neAcX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIVAwUBUm78/Tnsnt1WYoG5AQKXXQ/8DqthJiyg61Ukzd/1FwchfiarukJYfh7z
-VBGIem0lBRNGUblNIXRPSZmg0sQYsWiyhM8AT8QzZHfn2AV2Mt0nepjQt9RcxxpW
-6uNZmZQbRn09RGuU4gMQMJRkYaRhe/iyL0XeoTqAIKH3IgAShBqu/mfrQSG8xTp1
-wqh/4J1DXhxchNuMuyfaXQ7dI33OFkMCpNjrO34kU1I+kYgvBhNiXrg6ttYq5SRw
-CsuHmodHwKDBjG/tldpu+S3p2jRQD/QYDjoCbQzY35uPdKzqp7vy4bCw4y8NnBLb
-EmMnB4EpThvc9C3K1x3JXg0zErK6Pjibh+1sAm9YnsG8iFZQ26FhNHEIr5K9wSM8
-lezHtSP/7kgaYVoRW9Nw3HDLo4LCt5Iv/fwxfhO/jArNfYbEwMa3McYb6+sdtND0
-WDb4J7jld/H+0f3Tu5N958hzJyBosEJbmK0rzmSReop7duE9lV7W0rOFw9YUbZE6
-DYXbUhLi7ricOptrkef/1NwkLy3Vtzrvfz56ngz+OYAurMA7cHeo1y7tc+nP0N+R
-Br9WMsMyYwHNSaCZ8mSnyY1//dv7AI6eyosWKlFzai55tiKpjjpeW6FW/fv8GDnd
-hUvCbIoJMaYrxn/uSOyXyyAL575wlMn3ZsnLKelvJyYABIpseyu3wonSgyeC//Pc
-F78DGw0gEtg=
-=xA6D
------END PGP SIGNATURE-----
-
---Sig_/b3VR9kQfisD2E9rJ_6neAcX--
+Anton
