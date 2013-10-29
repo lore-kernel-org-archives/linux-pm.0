@@ -1,75 +1,34 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [GIT PULL]: CPUFreq: ARM Updates for 3.13
-Date: Tue, 29 Oct 2013 10:57:40 +0000
-Message-ID: <526F94A4.7080706@arm.com>
-References: <CAKohpombdzugLe0Q2NUttrapJuSqMDz41ECdxcHfh5dtPgiV0Q@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
+Date: Tue, 29 Oct 2013 17:03:14 +0530
+Message-ID: <CAKohponoxbV9P+0pWfEEi3sND7GbgHECsT=FRMCfeLcvOP9iDg@mail.gmail.com>
+References: <1382533461-31021-1-git-send-email-andrew@lunn.ch>
+	<CAKohpombg7mAmgxxvUg8kz1MaFwcycR1eL0UrgELY2WdGfrAag@mail.gmail.com>
+	<20131023135116.GC31126@lunn.ch>
+	<CAKohpokTgCz0c=PeaJHKiZEiYc0jPVq-vwkhP5pM0hh1-0QnLA@mail.gmail.com>
+	<20131023143657.GA31536@lunn.ch>
+	<CAKohpomedpd8XBPcdZX2vHy6b5=FMtbSVpNTG-eVLK1YPyPaMA@mail.gmail.com>
+	<20131028113104.GE27015@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpombdzugLe0Q2NUttrapJuSqMDz41ECdxcHfh5dtPgiV0Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:40359 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638Ab3J2LdP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 07:33:15 -0400
+Received: by mail-ob0-f178.google.com with SMTP id wm4so4980984obc.23
+        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2013 04:33:14 -0700 (PDT)
+In-Reply-To: <20131028113104.GE27015@lunn.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-Hi Viresh,
+On 28 October 2013 17:01, Andrew Lunn <andrew@lunn.ch> wrote:
+> I have tested this now. The dummy handler is required. Without it, it
+> seems like the WFI exits at the next timer tick, not immediately once
+> the cpufreq change has finished. I get poor numbers out of
+> cpufreq-bench without the handler.
 
-On 28/10/13 21:49, Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> I have pushed ARM cpufreq patches for v3.13, you can pull them from my
-> repo. Sorry if I am late...
-> 
-> The following changes since commit 959f58544b7f20c92d5eb43d1232c96c15c01bfb:
-> 
->   Linux 3.12-rc7 (2013-10-27 16:12:03 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.linaro.org/people/vireshk/linux.git cpufreq-next-for-3.13
-> 
-> for you to fetch changes up to 2332c7a7a8c1979de68429dcdcb125037ef35f4b:
-> 
->   cpufreq: arm_big_little: reconfigure switcher behavior at run time
-> (2013-10-29 03:18:41 +0530)
-> 
-> ----------------------------------------------------------------
-> Nicolas Pitre (1):
->       cpufreq: arm_big_little: reconfigure switcher behavior at run time
-> 
-> Sudeep KarkadaNagesha (5):
->       cpufreq: arm-big-little: use clk_get instead of clk_get_sys
-
-This is already pulled by Rafael, I can see it in linux-pm.git. So you can drop
-that.
-
->       ARM: vexpress/TC2: add support for CPU DVFS
->       ARM: vexpress/TC2: add cpu clock support
->       cpufreq: arm_big_little: add vexpress SPC interface driver
->       ARM: vexpress/TC2: register vexpress-spc cpufreq device
-> 
-
-I also see that the changes for renaming opp_* to dev_pm_opp_* are pulled in.
-This requires some fixup in patch 2 and 4 in this list. I can fixup by rebasing
-on Rafael's tree. Let me know if you need me to do that.
-
-Regards,
-Sudeep
-
-> Viresh Kumar (1):
->       cpufreq: arm_big_little: add in-kernel switching (IKS) support
-> 
->  arch/arm/mach-vexpress/Kconfig         |  12 +
->  arch/arm/mach-vexpress/Makefile        |   3 +-
->  arch/arm/mach-vexpress/spc.c           | 366 +++++++++++++++++++++++++++-
->  arch/arm/mach-vexpress/spc.h           |   2 +-
->  arch/arm/mach-vexpress/tc2_pm.c        |   7 +-
->  drivers/cpufreq/Kconfig.arm            |   8 +
->  drivers/cpufreq/Makefile               |   1 +
->  drivers/cpufreq/arm_big_little.c       | 420 ++++++++++++++++++++++++++++++---
->  drivers/cpufreq/arm_big_little.h       |   5 -
->  drivers/cpufreq/vexpress-spc-cpufreq.c |  69 ++++++
->  10 files changed, 853 insertions(+), 40 deletions(-)
->  create mode 100644 drivers/cpufreq/vexpress-spc-cpufreq.c
-> 
+Ahh.. that helps.. You can now put exactly this stuff in the comment over
+the handler..
