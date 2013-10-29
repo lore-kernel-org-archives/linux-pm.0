@@ -1,60 +1,70 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL REQUEST for Rafael] PM / devfreq: pull request bugfixes (resend)
-Date: Tue, 29 Oct 2013 07:17:10 +0000 (GMT)
-Message-ID: <23142243.105481383031030053.JavaMail.weblogic@epv6ml10>
-Reply-To: myungjoo.ham@samsung.com
+Subject: Re: [PATCH] devfreq: fix return value check in devfreq_init()
+Date: Tue, 29 Oct 2013 16:19:40 +0900
+Message-ID: <CAJ0PZbTossYacGOWLid4C-X0-zJ8G5f8kiOGJs=4uKArnfzeag@mail.gmail.com>
+References: <CAPgLHd9J4LL9SvxN1FeibN-gaCsoFu6o=PSGZDnzS4Ha1yN69w@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:39073 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604Ab3J2HRP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 03:17:15 -0400
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MVF00AFH5KKOIA0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 29 Oct 2013 16:17:10 +0900 (KST)
-MIME-version: 1.0
+Received: from mail-vb0-f52.google.com ([209.85.212.52]:48728 "EHLO
+	mail-vb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324Ab3J2HTk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 03:19:40 -0400
+Received: by mail-vb0-f52.google.com with SMTP id f13so6114093vbg.39
+        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2013 00:19:40 -0700 (PDT)
+In-Reply-To: <CAPgLHd9J4LL9SvxN1FeibN-gaCsoFu6o=PSGZDnzS4Ha1yN69w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
-Cc: "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, =?euc-kr?Q?=BF=EC=BB=F3=C1=A4?= <sangjung.woo@samsung.com>, "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>, "sachin.kamat@linaro.org" <sachin.kamat@linaro.org>, "yongjun@wei" <yongjun@wei.samsung.com>, "rjw@sisk.pl" <rjw@sisk.pl>
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: kyungmin.park@samsung.com, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBzb21lIGJ1Z2ZpeGVzIG9mIGRldmZyZXEuDQpJZiBp
-dCBpcyBub3QgdG9vIGxhdGUsIHBsZWFzZSBtZXJnZSBpbnRvIDMuMTItcmNYLg0KDQoNCg0KQ2hl
-ZXJzLA0KTXl1bmdKb28uDQoNCi0tLS0tQkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0tLS0NCkhh
-c2g6IFNIQTENCg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCA5NTlmNTg1NDRi
-N2YyMGM5MmQ1ZWI0M2QxMjMyYzk2YzE1YzAxYmZiOg0KDQogIExpbnV4IDMuMTItcmM3ICgyMDEz
-LTEwLTI3IDE2OjEyOjAzIC0wNzAwKQ0KDQphcmUgYXZhaWxhYmxlIGluIHRoZSBnaXQgcmVwb3Np
-dG9yeSBhdDoNCiAgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0
-L216eC9kZXZmcmVxLmdpdCBmb3ItcmFmYWVsDQoNCkRhbiBDYXJwZW50ZXIgKDEpOg0KICAgICAg
-UE0gLyBkZXZmcmVxOiBjcmVhdGVfZnJlZXphYmxlX3dvcmtxdWV1ZSgpIGRvZXNuJ3QgcmV0dXJu
-IGFuIEVSUl9QVFINCg0KU2FjaGluIEthbWF0ICg0KToNCiAgICAgIFBNIC8gZGV2ZnJlcTogRml4
-IGluY29ycmVjdCB1c2FnZSBvZiBJU19FUlJfT1JfTlVMTCBpbiBleHlub3M1X2J1cy5jDQogICAg
-ICBQTSAvIGRldmZyZXE6IFJlbW92ZSByZWR1bmRhbnQgcGxhdGZvcm1fc2V0X2RydmRhdGEoKSBp
-biBleHlub3M1X2J1cy5jDQogICAgICBQTSAvIGRldmZyZXE6IFVzZSBkZXZtXyogQVBJcyBpbiBl
-eHlub3M1X2J1cy5jDQogICAgICBQTSAvIGRldmZyZXE6IFJlbW92ZSBkdXBsaWNhdGUgaGVhZGVy
-IGZpbGUgaW5jbHVzaW9uIGluIGV4eW5vczVfYnVzLmMNCg0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZm
-cmVxLmMgICAgICAgICAgICB8ICAgIDQgKystLQ0KIGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5
-bm9zNV9idXMuYyB8ICAgMzEgKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KIDIgZmls
-ZXMgY2hhbmdlZCwgMTEgaW5zZXJ0aW9ucygrKSwgMjQgZGVsZXRpb25zKC0pDQotLS0tLUJFR0lO
-IFBHUCBTSUdOQVRVUkUtLS0tLQ0KVmVyc2lvbjogR251UEcgdjEuNC4xMSAoR05VL0xpbnV4KQ0K
-DQppUUljQkFFQkFnQUdCUUpTYmtsVEFBb0pFQk9odXJ2V0JvQ0tZYUFRQUpTRVl4bDFLQnE3VGR5
-SHhGNHBPcVE0DQpXRjRHYTh0TkVkYkJBanVxWmJtM1pJZHlnYkhKVlNxakE4SkpqcEF6SkNxdjJR
-VnkwWmNPellaUENrclJLZmVIDQpDMnpwYUVUdkJzbmk2dWxSU2dnblBCcThCZTFndzFEY1ZtNHdV
-WHYvQ3FsN0VQS1QzY25mV2tkSEZSSnJZQUtLDQp1TWcwSDMyRHlqazhjZkxEMmVYaE9GM0ZrZ2di
-MlBYRGdzM1FjemFObTdyM1FmVE5QbXR2d3NOS0ZYSWhxQUNtDQo0U0dPaEZzaElQVGhwTmpLVXBu
-b3NLbUM0ZlN0RE9SNk0zSUxiTUExVVFUOXNsU1BqU01HRUVOZFRYOVFuYWZnDQpPK0wvM1NQaWdG
-S0dsN0tOQlR0TFFGSUwxVlNha2tMbXBXK3ZlZnJKSXRHU040Qm0zcGNhaXZiSHk2dTJyQ05tDQpZ
-T2lPakJ3STNhQytYTGhmK015R0RFL0hkV3BtYS9rNHorb3I1WmtPR21HZVkzbm42akNsNkF6Q3VF
-Um9OdmdJDQpBeVJxQmMzSTFEWGxyOWE3MnAxaVViMkd5WG5NT1Z6ZGtxREpZODhNN0M3ZW53NHFD
-elVYN3lZS2cwbzlTVHVYDQpKTzdxU0c3RTdyT0pndDRIRE5oNmJrS2RiaXYvR0ZFUjFzV0pTZkQy
-U2pyQlNSTVlhNVJXS2RQbVNiYUJmZ2tXDQpDUjAyMysvOHdCUzFtS2dMZ295SXNyZkxubGZLWG9k
-WTZpK0hWOWZTU1Rwc005aUdYblgvYlpGZEJsMHZjdHY0DQprbis5akhxNDhtNEhVZmRHOFZVamxH
-dGJTU1o4OHpXZ1dKSmlxVWg2MmRxd3lFbFpIbUhkSnBuR3RLNFoxYitYDQpsZmd6dE91dG9BbFA3
-S21GVjI2dw0KPXpTeEwNCi0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQ0K
+On Fri, Oct 25, 2013 at 10:52 PM, Wei Yongjun <weiyj.lk@gmail.com> wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>
+> In case of error, the function create_freezable_workqueue() returns
+> NULL pointer not ERR_PTR(). The IS_ERR() test in the return value check
+> should be replaced with NULL test.
+>
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+
+I'm sorry but I've found that this is duplicated with a previous
+(pending) patch.
 
 
+
+Cheers,
+myungJoo.
+
+> ---
+>  drivers/devfreq/devfreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index c99c00d..22e5d2f 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -993,10 +993,10 @@ static int __init devfreq_init(void)
+>         }
+>
+>         devfreq_wq = create_freezable_workqueue("devfreq_wq");
+> -       if (IS_ERR(devfreq_wq)) {
+> +       if (!devfreq_wq) {
+>                 class_destroy(devfreq_class);
+>                 pr_err("%s: couldn't create workqueue\n", __FILE__);
+> -               return PTR_ERR(devfreq_wq);
+> +               return -ENOMEM;
+>         }
+>         devfreq_class->dev_groups = devfreq_groups;
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
+-- 
+MyungJoo Ham, Ph.D.
+System S/W Lab, S/W Center, Samsung Electronics
