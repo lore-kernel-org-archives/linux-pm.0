@@ -1,75 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL]: CPUFreq: ARM Updates for 3.13
-Date: Tue, 29 Oct 2013 13:13:25 +0100
-Message-ID: <4380344.Im7FREWokp@vostro.rjw.lan>
-References: <CAKohpombdzugLe0Q2NUttrapJuSqMDz41ECdxcHfh5dtPgiV0Q@mail.gmail.com> <51241428.cPzYVVdugk@vostro.rjw.lan> <526FA367.5020705@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH v3 0/4] ARM: vexpress/TC2: cpufreq support
+Date: Tue, 29 Oct 2013 12:18:36 +0000
+Message-ID: <1383049120-8336-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <526FA367.5020705@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep.KarkadaNagesha@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 29, 2013 12:00:39 PM Sudeep KarkadaNagesha wrote:
-> Hi Rafael,
-> 
-> On 29/10/13 12:05, Rafael J. Wysocki wrote:
-> > On Tuesday, October 29, 2013 10:57:40 AM Sudeep KarkadaNagesha wrote:
-> >> Hi Viresh,
-> >>
-> >> On 28/10/13 21:49, Viresh Kumar wrote:
-> >>> Hi Rafael,
-> >>>
-> >>> I have pushed ARM cpufreq patches for v3.13, you can pull them from my
-> >>> repo. Sorry if I am late...
-> >>>
-> >>> The following changes since commit 959f58544b7f20c92d5eb43d1232c96c15c01bfb:
-> >>>
-> >>>   Linux 3.12-rc7 (2013-10-27 16:12:03 -0700)
-> >>>
-> >>> are available in the git repository at:
-> >>>
-> >>>   git://git.linaro.org/people/vireshk/linux.git cpufreq-next-for-3.13
-> >>>
-> >>> for you to fetch changes up to 2332c7a7a8c1979de68429dcdcb125037ef35f4b:
-> >>>
-> >>>   cpufreq: arm_big_little: reconfigure switcher behavior at run time
-> >>> (2013-10-29 03:18:41 +0530)
-> >>>
-> >>> ----------------------------------------------------------------
-> >>> Nicolas Pitre (1):
-> >>>       cpufreq: arm_big_little: reconfigure switcher behavior at run time
-> >>>
-> >>> Sudeep KarkadaNagesha (5):
-> >>>       cpufreq: arm-big-little: use clk_get instead of clk_get_sys
-> >>
-> >> This is already pulled by Rafael, I can see it in linux-pm.git. So you can drop
-> >> that.
-> >>
-> >>>       ARM: vexpress/TC2: add support for CPU DVFS
-> >>>       ARM: vexpress/TC2: add cpu clock support
-> >>>       cpufreq: arm_big_little: add vexpress SPC interface driver
-> >>>       ARM: vexpress/TC2: register vexpress-spc cpufreq device
-> >>>
-> >>
-> >> I also see that the changes for renaming opp_* to dev_pm_opp_* are pulled in.
-> >> This requires some fixup in patch 2 and 4 in this list. I can fixup by rebasing
-> >> on Rafael's tree. Let me know if you need me to do that.
-> > 
-> > Yes, please rebase and send the patches to me directly (and CC to the list,
-> > of course).
-> > 
-> Ok, just to be sure, is below branch the right one to rebase ?
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Yes, it is.
+Hi Rafael,
 
-Thanks!
+The SPC(Serial Power Controller) on Versatile Express V2P-CA15_A7(TC2)
+not only controls low-power states, wake-up irqs and per-CPU jump addresses
+but also the CPU performance operating points which is essential to provide
+CPU DVFS. The M3 microcontroller can provide upto eight performance values,
+one set for each cluster (CA15 or CA7). Each of this value contains the
+frequency(kHz) and voltage(mV) at that performance level. It expects
+these performance level to be passed through the SPC PERF_LVL registers.
+    
+This patch series adds support to populate those OPPs, add them to the
+cpu devices and runtime programming of these performance levels through
+clock framework. It also adds a small interface cpufreq driver to validate
+the OPPs and register the arm_big_little cpufreq driver.
+
+Changes v2->v3:
+	- Dropped "cpufreq: arm-big-little: use clk_get instead of
+	  clk_get_sys" as it's already pulled in.
+	- Rebased on [1] to include opp_* to dev_pm_opp_* changes
+
+Changes v1->v2:
+	- Introduced ARCH_VEXPRESS_SPC config to make dependency
+	  selection cleaner
+	- Other minor review comments from Nico implemented
+
+Regards,
+Sudeep
+
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+linux-next
+
+Sudeep KarkadaNagesha (4):
+  ARM: vexpress/TC2: add support for CPU DVFS
+  ARM: vexpress/TC2: add cpu clock support
+  cpufreq: arm_big_little: add vexpress SPC interface driver
+  ARM: vexpress/TC2: register vexpress-spc cpufreq device
+
+ arch/arm/mach-vexpress/Kconfig         |  12 ++
+ arch/arm/mach-vexpress/Makefile        |   3 +-
+ arch/arm/mach-vexpress/spc.c           | 366 ++++++++++++++++++++++++++++++++-
+ arch/arm/mach-vexpress/spc.h           |   2 +-
+ arch/arm/mach-vexpress/tc2_pm.c        |   7 +-
+ drivers/cpufreq/Kconfig.arm            |   8 +
+ drivers/cpufreq/Makefile               |   1 +
+ drivers/cpufreq/vexpress-spc-cpufreq.c |  70 +++++++
+ 8 files changed, 464 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/cpufreq/vexpress-spc-cpufreq.c
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.1.2
+
