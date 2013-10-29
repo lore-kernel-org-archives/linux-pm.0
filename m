@@ -1,140 +1,75 @@
-From: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Subject: Re: [PATCH 00/19] Enable various Renesas drivers on all ARM platforms
-Date: Tue, 29 Oct 2013 10:46:18 +0100
-Message-ID: <4271216.r5b5qx4BLA@avalon>
-References: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-	<Pine.LNX.4.64.1310291009121.8404@axis700.grange>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [GIT PULL]: CPUFreq: ARM Updates for 3.13
+Date: Tue, 29 Oct 2013 10:57:40 +0000
+Message-ID: <526F94A4.7080706@arm.com>
+References: <CAKohpombdzugLe0Q2NUttrapJuSqMDz41ECdxcHfh5dtPgiV0Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <Pine.LNX.4.64.1310291009121.8404-0199iw4Nj15frtckUFj5Ag@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Guennadi Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Guennadi Liakhovetski <g.liakhovetski+renesas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Chris Ball <cjb-2X9k7bc8m7Mdnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <samuel-jcdQHdrhKHMdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Molton <ian-zdned+2MO1+9FHfhHBbuYA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-k
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpombdzugLe0Q2NUttrapJuSqMDz41ECdxcHfh5dtPgiV0Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Simon and Guennadi,
+Hi Viresh,
 
-On Tuesday 29 October 2013 10:12:17 Guennadi Liakhovetski wrote:
-> On Tue, 29 Oct 2013, Laurent Pinchart wrote:
-> > Hello,
-> > 
-> > This patch series, based on v3.12-rc7, prepares various Renesas drivers
-> > for migration to multiplatform kernels by enabling their compilation or
-> > otherwise fixing them on all ARM platforms. The patches are pretty
-> > straightforward and are described in their commit message.
-> > 
-> > I'd like to get all these patches merged in v3.14. As they will need to go
-> > through their respective subsystems' trees, I would appreciate if all
-> > maintainers involved could notify me when they merge patches from this
-> > series in their tree to help me tracking the merge status. I don't plan
-> > to send pull requests individually for these patches, and I will repost
-> > patches individually if changes are requested during review.
-> > 
-> > If you believe the issue should be solved in a different way (for instance
-> > by removing the architecture dependency completely) please reply to the
-> > cover letter to let other maintainers chime in.
+On 28/10/13 21:49, Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> Exactly this was my doubt. If we let these drivers build on all ARM
-> platforms... Maybe we should just let them build everywhere? Unless there
-> are real ARM dependencies. Maybe you could try to remove the restriction
-> and try to build them all on x86?
+> I have pushed ARM cpufreq patches for v3.13, you can pull them from my
+> repo. Sorry if I am late...
+> 
+> The following changes since commit 959f58544b7f20c92d5eb43d1232c96c15c01bfb:
+> 
+>   Linux 3.12-rc7 (2013-10-27 16:12:03 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.linaro.org/people/vireshk/linux.git cpufreq-next-for-3.13
+> 
+> for you to fetch changes up to 2332c7a7a8c1979de68429dcdcb125037ef35f4b:
+> 
+>   cpufreq: arm_big_little: reconfigure switcher behavior at run time
+> (2013-10-29 03:18:41 +0530)
+> 
+> ----------------------------------------------------------------
+> Nicolas Pitre (1):
+>       cpufreq: arm_big_little: reconfigure switcher behavior at run time
+> 
+> Sudeep KarkadaNagesha (5):
+>       cpufreq: arm-big-little: use clk_get instead of clk_get_sys
 
-My concern is that they might not build on some architectures for which I 
-don't have a cross-compiler. For instance not all architecture define ioread32 
-and iowrite32, which some drivers might rely on. What about depending on 
-SUPERH || ARM || COMPILE_TEST to start with, in order not to push compilation 
-breakages to mainline ?
+This is already pulled by Rafael, I can see it in linux-pm.git. So you can drop
+that.
 
-> > Cc: Chris Ball <cjb-2X9k7bc8m7Mdnm+yROfE0A@public.gmane.org>
-> > Cc: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>
-> > Cc: David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-> > Cc: dmaengine-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> > Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-> > Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-> > Cc: Guennadi Liakhovetski <g.liakhovetski+renesas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> > Cc: Ian Molton <ian-zdned+2MO1+9FHfhHBbuYA@public.gmane.org>
-> > Cc: iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
-> > Cc: Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>
-> > Cc: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> > Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> > Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> > Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> > Cc: Mauro Carvalho Chehab <m.chehab-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> > Cc: netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> > Cc: Samuel Ortiz <samuel-jcdQHdrhKHMdnm+yROfE0A@public.gmane.org>
-> > Cc: Sergei Shtylyov <sergei.shtylyov-M4DtvfQ/ZS1MRgGoP+s0PdBPR1lH4CV8@public.gmane.org>
-> > Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> > Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-> > Cc: Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> > Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-> > Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> > 
-> > Laurent Pinchart (19):
-> >   serial: sh-sci: Enable the driver on all ARM platforms
-> >   DMA: shdma: Enable the driver on all ARM platforms
-> >   i2c: sh_mobile: Enable the driver on all ARM platforms
-> >   input: sh_keysc: Enable the driver on all ARM platforms
-> >   iommu: shmobile: Enable the driver on all ARM platforms
-> >   i2c: rcar: Enable the driver on all ARM platforms
-> >   v4l: sh_vou: Enable the driver on all ARM platforms
-> >   mmc: sdhi: Enable the driver on all ARM platforms
-> >   mmc: sh_mmcif: Enable the driver on all ARM platforms
-> >   mtd: sh_flctl: Enable the driver on all ARM platforms
-> >   net: sh_eth: Set receive alignment correctly on all ARM platforms
-> >   irda: sh_irda: Enable the driver on all ARM platforms
-> >   pinctrl: sh-pfc: Enable the driver on all ARM platforms
-> >   pwm: pwm-renesas-tpu: Enable the driver on all ARM platforms
-> >   sh: intc: Enable the driver on all ARM platforms
-> >   spi: sh_msiof: Enable the driver on all ARM platforms
-> >   spi: sh_hspi: Enable the driver on all ARM platforms
-> >   thermal: rcar-thermal: Enable the driver on all ARM platforms
-> >   fbdev: sh-mobile-lcdcfb: Enable the driver on all ARM platforms
-> >  
-> >  drivers/dma/sh/Kconfig                | 2 +-
-> >  drivers/dma/sh/shdmac.c               | 6 +++---
-> >  drivers/i2c/busses/Kconfig            | 4 ++--
-> >  drivers/input/keyboard/Kconfig        | 2 +-
-> >  drivers/iommu/Kconfig                 | 2 +-
-> >  drivers/media/platform/Kconfig        | 2 +-
-> >  drivers/mmc/host/Kconfig              | 4 ++--
-> >  drivers/mmc/host/tmio_mmc_dma.c       | 2 +-
-> >  drivers/mtd/nand/Kconfig              | 2 +-
-> >  drivers/net/ethernet/renesas/sh_eth.c | 2 +-
-> >  drivers/net/ethernet/renesas/sh_eth.h | 2 +-
-> >  drivers/net/irda/Kconfig              | 2 +-
-> >  drivers/pinctrl/Makefile              | 2 +-
-> >  drivers/pinctrl/sh-pfc/Kconfig        | 2 +-
-> >  drivers/pwm/Kconfig                   | 2 +-
-> >  drivers/sh/intc/Kconfig               | 2 +-
-> >  drivers/spi/Kconfig                   | 4 ++--
-> >  drivers/thermal/Kconfig               | 2 +-
-> >  drivers/tty/serial/Kconfig            | 2 +-
-> >  drivers/video/Kconfig                 | 6 +++---
-> >  20 files changed, 27 insertions(+), 27 deletions(-)
+>       ARM: vexpress/TC2: add support for CPU DVFS
+>       ARM: vexpress/TC2: add cpu clock support
+>       cpufreq: arm_big_little: add vexpress SPC interface driver
+>       ARM: vexpress/TC2: register vexpress-spc cpufreq device
+> 
 
--- 
+I also see that the changes for renaming opp_* to dev_pm_opp_* are pulled in.
+This requires some fixup in patch 2 and 4 in this list. I can fixup by rebasing
+on Rafael's tree. Let me know if you need me to do that.
+
 Regards,
+Sudeep
 
-Laurent Pinchart
+> Viresh Kumar (1):
+>       cpufreq: arm_big_little: add in-kernel switching (IKS) support
+> 
+>  arch/arm/mach-vexpress/Kconfig         |  12 +
+>  arch/arm/mach-vexpress/Makefile        |   3 +-
+>  arch/arm/mach-vexpress/spc.c           | 366 +++++++++++++++++++++++++++-
+>  arch/arm/mach-vexpress/spc.h           |   2 +-
+>  arch/arm/mach-vexpress/tc2_pm.c        |   7 +-
+>  drivers/cpufreq/Kconfig.arm            |   8 +
+>  drivers/cpufreq/Makefile               |   1 +
+>  drivers/cpufreq/arm_big_little.c       | 420 ++++++++++++++++++++++++++++++---
+>  drivers/cpufreq/arm_big_little.h       |   5 -
+>  drivers/cpufreq/vexpress-spc-cpufreq.c |  69 ++++++
+>  10 files changed, 853 insertions(+), 40 deletions(-)
+>  create mode 100644 drivers/cpufreq/vexpress-spc-cpufreq.c
+> 
