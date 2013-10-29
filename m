@@ -1,95 +1,90 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: powersave governor runs programs faster and uses more power than
- performance governor
-Date: Tue, 29 Oct 2013 10:03:33 -0700
-Message-ID: <526FEA65.2030301@gmail.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>	<526A82CC.1040709@gmail.com>	<CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com>	<526A9092.5000800@gmail.com>	<CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>	<526AB813.1080708@verisign.com>	<CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com> <CAMeUXYvOTA4FXOo_mZKqeGnC_EhjBNMAsks41p0kx8YHXt9Cew@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Subject: Re: [PATCH 00/19] Enable various Renesas drivers on all ARM platforms
+Date: Tue, 29 Oct 2013 18:05:53 +0100
+Message-ID: <1577821.Q7gttkPE2J@avalon>
+References: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+	<20131029060427.GF11580@verge.net.au>
+	<20131029160449.GD16686@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAMeUXYvOTA4FXOo_mZKqeGnC_EhjBNMAsks41p0kx8YHXt9Cew@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Melanie Kambadur <melanie@cs.columbia.edu>, David C Niemi <dniemi@verisign.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============4918095343803587038=="
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <20131029160449.GD16686-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Guennadi Liakhovetski <g.liakhovetski+renesas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, ed.com-i9wRM+HIrmnmtl4Z8vJ8Kg761KYD1DLY@public.gmane.org, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Chris Ball <cjb-2X9k7bc8m7Mdnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <samuel-jcdQHdrhKHMdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Molton <ian-zdned+2MO1+9FHfhHBbuYA@public.gmane.org>, Simon
 List-Id: linux-pm@vger.kernel.org
 
-On 10/29/2013 09:27 AM, Melanie Kambadur wrote:
-> Apologies, I accidentally sent my last mail before finishing...
->
-> The available governors I have now are:
-> conservative ondemand userspace powersave performance.
->
 
-Only ondemand will have any active control of the P state requested.
-
-performance == highest P state (reported by ACPI) is requested
-powersave   == lowest P state (reported by ACPI) is requested
-userspace   == Allows the user select a single P state.
-
-With intel_pstate enabled
-performance == highest P state (enumerated form CPU) is requested.
-powersave   == Active control of the P state similar to ondemand.
-
-To get userspace governor behavior set
-/sys/devices/system/cpu/intel_pstate/{min, max}_perf_pct to the same
-values.
-
-/sys/devices/system/cpu/intel_pstate/no_turbo allows you to configure
-whether P states in the turbo range for your CPU will be selected.
+--===============4918095343803587038==
+Content-Type: multipart/signed; boundary="nextPart3771148.DUBN0oL5aB"; micalg="pgp-sha1"; protocol="application/pgp-signature"
 
 
-> Thankfully, I did not have to modify my kernel at all to get these.
-> Once I get the chance to run some tests, I will keep you posted as to
-> whether the governors behave as documented with this new
-> configuration.
->
-> Thanks again for the pointers and suggestions that got me this far!
->
-> Melanie
->
-> On Tue, Oct 29, 2013 at 12:25 PM, Melanie Kambadur
-> <melanie@cs.columbia.edu> wrote:
->> After getting the chance to modify the BIOS, it finally looks like I
->> have the options that I want in terms of drivers/governors.
->>
->> FYI, rmmod intel-pstate did not work (before or after modifying the
->> bios),
+--nextPart3771148.DUBN0oL5aB
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-intel_pstate is built-in only and not a module :-)
+Hi Mark,
 
->> and as I mentioned earlier, before updating the bios, setting
->> intel_pstate=disable erased most of my driver/governor options.
+On Tuesday 29 October 2013 09:04:49 Mark Brown wrote:
+> On Tue, Oct 29, 2013 at 03:04:27PM +0900, Simon Horman wrote:
+> > I think this is a step in a good direction.
+> > However, I think it would be even better if the architecture dependency
+> > was removed completely.
+> 
+> Yes, please.
 
-The cpufreq core creates the sysfs files as governors are registered
-with the core.  With intel_pstate=disable the driver will not register
-with the core so if no other drivers/governors register with the core
-the sysfs files will be missing.
+I've kept it for two reasons.
 
->> What
->> did work was to update the BIOS to OS control as suggested, and THEN
->> setting intel_pstate=disable gave me the acpi-cpufreq driver, along
->> with the following governors:
->>
->> On Fri, Oct 25, 2013 at 2:27 PM, David C Niemi <dniemi@verisign.com> wrote:
->>>
->>> I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
->>>
->>> speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
->>>
->>> It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
->>>
->>> Meanwhile, can you rmmod intel-pstate?
->>>
->>> DCN
->>>
->>> On 10/25/13 12:35, Melanie Kambadur wrote:
->>>> If I disable intel_pstate on my kernel command line, I end up with
->>>> access only to the speedstep and p4-clockmod drivers, and no
->>>> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
->>>> driver? I've tried a couple of things without success.
->>>>
->>>> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
->>>> sysadmin).
->>>> -Melanie
+The first one is that I can't compile-test all those drivers on all 
+architectures. The spi-sh-msiof driver, for instance, uses io(read|write)(16|
+32) which are not available on all architectures. There might be other similar 
+problems that I can't catch, and I don't want to introduce build breakages in 
+the kernel.
 
+The second reason is that, as the IP cores have never been used on anything 
+but SuperH and ARM, I don't like the idea of clobbering the config process 
+with drivers that are useless on the target architecture. Now that we have a 
+COMPILE_TEST Kconfig option, my preference would thus go to SUPERH || ARM || 
+COMPILE_TEST over no dependency at all.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+--nextPart3771148.DUBN0oL5aB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSb+r2AAoJEIkPb2GL7hl19w8H+gJj3zKx1Th48UvyGZV3QsU0
+AEq9ko2/u+rnJtA2vWyrc6Kfjp07Sa6vVOrY/5s9Mzg69jHQ96KzMTmwbv4/ExoW
+6Io3iKE6MdHBnnZ0xPRtNlaE6StlOt4Lv9+rQheJsomFgaRCmvKEaJLOB32bRkgb
+AfqFT8gu1OaKF72FhxwJ0Atl2kIJIMLZuaI0bMjRCaK2oDvV2NhufAUGRjuuMFFw
+/zQ0wxDIZTUQcu6OXEfa8CA5b5EvcW8v46a+BF+C7nVC4TF4wqgxlhJxxgXcd3mO
+pK7clYQn+8d2zpaS7CAMbXXip6r+AO83S8NjR/tDA5er/dyNJ+cskIb5kxNes34=
+=9Krm
+-----END PGP SIGNATURE-----
+
+--nextPart3771148.DUBN0oL5aB--
+
+
+--===============4918095343803587038==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4918095343803587038==--
