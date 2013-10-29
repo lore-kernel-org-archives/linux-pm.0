@@ -1,97 +1,79 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH v5 0/3] ARM: S5PV210: move to common clk framework
-Date: Tue, 29 Oct 2013 08:46:17 -0700
-Message-ID: <526FD849.9050000@samsung.com>
-References: <1380027009-2239-1-git-send-email-m.krawczuk@partner.samsung.com> <5264425E.4040301@samsung.com> <20131021121605.11944.74007@quantum> <1823897.8rOixkM4PW@amdc1227>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 00/19] Enable various Renesas drivers on all ARM platforms
+Date: Tue, 29 Oct 2013 09:04:49 -0700
+Message-ID: <20131029160449.GD16686@sirena.org.uk>
+References: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+ <20131029060427.GF11580@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f52.google.com ([209.85.213.52]:36157 "EHLO
-	mail-yh0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168Ab3J2PqZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 11:46:25 -0400
-In-Reply-To: <1823897.8rOixkM4PW@amdc1227>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============0643476374379051913=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20131029060427.GF11580@verge.net.au>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Simon Horman <horms@verge.net.au>
+Cc: linux-fbdev@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, Linus Walleij <linus.walleij@linaro.org>, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Vinod Koul <vinod.koul@intel.com>, Joerg Roedel <joro@8bytes.org>, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Chris Ball <cjb@laptop.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>, linux-pm@vger.kernel.org, Ian Molton <ian@mnementh.co.uk>, linux-arm-ker
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, mark.rutland@arm.com, swarren@wwwdotorg.org, linux-doc@vger.kernel.org, viresh.kumar@linaro.org, Tomasz Figa <tomasz.figa@gmail.com>, s.nawrocki@samsung.com, m.szyprowski@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, Mateusz Krawczuk <m.krawczuk@partner.samsung.com>, linux-pm@vger.kernel.org, kyungmin.park@samsung.com, cpufreq@vger.kernel.org, thomas.abraham@linaro.org, t.stanislaws@samsung.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, rob.herring@calxeda.com, rjw@sisk.pl, ben-linux@fluff.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, rob@landley.net
 
-On 10/29/13 04:42, Tomasz Figa wrote:
-> Hi Kukjin, Mike,
->
-> On Monday 21 of October 2013 05:16:05 Mike Turquette wrote:
->> Quoting Kukjin Kim (2013-10-20 13:51:42)
->>> On 10/20/13 01:03, Tomasz Figa wrote:
->>>> Hi Mike, Kukjin, Rafael,
->>>>
->>>> On Tuesday 24 of September 2013 14:50:06 Mateusz Krawczuk wrote:
->>>>> This patch series is the new s5pv210 clock implementation
->>>>> (using common clk framework).
->>>>>
->>>>> This implementation is compatible with device tree definition and board
->>>>> files.
->>>>>
->>>>> This patch series is based on linux-next and has been tested on goni and
->>>>> aquila
->>>>> boards using board file.
->>>>>
->>>>> Since v4:
->>>>> Corrected mux flags for finpll.
->>>>>
->>>>> Since v3:
->>>>>
->>>>> Replace s5pv210_clk_register_finpll, by creating mux finpll
->>>>> with xusbxti and xxti as parrents.
->>>>>
->>>>>
->>>>> Mateusz Krawczuk (3):
->>>>>     clk: samsung: Add clock driver for s5pc110/s5pv210
->>>>>     Cpufreq: s5pv210 cpufreq fixes for CCF
->>>>>     ARM: s5pv210: Migrate clock handling to Common Clock Framework
->>>>>
->>>>>    .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
->>>>>    arch/arm/mach-s5pv210/Kconfig                      |   9 +
->>>>>    arch/arm/mach-s5pv210/Makefile                     |   4 +-
->>>>>    arch/arm/mach-s5pv210/common.c                     |  17 +
->>>>>    arch/arm/mach-s5pv210/common.h                     |  10 +
->>>>>    arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
->>>>>    arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
->>>>>    arch/arm/plat-samsung/Kconfig                      |   2 +-
->>>>>    drivers/clk/samsung/Makefile                       |   3 +
->>>>>    drivers/clk/samsung/clk-s5pv210.c                  | 673
->>>>> +++++++++++++++++++++ drivers/cpufreq/s5pv210-cpufreq.c
->>>>>    |   6 +-
->>>>>    include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
->>>>>    12 files changed, 1019 insertions(+), 8 deletions(-)
->>>>>    create mode 100644
->>>>> Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
->>>>> create mode 100644 drivers/clk/samsung/clk-s5pv210.c
->>>>>    create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
->>>>
->>>> I believe this series is reasonable to be applied. Could we agree on
->>>> the tree it would go through and get all tne required acks?
->>>>
->>>> Best regards,
->>>> Tomasz
->>>
->>> I agree.
->>>
->>> Mike, how do you think the common clk stuff for s5pv210?
->>
->> Clock code looks good to me. Which tree do you want to take it through?
->
-> Seems like we just missed another kernel release. It's a bit sad that it's
-> happening so often for Samsung patches...
->
 
-Tomasz, sorry about that, I couldn't end up the stuff before attending 
-ARM Kernel Summit, but in my opinion, this series would be merged for 
-upcoming merge window via clk tree if Mike is fine because there is no 
-conflicts with Samsung tree.
+--===============0643476374379051913==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="2iBwrppp/7QCDedR"
+Content-Disposition: inline
 
-Mike, how do you think? If you're OK, please pick this into your tree 
-with my ack.
 
-Thanks,
-Kukjin
+--2iBwrppp/7QCDedR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Tue, Oct 29, 2013 at 03:04:27PM +0900, Simon Horman wrote:
+
+> I think this is a step in a good direction.
+> However, I think it would be even better if the architecture dependency was
+> removed completely.
+
+Yes, please.
+
+--2iBwrppp/7QCDedR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSb9yZAAoJELSic+t+oim9bYwP/iUUXI14zyW5LzIhwP6LBlEr
+FOYrZVwQxqUbnA4hDctQCmrA9VikBRNUmlDoUx+xxNNRLd7Zelm2iC8xQh4U1JJX
+9pJ/yv1FHi4EBNmWRK7gL9RXEUM7U4Jt1/nPgW64Kw7ooMwsKmMssrDmwm8xorRD
+iFvd4kY6ZiYz1m5Qvn1rQM05qskN1xGR0jdaxhH8DMCkhA0UyGhLoeFWXDy68T1A
+fsJQrF5mRjO/DNqgI/DqetC8gGy1gjyqETra6Ah730luxYN8bZxbmmbjBc4pYDtY
+7pjRnqVjPMCG+seGgAzlCkgk8t56mHfkrzSRnF0IZ4q5PW4uY1QpzuEs2vB3SI/A
+bS3SD8i71t88jsQ0G/skXAbme0Rl2J+7al3DDMJpUf8yCbFQTZoeFSbe75PgA5Dl
+C6D/7nuK8BIQw5/SV+iCVFN99nKXvJZHFc8wdB7YbXnSQCUdmCLnbkkjYS7HxkQ/
+4OB+XjOgVcGeDCjJrL38LrarJIu588qHe6Cz+8wlJvmV/B9pRWwsXNz2OzU8gSPp
+9RKDNPrpaF+aEoYONBJkHIJf8nqBKipk4xFOmOVxEoMA8oGCAAKltM/ktJdgdfir
+Kb+MgiqubYkjFUFJ08WBqs+L63H4mHQ3JcYAw9NsAiKf1XKJuwdIwddhPlrgTvrQ
+HY0P0bFfzdsgfQfvQ5gC
+=3XLW
+-----END PGP SIGNATURE-----
+
+--2iBwrppp/7QCDedR--
+
+
+--===============0643476374379051913==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============0643476374379051913==--
