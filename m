@@ -1,138 +1,60 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 00/19] Enable various Renesas drivers on all ARM platforms
-Date: Tue, 29 Oct 2013 15:04:27 +0900
-Message-ID: <20131029060427.GF11580@verge.net.au>
-References: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQUEST for Rafael] PM / devfreq: pull request bugfixes (resend)
+Date: Tue, 29 Oct 2013 07:17:10 +0000 (GMT)
+Message-ID: <23142243.105481383031030053.JavaMail.weblogic@epv6ml10>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, Linus Walleij <linus.walleij@linaro.org>, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>, Joerg Roedel <joro@8bytes.org>, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Chris Ball <cjb@laptop.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>, linux-pm@vger.kernel.org, Ian Molton <ian@mnementh.co.uk>, Mark Brown <broonie@kernel.org>, linux-arm-kernel@lists.infradead.org, Ser
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:39073 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604Ab3J2HRP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 03:17:15 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MVF00AFH5KKOIA0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 29 Oct 2013 16:17:10 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+Cc: "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, =?euc-kr?Q?=BF=EC=BB=F3=C1=A4?= <sangjung.woo@samsung.com>, "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>, "sachin.kamat@linaro.org" <sachin.kamat@linaro.org>, "yongjun@wei" <yongjun@wei.samsung.com>, "rjw@sisk.pl" <rjw@sisk.pl>
 
-On Tue, Oct 29, 2013 at 12:46:48AM +0100, Laurent Pinchart wrote:
-> Hello,
-> 
-> This patch series, based on v3.12-rc7, prepares various Renesas drivers
-> for migration to multiplatform kernels by enabling their compilation or
-> otherwise fixing them on all ARM platforms. The patches are pretty
-> straightforward and are described in their commit message.
-> 
-> I'd like to get all these patches merged in v3.14. As they will need to go
-> through their respective subsystems' trees, I would appreciate if all
-> maintainers involved could notify me when they merge patches from this series
-> in their tree to help me tracking the merge status. I don't plan to send pull
-> requests individually for these patches, and I will repost patches
-> individually if changes are requested during review.
-> 
-> If you believe the issue should be solved in a different way (for instance by
-> removing the architecture dependency completely) please reply to the cover
-> letter to let other maintainers chime in.
+RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBzb21lIGJ1Z2ZpeGVzIG9mIGRldmZyZXEuDQpJZiBp
+dCBpcyBub3QgdG9vIGxhdGUsIHBsZWFzZSBtZXJnZSBpbnRvIDMuMTItcmNYLg0KDQoNCg0KQ2hl
+ZXJzLA0KTXl1bmdKb28uDQoNCi0tLS0tQkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0tLS0NCkhh
+c2g6IFNIQTENCg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCA5NTlmNTg1NDRi
+N2YyMGM5MmQ1ZWI0M2QxMjMyYzk2YzE1YzAxYmZiOg0KDQogIExpbnV4IDMuMTItcmM3ICgyMDEz
+LTEwLTI3IDE2OjEyOjAzIC0wNzAwKQ0KDQphcmUgYXZhaWxhYmxlIGluIHRoZSBnaXQgcmVwb3Np
+dG9yeSBhdDoNCiAgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0
+L216eC9kZXZmcmVxLmdpdCBmb3ItcmFmYWVsDQoNCkRhbiBDYXJwZW50ZXIgKDEpOg0KICAgICAg
+UE0gLyBkZXZmcmVxOiBjcmVhdGVfZnJlZXphYmxlX3dvcmtxdWV1ZSgpIGRvZXNuJ3QgcmV0dXJu
+IGFuIEVSUl9QVFINCg0KU2FjaGluIEthbWF0ICg0KToNCiAgICAgIFBNIC8gZGV2ZnJlcTogRml4
+IGluY29ycmVjdCB1c2FnZSBvZiBJU19FUlJfT1JfTlVMTCBpbiBleHlub3M1X2J1cy5jDQogICAg
+ICBQTSAvIGRldmZyZXE6IFJlbW92ZSByZWR1bmRhbnQgcGxhdGZvcm1fc2V0X2RydmRhdGEoKSBp
+biBleHlub3M1X2J1cy5jDQogICAgICBQTSAvIGRldmZyZXE6IFVzZSBkZXZtXyogQVBJcyBpbiBl
+eHlub3M1X2J1cy5jDQogICAgICBQTSAvIGRldmZyZXE6IFJlbW92ZSBkdXBsaWNhdGUgaGVhZGVy
+IGZpbGUgaW5jbHVzaW9uIGluIGV4eW5vczVfYnVzLmMNCg0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZm
+cmVxLmMgICAgICAgICAgICB8ICAgIDQgKystLQ0KIGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5
+bm9zNV9idXMuYyB8ICAgMzEgKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KIDIgZmls
+ZXMgY2hhbmdlZCwgMTEgaW5zZXJ0aW9ucygrKSwgMjQgZGVsZXRpb25zKC0pDQotLS0tLUJFR0lO
+IFBHUCBTSUdOQVRVUkUtLS0tLQ0KVmVyc2lvbjogR251UEcgdjEuNC4xMSAoR05VL0xpbnV4KQ0K
+DQppUUljQkFFQkFnQUdCUUpTYmtsVEFBb0pFQk9odXJ2V0JvQ0tZYUFRQUpTRVl4bDFLQnE3VGR5
+SHhGNHBPcVE0DQpXRjRHYTh0TkVkYkJBanVxWmJtM1pJZHlnYkhKVlNxakE4SkpqcEF6SkNxdjJR
+VnkwWmNPellaUENrclJLZmVIDQpDMnpwYUVUdkJzbmk2dWxSU2dnblBCcThCZTFndzFEY1ZtNHdV
+WHYvQ3FsN0VQS1QzY25mV2tkSEZSSnJZQUtLDQp1TWcwSDMyRHlqazhjZkxEMmVYaE9GM0ZrZ2di
+MlBYRGdzM1FjemFObTdyM1FmVE5QbXR2d3NOS0ZYSWhxQUNtDQo0U0dPaEZzaElQVGhwTmpLVXBu
+b3NLbUM0ZlN0RE9SNk0zSUxiTUExVVFUOXNsU1BqU01HRUVOZFRYOVFuYWZnDQpPK0wvM1NQaWdG
+S0dsN0tOQlR0TFFGSUwxVlNha2tMbXBXK3ZlZnJKSXRHU040Qm0zcGNhaXZiSHk2dTJyQ05tDQpZ
+T2lPakJ3STNhQytYTGhmK015R0RFL0hkV3BtYS9rNHorb3I1WmtPR21HZVkzbm42akNsNkF6Q3VF
+Um9OdmdJDQpBeVJxQmMzSTFEWGxyOWE3MnAxaVViMkd5WG5NT1Z6ZGtxREpZODhNN0M3ZW53NHFD
+elVYN3lZS2cwbzlTVHVYDQpKTzdxU0c3RTdyT0pndDRIRE5oNmJrS2RiaXYvR0ZFUjFzV0pTZkQy
+U2pyQlNSTVlhNVJXS2RQbVNiYUJmZ2tXDQpDUjAyMysvOHdCUzFtS2dMZ295SXNyZkxubGZLWG9k
+WTZpK0hWOWZTU1Rwc005aUdYblgvYlpGZEJsMHZjdHY0DQprbis5akhxNDhtNEhVZmRHOFZVamxH
+dGJTU1o4OHpXZ1dKSmlxVWg2MmRxd3lFbFpIbUhkSnBuR3RLNFoxYitYDQpsZmd6dE91dG9BbFA3
+S21GVjI2dw0KPXpTeEwNCi0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQ0K
 
-I think this is a step in a good direction.
-However, I think it would be even better if the architecture dependency was
-removed completely.
 
-> 
-> Cc: Chris Ball <cjb@laptop.org>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: dmaengine@vger.kernel.org
-> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-> Cc: Ian Molton <ian@mnementh.co.uk>
-> Cc: iommu@lists.linux-foundation.org
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Joerg Roedel <joro@8bytes.org>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-i2c@vger.kernel.org
-> Cc: linux-input@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-media@vger.kernel.org
-> Cc: linux-mmc@vger.kernel.org
-> Cc: linux-mtd@lists.infradead.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-pwm@vger.kernel.org
-> Cc: linux-serial@vger.kernel.org
-> Cc: linux-spi@vger.kernel.org
-> Cc: Magnus Damm <magnus.damm@gmail.com>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Mauro Carvalho Chehab <m.chehab@samsung.com>
-> Cc: netdev@vger.kernel.org
-> Cc: Samuel Ortiz <samuel@sortiz.org>
-> Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Vinod Koul <vinod.koul@intel.com>
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> 
-> Laurent Pinchart (19):
->   serial: sh-sci: Enable the driver on all ARM platforms
->   DMA: shdma: Enable the driver on all ARM platforms
->   i2c: sh_mobile: Enable the driver on all ARM platforms
->   input: sh_keysc: Enable the driver on all ARM platforms
->   iommu: shmobile: Enable the driver on all ARM platforms
->   i2c: rcar: Enable the driver on all ARM platforms
->   v4l: sh_vou: Enable the driver on all ARM platforms
->   mmc: sdhi: Enable the driver on all ARM platforms
->   mmc: sh_mmcif: Enable the driver on all ARM platforms
->   mtd: sh_flctl: Enable the driver on all ARM platforms
->   net: sh_eth: Set receive alignment correctly on all ARM platforms
->   irda: sh_irda: Enable the driver on all ARM platforms
->   pinctrl: sh-pfc: Enable the driver on all ARM platforms
->   pwm: pwm-renesas-tpu: Enable the driver on all ARM platforms
->   sh: intc: Enable the driver on all ARM platforms
->   spi: sh_msiof: Enable the driver on all ARM platforms
->   spi: sh_hspi: Enable the driver on all ARM platforms
->   thermal: rcar-thermal: Enable the driver on all ARM platforms
->   fbdev: sh-mobile-lcdcfb: Enable the driver on all ARM platforms
-> 
->  drivers/dma/sh/Kconfig                | 2 +-
->  drivers/dma/sh/shdmac.c               | 6 +++---
->  drivers/i2c/busses/Kconfig            | 4 ++--
->  drivers/input/keyboard/Kconfig        | 2 +-
->  drivers/iommu/Kconfig                 | 2 +-
->  drivers/media/platform/Kconfig        | 2 +-
->  drivers/mmc/host/Kconfig              | 4 ++--
->  drivers/mmc/host/tmio_mmc_dma.c       | 2 +-
->  drivers/mtd/nand/Kconfig              | 2 +-
->  drivers/net/ethernet/renesas/sh_eth.c | 2 +-
->  drivers/net/ethernet/renesas/sh_eth.h | 2 +-
->  drivers/net/irda/Kconfig              | 2 +-
->  drivers/pinctrl/Makefile              | 2 +-
->  drivers/pinctrl/sh-pfc/Kconfig        | 2 +-
->  drivers/pwm/Kconfig                   | 2 +-
->  drivers/sh/intc/Kconfig               | 2 +-
->  drivers/spi/Kconfig                   | 4 ++--
->  drivers/thermal/Kconfig               | 2 +-
->  drivers/tty/serial/Kconfig            | 2 +-
->  drivers/video/Kconfig                 | 6 +++---
->  20 files changed, 27 insertions(+), 27 deletions(-)
-> 
-> -- 
-> Regards,
-> 
-> Laurent Pinchart
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
