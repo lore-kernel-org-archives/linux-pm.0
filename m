@@ -1,75 +1,45 @@
-From: Melanie Kambadur <melanie@cs.columbia.edu>
-Subject: Re: powersave governor runs programs faster and uses more power than
- performance governor
-Date: Tue, 29 Oct 2013 12:27:19 -0400
-Message-ID: <CAMeUXYvOTA4FXOo_mZKqeGnC_EhjBNMAsks41p0kx8YHXt9Cew@mail.gmail.com>
-References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
-	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
-	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
-	<526A82CC.1040709@gmail.com>
-	<CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com>
-	<526A9092.5000800@gmail.com>
-	<CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
-	<526AB813.1080708@verisign.com>
-	<CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 00/19] Enable various Renesas drivers on all ARM platforms
+Date: Tue, 29 Oct 2013 09:28:48 -0700
+Message-ID: <CACRpkdbKk=n=6tU=9fD05Gu9utpQSZ1qrK7EqLf5qwaV7eHBWA@mail.gmail.com>
+References: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f53.google.com ([209.85.212.53]:42849 "EHLO
-	mail-vb0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732Ab3J2Q1U convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 12:27:20 -0400
-In-Reply-To: <CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org>
+In-Reply-To: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mtd>,
+ <mailto:linux-mtd-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mtd/>
+List-Post: <mailto:linux-mtd@lists.infradead.org>
+List-Help: <mailto:linux-mtd-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mtd>,
+ <mailto:linux-mtd-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-mtd" <linux-mtd-bounces@lists.infradead.org>
+Errors-To: linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org
+To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Vinod Koul <vinod.koul@intel.com>, Joerg Roedel <joro@8bytes.org>, Wolfram Sang <wsa@the-dreams.de>, Magnus Damm <magnus.damm@gmail.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Chris Ball <cjb@laptop.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>"linux-pwm@vger.kernel.org" <linu>
 List-Id: linux-pm@vger.kernel.org
-To: David C Niemi <dniemi@verisign.com>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Apologies, I accidentally sent my last mail before finishing...
+On Mon, Oct 28, 2013 at 4:46 PM, Laurent Pinchart
+<laurent.pinchart+renesas@ideasonboard.com> wrote:
 
-The available governors I have now are:
-conservative ondemand userspace powersave performance.
+> If you believe the issue should be solved in a different way (for instance by
+> removing the architecture dependency completely) please reply to the cover
+> letter to let other maintainers chime in.
 
-Thankfully, I did not have to modify my kernel at all to get these.
-Once I get the chance to run some tests, I will keep you posted as to
-whether the governors behave as documented with this new
-configuration.
+I have no real opinions on whether this is a good itermediate step towards
+complete arch-independence or not, but I just noticed that you still
+have the <mach/*> hierarchy in mach-shmobile/include/mach/*, and
+grep:ing around this seems totally unnecessary, I think it would be
+easy to produce a patch set eliminating <mach/*> from shmobile.
 
-Thanks again for the pointers and suggestions that got me this far!
+(Usually we will just move all the headers down into the
+mach-shmobile folder.)
 
-Melanie
+Yours,
+Linus Walleij
 
-On Tue, Oct 29, 2013 at 12:25 PM, Melanie Kambadur
-<melanie@cs.columbia.edu> wrote:
-> After getting the chance to modify the BIOS, it finally looks like I
-> have the options that I want in terms of drivers/governors.
->
-> FYI, rmmod intel-pstate did not work (before or after modifying the
-> bios), and as I mentioned earlier, before updating the bios, setting
-> intel_pstate=disable erased most of my driver/governor options.  What
-> did work was to update the BIOS to OS control as suggested, and THEN
-> setting intel_pstate=disable gave me the acpi-cpufreq driver, along
-> with the following governors:
->
-> On Fri, Oct 25, 2013 at 2:27 PM, David C Niemi <dniemi@verisign.com> wrote:
->>
->> I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
->>
->> speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
->>
->> It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
->>
->> Meanwhile, can you rmmod intel-pstate?
->>
->> DCN
->>
->> On 10/25/13 12:35, Melanie Kambadur wrote:
->>> If I disable intel_pstate on my kernel command line, I end up with
->>> access only to the speedstep and p4-clockmod drivers, and no
->>> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
->>> driver? I've tried a couple of things without success.
->>>
->>> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
->>> sysadmin).
->>> -Melanie
+______________________________________________________
+Linux MTD discussion mailing list
+http://lists.infradead.org/mailman/listinfo/linux-mtd/
