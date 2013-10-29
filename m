@@ -1,71 +1,54 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: Any news on Runtime Interpreted Power Sequences
-Date: Tue, 29 Oct 2013 09:18:16 -0700
-Message-ID: <20131029161816.GE16686@sirena.org.uk>
-References: <20131025112224.6e5265e6@notabene.brown>
- <526A0E71.100@nvidia.com>
- <20131025183345.2b963e13@notabene.brown>
- <526E3605.9080002@nvidia.com>
- <20131028221004.3294c1ea@notabene.brown>
- <20131028235344.GB16686@sirena.org.uk>
- <20131029111037.6e59499d@notabene.brown>
+From: Melanie Kambadur <melanie@cs.columbia.edu>
+Subject: Re: powersave governor runs programs faster and uses more power than
+ performance governor
+Date: Tue, 29 Oct 2013 12:25:32 -0400
+Message-ID: <CAMeUXYtOURtQ4_iH4meuua2CWDiAFrKNYE9Zz2irYhAnt9AP8A@mail.gmail.com>
+References: <CAMeUXYuuM4LS2qAhhvQi8VG1bK4eiZjjTikchgHzeqi2EX6=bw@mail.gmail.com>
+	<CAOh2x==D_niGhi-fSSW18WQZjEQU+FngvVCB_K+y+3BRfaz96A@mail.gmail.com>
+	<CAMeUXYuQobSo7Au07V2KBE6=mAqXW1Hj--G92FP0X1H97Kv8OA@mail.gmail.com>
+	<526A82CC.1040709@gmail.com>
+	<CAMeUXYvP+CKZKeU4WDeNSOJVDoe1hfB8G7k1fp7wG-wC2WeBUg@mail.gmail.com>
+	<526A9092.5000800@gmail.com>
+	<CAMeUXYv2d_1AUpAH7vBRisBnP6dKTrd3J-i5qYk8W-gZH1EdMg@mail.gmail.com>
+	<526AB813.1080708@verisign.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="lteA1dqeVaWQ9QQl"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:54337 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033Ab3J2QS6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 12:18:58 -0400
-Content-Disposition: inline
-In-Reply-To: <20131029111037.6e59499d@notabene.brown>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <526AB813.1080708@verisign.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: David C Niemi <dniemi@verisign.com>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neilb@suse.de>
-Cc: Alex Courbot <acourbot@nvidia.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thierry Reding <thierry.reding@avionic-design.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+After getting the chance to modify the BIOS, it finally looks like I
+have the options that I want in terms of drivers/governors.
 
---lteA1dqeVaWQ9QQl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+FYI, rmmod intel-pstate did not work (before or after modifying the
+bios), and as I mentioned earlier, before updating the bios, setting
+intel_pstate=disable erased most of my driver/governor options.  What
+did work was to update the BIOS to OS control as suggested, and THEN
+setting intel_pstate=disable gave me the acpi-cpufreq driver, along
+with the following governors:
 
-On Tue, Oct 29, 2013 at 11:10:37AM +1100, NeilBrown wrote:
-
-> Yes, the device is soldered down and has a reset line that needs to be pulsed
-> low at about the same time that the MMC port enables the regulator.
-
-> How do you propose that I describe this?  Which driver should know about the
-> reset GPIO, how to I tell it about the GPIO, and which function should do the
-> pulsing?
-
-I'd expect the driver for the device to know about this, obviously
-depending on what this actually does it might want to use this at
-runtime (for example, putting the device into reset to minimise power
-while it's idle).  We really need a generic way for devices such as this
-on enumerable buses to run before the current probe() in order to allow
-them to manage their power up sequences in embedded systems, this is
-*far* from a unique situation.
-
---lteA1dqeVaWQ9QQl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSb9/EAAoJELSic+t+oim9oLMP/jg2V5UyqiBEWhktPY5+iE0U
-xi8EQMpT4HShmUPa9LbEw9dV5MkKe2R/amXXys64fO8YLHGib4hxO2bk5zWmzDME
-s9GwriQuQ5h7HEz+bjny+G4omDPYu0PwSZsX9u2i61XqbL+gMbIM+DjeeU4Lx9kC
-sZIDRIY4BU1uhdJFIDtg+eXHv429NKYduf7VwM2w84YJgHwyslC4UzgkyE+3UMv1
-suQRbXWU2x5UXed0A7p38FU2lIXbKD5+XkF1BuVc/7utz/1g5T2MmNz9v2bA+5eF
-u5T/iuZiowzRISd5Txr/1paAG4VaDQ1UFD+Ms9vEFWfuKPbBmAKrhDp+rH71ZD+U
-4zEgQ/9+v+foufW2orY/4Occ9axRniQGh2C8F6gJ2Yo+F+X5sfqL53R7WqKQlXiL
-kklMo1+drF0XG7o92Yxdq0gWyF7t/5CqD1NdCO48g2W36d2twyB7SCqhtuFCzp60
-khzc8WByCDGW9pn6pRKmxQ0ivM5ejQiXTFdow+3zT4v9pcsA8etL+SiVu+RAeLvg
-FWlTiILY3E/iVESfmL/jIC8+glfoLlh6Mrwro5cmTZ0kh9prH/FbCU6OMDDE8FLt
-aVaSTEcDoKNRx2IRhL0T5LxnG9Wl5DuRAiWI8r2TmthwmgmhvzJTDQYt694QKEMY
-6Cuwhl6ZIJoCd4tHWwr6
-=L3us
------END PGP SIGNATURE-----
-
---lteA1dqeVaWQ9QQl--
+On Fri, Oct 25, 2013 at 2:27 PM, David C Niemi <dniemi@verisign.com> wrote:
+>
+> I'm pretty sure that Dell's Active Power Controller would supersede what the intel-pstate driver/governor is trying to do as well.  I doubt you will have enough control over the box to do meaningful tests until you can get the BIOS power setting changed to "OS Control".
+>
+> speedstep and p4-clockmod are both ancient.  But it is all moot if the BIOS won't let the OS manage the CPU.
+>
+> It is possible your distribution is a bit too stripped down.  You might want to build and install your own kernel so you can make sure all the sensible options are in it.  But it is also possible acpi-cpufreq is built in so you don't see it as a module, and it is not possible to activate it due to the Active Power Controller getting in the way.
+>
+> Meanwhile, can you rmmod intel-pstate?
+>
+> DCN
+>
+> On 10/25/13 12:35, Melanie Kambadur wrote:
+>> If I disable intel_pstate on my kernel command line, I end up with
+>> access only to the speedstep and p4-clockmod drivers, and no
+>> acpi-cpufreq driver.  Is there a way to download the acpi-cpufreq
+>> driver? I've tried a couple of things without success.
+>>
+>> BTW, I haven't gotten the chance to modify the BIOS yet (waiting on a
+>> sysadmin).
+>> -Melanie
