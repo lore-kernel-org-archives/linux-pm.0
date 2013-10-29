@@ -1,70 +1,43 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH] devfreq: fix return value check in devfreq_init()
-Date: Tue, 29 Oct 2013 16:19:40 +0900
-Message-ID: <CAJ0PZbTossYacGOWLid4C-X0-zJ8G5f8kiOGJs=4uKArnfzeag@mail.gmail.com>
-References: <CAPgLHd9J4LL9SvxN1FeibN-gaCsoFu6o=PSGZDnzS4Ha1yN69w@mail.gmail.com>
-Reply-To: myungjoo.ham@gmail.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f52.google.com ([209.85.212.52]:48728 "EHLO
-	mail-vb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324Ab3J2HTk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2013 03:19:40 -0400
-Received: by mail-vb0-f52.google.com with SMTP id f13so6114093vbg.39
-        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2013 00:19:40 -0700 (PDT)
-In-Reply-To: <CAPgLHd9J4LL9SvxN1FeibN-gaCsoFu6o=PSGZDnzS4Ha1yN69w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH 2/2] Cpufreq/gov: use tick_nohz_check() to check idle micro accouting support
+Date: Tue, 29 Oct 2013 16:48:57 +0800
+Message-ID: <1383036537-30362-2-git-send-email-tianyu.lan@intel.com>
+References: <1383036537-30362-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1383036537-30362-1-git-send-email-tianyu.lan@intel.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: kyungmin.park@samsung.com, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-On Fri, Oct 25, 2013 at 10:52 PM, Wei Yongjun <weiyj.lk@gmail.com> wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->
-> In case of error, the function create_freezable_workqueue() returns
-> NULL pointer not ERR_PTR(). The IS_ERR() test in the return value check
-> should be replaced with NULL test.
->
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+Current, od_init() uses get_cpu_idle_time_us() to check whether
+idle micro accouting is supported. The get_cpu_idle_time_us()
+returns -1 only when tick nohz is disabled. This patch is to use
+tick_nohz_check() directly to check nohz enable status instead of
+get_cpu_idle_time_us(). This can avoid unnecessary getting and
+putting cpu.
 
-I'm sorry but I've found that this is duplicated with a previous
-(pending) patch.
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/cpufreq/cpufreq_ondemand.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-
-
-Cheers,
-myungJoo.
-
-> ---
->  drivers/devfreq/devfreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index c99c00d..22e5d2f 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -993,10 +993,10 @@ static int __init devfreq_init(void)
->         }
->
->         devfreq_wq = create_freezable_workqueue("devfreq_wq");
-> -       if (IS_ERR(devfreq_wq)) {
-> +       if (!devfreq_wq) {
->                 class_destroy(devfreq_class);
->                 pr_err("%s: couldn't create workqueue\n", __FILE__);
-> -               return PTR_ERR(devfreq_wq);
-> +               return -ENOMEM;
->         }
->         devfreq_class->dev_groups = devfreq_groups;
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 32f26f6..79986a9 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -485,10 +485,7 @@ static int od_init(struct dbs_data *dbs_data)
+ 		return -ENOMEM;
+ 	}
+ 
+-	cpu = get_cpu();
+-	idle_time = get_cpu_idle_time_us(cpu, NULL);
+-	put_cpu();
+-	if (idle_time != -1ULL) {
++	if (tick_nohz_check()) {
+ 		/* Idle micro accounting is supported. Use finer thresholds */
+ 		tuners->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
+ 		/*
 -- 
-MyungJoo Ham, Ph.D.
-System S/W Lab, S/W Center, Samsung Electronics
+1.8.4.rc0.1.g8f6a3e5.dirty
+
