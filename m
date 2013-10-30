@@ -1,121 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 01/16] cpufreq: create cpufreq_generic_get() routine
-Date: Thu, 31 Oct 2013 04:21:59 +0530
-Message-ID: <1a672a5e0b0f6fa4e03646b5f124f68e13f079f2.1383173230.git.viresh.kumar@linaro.org>
-References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
-References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/2] cpufreq support for the big.LITTLE switcher
+Date: Thu, 31 Oct 2013 00:25:35 +0100
+Message-ID: <44629257.8AhBlXWpZK@vostro.rjw.lan>
+References: <1383162281-24204-1-git-send-email-nicolas.pitre@linaro.org> <7822477.lBueQHUY4E@vostro.rjw.lan> <CAKohpom-Oo81U_J5sC8qG7uzjW=yRJLvAPDpNyV6Sst7uw=hag@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55493 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751369Ab3J3XN0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2013 19:13:26 -0400
+In-Reply-To: <CAKohpom-Oo81U_J5sC8qG7uzjW=yRJLvAPDpNyV6Sst7uw=hag@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Dave P Martin <dave.martin@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>
 
-CPUFreq drivers that use clock frameworks interface,i.e. clk_get_rate(), to get
-CPUs clk rate, has similar sort of code used for most of them.
+On Thursday, October 31, 2013 04:01:13 AM Viresh Kumar wrote:
+> 
+> --047d7b33ce860f693404e9fce430
+> Content-Type: text/plain; charset=ISO-8859-1
+> 
+> On 31 October 2013 03:22, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > Queued up for 3.13, thanks!
+> 
+> Hmm.. thanks for applying this but there was a minor bug here which
+> is fixed by below commit.. You don't really need to merge this with
+> the original commit and so can go as a separate commit..
+> 
+> Attached for applying.. Tested by Nico.
 
-This patch adds a generic ->get() which will do the same thing for them. All
-those drivers are required to now is to set .get to cpufreq_generic_get() and
-set their clk pointer in policy->clk during ->init().
+I've just fixed it up manually, please check the result in bleeding-edge.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++------
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 23 insertions(+), 6 deletions(-)
+Thanks!
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02d534d..eb42edb 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -176,6 +176,20 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
- }
- EXPORT_SYMBOL_GPL(cpufreq_generic_init);
- 
-+unsigned int cpufreq_generic_get(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
-+
-+	if (!policy || IS_ERR(policy->clk)) {
-+		pr_err("%s: No %s associated to cpu: %d\n", __func__,
-+				policy ? "clk" : "policy", cpu);
-+		return 0;
-+	}
-+
-+	return clk_get_rate(policy->clk) / 1000;
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_generic_get);
-+
- struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = NULL;
-@@ -1030,6 +1044,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		goto err_set_policy_cpu;
- 	}
- 
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	for_each_cpu(j, policy->cpus)
-+		per_cpu(cpufreq_cpu_data, j) = policy;
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+
- 	if (cpufreq_driver->get) {
- 		policy->cur = cpufreq_driver->get(policy->cpu);
- 		if (!policy->cur) {
-@@ -1062,11 +1081,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	}
- #endif
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
--	for_each_cpu(j, policy->cpus)
--		per_cpu(cpufreq_cpu_data, j) = policy;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
--
- 	if (!frozen) {
- 		ret = cpufreq_add_dev_interface(policy, dev);
- 		if (ret)
-@@ -1087,12 +1101,12 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	return 0;
- 
- err_out_unregister:
-+err_get_freq:
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
- 		per_cpu(cpufreq_cpu_data, j) = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--err_get_freq:
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 5bd6ab9..122d4cd 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -11,6 +11,7 @@
- #ifndef _LINUX_CPUFREQ_H
- #define _LINUX_CPUFREQ_H
- 
-+#include <linux/clk.h>
- #include <linux/cpumask.h>
- #include <linux/completion.h>
- #include <linux/kobject.h>
-@@ -66,6 +67,7 @@ struct cpufreq_policy {
- 	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
- 	unsigned int		last_cpu; /* cpu nr of previous CPU that managed
- 					   * this policy */
-+	struct clk		*clk;
- 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
- 
- 	unsigned int		min;    /* in kHz */
-@@ -447,6 +449,7 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu);
- int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
- 				      struct cpufreq_frequency_table *table);
- 
-+unsigned int cpufreq_generic_get(unsigned int cpu);
- int cpufreq_generic_init(struct cpufreq_policy *policy,
- 		struct cpufreq_frequency_table *table,
- 		unsigned int transition_latency);
 -- 
-1.7.12.rc2.18.g61b472e
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
