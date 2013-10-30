@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 16/16] cpufreq: unicore2: use cpufreq_generic_get() routine
-Date: Thu, 31 Oct 2013 04:22:14 +0530
-Message-ID: <6878a643df82272c18233c5e0328007f88cec024.1383173230.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 15/16] cpufreq: tegra: use cpufreq_generic_get() routine
+Date: Thu, 31 Oct 2013 04:22:13 +0530
+Message-ID: <9d3de82b097a5d05a1ca5cff4e23399e28fbcfff.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
@@ -15,76 +15,59 @@ List-Id: linux-pm@vger.kernel.org
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-We also do clk_get() once instead of doing it again and again in target & init.
-
+Cc: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/unicore2-cpufreq.c | 21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
+ drivers/cpufreq/tegra-cpufreq.c | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unicore2-cpufreq.c
-index 653ae29..951152f 100644
---- a/drivers/cpufreq/unicore2-cpufreq.c
-+++ b/drivers/cpufreq/unicore2-cpufreq.c
-@@ -11,6 +11,7 @@
-  * published by the Free Software Foundation.
-  */
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index 7d36b54..360d1a7 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -50,17 +50,6 @@ static struct clk *emc_clk;
+ static DEFINE_MUTEX(tegra_cpu_lock);
+ static bool is_suspended;
  
-+#include <linux/err.h>
- #include <linux/kernel.h>
- #include <linux/types.h>
- #include <linux/init.h>
-@@ -33,26 +34,16 @@ static int ucv2_verify_speed(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static unsigned int ucv2_getspeed(unsigned int cpu)
+-static unsigned int tegra_getspeed(unsigned int cpu)
 -{
--	struct clk *mclk = clk_get(NULL, "MAIN_CLK");
+-	unsigned long rate;
 -
--	if (cpu)
+-	if (cpu >= NUM_CPUS)
 -		return 0;
--	return clk_get_rate(mclk)/1000;
+-
+-	rate = clk_get_rate(cpu_clk) / 1000;
+-	return rate;
 -}
 -
- static int ucv2_target(struct cpufreq_policy *policy,
- 			 unsigned int target_freq,
- 			 unsigned int relation)
+ static int tegra_cpu_clk_set_rate(unsigned long rate)
  {
--	unsigned int cur = ucv2_getspeed(0);
-+	unsigned int cur = policy->cur;
- 	struct cpufreq_freqs freqs;
--	struct clk *mclk = clk_get(NULL, "MAIN_CLK");
+ 	int ret;
+@@ -144,7 +133,7 @@ static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
+ 		is_suspended = true;
+ 		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
+ 			freq_table[0].frequency);
+-		if (tegra_getspeed(0) != freq_table[0].frequency)
++		if (clk_get_rate(cpu_clk) / 1000 != freq_table[0].frequency)
+ 			tegra_update_cpu_speed(policy, freq_table[0].frequency);
+ 		cpufreq_cpu_put(policy);
+ 	} else if (event == PM_POST_SUSPEND) {
+@@ -180,6 +169,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
+ 	if (policy->cpu == 0)
+ 		register_pm_notifier(&tegra_cpu_pm_notifier);
  
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 
--	if (!clk_set_rate(mclk, target_freq * 1000)) {
-+	if (!clk_set_rate(policy->clk, target_freq * 1000)) {
- 		freqs.old = cur;
- 		freqs.new = target_freq;
- 	}
-@@ -66,9 +57,13 @@ static int __init ucv2_cpu_init(struct cpufreq_policy *policy)
- {
- 	if (policy->cpu != 0)
- 		return -EINVAL;
-+
- 	policy->min = policy->cpuinfo.min_freq = 250000;
- 	policy->max = policy->cpuinfo.max_freq = 1000000;
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-+	policy->clk = clk_get(NULL, "MAIN_CLK");
-+	if (IS_ERR(policy->clk))
-+		return PTR_ERR(policy->clk);
++	policy->clk = cpu_clk;
  	return 0;
  }
  
-@@ -76,7 +71,7 @@ static struct cpufreq_driver ucv2_driver = {
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= ucv2_verify_speed,
- 	.target		= ucv2_target,
--	.get		= ucv2_getspeed,
+@@ -194,7 +184,7 @@ static int tegra_cpu_exit(struct cpufreq_policy *policy)
+ static struct cpufreq_driver tegra_cpufreq_driver = {
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= tegra_target,
+-	.get		= tegra_getspeed,
 +	.get		= cpufreq_generic_get,
- 	.init		= ucv2_cpu_init,
- 	.name		= "UniCore-II",
- };
+ 	.init		= tegra_cpu_init,
+ 	.exit		= tegra_cpu_exit,
+ 	.name		= "tegra",
 -- 
 1.7.12.rc2.18.g61b472e
