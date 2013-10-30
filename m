@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 14/16] cpufreq: tegra: remove target_cpu_speed[] array
-Date: Thu, 31 Oct 2013 04:22:12 +0530
-Message-ID: <bdb887025675d0c358c5107b537c7afd427c144f.1383173230.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 12/16] cpufreq: s5pv210: use cpufreq_generic_get() routine
+Date: Thu, 31 Oct 2013 04:22:10 +0530
+Message-ID: <30a7fe7b07dad08b80f8b8d6df3dc5ffdeb906be.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:45532 "EHLO
+Received: from mail-oa0-f49.google.com ([209.85.219.49]:42164 "EHLO
 	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754856Ab3J3Wwm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2013 18:52:42 -0400
-Received: by mail-oa0-f49.google.com with SMTP id j10so2211319oah.8
-        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2013 15:52:42 -0700 (PDT)
+	with ESMTP id S1754819Ab3J3Wwj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2013 18:52:39 -0400
+Received: by mail-oa0-f49.google.com with SMTP id j10so2208519oah.22
+        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2013 15:52:38 -0700 (PDT)
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
@@ -18,104 +18,84 @@ List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org
 
-Tegra's cpufreq driver was maintaining requested target frequencies in an array:
-target_cpu_speed. And then finally setting the highest requested freq in the
-core. This was probably done because both cores share clock line and logically
-we want to set both cores to the max frequency requested..
+We have common infrastructure available with us for getting a CPUs clk rate.
+Lets use it for this driver.
 
-But this wasn't required to be done in individual CPUFreq drivers, its already
-taken care of by CPUFreq governors. They evaluate load for all CPUs and finally
-call target only for the frequency corresponding to max load.
+We don't need a global variable to hold clock anymore.
 
-So, get rid of this stuff from Tegra's cpufreq driver.
-
-Acked-by: Stephen Warren <swarren@nvidia.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 36 ++++++------------------------------
- 1 file changed, 6 insertions(+), 30 deletions(-)
+ drivers/cpufreq/s5pv210-cpufreq.c | 21 ++++++---------------
+ 1 file changed, 6 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index f42df7e..7d36b54 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -47,7 +47,6 @@ static struct clk *pll_x_clk;
- static struct clk *pll_p_clk;
- static struct clk *emc_clk;
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index e3973da..da0e291 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -23,7 +23,6 @@
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
  
--static unsigned long target_cpu_speed[NUM_CPUS];
- static DEFINE_MUTEX(tegra_cpu_lock);
- static bool is_suspended;
- 
-@@ -103,9 +102,6 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- {
- 	int ret = 0;
- 
--	if (tegra_getspeed(0) == rate)
--		return ret;
--
- 	/*
- 	 * Vote on memory bus frequency based on cpu frequency
- 	 * This sets the minimum frequency, display or avp may request higher
-@@ -125,35 +121,16 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 	return ret;
+-static struct clk *cpu_clk;
+ static struct clk *dmc0_clk;
+ static struct clk *dmc1_clk;
+ static DEFINE_MUTEX(set_freq_lock);
+@@ -164,14 +163,6 @@ static void s5pv210_set_refresh(enum s5pv210_dmc_port ch, unsigned long freq)
+ 	__raw_writel(tmp1, reg);
  }
  
--static unsigned long tegra_cpu_highest_speed(void)
+-static unsigned int s5pv210_getspeed(unsigned int cpu)
 -{
--	unsigned long rate = 0;
--	int i;
+-	if (cpu)
+-		return 0;
 -
--	for_each_online_cpu(i)
--		rate = max(rate, target_cpu_speed[i]);
--	return rate;
+-	return clk_get_rate(cpu_clk) / 1000;
 -}
 -
- static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
+ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
  {
--	unsigned int freq;
--	int ret = 0;
-+	int ret = -EBUSY;
+ 	unsigned long reg;
+@@ -193,7 +184,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 		goto exit;
+ 	}
  
- 	mutex_lock(&tegra_cpu_lock);
+-	old_freq = s5pv210_getspeed(0);
++	old_freq = policy->cur;
+ 	new_freq = s5pv210_freq_table[index].frequency;
  
--	if (is_suspended) {
--		ret = -EBUSY;
--		goto out;
--	}
--
--	freq = freq_table[index].frequency;
--
--	target_cpu_speed[policy->cpu] = freq;
-+	if (!is_suspended)
-+		ret = tegra_update_cpu_speed(policy,
-+				freq_table[index].frequency);
+ 	/* Finding current running level index */
+@@ -471,9 +462,9 @@ static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
+ 	unsigned long mem_type;
+ 	int ret;
  
--	ret = tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
--
--out:
- 	mutex_unlock(&tegra_cpu_lock);
+-	cpu_clk = clk_get(NULL, "armclk");
+-	if (IS_ERR(cpu_clk))
+-		return PTR_ERR(cpu_clk);
++	policy->clk = clk_get(NULL, "armclk");
++	if (IS_ERR(policy->clk))
++		return PTR_ERR(policy->clk);
+ 
+ 	dmc0_clk = clk_get(NULL, "sclk_dmc0");
+ 	if (IS_ERR(dmc0_clk)) {
+@@ -516,7 +507,7 @@ static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
+ out_dmc1:
+ 	clk_put(dmc0_clk);
+ out_dmc0:
+-	clk_put(cpu_clk);
++	clk_put(policy->clk);
  	return ret;
  }
-@@ -167,7 +144,8 @@ static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
- 		is_suspended = true;
- 		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
- 			freq_table[0].frequency);
--		tegra_update_cpu_speed(policy, freq_table[0].frequency);
-+		if (tegra_getspeed(0) != freq_table[0].frequency)
-+			tegra_update_cpu_speed(policy, freq_table[0].frequency);
- 		cpufreq_cpu_put(policy);
- 	} else if (event == PM_POST_SUSPEND) {
- 		is_suspended = false;
-@@ -191,8 +169,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- 	clk_prepare_enable(emc_clk);
- 	clk_prepare_enable(cpu_clk);
  
--	target_cpu_speed[policy->cpu] = tegra_getspeed(policy->cpu);
--
- 	/* FIXME: what's the actual transition time? */
- 	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
- 	if (ret) {
+@@ -563,7 +554,7 @@ static struct cpufreq_driver s5pv210_driver = {
+ 	.flags		= CPUFREQ_STICKY,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= s5pv210_target,
+-	.get		= s5pv210_getspeed,
++	.get		= cpufreq_generic_get,
+ 	.init		= s5pv210_cpu_init,
+ 	.name		= "s5pv210",
+ #ifdef CONFIG_PM
 -- 
 1.7.12.rc2.18.g61b472e
 
