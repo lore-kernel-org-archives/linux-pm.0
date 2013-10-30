@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 05/16] cpufreq: dbx500: use cpufreq_generic_get() routine
-Date: Thu, 31 Oct 2013 04:22:03 +0530
-Message-ID: <956f3793295af6ac2552406ff3b7cf79edc93ae0.1383173230.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 07/16] cpufreq: imx6q: use cpufreq_generic_get() routine
+Date: Thu, 31 Oct 2013 04:22:05 +0530
+Message-ID: <7d719cd3e73f6acc0e27a9b8bd2efdf295350b96.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org
 List-Id: linux-pm@vger.kernel.org
@@ -15,53 +15,44 @@ List-Id: linux-pm@vger.kernel.org
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-We don't have to find closest frequency in platform specific ->get() routine
-wihch dbx500 driver was doing and hence it can be removed as well.
-
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/dbx500-cpufreq.c | 19 ++-----------------
- 1 file changed, 2 insertions(+), 17 deletions(-)
+ drivers/cpufreq/imx6q-cpufreq.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index 0e67ab9..d83129d 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -26,24 +26,9 @@ static int dbx500_cpufreq_target(struct cpufreq_policy *policy,
- 	return clk_set_rate(armss_clk, freq_table[index].frequency * 1000);
- }
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index 4b3f18e..eacd785 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -35,11 +35,6 @@ static struct device *cpu_dev;
+ static struct cpufreq_frequency_table *freq_table;
+ static unsigned int transition_latency;
  
--static unsigned int dbx500_cpufreq_getspeed(unsigned int cpu)
+-static unsigned int imx6q_get_speed(unsigned int cpu)
 -{
--	int i = 0;
--	unsigned long freq = clk_get_rate(armss_clk) / 1000;
--
--	/* The value is rounded to closest frequency in the defined table. */
--	while (freq_table[i + 1].frequency != CPUFREQ_TABLE_END) {
--		if (freq < freq_table[i].frequency +
--		   (freq_table[i + 1].frequency - freq_table[i].frequency) / 2)
--			return freq_table[i].frequency;
--		i++;
--	}
--
--	return freq_table[i].frequency;
+-	return clk_get_rate(arm_clk) / 1000;
 -}
 -
- static int dbx500_cpufreq_init(struct cpufreq_policy *policy)
+ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
  {
-+	policy->clk = armss_clk;
- 	return cpufreq_generic_init(policy, freq_table, 20 * 1000);
+ 	struct dev_pm_opp *opp;
+@@ -134,13 +129,14 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 
+ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ {
++	policy->clk = arm_clk;
+ 	return cpufreq_generic_init(policy, freq_table, transition_latency);
  }
  
-@@ -51,7 +36,7 @@ static struct cpufreq_driver dbx500_cpufreq_driver = {
- 	.flags  = CPUFREQ_STICKY | CPUFREQ_CONST_LOOPS,
+ static struct cpufreq_driver imx6q_cpufreq_driver = {
  	.verify = cpufreq_generic_frequency_table_verify,
- 	.target_index = dbx500_cpufreq_target,
--	.get    = dbx500_cpufreq_getspeed,
-+	.get    = cpufreq_generic_get,
- 	.init   = dbx500_cpufreq_init,
- 	.name   = "DBX500",
- 	.attr   = cpufreq_generic_attr,
+ 	.target_index = imx6q_set_target,
+-	.get = imx6q_get_speed,
++	.get = cpufreq_generic_get,
+ 	.init = imx6q_cpufreq_init,
+ 	.exit = cpufreq_generic_exit,
+ 	.name = "imx6q-cpufreq",
 -- 
 1.7.12.rc2.18.g61b472e
+
