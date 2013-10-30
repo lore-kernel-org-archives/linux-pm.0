@@ -1,101 +1,90 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 12/16] cpufreq: s5pv210: use cpufreq_generic_get() routine
-Date: Thu, 31 Oct 2013 04:22:10 +0530
-Message-ID: <30a7fe7b07dad08b80f8b8d6df3dc5ffdeb906be.1383173230.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 16/16] cpufreq: unicore2: use cpufreq_generic_get() routine
+Date: Thu, 31 Oct 2013 04:22:14 +0530
+Message-ID: <6878a643df82272c18233c5e0328007f88cec024.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:42164 "EHLO
-	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754819Ab3J3Wwj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2013 18:52:39 -0400
-Received: by mail-oa0-f49.google.com with SMTP id j10so2208519oah.22
-        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2013 15:52:38 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org
+List-Id: linux-pm@vger.kernel.org
 
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-We don't need a global variable to hold clock anymore.
+We also do clk_get() once instead of doing it again and again in target & init.
 
-Cc: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/s5pv210-cpufreq.c | 21 ++++++---------------
- 1 file changed, 6 insertions(+), 15 deletions(-)
+ drivers/cpufreq/unicore2-cpufreq.c | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index e3973da..da0e291 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -23,7 +23,6 @@
- #include <mach/map.h>
- #include <mach/regs-clock.h>
+diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unicore2-cpufreq.c
+index 653ae29..951152f 100644
+--- a/drivers/cpufreq/unicore2-cpufreq.c
++++ b/drivers/cpufreq/unicore2-cpufreq.c
+@@ -11,6 +11,7 @@
+  * published by the Free Software Foundation.
+  */
  
--static struct clk *cpu_clk;
- static struct clk *dmc0_clk;
- static struct clk *dmc1_clk;
- static DEFINE_MUTEX(set_freq_lock);
-@@ -164,14 +163,6 @@ static void s5pv210_set_refresh(enum s5pv210_dmc_port ch, unsigned long freq)
- 	__raw_writel(tmp1, reg);
++#include <linux/err.h>
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/init.h>
+@@ -33,26 +34,16 @@ static int ucv2_verify_speed(struct cpufreq_policy *policy)
+ 	return 0;
  }
  
--static unsigned int s5pv210_getspeed(unsigned int cpu)
+-static unsigned int ucv2_getspeed(unsigned int cpu)
 -{
+-	struct clk *mclk = clk_get(NULL, "MAIN_CLK");
+-
 -	if (cpu)
 -		return 0;
--
--	return clk_get_rate(cpu_clk) / 1000;
+-	return clk_get_rate(mclk)/1000;
 -}
 -
- static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ static int ucv2_target(struct cpufreq_policy *policy,
+ 			 unsigned int target_freq,
+ 			 unsigned int relation)
  {
- 	unsigned long reg;
-@@ -193,7 +184,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 		goto exit;
+-	unsigned int cur = ucv2_getspeed(0);
++	unsigned int cur = policy->cur;
+ 	struct cpufreq_freqs freqs;
+-	struct clk *mclk = clk_get(NULL, "MAIN_CLK");
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+-	if (!clk_set_rate(mclk, target_freq * 1000)) {
++	if (!clk_set_rate(policy->clk, target_freq * 1000)) {
+ 		freqs.old = cur;
+ 		freqs.new = target_freq;
  	}
- 
--	old_freq = s5pv210_getspeed(0);
-+	old_freq = policy->cur;
- 	new_freq = s5pv210_freq_table[index].frequency;
- 
- 	/* Finding current running level index */
-@@ -471,9 +462,9 @@ static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
- 	unsigned long mem_type;
- 	int ret;
- 
--	cpu_clk = clk_get(NULL, "armclk");
--	if (IS_ERR(cpu_clk))
--		return PTR_ERR(cpu_clk);
-+	policy->clk = clk_get(NULL, "armclk");
+@@ -66,9 +57,13 @@ static int __init ucv2_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	if (policy->cpu != 0)
+ 		return -EINVAL;
++
+ 	policy->min = policy->cpuinfo.min_freq = 250000;
+ 	policy->max = policy->cpuinfo.max_freq = 1000000;
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
++	policy->clk = clk_get(NULL, "MAIN_CLK");
 +	if (IS_ERR(policy->clk))
 +		return PTR_ERR(policy->clk);
- 
- 	dmc0_clk = clk_get(NULL, "sclk_dmc0");
- 	if (IS_ERR(dmc0_clk)) {
-@@ -516,7 +507,7 @@ static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
- out_dmc1:
- 	clk_put(dmc0_clk);
- out_dmc0:
--	clk_put(cpu_clk);
-+	clk_put(policy->clk);
- 	return ret;
+ 	return 0;
  }
  
-@@ -563,7 +554,7 @@ static struct cpufreq_driver s5pv210_driver = {
+@@ -76,7 +71,7 @@ static struct cpufreq_driver ucv2_driver = {
  	.flags		= CPUFREQ_STICKY,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= s5pv210_target,
--	.get		= s5pv210_getspeed,
+ 	.verify		= ucv2_verify_speed,
+ 	.target		= ucv2_target,
+-	.get		= ucv2_getspeed,
 +	.get		= cpufreq_generic_get,
- 	.init		= s5pv210_cpu_init,
- 	.name		= "s5pv210",
- #ifdef CONFIG_PM
+ 	.init		= ucv2_cpu_init,
+ 	.name		= "UniCore-II",
+ };
 -- 
 1.7.12.rc2.18.g61b472e
-
