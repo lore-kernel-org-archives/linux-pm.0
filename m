@@ -1,39 +1,36 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 0/2] cpufreq support for the big.LITTLE switcher
-Date: Wed, 30 Oct 2013 12:47:45 -0700 (PDT)
-Message-ID: <alpine.LFD.2.03.1310301246440.18059@syhkavp.arg>
-References: <1382500691-634-1-git-send-email-nicolas.pitre@linaro.org> <5107459.zGbYpZKUI5@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/2] cpufreq support for the big.LITTLE switcher
+Date: Wed, 30 Oct 2013 22:52:49 +0100
+Message-ID: <7822477.lBueQHUY4E@vostro.rjw.lan>
+References: <1383162281-24204-1-git-send-email-nicolas.pitre@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5107459.zGbYpZKUI5@vostro.rjw.lan>
+In-Reply-To: <1383162281-24204-1-git-send-email-nicolas.pitre@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
 Cc: viresh.kumar@linaro.org, sudeep.karkadanagesha@arm.com, dave.martin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 30 Oct 2013, Rafael J. Wysocki wrote:
-
-> On Tuesday, October 22, 2013 11:58:09 PM Nicolas Pitre wrote:
-> > This is the third and final set of patches towards a fully functional
-> > and production quality switcher solution for big.LITTLE systems,
-> > establishing a landmark to compare against for any scheduler based
-> > solution meant to eventually surpass the switcher's power efficiency
-> > available in the mainline kernel.
-> > 
-> > Rationale for this code: http://lwn.net/Articles/481055/
-> > 
-> > The first and second patch sets have already been merged by RMK.  They
-> > implement the core switcher mechanism.  This set adds the necessary code
-> > to drive the switcher based on cpufreq governor decisions.
+On Wednesday, October 30, 2013 03:44:39 PM Nicolas Pitre wrote:
+> This is the third and final set of patches towards a fully functional
+> and production quality switcher solution for big.LITTLE systems,
+> establishing a landmark to compare against for any scheduler based
+> solution meant to eventually surpass the switcher's power efficiency
+> available in the mainline kernel.
 > 
-> Patch [1/2] doesn't apply any more after all of the recent changes from Viresh.
+> Rationale for this code: http://lwn.net/Articles/481055/
 > 
-> Please rebase on top of linux-pm/linux-next and resend.
+> The first and second patch sets have already been merged by RMK.  They
+> implement the core switcher mechanism.  This set adds the necessary code
+> to drive the switcher based on cpufreq governor decisions.
+> 
+> This set (v2) was rebased on top of the latest linux-pm tree as
+> requested by Rafael.
 
-I just resent those patches after some testing.
+Queued up for 3.13, thanks!
 
-Thanks!
-
-
-Nicolas
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
