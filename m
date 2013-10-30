@@ -1,90 +1,78 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 02/16] cpufreq: at32ap: use cpufreq_generic_get() routine
-Date: Thu, 31 Oct 2013 04:22:00 +0530
-Message-ID: <5f0068423d041bcdd6e64de8d1481a501873f9a9.1383173230.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 04/16] cpufreq: davinci: use cpufreq_generic_get() routine
+Date: Thu, 31 Oct 2013 04:22:02 +0530
+Message-ID: <fe9add257bf968c495f1f6ed57e9b4b30fac6b8c.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f47.google.com ([209.85.219.47]:64347 "EHLO
+	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754315Ab3J3WwX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2013 18:52:23 -0400
+Received: by mail-oa0-f47.google.com with SMTP id i1so2220342oag.20
+        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2013 15:52:23 -0700 (PDT)
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org
-List-Id: linux-pm@vger.kernel.org
 
 We have common infrastructure available with us for getting a CPUs clk rate.
 Lets use it for this driver.
 
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Cc: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/at32ap-cpufreq.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/cpufreq/davinci-cpufreq.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-index 856ad80..869c0b5 100644
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ b/drivers/cpufreq/at32ap-cpufreq.c
-@@ -21,17 +21,8 @@
- #include <linux/export.h>
- #include <linux/slab.h>
+diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
+index 5e8a854..cd7fb6e 100644
+--- a/drivers/cpufreq/davinci-cpufreq.c
++++ b/drivers/cpufreq/davinci-cpufreq.c
+@@ -58,14 +58,6 @@ static int davinci_verify_speed(struct cpufreq_policy *policy)
+ 	return 0;
+ }
  
--static struct clk *cpuclk;
- static struct cpufreq_frequency_table *freq_table;
- 
--static unsigned int at32_get_speed(unsigned int cpu)
+-static unsigned int davinci_getspeed(unsigned int cpu)
 -{
--	/* No SMP support */
 -	if (cpu)
 -		return 0;
--	return (unsigned int)((clk_get_rate(cpuclk) + 500) / 1000);
+-
+-	return clk_get_rate(cpufreq.armclk) / 1000;
 -}
 -
- static unsigned int	ref_freq;
- static unsigned long	loops_per_jiffy_ref;
- 
-@@ -39,7 +30,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
  {
+ 	struct davinci_cpufreq_config *pdata = cpufreq.dev->platform_data;
+@@ -73,7 +65,7 @@ static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
  	unsigned int old_freq, new_freq;
+ 	int ret = 0;
  
--	old_freq = at32_get_speed(0);
+-	old_freq = davinci_getspeed(0);
 +	old_freq = policy->cur;
- 	new_freq = freq_table[index].frequency;
+ 	new_freq = pdata->freq_table[idx].frequency;
  
- 	if (!ref_freq) {
-@@ -50,7 +41,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	if (old_freq < new_freq)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
- 				loops_per_jiffy_ref, ref_freq, new_freq);
--	clk_set_rate(cpuclk, new_freq * 1000);
-+	clk_set_rate(policy->clk, new_freq * 1000);
- 	if (new_freq < old_freq)
- 		boot_cpu_data.loops_per_jiffy = cpufreq_scale(
- 				loops_per_jiffy_ref, ref_freq, new_freq);
-@@ -61,6 +52,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
- static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- {
- 	unsigned int frequency, rate, min_freq;
-+	static struct clk *cpuclk;
- 	int retval, steps, i;
- 
- 	if (policy->cpu != 0)
-@@ -103,6 +95,7 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- 		frequency /= 2;
+ 	/* if moving to higher frequency, up the voltage beforehand */
+@@ -116,6 +108,8 @@ static int davinci_cpu_init(struct cpufreq_policy *policy)
+ 			return result;
  	}
  
-+	policy->clk = cpuclk;
- 	freq_table[steps - 1].frequency = CPUFREQ_TABLE_END;
- 
- 	retval = cpufreq_table_validate_and_show(policy, freq_table);
-@@ -123,7 +116,7 @@ static struct cpufreq_driver at32_driver = {
- 	.init		= at32_cpufreq_driver_init,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= at32_set_target,
--	.get		= at32_get_speed,
-+	.get		= cpufreq_generic_get,
++	policy->clk = cpufreq.armclk;
++
+ 	/*
+ 	 * Time measurement across the target() function yields ~1500-1800us
+ 	 * time taken with no drivers on notification list.
+@@ -129,7 +123,7 @@ static struct cpufreq_driver davinci_driver = {
  	.flags		= CPUFREQ_STICKY,
- };
- 
+ 	.verify		= davinci_verify_speed,
+ 	.target_index	= davinci_target,
+-	.get		= davinci_getspeed,
++	.get		= cpufreq_generic_get,
+ 	.init		= davinci_cpu_init,
+ 	.exit		= cpufreq_generic_exit,
+ 	.name		= "davinci",
 -- 
 1.7.12.rc2.18.g61b472e
+
