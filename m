@@ -1,124 +1,121 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 09/16] cpufreq: omap: use cpufreq_generic_get() routine
-Date: Thu, 31 Oct 2013 04:22:07 +0530
-Message-ID: <9f47e7f84d81272583215e6009ddf936bd8a669a.1383173230.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 14/16] cpufreq: tegra: remove target_cpu_speed[] array
+Date: Thu, 31 Oct 2013 04:22:12 +0530
+Message-ID: <bdb887025675d0c358c5107b537c7afd427c144f.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f49.google.com ([209.85.219.49]:45532 "EHLO
+	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754856Ab3J3Wwm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2013 18:52:42 -0400
+Received: by mail-oa0-f49.google.com with SMTP id j10so2211319oah.8
+        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2013 15:52:42 -0700 (PDT)
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1383173230.git.viresh.kumar@linaro.org>
 References: <cover.1383173230.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org
-List-Id: linux-pm@vger.kernel.org
 
-We have common infrastructure available with us for getting a CPUs clk rate.
-Lets use it for this driver.
+Tegra's cpufreq driver was maintaining requested target frequencies in an array:
+target_cpu_speed. And then finally setting the highest requested freq in the
+core. This was probably done because both cores share clock line and logically
+we want to set both cores to the max frequency requested..
 
-We don't need a global variable to hold clock anymore.
+But this wasn't required to be done in individual CPUFreq drivers, its already
+taken care of by CPUFreq governors. They evaluate load for all CPUs and finally
+call target only for the frequency corresponding to max load.
 
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+So, get rid of this stuff from Tegra's cpufreq driver.
+
+Acked-by: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/omap-cpufreq.c | 32 ++++++++++----------------------
- 1 file changed, 10 insertions(+), 22 deletions(-)
+ drivers/cpufreq/tegra-cpufreq.c | 36 ++++++------------------------------
+ 1 file changed, 6 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index be6d143..0c018dc 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -36,32 +36,20 @@
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index f42df7e..7d36b54 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -47,7 +47,6 @@ static struct clk *pll_x_clk;
+ static struct clk *pll_p_clk;
+ static struct clk *emc_clk;
  
- static struct cpufreq_frequency_table *freq_table;
- static atomic_t freq_table_users = ATOMIC_INIT(0);
--static struct clk *mpu_clk;
- static struct device *mpu_dev;
- static struct regulator *mpu_reg;
+-static unsigned long target_cpu_speed[NUM_CPUS];
+ static DEFINE_MUTEX(tegra_cpu_lock);
+ static bool is_suspended;
  
--static unsigned int omap_getspeed(unsigned int cpu)
+@@ -103,9 +102,6 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
+ {
+ 	int ret = 0;
+ 
+-	if (tegra_getspeed(0) == rate)
+-		return ret;
+-
+ 	/*
+ 	 * Vote on memory bus frequency based on cpu frequency
+ 	 * This sets the minimum frequency, display or avp may request higher
+@@ -125,35 +121,16 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
+ 	return ret;
+ }
+ 
+-static unsigned long tegra_cpu_highest_speed(void)
 -{
--	unsigned long rate;
+-	unsigned long rate = 0;
+-	int i;
 -
--	if (cpu >= NR_CPUS)
--		return 0;
--
--	rate = clk_get_rate(mpu_clk) / 1000;
+-	for_each_online_cpu(i)
+-		rate = max(rate, target_cpu_speed[i]);
 -	return rate;
 -}
 -
- static int omap_target(struct cpufreq_policy *policy, unsigned int index)
+ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
  {
- 	struct dev_pm_opp *opp;
- 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
- 	unsigned int old_freq, new_freq;
+-	unsigned int freq;
+-	int ret = 0;
++	int ret = -EBUSY;
  
--	old_freq = omap_getspeed(policy->cpu);
-+	old_freq = policy->cur;
- 	new_freq = freq_table[index].frequency;
+ 	mutex_lock(&tegra_cpu_lock);
  
- 	freq = new_freq * 1000;
--	ret = clk_round_rate(mpu_clk, freq);
-+	ret = clk_round_rate(policy->clk, freq);
- 	if (IS_ERR_VALUE(ret)) {
- 		dev_warn(mpu_dev,
- 			 "CPUfreq: Cannot find matching frequency for %lu\n",
-@@ -99,7 +87,7 @@ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
- 		}
- 	}
+-	if (is_suspended) {
+-		ret = -EBUSY;
+-		goto out;
+-	}
+-
+-	freq = freq_table[index].frequency;
+-
+-	target_cpu_speed[policy->cpu] = freq;
++	if (!is_suspended)
++		ret = tegra_update_cpu_speed(policy,
++				freq_table[index].frequency);
  
--	ret = clk_set_rate(mpu_clk, new_freq * 1000);
-+	ret = clk_set_rate(policy->clk, new_freq * 1000);
- 
- 	/* scaling down?  scale voltage after frequency */
- 	if (mpu_reg && (new_freq < old_freq)) {
-@@ -107,7 +95,7 @@ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
- 		if (r < 0) {
- 			dev_warn(mpu_dev, "%s: unable to scale voltage down.\n",
- 				 __func__);
--			clk_set_rate(mpu_clk, old_freq * 1000);
-+			clk_set_rate(policy->clk, old_freq * 1000);
- 			return r;
- 		}
- 	}
-@@ -125,9 +113,9 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
- {
- 	int result;
- 
--	mpu_clk = clk_get(NULL, "cpufreq_ck");
--	if (IS_ERR(mpu_clk))
--		return PTR_ERR(mpu_clk);
-+	policy->clk = clk_get(NULL, "cpufreq_ck");
-+	if (IS_ERR(policy->clk))
-+		return PTR_ERR(policy->clk);
- 
- 	if (!freq_table) {
- 		result = dev_pm_opp_init_cpufreq_table(mpu_dev, &freq_table);
-@@ -148,7 +136,7 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
- 
- 	freq_table_free();
- fail:
--	clk_put(mpu_clk);
-+	clk_put(policy->clk);
- 	return result;
+-	ret = tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
+-
+-out:
+ 	mutex_unlock(&tegra_cpu_lock);
+ 	return ret;
  }
+@@ -167,7 +144,8 @@ static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
+ 		is_suspended = true;
+ 		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
+ 			freq_table[0].frequency);
+-		tegra_update_cpu_speed(policy, freq_table[0].frequency);
++		if (tegra_getspeed(0) != freq_table[0].frequency)
++			tegra_update_cpu_speed(policy, freq_table[0].frequency);
+ 		cpufreq_cpu_put(policy);
+ 	} else if (event == PM_POST_SUSPEND) {
+ 		is_suspended = false;
+@@ -191,8 +169,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
+ 	clk_prepare_enable(emc_clk);
+ 	clk_prepare_enable(cpu_clk);
  
-@@ -156,7 +144,7 @@ static int omap_cpu_exit(struct cpufreq_policy *policy)
- {
- 	cpufreq_frequency_table_put_attr(policy->cpu);
- 	freq_table_free();
--	clk_put(mpu_clk);
-+	clk_put(policy->clk);
- 	return 0;
- }
- 
-@@ -164,7 +152,7 @@ static struct cpufreq_driver omap_driver = {
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= omap_target,
--	.get		= omap_getspeed,
-+	.get		= cpufreq_generic_get,
- 	.init		= omap_cpu_init,
- 	.exit		= omap_cpu_exit,
- 	.name		= "omap",
+-	target_cpu_speed[policy->cpu] = tegra_getspeed(policy->cpu);
+-
+ 	/* FIXME: what's the actual transition time? */
+ 	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
+ 	if (ret) {
 -- 
 1.7.12.rc2.18.g61b472e
+
