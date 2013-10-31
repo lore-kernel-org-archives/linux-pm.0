@@ -1,146 +1,153 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v2 00/19] Enable various Renesas drivers on all ARM
- platforms
-Date: Thu, 31 Oct 2013 14:52:28 +0900
-Message-ID: <20131031055228.GS1603@verge.net.au>
-References: <1383086274-11049-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Adrian Huang <adrian.huang@hp.com>
+Subject: Re: [PATCH v2] cpufreq: intel_pstate: skip the driver if ACPI has
+ power mgmt option
+Date: Thu, 31 Oct 2013 14:59:19 +0800
+Message-ID: <1383202759.2487.5.camel@adrian-F6S>
+References: <1382952130.4419.10.camel@adrian-F6S>
+	 <2180132.nWVXASx7r4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1383086274-11049-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, Linus Walleij <linus.walleij@linaro.org>, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>, Joerg Roedel <joro@8bytes.org>, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Chris Ball <cjb@laptop.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>, linux-pm@vger.kernel.org, Ian Molton <ian@mnementh.co.uk>, Mark Brown <broonie@kernel.org>, linux-arm-kernel@lists.infradead.org, Ser
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:14564 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753416Ab3JaG70 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2013 02:59:26 -0400
+In-Reply-To: <2180132.nWVXASx7r4@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linda.knippers@hp.com
 
-On Tue, Oct 29, 2013 at 11:37:35PM +0100, Laurent Pinchart wrote:
-> Hello,
-> 
-> This patch series, based on v3.12-rc7, prepares various Renesas drivers
-> for migration to multiplatform kernels by enabling their compilation or
-> otherwise fixing them on all ARM platforms. The patches are pretty
-> straightforward and are described in their commit message.
-> 
-> Changes since v1:
-> 
-> - The drivers can also be selected when COMPILE_TEST is enabled, regardless of
->   the architecture. This should provide a good compromise between wide build
->   test coverage and not clobbering configuration with drivers useless on
->   non-SuperH, non-ARM platforms.
-> 
-> - DMA configuration is now unconditional in patch 08/19
-> 
-> I'd like to get all these patches merged in v3.14. As they will need to go
-> through their respective subsystems' trees, I would appreciate if all
-> maintainers involved could notify me when they merge patches from this series
-> in their tree to help me tracking the merge status. I don't plan to send pull
-> requests individually for these patches, and I will repost patches
-> individually if changes are requested during review.
-> 
-> If you believe the issue should be solved in a different way please reply to
-> the cover letter to let other maintainers chime in.
+Will re-send it later. Sorry about that.=20
 
-All patches, including the v3 ones present in the thread at this time:
+=E6=96=BC =E4=B8=89=EF=BC=8C2013-10-30 =E6=96=BC 23:06 +0100=EF=BC=8CRa=
+fael J. Wysocki =E6=8F=90=E5=88=B0=EF=BC=9A=20
+> On Monday, October 28, 2013 05:22:10 PM Adrian Huang wrote:
+> > This patch minimizes indentation levels and re-defines some local v=
+ariables.
+>=20
+> Care to add changelog describing what changes are made by the patch a=
+nd why?
+>=20
+> > Signed-off-by: Adrian Huang <adrian.huang@hp.com>
+> > ---
+> > Changes since v1:
+> >  * Minimize indentation levels (Commented by Rafael)
+> >  * Re-define some local variables (Commented by Rafael)
+> >  * Return -ENODEV if platform FW has power management modes (Commen=
+ted by Dirk)
+> >=20
+> >  drivers/cpufreq/intel_pstate.c | 70 ++++++++++++++++++++++++++++++=
+++++++++++++
+> >  1 file changed, 70 insertions(+)
+> >=20
+> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel=
+_pstate.c
+> > index eb3fdc7..8770d67 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -26,6 +26,8 @@
+> >  #include <linux/fs.h>
+> >  #include <linux/debugfs.h>
+> >  #include <trace/events/power.h>
+> > +#include <linux/acpi.h>
+> > +#include <acpi/processor.h>
+> > =20
+> >  #include <asm/div64.h>
+> >  #include <asm/msr.h>
+> > @@ -129,6 +131,18 @@ static struct perf_limits limits =3D {
+> >  	.max_sysfs_pct =3D 100,
+> >  };
+> > =20
+> > +struct hw_vendor_info {
+> > +	u16  valid;
+> > +	char oem_id[ACPI_OEM_ID_SIZE];
+> > +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];
+> > +};
+> > +
+> > +/* Hardware vendor-specific info that has its own power management=
+ modes */
+> > +static struct hw_vendor_info vendor_info[] =3D {
+> > +	{1, "HP    ", "ProLiant"},
+> > +	{0, "", ""},
+> > +};
+> > +
+> >  static inline void pid_reset(struct _pid *pid, int setpoint, int b=
+usy,
+> >  			int deadband, int integral) {
+> >  	pid->setpoint =3D setpoint;
+> > @@ -698,6 +712,55 @@ static int intel_pstate_msrs_not_valid(void)
+> > =20
+> >  	return 0;
+> >  }
+> > +
+> > +static bool intel_pstate_no_acpi_pss(void)
+> > +{
+> > +	int i;
+> > +
+> > +	for_each_possible_cpu(i) {
+> > +		acpi_status status =3D AE_OK;
+> > +		struct acpi_buffer buffer =3D { ACPI_ALLOCATE_BUFFER, NULL };
+> > +		struct acpi_processor *pr =3D per_cpu(processors, i);
+> > +		union acpi_object *pss =3D NULL;
+> > +
+> > +		if (!pr)
+> > +			continue;
+> > +
+> > +		status =3D acpi_evaluate_object(pr->handle, "_PSS",
+> > +					      NULL, &buffer);
+> > +		if (ACPI_FAILURE(status))
+> > +			continue;
+> > +
+> > +		pss =3D buffer.pointer;
+> > +		if (pss && (pss->type =3D=3D ACPI_TYPE_PACKAGE)) {
+> > +			kfree(buffer.pointer);
+> > +			return false;
+> > +		}
+> > +
+> > +		kfree(buffer.pointer);
+> > +	}
+> > +
+> > +	return true;
+> > +}
+> > +
+> > +static bool intel_pstate_platform_pwr_mgmt_exists(void)
+> > +{
+> > +	struct acpi_table_header hdr;
+> > +	struct hw_vendor_info *v_info;
+> > +
+> > +	if (ACPI_FAILURE(acpi_get_table_header(ACPI_SIG_FADT, 0, &hdr)))
+> > +		return false;
+> > +
+> > +	for (v_info =3D vendor_info; v_info->valid; v_info++) {
+> > +		if (!strncmp(hdr.oem_id, v_info->oem_id, ACPI_OEM_ID_SIZE)
+> > +		    && !strncmp(hdr.oem_table_id, v_info->oem_table_id, ACPI_OEM=
+_TABLE_ID_SIZE)
+> > +		    && intel_pstate_no_acpi_pss())
+> > +			return true;
+> > +	}
+> > +
+> > +	return false;
+> > +}
+> > +
+> >  static int __init intel_pstate_init(void)
+> >  {
+> >  	int cpu, rc =3D 0;
+> > @@ -706,6 +769,13 @@ static int __init intel_pstate_init(void)
+> >  	if (no_load)
+> >  		return -ENODEV;
+> > =20
+> > +	/*
+> > +	 * The Intel pstate driver will be ignored if the platform
+> > +	 * firmware has its own power management modes.
+> > +	 */
+> > +	if (!acpi_disabled && intel_pstate_platform_pwr_mgmt_exists())
+> > +		return -ENODEV;
+> > +
+> >  	id =3D x86_match_cpu(intel_pstate_cpu_ids);
+> >  	if (!id)
+> >  		return -ENODEV;
+> >=20
 
-Acked-by: Simon Horman <horms@verge.net.au>
 
-> Cc: Chris Ball <cjb@laptop.org>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-> Cc: Ian Molton <ian@mnementh.co.uk>
-> Cc: iommu@lists.linux-foundation.org
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Joerg Roedel <joro@8bytes.org>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Magnus Damm <magnus.damm@gmail.com>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Mauro Carvalho Chehab <m.chehab@samsung.com>
-> Cc: Samuel Ortiz <samuel@sortiz.org>
-> Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Vinod Koul <vinod.koul@intel.com>
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: dmaengine@vger.kernel.org
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-i2c@vger.kernel.org
-> Cc: linux-input@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-media@vger.kernel.org
-> Cc: linux-mmc@vger.kernel.org
-> Cc: linux-mtd@lists.infradead.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-pwm@vger.kernel.org
-> Cc: linux-serial@vger.kernel.org
-> Cc: linux-spi@vger.kernel.org
-> Cc: netdev@vger.kernel.org
-> 
-> Laurent Pinchart (19):
->   serial: sh-sci: Enable the driver on all ARM platforms
->   DMA: shdma: Enable the driver on all ARM platforms
->   i2c: sh_mobile: Enable the driver on all ARM platforms
->   input: sh_keysc: Enable the driver on all ARM platforms
->   iommu: shmobile: Enable the driver on all ARM platforms
->   i2c: rcar: Enable the driver on all ARM platforms
->   v4l: sh_vou: Enable the driver on all ARM platforms
->   mmc: sdhi: Enable the driver on all ARM platforms
->   mmc: sh_mmcif: Enable the driver on all ARM platforms
->   mtd: sh_flctl: Enable the driver on all ARM platforms
->   net: sh_eth: Set receive alignment correctly on all ARM platforms
->   irda: sh_irda: Enable the driver on all ARM platforms
->   pinctrl: sh-pfc: Enable the driver on all ARM platforms
->   pwm: pwm-renesas-tpu: Enable the driver on all ARM platforms
->   sh: intc: Enable the driver on all ARM platforms
->   spi: sh_msiof: Enable the driver on all ARM platforms
->   spi: sh_hspi: Enable the driver on all ARM platforms
->   thermal: rcar-thermal: Enable the driver on all ARM platforms
->   fbdev: sh-mobile-lcdcfb: Enable the driver on all ARM platforms
-> 
->  drivers/dma/sh/Kconfig                | 2 +-
->  drivers/dma/sh/shdmac.c               | 6 +++---
->  drivers/i2c/busses/Kconfig            | 4 ++--
->  drivers/input/keyboard/Kconfig        | 2 +-
->  drivers/iommu/Kconfig                 | 2 +-
->  drivers/media/platform/Kconfig        | 2 +-
->  drivers/mmc/host/Kconfig              | 4 ++--
->  drivers/mmc/host/tmio_mmc_dma.c       | 4 +---
->  drivers/mtd/nand/Kconfig              | 2 +-
->  drivers/net/ethernet/renesas/sh_eth.c | 2 +-
->  drivers/net/ethernet/renesas/sh_eth.h | 2 +-
->  drivers/net/irda/Kconfig              | 2 +-
->  drivers/pinctrl/Makefile              | 2 +-
->  drivers/pinctrl/sh-pfc/Kconfig        | 2 +-
->  drivers/pwm/Kconfig                   | 2 +-
->  drivers/sh/intc/Kconfig               | 2 +-
->  drivers/spi/Kconfig                   | 4 ++--
->  drivers/thermal/Kconfig               | 2 +-
->  drivers/tty/serial/Kconfig            | 2 +-
->  drivers/video/Kconfig                 | 6 +++---
->  20 files changed, 27 insertions(+), 29 deletions(-)
-> 
-> -- 
-> Regards,
-> 
-> Laurent Pinchart
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
