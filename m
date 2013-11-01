@@ -1,59 +1,49 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH] power: Add legacy pm ops usage warning
-Date: Fri,  1 Nov 2013 09:07:04 -0600
-Message-ID: <1383318424-4072-1-git-send-email-shuah.kh@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: pavel@ucw.cz, rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH] cpufreq: ondemand: Remove redundant return statement
+Date: Fri, 01 Nov 2013 20:13:26 +0200
+Message-ID: <5273EF46.7060703@semaphore.gr>
+References: <5272A118.1090908@semaphore.gr> <CAKohponQ+oRYpdYrpKV3=GMh6ACQr+E+WygLHk0mdC+ivjeP_Q@mail.gmail.com> <7457887.jzoQrnelyS@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <7457887.jzoQrnelyS@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Henrik Nilsson <Karl.Henrik.Nilsson@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add legacy pm_ops usage checks to device_pm_add() when a device gets added
-to PM core's list of active devices. If legacy pm_ops usage is found at its
-class, bus, driver level, print warning message to indicate the driver code
-needs updating to use dev pm ops interfaces. This will help serve as a way
-to track drivers that still use legacy pm ops and fix them.
+On 11/01/2013 02:18 AM, Rafael J. Wysocki wrote:
+> On Friday, November 01, 2013 12:09:16 AM Viresh Kumar wrote:
+>> On 31 October 2013 23:57, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+>>> After commit dfa5bb622555d9da0df21b50f46ebdeef390041b
+>>> "cpufreq: ondemand: Change the calculation of target frequency",
+>>> this return statement is no longer needed.
+>>>
+>>> Reported-by: Henrik Nilsson <Karl.Henrik.Nilsson@gmail.com>
+>>> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+>>> ---
+>>>   drivers/cpufreq/cpufreq_ondemand.c | 1 -
+>>>   1 file changed, 1 deletion(-)
+>>>
+>>> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+>>> index 32f26f6..18d4091 100644
+>>> --- a/drivers/cpufreq/cpufreq_ondemand.c
+>>> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+>>> @@ -168,7 +168,6 @@ static void od_check_cpu(int cpu, unsigned int load)
+>>>                          dbs_info->rate_mult =
+>>>                                  od_tuners->sampling_down_factor;
+>>>                  dbs_freq_increase(policy, policy->max);
+>>> -               return;
+>>>          } else {
+>>>                  /* Calculate the next frequency proportional to load */
+>>>                  unsigned int freq_next;
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Queued up for 3.13, thanks!
+>
 
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
- drivers/base/power/main.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+Thank you both for your immediate response!
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9f098a8..4dc26dc 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -112,6 +112,23 @@ void device_pm_unlock(void)
- }
- 
- /**
-+ * check for lgeacy pm_ops usage and warn
-+ */
-+static void device_legacy_pm_ops_check(struct device *dev)
-+{
-+	char *info = "Please update driver to use dev pm_ops";
-+
-+	if (dev->class && (dev->class->suspend || dev->class->resume))
-+		dev_warn(dev, "Driver uses legacy class pm ops - %s\n", info);
-+
-+	if (dev->bus && (dev->bus->suspend || dev->bus->resume))
-+		dev_warn(dev, "Driver uses legacy bus pm ops - %s\n", info);
-+
-+	if (dev->driver && (dev->driver->suspend || dev->driver->resume))
-+		dev_warn(dev, "Driver uses legacy pm ops - %s\n", info);
-+}
-+
-+/**
-  * device_pm_add - Add a device to the PM core's list of active devices.
-  * @dev: Device to add to the list.
-  */
-@@ -123,6 +140,7 @@ void device_pm_add(struct device *dev)
- 	if (dev->parent && dev->parent->power.is_prepared)
- 		dev_warn(dev, "parent %s should not be sleeping\n",
- 			dev_name(dev->parent));
-+	device_legacy_pm_ops_check(dev);
- 	list_add_tail(&dev->power.entry, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
- }
--- 
-1.8.1.2
+Stratos
