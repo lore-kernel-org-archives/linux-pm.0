@@ -1,31 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 3/4] mvebu: Dove: Enable cpufreq driver in defconfig
-Date: Fri, 1 Nov 2013 05:22:21 +0530
-Message-ID: <CAKohpomOpfg3+OVooum9jVK2H12bu1Nz=zPMFWF02sCh6MdUhQ@mail.gmail.com>
-References: <1383247111-26834-1-git-send-email-andrew@lunn.ch>
-	<1383247111-26834-3-git-send-email-andrew@lunn.ch>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: ondemand: Remove redundant return statement
+Date: Fri, 01 Nov 2013 01:18 +0100
+Message-ID: <7457887.jzoQrnelyS@vostro.rjw.lan>
+References: <5272A118.1090908@semaphore.gr> <CAKohponQ+oRYpdYrpKV3=GMh6ACQr+E+WygLHk0mdC+ivjeP_Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:60308 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752397Ab3JaXwW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2013 19:52:22 -0400
-Received: by mail-oa0-f48.google.com with SMTP id m17so3832246oag.7
-        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2013 16:52:21 -0700 (PDT)
-In-Reply-To: <1383247111-26834-3-git-send-email-andrew@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponQ+oRYpdYrpKV3=GMh6ACQr+E+WygLHk0mdC+ivjeP_Q@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Henrik Nilsson <Karl.Henrik.Nilsson@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 1 November 2013 00:48, Andrew Lunn <andrew@lunn.ch> wrote:
-> Add cpufreq to dove_defconfig, so it is built by default.
->
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Tested-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> ---
->  arch/arm/configs/dove_defconfig | 2 ++
->  1 file changed, 2 insertions(+)
+On Friday, November 01, 2013 12:09:16 AM Viresh Kumar wrote:
+> On 31 October 2013 23:57, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> > After commit dfa5bb622555d9da0df21b50f46ebdeef390041b
+> > "cpufreq: ondemand: Change the calculation of target frequency",
+> > this return statement is no longer needed.
+> >
+> > Reported-by: Henrik Nilsson <Karl.Henrik.Nilsson@gmail.com>
+> > Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> > ---
+> >  drivers/cpufreq/cpufreq_ondemand.c | 1 -
+> >  1 file changed, 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> > index 32f26f6..18d4091 100644
+> > --- a/drivers/cpufreq/cpufreq_ondemand.c
+> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> > @@ -168,7 +168,6 @@ static void od_check_cpu(int cpu, unsigned int load)
+> >                         dbs_info->rate_mult =
+> >                                 od_tuners->sampling_down_factor;
+> >                 dbs_freq_increase(policy, policy->max);
+> > -               return;
+> >         } else {
+> >                 /* Calculate the next frequency proportional to load */
+> >                 unsigned int freq_next;
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Queued up for 3.13, thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
