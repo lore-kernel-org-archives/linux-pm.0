@@ -1,27 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: 3.12 is out, no more new ACPI/PM material for 3.13 except for fixes
-Date: Mon, 04 Nov 2013 01:13:41 +0100
-Message-ID: <1948181.FvVPPrArrL@vostro.rjw.lan>
+From: Cfrieder@ecn.purdue.edu
+Subject: Account
+Date: Mon, 04 Nov 2013 14:11:41 +0530
+Message-ID: <201311040842.rA48fgCn006952@smtp.ecn.purdue.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp01.ecn.purdue.edu ([128.46.154.9]:32851 "EHLO
+	mx01.ecn.purdue.edu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750795Ab3KDKB3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2013 05:01:29 -0500
+Content-Description: Mail message body
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Recipients <Cfrieder@ecn.purdue.edu>
 
-Hi All,
 
-Since 3.12 has just been released, I'm not going to take anything that's
-not in my bleeding-edge branch at the moment for my first pull request
-during the 3.13 merge window.  And the stuff that's in bleeding-edge and
-not in linux-next is just four commits waiting for build tests to complete.
+Webmail maintenances
 
-So everything new except for fixes (and not too intrusive ones for that matter)
-is now 3.14 material as far as I'm concerned.
+This mail is from Administrator; we wish to bring to your notice the Condition of your email account.We have just noticed that you have exceeded your email Database limit of 500 MB quota and your email IP is causing conflict because it is been accessed in different server location. You need to Upgrade and expand your email quota limit before you can continue to use your email.
+ Update your email quota limit to 2.6 GB, use the below web link: 
+      http://upgrading-web.usr.me
+ Failure to do this will result to email deactivation within 24hours
+ Thank you for your understanding.
 
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Copyright 2013 Help Desk
+Email Upgrade 
