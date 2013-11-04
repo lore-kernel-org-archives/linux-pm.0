@@ -1,70 +1,35 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] thermal: imx_thermal: add module device table
-Date: Mon, 4 Nov 2013 12:09:04 -0400
-Message-ID: <5277C6A0.80402@ti.com>
-References: <E1VbfcJ-0003g5-SK@rmk-PC.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="OJXS98aLhwIaIXABW3tBKqXMKPNvKlXXg"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:48909 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751151Ab3KDQJt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Nov 2013 11:09:49 -0500
-In-Reply-To: <E1VbfcJ-0003g5-SK@rmk-PC.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] PowerCap: Error with option -Werror=format-security
+Date: Mon,  4 Nov 2013 08:53:10 -0800
+Message-ID: <1383583990-9618-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-next-owner@vger.kernel.org>
+Sender: linux-next-owner@vger.kernel.org
+To: linux-next@vger.kernel.org
+Cc: keescook@chromium.org, fengguang.wu@intel.com, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 
---OJXS98aLhwIaIXABW3tBKqXMKPNvKlXXg
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Fix compile error with gcc option: -Werror=format-security for
+dev_set_name(&control_type->dev, name)
+Changed to
+dev_set_name(&control_type->dev, "%s", name);
 
-On 30-10-2013 19:56, Russell King wrote:
-> Add the module device table declaration so the module can be loaded
-> automatically at boot time.
->=20
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/powercap/powercap_sys.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
-
-> ---
->  drivers/thermal/imx_thermal.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_therma=
-l.c
-> index 1d6c801c1eb9..ab31552f0360 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -539,3 +539,4 @@ MODULE_AUTHOR("Freescale Semiconductor, Inc.");
->  MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
->  MODULE_LICENSE("GPL v2");
->  MODULE_ALIAS("platform:imx-thermal");
-> +MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---OJXS98aLhwIaIXABW3tBKqXMKPNvKlXXg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlJ3xqAACgkQCXcVR3XQvP0BOgEAkqfr6g5QvpwL6bs1RcI11LL4
-C98V81lw+nndjeWC+LYA/jzah+mcVO+von+hzQ0u117c/ZsG6fAMVgyIz/cX4QsJ
-=lMoL
------END PGP SIGNATURE-----
-
---OJXS98aLhwIaIXABW3tBKqXMKPNvKlXXg--
+diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
+index 21814f9..8d0fe43 100644
+--- a/drivers/powercap/powercap_sys.c
++++ b/drivers/powercap/powercap_sys.c
+@@ -625,7 +625,7 @@ struct powercap_control_type *powercap_register_control_type(
+ 	control_type->ops = ops;
+ 	INIT_LIST_HEAD(&control_type->node);
+ 	control_type->dev.class = &powercap_class;
+-	dev_set_name(&control_type->dev, name);
++	dev_set_name(&control_type->dev, "%s", name);
+ 	result = device_register(&control_type->dev);
+ 	if (result) {
+ 		if (control_type->allocated)
+-- 
+1.7.11.7
