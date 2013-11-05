@@ -1,57 +1,92 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH] PowerCap: Error with option -Werror=format-security
-Date: Mon, 4 Nov 2013 11:51:25 -0800
-Message-ID: <CAGXu5jJeixN6bAJh6KJWExyKiyJHFsFWboL7Z0Xtn2F-71zg5w@mail.gmail.com>
-References: <1383583990-9618-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:39328 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155Ab3KDTv0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2013 14:51:26 -0500
-Received: by mail-oa0-f44.google.com with SMTP id l20so7708340oag.3
-        for <linux-pm@vger.kernel.org>; Mon, 04 Nov 2013 11:51:25 -0800 (PST)
-In-Reply-To: <1383583990-9618-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: rjying <rjying@gmail.com>
+Subject: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead of voltage-tolerance
+Date: Tue,  5 Nov 2013 11:10:14 +0800
+Message-ID: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, rongjun.ying@gcsr.com, Rongjun Ying <rongjun.ying@csr.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Linux-Next <linux-next@vger.kernel.org>, Fengguang Wu <fengguang.wu@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-On Mon, Nov 4, 2013 at 8:53 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> Fix compile error with gcc option: -Werror=format-security for
-> dev_set_name(&control_type->dev, name)
-> Changed to
-> dev_set_name(&control_type->dev, "%s", name);
->
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/powercap/powercap_sys.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-> index 21814f9..8d0fe43 100644
-> --- a/drivers/powercap/powercap_sys.c
-> +++ b/drivers/powercap/powercap_sys.c
-> @@ -625,7 +625,7 @@ struct powercap_control_type *powercap_register_control_type(
->         control_type->ops = ops;
->         INIT_LIST_HEAD(&control_type->node);
->         control_type->dev.class = &powercap_class;
-> -       dev_set_name(&control_type->dev, name);
-> +       dev_set_name(&control_type->dev, "%s", name);
->         result = device_register(&control_type->dev);
->         if (result) {
->                 if (control_type->allocated)
-> --
-> 1.7.11.7
+From: Rongjun Ying <rongjun.ying@csr.com>
 
-Thanks for getting this fixed!
+Sometime the regulator can't supply appropriate voltages for requestion of cpu.
+All voltage tolerance value can't figure out a good voltage.
 
-Acked-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Rongjun Ying <rongjun.ying@csr.com>
+---
+ drivers/cpufreq/cpufreq-cpu0.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
--Kees
-
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index c522a95..0c9e6b9 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -23,7 +23,7 @@
+ #include <linux/slab.h>
+ 
+ static unsigned int transition_latency;
+-static unsigned int voltage_tolerance; /* in percentage */
++static unsigned int voltage_max;
+ 
+ static struct device *cpu_dev;
+ static struct clk *cpu_clk;
+@@ -45,7 +45,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ {
+ 	struct cpufreq_freqs freqs;
+ 	struct opp *opp;
+-	unsigned long volt = 0, volt_old = 0, tol = 0;
++	unsigned long volt = 0, volt_old = 0;
+ 	long freq_Hz, freq_exact;
+ 	unsigned int index;
+ 	int ret;
+@@ -82,7 +82,6 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 		}
+ 		volt = opp_get_voltage(opp);
+ 		rcu_read_unlock();
+-		tol = volt * voltage_tolerance / 100;
+ 		volt_old = regulator_get_voltage(cpu_reg);
+ 	}
+ 
+@@ -92,7 +91,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 
+ 	/* scaling up?  scale voltage before frequency */
+ 	if (!IS_ERR(cpu_reg) && freqs.new > freqs.old) {
+-		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
++		ret = regulator_set_voltage(cpu_reg, volt, voltage_max);
+ 		if (ret) {
+ 			pr_err("failed to scale voltage up: %d\n", ret);
+ 			freqs.new = freqs.old;
+@@ -104,14 +103,14 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 	if (ret) {
+ 		pr_err("failed to set clock rate: %d\n", ret);
+ 		if (!IS_ERR(cpu_reg))
+-			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
++			regulator_set_voltage(cpu_reg, volt_old, voltage_max);
+ 		freqs.new = freqs.old;
+ 		goto post_notify;
+ 	}
+ 
+ 	/* scaling down?  scale voltage after frequency */
+ 	if (!IS_ERR(cpu_reg) && freqs.new < freqs.old) {
+-		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
++		ret = regulator_set_voltage(cpu_reg, volt, voltage_max);
+ 		if (ret) {
+ 			pr_err("failed to scale voltage down: %d\n", ret);
+ 			clk_set_rate(cpu_clk, freqs.old * 1000);
+@@ -224,7 +223,11 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_put_node;
+ 	}
+ 
+-	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
++	ret = of_property_read_u32(np, "voltage-max", &voltage_max);
++	if (ret) {
++		pr_err("failed to get max voltage: %d\n", ret);
++		goto out_put_node;
++	}
+ 
+ 	if (of_property_read_u32(np, "clock-latency", &transition_latency))
+ 		transition_latency = CPUFREQ_ETERNAL;
 -- 
-Kees Cook
-Chrome OS Security
+1.7.5.4
+
