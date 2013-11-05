@@ -1,57 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PowerCap: Error with option -Werror=format-security
-Date: Tue, 05 Nov 2013 15:25:38 +0100
-Message-ID: <17745805.W16rbqgmuH@vostro.rjw.lan>
-References: <1383583990-9618-1-git-send-email-srinivas.pandruvada@linux.intel.com> <CAGXu5jJeixN6bAJh6KJWExyKiyJHFsFWboL7Z0Xtn2F-71zg5w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65046 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754831Ab3KEONU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2013 09:13:20 -0500
-In-Reply-To: <CAGXu5jJeixN6bAJh6KJWExyKiyJHFsFWboL7Z0Xtn2F-71zg5w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v10 0/7] cpufreq:boost: CPU Boost mode support
+Date: Tue, 05 Nov 2013 18:26:44 +0100
+Message-ID: <1383672411-26324-1-git-send-email-l.majewski@samsung.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux-Next <linux-next@vger.kernel.org>, Fengguang Wu <fengguang.wu@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-On Monday, November 04, 2013 11:51:25 AM Kees Cook wrote:
-> On Mon, Nov 4, 2013 at 8:53 AM, Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> > Fix compile error with gcc option: -Werror=format-security for
-> > dev_set_name(&control_type->dev, name)
-> > Changed to
-> > dev_set_name(&control_type->dev, "%s", name);
-> >
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > ---
-> >  drivers/powercap/powercap_sys.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-> > index 21814f9..8d0fe43 100644
-> > --- a/drivers/powercap/powercap_sys.c
-> > +++ b/drivers/powercap/powercap_sys.c
-> > @@ -625,7 +625,7 @@ struct powercap_control_type *powercap_register_control_type(
-> >         control_type->ops = ops;
-> >         INIT_LIST_HEAD(&control_type->node);
-> >         control_type->dev.class = &powercap_class;
-> > -       dev_set_name(&control_type->dev, name);
-> > +       dev_set_name(&control_type->dev, "%s", name);
-> >         result = device_register(&control_type->dev);
-> >         if (result) {
-> >                 if (control_type->allocated)
-> > --
-> > 1.7.11.7
-> 
-> Thanks for getting this fixed!
-> 
-> Acked-by: Kees Cook <keescook@chromium.org>
+This patch series introduces support for CPU overclocking technique
+called Boost.
 
-Queued up for 3.13, thanks!
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to include
+common code.
+
+Important design decisions:
+- Boost related code is compiled-in unconditionally to cpufreq core and
+  disabled by default. The cpufreq_driver is responsibile for setting
+  boost_supported flag and providing set_boost callback(if HW support
+  is needed). For software managed boost, special Kconfig flag -
+  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+  when a target platform has thermal framework properly configured.
+
+- struct cpufreq_driver has been extended with boost related fields:
+        -- boost_supported - when driver supports boosting
+        -- boost_enabled - boost state
+        -- set_boost - callback to function, which is necessary to
+           enable/disable boost
+
+- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+  _only_ when cpufreq driver supports Boost.
+
+- No special spin_lock for Boost was created. The one from cpufreq core
+  was reused.
+
+- The Boost code doesn't rely on any policy. When boost state is changed,
+  then the policy list is iterated and proper adjustements are done.
+
+- To improve safety level, the thermal framework is also extended to disable
+  software boosting, when thermal trip point is reached. After cooling down
+  the boost can be enabled again. This emulates behaviour similar to HW
+  managed boost (like x86)
+
+Tested at HW:
+       Exynos 4412 3.12-rc7 Linux
+       Intel Core i7-3770 3.12-rc7 Linux
+
+Above patches were posted on top of kernel_pm/bleeding-edge
+(SHA1: acc3663ce3f9cde3a7da88fb478531c58d5ed399)
+
+
+Lukasz Majewski (7):
+  cpufreq: Add boost frequency support in core
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  cpufreq:boost:Kconfig: Provide support for software managed BOOST
+  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+    framework
+  Documentation:cpufreq:boost: Update BOOST documentation
+  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+  thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
+    Exynos4412)
+
+ Documentation/cpu-freq/boost.txt          |   26 +++----
+ drivers/cpufreq/Kconfig                   |    4 +
+ drivers/cpufreq/Kconfig.arm               |   15 ++++
+ drivers/cpufreq/acpi-cpufreq.c            |   86 +++++++--------------
+ drivers/cpufreq/cpufreq.c                 |  118 ++++++++++++++++++++++++++++-
+ drivers/cpufreq/exynos-cpufreq.c          |    3 +
+ drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+ drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+ drivers/thermal/samsung/exynos_tmu_data.c |   47 ++++++++++++
+ include/linux/cpufreq.h                   |   24 ++++++
+ 10 files changed, 302 insertions(+), 79 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.10.4
+
