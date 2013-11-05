@@ -1,78 +1,53 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH V2 1/3] thermal: bcm281xx: Add Temperature Monitor driver
-Date: Tue, 05 Nov 2013 12:15:29 -0800
-Message-ID: <1383682529.4387.37.camel@joe-AO722>
-References: <1383681284-17643-1-git-send-email-wendy.ng@broadcom.com>
-	 <1383681284-17643-2-git-send-email-wendy.ng@broadcom.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: Async runtime put in __device_release_driver()
+Date: Tue, 5 Nov 2013 22:29:49 +0100
+Message-ID: <CAPDyKFp0UGjEbn+pWDLKOQvKsxeXSh5hY3++TA1rpErfihOtPA@mail.gmail.com>
+References: <5267A0DF.7080604@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1383681284-17643-2-git-send-email-wendy.ng@broadcom.com>
+In-Reply-To: <5267A0DF.7080604@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wendy Ng <wendy.ng@broadcom.com>
-Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Eduardo Valentin <eduardo.valentin@ti.com>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>, Tim Kryger <tim.kryger@linaro.org>, Matt Porter <matt.porter@linaro.org>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Archit Taneja <archit@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2013-11-05 at 11:54 -0800, Wendy Ng wrote:
-> This adds the support for Temperature Monitor (TMON) driver for
-> Broadcom bcm281xx SoCs. This driver plugs into the Thermal Framework.
+On 23 October 2013 12:11, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> Hi,
+>
+> I was debugging why clocks were left enabled after removing omapdss
+> driver, and I found this commit:
+>
+> fa180eb448fa263cf18dd930143b515d27d70d7b (PM / Runtime: Idle devices
+> asynchronously after probe|release)
+>
+> I don't understand how that is supposed to work.
+>
+> When a driver is removed, instead of using pm_runtime_put_sync() the
+> commit uses pm_runtime_put(), so the runtime_suspend call is queued. But
+> who is going to handle the queued suspend call, as the driver is already
+> removed? At least in my case, obviously nobody, as I only get
+> runtime_resume call in my driver, never the runtime_suspend.
+>
+> Is there something I need to add to my driver to make this work, or
+> should that part of the patch be reverted?
 
-trivia:
+I believe it is quite common that a device driver calls
+pm_runtime_get_sync as a part of it's remove callback, then it
+explicitly returns it's resources that has been fetched during probe.
+Like a clk_disable_unprepare for example.
 
-> diff --git a/drivers/thermal/bcm_kona_tmon.c b/drivers/thermal/bcm_kona_tmon.c
+The idea behind the change in __device_release_driver, was to try to
+prevent  devices from going active->idle->active and instead just
+remain active (if possible).
 
-Please add
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-before any #include to prefix the pr_<level> dmesg output.
+In your case, which seems like a more modern way of implementing
+"remove", you shall call "pm_runtime_suspend" to make sure the
+runtime_suspend callbacks gets called.
 
-If you _really_ want __func__ with each output, you could use
-#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
-though I think __func__ isn't particularly useful.
+Kind regards
+Ulf Hansson
 
-> +#include <linux/clk.h>
-> +#include <linux/err.h>
-[]
-> +static int bcm_get_temp(void *sensor_data, long *temp)
-> +{
-> +	u32 raw;
-> +	long mcelsius;
-> +	struct bcm_tmon_data_priv *priv = sensor_data;
-> +
-> +	if (!priv) {
-> +		pr_err("%s: input sensor_data not initialized.\n", __func__);
-
-then this could become
-		pr_err("input sensor_data not initialized\n");
-
-Also, there's no real need to terminate messages with sentence
-ending ".".  dmesg output generally isn't a sentence.
-
-> +		return -EINVAL;
-> +	}
-> +
-> +	raw = (readl(priv->base + TMON_TEMP_VAL_OFFSET)
-> +		& TMON_TEMP_VAL_TEMP_VAL_MASK) >> TMON_TEMP_VAL_TEMP_VAL_SHIFT;
-> +
-> +	pr_debug("%s: raw temp 0x%x\n", __func__, raw);
-
-also consider:
-
-	pr_debug("raw temp: %#x\n", raw);
-
-
-> +static int bcm_kona_tmon_probe(struct platform_device *pdev)
-> +{
-[]
-> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv) {
-> +		dev_err(&pdev->dev, "Failed to malloc priv.\n");
-> +		return -ENOMEM;
-> +	}
-
-Generic OOM messages are already emitted by devm_kzalloc.
-This could be written as:
-
-	priv = devm_kzalloc(etc...)
-	if (!priv)
-		return -ENOMEM;
+>
+>  Tomi
+>
