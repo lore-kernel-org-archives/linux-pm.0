@@ -1,86 +1,131 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v10 0/7] cpufreq:boost: CPU Boost mode support
-Date: Tue, 05 Nov 2013 18:26:44 +0100
-Message-ID: <1383672411-26324-1-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v10 7/7] thermal:exynos:boost: Automatic enable/disable of
+ BOOST feature (at Exynos4412)
+Date: Tue, 05 Nov 2013 18:26:51 +0100
+Message-ID: <1383672411-26324-8-git-send-email-l.majewski@samsung.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1383672411-26324-1-git-send-email-l.majewski@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+In-reply-to: <1383672411-26324-1-git-send-email-l.majewski@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch series introduces support for CPU overclocking technique
-called Boost.
+This patch provides auto disable/enable operation for boost. It uses already
+present thermal infrastructure to provide boost hysteresis.
+A special set of TMU data has been defined for Exynos4412, which is only
+considered when BOOST is enabled.
 
-It is a follow up of a LAB governor proposal. Boost is a LAB component:
-http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 
-Boost unifies hardware based solution (e.g. Intel Nehalem) with
-software oriented one (like the one done at Exynos).
-For this reason cpufreq/freq_table code has been reorganized to include
-common code.
+---
+Changes for v10:
+    - Remove boost related code from thermal_core.c
+    - Use already present thermal infrastructure to provide thermal hysteresis
+    - Introduce special set of TMU data for BOOST
 
-Important design decisions:
-- Boost related code is compiled-in unconditionally to cpufreq core and
-  disabled by default. The cpufreq_driver is responsibile for setting
-  boost_supported flag and providing set_boost callback(if HW support
-  is needed). For software managed boost, special Kconfig flag -
-  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
-  when a target platform has thermal framework properly configured.
+Changes for v9:
+    - None
 
-- struct cpufreq_driver has been extended with boost related fields:
-        -- boost_supported - when driver supports boosting
-        -- boost_enabled - boost state
-        -- set_boost - callback to function, which is necessary to
-           enable/disable boost
+Changes for v8:
+    - Move cpufreq_boost_* stub functions definition (needed when cpufreq
+      is not compiled in) to cpufreq.h at cpufreq core support commit
 
-- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
-  _only_ when cpufreq driver supports Boost.
+Changes for v7:
+    - None
 
-- No special spin_lock for Boost was created. The one from cpufreq core
-  was reused.
+Changes for v6:
+    - Disable boost only when supported and enabled
+    - Protect boost related thermal_zone_device struct fields with mutex
+    - Evaluate temperature trend during boost enable decision
+    - Create separate methods to handle boost enable/disable
+      (thermal_boost_{enable|disable}) operations
+    - Boost is disabled at any trip point passage (not only the non critical one)
+    - Add stub definitions for cpufreq boost functions used when
+      CONFIG_CPU_FREQ is NOT defined.
 
-- The Boost code doesn't rely on any policy. When boost state is changed,
-  then the policy list is iterated and proper adjustements are done.
+Changes for v5:
+    - Move boost disable code from cpu_cooling.c to thermal_core.c
+      (to handle_non_critical_trips)
+    - Extent struct thermal_zone_device by adding overheated bool flag
+    - Implement auto enable of boost after device cools down
+    - Introduce boost_polling flag, which indicates if thermal uses it's predefined
+      pool delay or has woken up thermal workqueue only to wait until device
+      cools down.
 
-- To improve safety level, the thermal framework is also extended to disable
-  software boosting, when thermal trip point is reached. After cooling down
-  the boost can be enabled again. This emulates behaviour similar to HW
-  managed boost (like x86)
+Changes for v4:
+    - New patch
 
-Tested at HW:
-       Exynos 4412 3.12-rc7 Linux
-       Intel Core i7-3770 3.12-rc7 Linux
+ drivers/thermal/samsung/exynos_tmu_data.c |   47 +++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-Above patches were posted on top of kernel_pm/bleeding-edge
-(SHA1: acc3663ce3f9cde3a7da88fb478531c58d5ed399)
-
-
-Lukasz Majewski (7):
-  cpufreq: Add boost frequency support in core
-  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
-    boost solution
-  cpufreq:boost:Kconfig: Provide support for software managed BOOST
-  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-    framework
-  Documentation:cpufreq:boost: Update BOOST documentation
-  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
-  thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
-    Exynos4412)
-
- Documentation/cpu-freq/boost.txt          |   26 +++----
- drivers/cpufreq/Kconfig                   |    4 +
- drivers/cpufreq/Kconfig.arm               |   15 ++++
- drivers/cpufreq/acpi-cpufreq.c            |   86 +++++++--------------
- drivers/cpufreq/cpufreq.c                 |  118 ++++++++++++++++++++++++++++-
- drivers/cpufreq/exynos-cpufreq.c          |    3 +
- drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
- drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
- drivers/thermal/samsung/exynos_tmu_data.c |   47 ++++++++++++
- include/linux/cpufreq.h                   |   24 ++++++
- 10 files changed, 302 insertions(+), 79 deletions(-)
-
+diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+index 073c292..9346926 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
++++ b/drivers/thermal/samsung/exynos_tmu_data.c
+@@ -167,13 +167,60 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
+ 	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+ 			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+ 			TMU_SUPPORT_EMUL_TIME)
++
++#define EXYNOS4412_TMU_DATA_BOOST \
++	.threshold_falling = 10, \
++	.trigger_levels[0] = 70, \
++	.trigger_levels[1] = 85, \
++	.trigger_levels[2] = 103, \
++	.trigger_levels[3] = 110, \
++	.trigger_enable[0] = true, \
++	.trigger_enable[1] = true, \
++	.trigger_enable[2] = true, \
++	.trigger_enable[3] = true, \
++	.trigger_type[0] = THROTTLE_ACTIVE, \
++	.trigger_type[1] = THROTTLE_ACTIVE, \
++	.trigger_type[2] = THROTTLE_ACTIVE, \
++	.trigger_type[3] = SW_TRIP, \
++	.max_trigger_level = 4, \
++	.gain = 8, \
++	.reference_voltage = 16, \
++	.noise_cancel_mode = 4, \
++	.cal_type = TYPE_ONE_POINT_TRIMMING, \
++	.efuse_value = 55, \
++	.min_efuse_value = 40, \
++	.max_efuse_value = 100, \
++	.first_point_trim = 25, \
++	.second_point_trim = 85, \
++	.default_temp_offset = 50, \
++	.freq_tab[0] = { \
++		.freq_clip_max = 1400 * 1000, \
++		.temp_level = 70, \
++	}, \
++	.freq_tab[1] = { \
++		.freq_clip_max = 800 * 1000, \
++		.temp_level = 85, \
++	}, \
++	.freq_tab[2] = { \
++		.freq_clip_max = 200 * 1000, \
++		.temp_level = 103, \
++	}, \
++	.freq_tab_count = 3, \
++	.registers = &exynos4412_tmu_registers, \
++	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
++			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
++			TMU_SUPPORT_EMUL_TIME)
+ #endif
+ 
+ #if defined(CONFIG_SOC_EXYNOS4412)
+ struct exynos_tmu_init_data const exynos4412_default_tmu_data = {
+ 	.tmu_data = {
+ 		{
++#ifdef CONFIG_CPU_FREQ_BOOST_SW
++			EXYNOS4412_TMU_DATA_BOOST,
++#else
+ 			EXYNOS4412_TMU_DATA,
++#endif
+ 			.type = SOC_ARCH_EXYNOS4412,
+ 			.test_mux = EXYNOS4412_MUX_ADDR_VALUE,
+ 		},
 -- 
 1.7.10.4
 
