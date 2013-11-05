@@ -1,123 +1,78 @@
-From: "Wendy Ng" <wendy.ng@broadcom.com>
-Subject: [PATCH V2 3/3] ARM: dts: Add TMON driver support to bcm281xx
-Date: Tue, 5 Nov 2013 11:54:44 -0800
-Message-ID: <1383681284-17643-4-git-send-email-wendy.ng@broadcom.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH V2 1/3] thermal: bcm281xx: Add Temperature Monitor driver
+Date: Tue, 05 Nov 2013 12:15:29 -0800
+Message-ID: <1383682529.4387.37.camel@joe-AO722>
 References: <1383681284-17643-1-git-send-email-wendy.ng@broadcom.com>
+	 <1383681284-17643-2-git-send-email-wendy.ng@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1383681284-17643-1-git-send-email-wendy.ng@broadcom.com>
+In-Reply-To: <1383681284-17643-2-git-send-email-wendy.ng@broadcom.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Eduardo Valentin <eduardo.valentin@ti.com>, Kumar Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>, Tim Kryger <tim.kryger@linaro.org>, Matt Porter <matt.porter@linaro.org>, Wendy Ng <wendy.ng@broadcom.com>
+To: Wendy Ng <wendy.ng@broadcom.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Eduardo Valentin <eduardo.valentin@ti.com>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Christian Daudt <bcm@fixthebug.org>, Markus Mayer <mmayer@broadcom.com>, Tim Kryger <tim.kryger@linaro.org>, Matt Porter <matt.porter@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This adds the support of Temperature Monitor (TMON) driver for
-Broadcom bcm281xx SoCs to the DT node. This also adds the
-thermal framework device-tree binding such that TMON driver
-can be used within the thermal framework.
+On Tue, 2013-11-05 at 11:54 -0800, Wendy Ng wrote:
+> This adds the support for Temperature Monitor (TMON) driver for
+> Broadcom bcm281xx SoCs. This driver plugs into the Thermal Framework.
 
-Signed-off-by: Wendy Ng <wendy.ng@broadcom.com>
-Reviewed-by: Markus Mayer <mmayer@broadcom.com>
-Reviewed-by: Christian Daudt <csd@broadcom.com>
-Reviewed-by: Matt Porter <matt.porter@linaro.org>
-Reviewed-by: Tim Kryger <tim.kryger@linaro.org>
-Acked-by: Kumar Gala <galak@codeaurora.org>
----
- arch/arm/boot/dts/bcm11351-brt.dts |    4 ++++
- arch/arm/boot/dts/bcm11351.dtsi    |   29 +++++++++++++++++++++++++++++
- arch/arm/boot/dts/bcm28155-ap.dts  |    4 ++++
- 3 files changed, 37 insertions(+)
+trivia:
 
-diff --git a/arch/arm/boot/dts/bcm11351-brt.dts b/arch/arm/boot/dts/bcm11351-brt.dts
-index 5a269c7..c24fd12 100644
---- a/arch/arm/boot/dts/bcm11351-brt.dts
-+++ b/arch/arm/boot/dts/bcm11351-brt.dts
-@@ -43,6 +43,10 @@
- 		status = "okay";
- 	};
- 
-+	tmon: tmon@34008000 {
-+		status = "okay";
-+	};
-+
- 	usbotg@3f120000 {
- 		status = "okay";
- 	};
-diff --git a/arch/arm/boot/dts/bcm11351.dtsi b/arch/arm/boot/dts/bcm11351.dtsi
-index 29987e2..0f17beb 100644
---- a/arch/arm/boot/dts/bcm11351.dtsi
-+++ b/arch/arm/boot/dts/bcm11351.dtsi
-@@ -13,6 +13,7 @@
- 
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/interrupt-controller/irq.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- #include "skeleton.dtsi"
- 
-@@ -25,6 +26,24 @@
- 		bootargs = "console=ttyS0,115200n8";
- 	};
- 
-+	thermal-zones {
-+		cpu_thermal: cpu_thermal {
-+			polling-delay-passive = <250>; /* msec */
-+			polling-delay = <1000>; /* msec */
-+
-+					   /* sensor */
-+			thermal-sensors = <&tmon>;
-+
-+			trips {
-+				cpu_crit: cpu_crit {
-+				        temperature = <105000>; /* mCelsius */
-+				        hysteresis = <2000>; /* mCelsius */
-+				        type = THERMAL_TRIP_CRITICAL;
-+				};
-+			};
-+		};
-+	};
-+
- 	gic: interrupt-controller@3ff00100 {
- 		compatible = "arm,cortex-a9-gic";
- 		#interrupt-cells = <3>;
-@@ -285,6 +304,15 @@
- 		};
- 	};
- 
-+	tmon: tmon@34008000 {
-+		compatible = "brcm,bcm11351-tmon", "brcm,kona-tmon";
-+		reg = <0x34008000 0x0024>;
-+		clocks = <&tmon_1m_clk>;
-+		interrupts = <GIC_SPI 183 IRQ_TYPE_LEVEL_HIGH>;
-+		#thermal-sensor-cells = <0>;
-+		status = "disabled";
-+	};
-+
- 	usbotg: usbotg@3f120000 {
- 		compatible = "snps,dwc2";
- 		reg = <0x3f120000 0x10000>;
-@@ -305,4 +333,5 @@
- 		compatible = "brcm,kona-usb2";
- 		status = "disabled";
- 	};
-+
- };
-diff --git a/arch/arm/boot/dts/bcm28155-ap.dts b/arch/arm/boot/dts/bcm28155-ap.dts
-index 02ebaaf..7151c25 100644
---- a/arch/arm/boot/dts/bcm28155-ap.dts
-+++ b/arch/arm/boot/dts/bcm28155-ap.dts
-@@ -63,6 +63,10 @@
- 		status = "okay";
- 	};
- 
-+	tmon: tmon@34008000 {
-+		status = "okay";
-+	};
-+
- 	usbotg@3f120000 {
- 		status = "okay";
- 	};
--- 
-1.7.9.5
+> diff --git a/drivers/thermal/bcm_kona_tmon.c b/drivers/thermal/bcm_kona_tmon.c
+
+Please add
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+before any #include to prefix the pr_<level> dmesg output.
+
+If you _really_ want __func__ with each output, you could use
+#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
+though I think __func__ isn't particularly useful.
+
+> +#include <linux/clk.h>
+> +#include <linux/err.h>
+[]
+> +static int bcm_get_temp(void *sensor_data, long *temp)
+> +{
+> +	u32 raw;
+> +	long mcelsius;
+> +	struct bcm_tmon_data_priv *priv = sensor_data;
+> +
+> +	if (!priv) {
+> +		pr_err("%s: input sensor_data not initialized.\n", __func__);
+
+then this could become
+		pr_err("input sensor_data not initialized\n");
+
+Also, there's no real need to terminate messages with sentence
+ending ".".  dmesg output generally isn't a sentence.
+
+> +		return -EINVAL;
+> +	}
+> +
+> +	raw = (readl(priv->base + TMON_TEMP_VAL_OFFSET)
+> +		& TMON_TEMP_VAL_TEMP_VAL_MASK) >> TMON_TEMP_VAL_TEMP_VAL_SHIFT;
+> +
+> +	pr_debug("%s: raw temp 0x%x\n", __func__, raw);
+
+also consider:
+
+	pr_debug("raw temp: %#x\n", raw);
+
+
+> +static int bcm_kona_tmon_probe(struct platform_device *pdev)
+> +{
+[]
+> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv) {
+> +		dev_err(&pdev->dev, "Failed to malloc priv.\n");
+> +		return -ENOMEM;
+> +	}
+
+Generic OOM messages are already emitted by devm_kzalloc.
+This could be written as:
+
+	priv = devm_kzalloc(etc...)
+	if (!priv)
+		return -ENOMEM;
