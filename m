@@ -1,109 +1,65 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
- of voltage-tolerance
-Date: Tue, 5 Nov 2013 19:53:09 +0800
-Message-ID: <20131105115307.GN19770@S2101-09.ap.freescale.net>
-References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
- <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / hibernate: Avoid overflow in hibernate_preallocate_memory
+Date: Tue, 05 Nov 2013 15:22:11 +0100
+Message-ID: <1974778.1p97Y6DIEX@vostro.rjw.lan>
+References: <52789B31.70005@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rongjun.ying@gcsr.com, Rongjun Ying <rongjun.ying@csr.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60597 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754536Ab3KEOJy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2013 09:09:54 -0500
+In-Reply-To: <52789B31.70005@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Leon Drugi <eyak@wp.pl>
 
-On Tue, Nov 05, 2013 at 10:08:06AM +0530, Viresh Kumar wrote:
-> Adding shawn in cc list..
+On Tuesday, November 05, 2013 03:16:01 PM Aaron Lu wrote:
+> When system has a lot of highmem(e.g. 16GiB using a 32 bits kernel), the
+> code to calculate how much memory we need to preallocate in normal zone
+> may cause overflow. As Leon has analysed:
+> "
+> It looks that during computing 'alloc' variable there is overflow:
+> alloc = (3943404 - 1970542) - 1978280 = -5418 (signed)
+> And this function goes to err_out.
+> "
+> Fix this by avoiding that overflow.
 > 
-> On 5 November 2013 08:40, rjying <rjying@gmail.com> wrote:
-> > From: Rongjun Ying <rongjun.ying@csr.com>
-> >
-> > Sometime the regulator can't supply appropriate voltages for requestion of cpu.
-> > All voltage tolerance value can't figure out a good voltage.
+> Reference: https://bugzilla.kernel.org/show_bug.cgi?id=60817
+> Reported-and-tested-by: Leon Drugi <eyak@wp.pl>
+> Cc: stable <stable@vger.kernel.org>
+> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> ---
+>  kernel/power/snapshot.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 98c3b34a4cff..91aa616a1f4e 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1402,7 +1402,8 @@ int hibernate_preallocate_memory(void)
+>  	 * highmem and non-highmem zones separately.
+>  	 */
+>  	pages_highmem = preallocate_image_highmem(highmem / 2);
+> -	alloc = (count - max_size) - pages_highmem;
+> +	alloc = (count - max_size) > pages_highmem ?
+> +		(count - max_size - pages_highmem) : 0;
 
-The voltage-tolerance is an optional device tree property.  You can omit
-it if you do not have a value for it.
+Well, what about
 
-Shawn
+	alloc = count - max_size;
+	if (alloc > pages_highmem)
+		alloc -= pages_highmem;
+	else
+		alloc = 0;
 
-> >
-> > Signed-off-by: Rongjun Ying <rongjun.ying@csr.com>
-> > ---
-> >  drivers/cpufreq/cpufreq-cpu0.c |   17 ++++++++++-------
-> >  1 files changed, 10 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> > index c522a95..0c9e6b9 100644
-> > --- a/drivers/cpufreq/cpufreq-cpu0.c
-> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> > @@ -23,7 +23,7 @@
-> >  #include <linux/slab.h>
-> >
-> >  static unsigned int transition_latency;
-> > -static unsigned int voltage_tolerance; /* in percentage */
-> > +static unsigned int voltage_max;
-> >
-> >  static struct device *cpu_dev;
-> >  static struct clk *cpu_clk;
-> > @@ -45,7 +45,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> >  {
-> >         struct cpufreq_freqs freqs;
-> >         struct opp *opp;
-> > -       unsigned long volt = 0, volt_old = 0, tol = 0;
-> > +       unsigned long volt = 0, volt_old = 0;
-> >         long freq_Hz, freq_exact;
-> >         unsigned int index;
-> >         int ret;
-> > @@ -82,7 +82,6 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> >                 }
-> >                 volt = opp_get_voltage(opp);
-> >                 rcu_read_unlock();
-> > -               tol = volt * voltage_tolerance / 100;
-> >                 volt_old = regulator_get_voltage(cpu_reg);
-> >         }
-> >
-> > @@ -92,7 +91,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> >
-> >         /* scaling up?  scale voltage before frequency */
-> >         if (!IS_ERR(cpu_reg) && freqs.new > freqs.old) {
-> > -               ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-> > +               ret = regulator_set_voltage(cpu_reg, volt, voltage_max);
-> >                 if (ret) {
-> >                         pr_err("failed to scale voltage up: %d\n", ret);
-> >                         freqs.new = freqs.old;
-> > @@ -104,14 +103,14 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> >         if (ret) {
-> >                 pr_err("failed to set clock rate: %d\n", ret);
-> >                 if (!IS_ERR(cpu_reg))
-> > -                       regulator_set_voltage_tol(cpu_reg, volt_old, tol);
-> > +                       regulator_set_voltage(cpu_reg, volt_old, voltage_max);
-> >                 freqs.new = freqs.old;
-> >                 goto post_notify;
-> >         }
-> >
-> >         /* scaling down?  scale voltage after frequency */
-> >         if (!IS_ERR(cpu_reg) && freqs.new < freqs.old) {
-> > -               ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-> > +               ret = regulator_set_voltage(cpu_reg, volt, voltage_max);
-> >                 if (ret) {
-> >                         pr_err("failed to scale voltage down: %d\n", ret);
-> >                         clk_set_rate(cpu_clk, freqs.old * 1000);
-> > @@ -224,7 +223,11 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-> >                 goto out_put_node;
-> >         }
-> >
-> > -       of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
-> > +       ret = of_property_read_u32(np, "voltage-max", &voltage_max);
-> > +       if (ret) {
-> > +               pr_err("failed to get max voltage: %d\n", ret);
-> > +               goto out_put_node;
-> > +       }
-> >
-> >         if (of_property_read_u32(np, "clock-latency", &transition_latency))
-> >                 transition_latency = CPUFREQ_ETERNAL;
-> > --
-> > 1.7.5.4
-> >
+>  	pages = preallocate_image_memory(alloc, avail_normal);
+>  	if (pages < alloc) {
+>  		/* We have exhausted non-highmem pages, try highmem. */
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
