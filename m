@@ -1,52 +1,46 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH] PM / hibernate: Avoid overflow in hibernate_preallocate_memory
-Date: Tue, 05 Nov 2013 15:16:01 +0800
-Message-ID: <52789B31.70005@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: =?UTF-8?Q?Re=3A_=E7=AD=94=E5=A4=8D=3A_=5BPATCH=5D_cpufreq=3A_sirf_=3A_Add_cpufreq_for_?=
+	=?UTF-8?Q?SiRFprimaII_and_SiRFatlasVI?=
+Date: Tue, 5 Nov 2013 14:29:14 +0530
+Message-ID: <CAKohpomfAxcqLX1t9SQmtviE-2-VM2C9aSVN4dCBXXsFusE9FA@mail.gmail.com>
+References: <1381030393-10452-1-git-send-email-Baohua.Song@csr.com>
+	<CAKohpok8GvukpTMyscjhn17UbcNSYpEzVMfv4JNg1Us=Gx39cg@mail.gmail.com>
+	<86130EF012BDF348AA0D464A4F449478012953F474@SHAASIEXM01.ASIA.ROOT.PRI>
+	<CAKohpomCm86CtZGDiELen63_xnAbFtrqNmfugH94e+n5HeshQA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:36740 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774Ab3KEHPQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Nov 2013 02:15:16 -0500
+Received: from mail-oa0-f53.google.com ([209.85.219.53]:34561 "EHLO
+	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752671Ab3KEI7P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2013 03:59:15 -0500
+Received: by mail-oa0-f53.google.com with SMTP id j17so252950oag.26
+        for <linux-pm@vger.kernel.org>; Tue, 05 Nov 2013 00:59:15 -0800 (PST)
+In-Reply-To: <CAKohpomCm86CtZGDiELen63_xnAbFtrqNmfugH94e+n5HeshQA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Leon Drugi <eyak@wp.pl>
+To: Rongjun Ying <Rongjun.Ying@csr.com>, Shawn Guo <shawn.guo@linaro.org>
+Cc: Barry Song <21cnbao@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Barry Song <Barry.Song@csr.com>
 
-When system has a lot of highmem(e.g. 16GiB using a 32 bits kernel), the
-code to calculate how much memory we need to preallocate in normal zone
-may cause overflow. As Leon has analysed:
-"
-It looks that during computing 'alloc' variable there is overflow:
-alloc = (3943404 - 1970542) - 1978280 = -5418 (signed)
-And this function goes to err_out.
-"
-Fix this by avoiding that overflow.
+Trying to send again, it bounced for some reason from lists..
 
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=60817
-Reported-and-tested-by: Leon Drugi <eyak@wp.pl>
-Cc: stable <stable@vger.kernel.org>
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
- kernel/power/snapshot.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 98c3b34a4cff..91aa616a1f4e 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1402,7 +1402,8 @@ int hibernate_preallocate_memory(void)
- 	 * highmem and non-highmem zones separately.
- 	 */
- 	pages_highmem = preallocate_image_highmem(highmem / 2);
--	alloc = (count - max_size) - pages_highmem;
-+	alloc = (count - max_size) > pages_highmem ?
-+		(count - max_size - pages_highmem) : 0;
- 	pages = preallocate_image_memory(alloc, avail_normal);
- 	if (pages < alloc) {
- 		/* We have exhausted non-highmem pages, try highmem. */
--- 
-1.8.4.39.ga0d3f10
-
+On 5 November 2013 14:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 28 October 2013 15:53, Rongjun Ying <Rongjun.Ying@csr.com> wrote:
+>>> Viresh Kumar [mailto:viresh.kumar@linaro.org]
+>
+>>> Any particular reason why you aren't reusing cpufreq-cpu0 ?? I can't see any
+>>> special stuff in this driver, that can't be handled by cpu0..
+>
+>> I tried to use the cpufreq-cpu0, But I found the regulator can't work  correct. Our regulator ic only supply 1.035V(min) and 1.150V(max) voltage which use a gpio pin to control it.
+>> But our SoC need 1.025V(200MHz or 400MHz), 1.050V(600MHz) and 1.150V(800MHz).
+>> So I can't set a voltage-tolerance value to get a appropriate voltage tolerance pair.
+>> For exsample:
+>> If I set voltage-tolerance to 1.
+>> Freqs           need-voltage            min-voltage             max-voltate             set to
+>> 800MHz          1.150V                  1.1385V                 1.1615V                 1.15V
+>> 600MHz          1.050V                  1.0395V                 1.0605V                 Can't set, this case can set to 1.150V
+>> Set other voltage-tolerance value, the same situation would happen.
+>>
+>> So I propose use a voltage-max instead of voltage-tolerance and replace regulator_set_voltage_tol to regulator_set_voltage(regulatrer, min_uV, voltage_max);
+>
+> @Shawn: Can you provide your inputs here?
