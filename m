@@ -1,46 +1,109 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: =?UTF-8?Q?Re=3A_=E7=AD=94=E5=A4=8D=3A_=5BPATCH=5D_cpufreq=3A_sirf_=3A_Add_cpufreq_for_?=
-	=?UTF-8?Q?SiRFprimaII_and_SiRFatlasVI?=
-Date: Tue, 5 Nov 2013 14:29:14 +0530
-Message-ID: <CAKohpomfAxcqLX1t9SQmtviE-2-VM2C9aSVN4dCBXXsFusE9FA@mail.gmail.com>
-References: <1381030393-10452-1-git-send-email-Baohua.Song@csr.com>
-	<CAKohpok8GvukpTMyscjhn17UbcNSYpEzVMfv4JNg1Us=Gx39cg@mail.gmail.com>
-	<86130EF012BDF348AA0D464A4F449478012953F474@SHAASIEXM01.ASIA.ROOT.PRI>
-	<CAKohpomCm86CtZGDiELen63_xnAbFtrqNmfugH94e+n5HeshQA@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
+ of voltage-tolerance
+Date: Tue, 5 Nov 2013 19:53:09 +0800
+Message-ID: <20131105115307.GN19770@S2101-09.ap.freescale.net>
+References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
+ <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:34561 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671Ab3KEI7P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2013 03:59:15 -0500
-Received: by mail-oa0-f53.google.com with SMTP id j17so252950oag.26
-        for <linux-pm@vger.kernel.org>; Tue, 05 Nov 2013 00:59:15 -0800 (PST)
-In-Reply-To: <CAKohpomCm86CtZGDiELen63_xnAbFtrqNmfugH94e+n5HeshQA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rongjun.ying@gcsr.com, Rongjun Ying <rongjun.ying@csr.com>
 List-Id: linux-pm@vger.kernel.org
-To: Rongjun Ying <Rongjun.Ying@csr.com>, Shawn Guo <shawn.guo@linaro.org>
-Cc: Barry Song <21cnbao@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Barry Song <Barry.Song@csr.com>
 
-Trying to send again, it bounced for some reason from lists..
+On Tue, Nov 05, 2013 at 10:08:06AM +0530, Viresh Kumar wrote:
+> Adding shawn in cc list..
+> 
+> On 5 November 2013 08:40, rjying <rjying@gmail.com> wrote:
+> > From: Rongjun Ying <rongjun.ying@csr.com>
+> >
+> > Sometime the regulator can't supply appropriate voltages for requestion of cpu.
+> > All voltage tolerance value can't figure out a good voltage.
 
-On 5 November 2013 14:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 28 October 2013 15:53, Rongjun Ying <Rongjun.Ying@csr.com> wrote:
->>> Viresh Kumar [mailto:viresh.kumar@linaro.org]
->
->>> Any particular reason why you aren't reusing cpufreq-cpu0 ?? I can't see any
->>> special stuff in this driver, that can't be handled by cpu0..
->
->> I tried to use the cpufreq-cpu0, But I found the regulator can't work  correct. Our regulator ic only supply 1.035V(min) and 1.150V(max) voltage which use a gpio pin to control it.
->> But our SoC need 1.025V(200MHz or 400MHz), 1.050V(600MHz) and 1.150V(800MHz).
->> So I can't set a voltage-tolerance value to get a appropriate voltage tolerance pair.
->> For exsample:
->> If I set voltage-tolerance to 1.
->> Freqs           need-voltage            min-voltage             max-voltate             set to
->> 800MHz          1.150V                  1.1385V                 1.1615V                 1.15V
->> 600MHz          1.050V                  1.0395V                 1.0605V                 Can't set, this case can set to 1.150V
->> Set other voltage-tolerance value, the same situation would happen.
->>
->> So I propose use a voltage-max instead of voltage-tolerance and replace regulator_set_voltage_tol to regulator_set_voltage(regulatrer, min_uV, voltage_max);
->
-> @Shawn: Can you provide your inputs here?
+The voltage-tolerance is an optional device tree property.  You can omit
+it if you do not have a value for it.
+
+Shawn
+
+> >
+> > Signed-off-by: Rongjun Ying <rongjun.ying@csr.com>
+> > ---
+> >  drivers/cpufreq/cpufreq-cpu0.c |   17 ++++++++++-------
+> >  1 files changed, 10 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> > index c522a95..0c9e6b9 100644
+> > --- a/drivers/cpufreq/cpufreq-cpu0.c
+> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> > @@ -23,7 +23,7 @@
+> >  #include <linux/slab.h>
+> >
+> >  static unsigned int transition_latency;
+> > -static unsigned int voltage_tolerance; /* in percentage */
+> > +static unsigned int voltage_max;
+> >
+> >  static struct device *cpu_dev;
+> >  static struct clk *cpu_clk;
+> > @@ -45,7 +45,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+> >  {
+> >         struct cpufreq_freqs freqs;
+> >         struct opp *opp;
+> > -       unsigned long volt = 0, volt_old = 0, tol = 0;
+> > +       unsigned long volt = 0, volt_old = 0;
+> >         long freq_Hz, freq_exact;
+> >         unsigned int index;
+> >         int ret;
+> > @@ -82,7 +82,6 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+> >                 }
+> >                 volt = opp_get_voltage(opp);
+> >                 rcu_read_unlock();
+> > -               tol = volt * voltage_tolerance / 100;
+> >                 volt_old = regulator_get_voltage(cpu_reg);
+> >         }
+> >
+> > @@ -92,7 +91,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+> >
+> >         /* scaling up?  scale voltage before frequency */
+> >         if (!IS_ERR(cpu_reg) && freqs.new > freqs.old) {
+> > -               ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+> > +               ret = regulator_set_voltage(cpu_reg, volt, voltage_max);
+> >                 if (ret) {
+> >                         pr_err("failed to scale voltage up: %d\n", ret);
+> >                         freqs.new = freqs.old;
+> > @@ -104,14 +103,14 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+> >         if (ret) {
+> >                 pr_err("failed to set clock rate: %d\n", ret);
+> >                 if (!IS_ERR(cpu_reg))
+> > -                       regulator_set_voltage_tol(cpu_reg, volt_old, tol);
+> > +                       regulator_set_voltage(cpu_reg, volt_old, voltage_max);
+> >                 freqs.new = freqs.old;
+> >                 goto post_notify;
+> >         }
+> >
+> >         /* scaling down?  scale voltage after frequency */
+> >         if (!IS_ERR(cpu_reg) && freqs.new < freqs.old) {
+> > -               ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+> > +               ret = regulator_set_voltage(cpu_reg, volt, voltage_max);
+> >                 if (ret) {
+> >                         pr_err("failed to scale voltage down: %d\n", ret);
+> >                         clk_set_rate(cpu_clk, freqs.old * 1000);
+> > @@ -224,7 +223,11 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+> >                 goto out_put_node;
+> >         }
+> >
+> > -       of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
+> > +       ret = of_property_read_u32(np, "voltage-max", &voltage_max);
+> > +       if (ret) {
+> > +               pr_err("failed to get max voltage: %d\n", ret);
+> > +               goto out_put_node;
+> > +       }
+> >
+> >         if (of_property_read_u32(np, "clock-latency", &transition_latency))
+> >                 transition_latency = CPUFREQ_ETERNAL;
+> > --
+> > 1.7.5.4
+> >
