@@ -1,29 +1,56 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Subject: does niced processes scales frequency too at the ondemand governor
- ?
-Date: Wed, 06 Nov 2013 19:29:18 +0100
-Message-ID: <527A8A7E.1050906@gmx.de>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCHv2 3/7] arm: dts: dra7: add bandgap entry
+Date: Wed, 6 Nov 2013 16:23:03 -0400
+Message-ID: <1383769383-13500-1-git-send-email-eduardo.valentin@ti.com>
+References: <1380652344-18819-4-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1380652344-18819-4-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org, bcousson@baylibre.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, t-kristo@ti.com, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Running a Gentoo Linux at a 4-core CPU (i5) I realize, that compiling
-packages using -j4 usually needs twice as long, if I run 4 BOINC
-processes in the back ground (nice -n 19) too. Even considering effects
-of invalidation of cache data this seems a too big impact in my eyes.
+This patch adds bandgap IP entry on DRA7 dtsi device tree file.
 
-It looks for me like that the BOINC processes scales down the frequency=
-,
-when they are running. This behaviour however would be wrong IMO. The
-frequency should be scaled just by the non-niced foreground processes,
-right ?
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ arch/arm/boot/dts/dra7.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+---
+Hi all,
 
---=20
-MfG/Sincerely
-Toralf F=C3=B6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+Difference from V1: now the BG node belongs to OCP.
+
+Tero, this is the patch you were asking for.
+
+Thanks,
+
+Eduardo
+
+diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
+index 3a746c2..d3d467b 100644
+--- a/arch/arm/boot/dts/dra7.dtsi
++++ b/arch/arm/boot/dts/dra7.dtsi
+@@ -102,6 +102,18 @@
+ 			pinctrl-single,function-mask = <0x3fffffff>;
+ 		};
+ 
++		bandgap: bandgap {
++			reg = <0x4a0021e0 0xc
++				0x4a00232c 0xc
++				0x4a002380 0x2c
++				0x4a0023C0 0x3c
++				0x4a002564 0x8
++				0x4a002574 0x50>;
++			compatible = "ti,dra752-bandgap";
++			interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>;
++			#thermal-sensor-cells = <1>;
++		};
++
+ 		sdma: dma-controller@4a056000 {
+ 			compatible = "ti,omap4430-sdma";
+ 			reg = <0x4a056000 0x1000>;
+-- 
+1.8.2.1.342.gfa7285d
