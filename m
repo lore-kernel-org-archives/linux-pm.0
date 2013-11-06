@@ -1,53 +1,77 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: Async runtime put in __device_release_driver()
-Date: Tue, 5 Nov 2013 22:29:49 +0100
-Message-ID: <CAPDyKFp0UGjEbn+pWDLKOQvKsxeXSh5hY3++TA1rpErfihOtPA@mail.gmail.com>
-References: <5267A0DF.7080604@ti.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH update] PM / hibernate: Avoid overflow in hibernate_preallocate_memory
+Date: Wed, 06 Nov 2013 08:41:31 +0800
+Message-ID: <5279903B.40202@intel.com>
+References: <52789B31.70005@intel.com> <1974778.1p97Y6DIEX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5267A0DF.7080604@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Archit Taneja <archit@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:52711 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755373Ab3KFAkr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Nov 2013 19:40:47 -0500
+In-Reply-To: <1974778.1p97Y6DIEX@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Leon Drugi <eyak@wp.pl>
 
-On 23 October 2013 12:11, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> Hi,
->
-> I was debugging why clocks were left enabled after removing omapdss
-> driver, and I found this commit:
->
-> fa180eb448fa263cf18dd930143b515d27d70d7b (PM / Runtime: Idle devices
-> asynchronously after probe|release)
->
-> I don't understand how that is supposed to work.
->
-> When a driver is removed, instead of using pm_runtime_put_sync() the
-> commit uses pm_runtime_put(), so the runtime_suspend call is queued. But
-> who is going to handle the queued suspend call, as the driver is already
-> removed? At least in my case, obviously nobody, as I only get
-> runtime_resume call in my driver, never the runtime_suspend.
->
-> Is there something I need to add to my driver to make this work, or
-> should that part of the patch be reverted?
+On 11/05/2013 10:22 PM, Rafael J. Wysocki wrote:
+> On Tuesday, November 05, 2013 03:16:01 PM Aaron Lu wrote:
+>>  	pages_highmem = preallocate_image_highmem(highmem / 2);
+>> -	alloc = (count - max_size) - pages_highmem;
+>> +	alloc = (count - max_size) > pages_highmem ?
+>> +		(count - max_size - pages_highmem) : 0;
+> 
+> Well, what about
+> 
+> 	alloc = count - max_size;
+> 	if (alloc > pages_highmem)
+> 		alloc -= pages_highmem;
+> 	else
+> 		alloc = 0;
+> 
 
-I believe it is quite common that a device driver calls
-pm_runtime_get_sync as a part of it's remove callback, then it
-explicitly returns it's resources that has been fetched during probe.
-Like a clk_disable_unprepare for example.
+OK, here it comes:
 
-The idea behind the change in __device_release_driver, was to try to
-prevent  devices from going active->idle->active and instead just
-remain active (if possible).
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH] PM / hibernate: Avoid overflow in hibernate_preallocate_memory
 
-In your case, which seems like a more modern way of implementing
-"remove", you shall call "pm_runtime_suspend" to make sure the
-runtime_suspend callbacks gets called.
+When system has a lot of highmem(e.g. 16GiB using a 32 bits kernel), the
+code to calculate how much memory we need to preallocate in normal zone
+may cause overflow. As Leon has analysed:
+"
+It looks that during computing 'alloc' variable there is overflow:
+alloc = (3943404 - 1970542) - 1978280 = -5418 (signed)
+And this function goes to err_out.
+"
+Fix this by avoiding that overflow.
 
-Kind regards
-Ulf Hansson
+Reference: https://bugzilla.kernel.org/show_bug.cgi?id=60817
+Reported-and-tested-by: Leon Drugi <eyak@wp.pl>
+Cc: stable <stable@vger.kernel.org>
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ kernel/power/snapshot.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
->
->  Tomi
->
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 98c3b34a4cff..10c22cae83a0 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -1402,7 +1402,11 @@ int hibernate_preallocate_memory(void)
+ 	 * highmem and non-highmem zones separately.
+ 	 */
+ 	pages_highmem = preallocate_image_highmem(highmem / 2);
+-	alloc = (count - max_size) - pages_highmem;
++	alloc = count - max_size;
++	if (alloc > pages_highmem)
++		alloc -= pages_highmem;
++	else
++		alloc = 0;
+ 	pages = preallocate_image_memory(alloc, avail_normal);
+ 	if (pages < alloc) {
+ 		/* We have exhausted non-highmem pages, try highmem. */
+-- 
+1.8.4.39.ga0d3f10
