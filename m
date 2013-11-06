@@ -1,77 +1,159 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH update] PM / hibernate: Avoid overflow in hibernate_preallocate_memory
-Date: Wed, 06 Nov 2013 08:41:31 +0800
-Message-ID: <5279903B.40202@intel.com>
-References: <52789B31.70005@intel.com> <1974778.1p97Y6DIEX@vostro.rjw.lan>
+From: Rongjun Ying <Rongjun.Ying@csr.com>
+Subject: RE: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
+ of voltage-tolerance
+Date: Wed, 6 Nov 2013 02:15:07 +0000
+Message-ID: <86130EF012BDF348AA0D464A4F44947801295423DF@SHAASIEXM01.ASIA.ROOT.PRI>
+References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
+ <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
+ <20131105115307.GN19770@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:52711 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755373Ab3KFAkr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Nov 2013 19:40:47 -0500
-In-Reply-To: <1974778.1p97Y6DIEX@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20131105115307.GN19770@S2101-09.ap.freescale.net>
+Content-Language: zh-CN
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "rongjun.ying@gcsr.com" <rongjun.ying@gcsr.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Leon Drugi <eyak@wp.pl>
 
-On 11/05/2013 10:22 PM, Rafael J. Wysocki wrote:
-> On Tuesday, November 05, 2013 03:16:01 PM Aaron Lu wrote:
->>  	pages_highmem = preallocate_image_highmem(highmem / 2);
->> -	alloc = (count - max_size) - pages_highmem;
->> +	alloc = (count - max_size) > pages_highmem ?
->> +		(count - max_size - pages_highmem) : 0;
+
+
+> -----Original Message-----
+> From: Shawn Guo [mailto:shawn.guo@linaro.org]
+> Sent: Tuesday, November 05, 2013 7:53 PM
+> To: Viresh Kumar
+> Cc: rjying; Rafael J. Wysocki; cpufreq@vger.kernel.org; linux-
+> pm@vger.kernel.org; Linux Kernel Mailing List; rongjun.ying@gcsr.com;
+> Rongjun Ying
+> Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage
+> instead of voltage-tolerance
 > 
-> Well, what about
+> On Tue, Nov 05, 2013 at 10:08:06AM +0530, Viresh Kumar wrote:
+> > Adding shawn in cc list..
+> >
+> > On 5 November 2013 08:40, rjying <rjying@gmail.com> wrote:
+> > > From: Rongjun Ying <rongjun.ying@csr.com>
+> > >
+> > > Sometime the regulator can't supply appropriate voltages for
+> requestion of cpu.
+> > > All voltage tolerance value can't figure out a good voltage.
 > 
-> 	alloc = count - max_size;
-> 	if (alloc > pages_highmem)
-> 		alloc -= pages_highmem;
-> 	else
-> 		alloc = 0;
+> The voltage-tolerance is an optional device tree property.  You can
+> omit it if you do not have a value for it.
 > 
+> Shawn
 
-OK, here it comes:
+It bounced for some reason, trying to send again.
 
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH] PM / hibernate: Avoid overflow in hibernate_preallocate_memory
+If omit voltage-tolerance, sometimes also can't get appropriate voltages.
+For example:
+If the regulator IC only can supply min voltage is 1.000V and max voltage is 1.200V, and cpu work max voltage is 1.200V.
+But the cpu just need 1.100V when cpu run under a freq.
+So regulator_set_voltage_tol will return failed. 
+Because the regulator_set_voltage will invoke with min-uV is 1100000 and max-uV is 1100000 parameters.
+Regulator can't supply it.
+As this case, the regulator just need supply 1.200V.
 
-When system has a lot of highmem(e.g. 16GiB using a 32 bits kernel), the
-code to calculate how much memory we need to preallocate in normal zone
-may cause overflow. As Leon has analysed:
-"
-It looks that during computing 'alloc' variable there is overflow:
-alloc = (3943404 - 1970542) - 1978280 = -5418 (signed)
-And this function goes to err_out.
-"
-Fix this by avoiding that overflow.
+RongJun Ying
+> 
+> > >
+> > > Signed-off-by: Rongjun Ying <rongjun.ying@csr.com>
+> > > ---
+> > >  drivers/cpufreq/cpufreq-cpu0.c |   17 ++++++++++-------
+> > >  1 files changed, 10 insertions(+), 7 deletions(-)
+> > >
+> > > diff --git a/drivers/cpufreq/cpufreq-cpu0.c
+> > > b/drivers/cpufreq/cpufreq-cpu0.c index c522a95..0c9e6b9 100644
+> > > --- a/drivers/cpufreq/cpufreq-cpu0.c
+> > > +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> > > @@ -23,7 +23,7 @@
+> > >  #include <linux/slab.h>
+> > >
+> > >  static unsigned int transition_latency; -static unsigned int
+> > > voltage_tolerance; /* in percentage */
+> > > +static unsigned int voltage_max;
+> > >
+> > >  static struct device *cpu_dev;
+> > >  static struct clk *cpu_clk;
+> > > @@ -45,7 +45,7 @@ static int cpu0_set_target(struct cpufreq_policy
+> > > *policy,  {
+> > >         struct cpufreq_freqs freqs;
+> > >         struct opp *opp;
+> > > -       unsigned long volt = 0, volt_old = 0, tol = 0;
+> > > +       unsigned long volt = 0, volt_old = 0;
+> > >         long freq_Hz, freq_exact;
+> > >         unsigned int index;
+> > >         int ret;
+> > > @@ -82,7 +82,6 @@ static int cpu0_set_target(struct cpufreq_policy
+> *policy,
+> > >                 }
+> > >                 volt = opp_get_voltage(opp);
+> > >                 rcu_read_unlock();
+> > > -               tol = volt * voltage_tolerance / 100;
+> > >                 volt_old = regulator_get_voltage(cpu_reg);
+> > >         }
+> > >
+> > > @@ -92,7 +91,7 @@ static int cpu0_set_target(struct cpufreq_policy
+> > > *policy,
+> > >
+> > >         /* scaling up?  scale voltage before frequency */
+> > >         if (!IS_ERR(cpu_reg) && freqs.new > freqs.old) {
+> > > -               ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+> > > +               ret = regulator_set_voltage(cpu_reg, volt,
+> > > + voltage_max);
+> > >                 if (ret) {
+> > >                         pr_err("failed to scale voltage up: %d\n",
+> ret);
+> > >                         freqs.new = freqs.old; @@ -104,14 +103,14
+> @@
+> > > static int cpu0_set_target(struct cpufreq_policy *policy,
+> > >         if (ret) {
+> > >                 pr_err("failed to set clock rate: %d\n", ret);
+> > >                 if (!IS_ERR(cpu_reg))
+> > > -                       regulator_set_voltage_tol(cpu_reg, volt_old,
+> tol);
+> > > +                       regulator_set_voltage(cpu_reg, volt_old,
+> > > + voltage_max);
+> > >                 freqs.new = freqs.old;
+> > >                 goto post_notify;
+> > >         }
+> > >
+> > >         /* scaling down?  scale voltage after frequency */
+> > >         if (!IS_ERR(cpu_reg) && freqs.new < freqs.old) {
+> > > -               ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+> > > +               ret = regulator_set_voltage(cpu_reg, volt,
+> > > + voltage_max);
+> > >                 if (ret) {
+> > >                         pr_err("failed to scale voltage down: %d\n",
+> ret);
+> > >                         clk_set_rate(cpu_clk, freqs.old * 1000); @@
+> > > -224,7 +223,11 @@ static int cpu0_cpufreq_probe(struct
+> platform_device *pdev)
+> > >                 goto out_put_node;
+> > >         }
+> > >
+> > > -       of_property_read_u32(np, "voltage-tolerance",
+> &voltage_tolerance);
+> > > +       ret = of_property_read_u32(np, "voltage-max", &voltage_max);
+> > > +       if (ret) {
+> > > +               pr_err("failed to get max voltage: %d\n", ret);
+> > > +               goto out_put_node;
+> > > +       }
+> > >
+> > >         if (of_property_read_u32(np, "clock-latency",
+> &transition_latency))
+> > >                 transition_latency = CPUFREQ_ETERNAL;
+> > > --
+> > > 1.7.5.4
+> > >
+> 
+> 
+> 
+>  To report this email as spam click
+> https://www.mailcontrol.com/sr/MZbqvYs5QwJvpeaetUwhCQ==
+> X88IR7qi8t8XvyHQDjR!61qPoTyr8GNFXkv3KeH4!zzvzA== .
 
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=60817
-Reported-and-tested-by: Leon Drugi <eyak@wp.pl>
-Cc: stable <stable@vger.kernel.org>
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
- kernel/power/snapshot.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 98c3b34a4cff..10c22cae83a0 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1402,7 +1402,11 @@ int hibernate_preallocate_memory(void)
- 	 * highmem and non-highmem zones separately.
- 	 */
- 	pages_highmem = preallocate_image_highmem(highmem / 2);
--	alloc = (count - max_size) - pages_highmem;
-+	alloc = count - max_size;
-+	if (alloc > pages_highmem)
-+		alloc -= pages_highmem;
-+	else
-+		alloc = 0;
- 	pages = preallocate_image_memory(alloc, avail_normal);
- 	if (pages < alloc) {
- 		/* We have exhausted non-highmem pages, try highmem. */
--- 
-1.8.4.39.ga0d3f10
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+More information can be found at www.csr.com. Follow CSR on Twitter at http://twitter.com/CSR_PLC and read our blog at www.csr.com/blog
