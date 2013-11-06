@@ -1,112 +1,165 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Subject: Re: Async runtime put in __device_release_driver()
-Date: Wed, 6 Nov 2013 09:51:42 +0200
-Message-ID: <5279F50E.6040304@ti.com>
-References: <5267A0DF.7080604@ti.com> <CAPDyKFp0UGjEbn+pWDLKOQvKsxeXSh5hY3++TA1rpErfihOtPA@mail.gmail.com>
+From: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
+Subject: Re: [PATCH 1/3 v6] thermal: samsung: add intclr_fall_shift bit in exynos_tmu_register
+Date: Wed, 6 Nov 2013 18:47:56 +0530
+Message-ID: <CAHfPSqAi5NdAcpiw4LXN0AHdd5t3EW1ATQq=cFsSEV+w36OnbA@mail.gmail.com>
+References: <1377668719-8602-2-git-send-email-ch.naveen@samsung.com>
+ <1381979473-7079-1-git-send-email-ch.naveen@samsung.com> <2064487.sPVcMNRS4J@amdc1032>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="aNj3CiBxWU9rNxe6a5uIGpIL74JqPV6h7"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:36569 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803Ab3KFHvy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 6 Nov 2013 02:51:54 -0500
-In-Reply-To: <CAPDyKFp0UGjEbn+pWDLKOQvKsxeXSh5hY3++TA1rpErfihOtPA@mail.gmail.com>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:55449 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756438Ab3KFNSS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2013 08:18:18 -0500
+In-Reply-To: <2064487.sPVcMNRS4J@amdc1032>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Archit Taneja <archit@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, devicetree@vger.kernel.org, cpgs@samsung.com
 
---aNj3CiBxWU9rNxe6a5uIGpIL74JqPV6h7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hello Bartlomiej,
 
-On 2013-11-05 23:29, Ulf Hansson wrote:
-> On 23 October 2013 12:11, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:=
+My reply is very long delayed sorry.
 
->> Hi,
->>
->> I was debugging why clocks were left enabled after removing omapdss
->> driver, and I found this commit:
->>
->> fa180eb448fa263cf18dd930143b515d27d70d7b (PM / Runtime: Idle devices
->> asynchronously after probe|release)
->>
->> I don't understand how that is supposed to work.
->>
->> When a driver is removed, instead of using pm_runtime_put_sync() the
->> commit uses pm_runtime_put(), so the runtime_suspend call is queued. B=
-ut
->> who is going to handle the queued suspend call, as the driver is alrea=
-dy
->> removed? At least in my case, obviously nobody, as I only get
->> runtime_resume call in my driver, never the runtime_suspend.
->>
->> Is there something I need to add to my driver to make this work, or
->> should that part of the patch be reverted?
->=20
-> I believe it is quite common that a device driver calls
-> pm_runtime_get_sync as a part of it's remove callback, then it
-> explicitly returns it's resources that has been fetched during probe.
-> Like a clk_disable_unprepare for example.
-
-I guess you mean the driver calls pm_runtime_get_sync _and_
-pm_runtime_put_sync as part of its remove callback?
-
-Probably bus drivers need to do that, but for memory mapped devices in a
-SoC, I don't think there's normally any need to do
-pm_runtime_get/put_sync during the remove callback.
-
-> The idea behind the change in __device_release_driver, was to try to
-> prevent  devices from going active->idle->active and instead just
-> remain active (if possible).
+On 17 October 2013 15:33, Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
 >
-> In your case, which seems like a more modern way of implementing
-> "remove", you shall call "pm_runtime_suspend" to make sure the
-> runtime_suspend callbacks gets called.
+> Hi Naveen,
+>
+> On Thursday, October 17, 2013 08:41:13 AM Naveen Krishna Chatradhi wrote:
+>> On Exynos5250, the FALL interrupt related en, status and clear bits are
+>> available at an offset of
+>> 16 in INTEN, INTSTAT registers and at an offset of
+>> 12 in INTCLEAR register.
+>>
+>> On Exynos5420, the FALL interrupt related en, status and clear bits are
+>> available at an offset of
+>> 16 in INTEN, INTSTAT and INTCLEAR registers.
+>>
+>> On Exynos5440,
+>> the FALL_IRQEN bits are at an offset of 4
+>> and the RISE_IRQEN bits are at an offset of 0
+>>
+>> This patch introduces a new bit field intclr_fall_shift to handle the
+>> offset for exyns5250 and exynos5440
+>>
+>> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+>> ---
+>> Changes since v1:
+>> Changes since v2:
+>> Changes since v3:
+>>   None
+>> Changes since v4:
+>>  Correct the CLEAR_FALL_INT_SHIFT for Exynos5250/Exynos5440
+>> Changes since v5:
+>>  Modify the commit message
+>
+> Thank you but v5 had more issues which are not fixed yet. Please see below.
+>
+>>  drivers/thermal/samsung/exynos_tmu.c      |    2 +-
+>>  drivers/thermal/samsung/exynos_tmu.h      |    2 ++
+>>  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
+>>  drivers/thermal/samsung/exynos_tmu_data.h |    4 +++-
+>>  4 files changed, 8 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>> index 32f38b9..b2202fa 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> @@ -265,7 +265,7 @@ skip_calib_data:
+>>                               data->base + reg->threshold_th1);
+>>
+>>               writel((reg->inten_rise_mask << reg->inten_rise_shift) |
+>> -                     (reg->inten_fall_mask << reg->inten_fall_shift),
+>> +                     (reg->inten_fall_mask << reg->intclr_fall_shift),
+>>                               data->base + reg->tmu_intclear);
+>>
+>>               /* if last threshold limit is also present */
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+>> index 3fb6554..5f4fe6c 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>> @@ -136,6 +136,7 @@ enum soc_type {
+>>   * @inten_fall3_shift: shift bits of falling 3 interrupt bits.
+>>   * @tmu_intstat: Register containing the interrupt status values.
+>>   * @tmu_intclear: Register for clearing the raised interrupt status.
+>> + * @intclr_fall_shift: shift bits for interrupt clear fall 0
+>>   * @emul_con: TMU emulation controller register.
+>>   * @emul_temp_shift: shift bits of emulation temperature.
+>>   * @emul_time_shift: shift bits of emulation time.
+>> @@ -207,6 +208,7 @@ struct exynos_tmu_registers {
+>>       u32     tmu_intstat;
+>>
+>>       u32     tmu_intclear;
+>> +     u32     intclr_fall_shift;
+>>
+>>       u32     emul_con;
+>>       u32     emul_temp_shift;
+>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+>> index 073c292..09a8a27 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+>> @@ -123,6 +123,7 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
+>>       .inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
+>>       .tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
+>>       .tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
+>> +     .intclr_fall_shift = EXYNOS5250_TMU_CLEAR_FALL_INT_SHIFT,
+>>       .emul_con = EXYNOS_EMUL_CON,
+>>       .emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
+>>       .emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+>> @@ -228,6 +229,7 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
+>>       .inten_fall0_shift = EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
+>>       .tmu_intstat = EXYNOS5440_TMU_S0_7_IRQ,
+>>       .tmu_intclear = EXYNOS5440_TMU_S0_7_IRQ,
+>> +     .intclr_fall_shift = EXYNOS5440_TMU_CLEAR_FALL_INT_SHIFT,
+>>       .tmu_irqstatus = EXYNOS5440_TMU_IRQ_STATUS,
+>>       .emul_con = EXYNOS5440_TMU_S0_7_DEBUG,
+>>       .emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
+>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
+>> index a1ea19d..9c1e2c8 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+>> @@ -69,9 +69,11 @@
+>>  #define EXYNOS_TMU_RISE_INT_MASK     0x111
+>>  #define EXYNOS_TMU_RISE_INT_SHIFT    0
+>>  #define EXYNOS_TMU_FALL_INT_MASK     0x111
+>> -#define EXYNOS_TMU_FALL_INT_SHIFT    12
+>> +#define EXYNOS_TMU_FALL_INT_SHIFT    16
+>>  #define EXYNOS_TMU_CLEAR_RISE_INT    0x111
+>>  #define EXYNOS_TMU_CLEAR_FALL_INT    (0x111 << 12)
+>> +#define EXYNOS5250_TMU_CLEAR_FALL_INT_SHIFT  12
+>
+> The better name would be EXYNOS_TMU_CLEAR_FALL_INT_SHIFT because it is
+> also used on EXYNOS4412.
+Okey will do that,
+>
+> Also in patch #3 you should define EXYNOS5420_TMU_CLEAR_FALL_INT_SHIFT
+> instead of re-using EXYNOS_TMU_FALL_INT_SHIFT.
+Exynos5440 has so will make for exynos5420 aswell
+>
+> Finally please remove no longer used inten_fall_shift field and related
+inten_fall_shift is not used will remove
+> defines (EXYNOS_TMU_FALL_INT_MASK and EXYNOS5440_TMU_FALL_INT_MASK).
+These macros are used for inten_fall_shift which is used at
+drivers/thermal/samsung/exynos_tmu.c:273:
+(reg->inten_fall_mask << reg->intclr_fall_shift),
 
-And as far as I understand, the change creates an explicit requirement
-to do either pm_runtime_get/put_sync or pm_runtime_suspend inside
-driver's remove callback. If so, that should be mentioned in big red
-letters in the pm-runtime documentation.
-
-The runtime_pm.txt doc does mention something related to this (and btw,
-the doc says pm_runtime_put_sync is being called, which is no longer
-true), but nothing clear about how the driver remove callback must be
-implemented.
-
-I tried grepping the kernel sources to find out if pm_runtime_suspend is
-widely used to get SoC platform devices to suspend, but it doesn't seem
-like it is. I didn't see pm_runtime_get/put_sync being used in remove
-callbacks widely either, but that was more difficult one to grep.
-
- Tomi
+>
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+>
+>> +#define EXYNOS5440_TMU_CLEAR_FALL_INT_SHIFT  4
+>>  #define EXYNOS_TMU_TRIP_MODE_SHIFT   13
+>>  #define EXYNOS_TMU_TRIP_MODE_MASK    0x7
+>>  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT       12
+>
+Will repost soon.
 
 
 
---aNj3CiBxWU9rNxe6a5uIGpIL74JqPV6h7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSefUSAAoJEPo9qoy8lh71lvYP/1J+EfdY3Pb4nZrIket+i6vC
-DuweAc6BEHJfkbGHsfcEU7Bpy0FS6vvFRc5M7D4tFGevuucXq5wkGBQI38Smm0mg
-S1zPx0/Y4UYfEElOmbYIq7zpmAEVurr8M813UHrwCZkiajeaVdW44iWXM/sAJDH5
-DscCovC8RKZAk8RCAqR/BUEL2sC1WXGqtLZf93wzQfIBVEFuzzW+AZHMYXpfcg0x
-OrLAb9AbLVbC2G9XWShMq1aaTGW17wHCtEGvElqaj6CiKi0ttRqFoFPfrn67/POP
-AjyGBNd6YbhEyK+rs3i/BigRY8agTudRCStWgB/FMgfL72Dy9Jxfn+p9DqPjoDX5
-2WK0hwdkiBh2ue1HUym3KLdX3tdogRwe9UsIgzi2LVNYz9IbNPeLT+zKsHFq86a2
-whT2bR/LRlsdrlOUzpp3FKmIGKpjFKL7hWUW9YfhIiQ0Ztch9N7iqqDH2V2OYrva
-VMFb+uJLITTwmtetxmB3n6NiLTns8a4rmf/q+98ifY0x6ayN6+ipEgBku8u81rYf
-9JcDdE8WdNZTGPrAXYvqN1okH5RL2CKuKxeVtKkegOZt//Be7z1KwFFXKcsfvLBQ
-oatw20lBtpE8VyPgBWwyjg8qLGSmN3TzeHArGrKyFSEqMOfvGX5hfa+iyEWXnE8l
-umvoctJ+r7vcG2mL7QwA
-=Q4u2
------END PGP SIGNATURE-----
-
---aNj3CiBxWU9rNxe6a5uIGpIL74JqPV6h7--
+-- 
+Shine bright,
+(: Nav :)
