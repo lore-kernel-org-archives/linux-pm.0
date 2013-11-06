@@ -1,46 +1,61 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
- of voltage-tolerance
-Date: Wed, 6 Nov 2013 11:27:44 +0800
-Message-ID: <20131106032742.GP19770@S2101-09.ap.freescale.net>
-References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
- <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
- <20131105115307.GN19770@S2101-09.ap.freescale.net>
- <86130EF012BDF348AA0D464A4F44947801295423DF@SHAASIEXM01.ASIA.ROOT.PRI>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: fix return value check in
+ cpufreq_cooling_register()
+Date: Wed, 06 Nov 2013 13:17:28 +0800
+Message-ID: <1383715048.2073.9.camel@rzhang1-mobl4>
+References: <CAPgLHd8_-oLvW7ps5way80S10asaN6uy8imjtUaqysQNNTXb7A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db9lp0251.outbound.messaging.microsoft.com ([213.199.154.251]:48997
-	"EHLO db9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751050Ab3KFD1I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2013 22:27:08 -0500
-Content-Disposition: inline
-In-Reply-To: <86130EF012BDF348AA0D464A4F44947801295423DF@SHAASIEXM01.ASIA.ROOT.PRI>
+Received: from mga01.intel.com ([192.55.52.88]:20465 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755Ab3KFFRd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Nov 2013 00:17:33 -0500
+In-Reply-To: <CAPgLHd8_-oLvW7ps5way80S10asaN6uy8imjtUaqysQNNTXb7A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rongjun Ying <Rongjun.Ying@csr.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "rongjun.ying@gcsr.com" <rongjun.ying@gcsr.com>
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: eduardo.valentin@ti.com, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-On Wed, Nov 06, 2013 at 02:15:07AM +0000, Rongjun Ying wrote:
-> If omit voltage-tolerance, sometimes also can't get appropriate voltages.
-> For example:
-> If the regulator IC only can supply min voltage is 1.000V and max voltage is 1.200V, and cpu work max voltage is 1.200V.
-> But the cpu just need 1.100V when cpu run under a freq.
-> So regulator_set_voltage_tol will return failed. 
-> Because the regulator_set_voltage will invoke with min-uV is 1100000 and max-uV is 1100000 parameters.
-> Regulator can't supply it.
-> As this case, the regulator just need supply 1.200V.
+On Fri, 2013-10-25 at 21:55 +0800, Wei Yongjun wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> 
+> In case of error, the function thermal_cooling_device_register() returns
+> ERR_PTR() and never returns NULL. The NULL test in the return value check
+> should be replaced with IS_ERR().
+> 
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-For given board, what voltages could be provided is known.  So you can
-just define OPP table in <board>.dts and specify the voltage as the
-value that the regulator IC can supply, e.g. 1.200V in above example.
+applied.
 
-This is not nice, as OPP table is CPU/SoC specific and should be ideally
-defined in <soc>.dtsi.  But still it's a way out for you to use
-cpufreq-cpu0 driver as it is.
+thanks,
+rui
+> ---
+>  drivers/thermal/cpu_cooling.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index d179028..02a46f2 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -469,10 +469,10 @@ cpufreq_cooling_register(const struct cpumask *clip_cpus)
+>  
+>  	cool_dev = thermal_cooling_device_register(dev_name, cpufreq_dev,
+>  						   &cpufreq_cooling_ops);
+> -	if (!cool_dev) {
+> +	if (IS_ERR(cool_dev)) {
+>  		release_idr(&cpufreq_idr, cpufreq_dev->id);
+>  		kfree(cpufreq_dev);
+> -		return ERR_PTR(-EINVAL);
+> +		return cool_dev;
+>  	}
+>  	cpufreq_dev->cool_dev = cool_dev;
+>  	cpufreq_dev->cpufreq_state = 0;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-In any case, you can not just change voltage-tolerance to voltage-max
-with no care about the existing users.
-
-Shawn
 
