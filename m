@@ -1,80 +1,75 @@
-From: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
-Subject: Re: [PATCH] thermal: exynos: handle gate clock for misplaced TRIMINFO register
-Date: Thu, 7 Nov 2013 20:41:57 +0530
-Message-ID: <CAHfPSqDrkn5nPfP17bMRQUQTHSc48nGXu4_+XVBBixfx+Wvj5g@mail.gmail.com>
-References: <1383828154-428-1-git-send-email-ch.naveen@samsung.com> <1695605.pk9l7dqkqm@amdc1227>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM / Runtime: Update documentation around probe|remove|suspend
+Date: Thu, 7 Nov 2013 10:49:52 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1311071046040.1401-100000@iolanthe.rowland.org>
+References: <1383817200-3004-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1695605.pk9l7dqkqm@amdc1227>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:40422 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752435Ab3KGPty (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Nov 2013 10:49:54 -0500
+In-Reply-To: <1383817200-3004-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Kevin Hilman <khilman@linaro.org>
 
-On 7 November 2013 19:48, Tomasz Figa <t.figa@samsung.com> wrote:
-> Hi Naveen,
->
-> On Thursday 07 of November 2013 18:12:34 Naveen Krishna Chatradhi wrote:
->> On Exynos5420 the TMU(4) for GPU has a seperate clock enable bit from
->> the other TMU channels(0 ~ 3). Hence, accessing TRIMINFO for base_second
->> should be acompanied by enabling the respective clock.
->>
->> This patch which allow for a "clk_sec" clock to be specified in the
->> device-tree which will be ungated when accessing the TRIMINFO register.
->>
->> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
->> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
->> ---
->>  drivers/thermal/samsung/exynos_tmu.c |   24 +++++++++++++++++++++++-
->>  1 file changed, 23 insertions(+), 1 deletion(-)
->
-> This patch modifies the device binding, but fails to mention anything
-> about the modification in respective documentation. Please do not do that.
-Will make a note to update Documentation from now on.
+On Thu, 7 Nov 2013, Ulf Hansson wrote:
 
->
-> In addition, since the series adding support for Exynos 5420 has not been
-> merged yet, I would rather make this patch a part of that series.
-Will merge and upload the whole set, first thing tomorrow.
->
-> Also please see my comment below.
->
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index b54825a..33edd1a 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> [snip]
->> @@ -641,6 +650,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>       if (ret)
->>               return ret;
->>
->> +     data->clk_sec = devm_clk_get(&pdev->dev, "tmu_apbif_sec");
->> +     if (!IS_ERR(data->clk_sec)) {
->
-> This code does not check if the clock was specified for TMU channels that
-> require it, i.e. the driver will not fail if you don't specify this clock.
-I thought of making it mandatory, And TMU on Exynos5440 may not need
-second clock for accessing the second base. I Will confirm with the Exynso5440
-specs and update accordingly.
->
-> Instead, it would be better create a separate compatible value for such
-> channels, like "samsung,exynos5420-tmu-broken-triminfo", for which this
-> clock would be mandatory and for which, if this clock is not specified,
-> the driver would fail.
-Right
+> PM core and driver core has changed some behavior regarding use of
+> runtime PM. Update the documentation accordingly.
+> 
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  Documentation/power/runtime_pm.txt |   19 ++++++++++---------
+>  1 file changed, 10 insertions(+), 9 deletions(-)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 0f54333..0f62cc7 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -547,13 +547,11 @@ helper functions described in Section 4.  In that case, pm_runtime_resume()
+>  should be used.  Of course, for this purpose the device's runtime PM has to be
+>  enabled earlier by calling pm_runtime_enable().
+>  
+> -If the device bus type's or driver's ->probe() callback runs
+> -pm_runtime_suspend() or pm_runtime_idle() or their asynchronous counterparts,
+> -they will fail returning -EAGAIN, because the device's usage counter is
+> -incremented by the driver core before executing ->probe().  Still, it may be
+> -desirable to suspend the device as soon as ->probe() has finished, so the driver
+> -core uses pm_runtime_put_sync() to invoke the subsystem-level idle callback for
+> -the device at that time.
+> +It may be desirable to suspend the device once ->probe() has finished.
+> +Therefore the driver core uses the asyncronous pm_request_idle() to submit a
+> +request to execute the subsystem-level idle callback for the device at that
+> +time.  A driver which make use of the runtime autosuspend feature, may want to
 
-Sure Tomasz,
-Creating a new compatible makes handling this case really simple
+s/which make/that makes/
+s/,//
 
-Thanks for reviewing.
->
-> Best regards,
-> Tomasz
->
+> +update the last busy mark before it finalilizes it's ->probe().
 
+s/it finalilizes it's/returning from/
 
+>  Moreover, the driver core prevents runtime PM callbacks from racing with the bus
+>  notifier callback in __device_release_driver(), which is necessary, because the
+> @@ -632,7 +630,10 @@ The PM core always increments the runtime usage counter before calling the
+>  Hence disabling runtime PM temporarily like this will not cause any runtime
+>  suspend attempts to be permanently lost.  If the usage count goes to zero
+>  following the return of the ->resume() callback, the ->runtime_idle() callback
+> -will be invoked as usual.
+> +will be invoked as usual.  Do note that PM core use the asyncronous
+> +pm_runtime_put() when decrementing the usage counter, which means it don't wait
+> +for the device to become inactive before it moves on and handles the next
+> +device from the list.
 
--- 
-Shine bright,
-(: Nav :)
+I don't think we need to state this.  It shouldn't make any difference 
+to drivers whether the runtime-put is synchronous or async.
+
+Alan Stern
+
