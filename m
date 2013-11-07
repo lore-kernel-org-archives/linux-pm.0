@@ -1,116 +1,91 @@
 From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH] thermal: exynos: handle gate clock for misplaced TRIMINFO
- register
-Date: Thu, 07 Nov 2013 18:12:34 +0530
-Message-ID: <1383828154-428-1-git-send-email-ch.naveen@samsung.com>
+Subject: [PATCH v2] ARM: dts: Exynos5420: Add device nodes for TMU blocks
+Date: Thu, 07 Nov 2013 18:37:49 +0530
+Message-ID: <1383829669-1271-1-git-send-email-ch.naveen@samsung.com>
+References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com
+To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: t.figa@samsung.com, naveenkrishna.ch@gmail.com, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, cpgs@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Exynos5420 the TMU(4) for GPU has a seperate clock enable bit from
-the other TMU channels(0 ~ 3). Hence, accessing TRIMINFO for base_second
-should be acompanied by enabling the respective clock.
+Exynos5420 SoC has per core thermal management unit.
+5 TMU channels 4 for CPUs and 5th for GPU.
 
-This patch which allow for a "clk_sec" clock to be specified in the
-device-tree which will be ungated when accessing the TRIMINFO register.
+This patch adds the device tree nodes to the DT device list.
 
-Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+Nodes carry the misplaced second base address and the second
+clock to access the misplaced base address.
+
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
 Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
 ---
- drivers/thermal/samsung/exynos_tmu.c |   24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+Changes since v1:
+1. Nodes carry the misplaced second base address and the second
+   clock to access the misplaced base address.
+2. Correct the clock number for the TMU4
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index b54825a..33edd1a 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -47,6 +47,7 @@
-  * @irq_work: pointer to the irq work structure.
-  * @lock: lock to implement synchronization.
-  * @clk: pointer to the clock structure.
-+ * @clk_sec: pointer to the clock structure for accessing the base_second.
-  * @temp_error1: fused value of the first point trim.
-  * @temp_error2: fused value of the second point trim.
-  * @regulator: pointer to the TMU regulator structure.
-@@ -61,7 +62,7 @@ struct exynos_tmu_data {
- 	enum soc_type soc;
- 	struct work_struct irq_work;
- 	struct mutex lock;
--	struct clk *clk;
-+	struct clk *clk, *clk_sec;
- 	u8 temp_error1, temp_error2;
- 	struct regulator *regulator;
- 	struct thermal_sensor_conf *reg_conf;
-@@ -152,6 +153,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 
- 	mutex_lock(&data->lock);
- 	clk_enable(data->clk);
-+	if (!IS_ERR(data->clk_sec))
-+		clk_enable(data->clk_sec);
- 
- 	if (TMU_SUPPORTS(pdata, READY_STATUS)) {
- 		status = readb(data->base + reg->tmu_status);
-@@ -306,6 +309,8 @@ skip_calib_data:
- out:
- 	clk_disable(data->clk);
- 	mutex_unlock(&data->lock);
-+	if (!IS_ERR(data->clk_sec))
-+		clk_disable(data->clk_sec);
- 
- 	return ret;
- }
-@@ -457,12 +462,16 @@ static void exynos_tmu_work(struct work_struct *work)
- 	const struct exynos_tmu_registers *reg = pdata->registers;
- 	unsigned int val_irq, val_type;
- 
-+	if (!IS_ERR(data->clk_sec))
-+		clk_enable(data->clk_sec);
- 	/* Find which sensor generated this interrupt */
- 	if (reg->tmu_irqstatus) {
- 		val_type = readl(data->base_second + reg->tmu_irqstatus);
- 		if (!((val_type >> data->id) & 0x1))
- 			goto out;
- 	}
-+	if (!IS_ERR(data->clk_sec))
-+		clk_disable(data->clk_sec);
- 
- 	exynos_report_trigger(data->reg_conf);
- 	mutex_lock(&data->lock);
-@@ -641,6 +650,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	data->clk_sec = devm_clk_get(&pdev->dev, "tmu_apbif_sec");
-+	if (!IS_ERR(data->clk_sec)) {
-+		ret = clk_prepare(data->clk_sec);
-+		if (ret) {
-+			dev_err(&pdev->dev, "Failed to get clock\n");
-+			return  PTR_ERR(data->clk_sec);
-+		}
-+	}
+ arch/arm/boot/dts/exynos5420.dtsi |   48 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+index 6ffefd1..d736b40 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -369,4 +369,52 @@
+ 		clock-names = "gscl";
+ 		samsung,power-domain = <&gsc_pd>;
+ 	};
 +
- 	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
- 	    pdata->type == SOC_ARCH_EXYNOS4412 ||
- 	    pdata->type == SOC_ARCH_EXYNOS5250 ||
-@@ -713,6 +731,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	return 0;
- err_clk:
- 	clk_unprepare(data->clk);
-+	if (!IS_ERR(data->clk_sec))
-+		clk_unprepare(data->clk_sec);
- 	return ret;
- }
- 
-@@ -725,6 +745,8 @@ static int exynos_tmu_remove(struct platform_device *pdev)
- 	exynos_unregister_thermal(data->reg_conf);
- 
- 	clk_unprepare(data->clk);
-+	if (!IS_ERR(data->clk_sec))
-+		clk_unprepare(data->clk_sec);
- 
- 	if (!IS_ERR(data->regulator))
- 		regulator_disable(data->regulator);
++	/* tmu for CPU0 */
++	tmu@10060000 {
++		compatible = "samsung,exynos5420-tmu";
++		reg = <0x10060000 0x100>;
++		interrupts = <0 65 0>;
++		clocks = <&clock 318>;
++		clock-names = "tmu_apbif";
++	};
++
++	/* tmu for CPU1 */
++	tmu@10064000 {
++		compatible = "samsung,exynos5420-tmu";
++		reg = <0x10064000 0x100>;
++		interrupts = <0 183 0>;
++		clocks = <&clock 318>;
++		clock-names = "tmu_apbif";
++	};
++
++	/* tmu for CPU2 */
++	tmu@10068000 {
++		compatible = "samsung,exynos5420-tmu";
++		/* 2nd reg is for the misplaced TRIMINFO register */
++		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
++		interrupts = <0 184 0>;
++		clocks = <&clock 318>;
++		clock-names = "tmu_apbif";
++	};
++
++	/* tmu for CPU3 */
++	tmu@1006c000 {
++		compatible = "samsung,exynos5420-tmu";
++		/* 2nd reg is for the misplaced TRIMINFO register */
++		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
++		interrupts = <0 185 0>;
++		clocks = <&clock 318>, <&clock 319>;
++		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
++	};
++
++	/* tmu for GPU */
++	tmu@100a0000 {
++		compatible = "samsung,exynos5420-tmu";
++		/* 2nd reg is for the misplaced TRIMINFO register */
++		reg = <0x100a0000 0x100>, <0x10068000 0x4>;
++		interrupts = <0 215 0>;
++		clocks = <&clock 319>, <&clock 318>;
++		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
++	};
+ };
 -- 
 1.7.10.4
