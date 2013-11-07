@@ -1,187 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Async runtime put in __device_release_driver()
-Date: Thu, 07 Nov 2013 02:05:22 +0100
-Message-ID: <1492779.QFdev7puUr@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1311061656450.1220-100000@iolanthe.rowland.org> <5303847.vEYmuQ7tHR@vostro.rjw.lan> <CAGa+x84096yRRU4PvV4jte28_YtXXNECgtp8N6gm9-GT+BjRvw@mail.gmail.com>
+From: Rongjun Ying <Rongjun.Ying@csr.com>
+Subject: RE: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
+ of voltage-tolerance
+Date: Thu, 7 Nov 2013 01:55:21 +0000
+Message-ID: <86130EF012BDF348AA0D464A4F44947801295427BD@SHAASIEXM01.ASIA.ROOT.PRI>
+References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
+ <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
+ <20131105115307.GN19770@S2101-09.ap.freescale.net>
+ <86130EF012BDF348AA0D464A4F44947801295423DF@SHAASIEXM01.ASIA.ROOT.PRI>
+ <20131106032742.GP19770@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59757 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752805Ab3KGAxD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2013 19:53:03 -0500
-In-Reply-To: <CAGa+x84096yRRU4PvV4jte28_YtXXNECgtp8N6gm9-GT+BjRvw@mail.gmail.com>
+Received: from cluster-d.mailcontrol.com ([85.115.60.190]:57111 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751451Ab3KGBzg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2013 20:55:36 -0500
+In-Reply-To: <20131106032742.GP19770@S2101-09.ap.freescale.net>
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Archit Taneja <archit@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Barry Song <Barry.Song@csr.com>
 
-On Wednesday, November 06, 2013 04:21:48 PM Kevin Hilman wrote:
-> On Wed, Nov 6, 2013 at 4:16 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Wednesday, November 06, 2013 11:48:24 PM Ulf Hansson wrote:
-> >>
-> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> skrev:
-> >> >On Wednesday, November 06, 2013 05:02:12 PM Alan Stern wrote:
-> >> >> On Wed, 6 Nov 2013, Rafael J. Wysocki wrote:
-> >> >>
-> >> >> > On Wednesday, November 06, 2013 09:51:42 AM Tomi Valkeinen wrote:
-> >> >> > > On 2013-11-05 23:29, Ulf Hansson wrote:
-> >> >> > > > On 23 October 2013 12:11, Tomi Valkeinen
-> >> ><tomi.valkeinen@ti.com> wrote:
-> >> >> > > >> Hi,
-> >> >> > > >>
-> >> >> > > >> I was debugging why clocks were left enabled after removing
-> >> >omapdss
-> >> >> > > >> driver, and I found this commit:
-> >> >> > > >>
-> >> >> > > >> fa180eb448fa263cf18dd930143b515d27d70d7b (PM / Runtime: Idle
-> >> >devices
-> >> >> > > >> asynchronously after probe|release)
-> >> >> > > >>
-> >> >> > > >> I don't understand how that is supposed to work.
-> >> >> > > >>
-> >> >> > > >> When a driver is removed, instead of using
-> >> >pm_runtime_put_sync() the
-> >> >> > > >> commit uses pm_runtime_put(), so the runtime_suspend call is
-> >> >queued. But
-> >> >> > > >> who is going to handle the queued suspend call, as the driver
-> >> >is already
-> >> >> > > >> removed? At least in my case, obviously nobody, as I only get
-> >> >> > > >> runtime_resume call in my driver, never the runtime_suspend.
-> >> >> > > >>
-> >> >> > > >> Is there something I need to add to my driver to make this
-> >> >work, or
-> >> >> > > >> should that part of the patch be reverted?
-> >> >> > > >
-> >> >> > > > I believe it is quite common that a device driver calls
-> >> >> > > > pm_runtime_get_sync as a part of it's remove callback, then it
-> >> >> > > > explicitly returns it's resources that has been fetched during
-> >> >probe.
-> >> >> > > > Like a clk_disable_unprepare for example.
-> >> >> > >
-> >> >> > > I guess you mean the driver calls pm_runtime_get_sync _and_
-> >> >> > > pm_runtime_put_sync as part of its remove callback?
-> >> >> > >
-> >> >> > > Probably bus drivers need to do that, but for memory mapped
-> >> >devices in a
-> >> >> > > SoC, I don't think there's normally any need to do
-> >> >> > > pm_runtime_get/put_sync during the remove callback.
-> >> >> > >
-> >> >> > > > The idea behind the change in __device_release_driver, was to
-> >> >try to
-> >> >> > > > prevent  devices from going active->idle->active and instead
-> >> >just
-> >> >> > > > remain active (if possible).
-> >> >> > > >
-> >> >> > > > In your case, which seems like a more modern way of
-> >> >implementing
-> >> >> > > > "remove", you shall call "pm_runtime_suspend" to make sure the
-> >> >> > > > runtime_suspend callbacks gets called.
-> >> >> > >
-> >> >> > > And as far as I understand, the change creates an explicit
-> >> >requirement
-> >> >> > > to do either pm_runtime_get/put_sync or pm_runtime_suspend inside
-> >> >> > > driver's remove callback. If so, that should be mentioned in big
-> >> >red
-> >> >> > > letters in the pm-runtime documentation.
-> >> >> > >
-> >> >> > > The runtime_pm.txt doc does mention something related to this
-> >> >(and btw,
-> >> >> > > the doc says pm_runtime_put_sync is being called, which is no
-> >> >longer
-> >> >> > > true), but nothing clear about how the driver remove callback
-> >> >must be
-> >> >> > > implemented.
-> >> >> >
-> >> >> > That's correct.
-> >> >> >
-> >> >> > > I tried grepping the kernel sources to find out if
-> >> >pm_runtime_suspend is
-> >> >> > > widely used to get SoC platform devices to suspend, but it
-> >> >doesn't seem
-> >> >> > > like it is. I didn't see pm_runtime_get/put_sync being used in
-> >> >remove
-> >> >> > > callbacks widely either, but that was more difficult one to grep.
-> >> >> >
-> >> >> > I think your observations are valid, which unfortunately means that
-> >> >we'll
-> >> >> > need to revert the commit in question, because it has changed the
-> >> >behavior
-> >> >> > that drivers are perfectly fine to expect given the existing
-> >> >documentation
-> >> >> > etc.  It looks like the change was premature at least.
-> >> >> >
-> >> >> > Greg, I wonder if you can queue up a revert of fa180eb448fa for
-> >> >3.13, or
-> >> >> > do you want me to do that?
-> >> >>
-> >> >> Would it be better to leave the runtime-idle callbacks (invoked
-> >> >during
-> >> >> probe) async and revert only the change to __device_release_driver()?
-> >> >>
-> >> >> Having an async callback after probe shouldn't cause problems,
-> >> >because
-> >> >> the driver will then be bound (assuming the probe succeeded).
-> >> >
-> >> >Right.  OK, I'll prepare a patch.
-> >>
-> >> That seems like a good way forward.
-> >
-> > There you go.
-> >
-> > ---
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Subject: PM / runtime: Use pm_runtime_put_sync() in __device_release_driver()
-> >
-> > Commit fa180eb448fa (PM / Runtime: Idle devices asynchronously after
-> > probe|release) modified __device_release_driver() to call
-> > pm_runtime_put(dev) instead of pm_runtime_put_sync(dev) before
-> > detaching the driver from the device.  However, that was a mistake,
-> > because pm_runtime_put(dev) causes rpm_idle() to be queued up and
-> > the driver may be gone already when that function is executed.
-> > That breaks the assumptions the drivers have the right to make
-> > about the core's behavior on the basis of the existing documentation
-> > and actually causes problems to happen, so revert that part of
-> > commit fa180eb448fa and restore the previous behavior of
-> > __device_release_driver().
-> >
-> > Reported-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Fixes: fa180eb448fa (PM / Runtime: Idle devices asynchronously after probe|release)
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: 3.10+ <stable@vger.kernel.org> # 3.10+
+
+
+> -----Original Message-----
+> From: Shawn Guo [mailto:shawn.guo@linaro.org]
+> Sent: Wednesday, November 06, 2013 11:28 AM
+> To: Rongjun Ying
+> Cc: Viresh Kumar; rjying; Rafael J. Wysocki; cpufreq@vger.kernel.org;
+> linux-pm@vger.kernel.org; Linux Kernel Mailing List;
+> rongjun.ying@gcsr.com
+> Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage
+> instead of voltage-tolerance
 > 
-> Acked-by: Kevin Hilman <khilman@linaro.org>
+> On Wed, Nov 06, 2013 at 02:15:07AM +0000, Rongjun Ying wrote:
+> > If omit voltage-tolerance, sometimes also can't get appropriate
+> voltages.
+> > For example:
+> > If the regulator IC only can supply min voltage is 1.000V and max
+> voltage is 1.200V, and cpu work max voltage is 1.200V.
+> > But the cpu just need 1.100V when cpu run under a freq.
+> > So regulator_set_voltage_tol will return failed.
+> > Because the regulator_set_voltage will invoke with min-uV is 1100000
+> and max-uV is 1100000 parameters.
+> > Regulator can't supply it.
+> > As this case, the regulator just need supply 1.200V.
 > 
-> I like this fix since I don't want to add any more requirements to drivers.
+> For given board, what voltages could be provided is known.  So you can
+> just define OPP table in <board>.dts and specify the voltage as the
+> value that the regulator IC can supply, e.g. 1.200V in above example.
+> 
+> This is not nice, as OPP table is CPU/SoC specific and should be
+> ideally defined in <soc>.dtsi.  But still it's a way out for you to use
+> cpufreq-cpu0 driver as it is.
+> 
+> In any case, you can not just change voltage-tolerance to voltage-max
+> with no care about the existing users.
+> 
+> Shawn
+> 
+I don't think so. The voltage/freq pairs are attribute of the CPU.
+Any boards can choose regulator IC base the cost and other reasons.
+If the opp table defined in <board>.dts, we can set exact voltage/freq pairs,
+and not need use the voltage-tolerance to set tolerance.
 
-OK, I've queued this up for 3.13.
+Thanks
+-RongJun Ying
+> 
+> 
+>  To report this email as spam click
+> https://www.mailcontrol.com/sr/MZbqvYs5QwJvpeaetUwhCQ==
+> ch0RRg48Kxe8iwle4qrOOz8w5o+DwGNVtWag1M3YVHc55g== .
 
-Thanks!
 
-
-> > ---
-> >  drivers/base/dd.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > Index: linux-pm/drivers/base/dd.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/base/dd.c
-> > +++ linux-pm/drivers/base/dd.c
-> > @@ -499,7 +499,7 @@ static void __device_release_driver(stru
-> >                                                      BUS_NOTIFY_UNBIND_DRIVER,
-> >                                                      dev);
-> >
-> > -               pm_runtime_put(dev);
-> > +               pm_runtime_put_sync(dev);
-> >
-> >                 if (dev->bus && dev->bus->remove)
-> >                         dev->bus->remove(dev);
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+More information can be found at www.csr.com. Follow CSR on Twitter at http://twitter.com/CSR_PLC and read our blog at www.csr.com/blog
