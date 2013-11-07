@@ -1,60 +1,116 @@
-From: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
-Subject: Re: [PATCH 1/3 v8] thermal: samsung: add intclr_fall_shift bit in
- exynos_tmu_register struct
-Date: Thu, 7 Nov 2013 16:28:31 +0530
-Message-ID: <CAHfPSqBjTpCyKaR03t_cd3JrhX_6tfwsBFuHEG1v1=qn1OqyrQ@mail.gmail.com>
-References: <1381979473-7079-1-git-send-email-ch.naveen@samsung.com>
- <1383803562-31752-1-git-send-email-ch.naveen@samsung.com> <1864683.tCrpAXuim8@amdc1032>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1864683.tCrpAXuim8@amdc1032>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, devicetree@vger.kernel.org, cpgs@samsung.com
+From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Subject: [PATCH] thermal: exynos: handle gate clock for misplaced TRIMINFO
+ register
+Date: Thu, 07 Nov 2013 18:12:34 +0530
+Message-ID: <1383828154-428-1-git-send-email-ch.naveen@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bartlomiej,
+On Exynos5420 the TMU(4) for GPU has a seperate clock enable bit from
+the other TMU channels(0 ~ 3). Hence, accessing TRIMINFO for base_second
+should be acompanied by enabling the respective clock.
 
-On 7 November 2013 16:18, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
->
-> Hi,
->
-> On Thursday, November 07, 2013 11:22:42 AM Naveen Krishna Chatradhi wrote:
->> On Exynos5250, the FALL interrupt related en, status and clear bits are
->> available at an offset of
->> 16 in INTEN, INTSTAT registers and at an offset of
->> 12 in INTCLEAR register.
->>
->> On Exynos5420, the FALL interrupt related en, status and clear bits are
->> available at an offset of
->> 16 in INTEN, INTSTAT and INTCLEAR registers.
->>
->> On Exynos5440,
->> the FALL_IRQEN bits are at an offset of 4
->> and the RISE_IRQEN bits are at an offset of 0
->>
->> This patch introduces a new bit field intclr_fall_shift to handle the
->> offset for exyns5250 and exynos5440
->> Also removes the unused macros EXYNOS_TMU_FALL_INT_SHIFT and
->> EXYNOS5440_TMU_FALL_INT_SHIFT, inten_fall_shift field
->
-> Thanks for fixing this.  All three patches look good to me now.
->
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+This patch which allow for a "clk_sec" clock to be specified in the
+device-tree which will be ungated when accessing the TRIMINFO register.
 
-Thanks for all the following up.
->
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
+Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c |   24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
 
-
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index b54825a..33edd1a 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -47,6 +47,7 @@
+  * @irq_work: pointer to the irq work structure.
+  * @lock: lock to implement synchronization.
+  * @clk: pointer to the clock structure.
++ * @clk_sec: pointer to the clock structure for accessing the base_second.
+  * @temp_error1: fused value of the first point trim.
+  * @temp_error2: fused value of the second point trim.
+  * @regulator: pointer to the TMU regulator structure.
+@@ -61,7 +62,7 @@ struct exynos_tmu_data {
+ 	enum soc_type soc;
+ 	struct work_struct irq_work;
+ 	struct mutex lock;
+-	struct clk *clk;
++	struct clk *clk, *clk_sec;
+ 	u8 temp_error1, temp_error2;
+ 	struct regulator *regulator;
+ 	struct thermal_sensor_conf *reg_conf;
+@@ -152,6 +153,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
++	if (!IS_ERR(data->clk_sec))
++		clk_enable(data->clk_sec);
+ 
+ 	if (TMU_SUPPORTS(pdata, READY_STATUS)) {
+ 		status = readb(data->base + reg->tmu_status);
+@@ -306,6 +309,8 @@ skip_calib_data:
+ out:
+ 	clk_disable(data->clk);
+ 	mutex_unlock(&data->lock);
++	if (!IS_ERR(data->clk_sec))
++		clk_disable(data->clk_sec);
+ 
+ 	return ret;
+ }
+@@ -457,12 +462,16 @@ static void exynos_tmu_work(struct work_struct *work)
+ 	const struct exynos_tmu_registers *reg = pdata->registers;
+ 	unsigned int val_irq, val_type;
+ 
++	if (!IS_ERR(data->clk_sec))
++		clk_enable(data->clk_sec);
+ 	/* Find which sensor generated this interrupt */
+ 	if (reg->tmu_irqstatus) {
+ 		val_type = readl(data->base_second + reg->tmu_irqstatus);
+ 		if (!((val_type >> data->id) & 0x1))
+ 			goto out;
+ 	}
++	if (!IS_ERR(data->clk_sec))
++		clk_disable(data->clk_sec);
+ 
+ 	exynos_report_trigger(data->reg_conf);
+ 	mutex_lock(&data->lock);
+@@ -641,6 +650,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	data->clk_sec = devm_clk_get(&pdev->dev, "tmu_apbif_sec");
++	if (!IS_ERR(data->clk_sec)) {
++		ret = clk_prepare(data->clk_sec);
++		if (ret) {
++			dev_err(&pdev->dev, "Failed to get clock\n");
++			return  PTR_ERR(data->clk_sec);
++		}
++	}
++
+ 	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
+ 	    pdata->type == SOC_ARCH_EXYNOS4412 ||
+ 	    pdata->type == SOC_ARCH_EXYNOS5250 ||
+@@ -713,6 +731,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	return 0;
+ err_clk:
+ 	clk_unprepare(data->clk);
++	if (!IS_ERR(data->clk_sec))
++		clk_unprepare(data->clk_sec);
+ 	return ret;
+ }
+ 
+@@ -725,6 +745,8 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 	exynos_unregister_thermal(data->reg_conf);
+ 
+ 	clk_unprepare(data->clk);
++	if (!IS_ERR(data->clk_sec))
++		clk_unprepare(data->clk_sec);
+ 
+ 	if (!IS_ERR(data->regulator))
+ 		regulator_disable(data->regulator);
 -- 
-Shine bright,
-(: Nav :)
+1.7.10.4
