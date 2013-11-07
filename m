@@ -1,155 +1,178 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v2] ARM: dts: Exynos5420: Add device nodes for TMU blocks
-Date: Thu, 07 Nov 2013 17:45:16 +0100
-Message-ID: <6654895.bR12A8qC1P@amdc1227>
-References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
- <22321712.GIyJDTupbe@amdc1227>
- <CAHfPSqARSJqbXv9F+Fgro_=k3P2xE3XNsF-KYOW43WdVtKeSEA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Async runtime put in __device_release_driver()
+Date: Thu, 07 Nov 2013 19:55:55 +0100
+Message-ID: <2120140.KNmcSko2m0@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1311061656450.1220-100000@iolanthe.rowland.org> <1492779.QFdev7puUr@vostro.rjw.lan> <CAPDyKFoZTMKEcGRLAgR8y1=_iuocrwgXJDADhMgK_MeZAnAuPg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAHfPSqARSJqbXv9F+Fgro_=k3P2xE3XNsF-KYOW43WdVtKeSEA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
-Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, amit.daniel@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, devicetree@vger.kernel.org, cpgs@samsung.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60220 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750939Ab3KGSnf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Nov 2013 13:43:35 -0500
+In-Reply-To: <CAPDyKFoZTMKEcGRLAgR8y1=_iuocrwgXJDADhMgK_MeZAnAuPg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Archit Taneja <archit@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Naveen,
-
-On Thursday 07 of November 2013 22:02:10 Naveen Krishna Ch wrote:
-> Hello Tomasz,
+On Thursday, November 07, 2013 09:18:52 AM Ulf Hansson wrote:
+> On 7 November 2013 02:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, November 06, 2013 04:21:48 PM Kevin Hilman wrote:
+> >> On Wed, Nov 6, 2013 at 4:16 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > On Wednesday, November 06, 2013 11:48:24 PM Ulf Hansson wrote:
+> >> >>
+> >> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> skrev:
+> >> >> >On Wednesday, November 06, 2013 05:02:12 PM Alan Stern wrote:
+> >> >> >> On Wed, 6 Nov 2013, Rafael J. Wysocki wrote:
+> >> >> >>
+> >> >> >> > On Wednesday, November 06, 2013 09:51:42 AM Tomi Valkeinen wrote:
+> >> >> >> > > On 2013-11-05 23:29, Ulf Hansson wrote:
+> >> >> >> > > > On 23 October 2013 12:11, Tomi Valkeinen
+> >> >> ><tomi.valkeinen@ti.com> wrote:
+> >> >> >> > > >> Hi,
+> >> >> >> > > >>
+> >> >> >> > > >> I was debugging why clocks were left enabled after removing
+> >> >> >omapdss
+> >> >> >> > > >> driver, and I found this commit:
+> >> >> >> > > >>
+> >> >> >> > > >> fa180eb448fa263cf18dd930143b515d27d70d7b (PM / Runtime: Idle
+> >> >> >devices
+> >> >> >> > > >> asynchronously after probe|release)
+> >> >> >> > > >>
+> >> >> >> > > >> I don't understand how that is supposed to work.
+> >> >> >> > > >>
+> >> >> >> > > >> When a driver is removed, instead of using
+> >> >> >pm_runtime_put_sync() the
+> >> >> >> > > >> commit uses pm_runtime_put(), so the runtime_suspend call is
+> >> >> >queued. But
+> >> >> >> > > >> who is going to handle the queued suspend call, as the driver
+> >> >> >is already
+> >> >> >> > > >> removed? At least in my case, obviously nobody, as I only get
+> >> >> >> > > >> runtime_resume call in my driver, never the runtime_suspend.
+> >> >> >> > > >>
+> >> >> >> > > >> Is there something I need to add to my driver to make this
+> >> >> >work, or
+> >> >> >> > > >> should that part of the patch be reverted?
+> >> >> >> > > >
+> >> >> >> > > > I believe it is quite common that a device driver calls
+> >> >> >> > > > pm_runtime_get_sync as a part of it's remove callback, then it
+> >> >> >> > > > explicitly returns it's resources that has been fetched during
+> >> >> >probe.
+> >> >> >> > > > Like a clk_disable_unprepare for example.
+> >> >> >> > >
+> >> >> >> > > I guess you mean the driver calls pm_runtime_get_sync _and_
+> >> >> >> > > pm_runtime_put_sync as part of its remove callback?
+> >> >> >> > >
+> >> >> >> > > Probably bus drivers need to do that, but for memory mapped
+> >> >> >devices in a
+> >> >> >> > > SoC, I don't think there's normally any need to do
+> >> >> >> > > pm_runtime_get/put_sync during the remove callback.
+> >> >> >> > >
+> >> >> >> > > > The idea behind the change in __device_release_driver, was to
+> >> >> >try to
+> >> >> >> > > > prevent  devices from going active->idle->active and instead
+> >> >> >just
+> >> >> >> > > > remain active (if possible).
+> >> >> >> > > >
+> >> >> >> > > > In your case, which seems like a more modern way of
+> >> >> >implementing
+> >> >> >> > > > "remove", you shall call "pm_runtime_suspend" to make sure the
+> >> >> >> > > > runtime_suspend callbacks gets called.
+> >> >> >> > >
+> >> >> >> > > And as far as I understand, the change creates an explicit
+> >> >> >requirement
+> >> >> >> > > to do either pm_runtime_get/put_sync or pm_runtime_suspend inside
+> >> >> >> > > driver's remove callback. If so, that should be mentioned in big
+> >> >> >red
+> >> >> >> > > letters in the pm-runtime documentation.
+> >> >> >> > >
+> >> >> >> > > The runtime_pm.txt doc does mention something related to this
+> >> >> >(and btw,
+> >> >> >> > > the doc says pm_runtime_put_sync is being called, which is no
+> >> >> >longer
+> >> >> >> > > true), but nothing clear about how the driver remove callback
+> >> >> >must be
+> >> >> >> > > implemented.
+> >> >> >> >
+> >> >> >> > That's correct.
+> >> >> >> >
+> >> >> >> > > I tried grepping the kernel sources to find out if
+> >> >> >pm_runtime_suspend is
+> >> >> >> > > widely used to get SoC platform devices to suspend, but it
+> >> >> >doesn't seem
+> >> >> >> > > like it is. I didn't see pm_runtime_get/put_sync being used in
+> >> >> >remove
+> >> >> >> > > callbacks widely either, but that was more difficult one to grep.
+> >> >> >> >
+> >> >> >> > I think your observations are valid, which unfortunately means that
+> >> >> >we'll
+> >> >> >> > need to revert the commit in question, because it has changed the
+> >> >> >behavior
+> >> >> >> > that drivers are perfectly fine to expect given the existing
+> >> >> >documentation
+> >> >> >> > etc.  It looks like the change was premature at least.
+> >> >> >> >
+> >> >> >> > Greg, I wonder if you can queue up a revert of fa180eb448fa for
+> >> >> >3.13, or
+> >> >> >> > do you want me to do that?
+> >> >> >>
+> >> >> >> Would it be better to leave the runtime-idle callbacks (invoked
+> >> >> >during
+> >> >> >> probe) async and revert only the change to __device_release_driver()?
+> >> >> >>
+> >> >> >> Having an async callback after probe shouldn't cause problems,
+> >> >> >because
+> >> >> >> the driver will then be bound (assuming the probe succeeded).
+> >> >> >
+> >> >> >Right.  OK, I'll prepare a patch.
+> >> >>
+> >> >> That seems like a good way forward.
+> >> >
+> >> > There you go.
+> >> >
+> >> > ---
+> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> > Subject: PM / runtime: Use pm_runtime_put_sync() in __device_release_driver()
+> >> >
+> >> > Commit fa180eb448fa (PM / Runtime: Idle devices asynchronously after
+> >> > probe|release) modified __device_release_driver() to call
+> >> > pm_runtime_put(dev) instead of pm_runtime_put_sync(dev) before
+> >> > detaching the driver from the device.  However, that was a mistake,
+> >> > because pm_runtime_put(dev) causes rpm_idle() to be queued up and
+> >> > the driver may be gone already when that function is executed.
+> >> > That breaks the assumptions the drivers have the right to make
+> >> > about the core's behavior on the basis of the existing documentation
+> >> > and actually causes problems to happen, so revert that part of
+> >> > commit fa180eb448fa and restore the previous behavior of
+> >> > __device_release_driver().
+> >> >
+> >> > Reported-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> >> > Fixes: fa180eb448fa (PM / Runtime: Idle devices asynchronously after probe|release)
+> >> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> > Cc: 3.10+ <stable@vger.kernel.org> # 3.10+
+> >>
+> >> Acked-by: Kevin Hilman <khilman@linaro.org>
+> >>
+> >> I like this fix since I don't want to add any more requirements to drivers.
 > 
-> On 7 November 2013 19:53, Tomasz Figa <t.figa@samsung.com> wrote:
-> > Hi Naveen,
-> >
-> > On Thursday 07 of November 2013 18:37:49 Naveen Krishna Chatradhi wrote:
-> >> Exynos5420 SoC has per core thermal management unit.
-> >> 5 TMU channels 4 for CPUs and 5th for GPU.
-> >>
-> >> This patch adds the device tree nodes to the DT device list.
-> >>
-> >> Nodes carry the misplaced second base address and the second
-> >> clock to access the misplaced base address.
-> >>
-> >> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-> >> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-> >> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
-> >> ---
-> >> Changes since v1:
-> >> 1. Nodes carry the misplaced second base address and the second
-> >>    clock to access the misplaced base address.
-> >> 2. Correct the clock number for the TMU4
-> >
-> > First of all, this patch should be a part of the whole series adding
-> > support for thermal on Exynos 5420.
-> Right, Reason why i posted this patch myself fixing the nits (As Leela
-> and i work closely)
-> Should have been along with the set.
-
-OK.
-
-> >
-> > In addition, see my comment below.
-> >
-> >>  arch/arm/boot/dts/exynos5420.dtsi |   48 +++++++++++++++++++++++++++++++++++++
-> >>  1 file changed, 48 insertions(+)
-> >>
-> >> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-> >> index 6ffefd1..d736b40 100644
-> >> --- a/arch/arm/boot/dts/exynos5420.dtsi
-> >> +++ b/arch/arm/boot/dts/exynos5420.dtsi
-> >> @@ -369,4 +369,52 @@
-> >>               clock-names = "gscl";
-> >>               samsung,power-domain = <&gsc_pd>;
-> >>       };
-> >> +
-> >> +     /* tmu for CPU0 */
-> >> +     tmu@10060000 {
-> >> +             compatible = "samsung,exynos5420-tmu";
-> >> +             reg = <0x10060000 0x100>;
-> >> +             interrupts = <0 65 0>;
-> >> +             clocks = <&clock 318>;
-> >> +             clock-names = "tmu_apbif";
-> >> +     };
-> >> +
-> >> +     /* tmu for CPU1 */
-> >> +     tmu@10064000 {
-> >> +             compatible = "samsung,exynos5420-tmu";
-> >> +             reg = <0x10064000 0x100>;
-> >> +             interrupts = <0 183 0>;
-> >> +             clocks = <&clock 318>;
-> >> +             clock-names = "tmu_apbif";
-> >> +     };
-> >> +
-> >> +     /* tmu for CPU2 */
-> >> +     tmu@10068000 {
-> >> +             compatible = "samsung,exynos5420-tmu";
-> >> +             /* 2nd reg is for the misplaced TRIMINFO register */
-> >
-> > Instead of this comment, such broken TMU variant should use a separate
-> > compatible value, like "samsung,exynos5420-tmu-broken-triminfo", like
-> > I mentioned in my comments to your other patch.
-> Will make a note of it.
-
-OK.
-
-> >
-> > For this compatible value, both second reg entry and second clock would
-> > be required.
-> >
-> >> +             reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-> >> +             interrupts = <0 184 0>;
-> >> +             clocks = <&clock 318>;
-> >> +             clock-names = "tmu_apbif";
-> >> +     };
-> >> +
-> >> +     /* tmu for CPU3 */
-> >> +     tmu@1006c000 {
-> >> +             compatible = "samsung,exynos5420-tmu";
-> >> +             /* 2nd reg is for the misplaced TRIMINFO register */
-> >> +             reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-> >> +             interrupts = <0 185 0>;
-> >> +             clocks = <&clock 318>, <&clock 319>;
-> >> +             clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-> >
-> > The "tmu_apbif_triminfo" clock is not specified in exynos-thermal binding
-> > documentation. In addition, the patch of yours adding support for second
-> > clock uses another name - "tmu_apbif_sec".
-> >
-> > As for the name itself, I would prefer "tmu_apbif_triminfo" as it's more
-> > meaningful.
-> TMU hardware on Exynos5440 and Exynos5420 has two different abnormalities
-> On Exynos5440 Some registers are interleaved between the channels
-> On Exynos5420, TRIMINFO is misplaced between, channels 2, 3 and 4.
-
-I know that those cases are different, but my point was not about it.
-
-In your patch adding support for this second clock, you add following call
-to devm_clk_get():
-
-	data->clk_sec = devm_clk_get(&pdev->dev, "tmu_apbif_sec");
-
-However in device tree nodes added by this patch, you have
-
-	clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-
-and this where my confusion comes from.
-
-> having second_base was for the fix by Amit to address Exynos5440 problem,
-> Which was already merged.
-> After several reviews i tried to solve it by reusing the second_base
-> for Exynos5420 aswell.
-> Hence, I tried to use the "clk_sec" or "clk_second" which will rhyme
-> along with the
-> "second_base" in the driver.
+> Agree!
 > 
-> I'm still not sure this having second clock is needed for Exynos5440 aswell.
-> Will figure it out tomorrow.
+> >
+> > OK, I've queued this up for 3.13.
+> 
+> If not to late:
+> 
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Even if Exynos 5440 does not need the second clock, it uses a different
-compatible value, so you can easily distinguish the cases when the second
-clock is required or not.
+No, it isn't, thanks!
 
-Best regards,
-Tomasz
+> BTW, I start creating a patch on the doc to align it to the changes
+> that the "async" patches made.
+
+I've seen it, please address the Alan's comments in that patch.
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
