@@ -1,306 +1,206 @@
-From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH 3/3 v8] thermal: samsung: Add TMU support for Exynos5420 SoCs
-Date: Thu, 07 Nov 2013 11:23:32 +0530
-Message-ID: <1383803612-31834-1-git-send-email-ch.naveen@samsung.com>
-References: <1378268629-2886-3-git-send-email-ch.naveen@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: Async runtime put in __device_release_driver()
+Date: Thu, 7 Nov 2013 09:18:52 +0100
+Message-ID: <CAPDyKFoZTMKEcGRLAgR8y1=_iuocrwgXJDADhMgK_MeZAnAuPg@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1311061656450.1220-100000@iolanthe.rowland.org>
+	<5303847.vEYmuQ7tHR@vostro.rjw.lan>
+	<CAGa+x84096yRRU4PvV4jte28_YtXXNECgtp8N6gm9-GT+BjRvw@mail.gmail.com>
+	<1492779.QFdev7puUr@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:45429 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384Ab3KGFwH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Nov 2013 00:52:07 -0500
-In-reply-to: <1378268629-2886-3-git-send-email-ch.naveen@samsung.com>
+Received: from mail-qe0-f51.google.com ([209.85.128.51]:64623 "EHLO
+	mail-qe0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137Ab3KGISx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Nov 2013 03:18:53 -0500
+Received: by mail-qe0-f51.google.com with SMTP id q19so154652qeb.38
+        for <linux-pm@vger.kernel.org>; Thu, 07 Nov 2013 00:18:53 -0800 (PST)
+In-Reply-To: <1492779.QFdev7puUr@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Archit Taneja <archit@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-This patch adds the neccessary register changes and arch information
-to support Exynos5420 SoCs
-Exynos5420 has 5 TMU channels one for each CPU 0, 1, 2 and 3 and GPU
+On 7 November 2013 02:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, November 06, 2013 04:21:48 PM Kevin Hilman wrote:
+>> On Wed, Nov 6, 2013 at 4:16 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Wednesday, November 06, 2013 11:48:24 PM Ulf Hansson wrote:
+>> >>
+>> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> skrev:
+>> >> >On Wednesday, November 06, 2013 05:02:12 PM Alan Stern wrote:
+>> >> >> On Wed, 6 Nov 2013, Rafael J. Wysocki wrote:
+>> >> >>
+>> >> >> > On Wednesday, November 06, 2013 09:51:42 AM Tomi Valkeinen wrote:
+>> >> >> > > On 2013-11-05 23:29, Ulf Hansson wrote:
+>> >> >> > > > On 23 October 2013 12:11, Tomi Valkeinen
+>> >> ><tomi.valkeinen@ti.com> wrote:
+>> >> >> > > >> Hi,
+>> >> >> > > >>
+>> >> >> > > >> I was debugging why clocks were left enabled after removing
+>> >> >omapdss
+>> >> >> > > >> driver, and I found this commit:
+>> >> >> > > >>
+>> >> >> > > >> fa180eb448fa263cf18dd930143b515d27d70d7b (PM / Runtime: Idle
+>> >> >devices
+>> >> >> > > >> asynchronously after probe|release)
+>> >> >> > > >>
+>> >> >> > > >> I don't understand how that is supposed to work.
+>> >> >> > > >>
+>> >> >> > > >> When a driver is removed, instead of using
+>> >> >pm_runtime_put_sync() the
+>> >> >> > > >> commit uses pm_runtime_put(), so the runtime_suspend call is
+>> >> >queued. But
+>> >> >> > > >> who is going to handle the queued suspend call, as the driver
+>> >> >is already
+>> >> >> > > >> removed? At least in my case, obviously nobody, as I only get
+>> >> >> > > >> runtime_resume call in my driver, never the runtime_suspend.
+>> >> >> > > >>
+>> >> >> > > >> Is there something I need to add to my driver to make this
+>> >> >work, or
+>> >> >> > > >> should that part of the patch be reverted?
+>> >> >> > > >
+>> >> >> > > > I believe it is quite common that a device driver calls
+>> >> >> > > > pm_runtime_get_sync as a part of it's remove callback, then it
+>> >> >> > > > explicitly returns it's resources that has been fetched during
+>> >> >probe.
+>> >> >> > > > Like a clk_disable_unprepare for example.
+>> >> >> > >
+>> >> >> > > I guess you mean the driver calls pm_runtime_get_sync _and_
+>> >> >> > > pm_runtime_put_sync as part of its remove callback?
+>> >> >> > >
+>> >> >> > > Probably bus drivers need to do that, but for memory mapped
+>> >> >devices in a
+>> >> >> > > SoC, I don't think there's normally any need to do
+>> >> >> > > pm_runtime_get/put_sync during the remove callback.
+>> >> >> > >
+>> >> >> > > > The idea behind the change in __device_release_driver, was to
+>> >> >try to
+>> >> >> > > > prevent  devices from going active->idle->active and instead
+>> >> >just
+>> >> >> > > > remain active (if possible).
+>> >> >> > > >
+>> >> >> > > > In your case, which seems like a more modern way of
+>> >> >implementing
+>> >> >> > > > "remove", you shall call "pm_runtime_suspend" to make sure the
+>> >> >> > > > runtime_suspend callbacks gets called.
+>> >> >> > >
+>> >> >> > > And as far as I understand, the change creates an explicit
+>> >> >requirement
+>> >> >> > > to do either pm_runtime_get/put_sync or pm_runtime_suspend inside
+>> >> >> > > driver's remove callback. If so, that should be mentioned in big
+>> >> >red
+>> >> >> > > letters in the pm-runtime documentation.
+>> >> >> > >
+>> >> >> > > The runtime_pm.txt doc does mention something related to this
+>> >> >(and btw,
+>> >> >> > > the doc says pm_runtime_put_sync is being called, which is no
+>> >> >longer
+>> >> >> > > true), but nothing clear about how the driver remove callback
+>> >> >must be
+>> >> >> > > implemented.
+>> >> >> >
+>> >> >> > That's correct.
+>> >> >> >
+>> >> >> > > I tried grepping the kernel sources to find out if
+>> >> >pm_runtime_suspend is
+>> >> >> > > widely used to get SoC platform devices to suspend, but it
+>> >> >doesn't seem
+>> >> >> > > like it is. I didn't see pm_runtime_get/put_sync being used in
+>> >> >remove
+>> >> >> > > callbacks widely either, but that was more difficult one to grep.
+>> >> >> >
+>> >> >> > I think your observations are valid, which unfortunately means that
+>> >> >we'll
+>> >> >> > need to revert the commit in question, because it has changed the
+>> >> >behavior
+>> >> >> > that drivers are perfectly fine to expect given the existing
+>> >> >documentation
+>> >> >> > etc.  It looks like the change was premature at least.
+>> >> >> >
+>> >> >> > Greg, I wonder if you can queue up a revert of fa180eb448fa for
+>> >> >3.13, or
+>> >> >> > do you want me to do that?
+>> >> >>
+>> >> >> Would it be better to leave the runtime-idle callbacks (invoked
+>> >> >during
+>> >> >> probe) async and revert only the change to __device_release_driver()?
+>> >> >>
+>> >> >> Having an async callback after probe shouldn't cause problems,
+>> >> >because
+>> >> >> the driver will then be bound (assuming the probe succeeded).
+>> >> >
+>> >> >Right.  OK, I'll prepare a patch.
+>> >>
+>> >> That seems like a good way forward.
+>> >
+>> > There you go.
+>> >
+>> > ---
+>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> > Subject: PM / runtime: Use pm_runtime_put_sync() in __device_release_driver()
+>> >
+>> > Commit fa180eb448fa (PM / Runtime: Idle devices asynchronously after
+>> > probe|release) modified __device_release_driver() to call
+>> > pm_runtime_put(dev) instead of pm_runtime_put_sync(dev) before
+>> > detaching the driver from the device.  However, that was a mistake,
+>> > because pm_runtime_put(dev) causes rpm_idle() to be queued up and
+>> > the driver may be gone already when that function is executed.
+>> > That breaks the assumptions the drivers have the right to make
+>> > about the core's behavior on the basis of the existing documentation
+>> > and actually causes problems to happen, so revert that part of
+>> > commit fa180eb448fa and restore the previous behavior of
+>> > __device_release_driver().
+>> >
+>> > Reported-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> > Fixes: fa180eb448fa (PM / Runtime: Idle devices asynchronously after probe|release)
+>> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> > Cc: 3.10+ <stable@vger.kernel.org> # 3.10+
+>>
+>> Acked-by: Kevin Hilman <khilman@linaro.org>
+>>
+>> I like this fix since I don't want to add any more requirements to drivers.
 
-Also updated the Documentation at
-Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+Agree!
 
-Note: The platform data structure will be handled properly once the driver
- moves to complete device driver solution.
+>
+> OK, I've queued this up for 3.13.
 
-Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
----
-Changes since v1:
-1. modified the platform data structure in order to pass SHARED flag
-   for channels that need sharing of address space.
-2. https://lkml.org/lkml/2013/8/1/38 is merged into this patch.
-   As the changes are minimum and can be added here.
-Changes since v3:
-   a. Rearraged the code alphabetically, make exynso5420 come before exynso5440
-   b. Reduce code duplication in passing platform data by introducing a common macro
-      Bartlomiej Zolnierkiewicz Thanks for review and suggestions
-Changes since v4:
- None
-Changes since v5:
- None
-Changes since v6:
- - removed the unsued field "inten_fall_shift"
- - defined EXYNOS5420_TMU_CLEAR_FALL_INT_SHIFT instead of using EXYNOS_TMU_FALL_INT_SHIFT
-Changes since v7:
- - changes ins v6 were moved to the patch 1/3 of this patchset.
- - defined EXYNOS5420_TMU_CLEAR_FALL_INT_SHIFT instead of using EXYNOS_TMU_FALL_INT_SHIFT
- 
- .../devicetree/bindings/thermal/exynos-thermal.txt |   39 ++++++++
- drivers/thermal/samsung/exynos_tmu.c               |   12 ++-
- drivers/thermal/samsung/exynos_tmu.h               |    1 +
- drivers/thermal/samsung/exynos_tmu_data.c          |   98 ++++++++++++++++++++
- drivers/thermal/samsung/exynos_tmu_data.h          |    8 ++
- 5 files changed, 157 insertions(+), 1 deletion(-)
+If not to late:
 
-diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-index 116cca0..c5f9a74 100644
---- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-@@ -6,6 +6,7 @@
- 	       "samsung,exynos4412-tmu"
- 	       "samsung,exynos4210-tmu"
- 	       "samsung,exynos5250-tmu"
-+	       "samsung,exynos5420-tmu"
- 	       "samsung,exynos5440-tmu"
- - interrupt-parent : The phandle for the interrupt controller
- - reg : Address range of the thermal registers. For soc's which has multiple
-@@ -13,6 +14,16 @@
- 	interrupt related then 2 set of register has to supplied. First set
- 	belongs	to each instance of TMU and second set belongs to second set
- 	of common TMU registers.
-+  NOTE: On Exynos5420, the TRIMINFO register is misplaced for TMU
-+	channels 2, 3 and 4
-+
-+	TRIMINFO at 0x1006c000 contains data for TMU channel 3
-+	TRIMINFO at 0x100a0000 contains data for TMU channel 4
-+	TRIMINFO at 0x10068000 contains data for TMU channel 2
-+
-+	The misplaced register address is passed through devicetree as the
-+	second base
-+
- - interrupts : Should contain interrupt for thermal system
- - clocks : The main clock for TMU device
- - clock-names : Thermal system clock name
-@@ -43,6 +54,34 @@ Example 2):
- 		clock-names = "tmu_apbif";
- 	};
- 
-+Example 3): (In case of Exynos5420)
-+	/* tmu for CPU2 */
-+	tmu@10068000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-+		interrupts = <0 184 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU3 */
-+	tmu@1006c000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-+		interrupts = <0 185 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for GPU */
-+	tmu@100a0000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x100a0000 0x100>, <0x10068000 0x4>;
-+		interrupts = <0 215 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
- Note: For multi-instance tmu each instance should have an alias correctly
- numbered in "aliases" node.
- 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index ae80a87..b54825a 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -186,7 +186,12 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
- 		}
- 	} else {
--		trim_info = readl(data->base + reg->triminfo_data);
-+		/* On exynos5420 the triminfo register is in the shared space */
-+		if (data->base_second && (data->soc == SOC_ARCH_EXYNOS5420))
-+			trim_info = readl(data->base_second +
-+							reg->triminfo_data);
-+		else
-+			trim_info = readl(data->base + reg->triminfo_data);
- 	}
- 	data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
- 	data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
-@@ -498,6 +503,10 @@ static const struct of_device_id exynos_tmu_match[] = {
- 		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
- 	},
- 	{
-+		.compatible = "samsung,exynos5420-tmu",
-+		.data = (void *)EXYNOS5420_TMU_DRV_DATA,
-+	},
-+	{
- 		.compatible = "samsung,exynos5440-tmu",
- 		.data = (void *)EXYNOS5440_TMU_DRV_DATA,
- 	},
-@@ -635,6 +644,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
- 	    pdata->type == SOC_ARCH_EXYNOS4412 ||
- 	    pdata->type == SOC_ARCH_EXYNOS5250 ||
-+	    pdata->type == SOC_ARCH_EXYNOS5420 ||
- 	    pdata->type == SOC_ARCH_EXYNOS5440)
- 		data->soc = pdata->type;
- 	else {
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 0591089..62a6667 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -43,6 +43,7 @@ enum soc_type {
- 	SOC_ARCH_EXYNOS4210 = 1,
- 	SOC_ARCH_EXYNOS4412,
- 	SOC_ARCH_EXYNOS5250,
-+	SOC_ARCH_EXYNOS5420,
- 	SOC_ARCH_EXYNOS5440,
- };
- 
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index a09047a..088a5aa 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -194,6 +194,104 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
- };
- #endif
- 
-+#if defined(CONFIG_SOC_EXYNOS5420)
-+static const struct exynos_tmu_registers exynos5420_tmu_registers = {
-+	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
-+	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
-+	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
-+	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
-+	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
-+	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
-+	.therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
-+	.therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
-+	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
-+	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
-+	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-+	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
-+	.tmu_status = EXYNOS_TMU_REG_STATUS,
-+	.tmu_cur_temp = EXYNOS_TMU_REG_CURRENT_TEMP,
-+	.threshold_th0 = EXYNOS_THD_TEMP_RISE,
-+	.threshold_th1 = EXYNOS_THD_TEMP_FALL,
-+	.tmu_inten = EXYNOS_TMU_REG_INTEN,
-+	.inten_rise_mask = EXYNOS_TMU_RISE_INT_MASK,
-+	.inten_rise_shift = EXYNOS_TMU_RISE_INT_SHIFT,
-+	.inten_fall_mask = EXYNOS_TMU_FALL_INT_MASK,
-+	.inten_rise0_shift = EXYNOS_TMU_INTEN_RISE0_SHIFT,
-+	.inten_rise1_shift = EXYNOS_TMU_INTEN_RISE1_SHIFT,
-+	.inten_rise2_shift = EXYNOS_TMU_INTEN_RISE2_SHIFT,
-+	/* INTEN_RISE3 Not availble in exynos5420 */
-+	.inten_rise3_shift = EXYNOS_TMU_INTEN_RISE3_SHIFT,
-+	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
-+	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
-+	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
-+	.intclr_fall_shift = EXYNOS5420_TMU_CLEAR_FALL_INT_SHIFT,
-+	.emul_con = EXYNOS_EMUL_CON,
-+	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
-+	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
-+	.emul_time_mask = EXYNOS_EMUL_TIME_MASK,
-+};
-+
-+#define __EXYNOS5420_TMU_DATA	\
-+	.threshold_falling = 10, \
-+	.trigger_levels[0] = 85, \
-+	.trigger_levels[1] = 103, \
-+	.trigger_levels[2] = 110, \
-+	.trigger_levels[3] = 120, \
-+	.trigger_enable[0] = true, \
-+	.trigger_enable[1] = true, \
-+	.trigger_enable[2] = true, \
-+	.trigger_enable[3] = false, \
-+	.trigger_type[0] = THROTTLE_ACTIVE, \
-+	.trigger_type[1] = THROTTLE_ACTIVE, \
-+	.trigger_type[2] = SW_TRIP, \
-+	.trigger_type[3] = HW_TRIP, \
-+	.max_trigger_level = 4, \
-+	.gain = 8, \
-+	.reference_voltage = 16, \
-+	.noise_cancel_mode = 4, \
-+	.cal_type = TYPE_ONE_POINT_TRIMMING, \
-+	.efuse_value = 55, \
-+	.min_efuse_value = 40, \
-+	.max_efuse_value = 100, \
-+	.first_point_trim = 25, \
-+	.second_point_trim = 85, \
-+	.default_temp_offset = 50, \
-+	.freq_tab[0] = { \
-+		.freq_clip_max = 800 * 1000, \
-+		.temp_level = 85, \
-+	}, \
-+	.freq_tab[1] = { \
-+		.freq_clip_max = 200 * 1000, \
-+		.temp_level = 103, \
-+	}, \
-+	.freq_tab_count = 2, \
-+	.type = SOC_ARCH_EXYNOS5420, \
-+	.registers = &exynos5420_tmu_registers, \
-+
-+#define EXYNOS5420_TMU_DATA \
-+	__EXYNOS5420_TMU_DATA \
-+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
-+			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-+			TMU_SUPPORT_EMUL_TIME)
-+
-+#define EXYNOS5420_TMU_DATA_SHARED \
-+	__EXYNOS5420_TMU_DATA \
-+	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
-+			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
-+			TMU_SUPPORT_EMUL_TIME | TMU_SUPPORT_ADDRESS_MULTIPLE)
-+
-+struct exynos_tmu_init_data const exynos5420_default_tmu_data = {
-+	.tmu_data = {
-+		{ EXYNOS5420_TMU_DATA },
-+		{ EXYNOS5420_TMU_DATA },
-+		{ EXYNOS5420_TMU_DATA_SHARED },
-+		{ EXYNOS5420_TMU_DATA_SHARED },
-+		{ EXYNOS5420_TMU_DATA_SHARED },
-+	},
-+	.tmu_count = 5,
-+};
-+#endif
-+
- #if defined(CONFIG_SOC_EXYNOS5440)
- static const struct exynos_tmu_registers exynos5440_tmu_registers = {
- 	.triminfo_data = EXYNOS5440_TMU_S0_7_TRIM,
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-index d9495a4..41f06dc 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.h
-+++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -72,6 +72,7 @@
- #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
- #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
- #define EXYNOS_TMU_CLEAR_FALL_INT_SHIFT	12
-+#define EXYNOS5420_TMU_CLEAR_FALL_INT_SHIFT	16
- #define EXYNOS5440_TMU_CLEAR_FALL_INT_SHIFT	4
- #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
- #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
-@@ -156,6 +157,13 @@ extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
- #define EXYNOS5250_TMU_DRV_DATA (NULL)
- #endif
- 
-+#if defined(CONFIG_SOC_EXYNOS5420)
-+extern struct exynos_tmu_init_data const exynos5420_default_tmu_data;
-+#define EXYNOS5420_TMU_DRV_DATA (&exynos5420_default_tmu_data)
-+#else
-+#define EXYNOS5420_TMU_DRV_DATA (NULL)
-+#endif
-+
- #if defined(CONFIG_SOC_EXYNOS5440)
- extern struct exynos_tmu_init_data const exynos5440_default_tmu_data;
- #define EXYNOS5440_TMU_DRV_DATA (&exynos5440_default_tmu_data)
--- 
-1.7.10.4
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
+BTW, I start creating a patch on the doc to align it to the changes
+that the "async" patches made.
+
+Kind regards
+Ulf Hansson
+
+>
+> Thanks!
+>
+>
+>> > ---
+>> >  drivers/base/dd.c |    2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > Index: linux-pm/drivers/base/dd.c
+>> > ===================================================================
+>> > --- linux-pm.orig/drivers/base/dd.c
+>> > +++ linux-pm/drivers/base/dd.c
+>> > @@ -499,7 +499,7 @@ static void __device_release_driver(stru
+>> >                                                      BUS_NOTIFY_UNBIND_DRIVER,
+>> >                                                      dev);
+>> >
+>> > -               pm_runtime_put(dev);
+>> > +               pm_runtime_put_sync(dev);
+>> >
+>> >                 if (dev->bus && dev->bus->remove)
+>> >                         dev->bus->remove(dev);
+>> >
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
