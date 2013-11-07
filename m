@@ -1,54 +1,57 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
- of voltage-tolerance
-Date: Thu, 7 Nov 2013 10:26:41 +0800
-Message-ID: <20131107022639.GB5994@S2101-09.ap.freescale.net>
-References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
- <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
- <20131105115307.GN19770@S2101-09.ap.freescale.net>
- <86130EF012BDF348AA0D464A4F44947801295423DF@SHAASIEXM01.ASIA.ROOT.PRI>
- <20131106032742.GP19770@S2101-09.ap.freescale.net>
- <86130EF012BDF348AA0D464A4F44947801295427BD@SHAASIEXM01.ASIA.ROOT.PRI>
+From: Xiaoguang Chen <chenxg@marvell.com>
+Subject: [PATCH] cpufreq: conservative: fix requested_freq reduction issue
+Date: Thu, 7 Nov 2013 10:28:50 +0800
+Message-ID: <1383791330-8289-1-git-send-email-chenxg@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [65.55.88.12] ([65.55.88.12]:9936 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752323Ab3KGC1I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2013 21:27:08 -0500
-Content-Disposition: inline
-In-Reply-To: <86130EF012BDF348AA0D464A4F44947801295427BD@SHAASIEXM01.ASIA.ROOT.PRI>
+Received: from mx0a-0016f401.pphosted.com ([67.231.148.174]:20841 "EHLO
+	mx0a-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752508Ab3KGC3P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2013 21:29:15 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rongjun Ying <Rongjun.Ying@csr.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Barry Song <Barry.Song@csr.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: chenxg@marvell.com, chenxg.marvell@gmail.com
 
-On Thu, Nov 07, 2013 at 01:55:21AM +0000, Rongjun Ying wrote:
-> > For given board, what voltages could be provided is known.  So you can
-> > just define OPP table in <board>.dts and specify the voltage as the
-> > value that the regulator IC can supply, e.g. 1.200V in above example.
-> > 
-> > This is not nice, as OPP table is CPU/SoC specific and should be
-> > ideally defined in <soc>.dtsi.  But still it's a way out for you to use
-> > cpufreq-cpu0 driver as it is.
-> > 
-> > In any case, you can not just change voltage-tolerance to voltage-max
-> > with no care about the existing users.
-> > 
-> > Shawn
-> > 
-> I don't think so. The voltage/freq pairs are attribute of the CPU.
-> Any boards can choose regulator IC base the cost and other reasons.
-> If the opp table defined in <board>.dts, we can set exact voltage/freq pairs,
-> and not need use the voltage-tolerance to set tolerance.
+When decreasing frequency, requested_freq may be less than
+freq_target, So requested_freq minus freq_target may be negative,
+But reqested_freq's unit is unsigned int, then the negative result
+will be one larger interger which may be even higher than
+requested_freq.
 
-If you read my comment above, you should see that I agree OPP is
-CPU/SoC specific and should be defined in <soc>.dtsi.  But property
-operating-points can reasonably be overwritten by particular <board>.dts
-for some reason like some voltages cannot be supplied on that board.
+This patch is to fix such issue. when result becomes negative,
+set requested_freq as the min value of policy.
 
-Again, this is just a way for you to use generic cpufreq-cpu0 driver as
-it is, but not necessarily the best one.
+Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+---
+ drivers/cpufreq/cpufreq_conservative.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Shawn
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index f62d822..218460f 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -80,13 +80,18 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 
+ 	/* Check for frequency decrease */
+ 	if (load < cs_tuners->down_threshold) {
++		unsigned int freq_target;
+ 		/*
+ 		 * if we cannot reduce the frequency anymore, break out early
+ 		 */
+ 		if (policy->cur == policy->min)
+ 			return;
+ 
+-		dbs_info->requested_freq -= get_freq_target(cs_tuners, policy);
++		freq_target = get_freq_target(cs_tuners, policy);
++		if (dbs_info->requested_freq > freq_target)
++			dbs_info->requested_freq -= freq_target;
++		else
++			dbs_info->requested_freq = policy->min;
+ 
+ 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
+ 				CPUFREQ_RELATION_L);
+-- 
+1.8.0
 
