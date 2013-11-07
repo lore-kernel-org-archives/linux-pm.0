@@ -1,49 +1,52 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: cpufreq-cpu0: use the max voltage instead
- of voltage-tolerance
-Date: Thu, 7 Nov 2013 12:55:42 +0800
-Message-ID: <20131107045540.GE5994@S2101-09.ap.freescale.net>
-References: <1383621014-11202-1-git-send-email-rongjun.ying@csr.com>
- <CAKohpo=qR5WD=5VjGmeRraQ+_m5NUn8xiP5Z_ZuZWLv1hNx5KA@mail.gmail.com>
- <20131105115307.GN19770@S2101-09.ap.freescale.net>
- <86130EF012BDF348AA0D464A4F44947801295423DF@SHAASIEXM01.ASIA.ROOT.PRI>
- <20131106032742.GP19770@S2101-09.ap.freescale.net>
- <86130EF012BDF348AA0D464A4F44947801295427BD@SHAASIEXM01.ASIA.ROOT.PRI>
- <20131107022639.GB5994@S2101-09.ap.freescale.net>
- <86130EF012BDF348AA0D464A4F4494780129542816@SHAASIEXM01.ASIA.ROOT.PRI>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: conservative: fix requested_freq reduction issue
+Date: Thu, 7 Nov 2013 10:39:38 +0530
+Message-ID: <CAKohpo=2xjR=nr5hyMg9bve5_uVbV79R2FTxks0bLmL7kNV9Mg@mail.gmail.com>
+References: <1383791330-8289-1-git-send-email-chenxg@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from am1ehsobe003.messaging.microsoft.com ([213.199.154.206]:16116
-	"EHLO am1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750869Ab3KGEzE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2013 23:55:04 -0500
-Content-Disposition: inline
-In-Reply-To: <86130EF012BDF348AA0D464A4F4494780129542816@SHAASIEXM01.ASIA.ROOT.PRI>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:48316 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797Ab3KGFJj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Nov 2013 00:09:39 -0500
+Received: by mail-oa0-f42.google.com with SMTP id l6so84983oag.15
+        for <linux-pm@vger.kernel.org>; Wed, 06 Nov 2013 21:09:38 -0800 (PST)
+In-Reply-To: <1383791330-8289-1-git-send-email-chenxg@marvell.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rongjun Ying <Rongjun.Ying@csr.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjying <rjying@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Barry Song <Barry.Song@csr.com>
+To: Xiaoguang Chen <chenxg@marvell.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Xiaoguang Chen <chenxg.marvell@gmail.com>
 
-On Thu, Nov 07, 2013 at 03:32:09AM +0000, Rongjun Ying wrote:
-> I think my patch is better.
+On 7 November 2013 07:58, Xiaoguang Chen <chenxg@marvell.com> wrote:
+> When decreasing frequency, requested_freq may be less than
+> freq_target, So requested_freq minus freq_target may be negative,
+> But reqested_freq's unit is unsigned int, then the negative result
+> will be one larger interger which may be even higher than
+> requested_freq.
+>
+> This patch is to fix such issue. when result becomes negative,
+> set requested_freq as the min value of policy.
+>
+> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 
-Well, unfortunately your patch is plainly wrong, because there are
-in-tree users of voltage-tolerance right now.  How can you simply remove
-it from driver with ignoring these users?
+Good Catch.
 
-$ git grep voltage-tolerance arch/arm/boot/dts
-arch/arm/boot/dts/am33xx.dtsi:                  voltage-tolerance = <2>; /* 2 percentage */
-arch/arm/boot/dts/imx27.dtsi:                   voltage-tolerance = <5>;
-arch/arm/boot/dts/r8a73a4-ape6evm-reference.dts:        voltage-tolerance = <1>; /* 1% */
-arch/arm/boot/dts/r8a73a4-ape6evm.dts:  voltage-tolerance = <1>; /* 1% */
-arch/arm/boot/dts/sh73a0-kzm9g-reference.dts:                   voltage-tolerance = <1>; /* 1% */
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Shawn
+We need another patch for fixing the other part of code where we
+increase freq..
+We need to replace:
 
-> All soc have a max work voltage. If regulator IC can't supply min voltage, 
-> It can supply max voltage to soc.
-> As my patch, not need overwrite OPP in <board>.dts.
-> As your comment above, almost all board need overwrite OPP, unless the regulator 
-> IC can supply all voltage ranges of SoC need.
+if (dbs_info->requested_freq == policy->max)
+    return;
 
+with
+
+if (dbs_info->requested_freq >= policy->max)
+    return;
+
+So, that we don't run unnecessary code :)
