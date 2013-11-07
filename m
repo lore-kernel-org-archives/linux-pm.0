@@ -1,75 +1,138 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM / Runtime: Update documentation around probe|remove|suspend
-Date: Thu, 7 Nov 2013 10:49:52 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1311071046040.1401-100000@iolanthe.rowland.org>
-References: <1383817200-3004-1-git-send-email-ulf.hansson@linaro.org>
+From: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
+Subject: Re: [PATCH v2] ARM: dts: Exynos5420: Add device nodes for TMU blocks
+Date: Thu, 7 Nov 2013 22:02:10 +0530
+Message-ID: <CAHfPSqARSJqbXv9F+Fgro_=k3P2xE3XNsF-KYOW43WdVtKeSEA@mail.gmail.com>
+References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
+ <1383829669-1271-1-git-send-email-ch.naveen@samsung.com> <22321712.GIyJDTupbe@amdc1227>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:40422 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752435Ab3KGPty (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Nov 2013 10:49:54 -0500
-In-Reply-To: <1383817200-3004-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-pb0-f54.google.com ([209.85.160.54]:58914 "EHLO
+	mail-pb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753150Ab3KGQcb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Nov 2013 11:32:31 -0500
+In-Reply-To: <22321712.GIyJDTupbe@amdc1227>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Kevin Hilman <khilman@linaro.org>
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, amit.daniel@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, devicetree@vger.kernel.org, cpgs@samsung.com
 
-On Thu, 7 Nov 2013, Ulf Hansson wrote:
+Hello Tomasz,
 
-> PM core and driver core has changed some behavior regarding use of
-> runtime PM. Update the documentation accordingly.
-> 
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  Documentation/power/runtime_pm.txt |   19 ++++++++++---------
->  1 file changed, 10 insertions(+), 9 deletions(-)
-> 
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index 0f54333..0f62cc7 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -547,13 +547,11 @@ helper functions described in Section 4.  In that case, pm_runtime_resume()
->  should be used.  Of course, for this purpose the device's runtime PM has to be
->  enabled earlier by calling pm_runtime_enable().
->  
-> -If the device bus type's or driver's ->probe() callback runs
-> -pm_runtime_suspend() or pm_runtime_idle() or their asynchronous counterparts,
-> -they will fail returning -EAGAIN, because the device's usage counter is
-> -incremented by the driver core before executing ->probe().  Still, it may be
-> -desirable to suspend the device as soon as ->probe() has finished, so the driver
-> -core uses pm_runtime_put_sync() to invoke the subsystem-level idle callback for
-> -the device at that time.
-> +It may be desirable to suspend the device once ->probe() has finished.
-> +Therefore the driver core uses the asyncronous pm_request_idle() to submit a
-> +request to execute the subsystem-level idle callback for the device at that
-> +time.  A driver which make use of the runtime autosuspend feature, may want to
+On 7 November 2013 19:53, Tomasz Figa <t.figa@samsung.com> wrote:
+> Hi Naveen,
+>
+> On Thursday 07 of November 2013 18:37:49 Naveen Krishna Chatradhi wrote:
+>> Exynos5420 SoC has per core thermal management unit.
+>> 5 TMU channels 4 for CPUs and 5th for GPU.
+>>
+>> This patch adds the device tree nodes to the DT device list.
+>>
+>> Nodes carry the misplaced second base address and the second
+>> clock to access the misplaced base address.
+>>
+>> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+>> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+>> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+>> ---
+>> Changes since v1:
+>> 1. Nodes carry the misplaced second base address and the second
+>>    clock to access the misplaced base address.
+>> 2. Correct the clock number for the TMU4
+>
+> First of all, this patch should be a part of the whole series adding
+> support for thermal on Exynos 5420.
+Right, Reason why i posted this patch myself fixing the nits (As Leela
+and i work closely)
+Should have been along with the set.
+>
+> In addition, see my comment below.
+>
+>>  arch/arm/boot/dts/exynos5420.dtsi |   48 +++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 48 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+>> index 6ffefd1..d736b40 100644
+>> --- a/arch/arm/boot/dts/exynos5420.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5420.dtsi
+>> @@ -369,4 +369,52 @@
+>>               clock-names = "gscl";
+>>               samsung,power-domain = <&gsc_pd>;
+>>       };
+>> +
+>> +     /* tmu for CPU0 */
+>> +     tmu@10060000 {
+>> +             compatible = "samsung,exynos5420-tmu";
+>> +             reg = <0x10060000 0x100>;
+>> +             interrupts = <0 65 0>;
+>> +             clocks = <&clock 318>;
+>> +             clock-names = "tmu_apbif";
+>> +     };
+>> +
+>> +     /* tmu for CPU1 */
+>> +     tmu@10064000 {
+>> +             compatible = "samsung,exynos5420-tmu";
+>> +             reg = <0x10064000 0x100>;
+>> +             interrupts = <0 183 0>;
+>> +             clocks = <&clock 318>;
+>> +             clock-names = "tmu_apbif";
+>> +     };
+>> +
+>> +     /* tmu for CPU2 */
+>> +     tmu@10068000 {
+>> +             compatible = "samsung,exynos5420-tmu";
+>> +             /* 2nd reg is for the misplaced TRIMINFO register */
+>
+> Instead of this comment, such broken TMU variant should use a separate
+> compatible value, like "samsung,exynos5420-tmu-broken-triminfo", like
+> I mentioned in my comments to your other patch.
+Will make a note of it.
+>
+> For this compatible value, both second reg entry and second clock would
+> be required.
+>
+>> +             reg = <0x10068000 0x100>, <0x1006c000 0x4>;
+>> +             interrupts = <0 184 0>;
+>> +             clocks = <&clock 318>;
+>> +             clock-names = "tmu_apbif";
+>> +     };
+>> +
+>> +     /* tmu for CPU3 */
+>> +     tmu@1006c000 {
+>> +             compatible = "samsung,exynos5420-tmu";
+>> +             /* 2nd reg is for the misplaced TRIMINFO register */
+>> +             reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
+>> +             interrupts = <0 185 0>;
+>> +             clocks = <&clock 318>, <&clock 319>;
+>> +             clock-names = "tmu_apbif", "tmu_apbif_triminfo";
+>
+> The "tmu_apbif_triminfo" clock is not specified in exynos-thermal binding
+> documentation. In addition, the patch of yours adding support for second
+> clock uses another name - "tmu_apbif_sec".
+>
+> As for the name itself, I would prefer "tmu_apbif_triminfo" as it's more
+> meaningful.
+TMU hardware on Exynos5440 and Exynos5420 has two different abnormalities
+On Exynos5440 Some registers are interleaved between the channels
+On Exynos5420, TRIMINFO is misplaced between, channels 2, 3 and 4.
 
-s/which make/that makes/
-s/,//
+having second_base was for the fix by Amit to address Exynos5440 problem,
+Which was already merged.
+After several reviews i tried to solve it by reusing the second_base
+for Exynos5420 aswell.
+Hence, I tried to use the "clk_sec" or "clk_second" which will rhyme
+along with the
+"second_base" in the driver.
 
-> +update the last busy mark before it finalilizes it's ->probe().
+I'm still not sure this having second clock is needed for Exynos5440 aswell.
+Will figure it out tomorrow.
+>
+> Best regards,
+> Tomasz
+>
 
-s/it finalilizes it's/returning from/
 
->  Moreover, the driver core prevents runtime PM callbacks from racing with the bus
->  notifier callback in __device_release_driver(), which is necessary, because the
-> @@ -632,7 +630,10 @@ The PM core always increments the runtime usage counter before calling the
->  Hence disabling runtime PM temporarily like this will not cause any runtime
->  suspend attempts to be permanently lost.  If the usage count goes to zero
->  following the return of the ->resume() callback, the ->runtime_idle() callback
-> -will be invoked as usual.
-> +will be invoked as usual.  Do note that PM core use the asyncronous
-> +pm_runtime_put() when decrementing the usage counter, which means it don't wait
-> +for the device to become inactive before it moves on and handles the next
-> +device from the list.
 
-I don't think we need to state this.  It shouldn't make any difference 
-to drivers whether the runtime-put is synchronous or async.
-
-Alan Stern
-
+-- 
+Shine bright,
+(: Nav :)
