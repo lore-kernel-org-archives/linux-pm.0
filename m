@@ -1,28 +1,57 @@
-From: <hope2@frank283.onmicrosoft.com>
-Subject: YOU HAVE BEEN AWARDED 3 CRORE 60LAKH IN THE BMW AWARD PROMO.TO GET YOUR
- AWARD SEND YOUR INFO :- MR JAY MC HENRY OR CALL HIM +447010059588
-Date: Sat, 9 Nov 2013 00:42:26 +0530
-Message-ID: <ec5f952f-a6bc-4e6d-9ca1-dcc6e9320af5@DBXPR04MB080.eurprd04.prod.outlook.com>
-Reply-To: <bmwclaims13@hotmail.co.uk>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: [PATCH 13/24] mm/power: Use memblock apis for early memory allocations
+Date: Fri, 8 Nov 2013 18:41:49 -0500
+Message-ID: <1383954120-24368-14-git-send-email-santosh.shilimkar@ti.com>
+References: <1383954120-24368-1-git-send-email-santosh.shilimkar@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from emea01-db3-ndr.ptr.protection.outlook.com ([157.56.120.99]:27448
-	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757457Ab3KHTnN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2013 14:43:13 -0500
-Content-Description: Mail message body
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1383954120-24368-1-git-send-email-santosh.shilimkar@ti.com>
+Sender: owner-linux-mm@kvack.org
+To: tj@kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J.
+ Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Recipients <hope2@frank283.onmicrosoft.com>
 
-1. Full Name:
-2. Full Address:
-3. State:
-4. Occupation:
-5. Age:
-6. Sex:
-7. Country:
-8. Mo.Number:
+Switch to memblock interfaces for early memory allocator instead of
+bootmem allocator. No functional change in beahvior than what it is
+in current code from bootmem users points of view.
+
+Archs already converted to NO_BOOTMEM now directly use memblock
+interfaces instead of bootmem wrappers build on top of memblock. And the
+archs which still uses bootmem, these new apis just fallback to exiting
+bootmem APIs.
+
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+---
+ kernel/power/snapshot.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 358a146..887134e 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -637,7 +637,7 @@ __register_nosave_region(unsigned long start_pfn, unsigned long end_pfn,
+ 		BUG_ON(!region);
+ 	} else
+ 		/* This allocation cannot fail */
+-		region = alloc_bootmem(sizeof(struct nosave_region));
++		region = memblock_virt_alloc(sizeof(struct nosave_region));
+ 	region->start_pfn = start_pfn;
+ 	region->end_pfn = end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
+-- 
+1.7.9.5
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
