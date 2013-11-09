@@ -1,84 +1,96 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] intel_idle: Support Intel Atom Processor C2000 Product Family
-Date: Sat,  9 Nov 2013 00:30:17 -0500
-Message-ID: <c58648637a2565252bc6887336a3ba932484b9d1.1383974976.git.len.brown@intel.com>
-References: <c7553d08fd591b6bc391bd22db68d02650c8d76f.1383974976.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c7553d08fd591b6bc391bd22db68d02650c8d76f.1383974976.git.len.brown@intel.com>
-In-Reply-To: <c7553d08fd591b6bc391bd22db68d02650c8d76f.1383974976.git.len.brown@intel.com>
-References: <c7553d08fd591b6bc391bd22db68d02650c8d76f.1383974976.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH 1/3] hwmon: (coretemp) Use PCI host bridge ID to identify CPU if necessary
+Date: Sat,  9 Nov 2013 09:51:07 -0800
+Message-ID: <1384019469-18666-1-git-send-email-linux@roeck-us.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:59747 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753740Ab3KIRvP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Nov 2013 12:51:15 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jean Delvare <khali@linux-fr.org>, Fenghua Yu <fenghua.yu@intel.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 
-From: Len Brown <len.brown@intel.com>
+Atom S12x0 CPUs are identified by the CPU host bridge ID. Add an override
+table based on PCI IDs as well as code to detect it.
 
-Support the "Intel(R) Atom(TM) Processor C2000 Product Family",
-formerly code-named Avoton.  It is based on the next generation
-Intel Atom processor architecture, formerly code-named Silvermont.
+PCI access functions can now be called with PCI disabled, so unlike previous
+attempts to use PCI IDs, the code no longer depends on it. If PCI is disabled,
+the CPU will not be identified correctly. Since it is unlikely that anything
+will work in this case, this is an acceptable limitation.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
- drivers/idle/intel_idle.c | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+ drivers/hwmon/coretemp.c |   33 ++++++++++++++++++++++++++++++---
+ 1 file changed, 30 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index fa6964d..2fea107 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -1,7 +1,7 @@
- /*
-  * intel_idle.c - native hardware idle loop for modern Intel processors
-  *
-- * Copyright (c) 2010, Intel Corporation.
-+ * Copyright (c) 2013, Intel Corporation.
-  * Len Brown <len.brown@intel.com>
-  *
-  * This program is free software; you can redistribute it and/or modify it
-@@ -329,6 +329,22 @@ static struct cpuidle_state atom_cstates[CPUIDLE_STATE_MAX] = {
- 	{
- 		.enter = NULL }
- };
-+static struct cpuidle_state avn_cstates[CPUIDLE_STATE_MAX] = {
-+	{
-+		.name = "C1-AVN",
-+		.desc = "MWAIT 0x00",
-+		.flags = MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 2,
-+		.target_residency = 2,
-+		.enter = &intel_idle },
-+	{
-+		.name = "C6-AVN",
-+		.desc = "MWAIT 0x51",
-+		.flags = MWAIT2flg(0x58) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.exit_latency = 15,
-+		.target_residency = 45,
-+		.enter = &intel_idle },
-+};
+diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+index 78be661..5c8ab25 100644
+--- a/drivers/hwmon/coretemp.c
++++ b/drivers/hwmon/coretemp.c
+@@ -36,6 +36,7 @@
+ #include <linux/cpu.h>
+ #include <linux/smp.h>
+ #include <linux/moduleparam.h>
++#include <linux/pci.h>
+ #include <asm/msr.h>
+ #include <asm/processor.h>
+ #include <asm/cpu_device_id.h>
+@@ -190,6 +191,17 @@ static ssize_t show_temp(struct device *dev,
+ 	return tdata->valid ? sprintf(buf, "%d\n", tdata->temp) : -EAGAIN;
+ }
  
- /**
-  * intel_idle
-@@ -462,6 +478,11 @@ static const struct idle_cpu idle_cpu_hsw = {
- 	.disable_promotion_to_c1e = true,
- };
- 
-+static const struct idle_cpu idle_cpu_avn = {
-+	.state_table = avn_cstates,
-+	.disable_promotion_to_c1e = true,
++struct tjmax_pci {
++	unsigned int device;
++	int tjmax;
 +};
 +
- #define ICPU(model, cpu) \
- 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
- 
-@@ -483,6 +504,7 @@ static const struct x86_cpu_id intel_idle_ids[] = {
- 	ICPU(0x3f, idle_cpu_hsw),
- 	ICPU(0x45, idle_cpu_hsw),
- 	ICPU(0x46, idle_cpu_hsw),
-+	ICPU(0x4D, idle_cpu_avn),
- 	{}
++static const struct tjmax_pci tjmax_pci_table[] __cpuinitconst = {
++	{ 0x0c72, 102000 },	/* Atom S1240 (Centerton) */
++	{ 0x0c73, 95000 },	/* Atom S1220 (Centerton) */
++	{ 0x0c75, 95000 },	/* Atom S1260 (Centerton) */
++};
++
+ struct tjmax {
+ 	char const *id;
+ 	int tjmax;
+@@ -222,8 +234,11 @@ static const struct tjmax_model tjmax_model_table[] = {
+ 				 * is undetectable by software
+ 				 */
+ 	{ 0x27, ANY, 90000 },	/* Atom Medfield (Z2460) */
+-	{ 0x35, ANY, 90000 },	/* Atom Clover Trail/Cloverview (Z2760) */
+-	{ 0x36, ANY, 100000 },	/* Atom Cedar Trail/Cedarview (N2xxx, D2xxx) */
++	{ 0x35, ANY, 90000 },	/* Atom Clover Trail/Cloverview (Z27x0) */
++	{ 0x36, ANY, 100000 },	/* Atom Cedar Trail/Cedarview (N2xxx, D2xxx)
++				 * Also matches S12x0 (stepping 9), covered by
++				 * PCI table
++				 */
  };
- MODULE_DEVICE_TABLE(x86cpu, intel_idle_ids);
+ 
+ static int adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *dev)
+@@ -236,8 +251,20 @@ static int adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *dev)
+ 	int err;
+ 	u32 eax, edx;
+ 	int i;
++	struct pci_dev *host_bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++
++	/*
++	 * Explicit tjmax table entries override heuristics.
++	 * First try PCI host bridge IDs, followed by model ID strings
++	 * and model/stepping information.
++	 */
++	if (host_bridge && host_bridge->vendor == PCI_VENDOR_ID_INTEL) {
++		for (i = 0; i < ARRAY_SIZE(tjmax_pci_table); i++) {
++			if (host_bridge->device == tjmax_pci_table[i].device)
++				return tjmax_pci_table[i].tjmax;
++		}
++	}
+ 
+-	/* explicit tjmax table entries override heuristics */
+ 	for (i = 0; i < ARRAY_SIZE(tjmax_table); i++) {
+ 		if (strstr(c->x86_model_id, tjmax_table[i].id))
+ 			return tjmax_table[i].tjmax;
 -- 
-1.8.4
+1.7.9.7
+
