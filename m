@@ -1,49 +1,144 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: conservative: fix requested_freq reduction issue
-Date: Mon, 11 Nov 2013 10:13:26 +0530
-Message-ID: <CAKohpomP61X_cymgZggMtmWjAhqG3VniEqw-rHstcBkwr5FYqQ@mail.gmail.com>
-References: <1383791330-8289-1-git-send-email-chenxg@marvell.com>
-	<CAKohpo=2xjR=nr5hyMg9bve5_uVbV79R2FTxks0bLmL7kNV9Mg@mail.gmail.com>
-	<CADmjqpNWYVxrXuo106rBuZeZ2BrkGFkmbMJ8jxi39c8kLiQ+iw@mail.gmail.com>
-	<CAKohpon6DhiWMuszuznK4ZNCBTpy0_r3gGvTXCDMcktXpN3HEw@mail.gmail.com>
-	<CADmjqpP4dxWoU_3dLzC5+JffvwnZaLV=uxFTghpMRoSL_85TrA@mail.gmail.com>
-	<CAKohpo=Rq-Sds5FzVdxcAEb78sqemq5JCc3S+pc11mu_b_ZpNA@mail.gmail.com>
-	<CADmjqpMG_UVbbmC4Yjveod2q9zHJ6LsxOAYzNZN4NBOr_qhN+Q@mail.gmail.com>
+From: Prasanna Kumar <prasannapadubidri@gmail.com>
+Subject: Re: [PATCH 1/1] ARM: EXYNOS: Add default latency values for Device
+ and Power Domain
+Date: Mon, 11 Nov 2013 10:19:40 +0530
+Message-ID: <CAPmaG0t++EtdGmVg_JOZt-MU1Su=BDAe7L-tv-un3qkQRkebfg@mail.gmail.com>
+References: <1383892025-14759-1-git-send-email-sachin.kamat@linaro.org>
+	<9546263.JaCWNRjo5C@flatron>
+	<CAK9yfHz-iUfOXEHwJ_QaF=YXudqiUMY0MMpNY4mh-f+ABAx-Xg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CADmjqpMG_UVbbmC4Yjveod2q9zHJ6LsxOAYzNZN4NBOr_qhN+Q@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <skarafotis@gmail.com>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Xiaoguang Chen <chenxg.marvell@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f181.google.com ([209.85.128.181]:46647 "EHLO
+	mail-ve0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101Ab3KKEtl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Nov 2013 23:49:41 -0500
+In-Reply-To: <CAK9yfHz-iUfOXEHwJ_QaF=YXudqiUMY0MMpNY4mh-f+ABAx-Xg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prathyush <prathyush.k@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Prasanna Kumar <prasanna.ps@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-On 9 November 2013 00:59, Stratos Karafotis <skarafotis@gmail.com> wrote:
-> I removed the check you proposed in this commit 934dac1ea072 to avoid
-> the duplicate check in cs_check_cpu and in dbs_cpufreq_notifier.
+On Mon, Nov 11, 2013 at 8:52 AM, Sachin Kamat <sachin.kamat@linaro.org>
+wrote:
 >
-> I agree that we don't need dbs_cpufreq_notifier if we transfer checks in
-> cs_check_cpu. But I'm not 100% sure if the notifier also covers
-> other cases and if it can be safely removed.
-
-It is there to take care of out-of-sync issues, and was introduced by this
-commit, so probably it will stay as is:
-
-commit a8d7c3bc2396aff14f9e920677072cb55b016040
-Author: Elias Oltmanns <eo@nebensachen.de>
-Date:   Mon Oct 22 09:50:13 2007 +0200
-
-    [CPUFREQ] Make cpufreq_conservative handle out-of-sync events properly
-
-    Make cpufreq_conservative handle out-of-sync events properly
-
-    Currently, the cpufreq_conservative governor doesn't get notified when the
-    actual frequency the cpu is running at differs from what cpufreq thought it
-    was. As a result the cpu may stay at the maximum frequency after a s2ram /
-    resume cycle even though the system is idle.
-
-    Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
-    Signed-off-by: Dave Jones <davej@redhat.com>
----
- drivers/cpufreq/cpufreq_conservative.c | 32 ++++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
+> Hi Tomasz,
+>
+> Thanks for reviewing.
+>
+> On 10 November 2013 22:25, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> > Hi Sachin, Prasanna,
+> >
+> > [CCing Rafael and respective mailing lists]
+> >
+> > Please see my comments inline. Also please always remember to add all
+> > appropriate recipients on CC list. More reviewers means higher chance of
+> > spotting (and so eliminating) potential issues.
+>
+> Indeed. Thanks for adding. get_maintainers somehow did not list PM
+> related folks.
+> So missed this.
+>
+> >
+> > On Friday 08 of November 2013 11:57:05 Sachin Kamat wrote:
+> >> From: Prasanna Kumar <prasanna.ps@samsung.com>
+> >>
+> >> Power domain and device timing data are intialized with default
+> >> values to avoid dump of warnings from various power domains
+> >> during power gating.
+> >>
+> >> Signed-off-by: Prasanna Kumar <prasanna.ps@samsung.com>
+> >> Signed-off-by: Prathyush K <prathyush.k@samsung.com>
+> >> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> >> ---
+> >>  arch/arm/mach-exynos/pm_domains.c |   15 ++++++++++++++-
+> >>  1 file changed, 14 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/arch/arm/mach-exynos/pm_domains.c
+> >> b/arch/arm/mach-exynos/pm_domains.c
+> >> index 84e0483a0500..9bbb4ac23980 100644
+> >> --- a/arch/arm/mach-exynos/pm_domains.c
+> >> +++ b/arch/arm/mach-exynos/pm_domains.c
+> >> @@ -25,6 +25,10 @@
+> >>  #include <mach/regs-pmu.h>
+> >>  #include <plat/devs.h>
+> >>
+> >> +#define DEFAULT_DEV_LATENCY_NS                       1000000UL
+> >> +#define DEFAULT_PD_PWRON_LATENCY_NS          10000000UL
+> >> +#define DEFAULT_PD_PWROFF_LATENCY_NS         10000000UL
+> >
+> > Is there any rationale behind choosing these particular values?
+>
+> IMO, these values were obtained more from experimentation. Prasanna,
+> please comment.
+As Sachin mentioned, the values are obtained from experimentation to avoid
+latency warning messages. These values can be changed when the
+information becomes available from the specs.
+As of now , this seems to be good set of values.
+>
+> >
+> >> +
+> >>  /*
+> >>   * Exynos specific wrapper around the generic power domain
+> >>   */
+> >> @@ -36,6 +40,13 @@ struct exynos_pm_domain {
+> >>       u32 enable;
+> >>  };
+> >>
+> >> +static struct gpd_timing_data dev_latencies = {
+> >> +     .stop_latency_ns = DEFAULT_DEV_LATENCY_NS,
+> >> +     .start_latency_ns = DEFAULT_DEV_LATENCY_NS,
+> >> +     .save_state_latency_ns = DEFAULT_DEV_LATENCY_NS,
+> >> +     .restore_state_latency_ns = DEFAULT_DEV_LATENCY_NS,
+> >
+> > I don't think that stop, start, save and restore latencies should be all
+> > the same.
+>
+> They could be different. But again as I said it was based on
+> experimentation rather than reference.
+>
+> >
+> >> +};
+> >> +
+> >>  static int exynos_pd_power(struct generic_pm_domain *domain, bool
+> >> power_on)
+> >>  {
+> >>       struct exynos_pm_domain *pd;
+> >> @@ -83,7 +94,7 @@ static void exynos_add_device_to_domain(struct
+> >> exynos_pm_domain *pd,
+> >>       dev_dbg(dev, "adding to power domain %s\n", pd->pd.name);
+> >>
+> >>       while (1) {
+> >> -             ret = pm_genpd_add_device(&pd->pd, dev);
+> >> +             ret = __pm_genpd_add_device(&pd->pd, dev,
+> >> &dev_latencies);
+> >
+> > The double underscore prefix scares me a bit. Is this function really
+> > supposed to be used like this?
+>
+> We did not find a wrapper/helper function to set this. Hence had to
+> use this. In fact I did not
+> find any other users of this function (pm_genpd_add_device) too.
+>
+> >
+> >>               if (ret != -EAGAIN)
+> >>                       break;
+> >>               cond_resched();
+> >> @@ -173,6 +184,8 @@ static __init int
+> >> exynos4_pm_init_power_domain(void)
+> >>               pd->base = of_iomap(np, 0);
+> >>               pd->pd.power_off = exynos_pd_power_off;
+> >>               pd->pd.power_on = exynos_pd_power_on;
+> >> +             pd->pd.power_off_latency_ns =
+> >> DEFAULT_PD_PWROFF_LATENCY_NS;
+> >> +             pd->pd.power_on_latency_ns = DEFAULT_PD_PWRON_LATENCY_NS;
+> >
+> > It might be worth to set up the latencies indeed, but wrong values can
+> > do
+> > more harm than good.
+>
+> Right. As of this now, this is a well tested set of values.
+>
+> --
+regards,
+Prasanna
