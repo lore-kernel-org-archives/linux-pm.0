@@ -1,67 +1,50 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv5 19/20] arm: dts: make OMAP4460 bandgap node to belong to OCP
-Date: Tue, 12 Nov 2013 15:46:21 -0400
-Message-ID: <1384285582-16933-20-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Subject: [PATCHv5 20/20] MAINTAINERS: add maintainer entry for thermal bindings
+Date: Tue, 12 Nov 2013 15:46:22 -0400
+Message-ID: <1384285582-16933-21-git-send-email-eduardo.valentin@ti.com>
 References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com
-Cc: wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Russell King <linux@arm.linux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1384285582-16933-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Cc: wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Small fix on representation. Bandgap node belongs to OCP.
+After discussion and agreement of thermal device tree bindings,
+it is desirable to properly maintain thermal bindings for
+existing and upcoming devices.
 
-Cc: "Beno=C3=AEt Cousson" <bcousson@baylibre.com>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: linux-omap@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Suggested-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+As original author of thermal device tree bindings, I am
+volunteering to maintain them.
+
+Cc: Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Cc: Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>
+Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
 ---
- arch/arm/boot/dts/omap4460.dtsi | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/boot/dts/omap4460.dtsi b/arch/arm/boot/dts/omap44=
-60.dtsi
-index dc22719..def8183 100644
---- a/arch/arm/boot/dts/omap4460.dtsi
-+++ b/arch/arm/boot/dts/omap4460.dtsi
-@@ -39,14 +39,16 @@
- 		#include "omap4-cpu-thermal.dtsi"
- 	};
-=20
--	bandgap: bandgap {
--		reg =3D <0x4a002260 0x4
--		       0x4a00232C 0x4
--		       0x4a002378 0x18>;
--		compatible =3D "ti,omap4460-bandgap";
--		interrupts =3D <0 126 IRQ_TYPE_LEVEL_HIGH>; /* talert */
--		gpios =3D <&gpio3 22 0>; /* tshut */
-+	ocp {
-+		bandgap: bandgap {
-+			reg =3D <0x4a002260 0x4
-+			       0x4a00232C 0x4
-+			       0x4a002378 0x18>;
-+			compatible =3D "ti,omap4460-bandgap";
-+			interrupts =3D <0 126 IRQ_TYPE_LEVEL_HIGH>; /* talert */
-+			gpios =3D <&gpio3 22 0>; /* tshut */
-=20
--		#thermal-sensor-cells =3D <0>;
-+			#thermal-sensor-cells =3D <0>;
-+		};
- 	};
- };
---=20
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3438384..94bfc46 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6178,6 +6178,7 @@ M:	Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+ M:	Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+ M:	Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+ M:	Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>
++M:	Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+ L:	devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+ S:	Maintained
+ F:	Documentation/devicetree/
+-- 
 1.8.2.1.342.gfa7285d
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
