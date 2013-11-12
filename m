@@ -1,64 +1,96 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Wed, 13 Nov 2013 00:19:29 +0530
-Message-ID: <52827839.80904@linux.vnet.ibm.com>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <52442F6F.5020703@linux.vnet.ibm.com> <5281E09B.3060303@linux.vnet.ibm.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCHv5 00/20] device thermal limits represented in device tree nodes (v5)
+Date: Tue, 12 Nov 2013 15:46:02 -0400
+Message-ID: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:42142 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774Ab3KLSyC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 13:54:02 -0500
-Received: from /spool/local
-	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 13 Nov 2013 00:23:59 +0530
-In-Reply-To: <5281E09B.3060303@linux.vnet.ibm.com>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:59021 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754132Ab3KLTrm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 Nov 2013 14:47:42 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, amit.kachhap@linaro.org, thomas.abraham@linaro.org, markgross@thegnar.org
+To: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com
+Cc: wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 11/12/2013 01:32 PM, Srivatsa S. Bhat wrote:
-> On 09/26/2013 06:28 PM, Srivatsa S. Bhat wrote:
->> On 09/26/2013 05:10 AM, Andrew Morton wrote:
->>> On Thu, 26 Sep 2013 04:56:32 +0530 "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>>
->>>> Experimental Results:
->>>> ====================
->>>>
->>>> Test setup:
->>>> ----------
->>>>
->>>> x86 Sandybridge dual-socket quad core HT-enabled machine, with 128GB RAM.
->>>> Memory Region size = 512MB.
->>>
->>> Yes, but how much power was saved ;)
->>>
->>
->> I don't have those numbers yet, but I'll be able to get them going forward.
->>
-> 
-> Hi,
-> 
-> I performed experiments on an IBM POWER 7 machine and got actual power-savings
-> numbers (upto 2.6% of total system power) from this patchset. I presented them
-> at the Kernel Summit but forgot to post them on LKML. So here they are:
-> 
+Hello all,
 
-<snip>
+Here is v5 of the work of representing hardware thermal properties
+in device tree infrastructure. Previous versions can be
+found here:
+V4: https://lkml.org/lkml/2013/9/26/787
+V3: https://lkml.org/lkml/2013/9/15/122
+RFCv2: http://lkml.org/lkml/2013/8/23/594
+RFCv1: http://lkml.org/lkml/2013/7/22/319
 
-And here is a recent LWN article that highlights the important design changes
-in this version and gives a good overview of this patchset as a whole:
+The differences from V4 of this series are pretty minor. Here is a shortlog:
+1. Rephrased couple of sentences and improved description of a couple of properties.
+2. Removed the macro constants for trip type from the binding header file.
+3. Due to (3), patches 09/14/15 were adapted to use plain string constants
+4. As per suggestion by Nishanth M. I also included in this series two
+patches to move TI bandgap nodes to belong under OCP.
+5. I volunteered to maintain the thermal binding, so added that to MAINTAINERS.
 
-http://lwn.net/Articles/568891/
+This specific series has been tested on OMAP4430, OMAP4460, OMAP5432 and DRA7.
 
-And here is the link to the patchset (v4):
-http://lwn.net/Articles/568369/
+All best,
 
-Regards,
-Srivatsa S. Bhat
- 
+Eduardo Valentin (20):
+  thermal: allow registering without .get_temp
+  thermal: introduce device tree parser
+  thermal: core: introduce thermal_of_cooling_device_register
+  thermal: cpu_cooling: introduce of_cpufreq_cooling_register
+  cpufreq: cpufreq-cpu0: add dt node parsing for cooling device
+    properties
+  hwmon: lm75: expose to thermal fw via DT nodes
+  hwmon: tmp102: expose to thermal fw via DT nodes
+  thermal: ti-soc-thermal: use thermal DT infrastructure
+  arm: dts: add omap4 CPU thermal data
+  arm: dts: add omap4430 thermal data
+  arm: dts: add omap4460 thermal data
+  arm: dts: add cooling properties on omap4430 cpu node
+  arm: dts: add cooling properties on omap4460 cpu node
+  arm: dts: add omap5 GPU thermal data
+  arm: dts: add omap5 CORE thermal data
+  arm: dts: add omap5 thermal data
+  arm: dts: add cooling properties on omap5 cpu node
+  arm: dts: make OMAP443x bandgap node to belong to OCP
+  arm: dts: make OMAP4460 bandgap node to belong to OCP
+  MAINTAINERS: add maintainer entry for thermal bindings
+
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   7 +
+ .../devicetree/bindings/thermal/thermal.txt        | 586 ++++++++++++++
+ MAINTAINERS                                        |   1 +
+ arch/arm/boot/dts/omap4-cpu-thermal.dtsi           |  41 +
+ arch/arm/boot/dts/omap443x.dtsi                    |  23 +-
+ arch/arm/boot/dts/omap4460.dtsi                    |  29 +-
+ arch/arm/boot/dts/omap5-core-thermal.dtsi          |  28 +
+ arch/arm/boot/dts/omap5-gpu-thermal.dtsi           |  28 +
+ arch/arm/boot/dts/omap5.dtsi                       |  15 +-
+ drivers/cpufreq/Kconfig                            |   2 +-
+ drivers/cpufreq/cpufreq-cpu0.c                     |  16 +
+ drivers/hwmon/lm75.c                               |  35 +-
+ drivers/hwmon/tmp102.c                             |  19 +
+ drivers/thermal/Kconfig                            |  14 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/cpu_cooling.c                      |  56 +-
+ drivers/thermal/of-thermal.c                       | 849 +++++++++++++++++++++
+ drivers/thermal/thermal_core.c                     |  77 +-
+ drivers/thermal/thermal_core.h                     |   9 +
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  77 +-
+ include/dt-bindings/thermal/thermal.h              |  17 +
+ include/linux/cpu_cooling.h                        |  25 +
+ include/linux/thermal.h                            |  32 +-
+ 23 files changed, 1936 insertions(+), 51 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/thermal.txt
+ create mode 100644 arch/arm/boot/dts/omap4-cpu-thermal.dtsi
+ create mode 100644 arch/arm/boot/dts/omap5-core-thermal.dtsi
+ create mode 100644 arch/arm/boot/dts/omap5-gpu-thermal.dtsi
+ create mode 100644 drivers/thermal/of-thermal.c
+ create mode 100644 include/dt-bindings/thermal/thermal.h
+
+-- 
+1.8.2.1.342.gfa7285d
 
