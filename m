@@ -1,91 +1,47 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
-Date: Tue, 12 Nov 2013 13:32:35 +0530
-Message-ID: <5281E09B.3060303@linux.vnet.ibm.com>
-References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <52442F6F.5020703@linux.vnet.ibm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
+Date: Tue, 12 Nov 2013 11:36:31 +0100
+Message-ID: <CAKfTPtD=s-gwmT3SWHukeZE13gXZqD9fR+sZLGm-p3zFu6RwvQ@mail.gmail.com>
+References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org>
+	<CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com>
+	<20131111163859.GE26898@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:49327 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753Ab3KLIHL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 03:07:11 -0500
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 12 Nov 2013 13:37:09 +0530
-In-Reply-To: <52442F6F.5020703@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20131111163859.GE26898@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, Lukasz Majewski <l.majewski@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Arjan van de Ven <arjan@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, amit.kachhap@linaro.org, thomas.abraham@linaro.org, markgross@thegnar.org
 
-On 09/26/2013 06:28 PM, Srivatsa S. Bhat wrote:
-> On 09/26/2013 05:10 AM, Andrew Morton wrote:
->> On Thu, 26 Sep 2013 04:56:32 +0530 "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+On 11 November 2013 17:38, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, Nov 11, 2013 at 11:33:45AM +0000, Catalin Marinas wrote:
+>> My understanding from the recent discussions is that the scheduler
+>> should decide directly on the C-state (or rather the deepest C-state
+>> possible since we don't want to duplicate the backend logic for
+>> synchronising CPUs going up or down). This means that the scheduler
+>> needs to know about C-state target residency, wake-up latency (I think
+>> we can leave coupled C-states to the backend, there is some complex
+>> synchronisation which I wouldn't duplicate).
 >>
->>> Experimental Results:
->>> ====================
->>>
->>> Test setup:
->>> ----------
->>>
->>> x86 Sandybridge dual-socket quad core HT-enabled machine, with 128GB RAM.
->>> Memory Region size = 512MB.
->>
->> Yes, but how much power was saved ;)
->>
-> 
-> I don't have those numbers yet, but I'll be able to get them going forward.
-> 
+>> Alternatively (my preferred approach), we get the scheduler to predict
+>> and pass the expected residency and latency requirements down to a
+>> power driver and read back the actual C-states for making task
+>> placement decisions. Some of the menu governor prediction logic could
+>> be turned into a library and used by the scheduler. Basically what
+>> this tries to achieve is better scheduler awareness of the current
+>> C-states decided by a cpuidle/power driver based on the scheduler
+>> constraints.
+>
+> Ah yes.. so I _think_ the scheduler wants to eventually know about idle
+> topology constraints. But we can get there in a gradual fashion I hope.
+>
+> Like the package C states on x86 -- for those to be effective the
+> scheduler needs to pack tasks and keep entire packages idle for as long
+> as possible.
 
-Hi,
+That's the purpose of patches 12, 13 and 14. To get the current wakeup
+latency of a core and use it when selecting a core
 
-I performed experiments on an IBM POWER 7 machine and got actual power-savings
-numbers (upto 2.6% of total system power) from this patchset. I presented them
-at the Kernel Summit but forgot to post them on LKML. So here they are:
-
-Hardware-setup:
---------------
-IBM POWER 7 machine: 4 socket (NUMA), 32 cores, 128GB RAM
-
- - 4 NUMA nodes with 32 GB RAM each
- - Booted with numa=fake=1 and treated them as 4 memory regions
-
-
-Software setup:
---------------
-Workload: Run modified ebizzy for half an hour, which allocates and frees large
-quantities of memory frequently. The modified ebizzy touches every allocated
-page a number of times (4 times) before freeing it up. This ensures that
-allocating a page in the "wrong" memory region makes it very costly in terms
-of power-savings, since every allocated page is accessed before getting
-freed (and accesses cause energy consumption). Thus, with this modified
-benchmark, sub-optimal MM decisions (in terms of memory power-savings) get
-magnified and hence become noticeable.
-
-
-Power-savings compared to mainline (3.12-rc4):
----------------------------------------------
-With this patchset applied, the average power of the system reduced by 2.6%
-compared to the mainline kernel during the benchmark run. The total system
-power is an excellent metric for such evaluations, since it brings out the
-overall power-efficiency of the patchset. (IOW, if the patchset shoots up the
-CPU or disk power-consumption while causing memory power savings, then the
-total system power will not show much difference). So these numbers indicate
-that the patchset performs quite well in reducing the power-consumption of
-the system as a whole.
-
-This is not the most ideal hardware configuration to test on, since I had
-only 4 memory regions to play with, but this gives a good initial indication
-of the kind of power savings that can be achieved with this patchset.
-
-I am expecting the same patchset to give us power-savings of upto 5% of the
-total system power on a newer prototype hardware that I have (since it has
-more memory regions and lower base power consumption).
-
-
-Regards,
-Srivatsa S. Bhat
-
+>
+>
