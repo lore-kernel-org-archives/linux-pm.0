@@ -1,95 +1,31 @@
-From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH 4/4 v3] ARM: dts: Exynos5420: Add device nodes for TMU blocks
-Date: Tue, 12 Nov 2013 12:07:48 +0530
-Message-ID: <1384238268-24671-1-git-send-email-ch.naveen@samsung.com>
-References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com, t.figa@samsung.com
+From: =?UTF-8?B?5YqJ5ZiJ6ae/?= <scott.liu@emc.com.tw>
+Subject: stop suspend during update firmware?
+Date: Tue, 12 Nov 2013 15:38:47 +0800
+Message-ID: <5281DB07.6060206@emc.com.tw>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from emcscan.emc.com.tw ([192.72.220.5]:27080 "EHLO
+	emcscan.emc.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751421Ab3KLHsx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 02:48:53 -0500
+Received: from [192.168.135.109] ([192.168.135.109])
+	by emc.com.tw (8.13.7+Sun/8.13.7) with ESMTP id rAC7ckam020255
+	for <"linux-pm@vger.kernel.org">; Tue, 12 Nov 2013 15:38:46 +0800 (CST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "linux-pm@vger.kernel.org"@emc.com.tw
 
-Exynos5420 SoC has per core thermal management unit.
-5 TMU channels 4 for CPUs and 5th for GPU.
+Hi,
+     I'm developing touchscreen i2c driver on Google chrome OS (kernel 
+v3.8.11)
+     I want to tell kernel do not enter suspend mode during update 
+firmware by request_firmware().
 
-This patch adds the device tree nodes to the DT device list.
+     But I only found the pm_wake_lock() for sysfs control, so does 
+anyway be tell kernel do not enter suspend/resume?
 
-Nodes carry the misplaced second base address and the second
-clock to access the misplaced base address.
+thanks,
+Scott
 
-Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
----
-Changes since v2:
-3. uses the new compatible strings introduced along with adding
-   support for Exynso5420.
-
-Changes since v1:
-1. Nodes carry the misplaced second base address and the second
-   clock to access the misplaced base address.
-2. Correct the clock number for the TMU4
-
- arch/arm/boot/dts/exynos5420.dtsi |   48 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
-
-diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-index 6ffefd1..d736b40 100644
---- a/arch/arm/boot/dts/exynos5420.dtsi
-+++ b/arch/arm/boot/dts/exynos5420.dtsi
-@@ -369,4 +369,52 @@
- 		clock-names = "gscl";
- 		samsung,power-domain = <&gsc_pd>;
- 	};
-+
-+	/* tmu for CPU0 */
-+	tmu@10060000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10060000 0x100>;
-+		interrupts = <0 65 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU1 */
-+	tmu@10064000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10064000 0x100>;
-+		interrupts = <0 183 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU2 */
-+	tmu@10068000 {
-+		compatible = "samsung,exynos5420-tmu-triminfo";
-+		/* 2nd reg is for the misplaced TRIMINFO register */
-+		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-+		interrupts = <0 184 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU3 */
-+	tmu@1006c000 {
-+		compatible = "samsung,exynos5420-tmu-triminfo-clk";
-+		/* 2nd reg is for the misplaced TRIMINFO register */
-+		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-+		interrupts = <0 185 0>;
-+		clocks = <&clock 318>, <&clock 319>;
-+		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-+	};
-+
-+	/* tmu for GPU */
-+	tmu@100a0000 {
-+		compatible = "samsung,exynos5420-tmu-triminfo-clk";
-+		/* 2nd reg is for the misplaced TRIMINFO register */
-+		reg = <0x100a0000 0x100>, <0x10068000 0x4>;
-+		interrupts = <0 215 0>;
-+		clocks = <&clock 319>, <&clock 318>;
-+		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-+	};
- };
--- 
-1.7.10.4
