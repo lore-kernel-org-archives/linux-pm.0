@@ -1,327 +1,182 @@
-From: <srinivas.kandagatla@st.com>
-Subject: [PATCH RFC 09/10] ARM: STi: Add STiH415 ethernet support.
-Date: Tue, 12 Nov 2013 13:53:09 +0000
-Message-ID: <1384264389-7697-1-git-send-email-srinivas.kandagatla@st.com>
-References: <1384264311-7308-1-git-send-email-srinivas.kandagatla@st.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
+ regulators suspended
+Date: Tue, 12 Nov 2013 09:11:30 -0600
+Message-ID: <52824522.7020401@ti.com>
+References: <1382638087-32054-1-git-send-email-nm@ti.com> <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu1sys200aog125.obsmtp.com ([207.126.144.159]:35116 "EHLO
-	eu1sys200aog125.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753878Ab3KLOU6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 09:20:58 -0500
-In-Reply-To: <1384264311-7308-1-git-send-email-srinivas.kandagatla@st.com>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:47283 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752010Ab3KLPLf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 Nov 2013 10:11:35 -0500
+In-Reply-To: <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org
-Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, Russell King <linux@arm.linux.org.uk>, Srinivas Kandagatla <srinivas.kandagatla@st.com>, Stuart Menefy <stuart.menefy@st.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, stephen.gallimore@st.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 
-From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+On 11/12/2013 12:03 AM, Viresh Kumar wrote:
+> Cc'ing Shawn as well.
+> 
+> Sorry for being really late.. I just forgot about it :(
 
-This patch adds support to STiH415 SOC, which has two ethernet
-snps,dwmac controllers version 3.610. With this patch B2000 and B2020
-boards can boot with ethernet in MII and RGMII modes.
+Thanks for responding :)
 
-Tested on both B2020 and B2000.
+> 
+> On 24 October 2013 23:38, Nishanth Menon <nm@ti.com> wrote:
+>> For platforms where regulators are used, regulator access tends to be
+>> disabled as part of the suspend path. In SMP systems such as OMAP,
+>> CPU1 is disabled as post suspend_noirq. This results in the following
+>> tail end sequence of actions:
+>> cpufreq_cpu_callback gets called with CPU_POST_DEAD
+>>         __cpufreq_remove_dev_finish is invoked as a result
+>>                 __cpufreq_governor(policy, CPUFREQ_GOV_START) is
+>>                 triggered
+>>
+>> At this point, with ondemand governor, if the cpu entered suspend path
+>> at a lower OPP, this triggers a transition request. However, since
+>> irqs are disabled, typically, regulator control using I2C operations
+>> are not possible either, regulator operations will naturally fail
+>> (even though clk_set_rate might succeed depending on the platform).
+>>
+>> Unfortunately, cpufreq_driver->suspend|resume is too late as well, since
+>> they are invoked as part of syscore_ops (after CPU1 is hotplugged out).
+>>
+>> The proposal here is to use pm notifier suspend to disable any
+>> requests to target, as we may very well expect this to fail at a later
+>> suspend sequence.
+> 
+> Yes the problem looks real but there are issues with this patch.
+> - It doesn't solve your problem completely, because you returned -EBUSY,
+> your suspend operation failed and we resumed immediately.
 
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
----
- arch/arm/boot/dts/stih415-clock.dtsi   |   14 +++++
- arch/arm/boot/dts/stih415-pinctrl.dtsi |   82 ++++++++++++++++++++++++++++++++
- arch/arm/boot/dts/stih415.dtsi         |   56 ++++++++++++++++++++++
- arch/arm/boot/dts/stih41x-b2000.dtsi   |   32 ++++++++++++
- arch/arm/boot/dts/stih41x-b2020.dtsi   |   33 +++++++++++++
- 5 files changed, 217 insertions(+), 0 deletions(-)
+Seems like there was an error handling miss somewhere - for some
+reason, it did suspend properly.
 
-diff --git a/arch/arm/boot/dts/stih415-clock.dtsi b/arch/arm/boot/dts/stih415-clock.dtsi
-index 174c799..d047dbc 100644
---- a/arch/arm/boot/dts/stih415-clock.dtsi
-+++ b/arch/arm/boot/dts/stih415-clock.dtsi
-@@ -34,5 +34,19 @@
- 			compatible = "fixed-clock";
- 			clock-frequency = <100000000>;
- 		};
-+
-+		CLKS_GMAC0_PHY: clockgenA1@7 {
-+			#clock-cells = <0>;
-+			compatible = "fixed-clock";
-+			clock-frequency = <25000000>;
-+			clock-output-names = "CLKS_GMAC0_PHY";
-+		};
-+
-+		CLKS_ETH1_PHY: clockgenA0@7 {
-+			#clock-cells = <0>;
-+			compatible = "fixed-clock";
-+			clock-frequency = <25000000>;
-+			clock-output-names = "CLKS_ETH1_PHY";
-+		};
- 	};
- };
-diff --git a/arch/arm/boot/dts/stih415-pinctrl.dtsi b/arch/arm/boot/dts/stih415-pinctrl.dtsi
-index 1d322b2..c087af8 100644
---- a/arch/arm/boot/dts/stih415-pinctrl.dtsi
-+++ b/arch/arm/boot/dts/stih415-pinctrl.dtsi
-@@ -86,6 +86,57 @@
- 					};
- 				};
- 			};
-+
-+			gmac1 {
-+				pinctrl_mii1: mii1 {
-+						st,pins {
-+						 txd0   = <&PIO0 0 ALT1 OUT  SE_NICLK_IO	0	CLK_A>;
-+						 txd1   = <&PIO0 1 ALT1 OUT  SE_NICLK_IO	0	CLK_A>;
-+						 txd2   = <&PIO0 2 ALT1 OUT  SE_NICLK_IO	0	CLK_A>;
-+						 txd3   = <&PIO0 3 ALT1 OUT  SE_NICLK_IO	0	CLK_A>;
-+						 txer   = <&PIO0 4 ALT1 OUT  SE_NICLK_IO	0	CLK_A>;
-+						 txen   = <&PIO0 5 ALT1 OUT  SE_NICLK_IO	0	CLK_A>;
-+						 txclk  = <&PIO0 6 ALT1 IN   NICLK	0	CLK_A>;
-+						 col    = <&PIO0 7 ALT1 IN   BYPASS	1000>;
-+						 mdio   = <&PIO1 0 ALT1 OUT  BYPASS	0>;
-+						 mdc    = <&PIO1 1 ALT1 OUT  NICLK	0	CLK_A>;
-+						 crs    = <&PIO1 2 ALT1 IN   BYPASS	1000>;
-+						 mdint  = <&PIO1 3 ALT1 IN   BYPASS	0>;
-+						 rxd0   = <&PIO1 4 ALT1 IN   SE_NICLK_IO	0	CLK_A>;
-+						 rxd1   = <&PIO1 5 ALT1 IN   SE_NICLK_IO	0	CLK_A>;
-+						 rxd2   = <&PIO1 6 ALT1 IN   SE_NICLK_IO	0	CLK_A>;
-+						 rxd3   = <&PIO1 7 ALT1 IN   SE_NICLK_IO	0	CLK_A>;
-+						 rxdv   = <&PIO2 0 ALT1 IN   SE_NICLK_IO	0	CLK_A>;
-+						 rx_er  = <&PIO2 1 ALT1 IN   SE_NICLK_IO	0	CLK_A>;
-+						 rxclk  = <&PIO2 2 ALT1 IN   NICLK	0	CLK_A>;
-+						 phyclk = <&PIO2 3 ALT1 IN   NICLK	1000	CLK_A>;
-+					};
-+				};
-+
-+				pinctrl_rgmii1: rgmii1-0 {
-+					st,pins {
-+						 txd0 =	 <&PIO0 0 ALT1 OUT DE_IO	1000	CLK_A>;
-+						 txd1 =	 <&PIO0 1 ALT1 OUT DE_IO	1000	CLK_A>;
-+						 txd2 =	 <&PIO0 2 ALT1 OUT DE_IO	1000	CLK_A>;
-+						 txd3 =	 <&PIO0 3 ALT1 OUT DE_IO	1000	CLK_A>;
-+						 txen =	 <&PIO0 5 ALT1 OUT DE_IO	0	CLK_A>;
-+						 txclk = <&PIO0 6 ALT1 IN	NICLK	0	CLK_A>;
-+						 mdio =	 <&PIO1 0 ALT1 OUT	BYPASS	0>;
-+						 mdc =	 <&PIO1 1 ALT1 OUT	NICLK	0	CLK_A>;
-+						 rxd0 =	 <&PIO1 4 ALT1 IN DE_IO	0	CLK_A>;
-+						 rxd1 =	 <&PIO1 5 ALT1 IN DE_IO	0	CLK_A>;
-+						 rxd2 =	 <&PIO1 6 ALT1 IN DE_IO	0	CLK_A>;
-+						 rxd3 =	 <&PIO1 7 ALT1 IN DE_IO	0	CLK_A>;
-+
-+						 rxdv =	  <&PIO2 0 ALT1 IN DE_IO	500	CLK_A>;
-+						 rxclk =  <&PIO2 2 ALT1 IN	NICLK	0	CLK_A>;
-+						 phyclk = <&PIO2 3 ALT4 OUT	NICLK	0	CLK_B>;
-+
-+						 clk125= <&PIO3 7 ALT4 IN 	NICLK	0	CLK_A>;
-+					};
-+				};
-+			};
-+
- 		};
- 
- 		pin-controller-front {
-@@ -197,6 +248,37 @@
- 					};
- 				};
- 			};
-+
-+			gmac0{
-+				pinctrl_mii0: mii0 {
-+					st,pins {
-+					 mdint =	<&PIO13 6 ALT2	IN	BYPASS		0>;
-+					 txen =		<&PIO13 7 ALT2	OUT	SE_NICLK_IO	0	CLK_A>;
-+
-+					 txd0 =		<&PIO14 0 ALT2	OUT	SE_NICLK_IO	0	CLK_A>;
-+					 txd1 =		<&PIO14 1 ALT2	OUT	SE_NICLK_IO	0	CLK_A>;
-+					 txd2 =		<&PIO14 2 ALT2	OUT	SE_NICLK_IO	0	CLK_B>;
-+					 txd3 =		<&PIO14 3 ALT2	OUT	SE_NICLK_IO	0	CLK_B>;
-+
-+					 txclk =	<&PIO15 0 ALT2	IN	NICLK		0	CLK_A>;
-+					 txer =		<&PIO15 1 ALT2	OUT	SE_NICLK_IO	0	CLK_A>;
-+					 crs =		<&PIO15 2 ALT2	IN	BYPASS		1000>;
-+					 col =		<&PIO15 3 ALT2	IN	BYPASS		1000>;
-+					 mdio  =        <&PIO15 4 ALT2	OUT	BYPASS 	3000>;
-+					 mdc   =        <&PIO15 5 ALT2	OUT     NICLK  	0    	CLK_B>;
-+
-+					 rxd0 =		<&PIO16 0 ALT2	IN	SE_NICLK_IO	0	CLK_A>;
-+					 rxd1 =		<&PIO16 1 ALT2	IN	SE_NICLK_IO	0	CLK_A>;
-+					 rxd2 =		<&PIO16 2 ALT2	IN	SE_NICLK_IO	0	CLK_A>;
-+					 rxd3 =		<&PIO16 3 ALT2	IN	SE_NICLK_IO	0	CLK_A>;
-+					 rxdv =		<&PIO15 6 ALT2	IN	SE_NICLK_IO	0	CLK_A>;
-+					 rx_er =	<&PIO15 7 ALT2	IN	SE_NICLK_IO	0	CLK_A>;
-+					 rxclk =	<&PIO17 0 ALT2	IN	NICLK		0	CLK_A>;
-+					 phyclk =	<&PIO13 5 ALT2	OUT	NICLK	1000	CLK_A>;
-+
-+					};
-+				};
-+			};
- 		};
- 
- 		pin-controller-left {
-diff --git a/arch/arm/boot/dts/stih415.dtsi b/arch/arm/boot/dts/stih415.dtsi
-index 0c0776e..c2b18c8 100644
---- a/arch/arm/boot/dts/stih415.dtsi
-+++ b/arch/arm/boot/dts/stih415.dtsi
-@@ -94,5 +94,61 @@
- 			pinctrl-names 	= "default";
- 			pinctrl-0	= <&pinctrl_sbc_serial1>;
- 		};
-+
-+		ethernet0: ethernet0{
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			status 		= "disabled";
-+			compatible		= "st,stih415-dwmac";
-+			reg			= <0x148 0x4>;
-+			st,syscon	= <&syscfg_rear>;
-+			resets			= <&softreset STIH415_ETH0_SOFTRESET>;
-+			ranges;
-+
-+			dwmac0:dwmac@fe810000 {
-+				device_type 	= "network";
-+				compatible	= "snps,dwmac", "snps,dwmac-3.610";
-+				status 		= "disabled";
-+				reg 		= <0xfe810000 0x8000>;
-+				interrupts 	= <0 147 0>, <0 148 0>, <0 149 0>;
-+				interrupt-names = "macirq", "eth_wake_irq", "eth_lpi";
-+
-+				snps,pbl 	= <32>;
-+				snps,mixed-burst;
-+
-+				pinctrl-names 	= "default";
-+				pinctrl-0	= <&pinctrl_mii0>;
-+				clock-names	= "stmmaceth";
-+				clocks		= <&CLKS_GMAC0_PHY>;
-+			};
-+		};
-+
-+		ethernet1: ethernet1 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			status 		= "disabled";
-+			compatible		= "st,stih415-dwmac";
-+			reg			= <0x74 0x4>;
-+			st,syscon		= <&syscfg_sbc>;
-+			resets			= <&softreset STIH415_ETH1_SOFTRESET>;
-+			ranges;
-+
-+			dwmac1: dwmac@fef08000 {
-+				device_type = "network";
-+				compatible	= "snps,dwmac", "snps,dwmac-3.610";
-+				status 		= "disabled";
-+				reg		= <0xfef08000 0x8000>;
-+				interrupts 	= <0 150 0>, <0 151 0>, <0 152 0>;
-+				interrupt-names = "macirq", "eth_wake_irq", "eth_lpi";
-+
-+				snps,pbl	= <32>;
-+				snps,mixed-burst;
-+
-+				pinctrl-names 	= "default";
-+				pinctrl-0	= <&pinctrl_mii1>;
-+				clock-names	= "stmmaceth";
-+				clocks		= <&CLKS_ETH1_PHY>;
-+			};
-+		};
- 	};
- };
-diff --git a/arch/arm/boot/dts/stih41x-b2000.dtsi b/arch/arm/boot/dts/stih41x-b2000.dtsi
-index 8e694d2..9ae9ca9 100644
---- a/arch/arm/boot/dts/stih41x-b2000.dtsi
-+++ b/arch/arm/boot/dts/stih41x-b2000.dtsi
-@@ -20,6 +20,8 @@
- 
- 	aliases {
- 		ttyAS0 = &serial2;
-+		ethernet0 = &dwmac0;
-+		ethernet1 = &dwmac1;
- 	};
- 
- 	soc {
-@@ -37,5 +39,35 @@
- 			};
- 		};
- 
-+		ethernet0: ethernet0{
-+			status 		= "okay";
-+			st,tx-retime-src	= "txclk";
-+
-+			dwmac0:dwmac@fe810000 {
-+				status			= "okay";
-+				phy-mode		= "mii";
-+				snps,phy-addr 		= <0x1>;
-+
-+				snps,reset-gpio 	= <&PIO106 2>;
-+				snps,reset-active-low;
-+				snps,reset-delays-us 	= <0 10000 10000>;
-+			};
-+		};
-+
-+		ethernet1: ethernet1 {
-+			status 		= "okay";
-+			st,tx-retime-src	= "txclk";
-+
-+			dwmac1: dwmac@fef08000 {
-+				status			= "okay";
-+				phy-mode		= "mii";
-+				snps,phy-addr 		= <0x1>;
-+
-+				snps,reset-gpio 	= <&PIO4 7>;
-+				snps,reset-active-low;
-+				snps,reset-delays-us 	= <0 10000 10000>;
-+			};
-+		};
-+
- 	};
- };
-diff --git a/arch/arm/boot/dts/stih41x-b2020.dtsi b/arch/arm/boot/dts/stih41x-b2020.dtsi
-index 133e181..7ce1380 100644
---- a/arch/arm/boot/dts/stih41x-b2020.dtsi
-+++ b/arch/arm/boot/dts/stih41x-b2020.dtsi
-@@ -19,6 +19,7 @@
- 
- 	aliases {
- 		ttyAS0 = &sbc_serial1;
-+		ethernet1 = &dwmac1;
- 	};
- 	soc {
- 		sbc_serial1: serial@fe531000 {
-@@ -38,5 +39,37 @@
- 				default-state = "off";
- 			};
- 		};
-+
-+		/**
-+		* ethernet clk routing:
-+		* for
-+		* 	max-speed = <1000>;
-+		* set
-+		* 	st,tx-retime-src	= "clk_125";
-+		*
-+		* for
-+		*	max-speed = <100>;
-+		* set
-+		*	st,tx-retime-src	= "clkgen";
-+		*/
-+
-+		ethernet1: ethernet1 {
-+			status 		= "okay";
-+			st,tx-retime-src	= "clkgen";
-+
-+			dwmac1: dwmac@fef08000 {
-+				status			= "okay";
-+				phy-mode		= "rgmii-id";
-+				max-speed		= <100>;
-+				snps,phy-addr 		= <0x1>;
-+
-+				snps,reset-gpio 	= <&PIO3 0>;
-+				snps,reset-active-low;
-+				snps,reset-delays-us 	= <0 10000 10000>;
-+
-+				pinctrl-0	= <&pinctrl_rgmii1>;
-+			};
-+		};
-+
- 	};
- };
+> - We can't make this solution true for everybody using cpu0 driver, it should
+> be platform specific.
+
+Agreed.
+
+> - Its not a problem of cpu0 driver but all drivers. So, probably a better idea
+> would be not calling ->target() at all when drivers have marked them unusable
+> in suspend path..
+
+Ack.
+
+> 
+> But I think the problem can/should be solved some other way.. Looking closely,
+> we got to the problem because we called
+> 
+> __cpufreq_governor(policy, CPUFREQ_GOV_START)
+> 
+> at the first place. This happened because the policy structure had more than
+> one cpu to take care of and after stopping goveronr for CPU1 it has to start it
+> again for CPU0... But this is really not required as anyway we are going to
+> suspend.
+> 
+> Can you try attached patch? I will then repost it formally...
+
+I tried a equivalent of this for v3.12 tag:
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 04548f7..9ec243c 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1186,7 +1186,7 @@ static int __cpufreq_remove_dev_prepare(struct
+device *dev,
+                return -EINVAL;
+        }
+
+-       if (cpufreq_driver->target) {
++       if (cpufreq_driver->target && (!frozen ||
+policy->governor_enabled)) {
+                ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+                if (ret) {
+                        pr_err("%s: Failed to stop governor\n", __func__);
+@@ -1252,7 +1252,7 @@ static int __cpufreq_remove_dev_finish(struct
+device *dev,
+
+        /* If cpu is last user of policy, free policy */
+        if (cpus == 1) {
+-               if (cpufreq_driver->target) {
++               if (cpufreq_driver->target && !frozen) {
+                        ret = __cpufreq_governor(policy,
+                                        CPUFREQ_GOV_POLICY_EXIT);
+                        if (ret) {
+
+And I see http://pastebin.mozilla.org/3528478
+
+with a WARN patch for generating call stack.
+
+
+Finally squelched warnings with a net diff (v3.12) of
+http://pastebin.mozilla.org/3546062
+
+However, ondemand is no longer functioning on resume (governor needs a
+start after being unfrozen.. and obviously by avoiding that entirely
+in frozen case.. not sure if I missed any other)..
+
+> 
+> commit 2aecab9be85ceafdbab5f824eec5d1f81f3fa803
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Tue Nov 12 11:26:36 2013 +0530
+> 
+>     cpufreq: don't start governor in suspend path
+> 
+>     When we suspend our system, we remove all non-boot CPUs one by one. At this
+>     point we actually STOP/START governor for each non-boot cpu, which
+> is a total
+>     waste of time as we aren't going to use governor until the time we are back.
+> 
+>     Also, this is causing problems for some platforms (like OMAP),
+> where governor
+>     tries to change freq of core in suspend path which requires programming
+>     regulators via I2C which isn't possible then.
+> 
+>     So, to make it better for everybody don't start the governor again
+> in suspend
+>     path.
+> 
+>     Reported-by: Nishanth Menon <nm@ti.com>
+>     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534d..bec58cf 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1174,7 +1174,7 @@ static int __cpufreq_remove_dev_prepare(struct
+> device *dev,
+>                 return -EINVAL;
+>         }
+> 
+> -       if (has_target()) {
+> +       if (has_target() && (!frozen || policy->governor_enabled)) {
+>                 ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+>                 if (ret) {
+>                         pr_err("%s: Failed to stop governor\n", __func__);
+> @@ -1282,7 +1282,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>                 if (!frozen)
+>                         cpufreq_policy_free(policy);
+>         } else {
+> -               if (has_target()) {
+> +               if (has_target() && !frozen) {
+>                         if ((ret = __cpufreq_governor(policy,
+> CPUFREQ_GOV_START)) ||
+>                                         (ret =
+> __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
+>                                 pr_err("%s: Failed to start governor\n",
+> 
+> 
+
+
+
+
 -- 
-1.7.6.5
-
+Regards,
+Nishanth Menon
