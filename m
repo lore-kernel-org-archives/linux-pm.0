@@ -1,103 +1,53 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv5 20/20] MAINTAINERS: add maintainer entry for thermal
- bindings
-Date: Tue, 12 Nov 2013 16:14:41 -0400
-Message-ID: <52828C31.2050604@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-21-git-send-email-eduardo.valentin@ti.com> <CAOesGMiCh-nGPqJQd4NPz9st7mBT0JkZ9nEK1gfyF2RmnrXZog@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="f56BqfqqbEW80qud7ROafavhrG6UELiBc"
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
+Date: Tue, 12 Nov 2013 23:14:05 +0000
+Message-ID: <42638CC1-ACC7-4330-A4F4-D78C88BE8155@arm.com>
+References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org> <CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com> <20131111163630.GD26898@twins.programming.kicks-ass.net> <52810851.4090907@linux.intel.com> <20131111181805.GE29572@arm.com> <52825BE9.2080605@linux.intel.com>
+Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:49033 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753225Ab3KLUQK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 15:16:10 -0500
-In-Reply-To: <CAOesGMiCh-nGPqJQd4NPz9st7mBT0JkZ9nEK1gfyF2RmnrXZog@mail.gmail.com>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:56379 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757316Ab3KLXOI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 18:14:08 -0500
+In-Reply-To: <52825BE9.2080605@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Olof Johansson <olof@lixom.net>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, rui.zhang@intel.com, wni@nvidia.com, Grant Likely <grant.likely@linaro.org>, durgadoss.r@intel.com, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, lm-sensors@lm-sensors.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
---f56BqfqqbEW80qud7ROafavhrG6UELiBc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 12-11-2013 15:59, Olof Johansson wrote:
-> On Tue, Nov 12, 2013 at 11:46 AM, Eduardo Valentin
-> <eduardo.valentin@ti.com> wrote:
->> After discussion and agreement of thermal device tree bindings,
->> it is desirable to properly maintain thermal bindings for
->> existing and upcoming devices.
->>
->> As original author of thermal device tree bindings, I am
->> volunteering to maintain them.
->>
->> Cc: Rob Herring <rob.herring@calxeda.com>
->> Cc: Pawel Moll <pawel.moll@arm.com>
->> Cc: Mark Rutland <mark.rutland@arm.com>
->> Cc: Stephen Warren <swarren@wwwdotorg.org>
->> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> ---
->>  MAINTAINERS | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 3438384..94bfc46 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -6178,6 +6178,7 @@ M:        Pawel Moll <pawel.moll@arm.com>
->>  M:     Mark Rutland <mark.rutland@arm.com>
->>  M:     Stephen Warren <swarren@wwwdotorg.org>
->>  M:     Ian Campbell <ijc+devicetree@hellion.org.uk>
->> +M:     Eduardo Valentin <eduardo.valentin@ti.com>
->>  L:     devicetree@vger.kernel.org
->>  S:     Maintained
->>  F:     Documentation/devicetree/
+On 12 Nov 2013, at 16:48, Arjan van de Ven <arjan@linux.intel.com> wrot=
+e:
+> On 11/11/2013 10:18 AM, Catalin Marinas wrote:
+>> The ordering is based on the actual C-state, so a simple way is to w=
+ake
+>> up the CPU in the shallowest C-state. With asymmetric configurations
+>> (big.LITTLE) we have different costs for the same C-state, so this w=
+ould
+>> come in handy.
 >=20
-> The number of device-tree maintainers is getting to be somewhat silly.
-> You don't have to be a maintainer to be a reviewer, and the number is
-> getting large enough that it might get hard for one maintainer to know
-> what another is doing.
->=20
-> So, soft nack, but it's really up to the DT guys.
+> btw I was considering something else; in practice CPUs will be in the=
+ deepest state..
+> ... at which point I was going to go with some other metrics of what =
+is best from a platform level
 
-Hello Olof,
+I agree, other metrics are needed.  The problem is that we currently
+only have (relatively, guessed from the target residency) the cost of
+transition from a C-state to a P-state (for the latter, not sure which)=
+=2E
+But we don=92t know what the power (saving) on that C-state is nor the =
+one=20
+at a P-state (and vendors reluctant to provide such information). So th=
+e=20
+best the scheduler can do is optimise the wake-up cost and blindly assu=
+me=20
+that deeper C-state on a CPU is more efficient than lower P-states on t=
+wo=20
+other CPUs (or the other way around).
 
-No issues on my side. As I stated in the patch description, I am
-volunteering. The motivation comes from the fact that it's been hard to
-get DT maintainers attention, so I am assuming they are not having
-enough bandwidth to pay attention to an extra class of bindings.
+If we find a good use for such metrics in the scheduler, I think the
+vendors would be more open to providing at least some relative (rather
+than absolute) numbers.
 
-I agree with you, this is up to the DT folks.
-
-
->=20
->=20
-> -Olof
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---f56BqfqqbEW80qud7ROafavhrG6UELiBc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKCjD4ACgkQCXcVR3XQvP2MdwD/SEGaGTglYxEMz7+GH81ShNQ9
-/80YSr5UHanZY02HA7oA/R+SZ8lrWwyGFUYWzziqk4zsFmJseZciL7A7mmMgZtDf
-=TWz8
------END PGP SIGNATURE-----
-
---f56BqfqqbEW80qud7ROafavhrG6UELiBc--
+Catalin
