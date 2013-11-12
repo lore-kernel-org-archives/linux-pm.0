@@ -1,53 +1,68 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
-Date: Tue, 12 Nov 2013 23:14:05 +0000
-Message-ID: <42638CC1-ACC7-4330-A4F4-D78C88BE8155@arm.com>
-References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org> <CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com> <20131111163630.GD26898@twins.programming.kicks-ass.net> <52810851.4090907@linux.intel.com> <20131111181805.GE29572@arm.com> <52825BE9.2080605@linux.intel.com>
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:56379 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757316Ab3KLXOI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 18:14:08 -0500
-In-Reply-To: <52825BE9.2080605@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Subject: Re: [PATCH v2 00/19] Enable various Renesas drivers on all ARM
+	platforms
+Date: Wed, 13 Nov 2013 00:32:06 +0100
+Message-ID: <55374441.jb1As8srky@avalon>
+References: <1383086274-11049-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <1383086274-11049-1-git-send-email-laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Guennadi Liakhovetski <g.liakhovetski+renesas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Chris Ball <cjb-2X9k7bc8m7Mdnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <samuel-jcdQHdrhKHMdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Molton <ian-zdned+2MO1+9FHfhHBbuYA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, xfoundat@
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 12 Nov 2013, at 16:48, Arjan van de Ven <arjan@linux.intel.com> wrot=
-e:
-> On 11/11/2013 10:18 AM, Catalin Marinas wrote:
->> The ordering is based on the actual C-state, so a simple way is to w=
-ake
->> up the CPU in the shallowest C-state. With asymmetric configurations
->> (big.LITTLE) we have different costs for the same C-state, so this w=
-ould
->> come in handy.
->=20
-> btw I was considering something else; in practice CPUs will be in the=
- deepest state..
-> ... at which point I was going to go with some other metrics of what =
-is best from a platform level
+Hello,
 
-I agree, other metrics are needed.  The problem is that we currently
-only have (relatively, guessed from the target residency) the cost of
-transition from a C-state to a P-state (for the latter, not sure which)=
-=2E
-But we don=92t know what the power (saving) on that C-state is nor the =
-one=20
-at a P-state (and vendors reluctant to provide such information). So th=
-e=20
-best the scheduler can do is optimise the wake-up cost and blindly assu=
-me=20
-that deeper C-state on a CPU is more efficient than lower P-states on t=
-wo=20
-other CPUs (or the other way around).
+On Tuesday 29 October 2013 23:37:35 Laurent Pinchart wrote:
+> Hello,
+> 
+> This patch series, based on v3.12-rc7, prepares various Renesas drivers
+> for migration to multiplatform kernels by enabling their compilation or
+> otherwise fixing them on all ARM platforms. The patches are pretty
+> straightforward and are described in their commit message.
+> 
+> Changes since v1:
+> 
+> - The drivers can also be selected when COMPILE_TEST is enabled, regardless
+> of the architecture. This should provide a good compromise between wide
+> build test coverage and not clobbering configuration with drivers useless
+> on non-SuperH, non-ARM platforms.
+> 
+> - DMA configuration is now unconditional in patch 08/19
+> 
+> I'd like to get all these patches merged in v3.14. As they will need to go
+> through their respective subsystems' trees, I would appreciate if all
+> maintainers involved could notify me when they merge patches from this
+> series in their tree to help me tracking the merge status. I don't plan to
+> send pull requests individually for these patches, and I will repost
+> patches individually if changes are requested during review.
+> 
+> If you believe the issue should be solved in a different way please reply to
+> the cover letter to let other maintainers chime in.
 
-If we find a good use for such metrics in the scheduler, I think the
-vendors would be more open to providing at least some relative (rather
-than absolute) numbers.
+This patch series was a prerequisite for a larger rework of Renesas platforms. 
+However, we've decided to go with an alternative approach that renames Kconfig 
+symbols to avoid touching all the drivers. There is thus no urgency to apply 
+this series anymore.
 
-Catalin
+I still plan to enable COMPILE_TEST on Renesas drivers. I will send a v3 of 
+these patches based on the feedback received on v2. Patches from v2 that have 
+already been applied can be dropped, but there's no need to revert them rebase 
+trees as they're not invalid per-se. I will make sure to address the situation 
+in v3. I'm sorry for the inconvenience.
+
+-- 
+Regards,
+
+Laurent Pinchart
