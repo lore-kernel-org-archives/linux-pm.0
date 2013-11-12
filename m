@@ -1,31 +1,91 @@
-From: =?UTF-8?B?5YqJ5ZiJ6ae/?= <scott.liu@emc.com.tw>
-Subject: stop suspend during update firmware?
-Date: Tue, 12 Nov 2013 15:38:47 +0800
-Message-ID: <5281DB07.6060206@emc.com.tw>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [Results] [RFC PATCH v4 00/40] mm: Memory Power Management
+Date: Tue, 12 Nov 2013 13:32:35 +0530
+Message-ID: <5281E09B.3060303@linux.vnet.ibm.com>
+References: <20130925231250.26184.31438.stgit@srivatsabhat.in.ibm.com> <52437128.7030402@linux.vnet.ibm.com> <20130925164057.6bbaf23bdc5057c42b2ab010@linux-foundation.org> <52442F6F.5020703@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from emcscan.emc.com.tw ([192.72.220.5]:27080 "EHLO
-	emcscan.emc.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751421Ab3KLHsx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 02:48:53 -0500
-Received: from [192.168.135.109] ([192.168.135.109])
-	by emc.com.tw (8.13.7+Sun/8.13.7) with ESMTP id rAC7ckam020255
-	for <"linux-pm@vger.kernel.org">; Tue, 12 Nov 2013 15:38:46 +0800 (CST)
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:49327 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754753Ab3KLIHL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2013 03:07:11 -0500
+Received: from /spool/local
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 12 Nov 2013 13:37:09 +0530
+In-Reply-To: <52442F6F.5020703@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org"@emc.com.tw
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mgorman@suse.de, dave@sr71.net, hannes@cmpxchg.org, tony.luck@intel.com, matthew.garrett@nebula.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, willy@linux.intel.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, isimatu.yasuaki@jp.fujitsu.com, santosh.shilimkar@ti.com, kosaki.motohiro@gmail.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, amit.kachhap@linaro.org, thomas.abraham@linaro.org, markgross@thegnar.org
+
+On 09/26/2013 06:28 PM, Srivatsa S. Bhat wrote:
+> On 09/26/2013 05:10 AM, Andrew Morton wrote:
+>> On Thu, 26 Sep 2013 04:56:32 +0530 "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>
+>>> Experimental Results:
+>>> ====================
+>>>
+>>> Test setup:
+>>> ----------
+>>>
+>>> x86 Sandybridge dual-socket quad core HT-enabled machine, with 128GB RAM.
+>>> Memory Region size = 512MB.
+>>
+>> Yes, but how much power was saved ;)
+>>
+> 
+> I don't have those numbers yet, but I'll be able to get them going forward.
+> 
 
 Hi,
-     I'm developing touchscreen i2c driver on Google chrome OS (kernel 
-v3.8.11)
-     I want to tell kernel do not enter suspend mode during update 
-firmware by request_firmware().
 
-     But I only found the pm_wake_lock() for sysfs control, so does 
-anyway be tell kernel do not enter suspend/resume?
+I performed experiments on an IBM POWER 7 machine and got actual power-savings
+numbers (upto 2.6% of total system power) from this patchset. I presented them
+at the Kernel Summit but forgot to post them on LKML. So here they are:
 
-thanks,
-Scott
+Hardware-setup:
+--------------
+IBM POWER 7 machine: 4 socket (NUMA), 32 cores, 128GB RAM
+
+ - 4 NUMA nodes with 32 GB RAM each
+ - Booted with numa=fake=1 and treated them as 4 memory regions
+
+
+Software setup:
+--------------
+Workload: Run modified ebizzy for half an hour, which allocates and frees large
+quantities of memory frequently. The modified ebizzy touches every allocated
+page a number of times (4 times) before freeing it up. This ensures that
+allocating a page in the "wrong" memory region makes it very costly in terms
+of power-savings, since every allocated page is accessed before getting
+freed (and accesses cause energy consumption). Thus, with this modified
+benchmark, sub-optimal MM decisions (in terms of memory power-savings) get
+magnified and hence become noticeable.
+
+
+Power-savings compared to mainline (3.12-rc4):
+---------------------------------------------
+With this patchset applied, the average power of the system reduced by 2.6%
+compared to the mainline kernel during the benchmark run. The total system
+power is an excellent metric for such evaluations, since it brings out the
+overall power-efficiency of the patchset. (IOW, if the patchset shoots up the
+CPU or disk power-consumption while causing memory power savings, then the
+total system power will not show much difference). So these numbers indicate
+that the patchset performs quite well in reducing the power-consumption of
+the system as a whole.
+
+This is not the most ideal hardware configuration to test on, since I had
+only 4 memory regions to play with, but this gives a good initial indication
+of the kind of power savings that can be achieved with this patchset.
+
+I am expecting the same patchset to give us power-savings of upto 5% of the
+total system power on a newer prototype hardware that I have (since it has
+more memory regions and lower base power consumption).
+
+
+Regards,
+Srivatsa S. Bhat
 
