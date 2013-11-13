@@ -1,51 +1,52 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Wed, 13 Nov 2013 14:16:03 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1311131411120.1424-100000@iolanthe.rowland.org>
-References: <1384360178-333-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM
+ enabled for unbound PCI devices
+Date: Wed, 13 Nov 2013 14:20:40 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org>
+References: <CAErSpo4T3poaKkamm1rqZDmSvom0R5PC7Yb1BU-jT0t+6iW95A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:45487 "HELO
+Received: from iolanthe.rowland.org ([192.131.102.54]:45504 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756930Ab3KMTQF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2013 14:16:05 -0500
-In-Reply-To: <1384360178-333-1-git-send-email-ulf.hansson@linaro.org>
+	with SMTP id S1756664Ab3KMTUl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2013 14:20:41 -0500
+In-Reply-To: <CAErSpo4T3poaKkamm1rqZDmSvom0R5PC7Yb1BU-jT0t+6iW95A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: mike <qiudayu@linux.vnet.ibm.com>, Huang Ying <ying.huang@intel.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed, 13 Nov 2013, Ulf Hansson wrote:
+On Wed, 13 Nov 2013, Bjorn Helgaas wrote:
 
-> The PM core was preventing devices from going inactive during system
-> suspend. Remove this constraint and moreover try to inactivate devices
-> by invoking pm_runtime_idle() before proceeding with device's
-> suspend_late callbacks.
+> [+cc Rafael, linux-pm]
 > 
-> A great amount of drivers that uses runtime PM will benefit from this.
+> On Wed, Nov 13, 2013 at 6:09 AM, mike <qiudayu@linux.vnet.ibm.com> wrote:
+> > Hi Huang Ying,
+> >
+> > I see you are the author of this patch, commit id is:
+> > 967577b062417b4e4b8e27b711220f4124f5153a
+> >
+> > I have a question while I try to understand this patch,
+> > So I would very grateful if you or others can give me some reply.....
+> >
+> > ............
+> > -       rc = ddi->drv->probe(ddi->dev, ddi->id);
+> > +       pm_runtime_get_sync(dev);
+> > +       pci_dev->driver = pci_drv;
+> > ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > I see here you make the driver to initialize before probe,
+> > But I have no idea of why you do this change.....
+> >
+> > and I look inside the code, it may be pm_runtime relate??
 
-It's not clear how drivers will benefit.
+Yes, it is related to runtime PM.  In the PCI subsystem, runtime PM 
+doesn't do anything unless pci_dev->driver is set.  You can see this at 
+the start of pci_pm_runtime_suspend().
 
-> Drivers that implements some of the system ->suspend* callbacks for the
-> only reason of making sure the runtime PM resourses gets inactive, can
-> now solely instead rely on the PM core to handle this.
-
-Drivers don't have to implement anything special if they want to use
-their runtime routines for system suspend.  All they have to do is set
-the .suspend and .resume method pointers to point to their
-runtime_suspend and runtime_resume routines.
-
-> In the case were drivers needs there runtime resourses to be activated
-> to be able to handle their system suspend tasks, those can easily just
-> restore the runtime PM usage count, pm_runtime_put_sync(), once done
-> with it's suspend operations, which then will inactivate the device.
-
-The reason for doing things the way they are is to avoid races between
-system PM callbacks and runtime PM callbacks.  We don't want to have a
-runtime_resume routine powering up a device at the same time as a
-suspend routine is powering it down.
+Since we want the driver's probe routine to be able to carry out
+runtime PM operations, we have to set pci_dev->driver before the probe
+routine runs.
 
 Alan Stern
 
