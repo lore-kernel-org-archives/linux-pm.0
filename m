@@ -1,56 +1,84 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
-Date: Wed, 13 Nov 2013 08:13:57 -0800
-Message-ID: <5283A545.4040406@linux.intel.com>
-References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org> <CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com> <20131111163630.GD26898@twins.programming.kicks-ass.net> <52810851.4090907@linux.intel.com> <20131111181805.GE29572@arm.com> <52825BE9.2080605@linux.intel.com> <42638CC1-ACC7-4330-A4F4-D78C88BE8155@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:55164 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756914Ab3KMQN7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Nov 2013 11:13:59 -0500
-In-Reply-To: <42638CC1-ACC7-4330-A4F4-D78C88BE8155@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
+Date: Wed, 13 Nov 2013 17:29:38 +0100
+Message-ID: <1384360178-333-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 11/12/2013 3:14 PM, Catalin Marinas wrote:
-> On 12 Nov 2013, at 16:48, Arjan van de Ven <arjan@linux.intel.com> wr=
-ote:
->> On 11/11/2013 10:18 AM, Catalin Marinas wrote:
->>> The ordering is based on the actual C-state, so a simple way is to =
-wake
->>> up the CPU in the shallowest C-state. With asymmetric configuration=
-s
->>> (big.LITTLE) we have different costs for the same C-state, so this =
-would
->>> come in handy.
->>
->> btw I was considering something else; in practice CPUs will be in th=
-e deepest state..
->> ... at which point I was going to go with some other metrics of what=
- is best from a platform level
->
-> I agree, other metrics are needed.  The problem is that we currently
-> only have (relatively, guessed from the target residency) the cost of
-> transition from a C-state to a P-state (for the latter, not sure whic=
-h).
-> But we don=92t know what the power (saving) on that C-state is nor th=
-e one
-> at a P-state (and vendors reluctant to provide such information). So =
-the
-> best the scheduler can do is optimise the wake-up cost and blindly as=
-sume
-> that deeper C-state on a CPU is more efficient than lower P-states on=
- two
-> other CPUs (or the other way around).
+The PM core was preventing devices from going inactive during system
+suspend. Remove this constraint and moreover try to inactivate devices
+by invoking pm_runtime_idle() before proceeding with device's
+suspend_late callbacks.
 
-for picking the cpu to wake on there are also low level physical kind o=
-f things
-we'd want to take into account on the intel side.
+A great amount of drivers that uses runtime PM will benefit from this.
 
+Drivers that implements some of the system ->suspend* callbacks for the
+only reason of making sure the runtime PM resourses gets inactive, can
+now solely instead rely on the PM core to handle this.
 
+In the case were drivers needs there runtime resourses to be activated
+to be able to handle their system suspend tasks, those can easily just
+restore the runtime PM usage count, pm_runtime_put_sync(), once done
+with it's suspend operations, which then will inactivate the device.
+
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
+There are a quite long history for how the PM core behaves around this
+topic. Changes has been iterated, back for forward, you might even
+think that it should have been settled at this point. So, forgive me
+for bringing this up, again.
+
+This patch shall obviously not be merged as is, it will cause
+regressions for several drivers and subsystems. The intent is instead
+to try to follow up on previous discussions to see if we might end up
+closer to the sequence, which my RFC PATCH suggests, or if I am just
+bothering you completely unnecessary.
+
+---
+ drivers/base/power/main.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index ee039af..670b1d5 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -832,7 +832,7 @@ static void device_complete(struct device *dev, pm_message_t state)
+ 
+ 	device_unlock(dev);
+ 
+-	pm_runtime_put(dev);
++	pm_request_idle(dev);
+ }
+ 
+ /**
+@@ -1004,6 +1004,7 @@ static int device_suspend_late(struct device *dev, pm_message_t state)
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+ 
++	pm_runtime_idle(dev);
+ 	__pm_runtime_disable(dev, false);
+ 
+ 	if (dev->power.syscore)
+@@ -1312,14 +1313,6 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 	if (dev->power.syscore)
+ 		return 0;
+ 
+-	/*
+-	 * If a device's parent goes into runtime suspend at the wrong time,
+-	 * it won't be possible to resume the device.  To prevent this we
+-	 * block runtime suspend here, during the prepare phase, and allow
+-	 * it again during the complete phase.
+-	 */
+-	pm_runtime_get_noresume(dev);
+-
+ 	device_lock(dev);
+ 
+ 	dev->power.wakeup_path = device_may_wakeup(dev);
+-- 
+1.7.9.5
