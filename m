@@ -1,107 +1,102 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] thermal management updates for v3.13-rc1
-Date: Wed, 13 Nov 2013 09:00:55 +0800
-Message-ID: <1384304455.3859.5.camel@rzhang1-mobl4>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
+ regulators suspended
+Date: Wed, 13 Nov 2013 11:19:27 +0530
+Message-ID: <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
+References: <1382638087-32054-1-git-send-email-nm@ti.com>
+	<CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
+	<52824522.7020401@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:60247 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753435Ab3KMBBA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Nov 2013 20:01:00 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52824522.7020401@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi, Linus,
+On 12 November 2013 20:41, Nishanth Menon <nm@ti.com> wrote:
+> On 11/12/2013 12:03 AM, Viresh Kumar wrote:
 
-Please pull from the git repository at
+>> Yes the problem looks real but there are issues with this patch.
+>> - It doesn't solve your problem completely, because you returned -EBUSY,
+>> your suspend operation failed and we resumed immediately.
+>
+> Seems like there was an error handling miss somewhere - for some
+> reason, it did suspend properly.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+Yeah, its missing in cpufreq_cpu_callback()..
 
-to receive thermal management updates for v3.13-rc1 with
-top-most commit 86e0a0bdf81c2dfa2a5a258dbb52f49c40ebc197:
+>> But I think the problem can/should be solved some other way.. Looking closely,
+>> we got to the problem because we called
+>>
+>> __cpufreq_governor(policy, CPUFREQ_GOV_START)
+>>
+>> at the first place. This happened because the policy structure had more than
+>> one cpu to take care of and after stopping goveronr for CPU1 it has to start it
+>> again for CPU0... But this is really not required as anyway we are going to
+>> suspend.
+>>
+>> Can you try attached patch? I will then repost it formally...
+>
+> I tried a equivalent of this for v3.12 tag:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 04548f7..9ec243c 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1186,7 +1186,7 @@ static int __cpufreq_remove_dev_prepare(struct
+> device *dev,
+>                 return -EINVAL;
+>         }
+>
+> -       if (cpufreq_driver->target) {
+> +       if (cpufreq_driver->target && (!frozen ||
+> policy->governor_enabled)) {
+>                 ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+>                 if (ret) {
+>                         pr_err("%s: Failed to stop governor\n", __func__);
+> @@ -1252,7 +1252,7 @@ static int __cpufreq_remove_dev_finish(struct
+> device *dev,
+>
+>         /* If cpu is last user of policy, free policy */
+>         if (cpus == 1) {
+> -               if (cpufreq_driver->target) {
+> +               if (cpufreq_driver->target && !frozen) {
+>                         ret = __cpufreq_governor(policy,
+>                                         CPUFREQ_GOV_POLICY_EXIT);
 
-  Merge branches 'intel_powerclamp', 'tmon' and 'misc' of .git into next
-(2013-11-07 08:45:54 +0800)
+This is not an equivalent of my patch :)
 
-on top of commit 959f58544b7f20c92d5eb43d1232c96c15c01bfb:
-
-  Linux 3.12-rc7 (2013-10-27 16:12:03 -0700)
-
-This time we only have a few changes as there are no soc thermal changes
-from Eduardo. The only big change is the introduction of TMON, a tool to
-help visualize, tune, and test the thermal subsystem. The rest is mostly
-cleanups and fixes all over.
-
-Specifics:
-
-- introduce TMON, a tool base on thermal sysfs I/F. It can be used to
-visualize, tune and test the thermal subsystem.
-
-- fix a zone/cooling device binding problem, when both thermal zone bind
-parameters and .bind() callback are available.
-
-thanks,
-rui
-
-
-----------------------------------------------------------------
-
-Jacob Pan (2):
-      thermal/intel_powerclamp: Add newer CPU models
-      tools/thermal: Introduce tmon, a tool for thermal subsystem
-
-Luka Perkov (1):
-      thermal: Kconfig: cosmetic fixes
-
-Ni Wade (1):
-      thermal: Fix binding problem when there is thermal zone params
-
-Regid Ichira (1):
-      typo in drivers/thermal/Kconfig: lpatform instead of platform
-
-Srinivas Pandruvada (1):
-      ACPI/thermal : Remove zone disabled warning
-
-Wei Yongjun (1):
-      thermal: cpu_cooling: fix return value check in
-cpufreq_cooling_register()
-
-Zhang Rui (1):
-      Merge branches 'intel_powerclamp', 'tmon' and 'misc' of .git into
-next
-
-durgadoss.r@intel.com (2):
-      Thermal: Tidy up error handling in powerclamp_init
-      Thermal: Check for validity before doing kfree
-
- drivers/acpi/thermal.c             |   10 +-
- drivers/thermal/Kconfig            |    7 +-
- drivers/thermal/cpu_cooling.c      |    4 +-
- drivers/thermal/intel_powerclamp.c |   29 +-
- drivers/thermal/thermal_core.c     |   10 +-
- tools/Makefile                     |   15 +-
- tools/thermal/tmon/Makefile        |   47 +++
- tools/thermal/tmon/README          |   50 +++
- tools/thermal/tmon/pid.c           |  131 ++++++++
- tools/thermal/tmon/sysfs.c         |  596
-+++++++++++++++++++++++++++++++++
- tools/thermal/tmon/tmon.8          |  142 ++++++++
- tools/thermal/tmon/tmon.c          |  352 ++++++++++++++++++++
- tools/thermal/tmon/tmon.h          |  204 ++++++++++++
- tools/thermal/tmon/tui.c           |  638
-++++++++++++++++++++++++++++++++++++
- 14 files changed, 2216 insertions(+), 19 deletions(-)
- create mode 100644 tools/thermal/tmon/Makefile
- create mode 100644 tools/thermal/tmon/README
- create mode 100644 tools/thermal/tmon/pid.c
- create mode 100644 tools/thermal/tmon/sysfs.c
- create mode 100644 tools/thermal/tmon/tmon.8
- create mode 100644 tools/thermal/tmon/tmon.c
- create mode 100644 tools/thermal/tmon/tmon.h
- create mode 100644 tools/thermal/tmon/tui.c
+@@ -1282,7 +1282,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+                if (!frozen)
+                        cpufreq_policy_free(policy);
+        } else {
+-               if (has_target()) {
++               if (has_target() && !frozen) {
+                        if ((ret = __cpufreq_governor(policy,
+CPUFREQ_GOV_START)) ||
+                                        (ret =
+__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
 
 
+> And I see http://pastebin.mozilla.org/3528478
+>
+> with a WARN patch for generating call stack.
+
+that's why you got it.. I was really surprised to see it just didn't
+worked for you
+and believe me it took me a lot of time understanding how isn't it
+working for u.
+Because I simply believed on your equivalent version and didn't looked at it
+closely :)
+
+> Finally squelched warnings with a net diff (v3.12) of
+> http://pastebin.mozilla.org/3546062
+
+we don't need that stuff in cpufreq_add_policy_cpu()
+
+> However, ondemand is no longer functioning on resume (governor needs a
+> start after being unfrozen.. and obviously by avoiding that entirely
+> in frozen case.. not sure if I missed any other)..
+
+It would be, try the right code once. :)
