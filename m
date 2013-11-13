@@ -1,31 +1,64 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
-Date: Wed, 13 Nov 2013 09:56:28 -0800
-Message-ID: <5283BD4C.3040600@linux.intel.com>
-References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org> <CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com> <20131111163630.GD26898@twins.programming.kicks-ass.net> <52810851.4090907@linux.intel.com> <20131111181805.GE29572@arm.com> <52825BE9.2080605@linux.intel.com> <42638CC1-ACC7-4330-A4F4-D78C88BE8155@arm.com> <5283A545.4040406@linux.intel.com> <20131113164457.GF18837@arm.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 1/1] thermal: fix cpu_cooling max_level behavior
+Date: Wed, 13 Nov 2013 14:11:09 -0400
+Message-ID: <1384366269-1655-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:19454 "EHLO mga11.intel.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:55378 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755123Ab3KMR4a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Nov 2013 12:56:30 -0500
-In-Reply-To: <20131113164457.GF18837@arm.com>
+	id S1756951Ab3KMSLX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Nov 2013 13:11:23 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
+As per Documentation/thermal/sysfs-api.txt, max_level
+is an index, not a counter. Thus, in case a CPU has
+3 valid frequencies, max_level is expected to be 2, for instance.
 
->> for picking the cpu to wake on there are also low level physical kind of things
->> we'd want to take into account on the intel side.
->
-> Are these static and could they be hidden behind some cost number in a
-> topology description? If they are dynamic, we would need arch or driver
-> hooks to give some cost or priority number that the scheduler can use.
+The current code makes max_level == number of valid frequencies,
+which is bogus. This patch fix the cpu_cooling device by
+ranging max_level properly.
 
-they're dynamic but slow moving (say, reevaluated once per second)
+Reported-by: Carlos Hernandez <ceh@ti.com>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/cpu_cooling.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-so we could have a static table that some driver updates async
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index d179028..d0f8f8b5 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -173,6 +173,8 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 		freq = table[i].frequency;
+ 		max_level++;
+ 	}
++	/* max_level is an index, not a counter */
++	max_level--;
+ 
+ 	/* get max level */
+ 	if (property == GET_MAXL) {
+@@ -181,7 +183,7 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 	}
+ 
+ 	if (property == GET_FREQ)
+-		level = descend ? input : (max_level - input - 1);
++		level = descend ? input : (max_level - input);
+ 
+ 	for (i = 0, j = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		/* ignore invalid entry */
+@@ -197,7 +199,7 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 
+ 		if (property == GET_LEVEL && (unsigned int)input == freq) {
+ 			/* get level by frequency */
+-			*output = descend ? j : (max_level - j - 1);
++			*output = descend ? j : (max_level - j);
+ 			return 0;
+ 		}
+ 		if (property == GET_FREQ && level == j) {
+-- 
+1.8.2.1.342.gfa7285d
 
