@@ -1,71 +1,66 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
-Date: Wed, 13 Nov 2013 16:45:00 +0000
-Message-ID: <20131113164457.GF18837@arm.com>
-References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org>
- <CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com>
- <20131111163630.GD26898@twins.programming.kicks-ass.net>
- <52810851.4090907@linux.intel.com>
- <20131111181805.GE29572@arm.com>
- <52825BE9.2080605@linux.intel.com>
- <42638CC1-ACC7-4330-A4F4-D78C88BE8155@arm.com>
- <5283A545.4040406@linux.intel.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM
+ enabled for unbound PCI devices
+Date: Wed, 13 Nov 2013 09:47:07 -0700
+Message-ID: <CAErSpo4T3poaKkamm1rqZDmSvom0R5PC7Yb1BU-jT0t+6iW95A@mail.gmail.com>
+References: <52837A10.3040301@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:52073 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756208Ab3KMQqE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2013 11:46:04 -0500
-Content-Disposition: inline
-In-Reply-To: <5283A545.4040406@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <52837A10.3040301@linux.vnet.ibm.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: mike <qiudayu@linux.vnet.ibm.com>
+Cc: Huang Ying <ying.huang@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Nov 13, 2013 at 04:13:57PM +0000, Arjan van de Ven wrote:
-> On 11/12/2013 3:14 PM, Catalin Marinas wrote:
-> > On 12 Nov 2013, at 16:48, Arjan van de Ven <arjan@linux.intel.com> =
-wrote:
-> >> On 11/11/2013 10:18 AM, Catalin Marinas wrote:
-> >>> The ordering is based on the actual C-state, so a simple way is t=
-o wake
-> >>> up the CPU in the shallowest C-state. With asymmetric configurati=
-ons
-> >>> (big.LITTLE) we have different costs for the same C-state, so thi=
-s would
-> >>> come in handy.
-> >>
-> >> btw I was considering something else; in practice CPUs will be in =
-the deepest state..
-> >> ... at which point I was going to go with some other metrics of wh=
-at is best from a platform level
-> >
-> > I agree, other metrics are needed.  The problem is that we currentl=
-y
-> > only have (relatively, guessed from the target residency) the cost =
-of
-> > transition from a C-state to a P-state (for the latter, not sure wh=
-ich).
-> > But we don=E2=80=99t know what the power (saving) on that C-state i=
-s nor the one
-> > at a P-state (and vendors reluctant to provide such information). S=
-o the
-> > best the scheduler can do is optimise the wake-up cost and blindly =
-assume
-> > that deeper C-state on a CPU is more efficient than lower P-states =
-on two
-> > other CPUs (or the other way around).
->=20
-> for picking the cpu to wake on there are also low level physical kind=
- of things
-> we'd want to take into account on the intel side.
+[+cc Rafael, linux-pm]
 
-Are these static and could they be hidden behind some cost number in a
-topology description? If they are dynamic, we would need arch or driver
-hooks to give some cost or priority number that the scheduler can use.
-
---=20
-Catalin
+On Wed, Nov 13, 2013 at 6:09 AM, mike <qiudayu@linux.vnet.ibm.com> wrote:
+> Hi Huang Ying,
+>
+> I see you are the author of this patch, commit id is:
+> 967577b062417b4e4b8e27b711220f4124f5153a
+>
+> I have a question while I try to understand this patch,
+> So I would very grateful if you or others can give me some reply.....
+>
+> ............
+> -       rc = ddi->drv->probe(ddi->dev, ddi->id);
+> +       pm_runtime_get_sync(dev);
+> +       pci_dev->driver = pci_drv;
+> ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> I see here you make the driver to initialize before probe,
+> But I have no idea of why you do this change.....
+>
+> and I look inside the code, it may be pm_runtime relate??
+>
+> Thanks
+> Mike
+> +       rc = pci_drv->probe(pci_dev, ddi->id);
+>         if (rc) {
+> -               pm_runtime_disable(dev);
+> -               pm_runtime_set_suspended(dev);
+> -               pm_runtime_put_noidle(dev);
+> +               pci_dev->driver = NULL;
+> +               pm_runtime_put_sync(dev);
+>         }
+> -       if (parent)
+> -               pm_runtime_put(parent);
+>         return rc;
+>  }
+>
+> @@ -330,10 +325,8 @@ __pci_device_probe(struct pci_driver *drv, struct
+> pci_dev *pci_dev)
+>                 id = pci_match_device(drv, pci_dev);
+>                 if (id)
+>                         error = pci_call_probe(drv, pci_dev, id);
+> -               if (error >= 0) {
+> -                       pci_dev->driver = drv;
+> +               if (error >= 0)
+>                         error = 0;
+> -               }
+>         }
+>         return error;
+>  }
+> .......................
+>
