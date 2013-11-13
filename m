@@ -1,132 +1,96 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv5 20/20] MAINTAINERS: add maintainer entry for thermal
- bindings
-Date: Wed, 13 Nov 2013 10:46:25 -0400
-Message-ID: <528390C1.2060902@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-21-git-send-email-eduardo.valentin@ti.com> <CAOesGMiCh-nGPqJQd4NPz9st7mBT0JkZ9nEK1gfyF2RmnrXZog@mail.gmail.com> <52828C31.2050604@ti.com> <20131113094232.GB21713@e106331-lin.cambridge.arm.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
+ regulators suspended
+Date: Wed, 13 Nov 2013 09:16:46 -0600
+Message-ID: <20131113151645.GA17828@kahuna>
+References: <1382638087-32054-1-git-send-email-nm@ti.com>
+ <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
+ <52824522.7020401@ti.com>
+ <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="slmGsk2f3aKAX9TOXKTg41uE9VJimV0Lc"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:45451 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757299Ab3KMOru (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Nov 2013 09:47:50 -0500
-In-Reply-To: <20131113094232.GB21713@e106331-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Olof Johansson <olof@lixom.net>, Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "wni@nvidia.com" <wni@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
---slmGsk2f3aKAX9TOXKTg41uE9VJimV0Lc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 11:19-20131113, Viresh Kumar wrote:
+> On 12 November 2013 20:41, Nishanth Menon <nm@ti.com> wrote:
+> > On 11/12/2013 12:03 AM, Viresh Kumar wrote:
+[...]
+> >> Can you try attached patch? I will then repost it formally...
+> >
+> > I tried a equivalent of this for v3.12 tag:
+[..]
+> > @@ -1252,7 +1252,7 @@ static int __cpufreq_remove_dev_finish(struct
+> > device *dev,
+> >
+> >         /* If cpu is last user of policy, free policy */
+> >         if (cpus == 1) {
+> > -               if (cpufreq_driver->target) {
+> > +               if (cpufreq_driver->target && !frozen) {
+> >                         ret = __cpufreq_governor(policy,
+> >                                         CPUFREQ_GOV_POLICY_EXIT);
+> 
+> This is not an equivalent of my patch :)
 
-On 13-11-2013 05:42, Mark Rutland wrote:
-> Hi,
->=20
-> On Tue, Nov 12, 2013 at 08:14:41PM +0000, Eduardo Valentin wrote:
->> On 12-11-2013 15:59, Olof Johansson wrote:
->>> On Tue, Nov 12, 2013 at 11:46 AM, Eduardo Valentin
->>> <eduardo.valentin@ti.com> wrote:
->>>> After discussion and agreement of thermal device tree bindings,
->>>> it is desirable to properly maintain thermal bindings for
->>>> existing and upcoming devices.
->>>>
->>>> As original author of thermal device tree bindings, I am
->>>> volunteering to maintain them.
->>>>
->>>> Cc: Rob Herring <rob.herring@calxeda.com>
->>>> Cc: Pawel Moll <pawel.moll@arm.com>
->>>> Cc: Mark Rutland <mark.rutland@arm.com>
->>>> Cc: Stephen Warren <swarren@wwwdotorg.org>
->>>> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
->>>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->>>> ---
->>>>  MAINTAINERS | 1 +
->>>>  1 file changed, 1 insertion(+)
->>>>
->>>> diff --git a/MAINTAINERS b/MAINTAINERS
->>>> index 3438384..94bfc46 100644
->>>> --- a/MAINTAINERS
->>>> +++ b/MAINTAINERS
->>>> @@ -6178,6 +6178,7 @@ M:        Pawel Moll <pawel.moll@arm.com>
->>>>  M:     Mark Rutland <mark.rutland@arm.com>
->>>>  M:     Stephen Warren <swarren@wwwdotorg.org>
->>>>  M:     Ian Campbell <ijc+devicetree@hellion.org.uk>
->>>> +M:     Eduardo Valentin <eduardo.valentin@ti.com>
->>>>  L:     devicetree@vger.kernel.org
->>>>  S:     Maintained
->>>>  F:     Documentation/devicetree/
->>>
->>> The number of device-tree maintainers is getting to be somewhat silly=
-=2E
->>> You don't have to be a maintainer to be a reviewer, and the number is=
-
->>> getting large enough that it might get hard for one maintainer to kno=
-w
->>> what another is doing.
->>>
->>> So, soft nack, but it's really up to the DT guys.
->>
->> Hello Olof,
->>
->> No issues on my side. As I stated in the patch description, I am
->> volunteering. The motivation comes from the fact that it's been hard t=
-o
->> get DT maintainers attention, so I am assuming they are not having
->> enough bandwidth to pay attention to an extra class of bindings.
->>
->> I agree with you, this is up to the DT folks.
->=20
-> When we discussed this in #devicetree, I was under the impression you
-> meant adding a line like:
->=20
-> F:      Documentation/devicetree/bindings/thermal/
-
-This would work for me too. How about adding this to thermal subsys
-entry in MAINTAINERS file?
-
->=20
-> To your MAINTAINERS entry, rather than adding yourself to the general
-> devicetree bindings MAINTAINERS entry. Sorry for the confusion regardin=
-g
-> this.
->=20
-> Given we have enough difficulty organising ourselves at present, I agre=
-e
-> with Olof that it doesn't make much sense to throw more people into the=
-
-> general devicetree bindings maintainer pile.
->=20
-> However, we would certainly appreciate any review you'd be willing to
-> provide.
->=20
-> Thanks,
-> Mark.
->=20
->=20
+arrgh, my bad.. Apologies for the bad one.. I missed it :( Does the following
+look equivalent?
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 04548f7..a9847ce 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1186,7 +1186,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (cpufreq_driver->target) {
++	if (cpufreq_driver->target && (!frozen || policy->governor_enabled)) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret) {
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+@@ -1295,7 +1295,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+ 		if (!frozen)
+ 			cpufreq_policy_free(policy);
+ 	} else {
+-		if (cpufreq_driver->target) {
++		if (cpufreq_driver->target && !frozen) {
+ 			if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
+ 					(ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
+ 				pr_err("%s: Failed to start governor\n",
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+With this, I now see:
+wakeup from "mem" at Sat Jan  1 00:17:45 2000
+[   40.823352] PM: Syncing filesystems ... done.
+[   40.848058] Freezing user space processes ... (elapsed 0.002 seconds) done.
+[   40.857869] Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+[   40.884567] smsc95xx 1-3:1.0 eth0: entering SUSPEND2 mode
+[   40.955323] PM: suspend of devices complete after 81.563 msecs
+[   40.967333] PM: late suspend of devices complete after 5.789 msecs
+[   40.981182] PM: noirq suspend of devices complete after 7.274 msecs
+[   40.988005] Disabling non-boot CPUs ...
+[   41.000297] CPU1: shutdown
+[   43.169193] Powerdomain (core_pwrdm) didn't enter target state 1
+[   43.175681] Powerdomain (emu_pwrdm) didn't enter target state 1
+[   43.182097] Powerdomain (l3init_pwrdm) didn't enter target state 1
+[   43.188762] Could not enter target state in pm_suspend
+[   43.194298] A possible cause could be an old bootloader - try u-boot >= v2012.07
+[   43.203291] Enabling non-boot CPUs ...
+[   43.210398] CPU1: Booted secondary processor
+[   43.212714] cpufreq: cpufreq_add_policy_cpu: Failed to stop governor
+^^^ ??
+[   43.224252] CPU1 is up
+[   43.248114] PM: noirq resume of devices complete after 21.329 msecs
+[   43.260582] PM: early resume of devices complete after 4.201 msecs
+[   43.623307] ata1: SATA link down (SStatus 0 SControl 300)
+[   44.006234] PM: resume of devices complete after 742.501 msecs
+[   44.020163] Restarting tasks ... done.
 
-Eduardo Valentin
-
-
---slmGsk2f3aKAX9TOXKTg41uE9VJimV0Lc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKDkMEACgkQCXcVR3XQvP1MgQEA4A3me8OJdzA42F/3En97fxl8
-+BMg42OFMOItYPRaNTABAJPGu4RiWaQFdYyCqzH50zMuushR8yN/BSnBnE6gu3d0
-=VWEh
------END PGP SIGNATURE-----
-
---slmGsk2f3aKAX9TOXKTg41uE9VJimV0Lc--
+but, yes, the patch does squelch the warning I saw.
+-- 
+Regards,
+Nishanth Menon
