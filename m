@@ -1,165 +1,31 @@
-From: Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
-Date: Wed, 13 Nov 2013 17:57:22 +0100
-Message-ID: <2523089.oKCvZdz31U@flatron>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
+Date: Wed, 13 Nov 2013 09:56:28 -0800
+Message-ID: <5283BD4C.3040600@linux.intel.com>
+References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org> <CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com> <20131111163630.GD26898@twins.programming.kicks-ass.net> <52810851.4090907@linux.intel.com> <20131111181805.GE29572@arm.com> <52825BE9.2080605@linux.intel.com> <42638CC1-ACC7-4330-A4F4-D78C88BE8155@arm.com> <5283A545.4040406@linux.intel.com> <20131113164457.GF18837@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1384285582-16933-3-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Cc: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:19454 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755123Ab3KMR4a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Nov 2013 12:56:30 -0500
+In-Reply-To: <20131113164457.GF18837@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Eduardo,
 
-On Tuesday 12 of November 2013 15:46:04 Eduardo Valentin wrote:
-> This patch introduces a device tree bindings for
-> describing the hardware thermal behavior and limits.
-> Also a parser to read and interpret the data and feed
-> it in the thermal framework is presented.
-[snip]
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> new file mode 100644
-> index 0000000..59f5bd2
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> @@ -0,0 +1,586 @@
-[snip]
-> +* Cooling device nodes
-> +
-> +Cooling devices are nodes providing control on power dissipation. There
-> +are essentially two ways to provide control on power dissipation. First
-> +is by means of regulating device performance, which is known as passive
-> +cooling. A typical passive cooling is a CPU that has dynamic voltage and
-> +frequency scaling (DVFS), and uses lower frequencies as cooling states.
-> +Second is by means of activating devices in order to remove
-> +the dissipated heat, which is known as active cooling, e.g. regulating
-> +fan speeds. In both cases, cooling devices shall have a way to determine
-> +the state of cooling in which the device is.
-> +
-> +Required properties:
-> +- cooling-min-state:	An integer indicating the smallest
-> +  Type: unsigned	cooling state accepted. Typically 0.
-> +  Size: one cell
+>> for picking the cpu to wake on there are also low level physical kind of things
+>> we'd want to take into account on the intel side.
+>
+> Are these static and could they be hidden behind some cost number in a
+> topology description? If they are dynamic, we would need arch or driver
+> hooks to give some cost or priority number that the scheduler can use.
 
-Could you explain (just in a reply) what a cooling state is and what are
-the min and max values used for?
+they're dynamic but slow moving (say, reevaluated once per second)
 
-> +
-> +- cooling-max-state:	An integer indicating the largest
-> +  Type: unsigned	cooling state accepted.
-> +  Size: one cell
-> +
-> +- #cooling-cells:	Used to provide cooling device specific information
-> +  Type: unsigned	while referring to it. Must be at least 2, in order
-> +  Size: one cell      	to specify minimum and maximum cooling state used
-> +			in the reference. The first cell is the minimum
-> +			cooling state requested and the second cell is
-> +			the maximum cooling state requested in the reference.
-> +			See Cooling device maps section below for more details
-> +			on how consumers refer to cooling devices.
-> +
-> +* Trip points
-> +
-> +The trip node is a node to describe a point in the temperature domain
-> +in which the system takes an action. This node describes just the point,
-> +not the action.
-> +
-> +Required properties:
-> +- temperature:		An integer indicating the trip temperature level,
-> +  Type: signed		in millicelsius.
-> +  Size: one cell
-> +
-> +- hysteresis:		A low hysteresis value on temperature property (above).
-> +  Type: unsigned	This is a relative value, in millicelsius.
-> +  Size: one cell
+so we could have a static table that some driver updates async
 
-What about replacing temperature and hysteresis with a single temperature
-property that can be either one cell for 0 hysteresis or two cells to
-specify lower and upper range of temperatures?
-
-> +
-> +- type:			a string containing the trip type. Supported values are:
-> +	"active":	A trip point to enable active cooling
-> +	"passive":	A trip point to enable passive cooling
-
-The two above seem to be implying action, as opposed to the general
-comment about trip points.
-
-> +	"hot":		A trip point to notify emergency
-> +	"critical":	Hardware not reliable.
-> +  Type: string
-> +
-[snip]
-> +* Examples
-> +
-> +Below are several examples on how to use thermal data descriptors
-> +using device tree bindings:
-> +
-> +(a) - CPU thermal zone
-> +
-> +The CPU thermal zone example below describes how to setup one thermal zone
-> +using one single sensor as temperature source and many cooling devices and
-> +power dissipation control sources.
-> +
-> +#include <dt-bindings/thermal/thermal.h>
-> +
-> +cpus {
-> +	/*
-> +	 * Here is an example of describing a cooling device for a DVFS
-> +	 * capable CPU. The CPU node describes its four OPPs.
-> +	 * The cooling states possible are 0..3, and they are
-> +	 * used as OPP indexes. The minimum cooling state is 0, which means
-> +	 * all four OPPs can be available to the system. The maximum
-> +	 * cooling state is 3, which means only the lowest OPPs (198MHz@0.85V)
-> +	 * can be available in the system.
-> +	 */
-> +	cpu0: cpu@0 {
-> +		...
-> +		operating-points = <
-> +			/* kHz    uV */
-> +			970000  1200000
-> +			792000  1100000
-> +			396000  950000
-> +			198000  850000
-> +		>;
-> +		cooling-min-state = <0>;
-> +		cooling-max-state = <3>;
-> +		#cooling-cells = <2>; /* min followed by max */
-
-I believe you don't need the min- and max-state properties here then. Your
-thermal core can simply query the cpufreq driver (which would be a cooling
-device here) about the range of states it supports.
-
-> +	};
-> +	...
-> +};
-> +
-> +&i2c1 {
-> +	...
-> +	/*
-> +	 * A simple fan controller which supports 10 speeds of operation
-> +	 * (represented as 0-9).
-> +	 */
-> +	fan0: fan@0x48 {
-> +		...
-> +		cooling-min-state = <0>;
-> +		cooling-max-state = <9>;
-
-This is similar. The fan driver will probaby know about available
-fan speed levels and be able to report the range of states to thermal
-core.
-
-That's just for the binding. I will try to review the code when I find
-a bit more time.
-
-Best regards,
-Tomasz
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
