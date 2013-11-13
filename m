@@ -1,48 +1,131 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: OMAP: Fix compilation error 'r & ret undeclared'
-Date: Wed, 13 Nov 2013 15:39:23 +0530
-Message-ID: <c5d802f9efd94a2fafea738d370feff85272bf9a.1384337302.git.viresh.kumar@linaro.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv5 20/20] MAINTAINERS: add maintainer entry for thermal
+ bindings
+Date: Wed, 13 Nov 2013 08:17:12 -0400
+Message-ID: <52836DC8.8080702@ti.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-21-git-send-email-eduardo.valentin@ti.com> <CAOesGMiCh-nGPqJQd4NPz9st7mBT0JkZ9nEK1gfyF2RmnrXZog@mail.gmail.com> <52828C31.2050604@ti.com> <20131113094232.GB21713@e106331-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="xj7vtLu5XQTwRUPwdGgl6qRw5hxGB2OUA"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f180.google.com ([209.85.216.180]:46214 "EHLO
-	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758537Ab3KMKJb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2013 05:09:31 -0500
-Received: by mail-qc0-f180.google.com with SMTP id e9so87113qcy.11
-        for <linux-pm@vger.kernel.org>; Wed, 13 Nov 2013 02:09:30 -0800 (PST)
+Received: from comal.ext.ti.com ([198.47.26.152]:39946 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758619Ab3KMMSk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Nov 2013 07:18:40 -0500
+In-Reply-To: <20131113094232.GB21713@e106331-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, santosh.shilimkar@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Olof Johansson <olof@lixom.net>, Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "wni@nvidia.com" <wni@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
-With a recent change "d4019f0 cpufreq: move freq change notifications to cpufreq
-core" few variables (r & ret) are removed by mistake and hence these warnings:
+--xj7vtLu5XQTwRUPwdGgl6qRw5hxGB2OUA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-drivers/cpufreq/omap-cpufreq.c: In function omap_target:
-drivers/cpufreq/omap-cpufreq.c:64:2: error: ret undeclared (first use in this function)
-drivers/cpufreq/omap-cpufreq.c:64:2: note: each undeclared identifier is reported only once for each function it appears in
-drivers/cpufreq/omap-cpufreq.c:94:3: error: r undeclared (first use in this function)
-drivers/cpufreq/omap-cpufreq.c:116:1: warning: control reaches end of non-void function [-Wreturn-type]
+On 13-11-2013 05:42, Mark Rutland wrote:
+> Hi,
+>=20
+> On Tue, Nov 12, 2013 at 08:14:41PM +0000, Eduardo Valentin wrote:
+>> On 12-11-2013 15:59, Olof Johansson wrote:
+>>> On Tue, Nov 12, 2013 at 11:46 AM, Eduardo Valentin
+>>> <eduardo.valentin@ti.com> wrote:
+>>>> After discussion and agreement of thermal device tree bindings,
+>>>> it is desirable to properly maintain thermal bindings for
+>>>> existing and upcoming devices.
+>>>>
+>>>> As original author of thermal device tree bindings, I am
+>>>> volunteering to maintain them.
+>>>>
+>>>> Cc: Rob Herring <rob.herring@calxeda.com>
+>>>> Cc: Pawel Moll <pawel.moll@arm.com>
+>>>> Cc: Mark Rutland <mark.rutland@arm.com>
+>>>> Cc: Stephen Warren <swarren@wwwdotorg.org>
+>>>> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+>>>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>>>> ---
+>>>>  MAINTAINERS | 1 +
+>>>>  1 file changed, 1 insertion(+)
+>>>>
+>>>> diff --git a/MAINTAINERS b/MAINTAINERS
+>>>> index 3438384..94bfc46 100644
+>>>> --- a/MAINTAINERS
+>>>> +++ b/MAINTAINERS
+>>>> @@ -6178,6 +6178,7 @@ M:        Pawel Moll <pawel.moll@arm.com>
+>>>>  M:     Mark Rutland <mark.rutland@arm.com>
+>>>>  M:     Stephen Warren <swarren@wwwdotorg.org>
+>>>>  M:     Ian Campbell <ijc+devicetree@hellion.org.uk>
+>>>> +M:     Eduardo Valentin <eduardo.valentin@ti.com>
+>>>>  L:     devicetree@vger.kernel.org
+>>>>  S:     Maintained
+>>>>  F:     Documentation/devicetree/
+>>>
+>>> The number of device-tree maintainers is getting to be somewhat silly=
+=2E
+>>> You don't have to be a maintainer to be a reviewer, and the number is=
 
-Lets fix them by declaring those variables again.
+>>> getting large enough that it might get hard for one maintainer to kno=
+w
+>>> what another is doing.
+>>>
+>>> So, soft nack, but it's really up to the DT guys.
+>>
+>> Hello Olof,
+>>
+>> No issues on my side. As I stated in the patch description, I am
+>> volunteering. The motivation comes from the fact that it's been hard t=
+o
+>> get DT maintainers attention, so I am assuming they are not having
+>> enough bandwidth to pay attention to an extra class of bindings.
+>>
+>> I agree with you, this is up to the DT folks.
+>=20
+> When we discussed this in #devicetree, I was under the impression you
+> meant adding a line like:
+>=20
+> F:      Documentation/devicetree/bindings/thermal/
+>=20
+> To your MAINTAINERS entry, rather than adding yourself to the general
+> devicetree bindings MAINTAINERS entry. Sorry for the confusion regardin=
+g
+> this.
+>=20
+> Given we have enough difficulty organising ourselves at present, I agre=
+e
+> with Olof that it doesn't make much sense to throw more people into the=
 
-Reported-by: Sebastian Capella <sebastian.capella@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/omap-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+> general devicetree bindings maintainer pile.
+>=20
+> However, we would certainly appreciate any review you'd be willing to
+> provide.
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index be6d143..a0acd0b 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -53,6 +53,7 @@ static unsigned int omap_getspeed(unsigned int cpu)
- 
- static int omap_target(struct cpufreq_policy *policy, unsigned int index)
- {
-+	int r, ret;
- 	struct dev_pm_opp *opp;
- 	unsigned long freq, volt = 0, volt_old = 0, tol = 0;
- 	unsigned int old_freq, new_freq;
--- 
-1.7.12.rc2.18.g61b472e
+No issues then folks. :-)
 
+>=20
+> Thanks,
+> Mark.
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--xj7vtLu5XQTwRUPwdGgl6qRw5hxGB2OUA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKDbcgACgkQCXcVR3XQvP3gAAEApfSAfk67eq22FJy/dY46cxCZ
+1DhuZiTeUNPQYuLMkF8A/AkgSQAHK3nAzd3hGOmLOhbfElBIW4F8h0PU34gqqpZr
+=xlBF
+-----END PGP SIGNATURE-----
+
+--xj7vtLu5XQTwRUPwdGgl6qRw5hxGB2OUA--
