@@ -1,102 +1,94 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
- regulators suspended
-Date: Wed, 13 Nov 2013 11:19:27 +0530
-Message-ID: <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
-References: <1382638087-32054-1-git-send-email-nm@ti.com>
-	<CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
-	<52824522.7020401@ti.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCHv5 20/20] MAINTAINERS: add maintainer entry for thermal
+ bindings
+Date: Wed, 13 Nov 2013 09:42:32 +0000
+Message-ID: <20131113094232.GB21713@e106331-lin.cambridge.arm.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
+ <1384285582-16933-21-git-send-email-eduardo.valentin@ti.com>
+ <CAOesGMiCh-nGPqJQd4NPz9st7mBT0JkZ9nEK1gfyF2RmnrXZog@mail.gmail.com>
+ <52828C31.2050604@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52824522.7020401@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:58047 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758699Ab3KMJmi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2013 04:42:38 -0500
+Content-Disposition: inline
+In-Reply-To: <52828C31.2050604@ti.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Olof Johansson <olof@lixom.net>, Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "wni@nvidia.com" <wni@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
-On 12 November 2013 20:41, Nishanth Menon <nm@ti.com> wrote:
-> On 11/12/2013 12:03 AM, Viresh Kumar wrote:
+Hi,
 
->> Yes the problem looks real but there are issues with this patch.
->> - It doesn't solve your problem completely, because you returned -EBUSY,
->> your suspend operation failed and we resumed immediately.
->
-> Seems like there was an error handling miss somewhere - for some
-> reason, it did suspend properly.
+On Tue, Nov 12, 2013 at 08:14:41PM +0000, Eduardo Valentin wrote:
+> On 12-11-2013 15:59, Olof Johansson wrote:
+> > On Tue, Nov 12, 2013 at 11:46 AM, Eduardo Valentin
+> > <eduardo.valentin@ti.com> wrote:
+> >> After discussion and agreement of thermal device tree bindings,
+> >> it is desirable to properly maintain thermal bindings for
+> >> existing and upcoming devices.
+> >>
+> >> As original author of thermal device tree bindings, I am
+> >> volunteering to maintain them.
+> >>
+> >> Cc: Rob Herring <rob.herring@calxeda.com>
+> >> Cc: Pawel Moll <pawel.moll@arm.com>
+> >> Cc: Mark Rutland <mark.rutland@arm.com>
+> >> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> >> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+> >> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> >> ---
+> >>  MAINTAINERS | 1 +
+> >>  1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/MAINTAINERS b/MAINTAINERS
+> >> index 3438384..94bfc46 100644
+> >> --- a/MAINTAINERS
+> >> +++ b/MAINTAINERS
+> >> @@ -6178,6 +6178,7 @@ M:        Pawel Moll <pawel.moll@arm.com>
+> >>  M:     Mark Rutland <mark.rutland@arm.com>
+> >>  M:     Stephen Warren <swarren@wwwdotorg.org>
+> >>  M:     Ian Campbell <ijc+devicetree@hellion.org.uk>
+> >> +M:     Eduardo Valentin <eduardo.valentin@ti.com>
+> >>  L:     devicetree@vger.kernel.org
+> >>  S:     Maintained
+> >>  F:     Documentation/devicetree/
+> > 
+> > The number of device-tree maintainers is getting to be somewhat silly.
+> > You don't have to be a maintainer to be a reviewer, and the number is
+> > getting large enough that it might get hard for one maintainer to know
+> > what another is doing.
+> > 
+> > So, soft nack, but it's really up to the DT guys.
+> 
+> Hello Olof,
+> 
+> No issues on my side. As I stated in the patch description, I am
+> volunteering. The motivation comes from the fact that it's been hard to
+> get DT maintainers attention, so I am assuming they are not having
+> enough bandwidth to pay attention to an extra class of bindings.
+> 
+> I agree with you, this is up to the DT folks.
 
-Yeah, its missing in cpufreq_cpu_callback()..
+When we discussed this in #devicetree, I was under the impression you
+meant adding a line like:
 
->> But I think the problem can/should be solved some other way.. Looking closely,
->> we got to the problem because we called
->>
->> __cpufreq_governor(policy, CPUFREQ_GOV_START)
->>
->> at the first place. This happened because the policy structure had more than
->> one cpu to take care of and after stopping goveronr for CPU1 it has to start it
->> again for CPU0... But this is really not required as anyway we are going to
->> suspend.
->>
->> Can you try attached patch? I will then repost it formally...
->
-> I tried a equivalent of this for v3.12 tag:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 04548f7..9ec243c 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1186,7 +1186,7 @@ static int __cpufreq_remove_dev_prepare(struct
-> device *dev,
->                 return -EINVAL;
->         }
->
-> -       if (cpufreq_driver->target) {
-> +       if (cpufreq_driver->target && (!frozen ||
-> policy->governor_enabled)) {
->                 ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->                 if (ret) {
->                         pr_err("%s: Failed to stop governor\n", __func__);
-> @@ -1252,7 +1252,7 @@ static int __cpufreq_remove_dev_finish(struct
-> device *dev,
->
->         /* If cpu is last user of policy, free policy */
->         if (cpus == 1) {
-> -               if (cpufreq_driver->target) {
-> +               if (cpufreq_driver->target && !frozen) {
->                         ret = __cpufreq_governor(policy,
->                                         CPUFREQ_GOV_POLICY_EXIT);
+F:      Documentation/devicetree/bindings/thermal/
 
-This is not an equivalent of my patch :)
+To your MAINTAINERS entry, rather than adding yourself to the general
+devicetree bindings MAINTAINERS entry. Sorry for the confusion regarding
+this.
 
-@@ -1282,7 +1282,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
-                if (!frozen)
-                        cpufreq_policy_free(policy);
-        } else {
--               if (has_target()) {
-+               if (has_target() && !frozen) {
-                        if ((ret = __cpufreq_governor(policy,
-CPUFREQ_GOV_START)) ||
-                                        (ret =
-__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
+Given we have enough difficulty organising ourselves at present, I agree
+with Olof that it doesn't make much sense to throw more people into the
+general devicetree bindings maintainer pile.
 
+However, we would certainly appreciate any review you'd be willing to
+provide.
 
-> And I see http://pastebin.mozilla.org/3528478
->
-> with a WARN patch for generating call stack.
-
-that's why you got it.. I was really surprised to see it just didn't
-worked for you
-and believe me it took me a lot of time understanding how isn't it
-working for u.
-Because I simply believed on your equivalent version and didn't looked at it
-closely :)
-
-> Finally squelched warnings with a net diff (v3.12) of
-> http://pastebin.mozilla.org/3546062
-
-we don't need that stuff in cpufreq_add_policy_cpu()
-
-> However, ondemand is no longer functioning on resume (governor needs a
-> start after being unfrozen.. and obviously by avoiding that entirely
-> in frozen case.. not sure if I missed any other)..
-
-It would be, try the right code once. :)
+Thanks,
+Mark.
