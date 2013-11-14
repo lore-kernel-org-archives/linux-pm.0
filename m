@@ -1,74 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / Hibernate: Do not crash kernel in free_basic_memory_bitmaps()
-Date: Thu, 14 Nov 2013 22:49:34 +0100
-Message-ID: <86536154.DW1yQsKN97@vostro.rjw.lan>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with regulators suspended
+Date: Thu, 14 Nov 2013 23:00:21 +0100
+Message-ID: <2085822.gaTNcUz76n@vostro.rjw.lan>
+References: <1382638087-32054-1-git-send-email-nm@ti.com> <20131113151645.GA17828@kahuna> <52842671.40703@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56552 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757858Ab3KNVhE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 16:37:04 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52842671.40703@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: viresh kumar <viresh.kumar@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thursday, November 14, 2013 06:55:05 AM viresh kumar wrote:
+> On Wednesday 13 November 2013 08:46 PM, Nishanth Menon wrote:
+> > arrgh, my bad.. Apologies for the bad one.. I missed it :( Does the following
+> > look equivalent?
+> 
+> yes.
+> 
+> > With this, I now see:
+> 
+> > [   43.212714] cpufreq: cpufreq_add_policy_cpu: Failed to stop governor
+> > ^^^ ??
+> 
+> Ahh, I missed this part. I thought it will fail at some other place where there
+> is no error checking :), but that's not true.
+> 
+> Following should fix it for you and looks to be the right way as well.
+> 
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index dc67fa0..30b09d3 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1530,6 +1530,14 @@ static void cpufreq_bp_resume(void)
+>                 }
+>         }
+> 
+> +       if (has_target()) {
+> +               if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
+> +                       (ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
 
-I have received a report about the BUG_ON() in free_basic_memory_bitmaps()
-triggering mysteriously during an aborted s2disk hibernation attempt.
-The only way I can explain that is that /dev/snapshot was first
-opened for writing (resume mode), then closed and then opened again
-for reading and closed again without freezing tasks.  In that case
-the first invocation of snapshot_open() would set the free_bitmaps
-flag in snapshot_state, which is a static variable.  That flag
-wouldn't be cleared later and the second invocation of snapshot_open()
-would just leave it like that, so the subsequent snapshot_release()
-would see data->frozen set and free_basic_memory_bitmaps() would be
-called unnecessarily.
 
-To prevent that from happening clear data->free_bitmaps in
-snapshot_open() when the file is being opened for reading (hibernate
-mode).
+I'm not going to apply anything like this.  If I have already, that's been a mistake.
 
-In addition to that, replace the BUG_ON() in free_basic_memory_bitmaps()
-with a WARN_ON() as the kernel can continue just fine if the condition
-checked by that macro occurs.
+Do not mix assignments with logical operators in such outrageous ways, please.
+That's completely unreadable and confusing.
 
-Fixes: aab172891542 (PM / hibernate: Fix user space driven resume regression)
-Reported-by: Oliver Lorenz <olli@olorenz.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/power/snapshot.c |    3 ++-
- kernel/power/user.c     |    1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+What about:
 
-Index: linux-pm/kernel/power/user.c
-===================================================================
---- linux-pm.orig/kernel/power/user.c
-+++ linux-pm/kernel/power/user.c
-@@ -70,6 +70,7 @@ static int snapshot_open(struct inode *i
- 		data->swap = swsusp_resume_device ?
- 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
- 		data->mode = O_RDONLY;
-+		data->free_bitmaps = false;
- 		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
- 		if (error)
- 			pm_notifier_call_chain(PM_POST_HIBERNATION);
-Index: linux-pm/kernel/power/snapshot.c
-===================================================================
---- linux-pm.orig/kernel/power/snapshot.c
-+++ linux-pm/kernel/power/snapshot.c
-@@ -792,7 +792,8 @@ void free_basic_memory_bitmaps(void)
- {
- 	struct memory_bitmap *bm1, *bm2;
- 
--	BUG_ON(!(forbidden_pages_map && free_pages_map));
-+	if (WARN_ON(!(forbidden_pages_map && free_pages_map)))
-+		return;
- 
- 	bm1 = forbidden_pages_map;
- 	bm2 = free_pages_map;
+	ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+	if (!ret) {
+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+		if (ret) {
 
+
+> +                       pr_err("%s: Failed to start governor\n", __func__);
+> +                       goto fail;
+> +               }
+> +       }
+> +
+>         schedule_work(&policy->update);
+> 
+>  fail:
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
