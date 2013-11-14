@@ -1,53 +1,87 @@
-From: viresh kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
- regulators suspended
-Date: Thu, 14 Nov 2013 06:55:05 +0530
-Message-ID: <52842671.40703@linaro.org>
-References: <1382638087-32054-1-git-send-email-nm@ti.com> <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com> <52824522.7020401@ti.com> <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com> <20131113151645.GA17828@kahuna>
+From: mike <qiudayu@linux.vnet.ibm.com>
+Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM enabled
+ for unbound PCI devices
+Date: Thu, 14 Nov 2013 11:23:41 +0800
+Message-ID: <5284423D.4090907@linux.vnet.ibm.com>
+References: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131113151645.GA17828@kahuna>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:34013 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290Ab3KNDXu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2013 22:23:50 -0500
+Received: from /spool/local
+	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <qiudayu@linux.vnet.ibm.com>;
+	Thu, 14 Nov 2013 08:53:48 +0530
+In-Reply-To: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Huang Ying <ying.huang@intel.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net
 
-On Wednesday 13 November 2013 08:46 PM, Nishanth Menon wrote:
-> arrgh, my bad.. Apologies for the bad one.. I missed it :( Does the following
-> look equivalent?
+On 11/14/2013 03:20 AM, Alan Stern wrote:
+> On Wed, 13 Nov 2013, Bjorn Helgaas wrote:
+>
+>> [+cc Rafael, linux-pm]
+>>
+>> On Wed, Nov 13, 2013 at 6:09 AM, mike<qiudayu@linux.vnet.ibm.com>  wrote:
+>>> Hi Huang Ying,
+>>>
+>>> I see you are the author of this patch, commit id is:
+>>> 967577b062417b4e4b8e27b711220f4124f5153a
+>>>
+>>> I have a question while I try to understand this patch,
+>>> So I would very grateful if you or others can give me some reply.....
+>>>
+>>> ............
+>>> -       rc = ddi->drv->probe(ddi->dev, ddi->id);
+>>> +       pm_runtime_get_sync(dev);
+>>> +       pci_dev->driver = pci_drv;
+>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>> I see here you make the driver to initialize before probe,
+>>> But I have no idea of why you do this change.....
+>>>
+>>> and I look inside the code, it may be pm_runtime relate??
+> Yes, it is related to runtime PM.  In the PCI subsystem, runtime PM
+> doesn't do anything unless pci_dev->driver is set.  You can see this at
+> the start of pci_pm_runtime_suspend().
+>
+> Since we want the driver's probe routine to be able to carry out
+> runtime PM operations, we have to set pci_dev->driver before the probe
+> routine runs.
+Is there any situations , like in  probe state,  pci_dev->driver
+has been set. the  pci_pm_runtime_xxx() has passed
+pci_dev->driver NULL check, but at this point, probe fail
+occurs, and  pci_dev->driver to be set to NULL.
 
-yes.
+What will happen ? Or this situation will never happen?
+I'm confuse about this.
 
-> With this, I now see:
+Because it may be dangerous to call the functions in driver
+to do some actions in the device  which probe failed.
 
-> [   43.212714] cpufreq: cpufreq_add_policy_cpu: Failed to stop governor
-> ^^^ ??
+Even if it will at last probe success, the driver itself must be
+very strong, because may be a lot critical data structs
+haven't be created or initialized, if we call driver function in
+probe state may be lead a invalid access to some pointer.
 
-Ahh, I missed this part. I thought it will fail at some other place where there
-is no error checking :), but that's not true.
+So I think this logic may have some issue, am I right?
 
-Following should fix it for you and looks to be the right way as well.
+If I am right, I have a *patch to fix this issue*, but I'm not sure
+it is safe enough to do PM ops in probe state.
 
+Actually, I face a *bug report* to this issue, access the
+driver function in probe state, even though it can be fixed
+in driver ( Make the driver more stronger), but the root
+cause is this issue.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index dc67fa0..30b09d3 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1530,6 +1530,14 @@ static void cpufreq_bp_resume(void)
-                }
-        }
+Pray for your reply, and I really want to know.
 
-+       if (has_target()) {
-+               if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
-+                       (ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
-+                       pr_err("%s: Failed to start governor\n", __func__);
-+                       goto fail;
-+               }
-+       }
-+
-        schedule_work(&policy->update);
-
- fail:
+Thanks
+Mike
+> Alan Stern
+>
 
