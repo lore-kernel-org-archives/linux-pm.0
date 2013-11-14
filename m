@@ -1,62 +1,55 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
  system suspend
-Date: Thu, 14 Nov 2013 10:55:31 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1311141053060.1439-100000@iolanthe.rowland.org>
-References: <CAPDyKFozCfPj-gW124cyFSu=ckiL-zVEmEx5tspY-1maO=+6fA@mail.gmail.com>
+Date: Thu, 14 Nov 2013 10:59:53 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1311141055470.1439-100000@iolanthe.rowland.org>
+References: <CAPDyKFocx3L5d5_6TCx5fDy9RgD0MmmWEG0pL=77Hk7bA5EZfA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:35481 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753981Ab3KNPzc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 10:55:32 -0500
-In-Reply-To: <CAPDyKFozCfPj-gW124cyFSu=ckiL-zVEmEx5tspY-1maO=+6fA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFocx3L5d5_6TCx5fDy9RgD0MmmWEG0pL=77Hk7bA5EZfA@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
 On Thu, 14 Nov 2013, Ulf Hansson wrote:
 
-> > If you want a driver to do the same thing for runtime PM and system
-> > suspend/resume, point its .suspend_late() and .runtime_suspend() to the
-> > same routine and analogously for .runtime_resume() and .resume_early()
-> > (that may not work for PCI, though, because of the _noirq stuff, but that's
-> > the PCI bus type issue).
+> > The reason for doing things the way they are is to avoid races between
+> > system PM callbacks and runtime PM callbacks.  We don't want to have a
+> > runtime_resume routine powering up a device at the same time as a
+> > suspend routine is powering it down.
 > 
-> When your .suspend_late callback gets called, your device may be
-> either active or inactive from runtime PM point of view. Just pointing
-> the .suspend_late callback to the .runtime_suspend callback, simply
-> wont work.
+> I believe I understand why the PM core prevent this. Some subsystems
+> and drivers depends on this behaviour, but I wonder if we should
+> consider this as common cases or more like special cases?
 > 
-> That would mean we might end up in trying to inactivate an already
-> inactivated device, which I doubt is a good thing.:-) Some additional
-> code will be needed to track the "runtime state" and to act
-> accordingly. This is what drivers already tries to handle as of today,
-> though so far mostly from their .suspend callbacks I believe.
+> For those drivers that potentially could rely on runtime PM (and it's
+> callbacks) to inactivate the device during system suspend, and thus
+> don't have issues with races you describe above, the current behaviour
+> in the PM core adds unnecessary complexity for these drivers to handle
+> system suspend.
 
-You could write a "generic" suspend_late routine that would invoke the 
-driver's runtime_suspend routine if the device's runtime PM status was 
-RPM_ACTIVE.
+What unnecessary complexity?
 
-> > Of course, the assumption behind .runtime_suspend() and .runtime_resume() is
-> > that they will be run when the device is not in use, while system suspend
-> > may actually happen when the device *is* in use and .suspend() should take
-> > care of that if necessary.  So you may need .suspend() anyway.
-> >
-> > One important property of system suspend is that it can happen at any time
-> > and that's why the .suspend() and .resume() callbacks are needed (and this
-> > also means that they can't be the same as .runtime_suspend() and
-> > .runtime_resume() in general).
+Bear in mind that drivers _cannot_ rely on runtime PM to inactivate a 
+device during system suspend.  The user can always prevent a device 
+from going into runtime suspend by writing "on" to the 
+/sys/.../power/control file.
+
+> Drivers/buses/power_domains that handles runtime PM enabled devices,
+> will, as you also have pointed out earlier, need to implement the
+> .suspend callback (suspend_late or suspend_noirq might work as well)
+> and the corresponding .resume callback. This just for the sake of
+> making sure all their runtime enabled devices gets fully inactivated
+> during system suspend.
 > 
-> I see your point and in most cases you are right. But, I am also sure
-> that quite many drivers should be able to cope with only runtime PM
-> callbacks. I have collected a bunch of examples that I can share, if
-> you are interested?
+> I wonder if we somehow should move the responsibility of preventing
+> "runtime suspend" as a part of the system suspend, down to the driver
+> to decide instead of the PM core?
 
-All those drivers should be able to utilize this "generic" suspend_late 
-routine.
+No, I don't think so.  It would mean that every driver's suspend
+routine would have to do a pm_runtime_get of some sort.  It's better to
+just leave the single runtime_get call in the PM core.
 
 Alan Stern
-
