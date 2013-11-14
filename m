@@ -1,57 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
-Date: Wed, 13 Nov 2013 23:21:39 +0100
-Message-ID: <1733072.0Y6z05AJRJ@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1311131411120.1424-100000@iolanthe.rowland.org>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
+ regulators suspended
+Date: Thu, 14 Nov 2013 06:55:05 +0530
+Message-ID: <52842671.40703@linaro.org>
+References: <1382638087-32054-1-git-send-email-nm@ti.com> <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com> <52824522.7020401@ti.com> <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com> <20131113151645.GA17828@kahuna>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55797 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751047Ab3KMWJJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2013 17:09:09 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1311131411120.1424-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20131113151645.GA17828@kahuna>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-On Wednesday, November 13, 2013 02:16:03 PM Alan Stern wrote:
-> On Wed, 13 Nov 2013, Ulf Hansson wrote:
-> 
-> > The PM core was preventing devices from going inactive during system
-> > suspend. Remove this constraint and moreover try to inactivate devices
-> > by invoking pm_runtime_idle() before proceeding with device's
-> > suspend_late callbacks.
-> > 
-> > A great amount of drivers that uses runtime PM will benefit from this.
-> 
-> It's not clear how drivers will benefit.
-> 
-> > Drivers that implements some of the system ->suspend* callbacks for the
-> > only reason of making sure the runtime PM resourses gets inactive, can
-> > now solely instead rely on the PM core to handle this.
-> 
-> Drivers don't have to implement anything special if they want to use
-> their runtime routines for system suspend.  All they have to do is set
-> the .suspend and .resume method pointers to point to their
-> runtime_suspend and runtime_resume routines.
+On Wednesday 13 November 2013 08:46 PM, Nishanth Menon wrote:
+> arrgh, my bad.. Apologies for the bad one.. I missed it :( Does the following
+> look equivalent?
 
-Well, not really.  This doesn't work in general, because the assumptions for
-running .suspend() (at any time, with user space frozen) are quite different
-from the assumptions for running .runtime_suspend() (when the device is not
-in use).  So generally .suspend() and .runtime_suspend() should be different.
+yes.
 
-That said .runtime_suspend() generally can be the same as .suspend_late()
-(and that was the main reason why the latter was introduced in the first
-place) and analogously for .runtime_resume() and .reasume_early().
+> With this, I now see:
 
-Although there are simple cases in which .suspend() and .runtime_suspend() may
-be the same, I'd still recommend to point .suspend_late and .runtime_suspend
-to the same routine and leaving .suspend as NULL in those cases too (and
-analogously for the resume stuff).
+> [   43.212714] cpufreq: cpufreq_add_policy_cpu: Failed to stop governor
+> ^^^ ??
 
-Thanks,
-Rafael
+Ahh, I missed this part. I thought it will fail at some other place where there
+is no error checking :), but that's not true.
+
+Following should fix it for you and looks to be the right way as well.
+
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index dc67fa0..30b09d3 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1530,6 +1530,14 @@ static void cpufreq_bp_resume(void)
+                }
+        }
+
++       if (has_target()) {
++               if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
++                       (ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
++                       pr_err("%s: Failed to start governor\n", __func__);
++                       goto fail;
++               }
++       }
++
+        schedule_work(&policy->update);
+
+ fail:
 
