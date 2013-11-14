@@ -1,86 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Thu, 14 Nov 2013 17:40:55 +0100
-Message-ID: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
-References: <CAPDyKFocx3L5d5_6TCx5fDy9RgD0MmmWEG0pL=77Hk7bA5EZfA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1311141055470.1439-100000@iolanthe.rowland.org>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
+ regulators suspended
+Date: Thu, 14 Nov 2013 22:16:00 +0530
+Message-ID: <5284FE48.8040802@linaro.org>
+References: <1382638087-32054-1-git-send-email-nm@ti.com> <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com> <52824522.7020401@ti.com> <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com> <20131113151645.GA17828@kahuna> <52842671.40703@linaro.org> <5284DDB9.7040502@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f182.google.com ([209.85.216.182]:51752 "EHLO
-	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756641Ab3KNQk4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 11:40:56 -0500
-Received: by mail-qc0-f182.google.com with SMTP id n7so1336328qcx.41
-        for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2013 08:40:55 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.44L0.1311141055470.1439-100000@iolanthe.rowland.org>
+Received: from mail-qe0-f53.google.com ([209.85.128.53]:33602 "EHLO
+	mail-qe0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757323Ab3KNQqI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 11:46:08 -0500
+Received: by mail-qe0-f53.google.com with SMTP id cy11so1399964qeb.40
+        for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2013 08:46:07 -0800 (PST)
+In-Reply-To: <5284DDB9.7040502@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 
-On 14 November 2013 16:59, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 14 Nov 2013, Ulf Hansson wrote:
->
->> > The reason for doing things the way they are is to avoid races between
->> > system PM callbacks and runtime PM callbacks.  We don't want to have a
->> > runtime_resume routine powering up a device at the same time as a
->> > suspend routine is powering it down.
->>
->> I believe I understand why the PM core prevent this. Some subsystems
->> and drivers depends on this behaviour, but I wonder if we should
->> consider this as common cases or more like special cases?
->>
->> For those drivers that potentially could rely on runtime PM (and it's
->> callbacks) to inactivate the device during system suspend, and thus
->> don't have issues with races you describe above, the current behaviour
->> in the PM core adds unnecessary complexity for these drivers to handle
->> system suspend.
->
-> What unnecessary complexity?
->
-> Bear in mind that drivers _cannot_ rely on runtime PM to inactivate a
-> device during system suspend.  The user can always prevent a device
-> from going into runtime suspend by writing "on" to the
-> /sys/.../power/control file.
+On Thursday 14 November 2013 07:57 PM, Nishanth Menon wrote:
+> I am guessing this is a little too early for restarting policy here
+> considering syscore_ops->resume is pretty early..
 
-Good that you brought this up. From my point of view I think the sysfs
-for runtime PM could be debated whether it should exist at all, at
-least in it's current form.
+Yeah, looks like that..
 
-Anyway, if userspace decides to prevent runtime_suspend, I guess it
-will have take the consequences for it as well. :-)
+> http://pastebin.mozilla.org/3602746 is the equivalent patch for v3.12
+> http://pastebin.mozilla.org/3602747 is the result.
 
->
->> Drivers/buses/power_domains that handles runtime PM enabled devices,
->> will, as you also have pointed out earlier, need to implement the
->> .suspend callback (suspend_late or suspend_noirq might work as well)
->> and the corresponding .resume callback. This just for the sake of
->> making sure all their runtime enabled devices gets fully inactivated
->> during system suspend.
->>
->> I wonder if we somehow should move the responsibility of preventing
->> "runtime suspend" as a part of the system suspend, down to the driver
->> to decide instead of the PM core?
->
-> No, I don't think so.  It would mean that every driver's suspend
-> routine would have to do a pm_runtime_get of some sort.  It's better to
-> just leave the single runtime_get call in the PM core.
+Can you try this instead of last diff I sent?
 
-In the end I suppose what case that is most common should win. :-) At
-the same time, we should go slowly forward and it is probably not
-realistic to convert each and every driver in one go.
 
-So as a way forward, I am thinking of a similar approach as you
-suggested with the "generic" suspend_late. But instead add a new
-runtime PM API, which intent is to let drivers to specify for PM core,
-if it should care to prevent the runtime suspend from happen during
-system system - or not. Could that work?
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index dc67fa0..e70e906 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1324,6 +1324,15 @@ static void handle_update(struct work_struct *work)
+                container_of(work, struct cpufreq_policy, update);
+        unsigned int cpu = policy->cpu;
+        pr_debug("handle_update for cpu %u called\n", cpu);
++
++       if (has_target() && !policy->governor_enabled) {
++               if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
++                       (ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
++                       pr_err("%s: Failed to start governor\n", __func__);
++                       goto fail;
++               }
++       }
++
+        cpufreq_update_policy(cpu);
+ }
 
-Kind regards
-Ulf Hansson
 
->
-> Alan Stern
->
