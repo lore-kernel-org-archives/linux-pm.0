@@ -1,185 +1,55 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv5 05/20] cpufreq: cpufreq-cpu0: add dt node parsing for
- cooling device properties
-Date: Thu, 14 Nov 2013 09:17:21 -0400
-Message-ID: <5284CD61.3000302@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Thu, 14 Nov 2013 14:21:10 +0100
+Message-ID: <CAPDyKFocx3L5d5_6TCx5fDy9RgD0MmmWEG0pL=77Hk7bA5EZfA@mail.gmail.com>
+References: <1384360178-333-1-git-send-email-ulf.hansson@linaro.org>
+	<Pine.LNX.4.44L0.1311131411120.1424-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo"
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1311131411120.1424-100000@iolanthe.rowland.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
---5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+>
+> Drivers don't have to implement anything special if they want to use
+> their runtime routines for system suspend.  All they have to do is set
+> the .suspend and .resume method pointers to point to their
+> runtime_suspend and runtime_resume routines.
+>
+>> In the case were drivers needs there runtime resourses to be activated
+>> to be able to handle their system suspend tasks, those can easily just
+>> restore the runtime PM usage count, pm_runtime_put_sync(), once done
+>> with it's suspend operations, which then will inactivate the device.
+>
+> The reason for doing things the way they are is to avoid races between
+> system PM callbacks and runtime PM callbacks.  We don't want to have a
+> runtime_resume routine powering up a device at the same time as a
+> suspend routine is powering it down.
 
-On 12-11-2013 15:46, Eduardo Valentin wrote:
-> This patch changes the cpufreq-cpu0 driver to consider if
-> a cpu needs cooling (with cpufreq). In case the cooling is needed,
-> the cpu0 device tree node needs to be properly configured
-> with cooling device properties.
->=20
-> In case these properties are present,, the driver will
-> load a cpufreq cooling device in the system. The cpufreq-cpu0
-> driver is not interested in determining how the system should
-> be using the cooling device. The driver is responsible
-> only of loading the cooling device.
->=20
-> Describing how the cooling device will be used can be
-> accomplished by setting up a thermal zone that references
-> and is composed by the cpufreq cooling device.
->=20
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+I believe I understand why the PM core prevent this. Some subsystems
+and drivers depends on this behaviour, but I wonder if we should
+consider this as common cases or more like special cases?
 
-Rafael, Can I still assume you are OK with this patch and add your
-acked-by [1]?
-http://www.spinics.net/lists/lm-sensors/msg39136.html
+For those drivers that potentially could rely on runtime PM (and it's
+callbacks) to inactivate the device during system suspend, and thus
+don't have issues with races you describe above, the current behaviour
+in the PM core adds unnecessary complexity for these drivers to handle
+system suspend.
 
-It has changed a few bits from V1 to here. The idea is still same though.=
+Drivers/buses/power_domains that handles runtime PM enabled devices,
+will, as you also have pointed out earlier, need to implement the
+.suspend callback (suspend_late or suspend_noirq might work as well)
+and the corresponding .resume callback. This just for the sake of
+making sure all their runtime enabled devices gets fully inactivated
+during system suspend.
 
+I wonder if we somehow should move the responsibility of preventing
+"runtime suspend" as a part of the system suspend, down to the driver
+to decide instead of the PM core?
 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: devicetree-discuss@lists.ozlabs.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt         |  7 +++++++
->  drivers/cpufreq/Kconfig                                  |  2 +-
->  drivers/cpufreq/cpufreq-cpu0.c                           | 16 ++++++++=
-++++++++
->  3 files changed, 24 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt=
- b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> index 051f764..f055515 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> @@ -15,6 +15,10 @@ Optional properties:
->  - clock-latency: Specify the possible maximum transition latency for c=
-lock,
->    in unit of nanoseconds.
->  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-> +- #cooling-cells:
-> +- cooling-min-level:
-> +- cooling-max-level:
-> +     Please refer to Documentation/devicetree/bindings/thermal/thermal=
-=2Etxt.
-> =20
->  Examples:
-> =20
-> @@ -33,6 +37,9 @@ cpus {
->  			198000  850000
->  		>;
->  		clock-latency =3D <61036>; /* two CLK32 periods */
-> +		#cooling-cells =3D <2>;
-> +		cooling-min-level =3D <0>;
-> +		cooling-max-level =3D <2>;
->  	};
-> =20
->  	cpu@1 {
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 534fcb8..fc1e9a5 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -186,7 +186,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
-> =20
->  config GENERIC_CPUFREQ_CPU0
->  	tristate "Generic CPU0 cpufreq driver"
-> -	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
-> +	depends on HAVE_CLK && REGULATOR && PM_OPP && OF && THERMAL && CPU_TH=
-ERMAL
->  	select CPU_FREQ_TABLE
->  	help
->  	  This adds a generic cpufreq driver for CPU0 frequency management.
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-c=
-pu0.c
-> index c522a95..568aaf3 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -13,7 +13,9 @@
-> =20
->  #include <linux/clk.h>
->  #include <linux/cpu.h>
-> +#include <linux/cpu_cooling.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/cpumask.h>
->  #include <linux/err.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> @@ -21,6 +23,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/regulator/consumer.h>
->  #include <linux/slab.h>
-> +#include <linux/thermal.h>
-> =20
->  static unsigned int transition_latency;
->  static unsigned int voltage_tolerance; /* in percentage */
-> @@ -29,6 +32,7 @@ static struct device *cpu_dev;
->  static struct clk *cpu_clk;
->  static struct regulator *cpu_reg;
->  static struct cpufreq_frequency_table *freq_table;
-> +static struct thermal_cooling_device *cdev;
-> =20
->  static int cpu0_verify_speed(struct cpufreq_policy *policy)
->  {
-> @@ -260,6 +264,17 @@ static int cpu0_cpufreq_probe(struct platform_devi=
-ce *pdev)
->  		goto out_free_table;
->  	}
-> =20
-> +	/*
-> +	 * For now, just loading the cooling device;
-> +	 * thermal DT code takes care of matching them.
-> +	 */
-> +	if (of_find_property(np, "#cooling-cells", NULL)) {
-> +		cdev =3D of_cpufreq_cooling_register(np, cpu_present_mask);
-> +		if (IS_ERR(cdev))
-> +			pr_err("running cpufreq without cooling device: %ld\n",
-> +			       PTR_ERR(cdev));
-> +	}
-> +
->  	of_node_put(np);
->  	return 0;
-> =20
-> @@ -272,6 +287,7 @@ out_put_node:
-> =20
->  static int cpu0_cpufreq_remove(struct platform_device *pdev)
->  {
-> +	cpufreq_cooling_unregister(cdev);
->  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
->  	opp_free_cpufreq_table(cpu_dev, &freq_table);
-> =20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKEzWIACgkQCXcVR3XQvP2LfwD/ZWtVvDNgk3ULqR8dyDmUBU5r
-ITYDt5+hxVkRX0KX15kA+gKKmrs9en3Evh4z3D6cfhX+gqPFuy0UqjboXss2hW+3
-=o+YS
------END PGP SIGNATURE-----
-
---5b8N1TKPpElctraVGCk8rBFL5nSOMVFJo--
+Kind regards
+Ulf Hansson
