@@ -1,121 +1,243 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM
- enabled for unbound PCI devices
-Date: Thu, 14 Nov 2013 16:54:20 +0800
-Message-ID: <1384419260.30364.27.camel@yhuang-dev>
-References: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org>
-	 <5284423D.4090907@linux.vnet.ibm.com> <1384408745.30364.8.camel@yhuang-dev>
-	 <5284799C.1010000@linux.vnet.ibm.com>
-		 <1384415609.30364.18.camel@yhuang-dev>
-	 <528485EA.5080309@linux.vnet.ibm.com>
-	 <1384417538.30364.25.camel@yhuang-dev>
-	 <52848BD9.1010704@linux.vnet.ibm.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
+Date: Thu, 14 Nov 2013 07:31:04 -0400
+Message-ID: <5284B478.8090503@ti.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com> <2523089.oKCvZdz31U@flatron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="gWrompVAELBKjsVwPaW8vmJdhgwtWMBHq"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:61967 "EHLO mga02.intel.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:36265 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751896Ab3KNIyX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Nov 2013 03:54:23 -0500
-In-Reply-To: <52848BD9.1010704@linux.vnet.ibm.com>
+	id S1752608Ab3KNLcT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Nov 2013 06:32:19 -0500
+In-Reply-To: <2523089.oKCvZdz31U@flatron>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mike <qiudayu@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
-On Thu, 2013-11-14 at 16:37 +0800, mike wrote:
-> On 11/14/2013 04:25 PM, Huang Ying wrote:
-> > On Thu, 2013-11-14 at 16:12 +0800, mike wrote:
-> >> On 11/14/2013 03:53 PM, Huang Ying wrote:
-> >>> On Thu, 2013-11-14 at 15:19 +0800, mike wrote:
-> >>>> On 11/14/2013 01:59 PM, Huang Ying wrote:
-> >>>>> On Thu, 2013-11-14 at 11:23 +0800, mike wrote:
-> >>>>>> On 11/14/2013 03:20 AM, Alan Stern wrote:
-> >>>>>>> On Wed, 13 Nov 2013, Bjorn Helgaas wrote:
-> >>>>>>>
-> >>>>>>>> [+cc Rafael, linux-pm]
-> >>>>>>>>
-> >>>>>>>> On Wed, Nov 13, 2013 at 6:09 AM, mike<qiudayu@linux.vnet.ibm.com>  wrote:
-> >>>>>>>>> Hi Huang Ying,
-> >>>>>>>>>
-> >>>>>>>>> I see you are the author of this patch, commit id is:
-> >>>>>>>>> 967577b062417b4e4b8e27b711220f4124f5153a
-> >>>>>>>>>
-> >>>>>>>>> I have a question while I try to understand this patch,
-> >>>>>>>>> So I would very grateful if you or others can give me some reply.....
-> >>>>>>>>>
-> >>>>>>>>> ............
-> >>>>>>>>> -       rc = ddi->drv->probe(ddi->dev, ddi->id);
-> >>>>>>>>> +       pm_runtime_get_sync(dev);
-> >>>>>>>>> +       pci_dev->driver = pci_drv;
-> >>>>>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >>>>>>>>> I see here you make the driver to initialize before probe,
-> >>>>>>>>> But I have no idea of why you do this change.....
-> >>>>>>>>>
-> >>>>>>>>> and I look inside the code, it may be pm_runtime relate??
-> >>>>>>> Yes, it is related to runtime PM.  In the PCI subsystem, runtime PM
-> >>>>>>> doesn't do anything unless pci_dev->driver is set.  You can see this at
-> >>>>>>> the start of pci_pm_runtime_suspend().
-> >>>>>>>
-> >>>>>>> Since we want the driver's probe routine to be able to carry out
-> >>>>>>> runtime PM operations, we have to set pci_dev->driver before the probe
-> >>>>>>> routine runs.
-> >>>>>> Is there any situations , like in  probe state,  pci_dev->driver
-> >>>>>> has been set. the  pci_pm_runtime_xxx() has passed
-> >>>>>> pci_dev->driver NULL check, but at this point, probe fail
-> >>>>>> occurs, and  pci_dev->driver to be set to NULL.
-> >>>>>>
-> >>>>>> What will happen ? Or this situation will never happen?
-> >>>>>> I'm confuse about this.
-> >>>>> I think that will never happen.  Before ->probe(), pm_runtime_get_sync()
-> >>>>> is called, so pci_pm_runtime_xxx() will not be called until
-> >>>>> pm_runtime_put_noidle() is called in ->probe().  And
-> >>>>>     should be done as one of the latest actions in
-> >>>>> ->probe(), after the normal probe actions succeeded.
-> >>>> OK, just as your description, it seems OK.
-> >>>> But this is really a issue as I explained in last email.
-> >>>>
-> >>>> So I want to know if there are any side-effect of changing the code
-> >>>> in pci_pm_runtime_xxx()
-> >>>>
-> >>>>     if (!pci_dev->driver)
-> >>>>            return 0;
-> >>>>     to
-> >>>>
-> >>>>     if (!dev->driver)
-> >>>>            return 0;
-> >>>>
-> >>> If you make this change, we can not put devices into low power state
-> >>> (runtime suspend the device) in ->probe().  That is expected in some
-> >> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >> This means dev->driver is NULL ?? but pci_dev->driver is set???
-> >>
-> >> Because if use pci_dev->driver can put into low power state, means
-> >>
-> >> pci_dev->driver is set, but in the situation, use dev->driver will can't,
-> >>
-> >> means dev->driver = null, but I have not find any case that
-> >>
-> >> dev->driver = null, but pci_dev->driver != null;
-> > Sorry I make a mistake here.  The dev->driver != null in
-> > local_pci_probe().  We use pci_dev->driver instead of dev->driver in
-> > pci_pm_runtime_xxx() because we want device to be kept in normal power
-> > state (D0) and SUSPENDED state when unbound.The
-> > pm_runtime_put/get_sync in pci_device_remove/local_pci_probe will not
-> > change the power state of the device because of the check in
-> > pci_pm_runtime_xxx().
-> Yes, you are right, but what am I confuse is that, why check dev->driver
-> in pci_pm_runtime_xxx() can't keep the device in normal power
-> state (D0) and SUSPENDED state when unbound.
-> 
-> May be logic issue ?
+--gWrompVAELBKjsVwPaW8vmJdhgwtWMBHq
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Because dev->driver is set before local_pci_probe() and cleared after
-pci_device_remove().  But we need a flag to be changed in
-local_pci_probe() and pci_device_remove().
+On 13-11-2013 12:57, Tomasz Figa wrote:
+> Hi Eduardo,
+>=20
 
-Best Regards,
-Huang Ying
+Hello Tomaz
+
+> On Tuesday 12 of November 2013 15:46:04 Eduardo Valentin wrote:
+>> This patch introduces a device tree bindings for
+>> describing the hardware thermal behavior and limits.
+>> Also a parser to read and interpret the data and feed
+>> it in the thermal framework is presented.
+> [snip]
+>> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/D=
+ocumentation/devicetree/bindings/thermal/thermal.txt
+>> new file mode 100644
+>> index 0000000..59f5bd2
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> @@ -0,0 +1,586 @@
+> [snip]
+>> +* Cooling device nodes
+>> +
+>> +Cooling devices are nodes providing control on power dissipation. The=
+re
+>> +are essentially two ways to provide control on power dissipation. Fir=
+st
+>> +is by means of regulating device performance, which is known as passi=
+ve
+>> +cooling. A typical passive cooling is a CPU that has dynamic voltage =
+and
+>> +frequency scaling (DVFS), and uses lower frequencies as cooling state=
+s.
+>> +Second is by means of activating devices in order to remove
+>> +the dissipated heat, which is known as active cooling, e.g. regulatin=
+g
+>> +fan speeds. In both cases, cooling devices shall have a way to determ=
+ine
+>> +the state of cooling in which the device is.
+>> +
+>> +Required properties:
+>> +- cooling-min-state:	An integer indicating the smallest
+>> +  Type: unsigned	cooling state accepted. Typically 0.
+>> +  Size: one cell
+>=20
+> Could you explain (just in a reply) what a cooling state is and what ar=
+e
+> the min and max values used for?
+
+Cooling state is an unsigned integer which represents heat control that
+a cooling device implies.
+
+>=20
+>> +
+>> +- cooling-max-state:	An integer indicating the largest
+>> +  Type: unsigned	cooling state accepted.
+>> +  Size: one cell
+>> +
+>> +- #cooling-cells:	Used to provide cooling device specific information=
+
+>> +  Type: unsigned	while referring to it. Must be at least 2, in order
+>> +  Size: one cell      	to specify minimum and maximum cooling state u=
+sed
+>> +			in the reference. The first cell is the minimum
+>> +			cooling state requested and the second cell is
+>> +			the maximum cooling state requested in the reference.
+>> +			See Cooling device maps section below for more details
+>> +			on how consumers refer to cooling devices.
+>> +
+>> +* Trip points
+>> +
+>> +The trip node is a node to describe a point in the temperature domain=
+
+>> +in which the system takes an action. This node describes just the poi=
+nt,
+>> +not the action.
+>> +
+>> +Required properties:
+>> +- temperature:		An integer indicating the trip temperature level,
+>> +  Type: signed		in millicelsius.
+>> +  Size: one cell
+>> +
+>> +- hysteresis:		A low hysteresis value on temperature property (above)=
+=2E
+>> +  Type: unsigned	This is a relative value, in millicelsius.
+>> +  Size: one cell
+>=20
+> What about replacing temperature and hysteresis with a single temperatu=
+re
+> property that can be either one cell for 0 hysteresis or two cells to
+> specify lower and upper range of temperatures?
+
+What is the problem with using two properties? I think we loose
+representation by gluing two properties into one just because one cell.
+
+>=20
+>> +
+>> +- type:			a string containing the trip type. Supported values are:
+>> +	"active":	A trip point to enable active cooling
+>> +	"passive":	A trip point to enable passive cooling
+>=20
+> The two above seem to be implying action, as opposed to the general
+> comment about trip points.
+
+They do not imply action, they specify type of trip.
+
+>=20
+>> +	"hot":		A trip point to notify emergency
+>> +	"critical":	Hardware not reliable.
+>> +  Type: string
+>> +
+> [snip]
+>> +* Examples
+>> +
+>> +Below are several examples on how to use thermal data descriptors
+>> +using device tree bindings:
+>> +
+>> +(a) - CPU thermal zone
+>> +
+>> +The CPU thermal zone example below describes how to setup one thermal=
+ zone
+>> +using one single sensor as temperature source and many cooling device=
+s and
+>> +power dissipation control sources.
+>> +
+>> +#include <dt-bindings/thermal/thermal.h>
+>> +
+>> +cpus {
+>> +	/*
+>> +	 * Here is an example of describing a cooling device for a DVFS
+>> +	 * capable CPU. The CPU node describes its four OPPs.
+>> +	 * The cooling states possible are 0..3, and they are
+>> +	 * used as OPP indexes. The minimum cooling state is 0, which means
+>> +	 * all four OPPs can be available to the system. The maximum
+>> +	 * cooling state is 3, which means only the lowest OPPs (198MHz@0.85=
+V)
+>> +	 * can be available in the system.
+>> +	 */
+>> +	cpu0: cpu@0 {
+>> +		...
+>> +		operating-points =3D <
+>> +			/* kHz    uV */
+>> +			970000  1200000
+>> +			792000  1100000
+>> +			396000  950000
+>> +			198000  850000
+>> +		>;
+>> +		cooling-min-state =3D <0>;
+>> +		cooling-max-state =3D <3>;
+>> +		#cooling-cells =3D <2>; /* min followed by max */
+>=20
+> I believe you don't need the min- and max-state properties here then. Y=
+our
+> thermal core can simply query the cpufreq driver (which would be a cool=
+ing
+> device here) about the range of states it supports
+
+This binding is not supposed to be aware of cpufreq, which is Linux
+specific implementation.
+
+Besides, the cpufreq layer is populated by data already specified in DT.
+=2E
+>=20
+>> +	};
+>> +	...
+>> +};
+>> +
+>> +&i2c1 {
+>> +	...
+>> +	/*
+>> +	 * A simple fan controller which supports 10 speeds of operation
+>> +	 * (represented as 0-9).
+>> +	 */
+>> +	fan0: fan@0x48 {
+>> +		...
+>> +		cooling-min-state =3D <0>;
+>> +		cooling-max-state =3D <9>;
+>=20
+> This is similar. The fan driver will probaby know about available
+> fan speed levels and be able to report the range of states to thermal
+> core.
+
+Then we loose also the flexibility to assign cooling states to trip
+points, as described in this binding.
+
+>=20
+> That's just for the binding. I will try to review the code when I find
+> a bit more time.
+
+ok.
+
+>=20
+> Best regards,
+> Tomasz
+>=20
+>=20
+>=20
 
 
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--gWrompVAELBKjsVwPaW8vmJdhgwtWMBHq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKEtHgACgkQCXcVR3XQvP2AQAD/V+9c81AkF8cH1mIhuyxXT8oE
+efYyyYI1eFpk85bUfh8A/3BUhCQZfv26Y2Vum+U+Iu+QiduOitkyqDOaG9yYbN7J
+=93CD
+-----END PGP SIGNATURE-----
+
+--gWrompVAELBKjsVwPaW8vmJdhgwtWMBHq--
