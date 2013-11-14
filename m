@@ -1,158 +1,57 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH] PM: remove device suspend and resume from "freeze" flow
-Date: Thu, 14 Nov 2013 18:06:40 +0100
-Message-ID: <52850320.1050101@intel.com>
-References: <20131111051859.GA18150@yong.y.wang@linux.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Thu, 14 Nov 2013 12:57:18 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1311141249580.1439-100000@iolanthe.rowland.org>
+References: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:53478 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755567Ab3KNRIZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Nov 2013 12:08:25 -0500
-In-Reply-To: <20131111051859.GA18150@yong.y.wang@linux.intel.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:35588 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754513Ab3KNR5T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 12:57:19 -0500
+In-Reply-To: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yong Wang <yong.y.wang@linux.intel.com>, rui.zhang@intel.com, len.brown@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-On 11/11/2013 6:18 AM, Yong Wang wrote:
-> "freeze" was originally designed to be equal to
-> frozen processes + suspended devices + idle processors.
-> Frankly speaking, "freeze" has not been widely adopted so far
-> since it was introduced. Following might be some reasons of
-> why that is the case.
->
-> 1. As traditional s3 is going away, there will be more devices
-> supporting connected standby instead. Unlike traditional s3, connected
-> standby is a power state that devices enter and exit more frequently.
-> Therefore, the entry and exit latency of connected standby state must
-> be as short as possible in order to minimize the impact on average
-> power and to achieve a decent battery life. With the current design
-> of "freeze", device suspend and resume contribute to the overall
-> entry and exit latency of "freeze" state significantly. Therefore
-> removing device suspend and resume could cut the latency dramatically.
+On Thu, 14 Nov 2013, Ulf Hansson wrote:
 
-Yes, it could.
+> > Bear in mind that drivers _cannot_ rely on runtime PM to inactivate a
+> > device during system suspend.  The user can always prevent a device
+> > from going into runtime suspend by writing "on" to the
+> > /sys/.../power/control file.
+> 
+> Good that you brought this up. From my point of view I think the sysfs
+> for runtime PM could be debated whether it should exist at all, at
+> least in it's current form.
 
-> 2. With the interaction between runtime PM and system PM, devices
-> that have been runtime suspended before system enters "freeze" state
-> will first be runtime resumed and then suspended again by their suspend
-> callback. When system exits "freeze" state, all devices will be resumed
-> despite the fact that only some devices need to participate in handling
-> the wakeup event. Then devices that were previously runtime suspended
-> will be runtime suspended again. Wouldn't it be better if we could
-> leave those devices runtime suspended during "freeze" and only have
-> necessary devices runtime resumed to handle wakeup event when system
-> exits "freeze" state.
+What other form would you suggest?
 
-That only is correct for PCI devices at the moment, if I remember 
-correctly.  Moreover, it doesn't have to be this way and we may just 
-remove that thing.
+> Anyway, if userspace decides to prevent runtime_suspend, I guess it
+> will have take the consequences for it as well. :-)
 
-> 3. In practice, we have found many device drivers that will not
-> put their devices into proper low power states because traditional
-> s3 will yank the platform power as a whole as the final step of s3.
-> Because many driver developers are still holding that assumption and
-> assume that someone else will help do all the power setting correctly
-> as the final step of s3, they simply leave their devices in a high
-> power state. In contract, many driver developers are able to do the
-> right thing with their runtime PM code because they know they are on
-> their own and no one else is going to help them put their devices
-> into a proper low power state.
->
-> Due to the reasons listed above, I propose to remove device suspend
-> and rsume from "freeze" flow and and make it equal to
-> frozen processes + idle processors which I belive will make "freeze"
-> more useful.
+Right now, those consequences don't include also preventing the device
+from going to low power during system system.  What would you do if you
+had a buggy device, where you knew it couldn't handle runtime suspend?  
+If you still wanted to put the whole system to sleep, you'd be stuck.
 
-I'm generally fine with this change, but your point 2 above is quite 
-arguable.
+> So as a way forward, I am thinking of a similar approach as you
+> suggested with the "generic" suspend_late. But instead add a new
+> runtime PM API, which intent is to let drivers to specify for PM core,
+> if it should care to prevent the runtime suspend from happen during
+> system system - or not. Could that work?
 
-Thanks,
-Rafael
+I don't see what good it would do.  Instead of adding a new flag, why 
+not just let drivers point their .suspend_late methods to the new 
+generic function?  That would accomplish almost the same thing without 
+changing the API.
 
-> Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-> ---
->   kernel/power/suspend.c |   44 ++++++++++++++++++++++++++------------------
->   1 files changed, 26 insertions(+), 18 deletions(-)
->
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 62ee437..4501cb9 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -184,10 +184,12 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
->   			goto Platform_finish;
->   	}
->   
-> -	error = dpm_suspend_end(PMSG_SUSPEND);
-> -	if (error) {
-> -		printk(KERN_ERR "PM: Some devices failed to power down\n");
-> -		goto Platform_finish;
-> +	if (need_suspend_ops(state)) {
-> +		error = dpm_suspend_end(PMSG_SUSPEND);
-> +		if (error) {
-> +			printk(KERN_ERR "PM: Some devices failed to power down\n");
-> +			goto Platform_finish;
-> +		}
->   	}
->   
->   	if (need_suspend_ops(state) && suspend_ops->prepare_late) {
-> @@ -239,7 +241,8 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
->   	if (need_suspend_ops(state) && suspend_ops->wake)
->   		suspend_ops->wake();
->   
-> -	dpm_resume_start(PMSG_RESUME);
-> +	if (need_suspend_ops(state))
-> +		dpm_resume_start(PMSG_RESUME);
->   
->    Platform_finish:
->   	if (need_suspend_ops(state) && suspend_ops->finish)
-> @@ -266,16 +269,19 @@ int suspend_devices_and_enter(suspend_state_t state)
->   		if (error)
->   			goto Close;
->   	}
-> -	suspend_console();
-> -	suspend_test_start();
-> -	error = dpm_suspend_start(PMSG_SUSPEND);
-> -	if (error) {
-> -		pr_err("PM: Some devices failed to suspend, or early wake event detected\n");
-> -		goto Recover_platform;
-> +
-> +	if (need_suspend_ops(state)) {
-> +		suspend_console();
-> +		suspend_test_start();
-> +		error = dpm_suspend_start(PMSG_SUSPEND);
-> +		if (error) {
-> +			pr_err("PM: Some devices failed to suspend, or early wake event detected\n");
-> +			goto Recover_platform;
-> +		}
-> +		suspend_test_finish("suspend devices");
-> +		if (suspend_test(TEST_DEVICES))
-> +			goto Recover_platform;
->   	}
-> -	suspend_test_finish("suspend devices");
-> -	if (suspend_test(TEST_DEVICES))
-> -		goto Recover_platform;
->   
->   	do {
->   		error = suspend_enter(state, &wakeup);
-> @@ -283,10 +289,12 @@ int suspend_devices_and_enter(suspend_state_t state)
->   		&& suspend_ops->suspend_again && suspend_ops->suspend_again());
->   
->    Resume_devices:
-> -	suspend_test_start();
-> -	dpm_resume_end(PMSG_RESUME);
-> -	suspend_test_finish("resume devices");
-> -	resume_console();
-> +	if (need_suspend_ops(state)) {
-> +		suspend_test_start();
-> +		dpm_resume_end(PMSG_RESUME);
-> +		suspend_test_finish("resume devices");
-> +		resume_console();
-> +	}
->    Close:
->   	if (need_suspend_ops(state) && suspend_ops->end)
->   		suspend_ops->end();
+(Actually, it would be superior.  The generic suspend_late approach 
+will work even if the user writes "on" to /sys/.../power/control, 
+whereas your approach won't work.)
+
+Alan Stern
 
