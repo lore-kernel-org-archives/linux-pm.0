@@ -1,55 +1,51 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Thu, 14 Nov 2013 14:21:10 +0100
-Message-ID: <CAPDyKFocx3L5d5_6TCx5fDy9RgD0MmmWEG0pL=77Hk7bA5EZfA@mail.gmail.com>
-References: <1384360178-333-1-git-send-email-ulf.hansson@linaro.org>
-	<Pine.LNX.4.44L0.1311131411120.1424-100000@iolanthe.rowland.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCHv6 20/20] MAINTAINERS: add thermal bindings entry in thermal domain
+Date: Thu, 14 Nov 2013 09:30:10 -0400
+Message-ID: <1384435810-8897-1-git-send-email-eduardo.valentin@ti.com>
+References: <20131113094232.GB21713@e106331-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1311131411120.1424-100000@iolanthe.rowland.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:45529 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751181Ab3KNNbb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Nov 2013 08:31:31 -0500
+In-Reply-To: <20131113094232.GB21713@e106331-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: olof@lixom.net, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com
+Cc: wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
->
-> Drivers don't have to implement anything special if they want to use
-> their runtime routines for system suspend.  All they have to do is set
-> the .suspend and .resume method pointers to point to their
-> runtime_suspend and runtime_resume routines.
->
->> In the case were drivers needs there runtime resourses to be activated
->> to be able to handle their system suspend tasks, those can easily just
->> restore the runtime PM usage count, pm_runtime_put_sync(), once done
->> with it's suspend operations, which then will inactivate the device.
->
-> The reason for doing things the way they are is to avoid races between
-> system PM callbacks and runtime PM callbacks.  We don't want to have a
-> runtime_resume routine powering up a device at the same time as a
-> suspend routine is powering it down.
+After discussion and agreement of thermal device tree bindings,
+it is desirable to properly maintain thermal bindings for
+existing and upcoming devices.
 
-I believe I understand why the PM core prevent this. Some subsystems
-and drivers depends on this behaviour, but I wonder if we should
-consider this as common cases or more like special cases?
+As original author of thermal device tree bindings, I am
+volunteering to maintain them. This then adds and entry
+for device tree bindings under thermal domain.
 
-For those drivers that potentially could rely on runtime PM (and it's
-callbacks) to inactivate the device during system suspend, and thus
-don't have issues with races you describe above, the current behaviour
-in the PM core adds unnecessary complexity for these drivers to handle
-system suspend.
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-Drivers/buses/power_domains that handles runtime PM enabled devices,
-will, as you also have pointed out earlier, need to implement the
-.suspend callback (suspend_late or suspend_noirq might work as well)
-and the corresponding .resume callback. This just for the sake of
-making sure all their runtime enabled devices gets fully inactivated
-during system suspend.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3438384..57fbf81 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8411,6 +8411,7 @@ S:      Supported
+ F:      drivers/thermal/
+ F:      include/linux/thermal.h
+ F:      include/linux/cpu_cooling.h
++F:      Documentation/devicetree/bindings/thermal/
+ 
+ THINGM BLINK(1) USB RGB LED DRIVER
+ M:	Vivien Didelot <vivien.didelot@savoirfairelinux.com>
+-- 
+1.8.2.1.342.gfa7285d
 
-I wonder if we somehow should move the responsibility of preventing
-"runtime suspend" as a part of the system suspend, down to the driver
-to decide instead of the PM core?
-
-Kind regards
-Ulf Hansson
