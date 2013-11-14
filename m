@@ -1,63 +1,88 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
- regulators suspended
-Date: Thu, 14 Nov 2013 08:27:05 -0600
-Message-ID: <5284DDB9.7040502@ti.com>
-References: <1382638087-32054-1-git-send-email-nm@ti.com> <CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com> <52824522.7020401@ti.com> <CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com> <20131113151645.GA17828@kahuna> <52842671.40703@linaro.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Thu, 14 Nov 2013 15:32:56 +0100
+Message-ID: <CAPDyKFozCfPj-gW124cyFSu=ckiL-zVEmEx5tspY-1maO=+6fA@mail.gmail.com>
+References: <1384360178-333-1-git-send-email-ulf.hansson@linaro.org>
+	<2003753.HAeVh74cdL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52842671.40703@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: viresh kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <2003753.HAeVh74cdL-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/13/2013 07:25 PM, viresh kumar wrote:
-> On Wednesday 13 November 2013 08:46 PM, Nishanth Menon wrote:
->> arrgh, my bad.. Apologies for the bad one.. I missed it :( Does the following
->> look equivalent?
-> 
-> yes.
-> 
->> With this, I now see:
-> 
->> [   43.212714] cpufreq: cpufreq_add_policy_cpu: Failed to stop governor
->> ^^^ ??
-> 
-> Ahh, I missed this part. I thought it will fail at some other place where there
-> is no error checking :), but that's not true.
-> 
-> Following should fix it for you and looks to be the right way as well.
-> 
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index dc67fa0..30b09d3 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1530,6 +1530,14 @@ static void cpufreq_bp_resume(void)
->                 }
->         }
-> 
-> +       if (has_target()) {
-> +               if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
-> +                       (ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
-> +                       pr_err("%s: Failed to start governor\n", __func__);
-> +                       goto fail;
-> +               }
-> +       }
-> +
->         schedule_work(&policy->update);
-> 
->  fail:
-> 
-I am guessing this is a little too early for restarting policy here
-considering syscore_ops->resume is pretty early..
+>
+> That's not even correct.  It prevents the runtime PM framework from being
+> used to suspend devices during system suspend and that's on purpose.  The
+> reason why is that we don't want asynchronous runtime suspends to happen
+> during system suspend and race with the suspend process.
+>
+>> Remove this constraint and moreover try to inactivate devices
+>> by invoking pm_runtime_idle() before proceeding with device's
+>> suspend_late callbacks.
+>>
+>> A great amount of drivers that uses runtime PM will benefit from this.
+>
+> If the idea is to be able to do pm_runtime_suspend() from the system suspend
+> code path, this is not the way to go and it kind of indicates the lack of
+> understanding why things have been arranged this way.
 
-http://pastebin.mozilla.org/3602746 is the equivalent patch for v3.12
-http://pastebin.mozilla.org/3602747 is the result.
+I guess there are several reasons, but the one that think stands the
+best is the race condition you are referring to above. I were more or
+less looking at the below commits to try to get a summary of the
+history, I guess there are more. :-)
 
--- 
-Regards,
-Nishanth Menon
+cf579dfb82550e34de7ccf3ef090d8b834ccd3a9
+and
+1e2ef05bb8cf851a694d38e9170c89e7ff052741
+
+>
+> If you want a driver to do the same thing for runtime PM and system
+> suspend/resume, point its .suspend_late() and .runtime_suspend() to the
+> same routine and analogously for .runtime_resume() and .resume_early()
+> (that may not work for PCI, though, because of the _noirq stuff, but that's
+> the PCI bus type issue).
+
+When your .suspend_late callback gets called, your device may be
+either active or inactive from runtime PM point of view. Just pointing
+the .suspend_late callback to the .runtime_suspend callback, simply
+wont work.
+
+That would mean we might end up in trying to inactivate an already
+inactivated device, which I doubt is a good thing.:-) Some additional
+code will be needed to track the "runtime state" and to act
+accordingly. This is what drivers already tries to handle as of today,
+though so far mostly from their .suspend callbacks I believe.
+
+>
+> Of course, the assumption behind .runtime_suspend() and .runtime_resume() is
+> that they will be run when the device is not in use, while system suspend
+> may actually happen when the device *is* in use and .suspend() should take
+> care of that if necessary.  So you may need .suspend() anyway.
+>
+> One important property of system suspend is that it can happen at any time
+> and that's why the .suspend() and .resume() callbacks are needed (and this
+> also means that they can't be the same as .runtime_suspend() and
+> .runtime_resume() in general).
+
+I see your point and in most cases you are right. But, I am also sure
+that quite many drivers should be able to cope with only runtime PM
+callbacks. I have collected a bunch of examples that I can share, if
+you are interested?
+
+Kind regards
+Ulf Hansson
+
+>
+> Thanks!
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
