@@ -1,57 +1,74 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Thu, 14 Nov 2013 12:57:18 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1311141249580.1439-100000@iolanthe.rowland.org>
-References: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / Hibernate: Do not crash kernel in free_basic_memory_bitmaps()
+Date: Thu, 14 Nov 2013 22:49:34 +0100
+Message-ID: <86536154.DW1yQsKN97@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:35588 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754513Ab3KNR5T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 12:57:19 -0500
-In-Reply-To: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:56552 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757858Ab3KNVhE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 16:37:04 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-On Thu, 14 Nov 2013, Ulf Hansson wrote:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> > Bear in mind that drivers _cannot_ rely on runtime PM to inactivate a
-> > device during system suspend.  The user can always prevent a device
-> > from going into runtime suspend by writing "on" to the
-> > /sys/.../power/control file.
-> 
-> Good that you brought this up. From my point of view I think the sysfs
-> for runtime PM could be debated whether it should exist at all, at
-> least in it's current form.
+I have received a report about the BUG_ON() in free_basic_memory_bitmaps()
+triggering mysteriously during an aborted s2disk hibernation attempt.
+The only way I can explain that is that /dev/snapshot was first
+opened for writing (resume mode), then closed and then opened again
+for reading and closed again without freezing tasks.  In that case
+the first invocation of snapshot_open() would set the free_bitmaps
+flag in snapshot_state, which is a static variable.  That flag
+wouldn't be cleared later and the second invocation of snapshot_open()
+would just leave it like that, so the subsequent snapshot_release()
+would see data->frozen set and free_basic_memory_bitmaps() would be
+called unnecessarily.
 
-What other form would you suggest?
+To prevent that from happening clear data->free_bitmaps in
+snapshot_open() when the file is being opened for reading (hibernate
+mode).
 
-> Anyway, if userspace decides to prevent runtime_suspend, I guess it
-> will have take the consequences for it as well. :-)
+In addition to that, replace the BUG_ON() in free_basic_memory_bitmaps()
+with a WARN_ON() as the kernel can continue just fine if the condition
+checked by that macro occurs.
 
-Right now, those consequences don't include also preventing the device
-from going to low power during system system.  What would you do if you
-had a buggy device, where you knew it couldn't handle runtime suspend?  
-If you still wanted to put the whole system to sleep, you'd be stuck.
+Fixes: aab172891542 (PM / hibernate: Fix user space driven resume regression)
+Reported-by: Oliver Lorenz <olli@olorenz.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/snapshot.c |    3 ++-
+ kernel/power/user.c     |    1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-> So as a way forward, I am thinking of a similar approach as you
-> suggested with the "generic" suspend_late. But instead add a new
-> runtime PM API, which intent is to let drivers to specify for PM core,
-> if it should care to prevent the runtime suspend from happen during
-> system system - or not. Could that work?
-
-I don't see what good it would do.  Instead of adding a new flag, why 
-not just let drivers point their .suspend_late methods to the new 
-generic function?  That would accomplish almost the same thing without 
-changing the API.
-
-(Actually, it would be superior.  The generic suspend_late approach 
-will work even if the user writes "on" to /sys/.../power/control, 
-whereas your approach won't work.)
-
-Alan Stern
+Index: linux-pm/kernel/power/user.c
+===================================================================
+--- linux-pm.orig/kernel/power/user.c
++++ linux-pm/kernel/power/user.c
+@@ -70,6 +70,7 @@ static int snapshot_open(struct inode *i
+ 		data->swap = swsusp_resume_device ?
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
++		data->free_bitmaps = false;
+ 		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+ 		if (error)
+ 			pm_notifier_call_chain(PM_POST_HIBERNATION);
+Index: linux-pm/kernel/power/snapshot.c
+===================================================================
+--- linux-pm.orig/kernel/power/snapshot.c
++++ linux-pm/kernel/power/snapshot.c
+@@ -792,7 +792,8 @@ void free_basic_memory_bitmaps(void)
+ {
+ 	struct memory_bitmap *bm1, *bm2;
+ 
+-	BUG_ON(!(forbidden_pages_map && free_pages_map));
++	if (WARN_ON(!(forbidden_pages_map && free_pages_map)))
++		return;
+ 
+ 	bm1 = forbidden_pages_map;
+ 	bm2 = free_pages_map;
 
