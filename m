@@ -1,40 +1,112 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Cpufreq: Remove fossil comment in the cpufreq_governor_dbs()
-Date: Fri, 15 Nov 2013 14:13:26 +0530
-Message-ID: <CAKohpokgkho_7P47cvxszUXq=qeWH6Yo4j8QcyHrBu0u8e8P9Q@mail.gmail.com>
-References: <1384494841-28581-1-git-send-email-tianyu.lan@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Fri, 15 Nov 2013 09:44:48 +0100
+Message-ID: <CAPDyKFrQfwOQsOCB1QFo4GWeX303AEWnanE61svy9UUJpNBUiw@mail.gmail.com>
+References: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
+	<Pine.LNX.4.44L0.1311141249580.1439-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1384494841-28581-1-git-send-email-tianyu.lan@intel.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qe0-f46.google.com ([209.85.128.46]:59413 "EHLO
+	mail-qe0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752871Ab3KOIot convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 03:44:49 -0500
+Received: by mail-qe0-f46.google.com with SMTP id s14so2003276qeb.5
+        for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2013 00:44:48 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1311141249580.1439-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-On 15 November 2013 11:24, Lan Tianyu <tianyu.lan@intel.com> wrote:
-> The related code has been changed and the comment is out of data.
-> So remove it.
+On 14 November 2013 18:57, Alan Stern <stern@rowland.harvard.edu> wrote=
+:
+> On Thu, 14 Nov 2013, Ulf Hansson wrote:
 >
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 4 ----
->  1 file changed, 4 deletions(-)
+>> > Bear in mind that drivers _cannot_ rely on runtime PM to inactivat=
+e a
+>> > device during system suspend.  The user can always prevent a devic=
+e
+>> > from going into runtime suspend by writing "on" to the
+>> > /sys/.../power/control file.
+>>
+>> Good that you brought this up. From my point of view I think the sys=
+fs
+>> for runtime PM could be debated whether it should exist at all, at
+>> least in it's current form.
 >
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 0806c31..e6be635 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -328,10 +328,6 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->                                              dbs_data->cdata->gov_dbs_timer);
->                 }
->
-> -               /*
-> -                * conservative does not implement micro like ondemand
-> -                * governor, thus we are bound to jiffes/HZ
-> -                */
->                 if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
->                         cs_dbs_info->down_skip = 0;
->                         cs_dbs_info->enable = 1;
+> What other form would you suggest?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I think it is kind of strange to give provision to userspace to
+control a "request based" power management feature in the kernel. Me
+personally can't think of any good use case, but I comes from the
+embedded/ARM world so I might not have the full picture.
+
+What would make sense to me, is to move the runtime PM sysfs to
+debugfs, because it is a good feature to make use of during
+development and debugging.
+
+>
+>> Anyway, if userspace decides to prevent runtime_suspend, I guess it
+>> will have take the consequences for it as well. :-)
+>
+> Right now, those consequences don't include also preventing the devic=
+e
+> from going to low power during system system.  What would you do if y=
+ou
+> had a buggy device, where you knew it couldn't handle runtime suspend=
+?
+> If you still wanted to put the whole system to sleep, you'd be stuck.
+
+Hmm, this seems like a use case for runtime PM sysfs then. :-)
+
+It sounds like vague arguments. If the driver has bugs we need to fix
+them, right? Should we really let userspace workaround bugs in the
+kernel?
+
+>
+>> So as a way forward, I am thinking of a similar approach as you
+>> suggested with the "generic" suspend_late. But instead add a new
+>> runtime PM API, which intent is to let drivers to specify for PM cor=
+e,
+>> if it should care to prevent the runtime suspend from happen during
+>> system system - or not. Could that work?
+>
+> I don't see what good it would do.  Instead of adding a new flag, why
+> not just let drivers point their .suspend_late methods to the new
+> generic function?  That would accomplish almost the same thing withou=
+t
+> changing the API.
+
+Two minor functions will be added to the API, no big deal I think.
+More importantly these will actually make life easier for some drivers
+since they don't need to set up any additional PM callbacks.
+
+Using the generic suspend_late approach would for sure work, but it
+will spread to buses and power domains as well, which is not the case
+when adding when adding a new API.
+
+>
+> (Actually, it would be superior.  The generic suspend_late approach
+> will work even if the user writes "on" to /sys/.../power/control,
+> whereas your approach won't work.)
+
+We have different view here. :-)
+
+Whether I like it or not, the sysfs interface exist and then I think
+the kernel must act accordingly. We shouldn=92t override it. I mean if
+userspace has decided to keep a device active, there is probably a
+reason.
+
+
+Thanks a lot Alan for being patient with me and continuing the discussi=
+on!
+
+Kind regards
+Ulf Hansson
+
+>
+> Alan Stern
+>
