@@ -1,72 +1,63 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Update PATCH 1/1] Cpufreq: Make governor data on nonboot cpus
- across system suspend/resume
-Date: Fri, 15 Nov 2013 15:52:24 +0530
-Message-ID: <CAKohpokjtaCJj3QCDyoQ+1UviLX8ZSnpWk05Jh4U02pmrq897g@mail.gmail.com>
-References: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com>
-	<1384503334-18809-1-git-send-email-tianyu.lan@intel.com>
+Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
+ regulators suspended
+Date: Fri, 15 Nov 2013 15:57:36 +0530
+Message-ID: <CAKohpokz6YEqz8ZNmQ77y8K3qvKYu3ffgVmiEcDyh2M9FsDGPg@mail.gmail.com>
+References: <1382638087-32054-1-git-send-email-nm@ti.com>
+	<CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
+	<52824522.7020401@ti.com>
+	<CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
+	<20131113151645.GA17828@kahuna>
+	<52842671.40703@linaro.org>
+	<5284DDB9.7040502@ti.com>
+	<5284FE48.8040802@linaro.org>
+	<528502AC.4010604@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:55282 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753347Ab3KOKWZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 05:22:25 -0500
-Received: by mail-ob0-f172.google.com with SMTP id wm4so3579097obc.17
-        for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2013 02:22:24 -0800 (PST)
-In-Reply-To: <1384503334-18809-1-git-send-email-tianyu.lan@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <528502AC.4010604@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>
 
-On 15 November 2013 13:45, Lan Tianyu <tianyu.lan@intel.com> wrote:
-> Currently, governor of nonboot cpus will be put to EXIT when system suspend.
-> Since all these cpus will be unplugged and the governor usage_count decreases
-> to zero. The governor data and its sysfs interfaces will be freed or released.
-> This makes user config of these governors loss during suspend and resume.
+On 14 November 2013 22:34, Nishanth Menon <nm@ti.com> wrote:
+> I think it is still too early to do so :(
+
+:)
+
+> equivalent patch: http://pastebin.mozilla.org/3603467 (with minor
+> changes for build)
 >
-> This doesn't happen on the governor covering boot cpu because it isn't
-> unplugged during system suspend.
+> Basic tests: http://pastebin.mozilla.org/3603456 (governor is
+> functional, but governor kicks in early before i2c is resumed)
 >
-> To fix this issue, skipping governor exit during system suspend and check
-> policy governor data to determine whether the governor is really needed
-> to be initialized when do init. If not, return EALREADY to indicate the
-> governor has been initialized and should do nothing. __cpufreq_governor()
-> convert EALREADY to 0 as return value for INIT event since governor is
-> still under INIT state and can do START operation.
+> With call stack: http://pastebin.mozilla.org/3603455 to highlight call
+> sequences
 >
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> ---
+> Seems like we might want to pause governor as early in the suspend
+> sequence as possible to allow SoC and regulator stuff to suspend
+> themselves without cpufreq interfering.. just my 2 cents..
 
-Hi Lan..
+You made me spend a day on this :)
+It wasn't a day's job really but I got into a really hard to crack bug with my
+patch, I was calling __cpufreq_governor() from under write_lock_irqsave
+for cpufreq_driver_lock. And __cpufreq_governor() had:
 
-Apologies!!
+ read_lock_irqsave(&cpufreq_driver_lock, flags);
 
-I already had a solution for this as this was reported by few Broadcom people
-as well. But I haven't send it to mainline yet as it was untested. It
-looked similar
-to what you had..
+I wasn't able to suspend my system: ARM, X86.. It simply stopped
+printing anything and I didn't had a clue of what's going on.. Hacked
+everything possible, even kernel/power/suspend.c to return early
+(yeah I used freezer > pm_test as well, but I wanted to return before
+freezing userspace)...
 
-And so I would have taken your patch (as you have sent it first to the list and
-there is no real advantage of my patch over yours, they were almost same) :)
+Then somehow I got to know that this is the wrong piece of code :)
 
-But then I went chasing another bug posted by Nishant:
+But probably I have a solution now to which you can't say:
 
-https://lkml.org/lkml/2013/10/24/369
+"I think it is still too early to do so :("
 
-And the final solution I have to write solved all the problems you and he
-reported.
+:)
 
-Please have a look at that patch (you are cc'd) and give it a try to see
-if it fixes your problem..
-
-Btw, One question about your setup:
-- you must have a multi cluster/socket SoC as you have atleast one more
-policy structure than used for group containing boot cpu..
-- Are you using separate governor for both groups?
-- Or are you using CPUFREQ_HAVE_GOVERNOR_PER_POLICY stuff
-to use same governor with separate tunables for both groups?
-
-Just wanted to know if somebody else is also using
-CPUFREQ_HAVE_GOVERNOR_PER_POLICY :)
+Give it a try and give a Tested-by please :)
