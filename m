@@ -1,57 +1,45 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: [PATCH V2 2/2] Cpufreq/gov: use tick_nohz_check() to check idle micro accouting support
-Date: Fri, 15 Nov 2013 16:35:35 +0800
-Message-ID: <1384504535-29987-2-git-send-email-tianyu.lan@intel.com>
-References: <1383036537-30362-1-git-send-email-tianyu.lan@intel.com>
- <1384504535-29987-1-git-send-email-tianyu.lan@intel.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
+Date: Fri, 15 Nov 2013 10:29:45 +0100
+Message-ID: <87li0q9fna.fsf@nemi.mork.no>
+References: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
+	<Pine.LNX.4.44L0.1311141249580.1439-100000@iolanthe.rowland.org>
+	<CAPDyKFrQfwOQsOCB1QFo4GWeX303AEWnanE61svy9UUJpNBUiw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:30754 "EHLO mga09.intel.com"
+Received: from canardo.mork.no ([148.122.252.1]:37264 "EHLO canardo.mork.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756266Ab3KOIrK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 15 Nov 2013 03:47:10 -0500
-In-Reply-To: <1384504535-29987-1-git-send-email-tianyu.lan@intel.com>
+	id S1752575Ab3KOJa1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 04:30:27 -0500
+In-Reply-To: <CAPDyKFrQfwOQsOCB1QFo4GWeX303AEWnanE61svy9UUJpNBUiw@mail.gmail.com>
+	(Ulf Hansson's message of "Fri, 15 Nov 2013 09:44:48 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-Current, od_init() uses get_cpu_idle_time_us() to check whether
-idle micro accouting is supported. The get_cpu_idle_time_us()
-returns -1 only when tick nohz is disabled. This patch is to use
-tick_nohz_check() directly to check nohz enable status instead of
-get_cpu_idle_time_us(). This can avoid unnecessary getting and
-putting cpu.
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
- drivers/cpufreq/cpufreq_ondemand.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+> I think it is kind of strange to give provision to userspace to
+> control a "request based" power management feature in the kernel. Me
+> personally can't think of any good use case, but I comes from the
+> embedded/ARM world so I might not have the full picture.
 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 18d4091..7db2468 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -475,8 +475,6 @@ static struct attribute_group od_attr_group_gov_pol = {
- static int od_init(struct dbs_data *dbs_data)
- {
- 	struct od_dbs_tuners *tuners;
--	u64 idle_time;
--	int cpu;
- 
- 	tuners = kzalloc(sizeof(*tuners), GFP_KERNEL);
- 	if (!tuners) {
-@@ -484,10 +482,7 @@ static int od_init(struct dbs_data *dbs_data)
- 		return -ENOMEM;
- 	}
- 
--	cpu = get_cpu();
--	idle_time = get_cpu_idle_time_us(cpu, NULL);
--	put_cpu();
--	if (idle_time != -1ULL) {
-+	if (tick_nohz_check()) {
- 		/* Idle micro accounting is supported. Use finer thresholds */
- 		tuners->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
- 		/*
--- 
-1.8.4.rc0.1.g8f6a3e5.dirty
+Because resuming a device inevitably adds latency, and that only
+userspace can decide the latency vs power policy for any given device,
+system and user?
 
+There are also other reasons, mostly related to device bugs.  But the
+above is the most important in my view.  Without that control knob I
+don't think I would have enabled runtime PM in any network driver while
+the netif is running.  The additional latency is noticable.
+
+Anyway, this is a pointless discussion.  The power/control ABI is in us=
+e
+so many places that it cannot be changed.  I'd suggest googling "break
+userspace" before even suggesting anything like that again.
+
+
+Bj=C3=B8rn
