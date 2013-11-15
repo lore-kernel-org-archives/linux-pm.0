@@ -1,160 +1,115 @@
 From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCHv5 06/20] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Fri, 15 Nov 2013 08:43:54 +0100
-Message-ID: <20131115084354.656452b9@endymion.delvare>
+Subject: Re: [lm-sensors] [PATCHv9 02/20] thermal: introduce device tree
+ parser
+Date: Fri, 15 Nov 2013 09:07:36 +0100
+Message-ID: <20131115090736.4f360dc8@endymion.delvare>
 References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
-	<1384285582-16933-7-git-send-email-eduardo.valentin@ti.com>
+	<1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zoneX.GCU-Squad.org ([194.213.125.0]:11218 "EHLO
+Received: from zoneX.GCU-Squad.org ([194.213.125.0]:45322 "EHLO
 	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753542Ab3KOHoV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 02:44:21 -0500
-In-Reply-To: <1384285582-16933-7-git-send-email-eduardo.valentin@ti.com>
+	with ESMTP id S1755290Ab3KOIHz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 03:07:55 -0500
+In-Reply-To: <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, devicetree@vger.kernel.org, wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, grant.likely@linaro.org
 
 Hi Eduardo,
 
-Sorry for joining the discussion a little late, I could never find the
-time to look into this patch series so far.
-
-On Tue, 12 Nov 2013 15:46:08 -0400, Eduardo Valentin wrote:
-> This patch adds to lm75 temperature sensor the possibility
-> to expose itself as thermal zone device, registered on the
-> thermal framework.
-> 
-> The thermal zone is built only if a device tree node
-> describing a thermal zone for this sensor is present
-> inside the lm75 DT node. Otherwise, the driver behavior
-> will be the same.
-> 
-> Cc: Jean Delvare <khali@linux-fr.org>
-> Cc: lm-sensors@lm-sensors.org
+On Tue, 12 Nov 2013 15:46:04 -0400, Eduardo Valentin wrote:
+> This patch introduces a device tree bindings for
+> describing the hardware thermal behavior and limits.
+> Also a parser to read and interpret the data and feed
+> it in the thermal framework is presented.
+>=20
+> This patch introduces a thermal data parser for device
+> tree. The parsed data is used to build thermal zones
+> and thermal binding parameters. The output data
+> can then be used to deploy thermal policies.
+>=20
+> This patch adds also documentation regarding this
+> API and how to define tree nodes to use
+> this infrastructure.
+>=20
+> Note that, in order to be able to have control
+> on the sensor registration on the DT thermal zone,
+> it was required to allow changing the thermal zone
+> .get_temp callback. For this reason, this patch
+> also removes the 'const' modifier from the .ops
+> field of thermal zone devices.
+>=20
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
 > Cc: linux-kernel@vger.kernel.org
-> Acked-by: Guenter Roeck <linux@roeck-us.net>
+> Cc: Mark Rutland <mark.rutland@arm.com>
 > Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 > ---
->  drivers/hwmon/lm75.c | 35 ++++++++++++++++++++++++++++++-----
->  1 file changed, 30 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
-> index c03b490..1d3600a 100644
-> --- a/drivers/hwmon/lm75.c
-> +++ b/drivers/hwmon/lm75.c
-> @@ -27,6 +27,8 @@
->  #include <linux/hwmon-sysfs.h>
->  #include <linux/err.h>
->  #include <linux/mutex.h>
-> +#include <linux/of.h>
-> +#include <linux/thermal.h>
->  #include "lm75.h"
->  
->  
-> @@ -70,6 +72,7 @@ static const u8 LM75_REG_TEMP[3] = {
->  /* Each client has this additional data */
->  struct lm75_data {
->  	struct device		*hwmon_dev;
-> +	struct thermal_zone_device	*tz;
->  	struct mutex		update_lock;
->  	u8			orig_conf;
->  	u8			resolution;	/* In bits, between 9 and 12 */
-> @@ -90,22 +93,36 @@ static struct lm75_data *lm75_update_device(struct device *dev);
->  
->  /*-----------------------------------------------------------------------*/
->  
-> +static inline long lm75_reg_to_mc(s16 temp, u8 resolution)
+> (...)
+> +static int of_thermal_get_trend(struct thermal_zone_device *tz, int =
+trip,
+> +				enum thermal_trend *trend)
 > +{
-> +	return ((temp >> (16 - resolution)) * 1000) >> (resolution - 8);
-> +}
+> +	struct __thermal_zone *data =3D tz->devdata;
+> +	long dev_trend;
+> +	int r;
 > +
->  /* sysfs attributes for hwmon */
->  
-> +static int lm75_read_temp(void *dev, long *temp)
-> +{
-> +	struct lm75_data *data = lm75_update_device(dev);
+> +	if (!data->get_trend)
+> +		return -EINVAL;
 > +
-> +	if (IS_ERR(data))
-> +		return PTR_ERR(data);
+> +	r =3D data->get_trend(data->sensor_data, &dev_trend);
+> +	if (r)
+> +		return r;
 > +
-> +	*temp = lm75_reg_to_mc(data->temp[0], data->resolution);
+> +	/* TODO: These intervals might have some thresholds, but in core co=
+de */
+> +	if (dev_trend > 0)
+> +		*trend =3D THERMAL_TREND_RAISING;
+> +	else if (dev_trend < 0)
+> +		*trend =3D THERMAL_TREND_DROPPING;
+> +	else
+> +		*trend =3D THERMAL_TREND_STABLE;
 > +
 > +	return 0;
 > +}
-> +
->  static ssize_t show_temp(struct device *dev, struct device_attribute *da,
->  			 char *buf)
->  {
->  	struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
->  	struct lm75_data *data = lm75_update_device(dev);
-> -	long temp;
->  
->  	if (IS_ERR(data))
->  		return PTR_ERR(data);
->  
-> -	temp = ((data->temp[attr->index] >> (16 - data->resolution)) * 1000)
-> -	       >> (data->resolution - 8);
-> -
-> -	return sprintf(buf, "%ld\n", temp);
-> +	return sprintf(buf, "%ld\n", lm75_reg_to_mc(data->temp[attr->index],
-> +						    data->resolution));
->  }
 
-I am a bit worried by this. I did expect that you'd have to split a
-piece of show_temp() into one separate function, not two. Here you have
-quite some redundancy between lm75_read_temp and show_temp. Sure these
-are small functions so the duplicate code is limited, but if you
-multiply by the number of hwmon drivers which are candidates for this
-change, this all adds up.
+I don't like the whole trend thing.
 
->  
->  static ssize_t set_temp(struct device *dev, struct device_attribute *da,
-> @@ -271,6 +288,13 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
->  		goto exit_remove;
->  	}
->  
-> +	data->tz = thermal_zone_of_sensor_register(&client->dev,
-> +						   0,
-> +						   &client->dev,
-> +						   lm75_read_temp, NULL);
+I've been writing hwmon drivers for the past decade and I've never seen
+a thermal sensor device being able to report trends. And as a rule of
+thumb, if the hardware can't do it then the (hardware-specific) drivers
+should not report it.
 
-I am also worried by this interface. Basically a separate callback
-function (here lm75_read_temp) is needed for every thermal input. Some
-hwmon drivers have many of these! This will result in duplicate code
-again. If you could just pass a sensor ID as an extra parameter to
-lm75_read_temp, you could use the same callback for all sensors. This
-would maybe also let you refactor the code above, as I believe
-show_temp would then be able to call lm75_read_temp(dev, &temp, 0)
-instead of reimplementing most of it.
+Hwmon devices (and drivers) report temperature values, and sometimes
+historical min/max. They can do that because these are facts that need
+no interpretation.
 
-I also note the lack of support for limits. Thermal zones can have
-limits, and the various hwmon drivers do support that, yet your
-interface offers no possibility to expose them. Wouldn't that be useful?
+Defining a trend, however, requires care and, more importantly,
+decisions. For example, consider a thermal sensor which reports 50=B0C =
+at
+time t, then 47=B0C at time t+3s, then 48=B0C at time t+6s. At t+7s som=
+eone
+asks for the trend, what should the driver reply? If you consider only
+the last 5 seconds, temperature is raising. If you consider the last 10
+seconds instead, temperature is dropping. How would the driver know
+what time frame the caller is interested in?
 
-> +	if (IS_ERR(data->tz))
-> +		data->tz = NULL;
+Another example: "small" temperature variations. If temperatures varies
+by 1=B0C in my kitchen's oven, I'd call it stable. If my body temperatu=
+re
+varies by 1=B0C, I'd call it non-stable, and my doctor for an appointme=
+nt
+also ;-)
 
-If you are doing that in all drivers, I would question the point of
-having thermal_zone_of_sensor_register() return a PTR_ERR in the first
-place.
+My point is that only the caller, and not the driver, knows how to
+convert a series of measurements into a trend. So I don't think drivers
+should implement anything like get_trend(). Whatever piece of code
+needs to establish a trend should call get_temp() repeatedly, store the
+results and do its own analysis of the data.
 
-> +
->  	dev_info(&client->dev, "%s: sensor '%s'\n",
->  		 dev_name(data->hwmon_dev), client->name);
->  
-> @@ -285,6 +309,7 @@ static int lm75_remove(struct i2c_client *client)
->  {
->  	struct lm75_data *data = i2c_get_clientdata(client);
->  
-> +	thermal_zone_of_sensor_unregister(&client->dev, data->tz);
->  	hwmon_device_unregister(data->hwmon_dev);
->  	sysfs_remove_group(&client->dev.kobj, &lm75_group);
->  	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
-
-
--- 
+--=20
 Jean Delvare
