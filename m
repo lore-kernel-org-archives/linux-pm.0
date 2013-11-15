@@ -1,25 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Fri, 15 Nov 2013 21:04:45 +0530
-Message-ID: <CAKohpokDFr4=XPAwG1g75g=0iHHCEgpHYtSv4hbvfOFfEZRewg@mail.gmail.com>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
-	<52862648.4000304@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52862648.4000304@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH] power: Replace printks with pr_* routines
+Date: Fri, 15 Nov 2013 09:10:06 -0700
+Message-ID: <1384531806-11500-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:46167 "EHLO
+	qmta10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753068Ab3KOQKN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 11:10:13 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, rjw@rjwysocki.net
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On 15 November 2013 19:18, Nishanth Menon <nm@ti.com> wrote:
-> Yes, this does fix the issue for me.
->
-> Tested-by: Nishanth Menon <nm@ti.com>
-> based on vendor kernel on top of v3.12 tag (equivalent diff:
-> http://pastebin.mozilla.org/3609407)
->
-> OMAP5-uEVM(OMAP5432): http://pastebin.mozilla.org/3609396
+Replaced printks with pr_* routines. dev_* routines could have been used,
+but chose to use pr_* to avoid breaking scripts that might be relying on
+a specific text.
 
-Thanks a lot for verifying buddy!! Glad that your issue is fixed..
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ drivers/base/power/main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 9f098a8..43d5dcf 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -349,7 +349,7 @@ static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
+ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
+ 			int error)
+ {
+-	printk(KERN_ERR "PM: Device %s failed to %s%s: error %d\n",
++	pr_err("PM: Device %s failed to %s%s: error %d\n",
+ 		dev_name(dev), pm_verb(state.event), info, error);
+ }
+ 
+@@ -1308,7 +1308,7 @@ int dpm_prepare(pm_message_t state)
+ 				error = 0;
+ 				continue;
+ 			}
+-			printk(KERN_INFO "PM: Device %s not prepared "
++			pr_info("PM: Device %s not prepared "
+ 				"for power transition: code %d\n",
+ 				dev_name(dev), error);
+ 			put_device(dev);
+@@ -1347,7 +1347,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_start);
+ void __suspend_report_result(const char *function, void *fn, int ret)
+ {
+ 	if (ret)
+-		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
++		pr_err("%s(): %pF returns %d\n", function, fn, ret);
+ }
+ EXPORT_SYMBOL_GPL(__suspend_report_result);
+ 
+-- 
+1.8.3.2
+
