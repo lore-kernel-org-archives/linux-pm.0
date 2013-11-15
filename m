@@ -1,48 +1,87 @@
-From: viresh kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCHv5 05/20] cpufreq: cpufreq-cpu0: add dt node parsing for
- cooling device properties
-Date: Fri, 15 Nov 2013 10:11:36 +0530
-Message-ID: <5285A600.1070807@linaro.org>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com
-Cc: wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH 1/1] Cpufreq: Make governor data on nonboot cpus across system syspend/resume
+Date: Fri, 15 Nov 2013 14:01:34 +0800
+Message-ID: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:17510 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751472Ab3KOGBn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 15 Nov 2013 01:01:43 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday 13 November 2013 01:16 AM, Eduardo Valentin wrote:
-> This patch changes the cpufreq-cpu0 driver to consider if
-> a cpu needs cooling (with cpufreq). In case the cooling is needed,
-> the cpu0 device tree node needs to be properly configured
-> with cooling device properties.
-> 
-> In case these properties are present,, the driver will
-> load a cpufreq cooling device in the system. The cpufreq-cpu0
-> driver is not interested in determining how the system should
-> be using the cooling device. The driver is responsible
-> only of loading the cooling device.
-> 
-> Describing how the cooling device will be used can be
-> accomplished by setting up a thermal zone that references
-> and is composed by the cpufreq cooling device.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: devicetree-discuss@lists.ozlabs.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt         |  7 +++++++
->  drivers/cpufreq/Kconfig                                  |  2 +-
->  drivers/cpufreq/cpufreq-cpu0.c                           | 16 ++++++++++++++++
->  3 files changed, 24 insertions(+), 1 deletion(-)
+Currently, governor of nonboot cpus will be put to EXIT when system syspend.
+Since all these cpus will be unplugged and the governor usage_count decreases
+to zero. The governor data and its sysfs interfaces will be freed or released.
+This makes user config of these governors loss during suspend and resume.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This doesn't happen on the governor covering boot cpu because it isn't
+unplugged during system suspend.
+
+To fix this issue, skipping governor exit during system suspend and check
+policy governor data to determine whether the governor is really needed
+to be initialized when do init. If not, return EALREADY to indicate the
+governor has been initialized and should do nothing. __cpufreq_governor()
+convert EALREADY to 0 as return value for INIT event since governor is
+still under INIT state and can do START operation.
+
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/cpufreq/cpufreq.c          |  5 ++++-
+ drivers/cpufreq/cpufreq_governor.c | 13 ++++++++++++-
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534d..38f2e4a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1239,7 +1239,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+ 
+ 	/* If cpu is last user of policy, free policy */
+ 	if (cpus == 1) {
+-		if (has_target()) {
++		if (has_target() && !frozen) {
+ 			ret = __cpufreq_governor(policy,
+ 					CPUFREQ_GOV_POLICY_EXIT);
+ 			if (ret) {
+@@ -1822,6 +1822,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+ 		module_put(policy->governor->owner);
+ 
++	if ((event == CPUFREQ_GOV_POLICY_INIT) && ret == -EALREADY)
++		ret = 0;
++
+ 	return ret;
+ }
+ 
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 0806c31..ddb93af 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -204,9 +204,20 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 
+ 	switch (event) {
+ 	case CPUFREQ_GOV_POLICY_INIT:
++		/*
++		 * In order to keep governor data across suspend/resume,
++		 * Governor doesn't exit when suspend and will be
++		 * reinitialized when resume. Here check policy governor
++		 * data to determine whether the governor has been exited.
++		 * If not, return EALREADY.
++		 */
+ 		if (have_governor_per_policy()) {
+-			WARN_ON(dbs_data);
++			if (dbs_data)
++				return -EALREADY;
+ 		} else if (dbs_data) {
++			if (policy->governor_data == dbs_data)
++				return -EALREADY;
++
+ 			dbs_data->usage_count++;
+ 			policy->governor_data = dbs_data;
+ 			return 0;
+-- 
+1.8.2.1
+
