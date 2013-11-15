@@ -1,57 +1,31 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH] power: Replace printks with pr_* routines
-Date: Fri, 15 Nov 2013 09:10:06 -0700
-Message-ID: <1384531806-11500-1-git-send-email-shuah.kh@samsung.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] power: Replace printks with pr_* routines
+Date: Sat, 16 Nov 2013 06:19:22 +0900
+Message-ID: <20131115211922.GB14410@kroah.com>
+References: <1384531806-11500-1-git-send-email-shuah.kh@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:46167 "EHLO
-	qmta10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753068Ab3KOQKN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 11:10:13 -0500
+Received: from mail.linuxfoundation.org ([140.211.169.12]:36092 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268Ab3KOVTQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 16:19:16 -0500
+Content-Disposition: inline
+In-Reply-To: <1384531806-11500-1-git-send-email-shuah.kh@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, rjw@rjwysocki.net
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Replaced printks with pr_* routines. dev_* routines could have been used,
-but chose to use pr_* to avoid breaking scripts that might be relying on
-a specific text.
+On Fri, Nov 15, 2013 at 09:10:06AM -0700, Shuah Khan wrote:
+> Replaced printks with pr_* routines. dev_* routines could have been used,
+> but chose to use pr_* to avoid breaking scripts that might be relying on
+> a specific text.
 
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
- drivers/base/power/main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+I'd really like to switch to dev_* instead, even changing to pr_* should
+change the output prefix (if it's set for this file, odds are it isn't
+though...)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9f098a8..43d5dcf 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -349,7 +349,7 @@ static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
- static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
- 			int error)
- {
--	printk(KERN_ERR "PM: Device %s failed to %s%s: error %d\n",
-+	pr_err("PM: Device %s failed to %s%s: error %d\n",
- 		dev_name(dev), pm_verb(state.event), info, error);
- }
- 
-@@ -1308,7 +1308,7 @@ int dpm_prepare(pm_message_t state)
- 				error = 0;
- 				continue;
- 			}
--			printk(KERN_INFO "PM: Device %s not prepared "
-+			pr_info("PM: Device %s not prepared "
- 				"for power transition: code %d\n",
- 				dev_name(dev), error);
- 			put_device(dev);
-@@ -1347,7 +1347,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_start);
- void __suspend_report_result(const char *function, void *fn, int ret)
- {
- 	if (ret)
--		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
-+		pr_err("%s(): %pF returns %d\n", function, fn, ret);
- }
- EXPORT_SYMBOL_GPL(__suspend_report_result);
- 
--- 
-1.8.3.2
+thanks,
 
+greg k-h
