@@ -1,63 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
- regulators suspended
-Date: Fri, 15 Nov 2013 15:57:36 +0530
-Message-ID: <CAKohpokz6YEqz8ZNmQ77y8K3qvKYu3ffgVmiEcDyh2M9FsDGPg@mail.gmail.com>
-References: <1382638087-32054-1-git-send-email-nm@ti.com>
-	<CAKohponJOOfGX4BHn76LTBDTm58+2QxPf_rv1i4avVfrWhfkRg@mail.gmail.com>
-	<52824522.7020401@ti.com>
-	<CAKohpomB=wnct88wrTvW-qixLQPQGjVrCVF3V-BSbY7mhsSYQg@mail.gmail.com>
-	<20131113151645.GA17828@kahuna>
-	<52842671.40703@linaro.org>
-	<5284DDB9.7040502@ti.com>
-	<5284FE48.8040802@linaro.org>
-	<528502AC.4010604@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Fri, 15 Nov 2013 11:34:35 +0100
+Message-ID: <CAPDyKFqJMbsF30PtFicXQ17fA+62YX7a9smsLrUUK7Fxn2SWpA@mail.gmail.com>
+References: <CAPDyKFqYOnfWKH7BFRem5T5yGmJrOWBTDhZwoExuemMf0HQ7Ag@mail.gmail.com>
+	<Pine.LNX.4.44L0.1311141249580.1439-100000@iolanthe.rowland.org>
+	<CAPDyKFrQfwOQsOCB1QFo4GWeX303AEWnanE61svy9UUJpNBUiw@mail.gmail.com>
+	<87li0q9fna.fsf@nemi.mork.no>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <528502AC.4010604@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <87li0q9fna.fsf@nemi.mork.no>
+Sender: linux-pci-owner@vger.kernel.org
+To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 14 November 2013 22:34, Nishanth Menon <nm@ti.com> wrote:
-> I think it is still too early to do so :(
-
-:)
-
-> equivalent patch: http://pastebin.mozilla.org/3603467 (with minor
-> changes for build)
+On 15 November 2013 10:29, Bj=F8rn Mork <bjorn@mork.no> wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
 >
-> Basic tests: http://pastebin.mozilla.org/3603456 (governor is
-> functional, but governor kicks in early before i2c is resumed)
+>> I think it is kind of strange to give provision to userspace to
+>> control a "request based" power management feature in the kernel. Me
+>> personally can't think of any good use case, but I comes from the
+>> embedded/ARM world so I might not have the full picture.
 >
-> With call stack: http://pastebin.mozilla.org/3603455 to highlight call
-> sequences
+> Because resuming a device inevitably adds latency, and that only
+> userspace can decide the latency vs power policy for any given device=
+,
+> system and user?
+
+That is a valid point. Though we have pm_qos, should not that be the
+input for these kind of requirement for a driver?
+
+In other words, if the latency requirement can't be met for a device
+while re-activating it, it should not enter runtime suspend state.
+
 >
-> Seems like we might want to pause governor as early in the suspend
-> sequence as possible to allow SoC and regulator stuff to suspend
-> themselves without cpufreq interfering.. just my 2 cents..
+> There are also other reasons, mostly related to device bugs.  But the
+> above is the most important in my view.  Without that control knob I
+> don't think I would have enabled runtime PM in any network driver whi=
+le
+> the netif is running.  The additional latency is noticable.
+>
+> Anyway, this is a pointless discussion.  The power/control ABI is in =
+use
+> so many places that it cannot be changed.  I'd suggest googling "brea=
+k
+> userspace" before even suggesting anything like that again.
+>
 
-You made me spend a day on this :)
-It wasn't a day's job really but I got into a really hard to crack bug with my
-patch, I was calling __cpufreq_governor() from under write_lock_irqsave
-for cpufreq_driver_lock. And __cpufreq_governor() had:
+I agree, and has never been a suggestion from my side either, more
+like a statement that I don't like the sysfs for runtime PM. :-)
 
- read_lock_irqsave(&cpufreq_driver_lock, flags);
+Kind regards
+Ulf Hansson
 
-I wasn't able to suspend my system: ARM, X86.. It simply stopped
-printing anything and I didn't had a clue of what's going on.. Hacked
-everything possible, even kernel/power/suspend.c to return early
-(yeah I used freezer > pm_test as well, but I wanted to return before
-freezing userspace)...
-
-Then somehow I got to know that this is the wrong piece of code :)
-
-But probably I have a solution now to which you can't say:
-
-"I think it is still too early to do so :("
-
-:)
-
-Give it a try and give a Tested-by please :)
+>
+> Bj=F8rn
