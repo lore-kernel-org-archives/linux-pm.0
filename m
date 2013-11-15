@@ -1,26 +1,46 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH V2 1/2] Tick: Introduce tick_nohz_check() to check nohz
- enable status
-Date: Fri, 15 Nov 2013 12:06:24 +0100 (CET)
-Message-ID: <alpine.DEB.2.02.1311151200560.30673@ionos.tec.linutronix.de>
-References: <1383036537-30362-1-git-send-email-tianyu.lan@intel.com> <1384504535-29987-1-git-send-email-tianyu.lan@intel.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1384504535-29987-1-git-send-email-tianyu.lan@intel.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: dipankar@in.ibm.com, paulmck@linux.vnet.ibm.com, fweisbec@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, rostedt@goodmis.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 1/2] PM / Runtime: Fix error path for prepare
+Date: Fri, 15 Nov 2013 12:40:44 +0100
+Message-ID: <1384515645-8696-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f42.google.com ([209.85.215.42]:49457 "EHLO
+	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754182Ab3KOLkv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 06:40:51 -0500
+Received: by mail-la0-f42.google.com with SMTP id ec20so2679487lab.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2013 03:40:50 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Fri, 15 Nov 2013, Lan Tianyu wrote:
+If a device prepare callback for some reason would fail, the PM core
+prevented the device from going inactive forever.
 
-> In some cases, nohz enable status needs to be checked. E.G, in RCU and cpufreq
-> ondemand governor. So add tick_nohz_check() to return tick_nohz_enabled value
-> And use tick_nohz_check() instead of referencing tick_nohz_enabled in the rcutree_plugin.h.
+In this case, to reverse the pm_runtime_get_noresume() we invokes the
+asyncronous pm_runtime_put(), thus restoring the usage count.
 
-What's the point of this? 
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/main.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Checking for tick_nohz_enabled is wrong to begin with.
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index ee039af..2a1b06a 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1350,6 +1350,9 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 
+ 	device_unlock(dev);
+ 
++	if (error)
++		pm_runtime_put(dev);
++
+ 	return error;
+ }
+ 
+-- 
+1.7.9.5
 
-See https://lkml.org/lkml/2013/11/13/424
