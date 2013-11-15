@@ -1,180 +1,52 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Fri, 15 Nov 2013 07:48:56 -0600
-Message-ID: <52862648.4000304@ti.com>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] PM / Runtime: Fix error path for prepare
+Date: Fri, 15 Nov 2013 16:14:27 +0100
+Message-ID: <1817325.VUBkIjsnQ5@vostro.rjw.lan>
+References: <1384515645-8696-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:34168 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753315Ab3KONtK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 15 Nov 2013 08:49:10 -0500
-In-Reply-To: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1384515645-8696-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
 
-On 11/15/2013 04:12 AM, Viresh Kumar wrote:
-> This patch adds PM notifiers for handling suspend/resume of cpufreq governors.
-> This is required for early suspend and late resume of governors.
+On Friday, November 15, 2013 12:40:44 PM Ulf Hansson wrote:
+> If a device prepare callback for some reason would fail, the PM core
+> prevented the device from going inactive forever.
 > 
-> There are multiple reasons that support this patch:
-> - Firstly it looks very much logical to stop governors when we know we are going
->   into suspend. But the question is when? Is PM notifiers the right place?
->   Following reasons are the supporting hands for this decision.
-> - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
->   wasn't working well with suspend/resume as calls for removing non-boot CPUs
->   was turning out into a call to drivers ->target() which then tries to play
->   with regulators. But regulators and their I2C bus were already suspended and
->   this resulted in a failure. This is why we need a PM notifier here.
-> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
->   tunables configuration for clusters/sockets with non-boot CPUs was getting
->   lost after suspend/resume, as we were notifying governors with
->   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
->   deallocating memory for tunables.
+> In this case, to reverse the pm_runtime_get_noresume() we invokes the
+> asyncronous pm_runtime_put(), thus restoring the usage count.
 > 
-> All above problems get fixed with having a PM notifier in place which will stop
-> any operation on governor. Hence no need to do any special handling of variables
-> like (frozen) in suspend/resume paths.
-> 
-> Reported-by: Lan Tianyu <tianyu.lan@intel.com>
-> Reported-by: Nishanth Menon <nm@ti.com>
-> Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+This should be in linux-next already.
+
+Thanks!
+
 > ---
+>  drivers/base/power/main.c |    3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> Hi Guys,
-> 
-> Can you please verify if this fixes issues reported by you? I have tested this
-> for multiple suspend-resumes on my thinkpad. It doesn't crash :)
-
-Yes, this does fix the issue for me.
-
-Tested-by: Nishanth Menon <nm@ti.com>
-based on vendor kernel on top of v3.12 tag (equivalent diff:
-http://pastebin.mozilla.org/3609407)
-
-OMAP5-uEVM(OMAP5432): http://pastebin.mozilla.org/3609396
-
-> 
->  drivers/cpufreq/cpufreq.c | 63 +++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 63 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 02d534d..c87ced9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -26,6 +26,7 @@
->  #include <linux/module.h>
->  #include <linux/mutex.h>
->  #include <linux/slab.h>
-> +#include <linux/suspend.h>
->  #include <linux/syscore_ops.h>
->  #include <linux/tick.h>
->  #include <trace/events/power.h>
-> @@ -47,6 +48,9 @@ static LIST_HEAD(cpufreq_policy_list);
->  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->  #endif
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index ee039af..2a1b06a 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1350,6 +1350,9 @@ static int device_prepare(struct device *dev, pm_message_t state)
 >  
-> +/* Flag to suspend/resume CPUFreq governors */
-> +static bool cpufreq_suspended;
-> +
->  static inline bool has_target(void)
->  {
->  	return cpufreq_driver->target_index || cpufreq_driver->target;
-> @@ -1462,6 +1466,54 @@ static struct subsys_interface cpufreq_interface = {
->  	.remove_dev	= cpufreq_remove_dev,
->  };
+>  	device_unlock(dev);
 >  
-> +/*
-> + * PM Notifier for suspending governors as some platforms can't change frequency
-> + * after this point in suspend cycle. Because some of the devices (like: i2c,
-> + * regulators, etc) they use for changing frequency are suspended quickly after
-> + * this point.
-> + */
-> +static int cpufreq_pm_notify(struct notifier_block *nb, unsigned long action,
-> +		void *data)
-> +{
-> +	struct cpufreq_policy *policy;
-> +	unsigned long flags;
+> +	if (error)
+> +		pm_runtime_put(dev);
 > +
-> +	if (!has_target())
-> +		return NOTIFY_OK;
-> +
-> +	if (action == PM_SUSPEND_PREPARE) {
-> +		pr_debug("%s: Suspending Governors\n", __func__);
-> +
-> +		list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> +			if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
-> +				pr_err("%s: Failed to stop governor for policy: %p\n",
-> +						__func__, policy);
-> +
-> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +		cpufreq_suspended = true;
-> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +	} else if (action == PM_POST_SUSPEND) {
-> +		pr_debug("%s: Resuming Governors\n", __func__);
-> +
-> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +		cpufreq_suspended = false;
-> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +
-> +		list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> +			if (__cpufreq_governor(policy, CPUFREQ_GOV_START) ||
-> +					__cpufreq_governor(policy,
-> +						CPUFREQ_GOV_LIMITS))
-> +				pr_err("%s: Failed to start governor for policy: %p\n",
-> +						__func__, policy);
-> +	}
-> +
-> +	return NOTIFY_OK;
-> +}
-> +
-> +static struct notifier_block cpufreq_pm_notifier = {
-> +	.notifier_call = cpufreq_pm_notify,
-> +};
-> +
->  /**
->   * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
->   *
-> @@ -1752,6 +1804,8 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
->  static int __cpufreq_governor(struct cpufreq_policy *policy,
->  					unsigned int event)
->  {
-> +	unsigned long flags;
-> +	bool is_suspended;
->  	int ret;
->  
->  	/* Only must be defined when default governor is known to have latency
-> @@ -1764,6 +1818,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
->  	struct cpufreq_governor *gov = NULL;
->  #endif
->  
-> +	/* Don't start any governor operations if we are entering suspend */
-> +	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> +	is_suspended = cpufreq_suspended;
-> +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +
-> +	if (is_suspended)
-> +		return 0;
-> +
->  	if (policy->governor->max_transition_latency &&
->  	    policy->cpuinfo.transition_latency >
->  	    policy->governor->max_transition_latency) {
-> @@ -2222,6 +2284,7 @@ static int __init cpufreq_core_init(void)
->  	cpufreq_global_kobject = kobject_create();
->  	BUG_ON(!cpufreq_global_kobject);
->  	register_syscore_ops(&cpufreq_syscore_ops);
-> +	register_pm_notifier(&cpufreq_pm_notifier);
->  
->  	return 0;
+>  	return error;
 >  }
+>  
 > 
-
-
 -- 
-Regards,
-Nishanth Menon
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
