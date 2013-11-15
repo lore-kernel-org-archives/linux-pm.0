@@ -1,214 +1,350 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [RFC v2 3/4] power: asv: Add support for Exynos5250
-Date: Fri, 15 Nov 2013 17:11:30 +0530
-Message-ID: <1384515691-26299-4-git-send-email-sachin.kamat@linaro.org>
-References: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, yadi.brar01@gmail.com, sachin.kamat@linaro.org, myungjoo.ham@samsung.com, Yadwinder Singh Brar <yadi.brar@samsung.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
+Date: Fri, 15 Nov 2013 09:19:02 -0400
+Message-ID: <52861F46.8020900@ti.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <2523089.oKCvZdz31U@flatron> <5284B478.8090503@ti.com> <25668725.sMcoUCgCKk@flatron>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="Cs1tdUcWi2W2pUXopW6Amwvp5fhcichCq"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:57807 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018Ab3KONUV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 08:20:21 -0500
+In-Reply-To: <25668725.sMcoUCgCKk@flatron>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
-From: Yadwinder Singh Brar <yadi.brar@samsung.com>
+--Cs1tdUcWi2W2pUXopW6Amwvp5fhcichCq
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This patch adds basic support (only for ARM ASV) for exynos5250 chips
-which have fused ASV group.
+Hello Tomasz,
 
-Signed-off-by: Yadwinder Singh Brar <yadi.brar@samsung.com>
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/power/asv/Makefile         |    2 +-
- drivers/power/asv/exynos-asv.c     |    8 +++
- drivers/power/asv/exynos-asv.h     |    1 +
- drivers/power/asv/exynos5250-asv.c |  139 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 149 insertions(+), 1 deletion(-)
- create mode 100644 drivers/power/asv/exynos5250-asv.c
+On 14-11-2013 09:40, Tomasz Figa wrote:
+> On Thursday 14 of November 2013 07:31:04 Eduardo Valentin wrote:
+>> On 13-11-2013 12:57, Tomasz Figa wrote:
+>>> Hi Eduardo,
+>>>
+>>
+>> Hello Tomaz
+>>
+>>> On Tuesday 12 of November 2013 15:46:04 Eduardo Valentin wrote:
+>>>> This patch introduces a device tree bindings for
+>>>> describing the hardware thermal behavior and limits.
+>>>> Also a parser to read and interpret the data and feed
+>>>> it in the thermal framework is presented.
+>>> [snip]
+>>>> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b=
+/Documentation/devicetree/bindings/thermal/thermal.txt
+>>>> new file mode 100644
+>>>> index 0000000..59f5bd2
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+>>>> @@ -0,0 +1,586 @@
+>>> [snip]
+>>>> +* Cooling device nodes
+>>>> +
+>>>> +Cooling devices are nodes providing control on power dissipation. T=
+here
+>>>> +are essentially two ways to provide control on power dissipation. F=
+irst
+>>>> +is by means of regulating device performance, which is known as pas=
+sive
+>>>> +cooling. A typical passive cooling is a CPU that has dynamic voltag=
+e and
+>>>> +frequency scaling (DVFS), and uses lower frequencies as cooling sta=
+tes.
+>>>> +Second is by means of activating devices in order to remove
+>>>> +the dissipated heat, which is known as active cooling, e.g. regulat=
+ing
+>>>> +fan speeds. In both cases, cooling devices shall have a way to dete=
+rmine
+>>>> +the state of cooling in which the device is.
+>>>> +
+>>>> +Required properties:
+>>>> +- cooling-min-state:	An integer indicating the smallest
+>>>> +  Type: unsigned	cooling state accepted. Typically 0.
+>>>> +  Size: one cell
+>>>
+>>> Could you explain (just in a reply) what a cooling state is and what =
+are
+>>> the min and max values used for?
+>>
+>> Cooling state is an unsigned integer which represents heat control tha=
+t
+>> a cooling device implies.
+>=20
+> OK. So you have a cooling device and it can have multiple cooling state=
+s,
+> like a cooling fan that has multiple speed levels. Did I understand thi=
+s
+> correctly?
+>=20
+> IMHO this should be also explained in the documentation above, possibly=
 
-diff --git a/drivers/power/asv/Makefile b/drivers/power/asv/Makefile
-index 9d0e0cc32cb5..a73544445c9a 100644
---- a/drivers/power/asv/Makefile
-+++ b/drivers/power/asv/Makefile
-@@ -1,2 +1,2 @@
- obj-$(CONFIG_POWER_ASV)			+= asv.o
--obj-$(CONFIG_POWER_EXYNOS_ASV)		+= exynos-asv.o
-+obj-$(CONFIG_POWER_EXYNOS_ASV)		+= exynos-asv.o exynos5250-asv.o
-diff --git a/drivers/power/asv/exynos-asv.c b/drivers/power/asv/exynos-asv.c
-index 50efb0b6af85..f2cd04d1ce95 100644
---- a/drivers/power/asv/exynos-asv.c
-+++ b/drivers/power/asv/exynos-asv.c
-@@ -46,9 +46,17 @@ static int exynos_asv_probe(struct platform_device *pdev)
- 	exynos_asv_info->base = base;
- 
- 	/* call SoC specific intialisation routine */
-+	if (of_machine_is_compatible("samsung,exynos5250")) {
-+		ret = exynos5250_asv_init(exynos_asv_info);
-+		if (ret) {
-+			pr_err("exynos5250_asv_init failed : %d\n", ret);
-+			goto err;
-+		}
-+	}
- 
- 	register_asv_member(exynos_asv_info->asv_list, exynos_asv_info->nr_mem);
- 
-+err:
- 	iounmap(base);
- err_map:
- 	of_node_put(chip_id);
-diff --git a/drivers/power/asv/exynos-asv.h b/drivers/power/asv/exynos-asv.h
-index 89a1ae8b5e19..a31becb7478f 100644
---- a/drivers/power/asv/exynos-asv.h
-+++ b/drivers/power/asv/exynos-asv.h
-@@ -18,4 +18,5 @@ struct exynos_asv_common {
- 	void __iomem *base;
- };
- 
-+extern int exynos5250_asv_init(struct exynos_asv_common *exynos_info);
- #endif	/* __EXYNOS_ASV_D_H */
-diff --git a/drivers/power/asv/exynos5250-asv.c b/drivers/power/asv/exynos5250-asv.c
-new file mode 100644
-index 000000000000..7746c7d2d987
---- /dev/null
-+++ b/drivers/power/asv/exynos5250-asv.c
-@@ -0,0 +1,139 @@
-+/* exynos5250 - ASV(Adaptive Supply Voltage)
-+ *
-+ * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-+ *		http://www.samsung.com/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+*/
-+
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/slab.h>
-+#include <linux/power/asv-driver.h>
-+#include "exynos-asv.h"
-+
-+#define FUSED_SG_OFFSET		3
-+#define ORIG_SG_OFFSET		17
-+#define ORIG_SG_MASK		0xF
-+#define MOD_SG_OFFSET		21
-+#define MOD_SG_MASK		0x7
-+
-+#define ARM_LEVEL_NR		16
-+#define ARM_GRP_NR		12
-+
-+#define CHIP_ID_OFFSET		0x4
-+
-+struct exynos5250_asv_info {
-+	unsigned int package_id;
-+	/* we may need more info as global data */
-+};
-+
-+static struct exynos5250_asv_info asv_group __initdata;
-+
-+static unsigned int asv_voltage[ARM_LEVEL_NR][ARM_GRP_NR + 1] __initdata = {
-+	{ 1700000, 1300000, 1275000, 1275000, 1262500, 1250000, 1225000,
-+	1212500, 1200000, 1187500, 1175000, 1150000, 1125000 },	/* L0 */
-+	{ 1600000, 1250000, 1225000, 1225000, 1212500, 1200000, 1187500,
-+	1175000, 1162500, 1150000, 1137500, 1112500, 1100000 },	/* L1 */
-+	{ 1500000, 1225000, 1187500, 1175000, 1162500, 1150000, 1137500,
-+	1125000, 1112500, 1100000, 1087500, 1075000, 1062500 },	/* L2 */
-+	{ 1400000, 1200000, 1125000, 1125000, 1125000, 1112500, 1100000,
-+	1087500, 1075000, 1062500, 1050000, 1037500, 1025000 },	/* L3 */
-+	{ 1300000, 1150000, 1100000, 1100000, 1100000, 1087500, 1075000,
-+	1062500, 1050000, 1037500, 1025000, 1012500, 1000000 },	/* L4 */
-+	{ 1200000, 1125000, 1075000, 1075000, 1062500, 1050000, 1037500,
-+	1025000, 1012500, 1000000,  987500,  975000,  975000 },	/* L5 */
-+	{ 1100000, 1100000, 1050000, 1050000, 1037500, 1025000, 1012500,
-+	1000000,  987500,  975000,  962500,  950000,  925000 },	/* L6 */
-+	{ 1000000, 1075000, 1037500, 1037500, 1012500, 1000000,  987500,
-+	975000,  962500,  950000,  937500,  925000,  912500 },	/* L7 */
-+	{ 900000, 1050000, 1025000, 1012500,  987500,  975000,  962500,
-+	950000,  937500,  925000,  912500,  912500,  900000 },	/* L8 */
-+	{ 800000, 1025000, 1000000,  987500,  975000,  962500,  950000,
-+	937500,  925000,  912500,  900000,  900000,  900000 },	/* L9 */
-+	{ 700000, 1012500,  975000,  962500,  950000,  937500,  925000,
-+	912500,  900000,  900000,  900000,  900000,  900000 },	/* L10 */
-+	{ 600000, 1000000,  962500,  950000,  937500,  925000,  912500,
-+	900000,  900000,  900000,  900000,  900000,  900000 },	/* L11 */
-+	{ 500000, 975000,  950000,  937500,  925000,  912500,  900000,
-+	900000,  900000,  900000,  900000,  900000,  887500 },	/* L12 */
-+	{ 400000, 950000,  937500,  925000,  912500,  900000,  900000,
-+	900000,  900000,  900000,  900000,  887500,  887500 },	/* L13 */
-+	{ 300000, 937500,  925000,  912500,  900000,  900000,  900000,
-+	900000,  900000,  900000,  887500,  887500,  875000 },	/* L14 */
-+	{ 200000, 925000,  912500,  900000,  900000,  900000,  900000,
-+	900000,  900000,  887500,  887500,  875000,  875000 },	/* L15 */
-+};
-+
-+static int __init exynos5250_get_asv_group(struct asv_info *asv_info)
-+{
-+	int exynos_asv_grp;
-+	u32 exynos_orig_sp;
-+	u32 exynos_mod_sp;
-+	u32 package_id = asv_group.package_id;
-+
-+	/* If ASV group is fused then retrieve it */
-+	if ((package_id >> FUSED_SG_OFFSET) & 0x1) {
-+		exynos_orig_sp = (package_id >> ORIG_SG_OFFSET) & ORIG_SG_MASK;
-+		exynos_mod_sp = (package_id >> MOD_SG_OFFSET) & MOD_SG_MASK;
-+
-+		exynos_asv_grp = exynos_orig_sp - exynos_mod_sp;
-+		if (exynos_asv_grp < 0) {
-+			pr_warn("%s: Invalid ASV group: %d\n", __func__,
-+				exynos_asv_grp);
-+			exynos_asv_grp = 0;	/* go for default */
-+		}
-+	} else {
-+		pr_warn("%s: ASV group not fused for : %s\n", __func__,
-+			asv_info->name);
-+		exynos_asv_grp = 0;		/* go for default */
-+	}
-+
-+	asv_info->asv_grp = exynos_asv_grp;
-+	return 0;
-+}
-+
-+static int __init exynos5250_init_arm_asv_table(struct asv_info *asv_info)
-+{
-+	struct asv_freq_table *dvfs_table;
-+	int i, asv_grp = asv_info->asv_grp;
-+
-+	dvfs_table = kzalloc(sizeof(*dvfs_table) * ARM_LEVEL_NR, GFP_KERNEL);
-+	if (!dvfs_table)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < ARM_LEVEL_NR; i++) {
-+		dvfs_table[i].freq = asv_voltage[i][0];
-+		dvfs_table[i].volt = asv_voltage[i][asv_grp + 1];
-+	}
-+
-+	asv_info->dvfs_table = dvfs_table;
-+	return 0;
-+}
-+
-+/* TODO: Implement .init_asv callback to set ABB value */
-+
-+static struct asv_ops exynos5250_arm_asv_ops __initdata = {
-+	.get_asv_group = exynos5250_get_asv_group,
-+	.init_asv_table = exynos5250_init_arm_asv_table,
-+};
-+
-+static struct asv_info exynos5250_asv_member[] __initdata = {
-+	{
-+		.type		= ASV_ARM,
-+		.name		= "VDD_ARM",
-+		.ops		= &exynos5250_arm_asv_ops,
-+		.nr_dvfs_level	= ARM_LEVEL_NR,
-+	},
-+};
-+
-+int __init exynos5250_asv_init(struct exynos_asv_common *exynos_info)
-+{
-+	asv_group.package_id = readl(exynos_info->base + CHIP_ID_OFFSET);
-+	exynos_info->asv_list = exynos5250_asv_member;
-+	exynos_info->nr_mem = ARRAY_SIZE(exynos5250_asv_member);
-+
-+	return 0;
-+}
--- 
-1.7.9.5
+> with one or two examples.
+
+
+There are more than one example in this file. Even explaining why
+cooling min and max are used, and the difference of min and max
+properties that appear in cooling device and those present in a cooling
+specifier. Cooling devices and cooling state are described in the
+paragraph above.
+
+>=20
+>>
+>>>
+>>>> +
+>>>> +- cooling-max-state:	An integer indicating the largest
+>>>> +  Type: unsigned	cooling state accepted.
+>>>> +  Size: one cell
+>>>> +
+>>>> +- #cooling-cells:	Used to provide cooling device specific informati=
+on
+>>>> +  Type: unsigned	while referring to it. Must be at least 2, in orde=
+r
+>>>> +  Size: one cell      	to specify minimum and maximum cooling state=
+ used
+>>>> +			in the reference. The first cell is the minimum
+>>>> +			cooling state requested and the second cell is
+>>>> +			the maximum cooling state requested in the reference.
+>>>> +			See Cooling device maps section below for more details
+>>>> +			on how consumers refer to cooling devices.
+>>>> +
+>>>> +* Trip points
+>>>> +
+>>>> +The trip node is a node to describe a point in the temperature doma=
+in
+>>>> +in which the system takes an action. This node describes just the p=
+oint,
+>>>> +not the action.
+>>>> +
+>>>> +Required properties:
+>>>> +- temperature:		An integer indicating the trip temperature level,
+>>>> +  Type: signed		in millicelsius.
+>>>> +  Size: one cell
+>>>> +
+>>>> +- hysteresis:		A low hysteresis value on temperature property (abov=
+e).
+>>>> +  Type: unsigned	This is a relative value, in millicelsius.
+>>>> +  Size: one cell
+>>>
+>>> What about replacing temperature and hysteresis with a single tempera=
+ture
+>>> property that can be either one cell for 0 hysteresis or two cells to=
+
+>>> specify lower and upper range of temperatures?
+>>
+>> What is the problem with using two properties? I think we loose
+>> representation by gluing two properties into one just because one cell=
+=2E
+>=20
+> Ranges is the representation widely used in other bindings. In addition=
+
+
+Well that sentence is arguable. It is not like all properties in DT are
+standardized as ranges, is it?
+
+> I believe a range is more representative - when reading a DTS you don't=
+
+> need to think whether the hysteresis is in temperature units, percents =
+or
+> something else and also is less ambiguous, because you have clearly
+> defined lower and upper bounds in one place.
+
+It is the other way around. For a person designing a thermal
+representation for a specific board it is intuitive to think about
+hysteresis in this case. It is a better representation because we are
+really talking about a hysteresis here in order to give some room for
+the system to react on temporary temperature transitions around that
+point. It is possible to use ranges as you are suggesting, but it
+becomes confusing.
+
+
+>=20
+>>
+>>>
+>>>> +
+>>>> +- type:			a string containing the trip type. Supported values are:
+>>>> +	"active":	A trip point to enable active cooling
+>>>> +	"passive":	A trip point to enable passive cooling
+>>>
+>>> The two above seem to be implying action, as opposed to the general
+>>> comment about trip points.
+>>
+>> They do not imply action, they specify type of trip.
+>=20
+> For me "A trip point to enable active cooling" means that when this tri=
+p
+> point is crossed, active cooling must be enabled. What is it if not
+> implying action?
+
+But within a board there could be more than one active cooling actions
+that could be done, it is not a 1 to 1 relation. Same thing applies to
+passive cooling. The binding does not imply a specific action. Just the
+trip type.
+
+>=20
+>>
+>>>
+>>>> +	"hot":		A trip point to notify emergency
+>>>> +	"critical":	Hardware not reliable.
+>>>> +  Type: string
+>>>> +
+>>> [snip]
+>>>> +* Examples
+>>>> +
+>>>> +Below are several examples on how to use thermal data descriptors
+>>>> +using device tree bindings:
+>>>> +
+>>>> +(a) - CPU thermal zone
+>>>> +
+>>>> +The CPU thermal zone example below describes how to setup one therm=
+al zone
+>>>> +using one single sensor as temperature source and many cooling devi=
+ces and
+>>>> +power dissipation control sources.
+>>>> +
+>>>> +#include <dt-bindings/thermal/thermal.h>
+>>>> +
+>>>> +cpus {
+>>>> +	/*
+>>>> +	 * Here is an example of describing a cooling device for a DVFS
+>>>> +	 * capable CPU. The CPU node describes its four OPPs.
+>>>> +	 * The cooling states possible are 0..3, and they are
+>>>> +	 * used as OPP indexes. The minimum cooling state is 0, which mean=
+s
+>>>> +	 * all four OPPs can be available to the system. The maximum
+>>>> +	 * cooling state is 3, which means only the lowest OPPs (198MHz@0.=
+85V)
+>>>> +	 * can be available in the system.
+>>>> +	 */
+>>>> +	cpu0: cpu@0 {
+>>>> +		...
+>>>> +		operating-points =3D <
+>>>> +			/* kHz    uV */
+>>>> +			970000  1200000
+>>>> +			792000  1100000
+>>>> +			396000  950000
+>>>> +			198000  850000
+>>>> +		>;
+>>>> +		cooling-min-state =3D <0>;
+>>>> +		cooling-max-state =3D <3>;
+>>>> +		#cooling-cells =3D <2>; /* min followed by max */
+>>>
+>>> I believe you don't need the min- and max-state properties here then.=
+ Your
+>>> thermal core can simply query the cpufreq driver (which would be a co=
+oling
+>>> device here) about the range of states it supports
+>>
+>> This binding is not supposed to be aware of cpufreq, which is Linux
+>> specific implementation.
+>=20
+> I didn't say anything about making the binding aware of cpufreq, but
+> instead about getting rid of redundancy of data, that can be provided
+> by respective drivers anyway.
+
+There are cases in which cooling devices don't need to use all states
+for cooling, because either lower states does not provide cooling
+effectiveness or higher states must be avoided at all. So, allowing
+drivers to report this thermal info is possible, but questionable
+design, as you would be spreading the thermal info. Besides, for the
+example I gave, the driver would need to know board specifics, as the
+range of states would vary anyway across board.
+
+>=20
+>>
+>> Besides, the cpufreq layer is populated by data already specified in D=
+T.
+>> .
+>>>
+>>>> +	};
+>>>> +	...
+>>>> +};
+>>>> +
+>>>> +&i2c1 {
+>>>> +	...
+>>>> +	/*
+>>>> +	 * A simple fan controller which supports 10 speeds of operation
+>>>> +	 * (represented as 0-9).
+>>>> +	 */
+>>>> +	fan0: fan@0x48 {
+>>>> +		...
+>>>> +		cooling-min-state =3D <0>;
+>>>> +		cooling-max-state =3D <9>;
+>>>
+>>> This is similar. The fan driver will probaby know about available
+>>> fan speed levels and be able to report the range of states to thermal=
+
+>>> core.
+>>
+>> Then we loose also the flexibility to assign cooling states to trip
+>> points, as described in this binding.
+>=20
+> I don't think you got my point correctly.
+>=20
+> Let's say you have a CPU, which has 4 operating points. You don't need
+> to specify that min state is 0 and max state is 4, because it is implie=
+d
+> by the list of operating points.
+
+Please read my explanation above.
+
+>=20
+> Same goes for a fan controller that has, let's say, an 8-bit PWM duty
+> cycle register, which in turn allows 256 different speed states. This
+> implies that min state for it is 0 and max state 255 and you don't need=
+
+> to specify this in DT.
+
+ditto.
+
+>=20
+> Now, both a CPU and fan controller will have their thermal drivers, whi=
+ch
+> can report to the thermal core what ranges of cooling states they suppo=
+rt,
+> which again makes it wrong to specify such data in DT.
+
+
+Please also read the examples I gave in the thermal binding. There are
+case that the designer may want to assign a range of states to
+temperature trip points. This binding is flexible enough to cover for
+that situation. And without the representation of these limits it would
+be hard to read the binding. It is not redundant data, please check the
+documentation.
+
+>=20
+> Best regards,
+> Tomasz
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--Cs1tdUcWi2W2pUXopW6Amwvp5fhcichCq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKGH0sACgkQCXcVR3XQvP04YAD/U4EUrd2Eyo5vIRPtS8VUtTfy
+7vm75ky69Kix7IRnhPwA/1nB7iEui0tGs1Sp4woqPxA6zuKg+ff5YfGAgsmPXBhb
+=sSU3
+-----END PGP SIGNATURE-----
+
+--Cs1tdUcWi2W2pUXopW6Amwvp5fhcichCq--
