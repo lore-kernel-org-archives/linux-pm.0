@@ -1,29 +1,48 @@
 From: viresh kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH] cpufreq: cpufreq-cpu0: do not allow transitions with
- regulators suspended
-Date: Fri, 15 Nov 2013 10:09:56 +0530
-Message-ID: <5285A59C.2070603@linaro.org>
-References: <1382638087-32054-1-git-send-email-nm@ti.com> <20131113151645.GA17828@kahuna> <52842671.40703@linaro.org> <2085822.gaTNcUz76n@vostro.rjw.lan>
+Subject: Re: [PATCHv5 05/20] cpufreq: cpufreq-cpu0: add dt node parsing for
+ cooling device properties
+Date: Fri, 15 Nov 2013 10:11:36 +0530
+Message-ID: <5285A600.1070807@linaro.org>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f41.google.com ([209.85.128.41]:40966 "EHLO
-	mail-qe0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756215Ab3KOEkC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Nov 2013 23:40:02 -0500
-Received: by mail-qe0-f41.google.com with SMTP id x7so1980445qeu.28
-        for <linux-pm@vger.kernel.org>; Thu, 14 Nov 2013 20:40:01 -0800 (PST)
-In-Reply-To: <2085822.gaTNcUz76n@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com
+Cc: wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>
 
-On Friday 15 November 2013 03:30 AM, Rafael J. Wysocki wrote:
-> I'm not going to apply anything like this.  If I have already, that's been a mistake.
+On Wednesday 13 November 2013 01:16 AM, Eduardo Valentin wrote:
+> This patch changes the cpufreq-cpu0 driver to consider if
+> a cpu needs cooling (with cpufreq). In case the cooling is needed,
+> the cpu0 device tree node needs to be properly configured
+> with cooling device properties.
 > 
-> Do not mix assignments with logical operators in such outrageous ways, please.
-> That's completely unreadable and confusing.
+> In case these properties are present,, the driver will
+> load a cpufreq cooling device in the system. The cpufreq-cpu0
+> driver is not interested in determining how the system should
+> be using the cooling device. The driver is responsible
+> only of loading the cooling device.
+> 
+> Describing how the cooling device will be used can be
+> accomplished by setting up a thermal zone that references
+> and is composed by the cpufreq cooling device.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: cpufreq@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: devicetree-discuss@lists.ozlabs.org
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> ---
+>  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt         |  7 +++++++
+>  drivers/cpufreq/Kconfig                                  |  2 +-
+>  drivers/cpufreq/cpufreq-cpu0.c                           | 16 ++++++++++++++++
+>  3 files changed, 24 insertions(+), 1 deletion(-)
 
-Okay... Will get it fixed for existing code as well..
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
