@@ -1,7 +1,7 @@
 From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [RFC v2 2/4] power: asv: Add a common ASV driver for Exynos SoCs.
-Date: Fri, 15 Nov 2013 17:11:29 +0530
-Message-ID: <1384515691-26299-3-git-send-email-sachin.kamat@linaro.org>
+Subject: [RFC v2 4/4] ARM: SAMSUNG: Register static platform device for ASV for Exynos5
+Date: Fri, 15 Nov 2013 17:11:31 +0530
+Message-ID: <1384515691-26299-5-git-send-email-sachin.kamat@linaro.org>
 References: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
@@ -12,150 +12,34 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Yadwinder Singh Brar <yadi.brar@samsung.com>
 
-This patch adds a common platform driver to register ASV members for
-Exynos SoCs.
+Since ASV is not a hardware controller, we can't add device tree node
+for it. This patch registers a static platform device for Exynos ASV.
 
 Signed-off-by: Yadwinder Singh Brar <yadi.brar@samsung.com>
 Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/power/asv/Kconfig      |   13 ++++++++
- drivers/power/asv/Makefile     |    1 +
- drivers/power/asv/exynos-asv.c |   70 ++++++++++++++++++++++++++++++++++++++++
- drivers/power/asv/exynos-asv.h |   21 ++++++++++++
- 4 files changed, 105 insertions(+)
- create mode 100644 drivers/power/asv/exynos-asv.c
- create mode 100644 drivers/power/asv/exynos-asv.h
+ arch/arm/mach-exynos/mach-exynos5-dt.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/power/asv/Kconfig b/drivers/power/asv/Kconfig
-index 761119d9f7f8..a57980a33148 100644
---- a/drivers/power/asv/Kconfig
-+++ b/drivers/power/asv/Kconfig
-@@ -8,3 +8,16 @@ menuconfig POWER_ASV
- 	  chip id info which depends on the chip manufacturing process.
+diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
+index 602c5d7111d0..831b7222aab6 100644
+--- a/arch/arm/mach-exynos/mach-exynos5-dt.c
++++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
+@@ -24,6 +24,7 @@ static void __init exynos5_dt_machine_init(void)
+ 	struct device_node *i2c_np;
+ 	const char *i2c_compat = "samsung,s3c2440-i2c";
+ 	unsigned int tmp;
++	struct platform_device_info devinfo = { .name = "exynos-asv", };
  
- 	  Say Y here to enable Adaptive Supply Voltage support.
-+
-+if POWER_ASV
-+
-+config POWER_EXYNOS_ASV
-+	bool "Adaptive Supply Voltage for Exynos"
-+	help
-+	  Exynos supports ASV depending upon the ASV group fused on chip.
-+	  Users can request ASV specific to a frequency for a particular member
-+	  from corresponding DVFS driver.
-+
-+	  Say Y here to enable Exynos Adaptive Supply Voltage.
-+
-+endif
-diff --git a/drivers/power/asv/Makefile b/drivers/power/asv/Makefile
-index 366cb04f557b..9d0e0cc32cb5 100644
---- a/drivers/power/asv/Makefile
-+++ b/drivers/power/asv/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_POWER_ASV)			+= asv.o
-+obj-$(CONFIG_POWER_EXYNOS_ASV)		+= exynos-asv.o
-diff --git a/drivers/power/asv/exynos-asv.c b/drivers/power/asv/exynos-asv.c
-new file mode 100644
-index 000000000000..50efb0b6af85
---- /dev/null
-+++ b/drivers/power/asv/exynos-asv.c
-@@ -0,0 +1,70 @@
-+/* Common Exynos ASV(Adaptive Supply Voltage) driver
-+ *
-+ * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-+ *		http://www.samsung.com/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+*/
-+
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/slab.h>
-+#include <linux/of_address.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power/asv-driver.h>
-+#include "exynos-asv.h"
-+
-+static int exynos_asv_probe(struct platform_device *pdev)
-+{
-+	struct device_node *chip_id;
-+	struct exynos_asv_common *exynos_asv_info;
-+	void __iomem *base;
-+	int ret = 0;
-+
-+	exynos_asv_info = devm_kzalloc(&pdev->dev, sizeof(*exynos_asv_info),
-+				       GFP_KERNEL);
-+	if (!exynos_asv_info)
-+		return -ENOMEM;
-+
-+	chip_id = of_find_compatible_node(NULL, NULL,
-+						"samsung,exynos4210-chipid");
-+	if (!chip_id) {
-+		pr_err("%s: unable to find chipid\n", __func__);
-+		return -ENODEV;
-+	}
-+
-+	base = of_iomap(chip_id, 0);
-+	if (!base) {
-+		dev_err(&pdev->dev, "unable to map chip_id register\n");
-+		ret = -ENOMEM;
-+		goto err_map;
-+	}
-+
-+	exynos_asv_info->base = base;
-+
-+	/* call SoC specific intialisation routine */
-+
-+	register_asv_member(exynos_asv_info->asv_list, exynos_asv_info->nr_mem);
-+
-+	iounmap(base);
-+err_map:
-+	of_node_put(chip_id);
-+
-+	return ret;
-+}
-+
-+static struct platform_driver exynos_asv_platdrv = {
-+	.driver = {
-+		.name	= "exynos-asv",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= exynos_asv_probe,
-+};
-+module_platform_driver(exynos_asv_platdrv);
-+
-+MODULE_AUTHOR("Yadwinder Singh Brar<yadi.brar@samsung.com>");
-+MODULE_DESCRIPTION("Exynos ASV driver");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/power/asv/exynos-asv.h b/drivers/power/asv/exynos-asv.h
-new file mode 100644
-index 000000000000..89a1ae8b5e19
---- /dev/null
-+++ b/drivers/power/asv/exynos-asv.h
-@@ -0,0 +1,21 @@
-+/*
-+ * Exynos - Adaptive Supply Voltage Driver Header File
-+ *
-+ * copyright (c) 2013 samsung electronics co., ltd.
-+ *		http://www.samsung.com/
-+ *
-+ * this program is free software; you can redistribute it and/or modify
-+ * it under the terms of the gnu general public license version 2 as
-+ * published by the free software foundation.
-+*/
-+
-+#ifndef __EXYNOS_ASV_D_H
-+#define __EXYNOS_ASV_D_H __FILE__
-+
-+struct exynos_asv_common {
-+	struct asv_info *asv_list;
-+	unsigned int nr_mem;
-+	void __iomem *base;
-+};
-+
-+#endif	/* __EXYNOS_ASV_D_H */
+ 	/*
+ 	 * Exynos5's legacy i2c controller and new high speed i2c
+@@ -47,6 +48,7 @@ static void __init exynos5_dt_machine_init(void)
+ 	exynos_cpufreq_init();
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
++	platform_device_register_full(&devinfo);
+ }
+ 
+ static char const *exynos5_dt_compat[] __initdata = {
 -- 
 1.7.9.5
