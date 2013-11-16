@@ -1,58 +1,100 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] power: Change device_wakeup_enable() to check for null
- dev_name(dev)
-Date: Fri, 15 Nov 2013 16:25:01 -0800
-Message-ID: <20131116002501.GA20625@kroah.com>
-References: <1384560238-10708-1-git-send-email-shuah.kh@samsung.com>
- <4035469.UfR6Rto3I2@vostro.rjw.lan>
- <5286B95F.4040306@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [Update PATCH 1/1] Cpufreq: Make governor data on nonboot cpus across system suspend/resume
+Date: Sat, 16 Nov 2013 01:38:39 +0100
+Message-ID: <2368963.sKiLjXYCVt@vostro.rjw.lan>
+References: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com> <1384503334-18809-1-git-send-email-tianyu.lan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5286B95F.4040306@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, anton@enomsg.org, dwmw2@infradead.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63268 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754420Ab3KPA0H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2013 19:26:07 -0500
+In-Reply-To: <1384503334-18809-1-git-send-email-tianyu.lan@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Nov 15, 2013 at 05:16:31PM -0700, Shuah Khan wrote:
-> On 11/15/2013 05:21 PM, Rafael J. Wysocki wrote:
-> > On Friday, November 15, 2013 05:03:57 PM Shuah Khan wrote:
-> >> device_wakeup_enable() uses dev_name(dev) as the wakeup source name.
-> >> When it gets called with a device with its name not yet set, ws structure
-> >> with ws->name = NULL gets created.
-> >>
-> >> When kernel is booted with wakeup_source_activate enabled, it will panic
-> >> when the trace point code tries to derefernces ws->name.
-> >>
-> >> Change device_wakeup_enable() to check for dev_name(dev) null condition
-> >> and return -EINVAL to avoid panics when device_wakeup_enable() gets called
-> >> before device is fully initialized with its name.
->   		return -EINVAL;
-> >
-> > Can you please use WARN_ON(!dev_name(dev)) here?  While I agree that it is a
-> > bad idea to crash the kernel because dev has no name, that indicates a driver
-> > bug that shouldn't be too easy to ignore.
-> >
-> > Thanks!
-> >
+On Friday, November 15, 2013 04:15:34 PM Lan Tianyu wrote:
+> Currently, governor of nonboot cpus will be put to EXIT when system suspend.
+> Since all these cpus will be unplugged and the governor usage_count decreases
+> to zero. The governor data and its sysfs interfaces will be freed or released.
+> This makes user config of these governors loss during suspend and resume.
+
+First off, do we have a pointer to a bug report related to that?
+
+Second, what does need to be done to reproduce this problem?
+
+> This doesn't happen on the governor covering boot cpu because it isn't
+> unplugged during system suspend.
 > 
-> Right. ok I will re-cut the patch with WARN_ON and send it. fyi I did 
-> send fix for the driver (power_supply) as well.
+> To fix this issue, skipping governor exit during system suspend and check
+> policy governor data to determine whether the governor is really needed
+> to be initialized when do init. If not, return EALREADY to indicate the
+> governor has been initialized and should do nothing. __cpufreq_governor()
+> convert EALREADY to 0 as return value for INIT event since governor is
+> still under INIT state and can do START operation.
 > 
-> http://www.kernelhub.org/?msg=362354&p=2
-
-Why is a driver calling kobject_set_name() instead of device_set_name()?
-
-Yes, it's really the same thing deep down, but drivers should never care
-about a kobject, just 'struct device'.  Well, even then it usually
-should care about it's type of 'struct device' but that's a different
-issue...
-
-Anyway, not saying your patch is wrong at all, just for the future if
-people are looking for code cleanups...
-
-thanks,
-
-greg k-h
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> ---
+> Fix some typos
+> 
+>  drivers/cpufreq/cpufreq.c          |  5 ++++-
+>  drivers/cpufreq/cpufreq_governor.c | 13 ++++++++++++-
+>  2 files changed, 16 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534d..38f2e4a 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1239,7 +1239,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>  
+>  	/* If cpu is last user of policy, free policy */
+>  	if (cpus == 1) {
+> -		if (has_target()) {
+> +		if (has_target() && !frozen) {
+>  			ret = __cpufreq_governor(policy,
+>  					CPUFREQ_GOV_POLICY_EXIT);
+>  			if (ret) {
+> @@ -1822,6 +1822,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+>  		module_put(policy->governor->owner);
+>  
+> +	if ((event == CPUFREQ_GOV_POLICY_INIT) && ret == -EALREADY)
+> +		ret = 0;
+> +
+>  	return ret;
+>  }
+>  
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 0806c31..ddb93af 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -204,9 +204,20 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  
+>  	switch (event) {
+>  	case CPUFREQ_GOV_POLICY_INIT:
+> +		/*
+> +		 * In order to keep governor data across suspend/resume,
+> +		 * Governor doesn't exit when suspend and will be
+> +		 * reinitialized when resume. Here check policy governor
+> +		 * data to determine whether the governor has been exited.
+> +		 * If not, return EALREADY.
+> +		 */
+>  		if (have_governor_per_policy()) {
+> -			WARN_ON(dbs_data);
+> +			if (dbs_data)
+> +				return -EALREADY;
+>  		} else if (dbs_data) {
+> +			if (policy->governor_data == dbs_data)
+> +				return -EALREADY;
+> +
+>  			dbs_data->usage_count++;
+>  			policy->governor_data = dbs_data;
+>  			return 0;
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
