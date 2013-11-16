@@ -1,92 +1,122 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [Update PATCH 1/1] Cpufreq: Make governor data on nonboot cpus
- across system suspend/resume
-Date: Sat, 16 Nov 2013 12:33:03 +0800
-Message-ID: <5286F57F.6000908@intel.com>
-References: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com> <1384503334-18809-1-git-send-email-tianyu.lan@intel.com> <CAKohpokjtaCJj3QCDyoQ+1UviLX8ZSnpWk05Jh4U02pmrq897g@mail.gmail.com>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: stats: Do not populate stats when policy->cur
+ has no exact match
+Date: Sat, 16 Nov 2013 10:52:23 +0530
+Message-ID: <5287010F.9000508@linaro.org>
+References: <1384561243-30391-1-git-send-email-nm@ti.com> <1423628.uM8DtnYzDe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokjtaCJj3QCDyoQ+1UviLX8ZSnpWk05Jh4U02pmrq897g@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f49.google.com ([209.85.216.49]:64091 "EHLO
+	mail-qa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897Ab3KPFWa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Nov 2013 00:22:30 -0500
+Received: by mail-qa0-f49.google.com with SMTP id cm18so1081270qab.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2013 21:22:30 -0800 (PST)
+In-Reply-To: <1423628.uM8DtnYzDe@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ceh@ti.com, Tobias Diedrich <ranma+xen@tdiedrich.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Dave Jones <davej@redhat.com>
 
-On 11/15/2013 06:22 PM, Viresh Kumar wrote:
-> On 15 November 2013 13:45, Lan Tianyu <tianyu.lan@intel.com> wrote:
->> Currently, governor of nonboot cpus will be put to EXIT when system suspend.
->> Since all these cpus will be unplugged and the governor usage_count decreases
->> to zero. The governor data and its sysfs interfaces will be freed or released.
->> This makes user config of these governors loss during suspend and resume.
->>
->> This doesn't happen on the governor covering boot cpu because it isn't
->> unplugged during system suspend.
->>
->> To fix this issue, skipping governor exit during system suspend and check
->> policy governor data to determine whether the governor is really needed
->> to be initialized when do init. If not, return EALREADY to indicate the
->> governor has been initialized and should do nothing. __cpufreq_governor()
->> convert EALREADY to 0 as return value for INIT event since governor is
->> still under INIT state and can do START operation.
->>
->> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
->> ---
->
-> Hi Lan..
->
+On Saturday 16 November 2013 06:40 AM, Rafael J. Wysocki wrote:
+> On Friday, November 15, 2013 06:20:43 PM Nishanth Menon wrote:
 
-Hi Viresh:
+>> So, instead of having a statistics information that never ever
+>> reflects valid data in the mentioned case and scratching our heads, we
+>> instead, refuse to populate any of the statistics entries and note in
+>> kernel log the error condition for developers to fix. The only useable
 
-> Apologies!!
->
-> I already had a solution for this as this was reported by few Broadcom people
-> as well. But I haven't send it to mainline yet as it was untested. It
-> looked similar
-> to what you had..
->
-> And so I would have taken your patch (as you have sent it first to the list and
-> there is no real advantage of my patch over yours, they were almost same) :)
->
-> But then I went chasing another bug posted by Nishant:
->
-> https://lkml.org/lkml/2013/10/24/369
->
-> And the final solution I have to write solved all the problems you and he
-> reported.
->
-> Please have a look at that patch (you are cc'd) and give it a try to see
-> if it fixes your problem..
+s/useable/usable
 
-Never mind. I think it should work and will try it.
+>> information are the available frequencies which is already available
+>> in other cpufreq sysfs entries.
 
->
-> Btw, One question about your setup:
-> - you must have a multi cluster/socket SoC as you have atleast one more
-> policy structure than used for group containing boot cpu..
+> I like this one.  Any objections from anyone?
 
-Actually, I test on a laptop and find this issue when reading code to 
-fix other bug. :)
+Well nothing against the patch but I have other thoughts. There are platforms
+which might have no choice of fixing this issue as their bootloaders might be
+setting boot freq to any value outside of our freq table.
 
-All cpus have their own policys.
+And those might not have a chance to fix that in driver as well in case they are
+using something like cpufreq-cpu0..
 
-> - Are you using separate governor for both groups?
+So, eventually this patch wouldn't do anything except giving a boot time error
+and not initializing any stats at all..
 
-Just to produce the bug, I set one non-boot cpu to conservative gov. All 
-other remain default "ondemand".
+Wouldn't it be better to create another frequency in all these tables, which
+will be an *Invalid* frequency.. With a value of -1 (i.e. largest value of an
+unsigned int) ??
 
-> - Or are you using CPUFREQ_HAVE_GOVERNOR_PER_POLICY stuff
-> to use same governor with separate tunables for both groups?
->
+And so nobody will ever miss stats again, even if they are running on invalid
+frequencies. We will capture that information too:
+- we have moved from/to invalid frequency to/from a valid/invalid frequency this
+much times.
+- We have stayed at valid/invalid frequencies for this much time.
 
-No, I am not using this.
+I have a untested patch for this. If this looks okay, Nishant can you please try
+below patch? With some fixups from your side :)
 
-> Just wanted to know if somebody else is also using
-> CPUFREQ_HAVE_GOVERNOR_PER_POLICY :)
->
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 4cf0d28..0c551a6 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -145,10 +145,12 @@ static struct attribute_group stats_attr_group = {
+ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+ {
+        int index;
+-       for (index = 0; index < stat->max_state; index++)
++       for (index = 0; index < stat->max_state - 1; index++)
+                if (stat->freq_table[index] == freq)
+                        return index;
+-       return -1;
++
++       /* Last state is INVALID, to mark out of table frequency */
++       return stat->max_state - 1;
+ }
+
+ /* should be called late in the CPU removal sequence so that the stats
+@@ -222,6 +224,9 @@ static int cpufreq_stats_create_table(struct cpufreq_policy
+*policy,
+                count++;
+        }
+
++       /* An extra entry for Invalid frequencies */
++       count++;
++
+        alloc_size = count * sizeof(int) + count * sizeof(u64);
+
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+@@ -243,9 +248,13 @@ static int cpufreq_stats_create_table(struct cpufreq_policy
+*policy,
+                unsigned int freq = table[i].frequency;
+                if (freq == CPUFREQ_ENTRY_INVALID)
+                        continue;
+-               if (freq_table_get_index(stat, freq) == -1)
++               if (freq_table_get_index(stat, freq) == stat->max_state - 1)
+                        stat->freq_table[j++] = freq;
+        }
++
++       /* Mark Invalid freq as max value to indicate Invalid freq */
++       stat->freq_table[j++] = -1;
++
+        stat->state_num = j;
+        spin_lock(&cpufreq_stats_lock);
+        stat->last_time = get_jiffies_64();
+@@ -315,10 +324,6 @@ static int cpufreq_stat_notifier_trans(struct
+notifier_block *nb,
+        old_index = stat->last_index;
+        new_index = freq_table_get_index(stat, freq->new);
+
+-       /* We can't do stat->time_in_state[-1]= .. */
+-       if (old_index == -1 || new_index == -1)
+-               return 0;
+-
+        cpufreq_stats_update(freq->cpu);
+
+        if (old_index == new_index)
 
 
--- 
-Best Regards
-Tianyu Lan
+(@Rafael: Finally I have moved to thunderbird, found a way out, so no more
+crappy attachments from me :))
