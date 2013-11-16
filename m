@@ -1,91 +1,58 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH] cpufreq: stats: Do not populate stats when policy->cur has no exact match
-Date: Fri, 15 Nov 2013 18:20:43 -0600
-Message-ID: <1384561243-30391-1-git-send-email-nm@ti.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] power: Change device_wakeup_enable() to check for null
+ dev_name(dev)
+Date: Fri, 15 Nov 2013 16:25:01 -0800
+Message-ID: <20131116002501.GA20625@kroah.com>
+References: <1384560238-10708-1-git-send-email-shuah.kh@samsung.com>
+ <4035469.UfR6Rto3I2@vostro.rjw.lan>
+ <5286B95F.4040306@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ceh@ti.com, Nishanth Menon <nm@ti.com>, Tobias Diedrich <ranma+xen@tdiedrich.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Dave Jones <davej@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5286B95F.4040306@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, anton@enomsg.org, dwmw2@infradead.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-commit 46a310b ([CPUFREQ] Don't set stat->last_index to -1 if the
-pol->cur has incorrect value.) tries to handle case where policy->cur
-does not match any entry in freq_table.
+On Fri, Nov 15, 2013 at 05:16:31PM -0700, Shuah Khan wrote:
+> On 11/15/2013 05:21 PM, Rafael J. Wysocki wrote:
+> > On Friday, November 15, 2013 05:03:57 PM Shuah Khan wrote:
+> >> device_wakeup_enable() uses dev_name(dev) as the wakeup source name.
+> >> When it gets called with a device with its name not yet set, ws structure
+> >> with ws->name = NULL gets created.
+> >>
+> >> When kernel is booted with wakeup_source_activate enabled, it will panic
+> >> when the trace point code tries to derefernces ws->name.
+> >>
+> >> Change device_wakeup_enable() to check for dev_name(dev) null condition
+> >> and return -EINVAL to avoid panics when device_wakeup_enable() gets called
+> >> before device is fully initialized with its name.
+>   		return -EINVAL;
+> >
+> > Can you please use WARN_ON(!dev_name(dev)) here?  While I agree that it is a
+> > bad idea to crash the kernel because dev has no name, that indicates a driver
+> > bug that shouldn't be too easy to ignore.
+> >
+> > Thanks!
+> >
+> 
+> Right. ok I will re-cut the patch with WARN_ON and send it. fyi I did 
+> send fix for the driver (power_supply) as well.
+> 
+> http://www.kernelhub.org/?msg=362354&p=2
 
-As indicated in the above commit, the exact match search of
-freq_table_get index will return a -1 which is stored in
-stat->last_index. However, as a result of the above commit,
-cpufreq_stat_notifier_trans which updates the statistics, fails
-to update any *further* valid transitions that take place as
-stat->last_index is -1 as the condition occurs at boot and never
-solved.
+Why is a driver calling kobject_set_name() instead of device_set_name()?
 
-So, instead of having a statistics information that never ever
-reflects valid data in the mentioned case and scratching our heads, we
-instead, refuse to populate any of the statistics entries and note in
-kernel log the error condition for developers to fix. The only useable
-information are the available frequencies which is already available
-in other cpufreq sysfs entries.
+Yes, it's really the same thing deep down, but drivers should never care
+about a kobject, just 'struct device'.  Well, even then it usually
+should care about it's type of 'struct device' but that's a different
+issue...
 
-Cc: Tobias Diedrich <ranma+xen@tdiedrich.de>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Dave Jones <davej@redhat.com>
-Reported-by: Carlos Hernandez <ceh@ti.com>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
+Anyway, not saying your patch is wrong at all, just for the future if
+people are looking for code cleanups...
 
-Patch based on v3.12 tag
+thanks,
 
-Reported by Carlos on TI vendor kernel (v3.12tag based):
-
-OMAP5uEVM: http://pastebin.mozilla.org/3612196
-AM335x-evm: http://pastebin.mozilla.org/3612220
-
-As can be seen, the translation table are present, however none of the
-transition information is ever updated.
-With the current patch, this becomes: http://pastebin.mozilla.org/3612256
-
-Original commit thread seems to be:
-https://lkml.org/lkml/2011/6/16/760 but I dont see much information if
-this was discussed further.
-
-An alternate approach possible is to try and recover from this case by
-using an 'atmost' match to find a closest match and then giveup when
-we cant find one, but that does not really indicate a proper statistic
-(if freq1 < cur_freq < freq2, was the intent to be at freq1 or freq2?
-stats should not make that policy decision)
-	http://pastebin.mozilla.org/3612179 (alternate approach 1)
-
-Yet another option might be to update last_index using the first
-transition into a valid index, but then, we wont have statistics
-information 100% correct as we did not store the very first frequency
-stat.
-	 http://pastebin.mozilla.org/3612241 (alternate approach 2)
-
- drivers/cpufreq/cpufreq_stats.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 4cf0d28..4c8a501 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -251,6 +251,14 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
- 	stat->last_time = get_jiffies_64();
- 	stat->last_index = freq_table_get_index(stat, policy->cur);
- 	spin_unlock(&cpufreq_stats_lock);
-+
-+	if (stat->last_index == -1) {
-+		pr_err("%s: No match for current freq %u in table. Disabled!\n",
-+		       __func__, policy->cur);
-+		ret = -EINVAL;
-+		goto error_out;
-+	}
-+
- 	cpufreq_cpu_put(current_policy);
- 	return 0;
- error_out:
--- 
-1.7.9.5
-
+greg k-h
