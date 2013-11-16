@@ -1,61 +1,149 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Sat, 16 Nov 2013 20:47:24 +0530
-Message-ID: <CAKohpok_zjdRVz5-ZGRmZtwysC7jORm2mgRbLWDUzo1ucYVKZg@mail.gmail.com>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
-	<5020664.HldDXMO8cr@vostro.rjw.lan>
-	<5286F536.70403@linaro.org>
-	<2235672.LLJc6e6dny@vostro.rjw.lan>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [Update PATCH 1/1] Cpufreq: Make governor data on nonboot cpus
+ across system suspend/resume
+Date: Sat, 16 Nov 2013 23:23:59 +0800
+Message-ID: <52878E0F.3030505@intel.com>
+References: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com> <2368963.sKiLjXYCVt@vostro.rjw.lan> <5286EDBF.9050001@intel.com> <9847309.KdKOG5y1Zx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2235672.LLJc6e6dny@vostro.rjw.lan>
+In-Reply-To: <9847309.KdKOG5y1Zx@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16 November 2013 19:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-
-> Well, disabling it for the whole duration of suspend/resume and/or hibernation
-> may not be the right approach entirely, unless we force the pax perf of the
-
-s/pax/max ?
-
-> boot CPU at least in addition to that.  Otherwise the latency of suspend and
-> the subsequent resume will depend on what perf level the CPUs where before
-> disabling the governors, which is not desirable at al.
-
-Well that is pretty much doable.
-
->> And these are the notifications that we send:
->> - PM_HIBERNATION_PREPARE
->> - PM_POST_HIBERNATION
->> - PM_RESTORE_PREPARE
->> - PM_POST_RESTORE
+On 11/16/2013 10:41 PM, Rafael J. Wysocki wrote:
+> On Saturday, November 16, 2013 11:59:59 AM Lan Tianyu wrote:
+>> On 11/16/2013 08:38 AM, Rafael J. Wysocki wrote:
+>>> On Friday, November 15, 2013 04:15:34 PM Lan Tianyu wrote:
+>>>> Currently, governor of nonboot cpus will be put to EXIT when system suspend.
+>>>> Since all these cpus will be unplugged and the governor usage_count decreases
+>>>> to zero. The governor data and its sysfs interfaces will be freed or released.
+>>>> This makes user config of these governors loss during suspend and resume.
+>>>
+>>> First off, do we have a pointer to a bug report related to that?
+>>>
 >>
->> If I am not wrong I need to stop governors on PM_HIBERNATION_PREPARE and need to
->> start them back on: PM_POST_HIBERNATION (I am a bit confused with this one. Does
->> this POST_HIBERNATION one happens at the end of going into hibernation? or after
->> booting back? I need a notifier at the end of restore)..
+>> No, I found this bug when I tried to resolve other similar bug.
+>> https://bugzilla.kernel.org/show_bug.cgi?id=63081. I still have no idea
+>> about bug 63081 and asked reporter to try this patch.
+>>
+>>> Second, what does need to be done to reproduce this problem?
+>>>
+>>
+>> Defaultly, all cpus use ondemand governor after bootup. Change one
+>> non-boot cpu's governor to conservative,
 >
-> You'd need both PM_POST_HIBERNATION and PM_POST_RESTORE, but I wouldn't really
-> like cpufreq governors to be disabled throughout the whole hibernation.
+> Well, why would anyone want to do that?  Just out of curiosity ...
 
-So PM_POST_HIBERNATION is called just before shutting off the system? And
-PM_POST_RESTORE is called after system is resumed from saved image?
+Just use this way to produce the issue. But on the laptop, I think
+fewer people will do the same thing. Just like Viresh said, this also
+will affect the systems of governor per policy.
 
-> Actually, we use CPU offline/online during system suspend/resume to avoid
-> having to do stuff like this from PM notifiers.
+>
+>> modify conservative config via sysfs interface and then do system suspend.
+>> After resume, the config of conservative is reset. On my machine, all cpus
+>> have owen policy.
+>
+> So this is acpi-cpufreq, right?
+>
 
-I didn't get the logic behind this one..
+Yes, it's acpi-cpufreq driver.
 
-> So I'd like the original problem to be addressed in a different way.
+> The patch looks basically OK to me, but ->
+>
+>>>> This doesn't happen on the governor covering boot cpu because it isn't
+>>>> unplugged during system suspend.
+>>>>
+>>>> To fix this issue, skipping governor exit during system suspend and check
+>>>> policy governor data to determine whether the governor is really needed
+>>>> to be initialized when do init. If not, return EALREADY to indicate the
+>>>> governor has been initialized and should do nothing. __cpufreq_governor()
+>>>> convert EALREADY to 0 as return value for INIT event since governor is
+>>>> still under INIT state and can do START operation.
+>>>>
+>>>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>>>> ---
+>>>> Fix some typos
+>>>>
+>>>>    drivers/cpufreq/cpufreq.c          |  5 ++++-
+>>>>    drivers/cpufreq/cpufreq_governor.c | 13 ++++++++++++-
+>>>>    2 files changed, 16 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>>> index 02d534d..38f2e4a 100644
+>>>> --- a/drivers/cpufreq/cpufreq.c
+>>>> +++ b/drivers/cpufreq/cpufreq.c
+>>>> @@ -1239,7 +1239,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>>>>
+>>>>    	/* If cpu is last user of policy, free policy */
+>>>>    	if (cpus == 1) {
+>>>> -		if (has_target()) {
+>>>> +		if (has_target() && !frozen) {
+>>>>    			ret = __cpufreq_governor(policy,
+>>>>    					CPUFREQ_GOV_POLICY_EXIT);
+>>>>    			if (ret) {
+>>>> @@ -1822,6 +1822,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>>>>    			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+>>>>    		module_put(policy->governor->owner);
+>>>>
+>>>> +	if ((event == CPUFREQ_GOV_POLICY_INIT) && ret == -EALREADY)
+>>>> +		ret = 0;
+>>>> +
+>
+> -> I'd prefer this check to be combined with the one done to determine whether
+> or not we need to do the module_put().  Something like
+>
+> 	if (event == CPUFREQ_GOV_POLICY_EXIT && ret) {
+> 		module_put(policy->governor->owner);
+> 		if (ret == -EALREADY)
+> 			return 0;
+> 	} else if (event == CPUFREQ_GOV_POLICY_EXIT && !ret) {
+> 		module_put(policy->governor->owner);
+> 	}
+>
 
-Hmm..
+Ok. I will update soon.
 
-> PS
-> The sisk.pl address will start bouncing shortly, so please replace it with
-> rjw@rjwysocki.net in your address book.
+> Thanks!
+>
+>>>>    	return ret;
+>>>>    }
+>>>>
+>>>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>>>> index 0806c31..ddb93af 100644
+>>>> --- a/drivers/cpufreq/cpufreq_governor.c
+>>>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>>>> @@ -204,9 +204,20 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>>>
+>>>>    	switch (event) {
+>>>>    	case CPUFREQ_GOV_POLICY_INIT:
+>>>> +		/*
+>>>> +		 * In order to keep governor data across suspend/resume,
+>>>> +		 * Governor doesn't exit when suspend and will be
+>>>> +		 * reinitialized when resume. Here check policy governor
+>>>> +		 * data to determine whether the governor has been exited.
+>>>> +		 * If not, return EALREADY.
+>>>> +		 */
+>>>>    		if (have_governor_per_policy()) {
+>>>> -			WARN_ON(dbs_data);
+>>>> +			if (dbs_data)
+>>>> +				return -EALREADY;
+>>>>    		} else if (dbs_data) {
+>>>> +			if (policy->governor_data == dbs_data)
+>>>> +				return -EALREADY;
+>>>> +
+>>>>    			dbs_data->usage_count++;
+>>>>    			policy->governor_data = dbs_data;
+>>>>    			return 0;
+>>>>
+>>
+>>
+>>
 
-Okay...
+
+-- 
+Best Regards
+Tianyu Lan
