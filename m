@@ -1,179 +1,116 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when booting with a mismatched bootloader configuration
-Date: Fri, 15 Nov 2013 20:22:15 -0600
-Message-ID: <1384568535-26611-1-git-send-email-nm@ti.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [Update PATCH 1/1] Cpufreq: Make governor data on nonboot cpus
+ across system suspend/resume
+Date: Sat, 16 Nov 2013 11:59:59 +0800
+Message-ID: <5286EDBF.9050001@intel.com>
+References: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com> <1384503334-18809-1-git-send-email-tianyu.lan@intel.com> <2368963.sKiLjXYCVt@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ceh@ti.com, Nishanth Menon <nm@ti.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:36505 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752244Ab3KPEAD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 15 Nov 2013 23:00:03 -0500
+In-Reply-To: <2368963.sKiLjXYCVt@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On many development platforms, at boot, the bootloader configured
-frequency maynot match the valid frequencies that are stated to be
-supported in OPP table. This may occur due to various reasons:
-a) older or default bootloader in development platform without latest
-updates
-b) SoC documentation update that may have occurred in kernel
-c) kernel definitions are out of date Vs bootloader which is updated
-etc..
+On 11/16/2013 08:38 AM, Rafael J. Wysocki wrote:
+> On Friday, November 15, 2013 04:15:34 PM Lan Tianyu wrote:
+>> Currently, governor of nonboot cpus will be put to EXIT when system suspend.
+>> Since all these cpus will be unplugged and the governor usage_count decreases
+>> to zero. The governor data and its sysfs interfaces will be freed or released.
+>> This makes user config of these governors loss during suspend and resume.
+>
+> First off, do we have a pointer to a bug report related to that?
+>
 
-In these cases, we should assume from a kernel perspective, the only
-safe frequency that the system can be on is the ones available in the
-OPP table. This may not handle case (c), but, that is a different
-kernel bug of it's own.
+No, I found this bug when I tried to resolve other similar bug.
+https://bugzilla.kernel.org/show_bug.cgi?id=63081. I still have no idea 
+about bug 63081 and asked reporter to try this patch.
 
-Considering that in many existing or development platforms, (a) or
-(b) is common, enforce a sanity check and reprogram to a conservative
-start configuration at probe to allow sane operation independent of
-bootloader.
+> Second, what does need to be done to reproduce this problem?
+>
 
-Reported-by: Carlos Hernandez <ceh@ti.com>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
+Defaultly, all cpus use ondemand governor after bootup. Change one 
+non-boot cpu's governor to conservative, modify conservative config via 
+sysfs interface and then do system suspend. After resume, the config
+of conservative is reset. On my machine, all cpus have owen policy.
 
-based on v3.12 tag - however, a rebase with opp function name change
-is needed for v3.13-rc1 if folks are ok, I can repost with updates.
 
-Identified when during debug of https://patchwork.kernel.org/patch/3191411/
-on TI vendor kernel based on v3.12 tag.
+>> This doesn't happen on the governor covering boot cpu because it isn't
+>> unplugged during system suspend.
+>>
+>> To fix this issue, skipping governor exit during system suspend and check
+>> policy governor data to determine whether the governor is really needed
+>> to be initialized when do init. If not, return EALREADY to indicate the
+>> governor has been initialized and should do nothing. __cpufreq_governor()
+>> convert EALREADY to 0 as return value for INIT event since governor is
+>> still under INIT state and can do START operation.
+>>
+>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>> ---
+>> Fix some typos
+>>
+>>   drivers/cpufreq/cpufreq.c          |  5 ++++-
+>>   drivers/cpufreq/cpufreq_governor.c | 13 ++++++++++++-
+>>   2 files changed, 16 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 02d534d..38f2e4a 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1239,7 +1239,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>>
+>>   	/* If cpu is last user of policy, free policy */
+>>   	if (cpus == 1) {
+>> -		if (has_target()) {
+>> +		if (has_target() && !frozen) {
+>>   			ret = __cpufreq_governor(policy,
+>>   					CPUFREQ_GOV_POLICY_EXIT);
+>>   			if (ret) {
+>> @@ -1822,6 +1822,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>>   			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+>>   		module_put(policy->governor->owner);
+>>
+>> +	if ((event == CPUFREQ_GOV_POLICY_INIT) && ret == -EALREADY)
+>> +		ret = 0;
+>> +
+>>   	return ret;
+>>   }
+>>
+>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>> index 0806c31..ddb93af 100644
+>> --- a/drivers/cpufreq/cpufreq_governor.c
+>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>> @@ -204,9 +204,20 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>>
+>>   	switch (event) {
+>>   	case CPUFREQ_GOV_POLICY_INIT:
+>> +		/*
+>> +		 * In order to keep governor data across suspend/resume,
+>> +		 * Governor doesn't exit when suspend and will be
+>> +		 * reinitialized when resume. Here check policy governor
+>> +		 * data to determine whether the governor has been exited.
+>> +		 * If not, return EALREADY.
+>> +		 */
+>>   		if (have_governor_per_policy()) {
+>> -			WARN_ON(dbs_data);
+>> +			if (dbs_data)
+>> +				return -EALREADY;
+>>   		} else if (dbs_data) {
+>> +			if (policy->governor_data == dbs_data)
+>> +				return -EALREADY;
+>> +
+>>   			dbs_data->usage_count++;
+>>   			policy->governor_data = dbs_data;
+>>   			return 0;
+>>
 
-In the case discussed, bootloader booted OMAP5uEVM at 1.1GHz when the available
-frequencies were 500MHz, 1GHz, 1.5GHz.
 
-To prevent system from functioning at this invalid configuration (and hence
-trigger the bug seen in stats), we should remove the dependence of the kernel
-from bootloader configuration.
-With this patch, in the mentioned boot scenario, we get the following log:
-[   25.649736] cpufreq_cpu0: bootloader freq 1100000000 no match to table, Using 1000000000
-
-Artificially modifying the bootloader to create other boundary conditions:
-(lower bound check)
-[   25.633535] cpufreq_cpu0: bootloader freq 300000000Hz no match to table, Using 500000000Hz
-(upper bound check)
-[   27.355837] cpufreq_cpu0: bootloader freq 1600000000Hz no match to table, Using 1500000000Hz
-
-The other alternative(to reduce code churn) would be to just report a
-mismatch and continue to function at the potentially risky OPP - but
-in the cases such as using userspace governor, the system could be in
-unstable state resulting in hard to debug behavior.
-
-The last alternative is to always expect bootloader to be in sync with proper
-OPP configuration, which rarely happens correctly.
-
- drivers/cpufreq/cpufreq-cpu0.c |   84 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 82 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index c522a95..9765050 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -176,7 +176,8 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
- static int cpu0_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np;
--	int ret;
-+	int ret, i;
-+	long boot_freq;
- 
- 	cpu_dev = get_cpu_device(0);
- 	if (!cpu_dev) {
-@@ -232,7 +233,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	if (!IS_ERR(cpu_reg)) {
- 		struct opp *opp;
- 		unsigned long min_uV, max_uV;
--		int i;
- 
- 		/*
- 		 * OPP is maintained in order of increasing frequency, and
-@@ -254,6 +254,86 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 			transition_latency += ret * 1000;
- 	}
- 
-+	boot_freq = clk_get_rate(cpu_clk);
-+
-+	/* See if we have a perfect match */
-+	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
-+		if (boot_freq == freq_table[i].frequency * 1000)
-+			break;
-+
-+	/* If we have a bad bootloader config, try recovery */
-+	if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
-+		struct opp *opp;
-+		long new_freq = boot_freq, freq_exact;
-+		unsigned long volt = 0, tol = 0;
-+
-+		ret = 0;
-+		rcu_read_lock();
-+
-+		/* Try a conservative match */
-+		opp = opp_find_freq_floor(cpu_dev, &new_freq);
-+
-+		/* If we did not get a floor match, try least available freq */
-+		if (IS_ERR(opp)) {
-+			new_freq = freq_table[0].frequency * 1000;
-+			opp = opp_find_freq_exact(cpu_dev, new_freq, true);
-+		}
-+		if (IS_ERR(opp))
-+			ret = -ERANGE;
-+		if (!IS_ERR(opp) && !IS_ERR(cpu_reg)) {
-+			volt = opp_get_voltage(opp);
-+			tol = volt * voltage_tolerance / 100;
-+		}
-+		rcu_read_unlock();
-+		if (ret) {
-+			pr_err("Fail to find match boot clock rate: %lu\n",
-+			       boot_freq);
-+			goto out_free_table;
-+		}
-+
-+		/* We dont expect to endup with same result */
-+		WARN_ON(boot_freq == new_freq);
-+
-+		freq_exact = clk_round_rate(cpu_clk, new_freq);
-+		if (freq_exact < 0) {
-+			pr_err("Fail to find valid boot clock rate: %lu\n",
-+			       freq_exact);
-+			goto out_free_table;
-+		}
-+
-+		/* Warn to get developer to fix bootloader */
-+		pr_err("Bootloader freq %luHz no match to table, Using %luHz\n",
-+		       boot_freq, new_freq);
-+
-+		/*
-+		 * For voltage sequencing we *assume* that bootloader has at
-+		 * least set the voltage appropriate for the boot_frequency
-+		 */
-+		if (!IS_ERR(cpu_reg) && boot_freq < new_freq) {
-+			ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-+			if (ret) {
-+				pr_err("Fail to scale boot voltage up: %d\n",
-+				       ret);
-+				goto out_free_table;
-+			}
-+		}
-+
-+		ret = clk_set_rate(cpu_clk, freq_exact);
-+		if (ret) {
-+			pr_err("Fail to set boot clock rate: %d\n", ret);
-+			goto out_free_table;
-+		}
-+
-+		if (!IS_ERR(cpu_reg) && boot_freq > new_freq) {
-+			ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-+			if (ret) {
-+				pr_err("Fail to scale boot voltage down: %d\n",
-+				       ret);
-+				goto out_free_table;
-+			}
-+		}
-+	}
-+
- 	ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
- 	if (ret) {
- 		pr_err("failed register driver: %d\n", ret);
 -- 
-1.7.9.5
-
+Best Regards
+Tianyu Lan
