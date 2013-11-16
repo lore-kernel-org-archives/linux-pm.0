@@ -1,106 +1,172 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] power: Change device_wakeup_enable() to check for null dev_name(dev)
-Date: Sat, 16 Nov 2013 01:21:43 +0100
-Message-ID: <4035469.UfR6Rto3I2@vostro.rjw.lan>
-References: <1384560238-10708-1-git-send-email-shuah.kh@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Sat, 16 Nov 2013 01:24:50 +0100
+Message-ID: <5020664.HldDXMO8cr@vostro.rjw.lan>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1384560238-10708-1-git-send-email-shuah.kh@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, anton@enomsg.org, dwmw2@infradead.org, stable@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:54669 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753163Ab3KPAMV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 15 Nov 2013 19:12:21 -0500
+In-Reply-To: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
 
-On Friday, November 15, 2013 05:03:57 PM Shuah Khan wrote:
-> device_wakeup_enable() uses dev_name(dev) as the wakeup source name.
-> When it gets called with a device with its name not yet set, ws structure
-> with ws->name = NULL gets created.
+On Friday, November 15, 2013 03:42:29 PM Viresh Kumar wrote:
+> This patch adds PM notifiers for handling suspend/resume of cpufreq governors.
+> This is required for early suspend and late resume of governors.
 > 
-> When kernel is booted with wakeup_source_activate enabled, it will panic
-> when the trace point code tries to derefernces ws->name.
+> There are multiple reasons that support this patch:
+> - Firstly it looks very much logical to stop governors when we know we are going
+>   into suspend. But the question is when? Is PM notifiers the right place?
+>   Following reasons are the supporting hands for this decision.
+> - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
+>   wasn't working well with suspend/resume as calls for removing non-boot CPUs
+>   was turning out into a call to drivers ->target() which then tries to play
+>   with regulators. But regulators and their I2C bus were already suspended and
+>   this resulted in a failure. This is why we need a PM notifier here.
+> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
+>   tunables configuration for clusters/sockets with non-boot CPUs was getting
+>   lost after suspend/resume, as we were notifying governors with
+>   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
+>   deallocating memory for tunables.
 > 
-> Change device_wakeup_enable() to check for dev_name(dev) null condition
-> and return -EINVAL to avoid panics when device_wakeup_enable() gets called
-> before device is fully initialized with its name.
-> 
-> The following panic resulted from power_supply_register() registering
-> wakeup source with a null device name.
-> 
-> [  819.769934] device: 'BAT1': device_add
-> [  819.770078] PM: Adding info for No Bus:BAT1
-> [  819.770235] BUG: unable to handle kernel NULL pointer dereference at           (null)
-> [  819.770435] IP: [<ffffffff813381c0>] skip_spaces+0x30/0x30
-> [  819.770572] PGD 3efd90067 PUD 3eff61067 PMD 0
-> [  819.770716] Oops: 0000 [#1] SMP
-> [  819.770829] Modules linked in: arc4 iwldvm mac80211 x86_pkg_temp_thermal coretemp kvm_intel joydev i915 kvm uvcvideo ghash_clmulni_intel videobuf2_vmalloc aesni_intel videobuf2_memops videobuf2_core aes_x86_64 ablk_helper cryptd videodev iwlwifi lrw rfcomm gf128mul glue_helper bnep btusb media bluetooth parport_pc hid_generic ppdev snd_hda_codec_hdmi drm_kms_helper snd_hda_codec_realtek cfg80211 drm tpm_infineon samsung_laptop snd_hda_intel usbhid snd_hda_codec hid snd_hwdep snd_pcm microcode snd_page_alloc snd_timer psmouse i2c_algo_bit lpc_ich tpm_tis video wmi mac_hid serio_raw ext2 lp parport r8169 mii
-> [  819.771802] CPU: 0 PID: 2167 Comm: bash Not tainted 3.12.0+ #25
-> [  819.771876] Hardware name: SAMSUNG ELECTRONICS CO., LTD. 900X3C/900X3D/900X4C/900X4D/SAMSUNG_NP1234567890, BIOS P03AAC 07/12/2012
-> [  819.772022] task: ffff88002e6ddcc0 ti: ffff8804015ca000 task.ti: ffff8804015ca000
-> [  819.772119] RIP: 0010:[<ffffffff813381c0>]  [<ffffffff813381c0>] skip_spaces+0x30/0x30
-> [  819.772242] RSP: 0018:ffff8804015cbc70  EFLAGS: 00010046
-> [  819.772310] RAX: 0000000000000003 RBX: ffff88040cfd6d40 RCX: 0000000000000018
-> [  819.772397] RDX: 0000000000020001 RSI: 0000000000000000 RDI: 0000000000000000
-> [  819.772484] RBP: ffff8804015cbcc0 R08: 0000000000000000 R09: ffff8803f0768d40
-> [  819.772570] R10: ffffea001033b800 R11: 0000000000000000 R12: ffffffff81c519c0
-> [  819.772656] R13: 0000000000020001 R14: 0000000000000000 R15: 0000000000020001
-> [  819.772744] FS:  00007ff98309b740(0000) GS:ffff88041f200000(0000) knlGS:0000000000000000
-> [  819.772845] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [  819.772917] CR2: 0000000000000000 CR3: 00000003f59dc000 CR4: 00000000001407f0
-> [  819.773001] Stack:
-> [  819.773030]  ffffffff81114003 ffff8804015cbcb0 0000000000000000 0000000000000046
-> [  819.773146]  ffff880409757a18 ffff8803f065a160 0000000000000000 0000000000020001
-> [  819.773273]  0000000000000000 0000000000000000 ffff8804015cbce8 ffffffff8143e388
-> [  819.773387] Call Trace:
-> [  819.773434]  [<ffffffff81114003>] ? ftrace_raw_event_wakeup_source+0x43/0xe0
-> [  819.773520]  [<ffffffff8143e388>] wakeup_source_report_event+0xb8/0xd0
-> [  819.773595]  [<ffffffff8143e3cd>] __pm_stay_awake+0x2d/0x50
-> [  819.773724]  [<ffffffff8153395c>] power_supply_changed+0x3c/0x90
-> [  819.773795]  [<ffffffff8153407c>] power_supply_register+0x18c/0x250
-> [  819.773869]  [<ffffffff813d8d18>] sysfs_add_battery+0x61/0x7b
-> [  819.773935]  [<ffffffff813d8d69>] battery_notify+0x37/0x3f
-> [  819.774001]  [<ffffffff816ccb7c>] notifier_call_chain+0x4c/0x70
-> [  819.774071]  [<ffffffff81073ded>] __blocking_notifier_call_chain+0x4d/0x70
-> [  819.774149]  [<ffffffff81073e26>] blocking_notifier_call_chain+0x16/0x20
-> [  819.774227]  [<ffffffff8109397a>] pm_notifier_call_chain+0x1a/0x40
-> [  819.774316]  [<ffffffff81095b66>] hibernate+0x66/0x1c0
-> [  819.774407]  [<ffffffff81093931>] state_store+0x71/0xa0
-> [  819.774507]  [<ffffffff81331d8f>] kobj_attr_store+0xf/0x20
-> [  819.774613]  [<ffffffff811f8618>] sysfs_write_file+0x128/0x1c0
-> [  819.774735]  [<ffffffff8118579d>] vfs_write+0xbd/0x1e0
-> [  819.774841]  [<ffffffff811861d9>] SyS_write+0x49/0xa0
-> [  819.774939]  [<ffffffff816d1052>] system_call_fastpath+0x16/0x1b
-> [  819.775055] Code: 89 f8 48 89 e5 f6 82 c0 a6 84 81 20 74 15 0f 1f 44 00 00 48 83 c0 01 0f b6 10 f6 82 c0 a6 84 81 20 75 f0 5d c3 66 0f 1f 44 00 00 <80> 3f 00 55 48 89 e5 74 15 48 89 f8 0f 1f 40 00 48 83 c0 01 80
-> [  819.775760] RIP  [<ffffffff813381c0>] skip_spaces+0x30/0x30
-> [  819.775881]  RSP <ffff8804015cbc70>
-> [  819.775949] CR2: 0000000000000000
-> [  819.794175] ---[ end trace c4ef25127039952e ]---
-> 
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> Cc: stable@vger.kernel.org
+> All above problems get fixed with having a PM notifier in place which will stop
+> any operation on governor. Hence no need to do any special handling of variables
+> like (frozen) in suspend/resume paths.
+
+Will cpufreq work during system-wide power transitions (suspend/resume etc.)
+after this?  In particular, what about hibernation?
+
+> Reported-by: Lan Tianyu <tianyu.lan@intel.com>
+> Reported-by: Nishanth Menon <nm@ti.com>
+> Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/base/power/wakeup.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index 2d56f41..e086f12 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -220,7 +220,7 @@ int device_wakeup_enable(struct device *dev)
->  	struct wakeup_source *ws;
+> Hi Guys,
+> 
+> Can you please verify if this fixes issues reported by you? I have tested this
+> for multiple suspend-resumes on my thinkpad. It doesn't crash :)
+> 
+>  drivers/cpufreq/cpufreq.c | 63 +++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 63 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534d..c87ced9 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  #include <linux/slab.h>
+> +#include <linux/suspend.h>
+>  #include <linux/syscore_ops.h>
+>  #include <linux/tick.h>
+>  #include <trace/events/power.h>
+> @@ -47,6 +48,9 @@ static LIST_HEAD(cpufreq_policy_list);
+>  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  #endif
+>  
+> +/* Flag to suspend/resume CPUFreq governors */
+> +static bool cpufreq_suspended;
+> +
+>  static inline bool has_target(void)
+>  {
+>  	return cpufreq_driver->target_index || cpufreq_driver->target;
+> @@ -1462,6 +1466,54 @@ static struct subsys_interface cpufreq_interface = {
+>  	.remove_dev	= cpufreq_remove_dev,
+>  };
+>  
+> +/*
+> + * PM Notifier for suspending governors as some platforms can't change frequency
+> + * after this point in suspend cycle. Because some of the devices (like: i2c,
+> + * regulators, etc) they use for changing frequency are suspended quickly after
+> + * this point.
+> + */
+> +static int cpufreq_pm_notify(struct notifier_block *nb, unsigned long action,
+> +		void *data)
+> +{
+> +	struct cpufreq_policy *policy;
+> +	unsigned long flags;
+> +
+> +	if (!has_target())
+> +		return NOTIFY_OK;
+> +
+> +	if (action == PM_SUSPEND_PREPARE) {
+> +		pr_debug("%s: Suspending Governors\n", __func__);
+> +
+> +		list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> +			if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+> +				pr_err("%s: Failed to stop governor for policy: %p\n",
+> +						__func__, policy);
+> +
+> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +		cpufreq_suspended = true;
+> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +	} else if (action == PM_POST_SUSPEND) {
+> +		pr_debug("%s: Resuming Governors\n", __func__);
+> +
+> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +		cpufreq_suspended = false;
+> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +		list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> +			if (__cpufreq_governor(policy, CPUFREQ_GOV_START) ||
+> +					__cpufreq_governor(policy,
+> +						CPUFREQ_GOV_LIMITS))
+> +				pr_err("%s: Failed to start governor for policy: %p\n",
+> +						__func__, policy);
+> +	}
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block cpufreq_pm_notifier = {
+> +	.notifier_call = cpufreq_pm_notify,
+> +};
+> +
+>  /**
+>   * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
+>   *
+> @@ -1752,6 +1804,8 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+>  static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  					unsigned int event)
+>  {
+> +	unsigned long flags;
+> +	bool is_suspended;
 >  	int ret;
 >  
-> -	if (!dev || !dev->power.can_wakeup)
-> +	if (!dev || !dev->power.can_wakeup || !dev_name(dev))
->  		return -EINVAL;
-
-Can you please use WARN_ON(!dev_name(dev)) here?  While I agree that it is a
-bad idea to crash the kernel because dev has no name, that indicates a driver
-bug that shouldn't be too easy to ignore.
-
-Thanks!
-
+>  	/* Only must be defined when default governor is known to have latency
+> @@ -1764,6 +1818,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  	struct cpufreq_governor *gov = NULL;
+>  #endif
+>  
+> +	/* Don't start any governor operations if we are entering suspend */
+> +	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	is_suspended = cpufreq_suspended;
+> +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +	if (is_suspended)
+> +		return 0;
+> +
+>  	if (policy->governor->max_transition_latency &&
+>  	    policy->cpuinfo.transition_latency >
+>  	    policy->governor->max_transition_latency) {
+> @@ -2222,6 +2284,7 @@ static int __init cpufreq_core_init(void)
+>  	cpufreq_global_kobject = kobject_create();
+>  	BUG_ON(!cpufreq_global_kobject);
+>  	register_syscore_ops(&cpufreq_syscore_ops);
+> +	register_pm_notifier(&cpufreq_pm_notifier);
+>  
+>  	return 0;
+>  }
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
