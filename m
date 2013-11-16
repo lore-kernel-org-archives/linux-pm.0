@@ -1,210 +1,63 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Sat, 16 Nov 2013 21:44:47 +0800
-Message-ID: <20131116134445.GI11014@S2101-09.ap.freescale.net>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Sat, 16 Nov 2013 15:29:36 +0100
+Message-ID: <2235672.LLJc6e6dny@vostro.rjw.lan>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <5020664.HldDXMO8cr@vostro.rjw.lan> <5286F536.70403@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from co9ehsobe002.messaging.microsoft.com ([207.46.163.25]:34295
-	"EHLO co9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751195Ab3KPNnQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Nov 2013 08:43:16 -0500
-Content-Disposition: inline
-In-Reply-To: <1384568535-26611-1-git-send-email-nm@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5286F536.70403@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: viresh kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ceh@ti.com
 
-On Fri, Nov 15, 2013 at 08:22:15PM -0600, Nishanth Menon wrote:
-> On many development platforms, at boot, the bootloader configured
-> frequency maynot match the valid frequencies that are stated to be
-> supported in OPP table. This may occur due to various reasons:
-> a) older or default bootloader in development platform without latest
-> updates
-> b) SoC documentation update that may have occurred in kernel
-> c) kernel definitions are out of date Vs bootloader which is updated
-> etc..
+On Saturday, November 16, 2013 10:01:50 AM viresh kumar wrote:
+> On Saturday 16 November 2013 05:54 AM, Rafael J. Wysocki wrote:
+> > Will cpufreq work during system-wide power transitions (suspend/resume etc.)
+> > after this?  In particular, what about hibernation?
 > 
-> In these cases, we should assume from a kernel perspective, the only
-> safe frequency that the system can be on is the ones available in the
-> OPP table. This may not handle case (c), but, that is a different
-> kernel bug of it's own.
+> I am disabling governors as soon as we start suspend. So No, cpufreq wouldn't
+> work during suspend/resume. But once system is resumed we are starting it back
+> again.
 
-No, it's not a kernel bug.
+Well, disabling it for the whole duration of suspend/resume and/or hibernation
+may not be the right approach entirely, unless we force the pax perf of the
+boot CPU at least in addition to that.  Otherwise the latency of suspend and
+the subsequent resume will depend on what perf level the CPUs where before
+disabling the governors, which is not desirable at al.
 
-OPP is not a definition that belongs to kernel.  Instead, it's
-characteristics of hardware, and that's why we can naturally put the
-definition into device tree.  Bear it in mind that device tree is a
-hardware description and should be OS agnostic.  So it shouldn't be
-treated as part of Linux kernel in any case, even though the device
-tree source is currently maintained in kernel tree.
+> Hibernation is probably not supported by my code yet.. I just went through
+> hibernation code quickly and it looks we don't send PM_SUSPEND_PREPARE or
+> PM_POST_SUSPEND notifications in case of hibernation. Correct?
 
-Device tree is designed as a way for firmware/bootloader to describe
-hardware to kernel.  That said, device tree is more part of bootloader
-than kernel.  If bootloader runs at a frequency that does not match the
-OPP in device tree, the one should be fixed is either bootloader or
-device tree but never kernel.
+Yes, that's correct.
 
-However, I agree we should at least have a check in cpufreq-cpu0 driver
-and fail out in case that a mismatch is detected.
+> And these are the notifications that we send:
+> - PM_HIBERNATION_PREPARE
+> - PM_POST_HIBERNATION
+> - PM_RESTORE_PREPARE
+> - PM_POST_RESTORE
+> 
+> If I am not wrong I need to stop governors on PM_HIBERNATION_PREPARE and need to
+> start them back on: PM_POST_HIBERNATION (I am a bit confused with this one. Does
+> this POST_HIBERNATION one happens at the end of going into hibernation? or after
+> booting back? I need a notifier at the end of restore)..
 
-Shawn
+You'd need both PM_POST_HIBERNATION and PM_POST_RESTORE, but I wouldn't really
+like cpufreq governors to be disabled throughout the whole hibernation.
 
-> 
-> Considering that in many existing or development platforms, (a) or
-> (b) is common, enforce a sanity check and reprogram to a conservative
-> start configuration at probe to allow sane operation independent of
-> bootloader.
-> 
-> Reported-by: Carlos Hernandez <ceh@ti.com>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> ---
-> 
-> based on v3.12 tag - however, a rebase with opp function name change
-> is needed for v3.13-rc1 if folks are ok, I can repost with updates.
-> 
-> Identified when during debug of https://patchwork.kernel.org/patch/3191411/
-> on TI vendor kernel based on v3.12 tag.
-> 
-> In the case discussed, bootloader booted OMAP5uEVM at 1.1GHz when the available
-> frequencies were 500MHz, 1GHz, 1.5GHz.
-> 
-> To prevent system from functioning at this invalid configuration (and hence
-> trigger the bug seen in stats), we should remove the dependence of the kernel
-> from bootloader configuration.
-> With this patch, in the mentioned boot scenario, we get the following log:
-> [   25.649736] cpufreq_cpu0: bootloader freq 1100000000 no match to table, Using 1000000000
-> 
-> Artificially modifying the bootloader to create other boundary conditions:
-> (lower bound check)
-> [   25.633535] cpufreq_cpu0: bootloader freq 300000000Hz no match to table, Using 500000000Hz
-> (upper bound check)
-> [   27.355837] cpufreq_cpu0: bootloader freq 1600000000Hz no match to table, Using 1500000000Hz
-> 
-> The other alternative(to reduce code churn) would be to just report a
-> mismatch and continue to function at the potentially risky OPP - but
-> in the cases such as using userspace governor, the system could be in
-> unstable state resulting in hard to debug behavior.
-> 
-> The last alternative is to always expect bootloader to be in sync with proper
-> OPP configuration, which rarely happens correctly.
-> 
->  drivers/cpufreq/cpufreq-cpu0.c |   84 +++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 82 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index c522a95..9765050 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -176,7 +176,8 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
->  static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  {
->  	struct device_node *np;
-> -	int ret;
-> +	int ret, i;
-> +	long boot_freq;
->  
->  	cpu_dev = get_cpu_device(0);
->  	if (!cpu_dev) {
-> @@ -232,7 +233,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  	if (!IS_ERR(cpu_reg)) {
->  		struct opp *opp;
->  		unsigned long min_uV, max_uV;
-> -		int i;
->  
->  		/*
->  		 * OPP is maintained in order of increasing frequency, and
-> @@ -254,6 +254,86 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  			transition_latency += ret * 1000;
->  	}
->  
-> +	boot_freq = clk_get_rate(cpu_clk);
-> +
-> +	/* See if we have a perfect match */
-> +	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
-> +		if (boot_freq == freq_table[i].frequency * 1000)
-> +			break;
-> +
-> +	/* If we have a bad bootloader config, try recovery */
-> +	if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
-> +		struct opp *opp;
-> +		long new_freq = boot_freq, freq_exact;
-> +		unsigned long volt = 0, tol = 0;
-> +
-> +		ret = 0;
-> +		rcu_read_lock();
-> +
-> +		/* Try a conservative match */
-> +		opp = opp_find_freq_floor(cpu_dev, &new_freq);
-> +
-> +		/* If we did not get a floor match, try least available freq */
-> +		if (IS_ERR(opp)) {
-> +			new_freq = freq_table[0].frequency * 1000;
-> +			opp = opp_find_freq_exact(cpu_dev, new_freq, true);
-> +		}
-> +		if (IS_ERR(opp))
-> +			ret = -ERANGE;
-> +		if (!IS_ERR(opp) && !IS_ERR(cpu_reg)) {
-> +			volt = opp_get_voltage(opp);
-> +			tol = volt * voltage_tolerance / 100;
-> +		}
-> +		rcu_read_unlock();
-> +		if (ret) {
-> +			pr_err("Fail to find match boot clock rate: %lu\n",
-> +			       boot_freq);
-> +			goto out_free_table;
-> +		}
-> +
-> +		/* We dont expect to endup with same result */
-> +		WARN_ON(boot_freq == new_freq);
-> +
-> +		freq_exact = clk_round_rate(cpu_clk, new_freq);
-> +		if (freq_exact < 0) {
-> +			pr_err("Fail to find valid boot clock rate: %lu\n",
-> +			       freq_exact);
-> +			goto out_free_table;
-> +		}
-> +
-> +		/* Warn to get developer to fix bootloader */
-> +		pr_err("Bootloader freq %luHz no match to table, Using %luHz\n",
-> +		       boot_freq, new_freq);
-> +
-> +		/*
-> +		 * For voltage sequencing we *assume* that bootloader has at
-> +		 * least set the voltage appropriate for the boot_frequency
-> +		 */
-> +		if (!IS_ERR(cpu_reg) && boot_freq < new_freq) {
-> +			ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-> +			if (ret) {
-> +				pr_err("Fail to scale boot voltage up: %d\n",
-> +				       ret);
-> +				goto out_free_table;
-> +			}
-> +		}
-> +
-> +		ret = clk_set_rate(cpu_clk, freq_exact);
-> +		if (ret) {
-> +			pr_err("Fail to set boot clock rate: %d\n", ret);
-> +			goto out_free_table;
-> +		}
-> +
-> +		if (!IS_ERR(cpu_reg) && boot_freq > new_freq) {
-> +			ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-> +			if (ret) {
-> +				pr_err("Fail to scale boot voltage down: %d\n",
-> +				       ret);
-> +				goto out_free_table;
-> +			}
-> +		}
-> +	}
-> +
->  	ret = cpufreq_register_driver(&cpu0_cpufreq_driver);
->  	if (ret) {
->  		pr_err("failed register driver: %d\n", ret);
-> -- 
-> 1.7.9.5
-> 
+Actually, we use CPU offline/online during system suspend/resume to avoid
+having to do stuff like this from PM notifiers.  So I'd like the original
+problem to be addressed in a different way.
 
+Thanks!
+
+PS
+The sisk.pl address will start bouncing shortly, so please replace it with
+rjw@rjwysocki.net in your address book.
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
