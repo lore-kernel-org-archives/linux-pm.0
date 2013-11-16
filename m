@@ -1,47 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [Update PATCH 1/1] Cpufreq: Make governor data on nonboot cpus across system suspend/resume
-Date: Sat, 16 Nov 2013 16:09:44 +0100
-Message-ID: <2541765.pYv7UXDJWx@vostro.rjw.lan>
-References: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com> <5286EDBF.9050001@intel.com> <9847309.KdKOG5y1Zx@vostro.rjw.lan>
+Date: Sat, 16 Nov 2013 16:10:45 +0100
+Message-ID: <2340396.PKx5xUKfbU@vostro.rjw.lan>
+References: <1384495294-10565-1-git-send-email-tianyu.lan@intel.com> <9847309.KdKOG5y1Zx@vostro.rjw.lan> <CAKohpomKqJ-Vb68JvmBdTM-QbrszLH1BLQ14s5H1JzVZBTzpYA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <9847309.KdKOG5y1Zx@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:61504 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752947Ab3KPO6M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Nov 2013 09:58:12 -0500
+In-Reply-To: <CAKohpomKqJ-Vb68JvmBdTM-QbrszLH1BLQ14s5H1JzVZBTzpYA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lan Tianyu <tianyu.lan@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Saturday, November 16, 2013 03:41:10 PM Rafael J. Wysocki wrote:
-
-[...]
-
-> > >> @@ -1822,6 +1822,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
-> > >>   			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
-> > >>   		module_put(policy->governor->owner);
-> > >>
-> > >> +	if ((event == CPUFREQ_GOV_POLICY_INIT) && ret == -EALREADY)
-> > >> +		ret = 0;
-> > >> +
+On Saturday, November 16, 2013 08:27:07 PM Viresh Kumar wrote:
+> On 16 November 2013 20:11, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Saturday, November 16, 2013 11:59:59 AM Lan Tianyu wrote:
 > 
-> -> I'd prefer this check to be combined with the one done to determine whether
-> or not we need to do the module_put().  Something like
+> >> Defaultly, all cpus use ondemand governor after bootup. Change one
+> >> non-boot cpu's governor to conservative,
+> >
+> > Well, why would anyone want to do that?  Just out of curiosity ...
 > 
-> 	if (event == CPUFREQ_GOV_POLICY_EXIT && ret) {
+> People may want to use different group/cluster/socket of CPUs differently,
+> with different kind of policies. Maybe performance governor for boot cpu
+> and ondemand for others.
+> 
+> This bug would also be there for big LITTLE where we want to have
+> separate set of tunables for big and LITTLE clusters for the same type
+> of governor.
+> 
+> > So this is acpi-cpufreq, right?
+> 
+> Probably yes, I saw something similar somewhere.. But this is driver
+> independent..
+> 
+> > The patch looks basically OK to me, but ->
+> 
+> We wouldn't need this patch if my other patch (where I am disabling
+> governors in suspend/resume goes in, in any form)..
 
-Obviously, that should be:
-
-	if (event == CPUFREQ_GOV_POLICY_INIT && ret) {
-
-> 		module_put(policy->governor->owner);
-> 		if (ret == -EALREADY)
-> 			return 0;
-> 	} else if (event == CPUFREQ_GOV_POLICY_EXIT && !ret) {
-> 		module_put(policy->governor->owner);
-> 	}
-
-Sorry for the confusion.
+Yes, I know that, but I don't think this is the right approach.
 
 Thanks!
 
