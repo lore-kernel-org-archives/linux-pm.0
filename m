@@ -1,108 +1,98 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: make sure frequency transitions are serialized
-Date: Sun, 17 Nov 2013 10:39:21 +0530
-Message-ID: <CAKohpo=JMAP6PzkdO6OimHPQ1uaqZtzZSzKPFdLwz+W7cytMdg@mail.gmail.com>
-References: <a0cad3326c6a6c8f0517332dd2230edaf67268e7.1378979483.git.viresh.kumar@linaro.org>
-	<793a5fadad931d04c2adb3a61c64063b7e62d083.1378979483.git.viresh.kumar@linaro.org>
-	<1791712.tJBFGgQvyI@vostro.rjw.lan>
-	<CAKohpomWjBZfLLqYjnP=n059bTC6pDseqfWbJmZy894fqHW7Nw@mail.gmail.com>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Sun, 17 Nov 2013 13:52:15 +0530
+Message-ID: <52887CB7.4000108@linaro.org>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <2235672.LLJc6e6dny@vostro.rjw.lan> <CAKohpok_zjdRVz5-ZGRmZtwysC7jORm2mgRbLWDUzo1ucYVKZg@mail.gmail.com> <6050176.zVNbf5pomE@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:50891 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265Ab3KQFJW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Nov 2013 00:09:22 -0500
-Received: by mail-ob0-f174.google.com with SMTP id uy5so5669217obc.33
-        for <linux-pm@vger.kernel.org>; Sat, 16 Nov 2013 21:09:21 -0800 (PST)
-In-Reply-To: <CAKohpomWjBZfLLqYjnP=n059bTC6pDseqfWbJmZy894fqHW7Nw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <6050176.zVNbf5pomE@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 23 October 2013 14:43, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> I got another solution which is much simpler, and I really can't believe
-> (psychologically) that it will solve all the problems we were talking about..
-> Please see if there is any loophole in there..
+On Sunday 17 November 2013 06:38 AM, Rafael J. Wysocki wrote:
+> On Saturday, November 16, 2013 08:47:24 PM Viresh Kumar wrote:
+>> Well that is pretty much doable.
+> 
+> Not necessarily on all CPU models.
 
-Ping!!
+Okay.. Just for my understanding, why?
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index ec391d7..e4ed89a 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -340,6 +340,13 @@ static void __cpufreq_notify_transition(struct
-> cpufreq_policy *policy,
->         }
->  }
->
-> +void cpufreq_notify_transition_each_cpu(struct cpufreq_policy *policy,
-> +               struct cpufreq_freqs *freqs, unsigned int state)
-> +{
-> +       for_each_cpu(freqs->cpu, policy->cpus)
-> +               __cpufreq_notify_transition(policy, freqs, state);
-> +}
-> +
->  /**
->   * cpufreq_notify_transition - call notifier chain and adjust_jiffies
->   * on frequency transition.
-> @@ -351,8 +358,34 @@ static void __cpufreq_notify_transition(struct
-> cpufreq_policy *policy,
->  void cpufreq_notify_transition(struct cpufreq_policy *policy,
->                 struct cpufreq_freqs *freqs, unsigned int state)
->  {
-> -       for_each_cpu(freqs->cpu, policy->cpus)
-> -               __cpufreq_notify_transition(policy, freqs, state);
-> +       if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
-> +               return cpufreq_notify_transition_each_cpu(policy, freqs, state);
-> +
-> +       /* Serialize pre-post notifications */
-> +       mutex_lock(&policy->transition_lock);
-> +       if (unlikely(WARN_ON(!policy->transition_ongoing &&
-> +                               (state == CPUFREQ_POSTCHANGE)))) {
-> +               mutex_unlock(&policy->transition_lock);
-> +               return;
-> +       }
-> +
-> +       if (state == CPUFREQ_PRECHANGE) {
-> +               while (policy->transition_ongoing) {
-> +                       mutex_unlock(&policy->transition_lock);
-> +                       cpu_relax();
-> +                       mutex_lock(&policy->transition_lock);
-> +               }
-> +
-> +               policy->transition_ongoing = true;
-> +               mutex_unlock(&policy->transition_lock);
-> +       }
-> +
-> +       cpufreq_notify_transition_each_cpu(policy, freqs, state);
-> +
-> +       if (state == CPUFREQ_POSTCHANGE) {
-> +               policy->transition_ongoing = false;
-> +               mutex_unlock(&policy->transition_lock);
-> +       }
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
->
-> @@ -950,6 +983,8 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
->                 goto err_free_cpumask;
->
->         INIT_LIST_HEAD(&policy->policy_list);
-> +       mutex_init(&policy->transition_lock);
-> +
->         return policy;
->
->  err_free_cpumask:
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 0aba2a6c..bb76909 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -85,6 +85,8 @@ struct cpufreq_policy {
->         struct list_head        policy_list;
->         struct kobject          kobj;
->         struct completion       kobj_unregister;
-> +       bool                    transition_ongoing; /* Tracks
-> transition status */
-> +       struct mutex            transition_lock;
->  };
+>> So PM_POST_HIBERNATION is called just before shutting off the system? And
+>> PM_POST_RESTORE is called after system is resumed from saved image?
+> 
+> PM_POST_HIBERNATION is only called if there's an error during hibernation.
+> PM_POST_RESTORE is called as you said.
+
+Ahh I see. Thanks.
+
+> Also you have to remember that the _PREPARE PM notifiers are called before the
+> freezing of tasks when user space is still running, so disabling governors at
+> that point may lead to some weird behavior.
+
+Actually good point. I haven't thought about it earlier.
+
+And when I see what bad can happen, I couldn't find much. The worst is that we
+wouldn't go to a frequency requested by userspace daemon. But we wouldn't send
+an error then. But I feel we can let that happen. Not servicing a request after
+we have started system suspend doesn't look that odd..
+
+Sysfs infrastructure is still preserved and so all that information would still
+be available.
+
+Do you see anything extra that might stop working?
+
+>>> Actually, we use CPU offline/online during system suspend/resume to avoid
+>>> having to do stuff like this from PM notifiers.
+>>
+>> I didn't get the logic behind this one..
+> 
+> If we have to do special stuff from PM notifiers for CPU "suspend", we will be
+> better off by doing something entirely special instead of CPU offline down the
+> road.  Which we may end up doing given the problems with frozen/not frozen in
+> the cpufreq core.
+
+A unrelated question here. Why are we offlining CPUs after suspending all the
+devices? Because the problem Nishanth mentioned was that he required few
+devices, i2c, to be available when CPUs are getting down. And there might be
+similar requirements at other places too. Was there any specific bottleneck due
+to which it is implemented this way?
+
+> We may introduce suspend_noirq and resume_noirq for cpu_subsys, for example,
+> and handle things from there.  Or something similar.  But slapping PM notifiers
+> on top of the existing code just because it appears to be easy (and making that
+> code even more overdesigned than it already is this way) doesn't seem quite
+> right.
+> 
+> Now, the Tianyu's patch extends the Srivatsa's approach to governors, which
+> actually should have been done from the outset, so it is within the scope of
+> what we have already.  It may not solve all of the problems, but it still makes
+> some progress and has a little chance to introduce *new* problems at the same
+> time.
+
+I understand your point here. But this is what I feel:
+
+- I don't have any special affection for using PM notifiers :) .. Its just that
+I need some way for cpufreq core to know that Suspend has started. Maybe after
+freezing of tasks and before removal of devices.
+
+- I thought of adding something like a suspend-prepare for syscore_ops (You are
+owner of all these frameworks and so our life is easy as we can discuss stuff
+with you directly :)).. But then thought maybe we can use PM notifiers.. But it
+looks that we better do that now ?
+
+- I have concerns with Tianyu's patch as policies should be better taken care of
+in cpufreq core instead of passing them over to governors. And with the
+alternative solution I had, code is getting more and more dirty. And so I
+thought of doing something else.
+
+- Not all platforms have problem with changing frequency during suspend/resume
+and so we may not require disabling of governors for all of them. Probably can
+add another field based on which we may/may-not disable governors from PM or
+syscore notifiers.
+
+--
+viresh
