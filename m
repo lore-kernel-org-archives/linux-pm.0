@@ -1,47 +1,237 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Sun, 17 Nov 2013 09:32:42 +0530
-Message-ID: <CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>
-	<20131116134445.GI11014@S2101-09.ap.freescale.net>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] Cpufreq: Make governor data on nonboot cpus across
+ system suspend/resume
+Date: Sun, 17 Nov 2013 09:43:14 +0530
+Message-ID: <5288425A.6000501@linaro.org>
+References: <9847309.KdKOG5y1Zx@vostro.rjw.lan> <1384616184-6197-1-git-send-email-tianyu.lan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131116134445.GI11014@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qe0-f52.google.com ([209.85.128.52]:57548 "EHLO
+	mail-qe0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753662Ab3KQENV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Nov 2013 23:13:21 -0500
+Received: by mail-qe0-f52.google.com with SMTP id cz11so2818807qeb.39
+        for <linux-pm@vger.kernel.org>; Sat, 16 Nov 2013 20:13:20 -0800 (PST)
+In-Reply-To: <1384616184-6197-1-git-send-email-tianyu.lan@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 16 November 2013 19:14, Shawn Guo <shawn.guo@linaro.org> wrote:
-> No, it's not a kernel bug.
+On 16 November 2013 21:06, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> @@ -1818,9 +1818,13 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>                 mutex_unlock(&cpufreq_governor_lock);
+>         }
 >
-> OPP is not a definition that belongs to kernel.  Instead, it's
-> characteristics of hardware, and that's why we can naturally put the
-> definition into device tree.  Bear it in mind that device tree is a
-> hardware description and should be OS agnostic.  So it shouldn't be
-> treated as part of Linux kernel in any case, even though the device
-> tree source is currently maintained in kernel tree.
+> -       if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
+> -                       ((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+> +       if ((event == CPUFREQ_GOV_POLICY_INIT) && ret) {
+> +               module_put(policy->governor->owner);
+> +               if (ret == -EALREADY)
+> +                       return 0;
+> +       } else if ((event == CPUFREQ_GOV_POLICY_EXIT) && !ret) {
+>                 module_put(policy->governor->owner);
+> +       }
+
+This can still be written more efficiently I believe:
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 138ebe9..54e28e1 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1866,10 +1866,12 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+        ret = policy->governor->governor(policy, event);
+
+        if (!ret) {
+-               if (event == CPUFREQ_GOV_POLICY_INIT)
++               if (event == CPUFREQ_GOV_POLICY_INIT) {
+                        policy->governor->initialized++;
+-               else if (event == CPUFREQ_GOV_POLICY_EXIT)
++               } else if (event == CPUFREQ_GOV_POLICY_EXIT) {
+                        policy->governor->initialized--;
++                       module_put(policy->governor->owner);
++               }
+        } else {
+                /* Restore original values */
+                mutex_lock(&cpufreq_governor_lock);
+@@ -1877,13 +1879,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+                        policy->governor_enabled = true;
+                else if (event == CPUFREQ_GOV_START)
+                        policy->governor_enabled = false;
++               else if (event == CPUFREQ_GOV_POLICY_INIT)
++                       if (ret == -EALREADY) {
++                               module_put(policy->governor->owner);
++                               ret = 0;
++                       }
+                mutex_unlock(&cpufreq_governor_lock);
+        }
+
+-       if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
+-                       ((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+-               module_put(policy->governor->owner);
+-
+        return ret;
+
+
+>         return ret;
+>  }
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 0806c31..ddb93af 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -204,9 +204,20 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 >
-> Device tree is designed as a way for firmware/bootloader to describe
-> hardware to kernel.  That said, device tree is more part of bootloader
-> than kernel.  If bootloader runs at a frequency that does not match the
-> OPP in device tree, the one should be fixed is either bootloader or
-> device tree but never kernel.
+>         switch (event) {
+>         case CPUFREQ_GOV_POLICY_INIT:
+> +               /*
+> +                * In order to keep governor data across suspend/resume,
+> +                * Governor doesn't exit when suspend and will be
+> +                * reinitialized when resume. Here check policy governor
+> +                * data to determine whether the governor has been exited.
+> +                * If not, return EALREADY.
+> +                */
+>                 if (have_governor_per_policy()) {
+> -                       WARN_ON(dbs_data);
+> +                       if (dbs_data)
+> +                               return -EALREADY;
+>                 } else if (dbs_data) {
+> +                       if (policy->governor_data == dbs_data)
+> +                               return -EALREADY;
+> +
+>                         dbs_data->usage_count++;
+>                         policy->governor_data = dbs_data;
+>                         return 0;
 
-I agree for all that..
+But I don't really like the solution here. You are handling frozen for EXIT in
+cpufreq-core and for INIT in governor. That doesn't look like the right
+approach. There are out of tree governors too (I know we don't care about them
+:)), and those also need to adapt with some policy made at cpufreq-core level.
 
-> However, I agree we should at least have a check in cpufreq-cpu0 driver
-> and fail out in case that a mismatch is detected.
+I told you that I had another solution for this problem, pretty similar to
+yours. It looked like this:
 
-But not here.. We aren't in a non-workable state here.. and so creating
-panic isn't the right approach.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 4fa06de..e70e906 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -408,7 +408,8 @@ show_one(scaling_max_freq, max);
+ show_one(scaling_cur_freq, cur);
 
-At max we can print an warning but then it doesn't lie in cpufreq-cpu0's
-domain. It should be done in core if required..
+ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+-				struct cpufreq_policy *new_policy);
++				struct cpufreq_policy *new_policy,
++				bool frozen);
 
-Though for Shawn's information we have another thread in parallel for
-this issue. You might like to check that too..
+ /**
+  * cpufreq_per_cpu_attr_write() / store_##file_name() - sysfs write access
+@@ -428,7 +429,7 @@ static ssize_t store_##file_name					\
+ 	if (ret != 1)							\
+ 		return -EINVAL;						\
+ 									\
+-	ret = cpufreq_set_policy(policy, &new_policy);		\
++	ret = cpufreq_set_policy(policy, &new_policy, false);		\
+ 	policy->user_policy.object = policy->object;			\
+ 									\
+ 	return ret ? ret : count;					\
+@@ -486,7 +487,7 @@ static ssize_t store_scaling_governor(struct cpufreq_policy
+*policy,
+ 						&new_policy.governor))
+ 		return -EINVAL;
 
-https://lkml.org/lkml/2013/11/15/503
+-	ret = cpufreq_set_policy(policy, &new_policy);
++	ret = cpufreq_set_policy(policy, &new_policy, false);
+
+ 	policy->user_policy.policy = policy->policy;
+ 	policy->user_policy.governor = policy->governor;
+@@ -822,7 +823,7 @@ err_out_kobj_put:
+ 	return ret;
+ }
+
+-static void cpufreq_init_policy(struct cpufreq_policy *policy)
++static void cpufreq_init_policy(struct cpufreq_policy *policy, bool frozen)
+ {
+ 	struct cpufreq_policy new_policy;
+ 	int ret = 0;
+@@ -832,7 +833,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ 	policy->governor = NULL;
+
+ 	/* set default policy */
+-	ret = cpufreq_set_policy(policy, &new_policy);
++	ret = cpufreq_set_policy(policy, &new_policy, frozen);
+ 	policy->user_policy.policy = policy->policy;
+ 	policy->user_policy.governor = policy->governor;
+
+@@ -1077,7 +1078,7 @@ static int __cpufreq_add_dev(struct device *dev, struct
+subsys_interface *sif,
+ 	list_add(&policy->policy_list, &cpufreq_policy_list);
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+
+-	cpufreq_init_policy(policy);
++	cpufreq_init_policy(policy, frozen);
+
+ 	kobject_uevent(&policy->kobj, KOBJ_ADD);
+ 	up_read(&cpufreq_rwsem);
+@@ -1239,17 +1240,17 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+
+ 	/* If cpu is last user of policy, free policy */
+ 	if (cpus == 1) {
+-		if (has_target()) {
+-			ret = __cpufreq_governor(policy,
+-					CPUFREQ_GOV_POLICY_EXIT);
+-			if (ret) {
+-				pr_err("%s: Failed to exit governor\n",
+-						__func__);
+-				return ret;
++		if (!frozen) {
++			if (has_target()) {
++				ret = __cpufreq_governor(policy,
++						CPUFREQ_GOV_POLICY_EXIT);
++				if (ret) {
++					pr_err("%s: Failed to exit governor\n",
++							__func__);
++					return ret;
++				}
+ 			}
+-		}
+
+-		if (!frozen) {
+ 			down_read(&policy->rwsem);
+ 			kobj = &policy->kobj;
+ 			cmp = &policy->kobj_unregister;
+@@ -1920,7 +1921,7 @@ EXPORT_SYMBOL(cpufreq_get_policy);
+  * new_policy: policy to be set.
+  */
+ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+-				struct cpufreq_policy *new_policy)
++				struct cpufreq_policy *new_policy, bool frozen)
+ {
+ 	int ret = 0, failed = 1;
+
+@@ -1987,7 +1988,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+
+ 			/* start new governor */
+ 			policy->governor = new_policy->governor;
+-			if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
++			if (frozen || !__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
+ 				if (!__cpufreq_governor(policy, CPUFREQ_GOV_START)) {
+ 					failed = 0;
+ 				} else {
+@@ -2065,7 +2066,7 @@ int cpufreq_update_policy(unsigned int cpu)
+ 		}
+ 	}
+
+-	ret = cpufreq_set_policy(policy, &new_policy);
++	ret = cpufreq_set_policy(policy, &new_policy, false);
+
+ 	up_write(&policy->rwsem);
+
+-------------------------------
+
+But after the PM notifiers patch I even don't want this to go.. I will make sure
+that that patch goes in, in one form or another :)
+
+So, just wait for sometime before posting a new version :) (I know you did it
+because Rafael suggested a change)..
