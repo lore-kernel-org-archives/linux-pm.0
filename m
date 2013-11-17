@@ -1,123 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Sun, 17 Nov 2013 22:37 +0100
-Message-ID: <5229929.5JRiWnF6CT@vostro.rjw.lan>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <5974906.WAPp3f3eVY@vostro.rjw.lan> <CAKohpo=PoAaYgLNEVkkTC6tzAH=5hKw4VWTsrjt2jQnr7+6Q_w@mail.gmail.com>
+Subject: Re: 3.12: kernel panic when resuming from suspend to RAM (x86_64)
+Date: Sun, 17 Nov 2013 23:34:20 +0100
+Message-ID: <4636530.OR894YNbbr@vostro.rjw.lan>
+References: <52888F6D.6000802@gmail.com> <CAC9WiBggfssh+31_MqVCT-hDf2E8zTuc81q-DhLYQuVF053mEA@mail.gmail.com> <20131117220611.GQ27323@pd.tnic>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54770 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51912 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751374Ab3KQVY0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Nov 2013 16:24:26 -0500
-In-Reply-To: <CAKohpo=PoAaYgLNEVkkTC6tzAH=5hKw4VWTsrjt2jQnr7+6Q_w@mail.gmail.com>
+	with SMTP id S1751750Ab3KQWVp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Nov 2013 17:21:45 -0500
+In-Reply-To: <20131117220611.GQ27323@pd.tnic>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+To: Borislav Petkov <bp@alien8.de>, Francis Moreau <francis.moro@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sunday, November 17, 2013 10:27:43 PM Viresh Kumar wrote:
-> On 17 November 2013 20:39, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Sunday, November 17, 2013 01:52:15 PM viresh kumar wrote:
+On Sunday, November 17, 2013 11:06:12 PM Borislav Petkov wrote:
+> On Sun, Nov 17, 2013 at 09:49:40PM +0100, Francis Moreau wrote:
+> > On Sun, Nov 17, 2013 at 8:53 PM, Borislav Petkov <bp@alien8.de> wrote:
+> > > On Sun, Nov 17, 2013 at 07:02:21PM +0100, Francis Moreau wrote:
+> > >> Sorry I haven't taken the original picture large enough, and getting
+> > >> this kernel panic is pretty hard since the kernel usually displays the
+> > >> black screen.
+> > >
+> > > Ok, just try to make a readable picture of the whole line, next time you
+> > > trigger it.
+> > >
+> > >> I can't find any traces of this function in the dump...
+> > >
+> > > Hmm, strange. Can you upload the whole vmlinux somewhere? Or is this the
+> > > official archlinux kernel? If so, where can I get it from?
+> > 
+> > Yes, you can download the bin package from :
+> > https://www.archlinux.org/packages/core/x86_64/linux/
+> > 
+> > The bin package is a tar archive, so it pretty straightforward to
+> > unpack the vmlinux file  (actual is filename vmlinuz-linux).
 > 
-> >> Do you see anything extra that might stop working?
-> >
-> > Well, the code would be racy with the patch as is.  User space might manipulate
-> > the sysfs knobs in parallel with your PM notifiers, for example, and I'm not
-> > entirely sure what can happen then.  And the lock in there is pointless,
-> > because it doesn't prevent any races from happening.
+> Ok, here's what I was able to see: rIP points to call_timer_fn+0x33
+> which is this:
 > 
-> Hmm..
+> ffffffff8106f590 <call_timer_fn>:
+> ffffffff8106f590:       e8 2b b2 48 00          callq  ffffffff814fa7c0 <__fentry__>
+> ffffffff8106f595:       55                      push   %rbp
+> ffffffff8106f596:       65 48 8b 04 25 70 c7    mov    %gs:0xc770,%rax
+> ffffffff8106f59d:       00 00 
+> ffffffff8106f59f:       48 89 e5                mov    %rsp,%rbp
+> ffffffff8106f5a2:       41 57                   push   %r15
+> ffffffff8106f5a4:       49 89 d7                mov    %rdx,%r15
+> ffffffff8106f5a7:       41 56                   push   %r14
+> ffffffff8106f5a9:       49 89 f6                mov    %rsi,%r14
+> ffffffff8106f5ac:       41 55                   push   %r13
+> ffffffff8106f5ae:       41 54                   push   %r12
+> ffffffff8106f5b0:       49 89 fc                mov    %rdi,%r12
+> ffffffff8106f5b3:       53                      push   %rbx
+> ffffffff8106f5b4:       44 8b a8 44 e0 ff ff    mov    -0x1fbc(%rax),%r13d
+> ffffffff8106f5bb:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+> ffffffff8106f5c0:       4c 89 ff                mov    %r15,%rdi
+> ffffffff8106f5c3:       41 ff d6                callq  *%r14			<--- faulting insn
+> ffffffff8106f5c6:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+> ffffffff8106f5cb:       65 48 8b 04 25 70 c7    mov    %gs:0xc770,%rax
+> ffffffff8106f5d2:       00 00 
+> ffffffff8106f5d4:       44 39 a8 44 e0 ff ff    cmp    %r13d,-0x1fbc(%rax)
 > 
-> >> A unrelated question here. Why are we offlining CPUs after suspending all the
-> >> devices? Because the problem Nishanth mentioned was that he required few
-> >> devices, i2c, to be available when CPUs are getting down. And there might be
-> >> similar requirements at other places too. Was there any specific bottleneck due
-> >> to which it is implemented this way?
-> >
-> > No, this is because the ACPI spec mandates powering down devices before CPUs
-> > during system suspend.  The way it is done today, however, I think we don't
-> > need to keep that ordering so strictly any more.  We definitely don't need to
-> > do that on non-ACPI systems.
+> and the virtual address in rIP is ffffffff8106f5c3, i.e. the same one
+> as in the photo. Thus, the CALL instruction tries to call the timer
+> function 'fn' which we pass as an argument to call_timer_fn.
 > 
-> Okay.. But different behavior for acpi and non-acpi at such core code doesn't
-> look great to me.. Lets see if we can work with existing code
+> However, the address we're trying to call in %r14 is garbage:
+> 0x455300323d504544 and not in canonical form, causing the #GP.
 > 
-> > So while I hate the PM notifiers idea (sorry, but that's how it goes), I think
-> > it would be OK to suspend *some* devices after disabling CPUs (not all of them,
-> > of course).
+> So basically what happens is suspend to RAM corrupts something
+> containing one or more timer functions and we end up calling crap after
+> resume.
 > 
-> Hmm...
+> If you want to debug this further, you could try playing through
+> Documentation/power/basic-pm-debugging.txt and see whether suspend to
+> disk works. There's also a section 2 which talks about testing suspend
+> to RAM which could be of help.
 > 
-> > And as I said, I think it would be OK to introduce suspend/resume callbacks for
-> > CPU devices and use those callbacks to work around the ordering issues, when
-> > necessary.  The main point is that the changes made for this purpose should
-> > only affect systems where they are necessary and not everyone.  I don't want
-> > to change the way things work today in general in cpufreq too much unless they
-> > are plain bugs that affect everyone.
-> >
-> >> > We may introduce suspend_noirq and resume_noirq for cpu_subsys, for example,
-> >> > and handle things from there.  Or something similar.  But slapping PM notifiers
-> >> > on top of the existing code just because it appears to be easy (and making that
-> >> > code even more overdesigned than it already is this way) doesn't seem quite
-> >> > right.
+> But let me add Rafael and Thomas - they should have much better ideas
+> than me.
 > 
-> Okay.. Even these notifiers would be fine for me. To make things more clear
-> before I start implementing them:
-> - What about implementing syscore's suspend_prepare and post_suspend?
+> Guys, thread starts here:
+> http://marc.info/?l=linux-kernel&m=138468134321335
 
-I'm not sure how useful that would be.  When would you like to execute those
-things?
+This looks like a softirq bug to me (and related to cpuidle).
 
-> - Or you want to extend only CPU subsystems notifiers? What notifiers exactly?
-> And at which places we want to issue them from?
-
-Why do we need to use notifiers?  What about PM callbacks?
-
-> >> - I have concerns with Tianyu's patch as policies should be better taken care of
-> >> in cpufreq core instead of passing them over to governors.
-> >
-> > Well, this is all too tangled anyway, but quite frankly I'm not sure if it is
-> > worth untangling at this point.  We're deprecating cpufreq anyway.
-> 
-> I don't really think cpufreq is going anywhere even after we move bits
-> into scheduler. All the backend CPUFreq stuff will probably stay as is,
-> as they can't go anywhere.
-> 
-> One thing that will surely go away is the governor's layer, which would
-> be directly embedded into scheduler.
-> 
-> Lets see how that goes..
-> 
-> >> - Not all platforms have problem with changing frequency during suspend/resume
-> >> and so we may not require disabling of governors for all of them. Probably can
-> >> add another field based on which we may/may-not disable governors from PM or
-> >> syscore notifiers.
-> >
-> > What exactly is wrong with adding suspend/resume callbacks to cpu_subsys?
-> 
-> Okay, so you were asking about extending following list: CPU_ONLINE,
-> CPU_UP_PREPARE, CPU_UP_CANCELED, CPU_DOWN_PREPARE, etc.. to
-> include suspend/resume ones as well?
-
-No.  Bus types (among other things) may provide suspend/resume callbacks for
-handling devices.  We have a bus type for CPUs, which is called cpu_subsys
-and currently doesn't define any PM callbacks, although it could do that in
-principle.  Have you investigated that possibility?
-
-> Logically speaking, all existing ones does look correct as they are more or
-> less cpu related. But suspend/resume doesn't look any similar, Atleast to me.
-> 
-> Suspend/resume are system's state rather than CPU's.. We aren't suspending
-> or resuming CPUs, we are shutting them off.. So I thought maybe syscore ops
-> is a better place (which is already used by cpufreq)..
-
-cpufreq uses syscore_ops for the boot CPU only and that admittedly is a hack.
-syscore_ops is specifically for things that have to be suspended with only one
-CPU online and with interrupts off.  I'm not sure how that applies to cpufreq.
-
-Thanks!
+I'm wondering if that happens with any of the older kernels or just 3.12?
 
 -- 
 I speak only for myself.
