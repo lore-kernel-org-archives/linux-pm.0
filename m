@@ -1,88 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Sun, 17 Nov 2013 02:08:40 +0100
-Message-ID: <6050176.zVNbf5pomE@vostro.rjw.lan>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <2235672.LLJc6e6dny@vostro.rjw.lan> <CAKohpok_zjdRVz5-ZGRmZtwysC7jORm2mgRbLWDUzo1ucYVKZg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
+ booting with a mismatched bootloader configuration
+Date: Sun, 17 Nov 2013 09:32:42 +0530
+Message-ID: <CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>
+References: <1384568535-26611-1-git-send-email-nm@ti.com>
+	<20131116134445.GI11014@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49668 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752507Ab3KQA4H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Nov 2013 19:56:07 -0500
-In-Reply-To: <CAKohpok_zjdRVz5-ZGRmZtwysC7jORm2mgRbLWDUzo1ucYVKZg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20131116134445.GI11014@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Saturday, November 16, 2013 08:47:24 PM Viresh Kumar wrote:
-> On 16 November 2013 19:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> 
-> > Well, disabling it for the whole duration of suspend/resume and/or hibernation
-> > may not be the right approach entirely, unless we force the pax perf of the
-> 
-> s/pax/max ?
+On 16 November 2013 19:14, Shawn Guo <shawn.guo@linaro.org> wrote:
+> No, it's not a kernel bug.
+>
+> OPP is not a definition that belongs to kernel.  Instead, it's
+> characteristics of hardware, and that's why we can naturally put the
+> definition into device tree.  Bear it in mind that device tree is a
+> hardware description and should be OS agnostic.  So it shouldn't be
+> treated as part of Linux kernel in any case, even though the device
+> tree source is currently maintained in kernel tree.
+>
+> Device tree is designed as a way for firmware/bootloader to describe
+> hardware to kernel.  That said, device tree is more part of bootloader
+> than kernel.  If bootloader runs at a frequency that does not match the
+> OPP in device tree, the one should be fixed is either bootloader or
+> device tree but never kernel.
 
-Yes.
+I agree for all that..
 
-> > boot CPU at least in addition to that.  Otherwise the latency of suspend and
-> > the subsequent resume will depend on what perf level the CPUs where before
-> > disabling the governors, which is not desirable at al.
-> 
-> Well that is pretty much doable.
+> However, I agree we should at least have a check in cpufreq-cpu0 driver
+> and fail out in case that a mismatch is detected.
 
-Not necessarily on all CPU models.
+But not here.. We aren't in a non-workable state here.. and so creating
+panic isn't the right approach.
 
-> >> And these are the notifications that we send:
-> >> - PM_HIBERNATION_PREPARE
-> >> - PM_POST_HIBERNATION
-> >> - PM_RESTORE_PREPARE
-> >> - PM_POST_RESTORE
-> >>
-> >> If I am not wrong I need to stop governors on PM_HIBERNATION_PREPARE and need to
-> >> start them back on: PM_POST_HIBERNATION (I am a bit confused with this one. Does
-> >> this POST_HIBERNATION one happens at the end of going into hibernation? or after
-> >> booting back? I need a notifier at the end of restore)..
-> >
-> > You'd need both PM_POST_HIBERNATION and PM_POST_RESTORE, but I wouldn't really
-> > like cpufreq governors to be disabled throughout the whole hibernation.
-> 
-> So PM_POST_HIBERNATION is called just before shutting off the system? And
-> PM_POST_RESTORE is called after system is resumed from saved image?
+At max we can print an warning but then it doesn't lie in cpufreq-cpu0's
+domain. It should be done in core if required..
 
-PM_POST_HIBERNATION is only called if there's an error during hibernation.
-PM_POST_RESTORE is called as you said.
+Though for Shawn's information we have another thread in parallel for
+this issue. You might like to check that too..
 
-Also you have to remember that the _PREPARE PM notifiers are called before the
-freezing of tasks when user space is still running, so disabling governors at
-that point may lead to some weird behavior.
-
-> > Actually, we use CPU offline/online during system suspend/resume to avoid
-> > having to do stuff like this from PM notifiers.
-> 
-> I didn't get the logic behind this one..
-
-If we have to do special stuff from PM notifiers for CPU "suspend", we will be
-better off by doing something entirely special instead of CPU offline down the
-road.  Which we may end up doing given the problems with frozen/not frozen in
-the cpufreq core.
-
-We may introduce suspend_noirq and resume_noirq for cpu_subsys, for example,
-and handle things from there.  Or something similar.  But slapping PM notifiers
-on top of the existing code just because it appears to be easy (and making that
-code even more overdesigned than it already is this way) doesn't seem quite
-right.
-
-Now, the Tianyu's patch extends the Srivatsa's approach to governors, which
-actually should have been done from the outset, so it is within the scope of
-what we have already.  It may not solve all of the problems, but it still makes
-some progress and has a little chance to introduce *new* problems at the same
-time.
-
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+https://lkml.org/lkml/2013/11/15/503
