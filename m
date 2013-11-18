@@ -1,78 +1,47 @@
-From: Nishanth Menon <nm@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: stats: Do not populate stats when policy->cur
  has no exact match
-Date: Mon, 18 Nov 2013 09:34:11 -0600
-Message-ID: <528A3373.7040205@ti.com>
-References: <1384561243-30391-1-git-send-email-nm@ti.com>	<1423628.uM8DtnYzDe@vostro.rjw.lan>	<5287010F.9000508@linaro.org>	<528A2D59.3080001@ti.com> <CAKohpokzk2Zr7G+GV9d9Bc73WJHNMg01dfAJcxbwCGKFt9BpOw@mail.gmail.com>
+Date: Mon, 18 Nov 2013 21:13:14 +0530
+Message-ID: <CAKohponyFja18pqn5UL9bbtf_M4twWEyL3YqDGX5dgpdeRnJ_A@mail.gmail.com>
+References: <1384561243-30391-1-git-send-email-nm@ti.com>
+	<1423628.uM8DtnYzDe@vostro.rjw.lan>
+	<5287010F.9000508@linaro.org>
+	<528A2D59.3080001@ti.com>
+	<CAKohpokzk2Zr7G+GV9d9Bc73WJHNMg01dfAJcxbwCGKFt9BpOw@mail.gmail.com>
+	<528A3373.7040205@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:33392 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307Ab3KRPeV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Nov 2013 10:34:21 -0500
-In-Reply-To: <CAKohpokzk2Zr7G+GV9d9Bc73WJHNMg01dfAJcxbwCGKFt9BpOw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <528A3373.7040205@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>, Tobias Diedrich <ranma+xen@tdiedrich.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Dave Jones <davej@redhat.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 11/18/2013 09:22 AM, Viresh Kumar wrote:
-> On 18 November 2013 20:38, Nishanth Menon <nm@ti.com> wrote:
->> On 11/15/2013 11:22 PM, viresh kumar wrote:
-> 
->>> I have a untested patch for this. If this looks okay, Nishant can you please try
->>> below patch? With some fixups from your side :)
->>
->> http://pastebin.mozilla.org/3628975
->>
->> I agree that it does show something
-> 
-> Were you required to update it or fix it? Or you used it as is?
+On 18 November 2013 21:04, Nishanth Menon <nm@ti.com> wrote:
+> depends on how we look at it.. if we consider freq_table as a list of
+> valid frequencies, anything that is not in there is an invalid entry.
 
-as is - though manually applied ;)
+Partly correct. Yes freq table has a list of valid frequencies, but normally
+we just build a table of definite length which will cover frequencies of
+all ranges.. Our plls allow us to configure other frequencies too and
+they are valid too.. So, we really can't call that invalid.. Though they
+must be called out of range? or something better?
 
-> 
->> but would we not rather prefer to
->> stick with the entries available in freq_table than have to deal with
->> invalid frequencies that may be provided by the driver? for example:
->> how do we in stat know that there will only be one invalid frequency
->> request?
-> 
-> We don't have to. Actually there is nothing like an invalid freq, as system
-> is able to run with it. Its only if kernel is allowed to switch to that
-> frequency or not.
+> why should stat support it when freq_table is enforced by cpufreq layer?
 
-depends on how we look at it.. if we consider freq_table as a list of
-valid frequencies, anything that is not in there is an invalid entry.
-why should stat support it when freq_table is enforced by cpufreq layer?
+We are not supporting them, and so had a single entry for them. It is
+just to show to user that we are actually running on some freq outside
+of table. You better check if that's fine for your system or not.
 
-> 
-> This information will be useful for platform developers to know that kernel
-> was running on some out of freq-table freq for some time, what that
-> frequency was their job to find out and kernel doesn't need to print all
-> out of range frequencies. Keeping a single entry for that is more than
-> sufficient..
-yeah, I guessed that.. no strong feelings other wise..
+> :) -> https://patchwork.kernel.org/patch/3192211/ shows how confused
+> my git am  feels ;)
 
-> 
-> Though I personally didn't like: 4294967295 to be printed there.. Will
-> see if I can improve that, but its obviously looks better than failing
-> in cpufreq-stats..
+I am surprised to see what patchwork has done to my diff :) .. whereas
+lkml shows it correctly..
 
-> 
->> there are some patch wrapping that thunderbird tends to do - I prefer
->> mutt that way, when I need to send inline patches :).
-> 
-> There are steps in Documentation/email-clients.txt to get that fixed.. I
-> have used thunderbird for several years and never found anything
-> wrong with sending inline patches..
+https://lkml.org/lkml/2013/11/16/3
 
-:) -> https://patchwork.kernel.org/patch/3192211/ shows how confused
-my git am  feels ;)
-
-
--- 
-Regards,
-Nishanth Menon
+Because I haven't created a commit, it was only diff and git am couldn't
+get this fixed.. So either patch -p1 < mail would have done it or maybe
+its better if I paste commits..
