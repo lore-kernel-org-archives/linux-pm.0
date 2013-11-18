@@ -1,56 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: stats: Do not populate stats when policy->cur
- has no exact match
-Date: Mon, 18 Nov 2013 20:52:02 +0530
-Message-ID: <CAKohpokzk2Zr7G+GV9d9Bc73WJHNMg01dfAJcxbwCGKFt9BpOw@mail.gmail.com>
-References: <1384561243-30391-1-git-send-email-nm@ti.com>
-	<1423628.uM8DtnYzDe@vostro.rjw.lan>
-	<5287010F.9000508@linaro.org>
-	<528A2D59.3080001@ti.com>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Mon, 18 Nov 2013 21:02:22 +0530
+Message-ID: <CAKohpomS_dW64tf52MzcM0BLEgg+iZJveU9mXHgCyUp5qNKqTg@mail.gmail.com>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
+	<5974906.WAPp3f3eVY@vostro.rjw.lan>
+	<CAKohpo=PoAaYgLNEVkkTC6tzAH=5hKw4VWTsrjt2jQnr7+6Q_w@mail.gmail.com>
+	<5229929.5JRiWnF6CT@vostro.rjw.lan>
+	<5289A80B.7080808@linaro.org>
+	<5289F29B.8050806@intel.com>
+	<CAKohpo=UjSqzE+Jg0s3taykHu4VinNUvLLhRm6pUXiyUc5F-3w@mail.gmail.com>
+	<528A1823.8080705@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <528A2D59.3080001@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>, Tobias Diedrich <ranma+xen@tdiedrich.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Dave Jones <davej@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:62984 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300Ab3KRPcW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2013 10:32:22 -0500
+Received: by mail-ob0-f174.google.com with SMTP id wn1so750451obc.5
+        for <linux-pm@vger.kernel.org>; Mon, 18 Nov 2013 07:32:22 -0800 (PST)
+In-Reply-To: <528A1823.8080705@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On 18 November 2013 20:38, Nishanth Menon <nm@ti.com> wrote:
-> On 11/15/2013 11:22 PM, viresh kumar wrote:
+On 18 November 2013 19:07, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> The resume/suspend() must be stored in the struct driver->pm? :)
 
->> I have a untested patch for this. If this looks okay, Nishant can you please try
->> below patch? With some fixups from your side :)
+We certainly can't move back to increase redundancy by implementing
+driver's specific stuff here :)
+
+>> Apart from that even cpufreq would be a bit hacky as we don't really need
+>> per-cpu callbacks..
+>>
 >
-> http://pastebin.mozilla.org/3628975
->
-> I agree that it does show something
+> This maybe depends on where we want the issue to be fixed, right?
+> The cpufreq driver also can fix the issue if we run their cpu_driver
+> resume/suspend callback earlier.
 
-Were you required to update it or fix it? Or you used it as is?
+same as above..
 
-> but would we not rather prefer to
-> stick with the entries available in freq_table than have to deal with
-> invalid frequencies that may be provided by the driver? for example:
-> how do we in stat know that there will only be one invalid frequency
-> request?
+> Another point, I just see cpuidle_resume() and cpuidle_pause() are called in
+> the dpm_resume_noirq and dpm_suspend_noirq(). Not sure whether this can be
+> applied to cpufreq.
 
-We don't have to. Actually there is nothing like an invalid freq, as system
-is able to run with it. Its only if kernel is allowed to switch to that
-frequency or not.
-
-This information will be useful for platform developers to know that kernel
-was running on some out of freq-table freq for some time, what that
-frequency was their job to find out and kernel doesn't need to print all
-out of range frequencies. Keeping a single entry for that is more than
-sufficient..
-
-Though I personally didn't like: 4294967295 to be printed there.. Will
-see if I can improve that, but its obviously looks better than failing
-in cpufreq-stats..
-
-> there are some patch wrapping that thunderbird tends to do - I prefer
-> mutt that way, when I need to send inline patches :).
-
-There are steps in Documentation/email-clients.txt to get that fixed.. I
-have used thunderbird for several years and never found anything
-wrong with sending inline patches..
+I will still prefer syscore_ops instead of calling framework specific routines
+directly from dpm_**() routines.. Don't know why this was done this way
+for cpuidle..
