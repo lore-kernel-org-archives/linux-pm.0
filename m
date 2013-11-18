@@ -1,76 +1,51 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: stats: Do not populate stats when policy->cur
- has no exact match
-Date: Mon, 18 Nov 2013 09:08:09 -0600
-Message-ID: <528A2D59.3080001@ti.com>
-References: <1384561243-30391-1-git-send-email-nm@ti.com> <1423628.uM8DtnYzDe@vostro.rjw.lan> <5287010F.9000508@linaro.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Mon, 18 Nov 2013 10:17:12 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1311181010080.1421-100000@iolanthe.rowland.org>
+References: <CAPDyKFrushEwW7x_VguPjOnP8BuSO=+tD=DxS9J0JQVfYTgOYA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5287010F.9000508@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: viresh kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ceh@ti.com, Tobias Diedrich <ranma+xen@tdiedrich.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Dave Jones <davej@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrushEwW7x_VguPjOnP8BuSO=+tD=DxS9J0JQVfYTgOYA@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/15/2013 11:22 PM, viresh kumar wrote:
-> On Saturday 16 November 2013 06:40 AM, Rafael J. Wysocki wrote:
->> On Friday, November 15, 2013 06:20:43 PM Nishanth Menon wrote:
-> 
->>> So, instead of having a statistics information that never ever
->>> reflects valid data in the mentioned case and scratching our heads, we
->>> instead, refuse to populate any of the statistics entries and note in
->>> kernel log the error condition for developers to fix. The only useable
-> 
-> s/useable/usable
-> 
->>> information are the available frequencies which is already available
->>> in other cpufreq sysfs entries.
-> 
->> I like this one.  Any objections from anyone?
-> 
-> Well nothing against the patch but I have other thoughts. There are platforms
-> which might have no choice of fixing this issue as their bootloaders might be
-> setting boot freq to any value outside of our freq table.
-> 
-> And those might not have a chance to fix that in driver as well in case they are
-> using something like cpufreq-cpu0..
-> 
-> So, eventually this patch wouldn't do anything except giving a boot time error
-> and not initializing any stats at all..
-> 
-> Wouldn't it be better to create another frequency in all these tables, which
-> will be an *Invalid* frequency.. With a value of -1 (i.e. largest value of an
-> unsigned int) ??
-> 
-> And so nobody will ever miss stats again, even if they are running on invalid
-> frequencies. We will capture that information too:
-> - we have moved from/to invalid frequency to/from a valid/invalid frequency this
-> much times.
-> - We have stayed at valid/invalid frequencies for this much time.
-> 
-> I have a untested patch for this. If this looks okay, Nishant can you please try
-> below patch? With some fixups from your side :)
+On Mon, 18 Nov 2013, Ulf Hansson wrote:
 
-http://pastebin.mozilla.org/3628975
+> I favour the pm_runtime_no_prevent_suspend API approach, since it
+> would mean a change in behaviour of the PM core.
 
-I agree that it does show something, but would we not rather prefer to
-stick with the entries available in freq_table than have to deal with
-invalid frequencies that may be provided by the driver? for example:
-how do we in stat know that there will only be one invalid frequency
-request?
+That's exactly why I don't favor it!  :-)
 
+>  I also think that in
+> some cases it could make runtime PM better understandable, for those
+> who are deploying it.
 
-> 
+I don't see how it would make runtime PM either more or less
+understandable, since the proposed change affects system PM, not
+runtime PM.  On the other hand, it would make the Runtime PM 
+documentation more complicated.
 
-[..]
-> (@Rafael: Finally I have moved to thunderbird, found a way out, so no more
-> crappy attachments from me :))
-> 
-there are some patch wrapping that thunderbird tends to do - I prefer
-mutt that way, when I need to send inline patches :).
+(Also, I think the name "pm_runtime_no_prevent_suspend" is a very bad 
+choice.  It should be something more like 
+"allow_runtime_suspend_during_system_sleep".)
 
--- 
-Regards,
-Nishanth Menon
+> Another advantage of "pm_runtime_no_prevent_suspend" is that driver's
+> can still easily prevent runtime suspend, during system suspend, by an
+> extra call to "pm_runtime_get*". Typically this could be used when the
+> device is configured for wakeup.
+
+How is this an advantage?  Drivers can accomplish the same thing right 
+now by not doing anything at all.
+
+>  In this case the generic suspend_late
+> approach would not work, since the driver would need to implement it's
+> own .suspend_late callback to handle this.
+
+Actually, drivers would simply need to _avoid_ setting the 
+.suspend_late callback.
+
+Alan Stern
