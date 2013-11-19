@@ -1,59 +1,37 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Tue, 19 Nov 2013 08:16:33 -0600
-Message-ID: <528B72C1.5060006@ti.com>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>	<20131116134445.GI11014@S2101-09.ap.freescale.net>	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>	<528A27F8.3070402@ti.com>	<20131118155753.GU11014@S2101-09.ap.freescale.net>	<528A4340.3020508@ti.com>	<20131119022133.GB18434@S2101-09.ap.freescale.net> <CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq/stats: Add "unknown" frequency field in stats tables
+Date: Tue, 19 Nov 2013 19:52:14 +0530
+Message-ID: <CAKohpomZeD-1gsh-u_wyabaYLoqm3A=cyUNyZDMmzE3_fKA8-g@mail.gmail.com>
+References: <b0a2e5d26be45d1d2853940d318d50415db48f6f.1384839287.git.viresh.kumar@linaro.org>
+	<1384850540.3381.6.camel@linaro1.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
+In-Reply-To: <1384850540.3381.6.camel@linaro1.home>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
+To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/18/2013 09:46 PM, Viresh Kumar wrote:
-> On 19 November 2013 07:51, Shawn Guo <shawn.guo@linaro.org> wrote:
->> No, I did not say that.  IMO, when cpufreq-cpu0 sees a mismatch, it has
->> no way to know or assume which one is correct and which is incorrect.
->> The best thing it can do is to fail out without changing anything about
->> running frequency and voltage.
-> 
-> Not specifically on this patch, but this is what I feel about this issue:
-> 
-> - As we are discussing on the other thread, there is scope of adding
-> "unknown" field in tables so that people would know that they were
-> running out of table freq at some point..
+On 19 November 2013 14:12, Jon Medhurst (Tixy) <tixy@linaro.org> wrote:
+> I'm wondering if this would break any user-side code parsing this output
+> and does that matter? (E.g. powertop will end up doing strtoull on
+> "unknown" and get zero as the frequency.)  Would omitting 'unknown' if
+> the time is zero be safer in this repect? Possibly not, inconsistency is
+> probably worse than change.
 
-Consider something like userspace governor selection -> the device at
-boot will probably remain in an unknown/"invalid" configuration till
-the very first transition attempt. I am less worried about the stats
-than not following what the hardware description is (as stated by
-device tree/other forms).
+We wouldn't know about this on bootup all the time. I thought of doing
+this only when an invalid frequency is configured at boot. Because after
+that cpufreq will never configure any freq out of freq-table.
 
-I staunchly disagree that at a point of mismatch detection, we just
-refuse to load up cpufreq governor -even though we know from device
-tree/other alternative entries what the hardware behavior is supposed
-to be. To refuse to loadup to a known configuration is considering the
-"valid configuration" data provided to the driver is wrong - an
-equivalent(considering the i2c example) is that if i2c driver sees bus
-configured for 3.4MHz and was asked to use 100KHz, it just refuses to
-load up!
+But in case of suspend/resume control again goes to bootloaders and
+they might end up configuring unknown freq again. And we aren't
+allocating these data structures on suspend resume but only during
+system boot.
 
-> - This is a common problem for all drivers/platforms and not only
-> cpufreq-cpu0, so the solution has to be generic and not driver
-> specific.. So, atleast I don't want to get this patch in at any cost,
-> unless there is a generic solution present..
-> - There are non-dt drivers as well, and so freq table is present
-> with the kernel and we can't support all frequencies that bootloader
-> may end up with..
-The above two are fair comments -> but that implies that policy->cur
-population should no longer be the responsibility of cpufreq drivers
-and be the responsibility of cpufreq core. are we stating we want to
-move that to cpufreq core?
+Even if powertop reads it zero then also it isn't that bad.. because the
+other option we had was to mark it zero or -1 (uint max).. But unknown
+looks better for readability..
 
--- 
-Regards,
-Nishanth Menon
+--
+viresh
