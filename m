@@ -1,42 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Tue, 19 Nov 2013 09:16:59 +0530
-Message-ID: <CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>
-	<20131116134445.GI11014@S2101-09.ap.freescale.net>
-	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>
-	<528A27F8.3070402@ti.com>
-	<20131118155753.GU11014@S2101-09.ap.freescale.net>
-	<528A4340.3020508@ti.com>
-	<20131119022133.GB18434@S2101-09.ap.freescale.net>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] cpufreq: exynos: Fix compilation warnings
+Date: Tue, 19 Nov 2013 09:53:39 +0530
+Message-ID: <1384835019-3251-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131119022133.GB18434@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
+To: linux-pm@vger.kernel.org
+Cc: cpufreq@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, sachin.kamat@linaro.org, Lukasz Majewski <l.majewski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 November 2013 07:51, Shawn Guo <shawn.guo@linaro.org> wrote:
-> No, I did not say that.  IMO, when cpufreq-cpu0 sees a mismatch, it has
-> no way to know or assume which one is correct and which is incorrect.
-> The best thing it can do is to fail out without changing anything about
-> running frequency and voltage.
+Commit a403797bbd81 ("cpufreq: exynos: Convert exynos-cpufreq
+to platform driver") forgot to change the function prototype.
+Change it now to fix the following compilation warnings:
 
-Not specifically on this patch, but this is what I feel about this issue:
+drivers/cpufreq/exynos-cpufreq.c:292:18: warning: incorrect type in ini=
+tializer
+(different argument counts)
+drivers/cpufreq/exynos-cpufreq.c:292:18:    expected int ( *probe )( ..=
+=2E )
+drivers/cpufreq/exynos-cpufreq.c:292:18:    got int ( static [toplevel]
+*<noident> )( ... )
+  CC      drivers/cpufreq/exynos-cpufreq.o
+drivers/cpufreq/exynos-cpufreq.c:292:2: warning: initialization from
+incompatible pointer type [enabled by default]
+  .probe =3D exynos_cpufreq_init,
+  ^
+drivers/cpufreq/exynos-cpufreq.c:292:2: warning: (near initialization f=
+or
+=E2=80=98exynos_cpufreq_platdrv.probe=E2=80=99) [enabled by default]
+  LD      drivers/cpufreq/built-in.o
 
-- As we are discussing on the other thread, there is scope of adding
-"unknown" field in tables so that people would know that they were
-running out of table freq at some point..
-- This is a common problem for all drivers/platforms and not only
-cpufreq-cpu0, so the solution has to be generic and not driver
-specific.. So, atleast I don't want to get this patch in at any cost,
-unless there is a generic solution present..
-- There are non-dt drivers as well, and so freq table is present
-with the kernel and we can't support all frequencies that bootloader
-may end up with..
+WARNING: drivers/cpufreq/built-in.o(.data+0x644): Section mismatch in r=
+eference
+from the variable exynos_cpufreq_platdrv to the function
+=2Einit.text:exynos_cpufreq_init()
 
---
-viresh
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-=
+cpufreq.c
+index a2f57d4101fc..e238c46efaac 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -233,7 +233,7 @@ static struct cpufreq_driver exynos_driver =3D {
+ #endif
+ };
+=20
+-static int __init exynos_cpufreq_init(void)
++static int exynos_cpufreq_init(struct platform_device *pdev)
+ {
+ 	int ret =3D -EINVAL;
+=20
+--=20
+1.7.9.5
+
