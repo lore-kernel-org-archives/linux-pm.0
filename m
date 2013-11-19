@@ -1,112 +1,163 @@
-From: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
-Subject: Re: [PATCH RFC 00/10] ARM: STi: Add dwmac glue and reset controller
-Date: Tue, 19 Nov 2013 06:28:42 +0100
-Message-ID: <528AF70A.7080603@st.com>
-References: <1384264311-7308-1-git-send-email-srinivas.kandagatla@st.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1384264311-7308-1-git-send-email-srinivas.kandagatla@st.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: srinivas.kandagatla@st.com
-Cc: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, Russell King <linux@arm.linux.org.uk>, Stuart Menefy <stuart.menefy@st.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, stephen.gallimore@st.com, linux-kernel@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq/stats: Add "unknown" frequency field in stats tables
+Date: Tue, 19 Nov 2013 11:10:26 +0530
+Message-ID: <b0a2e5d26be45d1d2853940d318d50415db48f6f.1384839287.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f47.google.com ([209.85.160.47]:32951 "EHLO
+	mail-pb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379Ab3KSFkg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 00:40:36 -0500
+Received: by mail-pb0-f47.google.com with SMTP id um1so1375699pbc.20
+        for <linux-pm@vger.kernel.org>; Mon, 18 Nov 2013 21:40:35 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, shawn.guo@linaro.org, ceh@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 11/12/2013 2:51 PM, srinivas.kandagatla@st.com wrote:
-> From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
->
-> Hi All,
->
-> This patch series adds Ethernet support to STi series SOCs STiH415 and STiH416.
-> STi SOC series integrates dwmac IP from synopsis, however there is a hardware
-> glue on top of this standard IP, this glue needs to configured before the
-> actual dwmac can be used.
-> To add this a new driver dwmac-sti is introduced whose responsibility is to
-> configure dwmac glue and before dwmac driver, this is achieved by making dwmac
-> device node as child to ethernet glue node. Inspired by usb/dwc3.
-> Also the glue needs to come out of softreset which is why we have added a
-> softreset controller to driver which looked perfectly neat, rather then
-> driving the softreset bit from the glue driver.
->
-> Also as part of power management in glue driver, I found that there was no
-> function to determine if the child device is a wakeup source or not.
-> I have added a new api device_child_may_wakeup API which could be useful for
-> drivers like this. "PM / wakeup : Introduce device_child_may_wakeup" patch has
-> that new API and "net: stmmac:sti: Add STi SOC glue driver." glue driver uses
-> this new API.
->
-> The reason for combining all these patches in a same series is because of
-> dependencies.
->
-> This patch series is tested on B2000 and B2020 boards with STiH415, STiH416
-> SOC on ethernet 100/1000 Links.
->
-> Comments?
+commit 46a310b ([CPUFREQ] Don't set stat->last_index to -1 if the pol->cur has
+incorrect value.) tries to handle case where policy->cur does not match any
+entry in freq_table.
 
-Hello Srini
-ll these patches are ok for me and, as you know, I have already started
-using them while porting other SoC. Glue logic is mandatory now!
+As indicated in the above commit, the exact match search of freq_table_get index
+will return a -1 which is stored in stat->last_index. However, as a result of
+the above commit, cpufreq_stat_notifier_trans which updates the statistics,
+fails to update any *further* valid transitions that take place as
+stat->last_index is -1 as the condition occurs at boot and never solved.
 
-Thanks
-peppe
+To fix this issue, lets create another entry for time_in_state and trans_table
+that will tell the user that CPU was running on unknown frequency for some time.
 
->
-> Thanks,
-> srini
->
-> Srinivas Kandagatla (6):
->    drivers: reset: stih415: add softreset controller
->    drivers: reset: stih416: add softreset controller
->    PM / wakeup : Introduce device_child_may_wakeup
->    net: stmmac:sti: Add STi SOC glue driver.
->    ARM: STi: Add STiH415 ethernet support.
->    ARM: STi: Add STiH416 ethernet support.
->
-> Stephen Gallimore (4):
->    drivers: reset: STi SoC system configuration reset controller support
->    drivers: reset: Reset controller driver for STiH415
->    drivers: reset: Reset controller driver for STiH416
->    ARM: STi: Add reset controller support to mach-sti Kconfig
->
->   .../devicetree/bindings/net/sti-dwmac.txt          |   45 +++
->   .../devicetree/bindings/reset/st,sti-powerdown.txt |   46 +++
->   .../devicetree/bindings/reset/st,sti-softreset.txt |   45 +++
->   arch/arm/boot/dts/stih415-clock.dtsi               |   14 +
->   arch/arm/boot/dts/stih415-pinctrl.dtsi             |   82 ++++++
->   arch/arm/boot/dts/stih415.dtsi                     |   67 +++++
->   arch/arm/boot/dts/stih416-clock.dtsi               |   14 +
->   arch/arm/boot/dts/stih416-pinctrl.dtsi             |  106 +++++++
->   arch/arm/boot/dts/stih416.dtsi                     |   69 +++++
->   arch/arm/boot/dts/stih41x-b2000.dtsi               |   32 +++
->   arch/arm/boot/dts/stih41x-b2020.dtsi               |   33 +++
->   arch/arm/mach-sti/Kconfig                          |    3 +
->   drivers/base/power/wakeup.c                        |   23 ++
->   drivers/net/ethernet/stmicro/stmmac/Makefile       |    1 +
->   drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c    |  294 ++++++++++++++++++++
->   drivers/reset/Kconfig                              |    2 +
->   drivers/reset/Makefile                             |    3 +
->   drivers/reset/sti/Kconfig                          |   15 +
->   drivers/reset/sti/Makefile                         |    4 +
->   drivers/reset/sti/reset-stih415.c                  |   99 +++++++
->   drivers/reset/sti/reset-stih416.c                  |  101 +++++++
->   drivers/reset/sti/reset-syscfg.c                   |  186 ++++++++++++
->   drivers/reset/sti/reset-syscfg.h                   |   69 +++++
->   .../dt-bindings/reset-controller/stih415-resets.h  |   23 ++
->   .../dt-bindings/reset-controller/stih416-resets.h  |   25 ++
->   include/linux/pm_wakeup.h                          |    1 +
->   26 files changed, 1402 insertions(+), 0 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/net/sti-dwmac.txt
->   create mode 100644 Documentation/devicetree/bindings/reset/st,sti-powerdown.txt
->   create mode 100644 Documentation/devicetree/bindings/reset/st,sti-softreset.txt
->   create mode 100644 drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c
->   create mode 100644 drivers/reset/sti/Kconfig
->   create mode 100644 drivers/reset/sti/Makefile
->   create mode 100644 drivers/reset/sti/reset-stih415.c
->   create mode 100644 drivers/reset/sti/reset-stih416.c
->   create mode 100644 drivers/reset/sti/reset-syscfg.c
->   create mode 100644 drivers/reset/sti/reset-syscfg.h
->   create mode 100644 include/dt-bindings/reset-controller/stih415-resets.h
->   create mode 100644 include/dt-bindings/reset-controller/stih416-resets.h
->
+This is how the output looks like on my thinkpad (Removed some entries to keep
+it simple):
+
+	$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state 
+	2800000 46
+	2600000 138
+	1200000 65
+	1000000 152
+	800000 34803
+	unknown 0
+
+	$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/trans_table 
+	   From  :    To
+	         :   2801000   2800000   2600000   2400000   2200000   2000000   unknown 
+	  2801000:         0        15        20         9        13        17         0 
+	  2800000:        13         0         4         1         0         1         0 
+	  2600000:        26         1         0         5         1         1         0 
+	  2400000:        11         0         6         0         1         1         0 
+	  2200000:         8         1         5         3         0         0         0 
+	  2000000:        11         1         2         1         2         0         0 
+	  unknown:         0         0         0         0         0         0         0 
+
+Reported-by: Carlos Hernandez <ceh@ti.com>
+Reported-and-tested-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_stats.c | 45 ++++++++++++++++++++++++++++-------------
+ 1 file changed, 31 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 4cf0d28..ebb21cd 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -72,9 +72,13 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+ 		return 0;
+ 	cpufreq_stats_update(stat->cpu);
+ 	for (i = 0; i < stat->state_num; i++) {
+-		len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i],
+-			(unsigned long long)
+-			jiffies_64_to_clock_t(stat->time_in_state[i]));
++		if (stat->freq_table[i] == -1)
++			return sprintf(buf + len, "unknown");
++		else
++			return sprintf(buf + len, "%u", stat->freq_table[i]);
++
++		len += sprintf(buf + len, " %llu\n", (unsigned long long)
++				jiffies_64_to_clock_t(stat->time_in_state[i]));
+ 	}
+ 	return len;
+ }
+@@ -94,8 +98,12 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 	for (i = 0; i < stat->state_num; i++) {
+ 		if (len >= PAGE_SIZE)
+ 			break;
+-		len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
+-				stat->freq_table[i]);
++		if (stat->freq_table[i] == -1)
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9s ",
++					"unknown");
++		else
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
++					stat->freq_table[i]);
+ 	}
+ 	if (len >= PAGE_SIZE)
+ 		return PAGE_SIZE;
+@@ -106,8 +114,12 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 		if (len >= PAGE_SIZE)
+ 			break;
+ 
+-		len += snprintf(buf + len, PAGE_SIZE - len, "%9u: ",
+-				stat->freq_table[i]);
++		if (stat->freq_table[i] == -1)
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9s: ",
++					"unknown");
++		else
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9u: ",
++					stat->freq_table[i]);
+ 
+ 		for (j = 0; j < stat->state_num; j++) {
+ 			if (len >= PAGE_SIZE)
+@@ -145,10 +157,12 @@ static struct attribute_group stats_attr_group = {
+ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+ {
+ 	int index;
+-	for (index = 0; index < stat->max_state; index++)
++	for (index = 0; index < stat->max_state - 1; index++)
+ 		if (stat->freq_table[index] == freq)
+ 			return index;
+-	return -1;
++
++	/* Last state is INVALID, to mark out of table frequency */
++	return stat->max_state - 1;
+ }
+ 
+ /* should be called late in the CPU removal sequence so that the stats
+@@ -222,6 +236,9 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 		count++;
+ 	}
+ 
++	/* An extra entry for Invalid frequencies */
++	count++;
++
+ 	alloc_size = count * sizeof(int) + count * sizeof(u64);
+ 
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+@@ -243,9 +260,13 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 		unsigned int freq = table[i].frequency;
+ 		if (freq == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+-		if (freq_table_get_index(stat, freq) == -1)
++		if (freq_table_get_index(stat, freq) == stat->max_state - 1)
+ 			stat->freq_table[j++] = freq;
+ 	}
++
++	/* Mark Invalid freq as max value to indicate Invalid freq */
++	stat->freq_table[j++] = -1;
++
+ 	stat->state_num = j;
+ 	spin_lock(&cpufreq_stats_lock);
+ 	stat->last_time = get_jiffies_64();
+@@ -315,10 +336,6 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+ 	old_index = stat->last_index;
+ 	new_index = freq_table_get_index(stat, freq->new);
+ 
+-	/* We can't do stat->time_in_state[-1]= .. */
+-	if (old_index == -1 || new_index == -1)
+-		return 0;
+-
+ 	cpufreq_stats_update(freq->cpu);
+ 
+ 	if (old_index == new_index)
+-- 
+1.7.12.rc2.18.g61b472e
 
