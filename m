@@ -1,68 +1,64 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
-Date: Tue, 19 Nov 2013 10:43:49 -0800
-Message-ID: <87pppwkza2.fsf@linaro.org>
-References: <Pine.LNX.4.44L0.1311191258550.1145-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1311191258550.1145-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Tue, 19 Nov 2013 13:03:11 -0500 (EST)")
-Sender: linux-pci-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH v2] power: Replace printks with dev_* and pr_* routines
+Date: Tue, 19 Nov 2013 11:46:58 -0700
+Message-ID: <1384886818-11861-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:45336 "EHLO
+	qmta10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751667Ab3KSSrE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 13:47:04 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, rjw@rjwysocki.net, joe@perches.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+Replaced printks with dev_* and pr_* routines. Replacing printk in
+__suspend_report_result() will require passing in struct device *
+pointer from calling routines and this will require changes to
+external interface suspend_report_result() which is used by several
+drivers. Hence, this one instance is replaced by pr_err().
 
-> On Tue, 19 Nov 2013, Kevin Hilman wrote:
->
->> Alan Stern <stern@rowland.harvard.edu> writes:
->> 
->> > On Tue, 19 Nov 2013, Ulf Hansson wrote:
->> >
->> >> At the moment, system PM is already affecting behaviour of runtime PM
->> >> since it is preventing runtime suspend during system suspend.
->> >
->> > Sure.  And that behavior is documented.  In any case, it's a bug for 
->> > drivers to depend on runtime suspend for carrying out a system suspend.
->> 
->> As Rafael mentioned, there is bus/pm_domain code that comes into play
->> here, so I'm not sure it's always a bug.
->> 
->> IMO, it's not a bug for the driver to depend on runtime PM if the
->> bus/pm_domain is handling the details.
->> 
->> On OMAP, we handle all the SoC on-chip devices with a pm_domain since
->> the low-level PM operations that need to happen are bus-level things not
->> device-level things.  Therefore, drivers for these devices can rely
->> entirely on runtime PM, even for system suspend.  The late/early
->> callbacks in the pm_domain can see if the device is runtime suspended
->> already or not and behave accordingly.
->> 
->> So, this all *can* work by handling it at the bus/pm_domain level, but
->> as Ulf has mentioned (and I agree) it seems like a clunky workaround
->> because the PM core is preventing it from happening as one might expect.
->
-> The problem is that userspace can disable runtime PM at any time by 
-> writing "on" to /sys/.../power/control.  Once that's done, you can't
-> depend on runtime PM to put the device into a low-power state during 
-> system suspend.
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ drivers/base/power/main.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-We handle that too.
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 9f098a8..3f42c43 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -349,8 +349,8 @@ static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
+ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
+ 			int error)
+ {
+-	printk(KERN_ERR "PM: Device %s failed to %s%s: error %d\n",
+-		dev_name(dev), pm_verb(state.event), info, error);
++	dev_err(dev, "PM: failed to %s%s: error %d\n",
++		pm_verb(state.event), info, error);
+ }
+ 
+ static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
+@@ -1308,9 +1308,8 @@ int dpm_prepare(pm_message_t state)
+ 				error = 0;
+ 				continue;
+ 			}
+-			printk(KERN_INFO "PM: Device %s not prepared "
+-				"for power transition: code %d\n",
+-				dev_name(dev), error);
++			dev_info("PM: not prepared for power transition: ",
++				 "code %d\n", error);
+ 			put_device(dev);
+ 			break;
+ 		}
+@@ -1347,7 +1346,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_start);
+ void __suspend_report_result(const char *function, void *fn, int ret)
+ {
+ 	if (ret)
+-		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
++		pr_err("%s(): %pF returns %d\n", function, fn, ret);
+ }
+ EXPORT_SYMBOL_GPL(__suspend_report_result);
+ 
+-- 
+1.8.3.2
 
-The way we handle it, that the pm_domain code "knows" that the device
-*should* be runtime suspended by the time the pm_domain suspend_noirq
-callback is called.  So it checks pm_runtime_status_suspended() and if
-the device is not runtime suspended, the pm_domain will "forcibly"
-runtime suspend the device (which just means, calling the driver's
-->runtime_suspend(), doing the bus-level magic, and setting the runtime
-PM state accordingly.)
-
-This is arguably the same approach as the using the late callbacks that
-you've already described, but it's just done in a hidden way at the bus
-level.  Also, this solution predates the addtion of the late callbacks
-and I believe may have even been initially proposed by you (or maybe
-Rafael, I forgot.)
-
-Kevin
