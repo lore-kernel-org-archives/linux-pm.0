@@ -1,29 +1,36 @@
 From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH 1/2] power_supply: Fix Oops from NULL pointer dereference from wakeup_source_activate
-Date: Tue, 19 Nov 2013 08:59:35 -0700
-Message-ID: <9575239e8eb1b813425e4297e26589946d5cdd1c.1384875691.git.shuah.kh@samsung.com>
+Subject: [PATCH 2/2] power: Change device_wakeup_enable() to WARN_ON on null dev_name(dev)
+Date: Tue, 19 Nov 2013 09:05:46 -0700
+Message-ID: <622a097f9780dc721354d0e2b6cb512280da1ebc.1384875691.git.shuah.kh@samsung.com>
 References: <cover.1384875691.git.shuah.kh@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:59876 "EHLO
+	qmta03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753384Ab3KSQFw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 11:05:52 -0500
 In-Reply-To: <cover.1384875691.git.shuah.kh@samsung.com>
-In-Reply-To: <cover.1384875691.git.shuah.kh@samsung.com>
-References: <cover.1384875691.git.shuah.kh@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, gregkh@linuxfoundation.org, anton@enomsg.org, dwmw2@infradead.org
 Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
-List-Id: linux-pm@vger.kernel.org
 
-power_supply_register() calls device_init_wakeup() to register a wakeup
-source before initializing dev_name. As a result, device_wakeup_enable()
-end up registering wakeup source with a null name when wakeup_source_register()
-gets called with dev_name(dev) which is null at the time.
+device_wakeup_enable() uses dev_name(dev) as the wakeup source name.
+When it gets called with a device with its name not yet set, ws structure
+with ws->name = NULL gets created.
 
 When kernel is booted with wakeup_source_activate enabled, it will panic
 when the trace point code tries to dereferences ws->name.
 
-Fixed the problem by moving up the kobject_set_name() call prior to accesses
-to dev_name(). Replaced kobject_set_name() with dev_set_name() which is the
-right interface to be called from drivers. Fixed the call to device_del() prior
-to device_add() in for wakeup_init_failed error handling code.
+Change device_wakeup_enable() to WARN_ON on dev_name(dev) null condition
+to detect driver bugs that result in calling device_wakeup_enable() before
+device is fully initialized with its name in device_wakeup_enable().
+
+This change without the power_supply_register() fix will result in early
+boot panics when AC Adapter and Battery device drivers try to register
+wakeup source.
+
+The following panic resulted from power_supply_register() registering
+wakeup source with a null device name.
 
 [  819.769934] device: 'BAT1': device_add
 [  819.770078] PM: Adding info for No Bus:BAT1
@@ -76,48 +83,23 @@ to device_add() in for wakeup_init_failed error handling code.
 
 Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
 ---
- drivers/power/power_supply_core.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/base/power/wakeup.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 00e6672..557af94 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -511,6 +511,10 @@ int power_supply_register(struct device *parent, struct power_supply *psy)
- 	dev_set_drvdata(dev, psy);
- 	psy->dev = dev;
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 2d56f41..a605f0d 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -223,6 +223,9 @@ int device_wakeup_enable(struct device *dev)
+ 	if (!dev || !dev->power.can_wakeup)
+ 		return -EINVAL;
  
-+	rc = dev_set_name(dev, "%s", psy->name);
-+	if (rc)
-+		goto dev_set_name_failed;
++	if (WARN_ON(!dev_name(dev)))
++		return -EINVAL;
 +
- 	INIT_WORK(&psy->changed_work, power_supply_changed_work);
- 
- 	rc = power_supply_check_supplies(psy);
-@@ -524,10 +528,6 @@ int power_supply_register(struct device *parent, struct power_supply *psy)
- 	if (rc)
- 		goto wakeup_init_failed;
- 
--	rc = kobject_set_name(&dev->kobj, "%s", psy->name);
--	if (rc)
--		goto kobject_set_name_failed;
--
- 	rc = device_add(dev);
- 	if (rc)
- 		goto device_add_failed;
-@@ -553,11 +553,11 @@ create_triggers_failed:
- register_cooler_failed:
- 	psy_unregister_thermal(psy);
- register_thermal_failed:
--wakeup_init_failed:
- 	device_del(dev);
--kobject_set_name_failed:
- device_add_failed:
-+wakeup_init_failed:
- check_supplies_failed:
-+dev_set_name_failed:
- 	put_device(dev);
- success:
- 	return rc;
+ 	ws = wakeup_source_register(dev_name(dev));
+ 	if (!ws)
+ 		return -ENOMEM;
 -- 
 1.8.3.2
+
