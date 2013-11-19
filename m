@@ -1,197 +1,43 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH] cpufreq, highbank: enable ECME thermal notifications
-Date: Tue, 19 Nov 2013 10:31:01 -0600
-Message-ID: <528B9245.70409@calxeda.com>
-References: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
+Date: Tue, 19 Nov 2013 08:45:13 -0800
+Message-ID: <87r4acmjc6.fsf@linaro.org>
+References: <Pine.LNX.4.44L0.1311191011470.1145-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Content-Type: text/plain
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1311191011470.1145-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Tue, 19 Nov 2013 10:35:46 -0500 (EST)")
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Would it be possible to get some kind of ACK or NAK for this patch?
-Thank you.
+Alan Stern <stern@rowland.harvard.edu> writes:
 
---Mark Langsdorf
-Calxeda, Inc.
+> On Tue, 19 Nov 2013, Ulf Hansson wrote:
+>
+>> At the moment, system PM is already affecting behaviour of runtime PM
+>> since it is preventing runtime suspend during system suspend.
+>
+> Sure.  And that behavior is documented.  In any case, it's a bug for 
+> drivers to depend on runtime suspend for carrying out a system suspend.
 
+As Rafael mentioned, there is bus/pm_domain code that comes into play
+here, so I'm not sure it's always a bug.
 
-On 10/19/2013 06:54 PM, Mark Langsdorf wrote:
-> The ECME sends thermal messages with a maximum and minimum allowed
-> frequency when the SoC status reaches certain trip points known to the
-> ECME. Use a notifier function to capture those messages and pass them
-> to a work-queued function that can trigger a policy re-evaluation by
-> cpufreq, capping the allowable frequencies.
-> 
-> The core of the policy adjusting code was taken from
-> drivers/thermal/cpu_cooling.c.
-> 
-> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> ---
->  drivers/cpufreq/highbank-cpufreq.c | 117 +++++++++++++++++++++++++++++++++++++
->  1 file changed, 117 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
-> index b61b5a3..f0521d3 100644
-> --- a/drivers/cpufreq/highbank-cpufreq.c
-> +++ b/drivers/cpufreq/highbank-cpufreq.c
-> @@ -17,15 +17,32 @@
->  #include <linux/module.h>
->  #include <linux/clk.h>
->  #include <linux/cpu.h>
-> +#include <linux/cpufreq.h>
->  #include <linux/err.h>
->  #include <linux/of.h>
->  #include <linux/mailbox.h>
->  #include <linux/platform_device.h>
-> +#include <linux/cpumask.h>
-> +#include <linux/workqueue.h>
->  
->  #define HB_CPUFREQ_CHANGE_NOTE	0x80000001
-> +#define HB_CPUFREQ_HEALTH_NOTE  0x00001001
-> +#define HB_CPUFREQ_TPS_REPORT	1
->  #define HB_CPUFREQ_IPC_LEN	7
->  #define HB_CPUFREQ_VOLT_RETRIES	15
->  
-> +#define NOTIFY_INVALID NULL
-> +
-> +struct hb_notify_device {
-> +	unsigned long max_freq;
-> +	unsigned long min_freq;
-> +	unsigned long thermal_state;
-> +	struct cpumask *allowed_cpus;
-> +};
-> +
-> +static struct hb_notify_device hb_records, *notify_device = NOTIFY_INVALID;
-> +static struct work_struct hb_thermal_wq;
-> +
->  static int hb_voltage_change(unsigned int freq)
->  {
->  	u32 msg[HB_CPUFREQ_IPC_LEN] = {HB_CPUFREQ_CHANGE_NOTE, freq / 1000000};
-> @@ -33,6 +50,89 @@ static int hb_voltage_change(unsigned int freq)
->  	return pl320_ipc_transmit(msg);
->  }
->  
-> +static int hb_thermal_cpufreq_notify(struct notifier_block *nb,
-> +				    unsigned long event, void *data)
-> +{
-> +	struct cpufreq_policy *policy = data;
-> +	unsigned long max_freq = 0, min_freq = 0;
-> +
-> +	if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
-> +		return 0;
-> +
-> +	if (cpumask_test_cpu(policy->cpu, notify_device->allowed_cpus)) {
-> +		max_freq = notify_device->max_freq;
-> +		min_freq = notify_device->min_freq;
-> +	}
-> +
-> +	/* Never exceed user_policy.max */
-> +	if (max_freq > policy->user_policy.max)
-> +		max_freq = policy->user_policy.max;
-> +	if (min_freq < policy->user_policy.min)
-> +		min_freq = policy->user_policy.min;
-> +
-> +	if ((policy->max != max_freq) || (policy->min != min_freq))
-> +		cpufreq_verify_within_limits(policy, min_freq, max_freq);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct notifier_block hb_thermal_cpufreq_nb = {
-> +	.notifier_call = hb_thermal_cpufreq_notify,
-> +};
-> +
-> +/*
-> + * We can't call cpufreq_adjust_policy from inside a notifier, so
-> + * do it from inside a workqueue
-> + */
-> +static void hb_thermal_wq_task(struct work_struct *work)
-> +{
-> +	unsigned int cpuid;
-> +	struct cpumask *mask = hb_records.allowed_cpus;
-> +
-> +	notify_device = &hb_records;
-> +
-> +	for_each_cpu(cpuid, mask) {
-> +		struct cpufreq_policy policy;
-> +		if (cpufreq_get_policy(&policy, cpuid) == 0) {
-> +			cpufreq_update_policy(cpuid);
-> +			break;
-> +		}
-> +	}
-> +	notify_device = NOTIFY_INVALID;
-> +}
-> +
-> +static int hb_thermal_tps_notify(struct notifier_block *nb,
-> +				unsigned long action, void *mailbox)
-> +{
-> +	unsigned long *data = (unsigned long *) mailbox;
-> +
-> +	if ((action != HB_CPUFREQ_HEALTH_NOTE) &&
-> +			(data[0] != HB_CPUFREQ_TPS_REPORT))
-> +		return 0;
-> +
-> +	/*
-> +	 * If we're already at this thermal state, or if ECME isn't
-> +	 * sending frequency data, there's nothing to do
-> +	 */
-> +	if ((hb_records.thermal_state == data[1]) || !data[2] || !data[3])
-> +		return NOTIFY_DONE;
-> +
-> +	hb_records.thermal_state = data[1];
-> +	hb_records.min_freq = data[2];
-> +	hb_records.max_freq = data[3];
-> +	notify_device = &hb_records;
-> +
-> +	schedule_work(&hb_thermal_wq);
-> +
-> +	pr_warn("ECME TPS event: frequencies limited to %lu-%lu MHz\n",
-> +	       hb_records.min_freq, hb_records.max_freq);
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static struct notifier_block hb_thermal_tps_nb = {
-> +	.notifier_call = hb_thermal_tps_notify,
-> +};
-> +
->  static int hb_cpufreq_clk_notify(struct notifier_block *nb,
->  				unsigned long action, void *hclk)
->  {
-> @@ -100,6 +200,23 @@ static int hb_cpufreq_driver_init(void)
->  		goto out_put_node;
->  	}
->  
-> +	/*
-> +	 * Set up thermal state notifications from ECME, but continue
-> +	 * running even if they don't work.
-> +	 */
-> +	ret = pl320_ipc_register_notifier(&hb_thermal_tps_nb);
-> +	if (!ret) {
-> +		ret = cpufreq_register_notifier(&hb_thermal_cpufreq_nb,
-> +				CPUFREQ_POLICY_NOTIFIER);
-> +		if (ret)
-> +			pl320_ipc_unregister_notifier(&hb_thermal_tps_nb);
-> +		else {
-> +			hb_records.allowed_cpus = (struct cpumask *)
-> +						cpu_possible_mask;
-> +			INIT_WORK(&hb_thermal_wq, hb_thermal_wq_task);
-> +		}
-> +	}
-> +
->  	/* Instantiate cpufreq-cpu0 */
->  	platform_device_register_full(&devinfo);
->  
-> 
+IMO, it's not a bug for the driver to depend on runtime PM if the
+bus/pm_domain is handling the details.
+
+On OMAP, we handle all the SoC on-chip devices with a pm_domain since
+the low-level PM operations that need to happen are bus-level things not
+device-level things.  Therefore, drivers for these devices can rely
+entirely on runtime PM, even for system suspend.  The late/early
+callbacks in the pm_domain can see if the device is runtime suspended
+already or not and behave accordingly.
+
+So, this all *can* work by handling it at the bus/pm_domain level, but
+as Ulf has mentioned (and I agree) it seems like a clunky workaround
+because the PM core is preventing it from happening as one might expect.
+
+Kevin
