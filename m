@@ -1,105 +1,197 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH 2/2] power: Change device_wakeup_enable() to WARN_ON on null dev_name(dev)
-Date: Tue, 19 Nov 2013 09:05:46 -0700
-Message-ID: <622a097f9780dc721354d0e2b6cb512280da1ebc.1384875691.git.shuah.kh@samsung.com>
-References: <cover.1384875691.git.shuah.kh@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:59876 "EHLO
-	qmta03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753384Ab3KSQFw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 11:05:52 -0500
-In-Reply-To: <cover.1384875691.git.shuah.kh@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH] cpufreq, highbank: enable ECME thermal notifications
+Date: Tue, 19 Nov 2013 10:31:01 -0600
+Message-ID: <528B9245.70409@calxeda.com>
+References: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
 List-Id: linux-pm@vger.kernel.org
-To: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, gregkh@linuxfoundation.org, anton@enomsg.org, dwmw2@infradead.org
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-device_wakeup_enable() uses dev_name(dev) as the wakeup source name.
-When it gets called with a device with its name not yet set, ws structure
-with ws->name = NULL gets created.
+Would it be possible to get some kind of ACK or NAK for this patch?
+Thank you.
 
-When kernel is booted with wakeup_source_activate enabled, it will panic
-when the trace point code tries to dereferences ws->name.
+--Mark Langsdorf
+Calxeda, Inc.
 
-Change device_wakeup_enable() to WARN_ON on dev_name(dev) null condition
-to detect driver bugs that result in calling device_wakeup_enable() before
-device is fully initialized with its name in device_wakeup_enable().
 
-This change without the power_supply_register() fix will result in early
-boot panics when AC Adapter and Battery device drivers try to register
-wakeup source.
-
-The following panic resulted from power_supply_register() registering
-wakeup source with a null device name.
-
-[  819.769934] device: 'BAT1': device_add
-[  819.770078] PM: Adding info for No Bus:BAT1
-[  819.770235] BUG: unable to handle kernel NULL pointer dereference at           (null)
-[  819.770435] IP: [<ffffffff813381c0>] skip_spaces+0x30/0x30
-[  819.770572] PGD 3efd90067 PUD 3eff61067 PMD 0
-[  819.770716] Oops: 0000 [#1] SMP
-[  819.770829] Modules linked in: arc4 iwldvm mac80211 x86_pkg_temp_thermal coretemp kvm_intel joydev i915 kvm uvcvideo ghash_clmulni_intel videobuf2_vmalloc aesni_intel videobuf2_memops videobuf2_core aes_x86_64 ablk_helper cryptd videodev iwlwifi lrw rfcomm gf128mul glue_helper bnep btusb media bluetooth parport_pc hid_generic ppdev snd_hda_codec_hdmi drm_kms_helper snd_hda_codec_realtek cfg80211 drm tpm_infineon samsung_laptop snd_hda_intel usbhid snd_hda_codec hid snd_hwdep snd_pcm microcode snd_page_alloc snd_timer psmouse i2c_algo_bit lpc_ich tpm_tis video wmi mac_hid serio_raw ext2 lp parport r8169 mii
-[  819.771802] CPU: 0 PID: 2167 Comm: bash Not tainted 3.12.0+ #25
-[  819.771876] Hardware name: SAMSUNG ELECTRONICS CO., LTD. 900X3C/900X3D/900X4C/900X4D/SAMSUNG_NP1234567890, BIOS P03AAC 07/12/2012
-[  819.772022] task: ffff88002e6ddcc0 ti: ffff8804015ca000 task.ti: ffff8804015ca000
-[  819.772119] RIP: 0010:[<ffffffff813381c0>]  [<ffffffff813381c0>] skip_spaces+0x30/0x30
-[  819.772242] RSP: 0018:ffff8804015cbc70  EFLAGS: 00010046
-[  819.772310] RAX: 0000000000000003 RBX: ffff88040cfd6d40 RCX: 0000000000000018
-[  819.772397] RDX: 0000000000020001 RSI: 0000000000000000 RDI: 0000000000000000
-[  819.772484] RBP: ffff8804015cbcc0 R08: 0000000000000000 R09: ffff8803f0768d40
-[  819.772570] R10: ffffea001033b800 R11: 0000000000000000 R12: ffffffff81c519c0
-[  819.772656] R13: 0000000000020001 R14: 0000000000000000 R15: 0000000000020001
-[  819.772744] FS:  00007ff98309b740(0000) GS:ffff88041f200000(0000) knlGS:0000000000000000
-[  819.772845] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  819.772917] CR2: 0000000000000000 CR3: 00000003f59dc000 CR4: 00000000001407f0
-[  819.773001] Stack:
-[  819.773030]  ffffffff81114003 ffff8804015cbcb0 0000000000000000 0000000000000046
-[  819.773146]  ffff880409757a18 ffff8803f065a160 0000000000000000 0000000000020001
-[  819.773273]  0000000000000000 0000000000000000 ffff8804015cbce8 ffffffff8143e388
-[  819.773387] Call Trace:
-[  819.773434]  [<ffffffff81114003>] ? ftrace_raw_event_wakeup_source+0x43/0xe0
-[  819.773520]  [<ffffffff8143e388>] wakeup_source_report_event+0xb8/0xd0
-[  819.773595]  [<ffffffff8143e3cd>] __pm_stay_awake+0x2d/0x50
-[  819.773724]  [<ffffffff8153395c>] power_supply_changed+0x3c/0x90
-[  819.773795]  [<ffffffff8153407c>] power_supply_register+0x18c/0x250
-[  819.773869]  [<ffffffff813d8d18>] sysfs_add_battery+0x61/0x7b
-[  819.773935]  [<ffffffff813d8d69>] battery_notify+0x37/0x3f
-[  819.774001]  [<ffffffff816ccb7c>] notifier_call_chain+0x4c/0x70
-[  819.774071]  [<ffffffff81073ded>] __blocking_notifier_call_chain+0x4d/0x70
-[  819.774149]  [<ffffffff81073e26>] blocking_notifier_call_chain+0x16/0x20
-[  819.774227]  [<ffffffff8109397a>] pm_notifier_call_chain+0x1a/0x40
-[  819.774316]  [<ffffffff81095b66>] hibernate+0x66/0x1c0
-[  819.774407]  [<ffffffff81093931>] state_store+0x71/0xa0
-[  819.774507]  [<ffffffff81331d8f>] kobj_attr_store+0xf/0x20
-[  819.774613]  [<ffffffff811f8618>] sysfs_write_file+0x128/0x1c0
-[  819.774735]  [<ffffffff8118579d>] vfs_write+0xbd/0x1e0
-[  819.774841]  [<ffffffff811861d9>] SyS_write+0x49/0xa0
-[  819.774939]  [<ffffffff816d1052>] system_call_fastpath+0x16/0x1b
-[  819.775055] Code: 89 f8 48 89 e5 f6 82 c0 a6 84 81 20 74 15 0f 1f 44 00 00 48 83 c0 01 0f b6 10 f6 82 c0 a6 84 81 20 75 f0 5d c3 66 0f 1f 44 00 00 <80> 3f 00 55 48 89 e5 74 15 48 89 f8 0f 1f 40 00 48 83 c0 01 80
-[  819.775760] RIP  [<ffffffff813381c0>] skip_spaces+0x30/0x30
-[  819.775881]  RSP <ffff8804015cbc70>
-[  819.775949] CR2: 0000000000000000
-[  819.794175] ---[ end trace c4ef25127039952e ]---
-
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
- drivers/base/power/wakeup.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 2d56f41..a605f0d 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -223,6 +223,9 @@ int device_wakeup_enable(struct device *dev)
- 	if (!dev || !dev->power.can_wakeup)
- 		return -EINVAL;
- 
-+	if (WARN_ON(!dev_name(dev)))
-+		return -EINVAL;
-+
- 	ws = wakeup_source_register(dev_name(dev));
- 	if (!ws)
- 		return -ENOMEM;
--- 
-1.8.3.2
-
+On 10/19/2013 06:54 PM, Mark Langsdorf wrote:
+> The ECME sends thermal messages with a maximum and minimum allowed
+> frequency when the SoC status reaches certain trip points known to the
+> ECME. Use a notifier function to capture those messages and pass them
+> to a work-queued function that can trigger a policy re-evaluation by
+> cpufreq, capping the allowable frequencies.
+> 
+> The core of the policy adjusting code was taken from
+> drivers/thermal/cpu_cooling.c.
+> 
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> ---
+>  drivers/cpufreq/highbank-cpufreq.c | 117 +++++++++++++++++++++++++++++++++++++
+>  1 file changed, 117 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+> index b61b5a3..f0521d3 100644
+> --- a/drivers/cpufreq/highbank-cpufreq.c
+> +++ b/drivers/cpufreq/highbank-cpufreq.c
+> @@ -17,15 +17,32 @@
+>  #include <linux/module.h>
+>  #include <linux/clk.h>
+>  #include <linux/cpu.h>
+> +#include <linux/cpufreq.h>
+>  #include <linux/err.h>
+>  #include <linux/of.h>
+>  #include <linux/mailbox.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/workqueue.h>
+>  
+>  #define HB_CPUFREQ_CHANGE_NOTE	0x80000001
+> +#define HB_CPUFREQ_HEALTH_NOTE  0x00001001
+> +#define HB_CPUFREQ_TPS_REPORT	1
+>  #define HB_CPUFREQ_IPC_LEN	7
+>  #define HB_CPUFREQ_VOLT_RETRIES	15
+>  
+> +#define NOTIFY_INVALID NULL
+> +
+> +struct hb_notify_device {
+> +	unsigned long max_freq;
+> +	unsigned long min_freq;
+> +	unsigned long thermal_state;
+> +	struct cpumask *allowed_cpus;
+> +};
+> +
+> +static struct hb_notify_device hb_records, *notify_device = NOTIFY_INVALID;
+> +static struct work_struct hb_thermal_wq;
+> +
+>  static int hb_voltage_change(unsigned int freq)
+>  {
+>  	u32 msg[HB_CPUFREQ_IPC_LEN] = {HB_CPUFREQ_CHANGE_NOTE, freq / 1000000};
+> @@ -33,6 +50,89 @@ static int hb_voltage_change(unsigned int freq)
+>  	return pl320_ipc_transmit(msg);
+>  }
+>  
+> +static int hb_thermal_cpufreq_notify(struct notifier_block *nb,
+> +				    unsigned long event, void *data)
+> +{
+> +	struct cpufreq_policy *policy = data;
+> +	unsigned long max_freq = 0, min_freq = 0;
+> +
+> +	if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
+> +		return 0;
+> +
+> +	if (cpumask_test_cpu(policy->cpu, notify_device->allowed_cpus)) {
+> +		max_freq = notify_device->max_freq;
+> +		min_freq = notify_device->min_freq;
+> +	}
+> +
+> +	/* Never exceed user_policy.max */
+> +	if (max_freq > policy->user_policy.max)
+> +		max_freq = policy->user_policy.max;
+> +	if (min_freq < policy->user_policy.min)
+> +		min_freq = policy->user_policy.min;
+> +
+> +	if ((policy->max != max_freq) || (policy->min != min_freq))
+> +		cpufreq_verify_within_limits(policy, min_freq, max_freq);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct notifier_block hb_thermal_cpufreq_nb = {
+> +	.notifier_call = hb_thermal_cpufreq_notify,
+> +};
+> +
+> +/*
+> + * We can't call cpufreq_adjust_policy from inside a notifier, so
+> + * do it from inside a workqueue
+> + */
+> +static void hb_thermal_wq_task(struct work_struct *work)
+> +{
+> +	unsigned int cpuid;
+> +	struct cpumask *mask = hb_records.allowed_cpus;
+> +
+> +	notify_device = &hb_records;
+> +
+> +	for_each_cpu(cpuid, mask) {
+> +		struct cpufreq_policy policy;
+> +		if (cpufreq_get_policy(&policy, cpuid) == 0) {
+> +			cpufreq_update_policy(cpuid);
+> +			break;
+> +		}
+> +	}
+> +	notify_device = NOTIFY_INVALID;
+> +}
+> +
+> +static int hb_thermal_tps_notify(struct notifier_block *nb,
+> +				unsigned long action, void *mailbox)
+> +{
+> +	unsigned long *data = (unsigned long *) mailbox;
+> +
+> +	if ((action != HB_CPUFREQ_HEALTH_NOTE) &&
+> +			(data[0] != HB_CPUFREQ_TPS_REPORT))
+> +		return 0;
+> +
+> +	/*
+> +	 * If we're already at this thermal state, or if ECME isn't
+> +	 * sending frequency data, there's nothing to do
+> +	 */
+> +	if ((hb_records.thermal_state == data[1]) || !data[2] || !data[3])
+> +		return NOTIFY_DONE;
+> +
+> +	hb_records.thermal_state = data[1];
+> +	hb_records.min_freq = data[2];
+> +	hb_records.max_freq = data[3];
+> +	notify_device = &hb_records;
+> +
+> +	schedule_work(&hb_thermal_wq);
+> +
+> +	pr_warn("ECME TPS event: frequencies limited to %lu-%lu MHz\n",
+> +	       hb_records.min_freq, hb_records.max_freq);
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static struct notifier_block hb_thermal_tps_nb = {
+> +	.notifier_call = hb_thermal_tps_notify,
+> +};
+> +
+>  static int hb_cpufreq_clk_notify(struct notifier_block *nb,
+>  				unsigned long action, void *hclk)
+>  {
+> @@ -100,6 +200,23 @@ static int hb_cpufreq_driver_init(void)
+>  		goto out_put_node;
+>  	}
+>  
+> +	/*
+> +	 * Set up thermal state notifications from ECME, but continue
+> +	 * running even if they don't work.
+> +	 */
+> +	ret = pl320_ipc_register_notifier(&hb_thermal_tps_nb);
+> +	if (!ret) {
+> +		ret = cpufreq_register_notifier(&hb_thermal_cpufreq_nb,
+> +				CPUFREQ_POLICY_NOTIFIER);
+> +		if (ret)
+> +			pl320_ipc_unregister_notifier(&hb_thermal_tps_nb);
+> +		else {
+> +			hb_records.allowed_cpus = (struct cpumask *)
+> +						cpu_possible_mask;
+> +			INIT_WORK(&hb_thermal_wq, hb_thermal_wq_task);
+> +		}
+> +	}
+> +
+>  	/* Instantiate cpufreq-cpu0 */
+>  	platform_device_register_full(&devinfo);
+>  
+> 
