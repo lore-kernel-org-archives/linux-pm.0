@@ -1,61 +1,83 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Tue, 19 Nov 2013 13:03:11 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1311191258550.1145-100000@iolanthe.rowland.org>
-References: <87r4acmjc6.fsf@linaro.org>
+From: Yuxuan Shui <yshuiv7@gmail.com>
+Subject: Re: [PATCH] intel_powerclamp: Fix cstate counter detection.
+Date: Wed, 20 Nov 2013 02:09:12 +0800
+Message-ID: <CAGqt0zzZpXpL7MfvfFWrxbChBfu30i_tcyCoavzMJsrPmg5AAw@mail.gmail.com>
+References: <1384758395-5074-1-git-send-email-yshuiv7@gmail.com>
+	<528A3EC9.8060301@linux.intel.com>
+	<CAGqt0zw2wEM_4SqMA8tqzABe0M1-ZXxM6X3rh4OezfnS9-eXJg@mail.gmail.com>
+	<528B74C9.3010902@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <87r4acmjc6.fsf-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f170.google.com ([209.85.128.170]:37060 "EHLO
+	mail-ve0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571Ab3KSSJN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 13:09:13 -0500
+Received: by mail-ve0-f170.google.com with SMTP id oy12so2452344veb.1
+        for <linux-pm@vger.kernel.org>; Tue, 19 Nov 2013 10:09:13 -0800 (PST)
+In-Reply-To: <528B74C9.3010902@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, jacob.jun.pan@linux.intel.com
 
-On Tue, 19 Nov 2013, Kevin Hilman wrote:
+On Tue, Nov 19, 2013 at 10:25 PM, Arjan van de Ven
+<arjan@linux.intel.com> wrote:
+> On 11/18/2013 9:29 PM, Yuxuan Shui wrote:
+>>
+>> On Tue, Nov 19, 2013 at 12:22 AM, Arjan van de Ven
+>> <arjan@linux.intel.com> wrote:
+>>>
+>>> On 11/17/2013 11:06 PM, Yuxuan Shui wrote:
+>>>>
+>>>>
+>>>> Having all zero cstate count doesn't necesserily mean the cstate
+>>>> counter is no functional.
+>>>>
+>>>
+>>> ... but it does mean that powerclamp will be non-functional
+>>>
+>>> but you had a reason to make this patch.
+>>> Can you expand a little bit on what you were seeing that made you
+>>> decide this patch was needed ?
+>>>
+>> There are possibilities that the system is busy from boot so that it
+>> doesn't enter C-state at all, right? In that situation powerclamp
+>> won't work.
+>
+>
+>
+> that is... extremely unlikely. Have you seen that happen?
 
-> Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> writes:
-> 
-> > On Tue, 19 Nov 2013, Ulf Hansson wrote:
-> >
-> >> At the moment, system PM is already affecting behaviour of runtime PM
-> >> since it is preventing runtime suspend during system suspend.
-> >
-> > Sure.  And that behavior is documented.  In any case, it's a bug for 
-> > drivers to depend on runtime suspend for carrying out a system suspend.
-> 
-> As Rafael mentioned, there is bus/pm_domain code that comes into play
-> here, so I'm not sure it's always a bug.
-> 
-> IMO, it's not a bug for the driver to depend on runtime PM if the
-> bus/pm_domain is handling the details.
-> 
-> On OMAP, we handle all the SoC on-chip devices with a pm_domain since
-> the low-level PM operations that need to happen are bus-level things not
-> device-level things.  Therefore, drivers for these devices can rely
-> entirely on runtime PM, even for system suspend.  The late/early
-> callbacks in the pm_domain can see if the device is runtime suspended
-> already or not and behave accordingly.
-> 
-> So, this all *can* work by handling it at the bus/pm_domain level, but
-> as Ulf has mentioned (and I agree) it seems like a clunky workaround
-> because the PM core is preventing it from happening as one might expect.
+Sure I've seen this, that's why I wrote this patch in the first place.
+It's my (rather old) laptop. After boot powertop show zero percent in
+C3 and C6, and powerclamp complaining pkg cstate counter is not
+functional.
 
-The problem is that userspace can disable runtime PM at any time by 
-writing "on" to /sys/.../power/control.  Once that's done, you can't
-depend on runtime PM to put the device into a low-power state during 
-system suspend.
+>
+>>
+>> Also, pkg_state_counter is used to calculate a cstate ratio, and I
+>> can't find any reason why powerclamp will be non-funtional when that
+>> ratio is zero.
+>
+>
+> if the counters we use are zero.. we can't use them in our control loop
 
-Now, if the bus-level code always takes care of putting the device into
-low power during system suspend, then the driver doesn't have to worry
-about it at all.  That's perfectly fine -- but I would hardly describe
-the situation by saying the driver relies on runtime PM for system
-suspend.
+I skimmed through the code. pkg_state_counter is called twice (except
+that once in start_power_clamp). Once in poll_pkg_cstate to calculate
+pkg_cstate_ratio_cur which is used for sysfs. The other time is in
+powerclamp_adjust_controls, which is used to calculate a ratio which
+is stored in a global variable current_ratio.
 
-Alan Stern
+The current_ratio is also used twice. Once in the same function, to
+check if we have done enough idle injection. The other is in
+adjust_compensation, where it's used to calculate a delta. In neither
+case current_ratio being zero will matter.
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Also, I'm using this patch myself, and it seems to be totally functional.
+
+So I failed to see why the counter can't be zero. If I made any
+mistakes, can you point them out?
+
+>
+> again, what were you actually seeing?
