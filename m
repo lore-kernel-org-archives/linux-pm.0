@@ -1,99 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
-Date: Tue, 19 Nov 2013 14:21:08 +0100
-Message-ID: <7271853.iqRc6SUNTz@vostro.rjw.lan>
-References: <CAPDyKFrushEwW7x_VguPjOnP8BuSO=+tD=DxS9J0JQVfYTgOYA@mail.gmail.com> <Pine.LNX.4.44L0.1311181010080.1421-100000@iolanthe.rowland.org> <CAPDyKFpypLVKiOZEweWMig9LrNHcOpNQnm+J3KJ3KzCDBgkv9A@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
+ booting with a mismatched bootloader configuration
+Date: Tue, 19 Nov 2013 08:16:33 -0600
+Message-ID: <528B72C1.5060006@ti.com>
+References: <1384568535-26611-1-git-send-email-nm@ti.com>	<20131116134445.GI11014@S2101-09.ap.freescale.net>	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>	<528A27F8.3070402@ti.com>	<20131118155753.GU11014@S2101-09.ap.freescale.net>	<528A4340.3020508@ti.com>	<20131119022133.GB18434@S2101-09.ap.freescale.net> <CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62770 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752173Ab3KSNIa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 08:08:30 -0500
-In-Reply-To: <CAPDyKFpypLVKiOZEweWMig9LrNHcOpNQnm+J3KJ3KzCDBgkv9A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-On Tuesday, November 19, 2013 01:21:57 PM Ulf Hansson wrote:
-> On 18 November 2013 16:17, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Mon, 18 Nov 2013, Ulf Hansson wrote:
-> >
-> >> I favour the pm_runtime_no_prevent_suspend API approach, since it
-> >> would mean a change in behaviour of the PM core.
-> >
-> > That's exactly why I don't favor it!  :-)
+On 11/18/2013 09:46 PM, Viresh Kumar wrote:
+> On 19 November 2013 07:51, Shawn Guo <shawn.guo@linaro.org> wrote:
+>> No, I did not say that.  IMO, when cpufreq-cpu0 sees a mismatch, it has
+>> no way to know or assume which one is correct and which is incorrect.
+>> The best thing it can do is to fail out without changing anything about
+>> running frequency and voltage.
 > 
-> I will try my best to convince you then. :-)
+> Not specifically on this patch, but this is what I feel about this issue:
 > 
-> >
-> >>  I also think that in
-> >> some cases it could make runtime PM better understandable, for those
-> >> who are deploying it.
-> >
-> > I don't see how it would make runtime PM either more or less
-> > understandable, since the proposed change affects system PM, not
-> > runtime PM.  On the other hand, it would make the Runtime PM
-> > documentation more complicated.
-> 
-> At the moment, system PM is already affecting behaviour of runtime PM
-> since it is preventing runtime suspend during system suspend.
-> 
-> To me and and those driver authors, that don't see the direct need for
-> why the PM core behaves like this (because we are not working with PCI
-> drivers for example), I would guess this is probably the piece in the
-> documentation we have more difficult to understand and adapt to.
-> 
-> I can point at some examples, were I believe drivers that use runtime
-> PM, tries to adapt to the PM core behaviour, but I fear they for too
-> many times have got it wrong. Here are some various examples I have
-> found, which made me think like this.
-> 
-> 1.
-> Not many are using the .suspend_late callback at all, which should be
-> the most proper solution to use.
+> - As we are discussing on the other thread, there is scope of adding
+> "unknown" field in tables so that people would know that they were
+> running out of table freq at some point..
 
-Yes.
+Consider something like userspace governor selection -> the device at
+boot will probably remain in an unknown/"invalid" configuration till
+the very first transition attempt. I am less worried about the stats
+than not following what the hardware description is (as stated by
+device tree/other forms).
 
-> 2.
-> Drivers are using the synchronise pm_runtime_put_sync in their
-> .suspend callbacks.
-> 
-> 3.
-> Drivers do "pm_runtime_get_sync" from their .suspend callbacks, but
-> don't put the device into inactive state from anywhere as a part of
-> the system suspend.
-> 
-> 4.
-> Drivers only handles system suspend tasks from it's .suspend callbacks
-> and don't implement .suspend_late, thus the device will not be fully
-> inactivated.
-> 
-> 5.
-> Drivers relies on pm_runtime_suspended or worse
-> pm_runtime_status_suspend, to check if they shall put their device
-> into inactive state from their .suspend callbacks or leave it as is.
-> While they put the device into inactive state, the runtime state is
-> not properly updated to reflect this. Most important, at this point
-> runtime PM has not yet been disabled from the PM core.
+I staunchly disagree that at a point of mismatch detection, we just
+refuse to load up cpufreq governor -even though we know from device
+tree/other alternative entries what the hardware behavior is supposed
+to be. To refuse to loadup to a known configuration is considering the
+"valid configuration" data provided to the driver is wrong - an
+equivalent(considering the i2c example) is that if i2c driver sees bus
+configured for 3.4MHz and was asked to use 100KHz, it just refuses to
+load up!
 
-All 2 and 5 are bugs in the drviers that should be fixed.  Whether or
-not 4 is a bug depends on what the bus type does.
-
-There's one more problem here, which is the expectation that drivers should
-be responsible for the entire handling of suspend/resume of their devices.
-This is misguided, because it forces the knowledge about particular platforms
-into the drivers.  Ideally, the suspend and resume of a device should be
-divided into a device-specific part handled by the driver and a bus-specific
-or platform-specific part handled by the bus type or a PM domain, respectively.
-The driver should only be concerned about the device-specific part.
-
-That applies to both system suspend/resume and runtime PM, though.
-
-Thanks!
+> - This is a common problem for all drivers/platforms and not only
+> cpufreq-cpu0, so the solution has to be generic and not driver
+> specific.. So, atleast I don't want to get this patch in at any cost,
+> unless there is a generic solution present..
+> - There are non-dt drivers as well, and so freq table is present
+> with the kernel and we can't support all frequencies that bootloader
+> may end up with..
+The above two are fair comments -> but that implies that policy->cur
+population should no longer be the responsibility of cpufreq drivers
+and be the responsibility of cpufreq core. are we stating we want to
+move that to cpufreq core?
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Nishanth Menon
