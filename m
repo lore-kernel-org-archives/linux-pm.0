@@ -1,78 +1,29 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Tue, 19 Nov 2013 19:56:26 +0530
-Message-ID: <CAKohpo=hzCSuQBGreRStzkOuH6aFiZKTtK9SF+_eGEajkwSXEA@mail.gmail.com>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>
-	<20131116134445.GI11014@S2101-09.ap.freescale.net>
-	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>
-	<528A27F8.3070402@ti.com>
-	<20131118155753.GU11014@S2101-09.ap.freescale.net>
-	<528A4340.3020508@ti.com>
-	<20131119022133.GB18434@S2101-09.ap.freescale.net>
-	<CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
-	<528B72C1.5060006@ti.com>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [lm-sensors] [PATCHv9 02/20] thermal: introduce device tree
+ parser
+Date: Tue, 19 Nov 2013 15:43:30 +0100
+Message-ID: <20131119154330.1951a978@endymion.delvare>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
+	<1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
+	<20131115090736.4f360dc8@endymion.delvare>
+	<1384754650.2316.32.camel@rzhang-lenovo>
+	<528A27EE.9090604@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:47116 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372Ab3KSO00 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 09:26:26 -0500
-Received: by mail-oa0-f42.google.com with SMTP id i4so3243536oah.15
-        for <linux-pm@vger.kernel.org>; Tue, 19 Nov 2013 06:26:26 -0800 (PST)
-In-Reply-To: <528B72C1.5060006@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <528A27EE.9090604@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, devicetree@vger.kernel.org, wni@nvidia.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, grant.likely@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
 
-On 19 November 2013 19:46, Nishanth Menon <nm@ti.com> wrote:
-> Consider something like userspace governor selection -> the device at
-> boot will probably remain in an unknown/"invalid" configuration till
-> the very first transition attempt. I am less worried about the stats
-> than not following what the hardware description is (as stated by
-> device tree/other forms).
->
-> I staunchly disagree that at a point of mismatch detection, we just
-> refuse to load up cpufreq governor -even though we know from device
-> tree/other alternative entries what the hardware behavior is supposed
-> to be. To refuse to loadup to a known configuration is considering the
-> "valid configuration" data provided to the driver is wrong - an
-> equivalent(considering the i2c example) is that if i2c driver sees bus
-> configured for 3.4MHz and was asked to use 100KHz, it just refuses to
-> load up!
+Eduardo, Rui,
 
-CPU looks to be a bit different in that aspect as compared to I2C. We
-aren't really sure if I2C will work at the existing freq but we are 100%
-sure that current freq of CPU is valid enough, otherwise we wouldn't
-have reached to this point.. :)
+I don't want to enter a long discussion here. I don't see get_trend()
+being implemented by any currently existing hwmon driver. But if you
+think future monitoring chips will be different and will be able to
+implement get_trend(), well, you'll know better.
 
-> The above two are fair comments -> but that implies that policy->cur
-> population should no longer be the responsibility of cpufreq drivers
-> and be the responsibility of cpufreq core. are we stating we want to
-> move that to cpufreq core?
-
-I am sure you want to have a look at this:
-
-commit da60ce9f2faca87013fd3cab1c3bed5183608c3d
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Thu Oct 3 20:28:30 2013 +0530
-
-    cpufreq: call cpufreq_driver->get() after calling ->init()
-
-    Almost all drivers set policy->cur with current CPU frequency in
-their ->init()
-    part. This can be done for all of them at core level and so they
-wouldn't need
-    to do it.
-
-    This patch adds supporting code in cpufreq core for calling get()
-after we have
-    called init() for a policy.
-
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+-- 
+Jean Delvare
