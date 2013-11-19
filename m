@@ -1,79 +1,49 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [PATCH v2] power: Replace printks with dev_* and pr_* routines
-Date: Tue, 19 Nov 2013 13:00:14 -0700
-Message-ID: <528BC34E.9010008@samsung.com>
-References: <1384886818-11861-1-git-send-email-shuah.kh@samsung.com>
- <1384887205.17783.40.camel@joe-AO722> <528BB492.8090404@samsung.com>
- <1384888035.17783.45.camel@joe-AO722>
-Reply-To: shuah.kh@samsung.com
+From: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH 0/2] power_supply: Fix Oops from NULL pointer dereference
+ from wakeup_source_activate
+Date: Tue, 19 Nov 2013 13:11:21 -0800
+Message-ID: <20131119211121.GA20193@teo>
+References: <cover.1384875691.git.shuah.kh@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w2.samsung.com ([211.189.100.13]:16543 "EHLO
-	usmailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058Ab3KSUAS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 15:00:18 -0500
-In-reply-to: <1384888035.17783.45.camel@joe-AO722>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:57964 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821Ab3KSVLZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 16:11:25 -0500
+Received: by mail-pd0-f180.google.com with SMTP id q10so3421732pdj.25
+        for <linux-pm@vger.kernel.org>; Tue, 19 Nov 2013 13:11:24 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <cover.1384875691.git.shuah.kh@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, Shuah Khan <shuah.kh@samsung.com>
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, gregkh@linuxfoundation.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On 11/19/2013 12:07 PM, Joe Perches wrote:
-> On Tue, 2013-11-19 at 11:57 -0700, Shuah Khan wrote:
->> On 11/19/2013 11:53 AM, Joe Perches wrote:
->>> On Tue, 2013-11-19 at 11:46 -0700, Shuah Khan wrote:
->>>> Replaced printks with dev_* and pr_* routines. Replacing printk in
->>>> __suspend_report_result() will require passing in struct device *
->>>> pointer from calling routines and this will require changes to
->>>> external interface suspend_report_result() which is used by several
->>>> drivers. Hence, this one instance is replaced by pr_err().
->>> []
->>>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->>> []
->>>> @@ -1308,9 +1308,8 @@ int dpm_prepare(pm_message_t state)
->>>>    				error = 0;
->>>>    				continue;
->>>>    			}
->>>> -			printk(KERN_INFO "PM: Device %s not prepared "
->>>> -				"for power transition: code %d\n",
->>>> -				dev_name(dev), error);
->>>> +			dev_info("PM: not prepared for power transition: ",
->>>> +				 "code %d\n", error);
->>>
->>> Shuah, you have to make sure the files modified by
->>> your patches compile successfully before sending
->>> patches like this.
->> Oops. I did compile. Missed the warning. Sorry about that.
->
-> btw:
->
-> When you're doing patches like this, not bugfixes,
-> not something that's going to be applied to current
-> or stable, please make them against -next and not
-> against Linus' tree.
+On Tue, Nov 19, 2013 at 08:59:34AM -0700, Shuah Khan wrote:
+> power_supply_register() calls device_init_wakeup() to register a wakeup
+> source before initializing dev_name. As a result, device_wakeup_enable()
+> end up registering wakeup source with a null name when wakeup_source_register()
+> gets called with dev_name(dev) which is null at the time.
+> 
+> device_wakeup_enable() uses dev_name(dev) as the wakeup source name.
+> When it gets called with a device with its name not yet set, ws structure
+> with ws->name = NULL gets created.
+> 
+> When kernel is booted with wakeup_source_activate enabled, it will panic
+> when the trace point code tries to dereferences ws->name.
+> 
+> This patch series fixes power_supply_register() to initialize the device name
+> prior to calling device_init_wakeup() and adds WARN_ON on null device name to
+> device_wakeup_enable() to detect driver bugs that result in calling
+> device_wakeup_enable() before device is fully initialized with its name in
+> device_wakeup_enable().
+> 
+> It is important that these two fixes to be pulled in together as a series. The
+> change to add WARN_ON on null device name without the power_supply_register()
+> fix will result in early boot panics when AC Adapter and Battery device drivers
+> try to register wakeup source.
 
-ok. Makes sense changes like this don't need to be rushed. They could 
-use soak time in linux-next.
+I am all for it, so for the power_supply part:
 
->
-> Also, I would make the larger change that modifies
-> all the drivers like I suggested.  What you've done
-> I think is a half-measure and is incomplete.
->
-
-I was a bit reluctant to change all the drivers since the original 
-message didn't include device information. However, adding device 
-information would make this message more useful.
-
-I will re-do the patch to make the larger change.
-
--- Shuah
-
-
--- 
-Shuah Khan
-Senior Linux Kernel Developer - Open Source Group
-Samsung Research America(Silicon Valley)
-shuah.kh@samsung.com | (970) 672-0658
+Acked-by: Anton Vorontsov <anton@enomsg.org>
