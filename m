@@ -1,192 +1,115 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCHv5 06/20] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Tue, 19 Nov 2013 10:39:48 +0100
-Message-ID: <20131119103948.0ec9daba@endymion.delvare>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
-	<1384285582-16933-7-git-send-email-eduardo.valentin@ti.com>
-	<20131115084354.656452b9@endymion.delvare>
-	<528A23DD.2070406@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Tue, 19 Nov 2013 13:21:57 +0100
+Message-ID: <CAPDyKFpypLVKiOZEweWMig9LrNHcOpNQnm+J3KJ3KzCDBgkv9A@mail.gmail.com>
+References: <CAPDyKFrushEwW7x_VguPjOnP8BuSO=+tD=DxS9J0JQVfYTgOYA@mail.gmail.com>
+	<Pine.LNX.4.44L0.1311181010080.1421-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zoneX.GCU-Squad.org ([194.213.125.0]:45065 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571Ab3KSJkX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 04:40:23 -0500
-In-Reply-To: <528A23DD.2070406@ti.com>
+Received: from mail-qc0-f175.google.com ([209.85.216.175]:41565 "EHLO
+	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667Ab3KSMWA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 07:22:00 -0500
+Received: by mail-qc0-f175.google.com with SMTP id x12so4611322qcv.6
+        for <linux-pm@vger.kernel.org>; Tue, 19 Nov 2013 04:21:58 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1311181010080.1421-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-Hi Eduardo,
+On 18 November 2013 16:17, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 18 Nov 2013, Ulf Hansson wrote:
+>
+>> I favour the pm_runtime_no_prevent_suspend API approach, since it
+>> would mean a change in behaviour of the PM core.
+>
+> That's exactly why I don't favor it!  :-)
 
-On Mon, 18 Nov 2013 10:27:41 -0400, Eduardo Valentin wrote:
-> The patch series have been looked and contributed by several people and
-> a couple o maintainers now. Starts to be way better than the original
-> RFC. The core idea still holds though.
+I will try my best to convince you then. :-)
 
-I have no objection to the core idea, it's great :-)
+>
+>>  I also think that in
+>> some cases it could make runtime PM better understandable, for those
+>> who are deploying it.
+>
+> I don't see how it would make runtime PM either more or less
+> understandable, since the proposed change affects system PM, not
+> runtime PM.  On the other hand, it would make the Runtime PM
+> documentation more complicated.
 
-> >> (...)
-> >>  /*-----------------------------------------------------------------------*/
-> >>  
-> >> +static inline long lm75_reg_to_mc(s16 temp, u8 resolution)
-> >> +{
-> >> +	return ((temp >> (16 - resolution)) * 1000) >> (resolution - 8);
-> >> +}
-> >> +
-> >>  /* sysfs attributes for hwmon */
-> >>  
-> >> +static int lm75_read_temp(void *dev, long *temp)
-> >> +{
-> >> +	struct lm75_data *data = lm75_update_device(dev);
-> >> +
-> >> +	if (IS_ERR(data))
-> >> +		return PTR_ERR(data);
-> >> +
-> >> +	*temp = lm75_reg_to_mc(data->temp[0], data->resolution);
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >>  static ssize_t show_temp(struct device *dev, struct device_attribute *da,
-> >>  			 char *buf)
-> >>  {
-> >>  	struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
-> >>  	struct lm75_data *data = lm75_update_device(dev);
-> >> -	long temp;
-> >>  
-> >>  	if (IS_ERR(data))
-> >>  		return PTR_ERR(data);
-> >>  
-> >> -	temp = ((data->temp[attr->index] >> (16 - data->resolution)) * 1000)
-> >> -	       >> (data->resolution - 8);
-> >> -
-> >> -	return sprintf(buf, "%ld\n", temp);
-> >> +	return sprintf(buf, "%ld\n", lm75_reg_to_mc(data->temp[attr->index],
-> >> +						    data->resolution));
-> >>  }
-> > 
-> > I am a bit worried by this. I did expect that you'd have to split a
-> > piece of show_temp() into one separate function, not two. Here you have
-> > quite some redundancy between lm75_read_temp and show_temp. Sure these
-> > are small functions so the duplicate code is limited, but if you
-> > multiply by the number of hwmon drivers which are candidates for this
-> > change, this all adds up.
-> 
-> Can you please elaborate a bit more on which way you think the code
-> above shall be improved? Are you suggesting we should make show_temp
-> call lm75_read_temp?
+At the moment, system PM is already affecting behaviour of runtime PM
+since it is preventing runtime suspend during system suspend.
 
-Yes, that's pretty much what I had in mind.
+To me and and those driver authors, that don't see the direct need for
+why the PM core behaves like this (because we are not working with PCI
+drivers for example), I would guess this is probably the piece in the
+documentation we have more difficult to understand and adapt to.
 
-> On this specific case, I believe the code
-> duplication is minor, although I haven't measured.
+I can point at some examples, were I believe drivers that use runtime
+PM, tries to adapt to the PM core behaviour, but I fear they for too
+many times have got it wrong. Here are some various examples I have
+found, which made me think like this.
 
-I do agree the duplication in a single driver is minor. However I
-expect more hwmon drivers to be converted to cooperate with the thermal
-subsystem in the future. Duplicated code adds up, in terms of build
-time, storage space and run-time memory consumption. Plus it hurts CPU
-caching even though I don't expect these code paths to be particularly
-hot.
+1.
+Not many are using the .suspend_late callback at all, which should be
+the most proper solution to use.
 
-OTOH I suppose that the compiler will inline lm75_reg_to_mc() in this
-specific case, saving one function call. It wouldn't possibly inline
-lm75_read_temp() so it is quite possible that your implementation
-actually performs better than what I am suggesting.
+2.
+Drivers are using the synchronise pm_runtime_put_sync in their
+.suspend callbacks.
 
-We're speaking of hardly measurable differences anyway. My other point
-below is probably more important...
+3.
+Drivers do "pm_runtime_get_sync" from their .suspend callbacks, but
+don't put the device into inactive state from anywhere as a part of
+the system suspend.
 
-> >>  
-> >>  static ssize_t set_temp(struct device *dev, struct device_attribute *da,
-> >> @@ -271,6 +288,13 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
-> >>  		goto exit_remove;
-> >>  	}
-> >>  
-> >> +	data->tz = thermal_zone_of_sensor_register(&client->dev,
-> >> +						   0,
-> >> +						   &client->dev,
-> >> +						   lm75_read_temp, NULL);
-> > 
-> > I am also worried by this interface. Basically a separate callback
-> > function (here lm75_read_temp) is needed for every thermal input. Some
-> > hwmon drivers have many of these! This will result in duplicate code
-> 
-> The code registering a callback can actually have a private data, in
-> case you need to differentiate between inputs or in case you need to
-> derive specific data in order to access the correct input.
+4.
+Drivers only handles system suspend tasks from it's .suspend callbacks
+and don't implement .suspend_late, thus the device will not be fully
+inactivated.
 
-Are you talking about void *dev? OK, you can virtually pass anything in
-that pointer, but...
+5.
+Drivers relies on pm_runtime_suspended or worse
+pm_runtime_status_suspend, to check if they shall put their device
+into inactive state from their .suspend callbacks or leave it as is.
+While they put the device into inactive state, the runtime state is
+not properly updated to reflect this. Most important, at this point
+runtime PM has not yet been disabled from the PM core.
 
-> > again. If you could just pass a sensor ID as an extra parameter to
-> > lm75_read_temp, you could use the same callback for all sensors. This
-> 
-> Wouldn't the private pointer be enough?
+>
+> (Also, I think the name "pm_runtime_no_prevent_suspend" is a very bad
+> choice.  It should be something more like
+> "allow_runtime_suspend_during_system_sleep".)
 
-I am worried that this won't be practical at all for the real world
-cases. I expect that most drivers will need to pass the device plus one
-index-like value. Having a single void pointer for that is certainly
-flexible but it will also be inefficient, as every driver will have to
-define its own custom structure to embed the needed information. You
-_do_ pass a sensor_id to thermal_zone_of_sensor_register() so it
-shouldn't be hard to pass it to the callback function(s) as well
-(assuming the indexing in the device tree matches the one done by the
-driver - I certainly hope so.) I'd even suggest passing the device
-unconditionally too, as I just can't see how a driver could do without
-it. If you pass the right parameters then you may not even need a void
-pointer.
+I am not so happy with the naming myself, we should work out a better one then.
 
-> I think it is a matter of checking what is the best way for the
-> candidates of users of this new API.
+>
+>> Another advantage of "pm_runtime_no_prevent_suspend" is that driver's
+>> can still easily prevent runtime suspend, during system suspend, by an
+>> extra call to "pm_runtime_get*". Typically this could be used when the
+>> device is configured for wakeup.
+>
+> How is this an advantage?  Drivers can accomplish the same thing right
+> now by not doing anything at all.
+>
+>>  In this case the generic suspend_late
+>> approach would not work, since the driver would need to implement it's
+>> own .suspend_late callback to handle this.
+>
+> Actually, drivers would simply need to _avoid_ setting the
+> .suspend_late callback.
 
-I agree. But two drivers are probably too few to make an educated
-decision, I suppose we'll need to convert some more to get a clearer
-view. Note that most things can be changed later if needed, so my
-comments aren't meant to block the integration of your patches. 
+I should have stated, that I means those scenarios were the wakeup
+configuration is decided in runtime and depending on the current
+situation. For example depending on what kind of peripheral that is
+connected. In this scenario, I think the advantage still stands.
 
-> In theory it is enough to hold the
-> ID on the data structure you pass through the void * parameter. However,
-> that would cause less impact if you have the users of the API already
-> structured in that way. Let me know what is best for your case.
+Kind regards
+Ulf Hansson
 
-We do not have that structure (struct device *, int index) ready yet,
-so we'd have to add it to every driver with more than one input. We
-could have a generic structure for that in some header file, to avoid
-the duplicated work, but if we need to do that, I'd say this is a good
-hint that we settled for the wrong API in the first place.
-
-> > (...)
-> > I also note the lack of support for limits. Thermal zones can have
-> > limits, and the various hwmon drivers do support that, yet your
-> > interface offers no possibility to expose them. Wouldn't that be useful?
-
-No comment on that? I'd expect the get_temp() callback to take an extra
-parameter so that it can return the value of a specific subfeature, for
-example INPUT, HOT, CRITICAL etc. Or leave get_temp() as is but add a
-get_trip_temp() callback to retrieve limit information (not sure if
-thermal zones can have more than one limit?)
-
-I think thermal zones support hysteresis as well, and so do many hwmon
-drivers. It seems unfortunate that your proposed "bridge" between the
-hwmon and thermal subsystems doesn't map all the features which are
-supported on both sides.
-
-> >> +	if (IS_ERR(data->tz))
-> >> +		data->tz = NULL;
-> > 
-> > If you are doing that in all drivers, I would question the point of
-> > having thermal_zone_of_sensor_register() return a PTR_ERR in the first
-> > place.
-> 
-> Yeah, maybe it should simply return NULL in the fail path and drivers
-> would not need to bother about it. What do you think?
-
-I think exactly what I wrote above, no more no less. I don't think I
-can add anything, and the decision is up to you.
-
--- 
-Jean Delvare
+>
+> Alan Stern
+>
