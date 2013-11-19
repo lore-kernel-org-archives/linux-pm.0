@@ -1,103 +1,99 @@
-From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH 4/4 v4] ARM: dts: Exynos5420: Add device nodes for TMU blocks
-Date: Tue, 19 Nov 2013 18:35:59 +0530
-Message-ID: <1384866359-16157-1-git-send-email-ch.naveen@samsung.com>
-References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
+Date: Tue, 19 Nov 2013 14:21:08 +0100
+Message-ID: <7271853.iqRc6SUNTz@vostro.rjw.lan>
+References: <CAPDyKFrushEwW7x_VguPjOnP8BuSO=+tD=DxS9J0JQVfYTgOYA@mail.gmail.com> <Pine.LNX.4.44L0.1311181010080.1421-100000@iolanthe.rowland.org> <CAPDyKFpypLVKiOZEweWMig9LrNHcOpNQnm+J3KJ3KzCDBgkv9A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:57086 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525Ab3KSNEf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 08:04:35 -0500
-In-reply-to: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:62770 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752173Ab3KSNIa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 08:08:30 -0500
+In-Reply-To: <CAPDyKFpypLVKiOZEweWMig9LrNHcOpNQnm+J3KJ3KzCDBgkv9A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com, t.figa@samsung.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-Exynos5420 SoC has per core thermal management unit.
-5 TMU channels 4 for CPUs and 5th for GPU.
+On Tuesday, November 19, 2013 01:21:57 PM Ulf Hansson wrote:
+> On 18 November 2013 16:17, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Mon, 18 Nov 2013, Ulf Hansson wrote:
+> >
+> >> I favour the pm_runtime_no_prevent_suspend API approach, since it
+> >> would mean a change in behaviour of the PM core.
+> >
+> > That's exactly why I don't favor it!  :-)
+> 
+> I will try my best to convince you then. :-)
+> 
+> >
+> >>  I also think that in
+> >> some cases it could make runtime PM better understandable, for those
+> >> who are deploying it.
+> >
+> > I don't see how it would make runtime PM either more or less
+> > understandable, since the proposed change affects system PM, not
+> > runtime PM.  On the other hand, it would make the Runtime PM
+> > documentation more complicated.
+> 
+> At the moment, system PM is already affecting behaviour of runtime PM
+> since it is preventing runtime suspend during system suspend.
+> 
+> To me and and those driver authors, that don't see the direct need for
+> why the PM core behaves like this (because we are not working with PCI
+> drivers for example), I would guess this is probably the piece in the
+> documentation we have more difficult to understand and adapt to.
+> 
+> I can point at some examples, were I believe drivers that use runtime
+> PM, tries to adapt to the PM core behaviour, but I fear they for too
+> many times have got it wrong. Here are some various examples I have
+> found, which made me think like this.
+> 
+> 1.
+> Not many are using the .suspend_late callback at all, which should be
+> the most proper solution to use.
 
-This patch adds the device tree nodes to the DT device list.
+Yes.
 
-Nodes carry the misplaced second base address and the second
-clock to access the misplaced base address.
+> 2.
+> Drivers are using the synchronise pm_runtime_put_sync in their
+> .suspend callbacks.
+> 
+> 3.
+> Drivers do "pm_runtime_get_sync" from their .suspend callbacks, but
+> don't put the device into inactive state from anywhere as a part of
+> the system suspend.
+> 
+> 4.
+> Drivers only handles system suspend tasks from it's .suspend callbacks
+> and don't implement .suspend_late, thus the device will not be fully
+> inactivated.
+> 
+> 5.
+> Drivers relies on pm_runtime_suspended or worse
+> pm_runtime_status_suspend, to check if they shall put their device
+> into inactive state from their .suspend callbacks or leave it as is.
+> While they put the device into inactive state, the runtime state is
+> not properly updated to reflect this. Most important, at this point
+> runtime PM has not yet been disabled from the PM core.
 
-Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
----
-Changes since v3:
-None, Just respinning
+All 2 and 5 are bugs in the drviers that should be fixed.  Whether or
+not 4 is a bug depends on what the bus type does.
 
-Changes since v2:
-3. uses the new compatible strings introduced along with adding
-   support for Exynso5420.
+There's one more problem here, which is the expectation that drivers should
+be responsible for the entire handling of suspend/resume of their devices.
+This is misguided, because it forces the knowledge about particular platforms
+into the drivers.  Ideally, the suspend and resume of a device should be
+divided into a device-specific part handled by the driver and a bus-specific
+or platform-specific part handled by the bus type or a PM domain, respectively.
+The driver should only be concerned about the device-specific part.
 
-Changes since v1:
-1. Nodes carry the misplaced second base address and the second
-   clock to access the misplaced base address.
-2. Correct the clock number for the TMU4
+That applies to both system suspend/resume and runtime PM, though.
 
- arch/arm/boot/dts/exynos5420.dtsi |   48 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+Thanks!
 
-diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-index 6ffefd1..d736b40 100644
---- a/arch/arm/boot/dts/exynos5420.dtsi
-+++ b/arch/arm/boot/dts/exynos5420.dtsi
-@@ -369,4 +369,52 @@
- 		clock-names = "gscl";
- 		samsung,power-domain = <&gsc_pd>;
- 	};
-+
-+	/* tmu for CPU0 */
-+	tmu@10060000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10060000 0x100>;
-+		interrupts = <0 65 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU1 */
-+	tmu@10064000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10064000 0x100>;
-+		interrupts = <0 183 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU2 */
-+	tmu@10068000 {
-+		compatible = "samsung,exynos5420-tmu-triminfo";
-+		/* 2nd reg is for the misplaced TRIMINFO register */
-+		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-+		interrupts = <0 184 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	/* tmu for CPU3 */
-+	tmu@1006c000 {
-+		compatible = "samsung,exynos5420-tmu-triminfo-clk";
-+		/* 2nd reg is for the misplaced TRIMINFO register */
-+		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-+		interrupts = <0 185 0>;
-+		clocks = <&clock 318>, <&clock 319>;
-+		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-+	};
-+
-+	/* tmu for GPU */
-+	tmu@100a0000 {
-+		compatible = "samsung,exynos5420-tmu-triminfo-clk";
-+		/* 2nd reg is for the misplaced TRIMINFO register */
-+		reg = <0x100a0000 0x100>, <0x10068000 0x4>;
-+		interrupts = <0 215 0>;
-+		clocks = <&clock 319>, <&clock 318>;
-+		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-+	};
- };
 -- 
-1.7.10.4
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
