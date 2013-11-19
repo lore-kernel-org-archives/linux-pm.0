@@ -1,54 +1,61 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Tue, 19 Nov 2013 11:43:49 -0600
-Message-ID: <528BA355.4040008@ti.com>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>	<20131116134445.GI11014@S2101-09.ap.freescale.net>	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>	<528A27F8.3070402@ti.com>	<20131118155753.GU11014@S2101-09.ap.freescale.net>	<528A4340.3020508@ti.com>	<20131119022133.GB18434@S2101-09.ap.freescale.net>	<CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>	<528B72C1.5060006@ti.com>	<CAKohpo=hzCSuQBGreRStzkOuH6aFiZKTtK9SF+_eGEajkwSXEA@mail.gmail.com>	<528B7CE5.5040502@ti.com>	<CAKohponO7M6rYoPt=ePNTZh=y+iU=BEbFWBqxr1JQPbVptvgXA@mail.gmail.com>	<528B884C.7070908@ti.com> <CAKohpo=brpnLe68ExPRPg9h5ABMhg+GS85Ebn-+S5-vWaStrPQ@mail.gmail.com>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Tue, 19 Nov 2013 13:03:11 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1311191258550.1145-100000@iolanthe.rowland.org>
+References: <87r4acmjc6.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:38149 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751624Ab3KSRny (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 12:43:54 -0500
-In-Reply-To: <CAKohpo=brpnLe68ExPRPg9h5ABMhg+GS85Ebn-+S5-vWaStrPQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <87r4acmjc6.fsf-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
 
-On 11/19/2013 11:10 AM, Viresh Kumar wrote:
-> On 19 November 2013 21:18, Nishanth Menon <nm@ti.com> wrote:
->> is that true for userspace governor
->> (CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)?
->> /sys/devices/system/cpu/cpu0/cpufreq $ cat scaling_available_frequencies
->> 500000 1000000 1500000
->>
->> /sys/devices/system/cpu/cpu0/cpufreq $ cat scaling_cur_freq
->> 1100000
+On Tue, 19 Nov 2013, Kevin Hilman wrote:
+
+> Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> writes:
 > 
-> No, but userspace governor must take care of this stuff as it want's
-> to change freq from userspace..
+> > On Tue, 19 Nov 2013, Ulf Hansson wrote:
+> >
+> >> At the moment, system PM is already affecting behaviour of runtime PM
+> >> since it is preventing runtime suspend during system suspend.
+> >
+> > Sure.  And that behavior is documented.  In any case, it's a bug for 
+> > drivers to depend on runtime suspend for carrying out a system suspend.
 > 
-
-Right, the point is that CPUFREQ_GOV_LIMITS wont help in the case when
-it is within min-max bound.. the first transition will help bring it
-to a sane value - that I agree.
-
->> OMAP5-UEVM will remain at this frequency for a long period of time
->> with AVS voltage(Adaptive Voltage Scaling technique used in OMAP to
->> optimize operational voltage) that was meant for 1GHz! that is
->> definitely not stable if there is no further transition to a valid
->> frequency.
+> As Rafael mentioned, there is bus/pm_domain code that comes into play
+> here, so I'm not sure it's always a bug.
 > 
-> I understand that point, but will this stay for a long time at that freq?
-> Why aren't governors coming into picture here?
+> IMO, it's not a bug for the driver to depend on runtime PM if the
+> bus/pm_domain is handling the details.
+> 
+> On OMAP, we handle all the SoC on-chip devices with a pm_domain since
+> the low-level PM operations that need to happen are bus-level things not
+> device-level things.  Therefore, drivers for these devices can rely
+> entirely on runtime PM, even for system suspend.  The late/early
+> callbacks in the pm_domain can see if the device is runtime suspended
+> already or not and behave accordingly.
+> 
+> So, this all *can* work by handling it at the bus/pm_domain level, but
+> as Ulf has mentioned (and I agree) it seems like a clunky workaround
+> because the PM core is preventing it from happening as one might expect.
 
-we depend on the first transition to take us to a sane configuration -
-but we cannot predict when and if it will happen.
+The problem is that userspace can disable runtime PM at any time by 
+writing "on" to /sys/.../power/control.  Once that's done, you can't
+depend on runtime PM to put the device into a low-power state during 
+system suspend.
 
+Now, if the bus-level code always takes care of putting the device into
+low power during system suspend, then the driver doesn't have to worry
+about it at all.  That's perfectly fine -- but I would hardly describe
+the situation by saying the driver relies on runtime PM for system
+suspend.
 
--- 
-Regards,
-Nishanth Menon
+Alan Stern
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
