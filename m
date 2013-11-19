@@ -1,99 +1,68 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] intel_powerclamp: Fix cstate counter detection.
-Date: Tue, 19 Nov 2013 10:38:18 -0800
-Message-ID: <20131119103818.2cccaa93@ultegra>
-References: <1384758395-5074-1-git-send-email-yshuiv7@gmail.com>
-	<528A3EC9.8060301@linux.intel.com>
-	<CAGqt0zw2wEM_4SqMA8tqzABe0M1-ZXxM6X3rh4OezfnS9-eXJg@mail.gmail.com>
-	<528B74C9.3010902@linux.intel.com>
-	<CAGqt0zzZpXpL7MfvfFWrxbChBfu30i_tcyCoavzMJsrPmg5AAw@mail.gmail.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
+Date: Tue, 19 Nov 2013 10:43:49 -0800
+Message-ID: <87pppwkza2.fsf@linaro.org>
+References: <Pine.LNX.4.44L0.1311191258550.1145-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:23560 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521Ab3KSSiV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Nov 2013 13:38:21 -0500
-In-Reply-To: <CAGqt0zzZpXpL7MfvfFWrxbChBfu30i_tcyCoavzMJsrPmg5AAw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1311191258550.1145-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Tue, 19 Nov 2013 13:03:11 -0500 (EST)")
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuxuan Shui <yshuiv7@gmail.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-pm@vger.kernel.org
 
-On Wed, 20 Nov 2013 02:09:12 +0800
-Yuxuan Shui <yshuiv7@gmail.com> wrote:
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-> On Tue, Nov 19, 2013 at 10:25 PM, Arjan van de Ven
-> <arjan@linux.intel.com> wrote:
-> > On 11/18/2013 9:29 PM, Yuxuan Shui wrote:
-> >>
-> >> On Tue, Nov 19, 2013 at 12:22 AM, Arjan van de Ven
-> >> <arjan@linux.intel.com> wrote:
-> >>>
-> >>> On 11/17/2013 11:06 PM, Yuxuan Shui wrote:
-> >>>>
-> >>>>
-> >>>> Having all zero cstate count doesn't necesserily mean the cstate
-> >>>> counter is no functional.
-> >>>>
-> >>>
-> >>> ... but it does mean that powerclamp will be non-functional
-> >>>
-> >>> but you had a reason to make this patch.
-> >>> Can you expand a little bit on what you were seeing that made you
-> >>> decide this patch was needed ?
-> >>>
-> >> There are possibilities that the system is busy from boot so that
-> >> it doesn't enter C-state at all, right? In that situation
-> >> powerclamp won't work.
-> >
-> >
-> >
-> > that is... extremely unlikely. Have you seen that happen?
-> 
-> Sure I've seen this, that's why I wrote this patch in the first place.
-> It's my (rather old) laptop. After boot powertop show zero percent in
-> C3 and C6, and powerclamp complaining pkg cstate counter is not
-> functional.
-> 
-I see, this is indeed a corner case where the sanity check by powerclamp
-driver is too strict and refused to load. I am OK with your patch and
-perhaps add a sanity check later while idle injection is in action?
+> On Tue, 19 Nov 2013, Kevin Hilman wrote:
+>
+>> Alan Stern <stern@rowland.harvard.edu> writes:
+>> 
+>> > On Tue, 19 Nov 2013, Ulf Hansson wrote:
+>> >
+>> >> At the moment, system PM is already affecting behaviour of runtime PM
+>> >> since it is preventing runtime suspend during system suspend.
+>> >
+>> > Sure.  And that behavior is documented.  In any case, it's a bug for 
+>> > drivers to depend on runtime suspend for carrying out a system suspend.
+>> 
+>> As Rafael mentioned, there is bus/pm_domain code that comes into play
+>> here, so I'm not sure it's always a bug.
+>> 
+>> IMO, it's not a bug for the driver to depend on runtime PM if the
+>> bus/pm_domain is handling the details.
+>> 
+>> On OMAP, we handle all the SoC on-chip devices with a pm_domain since
+>> the low-level PM operations that need to happen are bus-level things not
+>> device-level things.  Therefore, drivers for these devices can rely
+>> entirely on runtime PM, even for system suspend.  The late/early
+>> callbacks in the pm_domain can see if the device is runtime suspended
+>> already or not and behave accordingly.
+>> 
+>> So, this all *can* work by handling it at the bus/pm_domain level, but
+>> as Ulf has mentioned (and I agree) it seems like a clunky workaround
+>> because the PM core is preventing it from happening as one might expect.
+>
+> The problem is that userspace can disable runtime PM at any time by 
+> writing "on" to /sys/.../power/control.  Once that's done, you can't
+> depend on runtime PM to put the device into a low-power state during 
+> system suspend.
 
-> >
-> >>
-> >> Also, pkg_state_counter is used to calculate a cstate ratio, and I
-> >> can't find any reason why powerclamp will be non-funtional when
-> >> that ratio is zero.
-> >
-> >
-> > if the counters we use are zero.. we can't use them in our control
-> > loop
-> 
-> I skimmed through the code. pkg_state_counter is called twice (except
-> that once in start_power_clamp). Once in poll_pkg_cstate to calculate
-> pkg_cstate_ratio_cur which is used for sysfs. The other time is in
-> powerclamp_adjust_controls, which is used to calculate a ratio which
-> is stored in a global variable current_ratio.
-> 
-> The current_ratio is also used twice. Once in the same function, to
-> check if we have done enough idle injection. The other is in
-> adjust_compensation, where it's used to calculate a delta. In neither
-> case current_ratio being zero will matter.
-> 
-> Also, I'm using this patch myself, and it seems to be totally
-> functional.
-> 
-> So I failed to see why the counter can't be zero. If I made any
-> mistakes, can you point them out?
-> 
+We handle that too.
 
-> >
-> > again, what were you actually seeing?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The way we handle it, that the pm_domain code "knows" that the device
+*should* be runtime suspended by the time the pm_domain suspend_noirq
+callback is called.  So it checks pm_runtime_status_suspended() and if
+the device is not runtime suspended, the pm_domain will "forcibly"
+runtime suspend the device (which just means, calling the driver's
+->runtime_suspend(), doing the bus-level magic, and setting the runtime
+PM state accordingly.)
 
-[Jacob Pan]
+This is arguably the same approach as the using the late callbacks that
+you've already described, but it's just done in a hidden way at the bus
+level.  Also, this solution predates the addtion of the late callbacks
+and I believe may have even been initially proposed by you (or maybe
+Rafael, I forgot.)
+
+Kevin
