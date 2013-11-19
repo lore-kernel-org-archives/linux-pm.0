@@ -1,37 +1,42 @@
 From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 1/2] power_supply: Fix Oops from NULL pointer dereference
- from wakeup_source_activate
-Date: Tue, 19 Nov 2013 15:13:00 -0800
-Message-ID: <20131119231300.GB24054@kroah.com>
+Subject: Re: [PATCH 2/2] power: Change device_wakeup_enable() to WARN_ON on
+ null dev_name(dev)
+Date: Tue, 19 Nov 2013 15:14:01 -0800
+Message-ID: <20131119231401.GC24054@kroah.com>
 References: <cover.1384875691.git.shuah.kh@samsung.com>
- <9575239e8eb1b813425e4297e26589946d5cdd1c.1384875691.git.shuah.kh@samsung.com>
+ <622a097f9780dc721354d0e2b6cb512280da1ebc.1384875691.git.shuah.kh@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:42404 "EHLO
+Received: from mail.linuxfoundation.org ([140.211.169.12]:42413 "EHLO
 	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026Ab3KSXMl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 18:12:41 -0500
+	with ESMTP id S1752058Ab3KSXNl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 18:13:41 -0500
 Content-Disposition: inline
-In-Reply-To: <9575239e8eb1b813425e4297e26589946d5cdd1c.1384875691.git.shuah.kh@samsung.com>
+In-Reply-To: <622a097f9780dc721354d0e2b6cb512280da1ebc.1384875691.git.shuah.kh@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Shuah Khan <shuah.kh@samsung.com>
 Cc: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, anton@enomsg.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Tue, Nov 19, 2013 at 08:59:35AM -0700, Shuah Khan wrote:
-> power_supply_register() calls device_init_wakeup() to register a wakeup
-> source before initializing dev_name. As a result, device_wakeup_enable()
-> end up registering wakeup source with a null name when wakeup_source_register()
-> gets called with dev_name(dev) which is null at the time.
+On Tue, Nov 19, 2013 at 09:05:46AM -0700, Shuah Khan wrote:
+> device_wakeup_enable() uses dev_name(dev) as the wakeup source name.
+> When it gets called with a device with its name not yet set, ws structure
+> with ws->name = NULL gets created.
 > 
 > When kernel is booted with wakeup_source_activate enabled, it will panic
 > when the trace point code tries to dereferences ws->name.
 > 
-> Fixed the problem by moving up the kobject_set_name() call prior to accesses
-> to dev_name(). Replaced kobject_set_name() with dev_set_name() which is the
-> right interface to be called from drivers. Fixed the call to device_del() prior
-> to device_add() in for wakeup_init_failed error handling code.
+> Change device_wakeup_enable() to WARN_ON on dev_name(dev) null condition
+> to detect driver bugs that result in calling device_wakeup_enable() before
+> device is fully initialized with its name in device_wakeup_enable().
+> 
+> This change without the power_supply_register() fix will result in early
+> boot panics when AC Adapter and Battery device drivers try to register
+> wakeup source.
+> 
+> The following panic resulted from power_supply_register() registering
+> wakeup source with a null device name.
 > 
 > [  819.769934] device: 'BAT1': device_add
 > [  819.770078] PM: Adding info for No Bus:BAT1
@@ -83,15 +88,25 @@ On Tue, Nov 19, 2013 at 08:59:35AM -0700, Shuah Khan wrote:
 > [  819.794175] ---[ end trace c4ef25127039952e ]---
 > 
 > Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> ---
+>  drivers/base/power/wakeup.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index 2d56f41..a605f0d 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -223,6 +223,9 @@ int device_wakeup_enable(struct device *dev)
+>  	if (!dev || !dev->power.can_wakeup)
+>  		return -EINVAL;
+>  
+> +	if (WARN_ON(!dev_name(dev)))
+> +		return -EINVAL;
+> +
+>  	ws = wakeup_source_register(dev_name(dev));
 
-Care to add a:
-	Cc: stable <stable@vger.kernel.org>
-to this so that it gets backported to the older kernels that have this
-problem?
+Shouldn't wakeup_source_register() just handle a NULL for a name better?
 
-Oh, and feel free to also add:
-	Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
-thanks for the dev_set_name() change,
+thanks,
 
 greg k-h
