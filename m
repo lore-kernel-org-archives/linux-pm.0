@@ -1,25 +1,38 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 0/7] Cure some vaux idle wrackage
-Date: Wed, 20 Nov 2013 17:04:50 +0100
-Message-ID: <20131120160450.072555619@infradead.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 0/7] Cure some vaux idle wrackage
+Date: Wed, 20 Nov 2013 17:34:53 +0100
+Message-ID: <20131120163453.GS10022@twins.programming.kicks-ass.net>
+References: <20131120160450.072555619@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:46636 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389Ab3KTQfA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 11:35:00 -0500
+Content-Disposition: inline
+In-Reply-To: <20131120160450.072555619@infradead.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-I ran head-first into intel_powerclamp and acpi_pad yesterday -- afaict they
-try and do pretty much the same thing but both had competing sets of bugs and
-issues.
+On Wed, Nov 20, 2013 at 05:04:50PM +0100, Peter Zijlstra wrote:
+> I ran head-first into intel_powerclamp and acpi_pad yesterday -- afaict they
+> try and do pretty much the same thing but both had competing sets of bugs and
+> issues.
+> 
+> Related to that I went over the tree looking for preempt_enable_no_resched()
+> abuse.
+> 
+> I know that patch 3 isn't going to be popular with Arjan but you guys are going
+> to have to make that work. That stuff is hideously terrible.
+> 
+> A note to Zhang Rui, _never_ merge EXPORTs in another maintainers' guts without
+> an explicit ACK from him, Thomas was quite horrified when I asked him how
+> tick_nohz_idle_{enter,exit} got exported.
+> 
+> That said, thanks for a 'fun' two days :-(
 
-Related to that I went over the tree looking for preempt_enable_no_resched()
-abuse.
-
-I know that patch 3 isn't going to be popular with Arjan but you guys are going
-to have to make that work. That stuff is hideously terrible.
-
-A note to Zhang Rui, _never_ merge EXPORTs in another maintainers' guts without
-an explicit ACK from him, Thomas was quite horrified when I asked him how
-tick_nohz_idle_{enter,exit} got exported.
-
-That said, thanks for a 'fun' two days :-(
+s/vaux/faux/ .. its been a long day.. and there's far too many dead
+email addresses @intel.com
