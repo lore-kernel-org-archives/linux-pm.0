@@ -1,23 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] power: Change device_wakeup_enable() to WARN_ON on null dev_name(dev)
-Date: Wed, 20 Nov 2013 01:12:17 +0100
-Message-ID: <3131384.OBt4qgLdzO@vostro.rjw.lan>
-References: <cover.1384875691.git.shuah.kh@samsung.com> <4885530.zkZVX2zzgu@vostro.rjw.lan> <528BF9DB.6050308@samsung.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 2/2] power: Change device_wakeup_enable() to WARN_ON on
+ null dev_name(dev)
+Date: Tue, 19 Nov 2013 16:05:18 -0800
+Message-ID: <20131120000518.GA11434@kroah.com>
+References: <cover.1384875691.git.shuah.kh@samsung.com>
+ <622a097f9780dc721354d0e2b6cb512280da1ebc.1384875691.git.shuah.kh@samsung.com>
+ <20131119231401.GC24054@kroah.com>
+ <4885530.zkZVX2zzgu@vostro.rjw.lan>
+ <528BF9DB.6050308@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57445 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753039Ab3KSX7i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 18:59:38 -0500
+Received: from mail.linuxfoundation.org ([140.211.169.12]:42770 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753752Ab3KTAFB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Nov 2013 19:05:01 -0500
+Content-Disposition: inline
 In-Reply-To: <528BF9DB.6050308@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: shuah.kh@samsung.com
-Cc: Greg KH <gregkh@linuxfoundation.org>, len.brown@intel.com, pavel@ucw.cz, anton@enomsg.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, anton@enomsg.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Tuesday, November 19, 2013 04:52:59 PM Shuah Khan wrote:
+On Tue, Nov 19, 2013 at 04:52:59PM -0700, Shuah Khan wrote:
 > On 11/19/2013 04:56 PM, Rafael J. Wysocki wrote:
 > > On Tuesday, November 19, 2013 03:14:01 PM Greg KH wrote:
 > >> On Tue, Nov 19, 2013 at 09:05:46AM -0700, Shuah Khan wrote:
@@ -135,15 +140,6 @@ On Tuesday, November 19, 2013 04:52:59 PM Shuah Khan wrote:
 > this as one of the fixes to the oops. Would you rather see this fix 
 > instead of this change to device_wakeup_enable()?
 
-Obviously, I would. :-)
+No, that's fine, it makes more sense now.
 
-As I said, it should be possible to register a wakeup source without a name.
-
-Also please find the commit that added trace_wakeup_source_activate() to
-wakeup_source_activate() and add a Fixes: tag for it to the patch.
-
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+greg k-h
