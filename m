@@ -1,35 +1,40 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Wed, 20 Nov 2013 20:55:22 +0100
-Message-ID: <20131120195522.GA31828@amd.pavel.ucw.cz>
-References: <CAPDyKFocLDLLp0mJghP-+nwacxM58T3EengqW0vLka=WeRQxvw@mail.gmail.com>
- <Pine.LNX.4.44L0.1311201156070.1826-100000@iolanthe.rowland.org>
+From: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
+Date: Wed, 20 Nov 2013 22:14:02 +0200
+Message-ID: <528D180A.5050209@linux.intel.com>
+References: <20131120160450.072555619@infradead.org> <20131120162736.691879744@infradead.org> <528CF94E.8020300@linux.intel.com> <20131120181536.GW16796@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1311201156070.1826-100000@iolanthe.rowland.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:44177 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754982Ab3KTUOW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Nov 2013 15:14:22 -0500
+In-Reply-To: <20131120181536.GW16796@laptop.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Eliezer Tamir <eliezer@tamir.org.il>
 
-On Wed 2013-11-20 11:58:31, Alan Stern wrote:
-> On Wed, 20 Nov 2013, Ulf Hansson wrote:
+On 20/11/2013 20:15, Peter Zijlstra wrote:
+> There are options (CONFIG_PREEMPT_RCU) that allow scheduling while
+> holding rcu_read_lock().
 > 
-> > Do note that, the intent with my RFC is also to simplify for drivers
-> > in general using runtime PM. No matter how you put it, the
-> > consequences of preventing runtime suspend during system suspend are
-> > causing confusions.
+> Also, preempt_enable() only schedules when its possible to schedule, so
+> calling it when you know you cannot schedule is no issue.
 > 
-> Then fix the confusion.  Explain peoples' mistakes to them.
 
-Exactly. Way to solve confusion is not "make core behave as part of
-drivers apparently think it should".
+I have no issue with you changing busy_loop_us_clock() to use a regular
+preempt enable.
 
-And yes, you have a list of broken drivers... thanks for that.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I think that we still need to only do this if config preempt debug
+is on. When it's off we should use the alternate implementation.
+We are silencing a warning, but this is a performance critical path,
+and we think we know what we are doing.
+
+I tried to explain this in the comments. If you think my comments are
+not clear enough, I'm open to suggestions.
+
+Cheers,
+Eliezer
