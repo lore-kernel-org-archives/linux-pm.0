@@ -1,100 +1,98 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / Clocks: fix pm_clk_resume/suspend if CONFIG_PM_RUNTIME
- is set
-Date: Wed, 20 Nov 2013 10:42:30 -0800
-Message-ID: <528D0296.1070001@codeaurora.org>
-References: <1384954307-27094-1-git-send-email-grygorii.strashko@ti.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 7/7] preempt: Take away preempt_enable_no_resched() from
+ modules
+Date: Wed, 20 Nov 2013 10:54:57 -0800
+Message-ID: <20131120105457.04f6e51e@ultegra>
+References: <20131120160450.072555619@infradead.org>
+	<20131120162736.760865926@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:33423 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752998Ab3KTSmc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 13:42:32 -0500
-In-Reply-To: <1384954307-27094-1-git-send-email-grygorii.strashko@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20131120162736.760865926@infradead.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: santosh.shilimkar@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On 11/20/13 05:31, Grygorii Strashko wrote:
-> The following warning is shown and clk_enable() failed on Keystone platform
-> if CONFIG_PM_RUNTIME is set and Runtime PM is enabled for Davinci gpio driver:
-> [    0.564486] ------------[ cut here ]------------
-> [    0.569221] WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:883__clk_enable+0x8c/0x98()
-> [    0.577070] Modules linked in:
-> [    0.580231] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.12.0-10116-g11d59938-dirty #259
-> [    0.588368] [<c0014d34>] (unwind_backtrace+0x0/0xf8) from [<c0011eb8>] (show_stack+0x10/0x14)
-> [    0.597018] [<c0011eb8>] (show_stack+0x10/0x14) from [<c03c5df0>] (dump_stack+0x64/0xa4)
-> [    0.605235] [<c03c5df0>] (dump_stack+0x64/0xa4) from [<c00216b8>] (warn_slowpath_common+0x68/0x88)
-> [    0.614315] [<c00216b8>] (warn_slowpath_common+0x68/0x88) from [<c00216f4>] (warn_slowpath_null+0x1c/0x24)
-> [    0.624092] [<c00216f4>] (warn_slowpath_null+0x1c/0x24) from [<c0287a60>] (__clk_enable+0x8c/0x98)
-> [    0.633173] [<c0287a60>] (__clk_enable+0x8c/0x98) from [<c0287c54>] (clk_enable+0x18/0x2c)
-> [    0.641556] [<c0287c54>] (clk_enable+0x18/0x2c) from [<c023677c>] (pm_clk_resume+0x5c/0x80)
-> [    0.650025] [<c023677c>] (pm_clk_resume+0x5c/0x80) from [<c001eba8>] (keystone_pm_runtime_resume+0xc/0x18)
-> [    0.659800] [<c001eba8>] (keystone_pm_runtime_resume+0xc/0x18) from [<c02344e4>] (__rpm_callback+0x34/0x70)
-> [    0.669662] [<c02344e4>] (__rpm_callback+0x34/0x70) from [<c0234548>] (rpm_callback+0x28/0x88)
-> [    0.678390] [<c0234548>] (rpm_callback+0x28/0x88) from [<c023590c>] (rpm_resume+0x3c8/0x684)
-> [    0.686942] [<c023590c>] (rpm_resume+0x3c8/0x684) from [<c0235e40>] (__pm_runtime_resume+0x4c/0x64)
-> [    0.696111] [<c0235e40>] (__pm_runtime_resume+0x4c/0x64) from [<c0204798>] (davinci_gpio_probe+0x20c/0x5ac)
-> [    0.705983] [<c0204798>] (davinci_gpio_probe+0x20c/0x5ac) from [<c02310cc>] (platform_drv_probe+0x18/0x48)
-> [    0.715758] [<c02310cc>] (platform_drv_probe+0x18/0x48) from [<c022fa0c>] (driver_probe_device+0x80/0x21c)
-> [    0.725532] [<c022fa0c>] (driver_probe_device+0x80/0x21c) from [<c022fc34>] (__driver_attach+0x8c/0x90)
-> [    0.735044] [<c022fc34>] (__driver_attach+0x8c/0x90) from [<c022e35c>] (bus_for_each_dev+0x60/0x94)
-> [    0.744207] [<c022e35c>] (bus_for_each_dev+0x60/0x94) from [<c022f24c>] (bus_add_driver+0xdc/0x1d0)
-> [    0.753371] [<c022f24c>] (bus_add_driver+0xdc/0x1d0) from [<c023002c>] (driver_register+0x78/0xf4)
-> [    0.762449] [<c023002c>] (driver_register+0x78/0xf4) from [<c00088fc>] (do_one_initcall+0xec/0x148)
-> [    0.771616] [<c00088fc>] (do_one_initcall+0xec/0x148) from [<c0538c0c>] (kernel_init_freeable+0xfc/0x1c8)
-> [    0.781303] [<c0538c0c>] (kernel_init_freeable+0xfc/0x1c8) from [<c03c19d0>] (kernel_init+0x8/0x110)
-> [    0.790553] [<c03c19d0>] (kernel_init+0x8/0x110) from [<c000e318>] (ret_from_fork+0x14/0x3c)
-> [    0.799117] ---[ end trace 6588a0ec7fbc847a ]---
+On Wed, 20 Nov 2013 17:04:57 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Please omit the timestamps here.
-
->
-> This happens because the clk_enable() is called without clk_prepare()
-> from pm_clk_resume().
->
-> Hence, switch to use clk_prepare_enable()/clk_disable_unprepare()
-> instead of clk_enable()/clk_disable() in case if CONFIG_PM_RUNTIME is
-> set.
-> Actually, This is remainder fix of the earlier commit c122f27e1c
-> "base: power - use clk_prepare_enable and clk_prepare_disable".
->
-> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> Discourage drivers/modules to be creative with preemption.
+>=20
+> Sadly all is implemented in macros and inline so if they want to do
+> evil they still can, but at least try and discourage some.
+>=20
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Arjan van de Ven <arjan@linux.intel.com>
+> Cc: lenb@kernel.org
+> Cc: rjw@rjwysocki.net
+> Cc: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+> Cc: Chris Leech <christopher.leech@intel.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: rui.zhang@intel.com
+> Cc: jacob.jun.pan@linux.intel.com
+> Cc: Mike Galbraith <bitbucket@online.de>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: hpa@zytor.com
+> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 > ---
->  drivers/base/power/clock_ops.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 9d8fde7..60d389a 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -230,7 +230,7 @@ int pm_clk_suspend(struct device *dev)
->  	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
->  		if (ce->status < PCE_STATUS_ERROR) {
->  			if (ce->status == PCE_STATUS_ENABLED)
-> -				clk_disable(ce->clk);
-> +				clk_disable_unprepare(ce->clk);
->  			ce->status = PCE_STATUS_ACQUIRED;
->  		}
->  	}
-> @@ -259,7 +259,7 @@ int pm_clk_resume(struct device *dev)
->  
->  	list_for_each_entry(ce, &psd->clock_list, node) {
->  		if (ce->status < PCE_STATUS_ERROR) {
-> -			clk_enable(ce->clk);
-> +			clk_prepare_enable(ce->clk);
->  			ce->status = PCE_STATUS_ENABLED;
->  		}
->  	}
+>  include/linux/preempt.h |   16 +++++++++++++++-
+>  1 file changed, 15 insertions(+), 1 deletion(-)
+>=20
+> --- a/include/linux/preempt.h
+> +++ b/include/linux/preempt.h
+> @@ -64,7 +64,11 @@ do { \
+>  } while (0)
+> =20
+>  #else
+> -#define preempt_enable() preempt_enable_no_resched()
+> +#define preempt_enable() \
+> +do { \
+> +	barrier(); \
+> +	preempt_count_dec(); \
+> +} while (0)
+>  #define preempt_check_resched() do { } while (0)
+>  #endif
+> =20
+> @@ -126,6 +130,16 @@ do { \
+>  #define preempt_fold_need_resched() do { } while (0)
+>  #endif
+> =20
+> +#ifdef MODULE
+> +/*
+> + * Modules have no business playing preemption tricks.
+> + */
+> +#undef sched_preempt_enable_no_resched
+> +#undef preempt_enable_no_resched
+> +#undef preempt_enable_no_resched_notrace
+> +#undef preempt_check_resched
+> +#endif
+> +
+>  #ifdef CONFIG_PREEMPT_NOTIFIERS
+> =20
+>  struct preempt_notifier;
+>=20
+>=20
 
-This is inside a spin_lock_irqsave(). You should be getting scheduling
-while atomic warnings with this change. Are you testing with
-DEBUG_ATOMIC_SLEEP=y?
+run into a couple of compile issues.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+1)
+include/linux/rcupdate.h: In function =E2=80=98rcu_read_unlock_sched_no=
+trace=E2=80=99:
+include/linux/rcupdate.h:889:2: error: implicit declaration of function
+=E2=80=98preempt_enable_no_resched_notrace=E2=80=99 [-Werror=3Dimplicit=
+-function-declaration]
 
+2)
+In file included from drivers/cpufreq/acpi-cpufreq.c:41:0:
+include/linux/uaccess.h: In function =E2=80=98pagefault_enable=E2=80=99=
+:
+include/linux/uaccess.h:34:2: error: implicit declaration of function
+=E2=80=98preempt_check_resched=E2=80=99 [-Werror=3Dimplicit-function-de=
+claration]
+
+1) happens when CONFIG_PREEMPT is not set, perhaps add a dummy function=
+?
+2) I am not sure if we should take pagefault_enable away from modules
