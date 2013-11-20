@@ -1,97 +1,189 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
-Date: Wed, 20 Nov 2013 17:04:56 +0100
-Message-ID: <20131120162736.691879744@infradead.org>
+Subject: [PATCH 4/7] preempt, locking: Rework local_bh_{dis,en}able()
+Date: Wed, 20 Nov 2013 17:04:54 +0100
+Message-ID: <20131120162736.566307357@infradead.org>
 References: <20131120160450.072555619@infradead.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline; filename=peterz-fixup-weird-preempt_enable_no_resched-usage.patch
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:46537 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389Ab3KTQc5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 11:32:57 -0500
+Content-Disposition: inline; filename=peter_zijlstra-inline-local_bh_disable.patch
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-The only valid use of preempt_enable_no_resched() is if the very next
-line is schedule() or if we know preemption cannot actually be enabled
-by that statement due to known more preempt_count 'refs'.
+Currently local_bh_disable() is out-of-line for no apparent reason.
+So inline it to save a few cycles on call/return nonsense, the
+function body is a single add on x86 (a few loads and store extra on
+load/store archs).
 
-As to the busy_poll mess; that looks to be completely and utterly
-broken, sched_clock() can return utter garbage with interrupts enabled
-(rare but still), it can drift unbounded between CPUs, so if you get
-preempted/migrated and your new CPU is years behind on the previous
-CPU we get to busy spin for a _very_ long time. There is a _REASON_
-sched_clock() warns about preemptability - papering over it with a
-preempt_disable()/preempt_enable_no_resched() is just terminal brain
-damage on so many levels.
+Also expose two new local_bh functions:
 
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: lenb@kernel.org
+  __local_bh_{dis,en}able_ip(unsigned long ip, unsigned int cnt);
+
+Which implement the actual local_bh_{dis,en}able() behaviour.
+
+The next patch uses the exposed @cnt argument to optimize bh lock
+functions.
+
 Cc: rjw@rjwysocki.net
-Cc: Eliezer Tamir <eliezer.tamir@linux.intel.com>
-Cc: Chris Leech <christopher.leech@intel.com>
-Cc: David S. Miller <davem@davemloft.net>
 Cc: rui.zhang@intel.com
 Cc: jacob.jun.pan@linux.intel.com
 Cc: Mike Galbraith <bitbucket@online.de>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: hpa@zytor.com
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: lenb@kernel.org
 Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 ---
- include/net/busy_poll.h |   20 ++++++++------------
- net/ipv4/tcp.c          |    4 ++--
- 2 files changed, 10 insertions(+), 14 deletions(-)
+ include/linux/bottom_half.h  |   32 +++++++++++++++++++++++++++++---
+ include/linux/hardirq.h      |    1 +
+ include/linux/preempt_mask.h |    1 -
+ kernel/softirq.c             |   33 ++++-----------------------------
+ 4 files changed, 34 insertions(+), 33 deletions(-)
 
---- a/include/net/busy_poll.h
-+++ b/include/net/busy_poll.h
-@@ -42,27 +42,23 @@ static inline bool net_busy_loop_on(void
- 	return sysctl_net_busy_poll;
- }
+--- a/include/linux/bottom_half.h
++++ b/include/linux/bottom_half.h
+@@ -1,9 +1,35 @@
+ #ifndef _LINUX_BH_H
+ #define _LINUX_BH_H
  
--/* a wrapper to make debug_smp_processor_id() happy
-- * we can use sched_clock() because we don't care much about precision
-- * we only care that the average is bounded
-- */
--#ifdef CONFIG_DEBUG_PREEMPT
- static inline u64 busy_loop_us_clock(void)
- {
- 	u64 rc;
- 
-+	/*
-+	 * XXX with interrupts enabled sched_clock() can return utter garbage
-+	 * Futhermore, it can have unbounded drift between CPUs, so the below
-+	 * usage is terminally broken and only serves to shut up a valid debug
-+	 * warning.
-+	 */
+-extern void local_bh_disable(void);
++#include <linux/preempt.h>
++#include <linux/preempt_mask.h>
 +
- 	preempt_disable_notrace();
- 	rc = sched_clock();
--	preempt_enable_no_resched_notrace();
-+	preempt_enable_notrace();
++#ifdef CONFIG_TRACE_IRQFLAGS
++extern void __local_bh_disable_ip(unsigned long ip, unsigned int cnt);
++#else
++static __always_inline void __local_bh_disable_ip(unsigned long ip, unsigned int cnt)
++{
++	preempt_count_add(cnt);
++	barrier();
++}
++#endif
++
++static inline void local_bh_disable(void)
++{
++	__local_bh_disable_ip(_THIS_IP_, SOFTIRQ_DISABLE_OFFSET);
++}
++
+ extern void _local_bh_enable(void);
+-extern void local_bh_enable(void);
+-extern void local_bh_enable_ip(unsigned long ip);
++extern void __local_bh_enable_ip(unsigned long ip, unsigned int cnt);
++
++static inline void local_bh_enable_ip(unsigned long ip)
++{
++	__local_bh_enable_ip(ip, SOFTIRQ_DISABLE_OFFSET);
++}
++
++static inline void local_bh_enable(void)
++{
++	__local_bh_enable_ip(_THIS_IP_, SOFTIRQ_DISABLE_OFFSET);
++}
  
- 	return rc >> 10;
- }
--#else /* CONFIG_DEBUG_PREEMPT */
--static inline u64 busy_loop_us_clock(void)
--{
--	return sched_clock() >> 10;
--}
--#endif /* CONFIG_DEBUG_PREEMPT */
+ #endif /* _LINUX_BH_H */
+--- a/include/linux/hardirq.h
++++ b/include/linux/hardirq.h
+@@ -5,6 +5,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/ftrace_irq.h>
+ #include <linux/vtime.h>
++#include <asm/hardirq.h>
  
- static inline unsigned long sk_busy_loop_end_time(struct sock *sk)
+ 
+ extern void synchronize_irq(unsigned int irq);
+--- a/include/linux/preempt_mask.h
++++ b/include/linux/preempt_mask.h
+@@ -2,7 +2,6 @@
+ #define LINUX_PREEMPT_MASK_H
+ 
+ #include <linux/preempt.h>
+-#include <asm/hardirq.h>
+ 
+ /*
+  * We put the hardirq and softirq counter into the preemption
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -89,7 +89,7 @@ static void wakeup_softirqd(void)
+  * where hardirqs are disabled legitimately:
+  */
+ #ifdef CONFIG_TRACE_IRQFLAGS
+-static void __local_bh_disable(unsigned long ip, unsigned int cnt)
++void __local_bh_disable_ip(unsigned long ip, unsigned int cnt)
  {
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -1623,11 +1623,11 @@ int tcp_recvmsg(struct kiocb *iocb, stru
- 		    (len > sysctl_tcp_dma_copybreak) && !(flags & MSG_PEEK) &&
- 		    !sysctl_tcp_low_latency &&
- 		    net_dma_find_channel()) {
--			preempt_enable_no_resched();
-+			preempt_enable();
- 			tp->ucopy.pinned_list =
- 					dma_pin_iovec_pages(msg->msg_iov, len);
- 		} else {
--			preempt_enable_no_resched();
-+			preempt_enable();
- 		}
- 	}
- #endif
+ 	unsigned long flags;
+ 
+@@ -114,21 +114,8 @@ static void __local_bh_disable(unsigned
+ 	if (preempt_count() == cnt)
+ 		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
+ }
+-#else /* !CONFIG_TRACE_IRQFLAGS */
+-static inline void __local_bh_disable(unsigned long ip, unsigned int cnt)
+-{
+-	preempt_count_add(cnt);
+-	barrier();
+-}
+ #endif /* CONFIG_TRACE_IRQFLAGS */
+ 
+-void local_bh_disable(void)
+-{
+-	__local_bh_disable(_RET_IP_, SOFTIRQ_DISABLE_OFFSET);
+-}
+-
+-EXPORT_SYMBOL(local_bh_disable);
+-
+ static void __local_bh_enable(unsigned int cnt)
+ {
+ 	WARN_ON_ONCE(!irqs_disabled());
+@@ -151,7 +138,7 @@ void _local_bh_enable(void)
+ 
+ EXPORT_SYMBOL(_local_bh_enable);
+ 
+-static inline void _local_bh_enable_ip(unsigned long ip)
++void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
+ {
+ 	WARN_ON_ONCE(in_irq() || irqs_disabled());
+ #ifdef CONFIG_TRACE_IRQFLAGS
+@@ -166,7 +153,7 @@ static inline void _local_bh_enable_ip(u
+ 	 * Keep preemption disabled until we are done with
+ 	 * softirq processing:
+  	 */
+-	preempt_count_sub(SOFTIRQ_DISABLE_OFFSET - 1);
++	preempt_count_sub(cnt - 1);
+ 
+ 	if (unlikely(!in_interrupt() && local_softirq_pending())) {
+ 		/*
+@@ -183,18 +170,6 @@ static inline void _local_bh_enable_ip(u
+ 	preempt_check_resched();
+ }
+ 
+-void local_bh_enable(void)
+-{
+-	_local_bh_enable_ip(_RET_IP_);
+-}
+-EXPORT_SYMBOL(local_bh_enable);
+-
+-void local_bh_enable_ip(unsigned long ip)
+-{
+-	_local_bh_enable_ip(ip);
+-}
+-EXPORT_SYMBOL(local_bh_enable_ip);
+-
+ /*
+  * We restart softirq processing for at most MAX_SOFTIRQ_RESTART times,
+  * but break the loop if need_resched() is set or after 2 ms.
+@@ -268,7 +243,7 @@ asmlinkage void __do_softirq(void)
+ 	pending = local_softirq_pending();
+ 	account_irq_enter_time(current);
+ 
+-	__local_bh_disable(_RET_IP_, SOFTIRQ_OFFSET);
++	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
+ 	lockdep_softirq_start();
+ 
+ 	cpu = smp_processor_id();
+
+
