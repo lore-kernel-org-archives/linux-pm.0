@@ -1,38 +1,34 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/7] Cure some vaux idle wrackage
-Date: Wed, 20 Nov 2013 17:34:53 +0100
-Message-ID: <20131120163453.GS10022@twins.programming.kicks-ass.net>
-References: <20131120160450.072555619@infradead.org>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle implementations
+Date: Wed, 20 Nov 2013 08:40:49 -0800
+Message-ID: <528CE611.8040903@linux.intel.com>
+References: <20131120160450.072555619@infradead.org> <20131120162736.508462614@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:46636 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389Ab3KTQfA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 11:35:00 -0500
-Content-Disposition: inline
-In-Reply-To: <20131120160450.072555619@infradead.org>
+Received: from mga09.intel.com ([134.134.136.24]:49160 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754260Ab3KTQkw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Nov 2013 11:40:52 -0500
+In-Reply-To: <20131120162736.508462614@infradead.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Nov 20, 2013 at 05:04:50PM +0100, Peter Zijlstra wrote:
-> I ran head-first into intel_powerclamp and acpi_pad yesterday -- afaict they
-> try and do pretty much the same thing but both had competing sets of bugs and
-> issues.
-> 
-> Related to that I went over the tree looking for preempt_enable_no_resched()
-> abuse.
-> 
-> I know that patch 3 isn't going to be popular with Arjan but you guys are going
-> to have to make that work. That stuff is hideously terrible.
-> 
-> A note to Zhang Rui, _never_ merge EXPORTs in another maintainers' guts without
-> an explicit ACK from him, Thomas was quite horrified when I asked him how
-> tick_nohz_idle_{enter,exit} got exported.
-> 
-> That said, thanks for a 'fun' two days :-(
+On 11/20/2013 8:04 AM, Peter Zijlstra wrote:
+> This does not fully preseve existing behaviour in that the generic
+> idle cycle function calls into the normal cpuidle governed idle
+> routines and should thus respect things like QoS parameters and the
+> like.
 
-s/vaux/faux/ .. its been a long day.. and there's far too many dead
-email addresses @intel.com
+
+NAK on the powerclamp side.
+
+powerclamp MUST NOT do that....
+it is needed to go to the deepest state no matter what
+(this is for when your system is overheating. there is not a lot of choice
+here... alternative is an emergency reset that the hardware does for safety)
+
+
