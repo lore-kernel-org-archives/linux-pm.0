@@ -1,57 +1,70 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: [PATCH] cpufreq: tegra: don't error target() when suspended
-Date: Wed, 20 Nov 2013 14:06:22 -0700
-Message-ID: <1384981582-30697-1-git-send-email-swarren@wwwdotorg.org>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
+ implementations
+Date: Wed, 20 Nov 2013 14:08:21 -0800
+Message-ID: <20131120140821.1d5607c2@ultegra>
+References: <20131120160450.072555619@infradead.org>
+	<20131120162736.508462614@infradead.org>
+	<528CE611.8040903@linux.intel.com>
+	<alpine.DEB.2.02.1311201814410.30673@ionos.tec.linutronix.de>
+	<528CF028.2040002@linux.intel.com>
+	<alpine.DEB.2.02.1311201851040.30673@ionos.tec.linutronix.de>
+	<528CFDB1.3020300@linux.intel.com>
+	<alpine.DEB.2.02.1311201959460.30673@ionos.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:49988 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750858Ab3KTWIk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Nov 2013 17:08:40 -0500
+In-Reply-To: <alpine.DEB.2.02.1311201959460.30673@ionos.tec.linutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-From: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+On Wed, 20 Nov 2013 20:38:03 +0100 (CET)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-d4019f0a92ab "cpufreq: move freq change notifications to cpufreq core"
-added code to the cpufreq core to print an error if a cpufreq driver's
-.target() function returned an error. This exposed the fact that Tegra's
-cpufreq driver returns an error when it is ignoring requests due to the
-system being suspended.
+> On Wed, 20 Nov 2013, Arjan van de Ven wrote:
+> > 
+> > but for powerclamp to work, it needs to inject a deep idle....  I'm
+> > very ok using generic abstractions for that, but the abstraction
+> > needs to then include a "don't be nice about picking shallow C
+> > states for performance reasons, just pick something very deep"
+> > parameter.
+> 
+> And that's what you should have done in the first place. Make the
+> generic code take a parameter to indicate that. Or tell the scheduler
+> to throttle the machine and go deep idle. That would also be helpful
+> to others who might need some similar thing.
+> 
+I thought about that. Since the generic code is in performance critical
+path and idle injection is a rare case. Then the question is do we
+want sacrifice the 99% for %1 usage?
 
-Modify Tegra's .target() function not to return an error in this case;
-this prevents the error prints. The argument is that since the suspend
-hook can't and doesn't inform the cpufreq core when its requests will
-be ignored, there's no way for the cpufreq core to squelch them, so it's
-not an error for the requests to keep coming. This change make the Tegra
-driver consistent with how the Exynos handles the same situation. Note
-that s5pv210-cpufreq.c probably suffers from this same issue though.
+> No, you went with the worst design:
+> 
+>     - Hack it into some random driver
+>     - Export random core interfaces so it's harder to change them
+>     - Let others deal with the fallout
+> 
+> I'm cleaning up that kind of mess for more than 9 years now and I'm
+> really disappointed that you went over to the "who cares, works for
+> me" camp.
+> 
+> I can lively remember our discussions when we were cleaning up the
+> whole timer mess together in order to make NOHZ actually useful. Your
+> cursing about such code was definitely impressive back then.
+> 
+> Thanks,
+> 
+> 	tglx
+> 
+> 
+> 
+> 
 
-Signed-off-by: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
----
-This is a fix for 3.13.
-
-Commit d4019f0a92ab also failed to update the Tegra pm_notifier hook to
-emit cpufreq notifications. That hook calls the target() implementation
-directly, which used to emit the notifications. However, now that the
-notifications are made outside of target(), they no longer occur when
-target() is called directly. I'm not sure if this is an issue or not?
----
- drivers/cpufreq/tegra-cpufreq.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index f42df7ec03c5..b7309c37033d 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -142,10 +142,8 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- 
- 	mutex_lock(&tegra_cpu_lock);
- 
--	if (is_suspended) {
--		ret = -EBUSY;
-+	if (is_suspended)
- 		goto out;
--	}
- 
- 	freq = freq_table[index].frequency;
- 
--- 
-1.8.1.5
+[Jacob Pan]
