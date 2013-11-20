@@ -1,246 +1,361 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 1/7] x86, acpi, idle: Restructure the mwait idle routines
-Date: Wed, 20 Nov 2013 17:04:51 +0100
-Message-ID: <20131120162736.389511384@infradead.org>
+Subject: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle implementations
+Date: Wed, 20 Nov 2013 17:04:53 +0100
+Message-ID: <20131120162736.508462614@infradead.org>
 References: <20131120160450.072555619@infradead.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:46544 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429Ab3KTQc7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 11:32:59 -0500
-Content-Disposition: inline; filename=peter_zijlstra-x86_acpi_idle-restructure_the_mwait_idle_routines.patch
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline; filename=peterz-fixup-intel_clamp-mess.patch
+Sender: linux-kernel-owner@vger.kernel.org
 To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-People seem to delight in writing wrong and broken mwait idle routines;
-collapse the lot.
+People are starting to grow their own idle implementations in various
+disgusting ways. Collapse the lot and use the generic idle code to
+provide a proper idle cycle implementation.
 
-This leaves mwait_play_dead() the sole remaining user of __mwait() and
-new __mwait() users are probably doing it wrong.
+This does not fully preseve existing behaviour in that the generic
+idle cycle function calls into the normal cpuidle governed idle
+routines and should thus respect things like QoS parameters and the
+like.
 
-Also remove __sti_mwait() as its unused.
+If people want to over-ride the idle state they should talk to the
+cpuidle folks about extending the interface and attempt to preserve
+QoS guarantees, instead of jumping straight to the deepest possible C
+state.
 
+Compile tested only -- I've no idea how to actually use these vile
+things.
+
+Cc: hpa@zytor.com
 Cc: arjan@linux.intel.com
+Cc: rui.zhang@intel.com
 Cc: jacob.jun.pan@linux.intel.com
-Cc: Mike Galbraith <bitbucket@online.de>
+Cc: lenb@kernel.org
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: hpa@zytor.com
-Cc: lenb@kernel.org
-Cc: rui.zhang@intel.com
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 ---
- arch/x86/include/asm/mwait.h       |   40 +++++++++++++++++++++++++++++++++++++
- arch/x86/include/asm/processor.h   |   23 ---------------------
- arch/x86/kernel/acpi/cstate.c      |   23 ---------------------
- drivers/acpi/acpi_pad.c            |    5 ----
- drivers/acpi/processor_idle.c      |   15 -------------
- drivers/idle/intel_idle.c          |    8 -------
- drivers/thermal/intel_powerclamp.c |    4 ---
- 7 files changed, 43 insertions(+), 75 deletions(-)
+ drivers/acpi/acpi_pad.c            |   41 ------------
+ drivers/thermal/intel_powerclamp.c |   38 -----------
+ include/linux/cpu.h                |    2 
+ kernel/cpu/idle.c                  |  123 ++++++++++++++++++++++---------------
+ kernel/time/tick-sched.c           |    2 
+ 5 files changed, 82 insertions(+), 124 deletions(-)
 
---- a/arch/x86/include/asm/mwait.h
-+++ b/arch/x86/include/asm/mwait.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_X86_MWAIT_H
- #define _ASM_X86_MWAIT_H
- 
-+#include <linux/sched.h>
-+
- #define MWAIT_SUBSTATE_MASK		0xf
- #define MWAIT_CSTATE_MASK		0xf
- #define MWAIT_SUBSTATE_SIZE		4
-@@ -13,4 +15,42 @@
- 
- #define MWAIT_ECX_INTERRUPT_BREAK	0x1
- 
-+static inline void __monitor(const void *eax, unsigned long ecx,
-+			     unsigned long edx)
-+{
-+	/* "monitor %eax, %ecx, %edx;" */
-+	asm volatile(".byte 0x0f, 0x01, 0xc8;"
-+		     :: "a" (eax), "c" (ecx), "d"(edx));
-+}
-+
-+static inline void __mwait(unsigned long eax, unsigned long ecx)
-+{
-+	/* "mwait %eax, %ecx;" */
-+	asm volatile(".byte 0x0f, 0x01, 0xc9;"
-+		     :: "a" (eax), "c" (ecx));
-+}
-+
-+/*
-+ * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
-+ * which can obviate IPI to trigger checking of need_resched.
-+ * We execute MONITOR against need_resched and enter optimized wait state
-+ * through MWAIT. Whenever someone changes need_resched, we would be woken
-+ * up from MWAIT (without an IPI).
-+ *
-+ * New with Core Duo processors, MWAIT can take some hints based on CPU
-+ * capability.
-+ */
-+static inline void mwait_idle_with_hints(unsigned long eax, unsigned long ecx)
-+{
-+	if (!current_set_polling_and_test()) {
-+		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
-+			clflush((void *)&current_thread_info()->flags);
-+
-+		__monitor((void *)&current_thread_info()->flags, 0, 0);
-+		if (!need_resched())
-+			__mwait(eax, ecx);
-+	}
-+	__current_clr_polling();
-+}
-+
- #endif /* _ASM_X86_MWAIT_H */
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -700,29 +700,6 @@ static inline void sync_core(void)
- #endif
- }
- 
--static inline void __monitor(const void *eax, unsigned long ecx,
--			     unsigned long edx)
--{
--	/* "monitor %eax, %ecx, %edx;" */
--	asm volatile(".byte 0x0f, 0x01, 0xc8;"
--		     :: "a" (eax), "c" (ecx), "d"(edx));
--}
--
--static inline void __mwait(unsigned long eax, unsigned long ecx)
--{
--	/* "mwait %eax, %ecx;" */
--	asm volatile(".byte 0x0f, 0x01, 0xc9;"
--		     :: "a" (eax), "c" (ecx));
--}
--
--static inline void __sti_mwait(unsigned long eax, unsigned long ecx)
--{
--	trace_hardirqs_on();
--	/* "mwait %eax, %ecx;" */
--	asm volatile("sti; .byte 0x0f, 0x01, 0xc9;"
--		     :: "a" (eax), "c" (ecx));
--}
--
- extern void select_idle_routine(const struct cpuinfo_x86 *c);
- extern void init_amd_e400_c1e_mask(void);
- 
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -150,29 +150,6 @@ int acpi_processor_ffh_cstate_probe(unsi
- }
- EXPORT_SYMBOL_GPL(acpi_processor_ffh_cstate_probe);
- 
--/*
-- * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
-- * which can obviate IPI to trigger checking of need_resched.
-- * We execute MONITOR against need_resched and enter optimized wait state
-- * through MWAIT. Whenever someone changes need_resched, we would be woken
-- * up from MWAIT (without an IPI).
-- *
-- * New with Core Duo processors, MWAIT can take some hints based on CPU
-- * capability.
-- */
--void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
--{
--	if (!need_resched()) {
--		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
--			clflush((void *)&current_thread_info()->flags);
--
--		__monitor((void *)&current_thread_info()->flags, 0, 0);
--		smp_mb();
--		if (!need_resched())
--			__mwait(ax, cx);
--	}
--}
--
- void acpi_processor_ffh_cstate_enter(struct acpi_processor_cx *cx)
- {
- 	unsigned int cpu = smp_processor_id();
 --- a/drivers/acpi/acpi_pad.c
 +++ b/drivers/acpi/acpi_pad.c
-@@ -193,10 +193,7 @@ static int power_saving_thread(void *dat
- 					CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
- 			stop_critical_timings();
+@@ -41,9 +41,7 @@ static DEFINE_MUTEX(round_robin_lock);
+ static unsigned long power_saving_mwait_eax;
  
--			__monitor((void *)&current_thread_info()->flags, 0, 0);
--			smp_mb();
--			if (!need_resched())
--				__mwait(power_saving_mwait_eax, 1);
-+			mwait_idle_with_hints(power_saving_mwait_eax, 1);
+ static unsigned char tsc_detected_unstable;
+-static unsigned char tsc_marked_unstable;
+ static unsigned char lapic_detected_unstable;
+-static unsigned char lapic_marked_unstable;
  
- 			start_critical_timings();
- 			if (lapic_marked_unstable)
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -727,11 +727,6 @@ static int acpi_idle_enter_c1(struct cpu
- 	if (unlikely(!pr))
- 		return -EINVAL;
+ static void power_saving_mwait_init(void)
+ {
+@@ -153,10 +151,9 @@ static int power_saving_thread(void *dat
+ 	unsigned int tsk_index = (unsigned long)data;
+ 	u64 last_jiffies = 0;
  
--	if (cx->entry_method == ACPI_CSTATE_FFH) {
--		if (current_set_polling_and_test())
--			return -EINVAL;
--	}
+-	sched_setscheduler(current, SCHED_RR, &param);
++	sched_setscheduler(current, SCHED_FIFO, &param);
+ 
+ 	while (!kthread_should_stop()) {
+-		int cpu;
+ 		u64 expire_time;
+ 
+ 		try_to_freeze();
+@@ -171,41 +168,7 @@ static int power_saving_thread(void *dat
+ 
+ 		expire_time = jiffies + HZ * (100 - idle_pct) / 100;
+ 
+-		while (!need_resched()) {
+-			if (tsc_detected_unstable && !tsc_marked_unstable) {
+-				/* TSC could halt in idle, so notify users */
+-				mark_tsc_unstable("TSC halts in idle");
+-				tsc_marked_unstable = 1;
+-			}
+-			if (lapic_detected_unstable && !lapic_marked_unstable) {
+-				int i;
+-				/* LAPIC could halt in idle, so notify users */
+-				for_each_online_cpu(i)
+-					clockevents_notify(
+-						CLOCK_EVT_NOTIFY_BROADCAST_ON,
+-						&i);
+-				lapic_marked_unstable = 1;
+-			}
+-			local_irq_disable();
+-			cpu = smp_processor_id();
+-			if (lapic_marked_unstable)
+-				clockevents_notify(
+-					CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+-			stop_critical_timings();
 -
- 	lapic_timer_state_broadcast(pr, cx, 1);
- 	acpi_idle_do_entry(cx);
- 
-@@ -785,11 +780,6 @@ static int acpi_idle_enter_simple(struct
- 	if (unlikely(!pr))
- 		return -EINVAL;
- 
--	if (cx->entry_method == ACPI_CSTATE_FFH) {
--		if (current_set_polling_and_test())
--			return -EINVAL;
--	}
+-			mwait_idle_with_hints(power_saving_mwait_eax, 1);
 -
- 	/*
- 	 * Must be done before busmaster disable as we might need to
- 	 * access HPET !
-@@ -841,11 +831,6 @@ static int acpi_idle_enter_bm(struct cpu
- 		}
- 	}
- 
--	if (cx->entry_method == ACPI_CSTATE_FFH) {
--		if (current_set_polling_and_test())
--			return -EINVAL;
--	}
+-			start_critical_timings();
+-			if (lapic_marked_unstable)
+-				clockevents_notify(
+-					CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+-			local_irq_enable();
 -
- 	acpi_unlazy_tlb(smp_processor_id());
+-			if (jiffies > expire_time) {
+-				do_sleep = 1;
+-				break;
+-			}
+-		}
++		play_idle(expire_time);
  
- 	/* Tell the scheduler that we are going deep-idle: */
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -359,13 +359,7 @@ static int intel_idle(struct cpuidle_dev
- 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
- 
--	if (!current_set_polling_and_test()) {
--
--		__monitor((void *)&current_thread_info()->flags, 0, 0);
--		smp_mb();
--		if (!need_resched())
--			__mwait(eax, ecx);
--	}
-+	mwait_idle_with_hints(eax, ecx);
- 
- 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+ 		/*
+ 		 * current sched_rt has threshold for rt task running time.
 --- a/drivers/thermal/intel_powerclamp.c
 +++ b/drivers/thermal/intel_powerclamp.c
-@@ -438,9 +438,7 @@ static int clamp_thread(void *arg)
- 			 */
- 			local_touch_nmi();
- 			stop_critical_timings();
--			__monitor((void *)&current_thread_info()->flags, 0, 0);
--			cpu_relax(); /* allow HT sibling to run */
--			__mwait(eax, ecx);
-+			mwait_idle_with_hints(eax, ecx);
- 			start_critical_timings();
- 			atomic_inc(&idle_wakeup_counter);
- 		}
-
-
+@@ -247,11 +247,6 @@ static u64 pkg_state_counter(void)
+ 	return count;
+ }
+ 
+-static void noop_timer(unsigned long foo)
+-{
+-	/* empty... just the fact that we get the interrupt wakes us up */
+-}
+-
+ static unsigned int get_compensation(int ratio)
+ {
+ 	unsigned int comp = 0;
+@@ -356,7 +351,6 @@ static bool powerclamp_adjust_controls(u
+ static int clamp_thread(void *arg)
+ {
+ 	int cpunr = (unsigned long)arg;
+-	DEFINE_TIMER(wakeup_timer, noop_timer, 0, 0);
+ 	static const struct sched_param param = {
+ 		.sched_priority = MAX_USER_RT_PRIO/2,
+ 	};
+@@ -365,11 +359,9 @@ static int clamp_thread(void *arg)
+ 
+ 	set_bit(cpunr, cpu_clamping_mask);
+ 	set_freezable();
+-	init_timer_on_stack(&wakeup_timer);
+ 	sched_setscheduler(current, SCHED_FIFO, &param);
+ 
+-	while (true == clamping && !kthread_should_stop() &&
+-		cpu_online(cpunr)) {
++	while (clamping && !kthread_should_stop() && cpu_online(cpunr)) {
+ 		int sleeptime;
+ 		unsigned long target_jiffies;
+ 		unsigned int guard;
+@@ -417,35 +409,11 @@ static int clamp_thread(void *arg)
+ 		if (should_skip)
+ 			continue;
+ 
+-		target_jiffies = jiffies + duration_jiffies;
+-		mod_timer(&wakeup_timer, target_jiffies);
+ 		if (unlikely(local_softirq_pending()))
+ 			continue;
+-		/*
+-		 * stop tick sched during idle time, interrupts are still
+-		 * allowed. thus jiffies are updated properly.
+-		 */
+-		preempt_disable();
+-		tick_nohz_idle_enter();
+-		/* mwait until target jiffies is reached */
+-		while (time_before(jiffies, target_jiffies)) {
+-			unsigned long ecx = 1;
+-			unsigned long eax = target_mwait;
+-
+-			/*
+-			 * REVISIT: may call enter_idle() to notify drivers who
+-			 * can save power during cpu idle. same for exit_idle()
+-			 */
+-			local_touch_nmi();
+-			stop_critical_timings();
+-			mwait_idle_with_hints(eax, ecx);
+-			start_critical_timings();
+-			atomic_inc(&idle_wakeup_counter);
+-		}
+-		tick_nohz_idle_exit();
+-		preempt_enable_no_resched();
++
++		play_idle(duration_jiffies);
+ 	}
+-	del_timer_sync(&wakeup_timer);
+ 	clear_bit(cpunr, cpu_clamping_mask);
+ 
+ 	return 0;
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -215,6 +215,8 @@ enum cpuhp_state {
+ 	CPUHP_ONLINE,
+ };
+ 
++void play_idle(unsigned long jiffies);
++
+ void cpu_startup_entry(enum cpuhp_state state);
+ void cpu_idle(void);
+ 
+--- a/kernel/cpu/idle.c
++++ b/kernel/cpu/idle.c
+@@ -63,62 +63,88 @@ void __weak arch_cpu_idle(void)
+ }
+ 
+ /*
+- * Generic idle loop implementation
++ * Generic idle cycle.
+  */
+-static void cpu_idle_loop(void)
++static void do_idle(void)
+ {
+-	while (1) {
+-		tick_nohz_idle_enter();
++	tick_nohz_idle_enter();
+ 
+-		while (!need_resched()) {
+-			check_pgt_cache();
+-			rmb();
+-
+-			if (cpu_is_offline(smp_processor_id()))
+-				arch_cpu_idle_dead();
+-
+-			local_irq_disable();
+-			arch_cpu_idle_enter();
+-
+-			/*
+-			 * In poll mode we reenable interrupts and spin.
+-			 *
+-			 * Also if we detected in the wakeup from idle
+-			 * path that the tick broadcast device expired
+-			 * for us, we don't want to go deep idle as we
+-			 * know that the IPI is going to arrive right
+-			 * away
+-			 */
+-			if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
+-				cpu_idle_poll();
+-			} else {
+-				if (!current_clr_polling_and_test()) {
+-					stop_critical_timings();
+-					rcu_idle_enter();
+-					arch_cpu_idle();
+-					WARN_ON_ONCE(irqs_disabled());
+-					rcu_idle_exit();
+-					start_critical_timings();
+-				} else {
+-					local_irq_enable();
+-				}
+-				__current_set_polling();
+-			}
+-			arch_cpu_idle_exit();
+-		}
++	while (!need_resched()) {
++		check_pgt_cache();
++		rmb();
++
++		if (cpu_is_offline(smp_processor_id()))
++			arch_cpu_idle_dead();
++
++		local_irq_disable();
++		arch_cpu_idle_enter();
+ 
+ 		/*
+-		 * We need to test and propagate the TIF_NEED_RESCHED bit here
+-		 * because we might not have send the reschedule IPI to idle
+-		 * tasks.
++		 * In poll mode we reenable interrupts and spin.
++		 *
++		 * Also if we detected in the wakeup from idle path that the
++		 * tick broadcast device expired for us, we don't want to go
++		 * deep idle as we know that the IPI is going to arrive right
++		 * away
+ 		 */
+-		preempt_fold_need_resched();
+-		tick_nohz_idle_exit();
+-		schedule_preempt_disabled();
++		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
++			cpu_idle_poll();
++		} else {
++			if (!current_clr_polling_and_test()) {
++				stop_critical_timings();
++				rcu_idle_enter();
++				arch_cpu_idle();
++				WARN_ON_ONCE(irqs_disabled());
++				rcu_idle_exit();
++				start_critical_timings();
++			} else {
++				local_irq_enable();
++			}
++			__current_set_polling();
++		}
++		arch_cpu_idle_exit();
+ 	}
++
++	/*
++	 * We need to test and propagate the TIF_NEED_RESCHED bit here
++	 * because we might not have send the reschedule IPI to idle
++	 * tasks.
++	 */
++	preempt_fold_need_resched();
++	tick_nohz_idle_exit();
++	schedule_preempt_disabled();
++}
++
++static void play_idle_timer(unsigned long foo)
++{
++	set_tsk_need_resched(current);
++}
++
++void play_idle(unsigned long duration)
++{
++	DEFINE_TIMER(wakeup_timer, play_idle_timer, 0, 0);
++
++	/*
++	 * Only FIFO tasks can disable the tick since they don't need the forced
++	 * preemption.
++	 */
++	WARN_ON_ONCE(current->policy != SCHED_FIFO);
++	WARN_ON_ONCE(current->nr_cpus_allowed != 1);
++	WARN_ON_ONCE(!(current->flags & PF_NO_SETAFFINITY));
++	WARN_ON_ONCE(!(current->flags & PF_KTHREAD));
++
++	init_timer_on_stack(&wakeup_timer);
++	mod_timer_pinned(&wakeup_timer, jiffies + duration);
++
++	preempt_disable();
++	do_idle();
++	del_timer_sync(&wakeup_timer);
++	preempt_fold_need_resched();
++	preempt_enable();
+ }
++EXPORT_SYMBOL_GPL(play_idle);
+ 
+-void cpu_startup_entry(enum cpuhp_state state)
++__noreturn void cpu_startup_entry(enum cpuhp_state state)
+ {
+ 	/*
+ 	 * This #ifdef needs to die, but it's too late in the cycle to
+@@ -137,5 +163,6 @@ void cpu_startup_entry(enum cpuhp_state
+ #endif
+ 	__current_set_polling();
+ 	arch_cpu_idle_prepare();
+-	cpu_idle_loop();
++	while (1)
++		do_idle();
+ }
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -804,7 +804,6 @@ void tick_nohz_idle_enter(void)
+ 
+ 	local_irq_enable();
+ }
+-EXPORT_SYMBOL_GPL(tick_nohz_idle_enter);
+ 
+ /**
+  * tick_nohz_irq_exit - update next tick event from interrupt exit
+@@ -932,7 +931,6 @@ void tick_nohz_idle_exit(void)
+ 
+ 	local_irq_enable();
+ }
+-EXPORT_SYMBOL_GPL(tick_nohz_idle_exit);
+ 
+ static int tick_nohz_reprogram(struct tick_sched *ts, ktime_t now)
+ {
