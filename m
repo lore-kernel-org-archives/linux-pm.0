@@ -1,54 +1,71 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
- implementations
-Date: Wed, 20 Nov 2013 20:38:03 +0100 (CET)
-Message-ID: <alpine.DEB.2.02.1311201959460.30673@ionos.tec.linutronix.de>
-References: <20131120160450.072555619@infradead.org> <20131120162736.508462614@infradead.org> <528CE611.8040903@linux.intel.com> <alpine.DEB.2.02.1311201814410.30673@ionos.tec.linutronix.de> <528CF028.2040002@linux.intel.com>
- <alpine.DEB.2.02.1311201851040.30673@ionos.tec.linutronix.de> <528CFDB1.3020300@linux.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] PM / Clocks: fix pm_clk_resume/suspend if CONFIG_PM_RUNTIME
+ is set
+Date: Wed, 20 Nov 2013 11:53:11 -0800
+Message-ID: <528D1327.7080205@codeaurora.org>
+References: <1384954307-27094-1-git-send-email-grygorii.strashko@ti.com> <528D0296.1070001@codeaurora.org> <528D082C.3040405@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:35632 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797Ab3KTTiZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 14:38:25 -0500
-In-Reply-To: <528CFDB1.3020300@linux.intel.com>
+Received: from smtp.codeaurora.org ([198.145.11.231]:41208 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754858Ab3KTTxM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 14:53:12 -0500
+In-Reply-To: <528D082C.3040405@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: santosh.shilimkar@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Wed, 20 Nov 2013, Arjan van de Ven wrote:
-> 
-> but for powerclamp to work, it needs to inject a deep idle....  I'm
-> very ok using generic abstractions for that, but the abstraction
-> needs to then include a "don't be nice about picking shallow C
-> states for performance reasons, just pick something very deep"
-> parameter.
+On 11/20/13 11:06, Grygorii Strashko wrote:
+> On 11/20/2013 08:42 PM, Stephen Boyd wrote:
+>> On 11/20/13 05:31, Grygorii Strashko wrote:
+>>> @@ -230,7 +230,7 @@ int pm_clk_suspend(struct device *dev)
+>>>   	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
+>>>   		if (ce->status < PCE_STATUS_ERROR) {
+>>>   			if (ce->status == PCE_STATUS_ENABLED)
+>>> -				clk_disable(ce->clk);
+>>> +				clk_disable_unprepare(ce->clk);
+>>>   			ce->status = PCE_STATUS_ACQUIRED;
+>>>   		}
+>>>   	}
+>>> @@ -259,7 +259,7 @@ int pm_clk_resume(struct device *dev)
+>>>   
+>>>   	list_for_each_entry(ce, &psd->clock_list, node) {
+>>>   		if (ce->status < PCE_STATUS_ERROR) {
+>>> -			clk_enable(ce->clk);
+>>> +			clk_prepare_enable(ce->clk);
+>>>   			ce->status = PCE_STATUS_ENABLED;
+>>>   		}
+>>>   	}
+>> This is inside a spin_lock_irqsave(). You should be getting scheduling
+>> while atomic warnings with this change. Are you testing with
+>> DEBUG_ATOMIC_SLEEP=y?
+> Ops, thanks. No, It's not tested with DEBUG_ATOMIC_SLEEP and 
+> I agree with you.
+>
+> So, I see two option here:
+> 1) split above loops on two
+> 2) add calls of clk_prepare()/clk_unprepare() in pm_clk_notify()
+>
+> In my opinion option [2] is better.
+>
 
-And that's what you should have done in the first place. Make the
-generic code take a parameter to indicate that. Or tell the scheduler
-to throttle the machine and go deep idle. That would also be helpful
-to others who might need some similar thing.
+Doesn't that mean the clock will always be prepared as long as the
+device is present? That doesn't sound good. I would like the clocks to
+be disabled and unprepared as long as the device is suspended.
 
-No, you went with the worst design:
+What is the lock protecting? The linked list or something more? Can we
+remove the locks?
 
-    - Hack it into some random driver
-    - Export random core interfaces so it's harder to change them
-    - Let others deal with the fallout
+It looks like even if you just remove the locks here, the PM core is
+free to call this function with irqs disabled if pm_runtime_irq_safe()
+has been called on the device. Perhaps runtime PM can only do the
+clk_enable()/clk_disable() part and the clk_unprepare()/clk_prepare()
+calls should happen in the system suspend callbacks?
 
-I'm cleaning up that kind of mess for more than 9 years now and I'm
-really disappointed that you went over to the "who cares, works for
-me" camp.
-
-I can lively remember our discussions when we were cleaning up the
-whole timer mess together in order to make NOHZ actually useful. Your
-cursing about such code was definitely impressive back then.
-
-Thanks,
-
-	tglx
-
-
-
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
 
