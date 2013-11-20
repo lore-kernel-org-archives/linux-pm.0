@@ -1,34 +1,45 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Wed, 20 Nov 2013 11:58:31 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1311201156070.1826-100000@iolanthe.rowland.org>
-References: <CAPDyKFocLDLLp0mJghP-+nwacxM58T3EengqW0vLka=WeRQxvw@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
+ implementations
+Date: Wed, 20 Nov 2013 17:59:21 +0100
+Message-ID: <20131120165921.GT16796@laptop.programming.kicks-ass.net>
+References: <20131120160450.072555619@infradead.org>
+ <20131120162736.508462614@infradead.org>
+ <528CE611.8040903@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:36753 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754471Ab3KTQ6c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 11:58:32 -0500
-In-Reply-To: <CAPDyKFocLDLLp0mJghP-+nwacxM58T3EengqW0vLka=WeRQxvw@mail.gmail.com>
+Received: from merlin.infradead.org ([205.233.59.134]:47419 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753953Ab3KTQ7e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 11:59:34 -0500
+Content-Disposition: inline
+In-Reply-To: <528CE611.8040903@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, 20 Nov 2013, Ulf Hansson wrote:
+On Wed, Nov 20, 2013 at 08:40:49AM -0800, Arjan van de Ven wrote:
+> On 11/20/2013 8:04 AM, Peter Zijlstra wrote:
+> >This does not fully preseve existing behaviour in that the generic
+> >idle cycle function calls into the normal cpuidle governed idle
+> >routines and should thus respect things like QoS parameters and the
+> >like.
+> 
+> 
+> NAK on the powerclamp side.
+> 
+> powerclamp MUST NOT do that....
+> it is needed to go to the deepest state no matter what
+> (this is for when your system is overheating. there is not a lot of choice
+> here... alternative is an emergency reset that the hardware does for safety)
 
-> Do note that, the intent with my RFC is also to simplify for drivers
-> in general using runtime PM. No matter how you put it, the
-> consequences of preventing runtime suspend during system suspend are
-> causing confusions.
+Then its a worse broken piece of shit than I thought it was.
 
-Then fix the confusion.  Explain peoples' mistakes to them.
+The only way to do what you want is to pretty much do stop_machine().
 
-Plenty of other parts of the kernel are difficult or confusing to use.  
-Sometimes there simply is no way to avoid it.  We deal with the 
-situation by teaching people how to use these facilities properly.
+There's no guarantee your current FIFO-50 tasks will ever get to run.
 
-Alan Stern
-
+Also, since when does Intel hardware do emergency resets on thermal
+events? It used to force throttle stuff.
