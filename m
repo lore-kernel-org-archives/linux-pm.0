@@ -1,71 +1,35 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / Clocks: fix pm_clk_resume/suspend if CONFIG_PM_RUNTIME
- is set
-Date: Wed, 20 Nov 2013 11:53:11 -0800
-Message-ID: <528D1327.7080205@codeaurora.org>
-References: <1384954307-27094-1-git-send-email-grygorii.strashko@ti.com> <528D0296.1070001@codeaurora.org> <528D082C.3040405@ti.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Wed, 20 Nov 2013 20:55:22 +0100
+Message-ID: <20131120195522.GA31828@amd.pavel.ucw.cz>
+References: <CAPDyKFocLDLLp0mJghP-+nwacxM58T3EengqW0vLka=WeRQxvw@mail.gmail.com>
+ <Pine.LNX.4.44L0.1311201156070.1826-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:41208 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754858Ab3KTTxM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 14:53:12 -0500
-In-Reply-To: <528D082C.3040405@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1311201156070.1826-100000@iolanthe.rowland.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: santosh.shilimkar@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On 11/20/13 11:06, Grygorii Strashko wrote:
-> On 11/20/2013 08:42 PM, Stephen Boyd wrote:
->> On 11/20/13 05:31, Grygorii Strashko wrote:
->>> @@ -230,7 +230,7 @@ int pm_clk_suspend(struct device *dev)
->>>   	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
->>>   		if (ce->status < PCE_STATUS_ERROR) {
->>>   			if (ce->status == PCE_STATUS_ENABLED)
->>> -				clk_disable(ce->clk);
->>> +				clk_disable_unprepare(ce->clk);
->>>   			ce->status = PCE_STATUS_ACQUIRED;
->>>   		}
->>>   	}
->>> @@ -259,7 +259,7 @@ int pm_clk_resume(struct device *dev)
->>>   
->>>   	list_for_each_entry(ce, &psd->clock_list, node) {
->>>   		if (ce->status < PCE_STATUS_ERROR) {
->>> -			clk_enable(ce->clk);
->>> +			clk_prepare_enable(ce->clk);
->>>   			ce->status = PCE_STATUS_ENABLED;
->>>   		}
->>>   	}
->> This is inside a spin_lock_irqsave(). You should be getting scheduling
->> while atomic warnings with this change. Are you testing with
->> DEBUG_ATOMIC_SLEEP=y?
-> Ops, thanks. No, It's not tested with DEBUG_ATOMIC_SLEEP and 
-> I agree with you.
->
-> So, I see two option here:
-> 1) split above loops on two
-> 2) add calls of clk_prepare()/clk_unprepare() in pm_clk_notify()
->
-> In my opinion option [2] is better.
->
+On Wed 2013-11-20 11:58:31, Alan Stern wrote:
+> On Wed, 20 Nov 2013, Ulf Hansson wrote:
+> 
+> > Do note that, the intent with my RFC is also to simplify for drivers
+> > in general using runtime PM. No matter how you put it, the
+> > consequences of preventing runtime suspend during system suspend are
+> > causing confusions.
+> 
+> Then fix the confusion.  Explain peoples' mistakes to them.
 
-Doesn't that mean the clock will always be prepared as long as the
-device is present? That doesn't sound good. I would like the clocks to
-be disabled and unprepared as long as the device is suspended.
+Exactly. Way to solve confusion is not "make core behave as part of
+drivers apparently think it should".
 
-What is the lock protecting? The linked list or something more? Can we
-remove the locks?
-
-It looks like even if you just remove the locks here, the PM core is
-free to call this function with irqs disabled if pm_runtime_irq_safe()
-has been called on the device. Perhaps runtime PM can only do the
-clk_enable()/clk_disable() part and the clk_unprepare()/clk_prepare()
-calls should happen in the system suspend callbacks?
-
+And yes, you have a list of broken drivers... thanks for that.
+									Pavel
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
