@@ -1,66 +1,67 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
-Date: Wed, 20 Nov 2013 19:15:36 +0100
-Message-ID: <20131120181536.GW16796@laptop.programming.kicks-ass.net>
-References: <20131120160450.072555619@infradead.org>
- <20131120162736.691879744@infradead.org>
- <528CF94E.8020300@linux.intel.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle implementations
+Date: Wed, 20 Nov 2013 10:21:37 -0800
+Message-ID: <528CFDB1.3020300@linux.intel.com>
+References: <20131120160450.072555619@infradead.org> <20131120162736.508462614@infradead.org> <528CE611.8040903@linux.intel.com> <alpine.DEB.2.02.1311201814410.30673@ionos.tec.linutronix.de> <528CF028.2040002@linux.intel.com> <alpine.DEB.2.02.1311201851040.30673@ionos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:50411 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754545Ab3KTSPr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 13:15:47 -0500
-Content-Disposition: inline
-In-Reply-To: <528CF94E.8020300@linux.intel.com>
+Received: from mga02.intel.com ([134.134.136.20]:64520 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753716Ab3KTSVj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Nov 2013 13:21:39 -0500
+In-Reply-To: <alpine.DEB.2.02.1311201851040.30673@ionos.tec.linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eliezer Tamir <eliezer.tamir@linux.intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Nov 20, 2013 at 08:02:54PM +0200, Eliezer Tamir wrote:
-> On 20/11/2013 18:04, Peter Zijlstra wrote:
-> > The only valid use of preempt_enable_no_resched() is if the very next
-> > line is schedule() or if we know preemption cannot actually be enabled
-> > by that statement due to known more preempt_count 'refs'.
-> 
-> The reason I used the no resched version is that busy_poll_end_time()
-> is almost always called with rcu read lock held, so it seemed the more
-> correct option.
-> 
-> I have no issue with you changing this.
+On 11/20/2013 9:55 AM, Thomas Gleixner wrote:
+> On Wed, 20 Nov 2013, Arjan van de Ven wrote:
+>> On 11/20/2013 9:23 AM, Thomas Gleixner wrote:
+>>> On Wed, 20 Nov 2013, Arjan van de Ven wrote:
+>>>
+>>>> On 11/20/2013 8:04 AM, Peter Zijlstra wrote:
+>>>>> This does not fully preseve existing behaviour in that the generic
+>>>>> idle cycle function calls into the normal cpuidle governed idle
+>>>>> routines and should thus respect things like QoS parameters and the
+>>>>> like.
+>>>>
+>>>>
+>>>> NAK on the powerclamp side.
+>>>>
+>>>> powerclamp MUST NOT do that....
+>>>> it is needed to go to the deepest state no matter what
+>>>> (this is for when your system is overheating. there is not a lot of choice
+>>>> here... alternative is an emergency reset that the hardware does for
+>>>> safety)
+>>>
+>>> So that whole machinery falls apart when the thing which is running on
+>>> that hot core is a while(1) loop with a higher or equal FIFO priority
+>>> than this thread. Even if you'd run at prio 99, then there is no
+>>> guarantee that the cpu hog does not run with prio 99 as well and due
+>>> to FIFO and being on the CPU it's not going to let you on.
+>>
+>> the idea was to at least give people who know what they're doing a chance to
+>> run
+>
+> You can't be serious about that. Even if people know what they are
+> doing, they have no chance to prevent the occasional high prio runaway
+> bug. And then you shrug your shoulders and tell that guy who spent
+> time to tune the thing proper "bad luck" or what?
 
-There are options (CONFIG_PREEMPT_RCU) that allow scheduling while
-holding rcu_read_lock().
+his system will crawl to a halt (and if it's for a long time on a system with
+submarginal cooling, potentially reboot) due to the hardware protecting itself.
+What powerclamp is trying to do is avoid these steps from the hardware (they are both
+very harsh and very inefficient).
 
-Also, preempt_enable() only schedules when its possible to schedule, so
-calling it when you know you cannot schedule is no issue.
+but for powerclamp to work, it needs to inject a deep idle....
+I'm very ok using generic abstractions for that, but the abstraction needs to then
+include a "don't be nice about picking shallow C states for performance reasons, just
+pick something very deep" parameter.
 
-> > As to the busy_poll mess; that looks to be completely and utterly
-> > broken, sched_clock() can return utter garbage with interrupts enabled
-> > (rare but still), it can drift unbounded between CPUs, so if you get
-> > preempted/migrated and your new CPU is years behind on the previous
-> > CPU we get to busy spin for a _very_ long time. There is a _REASON_
-> > sched_clock() warns about preemptability - papering over it with a
-> > preempt_disable()/preempt_enable_no_resched() is just terminal brain
-> > damage on so many levels.
-> 
-> IMHO This has been reviewed thoroughly.
+(powerclamp will adjust if you have some periodic realtime task or interrupts or ..
+taking away idle from it, by over time injecting a bit more idle)
 
-At the very least you completely forgot to preserve any of that. The
-changelog that introduced it is completely void of anything useful and
-the code has a distinct lack of comments.
 
-> When Ben Hutchings voiced concerns I rewrote the code to use time_after,
-> so even if you do get switched over to a CPU where the time is random
-> you will at most poll another full interval.
-> 
-> Linus asked me to remove this since it makes us use two time values
-> instead of one. see https://lkml.org/lkml/2013/7/8/345.
-
-My brain is fried for today, I'll have a look tomorrow.
-
-But note that with patch 7/7 in place modular code an no longer use
-preempt_enable_no_resched(). I'm not sure net/ipv4/tcp.c can be build
-modular -- but istr a time when it was.
