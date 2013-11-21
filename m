@@ -1,84 +1,69 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
- implementations
-Date: Thu, 21 Nov 2013 08:07:16 -0800
-Message-ID: <20131121160716.GT4138@linux.vnet.ibm.com>
-References: <20131120160450.072555619@infradead.org>
- <20131120162736.508462614@infradead.org>
- <20131120165406.14fa0f09@ultegra>
- <20131121082151.GU10022@twins.programming.kicks-ass.net>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Thu, 21 Nov 2013 21:47:20 +0530
+Message-ID: <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
+	<5289A80B.7080808@linaro.org>
+	<CAKohpon5L21yXg=GAuSLSgkr_66iRSn_uUWKZ1FhwD3zuQNb_A@mail.gmail.com>
+	<1531674.UoqyyWSbOg@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e35.co.us.ibm.com ([32.97.110.153]:53073 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381Ab3KUQHp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 11:07:45 -0500
-Received: from /spool/local
-	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Thu, 21 Nov 2013 09:07:45 -0700
-Content-Disposition: inline
-In-Reply-To: <20131121082151.GU10022@twins.programming.kicks-ass.net>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:41802 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754140Ab3KUQRV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 11:17:21 -0500
+Received: by mail-ob0-f174.google.com with SMTP id wn1so5740835obc.33
+        for <linux-pm@vger.kernel.org>; Thu, 21 Nov 2013 08:17:20 -0800 (PST)
+In-Reply-To: <1531674.UoqyyWSbOg@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Thu, Nov 21, 2013 at 09:21:51AM +0100, Peter Zijlstra wrote:
-> On Wed, Nov 20, 2013 at 04:54:06PM -0800, Jacob Pan wrote:
-> > On Wed, 20 Nov 2013 17:04:53 +0100
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > People are starting to grow their own idle implementations in various
-> > > disgusting ways. Collapse the lot and use the generic idle code to
-> > > provide a proper idle cycle implementation.
-> > > 
-> > +Paul
-> > 
-> > RCU and others rely on is_idle_task() might be broken with the
-> > consolidated idle code since caller of do_idle may have pid != 0.
-> > 
-> > Should we use TS_POLL or introduce a new flag to identify idle task?
-> 
-> PF_IDLE would be my preference, I checked and we seem to have a grand
-> total of 2 unused task_struct::flags left ;-)
+On 21 November 2013 20:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, November 20, 2013 11:04:28 AM Viresh Kumar wrote:
+>> On 18 November 2013 11:09, viresh kumar <viresh.kumar@linaro.org> wrote:
 
-As long as RCU has some reliable way to identify an idle task, I am
-good.  But I have to ask -- why can't idle injection coordinate with
-the existing idle tasks rather than temporarily making alternative
-idle tasks?
+>> > Because in our usecase, we just want to know when suspend has started or
+>> > resume has finished. And so we really don't need a per cpu callback.
+>
+> But it won't hurt I suppose?
 
-							Thanx, Paul
+Hmm.. getting a single call to cpufreq core would be faster for sure. Otherwise
+we need to mark all the calls leaving the first one as no-ops..
 
-> > The reason why idle injection code does not inform RCU is that we have
-> > known short period of idle time which does not impact RCU grace period.
-> > 
-> > On the other side, I see idle injection code is working with this
-> > patchset with workaround in s_idle_task() by checking TS_POLL flag.
-> > But the efficiency is down by ~30%. i.e.
-> > 
-> > before: inject 25% time to get 23-24% package idle
-> > after: inject 25% time to get 16-17% package idle
-> > 
-> > Still looking into improvement.
-> 
-> So the quick hack is to make acpi_idle/intel_idle use the highest
-> possible C-state when pid!=0 && PF_IDLE.
-> 
-> Ideally though I'd see some of the QoS ramifications explored. Because
-> forcing the CPU into the highest C-state basically invalidates the
-> entire QoS stack.
-> 
-> So either make QoS and this idle injection stuff mutually exclusive in a
-> very explicit way -- disable the QoS interface when you enable one of
-> these idle injectors AND fail to engage the idle injectors when an
-> incompatible QoS setting is pre-existing.
-> 
-> Or come up with something smarter.
-> 
-> You also have to explore the case of higher priority tasks messing with
-> the proper operation of your injectors, this one is harder to deal with.
-> 
+> That actually isn't correct.  On systems with ACPI the processor driver binds to
+> those devices.  So the processor driver could use PM callbacks on those systems
+> in principle.
 
+> Introduce proper drivers for processors?  All of the cpuidle and cpufreq stuff
+> currently works by using its own homegrown device registration methods etc, but
+> surely that doesn't have to be the case?
+
+Hmm.. So you are asking for a new cpu-driver which can be used by cpufreq and
+cpuidle to get callback? If yes, where such driver will exist? And will the ACPI
+processor-drivers exist parallely? Or something else?
+
+>> > And I really feel even if we would be able to use cpu callbacks for
+>> > suspend/resume, that would be a real *Hack*, because our framework doesn't want
+>> > to get a callback for each of its devices (i.e. cpu) but a single callback at
+>> > certain instances..
+>
+> Oh really?  So CPUs are not individual devices any more or what?
+
+I am not calling cpu callbacks as hack but using them for cpufreq looked like
+one to me.
+
+Replying here to the other mail as well:
+
+On 21 November 2013 20:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, November 18, 2013 09:37:39 PM Lan Tianyu wrote:
+>> Another point, I just see cpuidle_resume() and cpuidle_pause() are
+>> called in the dpm_resume_noirq and dpm_suspend_noirq(). Not sure whether
+>> this can be applied to cpufreq.
+>
+> I don't see why not.
+
+Interesting. So you would be happy if I add such calls after freezing userspace
+and before restoring it back for cpufreq?
