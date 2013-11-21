@@ -1,39 +1,80 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: exynos: Fix line over 80 characters warning
-Date: Thu, 21 Nov 2013 08:28:56 +0530
-Message-ID: <CAK9yfHzCGbqtxVs9WqVLFJ-8v3jLU_B2ZDtWdAFUMEjeFShfwA@mail.gmail.com>
-References: <1384837639-9252-1-git-send-email-sachin.kamat@linaro.org>
-	<6133597.QYzlQUus4P@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+Date: Thu, 21 Nov 2013 08:54:12 +0530
+Message-ID: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f51.google.com ([209.85.219.51]:49862 "EHLO
-	mail-oa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827Ab3KUC65 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 21:58:57 -0500
-Received: by mail-oa0-f51.google.com with SMTP id i7so6394188oag.38
-        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2013 18:58:57 -0800 (PST)
-In-Reply-To: <6133597.QYzlQUus4P@vostro.rjw.lan>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:53441 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569Ab3KUDYV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 22:24:21 -0500
+Received: by mail-pd0-f178.google.com with SMTP id y10so3649549pdj.9
+        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2013 19:24:20 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 21 November 2013 06:24, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, November 19, 2013 10:37:19 AM Sachin Kamat wrote:
->> Silences the checkpatch warning introduced by
->> commit 94aa44090eda ("cpufreq: exynos: Add missing static").
->>
->> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
->
-> I'm not going to apply this and seriously if you care, please modify
-> checkpatch.pl to stop emitting that warning.  It is silly and useless in
-> my opinion, so I won't take any patches "fixing" it.
+Loop for states is currently present on callers side and so is replicated at
+several places. It would be better to move that inside cpuidle_free_state_kobj()
+instead.
 
-Agreed. However, the cpufreq drivers are pretty clean already and
-this one just stands out. That was the only reason for doing this.
+This patch does it.
 
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index e918b6d..ade31a9 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -378,12 +378,17 @@ static struct kobj_type ktype_state_cpuidle = {
+ 	.release = cpuidle_state_sysfs_release,
+ };
+ 
+-static inline void cpuidle_free_state_kobj(struct cpuidle_device *device, int i)
++static inline void cpuidle_free_state_kobj(struct cpuidle_device *device,
++		int count)
+ {
+-	kobject_put(&device->kobjs[i]->kobj);
+-	wait_for_completion(&device->kobjs[i]->kobj_unregister);
+-	kfree(device->kobjs[i]);
+-	device->kobjs[i] = NULL;
++	int i;
++
++	for (i = 0; i < count; i++) {
++		kobject_put(&device->kobjs[i]->kobj);
++		wait_for_completion(&device->kobjs[i]->kobj_unregister);
++		kfree(device->kobjs[i]);
++		device->kobjs[i] = NULL;
++	}
+ }
+ 
+ /**
+@@ -419,8 +424,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
+ 	return 0;
+ 
+ error_state:
+-	for (i = i - 1; i >= 0; i--)
+-		cpuidle_free_state_kobj(device, i);
++	cpuidle_free_state_kobj(device, i);
+ 	return ret;
+ }
+ 
+@@ -430,10 +434,7 @@ error_state:
+  */
+ static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
+ {
+-	int i;
+-
+-	for (i = 0; i < device->state_count; i++)
+-		cpuidle_free_state_kobj(device, i);
++	cpuidle_free_state_kobj(device, device->state_count);
+ }
+ 
+ #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
 -- 
-With warm regards,
-Sachin
+1.7.12.rc2.18.g61b472e
+
