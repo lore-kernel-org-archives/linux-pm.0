@@ -1,55 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use a sane boot frequency when
- booting with a mismatched bootloader configuration
-Date: Thu, 21 Nov 2013 13:11:47 +0530
-Message-ID: <CAKohpo=CaNMmU0wPH+WC5mKHZG1LQ-cSG+BS-oexAHnTuOcHVA@mail.gmail.com>
-References: <1384568535-26611-1-git-send-email-nm@ti.com>
-	<20131116134445.GI11014@S2101-09.ap.freescale.net>
-	<CAKohponU-WFnG8Gx6ba=k3eJmWV_0eWtpsy9kDP8yA2KrdoKtg@mail.gmail.com>
-	<528A27F8.3070402@ti.com>
-	<20131118155753.GU11014@S2101-09.ap.freescale.net>
-	<528A4340.3020508@ti.com>
-	<20131119022133.GB18434@S2101-09.ap.freescale.net>
-	<CAKohpok_yRZr-XQEC+w8PLN+ZyW83uijFyZrDM1LB8G2X4h-fg@mail.gmail.com>
-	<528B72C1.5060006@ti.com>
-	<CAKohpo=hzCSuQBGreRStzkOuH6aFiZKTtK9SF+_eGEajkwSXEA@mail.gmail.com>
-	<528B7CE5.5040502@ti.com>
-	<CAKohponO7M6rYoPt=ePNTZh=y+iU=BEbFWBqxr1JQPbVptvgXA@mail.gmail.com>
-	<528B884C.7070908@ti.com>
-	<CAKohpo=brpnLe68ExPRPg9h5ABMhg+GS85Ebn-+S5-vWaStrPQ@mail.gmail.com>
-	<528BA355.4040008@ti.com>
-	<528C478C.1070901@linaro.org>
-	<528CCE42.2060307@ti.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
+ implementations
+Date: Thu, 21 Nov 2013 09:21:51 +0100
+Message-ID: <20131121082151.GU10022@twins.programming.kicks-ass.net>
+References: <20131120160450.072555619@infradead.org>
+ <20131120162736.508462614@infradead.org>
+ <20131120165406.14fa0f09@ultegra>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:34601 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750844Ab3KUHlr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 02:41:47 -0500
-Received: by mail-ob0-f177.google.com with SMTP id va2so1665749obc.8
-        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2013 23:41:47 -0800 (PST)
-In-Reply-To: <528CCE42.2060307@ti.com>
+Received: from merlin.infradead.org ([205.233.59.134]:40266 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037Ab3KUIWK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 03:22:10 -0500
+Content-Disposition: inline
+In-Reply-To: <20131120165406.14fa0f09@ultegra>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Carlos Hernandez <ceh@ti.com>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 
-On 20 November 2013 20:29, Nishanth Menon <nm@ti.com> wrote:
-> With the current governors that we have in upstream, the only one of
-> my concern has been userspace governor, but based on your comment
-> earlier in the thread, this is considered an non-issue since userspace
-> must trigger transition. However, this does put the SoC at risk
-> depending on distro and custom governors used.
->
-> If the opinion is that we dont care about these, well.. I can end my
-> complaints and depend on the stats to tell me if an unknown frequency
-> was ever attempted for debug (even though I might personally not be
-> too excited about it).
+On Wed, Nov 20, 2013 at 04:54:06PM -0800, Jacob Pan wrote:
+> On Wed, 20 Nov 2013 17:04:53 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > People are starting to grow their own idle implementations in various
+> > disgusting ways. Collapse the lot and use the generic idle code to
+> > provide a proper idle cycle implementation.
+> > 
+> +Paul
+> 
+> RCU and others rely on is_idle_task() might be broken with the
+> consolidated idle code since caller of do_idle may have pid != 0.
+> 
+> Should we use TS_POLL or introduce a new flag to identify idle task?
 
-I wouldn't say that I was against this patch, but it looked like we could live
-without it as well.. But I also feel that there is some amount of uncertainty
-here and specially with userspace governor..
+PF_IDLE would be my preference, I checked and we seem to have a grand
+total of 2 unused task_struct::flags left ;-)
 
-So, just see the patch which I have floated as replacement for few of the
-patches we have been talking about..
+> The reason why idle injection code does not inform RCU is that we have
+> known short period of idle time which does not impact RCU grace period.
+> 
+> On the other side, I see idle injection code is working with this
+> patchset with workaround in s_idle_task() by checking TS_POLL flag.
+> But the efficiency is down by ~30%. i.e.
+> 
+> before: inject 25% time to get 23-24% package idle
+> after: inject 25% time to get 16-17% package idle
+> 
+> Still looking into improvement.
+
+So the quick hack is to make acpi_idle/intel_idle use the highest
+possible C-state when pid!=0 && PF_IDLE.
+
+Ideally though I'd see some of the QoS ramifications explored. Because
+forcing the CPU into the highest C-state basically invalidates the
+entire QoS stack.
+
+So either make QoS and this idle injection stuff mutually exclusive in a
+very explicit way -- disable the QoS interface when you enable one of
+these idle injectors AND fail to engage the idle injectors when an
+incompatible QoS setting is pre-existing.
+
+Or come up with something smarter.
+
+You also have to explore the case of higher priority tasks messing with
+the proper operation of your injectors, this one is harder to deal with.
