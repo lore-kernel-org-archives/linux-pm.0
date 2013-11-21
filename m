@@ -1,39 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: PROBLEM: [regression] Corrupted low memory after resume from suspend, starting with 3.11-rc3
-Date: Thu, 21 Nov 2013 23:05:15 +0100
-Message-ID: <1413632.CebWE94SKW@vostro.rjw.lan>
-References: <20131121160916.69985889@rechenknecht2k7>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Thu, 21 Nov 2013 23:14:39 +0100
+Message-ID: <2642790.BqNcqy9aCb@vostro.rjw.lan>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <1531674.UoqyyWSbOg@vostro.rjw.lan> <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62886 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754068Ab3KUVwf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 16:52:35 -0500
-In-Reply-To: <20131121160916.69985889@rechenknecht2k7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
-Cc: linux-pm@vger.kernel.org
 
-On Thursday, November 21, 2013 04:09:16 PM Benjamin Valentin wrote:
-> Hello,
-> starting with Linux 3.11, resuming from suspend leads to corrupted low
-> memory on my Gigabyte 965P-DS3 board. As a result of this, the ethernet
-> interface won't come up again/the display doesn't turn back on after
-> resume.
+On Thursday, November 21, 2013 09:47:20 PM Viresh Kumar wrote:
+> On 21 November 2013 20:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, November 20, 2013 11:04:28 AM Viresh Kumar wrote:
+> >> On 18 November 2013 11:09, viresh kumar <viresh.kumar@linaro.org> wrote:
 
-Do I understand correctly that this is about suspend to RAM?
+[...]
 
-> I've used Ubuntu's mainline builds for convenience and 3.11-rc3 is the
-> first revision to exhibit the issue. However, 3.11-rc1 and 3.11-rc2
-> will fail to suspend entirely. With 3.10, no memory corruption happens
-> and the system suspends just fine.
+> Replying here to the other mail as well:
+> 
+> On 21 November 2013 20:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Monday, November 18, 2013 09:37:39 PM Lan Tianyu wrote:
+> >> Another point, I just see cpuidle_resume() and cpuidle_pause() are
+> >> called in the dpm_resume_noirq and dpm_suspend_noirq(). Not sure whether
+> >> this can be applied to cpufreq.
+> >
+> > I don't see why not.
+> 
+> Interesting. So you would be happy if I add such calls after freezing userspace
+> and before restoring it back for cpufreq?
 
-Could you find (using bisection) the last kernel between 3.10 and 3.11-rc1
-that both suspended and resumed correctly and did not corrupt things for
-you?
+Short-term.  To be precise, governors may be stopped at the beginning of
+dpm_suspend_noirq() (that is, where cpuidle_pause() is called).  Analogously,
+they may be started again in dpm_resume_noirq(), where cpuidle_resume() is
+called.  That at least would be consistent with what cpuidle already does.
+
+That said in my opinion the appropriate long-term approach would be to split
+CPU offline and online each into two parts, the "core" part and the "extras"
+part, such that the "core" parts would only do the offline/online of the
+cores themselves.  The rest, such as cpufreq/cpuidle "offline/online" would
+be done in the "extras" part.
+
+Then, system suspend/resume will only use the "core" parts of CPU offline/online
+and the handling of the things belonging to "extras" would be carried out
+through CPU device suspend/resume callbacks.  In turn, the "runtime" CPU offline
+and online would carry out both the "extras" and "core" parts as it does today.
+
+Makes sense?
 
 Rafael
 
