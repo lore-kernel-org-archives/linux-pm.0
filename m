@@ -1,64 +1,227 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
-Date: Thu, 21 Nov 2013 11:10:18 +0100
-Message-ID: <20131121101018.GX10022@twins.programming.kicks-ass.net>
-References: <20131120160450.072555619@infradead.org>
- <20131120162736.691879744@infradead.org>
- <528CF94E.8020300@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH RFC v3 02/12] arm64: kernel: build MPIDR_EL1 hash function data structure
+Date: Thu, 21 Nov 2013 11:24:09 +0000
+Message-ID: <1385033059-25896-3-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:42366 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902Ab3KUKKe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 05:10:34 -0500
-Content-Disposition: inline
-In-Reply-To: <528CF94E.8020300@linux.intel.com>
+Received: from service87.mimecast.com ([91.220.42.44]:32785 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753861Ab3KULYw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 06:24:52 -0500
+In-Reply-To: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eliezer Tamir <eliezer.tamir@linux.intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Christoffer Dall <christoffer.dall@linaro.org>
 
-On Wed, Nov 20, 2013 at 08:02:54PM +0200, Eliezer Tamir wrote:
-> IMHO This has been reviewed thoroughly.
-> 
-> When Ben Hutchings voiced concerns I rewrote the code to use time_after,
-> so even if you do get switched over to a CPU where the time is random
-> you will at most poll another full interval.
-> 
-> Linus asked me to remove this since it makes us use two time values
-> instead of one. see https://lkml.org/lkml/2013/7/8/345.
+On ARM64 SMP systems, cores are identified by their MPIDR_EL1 register.
+The MPIDR_EL1 guidelines in the ARM ARM do not provide strict enforcement o=
+f
+MPIDR_EL1 layout, only recommendations that, if followed, split the MPIDR_E=
+L1
+on ARM 64 bit platforms in four affinity levels. In multi-cluster
+systems like big.LITTLE, if the affinity guidelines are followed, the
+MPIDR_EL1 can not be considered a linear index. This means that the
+association between logical CPU in the kernel and the HW CPU identifier
+becomes somewhat more complicated requiring methods like hashing to
+associate a given MPIDR_EL1 to a CPU logical index, in order for the look-u=
+p
+to be carried out in an efficient and scalable way.
 
-I'm not sure I see how this would be true.
+This patch provides a function in the kernel that starting from the
+cpu_logical_map, implement collision-free hashing of MPIDR_EL1 values by
+checking all significative bits of MPIDR_EL1 affinity level bitfields.
+The hashing can then be carried out through bits shifting and ORing; the
+resulting hash algorithm is a collision-free though not minimal hash that c=
+an
+be executed with few assembly instructions. The mpidr_el1 is filtered throu=
+gh a
+mpidr mask that is built by checking all bits that toggle in the set of
+MPIDR_EL1s corresponding to possible CPUs. Bits that do not toggle do not
+carry information so they do not contribute to the resulting hash.
 
-So the do_select() code basically does:
+Pseudo code:
 
-  for (;;) {
+/* check all bits that toggle, so they are required */
+for (i =3D 1, mpidr_el1_mask =3D 0; i < num_possible_cpus(); i++)
+=09mpidr_el1_mask |=3D (cpu_logical_map(i) ^ cpu_logical_map(0));
 
-    /* actual poll loop */
+/*
+ * Build shifts to be applied to aff0, aff1, aff2, aff3 values to hash the
+ * mpidr_el1
+ * fls() returns the last bit set in a word, 0 if none
+ * ffs() returns the first bit set in a word, 0 if none
+ */
+fs0 =3D mpidr_el1_mask[7:0] ? ffs(mpidr_el1_mask[7:0]) - 1 : 0;
+fs1 =3D mpidr_el1_mask[15:8] ? ffs(mpidr_el1_mask[15:8]) - 1 : 0;
+fs2 =3D mpidr_el1_mask[23:16] ? ffs(mpidr_el1_mask[23:16]) - 1 : 0;
+fs3 =3D mpidr_el1_mask[39:32] ? ffs(mpidr_el1_mask[39:32]) - 1 : 0;
+ls0 =3D fls(mpidr_el1_mask[7:0]);
+ls1 =3D fls(mpidr_el1_mask[15:8]);
+ls2 =3D fls(mpidr_el1_mask[23:16]);
+ls3 =3D fls(mpidr_el1_mask[39:32]);
+bits0 =3D ls0 - fs0;
+bits1 =3D ls1 - fs1;
+bits2 =3D ls2 - fs2;
+bits3 =3D ls3 - fs3;
+aff0_shift =3D fs0;
+aff1_shift =3D 8 + fs1 - bits0;
+aff2_shift =3D 16 + fs2 - (bits0 + bits1);
+aff3_shift =3D 32 + fs3 - (bits0 + bits1 + bits2);
+u32 hash(u64 mpidr_el1) {
+=09u32 l[4];
+=09u64 mpidr_el1_masked =3D mpidr_el1 & mpidr_el1_mask;
+=09l[0] =3D mpidr_el1_masked & 0xff;
+=09l[1] =3D mpidr_el1_masked & 0xff00;
+=09l[2] =3D mpidr_el1_masked & 0xff0000;
+=09l[3] =3D mpidr_el1_masked & 0xff00000000;
+=09return (l[0] >> aff0_shift | l[1] >> aff1_shift | l[2] >> aff2_shift |
+=09=09l[3] >> aff3_shift);
+}
 
-    if (!need_resched()) {
-      if (!busy_end) {
-	busy_end = now() + busypoll;
-	continue;
-      }
-      if (!((long)(busy_end - now()) < 0))
-	continue;
-    }
+The hashing algorithm relies on the inherent properties set in the ARM ARM
+recommendations for the MPIDR_EL1. Exotic configurations, where for instanc=
+e
+the MPIDR_EL1 values at a given affinity level have large holes, can end up
+requiring big hash tables since the compression of values that can be achie=
+ved
+through shifting is somewhat crippled when holes are present. Kernel warns =
+if
+the number of buckets of the resulting hash table exceeds the number of
+possible CPUs by a factor of 4, which is a symptom of a very sparse HW
+MPIDR_EL1 configuration.
 
-    /* go sleep */
+The hash algorithm is quite simple and can easily be implemented in assembl=
+y
+code, to be used in code paths where the kernel virtual address space is
+not set-up (ie cpu_resume) and instruction and data fetches are strongly
+ordered so code must be compact and must carry out few data accesses.
 
-  }
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ arch/arm64/include/asm/smp_plat.h | 13 ++++++++
+ arch/arm64/kernel/setup.c         | 70 +++++++++++++++++++++++++++++++++++=
+++++
+ 2 files changed, 83 insertions(+)
 
-So imagine our CPU0 timebase is 1 minute ahead of CPU1 (60e9 vs 0), and we start by:
+diff --git a/arch/arm64/include/asm/smp_plat.h b/arch/arm64/include/asm/smp=
+_plat.h
+index ed43a0d..59e2823 100644
+--- a/arch/arm64/include/asm/smp_plat.h
++++ b/arch/arm64/include/asm/smp_plat.h
+@@ -21,6 +21,19 @@
+=20
+ #include <asm/types.h>
+=20
++struct mpidr_hash {
++=09u64=09mask;
++=09u32=09shift_aff[4];
++=09u32=09bits;
++};
++
++extern struct mpidr_hash mpidr_hash;
++
++static inline u32 mpidr_hash_size(void)
++{
++=09return 1 << mpidr_hash.bits;
++}
++
+ /*
+  * Logical CPU mapping.
+  */
+diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+index 0bc5e4c..e91d33e 100644
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -113,6 +113,75 @@ bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
+ =09return phys_id =3D=3D cpu_logical_map(cpu);
+ }
+=20
++struct mpidr_hash mpidr_hash;
++#ifdef CONFIG_SMP
++/**
++ * smp_build_mpidr_hash - Pre-compute shifts required at each affinity
++ *=09=09=09  level in order to build a linear index from an
++ *=09=09=09  MPIDR value. Resulting algorithm is a collision
++ *=09=09=09  free hash carried out through shifting and ORing
++ */
++static void __init smp_build_mpidr_hash(void)
++{
++=09u32 i, affinity, fs[4], bits[4], ls;
++=09u64 mask =3D 0;
++=09/*
++=09 * Pre-scan the list of MPIDRS and filter out bits that do
++=09 * not contribute to affinity levels, ie they never toggle.
++=09 */
++=09for_each_possible_cpu(i)
++=09=09mask |=3D (cpu_logical_map(i) ^ cpu_logical_map(0));
++=09pr_debug("mask of set bits %#llx\n", mask);
++=09/*
++=09 * Find and stash the last and first bit set at all affinity levels to
++=09 * check how many bits are required to represent them.
++=09 */
++=09for (i =3D 0; i < 4; i++) {
++=09=09affinity =3D MPIDR_AFFINITY_LEVEL(mask, i);
++=09=09/*
++=09=09 * Find the MSB bit and LSB bits position
++=09=09 * to determine how many bits are required
++=09=09 * to express the affinity level.
++=09=09 */
++=09=09ls =3D fls(affinity);
++=09=09fs[i] =3D affinity ? ffs(affinity) - 1 : 0;
++=09=09bits[i] =3D ls - fs[i];
++=09}
++=09/*
++=09 * An index can be created from the MPIDR_EL1 by isolating the
++=09 * significant bits at each affinity level and by shifting
++=09 * them in order to compress the 32 bits values space to a
++=09 * compressed set of values. This is equivalent to hashing
++=09 * the MPIDR_EL1 through shifting and ORing. It is a collision free
++=09 * hash though not minimal since some levels might contain a number
++=09 * of CPUs that is not an exact power of 2 and their bit
++=09 * representation might contain holes, eg MPIDR_EL1[7:0] =3D {0x2, 0x80=
+}.
++=09 */
++=09mpidr_hash.shift_aff[0] =3D MPIDR_LEVEL_SHIFT(0) + fs[0];
++=09mpidr_hash.shift_aff[1] =3D MPIDR_LEVEL_SHIFT(1) + fs[1] - bits[0];
++=09mpidr_hash.shift_aff[2] =3D MPIDR_LEVEL_SHIFT(2) + fs[2] -
++=09=09=09=09=09=09(bits[1] + bits[0]);
++=09mpidr_hash.shift_aff[3] =3D MPIDR_LEVEL_SHIFT(3) +
++=09=09=09=09  fs[3] - (bits[2] + bits[1] + bits[0]);
++=09mpidr_hash.mask =3D mask;
++=09mpidr_hash.bits =3D bits[3] + bits[2] + bits[1] + bits[0];
++=09pr_debug("MPIDR hash: aff0[%u] aff1[%u] aff2[%u] aff3[%u] mask[%#llx] b=
+its[%u]\n",
++=09=09mpidr_hash.shift_aff[0],
++=09=09mpidr_hash.shift_aff[1],
++=09=09mpidr_hash.shift_aff[2],
++=09=09mpidr_hash.shift_aff[3],
++=09=09mpidr_hash.mask,
++=09=09mpidr_hash.bits);
++=09/*
++=09 * 4x is an arbitrary value used to warn on a hash table much bigger
++=09 * than expected on most systems.
++=09 */
++=09if (mpidr_hash_size() > 4 * num_possible_cpus())
++=09=09pr_warn("Large number of MPIDR hash buckets detected\n");
++=09__flush_dcache_area(&mpidr_hash, sizeof(struct mpidr_hash));
++}
++#endif
++
+ static void __init setup_processor(void)
+ {
+ =09struct cpu_info *cpu_info;
+@@ -231,6 +300,7 @@ void __init setup_arch(char **cmdline_p)
+ =09cpu_read_bootcpu_ops();
+ #ifdef CONFIG_SMP
+ =09smp_init_cpus();
++=09smp_build_mpidr_hash();
+ #endif
+=20
+ #ifdef CONFIG_VT
+--=20
+1.8.4
 
-  busy_end = now() + busypoll; /* CPU0: 60e9 + d */
 
-but then we migrate to CPU1 and do:
-
-  busy_end - now() /* CPU1: 60e9 + d' */
-
-and find we're still a minute out; and in fact we'll keep spinning for
-that entire minute barring a need_resched().
-
-Surely that's not intended and desired?
