@@ -1,137 +1,72 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv5 10/20] arm: dts: add omap4430 thermal data
-Date: Thu, 21 Nov 2013 11:36:13 -0400
-Message-ID: <528E286D.50100@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
- <1384285582-16933-11-git-send-email-eduardo.valentin@ti.com>
- <20131120123245.GA3242@amd.pavel.ucw.cz>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 Resend] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+Date: Thu, 21 Nov 2013 21:18:34 +0530
+Message-ID: <CAKohpon_-QSPOMi4L6WJZL0akXymhRqhkEWpmzuczE6F-=VUBw@mail.gmail.com>
+References: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>
+	<1500472.jI9SKO09jR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0656805260706730323=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20131120123245.GA3242@amd.pavel.ucw.cz>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, wni@nvidia.com, durgadoss.r@intel.com, ian.campbell@citrix.com, pawel.moll@arm.com, swarren@wwwdotorg.org, Tony Lindgren <tony@atomide.com>, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rob.herring@calxeda.com, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, linux-arm-kernel@lists.infradead.org, =?ISO-8859-1?Q?Beno=EEt_Cousson?= <bcousson@baylibre.com>, grant.likely@linaro.org, Russell King <linux@arm.linux.org.uk>, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux@roeck-us.net
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1500472.jI9SKO09jR@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============0656805260706730323==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="OQGHXilJNQEKWhIDtwI8TunGQ1jD8Fk8k"
-
---OQGHXilJNQEKWhIDtwI8TunGQ1jD8Fk8k
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 20-11-2013 08:32, Pavel Machek wrote:
-> HI!
->=20
->> This patch changes the dtsi entry on omap4430 to contain
->> the thermal data. This data will enable the passive
->> cooling with CPUfreq cooling device at 100C and the
->> system will do a thermal shutdown at 125C.
+On 21 November 2013 18:39, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, November 21, 2013 08:54:12 AM Viresh Kumar wrote:
+>> Loop for states is currently present on callers side and so is replicated at
+>> several places. It would be better to move that inside cpuidle_free_state_kobj()
+>> instead.
 >>
->> Cc: "Beno=EEt Cousson" <bcousson@baylibre.com>
->> Cc: Tony Lindgren <tony@atomide.com>
->> Cc: Russell King <linux@arm.linux.org.uk>
->> Cc: linux-omap@vger.kernel.org
->> Cc: devicetree-discuss@lists.ozlabs.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> This patch does it.
+>>
+>> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 >> ---
->>  arch/arm/boot/dts/omap443x.dtsi | 10 ++++++++--
->>  1 file changed, 8 insertions(+), 2 deletions(-)
+>>  drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
+>>  1 file changed, 12 insertions(+), 11 deletions(-)
 >>
->> diff --git a/arch/arm/boot/dts/omap443x.dtsi b/arch/arm/boot/dts/omap4=
-43x.dtsi
->> index bcf455e..e9c97d6 100644
->> --- a/arch/arm/boot/dts/omap443x.dtsi
->> +++ b/arch/arm/boot/dts/omap443x.dtsi
->> @@ -12,7 +12,7 @@
->> =20
->>  / {
->>  	cpus {
->> -		cpu@0 {
->> +		cpu0: cpu@0 {
->>  			/* OMAP443x variants OPP50-OPPNT */
->>  			operating-points =3D <
->>  				/* kHz    uV */
->=20
-> I see you also add labels to various other entries...
-
-I think I didn't quite get your point here. Can you please elaborate?
-
-This label has been added because it will be used in thermal zone while
-referencing the cooling device.
-
->=20
->> @@ -25,9 +25,15 @@
->>  		};
->>  	};
->> =20
->> -	bandgap {
->> +	thermal-zones{
->=20
-> You may want to include space here.
-
-OK.
-
->=20
->> +		#include "omap4-cpu-thermal.dtsi"
->> +	};
->> +
->> +	bandgap: bandgap {
->>  		reg =3D <0x4a002260 0x4
->>  		       0x4a00232C 0x4>;
->>  		compatible =3D "ti,omap4430-bandgap";
->> +
->> +		#thermal-sensor-cells =3D <0>;
->>  	};
+>> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+>> index e918b6d..ade31a9 100644
+>> --- a/drivers/cpuidle/sysfs.c
+>> +++ b/drivers/cpuidle/sysfs.c
+>> @@ -378,12 +378,17 @@ static struct kobj_type ktype_state_cpuidle = {
+>>       .release = cpuidle_state_sysfs_release,
 >>  };
->=20
+>>
+>> -static inline void cpuidle_free_state_kobj(struct cpuidle_device *device, int i)
+>> +static inline void cpuidle_free_state_kobj(struct cpuidle_device *device,
+>> +             int count)
+>>  {
+>> -     kobject_put(&device->kobjs[i]->kobj);
+>> -     wait_for_completion(&device->kobjs[i]->kobj_unregister);
+>> -     kfree(device->kobjs[i]);
+>> -     device->kobjs[i] = NULL;
+>> +     int i;
+>> +
+>> +     for (i = 0; i < count; i++) {
+>> +             kobject_put(&device->kobjs[i]->kobj);
+>> +             wait_for_completion(&device->kobjs[i]->kobj_unregister);
+>> +             kfree(device->kobjs[i]);
+>> +             device->kobjs[i] = NULL;
+>> +     }
+>>  }
+>>
+>>  /**
+>> @@ -419,8 +424,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
+>>       return 0;
+>>
+>>  error_state:
+>> -     for (i = i - 1; i >= 0; i--)
+>> -             cpuidle_free_state_kobj(device, i);
+>> +     cpuidle_free_state_kobj(device, i);
+>
+> Well, doesn't the ordering actually matter?  Your patch changes the ordering
+> here.
 
+I don't think it matters. And it was done in reverse order earlier to
+save an extra
+variable..
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---OQGHXilJNQEKWhIDtwI8TunGQ1jD8Fk8k
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKOKG0ACgkQCXcVR3XQvP2npgEAxbfIMuRDvRE62RLB0vNNBJZi
-h70ppZC7HXSQYLS9an4A/1/i5UmTN/9oMYPgz4cCiwNsCLAgWpwHm44gDmu7sspq
-=ysce
------END PGP SIGNATURE-----
-
---OQGHXilJNQEKWhIDtwI8TunGQ1jD8Fk8k--
-
-
---===============0656805260706730323==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============0656805260706730323==--
+Daniel??
