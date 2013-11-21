@@ -1,68 +1,57 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
- implementations
-Date: Thu, 21 Nov 2013 09:21:51 +0100
-Message-ID: <20131121082151.GU10022@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH 2/7] sched, preempt: Fixup missed PREEMPT_NEED_RESCHED
+ folding
+Date: Thu, 21 Nov 2013 09:25:28 +0100
+Message-ID: <20131121082528.GV10022@twins.programming.kicks-ass.net>
 References: <20131120160450.072555619@infradead.org>
- <20131120162736.508462614@infradead.org>
- <20131120165406.14fa0f09@ultegra>
+ <20131120162736.446984500@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:40266 "EHLO
+Received: from merlin.infradead.org ([205.233.59.134]:40373 "EHLO
 	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037Ab3KUIWK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 03:22:10 -0500
+	with ESMTP id S1751086Ab3KUIZf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 03:25:35 -0500
 Content-Disposition: inline
-In-Reply-To: <20131120165406.14fa0f09@ultegra>
+In-Reply-To: <20131120162736.446984500@infradead.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Nov 20, 2013 at 04:54:06PM -0800, Jacob Pan wrote:
-> On Wed, 20 Nov 2013 17:04:53 +0100
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > People are starting to grow their own idle implementations in various
-> > disgusting ways. Collapse the lot and use the generic idle code to
-> > provide a proper idle cycle implementation.
-> > 
-> +Paul
-> 
-> RCU and others rely on is_idle_task() might be broken with the
-> consolidated idle code since caller of do_idle may have pid != 0.
-> 
-> Should we use TS_POLL or introduce a new flag to identify idle task?
+On Wed, Nov 20, 2013 at 05:04:52PM +0100, Peter Zijlstra wrote:
+> --- a/kernel/cpu/idle.c
+> +++ b/kernel/cpu/idle.c
+> @@ -105,14 +105,14 @@ static void cpu_idle_loop(void)
+>  				__current_set_polling();
+>  			}
+>  			arch_cpu_idle_exit();
+> -			/*
+> -			 * We need to test and propagate the TIF_NEED_RESCHED
+> -			 * bit here because we might not have send the
+> -			 * reschedule IPI to idle tasks.
+> -			 */
+> -			if (tif_need_resched())
+> -				set_preempt_need_resched();
+>  		}
 
-PF_IDLE would be my preference, I checked and we seem to have a grand
-total of 2 unused task_struct::flags left ;-)
 
-> The reason why idle injection code does not inform RCU is that we have
-> known short period of idle time which does not impact RCU grace period.
-> 
-> On the other side, I see idle injection code is working with this
-> patchset with workaround in s_idle_task() by checking TS_POLL flag.
-> But the efficiency is down by ~30%. i.e.
-> 
-> before: inject 25% time to get 23-24% package idle
-> after: inject 25% time to get 16-17% package idle
-> 
-> Still looking into improvement.
+		/*
+		 * Ensure our read doesn't slip before the read that
+		 * terminates the loop above; in that situation we might
+		 * actually fail to observe the TIF_NEED_RESCHED we
+		 * _know_ must be set here.
+		 */
 
-So the quick hack is to make acpi_idle/intel_idle use the highest
-possible C-state when pid!=0 && PF_IDLE.
+		smp_rmb(); /* pairs with resched_task() */
 
-Ideally though I'd see some of the QoS ramifications explored. Because
-forcing the CPU into the highest C-state basically invalidates the
-entire QoS stack.
-
-So either make QoS and this idle injection stuff mutually exclusive in a
-very explicit way -- disable the QoS interface when you enable one of
-these idle injectors AND fail to engage the idle injectors when an
-incompatible QoS setting is pre-existing.
-
-Or come up with something smarter.
-
-You also have to explore the case of higher priority tasks messing with
-the proper operation of your injectors, this one is harder to deal with.
+> +
+> +		/*
+> +		 * We need to test and propagate the TIF_NEED_RESCHED bit here
+> +		 * because we might not have send the reschedule IPI to idle
+> +		 * tasks.
+> +		 */
+> +		preempt_fold_need_resched();
+>  		tick_nohz_idle_exit();
+>  		schedule_preempt_disabled();
+>  	}
