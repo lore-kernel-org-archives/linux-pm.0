@@ -1,87 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Regression] Fwd: [Bug 64841] Linux hangs when suspending to disk
-Date: Thu, 21 Nov 2013 22:24:03 +0100
-Message-ID: <1669934.XNTsQyvtko@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Thu, 21 Nov 2013 22:43:14 +0100
+Message-ID: <1980582.Pd2pT79ZWp@vostro.rjw.lan>
+References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org> <CAKohpo=fZ8Fr=CMDzCy3daBU+mZBJ+9fOks6L7WLOZzE7WaAaQ@mail.gmail.com> <528E4950.9030507@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="nextPart5299676.f5K04xX14b"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58417 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751226Ab3KUVLX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 16:11:23 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Ben Widawsky <benjamin.widawsky@intel.com>
-Cc: Takashi Iwai <tiwai@suse.de>, Paulo Zanoni <paulo.r.zanoni@intel.com>, Todd Previte <tprevite@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, bjackson0971@gmail.com
-
-This is a multi-part message in MIME format.
-
---nextPart5299676.f5K04xX14b
-Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <528E4950.9030507@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Sripa Bagadia <ceh@ti.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thursday, November 21, 2013 09:56:32 AM Dirk Brandewie wrote:
+> On 11/21/2013 07:57 AM, Viresh Kumar wrote:
+> > On 21 November 2013 18:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> On Thursday, November 21, 2013 12:39:02 PM Viresh Kumar wrote:
+> >
+> >>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> >>> @@ -1038,6 +1038,32 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+> >
+> >>> +     if (has_target()) {
+> >>> +             ret = __cpufreq_driver_target(policy, policy->cur,
+> >>> +                             CPUFREQ_RELATION_L);
+> >>> +             if (ret)
+> >>> +                     pr_err("%s: Unable to set frequency from table: %d\n",
+> >>> +                                     __func__, ret);
+> >>
+> >> Should we continue in that case?
+> >
+> > I wasn't sure. I thought maybe there are platforms which might not be
+> > ready for transitions so early and so an error message would be fine,
+> > as we will fail soon anyway in case there is a bug.
+> >
+> 
+> The scaling driver for the CPU has already loaded and its .init procedure has 
+> been called so .target better be callable.
+> 
+> Since the scaling driver is responsible maintaining the set of valid frequencies
+> and setting policy->cur I think it is reasonable to have the scaling driver
+> ensure that policy->cur returned from its .init and the operating frequency are
+> in sync and match one of the values in its frequency table.
 
-Unfortunately, your commit 828c79087cec (drm/i915: Disable GGTT PTEs on GEN6+
-suspend) introduced a confirmed regression that seems to have made it into
-stable.
-
-Any chance to look into that?
+>From that I infer that we should not continue on errors here.  Which also is my
+opinion.
 
 Rafael
-
---nextPart5299676.f5K04xX14b
-Content-Type: message/rfc822
-Content-Disposition: inline; filename="forwarded message"
-Content-Description: bugzilla-daemon@bugzilla.kernel.org: [Bug 64841] Linux hangs when suspending to disk
-
-Return-Path: <bugzilla-daemon@bugzilla.kernel.org>
-Received: from mail.kernel.org [198.145.19.201] (HELO mail.kernel.org) by serwer1319399.home.pl [79.96.170.134] with SMTP (IdeaSmtpServer v0.80) id 642e5487567a591a; Thu, 21 Nov 2013 17:09:29 +0100
-Received: from mail.kernel.org (localhost [127.0.0.1]) by mail.kernel.org (Postfix) with ESMTP id 3E3F120791 for <rjw@rjwysocki.net>; Thu, 21 Nov 2013 16:09:27 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51]) by mail.kernel.org (Postfix) with ESMTP id 4F02A2078A for <rjw@rjwysocki.net>; Thu, 21 Nov 2013 16:09:18 +0000 (UTC)
-Received: by bugzilla1.web.kernel.org (Postfix, from userid 48) id 4788A400C5; Thu, 21 Nov 2013 16:09:18 +0000 (UTC)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: rjw@rjwysocki.net
-Subject: [Bug 64841] Linux hangs when suspending to disk
-Date: Thu, 21 Nov 2013 16:09:18 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: Hibernation/Suspend
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: bjackson0971@gmail.com
-X-Bugzilla-Status: NEEDINFO
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: rjw@rjwysocki.net
-X-Bugzilla-Target-Milestone: ---
-Message-ID: <bug-64841-76231-ZjstPiWo92@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-64841-76231@https.bugzilla.kernel.org/>
-References: <bug-64841-76231@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
-X-Spam-Status: No, score=-2.4 required=5.0 tests=BAYES_00,RP_MATCHES_RCVD, UNPARSEABLE_RELAY autolearn=unavailable version=3.3.1
-X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on mail.kernel.org
-X-Virus-Scanned: ClamAV using ClamSMTP
-
-https://bugzilla.kernel.org/show_bug.cgi?id=64841
-
---- Comment #4 from Brad  Jackson <bjackson0971@gmail.com> ---
-828c79087cec61eaf4c76bb32c222fbe35ac3930 is the first bad commit
-commit 828c79087cec61eaf4c76bb32c222fbe35ac3930
-Author: Ben Widawsky <benjamin.widawsky@intel.com>
-Date:   Wed Oct 16 09:21:30 2013 -0700
-
-    drm/i915: Disable GGTT PTEs on GEN6+ suspend
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
-
---nextPart5299676.f5K04xX14b--
 
