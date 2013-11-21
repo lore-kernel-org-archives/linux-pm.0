@@ -1,127 +1,84 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: Thermal:about a BUG
-Date: Thu, 21 Nov 2013 12:06:40 -0400
-Message-ID: <528E2F90.80407@ti.com>
-References: <201311201707055318198@gmail.com> <1385004811.2379.28.camel@rzhang-lenovo>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
+ implementations
+Date: Thu, 21 Nov 2013 08:07:16 -0800
+Message-ID: <20131121160716.GT4138@linux.vnet.ibm.com>
+References: <20131120160450.072555619@infradead.org>
+ <20131120162736.508462614@infradead.org>
+ <20131120165406.14fa0f09@ultegra>
+ <20131121082151.GU10022@twins.programming.kicks-ass.net>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="Ga56uGGkXPEdW0gAdilX8D52LSMxdAUcg"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:33074 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827Ab3KUQGv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 21 Nov 2013 11:06:51 -0500
-In-Reply-To: <1385004811.2379.28.camel@rzhang-lenovo>
+Received: from e35.co.us.ibm.com ([32.97.110.153]:53073 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381Ab3KUQHp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 11:07:45 -0500
+Received: from /spool/local
+	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Thu, 21 Nov 2013 09:07:45 -0700
+Content-Disposition: inline
+In-Reply-To: <20131121082151.GU10022@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "xulinuxkernel@gmail.com" <xulinuxkernel@gmail.com>, "eduardo.valentin" <eduardo.valentin@ti.com>, linux-pm <linux-pm@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
---Ga56uGGkXPEdW0gAdilX8D52LSMxdAUcg
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Thu, Nov 21, 2013 at 09:21:51AM +0100, Peter Zijlstra wrote:
+> On Wed, Nov 20, 2013 at 04:54:06PM -0800, Jacob Pan wrote:
+> > On Wed, 20 Nov 2013 17:04:53 +0100
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > People are starting to grow their own idle implementations in various
+> > > disgusting ways. Collapse the lot and use the generic idle code to
+> > > provide a proper idle cycle implementation.
+> > > 
+> > +Paul
+> > 
+> > RCU and others rely on is_idle_task() might be broken with the
+> > consolidated idle code since caller of do_idle may have pid != 0.
+> > 
+> > Should we use TS_POLL or introduce a new flag to identify idle task?
+> 
+> PF_IDLE would be my preference, I checked and we seem to have a grand
+> total of 2 unused task_struct::flags left ;-)
 
-On 20-11-2013 23:33, Zhang Rui wrote:
-> Hi,
->=20
-> thanks for reporting the problem.
->=20
-> On =E4=B8=89, 2013-11-20 at 17:07 +0800, xulinuxkernel@gmail.com wrote:=
+As long as RCU has some reliable way to identify an idle task, I am
+good.  But I have to ask -- why can't idle injection coordinate with
+the existing idle tasks rather than temporarily making alternative
+idle tasks?
 
->> =20
->> Hi  all=20
->> Recently I porting the thermal driver,I think there will be a bug
->> following,I am Just not sure about it,
->> In functon get_target_state (),
->> ...
->> case THERMAL_TREND_DROPPING:
->> if (cur_state =3D=3D instance->lower) {
->> if (!throttle)
->> next_target =3D THERMAL_NO_TARGET;
->> } else {
->>     next_target =3D cur_state - 1;
->>     if (next_target > instance->upper)
->>         next_target =3D instance->upper;
->> }
->> break;
->> case THERMAL_TREND_DROP_FULL:
->> if (cur_state =3D=3D instance->lower) {
->> if (!throttle)
->>         next_target =3D THERMAL_NO_TARGET;
->> } else
->>     next_target =3D instance->lower;
->> break;
->> ..
->> =20
->> For case THERMAL_TREND_DROPPING
->> if cur_state=3D0,instance->lower=3D2,
->> so next_state =3D0xffffffff ,so next_target > instance->upper will be
->> right,
->> =20
->> I think In this case will be wrong.
->> and I think this will be okay.
->> =20
->> if (cur_state <=3D instance->lower) {
->> if (!throttle)
->> next_target =3D THERMAL_NO_TARGET;
->> } else {
->>     next_target =3D cur_state - 1;
->>     if (next_target > instance->upper)
->>         next_target =3D instance->upper;
->> }
->=20
-> this should fix the problem for you, plus we may also needs this change=
+							Thanx, Paul
 
-> for THERMAL_TREND_DROPPING_FULL case.
-> But my question would be:
-> How could a cooling device be in a cooling state that is lower than the=
+> > The reason why idle injection code does not inform RCU is that we have
+> > known short period of idle time which does not impact RCU grace period.
+> > 
+> > On the other side, I see idle injection code is working with this
+> > patchset with workaround in s_idle_task() by checking TS_POLL flag.
+> > But the efficiency is down by ~30%. i.e.
+> > 
+> > before: inject 25% time to get 23-24% package idle
+> > after: inject 25% time to get 16-17% package idle
+> > 
+> > Still looking into improvement.
+> 
+> So the quick hack is to make acpi_idle/intel_idle use the highest
+> possible C-state when pid!=0 && PF_IDLE.
+> 
+> Ideally though I'd see some of the QoS ramifications explored. Because
+> forcing the CPU into the highest C-state basically invalidates the
+> entire QoS stack.
+> 
+> So either make QoS and this idle injection stuff mutually exclusive in a
+> very explicit way -- disable the QoS interface when you enable one of
+> these idle injectors AND fail to engage the idle injectors when an
+> incompatible QoS setting is pre-existing.
+> 
+> Or come up with something smarter.
+> 
+> You also have to explore the case of higher priority tasks messing with
+> the proper operation of your injectors, this one is harder to deal with.
+> 
 
-> lower limit of an active thermal_instance?
-> This seems like that the cooling device' cooling state is changed beyon=
-d
-> thermal core, and I do not think the current code handles this situatio=
-n
-> well. IMO, we need a bigger fix for this issue. Let me think about it
-> and reply to you later.
-
-I think it is better to investigate further before we come up with a fix.=
-
-
-Xu, can you please describe the thermal zone you are using? Also what
-cooling device are you using? Is the cooling device in mainline?
-
-Do you really see this error happening? Can you please describe the
-scenario that leads to the error ?
-
->=20
-> thanks,
-> rui
->=20
->=20
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---Ga56uGGkXPEdW0gAdilX8D52LSMxdAUcg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKOL5AACgkQCXcVR3XQvP2gGgEA5e8jUzELlDFulCbeSdj3m/Pv
-ke6202HNQA+Jrifx62QBAO0k7TQgST6Og+PSlnnvHhFxoWfqLfVFNJO2youfZCv9
-=krTB
------END PGP SIGNATURE-----
-
---Ga56uGGkXPEdW0gAdilX8D52LSMxdAUcg--
