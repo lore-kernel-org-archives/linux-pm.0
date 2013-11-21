@@ -1,57 +1,80 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/7] sched, preempt: Fixup missed PREEMPT_NEED_RESCHED
- folding
-Date: Thu, 21 Nov 2013 09:25:28 +0100
-Message-ID: <20131121082528.GV10022@twins.programming.kicks-ass.net>
-References: <20131120160450.072555619@infradead.org>
- <20131120162736.446984500@infradead.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
+ system suspend
+Date: Thu, 21 Nov 2013 10:00:14 +0100
+Message-ID: <CAPDyKFrJ34oWhPosqqfh-cCpoQnAY9Q90wP7nn60RAh87ZCPAw@mail.gmail.com>
+References: <87r4acmjc6.fsf@linaro.org>
+	<Pine.LNX.4.44L0.1311191258550.1145-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:40373 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086Ab3KUIZf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 03:25:35 -0500
-Content-Disposition: inline
-In-Reply-To: <20131120162736.446984500@infradead.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <Pine.LNX.4.44L0.1311191258550.1145-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Nov 20, 2013 at 05:04:52PM +0100, Peter Zijlstra wrote:
-> --- a/kernel/cpu/idle.c
-> +++ b/kernel/cpu/idle.c
-> @@ -105,14 +105,14 @@ static void cpu_idle_loop(void)
->  				__current_set_polling();
->  			}
->  			arch_cpu_idle_exit();
-> -			/*
-> -			 * We need to test and propagate the TIF_NEED_RESCHED
-> -			 * bit here because we might not have send the
-> -			 * reschedule IPI to idle tasks.
-> -			 */
-> -			if (tif_need_resched())
-> -				set_preempt_need_resched();
->  		}
+On 19 November 2013 19:03, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> wrote:
+> On Tue, 19 Nov 2013, Kevin Hilman wrote:
+>
+>> Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> writes:
+>>
+>> > On Tue, 19 Nov 2013, Ulf Hansson wrote:
+>> >
+>> >> At the moment, system PM is already affecting behaviour of runtime PM
+>> >> since it is preventing runtime suspend during system suspend.
+>> >
+>> > Sure.  And that behavior is documented.  In any case, it's a bug for
+>> > drivers to depend on runtime suspend for carrying out a system suspend.
+>>
+>> As Rafael mentioned, there is bus/pm_domain code that comes into play
+>> here, so I'm not sure it's always a bug.
+>>
+>> IMO, it's not a bug for the driver to depend on runtime PM if the
+>> bus/pm_domain is handling the details.
+>>
+>> On OMAP, we handle all the SoC on-chip devices with a pm_domain since
+>> the low-level PM operations that need to happen are bus-level things not
+>> device-level things.  Therefore, drivers for these devices can rely
+>> entirely on runtime PM, even for system suspend.  The late/early
+>> callbacks in the pm_domain can see if the device is runtime suspended
+>> already or not and behave accordingly.
+>>
+>> So, this all *can* work by handling it at the bus/pm_domain level, but
+>> as Ulf has mentioned (and I agree) it seems like a clunky workaround
+>> because the PM core is preventing it from happening as one might expect.
+>
+> The problem is that userspace can disable runtime PM at any time by
+> writing "on" to /sys/.../power/control.  Once that's done, you can't
+> depend on runtime PM to put the device into a low-power state during
+> system suspend.
+>
+> Now, if the bus-level code always takes care of putting the device into
+> low power during system suspend, then the driver doesn't have to worry
+> about it at all.  That's perfectly fine -- but I would hardly describe
+> the situation by saying the driver relies on runtime PM for system
+> suspend.
 
+But they are, since that is exactly what these driver depends on
+during system suspend. And since the power domain invokes the runtime
+callbacks, normally CONFIG_PM_RUNTIME is needed for the callbacks to
+be set up from in the bus/driver.
 
-		/*
-		 * Ensure our read doesn't slip before the read that
-		 * terminates the loop above; in that situation we might
-		 * actually fail to observe the TIF_NEED_RESCHED we
-		 * _know_ must be set here.
-		 */
+I suppose that the OMAP SoC maintainers were accepting that this
+dependency were allowed to exist, since that was the only solution to
+their problem at that point.
 
-		smp_rmb(); /* pairs with resched_task() */
+Today, several years later, we are still indirectly pushing those SoC
+maintainers that faces similar issues, to accept this dependency
+between system suspend and runtime suspend. I see a conflict here. :-)
 
-> +
-> +		/*
-> +		 * We need to test and propagate the TIF_NEED_RESCHED bit here
-> +		 * because we might not have send the reschedule IPI to idle
-> +		 * tasks.
-> +		 */
-> +		preempt_fold_need_resched();
->  		tick_nohz_idle_exit();
->  		schedule_preempt_disabled();
->  	}
+Kind regards
+Ulf Hansson
+
+>
+> Alan Stern
+>
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
