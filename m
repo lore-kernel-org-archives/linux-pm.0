@@ -1,88 +1,93 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 Resend] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
-Date: Thu, 21 Nov 2013 14:09:29 +0100
-Message-ID: <1500472.jI9SKO09jR@vostro.rjw.lan>
-References: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Thu, 21 Nov 2013 14:11:57 +0100
+Message-ID: <3577662.BKCLJdcf18@vostro.rjw.lan>
+References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55787 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754122Ab3KUM4t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 07:56:49 -0500
-In-Reply-To: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: nm@ti.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, ceh@ti.com
+List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 21, 2013 08:54:12 AM Viresh Kumar wrote:
-> Loop for states is currently present on callers side and so is replicated at
-> several places. It would be better to move that inside cpuidle_free_state_kobj()
-> instead.
+On Thursday, November 21, 2013 12:39:02 PM Viresh Kumar wrote:
+> Sometimes boot loaders set CPU frequency to a value outside of frequency table
+> present with cpufreq core. In such cases CPU might be unstable if it has to run
+> on that frequency for long duration of time and so its better to set it to a
+> frequency which is specified in freq-table. This also makes cpufreq stats
+> inconsistent as cpufreq-stats would fail to register because current frequency
+> of CPU isn't found in freq-table.
 > 
-> This patch does it.
+> Because we don't want this change to effect boot process badly, we go for the
+> next freq which is >= policy->cur ('cur' must be set by now, otherwise we will
+> end up setting freq to lowest of the table as 'cur' is initialized to zero).
 > 
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> In case where CPU is already running on one of the frequencies present in
+> freq-table, this would turn into a dummy call as __cpufreq_driver_target() would
+> return early.
+> 
+> Reported-by: Carlos Hernandez <ceh@ti.com>
+> Reported-by: Nishanth Menon <nm@ti.com>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
->  1 file changed, 12 insertions(+), 11 deletions(-)
+> After lots of discussion with Nishanth and others, I feel something like this..
 > 
-> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index e918b6d..ade31a9 100644
-> --- a/drivers/cpuidle/sysfs.c
-> +++ b/drivers/cpuidle/sysfs.c
-> @@ -378,12 +378,17 @@ static struct kobj_type ktype_state_cpuidle = {
->  	.release = cpuidle_state_sysfs_release,
->  };
+> @Nishanth: Please see if this works for you and I hope we don't need any of
+> these patches anymore:
+> 
+> - https://lkml.org/lkml/2013/11/15/569 : cpufreq: cpufreq-cpu0: Use a sane boot
+> frequency when booting with a mismatched bootloader configuration
+> - https://lkml.org/lkml/2013/11/15/503 : cpufreq: stats: Do not populate stats
+>   when policy->cur has no exact match
+> - https://lkml.org/lkml/2013/11/19/16 : cpufreq/stats: Add "unknown" frequency
+>   field in stats tables
+> 
+>  drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534d..d55c843 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1038,6 +1038,32 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>  		}
+>  	}
 >  
-> -static inline void cpuidle_free_state_kobj(struct cpuidle_device *device, int i)
-> +static inline void cpuidle_free_state_kobj(struct cpuidle_device *device,
-> +		int count)
->  {
-> -	kobject_put(&device->kobjs[i]->kobj);
-> -	wait_for_completion(&device->kobjs[i]->kobj_unregister);
-> -	kfree(device->kobjs[i]);
-> -	device->kobjs[i] = NULL;
-> +	int i;
-> +
-> +	for (i = 0; i < count; i++) {
-> +		kobject_put(&device->kobjs[i]->kobj);
-> +		wait_for_completion(&device->kobjs[i]->kobj_unregister);
-> +		kfree(device->kobjs[i]);
-> +		device->kobjs[i] = NULL;
+> +	/*
+> +	 * Sometimes boot loaders set CPU frequency to a value outside of
+> +	 * frequency table present with cpufreq core. In such cases CPU might be
+> +	 * unstable if it has to run on that frequency for long duration of time
+> +	 * and so its better to set it to a frequency which is specified in
+> +	 * freq-table. This also makes cpufreq stats inconsistent as
+> +	 * cpufreq-stats would fail to register because current frequency of CPU
+> +	 * isn't found in freq-table.
+> +	 *
+> +	 * Because we don't want this change to effect boot process badly, we go
+> +	 * for the next freq which is >= policy->cur ('cur' must be set by now,
+> +	 * otherwise we will end up setting freq to lowest of the table as 'cur'
+> +	 * is initialized to zero).
+> +	 *
+> +	 * In case where CPU is already running on one of the frequencies
+> +	 * present in freq-table, this would turn into a dummy call as
+> +	 * __cpufreq_driver_target() would return early.
+> +	 */
+> +	if (has_target()) {
+> +		ret = __cpufreq_driver_target(policy, policy->cur,
+> +				CPUFREQ_RELATION_L);
+> +		if (ret)
+> +			pr_err("%s: Unable to set frequency from table: %d\n",
+> +					__func__, ret);
+
+Should we continue in that case?
+
 > +	}
->  }
+> +
+>  	/* related cpus should atleast have policy->cpus */
+>  	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
 >  
->  /**
-> @@ -419,8 +424,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
->  	return 0;
->  
->  error_state:
-> -	for (i = i - 1; i >= 0; i--)
-> -		cpuidle_free_state_kobj(device, i);
-> +	cpuidle_free_state_kobj(device, i);
-
-Well, doesn't the ordering actually matter?  Your patch changes the ordering
-here.
-
->  	return ret;
->  }
->  
-> @@ -430,10 +434,7 @@ error_state:
->   */
->  static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
->  {
-> -	int i;
-> -
-> -	for (i = 0; i < device->state_count; i++)
-> -		cpuidle_free_state_kobj(device, i);
-> +	cpuidle_free_state_kobj(device, device->state_count);
->  }
->  
->  #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
 > 
 -- 
 I speak only for myself.
