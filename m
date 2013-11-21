@@ -1,49 +1,48 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH RFC v3 12/12] arm64: add CPU power management menu/entries
-Date: Thu, 21 Nov 2013 11:24:19 +0000
-Message-ID: <1385033059-25896-13-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH] intel_idle: shrink avn_cstates table and mark it with
+ __initdata tag
+Date: Thu, 21 Nov 2013 13:09:38 +0100
+Message-ID: <7374737.rFhOp5HKV7@amdc1032>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:33348 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754091Ab3KULZD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 06:25:03 -0500
-In-Reply-To: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:48571 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225Ab3KUMJr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 07:09:47 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Christoffer Dall <christoffer.dall@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch provides a menu for CPU power management options in the
-arm64 Kconfig and adds an entry to enable the generic CPU idle configuratio=
-n.
+This is a fixup for commit fab04b2 ("intel_idle: Support Intel Atom
+Processor C2000 Product Family") which didn't take into account
+changes done in commits eba682a ("intel_idle: shrink states tables")
+and 00f3e75 ("intel_idle: mark states tables with __initdata tag").
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Len Brown <len.brown@intel.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm64/Kconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/idle/intel_idle.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 0d78e92..3e2c392 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -291,6 +291,12 @@ config ARM64_CPU_SUSPEND
-=20
- endmenu
-=20
-+menu "CPU Power Management"
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index cbd4e9a..f4bdf72 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -329,7 +329,8 @@ static struct cpuidle_state atom_cstates[] __initdata = {
+ 	{
+ 		.enter = NULL }
+ };
+-static struct cpuidle_state avn_cstates[CPUIDLE_STATE_MAX] = {
 +
-+source "drivers/cpuidle/Kconfig"
-+
-+endmenu
-+
- source "net/Kconfig"
-=20
- source "drivers/Kconfig"
---=20
-1.8.4
++static struct cpuidle_state avn_cstates[] __initdata = {
+ 	{
+ 		.name = "C1-AVN",
+ 		.desc = "MWAIT 0x00",
+-- 
+1.8.2.3
 
 
