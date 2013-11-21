@@ -1,20 +1,16 @@
 From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH 1/2] power_supply: Fix Oops from NULL pointer dereference from wakeup_source_activate
-Date: Wed, 20 Nov 2013 18:40:49 -0700
-Message-ID: <739760cf69fca695a825246b5f6f1849cd2cf57a.1384990612.git.shuah.kh@samsung.com>
+Subject: [PATCH 2/2] PM: Fix Oops from NULL pointer dereference in wakeup_source_activate
+Date: Wed, 20 Nov 2013 18:40:50 -0700
+Message-ID: <43b305b56bbbfc82b2684919e2d1ba2bd50fecae.1384990612.git.shuah.kh@samsung.com>
 References: <cover.1384990612.git.shuah.kh@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta11.emeryville.ca.mail.comcast.net ([76.96.27.211]:49741
-	"EHLO qmta11.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753572Ab3KUBk5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 20:40:57 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1384990612.git.shuah.kh@samsung.com>
 In-Reply-To: <cover.1384990612.git.shuah.kh@samsung.com>
 References: <cover.1384990612.git.shuah.kh@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, gregkh@linuxfoundation.org, anton@enomsg.org, dwmw2@infradead.org
 Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, stable@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 power_supply_register() calls device_init_wakeup() to register a wakeup
 source before initializing dev_name. As a result, device_wakeup_enable()
@@ -22,19 +18,20 @@ end up registering wakeup source with a null name when wakeup_source_register()
 gets called with dev_name(dev) which is null at the time.
 
 When kernel is booted with wakeup_source_activate enabled, it will panic
-when the trace point code tries to dereference ws->name.
+when the trace point code tries to dereference ws->name. Registering a
+a wakeup source without a name should be possible.
 
-Fixed the problem by moving up the kobject_set_name() call prior to accesses
-to dev_name(). Replaced kobject_set_name() with dev_set_name() which is the
-right interface to be called from drivers. Fixed the call to device_del() prior
-to device_add() in for wakeup_init_failed error handling code.
+Fix wakeup_source_activate tracepoint to check for null name and handle it
+gracefully by just using "(no name)" as the name string for the source.
+
+Fixes: commit 6791e36c4a40e8930e08669e60077eea6770c429
 
 Trace after the change:
-
-            bash-2023  [000] d...    88.069073: wakeup_source_activate: BAT1 state=0x20001
-     kworker/0:1-38    [000] d...    88.069155: wakeup_source_deactivate: BAT1 state=0x30000
+            bash-2008  [000] d...   610.307262: wakeup_source_activate: (no name) state=0x20001
+     kworker/0:0-2000  [000] d...   610.307287: wakeup_source_deactivate: (no name) state=0x30000
 
 Oops message:
+
 [  819.769934] device: 'BAT1': device_add
 [  819.770078] PM: Adding info for No Bus:BAT1
 [  819.770235] BUG: unable to handle kernel NULL pointer dereference at           (null)
@@ -85,53 +82,31 @@ Oops message:
 [  819.794175] ---[ end trace c4ef25127039952e ]---
 
 Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-Acked-by: Anton Vorontsov <anton@enomsg.org>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: stable@vger.kernel.org
 ---
- drivers/power/power_supply_core.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ include/trace/events/power.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 00e6672..557af94 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -511,6 +511,10 @@ int power_supply_register(struct device *parent, struct power_supply *psy)
- 	dev_set_drvdata(dev, psy);
- 	psy->dev = dev;
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index cda100d..5ba545a 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -110,12 +110,14 @@ DECLARE_EVENT_CLASS(wakeup_source,
+ 	TP_ARGS(name, state),
  
-+	rc = dev_set_name(dev, "%s", psy->name);
-+	if (rc)
-+		goto dev_set_name_failed;
+ 	TP_STRUCT__entry(
+-		__string(       name,           name            )
++		__string(name,  name ? name : "(no name)")
+ 		__field(        u64,            state           )
+ 	),
+ 
+ 	TP_fast_assign(
+-		__assign_str(name, name);
++		const char *tname = name ? name : "(no name)";
 +
- 	INIT_WORK(&psy->changed_work, power_supply_changed_work);
++		__assign_str(name, tname);
+ 		__entry->state = state;
+ 	),
  
- 	rc = power_supply_check_supplies(psy);
-@@ -524,10 +528,6 @@ int power_supply_register(struct device *parent, struct power_supply *psy)
- 	if (rc)
- 		goto wakeup_init_failed;
- 
--	rc = kobject_set_name(&dev->kobj, "%s", psy->name);
--	if (rc)
--		goto kobject_set_name_failed;
--
- 	rc = device_add(dev);
- 	if (rc)
- 		goto device_add_failed;
-@@ -553,11 +553,11 @@ create_triggers_failed:
- register_cooler_failed:
- 	psy_unregister_thermal(psy);
- register_thermal_failed:
--wakeup_init_failed:
- 	device_del(dev);
--kobject_set_name_failed:
- device_add_failed:
-+wakeup_init_failed:
- check_supplies_failed:
-+dev_set_name_failed:
- 	put_device(dev);
- success:
- 	return rc;
 -- 
 1.8.3.2
-
