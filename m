@@ -1,55 +1,68 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH] cpufreq: tegra: don't error target() when suspended
-Date: Thu, 21 Nov 2013 11:41:09 -0700
-Message-ID: <528E53C5.9040105@wwwdotorg.org>
-References: <1384981582-30697-1-git-send-email-swarren@wwwdotorg.org> <CAKohpomJiGbxk9BTJWcGRiid3TwV7d4i5BkSwSd8JxphSRZwUA@mail.gmail.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
+ implementations
+Date: Thu, 21 Nov 2013 11:19:16 -0800
+Message-ID: <20131121191916.GZ4138@linux.vnet.ibm.com>
+References: <20131120160450.072555619@infradead.org>
+ <20131120162736.508462614@infradead.org>
+ <20131120165406.14fa0f09@ultegra>
+ <20131121082151.GU10022@twins.programming.kicks-ass.net>
+ <20131121160716.GT4138@linux.vnet.ibm.com>
+ <528E32EF.2050300@linux.intel.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:34597 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927Ab3KUSlM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 13:41:12 -0500
-In-Reply-To: <CAKohpomJiGbxk9BTJWcGRiid3TwV7d4i5BkSwSd8JxphSRZwUA@mail.gmail.com>
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53263 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021Ab3KUT1T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 14:27:19 -0500
+Received: from /spool/local
+	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Thu, 21 Nov 2013 12:27:19 -0700
+Content-Disposition: inline
+In-Reply-To: <528E32EF.2050300@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-tegra@vger.kernel.org, Stephen Warren <swarren@nvidia.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 11/20/2013 08:44 PM, Viresh Kumar wrote:
-> On 21 November 2013 02:36, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> From: Stephen Warren <swarren@nvidia.com>
->>
->> d4019f0a92ab "cpufreq: move freq change notifications to cpufreq core"
->> added code to the cpufreq core to print an error if a cpufreq driver's
->> .target() function returned an error. This exposed the fact that Tegra's
->> cpufreq driver returns an error when it is ignoring requests due to the
->> system being suspended.
->>
->> Modify Tegra's .target() function not to return an error in this case;
->> this prevents the error prints. The argument is that since the suspend
->> hook can't and doesn't inform the cpufreq core when its requests will
->> be ignored, there's no way for the cpufreq core to squelch them, so it's
->> not an error for the requests to keep coming. This change make the Tegra
->> driver consistent with how the Exynos handles the same situation. Note
->> that s5pv210-cpufreq.c probably suffers from this same issue though.
->>
->> Signed-off-by: Stephen Warren <swarren@nvidia.com>
+On Thu, Nov 21, 2013 at 08:21:03AM -0800, Arjan van de Ven wrote:
+> On 11/21/2013 8:07 AM, Paul E. McKenney wrote:
+> >As long as RCU has some reliable way to identify an idle task, I am
+> >good.  But I have to ask -- why can't idle injection coordinate with
+> >the existing idle tasks rather than temporarily making alternative
+> >idle tasks?
 > 
-> Thanks..
-> 
->> ---
->> This is a fix for 3.13.
->>
->> Commit d4019f0a92ab also failed to update the Tegra pm_notifier hook to
->> emit cpufreq notifications. That hook calls the target() implementation
->> directly, which used to emit the notifications. However, now that the
->> notifications are made outside of target(), they no longer occur when
->> target() is called directly. I'm not sure if this is an issue or not?
-> 
-> Hmm.. Yes and no.. Frequency after this point will not be in sync with
-> cpufreq core, but at the same time after resume cpufreq core will check
-> this out and get the correct frequency..
+> it's not a real idle. that's the whole problem of the situation.
+> to the rest of the OS, this is being BUSY (busy saving power using
+> a CPU instruction, but it might as well have been an mdelay() operation)
+> and it's also what end users expect; they want to be able to see
+> where there performance (read: cpu time in "top") is going.
 
-OK, sounds like I should ignore this issue then?
+My concern is keeping RCU's books straight.  Suppose that there is a need
+to call for idle in the middle of a preemptible RCU read-side critical
+section.  Now, if that call for idle involves a context switch, all is
+well -- RCU will see the task as still being in its RCU read-side critical
+section, which means that it is OK for RCU to see the CPU as idle.
+
+However, if there is no context switch and RCU sees the CPU as idle,
+preemptible RCU could prematurely end the grace period.  If there is no
+context switch and RCU sees the CPU as non-idle for too long, we start
+getting RCU CPU stall warning splats.
+
+Another approach would be to only inject idle when the CPU is not
+doing anything that could possibly be in an RCU read-side critical
+section.  But things might get a bit hot in case of an overly
+long RCU read-side critical section.
+
+One approach that might work would be to hook into RCU's context-switch
+code going in and coming out, then telling RCU that the CPU is idle,
+even though top and friends see it as non-idle.  This last is in fact
+similar to how RCU handles userspace execution for NO_HZ_FULL.
+
+Or were you thinking of yet another possible approach for this?
+
+							Thanx, Paul
+
