@@ -1,88 +1,87 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
- implementations
-Date: Thu, 21 Nov 2013 12:07:17 -0800
-Message-ID: <20131121200717.GB4138@linux.vnet.ibm.com>
-References: <20131120160450.072555619@infradead.org>
- <20131120162736.508462614@infradead.org>
- <20131120165406.14fa0f09@ultegra>
- <20131121082151.GU10022@twins.programming.kicks-ass.net>
- <20131121160716.GT4138@linux.vnet.ibm.com>
- <528E32EF.2050300@linux.intel.com>
- <20131121191916.GZ4138@linux.vnet.ibm.com>
- <528E62D0.3010003@linux.intel.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [Regression] Fwd: [Bug 64841] Linux hangs when suspending to disk
+Date: Thu, 21 Nov 2013 22:24:03 +0100
+Message-ID: <1669934.XNTsQyvtko@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="nextPart5299676.f5K04xX14b"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45026 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923Ab3KUUHX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 15:07:23 -0500
-Received: from /spool/local
-	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Thu, 21 Nov 2013 13:07:23 -0700
-Content-Disposition: inline
-In-Reply-To: <528E62D0.3010003@linux.intel.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:58417 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751226Ab3KUVLX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 16:11:23 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Ben Widawsky <benjamin.widawsky@intel.com>
+Cc: Takashi Iwai <tiwai@suse.de>, Paulo Zanoni <paulo.r.zanoni@intel.com>, Todd Previte <tprevite@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, bjackson0971@gmail.com
 
-On Thu, Nov 21, 2013 at 11:45:20AM -0800, Arjan van de Ven wrote:
-> On 11/21/2013 11:19 AM, Paul E. McKenney wrote:
-> >On Thu, Nov 21, 2013 at 08:21:03AM -0800, Arjan van de Ven wrote:
-> >>On 11/21/2013 8:07 AM, Paul E. McKenney wrote:
-> >>>As long as RCU has some reliable way to identify an idle task, I am
-> >>>good.  But I have to ask -- why can't idle injection coordinate with
-> >>>the existing idle tasks rather than temporarily making alternative
-> >>>idle tasks?
-> >>
-> >>it's not a real idle. that's the whole problem of the situation.
-> >>to the rest of the OS, this is being BUSY (busy saving power using
-> >>a CPU instruction, but it might as well have been an mdelay() operation)
-> >>and it's also what end users expect; they want to be able to see
-> >>where there performance (read: cpu time in "top") is going.
-> >
-> >My concern is keeping RCU's books straight.  Suppose that there is a need
-> >to call for idle in the middle of a preemptible RCU read-side critical
-> >section.  Now, if that call for idle involves a context switch, all is
-> >well -- RCU will see the task as still being in its RCU read-side critical
-> >section, which means that it is OK for RCU to see the CPU as idle.
-> >
-> >However, if there is no context switch and RCU sees the CPU as idle,
-> >preemptible RCU could prematurely end the grace period.  If there is no
-> >context switch and RCU sees the CPU as non-idle for too long, we start
-> >getting RCU CPU stall warning splats.
-> >
-> >Another approach would be to only inject idle when the CPU is not
-> >doing anything that could possibly be in an RCU read-side critical
-> >section.  But things might get a bit hot in case of an overly
-> >long RCU read-side critical section.
-> >
-> >One approach that might work would be to hook into RCU's context-switch
-> >code going in and coming out, then telling RCU that the CPU is idle,
-> >even though top and friends see it as non-idle.  This last is in fact
-> >similar to how RCU handles userspace execution for NO_HZ_FULL.
-> >
-> 
-> so powerclamp and such are not "idle".
-> They are "busy" from everything except the lowest level of the CPU hardware.
-> once you start thinking of them as idle, all hell breaks lose in terms of implications
-> (including sysadmin visibility etc).... (hence some of the explosions in this thread
-> as well).
-> 
-> but it's not "idle".
-> 
-> it's "put the cpu in a low power state for a specified amount of time". sure it uses the same
-> instruction to do so that the idle loop uses.
-> 
-> (now to make it messy, the current driver does a bunch of things similar to the idle loop
-> which is a mess and fair to be complained about)
+This is a multi-part message in MIME format.
 
-Then from an RCU viewpoint, they need to be short in duration.  Otherwise
-you risk getting CPU stall-warning explosions from RCU.  ;-)
+--nextPart5299676.f5K04xX14b
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-							Thanx, Paul
+Hi,
+
+Unfortunately, your commit 828c79087cec (drm/i915: Disable GGTT PTEs on GEN6+
+suspend) introduced a confirmed regression that seems to have made it into
+stable.
+
+Any chance to look into that?
+
+Rafael
+
+--nextPart5299676.f5K04xX14b
+Content-Type: message/rfc822
+Content-Disposition: inline; filename="forwarded message"
+Content-Description: bugzilla-daemon@bugzilla.kernel.org: [Bug 64841] Linux hangs when suspending to disk
+
+Return-Path: <bugzilla-daemon@bugzilla.kernel.org>
+Received: from mail.kernel.org [198.145.19.201] (HELO mail.kernel.org) by serwer1319399.home.pl [79.96.170.134] with SMTP (IdeaSmtpServer v0.80) id 642e5487567a591a; Thu, 21 Nov 2013 17:09:29 +0100
+Received: from mail.kernel.org (localhost [127.0.0.1]) by mail.kernel.org (Postfix) with ESMTP id 3E3F120791 for <rjw@rjwysocki.net>; Thu, 21 Nov 2013 16:09:27 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51]) by mail.kernel.org (Postfix) with ESMTP id 4F02A2078A for <rjw@rjwysocki.net>; Thu, 21 Nov 2013 16:09:18 +0000 (UTC)
+Received: by bugzilla1.web.kernel.org (Postfix, from userid 48) id 4788A400C5; Thu, 21 Nov 2013 16:09:18 +0000 (UTC)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: rjw@rjwysocki.net
+Subject: [Bug 64841] Linux hangs when suspending to disk
+Date: Thu, 21 Nov 2013 16:09:18 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: Hibernation/Suspend
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: bjackson0971@gmail.com
+X-Bugzilla-Status: NEEDINFO
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: rjw@rjwysocki.net
+X-Bugzilla-Target-Milestone: ---
+Message-ID: <bug-64841-76231-ZjstPiWo92@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-64841-76231@https.bugzilla.kernel.org/>
+References: <bug-64841-76231@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
+X-Spam-Status: No, score=-2.4 required=5.0 tests=BAYES_00,RP_MATCHES_RCVD, UNPARSEABLE_RELAY autolearn=unavailable version=3.3.1
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on mail.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+https://bugzilla.kernel.org/show_bug.cgi?id=64841
+
+--- Comment #4 from Brad  Jackson <bjackson0971@gmail.com> ---
+828c79087cec61eaf4c76bb32c222fbe35ac3930 is the first bad commit
+commit 828c79087cec61eaf4c76bb32c222fbe35ac3930
+Author: Ben Widawsky <benjamin.widawsky@intel.com>
+Date:   Wed Oct 16 09:21:30 2013 -0700
+
+    drm/i915: Disable GGTT PTEs on GEN6+ suspend
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
+
+--nextPart5299676.f5K04xX14b--
 
