@@ -1,36 +1,84 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] cpufreq: exynos5250: Set APLL rate using CCF API
-Date: Thu, 21 Nov 2013 11:02:51 +0530
-Message-ID: <CAKohpomksAg4RpgTJ=mgtRnKHCidzEjfYHVeLQku1Jck_URmxg@mail.gmail.com>
-References: <1385009046-22070-1-git-send-email-sachin.kamat@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1385009046-22070-1-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>
+Subject: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Thu, 21 Nov 2013 12:39:02 +0530
+Message-ID: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net, nm@ti.com
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, ceh@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21 November 2013 10:14, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> Use common clock framework (CCF) APIs to set the clock rates
-> instead of direct register manipulation. This now updates the
-> sysfs entry (cpuinfo_cur_freq) correctly which did not reflect
-> the correct value until now. While at it clean up the PLL s-div
-> parameter setting as it is handled by the PLL driver.
->
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
-> To fully test this, the following 2 patches would be necessary:
-> * clk: exynos5250: register APLL rate table
-> http://www.spinics.net/lists/arm-kernel/msg285103.html
-> * clk: exynos5250: Add CLK_SET_RATE_PARENT flag to mout_apll
-> http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/24906
-> ---
->
->  drivers/cpufreq/exynos5250-cpufreq.c |   74 +++++-----------------------------
->  1 file changed, 10 insertions(+), 64 deletions(-)
+Sometimes boot loaders set CPU frequency to a value outside of frequency table
+present with cpufreq core. In such cases CPU might be unstable if it has to run
+on that frequency for long duration of time and so its better to set it to a
+frequency which is specified in freq-table. This also makes cpufreq stats
+inconsistent as cpufreq-stats would fail to register because current frequency
+of CPU isn't found in freq-table.
 
-Nice cleanup..
+Because we don't want this change to effect boot process badly, we go for the
+next freq which is >= policy->cur ('cur' must be set by now, otherwise we will
+end up setting freq to lowest of the table as 'cur' is initialized to zero).
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+In case where CPU is already running on one of the frequencies present in
+freq-table, this would turn into a dummy call as __cpufreq_driver_target() would
+return early.
+
+Reported-by: Carlos Hernandez <ceh@ti.com>
+Reported-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+After lots of discussion with Nishanth and others, I feel something like this..
+
+@Nishanth: Please see if this works for you and I hope we don't need any of
+these patches anymore:
+
+- https://lkml.org/lkml/2013/11/15/569 : cpufreq: cpufreq-cpu0: Use a sane boot
+frequency when booting with a mismatched bootloader configuration
+- https://lkml.org/lkml/2013/11/15/503 : cpufreq: stats: Do not populate stats
+  when policy->cur has no exact match
+- https://lkml.org/lkml/2013/11/19/16 : cpufreq/stats: Add "unknown" frequency
+  field in stats tables
+
+ drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534d..d55c843 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1038,6 +1038,32 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 		}
+ 	}
+ 
++	/*
++	 * Sometimes boot loaders set CPU frequency to a value outside of
++	 * frequency table present with cpufreq core. In such cases CPU might be
++	 * unstable if it has to run on that frequency for long duration of time
++	 * and so its better to set it to a frequency which is specified in
++	 * freq-table. This also makes cpufreq stats inconsistent as
++	 * cpufreq-stats would fail to register because current frequency of CPU
++	 * isn't found in freq-table.
++	 *
++	 * Because we don't want this change to effect boot process badly, we go
++	 * for the next freq which is >= policy->cur ('cur' must be set by now,
++	 * otherwise we will end up setting freq to lowest of the table as 'cur'
++	 * is initialized to zero).
++	 *
++	 * In case where CPU is already running on one of the frequencies
++	 * present in freq-table, this would turn into a dummy call as
++	 * __cpufreq_driver_target() would return early.
++	 */
++	if (has_target()) {
++		ret = __cpufreq_driver_target(policy, policy->cur,
++				CPUFREQ_RELATION_L);
++		if (ret)
++			pr_err("%s: Unable to set frequency from table: %d\n",
++					__func__, ret);
++	}
++
+ 	/* related cpus should atleast have policy->cpus */
+ 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+ 
+-- 
+1.7.12.rc2.18.g61b472e
+
