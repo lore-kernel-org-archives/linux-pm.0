@@ -1,80 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
-Date: Thu, 21 Nov 2013 08:54:12 +0530
-Message-ID: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:53441 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751569Ab3KUDYV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 22:24:21 -0500
-Received: by mail-pd0-f178.google.com with SMTP id y10so3649549pdj.9
-        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2013 19:24:20 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH V2 13/16] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+Date: Thu, 21 Nov 2013 08:54:36 +0530
+Message-ID: <CAKohpokPcBufPm2UPzqiX974m=j-q6BaOSaSgSKNK8ob0QNs2w@mail.gmail.com>
+References: <cover.1380815504.git.viresh.kumar@linaro.org>
+	<CAKohpo=+W9vTcfRcH=6t0Bbct2+GJYge60ZoQZwYuZ=An6UCtQ@mail.gmail.com>
+	<CAKohpokQh_Awj2tzhFbqzv8u4zQ2WV0QZP0Sq1tqVQBYemW+gA@mail.gmail.com>
+	<7256587.cI3URDaS0R@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7256587.cI3URDaS0R@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Loop for states is currently present on callers side and so is replicated at
-several places. It would be better to move that inside cpuidle_free_state_kobj()
-instead.
+On 21 November 2013 06:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, November 20, 2013 01:33:53 PM Viresh Kumar wrote:
+>> Fixing Rafael's email id..
+>>
+>> On 20 November 2013 13:33, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > On 3 October 2013 21:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> >> Loop for states is currently present on callers side and so is replicated at
+>> >> several places. It would be better to move that inside cpuidle_free_state_kobj()
+>> >> instead.
+>> >>
+>> >> This patch does it.
+>> >>
+>> >> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> >> ---
+>> >>  drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
+>> >>  1 file changed, 12 insertions(+), 11 deletions(-)
+>> >
+>> > Hi Rafael,
+>> >
+>> > You missed applying this one?
+>
+> I might.  Care to resend?
 
-This patch does it.
-
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index e918b6d..ade31a9 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -378,12 +378,17 @@ static struct kobj_type ktype_state_cpuidle = {
- 	.release = cpuidle_state_sysfs_release,
- };
- 
--static inline void cpuidle_free_state_kobj(struct cpuidle_device *device, int i)
-+static inline void cpuidle_free_state_kobj(struct cpuidle_device *device,
-+		int count)
- {
--	kobject_put(&device->kobjs[i]->kobj);
--	wait_for_completion(&device->kobjs[i]->kobj_unregister);
--	kfree(device->kobjs[i]);
--	device->kobjs[i] = NULL;
-+	int i;
-+
-+	for (i = 0; i < count; i++) {
-+		kobject_put(&device->kobjs[i]->kobj);
-+		wait_for_completion(&device->kobjs[i]->kobj_unregister);
-+		kfree(device->kobjs[i]);
-+		device->kobjs[i] = NULL;
-+	}
- }
- 
- /**
-@@ -419,8 +424,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
- 	return 0;
- 
- error_state:
--	for (i = i - 1; i >= 0; i--)
--		cpuidle_free_state_kobj(device, i);
-+	cpuidle_free_state_kobj(device, i);
- 	return ret;
- }
- 
-@@ -430,10 +434,7 @@ error_state:
-  */
- static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
- {
--	int i;
--
--	for (i = 0; i < device->state_count; i++)
--		cpuidle_free_state_kobj(device, i);
-+	cpuidle_free_state_kobj(device, device->state_count);
- }
- 
- #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
--- 
-1.7.12.rc2.18.g61b472e
-
+Sent..
