@@ -1,83 +1,47 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: Thermal:about a BUG
-Date: Thu, 21 Nov 2013 11:33:31 +0800
-Message-ID: <1385004811.2379.28.camel@rzhang-lenovo>
-References: <201311201707055318198@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: tegra: don't error target() when suspended
+Date: Thu, 21 Nov 2013 09:14:28 +0530
+Message-ID: <CAKohpomJiGbxk9BTJWcGRiid3TwV7d4i5BkSwSd8JxphSRZwUA@mail.gmail.com>
+References: <1384981582-30697-1-git-send-email-swarren@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:34856 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133Ab3KUDcQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 20 Nov 2013 22:32:16 -0500
-In-Reply-To: <201311201707055318198@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1384981582-30697-1-git-send-email-swarren@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-tegra@vger.kernel.org, Stephen Warren <swarren@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: "xulinuxkernel@gmail.com" <xulinuxkernel@gmail.com>
-Cc: "eduardo.valentin" <eduardo.valentin@ti.com>, linux-pm <linux-pm@vger.kernel.org>
 
-Hi,
+On 21 November 2013 02:36, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> From: Stephen Warren <swarren@nvidia.com>
+>
+> d4019f0a92ab "cpufreq: move freq change notifications to cpufreq core"
+> added code to the cpufreq core to print an error if a cpufreq driver's
+> .target() function returned an error. This exposed the fact that Tegra's
+> cpufreq driver returns an error when it is ignoring requests due to the
+> system being suspended.
+>
+> Modify Tegra's .target() function not to return an error in this case;
+> this prevents the error prints. The argument is that since the suspend
+> hook can't and doesn't inform the cpufreq core when its requests will
+> be ignored, there's no way for the cpufreq core to squelch them, so it's
+> not an error for the requests to keep coming. This change make the Tegra
+> driver consistent with how the Exynos handles the same situation. Note
+> that s5pv210-cpufreq.c probably suffers from this same issue though.
+>
+> Signed-off-by: Stephen Warren <swarren@nvidia.com>
 
-thanks for reporting the problem.
+Thanks..
 
-On =E4=B8=89, 2013-11-20 at 17:07 +0800, xulinuxkernel@gmail.com wrote:
-> =20
-> Hi  all=20
-> Recently I porting the thermal driver,I think there will be a bug
-> following,I am Just not sure about it,
-> In functon get_target_state (),
-> ...
-> case THERMAL_TREND_DROPPING:
-> if (cur_state =3D=3D instance->lower) {
-> if (!throttle)
-> next_target =3D THERMAL_NO_TARGET;
-> } else {
->     next_target =3D cur_state - 1;
->     if (next_target > instance->upper)
->         next_target =3D instance->upper;
-> }
-> break;
-> case THERMAL_TREND_DROP_FULL:
-> if (cur_state =3D=3D instance->lower) {
-> if (!throttle)
->         next_target =3D THERMAL_NO_TARGET;
-> } else
->     next_target =3D instance->lower;
-> break;
-> ..
-> =20
-> For case THERMAL_TREND_DROPPING
-> if cur_state=3D0,instance->lower=3D2,
-> so next_state =3D0xffffffff ,so next_target > instance->upper will be
-> right,
-> =20
-> I think In this case will be wrong.
-> and I think this will be okay.
-> =20
-> if (cur_state <=3D instance->lower) {
-> if (!throttle)
-> next_target =3D THERMAL_NO_TARGET;
-> } else {
->     next_target =3D cur_state - 1;
->     if (next_target > instance->upper)
->         next_target =3D instance->upper;
-> }
+> ---
+> This is a fix for 3.13.
+>
+> Commit d4019f0a92ab also failed to update the Tegra pm_notifier hook to
+> emit cpufreq notifications. That hook calls the target() implementation
+> directly, which used to emit the notifications. However, now that the
+> notifications are made outside of target(), they no longer occur when
+> target() is called directly. I'm not sure if this is an issue or not?
 
-this should fix the problem for you, plus we may also needs this change
-for THERMAL_TREND_DROPPING_FULL case.
-But my question would be:
-How could a cooling device be in a cooling state that is lower than the
-lower limit of an active thermal_instance?
-This seems like that the cooling device' cooling state is changed beyon=
-d
-thermal core, and I do not think the current code handles this situatio=
-n
-well. IMO, we need a bigger fix for this issue. Let me think about it
-and reply to you later.
-
-thanks,
-rui
-
-
-
+Hmm.. Yes and no.. Frequency after this point will not be in sync with
+cpufreq core, but at the same time after resume cpufreq core will check
+this out and get the correct frequency..
