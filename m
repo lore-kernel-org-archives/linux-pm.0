@@ -1,46 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] Cpufreq: Make governor data on nonboot cpus across system suspend/resume
-Date: Thu, 21 Nov 2013 22:43:45 +0100
-Message-ID: <1599716.5y7kNnD1dc@vostro.rjw.lan>
-References: <9847309.KdKOG5y1Zx@vostro.rjw.lan> <2383693.rhJDd9X40m@vostro.rjw.lan> <CAKohponphVhZ3T1HD2AfhPBUn9SfQyrqdbvW3bEJFzRdKF2i0Q@mail.gmail.com>
+Subject: Re: PROBLEM: [regression] Corrupted low memory after resume from suspend, starting with 3.11-rc3
+Date: Thu, 21 Nov 2013 23:05:15 +0100
+Message-ID: <1413632.CebWE94SKW@vostro.rjw.lan>
+References: <20131121160916.69985889@rechenknecht2k7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50546 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:62886 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754444Ab3KUVbE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 16:31:04 -0500
-In-Reply-To: <CAKohponphVhZ3T1HD2AfhPBUn9SfQyrqdbvW3bEJFzRdKF2i0Q@mail.gmail.com>
+	with SMTP id S1754068Ab3KUVwf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 16:52:35 -0500
+In-Reply-To: <20131121160916.69985889@rechenknecht2k7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lan Tianyu <tianyu.lan@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
+Cc: linux-pm@vger.kernel.org
 
-On Thursday, November 21, 2013 09:24:02 PM Viresh Kumar wrote:
-> On 21 November 2013 20:13, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> -     if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
-> >
-> > The inner parens are not necessary.
-> >
-> >> -                     ((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
-> >> +     if ((event == CPUFREQ_GOV_POLICY_INIT) && ret) {
-> >
-> > Same here.
-> >
-> >> +             module_put(policy->governor->owner);
-> >> +             if (ret == -EALREADY)
-> >> +                     return 0;
-> >> +     } else if ((event == CPUFREQ_GOV_POLICY_EXIT) && !ret) {
-> >
-> > Same here.
-> 
-> Logically, yes you are correct. But probably its better for readability to
-> get these even if you know precedence is going to take care of our
-> expression..
+On Thursday, November 21, 2013 04:09:16 PM Benjamin Valentin wrote:
+> Hello,
+> starting with Linux 3.11, resuming from suspend leads to corrupted low
+> memory on my Gigabyte 965P-DS3 board. As a result of this, the ethernet
+> interface won't come up again/the display doesn't turn back on after
+> resume.
 
-Are you serious?
+Do I understand correctly that this is about suspend to RAM?
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> I've used Ubuntu's mainline builds for convenience and 3.11-rc3 is the
+> first revision to exhibit the issue. However, 3.11-rc1 and 3.11-rc2
+> will fail to suspend entirely. With 3.10, no memory corruption happens
+> and the system suspends just fine.
+
+Could you find (using bisection) the last kernel between 3.10 and 3.11-rc1
+that both suspended and resumed correctly and did not corrupt things for
+you?
+
+Rafael
+
