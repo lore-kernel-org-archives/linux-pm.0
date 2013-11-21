@@ -1,97 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 13/16] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
-Date: Thu, 21 Nov 2013 02:05:06 +0100
-Message-ID: <7256587.cI3URDaS0R@vostro.rjw.lan>
-References: <cover.1380815504.git.viresh.kumar@linaro.org> <CAKohpo=+W9vTcfRcH=6t0Bbct2+GJYge60ZoQZwYuZ=An6UCtQ@mail.gmail.com> <CAKohpokQh_Awj2tzhFbqzv8u4zQ2WV0QZP0Sq1tqVQBYemW+gA@mail.gmail.com>
+Subject: Re: [PATCH V2 14/16] cpuidle: don't calculate time-diff if entered_state < 0
+Date: Thu, 21 Nov 2013 02:06:04 +0100
+Message-ID: <2405639.7Gvu6oJDDu@vostro.rjw.lan>
+References: <cover.1380815504.git.viresh.kumar@linaro.org> <0a0c8e4c6fbf681d375f25b0c0eba036b8eaadf7.1380815504.git.viresh.kumar@linaro.org> <CAKohpon8s6mPVCVsvkZ-_LurDp=038FwqkCNy_Dx5mmeCF9+bw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65181 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754420Ab3KUAw0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2013 19:52:26 -0500
-In-Reply-To: <CAKohpokQh_Awj2tzhFbqzv8u4zQ2WV0QZP0Sq1tqVQBYemW+gA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon8s6mPVCVsvkZ-_LurDp=038FwqkCNy_Dx5mmeCF9+bw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, November 20, 2013 01:33:53 PM Viresh Kumar wrote:
-> Fixing Rafael's email id..
+On Wednesday, November 20, 2013 01:34:45 PM Viresh Kumar wrote:
+> On 3 October 2013 21:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > If entered_state < 0, we don't need to set dev->last_residency to 'diff' as we
+> > will be setting it to zero without using its new value.
+> >
+> > And so move calculation of diff also inside the "if" statement.
+> >
+> > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/cpuidle/cpuidle.c | 17 +++++++++--------
+> >  1 file changed, 9 insertions(+), 8 deletions(-)
 > 
-> On 20 November 2013 13:33, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 3 October 2013 21:26, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> Loop for states is currently present on callers side and so is replicated at
-> >> several places. It would be better to move that inside cpuidle_free_state_kobj()
-> >> instead.
-> >>
-> >> This patch does it.
-> >>
-> >> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >> ---
-> >>  drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
-> >>  1 file changed, 12 insertions(+), 11 deletions(-)
-> >
-> > Hi Rafael,
-> >
-> > You missed applying this one?
+> Missed applying this one too?
 
-I might.  Care to resend?
+No, I didn't.  I just thought it wasn't worth it ...
 
-> >> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> >> index e918b6d..ade31a9 100644
-> >> --- a/drivers/cpuidle/sysfs.c
-> >> +++ b/drivers/cpuidle/sysfs.c
-> >> @@ -378,12 +378,17 @@ static struct kobj_type ktype_state_cpuidle = {
-> >>         .release = cpuidle_state_sysfs_release,
-> >>  };
-> >>
-> >> -static inline void cpuidle_free_state_kobj(struct cpuidle_device *device, int i)
-> >> +static inline void cpuidle_free_state_kobj(struct cpuidle_device *device,
-> >> +               int count)
-> >>  {
-> >> -       kobject_put(&device->kobjs[i]->kobj);
-> >> -       wait_for_completion(&device->kobjs[i]->kobj_unregister);
-> >> -       kfree(device->kobjs[i]);
-> >> -       device->kobjs[i] = NULL;
-> >> +       int i;
-> >> +
-> >> +       for (i = 0; i < count; i++) {
-> >> +               kobject_put(&device->kobjs[i]->kobj);
-> >> +               wait_for_completion(&device->kobjs[i]->kobj_unregister);
-> >> +               kfree(device->kobjs[i]);
-> >> +               device->kobjs[i] = NULL;
-> >> +       }
-> >>  }
-> >>
-> >>  /**
-> >> @@ -419,8 +424,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
-> >>         return 0;
-> >>
-> >>  error_state:
-> >> -       for (i = i - 1; i >= 0; i--)
-> >> -               cpuidle_free_state_kobj(device, i);
-> >> +       cpuidle_free_state_kobj(device, i);
-> >>         return ret;
-> >>  }
-> >>
-> >> @@ -430,10 +434,7 @@ error_state:
-> >>   */
-> >>  static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
-> >>  {
-> >> -       int i;
-> >> -
-> >> -       for (i = 0; i < device->state_count; i++)
-> >> -               cpuidle_free_state_kobj(device, i);
-> >> +       cpuidle_free_state_kobj(device, device->state_count);
-> >>  }
-> >>
-> >>  #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
-> >> --
-> >> 1.7.12.rc2.18.g61b472e
-> >>
+> >
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index b45257a..1a6e9f5 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -77,23 +77,22 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> >
+> >         struct cpuidle_state *target_state = &drv->states[index];
+> >         ktime_t time_start, time_end;
+> > -       s64 diff;
+> >
+> >         time_start = ktime_get();
+> >
+> >         entered_state = target_state->enter(dev, drv, index);
+> >
+> > -       time_end = ktime_get();
+> > +       if (entered_state >= 0) {
+> > +               s64 diff;
+> >
+> > -       local_irq_enable();
+> > +               time_end = ktime_get();
+> > +               diff = ktime_to_us(ktime_sub(time_end, time_start));
+> >
+> > -       diff = ktime_to_us(ktime_sub(time_end, time_start));
+> > -       if (diff > INT_MAX)
+> > -               diff = INT_MAX;
+> > +               if (diff > INT_MAX)
+> > +                       diff = INT_MAX;
+> >
+> > -       dev->last_residency = (int) diff;
+> > +               dev->last_residency = (int) diff;
+> >
+> > -       if (entered_state >= 0) {
+> >                 /* Update cpuidle counters */
+> >                 /* This can be moved to within driver enter routine
+> >                  * but that results in multiple copies of same code.
+> > @@ -104,6 +103,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> >                 dev->last_residency = 0;
+> >         }
+> >
+> > +       local_irq_enable();
+> > +
+> >         return entered_state;
+> >  }
+> >
+> > --
+> > 1.7.12.rc2.18.g61b472e
+> >
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
