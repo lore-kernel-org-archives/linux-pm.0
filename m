@@ -1,57 +1,72 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Thu, 21 Nov 2013 09:56:32 -0800
-Message-ID: <528E4950.9030507@gmail.com>
-References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>	<3577662.BKCLJdcf18@vostro.rjw.lan> <CAKohpo=fZ8Fr=CMDzCy3daBU+mZBJ+9fOks6L7WLOZzE7WaAaQ@mail.gmail.com>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: Re: [PATCH 2/2] PM: Fix Oops from NULL pointer dereference in
+ wakeup_source_activate
+Date: Thu, 21 Nov 2013 11:02:02 -0700
+Message-ID: <528E4A9A.2060908@samsung.com>
+References: <cover.1384990612.git.shuah.kh@samsung.com>
+ <43b305b56bbbfc82b2684919e2d1ba2bd50fecae.1384990612.git.shuah.kh@samsung.com>
+ <528D6972.9010702@samsung.com> <20131120212656.1df4515e@gandalf.local.home>
+Reply-To: shuah.kh@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f42.google.com ([209.85.213.42]:61234 "EHLO
-	mail-yh0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640Ab3KUR66 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 12:58:58 -0500
-In-Reply-To: <CAKohpo=fZ8Fr=CMDzCy3daBU+mZBJ+9fOks6L7WLOZzE7WaAaQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-reply-to: <20131120212656.1df4515e@gandalf.local.home>
+Sender: stable-owner@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, gregkh@linuxfoundation.org, anton@enomsg.org, dwmw2@infradead.org, fweisbec@gmail.com, mingo@redhat.com, keun-o.park@windriver.com, paul.gortmaker@windriver.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, stable@vger.kernel.org, Shuah Khan <shuah.kh@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, Sripa Bagadia <ceh@ti.com>
 
-On 11/21/2013 07:57 AM, Viresh Kumar wrote:
-> On 21 November 2013 18:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Thursday, November 21, 2013 12:39:02 PM Viresh Kumar wrote:
+On 11/20/2013 07:26 PM, Steven Rostedt wrote:
+> On Wed, 20 Nov 2013 19:01:22 -0700
+> Shuah Khan <shuah.kh@samsung.com> wrote:
 >
->>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>> @@ -1038,6 +1038,32 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>> On 11/20/2013 06:40 PM, Shuah Khan wrote:
 >
->>> +     if (has_target()) {
->>> +             ret = __cpufreq_driver_target(policy, policy->cur,
->>> +                             CPUFREQ_RELATION_L);
->>> +             if (ret)
->>> +                     pr_err("%s: Unable to set frequency from table: %d\n",
->>> +                                     __func__, ret);
+>>> ---
+>>>    include/trace/events/power.h | 6 ++++--
+>>>    1 file changed, 4 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+>>> index cda100d..5ba545a 100644
+>>> --- a/include/trace/events/power.h
+>>> +++ b/include/trace/events/power.h
+>>> @@ -110,12 +110,14 @@ DECLARE_EVENT_CLASS(wakeup_source,
+>>>    	TP_ARGS(name, state),
+>>>
+>>>    	TP_STRUCT__entry(
+>>> -		__string(       name,           name            )
+>>> +		__string(name,  name ? name : "(no name)")
+>>>    		__field(        u64,            state           )
+>>>    	),
+>>>
+>>>    	TP_fast_assign(
+>>> -		__assign_str(name, name);
+>>> +		const char *tname = name ? name : "(no name)";
+>>> +
+>>> +		__assign_str(name, tname);
+>>>    		__entry->state = state;
+>>>    	),
+>>>
+>>>
 >>
->> Should we continue in that case?
+>> Adding tracing maintainers.
 >
-> I wasn't sure. I thought maybe there are platforms which might not be
-> ready for transitions so early and so an error message would be fine,
-> as we will fail soon anyway in case there is a bug.
+> Thanks!
 >
-
-The scaling driver for the CPU has already loaded and its .init procedure has 
-been called so .target better be callable.
-
-Since the scaling driver is responsible maintaining the set of valid frequencies
-and setting policy->cur I think it is reasonable to have the scaling driver
-ensure that policy->cur returned from its .init and the operating frequency are
-in sync and match one of the values in its frequency table.
-
---Dirk
-> --
-> viresh
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> This is one solution, but what about just making the tracing facility a
+> bit more robust for everyone. Following what glibc printf() does when
+> it is passed a NULL, does this patch fix it too?
 >
 
+Why not? I am working to get the code compiling now. Will let you know 
+if this works.
+
+-- Shuah
+
+
+-- 
+Shuah Khan
+Senior Linux Kernel Developer - Open Source Group
+Samsung Research America(Silicon Valley)
+shuah.kh@samsung.com | (970) 672-0658
