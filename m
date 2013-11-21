@@ -1,100 +1,146 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
-Date: Thu, 21 Nov 2013 14:39:36 +0100
-Message-ID: <20131121133936.GF10022@twins.programming.kicks-ass.net>
-References: <20131120160450.072555619@infradead.org>
- <20131120162736.691879744@infradead.org>
- <528CF94E.8020300@linux.intel.com>
- <20131121101018.GX10022@twins.programming.kicks-ass.net>
- <528E09F9.9030501@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Thu, 21 Nov 2013 15:38:06 +0100
+Message-ID: <1531674.UoqyyWSbOg@vostro.rjw.lan>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <5289A80B.7080808@linaro.org> <CAKohpon5L21yXg=GAuSLSgkr_66iRSn_uUWKZ1FhwD3zuQNb_A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:47499 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754406Ab3KUNjs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 08:39:48 -0500
-Content-Disposition: inline
-In-Reply-To: <528E09F9.9030501@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon5L21yXg=GAuSLSgkr_66iRSn_uUWKZ1FhwD3zuQNb_A@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eliezer Tamir <eliezer.tamir@linux.intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Nov 21, 2013 at 03:26:17PM +0200, Eliezer Tamir wrote:
-> On 21/11/2013 12:10, Peter Zijlstra wrote:
-> > On Wed, Nov 20, 2013 at 08:02:54PM +0200, Eliezer Tamir wrote:
-> >> IMHO This has been reviewed thoroughly.
+On Wednesday, November 20, 2013 11:04:28 AM Viresh Kumar wrote:
+> On 18 November 2013 11:09, viresh kumar <viresh.kumar@linaro.org> wrote:
+> > On 18 November 2013 03:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> On Sunday, November 17, 2013 10:27:43 PM Viresh Kumar wrote:
+> >
+> >>> Okay.. Even these notifiers would be fine for me. To make things more clear
+> >>> before I start implementing them:
+> >>> - What about implementing syscore's suspend_prepare and post_suspend?
 > >>
-> >> When Ben Hutchings voiced concerns I rewrote the code to use time_after,
-> >> so even if you do get switched over to a CPU where the time is random
-> >> you will at most poll another full interval.
+> >> I'm not sure how useful that would be.  When would you like to execute those
+> >> things?
+> >
+> > Maybe after freezing userspace. So I was actually looking to move the existing
+> > code I wrote in PM notifiers to those..
+> >
+> > Because in our usecase, we just want to know when suspend has started or
+> > resume has finished. And so we really don't need a per cpu callback.
+
+But it won't hurt I suppose?
+
+> > And so I felt probably it would be better to implement those instead of
+> > cpu_subsys callbacks.
+> >
+> >>> - Or you want to extend only CPU subsystems notifiers? What notifiers exactly?
+> >>> And at which places we want to issue them from?
 > >>
-> >> Linus asked me to remove this since it makes us use two time values
-> >> instead of one. see https://lkml.org/lkml/2013/7/8/345.
-> > 
-> > I'm not sure I see how this would be true.
-> > 
-> > So the do_select() code basically does:
-> > 
-> >   for (;;) {
-> > 
-> >     /* actual poll loop */
-> > 
-> >     if (!need_resched()) {
-> >       if (!busy_end) {
-> > 	busy_end = now() + busypoll;
-> > 	continue;
-> >       }
-> >       if (!((long)(busy_end - now()) < 0))
-> > 	continue;
-> >     }
-> > 
-> >     /* go sleep */
-> > 
-> >   }
-> > 
-> > So imagine our CPU0 timebase is 1 minute ahead of CPU1 (60e9 vs 0), and we start by:
-> > 
-> >   busy_end = now() + busypoll; /* CPU0: 60e9 + d */
-> > 
-> > but then we migrate to CPU1 and do:
-> > 
-> >   busy_end - now() /* CPU1: 60e9 + d' */
-> > 
-> > and find we're still a minute out; and in fact we'll keep spinning for
-> > that entire minute barring a need_resched().
-> 
-> not exactly, poll will return if there are any events to report of if
-> a signal is pending.
+> >> Why do we need to use notifiers?  What about PM callbacks?
+> >
+> > Yeah, we don't need notifiers but callbacks.
+> >
+> >>> Okay, so you were asking about extending following list: CPU_ONLINE,
+> >>> CPU_UP_PREPARE, CPU_UP_CANCELED, CPU_DOWN_PREPARE, etc.. to
+> >>> include suspend/resume ones as well?
+> >>
+> >> No.  Bus types (among other things) may provide suspend/resume callbacks for
+> >> handling devices.  We have a bus type for CPUs, which is called cpu_subsys
+> >> and currently doesn't define any PM callbacks, although it could do that in
+> >> principle.  Have you investigated that possibility?
+> >
+> > I did it now and got really confused. :)
+> >
+> > This is what my understanding is:
+> > - bus can register PM hooks, like suspend/resume/prepare, etc..
+> > - devices under that bus would register themselves to that bus and eventually
+> > can get their _driver's_ callbacks called via bus hooks.. For example and I2C
+> > controller driver's callbacks will get called via i2c core bus..
+> >
+> > - In case of cpu subsystem, even if cpu_subsys adds those hooks in
+> > drivers/base/cpu.c, then those hooks will get called for each cpu. CPU's don't
+> > have a driver
 
-Sure, but lacking any of those, you're now busy waiting for a minute.
+That actually isn't correct.  On systems with ACPI the processor driver binds to
+those devices.  So the processor driver could use PM callbacks on those systems
+in principle.
 
-> > Surely that's not intended and desired?
-> 
-> This limit is an extra safety net, because busy polling is expensive,
-> we limit the time we are willing to do it.
+> > and so the only callbacks called are the ones of cpu_subsys.
+> > - How will we bind/use them with cpufreq?
+> >
+> > Our sole requirement here is to get notify cpufreq core that system
+> > suspend/resume/hibernation/restore has started/finished. How will that get
+> > fulfilled with cpu_subsys callbacks?
 
-I just said your limit 'sysctl_net_busy_poll' isn't meaningful in any
-way shape or fashion.
+Introduce proper drivers for processors?  All of the cpuidle and cpufreq stuff
+currently works by using its own homegrown device registration methods etc, but
+surely that doesn't have to be the case?
 
-> We don't override any limit the user has put on the system call.
+> >>> Logically speaking, all existing ones does look correct as they are more or
+> >>> less cpu related. But suspend/resume doesn't look any similar, Atleast to me.
+> >>>
+> >>> Suspend/resume are system's state rather than CPU's.. We aren't suspending
+> >>> or resuming CPUs, we are shutting them off.. So I thought maybe syscore ops
+> >>> is a better place (which is already used by cpufreq)..
+> >>
+> >> cpufreq uses syscore_ops for the boot CPU only and that admittedly is a hack.
+> >
+> > Why do you call it a hack?
+> >
+> >> syscore_ops is specifically for things that have to be suspended with only one
+> >> CPU online and with interrupts off.  I'm not sure how that applies to cpufreq.
+> >
+> > Currently syscore_ops only implements suspend/resume/shutdown callbacks and
+> > those precisely happen the way you mentioned.
 
-You are in fact, note how the normal select @endtime argument is only
-set up _after_ you're done polling. So if the syscall had a timeout of 5
-seconds, you just blew it by 55.
+Which is very much intentional.
 
-> A signal or having events to report will also stop the looping.
-> So we are mostly capping the resources an _idle_ system will waste
-> on busy polling.
+> > i.e. after removing all non-boot
+> > CPUs and disabling interrupts (And before bringing back all CPUs and enabling
+> > interrupts on resume side).. So, yes we have limitation currently..
 
-Repeat, you're not actually capping anything.
+That is a by-design limitation, mind you.
 
-> We want to globally cap the amount of time the system busy polls, on
-> average. Nothing catastrophic will happen in the extremely rare occasion
-> that we miss.
-> 
-> The alternative is to use one more int on every poll/select all the
-> time, this seems like a bigger cost.
+> > Honestly speaking I have looked at syscore ops for the first time now, when we
+> > got to this problem.. I couldn't find much information about it anywhere,
+> > leaving the commit itself: 40dc16
+> >
+> > And by that, this is the definition of this framework: "PM / Core: Introduce
+> > struct syscore_ops for core subsystems PM"
 
-No, 'int' has nothing to do with it, using a semi-sane timesource does.
+That also is intentional, because it is very special.  It really only is for
+stuff that has to be run after putting non-boot CPUs offline.
+
+> > I can see that you mentioned the limitations like single cpu and disabled
+> > interrupts even in the log, but I think we can enhance this framework a little bit.
+
+No.
+
+> > Also I can see that there are many users of this framework which aren't core
+> > frameworks but simply drivers. I don't think that was the intention behind this
+> > framework, but that's how others went to use it.
+
+That's not my fault.
+
+> > So, this framework exists to service core frameworks for their requirements
+> > about PM stages. Currently that is only limited to late suspend and early resume
+> > but I feel there is space for more..
+> >
+> > For example, our current problem.. A core framework wants to prepare before
+> > suspend starts and after everything has resumed. Obviously that would violate
+> > one of the basic rules with which this was designed, but still this feature lies
+> > in scope of syscore. And so we can keep the limitations as is for
+> > suspend/resume/shutdown but not for prepare and resume_late.
+> >
+> > And I really feel even if we would be able to use cpu callbacks for
+> > suspend/resume, that would be a real *Hack*, because our framework doesn't want
+> > to get a callback for each of its devices (i.e. cpu) but a single callback at
+> > certain instances..
+
+Oh really?  So CPUs are not individual devices any more or what?
+
+Rafael
+
