@@ -1,48 +1,89 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] intel_idle: shrink avn_cstates table and mark it with
- __initdata tag
-Date: Thu, 21 Nov 2013 13:09:38 +0100
-Message-ID: <7374737.rFhOp5HKV7@amdc1032>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 Resend] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+Date: Thu, 21 Nov 2013 14:09:29 +0100
+Message-ID: <1500472.jI9SKO09jR@vostro.rjw.lan>
+References: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:48571 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225Ab3KUMJr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 07:09:47 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:55787 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754122Ab3KUM4t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 07:56:49 -0500
+In-Reply-To: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This is a fixup for commit fab04b2 ("intel_idle: Support Intel Atom
-Processor C2000 Product Family") which didn't take into account
-changes done in commits eba682a ("intel_idle: shrink states tables")
-and 00f3e75 ("intel_idle: mark states tables with __initdata tag").
+On Thursday, November 21, 2013 08:54:12 AM Viresh Kumar wrote:
+> Loop for states is currently present on callers side and so is replicated at
+> several places. It would be better to move that inside cpuidle_free_state_kobj()
+> instead.
+> 
+> This patch does it.
+> 
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
+>  1 file changed, 12 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+> index e918b6d..ade31a9 100644
+> --- a/drivers/cpuidle/sysfs.c
+> +++ b/drivers/cpuidle/sysfs.c
+> @@ -378,12 +378,17 @@ static struct kobj_type ktype_state_cpuidle = {
+>  	.release = cpuidle_state_sysfs_release,
+>  };
+>  
+> -static inline void cpuidle_free_state_kobj(struct cpuidle_device *device, int i)
+> +static inline void cpuidle_free_state_kobj(struct cpuidle_device *device,
+> +		int count)
+>  {
+> -	kobject_put(&device->kobjs[i]->kobj);
+> -	wait_for_completion(&device->kobjs[i]->kobj_unregister);
+> -	kfree(device->kobjs[i]);
+> -	device->kobjs[i] = NULL;
+> +	int i;
+> +
+> +	for (i = 0; i < count; i++) {
+> +		kobject_put(&device->kobjs[i]->kobj);
+> +		wait_for_completion(&device->kobjs[i]->kobj_unregister);
+> +		kfree(device->kobjs[i]);
+> +		device->kobjs[i] = NULL;
+> +	}
+>  }
+>  
+>  /**
+> @@ -419,8 +424,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
+>  	return 0;
+>  
+>  error_state:
+> -	for (i = i - 1; i >= 0; i--)
+> -		cpuidle_free_state_kobj(device, i);
+> +	cpuidle_free_state_kobj(device, i);
 
-Cc: Len Brown <len.brown@intel.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/idle/intel_idle.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Well, doesn't the ordering actually matter?  Your patch changes the ordering
+here.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index cbd4e9a..f4bdf72 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -329,7 +329,8 @@ static struct cpuidle_state atom_cstates[] __initdata = {
- 	{
- 		.enter = NULL }
- };
--static struct cpuidle_state avn_cstates[CPUIDLE_STATE_MAX] = {
-+
-+static struct cpuidle_state avn_cstates[] __initdata = {
- 	{
- 		.name = "C1-AVN",
- 		.desc = "MWAIT 0x00",
+>  	return ret;
+>  }
+>  
+> @@ -430,10 +434,7 @@ error_state:
+>   */
+>  static void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
+>  {
+> -	int i;
+> -
+> -	for (i = 0; i < device->state_count; i++)
+> -		cpuidle_free_state_kobj(device, i);
+> +	cpuidle_free_state_kobj(device, device->state_count);
+>  }
+>  
+>  #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
+> 
 -- 
-1.8.2.3
-
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
