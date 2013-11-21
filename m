@@ -1,94 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Thu, 21 Nov 2013 14:11:57 +0100
-Message-ID: <3577662.BKCLJdcf18@vostro.rjw.lan>
-References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
+From: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
+Date: Thu, 21 Nov 2013 15:26:17 +0200
+Message-ID: <528E09F9.9030501@linux.intel.com>
+References: <20131120160450.072555619@infradead.org> <20131120162736.691879744@infradead.org> <528CF94E.8020300@linux.intel.com> <20131121101018.GX10022@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: nm@ti.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, ceh@ti.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:60834 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751154Ab3KUN0X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Nov 2013 08:26:23 -0500
+In-Reply-To: <20131121101018.GX10022@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, November 21, 2013 12:39:02 PM Viresh Kumar wrote:
-> Sometimes boot loaders set CPU frequency to a value outside of frequency table
-> present with cpufreq core. In such cases CPU might be unstable if it has to run
-> on that frequency for long duration of time and so its better to set it to a
-> frequency which is specified in freq-table. This also makes cpufreq stats
-> inconsistent as cpufreq-stats would fail to register because current frequency
-> of CPU isn't found in freq-table.
+On 21/11/2013 12:10, Peter Zijlstra wrote:
+> On Wed, Nov 20, 2013 at 08:02:54PM +0200, Eliezer Tamir wrote:
+>> IMHO This has been reviewed thoroughly.
+>>
+>> When Ben Hutchings voiced concerns I rewrote the code to use time_after,
+>> so even if you do get switched over to a CPU where the time is random
+>> you will at most poll another full interval.
+>>
+>> Linus asked me to remove this since it makes us use two time values
+>> instead of one. see https://lkml.org/lkml/2013/7/8/345.
 > 
-> Because we don't want this change to effect boot process badly, we go for the
-> next freq which is >= policy->cur ('cur' must be set by now, otherwise we will
-> end up setting freq to lowest of the table as 'cur' is initialized to zero).
+> I'm not sure I see how this would be true.
 > 
-> In case where CPU is already running on one of the frequencies present in
-> freq-table, this would turn into a dummy call as __cpufreq_driver_target() would
-> return early.
+> So the do_select() code basically does:
 > 
-> Reported-by: Carlos Hernandez <ceh@ti.com>
-> Reported-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> After lots of discussion with Nishanth and others, I feel something like this..
+>   for (;;) {
 > 
-> @Nishanth: Please see if this works for you and I hope we don't need any of
-> these patches anymore:
+>     /* actual poll loop */
 > 
-> - https://lkml.org/lkml/2013/11/15/569 : cpufreq: cpufreq-cpu0: Use a sane boot
-> frequency when booting with a mismatched bootloader configuration
-> - https://lkml.org/lkml/2013/11/15/503 : cpufreq: stats: Do not populate stats
->   when policy->cur has no exact match
-> - https://lkml.org/lkml/2013/11/19/16 : cpufreq/stats: Add "unknown" frequency
->   field in stats tables
+>     if (!need_resched()) {
+>       if (!busy_end) {
+> 	busy_end = now() + busypoll;
+> 	continue;
+>       }
+>       if (!((long)(busy_end - now()) < 0))
+> 	continue;
+>     }
 > 
->  drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
+>     /* go sleep */
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 02d534d..d55c843 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1038,6 +1038,32 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->  		}
->  	}
->  
-> +	/*
-> +	 * Sometimes boot loaders set CPU frequency to a value outside of
-> +	 * frequency table present with cpufreq core. In such cases CPU might be
-> +	 * unstable if it has to run on that frequency for long duration of time
-> +	 * and so its better to set it to a frequency which is specified in
-> +	 * freq-table. This also makes cpufreq stats inconsistent as
-> +	 * cpufreq-stats would fail to register because current frequency of CPU
-> +	 * isn't found in freq-table.
-> +	 *
-> +	 * Because we don't want this change to effect boot process badly, we go
-> +	 * for the next freq which is >= policy->cur ('cur' must be set by now,
-> +	 * otherwise we will end up setting freq to lowest of the table as 'cur'
-> +	 * is initialized to zero).
-> +	 *
-> +	 * In case where CPU is already running on one of the frequencies
-> +	 * present in freq-table, this would turn into a dummy call as
-> +	 * __cpufreq_driver_target() would return early.
-> +	 */
-> +	if (has_target()) {
-> +		ret = __cpufreq_driver_target(policy, policy->cur,
-> +				CPUFREQ_RELATION_L);
-> +		if (ret)
-> +			pr_err("%s: Unable to set frequency from table: %d\n",
-> +					__func__, ret);
+>   }
+> 
+> So imagine our CPU0 timebase is 1 minute ahead of CPU1 (60e9 vs 0), and we start by:
+> 
+>   busy_end = now() + busypoll; /* CPU0: 60e9 + d */
+> 
+> but then we migrate to CPU1 and do:
+> 
+>   busy_end - now() /* CPU1: 60e9 + d' */
+> 
+> and find we're still a minute out; and in fact we'll keep spinning for
+> that entire minute barring a need_resched().
 
-Should we continue in that case?
+not exactly, poll will return if there are any events to report of if
+a signal is pending.
 
-> +	}
-> +
->  	/* related cpus should atleast have policy->cpus */
->  	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
->  
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> Surely that's not intended and desired?
+
+This limit is an extra safety net, because busy polling is expensive,
+we limit the time we are willing to do it.
+
+We don't override any limit the user has put on the system call.
+A signal or having events to report will also stop the looping.
+So we are mostly capping the resources an _idle_ system will waste
+on busy polling.
+
+We want to globally cap the amount of time the system busy polls, on
+average. Nothing catastrophic will happen in the extremely rare occasion
+that we miss.
+
+The alternative is to use one more int on every poll/select all the
+time, this seems like a bigger cost.
