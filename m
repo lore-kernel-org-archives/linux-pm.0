@@ -1,54 +1,135 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH RFC v3 01/12] arm64: kernel: add MPIDR_EL1 accessors macros
-Date: Thu, 21 Nov 2013 11:24:08 +0000
-Message-ID: <1385033059-25896-2-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH RFC v3 00/12] arm64: suspend/resume implementation
+Date: Thu, 21 Nov 2013 11:24:07 +0000
+Message-ID: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:60985 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:60933 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753416Ab3KULYw (ORCPT
+	with ESMTP id S1751461Ab3KULYw (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 06:24:52 -0500
-In-Reply-To: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Martin <dave.martin@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, Kumar Sankaran <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Christoffer Dall <christoffer.dall@linaro.org>
 
-In order to simplify access to different affinity levels within the
-MPIDR_EL1 register values, this patch implements some preprocessor
-macros that allow to retrieve the MPIDR_EL1 affinity level value according
-to the level passed as input parameter.
+This series is v3 of a previous posting:
 
-Reviewed-by: Will Deacon <will.deacon@arm.com>
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- arch/arm64/include/asm/cputype.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+http://lists.infradead.org/pipermail/linux-arm-kernel/2013-October/204471.h=
+tml
 
-diff --git a/arch/arm64/include/asm/cputype.h b/arch/arm64/include/asm/cput=
-ype.h
-index 5fe138e..e371936 100644
---- a/arch/arm64/include/asm/cputype.h
-+++ b/arch/arm64/include/asm/cputype.h
-@@ -30,6 +30,16 @@
-=20
- #define MPIDR_HWID_BITMASK=090xff00ffffff
-=20
-+#define MPIDR_LEVEL_BITS_SHIFT=093
-+#define MPIDR_LEVEL_BITS=09(1 << MPIDR_LEVEL_BITS_SHIFT)
-+#define MPIDR_LEVEL_MASK=09((1 << MPIDR_LEVEL_BITS) - 1)
-+
-+#define MPIDR_LEVEL_SHIFT(level) \
-+=09(((1 << level) >> 1) << MPIDR_LEVEL_BITS_SHIFT)
-+
-+#define MPIDR_AFFINITY_LEVEL(mpidr, level) \
-+=09((mpidr >> MPIDR_LEVEL_SHIFT(level)) & MPIDR_LEVEL_MASK)
-+
- #define read_cpuid(reg) ({=09=09=09=09=09=09\
- =09u64 __val;=09=09=09=09=09=09=09\
- =09asm("mrs=09%0, " reg : "=3Dr" (__val));=09=09=09\
+CPU idle driver and PSCI suspend implementation used for testing are not
+published as part of this series since they depend on standardization
+of PSCI bindings for C-states; code can be made available on a separate bra=
+nch
+if required.
+
+v3 changes:
+
+- Rebased to 3.12
+- Removed unused macros, merged them in generic cpu_do_{suspend}/{resume}
+- Refactored hw breakpoint reset code
+- Split Kconfig and make infrastructure
+- Moved debug monitors save/restore to cpu_do_{suspend}/{resume} and
+  cpu_suspend interface
+
+v2 changes:
+
+- Rebased to 3.12-rc4
+- Changed cpu_suspend prototype
+- Added macros to save/restore CPU registers
+- Improved register/load/store scheduling in context save/restore
+- Changed Kconfig option
+- Refactored the stack allocation and context struct layout
+- Fixed a bug in cpu_suspend return path
+- Added tick broadcast support
+- Dropped RFC tag
+
+This patch series provides an implementation of suspend/resume and
+related CPU PM notifiers for the arm64 architecture. The implementation
+has been tweaked and code made a bit more generic wrt ARM 32 bits
+version. The cpu_suspend call prototype accepts a single parameter that
+is translated by the CPU operations suspend protocol backend into a
+series of protocol (eg PSCI) specific parameters and function calls.
+This allows for generic suspend-to-RAM and CPU idle drivers, where the
+platform complexity is hidden behind the CPU ops suspend protocol
+implementation.
+
+The context restore split between processor specific functions and
+generic code has been kept similar to arm32 as well, since this makes
+sense from a functionality perspective, even though there is just a
+an architecture specific save/restore implementation for arm64, for v8.
+Code that deals with turning on the MMU and returning from suspend is kept
+in the same file as the the suspend method itself, so that assembly code is
+self contained in a single file and separated from the interface.
+
+The CPU register context is allocated on the stack; this behaviour is
+the same as in the arm 32-bit port, even though context could have been
+allocated statically as a NR_CPUS array of struct and the context
+addresses stored once of all in the context pointers array after virtual
+to physical conversion. Current solution uses the stack, since there is
+no need to allocate additional context space for context that can be
+easily saved on the suspend threads stacks, with no additional memory
+requirement.
+
+Cache flushing is kept to a minimum; the cpu_suspend method cleans only the
+few bytes of context to DRAM that need to be retrieved with the MMU off,
+the remainder of cache cleaning is delegated to suspend finishers.
+
+The series also provides patches to simplify the MPIDR_EL1 management
+and MPIDR_EL1 hashing that are integrated to the series but are also useful
+as stand alone code.
+
+Code has been tested on AEM v8 models and a simple CPU idle driver that
+enables a C-state where CPUs are shutdown when wfi is hit.
+
+KVM CPU PM notifier has been tested using kvm-tools, and by booting a KVM g=
+uest
+on a host with deep idle states enabled.
+
+HW breakpoint CPU PM notifier has been tested using a simple perf test that
+sets up per-cpu watchpoints and checks the proper behaviour when deep idle
+states are enabled.
+
+Lorenzo Pieralisi (12):
+  arm64: kernel: add MPIDR_EL1 accessors macros
+  arm64: kernel: build MPIDR_EL1 hash function data structure
+  arm64: kernel: suspend/resume registers save/restore
+  arm64: kernel: cpu_{suspend/resume} implementation
+  arm64: kernel: implement fpsimd CPU PM notifier
+  arm: kvm: implement CPU PM notifier
+  arm64: kernel: refactor code to install/uninstall breakpoints
+  arm64: kernel: implement HW breakpoints CPU PM notifier
+  arm64: enable generic clockevent broadcast
+  arm64: kernel: add CPU idle call
+  arm64: kernel: add PM build infrastructure
+  arm64: add CPU power management menu/entries
+
+ arch/arm/kvm/arm.c                |  30 ++++++
+ arch/arm64/Kconfig                |  21 ++++
+ arch/arm64/include/asm/cpu_ops.h  |   6 ++
+ arch/arm64/include/asm/cputype.h  |  10 ++
+ arch/arm64/include/asm/hardirq.h  |   2 +-
+ arch/arm64/include/asm/proc-fns.h |   3 +
+ arch/arm64/include/asm/smp_plat.h |  13 +++
+ arch/arm64/include/asm/suspend.h  |  27 +++++
+ arch/arm64/kernel/Makefile        |   1 +
+ arch/arm64/kernel/asm-offsets.c   |  11 ++
+ arch/arm64/kernel/fpsimd.c        |  36 +++++++
+ arch/arm64/kernel/hw_breakpoint.c | 221 ++++++++++++++++++++++++++--------=
+----
+ arch/arm64/kernel/process.c       |   7 +-
+ arch/arm64/kernel/setup.c         |  70 ++++++++++++
+ arch/arm64/kernel/sleep.S         | 184 +++++++++++++++++++++++++++++++
+ arch/arm64/kernel/smp.c           |  17 +++
+ arch/arm64/kernel/suspend.c       | 109 +++++++++++++++++++
+ arch/arm64/mm/proc.S              |  69 ++++++++++++
+ 18 files changed, 767 insertions(+), 70 deletions(-)
+ create mode 100644 arch/arm64/include/asm/suspend.h
+ create mode 100644 arch/arm64/kernel/sleep.S
+ create mode 100644 arch/arm64/kernel/suspend.c
+
 --=20
 1.8.4
 
