@@ -1,55 +1,64 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Thu, 21 Nov 2013 10:11:50 +0100
-Message-ID: <CAPDyKFpfdjMRVWnkiGTy2D=J1ghxbFgiDXROrpX1-mDMihhgdw@mail.gmail.com>
-References: <CAPDyKFozCfPj-gW124cyFSu=ckiL-zVEmEx5tspY-1maO=+6fA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1311141053060.1439-100000@iolanthe.rowland.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
+Date: Thu, 21 Nov 2013 11:10:18 +0100
+Message-ID: <20131121101018.GX10022@twins.programming.kicks-ass.net>
+References: <20131120160450.072555619@infradead.org>
+ <20131120162736.691879744@infradead.org>
+ <528CF94E.8020300@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f175.google.com ([209.85.216.175]:37807 "EHLO
-	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752529Ab3KUJLw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 04:11:52 -0500
-Received: by mail-qc0-f175.google.com with SMTP id x20so121711qcv.6
-        for <linux-pm@vger.kernel.org>; Thu, 21 Nov 2013 01:11:51 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.44L0.1311141053060.1439-100000@iolanthe.rowland.org>
+Received: from merlin.infradead.org ([205.233.59.134]:42366 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902Ab3KUKKe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2013 05:10:34 -0500
+Content-Disposition: inline
+In-Reply-To: <528CF94E.8020300@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+To: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 14 November 2013 16:55, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 14 Nov 2013, Ulf Hansson wrote:
->
->> > If you want a driver to do the same thing for runtime PM and system
->> > suspend/resume, point its .suspend_late() and .runtime_suspend() to the
->> > same routine and analogously for .runtime_resume() and .resume_early()
->> > (that may not work for PCI, though, because of the _noirq stuff, but that's
->> > the PCI bus type issue).
->>
->> When your .suspend_late callback gets called, your device may be
->> either active or inactive from runtime PM point of view. Just pointing
->> the .suspend_late callback to the .runtime_suspend callback, simply
->> wont work.
->>
->> That would mean we might end up in trying to inactivate an already
->> inactivated device, which I doubt is a good thing.:-) Some additional
->> code will be needed to track the "runtime state" and to act
->> accordingly. This is what drivers already tries to handle as of today,
->> though so far mostly from their .suspend callbacks I believe.
->
-> You could write a "generic" suspend_late routine that would invoke the
-> driver's runtime_suspend routine if the device's runtime PM status was
-> RPM_ACTIVE.
->
+On Wed, Nov 20, 2013 at 08:02:54PM +0200, Eliezer Tamir wrote:
+> IMHO This has been reviewed thoroughly.
+> 
+> When Ben Hutchings voiced concerns I rewrote the code to use time_after,
+> so even if you do get switched over to a CPU where the time is random
+> you will at most poll another full interval.
+> 
+> Linus asked me to remove this since it makes us use two time values
+> instead of one. see https://lkml.org/lkml/2013/7/8/345.
 
-I started drafting a new RFC according to your suggestion. Soon I
-realized that using such a callback for .suspend_late will make
-drivers/buses system suspend to depend on runtime suspend, (which my
-RFC also has problem with). So I guess this is not a recommended set
-up from the PM maintainers. Wandering in circles... :-)
+I'm not sure I see how this would be true.
 
-Kind regards
-Ulf Hansson
+So the do_select() code basically does:
+
+  for (;;) {
+
+    /* actual poll loop */
+
+    if (!need_resched()) {
+      if (!busy_end) {
+	busy_end = now() + busypoll;
+	continue;
+      }
+      if (!((long)(busy_end - now()) < 0))
+	continue;
+    }
+
+    /* go sleep */
+
+  }
+
+So imagine our CPU0 timebase is 1 minute ahead of CPU1 (60e9 vs 0), and we start by:
+
+  busy_end = now() + busypoll; /* CPU0: 60e9 + d */
+
+but then we migrate to CPU1 and do:
+
+  busy_end - now() /* CPU1: 60e9 + d' */
+
+and find we're still a minute out; and in fact we'll keep spinning for
+that entire minute barring a need_resched().
+
+Surely that's not intended and desired?
