@@ -1,120 +1,74 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during
- system suspend
-Date: Fri, 22 Nov 2013 09:19:32 +0100
-Message-ID: <CAPDyKFo9vzCVtMFzZaCjkGosPve72=RbWtLXaSzzX8Wq2O5ptA@mail.gmail.com>
-References: <CAPDyKFrJ34oWhPosqqfh-cCpoQnAY9Q90wP7nn60RAh87ZCPAw@mail.gmail.com>
-	<Pine.LNX.4.44L0.1311211046160.1301-100000@iolanthe.rowland.org>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [PATCH V2] Cpufreq: Make governor data on nonboot cpus across
+ system suspend/resume
+Date: Fri, 22 Nov 2013 16:19:23 +0800
+Message-ID: <528F138B.1090107@intel.com>
+References: <9847309.KdKOG5y1Zx@vostro.rjw.lan> <1384616184-6197-1-git-send-email-tianyu.lan@intel.com> <5288425A.6000501@linaro.org> <528F0C9E.8020409@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f180.google.com ([209.85.216.180]:37741 "EHLO
-	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808Ab3KVITd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 03:19:33 -0500
-Received: by mail-qc0-f180.google.com with SMTP id w7so359884qcr.11
-        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2013 00:19:32 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.44L0.1311211046160.1301-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <528F0C9E.8020409@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: viresh kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org
 
-On 21 November 2013 16:54, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 21 Nov 2013, Ulf Hansson wrote:
->
->> >> As Rafael mentioned, there is bus/pm_domain code that comes into play
->> >> here, so I'm not sure it's always a bug.
->> >>
->> >> IMO, it's not a bug for the driver to depend on runtime PM if the
->> >> bus/pm_domain is handling the details.
->> >>
->> >> On OMAP, we handle all the SoC on-chip devices with a pm_domain since
->> >> the low-level PM operations that need to happen are bus-level things not
->> >> device-level things.  Therefore, drivers for these devices can rely
->> >> entirely on runtime PM, even for system suspend.  The late/early
->> >> callbacks in the pm_domain can see if the device is runtime suspended
->> >> already or not and behave accordingly.
->> >>
->> >> So, this all *can* work by handling it at the bus/pm_domain level, but
->> >> as Ulf has mentioned (and I agree) it seems like a clunky workaround
->> >> because the PM core is preventing it from happening as one might expect.
->> >
->> > The problem is that userspace can disable runtime PM at any time by
->> > writing "on" to /sys/.../power/control.  Once that's done, you can't
->> > depend on runtime PM to put the device into a low-power state during
->> > system suspend.
->> >
->> > Now, if the bus-level code always takes care of putting the device into
->> > low power during system suspend, then the driver doesn't have to worry
->> > about it at all.  That's perfectly fine -- but I would hardly describe
->> > the situation by saying the driver relies on runtime PM for system
->> > suspend.
+On 2013=E5=B9=B411=E6=9C=8822=E6=97=A5 15:49, viresh kumar wrote:
+> On Sunday 17 November 2013 09:43 AM, viresh kumar wrote:
+>> On 16 November 2013 21:06, Lan Tianyu <tianyu.lan@intel.com> wrote:
+>=20
+>> But I don't really like the solution here. You are handling frozen f=
+or EXIT in
+>> cpufreq-core and for INIT in governor. That doesn't look like the ri=
+ght
+>> approach. There are out of tree governors too (I know we don't care =
+about them
+>> :)), and those also need to adapt with some policy made at cpufreq-c=
+ore level.
 >>
->> But they are, since that is exactly what these driver depends on
->> during system suspend.
->
-> Not at all.  These drivers rely on the bus-level code's suspend
-> routine to handle system suspend.  They don't rely on runtime PM.
->
->>  And since the power domain invokes the runtime
->> callbacks, normally CONFIG_PM_RUNTIME is needed for the callbacks to
->> be set up from in the bus/driver.
->
-> No, it isn't.  You can always write callbacks that get compiled even
-> when CONFIG_PM_RUNTIME isn't enabled.  It's very easy -- all you have
-> to do is change
->
->         #ifdef CONFIG_PM_RUNTIME
->
-> to
->
->         #ifdef CONFIG_PM
+>> I told you that I had another solution for this problem, pretty simi=
+lar to
+>> yours. It looked like this:
+>=20
+> Hi Lan,
+>=20
 
-You nailed it here! Since you consider this to be allowed from
-dependency point of view, all my problems described would be
-"solvable". :-)
+Hi Viresh:
 
-Regarding the SET_RUNTIME_PM_OPS macro, which today relies on
-CONFIG_PM_RUNTIME should then be moved to CONFIG_PM instead. As
-prerequisites, drivers using this macro, obviously need to implement
-the runtime PM callbacks within CONFIG_PM as well. If that makes sense
-to you as well, I will start working on converting them that needs.
+> There is some confusion going on here :)
+>=20
 
->
->> I suppose that the OMAP SoC maintainers were accepting that this
->> dependency were allowed to exist, since that was the only solution to
->> their problem at that point.
->>
->> Today, several years later, we are still indirectly pushing those SoC
->> maintainers that faces similar issues, to accept this dependency
->> between system suspend and runtime suspend. I see a conflict here. :-)
->
-> It's only a misunderstanding.  There is no dependency.
->
->
->> I started drafting a new RFC according to your suggestion. Soon I
->> realized that using such a callback for .suspend_late will make
->> drivers/buses system suspend to depend on runtime suspend, (which my
->> RFC also has problem with). So I guess this is not a recommended set
->> up from the PM maintainers. Wandering in circles... :-)
->
-> Same misunderstanding as before.  The drivers merely need to be written
-> so that the callbacks are compiled whenever CONFIG_PM is enabled rather
-> than CONFIG_PM_RUNTIME.
+I think you also are in the Cc list and replied the mail.:)
+https://lkml.org/lkml/2013/11/21/273
 
-I will submit a patch for a "generic suspend late" asap.
+> There were few problems in the approach in your patch, which I have m=
+entioned
+> above, and Rafael agreed to them..
 
-I noticed the pm_generic_suspend_late already existed in similar form
-as the other generic functions, so I suggest we leave that as is. We
-name this new one as, "pm_generic_suspend_late_runtime", to indicate
-some relationship with runtime PM.
+I only saw the out-of-tree governor issue your mentioned but where they
+are? How upstream kernel cares them?
 
-If you have other suggestions, please advise me.
+>=20
+>> But after the PM notifiers patch I even don't want this to go.. I wi=
+ll make sure
+>> that that patch goes in, in one form or another :)
+>=20
+> And I was still trying to get a better solution in place of these cha=
+nges. And
+> was going on the suggestions you gave about calling cpufreq callbacks=
+ from
+> dpm_{suspend|resume}_noirq() calls.. And I am on my way to get things=
+ fixed that
+> way. And so we don't actually need this patch anymore (I just saw tha=
+t you have
+> sent another version of it, probably because Rafael asked? Don't know=
+ what
+> happened there :))..
+>=20
+> So, I will try to get something working soon for you and Nishanth..
+>=20
 
-Kind regards
-Ulf Hansson
-
->
-> Alan Stern
->
+--=20
+Best regards
+Tianyu Lan
