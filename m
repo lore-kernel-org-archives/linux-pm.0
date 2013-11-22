@@ -1,56 +1,72 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V2 2/2] cpufreq: Change freq before suspending governors
-Date: Fri, 22 Nov 2013 12:39:24 -0700
-Message-ID: <528FB2EC.2020202@wwwdotorg.org>
-References: <cover.1385118255.git.viresh.kumar@linaro.org>	<df162ba4cbdf1379ccfa5dd4ca34153626ae9c71.1385118256.git.viresh.kumar@linaro.org>	<2783049.JzUB2QcsZz@vostro.rjw.lan> <CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Fri, 22 Nov 2013 15:43:43 -0600
+Message-ID: <528FD00F.9080108@ti.com>
+References: <de5c3ff26e9d06a6e0b06f8ba3da6d8c3ff82304.1385017369.git.viresh.kumar@linaro.org> <528F01C4.1050608@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:58787 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932110Ab3KVTpT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 14:45:19 -0500
-In-Reply-To: <CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <528F01C4.1050608@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: viresh kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, ceh@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@nvidia.com>, Kukjin Kim <kgene@kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-On 11/22/2013 05:52 AM, Viresh Kumar wrote:
-> On 22 November 2013 18:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Friday, November 22, 2013 04:59:49 PM Viresh Kumar wrote:
->>> Some platforms might want to change frequency before suspending governors. Like:
->>> - Some platform which want to set freq to max to speed up suspend/hibernation
->>>   process.
->>> - Some platform (like: Tegra or exynos), set this to min or bootloader's
->>>   frequency.
->>>
->>> This patch adds an option for those, so that they can specify this at call to
->>> ->init(), so that cpufreq core can take care of this before suspending system.
->>>
->>> If this variable is not updated by ->init() then its value would be zero and so
->>> core wouldn't do anything.
->>>
->>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 11/22/2013 01:03 AM, viresh kumar wrote:
+> On Thursday 21 November 2013 12:39 PM, Viresh Kumar wrote:
+
+[...]
+> Copying another mail from Nishant here to get my cc'list back..
+> 
+> On Friday 22 November 2013 05:12 AM, Nishanth Menon wrote:
+>> I gave this a quick run on my 3.12 kernel:
+>> http://pastebin.mozilla.org/3649730 is what I applied and output
+>> http://pastebin.mozilla.org/3649729
 >>
->> I don't think this is generally necessary, because the suspend/resume routines
->> added by patch [1/2] will be executed very late during suspend or very early
->> during resume and it shouldn't really matter what performance levels the CPUs
->> are at then.
+>> I need to see what I might have mucked up.. or see if I can test this
+>> on 3.13 master on a different board (since OMAP5 wont boot in master
+>> without clock dts nodes :()..
 > 
-> There are few things here:
-> - I feel that the current place from where we have suspended stuff is not gonna
-> fly. We are doing that in noirq and probably devices which might be required
-> during frequency transitions might already be down.. So we *may* need to
-> move that in dpm_suspend()..
-> - Secondly I want to understand why Tegra/Exynos has such code which I
-> mentioned above..
+> This happened because of common sense, which was missing in my patch :)
 > 
-> @Stephen, Kukjin and other samsung folks: Please provide some input here,
-> before your systems break in mainline :)
+> Try this over existing patch:
 
-I believe we set the clock to a low value because fast clocks consume
-more power. Tegra architecturally supports a number of different suspend
-levels. Only some of those actually power off or gate the clock source
-itself.
+
+Works like a charm :) thanks.
+
+http://pastebin.mozilla.org/3655494 -> simple Ondemand governor testing.
+http://pastebin.mozilla.org/3655493 -> simple Userspace governor testing.
+
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 6e8b226..e403388 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1126,13 +1126,19 @@ static int __cpufreq_add_dev(struct device *dev, struct
+> subsys_interface *sif,
+>          * In case where CPU is already running on one of the frequencies
+>          * present in freq-table, this would turn into a dummy call as
+>          * __cpufreq_driver_target() would return early.
+> +        *
+> +        * We are passing target-freq as "policy->cur - 1" otherwise
+> +        * __cpufreq_driver_target() would simply fail, as policy->cur will be
+> +        * equal to target-freq.
+>          */
+>         if (has_target()) {
+> -               ret = __cpufreq_driver_target(policy, policy->cur,
+> +               ret = __cpufreq_driver_target(policy, policy->cur - 1,
+>                                 CPUFREQ_RELATION_L);
+> -               if (ret)
+> +               if (ret) {
+>                         pr_err("%s: Unable to set frequency from table: %d\n",
+>                                         __func__, ret);
+> +                       goto err_out_unregister;
+> +               }
+>         }
+> 
+>         /* related cpus should atleast have policy->cpus */
+> 
+-- 
+Regards,
+Nishanth Menon
