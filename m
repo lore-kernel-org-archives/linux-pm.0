@@ -1,158 +1,103 @@
-From: viresh kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Fri, 22 Nov 2013 14:41:37 +0530
-Message-ID: <528F1FC9.4070306@linaro.org>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <1531674.UoqyyWSbOg@vostro.rjw.lan> <CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com> <2642790.BqNcqy9aCb@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2 Resend] cpuidle: free all state kobjects from cpuidle_free_state_kobj()
+Date: Fri, 22 Nov 2013 10:50:29 +0100
+Message-ID: <528F28E5.2030900@linaro.org>
+References: <8094ec60e0ad37d24ffbf146bc61515bd805c4fe.1385004181.git.viresh.kumar@linaro.org>	<1500472.jI9SKO09jR@vostro.rjw.lan> <CAKohpon_-QSPOMi4L6WJZL0akXymhRqhkEWpmzuczE6F-=VUBw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2642790.BqNcqy9aCb@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ea0-f170.google.com ([209.85.215.170]:59971 "EHLO
+	mail-ea0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752069Ab3KVJu0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 04:50:26 -0500
+Received: by mail-ea0-f170.google.com with SMTP id k10so402335eaj.1
+        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2013 01:50:25 -0800 (PST)
+In-Reply-To: <CAKohpon_-QSPOMi4L6WJZL0akXymhRqhkEWpmzuczE6F-=VUBw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday 22 November 2013 03:44 AM, Rafael J. Wysocki wrote:
-> Short-term.  To be precise, governors may be stopped at the beginning of
-> dpm_suspend_noirq() (that is, where cpuidle_pause() is called).  Analogously,
-> they may be started again in dpm_resume_noirq(), where cpuidle_resume() is
-> called.  That at least would be consistent with what cpuidle already does.
+On 11/21/2013 04:48 PM, Viresh Kumar wrote:
+> On 21 November 2013 18:39, Rafael J. Wysocki <rjw@rjwysocki.net> wrot=
+e:
+>> On Thursday, November 21, 2013 08:54:12 AM Viresh Kumar wrote:
+>>> Loop for states is currently present on callers side and so is repl=
+icated at
+>>> several places. It would be better to move that inside cpuidle_free=
+_state_kobj()
+>>> instead.
+>>>
+>>> This patch does it.
+>>>
+>>> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>   drivers/cpuidle/sysfs.c | 23 ++++++++++++-----------
+>>>   1 file changed, 12 insertions(+), 11 deletions(-)
+>>>
+>>> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+>>> index e918b6d..ade31a9 100644
+>>> --- a/drivers/cpuidle/sysfs.c
+>>> +++ b/drivers/cpuidle/sysfs.c
+>>> @@ -378,12 +378,17 @@ static struct kobj_type ktype_state_cpuidle =3D=
+ {
+>>>        .release =3D cpuidle_state_sysfs_release,
+>>>   };
+>>>
+>>> -static inline void cpuidle_free_state_kobj(struct cpuidle_device *=
+device, int i)
+>>> +static inline void cpuidle_free_state_kobj(struct cpuidle_device *=
+device,
+>>> +             int count)
+>>>   {
+>>> -     kobject_put(&device->kobjs[i]->kobj);
+>>> -     wait_for_completion(&device->kobjs[i]->kobj_unregister);
+>>> -     kfree(device->kobjs[i]);
+>>> -     device->kobjs[i] =3D NULL;
+>>> +     int i;
+>>> +
+>>> +     for (i =3D 0; i < count; i++) {
+>>> +             kobject_put(&device->kobjs[i]->kobj);
+>>> +             wait_for_completion(&device->kobjs[i]->kobj_unregiste=
+r);
+>>> +             kfree(device->kobjs[i]);
+>>> +             device->kobjs[i] =3D NULL;
+>>> +     }
+>>>   }
+>>>
+>>>   /**
+>>> @@ -419,8 +424,7 @@ static int cpuidle_add_state_sysfs(struct cpuid=
+le_device *device)
+>>>        return 0;
+>>>
+>>>   error_state:
+>>> -     for (i =3D i - 1; i >=3D 0; i--)
+>>> -             cpuidle_free_state_kobj(device, i);
+>>> +     cpuidle_free_state_kobj(device, i);
+>>
+>> Well, doesn't the ordering actually matter?  Your patch changes the =
+ordering
+>> here.
+>
+> I don't think it matters. And it was done in reverse order earlier to
+> save an extra
+> variable..
 
-Ahh, I mentioned the location to be after "freeze" as I thought CPUs are removed
-before calling dpm_suspend_noirq(). And yes I was *wrong*..
+Yes, that's correct. Without the reverse order we must declare a=20
+variable for the error case to do 'for (j =3D 0; j < i; j++)'
 
-So, dpm_suspend_noirq() and resume_noirq() looks to be the right place to get
-that stuff in.. And that will fit cleanly in the existing code as well.. Not
-many changes would be required in the $subject patch..
+Thanks
+   -- Daniel
 
-> That said in my opinion the appropriate long-term approach would be to split
-> CPU offline and online each into two parts, the "core" part and the "extras"
-> part, such that the "core" parts would only do the offline/online of the
-> cores themselves.  The rest, such as cpufreq/cpuidle "offline/online" would
-> be done in the "extras" part.
-> 
-> Then, system suspend/resume will only use the "core" parts of CPU offline/online
-> and the handling of the things belonging to "extras" would be carried out
-> through CPU device suspend/resume callbacks.  In turn, the "runtime" CPU offline
-> and online would carry out both the "extras" and "core" parts as it does today.
-> 
-> Makes sense?
 
-Yes it does. Very much.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-So, I will probably float a initial patch with the dpm_{suspend|resume}_noirq()
-approach to get things fixed for now. And then will do what you suggested. And
-yes logically this makes sense, a lot of sense. cpuidle/freq are about managing
-CPUs and so we better have a CPU driver here, to take care of suspend/resume paths.
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-I have few questions regarding the long term solution. There can be only one
-driver for any device, this is how device-driver model is. But there can be many
-users of cpu driver. Like ACPI (which we already have:
-drivers/acpi/processor_driver.c), CPUFreq, CPUIdle and maybe more..
-
-To get all these serviced together we probably need to write another layer on
-top of these to which these will register their callbacks.
-
-Then I started looking into kernel code to understand different frameworks we
-are using and came across: subsys_interface. This is the comment over it:
-
- * Simple interfaces attached to a subsystem. Multiple interfaces can
- * attach to a subsystem and its devices. Unlike drivers, they do not
- * exclusively claim or control devices. Interfaces usually represent
- * a specific functionality of a subsystem/class of devices.
-
-And it exactly fits our purpose. We don't really need a CPU driver as there are
-multiple frameworks that need it for the same device. And probably we just need
-a interface which would call user specific callbacks (user being: cpufreq,
-cpuidle, maybe more)..
-
-So, what about something like this ?
-
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index f48370d..523c0bc 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -120,6 +120,45 @@ static DEVICE_ATTR(release, S_IWUSR, NULL, cpu_release_store);
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
- #endif /* CONFIG_HOTPLUG_CPU */
-
-+int cpu_subsys_suspend_noirq(struct device *dev)
-+{
-+       struct bus_type *bus = dev->bus;
-+       struct subsys_interface *sif;
-+       int ret = 0;
-+
-+       list_for_each_entry(sif, &bus->p->interfaces, node) {
-+               if (sif->pm && sif->pm->suspend_noirq) {
-+                       ret = sif->suspend_noirq(dev);
-+                       if (ret)
-+                               break;
-+               }
-+       }
-+
-+       return ret;
-+}
-+
-+int cpu_subsys_resume_noirq(struct device *dev)
-+{
-+       struct bus_type *bus = dev->bus;
-+       struct subsys_interface *sif;
-+       int ret = 0;
-+
-+       list_for_each_entry(sif, &bus->p->interfaces, node) {
-+               if (sif->pm && sif->pm->resume_noirq) {
-+                       ret = sif->resume_noirq(dev);
-+                       if (ret)
-+                               break;
-+               }
-+       }
-+
-+       return ret;
-+}
-+
-+static const struct dev_pm_ops cpu_subsys_pm_ops = {
-+       .suspend_noirq = cpu_subsys_suspend_noirq,
-+       .resume_noirq = cpu_subsys_resume_noirq,
-+};
-+
- struct bus_type cpu_subsys = {
-        .name = "cpu",
-        .dev_name = "cpu",
-@@ -128,6 +167,7 @@ struct bus_type cpu_subsys = {
-        .online = cpu_subsys_online,
-        .offline = cpu_subsys_offline,
- #endif
-+       .pm = &cpu_subsys_pm_ops,
- };
- EXPORT_SYMBOL_GPL(cpu_subsys);
-
-diff --git a/include/linux/device.h b/include/linux/device.h
-index b025925..fa01273 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -298,11 +298,16 @@ struct device *driver_find_device(struct device_driver *drv,
-  * @node:       the list of functions registered at the subsystem
-  * @add_dev:    device hookup to device function handler
-  * @remove_dev: device hookup to device function handler
-+ * @pm: Power management operations of this interface.
-  *
-  * Simple interfaces attached to a subsystem. Multiple interfaces can
-  * attach to a subsystem and its devices. Unlike drivers, they do not
-  * exclusively claim or control devices. Interfaces usually represent
-  * a specific functionality of a subsystem/class of devices.
-+ *
-+ * PM callbacks are called from individual subsystems instead of PM core. And
-+ * hence might not be available for all subsystems. Currently present for:
-+ * cpu_subsys.
-  */
- struct subsys_interface {
-        const char *name;
-@@ -310,6 +315,7 @@ struct subsys_interface {
-        struct list_head node;
-        int (*add_dev)(struct device *dev, struct subsys_interface *sif);
-        int (*remove_dev)(struct device *dev, struct subsys_interface *sif);
-+       const struct dev_pm_ops *pm;
- };
-
- int subsys_interface_register(struct subsys_interface *sif);
