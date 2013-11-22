@@ -1,48 +1,93 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
- implementations
-Date: Fri, 22 Nov 2013 12:33:00 +0100
-Message-ID: <20131122113300.GM10022@twins.programming.kicks-ass.net>
-References: <20131120162736.508462614@infradead.org>
- <20131120165406.14fa0f09@ultegra>
- <20131121082151.GU10022@twins.programming.kicks-ass.net>
- <20131121160716.GT4138@linux.vnet.ibm.com>
- <528E32EF.2050300@linux.intel.com>
- <20131121191916.GZ4138@linux.vnet.ibm.com>
- <528E62D0.3010003@linux.intel.com>
- <20131121200717.GB4138@linux.vnet.ibm.com>
- <20131121161005.34150ab2@ultegra>
- <20131122042036.GL4138@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH] PM / Runtime: Allow to inactivate devices during system suspend
+Date: Fri, 22 Nov 2013 13:06:51 +0100
+Message-ID: <1947470.Tbpb5emIaY@vostro.rjw.lan>
+References: <CAPDyKFrJ34oWhPosqqfh-cCpoQnAY9Q90wP7nn60RAh87ZCPAw@mail.gmail.com> <Pine.LNX.4.44L0.1311211046160.1301-100000@iolanthe.rowland.org> <CAPDyKFo9vzCVtMFzZaCjkGosPve72=RbWtLXaSzzX8Wq2O5ptA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:43236 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753064Ab3KVLdK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 06:33:10 -0500
-Content-Disposition: inline
-In-Reply-To: <20131122042036.GL4138@linux.vnet.ibm.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:54201 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752565Ab3KVLyK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 06:54:10 -0500
+In-Reply-To: <CAPDyKFo9vzCVtMFzZaCjkGosPve72=RbWtLXaSzzX8Wq2O5ptA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org
 
-On Thu, Nov 21, 2013 at 08:20:36PM -0800, Paul E. McKenney wrote:
-> The 6ms to 25ms range should be just fine as far as normal RCU grace
-> periods are concerned.  However, it does mean that expedited grace
-> periods could be delayed: They normally take a few tens of microseconds,
-> but if they were unlucky enough to show up during an idle injection,
-> they would be magnified by two to three orders of magnitude, which is
-> not pretty.
+On Friday, November 22, 2013 09:19:32 AM Ulf Hansson wrote:
+> On 21 November 2013 16:54, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Thu, 21 Nov 2013, Ulf Hansson wrote:
+> >
+> >> >> As Rafael mentioned, there is bus/pm_domain code that comes into play
+> >> >> here, so I'm not sure it's always a bug.
+> >> >>
+> >> >> IMO, it's not a bug for the driver to depend on runtime PM if the
+> >> >> bus/pm_domain is handling the details.
+> >> >>
+> >> >> On OMAP, we handle all the SoC on-chip devices with a pm_domain since
+> >> >> the low-level PM operations that need to happen are bus-level things not
+> >> >> device-level things.  Therefore, drivers for these devices can rely
+> >> >> entirely on runtime PM, even for system suspend.  The late/early
+> >> >> callbacks in the pm_domain can see if the device is runtime suspended
+> >> >> already or not and behave accordingly.
+> >> >>
+> >> >> So, this all *can* work by handling it at the bus/pm_domain level, but
+> >> >> as Ulf has mentioned (and I agree) it seems like a clunky workaround
+> >> >> because the PM core is preventing it from happening as one might expect.
+> >> >
+> >> > The problem is that userspace can disable runtime PM at any time by
+> >> > writing "on" to /sys/.../power/control.  Once that's done, you can't
+> >> > depend on runtime PM to put the device into a low-power state during
+> >> > system suspend.
+> >> >
+> >> > Now, if the bus-level code always takes care of putting the device into
+> >> > low power during system suspend, then the driver doesn't have to worry
+> >> > about it at all.  That's perfectly fine -- but I would hardly describe
+> >> > the situation by saying the driver relies on runtime PM for system
+> >> > suspend.
+> >>
+> >> But they are, since that is exactly what these driver depends on
+> >> during system suspend.
+> >
+> > Not at all.  These drivers rely on the bus-level code's suspend
+> > routine to handle system suspend.  They don't rely on runtime PM.
+> >
+> >>  And since the power domain invokes the runtime
+> >> callbacks, normally CONFIG_PM_RUNTIME is needed for the callbacks to
+> >> be set up from in the bus/driver.
+> >
+> > No, it isn't.  You can always write callbacks that get compiled even
+> > when CONFIG_PM_RUNTIME isn't enabled.  It's very easy -- all you have
+> > to do is change
+> >
+> >         #ifdef CONFIG_PM_RUNTIME
+> >
+> > to
+> >
+> >         #ifdef CONFIG_PM
 > 
-> Hence my suggestion of hooking into RCU on idle-injection start and end
-> so that RCU considers that time period to be idle.  Just like it does
-> for user-mode execution on NO_HZ_FULL kernels, so I still don't see this
-> approach to be a problem.  I must confess that I still don't understand
-> what Arjan doesn't like about it.
+> You nailed it here! Since you consider this to be allowed from
+> dependency point of view, all my problems described would be
+> "solvable". :-)
+> 
+> Regarding the SET_RUNTIME_PM_OPS macro, which today relies on
+> CONFIG_PM_RUNTIME should then be moved to CONFIG_PM instead. As
+> prerequisites, drivers using this macro, obviously need to implement
+> the runtime PM callbacks within CONFIG_PM as well. If that makes sense
+> to you as well, I will start working on converting them that needs.
 
-Using these patches it would indeed use the RCU idle machinery as per
-the normal idle path.
+SET_RUNTIME_PM_OPS is intended to be used inside of a struct dev_pm_ops
+definition along the lines of UNIVERSAL_DEV_PM_OPS (although the latter
+was a mistake, sadly).
 
-If you can I can add more WARN_ON()s in play_idle() to ensure we're not
-called while holding any RCU locks.
+So actually what we need is a sane replacement for UNIVERSAL_DEV_PM_OPS
+in my opinion.
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
