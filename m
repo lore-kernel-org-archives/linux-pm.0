@@ -1,24 +1,33 @@
-From: viresh kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] cpufreq: tegra: don't error target() when suspended
-Date: Fri, 22 Nov 2013 10:29:31 +0530
-Message-ID: <528EE4B3.2050102@linaro.org>
-References: <1384981582-30697-1-git-send-email-swarren@wwwdotorg.org> <CAKohpomJiGbxk9BTJWcGRiid3TwV7d4i5BkSwSd8JxphSRZwUA@mail.gmail.com> <528E53C5.9040105@wwwdotorg.org>
+From: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
+Date: Fri, 22 Nov 2013 08:56:00 +0200
+Message-ID: <528F0000.7000505@linux.intel.com>
+References: <20131120160450.072555619@infradead.org> <20131120162736.691879744@infradead.org> <528CF94E.8020300@linux.intel.com> <20131121101018.GX10022@twins.programming.kicks-ass.net> <528E09F9.9030501@linux.intel.com> <20131121133936.GF10022@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <528E53C5.9040105-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:58193 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750765Ab3KVG4Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Nov 2013 01:56:24 -0500
+In-Reply-To: <20131121133936.GF10022@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday 22 November 2013 12:11 AM, Stephen Warren wrote:
-> OK, sounds like I should ignore this issue then?
+On 21/11/2013 15:39, Peter Zijlstra wrote:
+> On Thu, Nov 21, 2013 at 03:26:17PM +0200, Eliezer Tamir wrote:
 
-Yeah. And actually we are looking for a more generic solution instead o=
-f these
-per-driver PM notifiers. So, these should be removed soon..
+>> We don't override any limit the user has put on the system call.
+> 
+> You are in fact, note how the normal select @endtime argument is only
+> set up _after_ you're done polling. So if the syscall had a timeout of 5
+> seconds, you just blew it by 55.
+> 
 
+That's a bug, we will fix it.
 
-https://lkml.org/lkml/2013/11/15/107=E2=80=8E
+Cheers,
+Eliezer
