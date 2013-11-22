@@ -1,61 +1,105 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
- implementations
-Date: Fri, 22 Nov 2013 09:17:27 -0800
-Message-ID: <20131122171727.GT4138@linux.vnet.ibm.com>
-References: <20131120165406.14fa0f09@ultegra>
- <20131121082151.GU10022@twins.programming.kicks-ass.net>
- <20131121160716.GT4138@linux.vnet.ibm.com>
- <528E32EF.2050300@linux.intel.com>
- <20131121191916.GZ4138@linux.vnet.ibm.com>
- <528E62D0.3010003@linux.intel.com>
- <20131121200717.GB4138@linux.vnet.ibm.com>
- <20131121161005.34150ab2@ultegra>
- <20131122042036.GL4138@linux.vnet.ibm.com>
- <20131122113300.GM10022@twins.programming.kicks-ass.net>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Jean Delvare <jdelvare@suse.de>
+Subject: Re: cpuidle governors
+Date: Fri, 22 Nov 2013 19:06:51 +0100
+Message-ID: <1385143611.4840.7.camel@chaos.site>
+References: <1383831870.4370.382.camel@chaos.site>
+	 <527B9BA2.4060100@linaro.org> <1385106338.4373.11.camel@chaos.site>
+	 <528F7DB9.6020204@intel.com>  <528F82F4.3080005@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e39.co.us.ibm.com ([32.97.110.160]:59496 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755795Ab3KVRRe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 12:17:34 -0500
-Received: from /spool/local
-	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Fri, 22 Nov 2013 10:17:34 -0700
-Content-Disposition: inline
-In-Reply-To: <20131122113300.GM10022@twins.programming.kicks-ass.net>
+Received: from cantor2.suse.de ([195.135.220.15]:55849 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932137Ab3KVSG6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Nov 2013 13:06:58 -0500
+In-Reply-To: <528F82F4.3080005@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-On Fri, Nov 22, 2013 at 12:33:00PM +0100, Peter Zijlstra wrote:
-> On Thu, Nov 21, 2013 at 08:20:36PM -0800, Paul E. McKenney wrote:
-> > The 6ms to 25ms range should be just fine as far as normal RCU grace
-> > periods are concerned.  However, it does mean that expedited grace
-> > periods could be delayed: They normally take a few tens of microseconds,
-> > but if they were unlucky enough to show up during an idle injection,
-> > they would be magnified by two to three orders of magnitude, which is
-> > not pretty.
-> > 
-> > Hence my suggestion of hooking into RCU on idle-injection start and end
-> > so that RCU considers that time period to be idle.  Just like it does
-> > for user-mode execution on NO_HZ_FULL kernels, so I still don't see this
-> > approach to be a problem.  I must confess that I still don't understand
-> > what Arjan doesn't like about it.
-> 
-> Using these patches it would indeed use the RCU idle machinery as per
-> the normal idle path.
+Hi Daniel,
 
-OK, sorry for my confusion!
+Le Friday 22 November 2013 =C3=A0 17:14 +0100, Daniel Lezcano a =C3=A9c=
+rit :
+> On 11/22/2013 04:52 PM, Rafael J. Wysocki wrote:
+> > On 11/22/2013 8:45 AM, Jean Delvare wrote:
+> >>My own testing revealed:
+> >>
+> >> * That a kernel built without NO_HZ still gets cpuidle governor "m=
+enu".
+> >> This contradicts your statement above.
+> >> * That a NO_HZ kernel booted with nohz=3Doff behaves differently t=
+han a
+> >> kernel built without NO_HZ with regards to cpuidle. Both use the "=
+menu"
+> >> governor by default (while I understand they should rather not), b=
+ut in
+> >> the latter case deep C states are reached while in the former they=
+ never
+> >> are. This smells like a second bug.
+> >>
+> >> I would appreciate if both bugs could get fixed.
+> >
+> > Yes, it looks like we have two separate bugs there.
+>=20
+> Actually, the first one is a bug but not the second one.
+>=20
+> I made some changes to select by default the menu governor with NO_HZ=
+=20
+> and the ladder governor without NO_HZ and wanted to remove the unneed=
+ed=20
+> governor from the Kconfig. But we let it as it was to keep the old=20
+> behavior. Unfortunately, the governor rating decision will always goe=
+s=20
+> in favor of the menu governor as it is the best one even if we are *n=
+ot*=20
+> with NO_HZ. So the only way to prevent is to set in the kernel comman=
+d=20
+> line the option 'cpuidle_sysfs_switch' and from the userspace set the=
+=20
+> ladder governor when the system has booted.
 
-> If you can I can add more WARN_ON()s in play_idle() to ensure we're not
-> called while holding any RCU locks.
+That's what I ended up doing, yes, but I don't like it, because 1* it's
+not as straightforward as a cpuidle.governor=3Dxxx option and 2* I don'=
+t
+think I should have to change the governor manually in the first place.
 
-An rcu_sleep_check() or something similar, please!
+> A fix could be to remove from the configuration the governor which do=
+es=20
+> not suit the NO_HZ option.
 
-							Thanx, Paul
+That's not a good idea because nohz=3Doff can be passed on the command
+line to reenable the ticking at runtime. So the governor must be decide=
+d
+at runtime too.
+
+> Another fix would be to play with the rating and change them dependin=
+g=20
+> on the NO_HZ option.
+
+Yes, I think this is better, because then you can honor nohz=3Doff.
+
+> Concerning the second bug, it is not a bug but totally normal. On a=20
+> periodic tick system, (aka NO_HZ=3Dno), the periodic timer duration=20
+> prevents to enter a deep idle state. The target residency for the sta=
+te,=20
+> which is never reached, should be on your system greater than the=20
+> periodic tick duration.
+
+Not sure if you read what I wrote properly. The menu governor _does_
+work at least to some degree without NO_HZ, even if it is less efficien=
+t
+than with NO_HZ (no surprise here.) What bothers me is that NO_HZ=3Dy +
+nohz=3Doff behaves differently than NO_HZ=3Dn. I believe they should be=
+have
+the same.
+
+I'll fill bugs for both.
+
+Thanks,
+--=20
+Jean Delvare
+Suse L3 Support
 
