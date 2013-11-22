@@ -1,64 +1,56 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH] PM / Clocks: fix pm_clk_resume/suspend if CONFIG_PM_RUNTIME
- is set
-Date: Fri, 22 Nov 2013 14:01:20 -0500
-Message-ID: <528FAA00.9060801@ti.com>
-References: <1384954307-27094-1-git-send-email-grygorii.strashko@ti.com> <528D0296.1070001@codeaurora.org> <528D082C.3040405@ti.com> <528D1327.7080205@codeaurora.org> <528D1784.8080704@ti.com> <528D1C49.3020301@ti.com> <87ppps6zve.fsf@linaro.org>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V2 2/2] cpufreq: Change freq before suspending governors
+Date: Fri, 22 Nov 2013 12:39:24 -0700
+Message-ID: <528FB2EC.2020202@wwwdotorg.org>
+References: <cover.1385118255.git.viresh.kumar@linaro.org>	<df162ba4cbdf1379ccfa5dd4ca34153626ae9c71.1385118256.git.viresh.kumar@linaro.org>	<2783049.JzUB2QcsZz@vostro.rjw.lan> <CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:33357 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755554Ab3KVTB7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 14:01:59 -0500
-In-Reply-To: <87ppps6zve.fsf@linaro.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:58787 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932110Ab3KVTpT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 14:45:19 -0500
+In-Reply-To: <CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@nvidia.com>, Kukjin Kim <kgene@kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-On Friday 22 November 2013 01:43 PM, Kevin Hilman wrote:
-> Santosh Shilimkar <santosh.shilimkar@ti.com> writes:
-> 
-> [...]
-> 
->>>> It looks like even if you just remove the locks here, the PM core is
->>>> free to call this function with irqs disabled if pm_runtime_irq_safe()
->>>> has been called on the device. Perhaps runtime PM can only do the
->>>> clk_enable()/clk_disable() part and the clk_unprepare()/clk_prepare()
->>>> calls should happen in the system suspend callbacks?
+On 11/22/2013 05:52 AM, Viresh Kumar wrote:
+> On 22 November 2013 18:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Friday, November 22, 2013 04:59:49 PM Viresh Kumar wrote:
+>>> Some platforms might want to change frequency before suspending governors. Like:
+>>> - Some platform which want to set freq to max to speed up suspend/hibernation
+>>>   process.
+>>> - Some platform (like: Tegra or exynos), set this to min or bootloader's
+>>>   frequency.
 >>>
->>> Even don't know what to say :( On Keystone clk_unprepare()/clk_prepare() are NOPs.
->>> But clk_prepare() has to be called at least once before clk_enable() :((
->>> So, solution with suspend/resume will not fix current problem :( unfortunately.
+>>> This patch adds an option for those, so that they can specify this at call to
+>>> ->init(), so that cpufreq core can take care of this before suspending system.
 >>>
->>> FYI, Now pm_clk_suspend/pm_clk_resume are called from arch/arm/mach-keystone/pm_domain.c
->>> (also similar solution is used by Davinci, but issue has not been detected because
->>> PM runtime hasn't been used by Davinci IP drivers before)
+>>> If this variable is not updated by ->init() then its value would be zero and so
+>>> core wouldn't do anything.
 >>>
->> One way to deal with this is to have clk_unprepare()/clk_prepare()
->> called from dev_pm_domain ops before calling pm_clk_[suspend/resume]() if we
->> can't have that as part of runtime code.
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> I don't think this is generally necessary, because the suspend/resume routines
+>> added by patch [1/2] will be executed very late during suspend or very early
+>> during resume and it shouldn't really matter what performance levels the CPUs
+>> are at then.
 > 
-> That doesn't solve the irq_safe problem that Stephen pointed out without
-> being very careful.  Basically, if you have _any_ potentially sleeping
-> calls in this path, you can never allow devices to use
-> pm_runtime_irq_safe().
+> There are few things here:
+> - I feel that the current place from where we have suspended stuff is not gonna
+> fly. We are doing that in noirq and probably devices which might be required
+> during frequency transitions might already be down.. So we *may* need to
+> move that in dpm_suspend()..
+> - Secondly I want to understand why Tegra/Exynos has such code which I
+> mentioned above..
 > 
-You are right. I realized that after reading the code.
+> @Stephen, Kukjin and other samsung folks: Please provide some input here,
+> before your systems break in mainline :)
 
-> Also, I don't like having the clk_enable in the PM core but the
-> clk_prepare in the platform-specific pm_domain.  That seems prone for
-> platforms to get wrong.
-> 
-Agree.
-
-> I'll need to think about this a little more before having any idea what
-> to do here.
-> 
-Thanks Kevin for looking into it.
-
-Regards,
-Santosh
-
+I believe we set the clock to a low value because fast clocks consume
+more power. Tegra architecturally supports a number of different suspend
+levels. Only some of those actually power off or gate the clock source
+itself.
