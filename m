@@ -1,142 +1,61 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: cpuidle governors
-Date: Fri, 22 Nov 2013 17:14:44 +0100
-Message-ID: <528F82F4.3080005@linaro.org>
-References: <1383831870.4370.382.camel@chaos.site>	 <527B9BA2.4060100@linaro.org> <1385106338.4373.11.camel@chaos.site> <528F7DB9.6020204@intel.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/7] idle, thermal, acpi: Remove home grown idle
+ implementations
+Date: Fri, 22 Nov 2013 09:17:27 -0800
+Message-ID: <20131122171727.GT4138@linux.vnet.ibm.com>
+References: <20131120165406.14fa0f09@ultegra>
+ <20131121082151.GU10022@twins.programming.kicks-ass.net>
+ <20131121160716.GT4138@linux.vnet.ibm.com>
+ <528E32EF.2050300@linux.intel.com>
+ <20131121191916.GZ4138@linux.vnet.ibm.com>
+ <528E62D0.3010003@linux.intel.com>
+ <20131121200717.GB4138@linux.vnet.ibm.com>
+ <20131121161005.34150ab2@ultegra>
+ <20131122042036.GL4138@linux.vnet.ibm.com>
+ <20131122113300.GM10022@twins.programming.kicks-ass.net>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f50.google.com ([74.125.82.50]:34254 "EHLO
-	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041Ab3KVQOk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 11:14:40 -0500
-Received: by mail-wg0-f50.google.com with SMTP id k14so1360302wgh.5
-        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2013 08:14:38 -0800 (PST)
-In-Reply-To: <528F7DB9.6020204@intel.com>
+Received: from e39.co.us.ibm.com ([32.97.110.160]:59496 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755795Ab3KVRRe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2013 12:17:34 -0500
+Received: from /spool/local
+	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Fri, 22 Nov 2013 10:17:34 -0700
+Content-Disposition: inline
+In-Reply-To: <20131122113300.GM10022@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Jean Delvare <jdelvare@suse.de>
-Cc: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, Chris Leech <christopher.leech@intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 11/22/2013 04:52 PM, Rafael J. Wysocki wrote:
-> On 11/22/2013 8:45 AM, Jean Delvare wrote:
->> Hi Daniel,
->>
->> Thanks for your fast reply and sorry for my slow one :(
->>
->> Le Thursday 07 November 2013 =C3=A0 14:54 +0100, Daniel Lezcano a =C3=
-=A9crit :
->>> On 11/07/2013 02:44 PM, Jean Delvare wrote:
->>>> Hi all,
->>>>
->>>> I had to work on cpuidle recently and there are two things which c=
-aused
->>>> me trouble and I'd like to discuss.
->>>>
->>>> 1* Is there no documentation about how the available governors (me=
-nu
->>>> and
->>>> ladder) work? I found good documentation of the general architectu=
-re
->>>> and
->>>> API in Documentation/cpuidle, but I am missing a description of th=
-e
->>>> internal logic of each available governor (just like
->>>> Documentation/cpu-freq/governors.txt for cpufreq.)
->>> IMO, the code review and the header description in the menu.c file =
-is
->>> the best way to understand how the governor works.
->> OK, I'll look at the code then. But I still believe this should be
->> documented for clarity.
->>
->>> For very specific
->>> questions, try asking in the mailing list.
->> I'm doing that right now ;)
->>
->>>> Also, the
->>>> documentation says that "the kernel picks the best governor based =
-on
->>>> governor ratings" but that's pretty vague. An explanation of how t=
-he
->>>> governors are rated would be good to have. Could this be added?
->>> Yeah, actually they are rated but depending on the system configura=
-tion
->>> one fit better than the other one. Tickless system =3D> menu govern=
-or,
->>> Periodic system =3D> ladder governor. Using a tickless system with =
-the
->>> ladder governor is less efficient from a power saving POV.
->> My original issue is somewhat related to this. One customer reported=
- to
->> us that booting with nohz=3Doff breaks cpuidle. My own testing revea=
-led:
->>
->> * That a kernel built without NO_HZ still gets cpuidle governor "men=
-u".
->> This contradicts your statement above.
->> * That a NO_HZ kernel booted with nohz=3Doff behaves differently tha=
-n a
->> kernel built without NO_HZ with regards to cpuidle. Both use the "me=
-nu"
->> governor by default (while I understand they should rather not), but=
- in
->> the latter case deep C states are reached while in the former they n=
-ever
->> are. This smells like a second bug.
->>
->> I would appreciate if both bugs could get fixed.
->
-> Yes, it looks like we have two separate bugs there.
+On Fri, Nov 22, 2013 at 12:33:00PM +0100, Peter Zijlstra wrote:
+> On Thu, Nov 21, 2013 at 08:20:36PM -0800, Paul E. McKenney wrote:
+> > The 6ms to 25ms range should be just fine as far as normal RCU grace
+> > periods are concerned.  However, it does mean that expedited grace
+> > periods could be delayed: They normally take a few tens of microseconds,
+> > but if they were unlucky enough to show up during an idle injection,
+> > they would be magnified by two to three orders of magnitude, which is
+> > not pretty.
+> > 
+> > Hence my suggestion of hooking into RCU on idle-injection start and end
+> > so that RCU considers that time period to be idle.  Just like it does
+> > for user-mode execution on NO_HZ_FULL kernels, so I still don't see this
+> > approach to be a problem.  I must confess that I still don't understand
+> > what Arjan doesn't like about it.
+> 
+> Using these patches it would indeed use the RCU idle machinery as per
+> the normal idle path.
 
-Actually, the first one is a bug but not the second one.
+OK, sorry for my confusion!
 
-I made some changes to select by default the menu governor with NO_HZ=20
-and the ladder governor without NO_HZ and wanted to remove the unneeded=
-=20
-governor from the Kconfig. But we let it as it was to keep the old=20
-behavior. Unfortunately, the governor rating decision will always goes=20
-in favor of the menu governor as it is the best one even if we are *not=
-*=20
-with NO_HZ. So the only way to prevent is to set in the kernel command=20
-line the option 'cpuidle_sysfs_switch' and from the userspace set the=20
-ladder governor when the system has booted.
+> If you can I can add more WARN_ON()s in play_idle() to ensure we're not
+> called while holding any RCU locks.
 
-A fix could be to remove from the configuration the governor which does=
-=20
-not suit the NO_HZ option.
+An rcu_sleep_check() or something similar, please!
 
-Another fix would be to play with the rating and change them depending=20
-on the NO_HZ option.
-
-Concerning the second bug, it is not a bug but totally normal. On a=20
-periodic tick system, (aka NO_HZ=3Dno), the periodic timer duration=20
-prevents to enter a deep idle state. The target residency for the state=
-,=20
-which is never reached, should be on your system greater than the=20
-periodic tick duration.
-
-Hope that helps.
-
-   -- Daniel
-
-
->
->>   I can fill out bugzilla entries if it helps.
->
-> Please do, that helps a lot.
->
-> Thanks,
-> Rafael
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+							Thanx, Paul
 
