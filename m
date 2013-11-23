@@ -1,60 +1,53 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCHv5 06/20] hwmon: lm75: expose to thermal fw via DT nodes
-Date: Sat, 23 Nov 2013 19:38:08 +0100
-Message-ID: <20131123193808.46f303a8@endymion.delvare>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
-	<1384285582-16933-7-git-send-email-eduardo.valentin@ti.com>
-	<20131115084354.656452b9@endymion.delvare>
-	<528A23DD.2070406@ti.com>
-	<20131119103948.0ec9daba@endymion.delvare>
-	<528F6C10.5050704@ti.com>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: IRQF_RESUME_EARLY and errors in dpm_suspend_noirq
+Date: Sat, 23 Nov 2013 22:25:48 +0100
+Message-ID: <201311232225.48973.heiko@sntech.de>
+References: <201311201020.08158.heiko@sntech.de> <528C86C2.1070206@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zoneX.GCU-Squad.org ([194.213.125.0]:3070 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756223Ab3KWSii (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 23 Nov 2013 13:38:38 -0500
-In-Reply-To: <528F6C10.5050704@ti.com>
+Received: from gloria.sntech.de ([95.129.55.99]:39484 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752018Ab3KWV0O convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 23 Nov 2013 16:26:14 -0500
+In-Reply-To: <528C86C2.1070206@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+To: Laxman Dewangan <ldewangan@nvidia.com>
+Cc: Ian Campbell <ian.campbell@citrix.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Fri, 22 Nov 2013 10:37:04 -0400, Eduardo Valentin wrote:
-> Yeah, but I see your point. You probably want to have first code changes
-> done properly so that if we have code duplication, it does not spread
-> like a disease, like usually does. It is unavoidable to base new drivers
-> on existing ones. So better to get first converted drivers to be done
-> properly. I like this approach.
+Hi Laxman,
 
-Not only that, but also getting things right (as much as we are able
-to) at first avoids having to touch 20 already converted drivers when
-you attempt to convert the 21st one and it doesn't fit in the API.
-
-> (...)
-> OK. So I assume you are proposing something like:
-> 	.get_temp(struct device *dev, int id, long *temp);
+Am Mittwoch, 20. November 2013, 10:54:10 schrieb Laxman Dewangan:
+> > I may be blind, but where get the early-irqs resumed in the error
+> > path of dpm_suspend_noirq?
+> > 
+> > When a suspend_noirq callback returns an error, dpm_resume_noirq gets
+> > called, which only calls resume_device_irqs while the
+> > suspend_device_irqs call in dpm_suspend_noirq suspends all irqs. So it
+> > does not seem that the early-irqs get resumed at all in this case.
 > 
-> right?
-
-Yes.
-
-> (...)
-> In the end of the day, the APIs and driver support will be really well
-> defined when we convert most of the drivers. But I would like to this in
-> a separated patch series.
+> I also faced same issue in our suspend failure path and posted fix
+> sometime ago as
+> https://lkml.org/lkml/2013/8/13/373
 > 
-> What is your view? Are you OK if we integrate this series as a first
-> step of the complete process?
+> It is still under review.
 
-Yes we are.
+>From the thread on lkml.org it looks like it got no reaction at all - maybe 
+was just overlooked. So maybe it would be good to re-send it.
 
-> (...)
-> Thanks for the good feedback.
+As it is not visible on lkml.org, did you also include stable@kernel.org, as 
+the issue started in 2011?
 
-You're welcome.
+> You can try this patch if it resolve the issue.
 
--- 
-Jean Delvare
+Your patch looks a lot more sophisticated than my current band-aid fix :-) by 
+using the fact that irqs won't get resumed twice on their own.
+
+So if you repost your patch you could add an
+
+Acked-by: Heiko Stuebner <heiko@sntech.de>
+
+
+Heiko
