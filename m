@@ -1,53 +1,51 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: IRQF_RESUME_EARLY and errors in dpm_suspend_noirq
-Date: Sat, 23 Nov 2013 22:25:48 +0100
-Message-ID: <201311232225.48973.heiko@sntech.de>
-References: <201311201020.08158.heiko@sntech.de> <528C86C2.1070206@nvidia.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH v3 4/4] mvebu: Dove: Add clocks and DFS interrupt to
+ cpu node in DT.
+Date: Sat, 23 Nov 2013 21:51:00 -0500
+Message-ID: <20131124025100.GO29241@titan.lakedaemon.net>
+References: <1383247111-26834-1-git-send-email-andrew@lunn.ch>
+ <1383247111-26834-4-git-send-email-andrew@lunn.ch>
+ <1429743.Nz1AUEe5Hi@vostro.rjw.lan>
+ <CAKohpokTWfBnhWj+bdA9zx-+hyXUdp4ir5BYkZNLe08mcwVwLg@mail.gmail.com>
+ <20131101090737.GB26890@lunn.ch>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:39484 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752018Ab3KWV0O convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 23 Nov 2013 16:26:14 -0500
-In-Reply-To: <528C86C2.1070206@nvidia.com>
+Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:37064 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756226Ab3KXCvN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 23 Nov 2013 21:51:13 -0500
+Content-Disposition: inline
+In-Reply-To: <20131101090737.GB26890@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: Ian Campbell <ian.campbell@citrix.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-Hi Laxman,
-
-Am Mittwoch, 20. November 2013, 10:54:10 schrieb Laxman Dewangan:
-> > I may be blind, but where get the early-irqs resumed in the error
-> > path of dpm_suspend_noirq?
+On Fri, Nov 01, 2013 at 10:07:37AM +0100, Andrew Lunn wrote:
+> On Fri, Nov 01, 2013 at 05:21:03AM +0530, Viresh Kumar wrote:
+> > On 1 November 2013 03:56, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > On Thursday, October 31, 2013 08:18:31 PM Andrew Lunn wrote:
+> > >> The dove-cpufreq driver needs access to the DDR and CPU clock.  There
+> > >> is also an interrupt generated when the DFS hardware completes a
+> > >> change of frequencey. Add these to the cpu node in DT.
+> > >>
+> > >> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> > >> Tested-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+> > >
+> > > I need someone with DT bindings knowledge to ACK this for me.
 > > 
-> > When a suspend_noirq callback returns an error, dpm_resume_noirq gets
-> > called, which only calls resume_device_irqs while the
-> > suspend_device_irqs call in dpm_suspend_noirq suspends all irqs. So it
-> > does not seem that the early-irqs get resumed at all in this case.
+> > I can do that
 > 
-> I also faced same issue in our suspend failure path and posted fix
-> sometime ago as
-> https://lkml.org/lkml/2013/8/13/373
+> Thanks.
 > 
-> It is still under review.
+> > , but this set has to be rebased over all the latest developments
+> > in cpufreq core before getting posted again..
+> 
+> I will wait for -rc1 and rebase. 
 
->From the thread on lkml.org it looks like it got no reaction at all - maybe 
-was just overlooked. So maybe it would be good to re-send it.
+ping.
 
-As it is not visible on lkml.org, did you also include stable@kernel.org, as 
-the issue started in 2011?
+thx,
 
-> You can try this patch if it resolve the issue.
-
-Your patch looks a lot more sophisticated than my current band-aid fix :-) by 
-using the fact that irqs won't get resumed twice on their own.
-
-So if you repost your patch you could add an
-
-Acked-by: Heiko Stuebner <heiko@sntech.de>
-
-
-Heiko
+Jason.
