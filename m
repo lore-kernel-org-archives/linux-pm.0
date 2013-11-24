@@ -1,51 +1,52 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH v3 4/4] mvebu: Dove: Add clocks and DFS interrupt to
- cpu node in DT.
-Date: Sat, 23 Nov 2013 21:51:00 -0500
-Message-ID: <20131124025100.GO29241@titan.lakedaemon.net>
-References: <1383247111-26834-1-git-send-email-andrew@lunn.ch>
- <1383247111-26834-4-git-send-email-andrew@lunn.ch>
- <1429743.Nz1AUEe5Hi@vostro.rjw.lan>
- <CAKohpokTWfBnhWj+bdA9zx-+hyXUdp4ir5BYkZNLe08mcwVwLg@mail.gmail.com>
- <20131101090737.GB26890@lunn.ch>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: IRQF_RESUME_EARLY and errors in dpm_suspend_noirq
+Date: Sun, 24 Nov 2013 11:41:24 +0100
+Message-ID: <20131124104124.GA22947@amd.pavel.ucw.cz>
+References: <201311201020.08158.heiko@sntech.de>
+ <528C86C2.1070206@nvidia.com>
+ <201311232225.48973.heiko@sntech.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:37064 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756226Ab3KXCvN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 23 Nov 2013 21:51:13 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55899 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756472Ab3KXKlZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 24 Nov 2013 05:41:25 -0500
 Content-Disposition: inline
-In-Reply-To: <20131101090737.GB26890@lunn.ch>
+In-Reply-To: <201311232225.48973.heiko@sntech.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Cc: Laxman Dewangan <ldewangan@nvidia.com>, Ian Campbell <ian.campbell@citrix.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Fri, Nov 01, 2013 at 10:07:37AM +0100, Andrew Lunn wrote:
-> On Fri, Nov 01, 2013 at 05:21:03AM +0530, Viresh Kumar wrote:
-> > On 1 November 2013 03:56, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > On Thursday, October 31, 2013 08:18:31 PM Andrew Lunn wrote:
-> > >> The dove-cpufreq driver needs access to the DDR and CPU clock.  There
-> > >> is also an interrupt generated when the DFS hardware completes a
-> > >> change of frequencey. Add these to the cpu node in DT.
-> > >>
-> > >> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> > >> Tested-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> > >
-> > > I need someone with DT bindings knowledge to ACK this for me.
-> > 
-> > I can do that
-> 
-> Thanks.
-> 
-> > , but this set has to be rebased over all the latest developments
-> > in cpufreq core before getting posted again..
-> 
-> I will wait for -rc1 and rebase. 
+On Sat 2013-11-23 22:25:48, Heiko St=FCbner wrote:
+> Hi Laxman,
+>=20
+> Am Mittwoch, 20. November 2013, 10:54:10 schrieb Laxman Dewangan:
+> > > I may be blind, but where get the early-irqs resumed in the error
+> > > path of dpm_suspend_noirq?
+> > >=20
+> > > When a suspend_noirq callback returns an error, dpm_resume_noirq =
+gets
+> > > called, which only calls resume_device_irqs while the
+> > > suspend_device_irqs call in dpm_suspend_noirq suspends all irqs. =
+So it
+> > > does not seem that the early-irqs get resumed at all in this case=
+=2E
+> >=20
+> > I also faced same issue in our suspend failure path and posted fix
+> > sometime ago as
+> > https://lkml.org/lkml/2013/8/13/373
+> >=20
+> > It is still under review.
 
-ping.
+If it helps, you can add my
 
-thx,
+Reviewed-by: Pavel Machek <pavel@ucw.cz>
 
-Jason.
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
