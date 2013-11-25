@@ -1,104 +1,49 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Mon, 25 Nov 2013 08:38:36 -0800
-Message-ID: <52937D0C.1020501@gmail.com>
+Date: Mon, 25 Nov 2013 22:31:56 +0530
+Message-ID: <CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com>
 References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>
+	<52937D0C.1020501@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:54599 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754507Ab3KYQij (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Nov 2013 11:38:39 -0500
-In-Reply-To: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52937D0C.1020501@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, ceh@ti.com
 
-On 11/24/2013 08:23 PM, Viresh Kumar wrote:
-> Sometimes boot loaders set CPU frequency to a value outside of frequency table
-> present with cpufreq core. In such cases CPU might be unstable if it has to run
-> on that frequency for long duration of time and so its better to set it to a
-> frequency which is specified in freq-table. This also makes cpufreq stats
-> inconsistent as cpufreq-stats would fail to register because current frequency
-> of CPU isn't found in freq-table.
+On 25 November 2013 22:08, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> IMHO this issue should be fixed in the scaling driver for the platform.
 >
+> The scaling driver sets policy->cur and fills in the frequency table and has
 
-IMHO this issue should be fixed in the scaling driver for the platform.
+Not anymore, policy->cur is set in the core for most of the drivers now.
+Drivers just provide ->get() callbacks.
 
-The scaling driver sets policy->cur and fills in the frequency table and has the
-abilty to adjust the frequency of the CPU.  Letting this leak up into the core
-is wrong IMHO and just widens the window where the CPU will be running at the
-wrong frequency set by the bootloader.
+> the ability to adjust the frequency of the CPU.
 
-> Because we don't want this change to effect boot process badly, we go for the
-> next freq which is >= policy->cur ('cur' must be set by now, otherwise we will
-> end up setting freq to lowest of the table as 'cur' is initialized to zero).
->
-> In case where CPU is already running on one of the frequencies present in
-> freq-table, this would turn into a dummy call as __cpufreq_driver_target() would
-> return early.
->
-> Reported-by: Carlos Hernandez <ceh@ti.com>
-> Reported-and-tested-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> V1->V2
-> - Set to (policy->cur - 1) instead of policy->cur.
-> - return early in case __cpufreq_driver_target() fails.
->
->   drivers/cpufreq/cpufreq.c | 32 ++++++++++++++++++++++++++++++++
->   1 file changed, 32 insertions(+)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 02d534d..7be996c 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1038,6 +1038,38 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->   		}
->   	}
->
-> +	/*
-> +	 * Sometimes boot loaders set CPU frequency to a value outside of
-> +	 * frequency table present with cpufreq core. In such cases CPU might be
-> +	 * unstable if it has to run on that frequency for long duration of time
-> +	 * and so its better to set it to a frequency which is specified in
-> +	 * freq-table. This also makes cpufreq stats inconsistent as
-> +	 * cpufreq-stats would fail to register because current frequency of CPU
-> +	 * isn't found in freq-table.
-> +	 *
-> +	 * Because we don't want this change to effect boot process badly, we go
-> +	 * for the next freq which is >= policy->cur ('cur' must be set by now,
-> +	 * otherwise we will end up setting freq to lowest of the table as 'cur'
-> +	 * is initialized to zero).
-> +	 *
-> +	 * In case where CPU is already running on one of the frequencies
-> +	 * present in freq-table, this would turn into a dummy call as
-> +	 * __cpufreq_driver_target() would return early.
-> +	 *
-> +	 * We are passing target-freq as "policy->cur - 1" otherwise
-> +	 * __cpufreq_driver_target() would simply fail, as policy->cur will be
-> +	 * equal to target-freq.
-> +	 */
+I believe this kind of decisions should stay with the core, drivers should
+just provide the backend instead of intelligence..
 
-Shouldn't there be a check to see if the problem exists at all?  Otherwise
-the core is setting a policy for ALL platform even those where the issue does
-not exist.
+> Letting this leak up into the core
+> is wrong IMHO and just widens the window where the CPU will be running at
+> the wrong frequency set by the bootloader.
 
-> +	if (has_target()) {
-> +		ret = __cpufreq_driver_target(policy, policy->cur - 1,
-> +				CPUFREQ_RELATION_L);
-> +		if (ret) {
-> +			pr_err("%s: Unable to set frequency from table: %d\n",
-> +					__func__, ret);
-> +			goto err_out_unregister;
-> +		}
-> +	}
-> +
->   	/* related cpus should atleast have policy->cpus */
->   	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
->
->
+It doesn't stay there for long enough.. we get to this point in
+cpufreq core just
+after calling ->init(), and if the CPU is working without issues until
+now, it will
+stay stable for few more milliseconds.
 
+> Shouldn't there be a check to see if the problem exists at all?  Otherwise
+> the core is setting a policy for ALL platform even those where the issue
+> does
+> not exist.
+
+That is taken care of by __cpufreq_driver_target(). It checks if we are
+already running at requested frequency or not (after getting the next
+higher frequency)... If current freq is present in table,
+cpufreq_frequency_table_target() will return current frequency only for
+policy->cur -1. And so we will not end up configuring hardware
+unnecessarily.
