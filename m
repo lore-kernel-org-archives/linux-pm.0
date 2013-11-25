@@ -1,110 +1,32 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
-Date: Mon, 25 Nov 2013 09:55:19 +0530
-Message-ID: <CAKohponZEpk52rOcx-XxfUp75rZMUN8tqR=DJHnutO9Ga3fJ-Q@mail.gmail.com>
-References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org>
-	<1531674.UoqyyWSbOg@vostro.rjw.lan>
-	<CAKohpo=e+0cpq5XfWpM6Jm0VrnzzAu-xybpucEG6sRL0ydBmLQ@mail.gmail.com>
-	<2642790.BqNcqy9aCb@vostro.rjw.lan>
-	<528F1FC9.4070306@linaro.org>
+Subject: Re: [PATCH V2 2/2] cpufreq: Change freq before suspending governors
+Date: Mon, 25 Nov 2013 09:58:29 +0530
+Message-ID: <CAKohpomEL8aU_ETaHFG_G8mhYMZc6M6x7i4m+McozP=i7Fzz5A@mail.gmail.com>
+References: <cover.1385118255.git.viresh.kumar@linaro.org>
+	<CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
+	<528FB2EC.2020202@wwwdotorg.org>
+	<2065978.h16hV1Cgky@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <528F1FC9.4070306@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2065978.h16hV1Cgky@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Stephen Warren <swarren@nvidia.com>, Kukjin Kim <kgene@kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 November 2013 14:41, viresh kumar <viresh.kumar@linaro.org> wrote:
-> So, what about something like this ?
->
-> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-> index f48370d..523c0bc 100644
-> --- a/drivers/base/cpu.c
-> +++ b/drivers/base/cpu.c
-> @@ -120,6 +120,45 @@ static DEVICE_ATTR(release, S_IWUSR, NULL, cpu_release_store);
->  #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
->  #endif /* CONFIG_HOTPLUG_CPU */
->
-> +int cpu_subsys_suspend_noirq(struct device *dev)
-> +{
-> +       struct bus_type *bus = dev->bus;
-> +       struct subsys_interface *sif;
-> +       int ret = 0;
-> +
-> +       list_for_each_entry(sif, &bus->p->interfaces, node) {
-> +               if (sif->pm && sif->pm->suspend_noirq) {
-> +                       ret = sif->suspend_noirq(dev);
-> +                       if (ret)
-> +                               break;
-> +               }
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +int cpu_subsys_resume_noirq(struct device *dev)
-> +{
-> +       struct bus_type *bus = dev->bus;
-> +       struct subsys_interface *sif;
-> +       int ret = 0;
-> +
-> +       list_for_each_entry(sif, &bus->p->interfaces, node) {
-> +               if (sif->pm && sif->pm->resume_noirq) {
-> +                       ret = sif->resume_noirq(dev);
-> +                       if (ret)
-> +                               break;
-> +               }
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +static const struct dev_pm_ops cpu_subsys_pm_ops = {
-> +       .suspend_noirq = cpu_subsys_suspend_noirq,
-> +       .resume_noirq = cpu_subsys_resume_noirq,
-> +};
-> +
->  struct bus_type cpu_subsys = {
->         .name = "cpu",
->         .dev_name = "cpu",
-> @@ -128,6 +167,7 @@ struct bus_type cpu_subsys = {
->         .online = cpu_subsys_online,
->         .offline = cpu_subsys_offline,
->  #endif
-> +       .pm = &cpu_subsys_pm_ops,
->  };
->  EXPORT_SYMBOL_GPL(cpu_subsys);
->
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index b025925..fa01273 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -298,11 +298,16 @@ struct device *driver_find_device(struct device_driver *drv,
->   * @node:       the list of functions registered at the subsystem
->   * @add_dev:    device hookup to device function handler
->   * @remove_dev: device hookup to device function handler
-> + * @pm: Power management operations of this interface.
->   *
->   * Simple interfaces attached to a subsystem. Multiple interfaces can
->   * attach to a subsystem and its devices. Unlike drivers, they do not
->   * exclusively claim or control devices. Interfaces usually represent
->   * a specific functionality of a subsystem/class of devices.
-> + *
-> + * PM callbacks are called from individual subsystems instead of PM core. And
-> + * hence might not be available for all subsystems. Currently present for:
-> + * cpu_subsys.
->   */
->  struct subsys_interface {
->         const char *name;
-> @@ -310,6 +315,7 @@ struct subsys_interface {
->         struct list_head node;
->         int (*add_dev)(struct device *dev, struct subsys_interface *sif);
->         int (*remove_dev)(struct device *dev, struct subsys_interface *sif);
-> +       const struct dev_pm_ops *pm;
->  };
->
->  int subsys_interface_register(struct subsys_interface *sif);
+On 25 November 2013 03:02, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Viresh, maybe make it possible for the cpufreq driver to provide suspend/resume
+> callbacks to be executed by cpufreq_suspend() and cpufreq_resume() introduced
+> by [1/2]?  Then Tegra could set the frequencies to what it wants from there
+> before the governors are stopped.
 
-Any inputs?
+Giving cpufreq-drivers a chance to do whatever they want looks to be
+correct. So, maybe prepare() or suspend_prepare() for them can be
+implemented.
+
+Though I would still go for a generic function in core, which can be
+just  reused by samsung and tegra to set cores to specific frequencies.
+
+--
+viresh
