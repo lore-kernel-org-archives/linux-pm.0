@@ -1,128 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 6/6] cpufreq: Tegra: Use cpufreq_generic_suspend()
-Date: Mon, 25 Nov 2013 19:41:46 +0530
-Message-ID: <d6b2668d6326b2279ff36086e2eb6ae1b334f496.1385374822.git.viresh.kumar@linaro.org>
-References: <cover.1385374819.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1385374819.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1385374819.git.viresh.kumar@linaro.org>
-References: <cover.1385374819.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: Laxman Dewangan <ldewangan@nvidia.com>
+Subject: Re: IRQF_RESUME_EARLY and errors in dpm_suspend_noirq
+Date: Mon, 25 Nov 2013 19:42:06 +0530
+Message-ID: <52935AB6.2000302@nvidia.com>
+References: <201311201020.08158.heiko@sntech.de>  <528C86C2.1070206@nvidia.com> <1385374413.11161.28.camel@kazak.uk.xensource.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:3707 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755117Ab3KYOOR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Nov 2013 09:14:17 -0500
+In-Reply-To: <1385374413.11161.28.camel@kazak.uk.xensource.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Cc: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Currently we have implemented PM notifiers to disable/enable ->target() routines
-functionality during suspend/resume.
+On Monday 25 November 2013 03:43 PM, Ian Campbell wrote:
+> On Wed, 2013-11-20 at 15:24 +0530, Laxman Dewangan wrote:
+>> On Wednesday 20 November 2013 02:50 PM, Heiko St=C3=BCbner wrote:
+>>> Hi,
+>>>
+>>> Commit 9bab0b7fbace (genirq: Add IRQF_RESUME_EARLY and resume such =
+IRQs
+>>> earlier) split the suspend/resume of the irqs into two parts.
+>>>
+>>> The early-irqs get resumed during syscore_resume, while the rest ge=
+t
+>>> resumed by the regular resume_device_irqs.
+>>>
+>>> I may be blind, but where get the early-irqs resumed in the error
+>>> path of dpm_suspend_noirq?
+>>>
+>>> When a suspend_noirq callback returns an error, dpm_resume_noirq ge=
+ts called,
+>>> which only calls resume_device_irqs while the suspend_device_irqs c=
+all in
+>>> dpm_suspend_noirq suspends all irqs. So it does not seem that the e=
+arly-irqs
+>>> get resumed at all in this case.
+>>>
+>> I also faced same issue in our suspend failure path and posted fix
+>> sometime ago as
+>> https://lkml.org/lkml/2013/8/13/373
+>>
+>> It is still under review.
+> IME zero comments since August is not "under review", it is "has slip=
+ped
+> through the cracks" ;-)
+>
+> I would suggest you resend it.
+>
 
-Now we have support present in cpufreq core, lets use it.
+Thanks all of you for review/ack/validating it.
+I resend it today. Hope at this time it will be on tree.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/tegra-cpufreq.c | 54 +++++------------------------------------
- 1 file changed, 6 insertions(+), 48 deletions(-)
+Howevere, I have not added stable on cc.
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index f42df7e..336368b 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -26,7 +26,6 @@
- #include <linux/err.h>
- #include <linux/clk.h>
- #include <linux/io.h>
--#include <linux/suspend.h>
- 
- static struct cpufreq_frequency_table freq_table[] = {
- 	{ .frequency = 216000 },
-@@ -48,8 +47,6 @@ static struct clk *pll_p_clk;
- static struct clk *emc_clk;
- 
- static unsigned long target_cpu_speed[NUM_CPUS];
--static DEFINE_MUTEX(tegra_cpu_lock);
--static bool is_suspended;
- 
- static unsigned int tegra_getspeed(unsigned int cpu)
- {
-@@ -137,50 +134,10 @@ static unsigned long tegra_cpu_highest_speed(void)
- 
- static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	unsigned int freq;
--	int ret = 0;
--
--	mutex_lock(&tegra_cpu_lock);
--
--	if (is_suspended) {
--		ret = -EBUSY;
--		goto out;
--	}
--
--	freq = freq_table[index].frequency;
--
--	target_cpu_speed[policy->cpu] = freq;
--
--	ret = tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
--
--out:
--	mutex_unlock(&tegra_cpu_lock);
--	return ret;
-+	target_cpu_speed[policy->cpu] = freq_table[index].frequency;
-+	return tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
- }
- 
--static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
--	void *dummy)
--{
--	mutex_lock(&tegra_cpu_lock);
--	if (event == PM_SUSPEND_PREPARE) {
--		struct cpufreq_policy *policy = cpufreq_cpu_get(0);
--		is_suspended = true;
--		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
--			freq_table[0].frequency);
--		tegra_update_cpu_speed(policy, freq_table[0].frequency);
--		cpufreq_cpu_put(policy);
--	} else if (event == PM_POST_SUSPEND) {
--		is_suspended = false;
--	}
--	mutex_unlock(&tegra_cpu_lock);
--
--	return NOTIFY_OK;
--}
--
--static struct notifier_block tegra_cpu_pm_notifier = {
--	.notifier_call = tegra_pm_notify,
--};
--
- static int tegra_cpu_init(struct cpufreq_policy *policy)
- {
- 	int ret;
-@@ -192,6 +149,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- 	clk_prepare_enable(cpu_clk);
- 
- 	target_cpu_speed[policy->cpu] = tegra_getspeed(policy->cpu);
-+	policy->suspend_freq = freq_table[0].frequency;
- 
- 	/* FIXME: what's the actual transition time? */
- 	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
-@@ -201,9 +159,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
- 		return ret;
- 	}
- 
--	if (policy->cpu == 0)
--		register_pm_notifier(&tegra_cpu_pm_notifier);
--
- 	return 0;
- }
- 
-@@ -223,6 +178,9 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
- 	.exit		= tegra_cpu_exit,
- 	.name		= "tegra",
- 	.attr		= cpufreq_generic_attr,
-+#ifdef CONFIG_PM
-+	.suspend	= cpufreq_generic_suspend,
-+#endif
- };
- 
- static int __init tegra_cpufreq_init(void)
--- 
-1.7.12.rc2.18.g61b472e
+
+
