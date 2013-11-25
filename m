@@ -1,25 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/2] cpufreq: Change freq before suspending governors
-Date: Mon, 25 Nov 2013 15:44:02 +0530
-Message-ID: <CAKohpompkiUqOati4B8F0HqN2eTMEADm01SnUuE0_GxnTAWJdQ@mail.gmail.com>
-References: <cover.1385118255.git.viresh.kumar@linaro.org>
-	<CAKohpo=RWi1nRUJq4qx8K+Y7swMDaqwEOH24-KfBCMgdbW=hMQ@mail.gmail.com>
-	<528FB2EC.2020202@wwwdotorg.org>
-	<2065978.h16hV1Cgky@vostro.rjw.lan>
-	<CAKohpomEL8aU_ETaHFG_G8mhYMZc6M6x7i4m+McozP=i7Fzz5A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] Cpufreq: Change sysfs interface cpuinfo_cur_freq access privilege
+Date: Mon, 25 Nov 2013 12:26:46 +0100
+Message-ID: <5074010.ha99UACE9S@vostro.rjw.lan>
+References: <1385348018-30525-1-git-send-email-tianyu.lan@intel.com> <CAKohponvz8CjDpMbx=BXpBv5q8d4x94No90sJWjVsTRS_Uj1jw@mail.gmail.com> <5292E133.1040800@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomEL8aU_ETaHFG_G8mhYMZc6M6x7i4m+McozP=i7Fzz5A@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Stephen Warren <swarren@nvidia.com>, Kukjin Kim <kgene@kernel.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5292E133.1040800@intel.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, hg197@gmx.de, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25 November 2013 09:58, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Giving cpufreq-drivers a chance to do whatever they want looks to be
-> correct. So, maybe prepare() or suspend_prepare() for them can be
-> implemented.
+On Monday, November 25, 2013 01:33:39 PM Lan Tianyu wrote:
+> On 2013=E5=B9=B411=E6=9C=8825=E6=97=A5 12:30, Viresh Kumar wrote:
+> > On 25 November 2013 08:23, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> >> Currently, cpuinfo_cur_freq is only accessible for root user while
+> >> other cpufreq sysfs interfaces(E,G scaling_cur_freq) are available
+> >> to ordinary user. This seems make no sense. This patch is to chang=
+e
+> >> it.
+> >=20
+> > There is nothing wrong with the code and so this is more of a desig=
+n
+> > change..
+> >=20
+> > Probably Rafael can help us here as cpufreq_cur_freq will read stuf=
+f
+> > directly from hardware instead of using cached value in software.
+>=20
+> I think so, too. I also tried to checking the reason of the privilege=
+ by
+> git log but the code was there before linux kernel being migrated to =
+git
+> repository.
 
-I have used the existing infrastructure here, i.e. suspend/resume callbacks
-for drivers.. As we don't need two suspend calls now..
+And it has always behaved in the same way?  Then I wouldn't change it.
+
+Thanks!
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
