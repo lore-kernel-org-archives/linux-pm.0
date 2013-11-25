@@ -1,45 +1,114 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Cpufreq: Change sysfs interface cpuinfo_cur_freq access privilege
-Date: Mon, 25 Nov 2013 12:26:46 +0100
-Message-ID: <5074010.ha99UACE9S@vostro.rjw.lan>
-References: <1385348018-30525-1-git-send-email-tianyu.lan@intel.com> <CAKohponvz8CjDpMbx=BXpBv5q8d4x94No90sJWjVsTRS_Uj1jw@mail.gmail.com> <5292E133.1040800@intel.com>
+Subject: Re: [PATCH] cpufreq: suspend/resume governors with PM notifiers
+Date: Mon, 25 Nov 2013 12:35:44 +0100
+Message-ID: <2123322.DfAe1RTUPo@vostro.rjw.lan>
+References: <0e476d16e0ae4b001f5dd4f9ac191f899095928a.1384510171.git.viresh.kumar@linaro.org> <528F1FC9.4070306@linaro.org> <CAKohponZEpk52rOcx-XxfUp75rZMUN8tqR=DJHnutO9Ga3fJ-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5292E133.1040800@intel.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, hg197@gmx.de, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohponZEpk52rOcx-XxfUp75rZMUN8tqR=DJHnutO9Ga3fJ-Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, November 25, 2013 01:33:39 PM Lan Tianyu wrote:
-> On 2013=E5=B9=B411=E6=9C=8825=E6=97=A5 12:30, Viresh Kumar wrote:
-> > On 25 November 2013 08:23, Lan Tianyu <tianyu.lan@intel.com> wrote:
-> >> Currently, cpuinfo_cur_freq is only accessible for root user while
-> >> other cpufreq sysfs interfaces(E,G scaling_cur_freq) are available
-> >> to ordinary user. This seems make no sense. This patch is to chang=
-e
-> >> it.
-> >=20
-> > There is nothing wrong with the code and so this is more of a desig=
-n
-> > change..
-> >=20
-> > Probably Rafael can help us here as cpufreq_cur_freq will read stuf=
-f
-> > directly from hardware instead of using cached value in software.
->=20
-> I think so, too. I also tried to checking the reason of the privilege=
- by
-> git log but the code was there before linux kernel being migrated to =
-git
-> repository.
+On Monday, November 25, 2013 09:55:19 AM Viresh Kumar wrote:
+> On 22 November 2013 14:41, viresh kumar <viresh.kumar@linaro.org> wrote:
+> > So, what about something like this ?
+> >
+> > diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> > index f48370d..523c0bc 100644
+> > --- a/drivers/base/cpu.c
+> > +++ b/drivers/base/cpu.c
+> > @@ -120,6 +120,45 @@ static DEVICE_ATTR(release, S_IWUSR, NULL, cpu_release_store);
+> >  #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+> >  #endif /* CONFIG_HOTPLUG_CPU */
+> >
+> > +int cpu_subsys_suspend_noirq(struct device *dev)
+> > +{
+> > +       struct bus_type *bus = dev->bus;
+> > +       struct subsys_interface *sif;
+> > +       int ret = 0;
+> > +
+> > +       list_for_each_entry(sif, &bus->p->interfaces, node) {
+> > +               if (sif->pm && sif->pm->suspend_noirq) {
+> > +                       ret = sif->suspend_noirq(dev);
+> > +                       if (ret)
+> > +                               break;
+> > +               }
+> > +       }
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +int cpu_subsys_resume_noirq(struct device *dev)
+> > +{
+> > +       struct bus_type *bus = dev->bus;
+> > +       struct subsys_interface *sif;
+> > +       int ret = 0;
+> > +
+> > +       list_for_each_entry(sif, &bus->p->interfaces, node) {
+> > +               if (sif->pm && sif->pm->resume_noirq) {
+> > +                       ret = sif->resume_noirq(dev);
+> > +                       if (ret)
+> > +                               break;
+> > +               }
+> > +       }
+> > +
+> > +       return ret;
+> > +}
+> > +
+> > +static const struct dev_pm_ops cpu_subsys_pm_ops = {
+> > +       .suspend_noirq = cpu_subsys_suspend_noirq,
+> > +       .resume_noirq = cpu_subsys_resume_noirq,
+> > +};
+> > +
+> >  struct bus_type cpu_subsys = {
+> >         .name = "cpu",
+> >         .dev_name = "cpu",
+> > @@ -128,6 +167,7 @@ struct bus_type cpu_subsys = {
+> >         .online = cpu_subsys_online,
+> >         .offline = cpu_subsys_offline,
+> >  #endif
+> > +       .pm = &cpu_subsys_pm_ops,
+> >  };
+> >  EXPORT_SYMBOL_GPL(cpu_subsys);
+> >
+> > diff --git a/include/linux/device.h b/include/linux/device.h
+> > index b025925..fa01273 100644
+> > --- a/include/linux/device.h
+> > +++ b/include/linux/device.h
+> > @@ -298,11 +298,16 @@ struct device *driver_find_device(struct device_driver *drv,
+> >   * @node:       the list of functions registered at the subsystem
+> >   * @add_dev:    device hookup to device function handler
+> >   * @remove_dev: device hookup to device function handler
+> > + * @pm: Power management operations of this interface.
+> >   *
+> >   * Simple interfaces attached to a subsystem. Multiple interfaces can
+> >   * attach to a subsystem and its devices. Unlike drivers, they do not
+> >   * exclusively claim or control devices. Interfaces usually represent
+> >   * a specific functionality of a subsystem/class of devices.
+> > + *
+> > + * PM callbacks are called from individual subsystems instead of PM core. And
+> > + * hence might not be available for all subsystems. Currently present for:
+> > + * cpu_subsys.
+> >   */
+> >  struct subsys_interface {
+> >         const char *name;
+> > @@ -310,6 +315,7 @@ struct subsys_interface {
+> >         struct list_head node;
+> >         int (*add_dev)(struct device *dev, struct subsys_interface *sif);
+> >         int (*remove_dev)(struct device *dev, struct subsys_interface *sif);
+> > +       const struct dev_pm_ops *pm;
+> >  };
+> >
+> >  int subsys_interface_register(struct subsys_interface *sif);
+> 
+> Any inputs?
 
-And it has always behaved in the same way?  Then I wouldn't change it.
+Please give me some more time, this suretly is not urgent?
 
-Thanks!
-
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
