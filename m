@@ -1,72 +1,70 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Mon, 25 Nov 2013 09:43:59 -0800
-Message-ID: <52938C5F.7000307@gmail.com>
-References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>	<52937D0C.1020501@gmail.com> <CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC][PATCH v5 00/14] sched: packing tasks
+Date: Mon, 25 Nov 2013 19:55:59 +0100
+Message-ID: <52939D3F.3050409@linaro.org>
+References: <1382097147-30088-1-git-send-email-vincent.guittot@linaro.org> <CAHkRjk69GNYtLGBSWCNcsCzkBHywKrD0qQQbNkJRpMbcdsCPyw@mail.gmail.com> <20131111163630.GD26898@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f44.google.com ([209.85.128.44]:44308 "EHLO
-	mail-qe0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754963Ab3KYRoH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Nov 2013 12:44:07 -0500
-In-Reply-To: <CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com>
+Received: from mail-ea0-f173.google.com ([209.85.215.173]:64691 "EHLO
+	mail-ea0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754591Ab3KYSz4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Nov 2013 13:55:56 -0500
+Received: by mail-ea0-f173.google.com with SMTP id g15so2761620eak.18
+        for <linux-pm@vger.kernel.org>; Mon, 25 Nov 2013 10:55:54 -0800 (PST)
+In-Reply-To: <20131111163630.GD26898@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
+To: Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Chris Metcalf <cmetcalf@tilera.com>, Tony Luck <tony.luck@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, l.majewski@samsung.com, Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@vger.kernel.org
 
-On 11/25/2013 09:01 AM, Viresh Kumar wrote:
-> On 25 November 2013 22:08, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
->> IMHO this issue should be fixed in the scaling driver for the platform.
->>
->> The scaling driver sets policy->cur and fills in the frequency table and has
+On 11/11/2013 05:36 PM, Peter Zijlstra wrote:
+> On Mon, Nov 11, 2013 at 11:33:45AM +0000, Catalin Marinas wrote:
 >
-> Not anymore, policy->cur is set in the core for most of the drivers now.
-> Drivers just provide ->get() callbacks.
+> tl;dr :-) Still trying to wrap my head around how to do that weird
+> topology Vincent raised..
 >
->> the ability to adjust the frequency of the CPU.
+>> Question for Peter/Ingo: do you want the scheduler to decide on whic=
+h
+>> C-state a CPU should be in or we still leave this to a cpuidle
+>> layer/driver?
 >
-> I believe this kind of decisions should stay with the core, drivers should
-> just provide the backend instead of intelligence..
+> I think the can leave most of that in a driver; right along with how =
+to
+> prod the hardware to actually get into that state.
 >
+> I think the most important parts are what is now 'generic' code; stuf=
+f
+> that guestimates the idle-time and so forth.
+>
+> I think the scheduler simply wants to say: we expect to go idle for X
+> ns, we want a guaranteed wakeup latency of Y ns -- go do your thing.
 
+Hi Peter,
 
-This is a platform specific bug fix AFAICT and belongs in a platform
-specific piece of code
+IIUC, for full integration in the scheduler, we should eradicate the=20
+idle task and the related code tied with it, no ?
 
-
->> Letting this leak up into the core
->> is wrong IMHO and just widens the window where the CPU will be running at
->> the wrong frequency set by the bootloader.
->
-> It doesn't stay there for long enough.. we get to this point in
-> cpufreq core just
-> after calling ->init(), and if the CPU is working without issues until
-> now, it will
-> stay stable for few more milliseconds.
->
-
-And this is where the scaling driver should detect and fix the issue in ->init()
-on platforms we know about today, What happens if platforms in the future are
-more sensitive to the issue?
-
->> Shouldn't there be a check to see if the problem exists at all?  Otherwise
->> the core is setting a policy for ALL platform even those where the issue
->> does
->> not exist.
->
-> That is taken care of by __cpufreq_driver_target(). It checks if we are
-> already running at requested frequency or not (after getting the next
-> higher frequency)... If current freq is present in table,
-> cpufreq_frequency_table_target() will return current frequency only for
-> policy->cur -1. And so we will not end up configuring hardware
-> unnecessarily.
+> I think you also raised the point in that we do want some feedback as=
+ to
+> the cost of waking up particular cores to better make decisions on wh=
+ich
+> to wake. That is indeed so.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
 
-The core should not be working around bootloader bugs IMHO.  Silently
-fixing it is evil IMHO at a minimum the core should complain LOUDLY
-about this happening otherwise the bootloaders will have no incentive to
-get their act together.
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
