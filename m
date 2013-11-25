@@ -1,186 +1,215 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
-Date: Tue, 26 Nov 2013 00:10:11 +0100
-Message-ID: <5827021.HqYFigfrCJ@vostro.rjw.lan>
-References: <1385383221-20372-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3 1/6] cpufreq: suspend governors on system suspend/hibernate
+Date: Tue, 26 Nov 2013 00:29:07 +0100
+Message-ID: <40779593.MBXsTetiKz@vostro.rjw.lan>
+References: <cover.1385374819.git.viresh.kumar@linaro.org> <55cc3fbf9c553d669629e8ba98eef2b0ef33aaad.1385374822.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51748 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752054Ab3KYW5Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Nov 2013 17:57:24 -0500
-In-Reply-To: <1385383221-20372-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <55cc3fbf9c553d669629e8ba98eef2b0ef33aaad.1385374822.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Monday, November 25, 2013 01:40:21 PM Ulf Hansson wrote:
-> To put devices into low power state during sleep, it sometimes makes
-> sense at subsystem-level to re-use device's runtime PM callbacks.
+On Monday, November 25, 2013 07:41:41 PM Viresh Kumar wrote:
 > 
-> The PM core will at device_suspend_late disable runtime PM, after that
-> we can safely operate on these callbacks. At suspend_late the device
-> will be put into low power state by invoking the device's
-> runtime_suspend callback, unless the runtime status is already
-> suspended. At resume_early the state is restored by invoking the
-> device's runtime_resume callback. Soon after the PM core will re-enable
-> runtime PM before returning from device_resume_early.
+> This patch adds cpufreq callbacks to dpm_{suspend|resume}() for handling
+> suspend/resume of cpufreq governors. This is required for early suspend and
+> late resume of governors and cpufreq core.
 > 
-> The new pm_generic functions are named pm_generic_suspend_late_runtime
-> and pm_generic_resume_early_runtime, they are supposed to be used in
-> pairs.
-
-What happens if the subsystem uses the new functions as its late suspend/
-early resume callbacks, but some of its drivers implement .suspend_late()
-and .resume_early()?
-
-Also, these are system suspend/resume callbacks, so the "runtime" part of
-the names is kind of confusing.  I have no idea for better naming at this
-point, but still.
-
-> Do note that these new generic callbacks will work smothly even with
-> and without CONFIG_PM_RUNTIME, as long as the runtime PM callbacks are
-> implemented inside CONFIG_PM instead of CONFIG_PM_RUNTIME.
+> There are multiple problems that are fixed by this patch:
+> - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board 
+>   wasn't working well with suspend/resume as calls for removing non-boot CPUs
+>   was turning out into a call to drivers ->target() which then tries to play
+>   with regulators. But regulators and their I2C bus were already suspended and
+>   this resulted in a failure. Many platforms have such problems, samsung,
+>   tegra, etc.. They solved it with driver specific PM notifiers where they
+>   used to disable their driver's ->target() routine.
 > 
-> A special thanks to Alan Stern who came up with this idea.
+> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
 > 
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>   tunables configuration for clusters/sockets with non-boot CPUs was getting
+>   lost after suspend/resume, as we were notifying governors with
+>   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
+>   deallocating memory for tunables. This is also fixed with this patch as don't
+>   allow any operation on Governors during suspend/resume now.
+> 
+> Reported-by: Lan Tianyu <tianyu.lan@intel.com>
+> Reported-by: Nishanth Menon <nm@ti.com>
+> Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
 > ---
->  drivers/base/power/generic_ops.c |   86 ++++++++++++++++++++++++++++++++++++++
->  include/linux/pm.h               |    2 +
->  2 files changed, 88 insertions(+)
+> drivers/base/power/main.c |  5 +++++
 > 
-> diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-> index 5ee030a..3132768 100644
-> --- a/drivers/base/power/generic_ops.c
-> +++ b/drivers/base/power/generic_ops.c
-> @@ -93,6 +93,49 @@ int pm_generic_suspend_late(struct device *dev)
->  EXPORT_SYMBOL_GPL(pm_generic_suspend_late);
+>  drivers/cpufreq/cpufreq.c | 50
+>  +++++++++++++++++++++++++++++++++++++++++++++++ include/linux/cpufreq.h  
+>  |  3 +++
+>  3 files changed, 58 insertions(+)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 1b41fca..c9fbb9d 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -29,6 +29,7 @@
+> 
+>  #include <linux/async.h>
+>  #include <linux/suspend.h>
+>  #include <trace/events/power.h>
+> 
+> +#include <linux/cpufreq.h>
+> 
+>  #include <linux/cpuidle.h>
+>  #include <linux/timer.h>
+> 
+> @@ -789,6 +790,8 @@ void dpm_resume(pm_message_t state)
+> 
+>  	mutex_unlock(&dpm_list_mtx);
+>  	async_synchronize_full();
+>  	dpm_show_time(starttime, state, NULL);
+> 
+> +
+> +	cpufreq_resume();
+> 
+>  }
 >  
 >  /**
-> + * pm_generic_suspend_late_runtime - Generic suspend_late callback for
-> + * subsystems that wants to use runtime_suspend callbacks at suspend_late.
+> 
+> @@ -1259,6 +1262,8 @@ int dpm_suspend(pm_message_t state)
+> 
+>  	might_sleep();
+> 
+> +	cpufreq_suspend();
+> +
+> 
+>  	mutex_lock(&dpm_list_mtx);
+>  	pm_transition = state;
+>  	async_error = 0;
 
-This has to be one line.  You can add more description below the @dev line.
+Shouldn't it do cpufreq_resume() on errors?
 
-> + * @dev: Device to suspend.
-> + */
-> +int pm_generic_suspend_late_runtime(struct device *dev)
-> +{
-> +	int (*callback)(struct device *);
-> +	int ret = 0;
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534d..b6c7821 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -26,6 +26,7 @@
+> 
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  #include <linux/slab.h>
+> 
+> +#include <linux/suspend.h>
+> 
+>  #include <linux/syscore_ops.h>
+>  #include <linux/tick.h>
+>  #include <trace/events/power.h>
+> 
+> @@ -47,6 +48,9 @@ static LIST_HEAD(cpufreq_policy_list);
+> 
+>  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  #endif
+> 
+> +/* Flag to suspend/resume CPUFreq governors */
+> +static bool cpufreq_suspended;
 > +
-> +	/*
-> +	 * PM core has disabled runtime PM in device_suspend_late, thus we can
-> +	 * safely check the device's runtime status and decide whether
-> +	 * additional actions are needed to put the device into low power state.
-> +	 * If so, we invoke the device's runtime_suspend callback.
-> +	 * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
-> +	 * returns false and therefore the runtime_suspend callback will be
-> +	 * invoked.
-> +	 */
-> +	if (pm_runtime_status_suspended(dev))
-> +		return 0;
-> +
-> +	if (dev->pm_domain)
-> +		callback = dev->pm_domain->ops.runtime_suspend;
-> +	else if (dev->type && dev->type->pm)
-> +		callback = dev->type->pm->runtime_suspend;
-> +	else if (dev->class && dev->class->pm)
-> +		callback = dev->class->pm->runtime_suspend;
-> +	else if (dev->bus && dev->bus->pm)
-> +		callback = dev->bus->pm->runtime_suspend;
-> +	else
-> +		callback = NULL;
-> +
-> +	if (!callback && dev->driver && dev->driver->pm)
-> +		callback = dev->driver->pm->runtime_suspend;
-> +
-> +	if (callback)
-> +		ret = callback(dev);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_generic_suspend_late_runtime);
-> +
-> +/**
->   * pm_generic_suspend - Generic suspend callback for subsystems.
->   * @dev: Device to suspend.
->   */
-> @@ -237,6 +280,49 @@ int pm_generic_resume_early(struct device *dev)
->  EXPORT_SYMBOL_GPL(pm_generic_resume_early);
+> 
+>  static inline bool has_target(void)
+>  {
 >  
+>  	return cpufreq_driver->target_index || cpufreq_driver->target;
+> 
+> @@ -1462,6 +1466,48 @@ static struct subsys_interface cpufreq_interface = {
+> 
+>  	.remove_dev	= cpufreq_remove_dev,
+>  
+>  };
+> 
+> +/*
+> + * Callbacks for suspending/resuming governors as some platforms can't
+> change + * frequency after this point in suspend cycle. Because some of the
+> devices + * (like: i2c, regulators, etc) they use for changing frequency
+> are suspended + * quickly after this point.
+> + */
+> +void cpufreq_suspend(void)
+> +{
+> +	struct cpufreq_policy *policy;
+> +
+> +	if (!has_target())
+> +		return;
+> +
+> +	pr_debug("%s: Suspending Governors\n", __func__);
+> +
+> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+> +			pr_err("%s: Failed to stop governor for policy: %p\n",
+> +					__func__, policy);
+
+This appears to be racy.  Is it really racy, or just seemingly?
+
+> +
+> +	cpufreq_suspended = true;
+> +}
+> +
+> +void cpufreq_resume(void)
+> +{
+> +	struct cpufreq_policy *policy;
+> +
+> +	if (!has_target())
+> +		return;
+> +
+> +	pr_debug("%s: Resuming Governors\n", __func__);
+> +
+> +	cpufreq_suspended = false;
+> +
+> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_START) ||
+> +				__cpufreq_governor(policy,
+> +					CPUFREQ_GOV_LIMITS))
+> +			pr_err("%s: Failed to start governor for policy: %p\n",
+> +					__func__, policy);
+> +}
+> +
+> 
 >  /**
-> + * pm_generic_resume_early_runtime - Generic resume_early callback for
-> + * subsystems that wants to use runtime_resume callbacks at resume_early.
-
-Same here.
-
-> + * @dev: Device to resume.
-> + */
-> +int pm_generic_resume_early_runtime(struct device *dev)
-> +{
-> +	int (*callback)(struct device *);
-> +	int ret = 0;
-> +
-> +	/*
-> +	 * PM core has not yet enabled runtime PM in device_resume_early,
-> +	 * thus we can safely check the device's runtime status and restore the
-> +	 * previous state we had in device_suspend_late. If restore is needed
-> +	 * we invoke the device's runtime_resume callback.
-> +	 * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
-> +	 * returns false and therefore the runtime_resume callback will be
-> +	 * invoked.
-> +	 */
-> +	if (pm_runtime_status_suspended(dev))
+>  
+>   * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
+>   *
+> 
+> @@ -1764,6 +1810,10 @@ static int __cpufreq_governor(struct cpufreq_policy
+> *policy,> 
+>  	struct cpufreq_governor *gov = NULL;
+>  
+>  #endif
+> 
+> +	/* Don't start any governor operations if we are entering suspend */
+> +	if (cpufreq_suspended)
 > +		return 0;
 > +
-> +	if (dev->pm_domain)
-> +		callback = dev->pm_domain->ops.runtime_resume;
-> +	else if (dev->type && dev->type->pm)
-> +		callback = dev->type->pm->runtime_resume;
-> +	else if (dev->class && dev->class->pm)
-> +		callback = dev->class->pm->runtime_resume;
-> +	else if (dev->bus && dev->bus->pm)
-> +		callback = dev->bus->pm->runtime_resume;
-> +	else
-> +		callback = NULL;
+> 
+>  	if (policy->governor->max_transition_latency &&
+>  	
+>  	    policy->cpuinfo.transition_latency >
+>  	    policy->governor->max_transition_latency) {
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index dc196bb..6d93f91 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -255,6 +255,9 @@ struct cpufreq_driver {
+> 
+>  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+>  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+> 
+> +void cpufreq_suspend(void);
+> +void cpufreq_resume(void);
 > +
-> +	if (!callback && dev->driver && dev->driver->pm)
-> +		callback = dev->driver->pm->runtime_resume;
-> +
-> +	if (callback)
-> +		ret = callback(dev);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_generic_resume_early_runtime);
-> +
-> +/**
->   * pm_generic_resume - Generic resume callback for subsystems.
->   * @dev: Device to resume.
->   */
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index a224c7f..5bce0d4 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -656,9 +656,11 @@ extern void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *));
+> 
+>  const char *cpufreq_get_current_driver(void);
 >  
->  extern int pm_generic_prepare(struct device *dev);
->  extern int pm_generic_suspend_late(struct device *dev);
-> +extern int pm_generic_suspend_late_runtime(struct device *dev);
->  extern int pm_generic_suspend_noirq(struct device *dev);
->  extern int pm_generic_suspend(struct device *dev);
->  extern int pm_generic_resume_early(struct device *dev);
-> +extern int pm_generic_resume_early_runtime(struct device *dev);
->  extern int pm_generic_resume_noirq(struct device *dev);
->  extern int pm_generic_resume(struct device *dev);
->  extern int pm_generic_freeze_noirq(struct device *dev);
+>  static inline void cpufreq_verify_within_limits(struct cpufreq_policy
+>  *policy,
 
 Thanks!
 
