@@ -1,84 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Mon, 25 Nov 2013 22:13:51 +0100
-Message-ID: <2997050.eogEtPXZyL@vostro.rjw.lan>
-References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org> <CAKohpok0QJ2xP5uoSaAsX76KwD5yi9Z54pgNyQ7CW3c4Fkbq2A@mail.gmail.com> <52938C5F.7000307@gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system suspend/hibernate
+Date: Mon, 25 Nov 2013 15:30:21 -0600
+Message-ID: <5293C16D.80605@ti.com>
+References: <cover.1385118255.git.viresh.kumar@linaro.org> <e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52938C5F.7000307@gmail.com>
+In-Reply-To: <e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, November 25, 2013 09:43:59 AM Dirk Brandewie wrote:
-> On 11/25/2013 09:01 AM, Viresh Kumar wrote:
-> > On 25 November 2013 22:08, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
-> >> IMHO this issue should be fixed in the scaling driver for the platform.
-> >>
-> >> The scaling driver sets policy->cur and fills in the frequency table and has
-> >
-> > Not anymore, policy->cur is set in the core for most of the drivers now.
-> > Drivers just provide ->get() callbacks.
-> >
-> >> the ability to adjust the frequency of the CPU.
-> >
-> > I believe this kind of decisions should stay with the core, drivers should
-> > just provide the backend instead of intelligence..
-> >
+On 11/22/2013 05:29 AM, Viresh Kumar wrote:
+> This patch adds cpufreq callbacks to dpm_{suspend|resume}_noirq() for handling
+> suspend/resume of cpufreq governors. This is required for early suspend and late
+> resume of governors.
 > 
+> There are multiple problems that are fixed by this patch:
+> - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
+>   wasn't working well with suspend/resume as calls for removing non-boot CPUs
+>   was turning out into a call to drivers ->target() which then tries to play
+>   with regulators. But regulators and their I2C bus were already suspended and
+>   this resulted in a failure. This is why we need a PM notifier here.
+> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
+>   tunables configuration for clusters/sockets with non-boot CPUs was getting
+>   lost after suspend/resume, as we were notifying governors with
+>   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
+>   deallocating memory for tunables.
 > 
-> This is a platform specific bug fix AFAICT and belongs in a platform
-> specific piece of code
-> 
-> 
-> >> Letting this leak up into the core
-> >> is wrong IMHO and just widens the window where the CPU will be running at
-> >> the wrong frequency set by the bootloader.
-> >
-> > It doesn't stay there for long enough.. we get to this point in
-> > cpufreq core just
-> > after calling ->init(), and if the CPU is working without issues until
-> > now, it will
-> > stay stable for few more milliseconds.
-> >
-> 
-> And this is where the scaling driver should detect and fix the issue in ->init()
-> on platforms we know about today, What happens if platforms in the future are
-> more sensitive to the issue?
-
-So what should the core do if the driver is careless and lets the bug slip
-through?  Should it blindly trust the driver and let go?
-
-Honestly, I don't think so.
-
-> >> Shouldn't there be a check to see if the problem exists at all?  Otherwise
-> >> the core is setting a policy for ALL platform even those where the issue
-> >> does
-> >> not exist.
-> >
-> > That is taken care of by __cpufreq_driver_target(). It checks if we are
-> > already running at requested frequency or not (after getting the next
-> > higher frequency)... If current freq is present in table,
-> > cpufreq_frequency_table_target() will return current frequency only for
-> > policy->cur -1. And so we will not end up configuring hardware
-> > unnecessarily.
-> >
-> 
-> The core should not be working around bootloader bugs IMHO.  Silently
-> fixing it is evil IMHO at a minimum the core should complain LOUDLY
-> about this happening otherwise the bootloaders will have no incentive to
-> get their act together.
-
-Yes, we can add a WARN_ON() there.  Still, though, the core's responsibility
-is to ensure that (a) either we can continue safely or (b) we can't, in which
-case it should just fail the initialization.  Whether or not it should panic()
-I'm not sure.
-
-Thanks!
+> Reported-by: Lan Tianyu <tianyu.lan@intel.com>
+> Reported-by: Nishanth Menon <nm@ti.com>
+> Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/base/power/main.c |  3 +++
+>  drivers/cpufreq/cpufreq.c | 62 +++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/cpufreq.h   |  3 +++
+>  3 files changed, 68 insertions(+)
+yes, this seems to work for me as well.
+http://pastebin.mozilla.org/3670909 - no cpufreq attempts to
+transition were triggered.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Nishanth Menon
