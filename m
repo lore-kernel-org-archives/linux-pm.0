@@ -1,62 +1,166 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Cpufreq: Change sysfs interface cpuinfo_cur_freq access privilege
-Date: Mon, 25 Nov 2013 13:14:54 +0100
-Message-ID: <1521595.q8BSAikk1K@vostro.rjw.lan>
-References: <1385348018-30525-1-git-send-email-tianyu.lan@intel.com> <5074010.ha99UACE9S@vostro.rjw.lan> <52933AB5.9060409@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52415 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752935Ab3KYMCI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Nov 2013 07:02:08 -0500
-In-Reply-To: <52933AB5.9060409@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
+Date: Mon, 25 Nov 2013 13:40:21 +0100
+Message-ID: <1385383221-20372-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, hg197@gmx.de, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Monday, November 25, 2013 07:55:33 PM Lan Tianyu wrote:
-> On 11/25/2013 07:26 PM, Rafael J. Wysocki wrote:
-> > On Monday, November 25, 2013 01:33:39 PM Lan Tianyu wrote:
-> >> On 2013=E5=B9=B411=E6=9C=8825=E6=97=A5 12:30, Viresh Kumar wrote:
-> >>> On 25 November 2013 08:23, Lan Tianyu <tianyu.lan@intel.com> wrot=
-e:
-> >>>> Currently, cpuinfo_cur_freq is only accessible for root user whi=
-le
-> >>>> other cpufreq sysfs interfaces(E,G scaling_cur_freq) are availab=
-le
-> >>>> to ordinary user. This seems make no sense. This patch is to cha=
-nge
-> >>>> it.
-> >>>
-> >>> There is nothing wrong with the code and so this is more of a des=
-ign
-> >>> change..
-> >>>
-> >>> Probably Rafael can help us here as cpufreq_cur_freq will read st=
-uff
-> >>> directly from hardware instead of using cached value in software.
-> >>
-> >> I think so, too. I also tried to checking the reason of the privil=
-ege by
-> >> git log but the code was there before linux kernel being migrated =
-to git
-> >> repository.
-> >
-> > And it has always behaved in the same way?  Then I wouldn't change =
-it.
-> >
->=20
-> It has been there since 2.6.12-rc2 or more early. But the=20
-> cpuinfo_cur_freq is read-only and seems no harmful.
+To put devices into low power state during sleep, it sometimes makes
+sense at subsystem-level to re-use device's runtime PM callbacks.
 
-If it reads things directly from hardware, it may not be totally neutra=
-l.
+The PM core will at device_suspend_late disable runtime PM, after that
+we can safely operate on these callbacks. At suspend_late the device
+will be put into low power state by invoking the device's
+runtime_suspend callback, unless the runtime status is already
+suspended. At resume_early the state is restored by invoking the
+device's runtime_resume callback. Soon after the PM core will re-enable
+runtime PM before returning from device_resume_early.
 
-Thanks!
+The new pm_generic functions are named pm_generic_suspend_late_runtime
+and pm_generic_resume_early_runtime, they are supposed to be used in
+pairs.
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Do note that these new generic callbacks will work smothly even with
+and without CONFIG_PM_RUNTIME, as long as the runtime PM callbacks are
+implemented inside CONFIG_PM instead of CONFIG_PM_RUNTIME.
+
+A special thanks to Alan Stern who came up with this idea.
+
+Cc: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ drivers/base/power/generic_ops.c |   86 ++++++++++++++++++++++++++++++++++++++
+ include/linux/pm.h               |    2 +
+ 2 files changed, 88 insertions(+)
+
+diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+index 5ee030a..3132768 100644
+--- a/drivers/base/power/generic_ops.c
++++ b/drivers/base/power/generic_ops.c
+@@ -93,6 +93,49 @@ int pm_generic_suspend_late(struct device *dev)
+ EXPORT_SYMBOL_GPL(pm_generic_suspend_late);
+ 
+ /**
++ * pm_generic_suspend_late_runtime - Generic suspend_late callback for
++ * subsystems that wants to use runtime_suspend callbacks at suspend_late.
++ * @dev: Device to suspend.
++ */
++int pm_generic_suspend_late_runtime(struct device *dev)
++{
++	int (*callback)(struct device *);
++	int ret = 0;
++
++	/*
++	 * PM core has disabled runtime PM in device_suspend_late, thus we can
++	 * safely check the device's runtime status and decide whether
++	 * additional actions are needed to put the device into low power state.
++	 * If so, we invoke the device's runtime_suspend callback.
++	 * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
++	 * returns false and therefore the runtime_suspend callback will be
++	 * invoked.
++	 */
++	if (pm_runtime_status_suspended(dev))
++		return 0;
++
++	if (dev->pm_domain)
++		callback = dev->pm_domain->ops.runtime_suspend;
++	else if (dev->type && dev->type->pm)
++		callback = dev->type->pm->runtime_suspend;
++	else if (dev->class && dev->class->pm)
++		callback = dev->class->pm->runtime_suspend;
++	else if (dev->bus && dev->bus->pm)
++		callback = dev->bus->pm->runtime_suspend;
++	else
++		callback = NULL;
++
++	if (!callback && dev->driver && dev->driver->pm)
++		callback = dev->driver->pm->runtime_suspend;
++
++	if (callback)
++		ret = callback(dev);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_generic_suspend_late_runtime);
++
++/**
+  * pm_generic_suspend - Generic suspend callback for subsystems.
+  * @dev: Device to suspend.
+  */
+@@ -237,6 +280,49 @@ int pm_generic_resume_early(struct device *dev)
+ EXPORT_SYMBOL_GPL(pm_generic_resume_early);
+ 
+ /**
++ * pm_generic_resume_early_runtime - Generic resume_early callback for
++ * subsystems that wants to use runtime_resume callbacks at resume_early.
++ * @dev: Device to resume.
++ */
++int pm_generic_resume_early_runtime(struct device *dev)
++{
++	int (*callback)(struct device *);
++	int ret = 0;
++
++	/*
++	 * PM core has not yet enabled runtime PM in device_resume_early,
++	 * thus we can safely check the device's runtime status and restore the
++	 * previous state we had in device_suspend_late. If restore is needed
++	 * we invoke the device's runtime_resume callback.
++	 * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
++	 * returns false and therefore the runtime_resume callback will be
++	 * invoked.
++	 */
++	if (pm_runtime_status_suspended(dev))
++		return 0;
++
++	if (dev->pm_domain)
++		callback = dev->pm_domain->ops.runtime_resume;
++	else if (dev->type && dev->type->pm)
++		callback = dev->type->pm->runtime_resume;
++	else if (dev->class && dev->class->pm)
++		callback = dev->class->pm->runtime_resume;
++	else if (dev->bus && dev->bus->pm)
++		callback = dev->bus->pm->runtime_resume;
++	else
++		callback = NULL;
++
++	if (!callback && dev->driver && dev->driver->pm)
++		callback = dev->driver->pm->runtime_resume;
++
++	if (callback)
++		ret = callback(dev);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_generic_resume_early_runtime);
++
++/**
+  * pm_generic_resume - Generic resume callback for subsystems.
+  * @dev: Device to resume.
+  */
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index a224c7f..5bce0d4 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -656,9 +656,11 @@ extern void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *));
+ 
+ extern int pm_generic_prepare(struct device *dev);
+ extern int pm_generic_suspend_late(struct device *dev);
++extern int pm_generic_suspend_late_runtime(struct device *dev);
+ extern int pm_generic_suspend_noirq(struct device *dev);
+ extern int pm_generic_suspend(struct device *dev);
+ extern int pm_generic_resume_early(struct device *dev);
++extern int pm_generic_resume_early_runtime(struct device *dev);
+ extern int pm_generic_resume_noirq(struct device *dev);
+ extern int pm_generic_resume(struct device *dev);
+ extern int pm_generic_freeze_noirq(struct device *dev);
+-- 
+1.7.9.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
