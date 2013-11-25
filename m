@@ -1,44 +1,74 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [PATCH] Cpufreq: Change sysfs interface cpuinfo_cur_freq access
- privilege
-Date: Mon, 25 Nov 2013 13:33:39 +0800
-Message-ID: <5292E133.1040800@intel.com>
-References: <1385348018-30525-1-git-send-email-tianyu.lan@intel.com> <CAKohponvz8CjDpMbx=BXpBv5q8d4x94No90sJWjVsTRS_Uj1jw@mail.gmail.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH] PM / Clocks: fix pm_clk_resume/suspend if CONFIG_PM_RUNTIME
+ is set
+Date: Mon, 25 Nov 2013 12:05:28 +0200
+Message-ID: <529320E8.7030703@ti.com>
+References: <1384954307-27094-1-git-send-email-grygorii.strashko@ti.com> <528D0296.1070001@codeaurora.org> <528D082C.3040405@ti.com> <528D1327.7080205@codeaurora.org> <528D1784.8080704@ti.com> <528D1C49.3020301@ti.com> <87ppps6zve.fsf@linaro.org> <528FAA00.9060801@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponvz8CjDpMbx=BXpBv5q8d4x94No90sJWjVsTRS_Uj1jw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, hg197@gmx.de, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:39884 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751128Ab3KYKJd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Nov 2013 05:09:33 -0500
+In-Reply-To: <528FAA00.9060801@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>, Kevin Hilman <khilman@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 2013=E5=B9=B411=E6=9C=8825=E6=97=A5 12:30, Viresh Kumar wrote:
-> On 25 November 2013 08:23, Lan Tianyu <tianyu.lan@intel.com> wrote:
->> Currently, cpuinfo_cur_freq is only accessible for root user while
->> other cpufreq sysfs interfaces(E,G scaling_cur_freq) are available
->> to ordinary user. This seems make no sense. This patch is to change
->> it.
->=20
-> There is nothing wrong with the code and so this is more of a design
-> change..
->=20
-> Probably Rafael can help us here as cpufreq_cur_freq will read stuff
-> directly from hardware instead of using cached value in software.
+On 11/22/2013 09:01 PM, Santosh Shilimkar wrote:
+> On Friday 22 November 2013 01:43 PM, Kevin Hilman wrote:
+>> Santosh Shilimkar <santosh.shilimkar@ti.com> writes:
+>>
+>> [...]
+>>
+>>>>> It looks like even if you just remove the locks here, the PM core is
+>>>>> free to call this function with irqs disabled if pm_runtime_irq_safe()
+>>>>> has been called on the device. Perhaps runtime PM can only do the
+>>>>> clk_enable()/clk_disable() part and the clk_unprepare()/clk_prepare()
+>>>>> calls should happen in the system suspend callbacks?
+>>>>
+>>>> Even don't know what to say :( On Keystone clk_unprepare()/clk_prepare() are NOPs.
+>>>> But clk_prepare() has to be called at least once before clk_enable() :((
+>>>> So, solution with suspend/resume will not fix current problem :( unfortunately.
+>>>>
+>>>> FYI, Now pm_clk_suspend/pm_clk_resume are called from arch/arm/mach-keystone/pm_domain.c
+>>>> (also similar solution is used by Davinci, but issue has not been detected because
+>>>> PM runtime hasn't been used by Davinci IP drivers before)
+>>>>
+>>> One way to deal with this is to have clk_unprepare()/clk_prepare()
+>>> called from dev_pm_domain ops before calling pm_clk_[suspend/resume]() if we
+>>> can't have that as part of runtime code.
+>>
+>> That doesn't solve the irq_safe problem that Stephen pointed out without
+>> being very careful.  Basically, if you have _any_ potentially sleeping
+>> calls in this path, you can never allow devices to use
+>> pm_runtime_irq_safe().
+>>
+> You are right. I realized that after reading the code.
+> 
+>> Also, I don't like having the clk_enable in the PM core but the
+>> clk_prepare in the platform-specific pm_domain.  That seems prone for
+>> platforms to get wrong.
+>>
+> Agree.
+> 
+>> I'll need to think about this a little more before having any idea what
+>> to do here.
+>>
+> Thanks Kevin for looking into it.
 
-I think so, too. I also tried to checking the reason of the privilege b=
-y
-git log but the code was there before linux kernel being migrated to gi=
-t
-repository.
+May be it can be solved through CCF by introducing additional flag like
+CLK_SET_NO_PREPARE for cases when clocks perpetration isn't really needed.
+So, when this flag is set CCF will just auto-increment "prepare_count" 
+when clock is registered.
 
->=20
-> --
-> viresh
->=20
+Of Course, this will not solve the case when clock need to be prepared and
+driver wants to use PM Runtime, but for SoCs like Keystone that can be
+fast & simple solution. 
 
 
---=20
-Best regards
-Tianyu Lan
+Regards,
+- grygrorii
