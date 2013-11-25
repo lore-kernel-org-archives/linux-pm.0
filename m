@@ -1,232 +1,168 @@
 From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
-Date: Mon, 25 Nov 2013 11:47:17 -0400
-Message-ID: <52937105.6040505@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com> <20131125153721.GH32081@e106331-lin.cambridge.arm.com>
+Subject: Re: [GIT PULL] Thermal and Device tree
+Date: Mon, 25 Nov 2013 11:51:41 -0400
+Message-ID: <5293720D.5070605@ti.com>
+References: <1385390669-7613-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="Ju1ovUSkQSU9eUGcmI17HankcJHhb8UrX"
+	boundary="mvwbXfjrFbP5pBBjSG5jtMbGHFlL58mj5"
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20131125153721.GH32081-NuALmloUBlrZROr8t4l/smS4ubULX0JqMm0uRHvK7Nw@public.gmane.org>
+In-Reply-To: <1385390669-7613-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, "ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org" <ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org" <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org
+Cc: wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, eduardo.valentin-l0cyMroinI0@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---Ju1ovUSkQSU9eUGcmI17HankcJHhb8UrX
+--mvwbXfjrFbP5pBBjSG5jtMbGHFlL58mj5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 25-11-2013 11:37, Mark Rutland wrote:
-> On Tue, Nov 12, 2013 at 07:46:04PM +0000, Eduardo Valentin wrote:
->> This patch introduces a device tree bindings for
->> describing the hardware thermal behavior and limits.
->> Also a parser to read and interpret the data and feed
->> it in the thermal framework is presented.
->>
->> This patch introduces a thermal data parser for device
->> tree. The parsed data is used to build thermal zones
->> and thermal binding parameters. The output data
->> can then be used to deploy thermal policies.
->>
->> This patch adds also documentation regarding this
->> API and how to define tree nodes to use
->> this infrastructure.
->>
->> Note that, in order to be able to have control
->> on the sensor registration on the DT thermal zone,
->> it was required to allow changing the thermal zone
->> .get_temp callback. For this reason, this patch
->> also removes the 'const' modifier from the .ops
->> field of thermal zone devices.
->>
->> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
->> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
->> Signed-off-by: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
->> ---
->>
->> Hello all,
->>
->> Very minor changes from v8 to v9.
->>
->> Changelog:
->>
->> - Rephrase a couple of sentences in the binding document
->> - Fixed a couple of property types in the binding document
->> - Removed the constant macro definitions for trip type. This
->> change also affected the bindings posted on patches 09/14/15.
->>
->>  .../devicetree/bindings/thermal/thermal.txt        | 586 ++++++++++++=
-++
->>  drivers/thermal/Kconfig                            |  13 +
->>  drivers/thermal/Makefile                           |   1 +
->>  drivers/thermal/of-thermal.c                       | 849 ++++++++++++=
-+++++++++
->>  drivers/thermal/thermal_core.c                     |   9 +-
->>  drivers/thermal/thermal_core.h                     |   9 +
->>  include/dt-bindings/thermal/thermal.h              |  17 +
->>  include/linux/thermal.h                            |  28 +-
->>  8 files changed, 1509 insertions(+), 3 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/thermal/thermal.=
-txt
->>  create mode 100644 drivers/thermal/of-thermal.c
->>  create mode 100644 include/dt-bindings/thermal/thermal.h
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/D=
-ocumentation/devicetree/bindings/thermal/thermal.txt
->> new file mode 100644
->> index 0000000..59f5bd2
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
->> @@ -0,0 +1,586 @@
->> +* Thermal Framework Device Tree descriptor
->> +
->> +This file describes a generic binding to provide a way of
->> +defining hardware thermal structure using device tree.
->> +A thermal structure includes thermal zones and their components,
->> +such as trip points, polling intervals, sensors and cooling devices
->> +binding descriptors.
->> +
->> +The target of device tree thermal descriptors is to describe only
->> +the hardware thermal aspects. The thermal device tree bindings are
->> +not about how the system must control or which algorithm or policy
->> +must be taken in place.
->> +
->> +There are five types of nodes involved to describe thermal bindings:
->> +- thermal sensors: devices which may be used to take temperature
->> +  measurements.
->> +- cooling devices: devices which may be used to dissipate heat.
->> +- trip points: describe key temperatures at which cooling is recommen=
-ded. The
->> +  set of points should be chosen based on hardware limits.
->> +- cooling maps: used to describe links between trip points and coolin=
-g devices;
->> +- thermal zones: used to describe thermal data within the hardware;
->> +
->> +The following is a description of each of these node types.
->> +
->> +* Thermal sensor devices
->> +
->> +Thermal sensor devices are nodes providing temperature sensing capabi=
-lities on
->> +thermal zones. Typical devices are I2C ADC converters and bandgaps. T=
-hese are
->> +nodes providing temperature data to thermal zones. Thermal sensor dev=
-ices may
->> +control one or more internal sensors.
->> +
->> +Required property:
->> +- #thermal-sensor-cells: Used to provide sensor device specific infor=
-mation
->> +  Type: unsigned        while referring to it. Typically 0 on thermal=
- sensor
->> +  Size: one cell        nodes with only one sensor, and at least 1 on=
- nodes
->> +                        with several internal sensors, in order
->> +                        to identify uniquely the sensor instances wit=
-hin
->> +                        the IC. See thermal zone binding for more det=
-ails
->> +                        on how consumers refer to sensor devices.
->> +
->> +* Cooling device nodes
->> +
->> +Cooling devices are nodes providing control on power dissipation. The=
-re
->> +are essentially two ways to provide control on power dissipation. Fir=
-st
->> +is by means of regulating device performance, which is known as passi=
-ve
->> +cooling. A typical passive cooling is a CPU that has dynamic voltage =
-and
->> +frequency scaling (DVFS), and uses lower frequencies as cooling state=
-s.
->> +Second is by means of activating devices in order to remove
->> +the dissipated heat, which is known as active cooling, e.g. regulatin=
-g
->> +fan speeds. In both cases, cooling devices shall have a way to determ=
-ine
->> +the state of cooling in which the device is.
->> +
->> +Required properties:
->> +- cooling-min-state:   An integer indicating the smallest
->> +  Type: unsigned       cooling state accepted. Typically 0.
->> +  Size: one cell
->> +
->> +- cooling-max-state:   An integer indicating the largest
->> +  Type: unsigned       cooling state accepted.
->> +  Size: one cell
->> +
->> +- #cooling-cells:      Used to provide cooling device specific inform=
-ation
->> +  Type: unsigned       while referring to it. Must be at least 2, in =
-order
->> +  Size: one cell       to specify minimum and maximum cooling state u=
-sed
->> +                       in the reference. The first cell is the minimu=
-m
->> +                       cooling state requested and the second cell is=
 
->> +                       the maximum cooling state requested in the ref=
-erence.
->> +                       See Cooling device maps section below for more=
- details
->> +                       on how consumers refer to cooling devices.
->=20
-> This is the point I'm still most concerned with, as it provides a
-> definite meaning to an otherwise abstract property. However, if you
-> believe this is sane and unlikely to be problematic, then I am happy to=
+Hello again Rui,
 
-> leave the decision to you.
+On 25-11-2013 10:44, Eduardo Valentin wrote:
+> Hello Rui,
 >=20
->> +
->> +* Trip points
->> +
->> +The trip node is a node to describe a point in the temperature domain=
+> Please consider the following changes for 3.14. It contains the work of=
 
->> +in which the system takes an action. This node describes just the poi=
-nt,
->> +not the action.
->> +
->> +Required properties:
->> +- temperature:         An integer indicating the trip temperature lev=
-el,
->> +  Type: signed         in millicelsius.
->> +  Size: one cell
->> +
->> +- hysteresis:          A low hysteresis value on temperature property=
- (above).
->> +  Type: unsigned       This is a relative value, in millicelsius.
->> +  Size: one cell
->> +
->> +- type:                        a string containing the trip type. Sup=
-ported values are:
->=20
-> Get rid of the "Supported", that's a Linux detail.
->=20
-> s/Supported/expected/ ?
+> representing hardware thermal using device tree. It also contains
+> three examples on how to use the new representation on sensor devices,
+> using three different drivers to accomplish it. One driver is on therma=
+l
+> subsystem, the TI SoC thermal, and the other two drivers are in hwmon
+> subsystem. I also included a change on cpu cooling device, which requir=
+ed
+> also a change on cpufreq-cpu0 driver. The change on this cooling device=
 
-OK.
+> still keeps in one piece its usage on different platforms.
+>=20
+> Because it is a controversial topic due to the lack of standards, and
+> because it touches different subsystems, it took way longer than I expe=
+cted.
+> However, I've been discussing in different channels, and I believe I go=
+t
+> enough entropy now to go forward. We have acks from cpufreq folks (on A=
+RM side)
+> and from hwmon folks too. Raphael W., Jean D. and Mark R. have also
+> reviewed this series. They agree with the core idea of the work.
+
+FYI, Mark R. also acked the work on device tree binding behalf. And
+after a couple of improvements on binding document suggested by Thomasz
+F. and Mark. R, I uploaded in the same branch the resulting series.
+
+Let me know if you have troubles pulling the series.
 
 >=20
-> Given the discussion has otherwise boiled down to bits that I think can=
+> It has been agreed that this is not the end of it. As I said I started
+> with only three examples, but there are other potential drivers to use
+> this API. So, I have agreed with Jean D., for instance, that this
+> series would be first step of the complete work. Next would be to check=
 
-> change later, I'm happy to give my ack:
+> other potential drivers to be converted and then validate the proposed
+> API. Currently the thermal framework would be polling for device
+> temperature, but we could implement a couple of call backs to setup
+> update rate, thresholds and hysteresis too, for instance.
 >=20
-> Acked-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+> On the other hand, I don't think the principle and concept would break
+> after converting the remaining drivers. That is why I am sending this p=
+ull
+> request.
 >=20
+> Another point is, as you can see, there are several points in this pull=
 
-Thanks for your valuable contributions to this work. For sure it would
-not be at the state it is without your punctual and objective review.
-
-> I'll leave it to the others to fight against this if they still have
-> concerns.
+> request that do not belong to thermal subsystem. It has been suggested
+> by Guenter R. that in such cases, it is recommended to send the complet=
+e
+> series via one single subsystem. Thus, I am sending via your queue.
 >=20
-> Thanks,
-> Mark.
+> Lastly, I've also volunteered to maintain the upcoming thermal bindings=
+=2E
+> Then, you can see I am adding thermal bindings to our MAINTAINERS entry=
+ too.
+>=20
+>=20
+> All best,
+>=20
+> The following changes since commit 86e0a0bdf81c2dfa2a5a258dbb52f49c40eb=
+c197:
+>=20
+>   Merge branches 'intel_powerclamp', 'tmon' and 'misc' of .git into nex=
+t (2013-11-07 08:45:54 +0800)
+>=20
+> are available in the git repository at:
+>=20
+>=20
+>   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-ther=
+mal.git next
+>=20
+> for you to fetch changes up to 14d653c8ffc85c4aea7e50baa9a3c198b4fcf9c5=
+:
+>=20
+>   MAINTAINERS: add thermal bindings entry in thermal domain (2013-11-25=
+ 10:19:12 -0400)
+>=20
+> ----------------------------------------------------------------
+> Eduardo Valentin (20):
+>       thermal: allow registering without .get_temp
+>       thermal: introduce device tree parser
+>       thermal: core: introduce thermal_of_cooling_device_register
+>       thermal: cpu_cooling: introduce of_cpufreq_cooling_register
+>       cpufreq: cpufreq-cpu0: add dt node parsing for cooling device pro=
+perties
+>       hwmon: lm75: expose to thermal fw via DT nodes
+>       hwmon: tmp102: expose to thermal fw via DT nodes
+>       thermal: ti-soc-thermal: use thermal DT infrastructure
+>       arm: dts: add omap4 CPU thermal data
+>       arm: dts: add omap4430 thermal data
+>       arm: dts: add omap4460 thermal data
+>       arm: dts: add cooling properties on omap4430 cpu node
+>       arm: dts: add cooling properties on omap4460 cpu node
+>       arm: dts: add omap5 GPU thermal data
+>       arm: dts: add omap5 CORE thermal data
+>       arm: dts: add omap5 thermal data
+>       arm: dts: add cooling properties on omap5 cpu node
+>       arm: dts: make OMAP443x bandgap node to belong to OCP
+>       arm: dts: make OMAP4460 bandgap node to belong to OCP
+>       MAINTAINERS: add thermal bindings entry in thermal domain
+>=20
+>  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   7 +
+>  .../devicetree/bindings/thermal/thermal.txt        | 589 +++++++++++++=
++
+>  MAINTAINERS                                        |   1 +
+>  arch/arm/boot/dts/omap4-cpu-thermal.dtsi           |  41 +
+>  arch/arm/boot/dts/omap443x.dtsi                    |  23 +-
+>  arch/arm/boot/dts/omap4460.dtsi                    |  29 +-
+>  arch/arm/boot/dts/omap5-core-thermal.dtsi          |  28 +
+>  arch/arm/boot/dts/omap5-gpu-thermal.dtsi           |  28 +
+>  arch/arm/boot/dts/omap5.dtsi                       |  15 +-
+>  drivers/cpufreq/Kconfig                            |   2 +-
+>  drivers/cpufreq/cpufreq-cpu0.c                     |  16 +
+>  drivers/hwmon/lm75.c                               |  35 +-
+>  drivers/hwmon/tmp102.c                             |  19 +
+>  drivers/thermal/Kconfig                            |  14 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/cpu_cooling.c                      |  56 +-
+>  drivers/thermal/of-thermal.c                       | 849 +++++++++++++=
+++++++++
+>  drivers/thermal/thermal_core.c                     |  77 +-
+>  drivers/thermal/thermal_core.h                     |   9 +
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  77 +-
+>  include/dt-bindings/thermal/thermal.h              |  17 +
+>  include/linux/cpu_cooling.h                        |  25 +
+>  include/linux/thermal.h                            |  32 +-
+>  23 files changed, 1939 insertions(+), 51 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/thermal.t=
+xt
+>  create mode 100644 arch/arm/boot/dts/omap4-cpu-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/omap5-core-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/omap5-gpu-thermal.dtsi
+>  create mode 100644 drivers/thermal/of-thermal.c
+>  create mode 100644 include/dt-bindings/thermal/thermal.h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >=20
 >=20
 
@@ -237,7 +173,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---Ju1ovUSkQSU9eUGcmI17HankcJHhb8UrX
+--mvwbXfjrFbP5pBBjSG5jtMbGHFlL58mj5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -246,12 +182,12 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlKTcQUACgkQCXcVR3XQvP3JcAD9G7l/FSYGUb8tAza2iug4I0LM
-CLsSoYa23nCjvtgMYGMA/2KmrwGNXT4g5be9vY6tMGKvQIvcSfnOKv5sHhT0eE/N
-=EnMx
+iF4EAREIAAYFAlKTcg0ACgkQCXcVR3XQvP2ZUgEA2LhYLuEl+x4LOy1EeN2PgoTA
+bSA9jEPwTV1GvGXTgdYBAN8/b5lR8R4l2QtUNkzHzzIRPFfK0WbfcFKPzCs7tl5r
+=0vgz
 -----END PGP SIGNATURE-----
 
---Ju1ovUSkQSU9eUGcmI17HankcJHhb8UrX--
+--mvwbXfjrFbP5pBBjSG5jtMbGHFlL58mj5--
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
