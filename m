@@ -1,85 +1,124 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 3/6] cpufreq: Implement cpufreq_generic_suspend()
-Date: Mon, 25 Nov 2013 19:41:43 +0530
-Message-ID: <2b3f1f76ff383697c1ee8c8eeb0029d95b53248f.1385374822.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 5/6] cpufreq: s5pv210: Use cpufreq_generic_suspend()
+Date: Mon, 25 Nov 2013 19:41:45 +0530
+Message-ID: <1147f4293a630d460daeb4ac4042aadb57221df5.1385374822.git.viresh.kumar@linaro.org>
 References: <cover.1385374819.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1385374819.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1385374819.git.viresh.kumar@linaro.org>
 References: <cover.1385374819.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Multiple platforms need to set CPU to a particular frequency before suspending
-system. And so they need a common infrastructure which is provided by this
-patch. Those platforms just need to initialize their ->suspend() pointers with
-the generic routine.
+Currently we have implemented PM notifiers to disable/enable ->target() routines
+functionality during suspend/resume.
+
+Now we have support present in cpufreq core, lets use it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 25 +++++++++++++++++++++++++
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 28 insertions(+)
+ drivers/cpufreq/s5pv210-cpufreq.c | 49 +++------------------------------------
+ 1 file changed, 3 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 026efe4a..f6da551 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1466,6 +1466,31 @@ static struct subsys_interface cpufreq_interface = {
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index e3973da..89c052e 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -18,7 +18,6 @@
+ #include <linux/cpufreq.h>
+ #include <linux/reboot.h>
+ #include <linux/regulator/consumer.h>
+-#include <linux/suspend.h>
+ 
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
+@@ -444,18 +443,6 @@ exit:
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_PM
+-static int s5pv210_cpufreq_suspend(struct cpufreq_policy *policy)
+-{
+-	return 0;
+-}
+-
+-static int s5pv210_cpufreq_resume(struct cpufreq_policy *policy)
+-{
+-	return 0;
+-}
+-#endif
+-
+ static int check_mem_type(void __iomem *dmc_reg)
+ {
+ 	unsigned long val;
+@@ -511,6 +498,7 @@ static int __init s5pv210_cpu_init(struct cpufreq_policy *policy)
+ 	s5pv210_dram_conf[1].refresh = (__raw_readl(S5P_VA_DMC1 + 0x30) * 1000);
+ 	s5pv210_dram_conf[1].freq = clk_get_rate(dmc1_clk);
+ 
++	policy->suspend_freq = SLEEP_FREQ;
+ 	return cpufreq_generic_init(policy, s5pv210_freq_table, 40000);
+ 
+ out_dmc1:
+@@ -520,32 +508,6 @@ out_dmc0:
+ 	return ret;
+ }
+ 
+-static int s5pv210_cpufreq_notifier_event(struct notifier_block *this,
+-					  unsigned long event, void *ptr)
+-{
+-	int ret;
+-
+-	switch (event) {
+-	case PM_SUSPEND_PREPARE:
+-		ret = cpufreq_driver_target(cpufreq_cpu_get(0), SLEEP_FREQ, 0);
+-		if (ret < 0)
+-			return NOTIFY_BAD;
+-
+-		/* Disable updation of cpu frequency */
+-		no_cpufreq_access = true;
+-		return NOTIFY_OK;
+-	case PM_POST_RESTORE:
+-	case PM_POST_SUSPEND:
+-		/* Enable updation of cpu frequency */
+-		no_cpufreq_access = false;
+-		cpufreq_driver_target(cpufreq_cpu_get(0), SLEEP_FREQ, 0);
+-
+-		return NOTIFY_OK;
+-	}
+-
+-	return NOTIFY_DONE;
+-}
+-
+ static int s5pv210_cpufreq_reboot_notifier_event(struct notifier_block *this,
+ 						 unsigned long event, void *ptr)
+ {
+@@ -567,15 +529,11 @@ static struct cpufreq_driver s5pv210_driver = {
+ 	.init		= s5pv210_cpu_init,
+ 	.name		= "s5pv210",
+ #ifdef CONFIG_PM
+-	.suspend	= s5pv210_cpufreq_suspend,
+-	.resume		= s5pv210_cpufreq_resume,
++	.suspend	= cpufreq_generic_suspend,
++	.resume		= cpufreq_generic_suspend, /* We need to set SLEEP FREQ again */
+ #endif
  };
  
- /*
-+ * In case platform wants some specific frequency to be configured
-+ * during suspend..
-+ */
-+int cpufreq_generic_suspend(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+
-+	if (!policy->suspend_freq) {
-+		pr_err("%s: suspend_freq can't be zero\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	pr_debug("%s: Setting suspend-freq: %u\n", __func__,
-+			policy->suspend_freq);
-+
-+	ret = __cpufreq_driver_target(policy, policy->suspend_freq,
-+			CPUFREQ_RELATION_H);
-+	if (ret)
-+		pr_err("%s: unable to set suspend-freq: %u. err: %d\n",
-+				__func__, policy->suspend_freq, ret);
-+
-+	return ret;
-+}
-+
-+/*
-  * Callbacks for suspending/resuming governors as some platforms can't change
-  * frequency after this point in suspend cycle. Because some of the devices
-  * (like: i2c, regulators, etc) they use for changing frequency are suspended
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 6d93f91..94ccac5 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -72,6 +72,8 @@ struct cpufreq_policy {
- 	unsigned int		max;    /* in kHz */
- 	unsigned int		cur;    /* in kHz, only needed if cpufreq
- 					 * governors are used */
-+	unsigned int		suspend_freq; /* freq to set during suspend */
-+
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
-@@ -257,6 +259,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+-static struct notifier_block s5pv210_cpufreq_notifier = {
+-	.notifier_call = s5pv210_cpufreq_notifier_event,
+-};
+-
+ static struct notifier_block s5pv210_cpufreq_reboot_notifier = {
+ 	.notifier_call = s5pv210_cpufreq_reboot_notifier_event,
+ };
+@@ -595,7 +553,6 @@ static int __init s5pv210_cpufreq_init(void)
+ 		return PTR_ERR(int_regulator);
+ 	}
  
- void cpufreq_suspend(void);
- void cpufreq_resume(void);
-+int cpufreq_generic_suspend(struct cpufreq_policy *policy);
+-	register_pm_notifier(&s5pv210_cpufreq_notifier);
+ 	register_reboot_notifier(&s5pv210_cpufreq_reboot_notifier);
  
- const char *cpufreq_get_current_driver(void);
- 
+ 	return cpufreq_register_driver(&s5pv210_driver);
 -- 
 1.7.12.rc2.18.g61b472e
-
