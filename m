@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 4/6] cpufreq: exynos: Use cpufreq_generic_suspend()
-Date: Mon, 25 Nov 2013 19:41:44 +0530
-Message-ID: <5cc8adcda9868e4dd8ac8588e92c3b353171a737.1385374822.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 6/6] cpufreq: Tegra: Use cpufreq_generic_suspend()
+Date: Mon, 25 Nov 2013 19:41:46 +0530
+Message-ID: <d6b2668d6326b2279ff36086e2eb6ae1b334f496.1385374822.git.viresh.kumar@linaro.org>
 References: <cover.1385374819.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1385374819.git.viresh.kumar@linaro.org>
@@ -19,149 +19,110 @@ Now we have support present in cpufreq core, lets use it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/exynos-cpufreq.c | 97 +++-------------------------------------
- 1 file changed, 6 insertions(+), 91 deletions(-)
+ drivers/cpufreq/tegra-cpufreq.c | 54 +++++------------------------------------
+ 1 file changed, 6 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index f3c2287..88a4e28 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -16,7 +16,6 @@
- #include <linux/slab.h>
- #include <linux/regulator/consumer.h>
- #include <linux/cpufreq.h>
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index f42df7e..336368b 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -26,7 +26,6 @@
+ #include <linux/err.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
 -#include <linux/suspend.h>
  
- #include <plat/cpu.h>
+ static struct cpufreq_frequency_table freq_table[] = {
+ 	{ .frequency = 216000 },
+@@ -48,8 +47,6 @@ static struct clk *pll_p_clk;
+ static struct clk *emc_clk;
  
-@@ -26,10 +25,6 @@ static struct exynos_dvfs_info *exynos_info;
+ static unsigned long target_cpu_speed[NUM_CPUS];
+-static DEFINE_MUTEX(tegra_cpu_lock);
+-static bool is_suspended;
  
- static struct regulator *arm_regulator;
- 
--static unsigned int locking_frequency;
--static bool frequency_locked;
--static DEFINE_MUTEX(cpufreq_lock);
--
- static unsigned int exynos_getspeed(unsigned int cpu)
+ static unsigned int tegra_getspeed(unsigned int cpu)
  {
- 	return clk_get_rate(exynos_info->cpu_clk) / 1000;
-@@ -138,82 +133,12 @@ out:
+@@ -137,50 +134,10 @@ static unsigned long tegra_cpu_highest_speed(void)
  
- static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
+ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
  {
--	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
+-	unsigned int freq;
 -	int ret = 0;
 -
--	mutex_lock(&cpufreq_lock);
+-	mutex_lock(&tegra_cpu_lock);
 -
--	if (frequency_locked)
+-	if (is_suspended) {
+-		ret = -EBUSY;
 -		goto out;
+-	}
 -
--	ret = exynos_cpufreq_scale(freq_table[index].frequency);
+-	freq = freq_table[index].frequency;
+-
+-	target_cpu_speed[policy->cpu] = freq;
+-
+-	ret = tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
 -
 -out:
--	mutex_unlock(&cpufreq_lock);
--
+-	mutex_unlock(&tegra_cpu_lock);
 -	return ret;
--}
--
--#ifdef CONFIG_PM
--static int exynos_cpufreq_suspend(struct cpufreq_policy *policy)
--{
--	return 0;
--}
--
--static int exynos_cpufreq_resume(struct cpufreq_policy *policy)
--{
--	return 0;
-+	return exynos_cpufreq_scale(exynos_info->freq_table[index].frequency);
++	target_cpu_speed[policy->cpu] = freq_table[index].frequency;
++	return tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
  }
--#endif
--
--/**
-- * exynos_cpufreq_pm_notifier - block CPUFREQ's activities in suspend-resume
-- *			context
-- * @notifier
-- * @pm_event
-- * @v
-- *
-- * While frequency_locked == true, target() ignores every frequency but
-- * locking_frequency. The locking_frequency value is the initial frequency,
-- * which is set by the bootloader. In order to eliminate possible
-- * inconsistency in clock values, we save and restore frequencies during
-- * suspend and resume and block CPUFREQ activities. Note that the standard
-- * suspend/resume cannot be used as they are too deep (syscore_ops) for
-- * regulator actions.
-- */
--static int exynos_cpufreq_pm_notifier(struct notifier_block *notifier,
--				       unsigned long pm_event, void *v)
+ 
+-static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
+-	void *dummy)
 -{
--	int ret;
--
--	switch (pm_event) {
--	case PM_SUSPEND_PREPARE:
--		mutex_lock(&cpufreq_lock);
--		frequency_locked = true;
--		mutex_unlock(&cpufreq_lock);
--
--		ret = exynos_cpufreq_scale(locking_frequency);
--		if (ret < 0)
--			return NOTIFY_BAD;
--
--		break;
--
--	case PM_POST_SUSPEND:
--		mutex_lock(&cpufreq_lock);
--		frequency_locked = false;
--		mutex_unlock(&cpufreq_lock);
--		break;
+-	mutex_lock(&tegra_cpu_lock);
+-	if (event == PM_SUSPEND_PREPARE) {
+-		struct cpufreq_policy *policy = cpufreq_cpu_get(0);
+-		is_suspended = true;
+-		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
+-			freq_table[0].frequency);
+-		tegra_update_cpu_speed(policy, freq_table[0].frequency);
+-		cpufreq_cpu_put(policy);
+-	} else if (event == PM_POST_SUSPEND) {
+-		is_suspended = false;
 -	}
+-	mutex_unlock(&tegra_cpu_lock);
 -
 -	return NOTIFY_OK;
 -}
 -
--static struct notifier_block exynos_cpufreq_nb = {
--	.notifier_call = exynos_cpufreq_pm_notifier,
+-static struct notifier_block tegra_cpu_pm_notifier = {
+-	.notifier_call = tegra_pm_notify,
 -};
- 
- static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+-
+ static int tegra_cpu_init(struct cpufreq_policy *policy)
  {
-+	policy->suspend_freq = exynos_getspeed(policy->cpu);
- 	return cpufreq_generic_init(policy, exynos_info->freq_table, 100000);
- }
+ 	int ret;
+@@ -192,6 +149,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
+ 	clk_prepare_enable(cpu_clk);
  
-@@ -227,8 +152,7 @@ static struct cpufreq_driver exynos_driver = {
- 	.name		= "exynos_cpufreq",
- 	.attr		= cpufreq_generic_attr,
- #ifdef CONFIG_PM
--	.suspend	= exynos_cpufreq_suspend,
--	.resume		= exynos_cpufreq_resume,
-+	.suspend	= cpufreq_generic_suspend,
- #endif
- };
+ 	target_cpu_speed[policy->cpu] = tegra_getspeed(policy->cpu);
++	policy->suspend_freq = freq_table[0].frequency;
  
-@@ -263,19 +187,10 @@ static int __init exynos_cpufreq_init(void)
- 		goto err_vdd_arm;
+ 	/* FIXME: what's the actual transition time? */
+ 	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
+@@ -201,9 +159,6 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
+ 		return ret;
  	}
  
--	locking_frequency = exynos_getspeed(0);
+-	if (policy->cpu == 0)
+-		register_pm_notifier(&tegra_cpu_pm_notifier);
 -
--	register_pm_notifier(&exynos_cpufreq_nb);
--
--	if (cpufreq_register_driver(&exynos_driver)) {
--		pr_err("%s: failed to register cpufreq driver\n", __func__);
--		goto err_cpufreq;
--	}
--
--	return 0;
--err_cpufreq:
--	unregister_pm_notifier(&exynos_cpufreq_nb);
-+	if (!cpufreq_register_driver(&exynos_driver))
-+		return 0;
+ 	return 0;
+ }
  
-+	pr_err("%s: failed to register cpufreq driver\n", __func__);
- 	regulator_put(arm_regulator);
- err_vdd_arm:
- 	kfree(exynos_info);
+@@ -223,6 +178,9 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
+ 	.exit		= tegra_cpu_exit,
+ 	.name		= "tegra",
+ 	.attr		= cpufreq_generic_attr,
++#ifdef CONFIG_PM
++	.suspend	= cpufreq_generic_suspend,
++#endif
+ };
+ 
+ static int __init tegra_cpufreq_init(void)
 -- 
 1.7.12.rc2.18.g61b472e
