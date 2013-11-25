@@ -1,124 +1,190 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [GIT PULL] Thermal and Device tree
-Date: Mon, 25 Nov 2013 10:44:29 -0400
-Message-ID: <1385390669-7613-1-git-send-email-eduardo.valentin@ti.com>
+From: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
+Date: Mon, 25 Nov 2013 15:14:21 +0000
+Message-ID: <20131125151421.GF32081@e106331-lin.cambridge.arm.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
+ <25668725.sMcoUCgCKk@flatron>
+ <52861F46.8020900@ti.com>
+ <1574695.YAEZXuUskK@amdc1227>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:38722 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754593Ab3KYOps (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 Nov 2013 09:45:48 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1574695.YAEZXuUskK@amdc1227>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, "ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org" <ian.campbell-Sxgqhf6Nn4DQT0dZR+AlfA@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org" <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, linux@roeck-us.net, mark.rutland@arm.com, khali@linux-fr.org
-Cc: wni@nvidia.com, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
-Hello Rui,
+[...]
 
-Please consider the following changes for 3.14. It contains the work of
-representing hardware thermal using device tree. It also contains
-three examples on how to use the new representation on sensor devices,
-using three different drivers to accomplish it. One driver is on thermal
-subsystem, the TI SoC thermal, and the other two drivers are in hwmon
-subsystem. I also included a change on cpu cooling device, which required
-also a change on cpufreq-cpu0 driver. The change on this cooling device
-still keeps in one piece its usage on different platforms.
+> > >>>> +* Trip points
+> > >>>> +
+> > >>>> +The trip node is a node to describe a point in the temperature domain
+> > >>>> +in which the system takes an action. This node describes just the point,
+> > >>>> +not the action.
+> > >>>> +
+> > >>>> +Required properties:
+> > >>>> +- temperature:          An integer indicating the trip temperature level,
+> > >>>> +  Type: signed          in millicelsius.
+> > >>>> +  Size: one cell
+> > >>>> +
+> > >>>> +- hysteresis:           A low hysteresis value on temperature property (above).
+> > >>>> +  Type: unsigned        This is a relative value, in millicelsius.
+> > >>>> +  Size: one cell
+> > >>>
+> > >>> What about replacing temperature and hysteresis with a single temperature
+> > >>> property that can be either one cell for 0 hysteresis or two cells to
+> > >>> specify lower and upper range of temperatures?
+> > >>
+> > >> What is the problem with using two properties? I think we loose
+> > >> representation by gluing two properties into one just because one cell.
+> > >
+> > > Ranges is the representation widely used in other bindings. In addition
+> >
+> > Well that sentence is arguable. It is not like all properties in DT are
+> > standardized as ranges, is it?
+>
+> No, they are not, but property range is a common concept of representing
+> range of some values.
+>
+> Anyway, I won't insist on this, as it's just a minor detail. However I'd
+> like to see comments from more people on this.
 
-Because it is a controversial topic due to the lack of standards, and
-because it touches different subsystems, it took way longer than I expected.
-However, I've been discussing in different channels, and I believe I got
-enough entropy now to go forward. We have acks from cpufreq folks (on ARM side)
-and from hwmon folks too. Raphael W., Jean D. and Mark R. have also
-reviewed this series. They agree with the core idea of the work.
+I'm happy with having these as separate properties.
 
-It has been agreed that this is not the end of it. As I said I started
-with only three examples, but there are other potential drivers to use
-this API. So, I have agreed with Jean D., for instance, that this
-series would be first step of the complete work. Next would be to check
-other potential drivers to be converted and then validate the proposed
-API. Currently the thermal framework would be polling for device
-temperature, but we could implement a couple of call backs to setup
-update rate, thresholds and hysteresis too, for instance.
+[...]
 
-On the other hand, I don't think the principle and concept would break
-after converting the remaining drivers. That is why I am sending this pull
-request.
+> > >>>> +
+> > >>>> +- type:                 a string containing the trip type. Supported values are:
+> > >>>> +        "active":       A trip point to enable active cooling
+> > >>>> +        "passive":      A trip point to enable passive cooling
+> > >>>
+> > >>> The two above seem to be implying action, as opposed to the general
+> > >>> comment about trip points.
+> > >>
+> > >> They do not imply action, they specify type of trip.
+> > >
+> > > For me "A trip point to enable active cooling" means that when this trip
+> > > point is crossed, active cooling must be enabled. What is it if not
+> > > implying action?
+> >
+> > But within a board there could be more than one active cooling actions
+> > that could be done, it is not a 1 to 1 relation. Same thing applies to
+> > passive cooling. The binding does not imply a specific action. Just the
+> > trip type.
+>
+> I'd prefer the "active" and "passive" states to be renamed an their
+> descriptions rephrased. In general, the idea of having just four trip
+> point types seems like bound to a single specific hardware platform.
+>
+> That's a wild guess, but maybe having an unsigned integer to represent
+> trip point "attention level" would be a better idea?
 
-Another point is, as you can see, there are several points in this pull
-request that do not belong to thermal subsystem. It has been suggested
-by Guenter R. that in such cases, it is recommended to send the complete
-series via one single subsystem. Thus, I am sending via your queue.
+The set of names can be extended in future, and we can choose to have an
+attention-level property in future, and map the existing types to them.
+If we don't have something fundamantally better, I think this should be
+OK for now.
 
-Lastly, I've also volunteered to maintain the upcoming thermal bindings.
-Then, you can see I am adding thermal bindings to our MAINTAINERS entry too.
+>
+> >
+> > >
+> > >>
+> > >>>
+> > >>>> +        "hot":          A trip point to notify emergency
+> > >>>> +        "critical":     Hardware not reliable.
+> > >>>> +  Type: string
+> > >>>> +
+> > >>> [snip]
+> > >>>> +* Examples
+> > >>>> +
+> > >>>> +Below are several examples on how to use thermal data descriptors
+> > >>>> +using device tree bindings:
+> > >>>> +
+> > >>>> +(a) - CPU thermal zone
+> > >>>> +
+> > >>>> +The CPU thermal zone example below describes how to setup one thermal zone
+> > >>>> +using one single sensor as temperature source and many cooling devices and
+> > >>>> +power dissipation control sources.
+> > >>>> +
+> > >>>> +#include <dt-bindings/thermal/thermal.h>
+> > >>>> +
+> > >>>> +cpus {
+> > >>>> +        /*
+> > >>>> +         * Here is an example of describing a cooling device for a DVFS
+> > >>>> +         * capable CPU. The CPU node describes its four OPPs.
+> > >>>> +         * The cooling states possible are 0..3, and they are
+> > >>>> +         * used as OPP indexes. The minimum cooling state is 0, which means
+> > >>>> +         * all four OPPs can be available to the system. The maximum
+> > >>>> +         * cooling state is 3, which means only the lowest OPPs (198MHz@0.85V)
+> > >>>> +         * can be available in the system.
+> > >>>> +         */
+> > >>>> +        cpu0: cpu@0 {
+> > >>>> +                ...
+> > >>>> +                operating-points = <
+> > >>>> +                        /* kHz    uV */
+> > >>>> +                        970000  1200000
+> > >>>> +                        792000  1100000
+> > >>>> +                        396000  950000
+> > >>>> +                        198000  850000
+> > >>>> +                >;
+> > >>>> +                cooling-min-state = <0>;
+> > >>>> +                cooling-max-state = <3>;
+> > >>>> +                #cooling-cells = <2>; /* min followed by max */
+> > >>>
+> > >>> I believe you don't need the min- and max-state properties here then. Your
+> > >>> thermal core can simply query the cpufreq driver (which would be a cooling
+> > >>> device here) about the range of states it supports
+> > >>
+> > >> This binding is not supposed to be aware of cpufreq, which is Linux
+> > >> specific implementation.
+> > >
+> > > I didn't say anything about making the binding aware of cpufreq, but
+> > > instead about getting rid of redundancy of data, that can be provided
+> > > by respective drivers anyway.
+> >
+> > There are cases in which cooling devices don't need to use all states
+> > for cooling, because either lower states does not provide cooling
+> > effectiveness or higher states must be avoided at all. So, allowing
+> > drivers to report this thermal info is possible, but questionable
+> > design, as you would be spreading the thermal info. Besides, for the
+> > example I gave, the driver would need to know board specifics, as the
+> > range of states would vary anyway across board.
+>
+> One thing is the allowed range of cooling states supported by the
+> cooling device and another is the range of states that are usable on
+> given board. The former is a property of the cooling device that
+> in most cases is implied by its compatible string, so to eliminate the
+> bad data redundancy, you should not make the user respecify that. The
+> latter you have as a part of your cooling device specifier tuple.
+>
+> As an example of this, see PWM, GPIO or IRQ bindings. You don't have
+> {pwm-channel,pwm-duty,interrupt,gpio}-{min,max} properties, because this
+> is not needed by respective PWM, GPIO or IRQ drivers, as they already
+> know these parameters.
 
+This is arguable. The {min,max} levels associated with a cooling state
+is essentially a recommendation of a sane set of values you might want
+to use the cooling device with.
 
-All best,
+It could work using only the cooling device's information, but it might
+not be all that useful. The range might not represent a linear scale,
+and there might be secondary effects to consider (e.g. noise) that would
+affect the decision and would likely need to be considered by the
+particular drivers.
 
-The following changes since commit 86e0a0bdf81c2dfa2a5a258dbb52f49c40ebc197:
+The key question is where do we make the trade off? How much platform
+knowledge do we want each driver to have to handle, and how much are we
+happy to place in DT?
 
-  Merge branches 'intel_powerclamp', 'tmon' and 'misc' of .git into next (2013-11-07 08:45:54 +0800)
+It is possible to use the information from particular devices and ignore
+the {min,max} cooling state properties in future if that turns out to be
+better. I think that would be reasonable for now.
 
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next
-
-for you to fetch changes up to 14d653c8ffc85c4aea7e50baa9a3c198b4fcf9c5:
-
-  MAINTAINERS: add thermal bindings entry in thermal domain (2013-11-25 10:19:12 -0400)
-
-----------------------------------------------------------------
-Eduardo Valentin (20):
-      thermal: allow registering without .get_temp
-      thermal: introduce device tree parser
-      thermal: core: introduce thermal_of_cooling_device_register
-      thermal: cpu_cooling: introduce of_cpufreq_cooling_register
-      cpufreq: cpufreq-cpu0: add dt node parsing for cooling device properties
-      hwmon: lm75: expose to thermal fw via DT nodes
-      hwmon: tmp102: expose to thermal fw via DT nodes
-      thermal: ti-soc-thermal: use thermal DT infrastructure
-      arm: dts: add omap4 CPU thermal data
-      arm: dts: add omap4430 thermal data
-      arm: dts: add omap4460 thermal data
-      arm: dts: add cooling properties on omap4430 cpu node
-      arm: dts: add cooling properties on omap4460 cpu node
-      arm: dts: add omap5 GPU thermal data
-      arm: dts: add omap5 CORE thermal data
-      arm: dts: add omap5 thermal data
-      arm: dts: add cooling properties on omap5 cpu node
-      arm: dts: make OMAP443x bandgap node to belong to OCP
-      arm: dts: make OMAP4460 bandgap node to belong to OCP
-      MAINTAINERS: add thermal bindings entry in thermal domain
-
- .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   7 +
- .../devicetree/bindings/thermal/thermal.txt        | 589 ++++++++++++++
- MAINTAINERS                                        |   1 +
- arch/arm/boot/dts/omap4-cpu-thermal.dtsi           |  41 +
- arch/arm/boot/dts/omap443x.dtsi                    |  23 +-
- arch/arm/boot/dts/omap4460.dtsi                    |  29 +-
- arch/arm/boot/dts/omap5-core-thermal.dtsi          |  28 +
- arch/arm/boot/dts/omap5-gpu-thermal.dtsi           |  28 +
- arch/arm/boot/dts/omap5.dtsi                       |  15 +-
- drivers/cpufreq/Kconfig                            |   2 +-
- drivers/cpufreq/cpufreq-cpu0.c                     |  16 +
- drivers/hwmon/lm75.c                               |  35 +-
- drivers/hwmon/tmp102.c                             |  19 +
- drivers/thermal/Kconfig                            |  14 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/cpu_cooling.c                      |  56 +-
- drivers/thermal/of-thermal.c                       | 849 +++++++++++++++++++++
- drivers/thermal/thermal_core.c                     |  77 +-
- drivers/thermal/thermal_core.h                     |   9 +
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  77 +-
- include/dt-bindings/thermal/thermal.h              |  17 +
- include/linux/cpu_cooling.h                        |  25 +
- include/linux/thermal.h                            |  32 +-
- 23 files changed, 1939 insertions(+), 51 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/thermal.txt
- create mode 100644 arch/arm/boot/dts/omap4-cpu-thermal.dtsi
- create mode 100644 arch/arm/boot/dts/omap5-core-thermal.dtsi
- create mode 100644 arch/arm/boot/dts/omap5-gpu-thermal.dtsi
- create mode 100644 drivers/thermal/of-thermal.c
- create mode 100644 include/dt-bindings/thermal/thermal.h
+Thanks,
+Mark.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
