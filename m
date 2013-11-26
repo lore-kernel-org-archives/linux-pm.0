@@ -1,25 +1,37 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 6/8] sched, net: Clean up preempt_enable_no_resched() abuse
-Date: Tue, 26 Nov 2013 16:57:49 +0100
-Message-ID: <20131126160815.225776365@infradead.org>
+Subject: [PATCH 7/8] sched, net: Fixup busy_loop_us_clock()
+Date: Tue, 26 Nov 2013 16:57:50 +0100
+Message-ID: <20131126160815.293633156@infradead.org>
 References: <20131126155743.116756708@infradead.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:51457 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757176Ab3KZQL4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 11:11:56 -0500
-Content-Disposition: inline; filename=peterz-fixup-weird-preempt_enable_no_resched-usage.patch
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline; filename=peterz-fixup-busy_poll.patch
+Sender: linux-kernel-owner@vger.kernel.org
 To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 The only valid use of preempt_enable_no_resched() is if the very next
 line is schedule() or if we know preemption cannot actually be enabled
 by that statement due to known more preempt_count 'refs'.
 
-Cc: rjw@rjwysocki.net
-Cc: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+This busy_poll stuff looks to be completely and utterly broken,
+sched_clock() can return utter garbage with interrupts enabled (rare
+but still) and it can drift unbounded between CPUs.
+
+This means that if you get preempted/migrated and your new CPU is
+years behind on the previous CPU we get to busy spin for a _very_ long
+time.
+
+There is a _REASON_ sched_clock() warns about preemptability -
+papering over it with a preempt_disable()/preempt_enable_no_resched()
+is just terminal brain damage on so many levels.
+
+Replace sched_clock() usage with local_clock() which has a bounded
+drift between CPUs (<2 jiffies).
+
+There is a further problem with the entire busy wait poll thing in
+that the spin time is additive to the syscall timeout, not inclusive.
+
 Cc: David S. Miller <davem@davemloft.net>
 Cc: rui.zhang@intel.com
 Cc: jacob.jun.pan@linux.intel.com
@@ -28,27 +40,42 @@ Cc: Ingo Molnar <mingo@kernel.org>
 Cc: hpa@zytor.com
 Cc: Arjan van de Ven <arjan@linux.intel.com>
 Cc: lenb@kernel.org
+Cc: rjw@rjwysocki.net
+Cc: Eliezer Tamir <eliezer.tamir@linux.intel.com>
 Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 ---
- net/ipv4/tcp.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/net/busy_poll.h |   19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -1623,11 +1623,11 @@ int tcp_recvmsg(struct kiocb *iocb, stru
- 		    (len > sysctl_tcp_dma_copybreak) && !(flags & MSG_PEEK) &&
- 		    !sysctl_tcp_low_latency &&
- 		    net_dma_find_channel()) {
--			preempt_enable_no_resched();
-+			preempt_enable();
- 			tp->ucopy.pinned_list =
- 					dma_pin_iovec_pages(msg->msg_iov, len);
- 		} else {
--			preempt_enable_no_resched();
-+			preempt_enable();
- 		}
- 	}
- #endif
-
-
+--- a/include/net/busy_poll.h
++++ b/include/net/busy_poll.h
+@@ -42,27 +42,10 @@ static inline bool net_busy_loop_on(void
+ 	return sysctl_net_busy_poll;
+ }
+ 
+-/* a wrapper to make debug_smp_processor_id() happy
+- * we can use sched_clock() because we don't care much about precision
+- * we only care that the average is bounded
+- */
+-#ifdef CONFIG_DEBUG_PREEMPT
+ static inline u64 busy_loop_us_clock(void)
+ {
+-	u64 rc;
+-
+-	preempt_disable_notrace();
+-	rc = sched_clock();
+-	preempt_enable_no_resched_notrace();
+-
+-	return rc >> 10;
+-}
+-#else /* CONFIG_DEBUG_PREEMPT */
+-static inline u64 busy_loop_us_clock(void)
+-{
+-	return sched_clock() >> 10;
++	return local_clock() >> 10;
+ }
+-#endif /* CONFIG_DEBUG_PREEMPT */
+ 
+ static inline unsigned long sk_busy_loop_end_time(struct sock *sk)
+ {
