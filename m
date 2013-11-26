@@ -1,95 +1,35 @@
-From: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Subject: Re: [PATCH] i2c-mux-pca954x: Disable mux after 200ms timeout
-Date: Tue, 26 Nov 2013 18:00:19 +0100
-Message-ID: <20131126170019.GA18696@katana>
-References: <1385447520-3306-1-git-send-email-mike.looijmans@topic.nl>
- <20131126090639.GA2568@katana>
- <52946BA6.3080308@topic.nl>
- <20131126122818.GA7427@katana>
- <5294AADC.5070707@topic.nl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH v2] intel_idle: Fixed C6 state on Avoton/Rangeley processors
+Date: Tue, 26 Nov 2013 13:43:24 -0500
+Message-ID: <CAJvTdKm8bcUsnn_=_f_NQzJJ_FgmX6Ch3XDK3un22vwE9_Qh_Q@mail.gmail.com>
+References: <1385450037.4588.10.camel@po-d-abo-ubu>
+	<1574800.Vl6NB1rGSk@amdc1032>
+	<1385473105.4588.14.camel@po-d-abo-ubu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
-Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <5294AADC.5070707-Oq418RWZeHk@public.gmane.org>
-Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mike Looijmans <mike.looijmans-Oq418RWZeHk@public.gmane.org>
-Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:58033 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003Ab3KZSn0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 13:43:26 -0500
+In-Reply-To: <1385473105.4588.14.camel@po-d-abo-ubu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bockholdt Arne <a.bockholdt@precitec-optronik.de>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
+>                 .desc = "MWAIT 0x51",
+> -               .flags = MWAIT2flg(0x58) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +               .flags = MWAIT2flg(0x51) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+>                 .exit_latency = 15,
+>                 .target_residency = 45,
 
---FL5UXtIhxfXey3p5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for noticing that .desc and .flags are inconsistent.
+This is my fault -- apparently I e-mailed a version of this patch that
+is older than what I have in my git tree.
 
+No big issue, though, as 0x51 and 0x58 do exactly the same thing in
+AVN hardware.
+Indeed, changing .desc to 0x58 would be fine also.
 
-> I had looked a bit in that direction, but I think there's currently
-> no way for a driver to say "I won't be needing the bus for a while".
-> Something like that would be critical for such a pm system to work.
-
-Yes. I wasn't sure if something already existed.
-
-> In any case, it doesn't sound like something I can sell - it's
-> understandable for my employer that I spent an extra hour or so to
-> clean up and submit the code to upstream, but this appears to go
-> into a different class of rework.
->
-> So where do you want to go with this? Should I rework the patch to
-> make the timeout optional, or should I simply forget about
-> integrating at all?
-
-I understand your constraints, yet from a maintenance perspective I
-shouldn't have such code in a driver. So, out-of-tree that is for now.
-
-> In fact, on the customer's board, the pca mux is powered by a supply
-> so the whole mux can be powered-down too, for which I also needed to
-> patch the pca driver to reset its state when the powersupply
-> reported that it was going down. I think that particular patch isn't
-> of much use to the community though, or is it?
-
-If it uses standard pm callbacks, I'd think this makes sense.
-
-> Most hardware can control power and clocks to the I2C controller,
-> which would indeed account for some power savings. But again, that
-> would require drivers to provide estimations as to when they will
-> need the bus. And it would require much more information on the bus
-> controller too, though I suspect that to be the easier part.
-
-There are drivers gating off the clocks simply after every transfer. I
-don't know your HW details and workloads, but I wondered if you can
-unconditionally switch off the core, do some pinmuxing...
-
-> > Anyway, thanks for letting me know about your requirements (they should
-> > have been in the original commit message, though ;))
->=20
-> I'm new to Linux kernel development, so please forgive me...
-
-That was just a pointer, no complaint. You did a fine job in supplying
-information around your patch, so thanks.
-
-
---FL5UXtIhxfXey3p5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.15 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSlNOiAAoJEBQN5MwUoCm21JQQAJJvADh34ywcAJHn1qiN+0PG
-UiCuQWOpcRac0l5A52WEK1mgRaSIVkd++fMLKfHC7U73tf8PIcZ2QCx4xdp+In16
-fktspUH1wdtZ469mIH5KAOZ1Jj4T0FR5Xt/ucEl8NSMZJajDOpLFRJPbPUPI9eHW
-m2T0ThIIajkIBLqsvbiHs3K7Ha4uPkhqMBhmmLnnbBzIH76QyJmfP6pl/AJV8sHQ
-q3Rf0d4ZonWQQN0kAc8J+ZfsWVhH/9wCXcK1GNFfYR2/T8kiH4nIdwohwxuFMVrH
-5DMFL+n9vdI3NxcOPI2UEP9g1HO5CmBhHwS6mQenxIYH2+vnZHz0ggC/32x+U98b
-EyJxekFnrSjdyopMH2XxbtL/UIQlget1HuVWQYZGBNqar4k5EpH3YYuZDr36ixd4
-Qrl0KW/UmwxUynkIUmYFRyWJw7+ie1mgDpHvOlgNBr5WgLDzZpvieEcyyqzv0eLm
-jAIt29u9UIfCKkV+I+n2VO9F+5A0czxaKu4d8zM7miO0Lv9dH2EptwVr6JcxzZkE
-9nkuTrqrx/hOgRuV+14eGbN4owxQvqOGxgxKpvWyXPdmtYtZY/Voi0b+fv/74GN2
-qXcLhQGOkicbYLvMIziLoiv6DI6qxahZ/7R/OELvaA4Buop7kGdHncJeNTA/k4dS
-F0BSOP+sQaV9yg6OrtR/
-=C5kX
------END PGP SIGNATURE-----
-
---FL5UXtIhxfXey3p5--
+Acked-by: Len Brown <len.brown@intel.com>
