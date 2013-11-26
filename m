@@ -1,66 +1,92 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] intel_idle: Fixed C6 state on Avoton/Rangeley processors
-Date: Tue, 26 Nov 2013 13:53:58 +0100
-Message-ID: <1574800.Vl6NB1rGSk@amdc1032>
-References: <1385450037.4588.10.camel@po-d-abo-ubu>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH] thermal: offer Samsung thermal support only when ARCH_EXYNOS
+ is defined
+Date: Tue, 26 Nov 2013 09:22:31 -0400
+Message-ID: <5294A097.3070903@ti.com>
+References: <2958660.aJeCDrTTOe@amdc1032> <CADGdYn4YQL9-8WCDNWP8x9Gec9sMV09q3OsYPz3tTdMxDGnyvg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:31368 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115Ab3KZMyN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 07:54:13 -0500
-In-reply-to: <1385450037.4588.10.camel@po-d-abo-ubu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="4VVi7QlD6urIRFNS2FQm5NJVhP3htvdSh"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CADGdYn4YQL9-8WCDNWP8x9Gec9sMV09q3OsYPz3tTdMxDGnyvg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Amit Kachhap <amit.kachhap@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Bockholdt Arne <a.bockholdt@precitec-optronik.de>
-Cc: Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+
+--4VVi7QlD6urIRFNS2FQm5NJVhP3htvdSh
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 26-11-2013 02:07, Amit Kachhap wrote:
+> On 10/4/13, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> wrote:=
+
+>> Menu for Samsung thermal support is visible on all Samsung
+>> platforms while thermal drivers are currently available only
+>> for EXYNOS SoCs. Fix it by replacing PLAT_SAMSUNG dependency
+>> with ARCH_EXYNOS one.
+>>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Looks good, so
+> Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+
+I will be queuing this one in my tree.
+
+Thanks Bartlomiej.
+
+>=20
+>> ---
+>>  drivers/thermal/Kconfig | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index a709c63..05cf95c 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -198,7 +198,7 @@ source "drivers/thermal/ti-soc-thermal/Kconfig"
+>>  endmenu
+>>
+>>  menu "Samsung thermal drivers"
+>> -depends on PLAT_SAMSUNG
+>> +depends on ARCH_EXYNOS
+>>  source "drivers/thermal/samsung/Kconfig"
+>>  endmenu
+>>
+>> --
+>> 1.8.2.3
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-samsun=
+g-soc"
+>> in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>=20
+>=20
 
 
-Hi,
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-On Tuesday, November 26, 2013 07:13:57 AM Bockholdt Arne wrote:
-> Corrected the MWAIT flag for C-State C6 on Intel Avoton/Rangeley processors.
-> 
-> Signed-off-by: Arne Bockholdt <linux-kernel@bockholdt.com>
-> ---
-> 
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index cbd4e9a..92d1206 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -329,7 +329,7 @@ static struct cpuidle_state atom_cstates[] __initdata = {
->  	{
->  		.enter = NULL }
->  };
-> -static struct cpuidle_state avn_cstates[CPUIDLE_STATE_MAX] = {
-> +static struct cpuidle_state avn_cstates[] __initdata = {
+Eduardo Valentin
 
-The above fixup has already been submitted in a separate patch:
 
-	https://lkml.org/lkml/2013/11/21/177
+--4VVi7QlD6urIRFNS2FQm5NJVhP3htvdSh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-and it has nothing to do with the purpose of your patch.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-Thus please drop it from your patch.
+iF4EAREIAAYFAlKUoJcACgkQCXcVR3XQvP0mkAD8CkNGFWvuceTAtZomSCDOR+WZ
+Gx4FNdnQFbfpsuAfwx4A/1FKV6e/uL1jV3GSW9Nhm26DsMkWkA4LWYcFDz4DGEVg
+=ixY5
+-----END PGP SIGNATURE-----
 
->  	{
->  		.name = "C1-AVN",
->  		.desc = "MWAIT 0x00",
-> @@ -340,7 +340,7 @@ static struct cpuidle_state avn_cstates[CPUIDLE_STATE_MAX] = {
->  	{
->  		.name = "C6-AVN",
->  		.desc = "MWAIT 0x51",
-> -		.flags = MWAIT2flg(0x58) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
-> +		.flags = MWAIT2flg(0x51) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
->  		.exit_latency = 15,
->  		.target_residency = 45,
->  		.enter = &intel_idle },
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+--4VVi7QlD6urIRFNS2FQm5NJVhP3htvdSh--
