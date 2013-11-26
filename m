@@ -1,72 +1,50 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime
- PM callbacks
-Date: Tue, 26 Nov 2013 16:09:44 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1311261556480.1359-100000@iolanthe.rowland.org>
-References: <2026361.IiCVpVNYkW@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <2026361.IiCVpVNYkW@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 0/3] Hook up powerclamp with PM QOS and cpuidle
+Date: Tue, 26 Nov 2013 15:20:08 -0800
+Message-ID: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:19201 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754404Ab3KZXUS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Nov 2013 18:20:18 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Tue, 26 Nov 2013, Rafael J. Wysocki wrote:
+This patchset is intended to address the behavior change and efficiency
+loss introduced by using consolidated idle routine in powerclamp driver.
 
-> On Tuesday, November 26, 2013 10:48:56 AM Ulf Hansson wrote:
-> > On 26 November 2013 00:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > On Monday, November 25, 2013 01:40:21 PM Ulf Hansson wrote:
-> > >> To put devices into low power state during sleep, it sometimes makes
-> > >> sense at subsystem-level to re-use device's runtime PM callbacks.
+Specifically,
+[PATCH 3/8] idle, thermal, acpi: Remove home grown idle implementations
 
-Ulf, please be more careful about the distinction between "device" and 
-"driver".  Devices don't have callbacks; drivers do.  You made this 
-mistake a few times in the patch description.
+The motivation is that after using common idle routine, powerclamp driver
+can no longer pick the deepest idle state needed to conserve power.
+Idle state is selected by governors which can be influenced by PM QOS and
+other factors. This patchset hooks up powerclamp idle injection with PM
+QOS and eventually influce idle governors to pick the power saving target
+states.
 
-> > >> The PM core will at device_suspend_late disable runtime PM, after that
-> > >> we can safely operate on these callbacks. At suspend_late the device
-> > >> will be put into low power state by invoking the device's
-> > >> runtime_suspend callback, unless the runtime status is already
-> > >> suspended. At resume_early the state is restored by invoking the
-> > >> device's runtime_resume callback. Soon after the PM core will re-enable
-> > >> runtime PM before returning from device_resume_early.
-> > >>
-> > >> The new pm_generic functions are named pm_generic_suspend_late_runtime
-> > >> and pm_generic_resume_early_runtime, they are supposed to be used in
-> > >> pairs.
-> > >
-> > > What happens if the subsystem uses the new functions as its late suspend/
-> > > early resume callbacks, but some of its drivers implement .suspend_late()
-> > > and .resume_early()?
+There are some downside of this approach. Due to overhead, communication
+with PM QOS is at enable/disable idle injection time instead of each
+injection period. The implication is that if the system natual idle is
+more than target injected idle, powerclamp will skip some injection period.
+During this period however, deepest idle state may still be chosen
+necessarily regardless the latency constraint.
 
-The same thing that happens whenever any PM-related callback is defined
-by both the subsystem and the driver: The PM core uses the subsystem's
-callback.  (Or the pm_domain's callback, or the type's callback, or the 
-class's callback.)
 
-Besides, Ulf specifically assumed at the top of this message that
-re-using the runtime-suspend callback makes sense at the subsystem
-level.  This must mean it is appropriate for all drivers in the
-subsystem.  So why would a driver want to override the subsystem's 
-behavior?
+Jacob Pan (3):
+  pm/qos: allow state control of qos class
+  cpuidle: check for pm qos constraint override
+  thermal/powerclamp: communicate with pm qos when injecting idle
 
-> > Good point. Normally, I think the decision of using these callbacks
-> > should be taken at the lowest level, in other words in the driver.
-> > Otherwise the lowest layer of .suspend_late will be by-passed.
-> 
-> I'm not sure what's the point to add them, then.  If the driver has to decide
-> anyway, it may simply populate its .suspend_late and .resume_early pointers
-> I think.
+ drivers/cpuidle/governors/ladder.c |  4 ++++
+ drivers/cpuidle/governors/menu.c   | 13 +++++++++++--
+ drivers/thermal/intel_powerclamp.c |  8 ++++++++
+ include/linux/pm_qos.h             | 10 +++++++++-
+ kernel/power/qos.c                 | 24 ++++++++++++++++++++++++
+ 5 files changed, 56 insertions(+), 3 deletions(-)
 
-Another possibility is to have the pm_generic_suspend_late_runtime
-routine check to see if the driver has defined a suspend_late callback.  
-If the driver has its own callback, we could invoke it instead of
-invoking the runtime_suspend callback.
+-- 
+1.8.1.2
 
-However, I'm not sure that doing this would be worthwhile.  And it
-would hang in an infinite loop if the driver set its suspend_late
-pointer to pm_generic_suspend_late_runtime!
-
-Alan Stern
