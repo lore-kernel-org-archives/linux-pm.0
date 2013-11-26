@@ -1,89 +1,51 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [PATCH V3 0/6] cpufreq: suspend early/resume late
-Date: Tue, 26 Nov 2013 14:37:43 +0800
-Message-ID: <529441B7.90505@intel.com>
-References: <cover.1385374819.git.viresh.kumar@linaro.org>
+From: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
+Date: Tue, 26 Nov 2013 09:15:38 +0200
+Message-ID: <52944A9A.6090906@linux.intel.com>
+References: <20131120160450.072555619@infradead.org> <20131120162736.691879744@infradead.org> <528CF94E.8020300@linux.intel.com> <20131121101018.GX10022@twins.programming.kicks-ass.net> <528E09F9.9030501@linux.intel.com> <20131121133936.GF10022@twins.programming.kicks-ass.net> <528F0000.7000505@linux.intel.com> <20131122113044.GL10022@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1385374819.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:30137 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754322Ab3KZHQL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Nov 2013 02:16:11 -0500
+In-Reply-To: <20131122113044.GL10022@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer@tamir.org.il>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 2013=E5=B9=B411=E6=9C=8825=E6=97=A5 22:11, Viresh Kumar wrote:
-> This patchset adds cpufreq callbacks to dpm_{suspend|resume}() for ha=
-ndling
-> suspend/resume of cpufreq governors and core. This is required for ea=
-rly suspend
-> and late resume of governors and cpufreq core.
->=20
-> There are multiple problems that are fixed by this patch:
-> - Nishanth Menon (TI) found an interesting problem on his platform, O=
-MAP. His board
->   wasn't working well with suspend/resume as calls for removing non-b=
-oot CPUs
->   was turning out into a call to drivers ->target() which then tries =
-to play
->   with regulators. But regulators and their I2C bus were already susp=
-ended and
->   this resulted in a failure. Many platforms have such problems, sams=
-ung, tegra,
->   etc.. They solved it with driver specific PM notifiers where they u=
-sed to
->   disable their driver's ->target() routine. Most of these are update=
-d in this
->   patchset to use new infrastructure.
->=20
-> - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue wh=
-ere
->   tunables configuration for clusters/sockets with non-boot CPUs was =
-getting
->   lost after suspend/resume, as we were notifying governors with
->   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy =
-and so
->   deallocating memory for tunables. This is also fixed with this patc=
-h as don't
->   allow any operation on Governors during suspend/resume now.
->=20
->=20
-> So to solve these issues we introduce early suspend and late resume c=
-allbacks
-> which would remove need of cpufreq drivers to implement PM notifiers =
-to disable
-> transition after suspend and before resume.
->=20
-> @Nishanth: Can you please test V2 as well and confirm that suspend_no=
-irq()
-> doesn't work for you. I am sure it will not, but would be better if y=
-ou confirm
-> that.
->=20
-> Viresh Kumar (6):
->   cpufreq: suspend governors on system suspend/hibernate
->   cpufreq: call driver's suspend/resume for each policy
->   cpufreq: Implement cpufreq_generic_suspend()
->   cpufreq: exynos: Use cpufreq_generic_suspend()
->   cpufreq: s5pv210: Use cpufreq_generic_suspend()
->   cpufreq: Tegra: Use cpufreq_generic_suspend()
->=20
+On 22/11/2013 13:30, Peter Zijlstra wrote:
+> On Fri, Nov 22, 2013 at 08:56:00AM +0200, Eliezer Tamir wrote:
+>> On 21/11/2013 15:39, Peter Zijlstra wrote:
+>>> On Thu, Nov 21, 2013 at 03:26:17PM +0200, Eliezer Tamir wrote:
+> 
+> Please use local_clock(), yes its slightly more expensive, but I doubt
+> you can actually measure the effects on sane hardware.
 
-Patch 1-2,
-Tested-by: Lan Tianyu <tianyu.lan@intel.com>
+If we limit the discussion to sane hardware, I should mention that on
+current Intel CPUs TSC is guaranteed to be monotonic for anything up to
+8 sockets. Even on slightly older HS TSC skew is very small and should
+not be an issue for this use case.
 
->  drivers/base/power/main.c         |   5 ++
->  drivers/cpufreq/cpufreq.c         | 133 +++++++++++++++++++++-------=
-----------
->  drivers/cpufreq/exynos-cpufreq.c  |  97 ++-------------------------
->  drivers/cpufreq/s5pv210-cpufreq.c |  49 +-------------
->  drivers/cpufreq/tegra-cpufreq.c   |  54 ++--------------
->  include/linux/cpufreq.h           |   6 ++
->  6 files changed, 99 insertions(+), 245 deletions(-)
->=20
+So:
+Modern sane HW does not have this issue.
+The people that do busy polling typically pin tasks to cores anyway.
+You need cap_net_admin to use this setting.
+There is no real damage if the issue happens.
+This is fast-low-latency-path so we are very sensitive to adding even
+a small cost.
+Linus really didn't like adding to the cost of poll/select when busy
+polling is not being used.
 
+Having said that, since we need to fix the timeout issue you pointed
+out, we will test the use of local_clock() and see if it matters or
+not.
 
---=20
-Best regards
-Tianyu Lan
+Again, I have no objection to changing the use of
+preempt_enable_no_resched() to a plain preempt_enable().
+
+Cheers,
+Eliezer
