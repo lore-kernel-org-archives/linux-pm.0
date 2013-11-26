@@ -1,100 +1,95 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 8/8] preempt: Take away preempt_enable_no_resched() from modules
-Date: Tue, 26 Nov 2013 16:57:51 +0100
-Message-ID: <20131126160815.365229688@infradead.org>
-References: <20131126155743.116756708@infradead.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline; filename=peterz-hide-preempt_enable_no_resched-modules.patch
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+From: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Subject: Re: [PATCH] i2c-mux-pca954x: Disable mux after 200ms timeout
+Date: Tue, 26 Nov 2013 18:00:19 +0100
+Message-ID: <20131126170019.GA18696@katana>
+References: <1385447520-3306-1-git-send-email-mike.looijmans@topic.nl>
+ <20131126090639.GA2568@katana>
+ <52946BA6.3080308@topic.nl>
+ <20131126122818.GA7427@katana>
+ <5294AADC.5070707@topic.nl>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
+Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <5294AADC.5070707-Oq418RWZeHk@public.gmane.org>
+Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mike Looijmans <mike.looijmans-Oq418RWZeHk@public.gmane.org>
+Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Discourage drivers/modules to be creative with preemption.
 
-Sadly all is implemented in macros and inline so if they want to do
-evil they still can, but at least try and discourage some.
+--FL5UXtIhxfXey3p5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Eliezer Tamir <eliezer.tamir@linux.intel.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: rui.zhang@intel.com
-Cc: jacob.jun.pan@linux.intel.com
-Cc: Mike Galbraith <bitbucket@online.de>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: hpa@zytor.com
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: lenb@kernel.org
-Cc: rjw@rjwysocki.net
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
----
- include/linux/preempt.h |   22 ++++++++++++++++++++--
- include/linux/uaccess.h |    5 ++++-
- 2 files changed, 24 insertions(+), 3 deletions(-)
 
---- a/include/linux/preempt.h
-+++ b/include/linux/preempt.h
-@@ -64,7 +64,11 @@ do { \
- } while (0)
- 
- #else
--#define preempt_enable() preempt_enable_no_resched()
-+#define preempt_enable() \
-+do { \
-+	barrier(); \
-+	preempt_count_dec(); \
-+} while (0)
- #define preempt_check_resched() do { } while (0)
- #endif
- 
-@@ -93,7 +97,11 @@ do { \
- 		__preempt_schedule_context(); \
- } while (0)
- #else
--#define preempt_enable_notrace() preempt_enable_no_resched_notrace()
-+#define preempt_enable_notrace() \
-+do { \
-+	barrier(); \
-+	__preempt_count_dec(); \
-+} while (0)
- #endif
- 
- #else /* !CONFIG_PREEMPT_COUNT */
-@@ -126,6 +134,16 @@ do { \
- #define preempt_fold_need_resched() do { } while (0)
- #endif
- 
-+#ifdef MODULE
-+/*
-+ * Modules have no business playing preemption tricks.
-+ */
-+#undef sched_preempt_enable_no_resched
-+#undef preempt_enable_no_resched
-+#undef preempt_enable_no_resched_notrace
-+#undef preempt_check_resched
-+#endif
-+
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 
- struct preempt_notifier;
---- a/include/linux/uaccess.h
-+++ b/include/linux/uaccess.h
-@@ -25,13 +25,16 @@ static inline void pagefault_disable(voi
- 
- static inline void pagefault_enable(void)
- {
-+#ifndef CONFIG_PREEMPT
- 	/*
- 	 * make sure to issue those last loads/stores before enabling
- 	 * the pagefault handler again.
- 	 */
- 	barrier();
- 	preempt_count_dec();
--	preempt_check_resched();
-+#else
-+	preempt_enable();
-+#endif
- }
- 
- #ifndef ARCH_HAS_NOCACHE_UACCESS
+> I had looked a bit in that direction, but I think there's currently
+> no way for a driver to say "I won't be needing the bus for a while".
+> Something like that would be critical for such a pm system to work.
+
+Yes. I wasn't sure if something already existed.
+
+> In any case, it doesn't sound like something I can sell - it's
+> understandable for my employer that I spent an extra hour or so to
+> clean up and submit the code to upstream, but this appears to go
+> into a different class of rework.
+>
+> So where do you want to go with this? Should I rework the patch to
+> make the timeout optional, or should I simply forget about
+> integrating at all?
+
+I understand your constraints, yet from a maintenance perspective I
+shouldn't have such code in a driver. So, out-of-tree that is for now.
+
+> In fact, on the customer's board, the pca mux is powered by a supply
+> so the whole mux can be powered-down too, for which I also needed to
+> patch the pca driver to reset its state when the powersupply
+> reported that it was going down. I think that particular patch isn't
+> of much use to the community though, or is it?
+
+If it uses standard pm callbacks, I'd think this makes sense.
+
+> Most hardware can control power and clocks to the I2C controller,
+> which would indeed account for some power savings. But again, that
+> would require drivers to provide estimations as to when they will
+> need the bus. And it would require much more information on the bus
+> controller too, though I suspect that to be the easier part.
+
+There are drivers gating off the clocks simply after every transfer. I
+don't know your HW details and workloads, but I wondered if you can
+unconditionally switch off the core, do some pinmuxing...
+
+> > Anyway, thanks for letting me know about your requirements (they should
+> > have been in the original commit message, though ;))
+>=20
+> I'm new to Linux kernel development, so please forgive me...
+
+That was just a pointer, no complaint. You did a fine job in supplying
+information around your patch, so thanks.
+
+
+--FL5UXtIhxfXey3p5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.15 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSlNOiAAoJEBQN5MwUoCm21JQQAJJvADh34ywcAJHn1qiN+0PG
+UiCuQWOpcRac0l5A52WEK1mgRaSIVkd++fMLKfHC7U73tf8PIcZ2QCx4xdp+In16
+fktspUH1wdtZ469mIH5KAOZ1Jj4T0FR5Xt/ucEl8NSMZJajDOpLFRJPbPUPI9eHW
+m2T0ThIIajkIBLqsvbiHs3K7Ha4uPkhqMBhmmLnnbBzIH76QyJmfP6pl/AJV8sHQ
+q3Rf0d4ZonWQQN0kAc8J+ZfsWVhH/9wCXcK1GNFfYR2/T8kiH4nIdwohwxuFMVrH
+5DMFL+n9vdI3NxcOPI2UEP9g1HO5CmBhHwS6mQenxIYH2+vnZHz0ggC/32x+U98b
+EyJxekFnrSjdyopMH2XxbtL/UIQlget1HuVWQYZGBNqar4k5EpH3YYuZDr36ixd4
+Qrl0KW/UmwxUynkIUmYFRyWJw7+ie1mgDpHvOlgNBr5WgLDzZpvieEcyyqzv0eLm
+jAIt29u9UIfCKkV+I+n2VO9F+5A0czxaKu4d8zM7miO0Lv9dH2EptwVr6JcxzZkE
+9nkuTrqrx/hOgRuV+14eGbN4owxQvqOGxgxKpvWyXPdmtYtZY/Voi0b+fv/74GN2
+qXcLhQGOkicbYLvMIziLoiv6DI6qxahZ/7R/OELvaA4Buop7kGdHncJeNTA/k4dS
+F0BSOP+sQaV9yg6OrtR/
+=C5kX
+-----END PGP SIGNATURE-----
+
+--FL5UXtIhxfXey3p5--
