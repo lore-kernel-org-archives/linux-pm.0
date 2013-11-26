@@ -1,69 +1,133 @@
-From: viresh kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: clk_round_rate() can return a
- zero upon error
-Date: Tue, 26 Nov 2013 10:33:03 +0530
-Message-ID: <52942B87.1040203@linaro.org>
-References: <alpine.DEB.2.02.1311251559460.23090@tamien>
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM enabled
+ for unbound PCI devices
+Date: Tue, 26 Nov 2013 13:41:13 +0800
+Message-ID: <52943479.9050004@linux.vnet.ibm.com>
+References: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org> <5284423D.4090907@linux.vnet.ibm.com> <1384408745.30364.8.camel@yhuang-dev> <5284799C.1010000@linux.vnet.ibm.com> <1384415609.30364.18.camel@yhuang-dev>	 <528485EA.5080309@linux.vnet.ibm.com> <1384417538.30364.25.camel@yhuang-dev>	 <52848BD9.1010704@linux.vnet.ibm.com> <1384419260.30364.27.camel@yhuang-dev>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f52.google.com ([209.85.216.52]:51162 "EHLO
-	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995Ab3KZFDK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 00:03:10 -0500
-Received: by mail-qa0-f52.google.com with SMTP id k4so7246304qaq.4
-        for <linux-pm@vger.kernel.org>; Mon, 25 Nov 2013 21:03:09 -0800 (PST)
-In-Reply-To: <alpine.DEB.2.02.1311251559460.23090@tamien>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1384419260.30364.27.camel@yhuang-dev>
+Sender: linux-pci-owner@vger.kernel.org
+To: Huang Ying <ying.huang@intel.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
-To: Paul Walmsley <pwalmsley@nvidia.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Mike Turquette <mturquette@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday 26 November 2013 07:31 AM, Paul Walmsley wrote:
-> 
-> Treat both negative and zero return values from clk_round_rate()
-> as errors.  This is needed since subsequent patches will convert
-> clk_round_rate()'s return value to be an unsigned type, rather
-> than a signed type, since some clock sources can generate rates
-> higher than (2^31)-1 Hz.
-> 
-> Eventually, when calling clk_round_rate(), only a return value of
-> zero will be considered a error.  All other values will be
-> considered valid rates.  The comparison against values less than
-> 0 is kept to preserve the correct behavior in the meantime.
-> 
-> Signed-off-by: Paul Walmsley <paul@pwsan.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Mike Turquette <mturquette@linaro.org>
-> ---
-> Applies on v3.13-rc1.  See also:
-> 
-> http://marc.info/?l=linux-arm-kernel&m=138542591313620&w=2
-> 
->  drivers/cpufreq/cpufreq-cpu0.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index d4585ce2346c..0faf756f6197 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -44,7 +44,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> unsigned int index)
->      int ret;
-> 
->      freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
-> -    if (freq_Hz < 0)
-> +    if (freq_Hz <= 0)
->          freq_Hz = freq_table[index].frequency * 1000;
-> 
->      freq_exact = freq_Hz;
+On 11/14/2013 04:54 PM, Huang Ying wrote:
+> On Thu, 2013-11-14 at 16:37 +0800, mike wrote:
+>> On 11/14/2013 04:25 PM, Huang Ying wrote:
+>>> On Thu, 2013-11-14 at 16:12 +0800, mike wrote:
+>>>> On 11/14/2013 03:53 PM, Huang Ying wrote:
+>>>>> On Thu, 2013-11-14 at 15:19 +0800, mike wrote:
+>>>>>> On 11/14/2013 01:59 PM, Huang Ying wrote:
+>>>>>>> On Thu, 2013-11-14 at 11:23 +0800, mike wrote:
+>>>>>>>> On 11/14/2013 03:20 AM, Alan Stern wrote:
+>>>>>>>>> On Wed, 13 Nov 2013, Bjorn Helgaas wrote:
+>>>>>>>>>
+>>>>>>>>>> [+cc Rafael, linux-pm]
+>>>>>>>>>>
+>>>>>>>>>> On Wed, Nov 13, 2013 at 6:09 AM, mike<qiudayu@linux.vnet.ibm.com>  wrote:
+>>>>>>>>>>> Hi Huang Ying,
+>>>>>>>>>>>
+>>>>>>>>>>> I see you are the author of this patch, commit id is:
+>>>>>>>>>>> 967577b062417b4e4b8e27b711220f4124f5153a
+>>>>>>>>>>>
+>>>>>>>>>>> I have a question while I try to understand this patch,
+>>>>>>>>>>> So I would very grateful if you or others can give me some reply.....
+>>>>>>>>>>>
+>>>>>>>>>>> ............
+>>>>>>>>>>> -       rc = ddi->drv->probe(ddi->dev, ddi->id);
+>>>>>>>>>>> +       pm_runtime_get_sync(dev);
+>>>>>>>>>>> +       pci_dev->driver = pci_drv;
+>>>>>>>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>>>>>>>>> I see here you make the driver to initialize before probe,
+>>>>>>>>>>> But I have no idea of why you do this change.....
+>>>>>>>>>>>
+>>>>>>>>>>> and I look inside the code, it may be pm_runtime relate??
+>>>>>>>>> Yes, it is related to runtime PM.  In the PCI subsystem, runtime PM
+>>>>>>>>> doesn't do anything unless pci_dev->driver is set.  You can see this at
+>>>>>>>>> the start of pci_pm_runtime_suspend().
+>>>>>>>>>
+>>>>>>>>> Since we want the driver's probe routine to be able to carry out
+>>>>>>>>> runtime PM operations, we have to set pci_dev->driver before the probe
+>>>>>>>>> routine runs.
+>>>>>>>> Is there any situations , like in  probe state,  pci_dev->driver
+>>>>>>>> has been set. the  pci_pm_runtime_xxx() has passed
+>>>>>>>> pci_dev->driver NULL check, but at this point, probe fail
+>>>>>>>> occurs, and  pci_dev->driver to be set to NULL.
+>>>>>>>>
+>>>>>>>> What will happen ? Or this situation will never happen?
+>>>>>>>> I'm confuse about this.
+>>>>>>> I think that will never happen.  Before ->probe(), pm_runtime_get_sync()
+>>>>>>> is called, so pci_pm_runtime_xxx() will not be called until
+>>>>>>> pm_runtime_put_noidle() is called in ->probe().  And
+>>>>>>>      should be done as one of the latest actions in
+>>>>>>> ->probe(), after the normal probe actions succeeded.
+>>>>>> OK, just as your description, it seems OK.
+>>>>>> But this is really a issue as I explained in last email.
+>>>>>>
+>>>>>> So I want to know if there are any side-effect of changing the code
+>>>>>> in pci_pm_runtime_xxx()
+>>>>>>
+>>>>>>      if (!pci_dev->driver)
+>>>>>>             return 0;
+>>>>>>      to
+>>>>>>
+>>>>>>      if (!dev->driver)
+>>>>>>             return 0;
+>>>>>>
+>>>>> If you make this change, we can not put devices into low power state
+>>>>> (runtime suspend the device) in ->probe().  That is expected in some
+>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>> This means dev->driver is NULL ?? but pci_dev->driver is set???
+>>>>
+>>>> Because if use pci_dev->driver can put into low power state, means
+>>>>
+>>>> pci_dev->driver is set, but in the situation, use dev->driver will can't,
+>>>>
+>>>> means dev->driver = null, but I have not find any case that
+>>>>
+>>>> dev->driver = null, but pci_dev->driver != null;
+>>> Sorry I make a mistake here.  The dev->driver != null in
+>>> local_pci_probe().  We use pci_dev->driver instead of dev->driver in
+>>> pci_pm_runtime_xxx() because we want device to be kept in normal power
+>>> state (D0) and SUSPENDED state when unbound.The
+>>> pm_runtime_put/get_sync in pci_device_remove/local_pci_probe will not
+>>> change the power state of the device because of the check in
+>>> pci_pm_runtime_xxx().
+>> Yes, you are right, but what am I confuse is that, why check dev->driver
+>> in pci_pm_runtime_xxx() can't keep the device in normal power
+>> state (D0) and SUSPENDED state when unbound.
+>>
+>> May be logic issue ?
+> Because dev->driver is set before local_pci_probe() and cleared after
+> pci_device_remove().  But we need a flag to be changed in
+> local_pci_probe() and pci_device_remove().
+Hi Ying,
 
-So, we will see another patch where you will do: s/<=/== ??
-I am wondering if there is any other way we can get this solved, i.e. in a
-single patchset.
+I'm now face one bug, and the root cause is this logic has some problem.
 
-Otherwise, for both SPEAr and cpu0 patches:
+The other component calls the ops in driver during probe state, which a 
+lot of critical data struct haven't been setup yet.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This never happen in old logic, because dev->driver is unset in probe 
+state, it can check dev->driver to see if the device diver can work. But 
+for new logic it is really a big issue.
+
+Shall I add an other flag like 'unsigned int probe_state:1' in struct 
+pci_dev instead of setting dev->driver before probe and change the logic 
+back?
+
+Then in pci_pm_runtime_xxx() can check this flag instead of pci_dev->driver.
+
+If my logic does not affect your PM logic, I will send out the patch for 
+review. Otherwise I will consider other solutions.
+
+Thanks
+Mike
+>
+> Best Regards,
+> Huang Ying
+>
+>
