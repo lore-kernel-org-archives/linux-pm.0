@@ -1,218 +1,88 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime
- PM callbacks
-Date: Tue, 26 Nov 2013 10:48:56 +0100
-Message-ID: <CAPDyKFrS=8_T51hwSo+ONchm49_tj2o-+-H7Uv44ow4izutzfQ@mail.gmail.com>
-References: <1385383221-20372-1-git-send-email-ulf.hansson@linaro.org>
-	<5827021.HqYFigfrCJ@vostro.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
+Date: Tue, 26 Nov 2013 11:51:33 +0100 (CET)
+Message-ID: <alpine.DEB.2.02.1311261117100.30673@ionos.tec.linutronix.de>
+References: <20131120160450.072555619@infradead.org> <20131120162736.691879744@infradead.org> <528CF94E.8020300@linux.intel.com> <20131121101018.GX10022@twins.programming.kicks-ass.net> <528E09F9.9030501@linux.intel.com> <20131121133936.GF10022@twins.programming.kicks-ass.net>
+ <528F0000.7000505@linux.intel.com> <20131122113044.GL10022@twins.programming.kicks-ass.net> <52944A9A.6090906@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5827021.HqYFigfrCJ-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:60894 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754830Ab3KZKwH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 05:52:07 -0500
+In-Reply-To: <52944A9A.6090906@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eliezer Tamir <eliezer.tamir@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer@tamir.org.il>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 26 November 2013 00:10, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
-> On Monday, November 25, 2013 01:40:21 PM Ulf Hansson wrote:
->> To put devices into low power state during sleep, it sometimes makes
->> sense at subsystem-level to re-use device's runtime PM callbacks.
->>
->> The PM core will at device_suspend_late disable runtime PM, after that
->> we can safely operate on these callbacks. At suspend_late the device
->> will be put into low power state by invoking the device's
->> runtime_suspend callback, unless the runtime status is already
->> suspended. At resume_early the state is restored by invoking the
->> device's runtime_resume callback. Soon after the PM core will re-enable
->> runtime PM before returning from device_resume_early.
->>
->> The new pm_generic functions are named pm_generic_suspend_late_runtime
->> and pm_generic_resume_early_runtime, they are supposed to be used in
->> pairs.
->
-> What happens if the subsystem uses the new functions as its late suspend/
-> early resume callbacks, but some of its drivers implement .suspend_late()
-> and .resume_early()?
+On Tue, 26 Nov 2013, Eliezer Tamir wrote:
 
-Good point. Normally, I think the decision of using these callbacks
-should be taken at the lowest level, in other words in the driver.
-Otherwise the lowest layer of .suspend_late will be by-passed.
+> On 22/11/2013 13:30, Peter Zijlstra wrote:
+> > On Fri, Nov 22, 2013 at 08:56:00AM +0200, Eliezer Tamir wrote:
+> >> On 21/11/2013 15:39, Peter Zijlstra wrote:
+> >>> On Thu, Nov 21, 2013 at 03:26:17PM +0200, Eliezer Tamir wrote:
+> > 
+> > Please use local_clock(), yes its slightly more expensive, but I doubt
+> > you can actually measure the effects on sane hardware.
+> 
+> If we limit the discussion to sane hardware, I should mention that on
+> current Intel CPUs TSC is guaranteed to be monotonic for anything up to
+> 8 sockets. Even on slightly older HS TSC skew is very small and should
+> not be an issue for this use case.
 
-Do you think "subsystem-level" is too vague to indicate that? Should
-we say "driver-level" in the functions comment field instead?
+> Modern sane HW does not have this issue.
 
->
-> Also, these are system suspend/resume callbacks, so the "runtime" part of
-> the names is kind of confusing.  I have no idea for better naming at this
-> point, but still.
+That's wrong to begin with. There is no such thing which qualifies as
+"sane hardware". Especially not if we are talking about timers.
 
-Somehow I would like to indicate that it is actually the runtime
-callbacks that will be indirectly invoked. Besides that, I would
-happily change to whatever you propose. :-)
+> The people that do busy polling typically pin tasks to cores anyway.
 
->
->> Do note that these new generic callbacks will work smothly even with
->> and without CONFIG_PM_RUNTIME, as long as the runtime PM callbacks are
->> implemented inside CONFIG_PM instead of CONFIG_PM_RUNTIME.
->>
->> A special thanks to Alan Stern who came up with this idea.
->>
->> Cc: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
->> Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> ---
->>  drivers/base/power/generic_ops.c |   86 ++++++++++++++++++++++++++++++++++++++
->>  include/linux/pm.h               |    2 +
->>  2 files changed, 88 insertions(+)
->>
->> diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
->> index 5ee030a..3132768 100644
->> --- a/drivers/base/power/generic_ops.c
->> +++ b/drivers/base/power/generic_ops.c
->> @@ -93,6 +93,49 @@ int pm_generic_suspend_late(struct device *dev)
->>  EXPORT_SYMBOL_GPL(pm_generic_suspend_late);
->>
->>  /**
->> + * pm_generic_suspend_late_runtime - Generic suspend_late callback for
->> + * subsystems that wants to use runtime_suspend callbacks at suspend_late.
->
-> This has to be one line.  You can add more description below the @dev line.
+This is completely irrelevant. If stuff falls apart if the task is not
+pinned, then you lost nevertheless.
 
-OK
+> You need cap_net_admin to use this setting.
 
->
->> + * @dev: Device to suspend.
->> + */
->> +int pm_generic_suspend_late_runtime(struct device *dev)
->> +{
->> +     int (*callback)(struct device *);
->> +     int ret = 0;
->> +
->> +     /*
->> +      * PM core has disabled runtime PM in device_suspend_late, thus we can
->> +      * safely check the device's runtime status and decide whether
->> +      * additional actions are needed to put the device into low power state.
->> +      * If so, we invoke the device's runtime_suspend callback.
->> +      * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
->> +      * returns false and therefore the runtime_suspend callback will be
->> +      * invoked.
->> +      */
->> +     if (pm_runtime_status_suspended(dev))
->> +             return 0;
->> +
->> +     if (dev->pm_domain)
->> +             callback = dev->pm_domain->ops.runtime_suspend;
->> +     else if (dev->type && dev->type->pm)
->> +             callback = dev->type->pm->runtime_suspend;
->> +     else if (dev->class && dev->class->pm)
->> +             callback = dev->class->pm->runtime_suspend;
->> +     else if (dev->bus && dev->bus->pm)
->> +             callback = dev->bus->pm->runtime_suspend;
->> +     else
->> +             callback = NULL;
->> +
->> +     if (!callback && dev->driver && dev->driver->pm)
->> +             callback = dev->driver->pm->runtime_suspend;
->> +
->> +     if (callback)
->> +             ret = callback(dev);
->> +
->> +     return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(pm_generic_suspend_late_runtime);
->> +
->> +/**
->>   * pm_generic_suspend - Generic suspend callback for subsystems.
->>   * @dev: Device to suspend.
->>   */
->> @@ -237,6 +280,49 @@ int pm_generic_resume_early(struct device *dev)
->>  EXPORT_SYMBOL_GPL(pm_generic_resume_early);
->>
->>  /**
->> + * pm_generic_resume_early_runtime - Generic resume_early callback for
->> + * subsystems that wants to use runtime_resume callbacks at resume_early.
->
-> Same here.
+And how is that relevant? cap_net_admin does not change the fact, that
+you violate your constraints.
 
-OK
+> There is no real damage if the issue happens.
 
->
->> + * @dev: Device to resume.
->> + */
->> +int pm_generic_resume_early_runtime(struct device *dev)
->> +{
->> +     int (*callback)(struct device *);
->> +     int ret = 0;
->> +
->> +     /*
->> +      * PM core has not yet enabled runtime PM in device_resume_early,
->> +      * thus we can safely check the device's runtime status and restore the
->> +      * previous state we had in device_suspend_late. If restore is needed
->> +      * we invoke the device's runtime_resume callback.
->> +      * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
->> +      * returns false and therefore the runtime_resume callback will be
->> +      * invoked.
->> +      */
->> +     if (pm_runtime_status_suspended(dev))
->> +             return 0;
->> +
->> +     if (dev->pm_domain)
->> +             callback = dev->pm_domain->ops.runtime_resume;
->> +     else if (dev->type && dev->type->pm)
->> +             callback = dev->type->pm->runtime_resume;
->> +     else if (dev->class && dev->class->pm)
->> +             callback = dev->class->pm->runtime_resume;
->> +     else if (dev->bus && dev->bus->pm)
->> +             callback = dev->bus->pm->runtime_resume;
->> +     else
->> +             callback = NULL;
->> +
->> +     if (!callback && dev->driver && dev->driver->pm)
->> +             callback = dev->driver->pm->runtime_resume;
->> +
->> +     if (callback)
->> +             ret = callback(dev);
->> +
->> +     return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(pm_generic_resume_early_runtime);
->> +
->> +/**
->>   * pm_generic_resume - Generic resume callback for subsystems.
->>   * @dev: Device to resume.
->>   */
->> diff --git a/include/linux/pm.h b/include/linux/pm.h
->> index a224c7f..5bce0d4 100644
->> --- a/include/linux/pm.h
->> +++ b/include/linux/pm.h
->> @@ -656,9 +656,11 @@ extern void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *));
->>
->>  extern int pm_generic_prepare(struct device *dev);
->>  extern int pm_generic_suspend_late(struct device *dev);
->> +extern int pm_generic_suspend_late_runtime(struct device *dev);
->>  extern int pm_generic_suspend_noirq(struct device *dev);
->>  extern int pm_generic_suspend(struct device *dev);
->>  extern int pm_generic_resume_early(struct device *dev);
->> +extern int pm_generic_resume_early_runtime(struct device *dev);
->>  extern int pm_generic_resume_noirq(struct device *dev);
->>  extern int pm_generic_resume(struct device *dev);
->>  extern int pm_generic_freeze_noirq(struct device *dev);
->
+You'r violating the constraints which is not fatal, but not desired
+either.
 
-Thanks for the comments, I will submit a new version soon.
+> This is fast-low-latency-path so we are very sensitive to adding even
+> a small cost.
+> Linus really didn't like adding to the cost of poll/select when busy
+> polling is not being used.
+ 
+And that justifies exposing those who do not have access to "sane"
+hardware and/or did not pin their tasks to constraint violation?
 
-Kind regards
-Ulf Hansson
+> Having said that, since we need to fix the timeout issue you pointed
+> out, we will test the use of local_clock() and see if it matters or
+> not.
 
+If the hardware provides an indicator that the TSC is sane to use,
+then sched_clock_stable is 1, so local_clock() will not do the slow
+update dance at all. So for "sane" hardware the overhead is minimal
+and on crappy hardware the correctness is still ensured with more
+overhead.
 
+If you are really concerned about the minimal overhead in the
+sched_clock_stable == 1 case, then you better fix that (it's doable
+with some brain) instead of hacking broken crap, based on even more
+broken assumptions, into the networking code.
 
-> Thanks!
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+It's not the kernels fault, that we need to deal with
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK at all. And we have to deal with it
+no matter what, so we cannot make this undone by magic assumptions.
+
+Complain to those who forced us to do this. Hint: It's only ONE CPU
+vendor who thought that providing useless timestamps is a brilliant
+idea.
+
+Thanks,
+
+	tglx
