@@ -1,71 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system suspend/hibernate
-Date: Tue, 26 Nov 2013 21:18:42 +0100
-Message-ID: <9179214.Tbesu8t5px@vostro.rjw.lan>
-References: <cover.1385118255.git.viresh.kumar@linaro.org> <e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org> <20131126193902.GA2481@amd.pavel.ucw.cz>
+Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Tue, 26 Nov 2013 21:21:23 +0100
+Message-ID: <2309056.KUZA1Fnj0Y@vostro.rjw.lan>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org> <2997050.eogEtPXZyL@vostro.rjw.lan> <CAKohpon22PxGdTFcaOqzpLpVZd75OPP470Wyy95GjBhG2gViyQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59554 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758051Ab3KZUFz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 15:05:55 -0500
-In-Reply-To: <20131126193902.GA2481@amd.pavel.ucw.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon22PxGdTFcaOqzpLpVZd75OPP470Wyy95GjBhG2gViyQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tianyu.lan@intel.com, nm@ti.com, jinchoi@broadcom.com, sebastian.capella@linaro.org
 
-On Tuesday, November 26, 2013 08:39:02 PM Pavel Machek wrote:
-> Hi!
+On Tuesday, November 26, 2013 07:31:50 AM Viresh Kumar wrote:
+> On 26 November 2013 02:43, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Monday, November 25, 2013 09:43:59 AM Dirk Brandewie wrote:
+> >> This is a platform specific bug fix AFAICT and belongs in a platform
+> >> specific piece of code
 > 
-> > This patch adds cpufreq callbacks to dpm_{suspend|resume}_noirq() for handling
-> > suspend/resume of cpufreq governors. This is required for early suspend and late
-> > resume of governors.
-> > 
-> > There are multiple problems that are fixed by this patch:
-> > - Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
-> >   wasn't working well with suspend/resume as calls for removing non-boot CPUs
-> >   was turning out into a call to drivers ->target() which then tries to play
-> >   with regulators. But regulators and their I2C bus were already suspended and
-> >   this resulted in a failure. This is why we need a PM notifier here.
-> > - Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
-> >   tunables configuration for clusters/sockets with non-boot CPUs was getting
-> >   lost after suspend/resume, as we were notifying governors with
-> >   CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
-> >   deallocating memory for tunables.
-> > 
-> > +/*
-> > + * Callbacks for suspending/resuming governors as some platforms can't change
-> > + * frequency after this point in suspend cycle. Because some of the devices
-> > + * (like: i2c, regulators, etc) they use for changing frequency are suspended
-> > + * quickly after this point.
-> > + */
-> > +void cpufreq_suspend(void)
-> > +{
-> > +	struct cpufreq_policy *policy;
-> > +	unsigned long flags;
-> > +
-> > +	if (!has_target())
-> > +		return;
-> > +
-> > +	pr_debug("%s: Suspending Governors\n", __func__);
-> > +
-> > +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> > +		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
-> > +			pr_err("%s: Failed to stop governor for policy: %p\n",
-> > +					__func__, policy);
+> In case we end up doing that, we will do lots of code redundancy in
+> cpufreq drivers. And as Rafael said, some platforms might never
+> know they have booted with an out of table frequency and so taking
+> care of this at a single place is better, where we are sure that it
+> will get fixed.
 > 
-> So... we freeze frequencies in whatever state they are, yes?
+> >> The core should not be working around bootloader bugs IMHO.  Silently
+> >> fixing it is evil IMHO at a minimum the core should complain LOUDLY
+> >> about this happening otherwise the bootloaders will have no incentive to
+> >> get their act together.
+> 
+> That looks correct..
+> 
+> > Yes, we can add a WARN_ON() there.  Still, though, the core's responsibility
+> > is to ensure that (a) either we can continue safely or (b) we can't, in which
+> > case it should just fail the initialization.  Whether or not it should panic()
+> > I'm not sure.
+> 
+> But is this that big crime, that we do a WARN on it? CPU was running on
+> a workable frequency, it wasn't mentioned in the table, that's it.
+> 
+> Probably just throw an print message that CPU found to be running on
+> out of table frequency, and that got fixed..
 
-Yes.  The idea was to do that after suspending devices in which case it wouldn't
-matter so much.  But Viresh always has to complicate things.
+I was talking about the case when your
 
-> Should we go to some specific frequency?
+__cpufreq_driver_target(policy, policy->cur - 1, CPUFREQ_RELATION_L);
 
-If that is done where it is done, yes, we should.
+fails.  The other case is not really interesting.
 
-Thanks,
-Rafael
+Thanks!
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
