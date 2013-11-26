@@ -1,88 +1,62 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 6/7] sched: Clean up preempt_enable_no_resched() abuse
-Date: Tue, 26 Nov 2013 11:51:33 +0100 (CET)
-Message-ID: <alpine.DEB.2.02.1311261117100.30673@ionos.tec.linutronix.de>
-References: <20131120160450.072555619@infradead.org> <20131120162736.691879744@infradead.org> <528CF94E.8020300@linux.intel.com> <20131121101018.GX10022@twins.programming.kicks-ass.net> <528E09F9.9030501@linux.intel.com> <20131121133936.GF10022@twins.programming.kicks-ass.net>
- <528F0000.7000505@linux.intel.com> <20131122113044.GL10022@twins.programming.kicks-ass.net> <52944A9A.6090906@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:60894 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754830Ab3KZKwH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 05:52:07 -0500
-In-Reply-To: <52944A9A.6090906@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 1/2] PM / Runtime: Add second macro for definition of runtime PM callbacks
+Date: Tue, 26 Nov 2013 12:04:45 +0100
+Message-ID: <1385463886-9335-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eliezer Tamir <eliezer.tamir@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer@tamir.org.il>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, 26 Nov 2013, Eliezer Tamir wrote:
+It is allowed and will in many cases make sense to have the runtime PM
+callbacks to be defined for CONFIG_PM instead of CONFIG_PM_RUNTIME.
 
-> On 22/11/2013 13:30, Peter Zijlstra wrote:
-> > On Fri, Nov 22, 2013 at 08:56:00AM +0200, Eliezer Tamir wrote:
-> >> On 21/11/2013 15:39, Peter Zijlstra wrote:
-> >>> On Thu, Nov 21, 2013 at 03:26:17PM +0200, Eliezer Tamir wrote:
-> > 
-> > Please use local_clock(), yes its slightly more expensive, but I doubt
-> > you can actually measure the effects on sane hardware.
-> 
-> If we limit the discussion to sane hardware, I should mention that on
-> current Intel CPUs TSC is guaranteed to be monotonic for anything up to
-> 8 sockets. Even on slightly older HS TSC skew is very small and should
-> not be an issue for this use case.
+Since the PM core disables runtime PM during system suspend, before the
+.suspend_late callbacks are invoked, drivers could at this point
+directly invoke it's runtime PM callbacks or even walk through it's bus
+or power domain, to put it's device into low power state.
 
-> Modern sane HW does not have this issue.
+Use the new macro SET_PM_RUNTIME_PM_OPS in cases were the above makes
+sense. Make sure the callbacks are encapsulated within CONFIG_PM
+instead of CONFIG_PM_RUNTIME.
 
-That's wrong to begin with. There is no such thing which qualifies as
-"sane hardware". Especially not if we are talking about timers.
+Do note that the old macro SET_RUNTIME_PM_OPS, which is being quite
+widely used right now, requires the callbacks to be defined for
+CONFIG_PM_RUNTIME. In many cases it will certainly be convenient to
+convert to the new macro above, but still some cases are optimal for
+only CONFIG_PM_RUNTIME.
 
-> The people that do busy polling typically pin tasks to cores anyway.
+Cc: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ include/linux/pm.h |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-This is completely irrelevant. If stuff falls apart if the task is not
-pinned, then you lost nevertheless.
-
-> You need cap_net_admin to use this setting.
-
-And how is that relevant? cap_net_admin does not change the fact, that
-you violate your constraints.
-
-> There is no real damage if the issue happens.
-
-You'r violating the constraints which is not fatal, but not desired
-either.
-
-> This is fast-low-latency-path so we are very sensitive to adding even
-> a small cost.
-> Linus really didn't like adding to the cost of poll/select when busy
-> polling is not being used.
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index a224c7f..7a830a7 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -320,6 +320,15 @@ struct dev_pm_ops {
+ #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
+ #endif
  
-And that justifies exposing those who do not have access to "sane"
-hardware and/or did not pin their tasks to constraint violation?
++#ifdef CONFIG_PM
++#define SET_PM_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
++	.runtime_suspend = suspend_fn, \
++	.runtime_resume = resume_fn, \
++	.runtime_idle = idle_fn,
++#else
++#define SET_PM_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
++#endif
++
+ /*
+  * Use this if you want to use the same suspend and resume callbacks for suspend
+  * to RAM and hibernation.
+-- 
+1.7.9.5
 
-> Having said that, since we need to fix the timeout issue you pointed
-> out, we will test the use of local_clock() and see if it matters or
-> not.
-
-If the hardware provides an indicator that the TSC is sane to use,
-then sched_clock_stable is 1, so local_clock() will not do the slow
-update dance at all. So for "sane" hardware the overhead is minimal
-and on crappy hardware the correctness is still ensured with more
-overhead.
-
-If you are really concerned about the minimal overhead in the
-sched_clock_stable == 1 case, then you better fix that (it's doable
-with some brain) instead of hacking broken crap, based on even more
-broken assumptions, into the networking code.
-
-It's not the kernels fault, that we need to deal with
-CONFIG_HAVE_UNSTABLE_SCHED_CLOCK at all. And we have to deal with it
-no matter what, so we cannot make this undone by magic assumptions.
-
-Complain to those who forced us to do this. Hint: It's only ONE CPU
-vendor who thought that providing useless timestamps is a brilliant
-idea.
-
-Thanks,
-
-	tglx
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
