@@ -1,50 +1,30 @@
-From: Paul Walmsley <pwalmsley@nvidia.com>
-Subject: [PATCH] cpufreq: cpufreq-cpu0: clk_round_rate() can return a zero
- upon error
-Date: Mon, 25 Nov 2013 18:01:18 -0800
-Message-ID: <alpine.DEB.2.02.1311251559460.23090@tamien>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system suspend/hibernate
+Date: Tue, 26 Nov 2013 07:46:11 +0530
+Message-ID: <CAKohpokAL9iTN8KSONwBS1JHBg93RyBS6nJVBruxddjO-UvYcg@mail.gmail.com>
+References: <cover.1385118255.git.viresh.kumar@linaro.org>
+	<e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
+	<5293C16D.80605@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Mike Turquette <mturquette@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5293C16D.80605@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 26 November 2013 03:00, Nishanth Menon <nm@ti.com> wrote:
+> yes, this seems to work for me as well.
+> http://pastebin.mozilla.org/3670909 - no cpufreq attempts to
+> transition were triggered.
 
-Treat both negative and zero return values from clk_round_rate()
-as errors.  This is needed since subsequent patches will convert
-clk_round_rate()'s return value to be an unsigned type, rather
-than a signed type, since some clock sources can generate rates
-higher than (2^31)-1 Hz.
+Ahh.. Thanks for confirming..
+But we still can't work with noirq handlers as there are platforms
+which want to change frequency before going into suspend and
+so we need to do this from dpm_suspend() :)
 
-Eventually, when calling clk_round_rate(), only a return value of
-zero will be considered a error.  All other values will be
-considered valid rates.  The comparison against values less than
-0 is kept to preserve the correct behavior in the meantime.
+Thanks for trying.
 
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>
----
-Applies on v3.13-rc1.  See also:
-
-http://marc.info/?l=linux-arm-kernel&m=138542591313620&w=2
-
-  drivers/cpufreq/cpufreq-cpu0.c |    2 +-
-  1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index d4585ce2346c..0faf756f6197 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -44,7 +44,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
-  	int ret;
-
-  	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
--	if (freq_Hz < 0)
-+	if (freq_Hz <= 0)
-  		freq_Hz = freq_table[index].frequency * 1000;
-
-  	freq_exact = freq_Hz;
+--
+viresh
