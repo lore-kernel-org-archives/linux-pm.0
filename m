@@ -1,62 +1,69 @@
-From: viresh kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V3 1/6] cpufreq: suspend governors on system suspend/hibernate
-Date: Tue, 26 Nov 2013 09:42:43 +0530
-Message-ID: <52941FBB.7070603@linaro.org>
-References: <cover.1385374819.git.viresh.kumar@linaro.org> <55cc3fbf9c553d669629e8ba98eef2b0ef33aaad.1385374822.git.viresh.kumar@linaro.org>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: clk_round_rate() can return a
+ zero upon error
+Date: Tue, 26 Nov 2013 10:33:03 +0530
+Message-ID: <52942B87.1040203@linaro.org>
+References: <alpine.DEB.2.02.1311251559460.23090@tamien>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <55cc3fbf9c553d669629e8ba98eef2b0ef33aaad.1385374822.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jinchoi-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, tianyu.lan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, sebastian.capella-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, jhbird.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f52.google.com ([209.85.216.52]:51162 "EHLO
+	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995Ab3KZFDK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 00:03:10 -0500
+Received: by mail-qa0-f52.google.com with SMTP id k4so7246304qaq.4
+        for <linux-pm@vger.kernel.org>; Mon, 25 Nov 2013 21:03:09 -0800 (PST)
+In-Reply-To: <alpine.DEB.2.02.1311251559460.23090@tamien>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Paul Walmsley <pwalmsley@nvidia.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Mike Turquette <mturquette@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday 25 November 2013 07:41 PM, Viresh Kumar wrote:
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index dc196bb..6d93f91 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -255,6 +255,9 @@ struct cpufreq_driver {
->  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
->  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
->  
-> +void cpufreq_suspend(void);
-> +void cpufreq_resume(void);
-> +
->  const char *cpufreq_get_current_driver(void);
->  
->  static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy,
+On Tuesday 26 November 2013 07:31 AM, Paul Walmsley wrote:
+> 
+> Treat both negative and zero return values from clk_round_rate()
+> as errors.  This is needed since subsequent patches will convert
+> clk_round_rate()'s return value to be an unsigned type, rather
+> than a signed type, since some clock sources can generate rates
+> higher than (2^31)-1 Hz.
+> 
+> Eventually, when calling clk_round_rate(), only a return value of
+> zero will be considered a error.  All other values will be
+> considered valid rates.  The comparison against values less than
+> 0 is kept to preserve the correct behavior in the meantime.
+> 
+> Signed-off-by: Paul Walmsley <paul@pwsan.com>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Mike Turquette <mturquette@linaro.org>
+> ---
+> Applies on v3.13-rc1.  See also:
+> 
+> http://marc.info/?l=linux-arm-kernel&m=138542591313620&w=2
+> 
+>  drivers/cpufreq/cpufreq-cpu0.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index d4585ce2346c..0faf756f6197 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -44,7 +44,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+> unsigned int index)
+>      int ret;
+> 
+>      freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
+> -    if (freq_Hz < 0)
+> +    if (freq_Hz <= 0)
+>          freq_Hz = freq_table[index].frequency * 1000;
+> 
+>      freq_exact = freq_Hz;
 
-A minor fix here to get kernel compiled without cpufreq support enabled:
+So, we will see another patch where you will do: s/<=/== ??
+I am wondering if there is any other way we can get this solved, i.e. in a
+single patchset.
 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 8d8b2f4..d40809d 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -259,9 +259,6 @@ struct cpufreq_driver {
- int cpufreq_register_driver(struct cpufreq_driver *driver_data);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+Otherwise, for both SPEAr and cpu0 patches:
 
--void cpufreq_suspend(void);
--void cpufreq_resume(void);
--
- const char *cpufreq_get_current_driver(void);
-
- static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy,
-@@ -287,6 +284,14 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
-                        policy->cpuinfo.max_freq);
- }
-
-+#ifdef CONFIG_CPU_FREQ
-+void cpufreq_suspend(void);
-+void cpufreq_resume(void);
-+#elif
-+static inline void cpufreq_suspend(void) {}
-+static inline void cpufreq_resume(void) {}
-+#endif
-+
- /*********************************************************************
-  *                     CPUFREQ NOTIFIER INTERFACE                    *
-  *********************************************************************/
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
