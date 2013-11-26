@@ -1,108 +1,83 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 1/3] pm/qos: allow state control of qos class
-Date: Tue, 26 Nov 2013 15:20:09 -0800
-Message-ID: <1385508011-26914-2-git-send-email-jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 2/3] cpuidle: check for pm qos constraint override
+Date: Tue, 26 Nov 2013 15:20:10 -0800
+Message-ID: <1385508011-26914-3-git-send-email-jacob.jun.pan@linux.intel.com>
 References: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:19201 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757592Ab3KZXUV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Nov 2013 18:20:21 -0500
 In-Reply-To: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
 Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-When power capping or thermal control is needed, CPU QOS latency cannot
-be satisfied. This patch adds a state variable to indicate whether a QOS
-class (including all constraint requests) should be ignored.
+If a QOS class is disabled due to platform thermal or power capping
+needs, idle governor shall pick the deepest idle state to conserve power.
+
+Power saving should be prioritized over QOS in this case in that
+hardware based catastrophic measure is more intrusive than
+managed idle.
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 ---
- include/linux/pm_qos.h | 10 +++++++++-
- kernel/power/qos.c     | 24 ++++++++++++++++++++++++
- 2 files changed, 33 insertions(+), 1 deletion(-)
+ drivers/cpuidle/governors/ladder.c |  4 ++++
+ drivers/cpuidle/governors/menu.c   | 13 +++++++++++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 5a95013..648b50b 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -10,7 +10,7 @@
- #include <linux/device.h>
- #include <linux/workqueue.h>
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 9f08e8c..40161d3 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -71,6 +71,10 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	int last_residency, last_idx = ldev->last_state_idx;
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
  
--enum {
-+enum pm_qos_class {
- 	PM_QOS_RESERVED = 0,
- 	PM_QOS_CPU_DMA_LATENCY,
- 	PM_QOS_NETWORK_LATENCY,
-@@ -20,6 +20,11 @@ enum {
- 	PM_QOS_NUM_CLASSES,
- };
- 
-+enum pm_qos_state {
-+	PM_QOS_CONSTRAINT_AVAILABLE,
-+	PM_QOS_CONSTRAINT_IGNORED,
-+};
++	/* qos ignored, pick the deepest idle state */
++	if (unlikely(latency_req == PM_QOS_DEFAULT_VALUE))
++		return drv->state_count - 1;
 +
- enum pm_qos_flags_status {
- 	PM_QOS_FLAGS_UNDEFINED = -1,
- 	PM_QOS_FLAGS_NONE,
-@@ -77,6 +82,7 @@ struct pm_qos_constraints {
- 	struct plist_head list;
- 	s32 target_value;	/* Do not change to 64 bit */
- 	s32 default_value;
-+	enum pm_qos_state state;
- 	enum pm_qos_type type;
- 	struct blocking_notifier_head *notifiers;
- };
-@@ -123,6 +129,8 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_request_active(struct pm_qos_request *req);
- s32 pm_qos_read_value(struct pm_qos_constraints *c);
-+void pm_qos_set_constraint_class_state(enum pm_qos_class class,
-+				enum pm_qos_state state);
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0)) {
+ 		ladder_do_selection(ldev, last_idx, 0);
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index cf7f2f0..afa0088 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -297,12 +297,21 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		data->needs_update = 0;
+ 	}
  
- #ifdef CONFIG_PM
- enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 8dff9b4..cf475b0 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -146,6 +146,11 @@ static inline int pm_qos_get_value(struct pm_qos_constraints *c)
++	/* qos ignored, pick the deepest idle state */
++	if (unlikely(latency_req == PM_QOS_DEFAULT_VALUE)) {
++		struct cpuidle_state *s = &drv->states[drv->state_count - 1];
++
++		data->last_state_idx = drv->state_count - 1;
++		data->exit_us = s->exit_latency;
++		goto exit_done;
++	}
++
+ 	data->last_state_idx = 0;
+ 	data->exit_us = 0;
  
- s32 pm_qos_read_value(struct pm_qos_constraints *c)
- {
-+	/* return invalid default value if constraints cannot be met, e.g.
-+	 * during idle injection.
-+	 */
-+	if (c->state == PM_QOS_CONSTRAINT_IGNORED)
-+		return PM_QOS_DEFAULT_VALUE;
- 	return c->target_value;
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0))
+-		return 0;
++		goto exit_done;
+ 
+ 	/* determine the expected residency time, round up */
+ 	t = ktime_to_timespec(tick_nohz_get_sleep_length());
+@@ -361,7 +370,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		data->last_state_idx = i;
+ 		data->exit_us = s->exit_latency;
+ 	}
+-
++exit_done:
+ 	return data->last_state_idx;
  }
  
-@@ -353,6 +358,25 @@ void pm_qos_add_request(struct pm_qos_request *req,
- }
- EXPORT_SYMBOL_GPL(pm_qos_add_request);
- 
-+void pm_qos_set_constraint_class_state(enum pm_qos_class class,
-+				enum pm_qos_state state)
-+{
-+	struct pm_qos_constraints *c = pm_qos_array[class]->constraints;
-+	unsigned long curr_value;
-+
-+	if (c->state == state)
-+		return;
-+	curr_value = (state == PM_QOS_CONSTRAINT_IGNORED) ?
-+		PM_QOS_DEFAULT_VALUE : c->target_value;
-+	c->state = state;
-+
-+	/* notify existing QOS requests change */
-+	blocking_notifier_call_chain(c->notifiers,
-+				curr_value,
-+				NULL);
-+}
-+EXPORT_SYMBOL_GPL(pm_qos_set_constraint_class_state);
-+
- /**
-  * pm_qos_update_request - modifies an existing qos request
-  * @req : handle to list element holding a pm_qos request to use
 -- 
 1.8.1.2
+
