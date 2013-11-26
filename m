@@ -1,125 +1,97 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH 1/3] pm/qos: allow state control of qos class
-Date: Wed, 27 Nov 2013 00:28:16 +0100
-Message-ID: <52952E90.4000604@intel.com>
-References: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com> <1385508011-26914-2-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime
+ PM callbacks
+Date: Wed, 27 Nov 2013 00:44:35 +0100
+Message-ID: <CAPDyKFp2z=ST6Sd3T+1Ko5pf5pf3Cfr44jS=jTBWABPcSS2RLg@mail.gmail.com>
+References: <2026361.IiCVpVNYkW@vostro.rjw.lan>
+	<Pine.LNX.4.44L0.1311261556480.1359-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:25985 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757605Ab3KZX2V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Nov 2013 18:28:21 -0500
-In-Reply-To: <1385508011-26914-2-git-send-email-jacob.jun.pan@linux.intel.com>
+Received: from mail-qa0-f41.google.com ([209.85.216.41]:48666 "EHLO
+	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758391Ab3KZXog (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 18:44:36 -0500
+Received: by mail-qa0-f41.google.com with SMTP id j5so5114307qaq.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 Nov 2013 15:44:35 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1311261556480.1359-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-On 11/27/2013 12:20 AM, Jacob Pan wrote:
-> When power capping or thermal control is needed, CPU QOS latency cannot
-> be satisfied. This patch adds a state variable to indicate whether a QOS
-> class (including all constraint requests) should be ignored.
+On 26 November 2013 22:09, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Tue, 26 Nov 2013, Rafael J. Wysocki wrote:
 >
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-
-Honestly, I don't like this.  I know the motivation and what you're 
-trying to achieve, but I don't like the approach.
-
-I need to think a bit more about that.
-
-Thanks,
-Rafael
-
-
-> ---
->   include/linux/pm_qos.h | 10 +++++++++-
->   kernel/power/qos.c     | 24 ++++++++++++++++++++++++
->   2 files changed, 33 insertions(+), 1 deletion(-)
+>> On Tuesday, November 26, 2013 10:48:56 AM Ulf Hansson wrote:
+>> > On 26 November 2013 00:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > > On Monday, November 25, 2013 01:40:21 PM Ulf Hansson wrote:
+>> > >> To put devices into low power state during sleep, it sometimes makes
+>> > >> sense at subsystem-level to re-use device's runtime PM callbacks.
 >
-> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index 5a95013..648b50b 100644
-> --- a/include/linux/pm_qos.h
-> +++ b/include/linux/pm_qos.h
-> @@ -10,7 +10,7 @@
->   #include <linux/device.h>
->   #include <linux/workqueue.h>
->   
-> -enum {
-> +enum pm_qos_class {
->   	PM_QOS_RESERVED = 0,
->   	PM_QOS_CPU_DMA_LATENCY,
->   	PM_QOS_NETWORK_LATENCY,
-> @@ -20,6 +20,11 @@ enum {
->   	PM_QOS_NUM_CLASSES,
->   };
->   
-> +enum pm_qos_state {
-> +	PM_QOS_CONSTRAINT_AVAILABLE,
-> +	PM_QOS_CONSTRAINT_IGNORED,
-> +};
-> +
->   enum pm_qos_flags_status {
->   	PM_QOS_FLAGS_UNDEFINED = -1,
->   	PM_QOS_FLAGS_NONE,
-> @@ -77,6 +82,7 @@ struct pm_qos_constraints {
->   	struct plist_head list;
->   	s32 target_value;	/* Do not change to 64 bit */
->   	s32 default_value;
-> +	enum pm_qos_state state;
->   	enum pm_qos_type type;
->   	struct blocking_notifier_head *notifiers;
->   };
-> @@ -123,6 +129,8 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
->   int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
->   int pm_qos_request_active(struct pm_qos_request *req);
->   s32 pm_qos_read_value(struct pm_qos_constraints *c);
-> +void pm_qos_set_constraint_class_state(enum pm_qos_class class,
-> +				enum pm_qos_state state);
->   
->   #ifdef CONFIG_PM
->   enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
-> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index 8dff9b4..cf475b0 100644
-> --- a/kernel/power/qos.c
-> +++ b/kernel/power/qos.c
-> @@ -146,6 +146,11 @@ static inline int pm_qos_get_value(struct pm_qos_constraints *c)
->   
->   s32 pm_qos_read_value(struct pm_qos_constraints *c)
->   {
-> +	/* return invalid default value if constraints cannot be met, e.g.
-> +	 * during idle injection.
-> +	 */
-> +	if (c->state == PM_QOS_CONSTRAINT_IGNORED)
-> +		return PM_QOS_DEFAULT_VALUE;
->   	return c->target_value;
->   }
->   
-> @@ -353,6 +358,25 @@ void pm_qos_add_request(struct pm_qos_request *req,
->   }
->   EXPORT_SYMBOL_GPL(pm_qos_add_request);
->   
-> +void pm_qos_set_constraint_class_state(enum pm_qos_class class,
-> +				enum pm_qos_state state)
-> +{
-> +	struct pm_qos_constraints *c = pm_qos_array[class]->constraints;
-> +	unsigned long curr_value;
-> +
-> +	if (c->state == state)
-> +		return;
-> +	curr_value = (state == PM_QOS_CONSTRAINT_IGNORED) ?
-> +		PM_QOS_DEFAULT_VALUE : c->target_value;
-> +	c->state = state;
-> +
-> +	/* notify existing QOS requests change */
-> +	blocking_notifier_call_chain(c->notifiers,
-> +				curr_value,
-> +				NULL);
-> +}
-> +EXPORT_SYMBOL_GPL(pm_qos_set_constraint_class_state);
-> +
->   /**
->    * pm_qos_update_request - modifies an existing qos request
->    * @req : handle to list element holding a pm_qos request to use
+> Ulf, please be more careful about the distinction between "device" and
+> "driver".  Devices don't have callbacks; drivers do.  You made this
+> mistake a few times in the patch description.
 
+Sorry, my bad.
+
+>
+>> > >> The PM core will at device_suspend_late disable runtime PM, after that
+>> > >> we can safely operate on these callbacks. At suspend_late the device
+>> > >> will be put into low power state by invoking the device's
+>> > >> runtime_suspend callback, unless the runtime status is already
+>> > >> suspended. At resume_early the state is restored by invoking the
+>> > >> device's runtime_resume callback. Soon after the PM core will re-enable
+>> > >> runtime PM before returning from device_resume_early.
+>> > >>
+>> > >> The new pm_generic functions are named pm_generic_suspend_late_runtime
+>> > >> and pm_generic_resume_early_runtime, they are supposed to be used in
+>> > >> pairs.
+>> > >
+>> > > What happens if the subsystem uses the new functions as its late suspend/
+>> > > early resume callbacks, but some of its drivers implement .suspend_late()
+>> > > and .resume_early()?
+>
+> The same thing that happens whenever any PM-related callback is defined
+> by both the subsystem and the driver: The PM core uses the subsystem's
+> callback.  (Or the pm_domain's callback, or the type's callback, or the
+> class's callback.)
+>
+> Besides, Ulf specifically assumed at the top of this message that
+> re-using the runtime-suspend callback makes sense at the subsystem
+> level.  This must mean it is appropriate for all drivers in the
+> subsystem.  So why would a driver want to override the subsystem's
+> behavior?
+>
+>> > Good point. Normally, I think the decision of using these callbacks
+>> > should be taken at the lowest level, in other words in the driver.
+>> > Otherwise the lowest layer of .suspend_late will be by-passed.
+>>
+>> I'm not sure what's the point to add them, then.  If the driver has to decide
+>> anyway, it may simply populate its .suspend_late and .resume_early pointers
+>> I think.
+>
+> Another possibility is to have the pm_generic_suspend_late_runtime
+> routine check to see if the driver has defined a suspend_late callback.
+> If the driver has its own callback, we could invoke it instead of
+> invoking the runtime_suspend callback.
+
+There are already a generic callbacks that does this. Normally the
+generic callbacks is used from buses and power domains.
+
+My new callbacks are intended to be used from the driver, so those are
+kind of different from the others in that sense.
+
+>
+> However, I'm not sure that doing this would be worthwhile.  And it
+> would hang in an infinite loop if the driver set its suspend_late
+> pointer to pm_generic_suspend_late_runtime!
+
+:-)
+
+>
+> Alan Stern
+>
+
+Kind regards
+Ulf Hansson
