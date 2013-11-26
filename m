@@ -1,62 +1,195 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 4/6] cpufreq: exynos: Use cpufreq_generic_suspend()
-Date: Tue, 26 Nov 2013 20:06:22 +0530
-Message-ID: <CAKohpoka9VCi+Siygf6wWF4v=9pZawtO-ZZ5EoFDuJpAyv7VBA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 5/8] locking: Optimize lock_bh functions
+Date: Tue, 26 Nov 2013 16:57:48 +0100
+Message-ID: <20131126160815.158875692@infradead.org>
+References: <20131126155743.116756708@infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:51447 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757176Ab3KZQLy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 11:11:54 -0500
+Content-Disposition: inline; filename=peter_zijlstra-remove_preempt_enable_no_sched-from-locks.patch
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, Eliezer Tamir <eliezer.tamir@linux.intel.com>, David Miller <davem@davemloft.net>, rui.zhang@intel.com, jacob.jun.pan@linux.intel.com, Mike Galbraith <bitbucket@online.de>, Ingo Molnar <mingo@kernel.org>, hpa@zytor.com, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 25 November 2013 19:41, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Currently we have implemented PM notifiers to disable/enable ->target() routines
-> functionality during suspend/resume.
->
-> Now we have support present in cpufreq core, lets use it.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/exynos-cpufreq.c | 97 +++-------------------------------------
->  1 file changed, 6 insertions(+), 91 deletions(-)
+Currently all _bh_ lock functions do two preempt_count operations:
 
-Jonghwan Choi reported an issue with this patch. He asked me
-to look at: 6e45eb
+  local_bh_disable();
+  preempt_disable();
 
-And so following diff is updated for this patch in my repo.. Will get
-that fixed in V4:
+and for the unlock:
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 4b6e6a6..3f216da 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -22,8 +22,8 @@
- #include "exynos-cpufreq.h"
+  preempt_enable_no_resched();
+  local_bh_enable();
 
- static struct exynos_dvfs_info *exynos_info;
--
- static struct regulator *arm_regulator;
-+static unsigned int locking_frequency;
+Since its a waste of perfectly good cycles to modify the same variable
+twice when you can do it in one go; use the new
+__local_bh_{dis,en}able_ip() functions that allow us to provide a
+preempt_count value to add/sub.
 
- static int exynos_cpufreq_get_index(unsigned int freq)
- {
-@@ -134,7 +134,7 @@ static int exynos_target(struct cpufreq_policy
-*policy, unsigned int index)
- static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
-        policy->clk = exynos_info->cpu_clk;
--       policy->suspend_freq = clk_get_rate(exynos_info->cpu_clk) / 1000;
-+       policy->suspend_freq = locking_frequency;
-        return cpufreq_generic_init(policy, exynos_info->freq_table, 100000);
- }
+So define SOFTIRQ_LOCK_OFFSET as the offset a _bh_ lock needs to
+add/sub to be done in one go.
 
-@@ -182,6 +182,9 @@ static int __init exynos_cpufreq_init(void)
-                goto err_vdd_arm;
-        }
+As a bonus it gets rid of the preempt_enable_no_resched() usage.
 
-+       /* Done here as we want to capture boot frequency */
-+       locking_frequency = clk_get_rate(exynos_info->cpu_clk) / 1000;
+Cc: rjw@rjwysocki.net
+Cc: rui.zhang@intel.com
+Cc: jacob.jun.pan@linux.intel.com
+Cc: Mike Galbraith <bitbucket@online.de>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: hpa@zytor.com
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: lenb@kernel.org
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+---
+ include/linux/preempt_mask.h     |   15 +++++++++++++++
+ include/linux/rwlock_api_smp.h   |   12 ++++--------
+ include/linux/spinlock_api_smp.h |   12 ++++--------
+ include/linux/spinlock_api_up.h  |   16 +++++++++++-----
+ 4 files changed, 34 insertions(+), 21 deletions(-)
+
+--- a/include/linux/preempt_mask.h
++++ b/include/linux/preempt_mask.h
+@@ -78,6 +78,21 @@
+ #endif
+ 
+ /*
++ * The preempt_count offset needed for things like:
++ *
++ *  spin_lock_bh()
++ *
++ * Which need to disable both preemption (CONFIG_PREEMPT_COUNT) and
++ * softirqs, such that unlock sequences of:
++ *
++ *  spin_unlock();
++ *  local_bh_enable();
++ *
++ * Work as expected.
++ */
++#define SOFTIRQ_LOCK_OFFSET (SOFTIRQ_DISABLE_OFFSET + PREEMPT_CHECK_OFFSET)
 +
-        if (!cpufreq_register_driver(&exynos_driver))
-                return 0;
++/*
+  * Are we running in atomic context?  WARNING: this macro cannot
+  * always detect atomic context; in particular, it cannot know about
+  * held spinlocks in non-preemptible kernels.  Thus it should not be
+--- a/include/linux/rwlock_api_smp.h
++++ b/include/linux/rwlock_api_smp.h
+@@ -172,8 +172,7 @@ static inline void __raw_read_lock_irq(r
+ 
+ static inline void __raw_read_lock_bh(rwlock_t *lock)
+ {
+-	local_bh_disable();
+-	preempt_disable();
++	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_read_trylock, do_raw_read_lock);
+ }
+@@ -200,8 +199,7 @@ static inline void __raw_write_lock_irq(
+ 
+ static inline void __raw_write_lock_bh(rwlock_t *lock)
+ {
+-	local_bh_disable();
+-	preempt_disable();
++	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_write_trylock, do_raw_write_lock);
+ }
+@@ -250,8 +248,7 @@ static inline void __raw_read_unlock_bh(
+ {
+ 	rwlock_release(&lock->dep_map, 1, _RET_IP_);
+ 	do_raw_read_unlock(lock);
+-	preempt_enable_no_resched();
+-	local_bh_enable_ip((unsigned long)__builtin_return_address(0));
++	__local_bh_enable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ }
+ 
+ static inline void __raw_write_unlock_irqrestore(rwlock_t *lock,
+@@ -275,8 +272,7 @@ static inline void __raw_write_unlock_bh
+ {
+ 	rwlock_release(&lock->dep_map, 1, _RET_IP_);
+ 	do_raw_write_unlock(lock);
+-	preempt_enable_no_resched();
+-	local_bh_enable_ip((unsigned long)__builtin_return_address(0));
++	__local_bh_enable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ }
+ 
+ #endif /* __LINUX_RWLOCK_API_SMP_H */
+--- a/include/linux/spinlock_api_smp.h
++++ b/include/linux/spinlock_api_smp.h
+@@ -131,8 +131,7 @@ static inline void __raw_spin_lock_irq(r
+ 
+ static inline void __raw_spin_lock_bh(raw_spinlock_t *lock)
+ {
+-	local_bh_disable();
+-	preempt_disable();
++	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, do_raw_spin_trylock, do_raw_spin_lock);
+ }
+@@ -174,20 +173,17 @@ static inline void __raw_spin_unlock_bh(
+ {
+ 	spin_release(&lock->dep_map, 1, _RET_IP_);
+ 	do_raw_spin_unlock(lock);
+-	preempt_enable_no_resched();
+-	local_bh_enable_ip((unsigned long)__builtin_return_address(0));
++	__local_bh_enable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ }
+ 
+ static inline int __raw_spin_trylock_bh(raw_spinlock_t *lock)
+ {
+-	local_bh_disable();
+-	preempt_disable();
++	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ 	if (do_raw_spin_trylock(lock)) {
+ 		spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
+ 		return 1;
+ 	}
+-	preempt_enable_no_resched();
+-	local_bh_enable_ip((unsigned long)__builtin_return_address(0));
++	__local_bh_enable_ip(_RET_IP_, SOFTIRQ_LOCK_OFFSET);
+ 	return 0;
+ }
+ 
+--- a/include/linux/spinlock_api_up.h
++++ b/include/linux/spinlock_api_up.h
+@@ -24,11 +24,14 @@
+  * flags straight, to suppress compiler warnings of unused lock
+  * variables, and to add the proper checker annotations:
+  */
++#define ___LOCK(lock) \
++  do { __acquire(lock); (void)(lock); } while (0)
++
+ #define __LOCK(lock) \
+-  do { preempt_disable(); __acquire(lock); (void)(lock); } while (0)
++  do { preempt_disable(); ___LOCK(lock); } while (0);
+ 
+ #define __LOCK_BH(lock) \
+-  do { local_bh_disable(); __LOCK(lock); } while (0)
++  do { __local_bh_disable_ip(_THIS_IP_, SOFTIRQ_LOCK_OFFSET); ___LOCK(lock); } while (0)
+ 
+ #define __LOCK_IRQ(lock) \
+   do { local_irq_disable(); __LOCK(lock); } while (0)
+@@ -36,12 +39,15 @@
+ #define __LOCK_IRQSAVE(lock, flags) \
+   do { local_irq_save(flags); __LOCK(lock); } while (0)
+ 
++#define ___UNLOCK(lock) \
++  do { __release(lock); (void)(lock); } while (0)
++
+ #define __UNLOCK(lock) \
+-  do { preempt_enable(); __release(lock); (void)(lock); } while (0)
++  do { preempt_enable(); ___UNLOCK(lock); } while (0)
+ 
+ #define __UNLOCK_BH(lock) \
+-  do { preempt_enable_no_resched(); local_bh_enable(); \
+-	  __release(lock); (void)(lock); } while (0)
++  do { __local_bh_enable_ip(_THIS_IP_, SOFTIRQ_LOCK_OFFSET); \
++       ___UNLOCK(lock); } while (0)
+ 
+ #define __UNLOCK_IRQ(lock) \
+   do { local_irq_enable(); __UNLOCK(lock); } while (0)
+
+
