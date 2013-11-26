@@ -1,90 +1,52 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Runtime: Implement the pm_generic_runtime functions for CONFIG_PM
-Date: Wed, 27 Nov 2013 00:49:41 +0100
-Message-ID: <1385509781-18721-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-usb@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
+From: Paul Walmsley <pwalmsley@nvidia.com>
+Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: clk_round_rate() can return a
+ zero upon error
+Date: Tue, 26 Nov 2013 15:50:05 -0800
+Message-ID: <529533AD.2050406@nvidia.com>
+References: <alpine.DEB.2.02.1311251559460.23090@tamien> <52942B87.1040203@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52942B87.1040203@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: viresh kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The pm_generic_runtime_suspend|resume functions were implemented within
-CONFIG_PM_RUNTIME.
+On 11/25/2013 09:03 PM, viresh kumar wrote:
+> On Tuesday 26 November 2013 07:31 AM, Paul Walmsley wrote:
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+>> index d4585ce2346c..0faf756f6197 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -44,7 +44,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+>> unsigned int index)
+>>       int ret;
+>>
+>>       freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
+>> -    if (freq_Hz < 0)
+>> +    if (freq_Hz <= 0)
+>>           freq_Hz = freq_table[index].frequency * 1000;
+>>
+>>       freq_exact = freq_Hz;
+> So, we will see another patch where you will do: s/<=/== ??
 
-As we also may use runtime PM callbacks during system suspend, to put
-devices into low power state, we need to move the implementation of
-pm_generic_runtime_suspend|resume to CONFIG_PM.
+Probably so for this driver - along with converting the type of freq_Hz 
+to be u64 or unsigned long.  Not sure yet about all of the other 
+drivers, since many of them are unlikely to see rates above (2^31)-1 Hz.
 
-This change prevents the platform bus from by-passing driver's runtime
-PM callbacks while only CONFIG_PM_SLEEP and not CONFIG_PM_RUNTIME is
-being used.
+> I am wondering if there is any other way we can get this solved, i.e. in a
+> single patchset.
 
-Cc: Kevin Hilman <khilman@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/generic_ops.c |    4 ++--
- include/linux/pm_runtime.h       |   12 ++++++++----
- 2 files changed, 10 insertions(+), 6 deletions(-)
+I'm trying to avoid sending up a large series that touches drivers all 
+over the tree :-(
 
-diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-index 5ee030a..a2e55bf 100644
---- a/drivers/base/power/generic_ops.c
-+++ b/drivers/base/power/generic_ops.c
-@@ -10,7 +10,7 @@
- #include <linux/pm_runtime.h>
- #include <linux/export.h>
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- /**
-  * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
-  * @dev: Device to suspend.
-@@ -48,7 +48,7 @@ int pm_generic_runtime_resume(struct device *dev)
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(pm_generic_runtime_resume);
--#endif /* CONFIG_PM_RUNTIME */
-+#endif /* CONFIG_PM */
- 
- #ifdef CONFIG_PM_SLEEP
- /**
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 6fa7cea..16c9a62 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -23,6 +23,14 @@
- 					    usage_count */
- #define RPM_AUTO		0x08	/* Use autosuspend_delay */
- 
-+#ifdef CONFIG_PM
-+extern int pm_generic_runtime_suspend(struct device *dev);
-+extern int pm_generic_runtime_resume(struct device *dev);
-+#else
-+static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
-+static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
-+#endif
-+
- #ifdef CONFIG_PM_RUNTIME
- 
- extern struct workqueue_struct *pm_wq;
-@@ -37,8 +45,6 @@ extern void pm_runtime_enable(struct device *dev);
- extern void __pm_runtime_disable(struct device *dev, bool check_resume);
- extern void pm_runtime_allow(struct device *dev);
- extern void pm_runtime_forbid(struct device *dev);
--extern int pm_generic_runtime_suspend(struct device *dev);
--extern int pm_generic_runtime_resume(struct device *dev);
- extern void pm_runtime_no_callbacks(struct device *dev);
- extern void pm_runtime_irq_safe(struct device *dev);
- extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
-@@ -142,8 +148,6 @@ static inline bool pm_runtime_active(struct device *dev) { return true; }
- static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
- static inline bool pm_runtime_enabled(struct device *dev) { return false; }
- 
--static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
--static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
- static inline void pm_runtime_irq_safe(struct device *dev) {}
- 
--- 
-1.7.9.5
+> Otherwise, for both SPEAr and cpu0 patches:
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Thanks!  But I was instead hoping you might queue them up for merging 
+for v3.14?  That should greatly reduce the risk of merge conflicts.
+
+- Paul
