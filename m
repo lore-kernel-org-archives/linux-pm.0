@@ -1,64 +1,123 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system suspend/hibernate
-Date: Wed, 27 Nov 2013 15:26:49 +0100
-Message-ID: <1569441.L2JJETg4Jp@vostro.rjw.lan>
-References: <cover.1385118255.git.viresh.kumar@linaro.org> <9179214.Tbesu8t5px@vostro.rjw.lan> <CAKohpo=4ZdDybsm6oz0-GjCyP2c8MGvV9uZG8n+Cv2xGKcmeDQ@mail.gmail.com>
+Subject: [GIT PULL] ACPI and power management fixes for v3.13-rc2
+Date: Wed, 27 Nov 2013 15:35:22 +0100
+Message-ID: <1656039.n8p00yR1CA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=4ZdDybsm6oz0-GjCyP2c8MGvV9uZG8n+Cv2xGKcmeDQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, November 27, 2013 08:26:00 AM Viresh Kumar wrote:
-> On 27 November 2013 01:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Tuesday, November 26, 2013 08:39:02 PM Pavel Machek wrote:
-> >> So... we freeze frequencies in whatever state they are, yes?
-> 
-> Better go through the V3 of this patchset:
-> 
-> https://lkml.org/lkml/2013/11/25/838
-> 
-> We are giving drivers and opportunity to set core to whatever frequency they
-> want before suspending.
-> 
-> > Yes.  The idea was to do that after suspending devices in which case it wouldn't
-> > matter so much.  But Viresh always has to complicate things.
-> 
-> :)
-> 
-> Its complicated by the kind of designs we have for our hardware. We tried the
-> noirq callbacks and it worked atleast for Nishanth, who reported the problem
-> initially. But the problem started when drivers wanted to change their
-> frequencies before suspending and that can't happen in noirq place..
+Hi Linus,
 
-This way you end up with a fix that may introduce other issues.  Which is kind
-of fine before a merge window, but not so much after one.  So at this point it's
-better to fix things that may be fixed without introducing those other issues
-*first* and then go for a more intrusive change that will cover more cases.
+Please pull from the git repository at
 
-> I had another idea but then left it thinking that it might be even more
-> complicated :)
-> 
-> What about both dpm_suspend_noirq and dpm_suspend callbacks. Drivers
-> will change freq in dpm_suspend_noirq and dpm_suspend will stop governors?
-> 
-> But the question is can governors try another frequency at that time?
-> i.e. override whatever is configured by drivers?
-> 
-> >> Should we go to some specific frequency?
-> >
-> > If that is done where it is done, yes, we should.
-> 
-> You meant dpm_suspend() here, right?
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.13-rc2
 
-Yes.
+to receive ACPI and power management fixes for v3.13-rc2 with
+top-most commit b90f7b8af985739facce48d64050a023e7df3858
+
+  Merge branch 'pm-tools'
+
+on top of commit 6ce4eac1f600b34f2f7f58f9cd8f0503d79e42ae
+
+  Linux Linux 3.13-rc1
+
+These commits fix one cpufreq bug introduced recently and a few bugs all over
+(ACPI mostly) that have been around for quite some time.  They also clean up
+a couple of things.
+
+If you don't like the octopus merge, please let me know. :-)
+
+Specifics:
+
+ - Fix for a recent regression in the Tegra cpufreq driver causing
+   excess error messages to be printed from Stephen Warren.
+
+ - ACPI-based device hotplug fix to prevent conflicting notify handlers
+   from being installed for PCI host bridge objects.  From Toshi Kani.
+
+ - ACPICA update to upstream version 20131115.  This contains bug fixes
+   mostly (loop termination fix for the get AML length function, fixes
+   related to namespace node removal and debug output).  From Bob Moore,
+   Tomasz Nowicki and Lv Zheng.
+
+ - Removal of incorrect inclusions of internal ACPICA header files by
+   non-ACPICA code from Lv Zheng.
+
+ - Fixes for the ACPI sysfs interface exposing tables to user space
+   from Daisuke Hatayama and Jeremy Compostella.
+
+ - Assorted ACPI and cpufreq cleanups from Sachin Kamat and Al Stone.
+
+ - cpupower tool fix and man page from Thomas Renninger.
 
 Thanks!
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
+---------------
+
+Al Stone (1):
+      ACPI / sleep: clean up compiler warning about uninitialized field
+
+Bob Moore (3):
+      ACPICA: Debug output: Do not emit function nesting level for kernel build.
+      ACPICA: Add support to delete all objects attached to the root namespace node.
+      ACPICA: Update version to 20131115.
+
+Daisuke HATAYAMA (1):
+      ACPI / sysfs: Set file size for each exposed ACPI table
+
+Jeremy Compostella (1):
+      ACPI / sysfs: Fix incorrect ACPI tables walk in acpi_tables_sysfs_init()
+
+Lv Zheng (3):
+      ACPICA: Tests: Add CHECKSUM_ABORT protection for test utilities.
+      ACPICA: Resources: Fix loop termination for the get AML length function.
+      ACPI: Clean up incorrect inclusions of ACPICA headers
+
+Sachin Kamat (1):
+      cpufreq: exynos: Remove unwanted EXPORT_SYMBOL
+
+Stephen Warren (1):
+      cpufreq: tegra: don't error target() when suspended
+
+Thomas Renninger (2):
+      tools: cpupower: Add cpupower-idle-set(1) manpage
+      tools: cpupower: fix wrong err msg not supported vs not available
+
+Tomasz Nowicki (1):
+      ACPICA: Delete all attached data objects during namespace node deletion.
+
+Toshi Kani (1):
+      ACPI / hotplug: Fix conflicted PCI bridge notify handlers
+
+---------------
+
+ drivers/acpi/acpica/acresrc.h                 |    6 +--
+ drivers/acpi/acpica/nsalloc.c                 |   18 +++++--
+ drivers/acpi/acpica/nsutils.c                 |   18 ++++---
+ drivers/acpi/acpica/rscalc.c                  |    9 +++-
+ drivers/acpi/acpica/rscreate.c                |   36 ++++++-------
+ drivers/acpi/acpica/rsutils.c                 |    2 +-
+ drivers/acpi/acpica/utdebug.c                 |   31 ++++++++---
+ drivers/acpi/nvs.c                            |    1 -
+ drivers/acpi/pci_root.c                       |    3 ++
+ drivers/acpi/scan.c                           |    2 +-
+ drivers/acpi/sleep.c                          |    2 +-
+ drivers/acpi/sysfs.c                          |   54 ++++++++++---------
+ drivers/cpufreq/exynos4210-cpufreq.c          |    1 -
+ drivers/cpufreq/exynos4x12-cpufreq.c          |    1 -
+ drivers/cpufreq/exynos5250-cpufreq.c          |    1 -
+ drivers/cpufreq/tegra-cpufreq.c               |    4 +-
+ drivers/hwmon/asus_atk0110.c                  |    1 -
+ include/acpi/acconfig.h                       |    2 +
+ include/acpi/acpi_bus.h                       |    1 +
+ include/acpi/acpixf.h                         |    2 +-
+ tools/power/cpupower/man/cpupower-idle-info.1 |    3 +-
+ tools/power/cpupower/man/cpupower-idle-set.1  |   71 +++++++++++++++++++++++++
+ tools/power/cpupower/utils/helpers/sysfs.c    |    4 +-
+ 23 files changed, 189 insertions(+), 84 deletions(-)
