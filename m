@@ -1,44 +1,102 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/3] Hook up powerclamp with PM QOS and cpuidle
-Date: Wed, 27 Nov 2013 12:56:34 +0100
-Message-ID: <20131127115634.GA10022@twins.programming.kicks-ass.net>
-References: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
+Date: Wed, 27 Nov 2013 15:12:40 +0100
+Message-ID: <18994672.4q6Ofp2t01@vostro.rjw.lan>
+References: <2026361.IiCVpVNYkW@vostro.rjw.lan> <3028580.oiUVTDjyao@vostro.rjw.lan> <CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:48329 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753498Ab3K0L4l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 06:56:41 -0500
-Content-Disposition: inline
-In-Reply-To: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Tue, Nov 26, 2013 at 03:20:08PM -0800, Jacob Pan wrote:
-> This patchset is intended to address the behavior change and efficiency
-> loss introduced by using consolidated idle routine in powerclamp driver.
+On Wednesday, November 27, 2013 10:59:57 AM Ulf Hansson wrote:
+> >>
+> >> There are already a generic callbacks that does this. Normally the
+> >> generic callbacks is used from buses and power domains.
+> >>
+> >> My new callbacks are intended to be used from the driver, so those are
+> >> kind of different from the others in that sense.
+> >
+> > Hmm.  I see.
+> >
+> > For that to work, the subsystem's .suspend() and .resume() callbacks will
+> > have to be implemented in a special way, because of the unknown runtime PM
+> > status of devices while those callbacks are being executed.
 > 
-> Specifically,
-> [PATCH 3/8] idle, thermal, acpi: Remove home grown idle implementations
+> Not sure I understand why you think the runtime PM status is unknown?
 > 
-> The motivation is that after using common idle routine, powerclamp driver
-> can no longer pick the deepest idle state needed to conserve power.
-> Idle state is selected by governors which can be influenced by PM QOS and
-> other factors. This patchset hooks up powerclamp idle injection with PM
-> QOS and eventually influce idle governors to pick the power saving target
-> states.
+> In .suspend the runtime status can still be changed. Since the PM core
+> disables runtime PM before invoking .suspend_late and since the PM
+> core will keep runtime PM disabled until after the .resume_early has
+> been invoked, it will be safe to operate on the runtime PM callbacks
+> during this period - if the driver/bus are adopted for it. While the
+> .resume callback gets invoked, the runtime status are restored to it's
+> previous state, which the bus/driver would expect.
 > 
-> There are some downside of this approach. Due to overhead, communication
-> with PM QOS is at enable/disable idle injection time instead of each
-> injection period. The implication is that if the system natual idle is
-> more than target injected idle, powerclamp will skip some injection period.
-> During this period however, deepest idle state may still be chosen
-> necessarily regardless the latency constraint.
+> Do you want me to send a patch for a driver that uses these callbacks?
+> I suppose it would clarify how I am thinking...
+> 
+> > Presumably you think about subsystems that don't implement those callbacks
+> > at all?
+> 
+> If you mean that "drivers" is not a part of the term "subsystem" here,
+> then I somewhat agree.
+> 
+> My view is that it will be mostly drivers that make use of these callbacks.
+> 
+> Though, I don't think we need to prevent subsystems or power domains
+> from using them, they will only have to know what the consequences
+> are. :-)
+> 
+> Maybe there could even be some cases were it actually makes good sense
+> of using them for subsystems, even if I yet not have come a cross such
+> a case.
 
-Does the QoS stuff have a means of notifying its users of constraints
-violation? I suspect some applications might light to be told if their
-requests aren't honoured.
+We first need to clarify the terminology as that seems to be the source of
+the confusion to some extent at least.
 
+When I (or Alan presumably too) say "a subsystem", I mean a bus type, a device
+type or a device class as represented by struct bus_type, struct device_type
+and struct class, respectively.  So "a subsystem callback" means the specific
+callback defined in the given bus type, device type or device class object.
+You can think about that as of "subsystem level" if that's easier.  So that's
+what we mean when we talk about subsystems, not the whole collection of drivers
+and the code above them.
+
+Now, say you have a bus type.  Usually, the bus type's PM callbacks will run
+device drivers' PM callbacks.  Quite often they will do things to hardware
+in addition to what the drivers do.  But if your driver's .suspend_late()
+depends on the runtime PM status of the device, then the bus type's .suspend()
+needs to preserve that status.  That is, it cannot do anything to the hardware
+that may cause the runtime PM status of the device to become stale.  That makes
+the .suspend() somewhat special, doesn't it?
+
+Now I *guess* that your goal is something like "if that device has been
+runtime suspended, don't touch it", which is a reasonable goal to have.  I'd
+like to implement something like that too, but I think that it needs to be done
+differently.
+
+Actually, my idea is to allow the subsystem-level .prepare() callback to let
+the core know if the device needs to be handled during the given suspend/resume
+cycle.  It may be arranged, for example, so that if the subsystem-level (e.g.
+bus type) .prepare() returns a positive number, the core will put the device
+into a special list and it won't take it into consideration at all during the
+whole cycle.
+
+Why this way?  Because subsystems have much better ways to determine whether
+or not it is necessary to access the device during the upcoming system
+suspend/resume cycle than the core does.
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
