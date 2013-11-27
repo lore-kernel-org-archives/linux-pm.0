@@ -1,52 +1,91 @@
-From: Paul Walmsley <pwalmsley@nvidia.com>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: clk_round_rate() can return a
- zero upon error
-Date: Tue, 26 Nov 2013 15:50:05 -0800
-Message-ID: <529533AD.2050406@nvidia.com>
-References: <alpine.DEB.2.02.1311251559460.23090@tamien> <52942B87.1040203@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
+Date: Wed, 27 Nov 2013 01:37:01 +0100
+Message-ID: <4869546.m4vL9vQAZm@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1311261556480.1359-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52942B87.1040203@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: viresh kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:49369 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753811Ab3K0AYN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 19:24:13 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1311261556480.1359-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-On 11/25/2013 09:03 PM, viresh kumar wrote:
-> On Tuesday 26 November 2013 07:31 AM, Paul Walmsley wrote:
->> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
->> index d4585ce2346c..0faf756f6197 100644
->> --- a/drivers/cpufreq/cpufreq-cpu0.c
->> +++ b/drivers/cpufreq/cpufreq-cpu0.c
->> @@ -44,7 +44,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
->> unsigned int index)
->>       int ret;
->>
->>       freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
->> -    if (freq_Hz < 0)
->> +    if (freq_Hz <= 0)
->>           freq_Hz = freq_table[index].frequency * 1000;
->>
->>       freq_exact = freq_Hz;
-> So, we will see another patch where you will do: s/<=/== ??
+On Tuesday, November 26, 2013 04:09:44 PM Alan Stern wrote:
+> On Tue, 26 Nov 2013, Rafael J. Wysocki wrote:
+> 
+> > On Tuesday, November 26, 2013 10:48:56 AM Ulf Hansson wrote:
+> > > On 26 November 2013 00:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > > On Monday, November 25, 2013 01:40:21 PM Ulf Hansson wrote:
+> > > >> To put devices into low power state during sleep, it sometimes makes
+> > > >> sense at subsystem-level to re-use device's runtime PM callbacks.
+> 
+> Ulf, please be more careful about the distinction between "device" and 
+> "driver".  Devices don't have callbacks; drivers do.  You made this 
+> mistake a few times in the patch description.
+> 
+> > > >> The PM core will at device_suspend_late disable runtime PM, after that
+> > > >> we can safely operate on these callbacks. At suspend_late the device
+> > > >> will be put into low power state by invoking the device's
+> > > >> runtime_suspend callback, unless the runtime status is already
+> > > >> suspended. At resume_early the state is restored by invoking the
+> > > >> device's runtime_resume callback. Soon after the PM core will re-enable
+> > > >> runtime PM before returning from device_resume_early.
+> > > >>
+> > > >> The new pm_generic functions are named pm_generic_suspend_late_runtime
+> > > >> and pm_generic_resume_early_runtime, they are supposed to be used in
+> > > >> pairs.
+> > > >
+> > > > What happens if the subsystem uses the new functions as its late suspend/
+> > > > early resume callbacks, but some of its drivers implement .suspend_late()
+> > > > and .resume_early()?
+> 
+> The same thing that happens whenever any PM-related callback is defined
+> by both the subsystem and the driver: The PM core uses the subsystem's
+> callback.  (Or the pm_domain's callback, or the type's callback, or the 
+> class's callback.)
 
-Probably so for this driver - along with converting the type of freq_Hz 
-to be u64 or unsigned long.  Not sure yet about all of the other 
-drivers, since many of them are unlikely to see rates above (2^31)-1 Hz.
+Precisely.  But my question was more about how we are going to indicate it
+to the driver writers (who may not be familiar with that subsystem to start
+with and may have experience with some other subsystems that don't use
+these new functions) that they are not supposed to populate .suspend_late
+and .resume_early.
 
-> I am wondering if there is any other way we can get this solved, i.e. in a
-> single patchset.
+> Besides, Ulf specifically assumed at the top of this message that
+> re-using the runtime-suspend callback makes sense at the subsystem
+> level.  This must mean it is appropriate for all drivers in the
+> subsystem.  So why would a driver want to override the subsystem's 
+> behavior?
 
-I'm trying to avoid sending up a large series that touches drivers all 
-over the tree :-(
+By mistake?
 
-> Otherwise, for both SPEAr and cpu0 patches:
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Good point. Normally, I think the decision of using these callbacks
+> > > should be taken at the lowest level, in other words in the driver.
+> > > Otherwise the lowest layer of .suspend_late will be by-passed.
+> > 
+> > I'm not sure what's the point to add them, then.  If the driver has to decide
+> > anyway, it may simply populate its .suspend_late and .resume_early pointers
+> > I think.
+> 
+> Another possibility is to have the pm_generic_suspend_late_runtime
+> routine check to see if the driver has defined a suspend_late callback.  
+> If the driver has its own callback, we could invoke it instead of
+> invoking the runtime_suspend callback.
+> 
+> However, I'm not sure that doing this would be worthwhile.  And it
+> would hang in an infinite loop if the driver set its suspend_late
+> pointer to pm_generic_suspend_late_runtime!
 
-Thanks!  But I was instead hoping you might queue them up for merging 
-for v3.14?  That should greatly reduce the risk of merge conflicts.
+Well, that's supposed to be a subsystem-level callback.
 
-- Paul
+Anyway, my personal opinion is that we seem to be adding confusion instead of
+reducing it here ...
+
+Rafael
+
