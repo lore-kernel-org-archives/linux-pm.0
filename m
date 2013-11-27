@@ -1,123 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [GIT PULL] ACPI and power management fixes for v3.13-rc2
-Date: Wed, 27 Nov 2013 15:35:22 +0100
-Message-ID: <1656039.n8p00yR1CA@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/5] PM: Enable option of re-use runtime PM callbacks at system suspend
+Date: Wed, 27 Nov 2013 16:34:55 +0100
+Message-ID: <1385566500-7666-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f179.google.com ([209.85.217.179]:53544 "EHLO
+	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871Ab3K0PfP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 10:35:15 -0500
+Received: by mail-lb0-f179.google.com with SMTP id l4so5464090lbv.38
+        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2013 07:35:14 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-Hi Linus,
+To put devices into low power state during system suspend, it may be convenient
+for runtime PM supported subsystems, power domains and drivers to have the
+option of re-using the runtime PM callbacks.
 
-Please pull from the git repository at
+At the moment, quite complex solutions exist for power domains that tries to
+handle the above, like for OMAP2. The idea here, is to make it possible for
+drivers, who should know best, how to easiest put their devices into low power
+state. The intent is thus not only to simplify drivers but also power domains.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.13-rc2
+Additionally, some drivers seems to have messed up things when combining
+runtime PM with system PM. While we enable the option of re-using the runtime
+PM callbacks during system PM, we also intend to clarify the way forward for
+how these scenarios could be resolved.
 
-to receive ACPI and power management fixes for v3.13-rc2 with
-top-most commit b90f7b8af985739facce48d64050a023e7df3858
+Some new helper macros for defining PM callbacks and two new pm_generic*
+functions has been implemented in this patch set. These are provided to make it
+easier for those who wants to enable the option of re-using the runtime PM
+callbacks during system suspend.
 
-  Merge branch 'pm-tools'
+A minor fix was needed for the platform bus, which runtime PM callbacks are set
+to the pm_genric_runtime_suspend|resume functions. These were implemented only
+for CONFIG_PM_RUNTIME and thus the platform bus prevented driver's runtime PM
+callbacks to be invoked when only CONFIG_PM_SLEEP was used. We move them into
+CONFIG_PM to resolve the problem and then let drivers decide how to handle this
+themselves.
 
-on top of commit 6ce4eac1f600b34f2f7f58f9cd8f0503d79e42ae
+Patch 5 is folded into this patch set, to visualize how a driver that uses both
+runtime PM and system PM, can benefit from re-using the runtime PM callbacks
+during system suspend.
 
-  Linux Linux 3.13-rc1
+Also note that, patch 1 to 4 has been submitted to linux-pm as standalone
+patches recently. I thought it make sense to collect them into a patchset
+since those are closely related.
 
-These commits fix one cpufreq bug introduced recently and a few bugs all over
-(ACPI mostly) that have been around for quite some time.  They also clean up
-a couple of things.
+Ulf Hansson (5):
+  PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
+  PM / Runtime: Implement the pm_generic_runtime functions for
+    CONFIG_PM
+  PM / Runtime: Add second macro for definition of runtime PM callbacks
+  PM / Sleep: Add macro to define common late/early system PM callbacks
+  drm/exynos: Convert to suspend_late/resume_early callbacks for fimc
 
-If you don't like the octopus merge, please let me know. :-)
+ drivers/base/power/generic_ops.c         |   90 +++++++++++++++++++++++++++++-
+ drivers/gpu/drm/exynos/exynos_drm_fimc.c |   33 ++---------
+ include/linux/pm.h                       |   23 ++++++++
+ include/linux/pm_runtime.h               |   12 ++--
+ 4 files changed, 123 insertions(+), 35 deletions(-)
 
-Specifics:
+-- 
+1.7.9.5
 
- - Fix for a recent regression in the Tegra cpufreq driver causing
-   excess error messages to be printed from Stephen Warren.
-
- - ACPI-based device hotplug fix to prevent conflicting notify handlers
-   from being installed for PCI host bridge objects.  From Toshi Kani.
-
- - ACPICA update to upstream version 20131115.  This contains bug fixes
-   mostly (loop termination fix for the get AML length function, fixes
-   related to namespace node removal and debug output).  From Bob Moore,
-   Tomasz Nowicki and Lv Zheng.
-
- - Removal of incorrect inclusions of internal ACPICA header files by
-   non-ACPICA code from Lv Zheng.
-
- - Fixes for the ACPI sysfs interface exposing tables to user space
-   from Daisuke Hatayama and Jeremy Compostella.
-
- - Assorted ACPI and cpufreq cleanups from Sachin Kamat and Al Stone.
-
- - cpupower tool fix and man page from Thomas Renninger.
-
-Thanks!
-
-
----------------
-
-Al Stone (1):
-      ACPI / sleep: clean up compiler warning about uninitialized field
-
-Bob Moore (3):
-      ACPICA: Debug output: Do not emit function nesting level for kernel build.
-      ACPICA: Add support to delete all objects attached to the root namespace node.
-      ACPICA: Update version to 20131115.
-
-Daisuke HATAYAMA (1):
-      ACPI / sysfs: Set file size for each exposed ACPI table
-
-Jeremy Compostella (1):
-      ACPI / sysfs: Fix incorrect ACPI tables walk in acpi_tables_sysfs_init()
-
-Lv Zheng (3):
-      ACPICA: Tests: Add CHECKSUM_ABORT protection for test utilities.
-      ACPICA: Resources: Fix loop termination for the get AML length function.
-      ACPI: Clean up incorrect inclusions of ACPICA headers
-
-Sachin Kamat (1):
-      cpufreq: exynos: Remove unwanted EXPORT_SYMBOL
-
-Stephen Warren (1):
-      cpufreq: tegra: don't error target() when suspended
-
-Thomas Renninger (2):
-      tools: cpupower: Add cpupower-idle-set(1) manpage
-      tools: cpupower: fix wrong err msg not supported vs not available
-
-Tomasz Nowicki (1):
-      ACPICA: Delete all attached data objects during namespace node deletion.
-
-Toshi Kani (1):
-      ACPI / hotplug: Fix conflicted PCI bridge notify handlers
-
----------------
-
- drivers/acpi/acpica/acresrc.h                 |    6 +--
- drivers/acpi/acpica/nsalloc.c                 |   18 +++++--
- drivers/acpi/acpica/nsutils.c                 |   18 ++++---
- drivers/acpi/acpica/rscalc.c                  |    9 +++-
- drivers/acpi/acpica/rscreate.c                |   36 ++++++-------
- drivers/acpi/acpica/rsutils.c                 |    2 +-
- drivers/acpi/acpica/utdebug.c                 |   31 ++++++++---
- drivers/acpi/nvs.c                            |    1 -
- drivers/acpi/pci_root.c                       |    3 ++
- drivers/acpi/scan.c                           |    2 +-
- drivers/acpi/sleep.c                          |    2 +-
- drivers/acpi/sysfs.c                          |   54 ++++++++++---------
- drivers/cpufreq/exynos4210-cpufreq.c          |    1 -
- drivers/cpufreq/exynos4x12-cpufreq.c          |    1 -
- drivers/cpufreq/exynos5250-cpufreq.c          |    1 -
- drivers/cpufreq/tegra-cpufreq.c               |    4 +-
- drivers/hwmon/asus_atk0110.c                  |    1 -
- include/acpi/acconfig.h                       |    2 +
- include/acpi/acpi_bus.h                       |    1 +
- include/acpi/acpixf.h                         |    2 +-
- tools/power/cpupower/man/cpupower-idle-info.1 |    3 +-
- tools/power/cpupower/man/cpupower-idle-set.1  |   71 +++++++++++++++++++++++++
- tools/power/cpupower/utils/helpers/sysfs.c    |    4 +-
- 23 files changed, 189 insertions(+), 84 deletions(-)
