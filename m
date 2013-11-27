@@ -1,71 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 1/6] cpufreq: suspend governors on system suspend/hibernate
-Date: Wed, 27 Nov 2013 02:42:27 +0100
-Message-ID: <4787675.sJF8mqYyxv@vostro.rjw.lan>
-References: <cover.1385374819.git.viresh.kumar@linaro.org> <CAKohpok0E=m=63KXM22usiW7Rsu59cD7Q=+k3tRcW=8269tZnQ@mail.gmail.com> <4253729.doK7ubnxKx@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system suspend/hibernate
+Date: Wed, 27 Nov 2013 08:26:00 +0530
+Message-ID: <CAKohpo=4ZdDybsm6oz0-GjCyP2c8MGvV9uZG8n+Cv2xGKcmeDQ@mail.gmail.com>
+References: <cover.1385118255.git.viresh.kumar@linaro.org>
+	<e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
+	<20131126193902.GA2481@amd.pavel.ucw.cz>
+	<9179214.Tbesu8t5px@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4253729.doK7ubnxKx@vostro.rjw.lan>
+In-Reply-To: <9179214.Tbesu8t5px@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, November 26, 2013 09:23:15 PM Rafael J. Wysocki wrote:
-> On Tuesday, November 26, 2013 07:56:19 AM Viresh Kumar wrote:
-> > On 26 November 2013 04:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >> @@ -1259,6 +1262,8 @@ int dpm_suspend(pm_message_t state)
-> > >>
-> > >>       might_sleep();
-> > >>
-> > >> +     cpufreq_suspend();
-> > >> +
-> > >>
-> > >>       mutex_lock(&dpm_list_mtx);
-> > >>       pm_transition = state;
-> > >>       async_error = 0;
-> > >
-> > > Shouldn't it do cpufreq_resume() on errors?
-> > 
-> > Yes and this is already done I believe. In case dpm_suspend() fails,
-> > dpm_resume() gets called. Isn't it?
-> 
-> OK
-> 
-> > >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > >> +void cpufreq_suspend(void)
-> > >> +{
-> > >> +     struct cpufreq_policy *policy;
-> > >> +
-> > >> +     if (!has_target())
-> > >> +             return;
-> > >> +
-> > >> +     pr_debug("%s: Suspending Governors\n", __func__);
-> > >> +
-> > >> +     list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> > >> +             if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
-> > >> +                     pr_err("%s: Failed to stop governor for policy: %p\n",
-> > >> +                                     __func__, policy);
-> > >
-> > > This appears to be racy.  Is it really racy, or just seemingly?
-> > 
-> > Why does it look racy to you? Userspace should be frozen by now,
-> > policy_list should be stable as well as nobody would touch it.
-> 
-> You're stopping governors while they may be in use in principle.  Do we have
-> suitable synchronization in place for that?
+On 27 November 2013 01:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, November 26, 2013 08:39:02 PM Pavel Machek wrote:
+>> So... we freeze frequencies in whatever state they are, yes?
 
-Anyway, if you did what I asked you to do and put the cpufreq suspend/resume
-into dpm_suspend/resume_noirq(), I'd probably take this for 3.13.  However,
-since you've decided to put those things somewhere else thus making the
-change much more intrusive, I can only queue it up for 3.14.
+Better go through the V3 of this patchset:
 
-This means I'm going to take the Tianyu's patch as a stop gap for 3.13.
+https://lkml.org/lkml/2013/11/25/838
 
-Thanks!
+We are giving drivers and opportunity to set core to whatever frequency they
+want before suspending.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> Yes.  The idea was to do that after suspending devices in which case it wouldn't
+> matter so much.  But Viresh always has to complicate things.
+
+:)
+
+Its complicated by the kind of designs we have for our hardware. We tried the
+noirq callbacks and it worked atleast for Nishanth, who reported the problem
+initially. But the problem started when drivers wanted to change their
+frequencies before suspending and that can't happen in noirq place..
+
+I had another idea but then left it thinking that it might be even more
+complicated :)
+
+What about both dpm_suspend_noirq and dpm_suspend callbacks. Drivers
+will change freq in dpm_suspend_noirq and dpm_suspend will stop governors?
+
+But the question is can governors try another frequency at that time?
+i.e. override whatever is configured by drivers?
+
+>> Should we go to some specific frequency?
+>
+> If that is done where it is done, yes, we should.
+
+You meant dpm_suspend() here, right?
