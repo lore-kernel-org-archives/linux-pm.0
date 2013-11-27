@@ -1,185 +1,152 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4] cpufreq: suspend governors on system suspend/hibernate
-Date: Wed, 27 Nov 2013 09:09:42 +0530
-Message-ID: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org>
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM enabled
+ for unbound PCI devices
+Date: Wed, 27 Nov 2013 13:32:51 +0800
+Message-ID: <52958403.4040201@linux.vnet.ibm.com>
+References: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org> <1384419260.30364.27.camel@yhuang-dev> <52943479.9050004@linux.vnet.ibm.com> <2309058.t3ZWy0Bt5x@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:58057 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804Ab3K0Djz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 22:39:55 -0500
-Received: by mail-pd0-f177.google.com with SMTP id q10so9028498pdj.36
-        for <linux-pm@vger.kernel.org>; Tue, 26 Nov 2013 19:39:54 -0800 (PST)
+Received: from e28smtp07.in.ibm.com ([122.248.162.7]:56912 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752186Ab3K0FdA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 00:33:00 -0500
+Received: from /spool/local
+	by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <qiudayu@linux.vnet.ibm.com>;
+	Wed, 27 Nov 2013 11:02:58 +0530
+In-Reply-To: <2309058.t3ZWy0Bt5x@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Huang Ying <ying.huang@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-pm@vger.kernel.org
 
-This patch adds cpufreq callbacks to dpm_{suspend|resume}_noirq() for handling
-suspend/resume of cpufreq governors.
+On 11/27/2013 04:32 AM, Rafael J. Wysocki wrote:
+> On Tuesday, November 26, 2013 01:41:13 PM Mike Qiu wrote:
+>> On 11/14/2013 04:54 PM, Huang Ying wrote:
+>>> On Thu, 2013-11-14 at 16:37 +0800, mike wrote:
+>>>> On 11/14/2013 04:25 PM, Huang Ying wrote:
+>>>>> On Thu, 2013-11-14 at 16:12 +0800, mike wrote:
+>>>>>> On 11/14/2013 03:53 PM, Huang Ying wrote:
+>>>>>>> On Thu, 2013-11-14 at 15:19 +0800, mike wrote:
+>>>>>>>> On 11/14/2013 01:59 PM, Huang Ying wrote:
+>>>>>>>>> On Thu, 2013-11-14 at 11:23 +0800, mike wrote:
+>>>>>>>>>> On 11/14/2013 03:20 AM, Alan Stern wrote:
+>>>>>>>>>>> On Wed, 13 Nov 2013, Bjorn Helgaas wrote:
+>>>>>>>>>>>
+>>>>>>>>>>>> [+cc Rafael, linux-pm]
+>>>>>>>>>>>>
+>>>>>>>>>>>> On Wed, Nov 13, 2013 at 6:09 AM, mike<qiudayu@linux.vnet.ibm.com>  wrote:
+>>>>>>>>>>>>> Hi Huang Ying,
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> I see you are the author of this patch, commit id is:
+>>>>>>>>>>>>> 967577b062417b4e4b8e27b711220f4124f5153a
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> I have a question while I try to understand this patch,
+>>>>>>>>>>>>> So I would very grateful if you or others can give me some reply.....
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> ............
+>>>>>>>>>>>>> -       rc = ddi->drv->probe(ddi->dev, ddi->id);
+>>>>>>>>>>>>> +       pm_runtime_get_sync(dev);
+>>>>>>>>>>>>> +       pci_dev->driver = pci_drv;
+>>>>>>>>>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>>>>>>>>>>> I see here you make the driver to initialize before probe,
+>>>>>>>>>>>>> But I have no idea of why you do this change.....
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> and I look inside the code, it may be pm_runtime relate??
+>>>>>>>>>>> Yes, it is related to runtime PM.  In the PCI subsystem, runtime PM
+>>>>>>>>>>> doesn't do anything unless pci_dev->driver is set.  You can see this at
+>>>>>>>>>>> the start of pci_pm_runtime_suspend().
+>>>>>>>>>>>
+>>>>>>>>>>> Since we want the driver's probe routine to be able to carry out
+>>>>>>>>>>> runtime PM operations, we have to set pci_dev->driver before the probe
+>>>>>>>>>>> routine runs.
+>>>>>>>>>> Is there any situations , like in  probe state,  pci_dev->driver
+>>>>>>>>>> has been set. the  pci_pm_runtime_xxx() has passed
+>>>>>>>>>> pci_dev->driver NULL check, but at this point, probe fail
+>>>>>>>>>> occurs, and  pci_dev->driver to be set to NULL.
+>>>>>>>>>>
+>>>>>>>>>> What will happen ? Or this situation will never happen?
+>>>>>>>>>> I'm confuse about this.
+>>>>>>>>> I think that will never happen.  Before ->probe(), pm_runtime_get_sync()
+>>>>>>>>> is called, so pci_pm_runtime_xxx() will not be called until
+>>>>>>>>> pm_runtime_put_noidle() is called in ->probe().  And
+>>>>>>>>>       should be done as one of the latest actions in
+>>>>>>>>> ->probe(), after the normal probe actions succeeded.
+>>>>>>>> OK, just as your description, it seems OK.
+>>>>>>>> But this is really a issue as I explained in last email.
+>>>>>>>>
+>>>>>>>> So I want to know if there are any side-effect of changing the code
+>>>>>>>> in pci_pm_runtime_xxx()
+>>>>>>>>
+>>>>>>>>       if (!pci_dev->driver)
+>>>>>>>>              return 0;
+>>>>>>>>       to
+>>>>>>>>
+>>>>>>>>       if (!dev->driver)
+>>>>>>>>              return 0;
+>>>>>>>>
+>>>>>>> If you make this change, we can not put devices into low power state
+>>>>>>> (runtime suspend the device) in ->probe().  That is expected in some
+>>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>>>> This means dev->driver is NULL ?? but pci_dev->driver is set???
+>>>>>>
+>>>>>> Because if use pci_dev->driver can put into low power state, means
+>>>>>>
+>>>>>> pci_dev->driver is set, but in the situation, use dev->driver will can't,
+>>>>>>
+>>>>>> means dev->driver = null, but I have not find any case that
+>>>>>>
+>>>>>> dev->driver = null, but pci_dev->driver != null;
+>>>>> Sorry I make a mistake here.  The dev->driver != null in
+>>>>> local_pci_probe().  We use pci_dev->driver instead of dev->driver in
+>>>>> pci_pm_runtime_xxx() because we want device to be kept in normal power
+>>>>> state (D0) and SUSPENDED state when unbound.The
+>>>>> pm_runtime_put/get_sync in pci_device_remove/local_pci_probe will not
+>>>>> change the power state of the device because of the check in
+>>>>> pci_pm_runtime_xxx().
+>>>> Yes, you are right, but what am I confuse is that, why check dev->driver
+>>>> in pci_pm_runtime_xxx() can't keep the device in normal power
+>>>> state (D0) and SUSPENDED state when unbound.
+>>>>
+>>>> May be logic issue ?
+>>> Because dev->driver is set before local_pci_probe() and cleared after
+>>> pci_device_remove().  But we need a flag to be changed in
+>>> local_pci_probe() and pci_device_remove().
+>> Hi Ying,
+>>
+>> I'm now face one bug, and the root cause is this logic has some problem.
+>>
+>> The other component calls the ops in driver during probe state, which a
+>> lot of critical data struct haven't been setup yet.
+>>
+>> This never happen in old logic, because dev->driver is unset in probe
+>> state, it can check dev->driver to see if the device diver can work. But
+>> for new logic it is really a big issue.
+> What is the other component and why is it doing that?
 
-There are multiple problems that are fixed by this patch:
-- Nishanth Menon (TI) found an interesting problem on his platform, OMAP. His board
-  wasn't working well with suspend/resume as calls for removing non-boot CPUs
-  was turning out into a call to drivers ->target() which then tries to play
-  with regulators. But regulators and their I2C bus were already suspended and
-  this resulted in a failure. Many platforms have such problems, samsung, tegra,
-  etc.. They solved it with driver specific PM notifiers where they used to
-  disable their driver's ->target() routine.
-- Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found another issue where
-  tunables configuration for clusters/sockets with non-boot CPUs was getting
-  lost after suspend/resume, as we were notifying governors with
-  CPUFREQ_GOV_POLICY_EXIT on removal of the last cpu for that policy and so
-  deallocating memory for tunables. This is also fixed with this patch as we
-  don't allow any operation on Governors during suspend/resume now.
+Some component like EEH in Power arch, it need to check whether the 
+driver is work or not.
 
-Reported-and-tested-by: Lan Tianyu <tianyu.lan@intel.com>
-Reported-and-tested-by: Nishanth Menon <nm@ti.com>
-Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
+In old logic, if probed then dev->driver set, otherwise it will be NULL, 
+it is safe to do so.
 
-This is almost same as 1/6 of V3 version of this patchset:
+But in new, it has problem, it can call the driver API, which is very 
+dangerous in probe state, maybe a lot key data structure haven't been 
+setup yet, this lead to the kernel down and machine reboot. Also this 
+can be fixed in driver, like check the driver data it self, this 
+solution needs all the driver fix this issue, It may be a huge program.
 
-https://lkml.org/lkml/2013/11/25/838
+So we need a new flag I think, or which old flag can we use to solve 
+this issue ?
 
-This is done to get some initial fixes for 3.13. These are already tested by
-both the reporters of initial problems. Tegra/exynos/s5p will keep running their
-PM notifiers until v3.14, as they are currently able to work with them..
+Thanks
+Mike
+>
+> Checking dev->driver may not be a correct way to address this issue anyway.
 
- drivers/base/power/main.c |  3 +++
- drivers/cpufreq/cpufreq.c | 50 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |  8 ++++++++
- 3 files changed, 61 insertions(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 1b41fca..e3219df 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -29,6 +29,7 @@
- #include <linux/async.h>
- #include <linux/suspend.h>
- #include <trace/events/power.h>
-+#include <linux/cpufreq.h>
- #include <linux/cpuidle.h>
- #include <linux/timer.h>
- 
-@@ -540,6 +541,7 @@ static void dpm_resume_noirq(pm_message_t state)
- 	dpm_show_time(starttime, state, "noirq");
- 	resume_device_irqs();
- 	cpuidle_resume();
-+	cpufreq_resume();
- }
- 
- /**
-@@ -955,6 +957,7 @@ static int dpm_suspend_noirq(pm_message_t state)
- 	ktime_t starttime = ktime_get();
- 	int error = 0;
- 
-+	cpufreq_suspend();
- 	cpuidle_pause();
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02d534d..b6c7821 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -26,6 +26,7 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/suspend.h>
- #include <linux/syscore_ops.h>
- #include <linux/tick.h>
- #include <trace/events/power.h>
-@@ -47,6 +48,9 @@ static LIST_HEAD(cpufreq_policy_list);
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
- 
-+/* Flag to suspend/resume CPUFreq governors */
-+static bool cpufreq_suspended;
-+
- static inline bool has_target(void)
- {
- 	return cpufreq_driver->target_index || cpufreq_driver->target;
-@@ -1462,6 +1466,48 @@ static struct subsys_interface cpufreq_interface = {
- 	.remove_dev	= cpufreq_remove_dev,
- };
- 
-+/*
-+ * Callbacks for suspending/resuming governors as some platforms can't change
-+ * frequency after this point in suspend cycle. Because some of the devices
-+ * (like: i2c, regulators, etc) they use for changing frequency are suspended
-+ * quickly after this point.
-+ */
-+void cpufreq_suspend(void)
-+{
-+	struct cpufreq_policy *policy;
-+
-+	if (!has_target())
-+		return;
-+
-+	pr_debug("%s: Suspending Governors\n", __func__);
-+
-+	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-+		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
-+			pr_err("%s: Failed to stop governor for policy: %p\n",
-+					__func__, policy);
-+
-+	cpufreq_suspended = true;
-+}
-+
-+void cpufreq_resume(void)
-+{
-+	struct cpufreq_policy *policy;
-+
-+	if (!has_target())
-+		return;
-+
-+	pr_debug("%s: Resuming Governors\n", __func__);
-+
-+	cpufreq_suspended = false;
-+
-+	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-+		if (__cpufreq_governor(policy, CPUFREQ_GOV_START) ||
-+				__cpufreq_governor(policy,
-+					CPUFREQ_GOV_LIMITS))
-+			pr_err("%s: Failed to start governor for policy: %p\n",
-+					__func__, policy);
-+}
-+
- /**
-  * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
-  *
-@@ -1764,6 +1810,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 	struct cpufreq_governor *gov = NULL;
- #endif
- 
-+	/* Don't start any governor operations if we are entering suspend */
-+	if (cpufreq_suspended)
-+		return 0;
-+
- 	if (policy->governor->max_transition_latency &&
- 	    policy->cpuinfo.transition_latency >
- 	    policy->governor->max_transition_latency) {
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index dc196bb..ee5fe9d 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -280,6 +280,14 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
- 			policy->cpuinfo.max_freq);
- }
- 
-+#ifdef CONFIG_CPU_FREQ
-+void cpufreq_suspend(void);
-+void cpufreq_resume(void);
-+#else
-+static inline void cpufreq_suspend(void) {}
-+static inline void cpufreq_resume(void) {}
-+#endif
-+
- /*********************************************************************
-  *                     CPUFREQ NOTIFIER INTERFACE                    *
-  *********************************************************************/
--- 
-1.7.12.rc2.18.g61b472e
+>
+> Thanks!
+>
 
