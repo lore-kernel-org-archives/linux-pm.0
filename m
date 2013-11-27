@@ -1,36 +1,39 @@
-From: Bockholdt Arne <a.bockholdt@precitec-optronik.de>
-Subject: Re: [PATCH v2] intel_idle: Fixed C6 state on Avoton/Rangeley
- processors
-Date: Wed, 27 Nov 2013 07:43:39 +0000
-Message-ID: <1385538219.4577.5.camel@po-d-abo-ubu>
-References: <1385450037.4588.10.camel@po-d-abo-ubu>
-	 <1574800.Vl6NB1rGSk@amdc1032> <1385473105.4588.14.camel@po-d-abo-ubu>
-	 <CAJvTdKm8bcUsnn_=_f_NQzJJ_FgmX6Ch3XDK3un22vwE9_Qh_Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJvTdKm8bcUsnn_=_f_NQzJJ_FgmX6Ch3XDK3un22vwE9_Qh_Q@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <63FD2D67C3C59C43AF9BC7204AEA0934@precitecgroup.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] PM / devfreq: Fix trivial typo in exynos4_bus.c
+Date: Wed, 27 Nov 2013 14:50:26 +0530
+Message-ID: <1385544026-24789-1-git-send-email-sachin.kamat@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:36066 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751241Ab3K0JWu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 04:22:50 -0500
+Received: by mail-pd0-f170.google.com with SMTP id g10so9592695pdj.29
+        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2013 01:22:49 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, trivial@kernel.org, sachin.kamat@linaro.org
 
-DQpPbiBUdWUsIDIwMTMtMTEtMjYgYXQgMTM6NDMgLTA1MDAsIExlbiBCcm93biB3cm90ZTogDQo+
-ID4gICAgICAgICAgICAgICAgIC5kZXNjID0gIk1XQUlUIDB4NTEiLA0KPiA+IC0gICAgICAgICAg
-ICAgICAuZmxhZ3MgPSBNV0FJVDJmbGcoMHg1OCkgfCBDUFVJRExFX0ZMQUdfVElNRV9WQUxJRCB8
-IENQVUlETEVfRkxBR19UTEJfRkxVU0hFRCwNCj4gPiArICAgICAgICAgICAgICAgLmZsYWdzID0g
-TVdBSVQyZmxnKDB4NTEpIHwgQ1BVSURMRV9GTEFHX1RJTUVfVkFMSUQgfCBDUFVJRExFX0ZMQUdf
-VExCX0ZMVVNIRUQsDQo+ID4gICAgICAgICAgICAgICAgIC5leGl0X2xhdGVuY3kgPSAxNSwNCj4g
-PiAgICAgICAgICAgICAgICAgLnRhcmdldF9yZXNpZGVuY3kgPSA0NSwNCj4gDQo+IFRoYW5rcyBm
-b3Igbm90aWNpbmcgdGhhdCAuZGVzYyBhbmQgLmZsYWdzIGFyZSBpbmNvbnNpc3RlbnQuDQo+IFRo
-aXMgaXMgbXkgZmF1bHQgLS0gYXBwYXJlbnRseSBJIGUtbWFpbGVkIGEgdmVyc2lvbiBvZiB0aGlz
-IHBhdGNoIHRoYXQNCj4gaXMgb2xkZXIgdGhhbiB3aGF0IEkgaGF2ZSBpbiBteSBnaXQgdHJlZS4N
-Cj4gDQo+IE5vIGJpZyBpc3N1ZSwgdGhvdWdoLCBhcyAweDUxIGFuZCAweDU4IGRvIGV4YWN0bHkg
-dGhlIHNhbWUgdGhpbmcgaW4NCj4gQVZOIGhhcmR3YXJlLg0KPiBJbmRlZWQsIGNoYW5naW5nIC5k
-ZXNjIHRvIDB4NTggd291bGQgYmUgZmluZSBhbHNvLg0KDQoNClRoZSBSYW5nZWxleSBvbiBteSBT
-dXBlcm1pY3JvIEExU1JpLTI3NThGIGJvYXJkIHdvbid0IGVudGVyIEM2IHdpdGgNCk1XQUlUIGZs
-YWcgc2V0IHRvIDB4NTggYnV0IHdpbGwgZG8gdGhhdCB3aXRoIDB4NTEuIE1heWJlIHRoZSBtaXNz
-aW5nDQp0dXJibyBtb2RlIG9mIHRoZSBSYW5nZWxleSA/DQoNCg0KQXJuZQ0K
+Changed exynox -> Exynos.
+
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/devfreq/exynos/exynos4_bus.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+index cede6f71cd63..bbbfe6853b18 100644
+--- a/drivers/devfreq/exynos/exynos4_bus.c
++++ b/drivers/devfreq/exynos/exynos4_bus.c
+@@ -116,7 +116,7 @@ static struct bus_opp_table exynos4210_busclk_table[] = {
+ };
+ 
+ /*
+- * MIF is the main control knob clock for exynox4x12 MIF/INT
++ * MIF is the main control knob clock for Exynos4x12 MIF/INT
+  * clock and voltage of both mif/int are controlled.
+  */
+ static struct bus_opp_table exynos4x12_mifclk_table[] = {
+-- 
+1.7.9.5
+
