@@ -1,72 +1,44 @@
-From: kgene@kernel.org
-Subject: RE: [PATCH v2 5/5] ARM: dts: exynos4412-trats2: Enable TMU support at
- Trats2
-Date: Wed, 27 Nov 2013 20:36:03 +0900
-Message-ID: <004d01ceeb64$da648200$8f2d8600$@kernel.org>
-References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
- <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
- <1381300194-13134-6-git-send-email-l.majewski@samsung.com>
- <20131015082935.3d33eee7@amdc308.digital.local>
- <20131127081242.0591f911@amdc308.digital.local>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/3] Hook up powerclamp with PM QOS and cpuidle
+Date: Wed, 27 Nov 2013 12:56:34 +0100
+Message-ID: <20131127115634.GA10022@twins.programming.kicks-ass.net>
+References: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:12090 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444Ab3K0LgF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 06:36:05 -0500
-In-reply-to: <20131127081242.0591f911@amdc308.digital.local>
-Content-language: ko
+Received: from merlin.infradead.org ([205.233.59.134]:48329 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753498Ab3K0L4l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 06:56:41 -0500
+Content-Disposition: inline
+In-Reply-To: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Lukasz Majewski' <l.majewski@samsung.com>
-Cc: 'Linux PM list' <linux-pm@vger.kernel.org>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Tomasz Figa' <t.figa@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
 
-Lukasz Majewski wrote:
+On Tue, Nov 26, 2013 at 03:20:08PM -0800, Jacob Pan wrote:
+> This patchset is intended to address the behavior change and efficiency
+> loss introduced by using consolidated idle routine in powerclamp driver.
 > 
-> Hi Kukjin,
+> Specifically,
+> [PATCH 3/8] idle, thermal, acpi: Remove home grown idle implementations
 > 
-> > Hi Kukjin,
-> >
-> > > This patch enables support for TMU at Exynos4412 based Trats2 board.
-> > >
-> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > > Reviewed-by: Tomasz Figa <t.figa@samsung.com>
-> > >
-> > > ---
-> > > Changes for v2:
-> > > - None
-> > >
-> > >  arch/arm/boot/dts/exynos4412-trats2.dts |    5 +++++
-> > >  1 file changed, 5 insertions(+)
-> > >
-> > > diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts
-> > > b/arch/arm/boot/dts/exynos4412-trats2.dts index fb7b9ae..57136f8
-> > > 100644 --- a/arch/arm/boot/dts/exynos4412-trats2.dts
-> > > +++ b/arch/arm/boot/dts/exynos4412-trats2.dts
-> > > @@ -467,6 +467,11 @@
-> > >  		status = "okay";
-> > >  	};
-> > >
-> > > +	tmu@100C0000 {
-> > > +		vtmu-supply = <&ldo10_reg>;
-> > > +		status = "okay";
-> > > +	};
-> > > +
-> > >  	i2c_ak8975: i2c-gpio-0 {
-> > >  		compatible = "i2c-gpio";
-> > >  		gpios = <&gpy2 4 0>, <&gpy2 5 0>;
-> >
-> > Can you pull this DT node definition for TMU (as a fix to v3.12)?
-> >
-> > It is crucial for Exynos4412. Other patches from this patch set were
-> > already pulled as v3.12 fixes.
-> >
+> The motivation is that after using common idle routine, powerclamp driver
+> can no longer pick the deepest idle state needed to conserve power.
+> Idle state is selected by governors which can be influenced by PM QOS and
+> other factors. This patchset hooks up powerclamp idle injection with PM
+> QOS and eventually influce idle governors to pick the power saving target
+> states.
 > 
-> Kukjin, could you pull this patch?
-> 
-Applied, thanks.
-Kukjin
+> There are some downside of this approach. Due to overhead, communication
+> with PM QOS is at enable/disable idle injection time instead of each
+> injection period. The implication is that if the system natual idle is
+> more than target injected idle, powerclamp will skip some injection period.
+> During this period however, deepest idle state may still be chosen
+> necessarily regardless the latency constraint.
+
+Does the QoS stuff have a means of notifying its users of constraints
+violation? I suspect some applications might light to be told if their
+requests aren't honoured.
 
