@@ -1,105 +1,58 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime
- PM callbacks
-Date: Wed, 27 Nov 2013 17:06:51 +0100
-Message-ID: <CAPDyKFoL8TseDdKHfm1KqhPUMaWRLpX3+i15a7jFsisZ9m0FHQ@mail.gmail.com>
-References: <2026361.IiCVpVNYkW@vostro.rjw.lan>
-	<3028580.oiUVTDjyao@vostro.rjw.lan>
-	<CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A@mail.gmail.com>
-	<18994672.4q6Ofp2t01@vostro.rjw.lan>
-	<CAPDyKFp5gz8Jku=g9OqRiE6tojcmodaCdYaFWqnrzYwThhDMog@mail.gmail.com>
+From: jacob pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 0/3] Hook up powerclamp with PM QOS and cpuidle
+Date: Wed, 27 Nov 2013 08:47:32 -0800
+Message-ID: <20131127084732.00006425@unknown>
+References: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<20131127115634.GA10022@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFp5gz8Jku=g9OqRiE6tojcmodaCdYaFWqnrzYwThhDMog-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:8419 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757237Ab3K0Qr7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 27 Nov 2013 11:47:59 -0500
+In-Reply-To: <20131127115634.GA10022@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
 
-On 27 November 2013 17:05, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->>
->> We first need to clarify the terminology as that seems to be the source of
->> the confusion to some extent at least.
->>
->> When I (or Alan presumably too) say "a subsystem", I mean a bus type, a device
->> type or a device class as represented by struct bus_type, struct device_type
->> and struct class, respectively.  So "a subsystem callback" means the specific
->> callback defined in the given bus type, device type or device class object.
->> You can think about that as of "subsystem level" if that's easier.  So that's
->> what we mean when we talk about subsystems, not the whole collection of drivers
->> and the code above them.
->
-> Thanks, this makes it perfectly clear now. I will try to improve while
-> communicating.
->
-> So we have subsystems, power domains and drivers to consider.
->
->>
->> Now, say you have a bus type.  Usually, the bus type's PM callbacks will run
->> device drivers' PM callbacks.  Quite often they will do things to hardware
->> in addition to what the drivers do.  But if your driver's .suspend_late()
->> depends on the runtime PM status of the device, then the bus type's .suspend()
->> needs to preserve that status.  That is, it cannot do anything to the hardware
->> that may cause the runtime PM status of the device to become stale.  That makes
->> the .suspend() somewhat special, doesn't it?
->
+On Wed, 27 Nov 2013 12:56:34 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-can -> can't
+> On Tue, Nov 26, 2013 at 03:20:08PM -0800, Jacob Pan wrote:
+> > This patchset is intended to address the behavior change and
+> > efficiency loss introduced by using consolidated idle routine in
+> > powerclamp driver.
+> > 
+> > Specifically,
+> > [PATCH 3/8] idle, thermal, acpi: Remove home grown idle
+> > implementations
+> > 
+> > The motivation is that after using common idle routine, powerclamp
+> > driver can no longer pick the deepest idle state needed to conserve
+> > power. Idle state is selected by governors which can be influenced
+> > by PM QOS and other factors. This patchset hooks up powerclamp idle
+> > injection with PM QOS and eventually influce idle governors to pick
+> > the power saving target states.
+> > 
+> > There are some downside of this approach. Due to overhead,
+> > communication with PM QOS is at enable/disable idle injection time
+> > instead of each injection period. The implication is that if the
+> > system natual idle is more than target injected idle, powerclamp
+> > will skip some injection period. During this period however,
+> > deepest idle state may still be chosen necessarily regardless the
+> > latency constraint.
+> 
+> Does the QoS stuff have a means of notifying its users of constraints
+> violation? I suspect some applications might light to be told if their
+> requests aren't honoured.
+> 
+Each class has a notifier. This patchset is calling the notifier
+when the qos class is disable/enable. the receiver of these
+notifications are in the kernel.
 
-> I agree, but I can see why this should be a problem for each and every
-> driver/bus.
->
-> Do note that idea here is only to provide the option of allowing
-> runtime PM callbacks to be executed as a part of the suspend_late ->
-> resume_early sequence. It is not a rule, it will have to be decided
-> for each subsystem/driver it they can benefit from this set up.
->
->>
->> Now I *guess* that your goal is something like "if that device has been
->> runtime suspended, don't touch it", which is a reasonable goal to have.  I'd
->> like to implement something like that too, but I think that it needs to be done
->> differently.
->
-> That is just a minor important part, but nice to have. Please have
-> look at the recently submitted patch set, "[PATCH 0/5] PM: Enable
-> option of re-use runtime PM callbacks at system suspend", I hope the
-> "cover letter" will describe my intention better.
->
->>
->> Actually, my idea is to allow the subsystem-level .prepare() callback to let
->> the core know if the device needs to be handled during the given suspend/resume
->> cycle.  It may be arranged, for example, so that if the subsystem-level (e.g.
->> bus type) .prepare() returns a positive number, the core will put the device
->> into a special list and it won't take it into consideration at all during the
->> whole cycle.
->>
->> Why this way?  Because subsystems have much better ways to determine whether
->> or not it is necessary to access the device during the upcoming system
->> suspend/resume cycle than the core does.
->
-> I am not sure I understand how this will solve my issues (except the
-> minor "if that device has been runtime suspended, don't touch it" -
-> thing).
->
-> I will still have to have a complex power domain and still
-> drivers/buses need wrapper functions around their the runtime PM
-> callbacks to invoke them during system suspend, if they need them.
->
-> In my view, I don't think your idea is conflict or can replace what I
-> suggest. Both can improve the situation, but maybe for different
-> scenarios.
->
-> Kind regards
-> Ulf Hansson
->
->>
->> Thanks!
->>
->> --
->> I speak only for myself.
->> Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I don't see the qos core code has a way to signal userspace about
+target change.
+
