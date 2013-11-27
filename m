@@ -1,102 +1,149 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
-Date: Wed, 27 Nov 2013 15:12:40 +0100
-Message-ID: <18994672.4q6Ofp2t01@vostro.rjw.lan>
-References: <2026361.IiCVpVNYkW@vostro.rjw.lan> <3028580.oiUVTDjyao@vostro.rjw.lan> <CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM enabled for unbound PCI devices
+Date: Wed, 27 Nov 2013 15:15 +0100
+Message-ID: <1864259.CAvWkUpgf3@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org> <52958403.4040201@linux.vnet.ibm.com> <1385533892.9224.35.camel@yhuang-dev>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1385533892.9224.35.camel@yhuang-dev>
+Sender: linux-pci-owner@vger.kernel.org
+To: Huang Ying <ying.huang@intel.com>
+Cc: Mike Qiu <qiudayu@linux.vnet.ibm.com>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, November 27, 2013 10:59:57 AM Ulf Hansson wrote:
-> >>
-> >> There are already a generic callbacks that does this. Normally the
-> >> generic callbacks is used from buses and power domains.
-> >>
-> >> My new callbacks are intended to be used from the driver, so those are
-> >> kind of different from the others in that sense.
-> >
-> > Hmm.  I see.
-> >
-> > For that to work, the subsystem's .suspend() and .resume() callbacks will
-> > have to be implemented in a special way, because of the unknown runtime PM
-> > status of devices while those callbacks are being executed.
+On Wednesday, November 27, 2013 02:31:32 PM Huang Ying wrote:
+> On Wed, 2013-11-27 at 13:32 +0800, Mike Qiu wrote:
+> > On 11/27/2013 04:32 AM, Rafael J. Wysocki wrote:
+> > > On Tuesday, November 26, 2013 01:41:13 PM Mike Qiu wrote:
+> > >> On 11/14/2013 04:54 PM, Huang Ying wrote:
+> > >>> On Thu, 2013-11-14 at 16:37 +0800, mike wrote:
+> > >>>> On 11/14/2013 04:25 PM, Huang Ying wrote:
+> > >>>>> On Thu, 2013-11-14 at 16:12 +0800, mike wrote:
+> > >>>>>> On 11/14/2013 03:53 PM, Huang Ying wrote:
+> > >>>>>>> On Thu, 2013-11-14 at 15:19 +0800, mike wrote:
+> > >>>>>>>> On 11/14/2013 01:59 PM, Huang Ying wrote:
+> > >>>>>>>>> On Thu, 2013-11-14 at 11:23 +0800, mike wrote:
+> > >>>>>>>>>> On 11/14/2013 03:20 AM, Alan Stern wrote:
+> > >>>>>>>>>>> On Wed, 13 Nov 2013, Bjorn Helgaas wrote:
+> > >>>>>>>>>>>
+> > >>>>>>>>>>>> [+cc Rafael, linux-pm]
+> > >>>>>>>>>>>>
+> > >>>>>>>>>>>> On Wed, Nov 13, 2013 at 6:09 AM, mike<qiudayu@linux.vnet.ibm.com>  wrote:
+> > >>>>>>>>>>>>> Hi Huang Ying,
+> > >>>>>>>>>>>>>
+> > >>>>>>>>>>>>> I see you are the author of this patch, commit id is:
+> > >>>>>>>>>>>>> 967577b062417b4e4b8e27b711220f4124f5153a
+> > >>>>>>>>>>>>>
+> > >>>>>>>>>>>>> I have a question while I try to understand this patch,
+> > >>>>>>>>>>>>> So I would very grateful if you or others can give me some reply.....
+> > >>>>>>>>>>>>>
+> > >>>>>>>>>>>>> ............
+> > >>>>>>>>>>>>> -       rc = ddi->drv->probe(ddi->dev, ddi->id);
+> > >>>>>>>>>>>>> +       pm_runtime_get_sync(dev);
+> > >>>>>>>>>>>>> +       pci_dev->driver = pci_drv;
+> > >>>>>>>>>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > >>>>>>>>>>>>> I see here you make the driver to initialize before probe,
+> > >>>>>>>>>>>>> But I have no idea of why you do this change.....
+> > >>>>>>>>>>>>>
+> > >>>>>>>>>>>>> and I look inside the code, it may be pm_runtime relate??
+> > >>>>>>>>>>> Yes, it is related to runtime PM.  In the PCI subsystem, runtime PM
+> > >>>>>>>>>>> doesn't do anything unless pci_dev->driver is set.  You can see this at
+> > >>>>>>>>>>> the start of pci_pm_runtime_suspend().
+> > >>>>>>>>>>>
+> > >>>>>>>>>>> Since we want the driver's probe routine to be able to carry out
+> > >>>>>>>>>>> runtime PM operations, we have to set pci_dev->driver before the probe
+> > >>>>>>>>>>> routine runs.
+> > >>>>>>>>>> Is there any situations , like in  probe state,  pci_dev->driver
+> > >>>>>>>>>> has been set. the  pci_pm_runtime_xxx() has passed
+> > >>>>>>>>>> pci_dev->driver NULL check, but at this point, probe fail
+> > >>>>>>>>>> occurs, and  pci_dev->driver to be set to NULL.
+> > >>>>>>>>>>
+> > >>>>>>>>>> What will happen ? Or this situation will never happen?
+> > >>>>>>>>>> I'm confuse about this.
+> > >>>>>>>>> I think that will never happen.  Before ->probe(), pm_runtime_get_sync()
+> > >>>>>>>>> is called, so pci_pm_runtime_xxx() will not be called until
+> > >>>>>>>>> pm_runtime_put_noidle() is called in ->probe().  And
+> > >>>>>>>>>       should be done as one of the latest actions in
+> > >>>>>>>>> ->probe(), after the normal probe actions succeeded.
+> > >>>>>>>> OK, just as your description, it seems OK.
+> > >>>>>>>> But this is really a issue as I explained in last email.
+> > >>>>>>>>
+> > >>>>>>>> So I want to know if there are any side-effect of changing the code
+> > >>>>>>>> in pci_pm_runtime_xxx()
+> > >>>>>>>>
+> > >>>>>>>>       if (!pci_dev->driver)
+> > >>>>>>>>              return 0;
+> > >>>>>>>>       to
+> > >>>>>>>>
+> > >>>>>>>>       if (!dev->driver)
+> > >>>>>>>>              return 0;
+> > >>>>>>>>
+> > >>>>>>> If you make this change, we can not put devices into low power state
+> > >>>>>>> (runtime suspend the device) in ->probe().  That is expected in some
+> > >>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > >>>>>> This means dev->driver is NULL ?? but pci_dev->driver is set???
+> > >>>>>>
+> > >>>>>> Because if use pci_dev->driver can put into low power state, means
+> > >>>>>>
+> > >>>>>> pci_dev->driver is set, but in the situation, use dev->driver will can't,
+> > >>>>>>
+> > >>>>>> means dev->driver = null, but I have not find any case that
+> > >>>>>>
+> > >>>>>> dev->driver = null, but pci_dev->driver != null;
+> > >>>>> Sorry I make a mistake here.  The dev->driver != null in
+> > >>>>> local_pci_probe().  We use pci_dev->driver instead of dev->driver in
+> > >>>>> pci_pm_runtime_xxx() because we want device to be kept in normal power
+> > >>>>> state (D0) and SUSPENDED state when unbound.The
+> > >>>>> pm_runtime_put/get_sync in pci_device_remove/local_pci_probe will not
+> > >>>>> change the power state of the device because of the check in
+> > >>>>> pci_pm_runtime_xxx().
+> > >>>> Yes, you are right, but what am I confuse is that, why check dev->driver
+> > >>>> in pci_pm_runtime_xxx() can't keep the device in normal power
+> > >>>> state (D0) and SUSPENDED state when unbound.
+> > >>>>
+> > >>>> May be logic issue ?
+> > >>> Because dev->driver is set before local_pci_probe() and cleared after
+> > >>> pci_device_remove().  But we need a flag to be changed in
+> > >>> local_pci_probe() and pci_device_remove().
+> > >> Hi Ying,
+> > >>
+> > >> I'm now face one bug, and the root cause is this logic has some problem.
+> > >>
+> > >> The other component calls the ops in driver during probe state, which a
+> > >> lot of critical data struct haven't been setup yet.
+> > >>
+> > >> This never happen in old logic, because dev->driver is unset in probe
+> > >> state, it can check dev->driver to see if the device diver can work. But
+> > >> for new logic it is really a big issue.
+> > > What is the other component and why is it doing that?
+> > 
+> > Some component like EEH in Power arch, it need to check whether the 
+> > driver is work or not.
+> > 
+> > In old logic, if probed then dev->driver set, otherwise it will be NULL, 
+> > it is safe to do so.
+> > 
+> > But in new, it has problem, it can call the driver API, which is very 
+> > dangerous in probe state, maybe a lot key data structure haven't been 
+> > setup yet, this lead to the kernel down and machine reboot. Also this 
+> > can be fixed in driver, like check the driver data it self, this 
+> > solution needs all the driver fix this issue, It may be a huge program.
+> > 
+> > So we need a new flag I think, or which old flag can we use to solve 
+> > this issue ?
 > 
-> Not sure I understand why you think the runtime PM status is unknown?
-> 
-> In .suspend the runtime status can still be changed. Since the PM core
-> disables runtime PM before invoking .suspend_late and since the PM
-> core will keep runtime PM disabled until after the .resume_early has
-> been invoked, it will be safe to operate on the runtime PM callbacks
-> during this period - if the driver/bus are adopted for it. While the
-> .resume callback gets invoked, the runtime status are restored to it's
-> previous state, which the bus/driver would expect.
-> 
-> Do you want me to send a patch for a driver that uses these callbacks?
-> I suppose it would clarify how I am thinking...
-> 
-> > Presumably you think about subsystems that don't implement those callbacks
-> > at all?
-> 
-> If you mean that "drivers" is not a part of the term "subsystem" here,
-> then I somewhat agree.
-> 
-> My view is that it will be mostly drivers that make use of these callbacks.
-> 
-> Though, I don't think we need to prevent subsystems or power domains
-> from using them, they will only have to know what the consequences
-> are. :-)
-> 
-> Maybe there could even be some cases were it actually makes good sense
-> of using them for subsystems, even if I yet not have come a cross such
-> a case.
+> I think a flag is not safe for you.  Driver may be removed when you
+> operate on it.
 
-We first need to clarify the terminology as that seems to be the source of
-the confusion to some extent at least.
+Precisely.  The old code is still unsafe although it happens to work in the
+given test conditions.
 
-When I (or Alan presumably too) say "a subsystem", I mean a bus type, a device
-type or a device class as represented by struct bus_type, struct device_type
-and struct class, respectively.  So "a subsystem callback" means the specific
-callback defined in the given bus type, device type or device class object.
-You can think about that as of "subsystem level" if that's easier.  So that's
-what we mean when we talk about subsystems, not the whole collection of drivers
-and the code above them.
+> Better to use device_lock() if possible, which will be
+> held during device probe and driver remove.
 
-Now, say you have a bus type.  Usually, the bus type's PM callbacks will run
-device drivers' PM callbacks.  Quite often they will do things to hardware
-in addition to what the drivers do.  But if your driver's .suspend_late()
-depends on the runtime PM status of the device, then the bus type's .suspend()
-needs to preserve that status.  That is, it cannot do anything to the hardware
-that may cause the runtime PM status of the device to become stale.  That makes
-the .suspend() somewhat special, doesn't it?
+Or generally synchronize it properly.
 
-Now I *guess* that your goal is something like "if that device has been
-runtime suspended, don't touch it", which is a reasonable goal to have.  I'd
-like to implement something like that too, but I think that it needs to be done
-differently.
-
-Actually, my idea is to allow the subsystem-level .prepare() callback to let
-the core know if the device needs to be handled during the given suspend/resume
-cycle.  It may be arranged, for example, so that if the subsystem-level (e.g.
-bus type) .prepare() returns a positive number, the core will put the device
-into a special list and it won't take it into consideration at all during the
-whole cycle.
-
-Why this way?  Because subsystems have much better ways to determine whether
-or not it is necessary to access the device during the upcoming system
-suspend/resume cycle than the core does.
-
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
