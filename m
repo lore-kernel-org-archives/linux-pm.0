@@ -1,52 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/2] cpufreq: suspend governors on system suspend/hibernate
-Date: Wed, 27 Nov 2013 08:26:00 +0530
-Message-ID: <CAKohpo=4ZdDybsm6oz0-GjCyP2c8MGvV9uZG8n+Cv2xGKcmeDQ@mail.gmail.com>
-References: <cover.1385118255.git.viresh.kumar@linaro.org>
-	<e4bc55fac6bc68694e9905cc3cc6844173b64925.1385118256.git.viresh.kumar@linaro.org>
-	<20131126193902.GA2481@amd.pavel.ucw.cz>
-	<9179214.Tbesu8t5px@vostro.rjw.lan>
+Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Wed, 27 Nov 2013 08:31:02 +0530
+Message-ID: <CAKohpokjAuUA-o4cJi=N7mO93kTwrmfVqtL-zOHAs6awKoXn1A@mail.gmail.com>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>
+	<2997050.eogEtPXZyL@vostro.rjw.lan>
+	<CAKohpon22PxGdTFcaOqzpLpVZd75OPP470Wyy95GjBhG2gViyQ@mail.gmail.com>
+	<2309056.KUZA1Fnj0Y@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9179214.Tbesu8t5px@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Nishanth Menon <nm@ti.com>, jinchoi@broadcom.com, Sebastian Capella <sebastian.capella@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:33883 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754584Ab3K0DBE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 22:01:04 -0500
+Received: by mail-ob0-f169.google.com with SMTP id wm4so6844675obc.28
+        for <linux-pm@vger.kernel.org>; Tue, 26 Nov 2013 19:01:03 -0800 (PST)
+In-Reply-To: <2309056.KUZA1Fnj0Y@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-On 27 November 2013 01:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, November 26, 2013 08:39:02 PM Pavel Machek wrote:
->> So... we freeze frequencies in whatever state they are, yes?
-
-Better go through the V3 of this patchset:
-
-https://lkml.org/lkml/2013/11/25/838
-
-We are giving drivers and opportunity to set core to whatever frequency they
-want before suspending.
-
-> Yes.  The idea was to do that after suspending devices in which case it wouldn't
-> matter so much.  But Viresh always has to complicate things.
-
-:)
-
-Its complicated by the kind of designs we have for our hardware. We tried the
-noirq callbacks and it worked atleast for Nishanth, who reported the problem
-initially. But the problem started when drivers wanted to change their
-frequencies before suspending and that can't happen in noirq place..
-
-I had another idea but then left it thinking that it might be even more
-complicated :)
-
-What about both dpm_suspend_noirq and dpm_suspend callbacks. Drivers
-will change freq in dpm_suspend_noirq and dpm_suspend will stop governors?
-
-But the question is can governors try another frequency at that time?
-i.e. override whatever is configured by drivers?
-
->> Should we go to some specific frequency?
+On 27 November 2013 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> I was talking about the case when your
 >
-> If that is done where it is done, yes, we should.
+> __cpufreq_driver_target(policy, policy->cur - 1, CPUFREQ_RELATION_L);
+>
+> fails.  The other case is not really interesting.
 
-You meant dpm_suspend() here, right?
+Okay.. I actually thought the context of this chat is about "not fixing the
+frequency silently". That's what Dirk pointed out, if I am not wrong.
+
+And hence I also support the new pr_warn I have added in those cases.
+But yes a WARN_ON() can be printed out in case
+__cpufreq_driver_target() fails.
