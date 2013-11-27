@@ -1,58 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: clk_round_rate() can return a zero upon error
-Date: Wed, 27 Nov 2013 02:28:06 +0100
-Message-ID: <37456401.ZmxAx3C9Zb@vostro.rjw.lan>
-References: <alpine.DEB.2.02.1311251559460.23090@tamien> <52942B87.1040203@linaro.org> <529533AD.2050406@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <529533AD.2050406@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Walmsley <pwalmsley@nvidia.com>
-Cc: viresh kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Subject: [PATCH 12/15] thermal: rcar-thermal: Enable driver compilation with COMPILE_TEST
+Date: Wed, 27 Nov 2013 02:18:34 +0100
+Message-ID: <1385515117-23664-13-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from perceval.ideasonboard.com ([95.142.166.194]:49541 "EHLO
+	perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759462Ab3K0BSs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2013 20:18:48 -0500
+In-Reply-To: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-sh@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 
-On Tuesday, November 26, 2013 03:50:05 PM Paul Walmsley wrote:
-> On 11/25/2013 09:03 PM, viresh kumar wrote:
-> > On Tuesday 26 November 2013 07:31 AM, Paul Walmsley wrote:
-> >> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> >> index d4585ce2346c..0faf756f6197 100644
-> >> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> >> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> >> @@ -44,7 +44,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> >> unsigned int index)
-> >>       int ret;
-> >>
-> >>       freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
-> >> -    if (freq_Hz < 0)
-> >> +    if (freq_Hz <= 0)
-> >>           freq_Hz = freq_table[index].frequency * 1000;
-> >>
-> >>       freq_exact = freq_Hz;
-> > So, we will see another patch where you will do: s/<=/== ??
-> 
-> Probably so for this driver - along with converting the type of freq_Hz 
-> to be u64 or unsigned long.  Not sure yet about all of the other 
-> drivers, since many of them are unlikely to see rates above (2^31)-1 Hz.
-> 
-> > I am wondering if there is any other way we can get this solved, i.e. in a
-> > single patchset.
-> 
-> I'm trying to avoid sending up a large series that touches drivers all 
-> over the tree :-(
-> 
-> > Otherwise, for both SPEAr and cpu0 patches:
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Thanks!  But I was instead hoping you might queue them up for merging 
-> for v3.14?  That should greatly reduce the risk of merge conflicts.
+This helps increasing build testing coverage.
 
-I have a plan to queue them up for 3.14. :-)
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Acked-by: Simon Horman <horms@verge.net.au>
+---
+ drivers/thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks!
-
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index f35a1f7..661cafc 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -121,7 +121,7 @@ config SPEAR_THERMAL
+ 
+ config RCAR_THERMAL
+ 	tristate "Renesas R-Car thermal driver"
+-	depends on ARCH_SHMOBILE
++	depends on ARCH_SHMOBILE || COMPILE_TEST
+ 	help
+ 	  Enable this to plug the R-Car thermal sensor driver into the Linux
+ 	  thermal framework.
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.3.2
+
