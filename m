@@ -1,149 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: A question about the patch: [PATCH] PCI/PM: Keep runtime PM enabled for unbound PCI devices
-Date: Wed, 27 Nov 2013 15:15 +0100
-Message-ID: <1864259.CAvWkUpgf3@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1311131416110.1424-100000@iolanthe.rowland.org> <52958403.4040201@linux.vnet.ibm.com> <1385533892.9224.35.camel@yhuang-dev>
+Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Wed, 27 Nov 2013 15:22:01 +0100
+Message-ID: <4759452.7dXrrSTGCc@vostro.rjw.lan>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org> <2309056.KUZA1Fnj0Y@vostro.rjw.lan> <CAKohpokjAuUA-o4cJi=N7mO93kTwrmfVqtL-zOHAs6awKoXn1A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1385533892.9224.35.camel@yhuang-dev>
-Sender: linux-pci-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Mike Qiu <qiudayu@linux.vnet.ibm.com>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59763 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756502Ab3K0OJN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 09:09:13 -0500
+In-Reply-To: <CAKohpokjAuUA-o4cJi=N7mO93kTwrmfVqtL-zOHAs6awKoXn1A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-On Wednesday, November 27, 2013 02:31:32 PM Huang Ying wrote:
-> On Wed, 2013-11-27 at 13:32 +0800, Mike Qiu wrote:
-> > On 11/27/2013 04:32 AM, Rafael J. Wysocki wrote:
-> > > On Tuesday, November 26, 2013 01:41:13 PM Mike Qiu wrote:
-> > >> On 11/14/2013 04:54 PM, Huang Ying wrote:
-> > >>> On Thu, 2013-11-14 at 16:37 +0800, mike wrote:
-> > >>>> On 11/14/2013 04:25 PM, Huang Ying wrote:
-> > >>>>> On Thu, 2013-11-14 at 16:12 +0800, mike wrote:
-> > >>>>>> On 11/14/2013 03:53 PM, Huang Ying wrote:
-> > >>>>>>> On Thu, 2013-11-14 at 15:19 +0800, mike wrote:
-> > >>>>>>>> On 11/14/2013 01:59 PM, Huang Ying wrote:
-> > >>>>>>>>> On Thu, 2013-11-14 at 11:23 +0800, mike wrote:
-> > >>>>>>>>>> On 11/14/2013 03:20 AM, Alan Stern wrote:
-> > >>>>>>>>>>> On Wed, 13 Nov 2013, Bjorn Helgaas wrote:
-> > >>>>>>>>>>>
-> > >>>>>>>>>>>> [+cc Rafael, linux-pm]
-> > >>>>>>>>>>>>
-> > >>>>>>>>>>>> On Wed, Nov 13, 2013 at 6:09 AM, mike<qiudayu@linux.vnet.ibm.com>  wrote:
-> > >>>>>>>>>>>>> Hi Huang Ying,
-> > >>>>>>>>>>>>>
-> > >>>>>>>>>>>>> I see you are the author of this patch, commit id is:
-> > >>>>>>>>>>>>> 967577b062417b4e4b8e27b711220f4124f5153a
-> > >>>>>>>>>>>>>
-> > >>>>>>>>>>>>> I have a question while I try to understand this patch,
-> > >>>>>>>>>>>>> So I would very grateful if you or others can give me some reply.....
-> > >>>>>>>>>>>>>
-> > >>>>>>>>>>>>> ............
-> > >>>>>>>>>>>>> -       rc = ddi->drv->probe(ddi->dev, ddi->id);
-> > >>>>>>>>>>>>> +       pm_runtime_get_sync(dev);
-> > >>>>>>>>>>>>> +       pci_dev->driver = pci_drv;
-> > >>>>>>>>>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > >>>>>>>>>>>>> I see here you make the driver to initialize before probe,
-> > >>>>>>>>>>>>> But I have no idea of why you do this change.....
-> > >>>>>>>>>>>>>
-> > >>>>>>>>>>>>> and I look inside the code, it may be pm_runtime relate??
-> > >>>>>>>>>>> Yes, it is related to runtime PM.  In the PCI subsystem, runtime PM
-> > >>>>>>>>>>> doesn't do anything unless pci_dev->driver is set.  You can see this at
-> > >>>>>>>>>>> the start of pci_pm_runtime_suspend().
-> > >>>>>>>>>>>
-> > >>>>>>>>>>> Since we want the driver's probe routine to be able to carry out
-> > >>>>>>>>>>> runtime PM operations, we have to set pci_dev->driver before the probe
-> > >>>>>>>>>>> routine runs.
-> > >>>>>>>>>> Is there any situations , like in  probe state,  pci_dev->driver
-> > >>>>>>>>>> has been set. the  pci_pm_runtime_xxx() has passed
-> > >>>>>>>>>> pci_dev->driver NULL check, but at this point, probe fail
-> > >>>>>>>>>> occurs, and  pci_dev->driver to be set to NULL.
-> > >>>>>>>>>>
-> > >>>>>>>>>> What will happen ? Or this situation will never happen?
-> > >>>>>>>>>> I'm confuse about this.
-> > >>>>>>>>> I think that will never happen.  Before ->probe(), pm_runtime_get_sync()
-> > >>>>>>>>> is called, so pci_pm_runtime_xxx() will not be called until
-> > >>>>>>>>> pm_runtime_put_noidle() is called in ->probe().  And
-> > >>>>>>>>>       should be done as one of the latest actions in
-> > >>>>>>>>> ->probe(), after the normal probe actions succeeded.
-> > >>>>>>>> OK, just as your description, it seems OK.
-> > >>>>>>>> But this is really a issue as I explained in last email.
-> > >>>>>>>>
-> > >>>>>>>> So I want to know if there are any side-effect of changing the code
-> > >>>>>>>> in pci_pm_runtime_xxx()
-> > >>>>>>>>
-> > >>>>>>>>       if (!pci_dev->driver)
-> > >>>>>>>>              return 0;
-> > >>>>>>>>       to
-> > >>>>>>>>
-> > >>>>>>>>       if (!dev->driver)
-> > >>>>>>>>              return 0;
-> > >>>>>>>>
-> > >>>>>>> If you make this change, we can not put devices into low power state
-> > >>>>>>> (runtime suspend the device) in ->probe().  That is expected in some
-> > >>>>>> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > >>>>>> This means dev->driver is NULL ?? but pci_dev->driver is set???
-> > >>>>>>
-> > >>>>>> Because if use pci_dev->driver can put into low power state, means
-> > >>>>>>
-> > >>>>>> pci_dev->driver is set, but in the situation, use dev->driver will can't,
-> > >>>>>>
-> > >>>>>> means dev->driver = null, but I have not find any case that
-> > >>>>>>
-> > >>>>>> dev->driver = null, but pci_dev->driver != null;
-> > >>>>> Sorry I make a mistake here.  The dev->driver != null in
-> > >>>>> local_pci_probe().  We use pci_dev->driver instead of dev->driver in
-> > >>>>> pci_pm_runtime_xxx() because we want device to be kept in normal power
-> > >>>>> state (D0) and SUSPENDED state when unbound.The
-> > >>>>> pm_runtime_put/get_sync in pci_device_remove/local_pci_probe will not
-> > >>>>> change the power state of the device because of the check in
-> > >>>>> pci_pm_runtime_xxx().
-> > >>>> Yes, you are right, but what am I confuse is that, why check dev->driver
-> > >>>> in pci_pm_runtime_xxx() can't keep the device in normal power
-> > >>>> state (D0) and SUSPENDED state when unbound.
-> > >>>>
-> > >>>> May be logic issue ?
-> > >>> Because dev->driver is set before local_pci_probe() and cleared after
-> > >>> pci_device_remove().  But we need a flag to be changed in
-> > >>> local_pci_probe() and pci_device_remove().
-> > >> Hi Ying,
-> > >>
-> > >> I'm now face one bug, and the root cause is this logic has some problem.
-> > >>
-> > >> The other component calls the ops in driver during probe state, which a
-> > >> lot of critical data struct haven't been setup yet.
-> > >>
-> > >> This never happen in old logic, because dev->driver is unset in probe
-> > >> state, it can check dev->driver to see if the device diver can work. But
-> > >> for new logic it is really a big issue.
-> > > What is the other component and why is it doing that?
-> > 
-> > Some component like EEH in Power arch, it need to check whether the 
-> > driver is work or not.
-> > 
-> > In old logic, if probed then dev->driver set, otherwise it will be NULL, 
-> > it is safe to do so.
-> > 
-> > But in new, it has problem, it can call the driver API, which is very 
-> > dangerous in probe state, maybe a lot key data structure haven't been 
-> > setup yet, this lead to the kernel down and machine reboot. Also this 
-> > can be fixed in driver, like check the driver data it self, this 
-> > solution needs all the driver fix this issue, It may be a huge program.
-> > 
-> > So we need a new flag I think, or which old flag can we use to solve 
-> > this issue ?
+On Wednesday, November 27, 2013 08:31:02 AM Viresh Kumar wrote:
+> On 27 November 2013 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > I was talking about the case when your
+> >
+> > __cpufreq_driver_target(policy, policy->cur - 1, CPUFREQ_RELATION_L);
+> >
+> > fails.  The other case is not really interesting.
 > 
-> I think a flag is not safe for you.  Driver may be removed when you
-> operate on it.
+> Okay.. I actually thought the context of this chat is about "not fixing the
+> frequency silently". That's what Dirk pointed out, if I am not wrong.
 
-Precisely.  The old code is still unsafe although it happens to work in the
-given test conditions.
+In that case you can simply print a message bashing the boot loader. :-)
 
-> Better to use device_lock() if possible, which will be
-> held during device probe and driver remove.
+> And hence I also support the new pr_warn I have added in those cases.
 
-Or generally synchronize it properly.
+Sure.
 
-Thanks,
+> But yes a WARN_ON() can be printed out in case
+> __cpufreq_driver_target() fails.
+
+And here my question was: Is it safe to continue at all in that case?
+
 Rafael
+
