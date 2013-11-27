@@ -1,31 +1,102 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Wed, 27 Nov 2013 21:22:01 +0530
-Message-ID: <CAKohpomXk34aaG3bKX9AuOcn7ZEXcKrc858jCUhcB2bavcnarQ@mail.gmail.com>
-References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>
-	<2309056.KUZA1Fnj0Y@vostro.rjw.lan>
-	<CAKohpokjAuUA-o4cJi=N7mO93kTwrmfVqtL-zOHAs6awKoXn1A@mail.gmail.com>
-	<4759452.7dXrrSTGCc@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime
+ PM callbacks
+Date: Wed, 27 Nov 2013 17:05:22 +0100
+Message-ID: <CAPDyKFp5gz8Jku=g9OqRiE6tojcmodaCdYaFWqnrzYwThhDMog@mail.gmail.com>
+References: <2026361.IiCVpVNYkW@vostro.rjw.lan>
+	<3028580.oiUVTDjyao@vostro.rjw.lan>
+	<CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A@mail.gmail.com>
+	<18994672.4q6Ofp2t01@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:41368 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355Ab3K0PwC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 10:52:02 -0500
-Received: by mail-ob0-f178.google.com with SMTP id uz6so7646240obc.9
-        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2013 07:52:01 -0800 (PST)
-In-Reply-To: <4759452.7dXrrSTGCc@vostro.rjw.lan>
+Received: from mail-qe0-f43.google.com ([209.85.128.43]:52870 "EHLO
+	mail-qe0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756559Ab3K0QFY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 11:05:24 -0500
+Received: by mail-qe0-f43.google.com with SMTP id 2so7698217qeb.30
+        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2013 08:05:23 -0800 (PST)
+In-Reply-To: <18994672.4q6Ofp2t01@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Kevin Hilman <khilman@linaro.org>
 
-On 27 November 2013 19:52, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> And here my question was: Is it safe to continue at all in that case?
+>
+> We first need to clarify the terminology as that seems to be the source of
+> the confusion to some extent at least.
+>
+> When I (or Alan presumably too) say "a subsystem", I mean a bus type, a device
+> type or a device class as represented by struct bus_type, struct device_type
+> and struct class, respectively.  So "a subsystem callback" means the specific
+> callback defined in the given bus type, device type or device class object.
+> You can think about that as of "subsystem level" if that's easier.  So that's
+> what we mean when we talk about subsystems, not the whole collection of drivers
+> and the code above them.
 
-Hmm.. Honestly speaking I haven't thought about it earlier. And from
-the kind of inputs we got from Nishanth its not safe at all and so we
-really need a BUG_ON in this case, instead of WARN_ON.
+Thanks, this makes it perfectly clear now. I will try to improve while
+communicating.
 
-What do you say?
+So we have subsystems, power domains and drivers to consider.
+
+>
+> Now, say you have a bus type.  Usually, the bus type's PM callbacks will run
+> device drivers' PM callbacks.  Quite often they will do things to hardware
+> in addition to what the drivers do.  But if your driver's .suspend_late()
+> depends on the runtime PM status of the device, then the bus type's .suspend()
+> needs to preserve that status.  That is, it cannot do anything to the hardware
+> that may cause the runtime PM status of the device to become stale.  That makes
+> the .suspend() somewhat special, doesn't it?
+
+I agree, but I can see why this should be a problem for each and every
+driver/bus.
+
+Do note that idea here is only to provide the option of allowing
+runtime PM callbacks to be executed as a part of the suspend_late ->
+resume_early sequence. It is not a rule, it will have to be decided
+for each subsystem/driver it they can benefit from this set up.
+
+>
+> Now I *guess* that your goal is something like "if that device has been
+> runtime suspended, don't touch it", which is a reasonable goal to have.  I'd
+> like to implement something like that too, but I think that it needs to be done
+> differently.
+
+That is just a minor important part, but nice to have. Please have
+look at the recently submitted patch set, "[PATCH 0/5] PM: Enable
+option of re-use runtime PM callbacks at system suspend", I hope the
+"cover letter" will describe my intention better.
+
+>
+> Actually, my idea is to allow the subsystem-level .prepare() callback to let
+> the core know if the device needs to be handled during the given suspend/resume
+> cycle.  It may be arranged, for example, so that if the subsystem-level (e.g.
+> bus type) .prepare() returns a positive number, the core will put the device
+> into a special list and it won't take it into consideration at all during the
+> whole cycle.
+>
+> Why this way?  Because subsystems have much better ways to determine whether
+> or not it is necessary to access the device during the upcoming system
+> suspend/resume cycle than the core does.
+
+I am not sure I understand how this will solve my issues (except the
+minor "if that device has been runtime suspended, don't touch it" -
+thing).
+
+I will still have to have a complex power domain and still
+drivers/buses need wrapper functions around their the runtime PM
+callbacks to invoke them during system suspend, if they need them.
+
+In my view, I don't think your idea is conflict or can replace what I
+suggest. Both can improve the situation, but maybe for different
+scenarios.
+
+Kind regards
+Ulf Hansson
+
+>
+> Thanks!
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
