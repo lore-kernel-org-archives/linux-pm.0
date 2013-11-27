@@ -1,39 +1,71 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 1/1] PM / devfreq: Fix trivial typo in exynos4_bus.c
-Date: Wed, 27 Nov 2013 14:50:26 +0530
-Message-ID: <1385544026-24789-1-git-send-email-sachin.kamat@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:36066 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241Ab3K0JWu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 04:22:50 -0500
-Received: by mail-pd0-f170.google.com with SMTP id g10so9592695pdj.29
-        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2013 01:22:49 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime
+ PM callbacks
+Date: Wed, 27 Nov 2013 10:59:57 +0100
+Message-ID: <CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A@mail.gmail.com>
+References: <2026361.IiCVpVNYkW@vostro.rjw.lan>
+	<Pine.LNX.4.44L0.1311261556480.1359-100000@iolanthe.rowland.org>
+	<CAPDyKFp2z=ST6Sd3T+1Ko5pf5pf3Cfr44jS=jTBWABPcSS2RLg@mail.gmail.com>
+	<3028580.oiUVTDjyao@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <3028580.oiUVTDjyao-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, trivial@kernel.org, sachin.kamat@linaro.org
 
-Changed exynox -> Exynos.
+>>
+>> There are already a generic callbacks that does this. Normally the
+>> generic callbacks is used from buses and power domains.
+>>
+>> My new callbacks are intended to be used from the driver, so those are
+>> kind of different from the others in that sense.
+>
+> Hmm.  I see.
+>
+> For that to work, the subsystem's .suspend() and .resume() callbacks will
+> have to be implemented in a special way, because of the unknown runtime PM
+> status of devices while those callbacks are being executed.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/devfreq/exynos/exynos4_bus.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Not sure I understand why you think the runtime PM status is unknown?
 
-diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-index cede6f71cd63..bbbfe6853b18 100644
---- a/drivers/devfreq/exynos/exynos4_bus.c
-+++ b/drivers/devfreq/exynos/exynos4_bus.c
-@@ -116,7 +116,7 @@ static struct bus_opp_table exynos4210_busclk_table[] = {
- };
- 
- /*
-- * MIF is the main control knob clock for exynox4x12 MIF/INT
-+ * MIF is the main control knob clock for Exynos4x12 MIF/INT
-  * clock and voltage of both mif/int are controlled.
-  */
- static struct bus_opp_table exynos4x12_mifclk_table[] = {
--- 
-1.7.9.5
+In .suspend the runtime status can still be changed. Since the PM core
+disables runtime PM before invoking .suspend_late and since the PM
+core will keep runtime PM disabled until after the .resume_early has
+been invoked, it will be safe to operate on the runtime PM callbacks
+during this period - if the driver/bus are adopted for it. While the
+.resume callback gets invoked, the runtime status are restored to it's
+previous state, which the bus/driver would expect.
 
+Do you want me to send a patch for a driver that uses these callbacks?
+I suppose it would clarify how I am thinking...
+
+>
+> Presumably you think about subsystems that don't implement those callbacks
+> at all?
+
+If you mean that "drivers" is not a part of the term "subsystem" here,
+then I somewhat agree.
+
+My view is that it will be mostly drivers that make use of these callbacks.
+
+Though, I don't think we need to prevent subsystems or power domains
+from using them, they will only have to know what the consequences
+are. :-)
+
+Maybe there could even be some cases were it actually makes good sense
+of using them for subsystems, even if I yet not have come a cross such
+a case.
+
+Kind regards
+Ulf Hansson
+
+>
+> Rafael
+>
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
