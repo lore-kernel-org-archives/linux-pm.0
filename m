@@ -1,67 +1,92 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 0/5] PM: Enable option of re-use runtime PM callbacks at system suspend
-Date: Wed, 27 Nov 2013 16:34:55 +0100
-Message-ID: <1385566500-7666-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f179.google.com ([209.85.217.179]:53544 "EHLO
-	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871Ab3K0PfP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 10:35:15 -0500
-Received: by mail-lb0-f179.google.com with SMTP id l4so5464090lbv.38
-        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2013 07:35:14 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/5] PM / Runtime: Implement the pm_generic_runtime functions for CONFIG_PM
+Date: Wed, 27 Nov 2013 16:34:57 +0100
+Message-ID: <1385566500-7666-3-git-send-email-ulf.hansson@linaro.org>
+References: <1385566500-7666-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1385566500-7666-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
+List-Id: linux-pm@vger.kernel.org
 
-To put devices into low power state during system suspend, it may be convenient
-for runtime PM supported subsystems, power domains and drivers to have the
-option of re-using the runtime PM callbacks.
+The pm_generic_runtime_suspend|resume functions were implemented within
+CONFIG_PM_RUNTIME.
 
-At the moment, quite complex solutions exist for power domains that tries to
-handle the above, like for OMAP2. The idea here, is to make it possible for
-drivers, who should know best, how to easiest put their devices into low power
-state. The intent is thus not only to simplify drivers but also power domains.
+As we also may use runtime PM callbacks during system suspend, to put
+devices into low power state, we need to move the implementation of
+pm_generic_runtime_suspend|resume to CONFIG_PM.
 
-Additionally, some drivers seems to have messed up things when combining
-runtime PM with system PM. While we enable the option of re-using the runtime
-PM callbacks during system PM, we also intend to clarify the way forward for
-how these scenarios could be resolved.
+This change prevents the platform bus from by-passing driver's runtime
+PM callbacks while only CONFIG_PM_SLEEP and not CONFIG_PM_RUNTIME is
+being used.
 
-Some new helper macros for defining PM callbacks and two new pm_generic*
-functions has been implemented in this patch set. These are provided to make it
-easier for those who wants to enable the option of re-using the runtime PM
-callbacks during system suspend.
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/generic_ops.c |    4 ++--
+ include/linux/pm_runtime.h       |   12 ++++++++----
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
-A minor fix was needed for the platform bus, which runtime PM callbacks are set
-to the pm_genric_runtime_suspend|resume functions. These were implemented only
-for CONFIG_PM_RUNTIME and thus the platform bus prevented driver's runtime PM
-callbacks to be invoked when only CONFIG_PM_SLEEP was used. We move them into
-CONFIG_PM to resolve the problem and then let drivers decide how to handle this
-themselves.
-
-Patch 5 is folded into this patch set, to visualize how a driver that uses both
-runtime PM and system PM, can benefit from re-using the runtime PM callbacks
-during system suspend.
-
-Also note that, patch 1 to 4 has been submitted to linux-pm as standalone
-patches recently. I thought it make sense to collect them into a patchset
-since those are closely related.
-
-Ulf Hansson (5):
-  PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
-  PM / Runtime: Implement the pm_generic_runtime functions for
-    CONFIG_PM
-  PM / Runtime: Add second macro for definition of runtime PM callbacks
-  PM / Sleep: Add macro to define common late/early system PM callbacks
-  drm/exynos: Convert to suspend_late/resume_early callbacks for fimc
-
- drivers/base/power/generic_ops.c         |   90 +++++++++++++++++++++++++++++-
- drivers/gpu/drm/exynos/exynos_drm_fimc.c |   33 ++---------
- include/linux/pm.h                       |   23 ++++++++
- include/linux/pm_runtime.h               |   12 ++--
- 4 files changed, 123 insertions(+), 35 deletions(-)
-
+diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+index 8e78ad1..a4c6cb0 100644
+--- a/drivers/base/power/generic_ops.c
++++ b/drivers/base/power/generic_ops.c
+@@ -10,7 +10,7 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/export.h>
+ 
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
+ /**
+  * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
+  * @dev: Device to suspend.
+@@ -48,7 +48,7 @@ int pm_generic_runtime_resume(struct device *dev)
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(pm_generic_runtime_resume);
+-#endif /* CONFIG_PM_RUNTIME */
++#endif /* CONFIG_PM */
+ 
+ #ifdef CONFIG_PM_SLEEP
+ /**
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 6fa7cea..16c9a62 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -23,6 +23,14 @@
+ 					    usage_count */
+ #define RPM_AUTO		0x08	/* Use autosuspend_delay */
+ 
++#ifdef CONFIG_PM
++extern int pm_generic_runtime_suspend(struct device *dev);
++extern int pm_generic_runtime_resume(struct device *dev);
++#else
++static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
++static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
++#endif
++
+ #ifdef CONFIG_PM_RUNTIME
+ 
+ extern struct workqueue_struct *pm_wq;
+@@ -37,8 +45,6 @@ extern void pm_runtime_enable(struct device *dev);
+ extern void __pm_runtime_disable(struct device *dev, bool check_resume);
+ extern void pm_runtime_allow(struct device *dev);
+ extern void pm_runtime_forbid(struct device *dev);
+-extern int pm_generic_runtime_suspend(struct device *dev);
+-extern int pm_generic_runtime_resume(struct device *dev);
+ extern void pm_runtime_no_callbacks(struct device *dev);
+ extern void pm_runtime_irq_safe(struct device *dev);
+ extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
+@@ -142,8 +148,6 @@ static inline bool pm_runtime_active(struct device *dev) { return true; }
+ static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+-static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
+-static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+ static inline void pm_runtime_irq_safe(struct device *dev) {}
+ 
 -- 
 1.7.9.5
-
