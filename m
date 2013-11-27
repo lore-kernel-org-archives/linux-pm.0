@@ -1,71 +1,72 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2] PM / Sleep: Add pm_generic functions to re-use runtime
- PM callbacks
-Date: Wed, 27 Nov 2013 10:59:57 +0100
-Message-ID: <CAPDyKFow3Y7bWAWNxQyrKeHizk0TSoCuPLHD=p_1D=CAYQpm9A@mail.gmail.com>
-References: <2026361.IiCVpVNYkW@vostro.rjw.lan>
-	<Pine.LNX.4.44L0.1311261556480.1359-100000@iolanthe.rowland.org>
-	<CAPDyKFp2z=ST6Sd3T+1Ko5pf5pf3Cfr44jS=jTBWABPcSS2RLg@mail.gmail.com>
-	<3028580.oiUVTDjyao@vostro.rjw.lan>
+From: kgene@kernel.org
+Subject: RE: [PATCH v2 5/5] ARM: dts: exynos4412-trats2: Enable TMU support at
+ Trats2
+Date: Wed, 27 Nov 2013 20:36:03 +0900
+Message-ID: <004d01ceeb64$da648200$8f2d8600$@kernel.org>
+References: <1380010102-25817-1-git-send-email-l.majewski@samsung.com>
+ <1381300194-13134-1-git-send-email-l.majewski@samsung.com>
+ <1381300194-13134-6-git-send-email-l.majewski@samsung.com>
+ <20131015082935.3d33eee7@amdc308.digital.local>
+ <20131127081242.0591f911@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <3028580.oiUVTDjyao-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:12090 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444Ab3K0LgF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2013 06:36:05 -0500
+In-reply-to: <20131127081242.0591f911@amdc308.digital.local>
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Lukasz Majewski' <l.majewski@samsung.com>
+Cc: 'Linux PM list' <linux-pm@vger.kernel.org>, 'Lukasz Majewski' <l.majewski@majess.pl>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Tomasz Figa' <t.figa@samsung.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 
->>
->> There are already a generic callbacks that does this. Normally the
->> generic callbacks is used from buses and power domains.
->>
->> My new callbacks are intended to be used from the driver, so those are
->> kind of different from the others in that sense.
->
-> Hmm.  I see.
->
-> For that to work, the subsystem's .suspend() and .resume() callbacks will
-> have to be implemented in a special way, because of the unknown runtime PM
-> status of devices while those callbacks are being executed.
+Lukasz Majewski wrote:
+> 
+> Hi Kukjin,
+> 
+> > Hi Kukjin,
+> >
+> > > This patch enables support for TMU at Exynos4412 based Trats2 board.
+> > >
+> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > > Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+> > >
+> > > ---
+> > > Changes for v2:
+> > > - None
+> > >
+> > >  arch/arm/boot/dts/exynos4412-trats2.dts |    5 +++++
+> > >  1 file changed, 5 insertions(+)
+> > >
+> > > diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts
+> > > b/arch/arm/boot/dts/exynos4412-trats2.dts index fb7b9ae..57136f8
+> > > 100644 --- a/arch/arm/boot/dts/exynos4412-trats2.dts
+> > > +++ b/arch/arm/boot/dts/exynos4412-trats2.dts
+> > > @@ -467,6 +467,11 @@
+> > >  		status = "okay";
+> > >  	};
+> > >
+> > > +	tmu@100C0000 {
+> > > +		vtmu-supply = <&ldo10_reg>;
+> > > +		status = "okay";
+> > > +	};
+> > > +
+> > >  	i2c_ak8975: i2c-gpio-0 {
+> > >  		compatible = "i2c-gpio";
+> > >  		gpios = <&gpy2 4 0>, <&gpy2 5 0>;
+> >
+> > Can you pull this DT node definition for TMU (as a fix to v3.12)?
+> >
+> > It is crucial for Exynos4412. Other patches from this patch set were
+> > already pulled as v3.12 fixes.
+> >
+> 
+> Kukjin, could you pull this patch?
+> 
+Applied, thanks.
+Kukjin
 
-Not sure I understand why you think the runtime PM status is unknown?
-
-In .suspend the runtime status can still be changed. Since the PM core
-disables runtime PM before invoking .suspend_late and since the PM
-core will keep runtime PM disabled until after the .resume_early has
-been invoked, it will be safe to operate on the runtime PM callbacks
-during this period - if the driver/bus are adopted for it. While the
-.resume callback gets invoked, the runtime status are restored to it's
-previous state, which the bus/driver would expect.
-
-Do you want me to send a patch for a driver that uses these callbacks?
-I suppose it would clarify how I am thinking...
-
->
-> Presumably you think about subsystems that don't implement those callbacks
-> at all?
-
-If you mean that "drivers" is not a part of the term "subsystem" here,
-then I somewhat agree.
-
-My view is that it will be mostly drivers that make use of these callbacks.
-
-Though, I don't think we need to prevent subsystems or power domains
-from using them, they will only have to know what the consequences
-are. :-)
-
-Maybe there could even be some cases were it actually makes good sense
-of using them for subsystems, even if I yet not have come a cross such
-a case.
-
-Kind regards
-Ulf Hansson
-
->
-> Rafael
->
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
