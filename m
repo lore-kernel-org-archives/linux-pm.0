@@ -1,131 +1,71 @@
-From: Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Subject: [PATCH 00/15] Enable compilation of various Renesas drivers with
-	COMPILE_TEST
-Date: Wed, 27 Nov 2013 02:18:22 +0100
-Message-ID: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 1/6] cpufreq: suspend governors on system suspend/hibernate
+Date: Wed, 27 Nov 2013 02:42:27 +0100
+Message-ID: <4787675.sJF8mqYyxv@vostro.rjw.lan>
+References: <cover.1385374819.git.viresh.kumar@linaro.org> <CAKohpok0E=m=63KXM22usiW7Rsu59cD7Q=+k3tRcW=8269tZnQ@mail.gmail.com> <4253729.doK7ubnxKx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Chris Ball <cjb-2X9k7bc8m7Mdnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <samuel-jcdQHdrhKHMdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Molton <ian-zdned+2MO1+9FHfhHBbuYA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4253729.doK7ubnxKx@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On Tuesday, November 26, 2013 09:23:15 PM Rafael J. Wysocki wrote:
+> On Tuesday, November 26, 2013 07:56:19 AM Viresh Kumar wrote:
+> > On 26 November 2013 04:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > >> @@ -1259,6 +1262,8 @@ int dpm_suspend(pm_message_t state)
+> > >>
+> > >>       might_sleep();
+> > >>
+> > >> +     cpufreq_suspend();
+> > >> +
+> > >>
+> > >>       mutex_lock(&dpm_list_mtx);
+> > >>       pm_transition = state;
+> > >>       async_error = 0;
+> > >
+> > > Shouldn't it do cpufreq_resume() on errors?
+> > 
+> > Yes and this is already done I believe. In case dpm_suspend() fails,
+> > dpm_resume() gets called. Isn't it?
+> 
+> OK
+> 
+> > >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > >> +void cpufreq_suspend(void)
+> > >> +{
+> > >> +     struct cpufreq_policy *policy;
+> > >> +
+> > >> +     if (!has_target())
+> > >> +             return;
+> > >> +
+> > >> +     pr_debug("%s: Suspending Governors\n", __func__);
+> > >> +
+> > >> +     list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
+> > >> +             if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+> > >> +                     pr_err("%s: Failed to stop governor for policy: %p\n",
+> > >> +                                     __func__, policy);
+> > >
+> > > This appears to be racy.  Is it really racy, or just seemingly?
+> > 
+> > Why does it look racy to you? Userspace should be frozen by now,
+> > policy_list should be stable as well as nobody would touch it.
+> 
+> You're stopping governors while they may be in use in principle.  Do we have
+> suitable synchronization in place for that?
 
-This patch series enables driver compilation with COMPILE_TEST for various
-Renesas drivers. The approach taken here is to split the Kconfig depends line
-in two, with compile dependencies (if any) on one line and runtime
-dependencies (as a list of the platforms on which the hardware can be found)
-on another line. The runtime dependencies line is extended with
-|| COMPILE_TEST to enable test compilation. This clearly identifies compile
-dependencies, and allow test compilation while not clobbering the
-configuration menu with useless options in the normal case.
+Anyway, if you did what I asked you to do and put the cpufreq suspend/resume
+into dpm_suspend/resume_noirq(), I'd probably take this for 3.13.  However,
+since you've decided to put those things somewhere else thus making the
+change much more intrusive, I can only queue it up for 3.14.
 
-The patches are based on top of v3.13-rc1. To avoid build warnings or errors
-during bisection the following patches sent to linux-sh and appropriate
-mailing lists should be applied first:
+This means I'm going to take the Tianyu's patch as a stop gap for 3.13.
 
-serial: sh-sci: Fix warnings due to improper casts and printk formats
-DMA: shdma: Fix warnings due to improper casts and printk formats
-DMA: shdma: Fix warnings due to declared but unused symbols
-DMA: shdma: Make sh_dmae_pm static
-v4l: sh_vou: Fix warnings due to improper casts and printk formats
-mmc: sh_mmcif: Factorize DMA channel request and configuration code
-mmc: sh_mmcif: Fix compilation warning on 64-bit platforms
-mtd: sh_flctl: Fix warnings due to improper casts
-fbdev: sh_mobile_lcdcfb: Don't use plain 0 as NULL pointer
-spi: sh-msiof: Fix warnings due to improper casts
-spi: rcar: Fix uninitialized variable warning
-spi: rcar: Fix pointer cast in the remove function
-
-For convenience I've pushed the whole series and its prerequisites to my git
-tree at
-
-	git://linuxtv.org/pinchartl/fbdev.git clocks/ccf/multiarch-drivers
-
-The patches will need to go through their respective subsystem's trees. To
-help me tracking the mainlining state I'd appreciate if the respective
-maintainers could notify me when applying the patches to their trees. Before
-doing so I'd like to get an ack from Mark Brown and/or Russell King on the
-approach.
-
-Cc: dmaengine-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Chris Ball <cjb-2X9k7bc8m7Mdnm+yROfE0A@public.gmane.org>
-Cc: David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>
-Cc: Ian Molton <ian-zdned+2MO1+9FHfhHBbuYA@public.gmane.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
-Cc: Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>
-Cc: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mauro Carvalho Chehab <m.chehab-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
-Cc: Samuel Ortiz <samuel-jcdQHdrhKHMdnm+yROfE0A@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-
-Laurent Pinchart (15):
-  i2c: shmobile/rcar: Restrict non-COMPILE_TEST compilation
-  input: sh_keysc: Restrict non-COMPILE_TEST compilation
-  serial: sh-sci: Restrict non-COMPILE_TEST compilation
-  iommu: shmobile: Enable driver compilation with COMPILE_TEST
-  DMA: shdma: Enable driver compilation with COMPILE_TEST
-  v4l: sh_vou: Enable driver compilation with COMPILE_TEST
-  mmc: sdhi: Enable driver compilation with COMPILE_TEST
-  mmc: sh_mmcif: Enable driver compilation with COMPILE_TEST
-  mtd: sh_flctl: Enable driver compilation with COMPILE_TEST
-  irda: sh_irda: Enable driver compilation with COMPILE_TEST
-  pwm: pwm-renesas-tpu: Enable driver compilation with COMPILE_TEST
-  thermal: rcar-thermal: Enable driver compilation with COMPILE_TEST
-  fbdev: sh-mobile-lcdcfb: Enable driver compilation with COMPILE_TEST
-  spi: sh-msiof: Enable driver compilation with COMPILE_TEST
-  sh: intc: Enable driver compilation with COMPILE_TEST
-
- drivers/dma/sh/Kconfig         | 2 +-
- drivers/i2c/busses/Kconfig     | 4 ++--
- drivers/input/keyboard/Kconfig | 2 +-
- drivers/iommu/Kconfig          | 1 +
- drivers/media/platform/Kconfig | 3 ++-
- drivers/mmc/host/Kconfig       | 6 ++++--
- drivers/mtd/nand/Kconfig       | 2 +-
- drivers/net/irda/Kconfig       | 3 ++-
- drivers/pwm/Kconfig            | 2 +-
- drivers/sh/intc/Kconfig        | 2 +-
- drivers/spi/Kconfig            | 3 ++-
- drivers/thermal/Kconfig        | 2 +-
- drivers/tty/serial/Kconfig     | 3 ++-
- drivers/video/Kconfig          | 8 +++++---
- 14 files changed, 26 insertions(+), 17 deletions(-)
+Thanks!
 
 -- 
-Regards,
-
-Laurent Pinchart
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
