@@ -1,39 +1,158 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4] cpufreq: suspend governors on system suspend/hibernate
-Date: Thu, 28 Nov 2013 19:49:29 +0530
-Message-ID: <CAKohpondYbBeObUJJqNZLe04dmN9tLMZv9KrjzqLr2NDorRtLw@mail.gmail.com>
-References: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org>
-	<3057132.zHNVNQZ8pP@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <3057132.zHNVNQZ8pP@vostro.rjw.lan>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+Subject: [PATCH V3] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Thu, 28 Nov 2013 20:14:11 +0530
+Message-ID: <ad0a09012f3621024deb51120c3d4ef97ffcbd0f.1385649767.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, ceh@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 28 November 2013 19:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> I don't think that the Nishanth's issue is fixed by this particular version of
-> the patch, so I modified the changelog and removed a the comment above
-> cpufreq_suspend()
+Sometimes boot loaders set CPU frequency to a value outside of frequency table
+present with cpufreq core. In such cases CPU might be unstable if it has to run
+on that frequency for long duration of time and so its better to set it to a
+frequency which is specified in freq-table. This also makes cpufreq stats
+inconsistent as cpufreq-stats would fail to register because current frequency
+of CPU isn't found in freq-table.
 
-No, it does fix his issue as we are just stopping the governors from
-dpm_suspend_noirq() and not initiating any new transitions. I said we need
-these calls from dpm_suspend() instead as platforms like exynos and tegra
-do need to change frequency before suspending..
+Because we don't want this change to effect boot process badly, we go for the
+next freq which is >= policy->cur ('cur' must be set by now, otherwise we will
+end up setting freq to lowest of the table as 'cur' is initialized to zero).
 
-See:
+In case current frequency doesn't match any frequency from freq-table, we throw
+warnings to user, so that user can get this fixed in their bootloaders or
+freq-tables.
 
-https://lkml.org/lkml/2013/11/25/692
+On some systems we can't really say what frequency we're running at the moment
+and so for these we have added another flag: CPUFREQ_SKIP_INITIAL_FREQ_CHECK.
 
-> (which should be a proper kerneldoc one if any, BTW).
+Reported-by: Carlos Hernandez <ceh@ti.com>
+Reported-and-tested-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2->V3:
+- Added BUG_ON()
+- Added another flag: CPUFREQ_SKIP_INITIAL_FREQ_CHECK
 
-Okay.. I will add that separately..
+ drivers/cpufreq/cpufreq.c    | 38 ++++++++++++++++++++++++++++++++++++++
+ drivers/cpufreq/freq_table.c | 24 ++++++++++++++++++++++++
+ include/linux/cpufreq.h      | 11 +++++++++++
+ 3 files changed, 73 insertions(+)
 
-> I've also made some minor changes to the conditionals, because I didn't like them
-> the way they were written originally.
->
-> Please check the result in bleeding-edge.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534d..1a8bf5d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1038,6 +1038,44 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 		}
+ 	}
+ 
++	/*
++	 * Sometimes boot loaders set CPU frequency to a value outside of
++	 * frequency table present with cpufreq core. In such cases CPU might be
++	 * unstable if it has to run on that frequency for long duration of time
++	 * and so its better to set it to a frequency which is specified in
++	 * freq-table. This also makes cpufreq stats inconsistent as
++	 * cpufreq-stats would fail to register because current frequency of CPU
++	 * isn't found in freq-table.
++	 *
++	 * Because we don't want this change to effect boot process badly, we go
++	 * for the next freq which is >= policy->cur ('cur' must be set by now,
++	 * otherwise we will end up setting freq to lowest of the table as 'cur'
++	 * is initialized to zero).
++	 *
++	 * We are passing target-freq as "policy->cur - 1" otherwise
++	 * __cpufreq_driver_target() would simply fail, as policy->cur will be
++	 * equal to target-freq.
++	 */
++	if (!(cpufreq_driver->flags & CPUFREQ_SKIP_INITIAL_FREQ_CHECK)
++			&& has_target()) {
++		/* Are we running at unknown frequency ? */
++		ret = cpufreq_frequency_table_get_index(policy, policy->cur);
++		if (ret == -EINVAL) {
++			/* Warn user and fix it */
++			pr_warn("%s: CPU%d: running at invalid freq: %u KHz\n",
++					__func__, policy->cpu, policy->cur);
++			/*
++			 * Reaching here after boot in a few seconds may not
++			 * mean that system will remain stable at "unknown"
++			 * frequency for longer duration. Hence, a BUG_ON().
++			 */
++			BUG_ON(__cpufreq_driver_target(policy, policy->cur - 1,
++					CPUFREQ_RELATION_L));
++			pr_warn("%s: CPU%d: frequency changed to: %u KHz\n",
++					__func__, policy->cpu, policy->cur);
++		}
++	}
++
+ 	/* related cpus should atleast have policy->cpus */
+ 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+ 
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 3458d27..0d6cc0e 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -178,7 +178,31 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
+ 
++int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
++		unsigned int freq)
++{
++	struct cpufreq_frequency_table *table;
++	int index = -EINVAL, i = 0;
++
++	table = cpufreq_frequency_get_table(policy->cpu);
++	if (unlikely(!table)) {
++		pr_debug("%s: Unable to find freq_table\n", __func__);
++		return -ENOENT;
++	}
++
++	for (; table[i].frequency != CPUFREQ_TABLE_END; i++) {
++		if (table[i].frequency == freq) {
++			index = i;
++			break;
++		}
++	}
++
++	return index;
++}
++EXPORT_SYMBOL_GPL(cpufreq_frequency_table_get_index);
++
+ static DEFINE_PER_CPU(struct cpufreq_frequency_table *, cpufreq_show_table);
++
+ /**
+  * show_available_freqs - show available frequencies for the specified CPU
+  */
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index dc196bb..7109c62 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -252,6 +252,15 @@ struct cpufreq_driver {
+  */
+ #define CPUFREQ_ASYNC_NOTIFICATION  (1 << 4)
+ 
++/*
++ * Set by drivers which don't want cpufreq core to check if CPU is running at a
++ * frequency present in freq-table exposed by the driver. For other drivers if
++ * CPU is found running at an out of table freq, we will try to set it to a freq
++ * from the table. And if that fails, we will stop further boot process by
++ * issuing a BUG_ON().
++ */
++#define CPUFREQ_SKIP_INITIAL_FREQ_CHECK	(1 << 5)
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 
+@@ -439,6 +448,8 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+ 				   unsigned int target_freq,
+ 				   unsigned int relation,
+ 				   unsigned int *index);
++int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
++		unsigned int freq);
+ 
+ void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
+ ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
+-- 
+1.7.12.rc2.18.g61b472e
 
-Everything else is fine..
