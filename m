@@ -1,43 +1,175 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 1/1] PM / devfreq: Fix trivial typo in exynos4_bus.c
-Date: Thu, 28 Nov 2013 06:05:17 +0000 (GMT)
-Message-ID: <13192635.130291385618717309.JavaMail.weblogic@epml10>
-Reply-To: myungjoo.ham@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq, highbank: enable ECME thermal notifications
+Date: Thu, 28 Nov 2013 12:06:44 +0530
+Message-ID: <CAOh2x=nyUDJz0N0Frz3X4-Omi6kcvQ37GEhXgmdw9bmQuWRZNw@mail.gmail.com>
+References: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:27425 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231Ab3K1GFT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2013 01:05:19 -0500
-Received: from epcpsbgr1.samsung.com
- (u141.gpu120.samsung.co.kr [203.254.230.141])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MWY00981M8USS30@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 28 Nov 2013 15:05:18 +0900 (KST)
-MIME-version: 1.0
+Received: from mail-vb0-f47.google.com ([209.85.212.47]:41403 "EHLO
+	mail-vb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752275Ab3K1Ggp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2013 01:36:45 -0500
+In-Reply-To: <1382226889-11062-1-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "trivial@kernel.org" <trivial@kernel.org>
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-PiBDaGFuZ2VkIGV4eW5veCAtPiBFeHlub3MuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBTYWNoaW4g
-S2FtYXQgPHNhY2hpbi5rYW1hdEBsaW5hcm8ub3JnPg0KDQpBY2tlZC1ieTogTXl1bmdKb28gSGFt
-IDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCg0KPiAtLS0NCj4gIGRyaXZlcnMvZGV2ZnJl
-cS9leHlub3MvZXh5bm9zNF9idXMuYyB8ICAgIDIgKy0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAxIGlu
-c2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2
-ZnJlcS9leHlub3MvZXh5bm9zNF9idXMuYyBiL2RyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5bm9z
-NF9idXMuYw0KPiBpbmRleCBjZWRlNmY3MWNkNjMuLmJiYmZlNjg1M2IxOCAxMDA2NDQNCj4gLS0t
-IGEvZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3M0X2J1cy5jDQo+ICsrKyBiL2RyaXZlcnMv
-ZGV2ZnJlcS9leHlub3MvZXh5bm9zNF9idXMuYw0KPiBAQCAtMTE2LDcgKzExNiw3IEBAIHN0YXRp
-YyBzdHJ1Y3QgYnVzX29wcF90YWJsZSBleHlub3M0MjEwX2J1c2Nsa190YWJsZVtdID0gew0KPiAg
-fTsNCj4gIA0KPiAgLyoNCj4gLSAqIE1JRiBpcyB0aGUgbWFpbiBjb250cm9sIGtub2IgY2xvY2sg
-Zm9yIGV4eW5veDR4MTIgTUlGL0lOVA0KPiArICogTUlGIGlzIHRoZSBtYWluIGNvbnRyb2wga25v
-YiBjbG9jayBmb3IgRXh5bm9zNHgxMiBNSUYvSU5UDQo+ICAgKiBjbG9jayBhbmQgdm9sdGFnZSBv
-ZiBib3RoIG1pZi9pbnQgYXJlIGNvbnRyb2xsZWQuDQo+ICAgKi8NCj4gIHN0YXRpYyBzdHJ1Y3Qg
-YnVzX29wcF90YWJsZSBleHlub3M0eDEyX21pZmNsa190YWJsZVtdID0gew0KPiAtLSANCj4gMS43
-LjkuNQ0K
+Hi Mark,
 
+Sorry for a months delay.. I would suggest adding specific people in --to
+field whom you want to review your patches. That's always helpful.
 
+On Sun, Oct 20, 2013 at 5:24 AM, Mark Langsdorf
+<mark.langsdorf@calxeda.com> wrote:
+> The ECME sends thermal messages with a maximum and minimum allowed
+> frequency when the SoC status reaches certain trip points known to the
+> ECME. Use a notifier function to capture those messages and pass them
+> to a work-queued function that can trigger a policy re-evaluation by
+> cpufreq, capping the allowable frequencies.
+>
+> The core of the policy adjusting code was taken from
+> drivers/thermal/cpu_cooling.c.
+>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> ---
+>  drivers/cpufreq/highbank-cpufreq.c | 117 +++++++++++++++++++++++++++++++++++++
+>  1 file changed, 117 insertions(+)
+>
+> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+> index b61b5a3..f0521d3 100644
+> --- a/drivers/cpufreq/highbank-cpufreq.c
+> +++ b/drivers/cpufreq/highbank-cpufreq.c
+> @@ -17,15 +17,32 @@
+>  #include <linux/module.h>
+>  #include <linux/clk.h>
+>  #include <linux/cpu.h>
+> +#include <linux/cpufreq.h>
+
+How was this missing earlier :)
+
+>  #include <linux/err.h>
+>  #include <linux/of.h>
+>  #include <linux/mailbox.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/cpumask.h>
+
+Please add this after cpu.h to keep them in ascending order..
+Also rearrange module and kernel.h to make this list sorted out in the
+same patch..
+
+> +#include <linux/workqueue.h>
+>
+>  #define HB_CPUFREQ_CHANGE_NOTE 0x80000001
+> +#define HB_CPUFREQ_HEALTH_NOTE  0x00001001
+> +#define HB_CPUFREQ_TPS_REPORT  1
+>  #define HB_CPUFREQ_IPC_LEN     7
+>  #define HB_CPUFREQ_VOLT_RETRIES        15
+>
+> +#define NOTIFY_INVALID NULL
+
+Not actually required. Just use NULL everywhere you want this..
+
+> +struct hb_notify_device {
+> +       unsigned long max_freq;
+> +       unsigned long min_freq;
+> +       unsigned long thermal_state;
+> +       struct cpumask *allowed_cpus;
+
+Because this is always equal to cpu_possible_mask, you
+don't actually need it..
+
+> +};
+> +
+> +static struct hb_notify_device hb_records, *notify_device = NOTIFY_INVALID;
+> +static struct work_struct hb_thermal_wq;
+> +
+>  static int hb_voltage_change(unsigned int freq)
+>  {
+>         u32 msg[HB_CPUFREQ_IPC_LEN] = {HB_CPUFREQ_CHANGE_NOTE, freq / 1000000};
+> @@ -33,6 +50,89 @@ static int hb_voltage_change(unsigned int freq)
+>         return pl320_ipc_transmit(msg);
+>  }
+>
+> +static int hb_thermal_cpufreq_notify(struct notifier_block *nb,
+> +                                   unsigned long event, void *data)
+> +{
+> +       struct cpufreq_policy *policy = data;
+> +       unsigned long max_freq = 0, min_freq = 0;
+> +
+> +       if (event != CPUFREQ_ADJUST || notify_device == NOTIFY_INVALID)
+
+I believe you should check notify_device == NOTIFY_INVALID first and then
+value of event.
+
+> +               return 0;
+> +
+> +       if (cpumask_test_cpu(policy->cpu, notify_device->allowed_cpus)) {
+
+What's your system configuration (Just for my understanding)? How many
+CPUs you have? They are sharing clock lines?
+
+And anyway how can policy->cpu be out of cpu_possible_mask ?
+
+> +               max_freq = notify_device->max_freq;
+> +               min_freq = notify_device->min_freq;
+> +       }
+> +
+> +       /* Never exceed user_policy.max */
+> +       if (max_freq > policy->user_policy.max)
+> +               max_freq = policy->user_policy.max;
+> +       if (min_freq < policy->user_policy.min)
+> +               min_freq = policy->user_policy.min;
+> +
+> +       if ((policy->max != max_freq) || (policy->min != min_freq))
+
+Probably just call cpufreq_verify_within_limits() directly as we have
+similar checks in there, it isn't too heavy ?
+
+> +               cpufreq_verify_within_limits(policy, min_freq, max_freq);
+> +
+> +       return 0;
+> +}
+> +
+> +static struct notifier_block hb_thermal_cpufreq_nb = {
+> +       .notifier_call = hb_thermal_cpufreq_notify,
+> +};
+> +
+> +/*
+> + * We can't call cpufreq_adjust_policy from inside a notifier, so
+> + * do it from inside a workqueue
+> + */
+
+Why exactly? Adding that into comment would be more useful..
+
+> +static void hb_thermal_wq_task(struct work_struct *work)
+> +{
+> +       unsigned int cpuid;
+> +       struct cpumask *mask = hb_records.allowed_cpus;
+> +
+> +       notify_device = &hb_records;
+> +
+> +       for_each_cpu(cpuid, mask) {
+
+That's not a optimal solution. We have CPUs in groups normally
+(i.e. sharing clock lines) and so each policy structure might be
+common for few.. And so we need to do below only for policy->cpu
+and no other CPUs from policy->affected_cpus.
+
+> +               struct cpufreq_policy policy;
+> +               if (cpufreq_get_policy(&policy, cpuid) == 0) {
+
+Do you expect any CPUs to exist without a policy? If not, then
+this check is just not required (Its heavy, memcpy)..
+
+Otherwise, also just call cpufreq_update_policy() and check
+return type for -ENODEV, which is returned if there is no
+policy associated with it..
+
+> +                       cpufreq_update_policy(cpuid);
+> +                       break;
+> +               }
+> +       }
+> +       notify_device = NOTIFY_INVALID;
+> +}
