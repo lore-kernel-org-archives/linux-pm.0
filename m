@@ -1,126 +1,59 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v3] cpufreq: exynos: Convert exynos-cpufreq to platform driver
-Date: Thu, 28 Nov 2013 13:42:42 +0100
-Message-ID: <1385642562-9339-1-git-send-email-l.majewski@samsung.com>
-References: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
+Date: Thu, 28 Nov 2013 14:09:59 +0100
+Message-ID: <14305907.pSqK27Oikr@vostro.rjw.lan>
+References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org> <5408313.YdNvR1b3g5@vostro.rjw.lan> <CAKohponPOFP3pxZYngZcFneBMNozNkCyB1Yevj4801TqfAxHbw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63498 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756482Ab3K1M5K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2013 07:57:10 -0500
+In-Reply-To: <CAKohponPOFP3pxZYngZcFneBMNozNkCyB1Yevj4801TqfAxHbw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 
-To make the driver multiplatform-friendly, unconditional initialization
-in an initcall is replaced with a platform driver probed only if
-respective platform device is registered.
+On Thursday, November 28, 2013 08:50:20 AM Viresh Kumar wrote:
+> On 28 November 2013 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > I have a concern that on some systems you can't really say what frequency
+> > you're running at the moment, however.
+> 
+> Which ones? I know ACPI tries to play smart by handling the frequency stuff
+> itself by marking CPUs not-related to each other for the kernel where they
+> might actually be sharing clock line... But probably in these cases as well,
+> atleast the cpufreq core should believe that it is running on a valid frequency
+> even if actual hardware is running at something different..
+> 
+> Any other platforms you are aware of that implement ->target/target_index
+> and where we can't say what freq are they running at?
 
-Tested at: Exynos4210 (TRATS) and Exynos4412 (TRATS2)
+acpi-cpufreq is one at least.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Anyway, this isn't about ACPI or anything like that, but hardware.  Generally
+speaking, on modern Intel hardware the processor itself chooses the frequency
+to run at and it may do that behind your back.  Moreover, it can choose a
+frequency different from the one you asked for.  And it won't choose one that
+it can't run at for that matter. :-)
 
----
-Changes for v3:
-- Rename exynos_cpufreq_init() to exynos_cpufreq_probe()
+Overall, I don't believe that the problem you're trying to address is relevant
+for any non-exotic x86 hardware.
 
-Changes for v2:
-- Proper definition of exynos_cpufreq_init() function to squash warnings
+> > So there should be a flag for
+> > drivers indicating whether or not frequencies (or operation points in
+> > general) are directly testable and the check should only be done for
+> > the drivers with the flag set.
+> 
+> Probably a flag with properties exactly opposite to what you mentioned,
+> so that we don't need to modify most of the drivers..
 
- arch/arm/mach-exynos/common.c          |    5 +++++
- arch/arm/mach-exynos/common.h          |    1 +
- arch/arm/mach-exynos/mach-exynos4-dt.c |    1 +
- arch/arm/mach-exynos/mach-exynos5-dt.c |    1 +
- drivers/cpufreq/exynos-cpufreq.c       |   13 +++++++++++--
- 5 files changed, 19 insertions(+), 2 deletions(-)
+That would work too if you prefer it.
 
-diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
-index 61d2906..1510436 100644
---- a/arch/arm/mach-exynos/common.c
-+++ b/arch/arm/mach-exynos/common.c
-@@ -303,6 +303,11 @@ void __init exynos_cpuidle_init(void)
- 	platform_device_register(&exynos_cpuidle);
- }
- 
-+void __init exynos_cpufreq_init(void)
-+{
-+	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
-+}
-+
- void __init exynos_init_late(void)
- {
- 	if (of_machine_is_compatible("samsung,exynos5440"))
-diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-index ff9b6a9..3f03334 100644
---- a/arch/arm/mach-exynos/common.h
-+++ b/arch/arm/mach-exynos/common.h
-@@ -22,6 +22,7 @@ void exynos_init_io(void);
- void exynos4_restart(enum reboot_mode mode, const char *cmd);
- void exynos5_restart(enum reboot_mode mode, const char *cmd);
- void exynos_cpuidle_init(void);
-+void exynos_cpufreq_init(void);
- void exynos_init_late(void);
- 
- void exynos_firmware_init(void);
-diff --git a/arch/arm/mach-exynos/mach-exynos4-dt.c b/arch/arm/mach-exynos/mach-exynos4-dt.c
-index 4603e6b..d3e54b7 100644
---- a/arch/arm/mach-exynos/mach-exynos4-dt.c
-+++ b/arch/arm/mach-exynos/mach-exynos4-dt.c
-@@ -22,6 +22,7 @@
- static void __init exynos4_dt_machine_init(void)
- {
- 	exynos_cpuidle_init();
-+	exynos_cpufreq_init();
- 
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
-diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
-index 1fe075a..602c5d7 100644
---- a/arch/arm/mach-exynos/mach-exynos5-dt.c
-+++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
-@@ -44,6 +44,7 @@ static void __init exynos5_dt_machine_init(void)
- 	}
- 
- 	exynos_cpuidle_init();
-+	exynos_cpufreq_init();
- 
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index f3c2287..81b863c 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -17,6 +17,7 @@
- #include <linux/regulator/consumer.h>
- #include <linux/cpufreq.h>
- #include <linux/suspend.h>
-+#include <linux/platform_device.h>
- 
- #include <plat/cpu.h>
- 
-@@ -232,7 +233,7 @@ static struct cpufreq_driver exynos_driver = {
- #endif
- };
- 
--static int __init exynos_cpufreq_init(void)
-+static int exynos_cpufreq_probe(struct platform_device *pdev)
- {
- 	int ret = -EINVAL;
- 
-@@ -281,4 +282,12 @@ err_vdd_arm:
- 	kfree(exynos_info);
- 	return -EINVAL;
- }
--late_initcall(exynos_cpufreq_init);
-+
-+static struct platform_driver exynos_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "exynos-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe = exynos_cpufreq_probe,
-+};
-+module_platform_driver(exynos_cpufreq_platdrv);
+Thanks!
+
 -- 
-1.7.10.4
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
