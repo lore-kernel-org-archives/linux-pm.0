@@ -1,37 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: Make sure CPU is running on a freq from freq-table
-Date: Thu, 28 Nov 2013 08:50:20 +0530
-Message-ID: <CAKohponPOFP3pxZYngZcFneBMNozNkCyB1Yevj4801TqfAxHbw@mail.gmail.com>
-References: <046513da96dfec919a1a41d270c167147d4a9c8d.1385353358.git.viresh.kumar@linaro.org>
-	<4759452.7dXrrSTGCc@vostro.rjw.lan>
-	<CAKohpomXk34aaG3bKX9AuOcn7ZEXcKrc858jCUhcB2bavcnarQ@mail.gmail.com>
-	<5408313.YdNvR1b3g5@vostro.rjw.lan>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 1/1] PM / devfreq: Fix trivial typo in exynos4_bus.c
+Date: Thu, 28 Nov 2013 06:05:17 +0000 (GMT)
+Message-ID: <13192635.130291385618717309.JavaMail.weblogic@epml10>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5408313.YdNvR1b3g5@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:27425 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231Ab3K1GFT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2013 01:05:19 -0500
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MWY00981M8USS30@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 28 Nov 2013 15:05:18 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "trivial@kernel.org" <trivial@kernel.org>
 
-On 28 November 2013 01:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> I have a concern that on some systems you can't really say what frequency
-> you're running at the moment, however.
+PiBDaGFuZ2VkIGV4eW5veCAtPiBFeHlub3MuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBTYWNoaW4g
+S2FtYXQgPHNhY2hpbi5rYW1hdEBsaW5hcm8ub3JnPg0KDQpBY2tlZC1ieTogTXl1bmdKb28gSGFt
+IDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCg0KPiAtLS0NCj4gIGRyaXZlcnMvZGV2ZnJl
+cS9leHlub3MvZXh5bm9zNF9idXMuYyB8ICAgIDIgKy0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAxIGlu
+c2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2
+ZnJlcS9leHlub3MvZXh5bm9zNF9idXMuYyBiL2RyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5bm9z
+NF9idXMuYw0KPiBpbmRleCBjZWRlNmY3MWNkNjMuLmJiYmZlNjg1M2IxOCAxMDA2NDQNCj4gLS0t
+IGEvZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3M0X2J1cy5jDQo+ICsrKyBiL2RyaXZlcnMv
+ZGV2ZnJlcS9leHlub3MvZXh5bm9zNF9idXMuYw0KPiBAQCAtMTE2LDcgKzExNiw3IEBAIHN0YXRp
+YyBzdHJ1Y3QgYnVzX29wcF90YWJsZSBleHlub3M0MjEwX2J1c2Nsa190YWJsZVtdID0gew0KPiAg
+fTsNCj4gIA0KPiAgLyoNCj4gLSAqIE1JRiBpcyB0aGUgbWFpbiBjb250cm9sIGtub2IgY2xvY2sg
+Zm9yIGV4eW5veDR4MTIgTUlGL0lOVA0KPiArICogTUlGIGlzIHRoZSBtYWluIGNvbnRyb2wga25v
+YiBjbG9jayBmb3IgRXh5bm9zNHgxMiBNSUYvSU5UDQo+ICAgKiBjbG9jayBhbmQgdm9sdGFnZSBv
+ZiBib3RoIG1pZi9pbnQgYXJlIGNvbnRyb2xsZWQuDQo+ICAgKi8NCj4gIHN0YXRpYyBzdHJ1Y3Qg
+YnVzX29wcF90YWJsZSBleHlub3M0eDEyX21pZmNsa190YWJsZVtdID0gew0KPiAtLSANCj4gMS43
+LjkuNQ0K
 
-Which ones? I know ACPI tries to play smart by handling the frequency stuff
-itself by marking CPUs not-related to each other for the kernel where they
-might actually be sharing clock line... But probably in these cases as well,
-atleast the cpufreq core should believe that it is running on a valid frequency
-even if actual hardware is running at something different..
 
-Any other platforms you are aware of that implement ->target/target_index
-and where we can't say what freq are they running at?
-
-> So there should be a flag for
-> drivers indicating whether or not frequencies (or operation points in
-> general) are directly testable and the check should only be done for
-> the drivers with the flag set.
-
-Probably a flag with properties exactly opposite to what you mentioned,
-so that we don't need to modify most of the drivers..
