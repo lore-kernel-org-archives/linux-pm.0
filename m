@@ -1,135 +1,122 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/5] PM: Enable option of re-use runtime PM callbacks at
- system suspend
-Date: Thu, 28 Nov 2013 10:58:48 +0100
-Message-ID: <CAPDyKFq0OW+uhBF1pMvY01peC1dRERtSdSNY15O=vvdY_XvQUA@mail.gmail.com>
-References: <1385566500-7666-1-git-send-email-ulf.hansson@linaro.org>
-	<1619468.NHTb5ylADI@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f54.google.com ([209.85.216.54]:43227 "EHLO
-	mail-qa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302Ab3K1J6v (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2013 04:58:51 -0500
-Received: by mail-qa0-f54.google.com with SMTP id f11so538475qae.6
-        for <linux-pm@vger.kernel.org>; Thu, 28 Nov 2013 01:58:51 -0800 (PST)
-In-Reply-To: <1619468.NHTb5ylADI@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v2] cpufreq: exynos: Convert exynos-cpufreq to platform driver
+Date: Thu, 28 Nov 2013 12:35:47 +0100
+Message-ID: <1385638547-2974-1-git-send-email-l.majewski@samsung.com>
+References: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 27 November 2013 21:42, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, November 27, 2013 04:34:55 PM Ulf Hansson wrote:
->> To put devices into low power state during system suspend, it may be convenient
->> for runtime PM supported subsystems, power domains and drivers to have the
->> option of re-using the runtime PM callbacks.
->>
->> At the moment, quite complex solutions exist for power domains that tries to
->> handle the above, like for OMAP2. The idea here, is to make it possible for
->> drivers, who should know best, how to easiest put their devices into low power
->> state. The intent is thus not only to simplify drivers but also power domains.
->
-> So this is not entirely correct and stems from the fact that you are only
-> considering one platform.
+To make the driver multiplatform-friendly, unconditional initialization
+in an initcall is replaced with a platform driver probed only if
+respective platform device is registered.
 
-Bad wording from my side, sorry.
+Tested at: Exynos4210 (TRATS) and Exynos4412 (TRATS2)
 
-I guess you realize, that am mostly working on ARM SoCs, but that
-involve many platforms and drivers. In these cases it is quite common
-that drivers are the best "decision makers" for PM. It is also very
-common to have power domain regulators.
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-This combination is almost impossible to support without "hacks" as of
-today, especially if you have a more complex situation were the driver
-is attached to both a bus and a power domain, and were those also are
-handling runtime PM resources.
+---
+Changes for v2:
+- Proper definition of exynos_cpufreq_init() function to squash warnings
 
->
-> On some other platforms, like x86 PC for one example, device drivers have no
-> idea how to put their devices into low power states at all, because that
-> depends on what's there in the ACPI tables.
->
-> This becomes clearly visible when you try to use the same driver on two
-> different platforms that have different board layouts and power configurations.
-> And if one of them uses ACPI by chance, the driver shouldn't really fiddle with
-> its little knobs for clocks and power rails directly.
+ arch/arm/mach-exynos/common.c          |    5 +++++
+ arch/arm/mach-exynos/common.h          |    1 +
+ arch/arm/mach-exynos/mach-exynos4-dt.c |    1 +
+ arch/arm/mach-exynos/mach-exynos5-dt.c |    1 +
+ drivers/cpufreq/exynos-cpufreq.c       |   13 +++++++++++--
+ 5 files changed, 19 insertions(+), 2 deletions(-)
 
-Again, this patch set will only provide the option of being able to
-re-use runtime PM callbacks during system suspend; could also be
-considered as fundamental "building blocks" for those SoCs who needs
-this.
-
-Additionally and important, it wont break nor interfere with any other
-platforms like x86, which of course is very important. On the other
-hand, if it makes sense for other platforms to use these new building
-blocks they have the opportunity to do so.
-
->
->> Additionally, some drivers seems to have messed up things when combining
->> runtime PM with system PM. While we enable the option of re-using the runtime
->> PM callbacks during system PM, we also intend to clarify the way forward for
->> how these scenarios could be resolved.
->>
->> Some new helper macros for defining PM callbacks and two new pm_generic*
->> functions has been implemented in this patch set. These are provided to make it
->> easier for those who wants to enable the option of re-using the runtime PM
->> callbacks during system suspend.
->
-> I'm generally opposed to re-using callbacks like this, because it adds confusion
-> to the picture.  It may seem to be clever, but in fact it leads to bad design
-> choices in the drivers in my opinion.
-
-In my world of the kernel, it will clearly resolve confusions and
-simplify a significant amount of code in power domains, buses and
-drivers. So I guess it depends on from what point you look at this.
-
-And, as you stated previously during these discussions, we have the
-opportunity to update the documentation around this topic, I will
-happily do it, if needed.
-
->
-> Let's talk about specific examples, though.
->
-> Why exactly do you need what patch [5/5] does in the exynos_drm_fimc driver?
-
-This was a simple example, I wanted to visualize how the new building
-blocks were going to be used. Anyway, this we achieve with the patch:
-
-1.
-The PM part in the driver becomes simplified, we don't need the
-wrapper functions for the runtime PM callbacks any more.
-
-2.
-Previously the driver did not make sure runtime PM was disabled,
-before it put the device into low power state at .suspend. From a
-runtime PM point of view, this is not a "nice" behaviour and opens up
-for confusions, even if it likely would work in most cases.
-
-3.
-The power domain runtime PM callbacks were by-passed during system
-suspend, my patch fixes this. Why do I want this? Because the power
-domain can have runtime PM resources it need to handle at this phase.
-Potentially, it could handle that from it's .suspend_late callback
-instead, but then it gets unnecessary complicated, which is what
-clearly happened to the power domain for OMAP2, for example.
-
-
-If you want additional proof of concepts, we can have a look at more
-complex example.
-
-Typically I am thinking of cases were a cross SoC driver is attached
-to a bus and for some SoCs a power domain as well. Then, the bus, the
-power domain and the driver - all have runtime PM resources to handle.
-
-In these cases using the new building blocks will not only
-significantly simplify code, but also fix immediate bugs. One example
-are drivers attached to the AMBA bus, at drivers/amba/bus.c.
-
-Kind regards
-Ulf Hansson
-
->
-> Rafael
->
+diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
+index 61d2906..1510436 100644
+--- a/arch/arm/mach-exynos/common.c
++++ b/arch/arm/mach-exynos/common.c
+@@ -303,6 +303,11 @@ void __init exynos_cpuidle_init(void)
+ 	platform_device_register(&exynos_cpuidle);
+ }
+ 
++void __init exynos_cpufreq_init(void)
++{
++	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
++}
++
+ void __init exynos_init_late(void)
+ {
+ 	if (of_machine_is_compatible("samsung,exynos5440"))
+diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+index ff9b6a9..3f03334 100644
+--- a/arch/arm/mach-exynos/common.h
++++ b/arch/arm/mach-exynos/common.h
+@@ -22,6 +22,7 @@ void exynos_init_io(void);
+ void exynos4_restart(enum reboot_mode mode, const char *cmd);
+ void exynos5_restart(enum reboot_mode mode, const char *cmd);
+ void exynos_cpuidle_init(void);
++void exynos_cpufreq_init(void);
+ void exynos_init_late(void);
+ 
+ void exynos_firmware_init(void);
+diff --git a/arch/arm/mach-exynos/mach-exynos4-dt.c b/arch/arm/mach-exynos/mach-exynos4-dt.c
+index 4603e6b..d3e54b7 100644
+--- a/arch/arm/mach-exynos/mach-exynos4-dt.c
++++ b/arch/arm/mach-exynos/mach-exynos4-dt.c
+@@ -22,6 +22,7 @@
+ static void __init exynos4_dt_machine_init(void)
+ {
+ 	exynos_cpuidle_init();
++	exynos_cpufreq_init();
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
+index 1fe075a..602c5d7 100644
+--- a/arch/arm/mach-exynos/mach-exynos5-dt.c
++++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
+@@ -44,6 +44,7 @@ static void __init exynos5_dt_machine_init(void)
+ 	}
+ 
+ 	exynos_cpuidle_init();
++	exynos_cpufreq_init();
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index f3c2287..e238c46 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -17,6 +17,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/cpufreq.h>
+ #include <linux/suspend.h>
++#include <linux/platform_device.h>
+ 
+ #include <plat/cpu.h>
+ 
+@@ -232,7 +233,7 @@ static struct cpufreq_driver exynos_driver = {
+ #endif
+ };
+ 
+-static int __init exynos_cpufreq_init(void)
++static int exynos_cpufreq_init(struct platform_device *pdev)
+ {
+ 	int ret = -EINVAL;
+ 
+@@ -281,4 +282,12 @@ err_vdd_arm:
+ 	kfree(exynos_info);
+ 	return -EINVAL;
+ }
+-late_initcall(exynos_cpufreq_init);
++
++static struct platform_driver exynos_cpufreq_platdrv = {
++	.driver = {
++		.name	= "exynos-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe = exynos_cpufreq_init,
++};
++module_platform_driver(exynos_cpufreq_platdrv);
+-- 
+1.7.10.4
