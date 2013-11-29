@@ -1,66 +1,69 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH V4 7/9] cpuidle/powernv: Add "Fast-Sleep" CPU idle
- state
-Date: Fri, 29 Nov 2013 15:39:37 +0100 (CET)
-Message-ID: <alpine.DEB.2.02.1311291301300.30673@ionos.tec.linutronix.de>
-References: <20131129104010.651.23117.stgit@preeti.in.ibm.com> <20131129104319.651.29563.stgit@preeti.in.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/5] PM: Enable option of re-use runtime PM callbacks at
+ system suspend
+Date: Fri, 29 Nov 2013 10:30:57 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1311291014020.27250-100000@netrider.rowland.org>
+References: <4064706.R9zKA4hcfi@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:34473 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755270Ab3K2Oj4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2013 09:39:56 -0500
-In-Reply-To: <20131129104319.651.29563.stgit@preeti.in.ibm.com>
+Received: from netrider.rowland.org ([192.131.102.5]:51918 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755442Ab3K2Pa6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2013 10:30:58 -0500
+In-Reply-To: <4064706.R9zKA4hcfi@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, rjw@sisk.pl, galak@kernel.crashing.org, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
-On Fri, 29 Nov 2013, Preeti U Murthy wrote:
-> +static enum hrtimer_restart handle_broadcast(struct hrtimer *hrtimer)
-> +{
-> +	struct clock_event_device *bc_evt = &bc_timer;
-> +	ktime_t interval, next_bc_tick, now;
-> +
-> +	now = ktime_get();
-> +
-> +	if (!restart_broadcast(bc_evt))
-> +		return HRTIMER_NORESTART;
-> +
-> +	interval = ktime_sub(bc_evt->next_event, now);
-> +	next_bc_tick = get_next_bc_tick();
+On Fri, 29 Nov 2013, Rafael J. Wysocki wrote:
 
-So you're seriously using a hrtimer to poll in HZ frequency for
-updates of bc->next_event?
+> That should have been
+> 
+>  	driver->runtime_suspend(dev)
+>  	do_X(dev)
+> 
+> because do_Y(dev) is for runtime suspend.  Sorry.
+> 
+> And of course, the subsystem-level code you're developing the driver for may not
+> do the do_X(dev) thing at all, in which case all will work.  But what if someone
+> tries to use the driver with a different subsystem-level code (like a new PM
+> domain)?
 
-To be honest, this design sucks.
+It sounds like the problem is one of division of responsibilities.  
+What part of the work is done by the subsystem, and what part is done 
+by the driver?  Obviously the answer will vary from one subsystem to 
+another.
 
-First of all, why is this a PPC specific feature? There are probably
-other architectures which could make use of this. So this should be
-implemented in the core code to begin with.
+As I understand it, in Ulf's situation the subsystem knows that the
+operations needed for the suspend_late phase of system suspend are the
+same as those carried out by the driver's runtime_suspend callback (if
+the device isn't already in a runtime-PM low-power state).  Or perhaps
+it knows they are the same as those carried out by the subsystem's
+runtime_suspend callback.  Or perhaps the _driver_ knows that the
+operations it needs for suspend_late are the same as those carried out
+by its own runtime_suspend callback (if the device isn't already in a
+low-power state).
 
-And a lot of the things you need for this are already available in the
-core in one form or the other.
+Regardless, under those conditions the suspend_late routine merely has
+to invoke the appropriate runtime_suspend routine, after checking the
+device's runtime PM status.  We can't do this by calling
+pm_runtime_suspend, because runtime PM is disabled during suspend_late.  
+Instead, we have to call the proper runtime-suspend routine directly.
 
-For a start you can stick the broadcast hrtimer to the cpu which does
-the timekeeping. The handover in the hotplug case is handled there as
-well as is the handover for the NOHZ case.
+The amount of code needed is quite small; basically nothing more than:
 
-This needs to be extended for this hrtimer broadcast thingy to work,
-but it shouldn't be that hard to do so.
+	if (!pm_runtime_status_suspended(dev))
+		dev->driver->pm->runtime_suspend(dev);
 
-Now for the polling. That's a complete trainwreck.
+The problems are:
 
-This can be solved via the broadcast IPI as well. When a CPU which
-goes down into deep idle sets the broadcast to expire earlier than the
-active value it can denote that and send the timer broadcast IPI over
-to the CPU which has the honour of dealing with this.
+     1. Which callback does this code belong in?
 
-This supports HIGHRES and NO_HZ if done right, without polling at
-all. So you can even let the last CPU which handles the broadcast
-hrtimer go for a long sleep, just not in the deepest idle state.
+     2. Which runtime_suspend callback should be invoked?  The example 
+	above uses dev->driver->pm->runtime_suspend, but this may not 
+	always be the right one.
 
-Thanks,
+Alan Stern
 
-	tglx
