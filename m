@@ -1,32 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 2/2] cpufreq: Mark x86 drivers with CPUFREQ_SKIP_INITIAL_FREQ_CHECK
- flag
-Date: Fri, 29 Nov 2013 19:45:11 +0530
-Message-ID: <CAOh2x=mqY5V2SyxmwQ-NePpQaAnpq_hKadNqaNKQQd+zxPL-0w@mail.gmail.com>
-References: <0596aca2267741a8be74db4d19a191c417779629.1385698209.git.viresh.kumar@linaro.org>
-	<697e564b93d1662514ac69e9c926904d3ff4f206.1385698209.git.viresh.kumar@linaro.org>
-	<2707481.i2fpomAdZe@vostro.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V4 7/9] cpuidle/powernv: Add "Fast-Sleep" CPU idle
+ state
+Date: Fri, 29 Nov 2013 15:39:37 +0100 (CET)
+Message-ID: <alpine.DEB.2.02.1311291301300.30673@ionos.tec.linutronix.de>
+References: <20131129104010.651.23117.stgit@preeti.in.ibm.com> <20131129104319.651.29563.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2707481.i2fpomAdZe@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, patches@linaro.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, ceh@ti.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:34473 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755270Ab3K2Oj4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2013 09:39:56 -0500
+In-Reply-To: <20131129104319.651.29563.stgit@preeti.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org, shangw@linux.vnet.ibm.com, rjw@sisk.pl, galak@kernel.crashing.org, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-On Fri, Nov 29, 2013 at 7:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> I think you haven't missed any of them.
->
-> That said, you need to do this in patch [1/2], or the kernel between
-> patches [1/2] and [2/2] may be broken on some systems.
->
-> If you want to do that in separate patches, the current [2/2] should be
-> [1/2] and vice versa.
->
-> I guess they will apply in the reverse order?
+On Fri, 29 Nov 2013, Preeti U Murthy wrote:
+> +static enum hrtimer_restart handle_broadcast(struct hrtimer *hrtimer)
+> +{
+> +	struct clock_event_device *bc_evt = &bc_timer;
+> +	ktime_t interval, next_bc_tick, now;
+> +
+> +	now = ktime_get();
+> +
+> +	if (!restart_broadcast(bc_evt))
+> +		return HRTIMER_NORESTART;
+> +
+> +	interval = ktime_sub(bc_evt->next_event, now);
+> +	next_bc_tick = get_next_bc_tick();
 
-No, definition of CPUFREQ_SKIP_INITIAL_FREQ_CHECK would be
-missing then after the first patch..
+So you're seriously using a hrtimer to poll in HZ frequency for
+updates of bc->next_event?
 
-Anyway, I have fixed that and resent them now..
+To be honest, this design sucks.
+
+First of all, why is this a PPC specific feature? There are probably
+other architectures which could make use of this. So this should be
+implemented in the core code to begin with.
+
+And a lot of the things you need for this are already available in the
+core in one form or the other.
+
+For a start you can stick the broadcast hrtimer to the cpu which does
+the timekeeping. The handover in the hotplug case is handled there as
+well as is the handover for the NOHZ case.
+
+This needs to be extended for this hrtimer broadcast thingy to work,
+but it shouldn't be that hard to do so.
+
+Now for the polling. That's a complete trainwreck.
+
+This can be solved via the broadcast IPI as well. When a CPU which
+goes down into deep idle sets the broadcast to expire earlier than the
+active value it can denote that and send the timer broadcast IPI over
+to the CPU which has the honour of dealing with this.
+
+This supports HIGHRES and NO_HZ if done right, without polling at
+all. So you can even let the last CPU which handles the broadcast
+hrtimer go for a long sleep, just not in the deepest idle state.
+
+Thanks,
+
+	tglx
