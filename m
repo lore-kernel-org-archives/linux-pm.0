@@ -1,167 +1,96 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH RFC 08/10] net: stmmac:sti: Add STi SOC glue driver.
-Date: Fri, 29 Nov 2013 20:37:15 +0100
-Message-ID: <20131129193715.GA3441@lukather>
-References: <1384264311-7308-1-git-send-email-srinivas.kandagatla@st.com>
- <1384264383-7653-1-git-send-email-srinivas.kandagatla@st.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/5] PM: Enable option of re-use runtime PM callbacks at system suspend
+Date: Fri, 29 Nov 2013 22:20:42 +0100
+Message-ID: <4994754.y6gINBtP7i@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1311291014020.27250-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:44148 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754631Ab3K2TkJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2013 14:40:09 -0500
-Content-Disposition: inline
-In-Reply-To: <1384264383-7653-1-git-send-email-srinivas.kandagatla@st.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:55275 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753886Ab3K2VHv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2013 16:07:51 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1311291014020.27250-100000@netrider.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: srinivas.kandagatla@st.com
-Cc: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, Russell King <linux@arm.linux.org.uk>, Stuart Menefy <stuart.menefy@st.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, stephen.gallimore@st.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
+On Friday, November 29, 2013 10:30:57 AM Alan Stern wrote:
+> On Fri, 29 Nov 2013, Rafael J. Wysocki wrote:
+> 
+> > That should have been
+> > 
+> >  	driver->runtime_suspend(dev)
+> >  	do_X(dev)
+> > 
+> > because do_Y(dev) is for runtime suspend.  Sorry.
+> > 
+> > And of course, the subsystem-level code you're developing the driver for may not
+> > do the do_X(dev) thing at all, in which case all will work.  But what if someone
+> > tries to use the driver with a different subsystem-level code (like a new PM
+> > domain)?
+> 
+> It sounds like the problem is one of division of responsibilities.  
+> What part of the work is done by the subsystem, and what part is done 
+> by the driver?  Obviously the answer will vary from one subsystem to 
+> another.
+> 
+> As I understand it, in Ulf's situation the subsystem knows that the
+> operations needed for the suspend_late phase of system suspend are the
+> same as those carried out by the driver's runtime_suspend callback (if
+> the device isn't already in a runtime-PM low-power state).  Or perhaps
+> it knows they are the same as those carried out by the subsystem's
+> runtime_suspend callback.  Or perhaps the _driver_ knows that the
+> operations it needs for suspend_late are the same as those carried out
+> by its own runtime_suspend callback (if the device isn't already in a
+> low-power state).
+> 
+> Regardless, under those conditions the suspend_late routine merely has
+> to invoke the appropriate runtime_suspend routine, after checking the
+> device's runtime PM status.  We can't do this by calling
+> pm_runtime_suspend, because runtime PM is disabled during suspend_late.  
+> Instead, we have to call the proper runtime-suspend routine directly.
 
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That would be kind of OK, if the driver's .suspend_late() only invoked its own
+.runtime_suspend(), what you did below.
 
-Hi Srinivas,
+But, in the Ulf's approach the driver calls .runtime_suspend() from
+its *subsystem* in the hope that it will all work out properly (or
+perhaps based on the knowledge about this particular subsystem).
 
-On Tue, Nov 12, 2013 at 01:53:03PM +0000, srinivas.kandagatla@st.com wrote:
-> From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
->=20
-> STi series SOCs have a glue layer on top of the synopsis gmac IP, this
-> glue layer needs to be configured before the gmac driver starts using
-> the IP.
->=20
-> This patch adds a platform driver for the glue layer which configures
-> the IP before stmmac driver takes over.
->=20
-> Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
-> ---
->  .../devicetree/bindings/net/sti-dwmac.txt          |   45 +++
->  drivers/net/ethernet/stmicro/stmmac/Makefile       |    1 +
->  drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c    |  294 ++++++++++++++=
-++++++
->  3 files changed, 340 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/net/sti-dwmac.txt
->  create mode 100644 drivers/net/ethernet/stmicro/stmmac/dwmac-sti.c
->=20
-> diff --git a/Documentation/devicetree/bindings/net/sti-dwmac.txt b/Docume=
-ntation/devicetree/bindings/net/sti-dwmac.txt
-> new file mode 100644
-> index 0000000..5431d9d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/net/sti-dwmac.txt
-> @@ -0,0 +1,45 @@
-> +STMicroelectronics SoC DWMAC controller
-> +
-> +The device node has following properties.
-> +
-> +Required properties:
-> + - compatible	: Can be "st,stih415-dwmac", "st,stih416-dwmac" or
-> +   "st,stid127-dwmac".
-> + - reg		: Offset of the glue configuration register map in system
-> +   configuration regmap pointed by st,syscon property and size.
-> + - st,syscon	: Should be phandle to system configuration node which
-> +   encompases this glue registers.
-> + - st,tx-retime-src: This specifies which clk is wired up to the mac for
-> +   retimeing tx lines. This is totally board dependent and can take one =
-of the
-> +   posssible values from "txclk", "clk_125", "phyclk" or "clkgen".
-> +
-> +Optional properties:
-> + - resets	: phandle pointing to the system reset controller with correct
-> +   reset line index for ethernet reset.
-> +
-> +Sub-nodes:
-> +The dwmac core should be added as subnode to STMicroelectronics dwmac gl=
-ue.
-> +- dwmac :	The binding details of dwmac can be found in
-> +  Documentation/devicetree/bindings/net/stmmac.txt
-> +
-> +Example:
-> +
-> +ethernet0: ethernet0{
-> +	#address-cells =3D <1>;
-> +	#size-cells =3D <1>;
-> +	compatible		=3D "st,stih415-dwmac";
-> +	reg			=3D <0x148 0x4>;
-> +	resets			=3D <&softreset STIH415_ETH0_SOFTRESET>;
-> +	st,syscon		=3D <&syscfg_rear>;
-> +	st,tx-retime-src	=3D "clk_125";
-> +	ranges;
-> +
-> +	dwmac0:dwmac@fe810000 {
-> +		device_type 	=3D "network";
-> +		compatible	=3D "snps,dwmac", "snps,dwmac-3.610";
-> +		reg 		=3D <0xfe810000 0x8000>;
-> +		interrupts 	=3D <0 147 0>;
-> +		interrupt-names =3D "macirq";
-> +		...
-> +	};
-> +};
+As I said, that may lead to problems when the same driver is attempted to
+be used with a different subsystem-level code (for example, a different PM
+domain).
 
-Sorry for stepping up so late, but I dont' think this is the right way
-to do it.
+> The amount of code needed is quite small; basically nothing more than:
+> 
+> 	if (!pm_runtime_status_suspended(dev))
+> 		dev->driver->pm->runtime_suspend(dev);
+> 
+> The problems are:
+> 
+>      1. Which callback does this code belong in?
+> 
+>      2. Which runtime_suspend callback should be invoked?  The example 
+> 	above uses dev->driver->pm->runtime_suspend, but this may not 
+> 	always be the right one.
 
-DT is to describe how the hardware is laid out in a system agnostic
-way, hence, it should not be impacted by the implementation details.
+Well, none of them may always be the right one, which is my point.
 
-The fact that you use a glue to the dwmac driver *is* an
-implementation detail.
+I don't think we can come up with a really generic set of routines that will
+be generally useful regardless of the subsystem/driver combination in question,
+so in my opinion the PM core is not the right place to put such routines into.
 
-I think you'd rather have something like:
+I wouldn't have problems with them being defined in the OMAP PM code.  As part
+of that code they are free to do whatever they like if that code's maintainers
+are fine with that.  But I don't want to see such confusing stuff in the core.
 
-dwmac0: ethernet@fe810000 {
-	compatible		=3D "st,stih415-dwmac";
-	reg 			=3D <0xfe810000 0x8000 0x148 0x4>;
-	resets			=3D <&softreset STIH415_ETH0_SOFTRESET>;
-	st,syscon		=3D <&syscfg_rear>;
-	st,tx-retime-src	=3D "clk_125";
-	interrupts 		=3D <0 147 0>;
-	interrupt-names 	=3D "macirq";
-	...
-};
+Anyway, I'd like to understand what problems in particular those things would
+be useful to solve, as I suspect that they may be addressed differently and
+more cleanly.
 
-Then, the driver can have its init functions associated to the
-compatible you're using, through the .data field of the of_device_id
-structure, and you just call it in the generic driver at probe's time.
+Thanks,
+Rafael
 
-
-I don't really know what this syscon thing is either, but I think the
-reg <0x148 0x4> is related to that.
-
-Why don't you pass it directly in the st,syscon property, to have
-something like <&syscfg_rear 0x148>?
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---n8g4imXOkfNTN/H1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSmOzrAAoJEBx+YmzsjxAgrw0QAI9JhZLvGUDKp70jGHcp/xtZ
-20OVTR2WYS1DA6M/qTZQOc2NDWzvq3MFE6NIz3e+P9GaoRjiQGYLIbHEXtTWXdR8
-RVrYKJDmsMYVTbt7Ir3s+olWCv2dmQJqkbvnhMaVoAoTO6+B1QMTMmzT+FbhLCBV
-CBQxJLjuYVT1erqtSv1daMqzsw40iAObi9IG4MJyXo7ZQ92F5BOSohCCQ5JN+4wN
-WCk2uzhTjDClbY4ReuMXy9QSdcIWBvkH9g+pGZr5WXvtfdtL7abwG19xQesxQrk9
-SUVJyVfoE8zwnQWesWJ/LlvgkfMvuKXn3aNWM2py57Wfkh1F5jTQ/aqLUKHI734S
-zwJvn0SjNv5P9T3REJtK1BnxaNhc/bBrIuwj1xnGok5XdXZr8jwIPzT1QV1PBcdk
-TrvABsopxySnskguYEyOgYF5g5SE/0fWoGxjsbcihFGq8HfoV/BPpTW45NMun/jy
-Z20l4QsV7Ymk+7DxDtHYZ8FP1Y3/Y0MG2jseJHD8pbRBclIKFe34Lh07OYci3xsE
-85W0lvLfIV9MPNKyeQEW7ZGc8hEG3QM8a7tNugyjSvFcVwB863nnjR7VKYqrJlSF
-HiEvh2Qf5z+jj4HCO0Vwgel4RrzGos07QqRKiZdshZU1UaV5Q978U+oJJCQyP6zz
-+PzArETdO7W+CDdm4Rs+
-=9Opn
------END PGP SIGNATURE-----
-
---n8g4imXOkfNTN/H1--
