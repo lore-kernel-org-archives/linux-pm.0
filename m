@@ -1,149 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PCI / tg3: Give up chip reset and carrier loss handling if PCI device is not present
-Date: Sun, 01 Dec 2013 02:34:37 +0100
-Message-ID: <7807315.7cU9KldDtM@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/5] cpufreq: Introduce cpufreq_notify_post_transition()
+Date: Sun, 1 Dec 2013 08:18:34 +0530
+Message-ID: <CAKohpokRkQn7zQhOVQQmuGZ+QygcwPH1b9z0XmZWgGCjpxk7RA@mail.gmail.com>
+References: <0d635c6701654a75f6d25dd435705dc1ede3e19c.1385826776.git.viresh.kumar@linaro.org>
+	<15590294.HtstlaFcjF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57210 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751328Ab3LABVo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Nov 2013 20:21:44 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <15590294.HtstlaFcjF@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: netdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Nithin Nayak Sujir <nsujir@broadcom.com>, Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 1 December 2013 01:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Saturday, November 30, 2013 09:26:19 PM Viresh Kumar wrote:
+>> This introduces another routine cpufreq_notify_post_transition() which can be
+>> used to send POSTCHANGE notification for new freq with or without both
+>> {PRE|POST}CHANGE notifications for last freq in case of failures. This is useful
+>> at multiple places, specially for sending transition failure notifications.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>
+>> Hi Rafael,
+>>
+>> Please see if you want to take it for 3.13 or 14, as this fixes bugs which are
+>> partly introduced in 3.13..
+>
+> Which ones?
 
-Modify tg3_chip_reset() and tg3_close() to check if the PCI network
-adapter device is accessible at all in order to skip poking it or
-trying to handle a carrier loss in vain when that's not the case.
-Introduce a special PCI helper function pci_device_is_present()
-for this purpose.
+Patch:
 
-Of course, this uncovers the lack of the appropriate RTNL locking
-in tg3_suspend() and tg3_resume(), so add that locking in there
-too.
+commit d4019f0a92ab802f385cc9c8ad3ab7b5449712cb
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Wed Aug 14 19:38:24 2013 +0530
 
-These changes prevent tg3 from burning a CPU at 100% load level for
-solid several seconds after the Thunderbolt link is disconnected from
-a Matrox DS1 docking station.
+    cpufreq: move freq change notifications to cpufreq core
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/net/ethernet/broadcom/tg3.c |   26 +++++++++++++++++++-------
- drivers/pci/pci.c                   |    8 ++++++++
- include/linux/pci.h                 |    1 +
- 3 files changed, 28 insertions(+), 7 deletions(-)
+adds:
 
-Index: linux-pm/drivers/net/ethernet/broadcom/tg3.c
-===================================================================
---- linux-pm.orig/drivers/net/ethernet/broadcom/tg3.c
-+++ linux-pm/drivers/net/ethernet/broadcom/tg3.c
-@@ -8932,6 +8932,9 @@ static int tg3_chip_reset(struct tg3 *tp
- 	void (*write_op)(struct tg3 *, u32, u32);
- 	int i, err;
- 
-+	if (!pci_device_is_present(tp->pdev))
-+		return -ENODEV;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
++               retval = cpufreq_driver->target_index(policy, index);
++               if (retval)
++                       pr_err("%s: Failed to change cpu frequency: %d\n",
++                                       __func__, retval);
 +
- 	tg3_nvram_lock(tp);
- 
- 	tg3_ape_lock(tp, TG3_APE_LOCK_GRC);
-@@ -11594,10 +11597,11 @@ static int tg3_close(struct net_device *
- 	memset(&tp->net_stats_prev, 0, sizeof(tp->net_stats_prev));
- 	memset(&tp->estats_prev, 0, sizeof(tp->estats_prev));
- 
--	tg3_power_down_prepare(tp);
--
--	tg3_carrier_off(tp);
-+	if (pci_device_is_present(tp->pdev)) {
-+		tg3_power_down_prepare(tp);
- 
-+		tg3_carrier_off(tp);
-+	}
- 	return 0;
- }
- 
-@@ -17739,10 +17743,12 @@ static int tg3_suspend(struct device *de
- 	struct pci_dev *pdev = to_pci_dev(device);
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct tg3 *tp = netdev_priv(dev);
--	int err;
-+	int err = 0;
++               if (notify) {
++                       /*
++                        * Notify with old freq in case we failed to change
++                        * frequency
++                        */
++                       if (retval)
++                               freqs.new = freqs.old;
 +
-+	rtnl_lock();
- 
- 	if (!netif_running(dev))
--		return 0;
-+		goto unlock;
- 
- 	tg3_reset_task_cancel(tp);
- 	tg3_phy_stop(tp);
-@@ -17784,6 +17790,8 @@ out:
- 			tg3_phy_start(tp);
- 	}
- 
-+unlock:
-+	rtnl_unlock();
- 	return err;
- }
- 
-@@ -17792,10 +17800,12 @@ static int tg3_resume(struct device *dev
- 	struct pci_dev *pdev = to_pci_dev(device);
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct tg3 *tp = netdev_priv(dev);
--	int err;
-+	int err = 0;
-+
-+	rtnl_lock();
- 
- 	if (!netif_running(dev))
--		return 0;
-+		goto unlock;
- 
- 	netif_device_attach(dev);
- 
-@@ -17819,6 +17829,8 @@ out:
- 	if (!err)
- 		tg3_phy_start(tp);
- 
-+unlock:
-+	rtnl_unlock();
- 	return err;
- }
- #endif /* CONFIG_PM_SLEEP */
-Index: linux-pm/drivers/pci/pci.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -4171,6 +4171,14 @@ int pci_set_vga_state(struct pci_dev *de
- 	return 0;
- }
- 
-+bool pci_device_is_present(struct pci_dev *pdev)
-+{
-+	u32 v;
-+
-+	return pci_bus_read_dev_vendor_id(pdev->bus, pdev->devfn, &v, 0);
-+}
-+EXPORT_SYMBOL_GPL(pci_device_is_present);
-+
- #define RESOURCE_ALIGNMENT_PARAM_SIZE COMMAND_LINE_SIZE
- static char resource_alignment_param[RESOURCE_ALIGNMENT_PARAM_SIZE] = {0};
- static DEFINE_SPINLOCK(resource_alignment_lock);
-Index: linux-pm/include/linux/pci.h
-===================================================================
---- linux-pm.orig/include/linux/pci.h
-+++ linux-pm/include/linux/pci.h
-@@ -961,6 +961,7 @@ void pci_update_resource(struct pci_dev
- int __must_check pci_assign_resource(struct pci_dev *dev, int i);
- int __must_check pci_reassign_resource(struct pci_dev *dev, int i, resource_size_t add_size, resource_size_t align);
- int pci_select_bars(struct pci_dev *dev, unsigned long flags);
-+bool pci_device_is_present(struct pci_dev *pdev);
- 
- /* ROM control related routines */
- int pci_enable_rom(struct pci_dev *pdev);
++                       cpufreq_notify_transition(policy, &freqs,
++                                       CPUFREQ_POSTCHANGE);
++               }
 
+
+And I thought it might go in 3.13, but surely it doesn't fix any
+obvious kernel crashes. It only fixes stuff when target_index() fails.
