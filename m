@@ -1,44 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Set CPU frequency target
-Date: Sun, 1 Dec 2013 08:22:20 +0530
-Message-ID: <CAKohpo=3J3eD8q20_9pJCgnuHzeg5GtHCVrWZCuz-LUrfhr=bg@mail.gmail.com>
-References: <CAKDJKT6cQVem2PNsceTBEVYh28vPnEiqGEaq6xLoQubBb2GPoA@mail.gmail.com>
+From: "Michael Chan" <mchan@broadcom.com>
+Subject: Re: [PATCH] PCI / tg3: Give up chip reset and carrier loss
+ handling if PCI device is not present
+Date: Sun, 1 Dec 2013 12:39:19 -0800
+Message-ID: <1385930359.6988.7.camel@LTIRV-MCHAN1.corp.ad.broadcom.com>
+References: <7807315.7cU9KldDtM@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKDJKT6cQVem2PNsceTBEVYh28vPnEiqGEaq6xLoQubBb2GPoA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Manish Badarkhe <badarkhe.manish@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain;
+ charset=cp1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7807315.7cU9KldDtM@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Nithin Nayak Sujir <nsujir@broadcom.com>, David Miller <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 1 December 2013 00:43, Manish Badarkhe <badarkhe.manish@gmail.com> wrote:
-> I have some doubts in order to set "target" frequency in cpu-frequency
-> driver. I gone through code which set
-> "target" CPU frequency and got details as below:
->
-> 1. Core CPU frequency driver "target" function calls
-> (__cpufreq_driver_target) a platform specific "target"
->     functions(for e.g. exynos_target, davinci_target).
-> 2. I observed some of problems in setting target frequency especially
-> when doing target freq > current frequency.
-> 3. Consider an example of davinci frequency driver if want to set a
-> frequency higher than current frequency then
->                      1. Firstly, set regulator voltage and if it fails
-> then return error.
->                      2. Set clock rate and if it fails return error.
->                      3. Consider a scenario that regulator works fine
-> while setting voltage but somehow "clk_set_rate"
->                          fails then here is a bug, that CPU runs at
-> higher voltage even though that is not required.
->
->  I have not seen anywhere in code that regulator is brought back to
-> original voltage if CPU set rate for frequency
->  is failed. Am I missing something in code flow? or there is no need
-> to care about regulator voltage in such case.
+On Sun, 2013-12-01 at 02:34 +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Modify tg3_chip_reset() and tg3_close() to check if the PCI network
+> adapter device is accessible at all in order to skip poking it or
+> trying to handle a carrier loss in vain when that's not the case.
+> Introduce a special PCI helper function pci_device_is_present()
+> for this purpose.
+> 
+> Of course, this uncovers the lack of the appropriate RTNL locking
+> in tg3_suspend() and tg3_resume(), so add that locking in there
+> too.
+> 
+> These changes prevent tg3 from burning a CPU at 100% load level for
+> solid several seconds after the Thunderbolt link is disconnected from
+> a Matrox DS1 docking station. 
 
-Its probably a bug, but people doesn't get around it unless clk_set_rate()
-fails. And so nobody has cared to fix it up..
-
-See cpufreq-cpu0 instead, which probably has all the error handling code
-in place.
+I'm not familiar with the DS1.  Does the tg3 device get removed through
+tg3_remove_one() in this case?  What happens when you reconnect the DS1?
