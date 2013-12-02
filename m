@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 4/5] cpufreq: powernow-k8: send new set of notification for transition failures
-Date: Mon,  2 Dec 2013 11:04:15 +0530
-Message-ID: <be988d856aeb8b612c7e9f0176acfdff35788d74.1385962178.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 2/5] cpufreq: send new set of notification for transition failures
+Date: Mon,  2 Dec 2013 11:04:13 +0530
+Message-ID: <09131009236f613c6589737449f5973f7eb6f216.1385962178.git.viresh.kumar@linaro.org>
 References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
@@ -37,28 +37,32 @@ code and this routine will take care of sending notifications in correct order.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/powernow-k8.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/cpufreq/cpufreq.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 0023c7d..e10b646 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -964,14 +964,9 @@ static int transition_frequency_fidvid(struct powernow_k8_data *data,
- 	cpufreq_cpu_put(policy);
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 3b877d4..a7fcb84 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1815,17 +1815,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 			pr_err("%s: Failed to change cpu frequency: %d\n",
+ 					__func__, retval);
  
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+-		if (notify) {
+-			/*
+-			 * Notify with old freq in case we failed to change
+-			 * frequency
+-			 */
+-			if (retval)
+-				freqs.new = freqs.old;
 -
- 	res = transition_fid_vid(data, fid, vid);
--	if (res)
--		freqs.new = freqs.old;
--	else
--		freqs.new = find_khz_freq_from_fid(data->currfid);
-+	cpufreq_notify_post_transition(policy, &freqs, res);
+-			cpufreq_notify_transition(policy, &freqs,
+-					CPUFREQ_POSTCHANGE);
+-		}
++		if (notify)
++			cpufreq_notify_post_transition(policy, &freqs, retval);
+ 	}
  
--	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 	return res;
- }
- 
+ out:
 -- 
 1.7.12.rc2.18.g61b472e
