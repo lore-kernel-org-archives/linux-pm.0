@@ -1,126 +1,63 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH] thermal: debug: add debug statement for core and step_wise
-Date: Mon, 02 Dec 2013 13:54:26 +0800
-Message-ID: <529C2092.5070801@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:38408 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905Ab3LBFye (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Dec 2013 00:54:34 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/3] CPUFreq: Cleanups for 3.14
+Date: Mon,  2 Dec 2013 11:48:27 +0530
+Message-ID: <cover.1385964947.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-To ease debugging thermal problem, add these dynamic debug statements
-so that user do not need rebuild kernel to see these info.
+Apart from the other patches, here are few minor cleanups for cpufreq core and
+drivers. The first two removes per-cpu cpufreq_show_table variable and moves
+that information in struct cpufreq_policy. And the last one removes unnecessary
+frozen variable/parameters.
 
-Based on a patch from Zhang Rui for debugging on bugzilla:
-https://bugzilla.kernel.org/attachment.cgi?id=98671
+Viresh Kumar (3):
+  cpufreq: add 'freq_table' in struct cpufreq_policy
+  cpufreq: Remove cpufreq_generic_exit()
+  cpufreq: Remove unnecessary variable/parameter 'frozen'
 
-A sample output after we turn on dynamic debug with the following cmd:
-# echo 'module thermal_sys +fp' > /sys/kernel/debug/dynamic_debug/control
-is like:
+ drivers/cpufreq/acpi-cpufreq.c         |  1 -
+ drivers/cpufreq/arm_big_little.c       |  1 -
+ drivers/cpufreq/blackfin-cpufreq.c     |  1 -
+ drivers/cpufreq/cpufreq-cpu0.c         |  1 -
+ drivers/cpufreq/cpufreq.c              | 67 ++++++++++++++++------------------
+ drivers/cpufreq/cris-artpec3-cpufreq.c |  1 -
+ drivers/cpufreq/cris-etraxfs-cpufreq.c |  1 -
+ drivers/cpufreq/davinci-cpufreq.c      |  1 -
+ drivers/cpufreq/e_powersaver.c         |  1 -
+ drivers/cpufreq/elanfreq.c             |  1 -
+ drivers/cpufreq/exynos-cpufreq.c       |  1 -
+ drivers/cpufreq/exynos5440-cpufreq.c   |  1 -
+ drivers/cpufreq/freq_table.c           | 46 ++++-------------------
+ drivers/cpufreq/ia64-acpi-cpufreq.c    |  1 -
+ drivers/cpufreq/imx6q-cpufreq.c        |  1 -
+ drivers/cpufreq/kirkwood-cpufreq.c     |  1 -
+ drivers/cpufreq/longhaul.c             |  1 -
+ drivers/cpufreq/loongson2_cpufreq.c    |  1 -
+ drivers/cpufreq/omap-cpufreq.c         |  1 -
+ drivers/cpufreq/p4-clockmod.c          |  1 -
+ drivers/cpufreq/pasemi-cpufreq.c       |  1 -
+ drivers/cpufreq/powernow-k6.c          |  1 -
+ drivers/cpufreq/powernow-k7.c          |  2 -
+ drivers/cpufreq/powernow-k8.c          |  2 -
+ drivers/cpufreq/ppc-corenet-cpufreq.c  |  1 -
+ drivers/cpufreq/ppc_cbe_cpufreq.c      |  1 -
+ drivers/cpufreq/pxa2xx-cpufreq.c       |  1 -
+ drivers/cpufreq/pxa3xx-cpufreq.c       |  1 -
+ drivers/cpufreq/sc520_freq.c           |  1 -
+ drivers/cpufreq/sh-cpufreq.c           |  1 -
+ drivers/cpufreq/sparc-us2e-cpufreq.c   |  4 +-
+ drivers/cpufreq/sparc-us3-cpufreq.c    |  4 +-
+ drivers/cpufreq/spear-cpufreq.c        |  1 -
+ drivers/cpufreq/speedstep-centrino.c   |  2 -
+ drivers/cpufreq/speedstep-ich.c        |  1 -
+ drivers/cpufreq/speedstep-smi.c        |  1 -
+ drivers/cpufreq/tegra-cpufreq.c        |  1 -
+ include/linux/cpufreq.h                | 11 +-----
+ 38 files changed, 42 insertions(+), 126 deletions(-)
 
-[  355.147627] update_temperature: thermal thermal_zone0: last_temperature=52000, current_temperature=55000
-[  355.147636] thermal_zone_trip_update: thermal thermal_zone0: Trip1[type=1,temp=79000]:trend=2,throttle=0
-[  355.147644] get_target_state: thermal cooling_device8: cur_state=0
-[  355.147647] thermal_zone_trip_update: thermal cooling_device8: old_target=-1, target=-1
-[  355.147652] get_target_state: thermal cooling_device7: cur_state=0
-[  355.147655] thermal_zone_trip_update: thermal cooling_device7: old_target=-1, target=-1
-[  355.147660] get_target_state: thermal cooling_device6: cur_state=0
-[  355.147663] thermal_zone_trip_update: thermal cooling_device6: old_target=-1, target=-1
-[  355.147668] get_target_state: thermal cooling_device5: cur_state=0
-[  355.147671] thermal_zone_trip_update: thermal cooling_device5: old_target=-1, target=-1
-[  355.147678] thermal_zone_trip_update: thermal thermal_zone0: Trip2[type=0,temp=90000]:trend=1,throttle=0
-[  355.147776] get_target_state: thermal cooling_device0: cur_state=0
-[  355.147783] thermal_zone_trip_update: thermal cooling_device0: old_target=-1, target=-1
-[  355.147792] thermal_zone_trip_update: thermal thermal_zone0: Trip3[type=0,temp=80000]:trend=1,throttle=0
-[  355.147845] get_target_state: thermal cooling_device1: cur_state=0
-[  355.147849] thermal_zone_trip_update: thermal cooling_device1: old_target=-1, target=-1
-[  355.147856] thermal_zone_trip_update: thermal thermal_zone0: Trip4[type=0,temp=70000]:trend=1,throttle=0
-[  355.147904] get_target_state: thermal cooling_device2: cur_state=0
-[  355.147908] thermal_zone_trip_update: thermal cooling_device2: old_target=-1, target=-1
-[  355.147915] thermal_zone_trip_update: thermal thermal_zone0: Trip5[type=0,temp=60000]:trend=1,throttle=0
-[  355.147963] get_target_state: thermal cooling_device3: cur_state=0
-[  355.147967] thermal_zone_trip_update: thermal cooling_device3: old_target=-1, target=-1
-[  355.147973] thermal_zone_trip_update: thermal thermal_zone0: Trip6[type=0,temp=55000]:trend=1,throttle=1
-[  355.148022] get_target_state: thermal cooling_device4: cur_state=0
-[  355.148025] thermal_zone_trip_update: thermal cooling_device4: old_target=-1, target=1
-[  355.148036] thermal_cdev_update: thermal cooling_device4: zone0->target=1
-[  355.169279] thermal_cdev_update: thermal cooling_device4: set to state 1
-
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
- drivers/thermal/step_wise.c    | 6 ++++++
- drivers/thermal/thermal_core.c | 6 ++++++
- 2 files changed, 12 insertions(+)
-
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index d89e781b0a18..f251521baaa2 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -60,6 +60,7 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 	 */
- 	cdev->ops->get_cur_state(cdev, &cur_state);
- 	next_target = instance->target;
-+	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
- 
- 	switch (trend) {
- 	case THERMAL_TREND_RAISING:
-@@ -131,6 +132,9 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 	if (tz->temperature >= trip_temp)
- 		throttle = true;
- 
-+	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%ld]:trend=%d,throttle=%d\n",
-+				trip, trip_type, trip_temp, trend, throttle);
-+
- 	mutex_lock(&tz->lock);
- 
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
-@@ -139,6 +143,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 
- 		old_target = instance->target;
- 		instance->target = get_target_state(instance, trend, throttle);
-+		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
-+					old_target, (int)instance->target);
- 
- 		if (old_target == instance->target)
- 			continue;
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index f1d511a9475b..30a02add9e2e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -450,6 +450,9 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	tz->last_temperature = tz->temperature;
- 	tz->temperature = temp;
- 	mutex_unlock(&tz->lock);
-+
-+	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
-+				tz->last_temperature, tz->temperature);
- }
- 
- void thermal_zone_device_update(struct thermal_zone_device *tz)
-@@ -1207,6 +1210,8 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	mutex_lock(&cdev->lock);
- 	/* Make sure cdev enters the deepest cooling state */
- 	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
-+		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
-+				instance->tz->id, instance->target);
- 		if (instance->target == THERMAL_NO_TARGET)
- 			continue;
- 		if (instance->target > target)
-@@ -1215,6 +1220,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	mutex_unlock(&cdev->lock);
- 	cdev->ops->set_cur_state(cdev, target);
- 	cdev->updated = true;
-+	dev_dbg(&cdev->device, "set to state %lu\n", target);
- }
- EXPORT_SYMBOL(thermal_cdev_update);
- 
 -- 
-1.8.3.1
+1.7.12.rc2.18.g61b472e
 
