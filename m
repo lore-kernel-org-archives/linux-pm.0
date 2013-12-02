@@ -1,75 +1,92 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 1/5] cpufreq: Introduce cpufreq_notify_post_transition()
-Date: Mon,  2 Dec 2013 11:04:12 +0530
-Message-ID: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f48.google.com ([209.85.128.48]:39160 "EHLO
-	mail-qe0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094Ab3LBFeW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Dec 2013 00:34:22 -0500
-Received: by mail-qe0-f48.google.com with SMTP id gc15so12549899qeb.21
-        for <linux-pm@vger.kernel.org>; Sun, 01 Dec 2013 21:34:21 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V2 3/5] cpufreq: pcc: send new set of notification for transition failures
+Date: Mon,  2 Dec 2013 11:04:14 +0530
+Message-ID: <3d86feabdc6f223b68a4936c9529b4edec3e39ba.1385962178.git.viresh.kumar@linaro.org>
+References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
+In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
+References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-This introduces another routine cpufreq_notify_post_transition() which can be
-used to send POSTCHANGE notification for new freq with or without both
-{PRE|POST}CHANGE notifications for last freq. This is useful at multiple places,
-specially for sending transition failure notifications.
+In the current code, if we fail during a frequency transition we simply send the
+POSTCHANGE notification with old frequency. This isn't enough.
+
+One of the core user of these notifications is the code responsible for keeping
+loops_per_jiffy aligned with frequency change. And mostly it is written as:
+
+	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+		update-loops-per-jiffy...
+	}
+
+So, suppose we are changing to a higher frequency and failed during transition,
+then following will happen:
+- CPUFREQ_PRECHANGE notification with freq-new > freq-old
+- CPUFREQ_POSTCHANGE notification with freq-new == freq-old
+
+The first one will update loops_per_jiffy and second one will do nothing. Even
+if we send the 2nd notification by exchanging values of freq-new and old, some
+users of these notifications might get unstable.
+
+This can be fixed by simply calling cpufreq_notify_post_transition() with error
+code and this routine will take care of sending notifications in correct order.
+
+Also it fills freqs.old before starting the first notification, this was missing
+since ever.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
+ drivers/cpufreq/pcc-cpufreq.c | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-V1->V2:
-- Not required to push it for 3.13 anymore and can go in 3.14.
-- Rebased over following patchset as there were conflicts in unicore2 driver if
-  following patchset is applied first (which should be the case):
-  https://lkml.org/lkml/2013/10/30/553 (create cpufreq_generic_get() routine)
-
- drivers/cpufreq/cpufreq.c | 14 ++++++++++++++
- include/linux/cpufreq.h   |  2 ++
- 2 files changed, 16 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 5e27def..3b877d4 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -338,6 +338,20 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index e2b4f40..1c0f106 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -213,6 +213,7 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
+ 		cpu, target_freq,
+ 		(pcch_virt_addr + pcc_cpu_data->input_offset));
+ 
++	freqs.old = policy->cur;
+ 	freqs.new = target_freq;
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+@@ -228,25 +229,20 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
+ 	memset_io((pcch_virt_addr + pcc_cpu_data->input_offset), 0, BUF_SZ);
+ 
+ 	status = ioread16(&pcch_hdr->status);
++	iowrite16(0, &pcch_hdr->status);
++
++	cpufreq_notify_post_transition(policy, &freqs, status != CMD_COMPLETE);
++	spin_unlock(&pcc_lock);
++
+ 	if (status != CMD_COMPLETE) {
+ 		pr_debug("target: FAILED for cpu %d, with status: 0x%x\n",
+ 			cpu, status);
+-		goto cmd_incomplete;
++		return -EINVAL;
+ 	}
+-	iowrite16(0, &pcch_hdr->status);
+ 
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 	pr_debug("target: was SUCCESSFUL for cpu %d\n", cpu);
+-	spin_unlock(&pcc_lock);
+ 
+ 	return 0;
+-
+-cmd_incomplete:
+-	freqs.new = freqs.old;
+-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-	iowrite16(0, &pcch_hdr->status);
+-	spin_unlock(&pcc_lock);
+-	return -EINVAL;
  }
- EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
  
-+/* Do post notifications when there are chances that transition has failed */
-+void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
-+		struct cpufreq_freqs *freqs, int transition_failed)
-+{
-+	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
-+	if (!transition_failed)
-+		return;
-+
-+	swap(freqs->old, freqs->new);
-+	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
-+	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
-+
- 
- /*********************************************************************
-  *                          SYSFS INTERFACE                          *
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 276e646..b26bfab 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -316,6 +316,8 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
- 
- void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, unsigned int state);
-+void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
-+		struct cpufreq_freqs *freqs, int transition_failed);
- 
- #else /* CONFIG_CPU_FREQ */
- static inline int cpufreq_register_notifier(struct notifier_block *nb,
+ static int pcc_get_offset(int cpu)
 -- 
 1.7.12.rc2.18.g61b472e
 
