@@ -1,154 +1,186 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH resend] scripts: Coccinelle script for pm_runtime_* return checks with IS_ERR_VALUE
-Date: Mon, 2 Dec 2013 07:39:41 -0600
-Message-ID: <1385991581-16843-1-git-send-email-nm@ti.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v10 7/7] thermal:exynos:boost: Automatic enable/disable
+ of BOOST feature (at Exynos4412)
+Date: Mon, 2 Dec 2013 10:53:06 -0400
+Message-ID: <529C9ED2.2060106@ti.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-8-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="Kh5LiP33daJRIV2bov45pGrinPmqUkKBC"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:33712 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752602Ab3LBNkP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Dec 2013 08:40:15 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:49023 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545Ab3LBOxZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Dec 2013 09:53:25 -0500
+In-Reply-To: <1383672411-26324-8-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Julia.Lawall@lip6.fr, Gilles.Muller@lip6.fr, nicolas.palix@imag.fr, mmarek@suse.cz
-Cc: linux-kernel@vger.kernel.org, cocci@systeme.lip6.fr, linux-pm@vger.kernel.org, Sekhar Nori <nsekhar@ti.com>, Nishanth Menon <nm@ti.com>, Russell King <rmk+kernel@arm.linux.org.uk>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-As indicated by Sekhar in [1], there seems to be a tendency to use
-IS_ERR_VALUE to check the error result for pm_runtime_* functions which
-make no sense considering commit c48cd65 (ARM: OMAP: use consistent
-error checking) - the error values can either be < 0 for error OR
-0, 1 in cases where we have success.
+--Kh5LiP33daJRIV2bov45pGrinPmqUkKBC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-So, setup a coccinelle script to help identify the same.
+On 05-11-2013 13:26, Lukasz Majewski wrote:
+> This patch provides auto disable/enable operation for boost. It uses al=
+ready
+> present thermal infrastructure to provide boost hysteresis.
+> A special set of TMU data has been defined for Exynos4412, which is onl=
+y
+> considered when BOOST is enabled.
 
-[1] http://marc.info/?t=138472678100003&r=1&w=2
+Can you please add more description why you need a different set of
+thermal data when boost is enabled? This is also important in case you
+(Exynos thermal folks) would like to migrate this driver to have thermal
+data support in DT.
 
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Reported-by: Sekhar Nori <nsekhar@ti.com>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
-Original post: http://marc.info/?t=138559437300001&r=1&w=2
 
- scripts/coccinelle/api/pm_runtime.cocci |  109 +++++++++++++++++++++++++++++++
- 1 file changed, 109 insertions(+)
- create mode 100644 scripts/coccinelle/api/pm_runtime.cocci
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>=20
+> ---
+> Changes for v10:
+>     - Remove boost related code from thermal_core.c
+>     - Use already present thermal infrastructure to provide thermal hys=
+teresis
+>     - Introduce special set of TMU data for BOOST
+>=20
+> Changes for v9:
+>     - None
+>=20
+> Changes for v8:
+>     - Move cpufreq_boost_* stub functions definition (needed when cpufr=
+eq
+>       is not compiled in) to cpufreq.h at cpufreq core support commit
+>=20
+> Changes for v7:
+>     - None
+>=20
+> Changes for v6:
+>     - Disable boost only when supported and enabled
+>     - Protect boost related thermal_zone_device struct fields with mute=
+x
+>     - Evaluate temperature trend during boost enable decision
+>     - Create separate methods to handle boost enable/disable
+>       (thermal_boost_{enable|disable}) operations
+>     - Boost is disabled at any trip point passage (not only the non cri=
+tical one)
+>     - Add stub definitions for cpufreq boost functions used when
+>       CONFIG_CPU_FREQ is NOT defined.
+>=20
+> Changes for v5:
+>     - Move boost disable code from cpu_cooling.c to thermal_core.c
+>       (to handle_non_critical_trips)
+>     - Extent struct thermal_zone_device by adding overheated bool flag
+>     - Implement auto enable of boost after device cools down
+>     - Introduce boost_polling flag, which indicates if thermal uses it'=
+s predefined
+>       pool delay or has woken up thermal workqueue only to wait until d=
+evice
+>       cools down.
+>=20
+> Changes for v4:
+>     - New patch
 
-diff --git a/scripts/coccinelle/api/pm_runtime.cocci b/scripts/coccinelle/api/pm_runtime.cocci
-new file mode 100644
-index 0000000..f01789e
---- /dev/null
-+++ b/scripts/coccinelle/api/pm_runtime.cocci
-@@ -0,0 +1,109 @@
-+/// Make sure pm_runtime_* calls does not use unnecessary IS_ERR_VALUE
-+//
-+// Keywords: pm_runtime
-+// Confidence: Medium
-+// Copyright (C) 2013 Texas Instruments Incorporated - GPLv2.
-+// URL: http://coccinelle.lip6.fr/
-+// Options: --include-headers
-+
-+virtual patch
-+virtual context
-+virtual org
-+virtual report
-+
-+//----------------------------------------------------------
-+//  Detection
-+//----------------------------------------------------------
-+
-+@runtime_bad_err_handle exists@
-+expression ret;
-+@@
-+(
-+ret = \(pm_runtime_idle\|
-+	pm_runtime_suspend\|
-+	pm_runtime_autosuspend\|
-+	pm_runtime_resume\|
-+	pm_request_idle\|
-+	pm_request_resume\|
-+	pm_request_autosuspend\|
-+	pm_runtime_get\|
-+	pm_runtime_get_sync\|
-+	pm_runtime_put\|
-+	pm_runtime_put_autosuspend\|
-+	pm_runtime_put_sync\|
-+	pm_runtime_put_sync_suspend\|
-+	pm_runtime_put_sync_autosuspend\|
-+	pm_runtime_set_active\|
-+	pm_schedule_suspend\|
-+	pm_runtime_barrier\|
-+	pm_generic_runtime_suspend\|
-+	pm_generic_runtime_resume\)(...);
-+...
-+IS_ERR_VALUE(ret)
-+...
-+)
-+
-+//----------------------------------------------------------
-+//  For context mode
-+//----------------------------------------------------------
-+
-+@depends on runtime_bad_err_handle && context@
-+identifier pm_runtime_api;
-+expression ret;
-+@@
-+(
-+ret = pm_runtime_api(...);
-+...
-+* IS_ERR_VALUE(ret)
-+...
-+)
-+
-+//----------------------------------------------------------
-+//  For patch mode
-+//----------------------------------------------------------
-+
-+@depends on runtime_bad_err_handle && patch@
-+identifier pm_runtime_api;
-+expression ret;
-+@@
-+(
-+ret = pm_runtime_api(...);
-+...
-+- IS_ERR_VALUE(ret)
-++ ret < 0
-+...
-+)
-+
-+//----------------------------------------------------------
-+//  For org and report mode
-+//----------------------------------------------------------
-+
-+@r depends on runtime_bad_err_handle exists@
-+position p1, p2;
-+identifier pm_runtime_api;
-+expression ret;
-+@@
-+(
-+ret = pm_runtime_api@p1(...);
-+...
-+IS_ERR_VALUE@p2(ret)
-+...
-+)
-+
-+@script:python depends on org@
-+p1 << r.p1;
-+p2 << r.p2;
-+pm_runtime_api << r.pm_runtime_api;
-+@@
-+
-+cocci.print_main(pm_runtime_api,p1)
-+cocci.print_secs("IS_ERR_VALUE",p2)
-+
-+@script:python depends on report@
-+p1 << r.p1;
-+p2 << r.p2;
-+pm_runtime_api << r.pm_runtime_api;
-+@@
-+
-+msg = "%s returns < 0 as error. Unecessary IS_ERR_VALUE at line %s" % (pm_runtime_api, p2[0].line)
-+coccilib.report.print_report(p1[0],msg)
--- 
-1.7.9.5
 
+Might be interesting to see the changelog for this patch only.
+
+>=20
+>  drivers/thermal/samsung/exynos_tmu_data.c |   47 +++++++++++++++++++++=
+++++++++
+>  1 file changed, 47 insertions(+)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
+l/samsung/exynos_tmu_data.c
+> index 073c292..9346926 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -167,13 +167,60 @@ static const struct exynos_tmu_registers exynos44=
+12_tmu_registers =3D {
+>  	.features =3D (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+>  			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+>  			TMU_SUPPORT_EMUL_TIME)
+> +
+> +#define EXYNOS4412_TMU_DATA_BOOST \
+> +	.threshold_falling =3D 10, \
+> +	.trigger_levels[0] =3D 70, \
+> +	.trigger_levels[1] =3D 85, \
+> +	.trigger_levels[2] =3D 103, \
+> +	.trigger_levels[3] =3D 110, \
+> +	.trigger_enable[0] =3D true, \
+> +	.trigger_enable[1] =3D true, \
+> +	.trigger_enable[2] =3D true, \
+> +	.trigger_enable[3] =3D true, \
+> +	.trigger_type[0] =3D THROTTLE_ACTIVE, \
+> +	.trigger_type[1] =3D THROTTLE_ACTIVE, \
+> +	.trigger_type[2] =3D THROTTLE_ACTIVE, \
+> +	.trigger_type[3] =3D SW_TRIP, \
+> +	.max_trigger_level =3D 4, \
+> +	.gain =3D 8, \
+> +	.reference_voltage =3D 16, \
+> +	.noise_cancel_mode =3D 4, \
+> +	.cal_type =3D TYPE_ONE_POINT_TRIMMING, \
+> +	.efuse_value =3D 55, \
+> +	.min_efuse_value =3D 40, \
+> +	.max_efuse_value =3D 100, \
+> +	.first_point_trim =3D 25, \
+> +	.second_point_trim =3D 85, \
+> +	.default_temp_offset =3D 50, \
+> +	.freq_tab[0] =3D { \
+> +		.freq_clip_max =3D 1400 * 1000, \
+> +		.temp_level =3D 70, \
+> +	}, \
+> +	.freq_tab[1] =3D { \
+> +		.freq_clip_max =3D 800 * 1000, \
+> +		.temp_level =3D 85, \
+> +	}, \
+> +	.freq_tab[2] =3D { \
+> +		.freq_clip_max =3D 200 * 1000, \
+> +		.temp_level =3D 103, \
+> +	}, \
+> +	.freq_tab_count =3D 3, \
+> +	.registers =3D &exynos4412_tmu_registers, \
+> +	.features =3D (TMU_SUPPORT_EMULATION | TMU_SUPPORT_TRIM_RELOAD | \
+> +			TMU_SUPPORT_FALLING_TRIP | TMU_SUPPORT_READY_STATUS | \
+> +			TMU_SUPPORT_EMUL_TIME)
+>  #endif
+> =20
+>  #if defined(CONFIG_SOC_EXYNOS4412)
+>  struct exynos_tmu_init_data const exynos4412_default_tmu_data =3D {
+>  	.tmu_data =3D {
+>  		{
+> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> +			EXYNOS4412_TMU_DATA_BOOST,
+> +#else
+>  			EXYNOS4412_TMU_DATA,
+> +#endif
+>  			.type =3D SOC_ARCH_EXYNOS4412,
+>  			.test_mux =3D EXYNOS4412_MUX_ADDR_VALUE,
+>  		},
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--Kh5LiP33daJRIV2bov45pGrinPmqUkKBC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKcntUACgkQCXcVR3XQvP1pnwEA7u+J4Yhhud74uSTMdinJ7Hqv
+fcy6XiqJMCXUCQ/nltoBAMDsV/mrwGFWzXHkBb8mxs4xzNtYaTDEllkhN7WLhXXt
+=4vOk
+-----END PGP SIGNATURE-----
+
+--Kh5LiP33daJRIV2bov45pGrinPmqUkKBC--
