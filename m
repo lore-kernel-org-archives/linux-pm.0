@@ -1,68 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/5] cpufreq: send new set of notification for transition failures
-Date: Mon,  2 Dec 2013 11:04:13 +0530
-Message-ID: <09131009236f613c6589737449f5973f7eb6f216.1385962178.git.viresh.kumar@linaro.org>
-References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
-In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
-References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V4 0/6] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Mon,  2 Dec 2013 11:22:30 +0530
+Message-ID: <cover.1385962528.git.viresh.kumar@linaro.org>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tianyu.lan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, jhbird.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-In the current code, if we fail during a frequency transition we simply send the
-POSTCHANGE notification with old frequency. This isn't enough.
+This patchset moves cpufreq callbacks to dpm_{suspend|resume}() from
+dpm_{suspend|resume}_noirq() for handling suspend/resume of cpufreq governors
+and core. This is required for early suspend and late resume of governors as
+there are drivers which want to change cpu frequency before suspending governors
+and they want to do it before devices get suspended, as some of them might be
+required to change frequency.
 
-One of the core user of these notifications is the code responsible for keeping
-loops_per_jiffy aligned with frequency change. And mostly it is written as:
+Following patch is already pushed for v3.13 as it was required for fixing some
+bugs in there. And the remaining was decided to be pushed for v3.14.
 
-	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
-	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-		update-loops-per-jiffy...
-	}
+commit 5a87182aa21d6d5d306840feab9321818dd3e2a3
+Author: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Date:   Wed Nov 27 09:09:42 2013 +0530
 
-So, suppose we are changing to a higher frequency and failed during transition,
-then following will happen:
-- CPUFREQ_PRECHANGE notification with freq-new > freq-old
-- CPUFREQ_POSTCHANGE notification with freq-new == freq-old
+    cpufreq: suspend governors on system suspend/hibernate
 
-The first one will update loops_per_jiffy and second one will do nothing. Even
-if we send the 2nd notification by exchanging values of freq-new and old, some
-users of these notifications might get unstable.
+This is already tested by few people and so incorporating their Tested-by as
+well.
 
-This can be fixed by simply calling cpufreq_notify_post_transition() with error
-code and this routine will take care of sending notifications in correct order.
+For: v3.14.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+Viresh Kumar (6):
+  cpufreq: suspend governors from dpm_{suspend|resume}()
+  cpufreq: call driver's suspend/resume for each policy
+  cpufreq: Implement cpufreq_generic_suspend()
+  cpufreq: exynos: Use cpufreq_generic_suspend()
+  cpufreq: s5pv210: Use cpufreq_generic_suspend()
+  cpufreq: Tegra: Use cpufreq_generic_suspend()
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 3b877d4..a7fcb84 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1815,17 +1815,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			pr_err("%s: Failed to change cpu frequency: %d\n",
- 					__func__, retval);
- 
--		if (notify) {
--			/*
--			 * Notify with old freq in case we failed to change
--			 * frequency
--			 */
--			if (retval)
--				freqs.new = freqs.old;
--
--			cpufreq_notify_transition(policy, &freqs,
--					CPUFREQ_POSTCHANGE);
--		}
-+		if (notify)
-+			cpufreq_notify_post_transition(policy, &freqs, retval);
- 	}
- 
- out:
+ drivers/base/power/main.c         |   6 +-
+ drivers/cpufreq/cpufreq.c         | 137 ++++++++++++++++----------------------
+ drivers/cpufreq/exynos-cpufreq.c  |  96 ++------------------------
+ drivers/cpufreq/s5pv210-cpufreq.c |  49 +-------------
+ drivers/cpufreq/tegra-cpufreq.c   |  46 ++-----------
+ include/linux/cpufreq.h           |   3 +
+ 6 files changed, 79 insertions(+), 258 deletions(-)
+
 -- 
 1.7.12.rc2.18.g61b472e
