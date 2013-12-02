@@ -1,241 +1,116 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH RESEND v10 2/7] cpufreq:acpi:x86: Adjust the acpi-cpufreq.c
- code to work with common boost solution
-Date: Mon, 02 Dec 2013 13:19:16 +0100
-Message-ID: <1385986761-17934-3-git-send-email-l.majewski@samsung.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+From: srinivas kandagatla <srinivas.kandagatla@st.com>
+Subject: Re: [PATCH RFC 08/10] net: stmmac:sti: Add STi SOC glue driver.
+Date: Mon, 2 Dec 2013 12:48:24 +0000
+Message-ID: <529C8198.7000106@st.com>
+References: <1384264311-7308-1-git-send-email-srinivas.kandagatla@st.com> <1384264383-7653-1-git-send-email-srinivas.kandagatla@st.com> <20131129193715.GA3441@lukather>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20131129193715.GA3441@lukather>
+Sender: linux-doc-owner@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, Russell King <linux@arm.linux.org.uk>, Stuart Menefy <stuart.menefy@st.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, stephen.gallimore@st.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The Intel's hardware based boost solution driver has been changed to cooperate with
-common cpufreq boost framework.
+Hi Maxime,
 
-The global sysfs boost attribute entry code (/sys/devices/system/cpu/cpufreq/boost)
-has been moved to a core cpufreq code. This attribute is now only visible,
-when cpufreq driver supports it.
+Thankyou for the comments.
 
-The _store_boost() function has been redesigned to be used as set_boost
-callback.
+On 29/11/13 19:37, Maxime Ripard wrote:
+>> +
+>> > +ethernet0: ethernet0{
+>> > +	#address-cells = <1>;
+>> > +	#size-cells = <1>;
+>> > +	compatible		= "st,stih415-dwmac";
+>> > +	reg			= <0x148 0x4>;
+>> > +	resets			= <&softreset STIH415_ETH0_SOFTRESET>;
+>> > +	st,syscon		= <&syscfg_rear>;
+>> > +	st,tx-retime-src	= "clk_125";
+>> > +	ranges;
+>> > +
+>> > +	dwmac0:dwmac@fe810000 {
+>> > +		device_type 	= "network";
+>> > +		compatible	= "snps,dwmac", "snps,dwmac-3.610";
+>> > +		reg 		= <0xfe810000 0x8000>;
+>> > +		interrupts 	= <0 147 0>;
+>> > +		interrupt-names = "macirq";
+>> > +		...
+>> > +	};
+>> > +};
+> Sorry for stepping up so late, but I dont' think this is the right way
+> to do it.
+> 
+Not a issue.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> DT is to describe how the hardware is laid out in a system agnostic
+> way, hence, it should not be impacted by the implementation details.
+> 
+If "hardware is laid out" means at SoC level? Then I attempted to do
+describe it in system agnostic way.
 
----
-Changes for v10:
-- None
+On ST SoCs "snps,dwmac" IP always has a hw glue layer on top of it.
 
-Changes for v9:
-- None
+> The fact that you use a glue to the dwmac driver *is* an
+> implementation detail.
 
-Changes for v8:
-- None
+Glue layer described here is actually a hardware glue on ST SoCs.
 
-Changes for v7:
-- Remove superfluous acpi_cpufreq_driver.boost_supported = false at
-  acpi_cpufreq_boost_init()
+> 
+> I think you'd rather have something like:
+> 
+> dwmac0: ethernet@fe810000 {
+> 	compatible		= "st,stih415-dwmac";
+> 	reg 			= <0xfe810000 0x8000 0x148 0x4>;
+> 	resets			= <&softreset STIH415_ETH0_SOFTRESET>;
+> 	st,syscon		= <&syscfg_rear>;
+> 	st,tx-retime-src	= "clk_125";
+> 	interrupts 		= <0 147 0>;
+> 	interrupt-names 	= "macirq";Am happy to go with 
+> 	...
+> };
+> 
+> Then, the driver can have its init functions associated to the
+> compatible you're using, through the .data field of the of_device_id
+> structure, and you just call it in the generic driver at probe's time.
 
-Changes for v6:
-- Perform acpi_cpufreq_boost_init initialization before cpufreq_driver
-  registration
-- Compile store_boost() only when CONFIG_X86_ACPI_CPUFREQ_CPB defined
-- Use boost_enabled flag defined at acpi_cpufreq_driver to store information
-  about boost state
-- Instead of using cpufreq_set_boost_enabled(), modify the boost_enable in
-  the acpi driver code
+This is changing the device tree bindings for the generic driver.
+Is this something Acceptable?
 
-Changes for v5:
-- Remove acpi-cpufreq's boost_enabled global flag and reuse one defined at
-  cpufreq core
+Peppe, are you Ok with such intrusive changes to the driver?
 
-Changes for v4:
-- add _store_boost to acpi_cpufreq_driver structure
+I did try few things before I sent this patch,
 
-Changes for v3:
-- Bring back boost_enabled as a global flag
-- Move boost_supported to cpufreq_driver structure
+1> Doing it via AUXDATA which was discouraged by Arnd.
 
-Changes for v2:
-- Replace boost_enabled and boost_supported global flags with proper entries
-  at struct cpufreq_driver.
-- Removal of struct cpufreq_boost
+2> Doing it the way you suggested which did not fit in very neatly,
+which looked like lot of SOC specific changes are added to generic driver.
 
- drivers/cpufreq/acpi-cpufreq.c |   86 ++++++++++++++--------------------------
- 1 file changed, 29 insertions(+), 57 deletions(-)
+3> Doing it as this patch, influenced by dwc3 code drivers/usb/dwc3/,
+Which fitted in very neatly without touching the existing generic driver.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index caf41eb..79e5608 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -80,7 +80,6 @@ static struct acpi_processor_performance __percpu *acpi_perf_data;
- static struct cpufreq_driver acpi_cpufreq_driver;
- 
- static unsigned int acpi_pstate_strict;
--static bool boost_enabled, boost_supported;
- static struct msr __percpu *msrs;
- 
- static bool boost_state(unsigned int cpu)
-@@ -133,49 +132,16 @@ static void boost_set_msrs(bool enable, const struct cpumask *cpumask)
- 	wrmsr_on_cpus(cpumask, msr_addr, msrs);
- }
- 
--static ssize_t _store_boost(const char *buf, size_t count)
-+static int _store_boost(int val)
- {
--	int ret;
--	unsigned long val = 0;
--
--	if (!boost_supported)
--		return -EINVAL;
--
--	ret = kstrtoul(buf, 10, &val);
--	if (ret || (val > 1))
--		return -EINVAL;
--
--	if ((val && boost_enabled) || (!val && !boost_enabled))
--		return count;
--
- 	get_online_cpus();
--
- 	boost_set_msrs(val, cpu_online_mask);
--
- 	put_online_cpus();
--
--	boost_enabled = val;
- 	pr_debug("Core Boosting %sabled.\n", val ? "en" : "dis");
- 
--	return count;
--}
--
--static ssize_t store_global_boost(struct kobject *kobj, struct attribute *attr,
--				  const char *buf, size_t count)
--{
--	return _store_boost(buf, count);
--}
--
--static ssize_t show_global_boost(struct kobject *kobj,
--				 struct attribute *attr, char *buf)
--{
--	return sprintf(buf, "%u\n", boost_enabled);
-+	return 0;
- }
- 
--static struct global_attr global_boost = __ATTR(boost, 0644,
--						show_global_boost,
--						store_global_boost);
--
- static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- {
- 	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-@@ -186,15 +152,32 @@ static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- cpufreq_freq_attr_ro(freqdomain_cpus);
- 
- #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
-+static ssize_t store_boost(const char *buf, size_t count)
-+{
-+	int ret;
-+	unsigned long val = 0;
-+
-+	if (!acpi_cpufreq_driver.boost_supported)
-+		return -EINVAL;
-+
-+	ret = kstrtoul(buf, 10, &val);
-+	if (ret || (val > 1))
-+		return -EINVAL;
-+
-+	_store_boost((int) val);
-+
-+	return count;
-+}
-+
- static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
- 			 size_t count)
- {
--	return _store_boost(buf, count);
-+	return store_boost(buf, count);
- }
- 
- static ssize_t show_cpb(struct cpufreq_policy *policy, char *buf)
- {
--	return sprintf(buf, "%u\n", boost_enabled);
-+	return sprintf(buf, "%u\n", acpi_cpufreq_driver.boost_enabled);
- }
- 
- cpufreq_freq_attr_rw(cpb);
-@@ -554,7 +537,7 @@ static int boost_notify(struct notifier_block *nb, unsigned long action,
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
--		boost_set_msrs(boost_enabled, cpumask);
-+		boost_set_msrs(acpi_cpufreq_driver.boost_enabled, cpumask);
- 		break;
- 
- 	case CPU_DOWN_PREPARE:
-@@ -911,6 +894,7 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.resume		= acpi_cpufreq_resume,
- 	.name		= "acpi-cpufreq",
- 	.attr		= acpi_cpufreq_attr,
-+	.set_boost      = _store_boost,
- };
- 
- static void __init acpi_cpufreq_boost_init(void)
-@@ -921,33 +905,22 @@ static void __init acpi_cpufreq_boost_init(void)
- 		if (!msrs)
- 			return;
- 
--		boost_supported = true;
--		boost_enabled = boost_state(0);
--
-+		acpi_cpufreq_driver.boost_supported = true;
-+		acpi_cpufreq_driver.boost_enabled = boost_state(0);
- 		get_online_cpus();
- 
- 		/* Force all MSRs to the same value */
--		boost_set_msrs(boost_enabled, cpu_online_mask);
-+		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
-+			       cpu_online_mask);
- 
- 		register_cpu_notifier(&boost_nb);
- 
- 		put_online_cpus();
--	} else
--		global_boost.attr.mode = 0444;
--
--	/* We create the boost file in any case, though for systems without
--	 * hardware support it will be read-only and hardwired to return 0.
--	 */
--	if (cpufreq_sysfs_create_file(&(global_boost.attr)))
--		pr_warn(PFX "could not register global boost sysfs file\n");
--	else
--		pr_debug("registered global boost sysfs file\n");
-+	}
- }
- 
- static void __exit acpi_cpufreq_boost_exit(void)
- {
--	cpufreq_sysfs_remove_file(&(global_boost.attr));
--
- 	if (msrs) {
- 		unregister_cpu_notifier(&boost_nb);
- 
-@@ -993,12 +966,11 @@ static int __init acpi_cpufreq_init(void)
- 			*iter = &cpb;
- 	}
- #endif
-+	acpi_cpufreq_boost_init();
- 
- 	ret = cpufreq_register_driver(&acpi_cpufreq_driver);
- 	if (ret)
- 		free_acpi_perf_data();
--	else
--		acpi_cpufreq_boost_init();
- 
- 	return ret;
- }
--- 
-1.7.10.4
+stmmac driver is a generic synopsis driver which ST has written the
+driver, so I did not want to pollute this driver with ST specific glue
+logic bindings.
+
+Again, this could be irrelevant/confusing to other people who are using
+this driver in there SoCs.
+
+Only thing that bothers me with your suggestion is the changes to
+generic driver.
+
+
+> 
+> I don't really know what this syscon thing is either, but I think the
+> reg <0x148 0x4> is related to that.
+Yes, it is related to that.
+
+> 
+> Why don't you pass it directly in the st,syscon property, to have
+> something like <&syscfg_rear 0x148>?
+This style was once discouraged by Arnd when I first sent pinctrl driver
+for reasons that dt should not specify the offsets to registers.
+
+> 
+> Maxime
+
