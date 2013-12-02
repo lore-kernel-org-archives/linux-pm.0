@@ -1,63 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PCI / tg3: Give up chip reset and carrier loss handling if PCI device is not present
-Date: Mon, 02 Dec 2013 02:18:50 +0100
-Message-ID: <3652057.Ek7BjA2Oi2@vostro.rjw.lan>
-References: <7807315.7cU9KldDtM@vostro.rjw.lan> <1385930359.6988.7.camel@LTIRV-MCHAN1.corp.ad.broadcom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/5] cpufreq: Introduce cpufreq_notify_post_transition()
+Date: Mon,  2 Dec 2013 11:04:12 +0530
+Message-ID: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60196 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751894Ab3LBBFz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Dec 2013 20:05:55 -0500
-In-Reply-To: <1385930359.6988.7.camel@LTIRV-MCHAN1.corp.ad.broadcom.com>
+Received: from mail-qe0-f48.google.com ([209.85.128.48]:39160 "EHLO
+	mail-qe0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094Ab3LBFeW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Dec 2013 00:34:22 -0500
+Received: by mail-qe0-f48.google.com with SMTP id gc15so12549899qeb.21
+        for <linux-pm@vger.kernel.org>; Sun, 01 Dec 2013 21:34:21 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Chan <mchan@broadcom.com>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Nithin Nayak Sujir <nsujir@broadcom.com>, David Miller <davem@davemloft.net>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Sunday, December 01, 2013 12:39:19 PM Michael Chan wrote:
-> On Sun, 2013-12-01 at 02:34 +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Modify tg3_chip_reset() and tg3_close() to check if the PCI network
-> > adapter device is accessible at all in order to skip poking it or
-> > trying to handle a carrier loss in vain when that's not the case.
-> > Introduce a special PCI helper function pci_device_is_present()
-> > for this purpose.
-> > 
-> > Of course, this uncovers the lack of the appropriate RTNL locking
-> > in tg3_suspend() and tg3_resume(), so add that locking in there
-> > too.
-> > 
-> > These changes prevent tg3 from burning a CPU at 100% load level for
-> > solid several seconds after the Thunderbolt link is disconnected from
-> > a Matrox DS1 docking station. 
-> 
-> I'm not familiar with the DS1.  Does the tg3 device get removed through
-> tg3_remove_one() in this case?
+This introduces another routine cpufreq_notify_post_transition() which can be
+used to send POSTCHANGE notification for new freq with or without both
+{PRE|POST}CHANGE notifications for last freq. This is useful at multiple places,
+specially for sending transition failure notifications.
 
-Yes, this is a normal removal except that the device is gone physically when
-it happens.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
 
-Thunderbolt cable disconnect is like a power failure for all devices on
-the link (that is, all devices in the DS1 in this particular case).
+V1->V2:
+- Not required to push it for 3.13 anymore and can go in 3.14.
+- Rebased over following patchset as there were conflicts in unicore2 driver if
+  following patchset is applied first (which should be the case):
+  https://lkml.org/lkml/2013/10/30/553 (create cpufreq_generic_get() routine)
 
-> What happens when you reconnect the DS1?
+ drivers/cpufreq/cpufreq.c | 14 ++++++++++++++
+ include/linux/cpufreq.h   |  2 ++
+ 2 files changed, 16 insertions(+)
 
-Well, it works.  ACPIPHP just waits for the removal to complete and then it
-handles the hot-add event and the device works normally after that.
-
-The only problem is that without the patch the hot-removal takes a few seconds
-and quite a lot of CPU power due to the tight loop spinning in tg3_carrier_off()
-called by tg3_close(), while with the patch it just happens almost instantaneously.
-
-And in the Thunderbolt disconnect case doing the entire tg3_chip_reset() is
-pointless anyway, because the config space of the device is not available then.
-
-Thanks!
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5e27def..3b877d4 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -338,6 +338,20 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
+ 
++/* Do post notifications when there are chances that transition has failed */
++void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
++		struct cpufreq_freqs *freqs, int transition_failed)
++{
++	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
++	if (!transition_failed)
++		return;
++
++	swap(freqs->old, freqs->new);
++	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
++	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
++}
++EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
++
+ 
+ /*********************************************************************
+  *                          SYSFS INTERFACE                          *
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 276e646..b26bfab 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -316,6 +316,8 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
+ 
+ void cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		struct cpufreq_freqs *freqs, unsigned int state);
++void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
++		struct cpufreq_freqs *freqs, int transition_failed);
+ 
+ #else /* CONFIG_CPU_FREQ */
+ static inline int cpufreq_register_notifier(struct notifier_block *nb,
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.rc2.18.g61b472e
+
