@@ -1,198 +1,133 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
-Date: Tue, 3 Dec 2013 10:40:06 +0000
-Message-ID: <20131203104004.GA5694@e102568-lin.cambridge.arm.com>
-References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
- <3AA6B169-C4C8-474B-B110-B912510B834E@codeaurora.org>
+From: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
+Subject: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Tue,  3 Dec 2013 12:14:32 +0100
+Message-ID: <1386069272-9250-1-git-send-email-bjorn@mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54461 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836Ab3LCKkR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Dec 2013 05:40:17 -0500
-In-Reply-To: <3AA6B169-C4C8-474B-B110-B912510B834E@codeaurora.org>
-Content-Disposition: inline
+Received: from canardo.mork.no ([148.122.252.1]:60678 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752726Ab3LCLPJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 Dec 2013 06:15:09 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kumar Gala <galak@codeaurora.org>
-Cc: devicetree <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
 
-On Mon, Dec 02, 2013 at 06:08:16PM +0000, Kumar Gala wrote:
-> 
-> On Dec 2, 2013, at 10:20 AM, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> 
-> > ARM based platforms implement a variety of power management schemes that
-> > allow processors to enter at run-time low-power states, aka C-states
-> > in ACPI jargon. The parameters defining these C-states vary on a per-platform
-> > basis forcing the OS to hardcode the state parameters in platform
-> > specific static tables whose size grows as the number of platforms supported
-> > in the kernel increases and hampers device drivers standardization.
-> >
-> > Therefore, this patch aims at standardizing C-state device tree bindings for
-> > ARM platforms. Bindings define C-state parameters inclusive of entry methods
-> > and state latencies, to allow operating systems to retrieve the
-> > configuration entries from the device tree and initialize the related
-> > power management drivers, paving the way for common code in the kernel
-> > to deal with power states and removing the need for static data in current
-> > and previous kernel versions.
-> 
-> Where is this spec'd today in the kernel?
+This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Perform
+light-weight init/teardown during suspend/resume"), which enabled
+suspend/resume optimizations leaving the sysfs files in place.
 
-How can it be in the kernel given that these bindings have just been posted ?
-I started coding the layer managing the C-states in the kernel, even
-though I would avoid writing it and then restart from scratch if these
-bindings are scrapped. Bindings should not depend on kernel code, it
-is the other way around, right ?
+Errors during suspend/resume are not handled properly, leaving
+dead sysfs attributes in case of failures.  There are are number of
+functions with special code for the "frozen" case, and all these
+need to also have special error handling.
 
-[...]
+The problem is easy to demonstrate by making cpufreq_driver->init()
+or cpufreq_driver->get() fail during resume.
 
-> > +===========================================
-> > +2 - state node
-> > +===========================================
-> > +
-> > +A state node represents a C-state description and must be defined as follows:
-> > +
-> > +- state node
-> > +
-> > +     Description: must be child of the cpu-power-states node.
-> > +
-> > +     The state node name must be "state", with unit address provided by the
-> > +     "reg" property following standard DT requirements[4].
-> > +
-> > +     A state node defines the following properties:
-> > +
-> > +     - reg
-> > +             Usage: Required
-> > +             Value type: <u32>
-> > +             Definition: Standard device tree property [4] used for
-> > +                         enumeration purposes.
-> 
-> I'm not sure what purpose reg is really serving here.
+The code is too complex for a simple fix, with split code paths
+in multiple blocks within a number of functions.  It is therefore
+best to revert the patch enabling this code until the error handling
+is in place.
 
-Enumeration, that's it.
+Examples of problems resulting from resume errors:
 
-> > +
-> > +     - index
-> > +             Usage: Required
-> > +             Value type: <u32>
-> > +             Definition: It represents C-state index, starting from 2 (index
-> > +                         0 represents the processor state "running" and
-> > +                         index 1 represents processor mode "WFI"; indexes 0
-> > +                         and 1 are standard ARM states that need not be
-> > +                         described).
-> 
-> any reason not to call it c-state-index"
+Dec  2 09:54:38 nemi kernel: [  930.162476] ------------[ cut here ]---=
+---------
+Dec  2 09:54:38 nemi kernel: [  930.162489] WARNING: CPU: 0 PID: 6055 a=
+t fs/sysfs/file.c:343 sysfs_open_file+0x77/0x212()
+Dec  2 09:54:38 nemi kernel: [  930.162493] missing sysfs attribute ope=
+rations for kobject: (null)
+Dec  2 09:54:38 nemi kernel: [  930.162495] Modules linked in: [strippe=
+d as irrelevant]
+Dec  2 09:54:38 nemi kernel: [  930.162662] CPU: 0 PID: 6055 Comm: grep=
+ Tainted: G      D      3.13.0-rc2 #153
+Dec  2 09:54:38 nemi kernel: [  930.162665] Hardware name: LENOVO 2776L=
+EG/2776LEG, BIOS 6EET55WW (3.15 ) 12/19/2011
+Dec  2 09:54:38 nemi kernel: [  930.162668]  0000000000000009 ffff88023=
+27ebb78 ffffffff81380b0e 0000000000000006
+Dec  2 09:54:38 nemi kernel: [  930.162676]  ffff8802327ebbc8 ffff88023=
+27ebbb8 ffffffff81038635 0000000000000000
+Dec  2 09:54:38 nemi kernel: [  930.162682]  ffffffff811823c7 ffff88021=
+a19e688 ffff88021a19e688 ffff8802302f9310
+Dec  2 09:54:38 nemi kernel: [  930.162690] Call Trace:
+Dec  2 09:54:38 nemi kernel: [  930.162698]  [<ffffffff81380b0e>] dump_=
+stack+0x55/0x76
+Dec  2 09:54:38 nemi kernel: [  930.162705]  [<ffffffff81038635>] warn_=
+slowpath_common+0x7c/0x96
+Dec  2 09:54:38 nemi kernel: [  930.162710]  [<ffffffff811823c7>] ? sys=
+fs_open_file+0x77/0x212
+Dec  2 09:54:38 nemi kernel: [  930.162715]  [<ffffffff810386e3>] warn_=
+slowpath_fmt+0x41/0x43
+Dec  2 09:54:38 nemi kernel: [  930.162720]  [<ffffffff81182dec>] ? sys=
+fs_get_active+0x6b/0x82
+Dec  2 09:54:38 nemi kernel: [  930.162725]  [<ffffffff81182382>] ? sys=
+fs_open_file+0x32/0x212
+Dec  2 09:54:38 nemi kernel: [  930.162730]  [<ffffffff811823c7>] sysfs=
+_open_file+0x77/0x212
+Dec  2 09:54:38 nemi kernel: [  930.162736]  [<ffffffff81182350>] ? sys=
+fs_schedule_callback+0x1ac/0x1ac
+Dec  2 09:54:38 nemi kernel: [  930.162742]  [<ffffffff81122562>] do_de=
+ntry_open+0x17c/0x257
+Dec  2 09:54:38 nemi kernel: [  930.162748]  [<ffffffff8112267e>] finis=
+h_open+0x41/0x4f
+Dec  2 09:54:38 nemi kernel: [  930.162754]  [<ffffffff81130225>] do_la=
+st+0x80c/0x9ba
+Dec  2 09:54:38 nemi kernel: [  930.162759]  [<ffffffff8112dbbd>] ? ino=
+de_permission+0x40/0x42
+Dec  2 09:54:38 nemi kernel: [  930.162764]  [<ffffffff81130606>] path_=
+openat+0x233/0x4a1
+Dec  2 09:54:38 nemi kernel: [  930.162770]  [<ffffffff81130b7e>] do_fi=
+lp_open+0x35/0x85
+Dec  2 09:54:38 nemi kernel: [  930.162776]  [<ffffffff8113b787>] ? __a=
+lloc_fd+0x172/0x184
+Dec  2 09:54:38 nemi kernel: [  930.162782]  [<ffffffff811232ea>] do_sy=
+s_open+0x6b/0xfa
+Dec  2 09:54:38 nemi kernel: [  930.162787]  [<ffffffff811233a7>] SyS_o=
+penat+0xf/0x11
+Dec  2 09:54:38 nemi kernel: [  930.162794]  [<ffffffff8138c812>] syste=
+m_call_fastpath+0x16/0x1b
+Dec  2 09:54:38 nemi kernel: [  930.162798] ---[ end trace 48ce7fe74a95=
+d4be ]---
 
-Well, they are called "state" nodes, so I called it "index".
+The failure to restore cpufreq devices on cancelled hibernation is
+not a new bug. It is caused by the ACPI _PPC call failing unless the
+hibernate is completed. This makes the acpi_cpufreq driver fail its
+init.
 
-I really do not care, can change it if we think we should call states
-c-states.
+Previously, the cpufreq device could be restored by offlining the
+cpu temporarily.  And as a complete hibernation cycle would do this,
+it would be automatically restored most of the time.  But after
+commit 5302c3fb2e62 the leftover sysfs attributes will block any
+device add action.  Therefore offlining and onlining CPU 1 will no
+longer restore the cpufreq object, and a complete suspend/resume
+cycle will replace it with garbage.
 
-> > +
-> > +     - entry-method
-> > +             Value type: <stringlist>
-> > +             Usage: Required
-> > +             Definition: Describes the method by which a CPU enters the
-> > +                         C-state. This property is required and must be one
-> > +                         of:
-> > +
-> > +                         - "psci"
-> > +                           ARM Standard firmware interface
-> > +
-> > +                         - "[vendor],[method]"
-> > +                           An implementation dependent string with
-> > +                           format "vendor,method", where vendor is a string
-> > +                           denoting the name of the manufacturer and
-> > +                           method is a string specifying the mechanism
-> > +                           used to enter the C-state.
-> > +
-> > +     - psci-power-state
-> > +             Usage: Required if entry-method property value is set to
-> > +                    "psci".
-> > +             Value type: <u32>
-> > +             Definition: power_state parameter to pass to the PSCI
-> > +                         suspend call to enter the C-state.
-> > +
-> > +     - latency
-> > +             Usage: Required
-> > +             Value type: <u32>
-> > +             Definition: Worst case latency in microseconds required to
-> > +                         enter and exit the C-state.
-> > +
-> > +     - min-residency
-> > +             Usage: Required
-> > +             Value type: <u32>
-> > +             Definition: Time in microseconds required for the CPU to be in
-> > +                         the C-state to make up for the dynamic power
-> > +                         consumed to enter/exit the C-state in order to
-> > +                         break even in terms of power consumption compared
-> > +                         to C1 state (wfi).
-> > +                         This parameter depends on the operating conditions
-> > +                         (operating point, cache state) and must assume
-> > +                         worst case scenario.
-> > +
-> > +     - cpus
-> > +             Usage: Optional
-> > +             Value type: <phandle>
-> > +             Definition: If defined, the phandle points to a node in the
-> > +                         cpu-map[2] representing all CPUs on which C-state
-> > +                         is valid. If not present or system is UP, the
-> > +                         C-state has to be considered valid for all CPUs in
-> > +                         the system.
-> > +
-> > +     - affinity
-> > +             Usage: Optional
-> > +             Value type: <phandle>
-> > +             Definition: If defined, phandle points to a node in the
-> > +                         cpu-map[2] that represents all CPUs that are
-> > +                         affected (ie share) by the C-state and have to
-> > +                         be coordinated on C-state entry/exit. If not
-> > +                         present or system is UP, the C-state is local to
-> > +                         a CPU and need no coordination (ie it is a CPU
-> > +                         state, that does not require coordination with
-> > +                         other CPUs). If present, the affinity property
-> > +                         must contain a phandle to a cpu-map node that
-> > +                         represents a subset, possibly inclusive of the
-> > +                         CPUs described through the cpus property.
-> > +
-> > +     - power-depth
-> > +             Usage: Required
-> > +             Value type: <u32>
-> > +             Definition: Integer value, starting from 2 (value 0 meaning
-> > +                         running and value 1 representing power depth of
-> > +                         wfi (C1)), that defines the level of depth of a
-> > +                         power state.
-> > +                         The system denotes power states with different
-> > +                         depths, an increasing value meaning less power
-> > +                         consumption and might involve powering down more
-> > +                         components.  Devices that are affected by
-> > +                         C-states entry must define the maximum power
-> > +                         depth supported in their respective device tree
-> > +                         bindings so that OSPM can take decision on how
-> > +                         to handle the device in question when the C-state
-> > +                         is entered. All devices (per-CPU or external) with
-> > +                         a power depth lower than the one defined in the
-> > +                         C-state entry stop operating when the C-state
-> > +                         is entered and action is required by OSPM to
-> > +                         guarantee their logic and memory content is saved
-> > +                         restored to guarantee proper functioning.
-> 
-> How is this different from the c-state index?
+=46ixes: 5302c3fb2e62 ("cpufreq: Perform light-weight init/teardown dur=
+ing suspend/resume")
+Cc: <stable@vger.kernel.org> # v3.12
+Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+---
+ drivers/cpufreq/cpufreq.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
-The idea, not sure it is worthwhile, is to represent a unique value in
-the system. There can be multiple eg C2 states (two clusters in two
-different power domains) with same index and different power depths.
-
-Devices attached to power domains can check the power depth to detect if
-the CPU must be prevented from entering the C-state or not, and on the
-other hand, power depth allows to understand if a device state must be
-saved and restored.
-
-I should have added an example but there is already lots of stuff to
-discuss for bindings as they are IMHO.
-
-Lorenzo
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534da22dd..b7c3b877da44 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2076,9 +2076,6 @@ static int cpufreq_cpu_callback(struct notifier_b=
+lock *nfb,
+ 	dev =3D get_cpu_device(cpu);
+ 	if (dev) {
+=20
+-		if (action & CPU_TASKS_FROZEN)
+-			frozen =3D true;
+-
+ 		switch (action & ~CPU_TASKS_FROZEN) {
+ 		case CPU_ONLINE:
+ 			__cpufreq_add_dev(dev, NULL, frozen);
+--=20
+1.7.10.4
 
