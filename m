@@ -1,94 +1,93 @@
 From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [RFC v2 0/4] Add basic support for ASV
-Date: Tue, 3 Dec 2013 20:16:12 +0530
-Message-ID: <CAM4voak0QaseYoRM+rsx2Fa8qs1z=w9iVep1smxx73_SUhmkJQ@mail.gmail.com>
+Subject: Re: [RFC v2 1/4] power: asv: Add common ASV support for Samsung SoCs
+Date: Tue, 3 Dec 2013 20:16:26 +0530
+Message-ID: <CAM4voam5GS5HORbb_r57C_61cMafKjQnBnR0dxD7x-9iTBps8Q@mail.gmail.com>
 References: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
-	<CAJ0PZbS8FxRA_sPTOnWbZcNfUMp=k5Jf_tZHLg1fh6gsAGJ=Gw@mail.gmail.com>
-	<CAK9yfHzUAnBMB2Bp+eKzR3NH1iRguJn4K45gss5psWzG4Lc7tw@mail.gmail.com>
+	<1384515691-26299-2-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAK9yfHzUAnBMB2Bp+eKzR3NH1iRguJn4K45gss5psWzG4Lc7tw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1384515691-26299-2-git-send-email-sachin.kamat@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: MyungJoo Ham <myungjoo.ham@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Yadwinder Singh Brar <yadi.brar01@gmail.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Bresticker <abrestic@google.com>, Doug Anderson <dianders@google.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Yadwinder Singh Brar <yadi.brar01@gmail.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, Andrew Bresticker <abrestic@google.com>, Doug Anderson <dianders@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Yadwinder and Sachin,
-
-On Mon, Nov 18, 2013 at 9:37 AM, Sachin Kamat <sachin.kamat@linaro.org>=
- wrote:
-> Hi MyungJoo,
->
-> On 18 November 2013 08:07, MyungJoo Ham <myungjoo.ham@samsung.com> wr=
-ote:
->>
->> 2013. 11. 15. =BF=C0=C8=C4 8:44=BF=A1 "Sachin Kamat" <sachin.kamat@l=
-inaro.org>=B4=D4=C0=CC =C0=DB=BC=BA:
->>
->>
->>>
->>> Original cover letter from Yadwinder:
->>> This series is to add basic common infrastructure for ASV.
->>>  Basically ASV is a technique used on samsung SoCs, which provides =
-the
->>> recommended supply voltage for dvfs of arm, mif etc. For a given op=
-erating
->>> frequency, the voltage is recommended based on SoC's ASV group.
->>> ASV group gets fussed on SoCs during process of mass production.
->>>
->>> This series includes:
->>>  - basic common infrastructue for ASV. It provides common APIs for =
-user
->>> drivers
->>> like cpufreq & devfreq and and an interface for SoC specific driver=
-s to
->>> register ASV members(instances)
->>>  - a common platform driver to register ASV members for exynos SoCs
->>>  - an example providing minimal support (only for ARM ASV) for exyn=
-os5250
->>> chips
->>>
->>> Its just basic skelton which I wanted to get it reviewed or discuss=
-ed in
->>> early stage, before going ahead on further development based on it.
->>>  Presently example is based on static ASV table provided in SoC spe=
-cific
->>> file,
->>> which I expects to go into DT. But exactly how and where needs to b=
-e
->>> discussed,
->>> may be in next revisions once we get through the basic skelton.
->>>  Also the location of driver in kernel may also seem odd to someone=
- and
->>> many more things :).
->>>
->>> Looking for your valuable reviews and suggestions.
->>
->> Hi,
->>
->> As I have commented on the previous thread of Yadwinder, please shar=
-e the
->> directory woth AVS, which is conceptually a superset of ASV.
->>
->> Ultimately, it would be best if you can supply an infra that can be =
-shared
->> with the current AVS, which does not have any currently.
->>
->
-> Yadwinder has already replied to your suggestion about his concerns. =
-Please
-> share your comments.
->
+Hi,
 
 CC'ing Doug and Andrew who have also worked on ASV.
 
-I tested these patches on a 5250 Chromebook after modifying the
-cpufreq code and a few other changes for booting the board. The driver
-is retrieving the ASV fused group correctly. The behavior on an
-unfused SMDK5250 is also fine.
-I have a few minor comments on the patches.
+[...]
 
-Thanks
+> diff --git a/drivers/power/asv/Kconfig b/drivers/power/asv/Kconfig
+> new file mode 100644
+> index 000000000000..761119d9f7f8
+> --- /dev/null
+> +++ b/drivers/power/asv/Kconfig
+> @@ -0,0 +1,10 @@
+> +menuconfig POWER_ASV
+> +       bool "Adaptive Supply Voltage (ASV) support"
+Select POWER_SUPPLY here ?
+> +       help
+> +         ASV is a technique used on Samsung SoCs which provides the
+> +         recommended supply voltage for some specific parts(like CPU, MIF, etc)
+> +         that support DVFS. For a given operating frequency, the voltage is
+> +         recommended based on SoCs ASV group. ASV group info is provided in the
+> +         chip id info which depends on the chip manufacturing process.
+> +
+
+[...]
+> +
+> +       if (asv_info->ops->init_asv)
+> +               ret = asv_info->ops->init_asv(asv_info);
+> +               if (ret) {
+> +                       pr_err("asv_init failed for %s : %d\n",
+> +                               asv_info->name, ret);
+> +                       goto err;
+> +               }
+> +
+> +       /* In case of parsing table from DT, we may need to add flag to identify
+> +       DT supporting members and call init_asv_table from asv_init_opp_table(
+> +       after getting dev_node from dev,if required), instead of calling here.
+> +       */
+Please fix Multi-line comment here and through the rest of the patches as well.
+
+[...]
+> + * @nr_dvfs_level: Number of dvfs levels supported by member.
+> + * @dvfs_table: Table containing supported ASV freqs and corresponding volts.
+> + * @asv_grp: ASV group of member.
+> + * @flags: ASV flags
+What are the ASV flags you had in mind ?
+> + */
+> +struct asv_info {
+> +       const char              *name;
+> +       enum asv_type_id        type;
+> +       struct asv_ops          *ops;
+> +       unsigned int            nr_dvfs_level;
+> +       struct asv_freq_table   *dvfs_table;
+> +       unsigned int            asv_grp;
+> +       unsigned int            flags;
+> +};
+
+[...]
+> +
+> +#ifdef CONFIG_POWER_ASV
+> +/* asv_get_volt - get the ASV for target_freq for particular target_type.
+> + *     returns 0 if target_freq is not supported
+Could you add a comment for asv_init_opp_table as well.
+> + */
+> +extern unsigned int asv_get_volt(enum asv_type_id target_type,
+> +                                       unsigned int target_freq);
+> +extern int asv_init_opp_table(struct device *dev,
+> +                                       enum asv_type_id target_type);
+> +#else
+> +static inline unsigned int asv_get_volt(enum asv_type_id target_type,
+> +                               unsigned int target_freq) { return 0; }
+> +static int asv_init_opp_table(struct device *dev, enum asv_type_id target_type)
+> +       { return 0; }
+> +
+> +#endif /* CONFIG_POWER_EXYNOS_AVS */
+> +#endif /* __ASV_H */
+
+Regards,
 Abhilash
