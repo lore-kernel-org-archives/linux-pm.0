@@ -1,133 +1,111 @@
-From: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
-Subject: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Tue,  3 Dec 2013 12:14:32 +0100
-Message-ID: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
+Date: Tue, 03 Dec 2013 12:52:36 +0100
+Message-ID: <529DC604.4050600@linaro.org>
+References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com> <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from canardo.mork.no ([148.122.252.1]:60678 "EHLO canardo.mork.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726Ab3LCLPJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 3 Dec 2013 06:15:09 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1386001205-11978-3-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dave Martin <dave.martin-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Mark Hambleton <mark.hambleton-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Hanjun Guo <hanjun.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
 
-This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Perform
-light-weight init/teardown during suspend/resume"), which enabled
-suspend/resume optimizations leaving the sysfs files in place.
+On 12/02/2013 05:20 PM, Lorenzo Pieralisi wrote:
+> ARM based platforms implement a variety of power management schemes t=
+hat
+> allow processors to enter at run-time low-power states, aka C-states
+> in ACPI jargon. The parameters defining these C-states vary on a per-=
+platform
+> basis forcing the OS to hardcode the state parameters in platform
+> specific static tables whose size grows as the number of platforms su=
+pported
+> in the kernel increases and hampers device drivers standardization.
+>
+> Therefore, this patch aims at standardizing C-state device tree bindi=
+ngs for
+> ARM platforms. Bindings define C-state parameters inclusive of entry =
+methods
+> and state latencies, to allow operating systems to retrieve the
+> configuration entries from the device tree and initialize the related
+> power management drivers, paving the way for common code in the kerne=
+l
+> to deal with power states and removing the need for static data in cu=
+rrent
+> and previous kernel versions.
+>
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
 
-Errors during suspend/resume are not handled properly, leaving
-dead sysfs attributes in case of failures.  There are are number of
-functions with special code for the "frozen" case, and all these
-need to also have special error handling.
+Hi Lorenzo,
 
-The problem is easy to demonstrate by making cpufreq_driver->init()
-or cpufreq_driver->get() fail during resume.
+thanks for the detailed description.
 
-The code is too complex for a simple fix, with split code paths
-in multiple blocks within a number of functions.  It is therefore
-best to revert the patch enabling this code until the error handling
-is in place.
+Just a couple of typos below.
 
-Examples of problems resulting from resume errors:
+[ ... ]
 
-Dec  2 09:54:38 nemi kernel: [  930.162476] ------------[ cut here ]---=
----------
-Dec  2 09:54:38 nemi kernel: [  930.162489] WARNING: CPU: 0 PID: 6055 a=
-t fs/sysfs/file.c:343 sysfs_open_file+0x77/0x212()
-Dec  2 09:54:38 nemi kernel: [  930.162493] missing sysfs attribute ope=
-rations for kobject: (null)
-Dec  2 09:54:38 nemi kernel: [  930.162495] Modules linked in: [strippe=
-d as irrelevant]
-Dec  2 09:54:38 nemi kernel: [  930.162662] CPU: 0 PID: 6055 Comm: grep=
- Tainted: G      D      3.13.0-rc2 #153
-Dec  2 09:54:38 nemi kernel: [  930.162665] Hardware name: LENOVO 2776L=
-EG/2776LEG, BIOS 6EET55WW (3.15 ) 12/19/2011
-Dec  2 09:54:38 nemi kernel: [  930.162668]  0000000000000009 ffff88023=
-27ebb78 ffffffff81380b0e 0000000000000006
-Dec  2 09:54:38 nemi kernel: [  930.162676]  ffff8802327ebbc8 ffff88023=
-27ebbb8 ffffffff81038635 0000000000000000
-Dec  2 09:54:38 nemi kernel: [  930.162682]  ffffffff811823c7 ffff88021=
-a19e688 ffff88021a19e688 ffff8802302f9310
-Dec  2 09:54:38 nemi kernel: [  930.162690] Call Trace:
-Dec  2 09:54:38 nemi kernel: [  930.162698]  [<ffffffff81380b0e>] dump_=
-stack+0x55/0x76
-Dec  2 09:54:38 nemi kernel: [  930.162705]  [<ffffffff81038635>] warn_=
-slowpath_common+0x7c/0x96
-Dec  2 09:54:38 nemi kernel: [  930.162710]  [<ffffffff811823c7>] ? sys=
-fs_open_file+0x77/0x212
-Dec  2 09:54:38 nemi kernel: [  930.162715]  [<ffffffff810386e3>] warn_=
-slowpath_fmt+0x41/0x43
-Dec  2 09:54:38 nemi kernel: [  930.162720]  [<ffffffff81182dec>] ? sys=
-fs_get_active+0x6b/0x82
-Dec  2 09:54:38 nemi kernel: [  930.162725]  [<ffffffff81182382>] ? sys=
-fs_open_file+0x32/0x212
-Dec  2 09:54:38 nemi kernel: [  930.162730]  [<ffffffff811823c7>] sysfs=
-_open_file+0x77/0x212
-Dec  2 09:54:38 nemi kernel: [  930.162736]  [<ffffffff81182350>] ? sys=
-fs_schedule_callback+0x1ac/0x1ac
-Dec  2 09:54:38 nemi kernel: [  930.162742]  [<ffffffff81122562>] do_de=
-ntry_open+0x17c/0x257
-Dec  2 09:54:38 nemi kernel: [  930.162748]  [<ffffffff8112267e>] finis=
-h_open+0x41/0x4f
-Dec  2 09:54:38 nemi kernel: [  930.162754]  [<ffffffff81130225>] do_la=
-st+0x80c/0x9ba
-Dec  2 09:54:38 nemi kernel: [  930.162759]  [<ffffffff8112dbbd>] ? ino=
-de_permission+0x40/0x42
-Dec  2 09:54:38 nemi kernel: [  930.162764]  [<ffffffff81130606>] path_=
-openat+0x233/0x4a1
-Dec  2 09:54:38 nemi kernel: [  930.162770]  [<ffffffff81130b7e>] do_fi=
-lp_open+0x35/0x85
-Dec  2 09:54:38 nemi kernel: [  930.162776]  [<ffffffff8113b787>] ? __a=
-lloc_fd+0x172/0x184
-Dec  2 09:54:38 nemi kernel: [  930.162782]  [<ffffffff811232ea>] do_sy=
-s_open+0x6b/0xfa
-Dec  2 09:54:38 nemi kernel: [  930.162787]  [<ffffffff811233a7>] SyS_o=
-penat+0xf/0x11
-Dec  2 09:54:38 nemi kernel: [  930.162794]  [<ffffffff8138c812>] syste=
-m_call_fastpath+0x16/0x1b
-Dec  2 09:54:38 nemi kernel: [  930.162798] ---[ end trace 48ce7fe74a95=
-d4be ]---
+> +- cpu-power-states node
+> +
+> +	Usage: Optional - On ARM systems, is a container of processor C-sta=
+te
+> +			  nodes. If the system does not provide CPU power
+> +			  management capabilities or the processor just
+> +			  supports WFI (C1 state) a cpu-power-states node is
+> +			  not required.
+> +
+> +	Description: cpu-power-states node is a container node, where its
+> +		     subnodes describe the CPU low-power C-states.
+> +
+> +	Node name must be "cpu-power-states".
+> +
+> +	The cpu-power-states node's parent node must be cpus node.
+> +
+> +	The cpu-power-states node's child nodes can be:
+> +
+> +	- one or more state nodes
+> +
+> +	The cpu-power-states node must contain the following properties:
+> +
+> +	- compatible
+> +		Value type: <stringlist>
+> +		Usage: Required
 
-The failure to restore cpufreq devices on cancelled hibernation is
-not a new bug. It is caused by the ACPI _PPC call failing unless the
-hibernate is completed. This makes the acpi_cpufreq driver fail its
-init.
+Invert the field above to be consistent with the definitions below.
 
-Previously, the cpufreq device could be restored by offlining the
-cpu temporarily.  And as a complete hibernation cycle would do this,
-it would be automatically restored most of the time.  But after
-commit 5302c3fb2e62 the leftover sysfs attributes will block any
-device add action.  Therefore offlining and onlining CPU 1 will no
-longer restore the cpufreq object, and a complete suspend/resume
-cycle will replace it with garbage.
+[ ... ]
 
-=46ixes: 5302c3fb2e62 ("cpufreq: Perform light-weight init/teardown dur=
-ing suspend/resume")
-Cc: <stable@vger.kernel.org> # v3.12
-Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
----
- drivers/cpufreq/cpufreq.c |    3 ---
- 1 file changed, 3 deletions(-)
+> +	- power-depth
+> +		Usage: Required
+> +		Value type: <u32>
+> +		Definition: Integer value, starting from 2 (value 0 meaning
+> +			    running and value 1 representing power depth of
+> +			    wfi (C1)), that defines the level of depth of a
+> +			    power state.
+> +			    The system denotes power states with different
+> +			    depths, an increasing value meaning less power
+> +			    consumption and might involve powering down more
+> +			    components.  Devices that are affected by
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02d534da22dd..b7c3b877da44 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2076,9 +2076,6 @@ static int cpufreq_cpu_callback(struct notifier_b=
-lock *nfb,
- 	dev =3D get_cpu_device(cpu);
- 	if (dev) {
-=20
--		if (action & CPU_TASKS_FROZEN)
--			frozen =3D true;
--
- 		switch (action & ~CPU_TASKS_FROZEN) {
- 		case CPU_ONLINE:
- 			__cpufreq_add_dev(dev, NULL, frozen);
+                                     ^^^ extra space
+
+[ ... ]
+
+Thanks
+   -- Daniel
+
 --=20
-1.7.10.4
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
