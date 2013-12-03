@@ -1,78 +1,143 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: Check for dev before deregistering it.
-Date: Tue, 03 Dec 2013 22:33:08 +0100
-Message-ID: <3652709.SMvyaH5n9G@vostro.rjw.lan>
-References: <1386086398-3686-1-git-send-email-konrad.wilk@oracle.com>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Tue, 03 Dec 2013 22:45:55 +0100
+Message-ID: <2436827.rgCar9cJQZ@vostro.rjw.lan>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51679 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753409Ab3LCVUK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Dec 2013 16:20:10 -0500
-In-Reply-To: <1386086398-3686-1-git-send-email-konrad.wilk@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+Sender: cpufreq-owner@vger.kernel.org
+To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Tuesday, December 03, 2013 10:59:58 AM Konrad Rzeszutek Wilk wrote:
-> If not, we could end up in the unfortunate situation where
-> we dereference a NULL pointer b/c we have cpuidle disabled.
-> 
-> This is the case when booting under Xen (which uses the
-> ACPI P/C states but disables the CPU idle driver) - and can
-> be easily reproduced when booting with cpuidle.off=1.
-> 
-> BUG: unable to handle kernel NULL pointer dereference at           (null)
-> IP: [<ffffffff8156db4a>] cpuidle_unregister_device+0x2a/0x90
-> .. snip..
-> Call Trace:
->  [<ffffffff813b15b4>] acpi_processor_power_exit+0x3c/0x5c
->  [<ffffffff813af0a9>] acpi_processor_stop+0x61/0xb6
->  [<ffffffff814215bf>] __device_release_driver+0fffff81421653>] device_release_driver+0x23/0x30
->  [<ffffffff81420ed8>] bus_remove_device+0x108/0x180
->  [<ffffffff8141d9d9>] device_del+0x129/0x1c0
->  [<ffffffff813cb4b0>] ? unregister_xenbus_watch+0x1f0/0x1f0
->  [<ffffffff8141da8e>] device_unregister+0x1e/0x60
->  [<ffffffff814243e9>] unregister_cpu+0x39/0x60
->  [<ffffffff81019e03>] arch_unregister_cpu+0x23/0x30
->  [<ffffffff813c3c51>] handle_vcpu_hotplug_event+0xc1/0xe0
->  [<ffffffff813cb4f5>] xenwatch_thread+0x45/0x120
->  [<ffffffff810af010>] ? abort_exclusive_wait+0xb0/0xb0
->  [<ffffffff8108ec42>] kthread+0xd2/0xf0
->  [<ffffffff8108eb70>] ? kthread_create_on_node+0x180/0x180
->  [<ffffffff816ce17c>] ret_from_fork+0x7c/0xb0
->  [<ffffffff8108eb70>] ? kthread_create_on_node+0x180/0x180
-> 
-> This problem also appears in 3.12 and could be a candidate for backport.
-> 
-> CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> CC: Daniel Lezcano <daniel.lezcano@linaro.org>
-> CC: linux-pm@vger.kernel.org
-> Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+On Tuesday, December 03, 2013 12:14:32 PM Bj=C3=B8rn Mork wrote:
+> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Perfor=
+m
+> light-weight init/teardown during suspend/resume"), which enabled
+> suspend/resume optimizations leaving the sysfs files in place.
+>=20
+> Errors during suspend/resume are not handled properly, leaving
+> dead sysfs attributes in case of failures.  There are are number of
+> functions with special code for the "frozen" case, and all these
+> need to also have special error handling.
+>=20
+> The problem is easy to demonstrate by making cpufreq_driver->init()
+> or cpufreq_driver->get() fail during resume.
+>=20
+> The code is too complex for a simple fix, with split code paths
+> in multiple blocks within a number of functions.  It is therefore
+> best to revert the patch enabling this code until the error handling
+> is in place.
+>=20
+> Examples of problems resulting from resume errors:
 
-Applied, thanks!
+Applied, but next time you add call traces to patch changelogs, please =
+remove
+timestamps from them unless those timestamps are relevant for the bug
+description.  They are pure noise otherwise.
 
+Thanks,
+Rafael
+
+
+> Dec  2 09:54:38 nemi kernel: [  930.162476] ------------[ cut here ]-=
+-----------
+> Dec  2 09:54:38 nemi kernel: [  930.162489] WARNING: CPU: 0 PID: 6055=
+ at fs/sysfs/file.c:343 sysfs_open_file+0x77/0x212()
+> Dec  2 09:54:38 nemi kernel: [  930.162493] missing sysfs attribute o=
+perations for kobject: (null)
+> Dec  2 09:54:38 nemi kernel: [  930.162495] Modules linked in: [strip=
+ped as irrelevant]
+> Dec  2 09:54:38 nemi kernel: [  930.162662] CPU: 0 PID: 6055 Comm: gr=
+ep Tainted: G      D      3.13.0-rc2 #153
+> Dec  2 09:54:38 nemi kernel: [  930.162665] Hardware name: LENOVO 277=
+6LEG/2776LEG, BIOS 6EET55WW (3.15 ) 12/19/2011
+> Dec  2 09:54:38 nemi kernel: [  930.162668]  0000000000000009 ffff880=
+2327ebb78 ffffffff81380b0e 0000000000000006
+> Dec  2 09:54:38 nemi kernel: [  930.162676]  ffff8802327ebbc8 ffff880=
+2327ebbb8 ffffffff81038635 0000000000000000
+> Dec  2 09:54:38 nemi kernel: [  930.162682]  ffffffff811823c7 ffff880=
+21a19e688 ffff88021a19e688 ffff8802302f9310
+> Dec  2 09:54:38 nemi kernel: [  930.162690] Call Trace:
+> Dec  2 09:54:38 nemi kernel: [  930.162698]  [<ffffffff81380b0e>] dum=
+p_stack+0x55/0x76
+> Dec  2 09:54:38 nemi kernel: [  930.162705]  [<ffffffff81038635>] war=
+n_slowpath_common+0x7c/0x96
+> Dec  2 09:54:38 nemi kernel: [  930.162710]  [<ffffffff811823c7>] ? s=
+ysfs_open_file+0x77/0x212
+> Dec  2 09:54:38 nemi kernel: [  930.162715]  [<ffffffff810386e3>] war=
+n_slowpath_fmt+0x41/0x43
+> Dec  2 09:54:38 nemi kernel: [  930.162720]  [<ffffffff81182dec>] ? s=
+ysfs_get_active+0x6b/0x82
+> Dec  2 09:54:38 nemi kernel: [  930.162725]  [<ffffffff81182382>] ? s=
+ysfs_open_file+0x32/0x212
+> Dec  2 09:54:38 nemi kernel: [  930.162730]  [<ffffffff811823c7>] sys=
+fs_open_file+0x77/0x212
+> Dec  2 09:54:38 nemi kernel: [  930.162736]  [<ffffffff81182350>] ? s=
+ysfs_schedule_callback+0x1ac/0x1ac
+> Dec  2 09:54:38 nemi kernel: [  930.162742]  [<ffffffff81122562>] do_=
+dentry_open+0x17c/0x257
+> Dec  2 09:54:38 nemi kernel: [  930.162748]  [<ffffffff8112267e>] fin=
+ish_open+0x41/0x4f
+> Dec  2 09:54:38 nemi kernel: [  930.162754]  [<ffffffff81130225>] do_=
+last+0x80c/0x9ba
+> Dec  2 09:54:38 nemi kernel: [  930.162759]  [<ffffffff8112dbbd>] ? i=
+node_permission+0x40/0x42
+> Dec  2 09:54:38 nemi kernel: [  930.162764]  [<ffffffff81130606>] pat=
+h_openat+0x233/0x4a1
+> Dec  2 09:54:38 nemi kernel: [  930.162770]  [<ffffffff81130b7e>] do_=
+filp_open+0x35/0x85
+> Dec  2 09:54:38 nemi kernel: [  930.162776]  [<ffffffff8113b787>] ? _=
+_alloc_fd+0x172/0x184
+> Dec  2 09:54:38 nemi kernel: [  930.162782]  [<ffffffff811232ea>] do_=
+sys_open+0x6b/0xfa
+> Dec  2 09:54:38 nemi kernel: [  930.162787]  [<ffffffff811233a7>] SyS=
+_openat+0xf/0x11
+> Dec  2 09:54:38 nemi kernel: [  930.162794]  [<ffffffff8138c812>] sys=
+tem_call_fastpath+0x16/0x1b
+> Dec  2 09:54:38 nemi kernel: [  930.162798] ---[ end trace 48ce7fe74a=
+95d4be ]---
+>=20
+> The failure to restore cpufreq devices on cancelled hibernation is
+> not a new bug. It is caused by the ACPI _PPC call failing unless the
+> hibernate is completed. This makes the acpi_cpufreq driver fail its
+> init.
+>=20
+> Previously, the cpufreq device could be restored by offlining the
+> cpu temporarily.  And as a complete hibernation cycle would do this,
+> it would be automatically restored most of the time.  But after
+> commit 5302c3fb2e62 the leftover sysfs attributes will block any
+> device add action.  Therefore offlining and onlining CPU 1 will no
+> longer restore the cpufreq object, and a complete suspend/resume
+> cycle will replace it with garbage.
+>=20
+> Fixes: 5302c3fb2e62 ("cpufreq: Perform light-weight init/teardown dur=
+ing suspend/resume")
+> Cc: <stable@vger.kernel.org> # v3.12
+> Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
 > ---
->  drivers/cpuidle/cpuidle.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 2a991e4..a55e68f 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -400,7 +400,7 @@ EXPORT_SYMBOL_GPL(cpuidle_register_device);
->   */
->  void cpuidle_unregister_device(struct cpuidle_device *dev)
->  {
-> -	if (dev->registered == 0)
-> +	if (!dev || dev->registered == 0)
->  		return;
->  
->  	cpuidle_pause_and_lock();
-> 
--- 
+>  drivers/cpufreq/cpufreq.c |    3 ---
+>  1 file changed, 3 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 02d534da22dd..b7c3b877da44 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2076,9 +2076,6 @@ static int cpufreq_cpu_callback(struct notifier=
+_block *nfb,
+>  	dev =3D get_cpu_device(cpu);
+>  	if (dev) {
+> =20
+> -		if (action & CPU_TASKS_FROZEN)
+> -			frozen =3D true;
+> -
+>  		switch (action & ~CPU_TASKS_FROZEN) {
+>  		case CPU_ONLINE:
+>  			__cpufreq_add_dev(dev, NULL, frozen);
+>=20
+--=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
