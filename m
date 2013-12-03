@@ -1,143 +1,212 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Tue, 03 Dec 2013 22:45:55 +0100
-Message-ID: <2436827.rgCar9cJQZ@vostro.rjw.lan>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+Subject: Re: [PATCH 1/5] PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
+Date: Wed, 04 Dec 2013 00:15:13 +0100
+Message-ID: <5255487.U4HM7Lafsi@vostro.rjw.lan>
+References: <1385566500-7666-1-git-send-email-ulf.hansson@linaro.org> <1385566500-7666-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386069272-9250-1-git-send-email-bjorn@mork.no>
-Sender: cpufreq-owner@vger.kernel.org
-To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:61593 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755385Ab3LCXCQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Dec 2013 18:02:16 -0500
+In-Reply-To: <1385566500-7666-2-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Tuesday, December 03, 2013 12:14:32 PM Bj=C3=B8rn Mork wrote:
-> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Perfor=
-m
-> light-weight init/teardown during suspend/resume"), which enabled
-> suspend/resume optimizations leaving the sysfs files in place.
->=20
-> Errors during suspend/resume are not handled properly, leaving
-> dead sysfs attributes in case of failures.  There are are number of
-> functions with special code for the "frozen" case, and all these
-> need to also have special error handling.
->=20
-> The problem is easy to demonstrate by making cpufreq_driver->init()
-> or cpufreq_driver->get() fail during resume.
->=20
-> The code is too complex for a simple fix, with split code paths
-> in multiple blocks within a number of functions.  It is therefore
-> best to revert the patch enabling this code until the error handling
-> is in place.
->=20
-> Examples of problems resulting from resume errors:
+On Wednesday, November 27, 2013 04:34:56 PM Ulf Hansson wrote:
+> To put devices into low power state during sleep, it sometimes makes
+> sense at subsystem-level to re-use the runtime PM callbacks.
+> 
+> The PM core will at device_suspend_late disable runtime PM, after that
+> we can safely operate on these callbacks. At suspend_late the device
+> will be put into low power state by invoking the runtime_suspend
+> callbacks, unless the runtime status is already suspended. At
+> resume_early the state is restored by invoking the runtime_resume
+> callbacks. Soon after the PM core will re-enable runtime PM before
+> returning from device_resume_early.
+> 
+> The new pm_generic functions are named pm_generic_suspend_late_runtime
+> and pm_generic_resume_early_runtime, they are supposed to be used in
+> pairs.
+> 
+> Do note that these new generic callbacks will work smothly even with
+> and without CONFIG_PM_RUNTIME, as long as the runtime PM callbacks are
+> implemented inside CONFIG_PM instead of CONFIG_PM_RUNTIME.
+> 
+> A special thanks to Alan Stern who came up with this idea.
+> 
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/generic_ops.c |   86 ++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h               |    2 +
+>  2 files changed, 88 insertions(+)
+> 
+> diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+> index 5ee030a..8e78ad1 100644
+> --- a/drivers/base/power/generic_ops.c
+> +++ b/drivers/base/power/generic_ops.c
+> @@ -93,6 +93,49 @@ int pm_generic_suspend_late(struct device *dev)
+>  EXPORT_SYMBOL_GPL(pm_generic_suspend_late);
 
-Applied, but next time you add call traces to patch changelogs, please =
-remove
-timestamps from them unless those timestamps are relevant for the bug
-description.  They are pure noise otherwise.
+After a bit of reconsideration it appears to me that the only benefit of that
+would be to make it possible for drivers to work around incomplete PM domains
+implementations.  Which would be of questionable value.
+
+>  /**
+> + * pm_generic_suspend_late_runtime - Generic suspend_late callback for drivers
+> + * @dev: Device to suspend.
+> + * Use to invoke runtime_suspend callbacks at suspend_late.
+> + */
+> +int pm_generic_suspend_late_runtime(struct device *dev)
+> +{
+> +	int (*callback)(struct device *);
+> +	int ret = 0;
+> +
+> +	/*
+> +	 * PM core has disabled runtime PM in device_suspend_late, thus we can
+> +	 * safely check the device's runtime status and decide whether
+> +	 * additional actions are needed to put the device into low power state.
+> +	 * If so, we invoke the runtime_suspend callbacks.
+> +	 * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
+> +	 * returns false and therefore the runtime_suspend callback will be
+> +	 * invoked.
+> +	 */
+> +	if (pm_runtime_status_suspended(dev))
+> +		return 0;
+> +
+> +	if (dev->pm_domain)
+> +		callback = dev->pm_domain->ops.runtime_suspend;
+
+First of all, for this to work you need to assume that the type/bus/class will
+not exercise hardware in any way by itself (or you can look at the PCI bus type
+for an example why it won't generally work otherwise), so you could simply skip
+the rest of this conditional.
+
+For the bus types you are concerned about (platform and AMBA) that actually is
+the case as far as I can say.
+
+> +	else if (dev->type && dev->type->pm)
+> +		callback = dev->type->pm->runtime_suspend;
+> +	else if (dev->class && dev->class->pm)
+> +		callback = dev->class->pm->runtime_suspend;
+> +	else if (dev->bus && dev->bus->pm)
+> +		callback = dev->bus->pm->runtime_suspend;
+> +	else
+> +		callback = NULL;
+> +
+> +	if (!callback && dev->driver && dev->driver->pm)
+> +		callback = dev->driver->pm->runtime_suspend;
+> +
+> +	if (callback)
+> +		ret = callback(dev);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(pm_generic_suspend_late_runtime);
+
+After that you're left with something like this:
+
+int prototype_suspend_late(struct device *dev)
+{
+	int (*callback)(struct device *);
+
+	if (pm_runtime_status_suspended(dev))
+		return 0;
+
+	if (dev->pm_domain)
+		callback = dev->pm_domain->ops.runtime_suspend;
+	else if (dev->driver && dev->driver->pm)
+		callback = dev->driver->pm->runtime_suspend;
+	else
+		callback = NULL;
+
+	return callback ? callback(dev) : 0;
+}
+
+Moreover, if a driver's .suspend_late is pointed to the above, it can be called
+in two ways.  The first way is via type/bus/class or the PM core itself which
+means that all PM handling at this stage is going to be done by
+prototype_suspend_late().  The other way is via a PM domain, in which case
+there may be some additional PM handling in the domain code in principle
+(before or after calling the driver's .suspend_late()).  However, in the
+latter case it generally wouldn't be OK to call PM domain's .runtime_suspend(),
+because that may interfere with the PM handling in its .suspend_late().  So
+again, this pretty much requires that the PM domain's .suspend_late pointer be
+NULL or point to a routine that simply executes the driver's callback and does
+noting in addition to that.
+
+Now, I suspect that if the driver's runtime_suspend callback is
+driver_runtime_suspend() and the PM domain's runtime_suspend callback is
+pm_domain_runtime_suspend(), the code you actually want to be executed at the
+"late suspend" stage will be
+
+	if (!pm_runtime_status_suspended(dev))
+		pm_domain_runtime_suspend()
+			driver_runtime_suspend()
+
+(where the assumption is that pm_domain_runtime_suspend() will call
+driver_runtime_suspend() for you).  Clearly, prototype_suspend_late() will lead
+to that effective result in the conditions in which it makes sense to use it.
+
+So, instead of pointing the driver's .suspend_late() to prototype_suspend_late(),
+why don't you point the .suspend_late of the *PM* *domain* to the following
+slightly modified version of that function:
+
+int pm_domain_simplified_suspend_late(struct device *dev)
+{
+	int (*callback)(struct device *) = NULL;
+
+	if (pm_runtime_status_suspended(dev))
+		return 0;
+
+	/* Try to execute our own .runtime_suspend() callback. */
+	if (dev->pm_domain)
+		callback = dev->pm_domain->ops.runtime_suspend;
+
+	if (WARN_ON(!callback) && dev->driver && dev->driver->pm)
+		callback = dev->driver->pm->runtime_suspend;
+
+	return callback ? callback(dev) : 0;
+}
+
+This will cause exactly the code you need to be executed too (with
+a fallback to direct execution of the driver's callback in broken
+cases where the PM domain's own .runtime_suspend() is not implemented),
+but in a much cleaner way (no going back to the code layer that has just
+called you etc.).  And you *can* point the PM domain's .suspend_late
+to this, because it has to be either empty of trivial if the
+prototype_suspend_late() above is supposed to work as the driver's
+.suspend_late() callback.
+
+So in my opinion, if you point the .suspend_late callback pointers of the
+PM domains in question to the pm_domain_simplified_suspend_late() above
+and their .resume_early callback pointers to the following function:
+
+int pm_domain_simplified_resume_early(struct device *dev)
+{
+	int (*callback)(struct device *) = NULL;
+
+	if (pm_runtime_status_suspended(dev))
+		return 0;
+
+	if (dev->pm_domain)
+		callback = dev->pm_domain->ops.runtime_resume;
+
+	if (WARN_ON(!callback) && dev->driver && dev->driver->pm)
+		callback = dev->driver->pm->runtime_resume;
+
+	return callback ? callback(dev) : 0;
+}
+
+it will solve your problems without that horrible jumping between code
+layers.
 
 Thanks,
 Rafael
 
-
-> Dec  2 09:54:38 nemi kernel: [  930.162476] ------------[ cut here ]-=
------------
-> Dec  2 09:54:38 nemi kernel: [  930.162489] WARNING: CPU: 0 PID: 6055=
- at fs/sysfs/file.c:343 sysfs_open_file+0x77/0x212()
-> Dec  2 09:54:38 nemi kernel: [  930.162493] missing sysfs attribute o=
-perations for kobject: (null)
-> Dec  2 09:54:38 nemi kernel: [  930.162495] Modules linked in: [strip=
-ped as irrelevant]
-> Dec  2 09:54:38 nemi kernel: [  930.162662] CPU: 0 PID: 6055 Comm: gr=
-ep Tainted: G      D      3.13.0-rc2 #153
-> Dec  2 09:54:38 nemi kernel: [  930.162665] Hardware name: LENOVO 277=
-6LEG/2776LEG, BIOS 6EET55WW (3.15 ) 12/19/2011
-> Dec  2 09:54:38 nemi kernel: [  930.162668]  0000000000000009 ffff880=
-2327ebb78 ffffffff81380b0e 0000000000000006
-> Dec  2 09:54:38 nemi kernel: [  930.162676]  ffff8802327ebbc8 ffff880=
-2327ebbb8 ffffffff81038635 0000000000000000
-> Dec  2 09:54:38 nemi kernel: [  930.162682]  ffffffff811823c7 ffff880=
-21a19e688 ffff88021a19e688 ffff8802302f9310
-> Dec  2 09:54:38 nemi kernel: [  930.162690] Call Trace:
-> Dec  2 09:54:38 nemi kernel: [  930.162698]  [<ffffffff81380b0e>] dum=
-p_stack+0x55/0x76
-> Dec  2 09:54:38 nemi kernel: [  930.162705]  [<ffffffff81038635>] war=
-n_slowpath_common+0x7c/0x96
-> Dec  2 09:54:38 nemi kernel: [  930.162710]  [<ffffffff811823c7>] ? s=
-ysfs_open_file+0x77/0x212
-> Dec  2 09:54:38 nemi kernel: [  930.162715]  [<ffffffff810386e3>] war=
-n_slowpath_fmt+0x41/0x43
-> Dec  2 09:54:38 nemi kernel: [  930.162720]  [<ffffffff81182dec>] ? s=
-ysfs_get_active+0x6b/0x82
-> Dec  2 09:54:38 nemi kernel: [  930.162725]  [<ffffffff81182382>] ? s=
-ysfs_open_file+0x32/0x212
-> Dec  2 09:54:38 nemi kernel: [  930.162730]  [<ffffffff811823c7>] sys=
-fs_open_file+0x77/0x212
-> Dec  2 09:54:38 nemi kernel: [  930.162736]  [<ffffffff81182350>] ? s=
-ysfs_schedule_callback+0x1ac/0x1ac
-> Dec  2 09:54:38 nemi kernel: [  930.162742]  [<ffffffff81122562>] do_=
-dentry_open+0x17c/0x257
-> Dec  2 09:54:38 nemi kernel: [  930.162748]  [<ffffffff8112267e>] fin=
-ish_open+0x41/0x4f
-> Dec  2 09:54:38 nemi kernel: [  930.162754]  [<ffffffff81130225>] do_=
-last+0x80c/0x9ba
-> Dec  2 09:54:38 nemi kernel: [  930.162759]  [<ffffffff8112dbbd>] ? i=
-node_permission+0x40/0x42
-> Dec  2 09:54:38 nemi kernel: [  930.162764]  [<ffffffff81130606>] pat=
-h_openat+0x233/0x4a1
-> Dec  2 09:54:38 nemi kernel: [  930.162770]  [<ffffffff81130b7e>] do_=
-filp_open+0x35/0x85
-> Dec  2 09:54:38 nemi kernel: [  930.162776]  [<ffffffff8113b787>] ? _=
-_alloc_fd+0x172/0x184
-> Dec  2 09:54:38 nemi kernel: [  930.162782]  [<ffffffff811232ea>] do_=
-sys_open+0x6b/0xfa
-> Dec  2 09:54:38 nemi kernel: [  930.162787]  [<ffffffff811233a7>] SyS=
-_openat+0xf/0x11
-> Dec  2 09:54:38 nemi kernel: [  930.162794]  [<ffffffff8138c812>] sys=
-tem_call_fastpath+0x16/0x1b
-> Dec  2 09:54:38 nemi kernel: [  930.162798] ---[ end trace 48ce7fe74a=
-95d4be ]---
->=20
-> The failure to restore cpufreq devices on cancelled hibernation is
-> not a new bug. It is caused by the ACPI _PPC call failing unless the
-> hibernate is completed. This makes the acpi_cpufreq driver fail its
-> init.
->=20
-> Previously, the cpufreq device could be restored by offlining the
-> cpu temporarily.  And as a complete hibernation cycle would do this,
-> it would be automatically restored most of the time.  But after
-> commit 5302c3fb2e62 the leftover sysfs attributes will block any
-> device add action.  Therefore offlining and onlining CPU 1 will no
-> longer restore the cpufreq object, and a complete suspend/resume
-> cycle will replace it with garbage.
->=20
-> Fixes: 5302c3fb2e62 ("cpufreq: Perform light-weight init/teardown dur=
-ing suspend/resume")
-> Cc: <stable@vger.kernel.org> # v3.12
-> Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-> ---
->  drivers/cpufreq/cpufreq.c |    3 ---
->  1 file changed, 3 deletions(-)
->=20
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 02d534da22dd..b7c3b877da44 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2076,9 +2076,6 @@ static int cpufreq_cpu_callback(struct notifier=
-_block *nfb,
->  	dev =3D get_cpu_device(cpu);
->  	if (dev) {
-> =20
-> -		if (action & CPU_TASKS_FROZEN)
-> -			frozen =3D true;
-> -
->  		switch (action & ~CPU_TASKS_FROZEN) {
->  		case CPU_ONLINE:
->  			__cpufreq_add_dev(dev, NULL, frozen);
->=20
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
