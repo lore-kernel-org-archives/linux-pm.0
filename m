@@ -1,220 +1,211 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v10 7/7] thermal:exynos:boost: Automatic enable/disable
- of BOOST feature (at Exynos4412)
-Date: Tue, 3 Dec 2013 08:36:46 -0400
-Message-ID: <529DD05E.1050402@ti.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-8-git-send-email-l.majewski@samsung.com> <529C9ED2.2060106@ti.com> <20131203083159.35895456@amdc2363>
+Subject: Re: [PATCH] thermal: debug: add debug statement for core and step_wise
+Date: Tue, 3 Dec 2013 08:46:32 -0400
+Message-ID: <529DD2A8.2080505@ti.com>
+References: <529C2092.5070801@intel.com> <529CA536.8000702@ti.com> <529D4A1F.6000700@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW"
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131203083159.35895456@amdc2363>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
+	boundary="XIKCnFo8GRBdqADInh7JqTCBG21tbf2Cf"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:38023 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753114Ab3LCMqv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 Dec 2013 07:46:51 -0500
+In-Reply-To: <529D4A1F.6000700@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
---uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW
-Content-Type: text/plain; charset=ISO-8859-1
+--XIKCnFo8GRBdqADInh7JqTCBG21tbf2Cf
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 03-12-2013 03:31, Lukasz Majewski wrote:
-> Hi Eduardo,
->=20
->> On 05-11-2013 13:26, Lukasz Majewski wrote:
->>> This patch provides auto disable/enable operation for boost. It
->>> uses already present thermal infrastructure to provide boost
->>> hysteresis. A special set of TMU data has been defined for
->>> Exynos4412, which is only considered when BOOST is enabled.
+On 02-12-2013 23:03, Aaron Lu wrote:
+> On 12/02/2013 11:20 PM, Eduardo Valentin wrote:
+>> On 02-12-2013 01:54, Aaron Lu wrote:
+>>> To ease debugging thermal problem, add these dynamic debug statements=
+
+>>> so that user do not need rebuild kernel to see these info.
+>>>
+>>> Based on a patch from Zhang Rui for debugging on bugzilla:
+>>> https://bugzilla.kernel.org/attachment.cgi?id=3D98671
+>>>
+>>> A sample output after we turn on dynamic debug with the following cmd=
+:
+>>> # echo 'module thermal_sys +fp' > /sys/kernel/debug/dynamic_debug/con=
+trol
+>>> is like:
+>>>
+>>> [  355.147627] update_temperature: thermal thermal_zone0: last_temper=
+ature=3D52000, current_temperature=3D55000
+>>> [  355.147636] thermal_zone_trip_update: thermal thermal_zone0: Trip1=
+[type=3D1,temp=3D79000]:trend=3D2,throttle=3D0
+>>> [  355.147644] get_target_state: thermal cooling_device8: cur_state=3D=
+0
+>>> [  355.147647] thermal_zone_trip_update: thermal cooling_device8: old=
+_target=3D-1, target=3D-1
+>>> [  355.147652] get_target_state: thermal cooling_device7: cur_state=3D=
+0
+>>> [  355.147655] thermal_zone_trip_update: thermal cooling_device7: old=
+_target=3D-1, target=3D-1
+>>> [  355.147660] get_target_state: thermal cooling_device6: cur_state=3D=
+0
+>>> [  355.147663] thermal_zone_trip_update: thermal cooling_device6: old=
+_target=3D-1, target=3D-1
+>>> [  355.147668] get_target_state: thermal cooling_device5: cur_state=3D=
+0
+>>> [  355.147671] thermal_zone_trip_update: thermal cooling_device5: old=
+_target=3D-1, target=3D-1
+>>> [  355.147678] thermal_zone_trip_update: thermal thermal_zone0: Trip2=
+[type=3D0,temp=3D90000]:trend=3D1,throttle=3D0
+>>> [  355.147776] get_target_state: thermal cooling_device0: cur_state=3D=
+0
+>>> [  355.147783] thermal_zone_trip_update: thermal cooling_device0: old=
+_target=3D-1, target=3D-1
+>>> [  355.147792] thermal_zone_trip_update: thermal thermal_zone0: Trip3=
+[type=3D0,temp=3D80000]:trend=3D1,throttle=3D0
+>>> [  355.147845] get_target_state: thermal cooling_device1: cur_state=3D=
+0
+>>> [  355.147849] thermal_zone_trip_update: thermal cooling_device1: old=
+_target=3D-1, target=3D-1
+>>> [  355.147856] thermal_zone_trip_update: thermal thermal_zone0: Trip4=
+[type=3D0,temp=3D70000]:trend=3D1,throttle=3D0
+>>> [  355.147904] get_target_state: thermal cooling_device2: cur_state=3D=
+0
+>>> [  355.147908] thermal_zone_trip_update: thermal cooling_device2: old=
+_target=3D-1, target=3D-1
+>>> [  355.147915] thermal_zone_trip_update: thermal thermal_zone0: Trip5=
+[type=3D0,temp=3D60000]:trend=3D1,throttle=3D0
+>>> [  355.147963] get_target_state: thermal cooling_device3: cur_state=3D=
+0
+>>> [  355.147967] thermal_zone_trip_update: thermal cooling_device3: old=
+_target=3D-1, target=3D-1
+>>> [  355.147973] thermal_zone_trip_update: thermal thermal_zone0: Trip6=
+[type=3D0,temp=3D55000]:trend=3D1,throttle=3D1
+>>> [  355.148022] get_target_state: thermal cooling_device4: cur_state=3D=
+0
+>>> [  355.148025] thermal_zone_trip_update: thermal cooling_device4: old=
+_target=3D-1, target=3D1
+>>> [  355.148036] thermal_cdev_update: thermal cooling_device4: zone0->t=
+arget=3D1
+>>> [  355.169279] thermal_cdev_update: thermal cooling_device4: set to s=
+tate 1
 >>
->> Can you please add more description why you need a different set of
->> thermal data when boost is enabled?=20
+>> This patch is slightly different from what is posted by Rui.
+>>
+>> We are missing here the function names. dev_dbg does not include
+>> function name by default, does it?
 >=20
-> It turned out that the Thermal subsystem (after rework done for v3.12)
-> is capable of providing hysteresis for BOOST.
+> That depends on what flag we pass to the control file, take the above
+> example, I passed +fp so the function name will be printed.
+> The document about this is: Documentation/dynamic-debug-howto.txt.
 >=20
 
-So, the difference is only the hysteresis?
+Yeah, I completed missed that.
 
-> For version of the patch up to v8 I had to modify the thermal core to
-> provide such functionality. Changes in core weren't accepted by Zhang
-> Rui.
-
-Ok... But still I didn't get what you needed to modify and why.. Sorry I
-jumped in the middle of ongoing discussion.
-
+>>
+>> Apart from the above, you can add my:
+>>
+>> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 >=20
-> Then I've looked again to the code and it turned out that proper
-> setting of Exynos4x12 data (like trigger levels and freq_clip_max) can
-> solve the problem in a much better way by using Exynos thermal
-> interrupts.
-> Another advantage is that those changes are done per device.
+
+Patch looks fine to me.
+
+> Thanks for the review!
 >=20
->> This is also important in case you
->> (Exynos thermal folks) would like to migrate this driver to have
->> thermal data support in DT.
->=20
-> Some work on this driver is ongoing (mainly done by Bartek
-> Zolnierkiewicz). This BOOST change doesn't break anything and only
-> extend the current thermal code. Thereof it will not break anything.
-
-Well, good that it does not break anything, right?
-
-But, My point, Lukasz, is that I am failing to understand, based on your
-patch and description why we need a different data definition, one for
-boost, other for without boost. Can you help me to get your intention
-with this patch properly?
-
-Side question is what happens in runtime if user echo 0 > boost? Should
-we switch the data within the driver? Would we be penalizing performance
-with strict hysteresis while we could be allowing longer periods of high
-frequency usage? See what I am missing? Maybe we actually need something
-else a part from defining one data structure for boost other for
-non-boost systems.
-
+> -Aaron
 >=20
 >>
 >>
 >>>
->>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->>> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
->>>
+>>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+>>
 >>> ---
->>> Changes for v10:
->>>     - Remove boost related code from thermal_core.c
->>>     - Use already present thermal infrastructure to provide thermal
->>> hysteresis
->>>     - Introduce special set of TMU data for BOOST
+>>>  drivers/thermal/step_wise.c    | 6 ++++++
+>>>  drivers/thermal/thermal_core.c | 6 ++++++
+>>>  2 files changed, 12 insertions(+)
 >>>
->>> Changes for v9:
->>>     - None
->>>
->>> Changes for v8:
->>>     - Move cpufreq_boost_* stub functions definition (needed when
->>> cpufreq is not compiled in) to cpufreq.h at cpufreq core support
->>> commit
->>>
->>> Changes for v7:
->>>     - None
->>>
->>> Changes for v6:
->>>     - Disable boost only when supported and enabled
->>>     - Protect boost related thermal_zone_device struct fields with
->>> mutex
->>>     - Evaluate temperature trend during boost enable decision
->>>     - Create separate methods to handle boost enable/disable
->>>       (thermal_boost_{enable|disable}) operations
->>>     - Boost is disabled at any trip point passage (not only the non
->>> critical one)
->>>     - Add stub definitions for cpufreq boost functions used when
->>>       CONFIG_CPU_FREQ is NOT defined.
->>>
->>> Changes for v5:
->>>     - Move boost disable code from cpu_cooling.c to thermal_core.c
->>>       (to handle_non_critical_trips)
->>>     - Extent struct thermal_zone_device by adding overheated bool
->>> flag
->>>     - Implement auto enable of boost after device cools down
->>>     - Introduce boost_polling flag, which indicates if thermal uses
->>> it's predefined pool delay or has woken up thermal workqueue only
->>> to wait until device cools down.
->>>
->>> Changes for v4:
->>>     - New patch
->>
->>
->> Might be interesting to see the changelog for this patch only.
->=20
-> The above list presents the development state of this particular patch
-> (thermal).=20
-> Up to v8 I had modified the thermal core. For v10 I've decided to use
-> proper Exynos data setting.
->=20
-> If in any doubt, please ask.=20
->=20
-> This last thermal patch of the series hinders this code to be applied
-> to cpufreq subsystem (Viresh had acked it some time ago and I hope that=
-
-> he hasn't changed his mind :-) ).
->=20
->=20
->>
->>>
->>>  drivers/thermal/samsung/exynos_tmu_data.c |   47
->>> +++++++++++++++++++++++++++++ 1 file changed, 47 insertions(+)
->>>
->>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
->>> b/drivers/thermal/samsung/exynos_tmu_data.c index 073c292..9346926
->>> 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
->>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
->>> @@ -167,13 +167,60 @@ static const struct exynos_tmu_registers
->>> exynos4412_tmu_registers =3D { .features =3D (TMU_SUPPORT_EMULATION |=
-
->>> TMU_SUPPORT_TRIM_RELOAD | \ TMU_SUPPORT_FALLING_TRIP |
->>> TMU_SUPPORT_READY_STATUS | \ TMU_SUPPORT_EMUL_TIME)
->>> +
->>> +#define EXYNOS4412_TMU_DATA_BOOST \
->>> +	.threshold_falling =3D 10, \
->>> +	.trigger_levels[0] =3D 70, \
->>> +	.trigger_levels[1] =3D 85, \
->>> +	.trigger_levels[2] =3D 103, \
->>> +	.trigger_levels[3] =3D 110, \
->>> +	.trigger_enable[0] =3D true, \
->>> +	.trigger_enable[1] =3D true, \
->>> +	.trigger_enable[2] =3D true, \
->>> +	.trigger_enable[3] =3D true, \
->>> +	.trigger_type[0] =3D THROTTLE_ACTIVE, \
->>> +	.trigger_type[1] =3D THROTTLE_ACTIVE, \
->>> +	.trigger_type[2] =3D THROTTLE_ACTIVE, \
->>> +	.trigger_type[3] =3D SW_TRIP, \
->>> +	.max_trigger_level =3D 4, \
->>> +	.gain =3D 8, \
->>> +	.reference_voltage =3D 16, \
->>> +	.noise_cancel_mode =3D 4, \
->>> +	.cal_type =3D TYPE_ONE_POINT_TRIMMING, \
->>> +	.efuse_value =3D 55, \
->>> +	.min_efuse_value =3D 40, \
->>> +	.max_efuse_value =3D 100, \
->>> +	.first_point_trim =3D 25, \
->>> +	.second_point_trim =3D 85, \
->>> +	.default_temp_offset =3D 50, \
->>> +	.freq_tab[0] =3D { \
->>> +		.freq_clip_max =3D 1400 * 1000, \
->>> +		.temp_level =3D 70, \
->>> +	}, \
->>> +	.freq_tab[1] =3D { \
->>> +		.freq_clip_max =3D 800 * 1000, \
->>> +		.temp_level =3D 85, \
->>> +	}, \
->>> +	.freq_tab[2] =3D { \
->>> +		.freq_clip_max =3D 200 * 1000, \
->>> +		.temp_level =3D 103, \
->>> +	}, \
->>> +	.freq_tab_count =3D 3, \
->>> +	.registers =3D &exynos4412_tmu_registers, \
->>> +	.features =3D (TMU_SUPPORT_EMULATION |
->>> TMU_SUPPORT_TRIM_RELOAD | \
->>> +			TMU_SUPPORT_FALLING_TRIP |
->>> TMU_SUPPORT_READY_STATUS | \
->>> +			TMU_SUPPORT_EMUL_TIME)
->>>  #endif
+>>> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.=
+c
+>>> index d89e781b0a18..f251521baaa2 100644
+>>> --- a/drivers/thermal/step_wise.c
+>>> +++ b/drivers/thermal/step_wise.c
+>>> @@ -60,6 +60,7 @@ static unsigned long get_target_state(struct therma=
+l_instance *instance,
+>>>  	 */
+>>>  	cdev->ops->get_cur_state(cdev, &cur_state);
+>>>  	next_target =3D instance->target;
+>>> +	dev_dbg(&cdev->device, "cur_state=3D%ld\n", cur_state);
 >>> =20
->>>  #if defined(CONFIG_SOC_EXYNOS4412)
->>>  struct exynos_tmu_init_data const exynos4412_default_tmu_data =3D {
->>>  	.tmu_data =3D {
->>>  		{
->>> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
->>> +			EXYNOS4412_TMU_DATA_BOOST,
->>> +#else
->>>  			EXYNOS4412_TMU_DATA,
->>> +#endif
->>>  			.type =3D SOC_ARCH_EXYNOS4412,
->>>  			.test_mux =3D EXYNOS4412_MUX_ADDR_VALUE,
->>>  		},
+>>>  	switch (trend) {
+>>>  	case THERMAL_TREND_RAISING:
+>>> @@ -131,6 +132,9 @@ static void thermal_zone_trip_update(struct therm=
+al_zone_device *tz, int trip)
+>>>  	if (tz->temperature >=3D trip_temp)
+>>>  		throttle =3D true;
+>>> =20
+>>> +	dev_dbg(&tz->device, "Trip%d[type=3D%d,temp=3D%ld]:trend=3D%d,throt=
+tle=3D%d\n",
+>>> +				trip, trip_type, trip_temp, trend, throttle);
+>>> +
+>>>  	mutex_lock(&tz->lock);
+>>> =20
+>>>  	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+>>> @@ -139,6 +143,8 @@ static void thermal_zone_trip_update(struct therm=
+al_zone_device *tz, int trip)
+>>> =20
+>>>  		old_target =3D instance->target;
+>>>  		instance->target =3D get_target_state(instance, trend, throttle);
+>>> +		dev_dbg(&instance->cdev->device, "old_target=3D%d, target=3D%d\n",=
+
+>>> +					old_target, (int)instance->target);
+>>> =20
+>>>  		if (old_target =3D=3D instance->target)
+>>>  			continue;
+>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal=
+_core.c
+>>> index f1d511a9475b..30a02add9e2e 100644
+>>> --- a/drivers/thermal/thermal_core.c
+>>> +++ b/drivers/thermal/thermal_core.c
+>>> @@ -450,6 +450,9 @@ static void update_temperature(struct thermal_zon=
+e_device *tz)
+>>>  	tz->last_temperature =3D tz->temperature;
+>>>  	tz->temperature =3D temp;
+>>>  	mutex_unlock(&tz->lock);
+>>> +
+>>> +	dev_dbg(&tz->device, "last_temperature=3D%d, current_temperature=3D=
+%d\n",
+>>> +				tz->last_temperature, tz->temperature);
+>>>  }
+>>> =20
+>>>  void thermal_zone_device_update(struct thermal_zone_device *tz)
+>>> @@ -1207,6 +1210,8 @@ void thermal_cdev_update(struct thermal_cooling=
+_device *cdev)
+>>>  	mutex_lock(&cdev->lock);
+>>>  	/* Make sure cdev enters the deepest cooling state */
+>>>  	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) =
+{
+>>> +		dev_dbg(&cdev->device, "zone%d->target=3D%lu\n",
+>>> +				instance->tz->id, instance->target);
+>>>  		if (instance->target =3D=3D THERMAL_NO_TARGET)
+>>>  			continue;
+>>>  		if (instance->target > target)
+>>> @@ -1215,6 +1220,7 @@ void thermal_cdev_update(struct thermal_cooling=
+_device *cdev)
+>>>  	mutex_unlock(&cdev->lock);
+>>>  	cdev->ops->set_cur_state(cdev, target);
+>>>  	cdev->updated =3D true;
+>>> +	dev_dbg(&cdev->device, "set to state %lu\n", target);
+>>>  }
+>>>  EXPORT_SYMBOL(thermal_cdev_update);
+>>> =20
 >>>
 >>
 >>
+>=20
+>=20
 >=20
 
 
@@ -224,7 +215,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW
+--XIKCnFo8GRBdqADInh7JqTCBG21tbf2Cf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -233,9 +224,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlKd0GQACgkQCXcVR3XQvP1PPQEAr1+DMdAtw3QlWeX7MksKva3T
-uMMYoEcVq96kRDjhIGQBAKX4pYTqg/CEZJ7oKkxBPKqXQOCI7mjG22Xs81b/jwop
-=O8X7
+iF4EAREIAAYFAlKd0q4ACgkQCXcVR3XQvP2s1AD+KGh6OGaNg0wmSJqnt9qTgt0L
+l3s96OfZfOcMz4i282oA/j7f0lc5uMOvC6thZWmgmtymjsMW1E106ts3bCYzRH7E
+=LNfg
 -----END PGP SIGNATURE-----
 
---uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW--
+--XIKCnFo8GRBdqADInh7JqTCBG21tbf2Cf--
