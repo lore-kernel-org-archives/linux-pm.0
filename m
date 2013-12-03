@@ -1,153 +1,64 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH] thermal: debug: add debug statement for core and step_wise
-Date: Tue, 03 Dec 2013 11:03:59 +0800
-Message-ID: <529D4A1F.6000700@intel.com>
-References: <529C2092.5070801@intel.com> <529CA536.8000702@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 1/2] cpufreq: Mark x86 drivers with CPUFREQ_SKIP_INITIAL_FREQ_CHECK
+ flag
+Date: Tue, 3 Dec 2013 11:18:01 +0530
+Message-ID: <CAKohpo=mqqCjjOpEAMHo385h=DVcw3Hn9GX9yGXFP_YHcyNBtw@mail.gmail.com>
+References: <0875dc1b263f39081232c560fc72c15cd42dfc6f.1385734305.git.viresh.kumar@linaro.org>
+	<529CA5D5.9010008@gmail.com>
+	<2171422.pY15ZQme4E@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:19961 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007Ab3LCDEA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 Dec 2013 22:04:00 -0500
-In-Reply-To: <529CA536.8000702@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2171422.pY15ZQme4E@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Carlos Hernandez <ceh@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On 12/02/2013 11:20 PM, Eduardo Valentin wrote:
-> On 02-12-2013 01:54, Aaron Lu wrote:
->> To ease debugging thermal problem, add these dynamic debug statements
->> so that user do not need rebuild kernel to see these info.
->>
->> Based on a patch from Zhang Rui for debugging on bugzilla:
->> https://bugzilla.kernel.org/attachment.cgi?id=98671
->>
->> A sample output after we turn on dynamic debug with the following cmd:
->> # echo 'module thermal_sys +fp' > /sys/kernel/debug/dynamic_debug/control
->> is like:
->>
->> [  355.147627] update_temperature: thermal thermal_zone0: last_temperature=52000, current_temperature=55000
->> [  355.147636] thermal_zone_trip_update: thermal thermal_zone0: Trip1[type=1,temp=79000]:trend=2,throttle=0
->> [  355.147644] get_target_state: thermal cooling_device8: cur_state=0
->> [  355.147647] thermal_zone_trip_update: thermal cooling_device8: old_target=-1, target=-1
->> [  355.147652] get_target_state: thermal cooling_device7: cur_state=0
->> [  355.147655] thermal_zone_trip_update: thermal cooling_device7: old_target=-1, target=-1
->> [  355.147660] get_target_state: thermal cooling_device6: cur_state=0
->> [  355.147663] thermal_zone_trip_update: thermal cooling_device6: old_target=-1, target=-1
->> [  355.147668] get_target_state: thermal cooling_device5: cur_state=0
->> [  355.147671] thermal_zone_trip_update: thermal cooling_device5: old_target=-1, target=-1
->> [  355.147678] thermal_zone_trip_update: thermal thermal_zone0: Trip2[type=0,temp=90000]:trend=1,throttle=0
->> [  355.147776] get_target_state: thermal cooling_device0: cur_state=0
->> [  355.147783] thermal_zone_trip_update: thermal cooling_device0: old_target=-1, target=-1
->> [  355.147792] thermal_zone_trip_update: thermal thermal_zone0: Trip3[type=0,temp=80000]:trend=1,throttle=0
->> [  355.147845] get_target_state: thermal cooling_device1: cur_state=0
->> [  355.147849] thermal_zone_trip_update: thermal cooling_device1: old_target=-1, target=-1
->> [  355.147856] thermal_zone_trip_update: thermal thermal_zone0: Trip4[type=0,temp=70000]:trend=1,throttle=0
->> [  355.147904] get_target_state: thermal cooling_device2: cur_state=0
->> [  355.147908] thermal_zone_trip_update: thermal cooling_device2: old_target=-1, target=-1
->> [  355.147915] thermal_zone_trip_update: thermal thermal_zone0: Trip5[type=0,temp=60000]:trend=1,throttle=0
->> [  355.147963] get_target_state: thermal cooling_device3: cur_state=0
->> [  355.147967] thermal_zone_trip_update: thermal cooling_device3: old_target=-1, target=-1
->> [  355.147973] thermal_zone_trip_update: thermal thermal_zone0: Trip6[type=0,temp=55000]:trend=1,throttle=1
->> [  355.148022] get_target_state: thermal cooling_device4: cur_state=0
->> [  355.148025] thermal_zone_trip_update: thermal cooling_device4: old_target=-1, target=1
->> [  355.148036] thermal_cdev_update: thermal cooling_device4: zone0->target=1
->> [  355.169279] thermal_cdev_update: thermal cooling_device4: set to state 1
-> 
-> This patch is slightly different from what is posted by Rui.
-> 
-> We are missing here the function names. dev_dbg does not include
-> function name by default, does it?
+On 3 December 2013 04:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, December 02, 2013 07:23:01 AM Dirk Brandewie wrote:
+>> Sorry for late response to these threads.  Holiday weekend in the US.
 
-That depends on what flag we pass to the control file, take the above
-example, I passed +fp so the function name will be printed.
-The document about this is: Documentation/dynamic-debug-howto.txt.
+No issues.
 
-> 
-> Apart from the above, you can add my:
-> 
-> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> NAK for intel_pstate.  The code that will use this flag also uses has_target()
+>> which is false for intel_pstate.
+>
+> Is your point that intel_pstate doesn't need to have this flag set?
 
-Thanks for the review!
+Probably yes as intel_pstate would never share freq-table. Will fix this.
 
--Aaron
+>> I still believe that this bug should be dealt with in platform specific code
+>> since this is working around a bootloader bug.  Are there platforms in the wild
+>> that even need this code or is this to support early platform bringup?
+>
+> All it takes to introduce it is to use a buggy bootloader, so I guess
+> there's a number of potentially affected platforms out there.
 
-> 
-> 
->>
->> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> 
->> ---
->>  drivers/thermal/step_wise.c    | 6 ++++++
->>  drivers/thermal/thermal_core.c | 6 ++++++
->>  2 files changed, 12 insertions(+)
->>
->> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
->> index d89e781b0a18..f251521baaa2 100644
->> --- a/drivers/thermal/step_wise.c
->> +++ b/drivers/thermal/step_wise.c
->> @@ -60,6 +60,7 @@ static unsigned long get_target_state(struct thermal_instance *instance,
->>  	 */
->>  	cdev->ops->get_cur_state(cdev, &cur_state);
->>  	next_target = instance->target;
->> +	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
->>  
->>  	switch (trend) {
->>  	case THERMAL_TREND_RAISING:
->> @@ -131,6 +132,9 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->>  	if (tz->temperature >= trip_temp)
->>  		throttle = true;
->>  
->> +	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%ld]:trend=%d,throttle=%d\n",
->> +				trip, trip_type, trip_temp, trend, throttle);
->> +
->>  	mutex_lock(&tz->lock);
->>  
->>  	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
->> @@ -139,6 +143,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->>  
->>  		old_target = instance->target;
->>  		instance->target = get_target_state(instance, trend, throttle);
->> +		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
->> +					old_target, (int)instance->target);
->>  
->>  		if (old_target == instance->target)
->>  			continue;
->> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->> index f1d511a9475b..30a02add9e2e 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -450,6 +450,9 @@ static void update_temperature(struct thermal_zone_device *tz)
->>  	tz->last_temperature = tz->temperature;
->>  	tz->temperature = temp;
->>  	mutex_unlock(&tz->lock);
->> +
->> +	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
->> +				tz->last_temperature, tz->temperature);
->>  }
->>  
->>  void thermal_zone_device_update(struct thermal_zone_device *tz)
->> @@ -1207,6 +1210,8 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
->>  	mutex_lock(&cdev->lock);
->>  	/* Make sure cdev enters the deepest cooling state */
->>  	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
->> +		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
->> +				instance->tz->id, instance->target);
->>  		if (instance->target == THERMAL_NO_TARGET)
->>  			continue;
->>  		if (instance->target > target)
->> @@ -1215,6 +1220,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
->>  	mutex_unlock(&cdev->lock);
->>  	cdev->ops->set_cur_state(cdev, target);
->>  	cdev->updated = true;
->> +	dev_dbg(&cdev->device, "set to state %lu\n", target);
->>  }
->>  EXPORT_SYMBOL(thermal_cdev_update);
->>  
->>
-> 
-> 
+Yeah. This was first reported for OMAP SoC's though.
 
+> This really isn't about which individual platforms have the problem, but about
+> which platforms have the property that the clock *can* be set to a wrong
+> frequency initially.  These are the ones we need to worry about regardless,
+> because we can't control boot loaders and duplicating the same code in
+> a number of drivers doesn't sound like a good approach.
+>
+> So the only reasonable way forward I can see is to flag either the platforms
+> that we need to worry about, or the platforms that we don't need to worry
+> about and use that to decide whether or not to do the check.
+
+To be honest Rafael suggested exactly this initially, i.e. set flag for all the
+drivers which want this to be done and I thought the number of drivers that
+don't want it would be lesser and so it would be easier to set this flag there.
+
+But looking at the logic Dirk gave, it makes sense to do this for drivers which
+want this feature to be enabled. Moreover we really can't say for how long
+these drivers will continue keeping this flag as I don't really think its a bug.
+Kernel can't expect bootloaders to set core to a frequency which should be
+exactly same as what cpufreq table has. And so this flag may stay until
+cpufreq is around :)
+
+I will send updated patches soon..
+
+--
+viresh
