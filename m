@@ -1,111 +1,241 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
-Date: Tue, 03 Dec 2013 12:52:36 +0100
-Message-ID: <529DC604.4050600@linaro.org>
-References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com> <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v10 7/7] thermal:exynos:boost: Automatic enable/disable
+ of BOOST feature (at Exynos4412)
+Date: Tue, 3 Dec 2013 08:36:46 -0400
+Message-ID: <529DD05E.1050402@ti.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-1-git-send-email-l.majewski@samsung.com> <1383672411-26324-8-git-send-email-l.majewski@samsung.com> <529C9ED2.2060106@ti.com> <20131203083159.35895456@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1386001205-11978-3-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dave Martin <dave.martin-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Mark Hambleton <mark.hambleton-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Hanjun Guo <hanjun.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20131203083159.35895456@amdc2363>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/02/2013 05:20 PM, Lorenzo Pieralisi wrote:
-> ARM based platforms implement a variety of power management schemes t=
-hat
-> allow processors to enter at run-time low-power states, aka C-states
-> in ACPI jargon. The parameters defining these C-states vary on a per-=
-platform
-> basis forcing the OS to hardcode the state parameters in platform
-> specific static tables whose size grows as the number of platforms su=
-pported
-> in the kernel increases and hampers device drivers standardization.
->
-> Therefore, this patch aims at standardizing C-state device tree bindi=
-ngs for
-> ARM platforms. Bindings define C-state parameters inclusive of entry =
-methods
-> and state latencies, to allow operating systems to retrieve the
-> configuration entries from the device tree and initialize the related
-> power management drivers, paving the way for common code in the kerne=
-l
-> to deal with power states and removing the need for static data in cu=
-rrent
-> and previous kernel versions.
->
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+--uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi Lorenzo,
+On 03-12-2013 03:31, Lukasz Majewski wrote:
+> Hi Eduardo,
+>=20
+>> On 05-11-2013 13:26, Lukasz Majewski wrote:
+>>> This patch provides auto disable/enable operation for boost. It
+>>> uses already present thermal infrastructure to provide boost
+>>> hysteresis. A special set of TMU data has been defined for
+>>> Exynos4412, which is only considered when BOOST is enabled.
+>>
+>> Can you please add more description why you need a different set of
+>> thermal data when boost is enabled?=20
+>=20
+> It turned out that the Thermal subsystem (after rework done for v3.12)
+> is capable of providing hysteresis for BOOST.
+>=20
 
-thanks for the detailed description.
+So, the difference is only the hysteresis?
 
-Just a couple of typos below.
+> For version of the patch up to v8 I had to modify the thermal core to
+> provide such functionality. Changes in core weren't accepted by Zhang
+> Rui.
 
-[ ... ]
+Ok... But still I didn't get what you needed to modify and why.. Sorry I
+jumped in the middle of ongoing discussion.
 
-> +- cpu-power-states node
-> +
-> +	Usage: Optional - On ARM systems, is a container of processor C-sta=
-te
-> +			  nodes. If the system does not provide CPU power
-> +			  management capabilities or the processor just
-> +			  supports WFI (C1 state) a cpu-power-states node is
-> +			  not required.
-> +
-> +	Description: cpu-power-states node is a container node, where its
-> +		     subnodes describe the CPU low-power C-states.
-> +
-> +	Node name must be "cpu-power-states".
-> +
-> +	The cpu-power-states node's parent node must be cpus node.
-> +
-> +	The cpu-power-states node's child nodes can be:
-> +
-> +	- one or more state nodes
-> +
-> +	The cpu-power-states node must contain the following properties:
-> +
-> +	- compatible
-> +		Value type: <stringlist>
-> +		Usage: Required
+>=20
+> Then I've looked again to the code and it turned out that proper
+> setting of Exynos4x12 data (like trigger levels and freq_clip_max) can
+> solve the problem in a much better way by using Exynos thermal
+> interrupts.
+> Another advantage is that those changes are done per device.
+>=20
+>> This is also important in case you
+>> (Exynos thermal folks) would like to migrate this driver to have
+>> thermal data support in DT.
+>=20
+> Some work on this driver is ongoing (mainly done by Bartek
+> Zolnierkiewicz). This BOOST change doesn't break anything and only
+> extend the current thermal code. Thereof it will not break anything.
 
-Invert the field above to be consistent with the definitions below.
+Well, good that it does not break anything, right?
 
-[ ... ]
+But, My point, Lukasz, is that I am failing to understand, based on your
+patch and description why we need a different data definition, one for
+boost, other for without boost. Can you help me to get your intention
+with this patch properly?
 
-> +	- power-depth
-> +		Usage: Required
-> +		Value type: <u32>
-> +		Definition: Integer value, starting from 2 (value 0 meaning
-> +			    running and value 1 representing power depth of
-> +			    wfi (C1)), that defines the level of depth of a
-> +			    power state.
-> +			    The system denotes power states with different
-> +			    depths, an increasing value meaning less power
-> +			    consumption and might involve powering down more
-> +			    components.  Devices that are affected by
+Side question is what happens in runtime if user echo 0 > boost? Should
+we switch the data within the driver? Would we be penalizing performance
+with strict hysteresis while we could be allowing longer periods of high
+frequency usage? See what I am missing? Maybe we actually need something
+else a part from defining one data structure for boost other for
+non-boost systems.
 
-                                     ^^^ extra space
+>=20
+>>
+>>
+>>>
+>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>>> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>>>
+>>> ---
+>>> Changes for v10:
+>>>     - Remove boost related code from thermal_core.c
+>>>     - Use already present thermal infrastructure to provide thermal
+>>> hysteresis
+>>>     - Introduce special set of TMU data for BOOST
+>>>
+>>> Changes for v9:
+>>>     - None
+>>>
+>>> Changes for v8:
+>>>     - Move cpufreq_boost_* stub functions definition (needed when
+>>> cpufreq is not compiled in) to cpufreq.h at cpufreq core support
+>>> commit
+>>>
+>>> Changes for v7:
+>>>     - None
+>>>
+>>> Changes for v6:
+>>>     - Disable boost only when supported and enabled
+>>>     - Protect boost related thermal_zone_device struct fields with
+>>> mutex
+>>>     - Evaluate temperature trend during boost enable decision
+>>>     - Create separate methods to handle boost enable/disable
+>>>       (thermal_boost_{enable|disable}) operations
+>>>     - Boost is disabled at any trip point passage (not only the non
+>>> critical one)
+>>>     - Add stub definitions for cpufreq boost functions used when
+>>>       CONFIG_CPU_FREQ is NOT defined.
+>>>
+>>> Changes for v5:
+>>>     - Move boost disable code from cpu_cooling.c to thermal_core.c
+>>>       (to handle_non_critical_trips)
+>>>     - Extent struct thermal_zone_device by adding overheated bool
+>>> flag
+>>>     - Implement auto enable of boost after device cools down
+>>>     - Introduce boost_polling flag, which indicates if thermal uses
+>>> it's predefined pool delay or has woken up thermal workqueue only
+>>> to wait until device cools down.
+>>>
+>>> Changes for v4:
+>>>     - New patch
+>>
+>>
+>> Might be interesting to see the changelog for this patch only.
+>=20
+> The above list presents the development state of this particular patch
+> (thermal).=20
+> Up to v8 I had modified the thermal core. For v10 I've decided to use
+> proper Exynos data setting.
+>=20
+> If in any doubt, please ask.=20
+>=20
+> This last thermal patch of the series hinders this code to be applied
+> to cpufreq subsystem (Viresh had acked it some time ago and I hope that=
 
-[ ... ]
+> he hasn't changed his mind :-) ).
+>=20
+>=20
+>>
+>>>
+>>>  drivers/thermal/samsung/exynos_tmu_data.c |   47
+>>> +++++++++++++++++++++++++++++ 1 file changed, 47 insertions(+)
+>>>
+>>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
+>>> b/drivers/thermal/samsung/exynos_tmu_data.c index 073c292..9346926
+>>> 100644 --- a/drivers/thermal/samsung/exynos_tmu_data.c
+>>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+>>> @@ -167,13 +167,60 @@ static const struct exynos_tmu_registers
+>>> exynos4412_tmu_registers =3D { .features =3D (TMU_SUPPORT_EMULATION |=
 
-Thanks
-   -- Daniel
+>>> TMU_SUPPORT_TRIM_RELOAD | \ TMU_SUPPORT_FALLING_TRIP |
+>>> TMU_SUPPORT_READY_STATUS | \ TMU_SUPPORT_EMUL_TIME)
+>>> +
+>>> +#define EXYNOS4412_TMU_DATA_BOOST \
+>>> +	.threshold_falling =3D 10, \
+>>> +	.trigger_levels[0] =3D 70, \
+>>> +	.trigger_levels[1] =3D 85, \
+>>> +	.trigger_levels[2] =3D 103, \
+>>> +	.trigger_levels[3] =3D 110, \
+>>> +	.trigger_enable[0] =3D true, \
+>>> +	.trigger_enable[1] =3D true, \
+>>> +	.trigger_enable[2] =3D true, \
+>>> +	.trigger_enable[3] =3D true, \
+>>> +	.trigger_type[0] =3D THROTTLE_ACTIVE, \
+>>> +	.trigger_type[1] =3D THROTTLE_ACTIVE, \
+>>> +	.trigger_type[2] =3D THROTTLE_ACTIVE, \
+>>> +	.trigger_type[3] =3D SW_TRIP, \
+>>> +	.max_trigger_level =3D 4, \
+>>> +	.gain =3D 8, \
+>>> +	.reference_voltage =3D 16, \
+>>> +	.noise_cancel_mode =3D 4, \
+>>> +	.cal_type =3D TYPE_ONE_POINT_TRIMMING, \
+>>> +	.efuse_value =3D 55, \
+>>> +	.min_efuse_value =3D 40, \
+>>> +	.max_efuse_value =3D 100, \
+>>> +	.first_point_trim =3D 25, \
+>>> +	.second_point_trim =3D 85, \
+>>> +	.default_temp_offset =3D 50, \
+>>> +	.freq_tab[0] =3D { \
+>>> +		.freq_clip_max =3D 1400 * 1000, \
+>>> +		.temp_level =3D 70, \
+>>> +	}, \
+>>> +	.freq_tab[1] =3D { \
+>>> +		.freq_clip_max =3D 800 * 1000, \
+>>> +		.temp_level =3D 85, \
+>>> +	}, \
+>>> +	.freq_tab[2] =3D { \
+>>> +		.freq_clip_max =3D 200 * 1000, \
+>>> +		.temp_level =3D 103, \
+>>> +	}, \
+>>> +	.freq_tab_count =3D 3, \
+>>> +	.registers =3D &exynos4412_tmu_registers, \
+>>> +	.features =3D (TMU_SUPPORT_EMULATION |
+>>> TMU_SUPPORT_TRIM_RELOAD | \
+>>> +			TMU_SUPPORT_FALLING_TRIP |
+>>> TMU_SUPPORT_READY_STATUS | \
+>>> +			TMU_SUPPORT_EMUL_TIME)
+>>>  #endif
+>>> =20
+>>>  #if defined(CONFIG_SOC_EXYNOS4412)
+>>>  struct exynos_tmu_init_data const exynos4412_default_tmu_data =3D {
+>>>  	.tmu_data =3D {
+>>>  		{
+>>> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+>>> +			EXYNOS4412_TMU_DATA_BOOST,
+>>> +#else
+>>>  			EXYNOS4412_TMU_DATA,
+>>> +#endif
+>>>  			.type =3D SOC_ARCH_EXYNOS4412,
+>>>  			.test_mux =3D EXYNOS4412_MUX_ADDR_VALUE,
+>>>  		},
+>>>
+>>
+>>
+>=20
+
 
 --=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+You have got to be excited about what you are doing. (L. Lamport)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Eduardo Valentin
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKd0GQACgkQCXcVR3XQvP1PPQEAr1+DMdAtw3QlWeX7MksKva3T
+uMMYoEcVq96kRDjhIGQBAKX4pYTqg/CEZJ7oKkxBPKqXQOCI7mjG22Xs81b/jwop
+=O8X7
+-----END PGP SIGNATURE-----
+
+--uUlLs03Gj8Fg2nUDTspMPmf5CU0vv6LgW--
