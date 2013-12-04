@@ -1,128 +1,128 @@
-From: Dave Martin <Dave.Martin@arm.com>
-Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
-Date: Wed, 4 Dec 2013 15:20:10 +0000
-Message-ID: <20131204152010.GC2323@e103592.cambridge.arm.com>
-References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH v4 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
+Date: Wed, 4 Dec 2013 16:27:26 +0100
+Message-ID: <20131204152726.GC8062@lunn.ch>
+References: <1386166641-7567-1-git-send-email-andrew@lunn.ch>
+ <1386166641-7567-2-git-send-email-andrew@lunn.ch>
+ <20131204145413.GD29200@e106331-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from vps0.lunn.ch ([178.209.37.122]:56684 "EHLO vps0.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932254Ab3LDP1e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 4 Dec 2013 10:27:34 -0500
 Content-Disposition: inline
-In-Reply-To: <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Nicolas Pitre <nico@linaro.org>, Mark Hambleton <mark.hambleton@broadcom.com>, Grant Likely <grant.likely@linaro.org>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <rob.herring@calxeda.com>, linux-arm-kernel@lists.infradead.org, Hanjun Guo <hanjun.guo@linaro.org>
+In-Reply-To: <20131204145413.GD29200@e106331-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Mon, Dec 02, 2013 at 04:20:05PM +0000, Lorenzo Pieralisi wrote:
-> ARM based platforms implement a variety of power management schemes that
-> allow processors to enter at run-time low-power states, aka C-states
-> in ACPI jargon. The parameters defining these C-states vary on a per-platform
-> basis forcing the OS to hardcode the state parameters in platform
-> specific static tables whose size grows as the number of platforms supported
-> in the kernel increases and hampers device drivers standardization.
+> > +static int dove_cpufreq_target(struct cpufreq_policy *policy,
+> > +			       unsigned int index)
+> > +{
+> > +	unsigned int state = dove_freq_table[index].driver_data;
+> > +	unsigned long reg, cr;
+> > +
+> > +	local_irq_disable();
+> > +
+> > +	/* Mask IRQ and FIQ to CPU */
+> > +	cr = readl(priv.pmu_cr);
+> > +	cr |= MASK_IRQ | MASK_FIQ;
+> > +	writel(cr, priv.pmu_cr);
+> > +
+> > +	/* Set/Clear the CPU_SLOW_EN bit */
+> > +	reg = readl_relaxed(priv.dfs + DFS_CR);
+> > +	reg &= ~L2_RATIO_MASK;
+> > +
+> > +	switch (state) {
+> > +	case STATE_CPU_FREQ:
+> > +		reg |= priv.xpratio;
+> > +		reg &= ~CPU_SLOW_EN;
+> > +		break;
+> > +	case STATE_DDR_FREQ:
+> > +		reg |= (priv.dpratio | CPU_SLOW_EN);
+> > +		break;
+> > +	}
+> > +
+> > +	/* Start the DFS process */
+> > +	reg |= DFS_EN;
+> > +
+> > +	writel(reg, priv.dfs + DFS_CR);
+> > +
+> > +	/* Wait-for-Interrupt, while the hardware changes frequency */
+> > +	cpu_do_idle();
+> > +
+> > +	local_irq_enable();
 > 
-> Therefore, this patch aims at standardizing C-state device tree bindings for
-> ARM platforms. Bindings define C-state parameters inclusive of entry methods
-> and state latencies, to allow operating systems to retrieve the
-> configuration entries from the device tree and initialize the related
-> power management drivers, paving the way for common code in the kernel
-> to deal with power states and removing the need for static data in current
-> and previous kernel versions.
+> Just to check -- does the PMU automatically unmask IRQ and FIQ? 
+
+The data sheet says so, yes.
+
+> > +static int dove_cpufreq_probe(struct platform_device *pdev)
+> > +{
+> > +	struct device *cpu_dev;
+> > +	struct resource *res;
+> > +	int err, irq;
+> > +
+> > +	memset(&priv, 0, sizeof(priv));
+> > +	priv.dev = &pdev->dev;
+> > +
+> > +	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+> > +					   "cpufreq: DFS");
+> > +	priv.dfs = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (IS_ERR(priv.dfs))
+> > +		return PTR_ERR(priv.dfs);
+> > +
+> > +	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+> > +					   "cpufreq: PMU CR");
+> > +	priv.pmu_cr = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (IS_ERR(priv.pmu_cr))
+> > +		return PTR_ERR(priv.pmu_cr);
+> > +
+> > +	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+> > +					   "cpufreq: PMU Clk Div");
+> > +	priv.pmu_clk_div = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (IS_ERR(priv.pmu_clk_div))
+> > +		return PTR_ERR(priv.pmu_clk_div);
 > 
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> +
+> I'd very much prefer that the PMU were described in the DT, and the
+> driver probed based on that.
 
-[...]
+Please see my other response. We can discuss that there.
+ 
+> > +
+> > +	cpu_dev = get_cpu_device(0);
+> > +
+> > +	priv.cpu_clk = devm_clk_get(cpu_dev, "cpu_clk");
+> > +	if (IS_ERR(priv.cpu_clk)) {
+> > +		err = PTR_ERR(priv.cpu_clk);
+> > +		goto out;
+> > +	}
+> 
+> I think it would be better to describe the clocks as being fed to the
+> PMU than directly to the CPU -- the PMU selects the appropriate clock
+> and feeds it to the CPU.
 
-> +	- cpus
+The wording in the data sheet is not very clear:
 
-Because cpus is really a topology subtree, it might be good to have
-different names.
+    The PMU initiates new clock ratio values for the CPU subsystem
+    clocks generation unit.
 
-To avoid confusion with Mark's affinity properties, maybe a different
-word would be preferable instead of "affinity".
+So to me, the PMU is not the clock consumer, it just controls the
+clock generation unit. There is also a block diagram which shows the
+"CPU Subsystem ClockGen" as being external to the PMU.
+ 
+> Also, the clocks could be named better with respect to their logical
+> function. One is the high-frequency default, and the other is a
+> low-frequency option. They're both able to feed the CPU, and the fact
+> that one also feeds the DDR isn't relevant to the CPU.
 
-Maybe "topology" instead of "cpus", and "affected-topology" instead of
-"affinity"?
+The data sheet uses the terms Turbo Speed and Slow Speed modes. So i
+could call them turbo and slow? However, the current names follow the
+kirkwood cpufreq driver. It also can swap between a fast clock and the
+DDR clock. So i thought keeping the drivers similar would help with
+the maintenance burden. 
 
-
-cpufreq also has its concepts of "related" and "affected" cpus, which
-tries to describe something similar (in all honesty, I always struggle
-to remember which is which ... but if we were consistent with it, that
-might help).
-
-> +		Usage: Optional
-> +		Value type: <phandle>
-> +		Definition: If defined, the phandle points to a node in the
-> +			    cpu-map[2] representing all CPUs on which C-state
-> +			    is valid. If not present or system is UP, the
-> +			    C-state has to be considered valid for all CPUs in
-> +			    the system.
-> +
-> +	- affinity
-> +		Usage: Optional
-> +		Value type: <phandle>
-> +		Definition: If defined, phandle points to a node in the
-> +			    cpu-map[2] that represents all CPUs that are
-> +			    affected (ie share) by the C-state and have to
-> +			    be coordinated on C-state entry/exit. If not
-> +			    present or system is UP, the C-state is local to
-> +			    a CPU and need no coordination (ie it is a CPU
-> +			    state, that does not require coordination with
-> +			    other CPUs). If present, the affinity property
-> +			    must contain a phandle to a cpu-map node that
-> +			    represents a subset, possibly inclusive of the
-> +			    CPUs described through the cpus property.
-
-Can you elaborate on how cpus and affinity might be different?
-
-The statement about "having to be coordainted" also feels a bit vague,
-though I'm not sure how much we can usefully say here.
-
-If we describe power domains more explicitly it might help with this,
-because that could bring some description of what needs to be
-coordinated.
-
-> +
-> +	- power-depth
-> +		Usage: Required
-> +		Value type: <u32>
-> +		Definition: Integer value, starting from 2 (value 0 meaning
-> +			    running and value 1 representing power depth of
-> +			    wfi (C1)), that defines the level of depth of a
-> +			    power state.
-> +			    The system denotes power states with different
-> +			    depths, an increasing value meaning less power
-> +			    consumption and might involve powering down more
-> +			    components.  Devices that are affected by
-> +			    C-states entry must define the maximum power
-> +			    depth supported in their respective device tree
-> +			    bindings so that OSPM can take decision on how
-> +			    to handle the device in question when the C-state
-> +			    is entered. All devices (per-CPU or external) with
-> +			    a power depth lower than the one defined in the
-> +			    C-state entry stop operating when the C-state
-> +			    is entered and action is required by OSPM to
-> +			    guarantee their logic and memory content is saved
-> +			    restored to guarantee proper functioning.
-
-Any reason to use numbers instead of strings?
-
-Strings make the DT more readable ... we would presumably only have to
-parse this information once, so it shouldn't be an overhead, unless there
-are hundreds of C-state nodes.
-
-[...]
-
-Cheers
----Dave
+    Andrew
