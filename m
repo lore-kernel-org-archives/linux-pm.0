@@ -1,303 +1,246 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/5] PM / Sleep: Add pm_generic functions to re-use
- runtime PM callbacks
-Date: Wed, 4 Dec 2013 12:00:05 +0100
-Message-ID: <CAPDyKFoTbDWU2c4a=pLa4RmDOCJB9w+1b0-uG75fYELy8Uv9Bw@mail.gmail.com>
-References: <1385566500-7666-1-git-send-email-ulf.hansson@linaro.org>
-	<1385566500-7666-2-git-send-email-ulf.hansson@linaro.org>
-	<5255487.U4HM7Lafsi@vostro.rjw.lan>
-	<1858154.Dd0R3NaGoS@vostro.rjw.lan>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Wed, 04 Dec 2013 13:08:30 +0100
+Message-ID: <87fvq8lsxt.fsf@nemi.mork.no>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+	<529F04B2.7050303@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1858154.Dd0R3NaGoS@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from canardo.mork.no ([148.122.252.1]:52264 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753663Ab3LDMUu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2013 07:20:50 -0500
+In-Reply-To: <529F04B2.7050303@linaro.org> (viresh kumar's message of "Wed, 04
+	Dec 2013 16:02:18 +0530")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: viresh kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 4 December 2013 00:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, December 04, 2013 12:15:13 AM Rafael J. Wysocki wrote:
->> On Wednesday, November 27, 2013 04:34:56 PM Ulf Hansson wrote:
->> > To put devices into low power state during sleep, it sometimes makes
->> > sense at subsystem-level to re-use the runtime PM callbacks.
->> >
->> > The PM core will at device_suspend_late disable runtime PM, after that
->> > we can safely operate on these callbacks. At suspend_late the device
->> > will be put into low power state by invoking the runtime_suspend
->> > callbacks, unless the runtime status is already suspended. At
->> > resume_early the state is restored by invoking the runtime_resume
->> > callbacks. Soon after the PM core will re-enable runtime PM before
->> > returning from device_resume_early.
->> >
->> > The new pm_generic functions are named pm_generic_suspend_late_runtime
->> > and pm_generic_resume_early_runtime, they are supposed to be used in
->> > pairs.
->> >
->> > Do note that these new generic callbacks will work smothly even with
->> > and without CONFIG_PM_RUNTIME, as long as the runtime PM callbacks are
->> > implemented inside CONFIG_PM instead of CONFIG_PM_RUNTIME.
->> >
->> > A special thanks to Alan Stern who came up with this idea.
->> >
->> > Cc: Kevin Hilman <khilman@linaro.org>
->> > Cc: Alan Stern <stern@rowland.harvard.edu>
->> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> > ---
->> >  drivers/base/power/generic_ops.c |   86 ++++++++++++++++++++++++++++++++++++++
->> >  include/linux/pm.h               |    2 +
->> >  2 files changed, 88 insertions(+)
->> >
->> > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
->> > index 5ee030a..8e78ad1 100644
->> > --- a/drivers/base/power/generic_ops.c
->> > +++ b/drivers/base/power/generic_ops.c
->> > @@ -93,6 +93,49 @@ int pm_generic_suspend_late(struct device *dev)
->> >  EXPORT_SYMBOL_GPL(pm_generic_suspend_late);
->>
->> After a bit of reconsideration it appears to me that the only benefit of that
->> would be to make it possible for drivers to work around incomplete PM domains
->> implementations.  Which would be of questionable value.
->>
->> >  /**
->> > + * pm_generic_suspend_late_runtime - Generic suspend_late callback for drivers
->> > + * @dev: Device to suspend.
->> > + * Use to invoke runtime_suspend callbacks at suspend_late.
->> > + */
->> > +int pm_generic_suspend_late_runtime(struct device *dev)
->> > +{
->> > +   int (*callback)(struct device *);
->> > +   int ret = 0;
->> > +
->> > +   /*
->> > +    * PM core has disabled runtime PM in device_suspend_late, thus we can
->> > +    * safely check the device's runtime status and decide whether
->> > +    * additional actions are needed to put the device into low power state.
->> > +    * If so, we invoke the runtime_suspend callbacks.
->> > +    * For the !CONFIG_PM_RUNTIME case, pm_runtime_status_suspended() always
->> > +    * returns false and therefore the runtime_suspend callback will be
->> > +    * invoked.
->> > +    */
->> > +   if (pm_runtime_status_suspended(dev))
->> > +           return 0;
->> > +
->> > +   if (dev->pm_domain)
->> > +           callback = dev->pm_domain->ops.runtime_suspend;
->>
->> First of all, for this to work you need to assume that the type/bus/class will
->> not exercise hardware in any way by itself (or you can look at the PCI bus type
->> for an example why it won't generally work otherwise), so you could simply skip
->> the rest of this conditional.
->>
->> For the bus types you are concerned about (platform and AMBA) that actually is
->> the case as far as I can say.
->>
->> > +   else if (dev->type && dev->type->pm)
->> > +           callback = dev->type->pm->runtime_suspend;
->> > +   else if (dev->class && dev->class->pm)
->> > +           callback = dev->class->pm->runtime_suspend;
->> > +   else if (dev->bus && dev->bus->pm)
->> > +           callback = dev->bus->pm->runtime_suspend;
->> > +   else
->> > +           callback = NULL;
->> > +
->> > +   if (!callback && dev->driver && dev->driver->pm)
->> > +           callback = dev->driver->pm->runtime_suspend;
->> > +
->> > +   if (callback)
->> > +           ret = callback(dev);
->> > +
->> > +   return ret;
->> > +}
->> > +EXPORT_SYMBOL_GPL(pm_generic_suspend_late_runtime);
->>
->> After that you're left with something like this:
->>
->> int prototype_suspend_late(struct device *dev)
->> {
->>       int (*callback)(struct device *);
->>
->>       if (pm_runtime_status_suspended(dev))
->>               return 0;
->>
->>       if (dev->pm_domain)
->>               callback = dev->pm_domain->ops.runtime_suspend;
->>       else if (dev->driver && dev->driver->pm)
->>               callback = dev->driver->pm->runtime_suspend;
->>       else
->>               callback = NULL;
->>
->>       return callback ? callback(dev) : 0;
->> }
->>
->> Moreover, if a driver's .suspend_late is pointed to the above, it can be called
->> in two ways.  The first way is via type/bus/class or the PM core itself which
->> means that all PM handling at this stage is going to be done by
->> prototype_suspend_late().  The other way is via a PM domain, in which case
->> there may be some additional PM handling in the domain code in principle
->> (before or after calling the driver's .suspend_late()).  However, in the
->> latter case it generally wouldn't be OK to call PM domain's .runtime_suspend(),
->> because that may interfere with the PM handling in its .suspend_late().  So
->> again, this pretty much requires that the PM domain's .suspend_late pointer be
->> NULL or point to a routine that simply executes the driver's callback and does
->> noting in addition to that.
->>
->> Now, I suspect that if the driver's runtime_suspend callback is
->> driver_runtime_suspend() and the PM domain's runtime_suspend callback is
->> pm_domain_runtime_suspend(), the code you actually want to be executed at the
->> "late suspend" stage will be
->>
->>       if (!pm_runtime_status_suspended(dev))
->>               pm_domain_runtime_suspend()
->>                       driver_runtime_suspend()
->>
->> (where the assumption is that pm_domain_runtime_suspend() will call
->> driver_runtime_suspend() for you).  Clearly, prototype_suspend_late() will lead
->> to that effective result in the conditions in which it makes sense to use it.
->>
->> So, instead of pointing the driver's .suspend_late() to prototype_suspend_late(),
->> why don't you point the .suspend_late of the *PM* *domain* to the following
->> slightly modified version of that function:
->>
->> int pm_domain_simplified_suspend_late(struct device *dev)
->> {
->>       int (*callback)(struct device *) = NULL;
->>
->>       if (pm_runtime_status_suspended(dev))
->>               return 0;
->>
->>       /* Try to execute our own .runtime_suspend() callback. */
->>       if (dev->pm_domain)
->>               callback = dev->pm_domain->ops.runtime_suspend;
->>
->>       if (WARN_ON(!callback) && dev->driver && dev->driver->pm)
->>               callback = dev->driver->pm->runtime_suspend;
->>
->>       return callback ? callback(dev) : 0;
->> }
->>
->> This will cause exactly the code you need to be executed too (with
->> a fallback to direct execution of the driver's callback in broken
->> cases where the PM domain's own .runtime_suspend() is not implemented),
->> but in a much cleaner way (no going back to the code layer that has just
->> called you etc.).  And you *can* point the PM domain's .suspend_late
->> to this, because it has to be either empty of trivial if the
->> prototype_suspend_late() above is supposed to work as the driver's
->> .suspend_late() callback.
->>
->> So in my opinion, if you point the .suspend_late callback pointers of the
->> PM domains in question to the pm_domain_simplified_suspend_late() above
->> and their .resume_early callback pointers to the following function:
->>
->> int pm_domain_simplified_resume_early(struct device *dev)
->> {
->>       int (*callback)(struct device *) = NULL;
->>
->>       if (pm_runtime_status_suspended(dev))
->>               return 0;
->>
->>       if (dev->pm_domain)
->>               callback = dev->pm_domain->ops.runtime_resume;
->>
->>       if (WARN_ON(!callback) && dev->driver && dev->driver->pm)
->>               callback = dev->driver->pm->runtime_resume;
->>
->>       return callback ? callback(dev) : 0;
->> }
->>
->> it will solve your problems without that horrible jumping between code
->> layers.
+viresh kumar <viresh.kumar@linaro.org> writes:
+
+> On Tuesday 03 December 2013 04:44 PM, Bj=C3=B8rn Mork wrote:
+>> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Perfo=
+rm
+>> light-weight init/teardown during suspend/resume"), which enabled
+>> suspend/resume optimizations leaving the sysfs files in place.
+>>=20
+>> Errors during suspend/resume are not handled properly, leaving
+>> dead sysfs attributes in case of failures.  There are are number of
+>> functions with special code for the "frozen" case, and all these
+>> need to also have special error handling.
 >
-> And in addition to that you can point the drivers' .suspend_late callbacks to
-> something like:
+> Can you try this please if it fixes things for you (with your patch r=
+everted):
+
+Yes, that patch looks like it fix the problem, and I cannot spot any
+obvious missing cleanups.
+
+But I must say that the whole kobj + free thing makes me feel a bit
+uneasy.  I assume there are good reasons why "cpufreq" isn't just a
+device with a release method?
+
+And I do hope there is something gained by the special suspend handling=
+,
+because keeping this partial device looks really messy. If it's all jus=
+t
+for some file permissions, then there must be better ways?  Isn't
+consistent file permissions on device creation really a userspace issue=
+?
+
+Anyway, the patch works so you can add
+
+Tested-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+
+
+BTW, a simple way to test these things is cancelling a userspace
+hibernate on an ACPI system.  It will always make the acpi_cpufreq
+driver fail because it attemps to call _PPC inbetween
+acpi_ec_block_transactions and acpi_ec_unblock_transactions.  There is
+no acpi_ec_unblock_transactions_early call in this case.
+
+
+
+Bj=C3=B8rn
+
+
+
+
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Wed, 4 Dec 2013 15:20:12 +0530
+> Subject: [PATCH] cpufreq: remove sysfs files for CPU which failed to =
+come
+>  back after resume
 >
-> int pm_simplified_suspend_late(struct device *dev)
-> {
->         if (pm_runtime_status_suspended(dev))
->                 return 0;
+> There are cases where cpufreq_add_dev() may fail for some CPUs during=
+ resume.
+> With the current code we will still have sysfs cpufreq files for such=
+ CPUs, and
+> struct cpufreq_policy would be already freed for them. Hence any oper=
+ation on
+> those sysfs files would result in kernel warnings.
 >
->         return dev->driver->pm->runtime_suspend ?
->                 dev->driver->pm->runtime_suspend(dev) : 0;
-> }
+> To fix this, lets remove those sysfs files or put the associated kobj=
+ect in case
+> of such errors. Also, to make it simple lets remove the sysfs links f=
+rom all the
+> CPUs (except policy->cpu) during suspend as that operation wouldn't r=
+esult with a
+> loss of sysfs file permissions. And so we will create those links dur=
+ing resume
+> as well.
 >
-> (and analogously for the "early resume") which will cause their .runtime_suspend()
-> to be executed even if the PM domain doesn't have a .suspend_late (or there's
-> no PM domain at all).
-
-Rafael, I highly appreciate your detailed reply!
-
-Let' me try to summarize my picture to try to wrap up the discussion:
-
-1.
-I interpret your answer as we are aligned on that re-using the runtime
-PM callbacks during system suspend, would in some cases be useful and
-accepted. That is great news to hear and definitely the most important
-part! :-)
-
-I suppose that this also means we should go forward with the following
-patches, right?
-
-[PATCH 2/5] PM / Runtime: Implement the pm_generic_runtime functions
-for CONFIG_PM
-
-[PATCH 3/5] PM / Runtime: Add second macro for definition of runtime
-PM callbacks
-
-[PATCH 4/5] PM / Sleep: Add macro to define common late/early system
-PM callbacks
-
-2.
-With your suggestions for how the PM domain shall implement it's
-.suspend_late, I do in some cases see a problem for the driver.
-Particularly in those scenarios were the driver needs full control of
-the sequence of putting it's device into low power state during system
-suspend. That is because the sequence is not initiated by the driver
-but instead from the PM domain.
-
-To be more clear, I don't think defining driver's .suspend_late
-callbacks directly to the pm_generic_suspend_late_runtime function
-would be enough in all cases.
-
-Sometimes the driver have additional actions to complete during system
-suspend - and the order of how things are done are important. Thus I
-see the "pm_generic_suspend_late_runtime" also being invoked as a
-function call from drivers .suspend_late callbacks to be able to
-handle these cases.
-
-I mentioned earlier that it could be better to view the
-pm_generic_suspend_late_runtime more as "helper function" instead of
-only as a callback.
-
-To move things one step further, I think it would make sense to add a
-pm_runtime_disable() in the beginning of
-pm_generic_suspend_late_runtime(), to clarify that it requires runtime
-PM to be disabled (runtime PM will then be re-enabled in the end of
-pm_generic_resume_early_runtime()).
-
-This would provide the option of using them as a "standalone" helper
-functions, since those would no more rely on the PM core to disable
-runtime PM from device_suspend_late.
-
-3.
-Finally, I understand you rejects to have the
-pm_generic_suspend_late_runtime and pm_generic_resume_early_runtime
-functions as a part of the PM core, at least in it's current form.
-
-Considering my reply here, were I suggest to move them out from the
-file with the generic callbacks and instead have them somewhere were
-we can consider them as "helper functions", would that matter to your
-opinion? Not sure were those would belong though, maybe closer to
-runtime PM but still available for CONFIG_PM. :-)
-
-An option would obviously be to not provide these kind of functions at
-all and instead leave it to be implemented wherever it may be needed.
-I just fear it would be duplicated code around, but it might be more
-clear of what goes on then. :-)
-
-Kind regards
-Uffe
-
+> Reported-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 61 ++++++++++++++++++++++++-------------=
+----------
+>  1 file changed, 31 insertions(+), 30 deletions(-)
 >
-> Thanks,
-> Rafael
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 606224a..57c80a7 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -849,8 +849,7 @@ static void cpufreq_init_policy(struct cpufreq_po=
+licy *policy)
 >
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+> -				  unsigned int cpu, struct device *dev,
+> -				  bool frozen)
+> +				  unsigned int cpu, struct device *dev)
+>  {
+>  	int ret =3D 0;
+>  	unsigned long flags;
+> @@ -881,9 +880,7 @@ static int cpufreq_add_policy_cpu(struct cpufreq_=
+policy *policy,
+>  		}
+>  	}
+>
+> -	/* Don't touch sysfs links during light-weight init */
+> -	if (!frozen)
+> -		ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> +	ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+>
+>  	return ret;
+>  }
+> @@ -930,6 +927,27 @@ err_free_policy:
+>  	return NULL;
+>  }
+>
+> +static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
+> +{
+> +	struct kobject *kobj;
+> +	struct completion *cmp;
+> +
+> +	down_read(&policy->rwsem);
+> +	kobj =3D &policy->kobj;
+> +	cmp =3D &policy->kobj_unregister;
+> +	up_read(&policy->rwsem);
+> +	kobject_put(kobj);
+> +
+> +	/*
+> +	 * We need to make sure that the underlying kobj is
+> +	 * actually not referenced anymore by anybody before we
+> +	 * proceed with unloading.
+> +	 */
+> +	pr_debug("waiting for dropping of refcount\n");
+> +	wait_for_completion(cmp);
+> +	pr_debug("wait complete\n");
+> +}
+> +
+>  static void cpufreq_policy_free(struct cpufreq_policy *policy)
+>  {
+>  	free_cpumask_var(policy->related_cpus);
+> @@ -990,7 +1008,7 @@ static int __cpufreq_add_dev(struct device *dev,=
+ struct subsys_interface *sif,
+>  	list_for_each_entry(tpolicy, &cpufreq_policy_list, policy_list) {
+>  		if (cpumask_test_cpu(cpu, tpolicy->related_cpus)) {
+>  			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -			ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, dev, frozen);
+> +			ret =3D cpufreq_add_policy_cpu(tpolicy, cpu, dev);
+>  			up_read(&cpufreq_rwsem);
+>  			return ret;
+>  		}
+> @@ -1100,7 +1118,10 @@ err_get_freq:
+>  	if (cpufreq_driver->exit)
+>  		cpufreq_driver->exit(policy);
+>  err_set_policy_cpu:
+> +	if (frozen)
+> +		cpufreq_policy_put_kobj(policy);
+>  	cpufreq_policy_free(policy);
+> +
+>  nomem_out:
+>  	up_read(&cpufreq_rwsem);
+>
+> @@ -1122,7 +1143,7 @@ static int cpufreq_add_dev(struct device *dev, =
+struct subsys_interface *sif)
+>  }
+>
+>  static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *po=
+licy,
+> -					   unsigned int old_cpu, bool frozen)
+> +					   unsigned int old_cpu)
+>  {
+>  	struct device *cpu_dev;
+>  	int ret;
+> @@ -1130,10 +1151,6 @@ static int cpufreq_nominate_new_policy_cpu(str=
+uct cpufreq_policy *policy,
+>  	/* first sibling now owns the new sysfs dir */
+>  	cpu_dev =3D get_cpu_device(cpumask_any_but(policy->cpus, old_cpu));
+>
+> -	/* Don't touch sysfs files during light-weight tear-down */
+> -	if (frozen)
+> -		return cpu_dev->id;
+> -
+>  	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+>  	ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
+>  	if (ret) {
+> @@ -1200,7 +1217,7 @@ static int __cpufreq_remove_dev_prepare(struct =
+device *dev,
+>  		if (!frozen)
+>  			sysfs_remove_link(&dev->kobj, "cpufreq");
+>  	} else if (cpus > 1) {
+> -		new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
+> +		new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu);
+>  		if (new_cpu >=3D 0) {
+>  			update_policy_cpu(policy, new_cpu);
+>
+> @@ -1222,8 +1239,6 @@ static int __cpufreq_remove_dev_finish(struct d=
+evice *dev,
+>  	int ret;
+>  	unsigned long flags;
+>  	struct cpufreq_policy *policy;
+> -	struct kobject *kobj;
+> -	struct completion *cmp;
+>
+>  	read_lock_irqsave(&cpufreq_driver_lock, flags);
+>  	policy =3D per_cpu(cpufreq_cpu_data, cpu);
+> @@ -1253,22 +1268,8 @@ static int __cpufreq_remove_dev_finish(struct =
+device *dev,
+>  			}
+>  		}
+>
+> -		if (!frozen) {
+> -			down_read(&policy->rwsem);
+> -			kobj =3D &policy->kobj;
+> -			cmp =3D &policy->kobj_unregister;
+> -			up_read(&policy->rwsem);
+> -			kobject_put(kobj);
+> -
+> -			/*
+> -			 * We need to make sure that the underlying kobj is
+> -			 * actually not referenced anymore by anybody before we
+> -			 * proceed with unloading.
+> -			 */
+> -			pr_debug("waiting for dropping of refcount\n");
+> -			wait_for_completion(cmp);
+> -			pr_debug("wait complete\n");
+> -		}
+> +		if (!frozen)
+> +			cpufreq_policy_put_kobj(policy);
+>
+>  		/*
+>  		 * Perform the ->exit() even during light-weight tear-down,
