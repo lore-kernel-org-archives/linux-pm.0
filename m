@@ -1,115 +1,103 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH RESEND v10 0/7] cpufreq:boost: CPU Boost mode support
-Date: Wed, 04 Dec 2013 07:59:21 +0100
-Message-ID: <20131204075921.3b9e86fa@amdc2363>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: Check for dev before deregistering it.
+Date: Wed, 04 Dec 2013 10:10:28 +0100
+Message-ID: <529EF184.3090000@linaro.org>
+References: <1386086398-3686-1-git-send-email-konrad.wilk@oracle.com> <3652709.SMvyaH5n9G@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f41.google.com ([74.125.83.41]:52638 "EHLO
+	mail-ee0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754879Ab3LDJKT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2013 04:10:19 -0500
+Received: by mail-ee0-f41.google.com with SMTP id t10so2189420eei.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Dec 2013 01:10:18 -0800 (PST)
+In-Reply-To: <3652709.SMvyaH5n9G@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org
 
-Hi Rafael,
+On 12/03/2013 10:33 PM, Rafael J. Wysocki wrote:
+> On Tuesday, December 03, 2013 10:59:58 AM Konrad Rzeszutek Wilk wrote=
+:
+>> If not, we could end up in the unfortunate situation where
+>> we dereference a NULL pointer b/c we have cpuidle disabled.
+>>
+>> This is the case when booting under Xen (which uses the
+>> ACPI P/C states but disables the CPU idle driver) - and can
+>> be easily reproduced when booting with cpuidle.off=3D1.
+>>
+>> BUG: unable to handle kernel NULL pointer dereference at           (=
+null)
+>> IP: [<ffffffff8156db4a>] cpuidle_unregister_device+0x2a/0x90
+>> .. snip..
+>> Call Trace:
+>>   [<ffffffff813b15b4>] acpi_processor_power_exit+0x3c/0x5c
+>>   [<ffffffff813af0a9>] acpi_processor_stop+0x61/0xb6
+>>   [<ffffffff814215bf>] __device_release_driver+0fffff81421653>] devi=
+ce_release_driver+0x23/0x30
+>>   [<ffffffff81420ed8>] bus_remove_device+0x108/0x180
+>>   [<ffffffff8141d9d9>] device_del+0x129/0x1c0
+>>   [<ffffffff813cb4b0>] ? unregister_xenbus_watch+0x1f0/0x1f0
+>>   [<ffffffff8141da8e>] device_unregister+0x1e/0x60
+>>   [<ffffffff814243e9>] unregister_cpu+0x39/0x60
+>>   [<ffffffff81019e03>] arch_unregister_cpu+0x23/0x30
+>>   [<ffffffff813c3c51>] handle_vcpu_hotplug_event+0xc1/0xe0
+>>   [<ffffffff813cb4f5>] xenwatch_thread+0x45/0x120
+>>   [<ffffffff810af010>] ? abort_exclusive_wait+0xb0/0xb0
+>>   [<ffffffff8108ec42>] kthread+0xd2/0xf0
+>>   [<ffffffff8108eb70>] ? kthread_create_on_node+0x180/0x180
+>>   [<ffffffff816ce17c>] ret_from_fork+0x7c/0xb0
+>>   [<ffffffff8108eb70>] ? kthread_create_on_node+0x180/0x180
+>>
+>> This problem also appears in 3.12 and could be a candidate for backp=
+ort.
+>>
+>> CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> CC: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> CC: linux-pm@vger.kernel.org
+>> Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+>
+> Applied, thanks!
+>
+>> ---
+>>   drivers/cpuidle/cpuidle.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index 2a991e4..a55e68f 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -400,7 +400,7 @@ EXPORT_SYMBOL_GPL(cpuidle_register_device);
+>>    */
+>>   void cpuidle_unregister_device(struct cpuidle_device *dev)
+>>   {
+>> -	if (dev->registered =3D=3D 0)
+>> +	if (!dev || dev->registered =3D=3D 0)
+>>   		return;
+>>
+>>   	cpuidle_pause_and_lock();
 
-> This patch series introduces support for CPU overclocking technique
-> called Boost.
-> 
-> It is a follow up of a LAB governor proposal. Boost is a LAB
-> component:
-> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> 
-> Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> software oriented one (like the one done at Exynos).
-> For this reason cpufreq/freq_table code has been reorganized to
-> include common code.
-> 
-> Important design decisions:
-> - Boost related code is compiled-in unconditionally to cpufreq core
-> and disabled by default. The cpufreq_driver is responsibile for
-> setting boost_supported flag and providing set_boost callback(if HW
-> support is needed). For software managed boost, special Kconfig flag -
->   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
->   when a target platform has thermal framework properly configured.
-> 
-> - struct cpufreq_driver has been extended with boost related fields:
->         -- boost_supported - when driver supports boosting
->         -- boost_enabled - boost state
->         -- set_boost - callback to function, which is necessary to
->            enable/disable boost
-> 
-> - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
-> visible _only_ when cpufreq driver supports Boost.
-> 
-> - No special spin_lock for Boost was created. The one from cpufreq
-> core was reused.
-> 
-> - The Boost code doesn't rely on any policy. When boost state is
-> changed, then the policy list is iterated and proper adjustements are
-> done.
-> 
-> - To improve safety level, the thermal framework is also extended to
-> disable software boosting, when thermal trip point is reached. After
-> cooling down the boost can be enabled again. This emulates behaviour
-> similar to HW managed boost (like x86)
-> 
-> Tested at HW:
->        Exynos 4412 3.13-rc2 Linux
->        Intel Core i7-3770 3.13-rc2 Linux
-> 
-> Above patches were posted on top of kernel_pm/bleeding-edge
-> (SHA1: 9483a9f69d5c8f83f1723361bf8340ddfb6475b4)
-> 
+Oops, wait. Are we sure the problem is coming from cpuidle ?
 
-Rafael, could you pull patches from 1 to 6 of this series? Those are
-related to cpufreq core and has already been accepted by Viresh at a
-late August this year.
-This would facilitate my further cpufreq work.
+The cpuidle_unregister_device is called with a NULL pointer, that=20
+shouldn't happen.
 
-And about the last patch - related to thermal. It seems that more
-discussion NOT related to cpufreq will be ongoing. 
-
-I would prefer to add it as a separate patch to thermal subtree.
-
-
-
-> 
-> Lukasz Majewski (7):
->   cpufreq: Add boost frequency support in core
->   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
->     boost solution
->   cpufreq:boost:Kconfig: Provide support for software managed BOOST
->   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
->     framework
->   Documentation:cpufreq:boost: Update BOOST documentation
->   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
->   thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
->     Exynos4412)
-> 
->  Documentation/cpu-freq/boost.txt          |   26 +++----
->  drivers/cpufreq/Kconfig                   |    4 +
->  drivers/cpufreq/Kconfig.arm               |   15 ++++
->  drivers/cpufreq/acpi-cpufreq.c            |   86
-> +++++++-------------- drivers/cpufreq/cpufreq.c                 |
-> 118 ++++++++++++++++++++++++++++-
-> drivers/cpufreq/exynos-cpufreq.c          |    3 +
-> drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
-> drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
-> drivers/thermal/samsung/exynos_tmu_data.c |   47 ++++++++++++
-> include/linux/cpufreq.h                   |   24 ++++++ 10 files
-> changed, 302 insertions(+), 79 deletions(-)
-> 
+Konrad, you say that could be easily reproduced. How do you produce it =
+?=20
+Unplugging a cpu ?
 
 
 
--- 
--- 
-Best regards,
 
-Lukasz Majewski
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
