@@ -1,86 +1,96 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Wed, 04 Dec 2013 16:41:45 +0100
-Message-ID: <87li00y66e.fsf@nemi.mork.no>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
-	<529F04B2.7050303@linaro.org> <87fvq8lsxt.fsf@nemi.mork.no>
-	<CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [PATCH] cpuidle: Check for dev before deregistering it.
+Date: Wed, 4 Dec 2013 11:09:11 -0500
+Message-ID: <20131204160911.GB391@pegasus.dumpdata.com>
+References: <1386086398-3686-1-git-send-email-konrad.wilk@oracle.com>
+ <3652709.SMvyaH5n9G@vostro.rjw.lan>
+ <529EF184.3090000@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
-	(Viresh Kumar's message of "Wed, 4 Dec 2013 20:11:01 +0530")
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from userp1040.oracle.com ([156.151.31.81]:32263 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755787Ab3LDQJY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2013 11:09:24 -0500
+Content-Disposition: inline
+In-Reply-To: <529EF184.3090000@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
-> On 4 December 2013 17:38, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
->> Yes, that patch looks like it fix the problem, and I cannot spot any
->> obvious missing cleanups.
->
-> Great!!
->
->> But I must say that the whole kobj + free thing makes me feel a bit
->> uneasy.  I assume there are good reasons why "cpufreq" isn't just a
->> device with a release method?
->
-> I didn't get it completely.. How exactly you wanted it to be..
+On Wed, Dec 04, 2013 at 10:10:28AM +0100, Daniel Lezcano wrote:
+> On 12/03/2013 10:33 PM, Rafael J. Wysocki wrote:
+> >On Tuesday, December 03, 2013 10:59:58 AM Konrad Rzeszutek Wilk wrote:
+> >>If not, we could end up in the unfortunate situation where
+> >>we dereference a NULL pointer b/c we have cpuidle disabled.
+> >>
+> >>This is the case when booting under Xen (which uses the
+> >>ACPI P/C states but disables the CPU idle driver) - and can
+> >>be easily reproduced when booting with cpuidle.off=1.
+> >>
+> >>BUG: unable to handle kernel NULL pointer dereference at           (null)
+> >>IP: [<ffffffff8156db4a>] cpuidle_unregister_device+0x2a/0x90
+> >>.. snip..
+> >>Call Trace:
+> >>  [<ffffffff813b15b4>] acpi_processor_power_exit+0x3c/0x5c
+> >>  [<ffffffff813af0a9>] acpi_processor_stop+0x61/0xb6
+> >>  [<ffffffff814215bf>] __device_release_driver+0fffff81421653>] device_release_driver+0x23/0x30
+> >>  [<ffffffff81420ed8>] bus_remove_device+0x108/0x180
+> >>  [<ffffffff8141d9d9>] device_del+0x129/0x1c0
+> >>  [<ffffffff813cb4b0>] ? unregister_xenbus_watch+0x1f0/0x1f0
+> >>  [<ffffffff8141da8e>] device_unregister+0x1e/0x60
+> >>  [<ffffffff814243e9>] unregister_cpu+0x39/0x60
+> >>  [<ffffffff81019e03>] arch_unregister_cpu+0x23/0x30
+> >>  [<ffffffff813c3c51>] handle_vcpu_hotplug_event+0xc1/0xe0
+> >>  [<ffffffff813cb4f5>] xenwatch_thread+0x45/0x120
+> >>  [<ffffffff810af010>] ? abort_exclusive_wait+0xb0/0xb0
+> >>  [<ffffffff8108ec42>] kthread+0xd2/0xf0
+> >>  [<ffffffff8108eb70>] ? kthread_create_on_node+0x180/0x180
+> >>  [<ffffffff816ce17c>] ret_from_fork+0x7c/0xb0
+> >>  [<ffffffff8108eb70>] ? kthread_create_on_node+0x180/0x180
+> >>
+> >>This problem also appears in 3.12 and could be a candidate for backport.
+> >>
+> >>CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> >>CC: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>CC: linux-pm@vger.kernel.org
+> >>Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+> >
+> >Applied, thanks!
+> >
+> >>---
+> >>  drivers/cpuidle/cpuidle.c | 2 +-
+> >>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>
+> >>diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> >>index 2a991e4..a55e68f 100644
+> >>--- a/drivers/cpuidle/cpuidle.c
+> >>+++ b/drivers/cpuidle/cpuidle.c
+> >>@@ -400,7 +400,7 @@ EXPORT_SYMBOL_GPL(cpuidle_register_device);
+> >>   */
+> >>  void cpuidle_unregister_device(struct cpuidle_device *dev)
+> >>  {
+> >>-	if (dev->registered == 0)
+> >>+	if (!dev || dev->registered == 0)
+> >>  		return;
+> >>
+> >>  	cpuidle_pause_and_lock();
+> 
+> Oops, wait. Are we sure the problem is coming from cpuidle ?
 
-Like a normal "struct device".  All that manual fiddling with sysfs
-files and kobj removal etc looks so complicated and error prone to me.
-But this is likely because I don't understand the code at all.
+It is acpi_processor_power_exit assuming that the cpuidle is
+initialized. It could be fixed there too, but there are multiple
+entries in cpuidle where it does the : "if (!dev) return .."
+so I figured this should be done as well here.
 
-Take my comments for what they are worth.  I'm not claiming any
-understanding at all here....
+> 
+> The cpuidle_unregister_device is called with a NULL pointer, that
+> shouldn't happen.
 
->> And I do hope there is something gained by the special suspend handl=
-ing,
->> because keeping this partial device looks really messy. If it's all =
-just
->> for some file permissions, then there must be better ways?
->
-> We didn't found many and so Srivatsa went with this way.. If you have=
- a
-> better way then we are all for it :)
->
->> Isn't consistent file permissions on device creation really a usersp=
-ace issue?
->
-> Yes, normally it is.. But suspend/resume or hibernation isn't a users=
-pace
-> problem at all.
+It does :-)
+> 
+> Konrad, you say that could be easily reproduced. How do you produce
+> it ? Unplugging a cpu ?
 
-It is a userspace problem for other devices which are unplugged and
-plugged on suspend/resume. CPUs are obviously exceptional for some
-reason. This is what I don't understand.  I assume the file permissions
-are set up by userspace when the device is first created? Why doesn't
-the same apply to device creation after a resume hotplug?
-
-You have made the very wise decision to handle suspend/resume of non
-boot CPUs as hotplugging events.  But then you totally destroy this nic=
-e
-and simple model by adding lots of code implementing some very device
-specific suspend/resume handling.  That confuses me.  And it's not like
-you save anything valuable over the suspend/resume.  You want to save
-file permissions of sysfs attributes? Who cares?  They should be set by
-udev rules anyway.
-
-> We had a discussion earlier on it and realized that kernel
-> is screwing it up and so it should get it back. Userspace doesn't hav=
-e to
-> know how cpufreq removed these directories/files and added them back
-> on resume.
-
-Userspace should see this as CPUs going away and then being added back,
-right? If userspace set the file permissions the first time the CPU was
-added, why can't it do so the next time as well?
-
-This wouldn't have been such a big deal if the workaorund was a simple
-line or two.  But it is not.
-
-
-
-Bj=C3=B8rn
+Yes. 
