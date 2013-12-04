@@ -1,211 +1,86 @@
-From: Kumar Gala <galak@codeaurora.org>
-Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
-Date: Wed, 4 Dec 2013 09:36:08 -0600
-Message-ID: <24A59FCA-88E5-42BB-9AEC-CDA07841A6ED@codeaurora.org>
-References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com> <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com> <3AA6B169-C4C8-474B-B110-B912510B834E@codeaurora.org> <20131203104004.GA5694@e102568-lin.cambridge.arm.com>
-Mime-Version: 1.0 (Mac OS X Mail 7.0 \(1822\))
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:55449 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932599Ab3LDPgR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2013 10:36:17 -0500
-In-Reply-To: <20131203104004.GA5694@e102568-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Wed, 04 Dec 2013 16:41:45 +0100
+Message-ID: <87li00y66e.fsf@nemi.mork.no>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+	<529F04B2.7050303@linaro.org> <87fvq8lsxt.fsf@nemi.mork.no>
+	<CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomBeJSMc3=BSPbo97nkGbc5MRRvTtJn1z062FN01B51Qw@mail.gmail.com>
+	(Viresh Kumar's message of "Wed, 4 Dec 2013 20:11:01 +0530")
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Amit Kucheria <amit.kucheria@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Nicolas Pitre <nico@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Hanjun Guo <hanjun.guo@linaro.org>, Mark Hambleton <mark.hambleton@broadcom.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+> On 4 December 2013 17:38, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
+>> Yes, that patch looks like it fix the problem, and I cannot spot any
+>> obvious missing cleanups.
+>
+> Great!!
+>
+>> But I must say that the whole kobj + free thing makes me feel a bit
+>> uneasy.  I assume there are good reasons why "cpufreq" isn't just a
+>> device with a release method?
+>
+> I didn't get it completely.. How exactly you wanted it to be..
+
+Like a normal "struct device".  All that manual fiddling with sysfs
+files and kobj removal etc looks so complicated and error prone to me.
+But this is likely because I don't understand the code at all.
+
+Take my comments for what they are worth.  I'm not claiming any
+understanding at all here....
+
+>> And I do hope there is something gained by the special suspend handl=
+ing,
+>> because keeping this partial device looks really messy. If it's all =
+just
+>> for some file permissions, then there must be better ways?
+>
+> We didn't found many and so Srivatsa went with this way.. If you have=
+ a
+> better way then we are all for it :)
+>
+>> Isn't consistent file permissions on device creation really a usersp=
+ace issue?
+>
+> Yes, normally it is.. But suspend/resume or hibernation isn't a users=
+pace
+> problem at all.
+
+It is a userspace problem for other devices which are unplugged and
+plugged on suspend/resume. CPUs are obviously exceptional for some
+reason. This is what I don't understand.  I assume the file permissions
+are set up by userspace when the device is first created? Why doesn't
+the same apply to device creation after a resume hotplug?
+
+You have made the very wise decision to handle suspend/resume of non
+boot CPUs as hotplugging events.  But then you totally destroy this nic=
+e
+and simple model by adding lots of code implementing some very device
+specific suspend/resume handling.  That confuses me.  And it's not like
+you save anything valuable over the suspend/resume.  You want to save
+file permissions of sysfs attributes? Who cares?  They should be set by
+udev rules anyway.
+
+> We had a discussion earlier on it and realized that kernel
+> is screwing it up and so it should get it back. Userspace doesn't hav=
+e to
+> know how cpufreq removed these directories/files and added them back
+> on resume.
+
+Userspace should see this as CPUs going away and then being added back,
+right? If userspace set the file permissions the first time the CPU was
+added, why can't it do so the next time as well?
+
+This wouldn't have been such a big deal if the workaorund was a simple
+line or two.  But it is not.
 
 
-On Dec 3, 2013, at 4:40 AM, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
 
-> On Mon, Dec 02, 2013 at 06:08:16PM +0000, Kumar Gala wrote:
->> 
->> On Dec 2, 2013, at 10:20 AM, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
->> 
->>> ARM based platforms implement a variety of power management schemes that
->>> allow processors to enter at run-time low-power states, aka C-states
->>> in ACPI jargon. The parameters defining these C-states vary on a per-platform
->>> basis forcing the OS to hardcode the state parameters in platform
->>> specific static tables whose size grows as the number of platforms supported
->>> in the kernel increases and hampers device drivers standardization.
->>> 
->>> Therefore, this patch aims at standardizing C-state device tree bindings for
->>> ARM platforms. Bindings define C-state parameters inclusive of entry methods
->>> and state latencies, to allow operating systems to retrieve the
->>> configuration entries from the device tree and initialize the related
->>> power management drivers, paving the way for common code in the kernel
->>> to deal with power states and removing the need for static data in current
->>> and previous kernel versions.
->> 
->> Where is this spec'd today in the kernel?
-> 
-> How can it be in the kernel given that these bindings have just been posted ?
-> I started coding the layer managing the C-states in the kernel, even
-> though I would avoid writing it and then restart from scratch if these
-> bindings are scrapped. Bindings should not depend on kernel code, it
-> is the other way around, right ?
-
-I was guessing that there is existing code in the kernel that uses some platform data structures.  I was wondering what that code looked like today.
-
-> 
-> [...]
-> 
->>> +===========================================
->>> +2 - state node
->>> +===========================================
->>> +
->>> +A state node represents a C-state description and must be defined as follows:
->>> +
->>> +- state node
->>> +
->>> +     Description: must be child of the cpu-power-states node.
->>> +
->>> +     The state node name must be "state", with unit address provided by the
->>> +     "reg" property following standard DT requirements[4].
->>> +
->>> +     A state node defines the following properties:
->>> +
->>> +     - reg
->>> +             Usage: Required
->>> +             Value type: <u32>
->>> +             Definition: Standard device tree property [4] used for
->>> +                         enumeration purposes.
->> 
->> I'm not sure what purpose reg is really serving here.
-> 
-> Enumeration, that's it.
-> 
->>> +
->>> +     - index
->>> +             Usage: Required
->>> +             Value type: <u32>
->>> +             Definition: It represents C-state index, starting from 2 (index
->>> +                         0 represents the processor state "running" and
->>> +                         index 1 represents processor mode "WFI"; indexes 0
->>> +                         and 1 are standard ARM states that need not be
->>> +                         described).
->> 
->> any reason not to call it c-state-index"
-> 
-> Well, they are called "state" nodes, so I called it "index".
-> 
-> I really do not care, can change it if we think we should call states
-> c-states.
-> 
->>> +
->>> +     - entry-method
->>> +             Value type: <stringlist>
->>> +             Usage: Required
->>> +             Definition: Describes the method by which a CPU enters the
->>> +                         C-state. This property is required and must be one
->>> +                         of:
->>> +
->>> +                         - "psci"
->>> +                           ARM Standard firmware interface
->>> +
->>> +                         - "[vendor],[method]"
->>> +                           An implementation dependent string with
->>> +                           format "vendor,method", where vendor is a string
->>> +                           denoting the name of the manufacturer and
->>> +                           method is a string specifying the mechanism
->>> +                           used to enter the C-state.
->>> +
->>> +     - psci-power-state
->>> +             Usage: Required if entry-method property value is set to
->>> +                    "psci".
->>> +             Value type: <u32>
->>> +             Definition: power_state parameter to pass to the PSCI
->>> +                         suspend call to enter the C-state.
->>> +
->>> +     - latency
->>> +             Usage: Required
->>> +             Value type: <u32>
->>> +             Definition: Worst case latency in microseconds required to
->>> +                         enter and exit the C-state.
->>> +
->>> +     - min-residency
->>> +             Usage: Required
->>> +             Value type: <u32>
->>> +             Definition: Time in microseconds required for the CPU to be in
->>> +                         the C-state to make up for the dynamic power
->>> +                         consumed to enter/exit the C-state in order to
->>> +                         break even in terms of power consumption compared
->>> +                         to C1 state (wfi).
->>> +                         This parameter depends on the operating conditions
->>> +                         (operating point, cache state) and must assume
->>> +                         worst case scenario.
->>> +
->>> +     - cpus
->>> +             Usage: Optional
->>> +             Value type: <phandle>
->>> +             Definition: If defined, the phandle points to a node in the
->>> +                         cpu-map[2] representing all CPUs on which C-state
->>> +                         is valid. If not present or system is UP, the
->>> +                         C-state has to be considered valid for all CPUs in
->>> +                         the system.
->>> +
->>> +     - affinity
->>> +             Usage: Optional
->>> +             Value type: <phandle>
->>> +             Definition: If defined, phandle points to a node in the
->>> +                         cpu-map[2] that represents all CPUs that are
->>> +                         affected (ie share) by the C-state and have to
->>> +                         be coordinated on C-state entry/exit. If not
->>> +                         present or system is UP, the C-state is local to
->>> +                         a CPU and need no coordination (ie it is a CPU
->>> +                         state, that does not require coordination with
->>> +                         other CPUs). If present, the affinity property
->>> +                         must contain a phandle to a cpu-map node that
->>> +                         represents a subset, possibly inclusive of the
->>> +                         CPUs described through the cpus property.
->>> +
->>> +     - power-depth
->>> +             Usage: Required
->>> +             Value type: <u32>
->>> +             Definition: Integer value, starting from 2 (value 0 meaning
->>> +                         running and value 1 representing power depth of
->>> +                         wfi (C1)), that defines the level of depth of a
->>> +                         power state.
->>> +                         The system denotes power states with different
->>> +                         depths, an increasing value meaning less power
->>> +                         consumption and might involve powering down more
->>> +                         components.  Devices that are affected by
->>> +                         C-states entry must define the maximum power
->>> +                         depth supported in their respective device tree
->>> +                         bindings so that OSPM can take decision on how
->>> +                         to handle the device in question when the C-state
->>> +                         is entered. All devices (per-CPU or external) with
->>> +                         a power depth lower than the one defined in the
->>> +                         C-state entry stop operating when the C-state
->>> +                         is entered and action is required by OSPM to
->>> +                         guarantee their logic and memory content is saved
->>> +                         restored to guarantee proper functioning.
->> 
->> How is this different from the c-state index?
-> 
-> The idea, not sure it is worthwhile, is to represent a unique value in
-> the system. There can be multiple eg C2 states (two clusters in two
-> different power domains) with same index and different power depths.
-> 
-> Devices attached to power domains can check the power depth to detect if
-> the CPU must be prevented from entering the C-state or not, and on the
-> other hand, power depth allows to understand if a device state must be
-> saved and restored.
-> 
-> I should have added an example but there is already lots of stuff to
-> discuss for bindings as they are IMHO.
-> 
-> Lorenzo
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
--- 
-Employee of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
-
+Bj=C3=B8rn
