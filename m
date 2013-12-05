@@ -1,76 +1,62 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: [PATCH 1/2] cpufreq: enable ARM drivers on arm64
-Date: Wed,  4 Dec 2013 18:23:13 -0600
-Message-ID: <1386202994-30784-2-git-send-email-robherring2@gmail.com>
-References: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PowerCap: Fix mode for energy counter
+Date: Thu, 05 Dec 2013 02:27:26 +0100
+Message-ID: <1932191.gZoa77HKas@vostro.rjw.lan>
+References: <1386184379-26220-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64854 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756367Ab3LEBO2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2013 20:14:28 -0500
+In-Reply-To: <1386184379-26220-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-From: Rob Herring <rob.herring@calxeda.com>
-
-Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
-drivers. The power menu is needed for OPP support. At least on Calxeda
-systems, the same cpufreq driver is used for arm and arm64 based
-systems.
-
-Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: linux-pm@vger.kernel.org
----
- arch/arm64/Kconfig      | 8 ++++++++
- drivers/cpufreq/Kconfig | 2 +-
- 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 88c8b6c1..1808dd1 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -276,6 +276,14 @@ config SYSVIPC_COMPAT
- 
- endmenu
- 
-+menu "Power management options"
-+
-+source "kernel/power/Kconfig"
-+
-+source "drivers/cpufreq/Kconfig"
-+
-+endmenu
-+
- source "net/Kconfig"
- 
- source "drivers/Kconfig"
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 38093e2..e26fdcd 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -195,7 +195,7 @@ source "drivers/cpufreq/Kconfig.x86"
- endmenu
- 
- menu "ARM CPU frequency scaling drivers"
--depends on ARM
-+depends on ARM || ARM64
- source "drivers/cpufreq/Kconfig.arm"
- endmenu
- 
+On Wednesday, December 04, 2013 11:12:59 AM Srinivas Pandruvada wrote:
+> As per the documentation of powercap sysfs, energy_uj field is read only,
+> if it can't be reset. Currently it always allows write but will fail,
+> if there is no reset callback.
+> Changing mode field, to read only if there is no reset callback.
+> 
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Reported-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+
+Queued up for the next PM pull request.
+
+Thanks,
+Rafael
+
+
+> ---
+>  drivers/powercap/powercap_sys.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
+> index 8d0fe43..84419af 100644
+> --- a/drivers/powercap/powercap_sys.c
+> +++ b/drivers/powercap/powercap_sys.c
+> @@ -377,9 +377,14 @@ static void create_power_zone_common_attributes(
+>  	if (power_zone->ops->get_max_energy_range_uj)
+>  		power_zone->zone_dev_attrs[count++] =
+>  					&dev_attr_max_energy_range_uj.attr;
+> -	if (power_zone->ops->get_energy_uj)
+> +	if (power_zone->ops->get_energy_uj) {
+> +		if (power_zone->ops->reset_energy_uj)
+> +			dev_attr_energy_uj.attr.mode = S_IWUSR | S_IRUGO;
+> +		else
+> +			dev_attr_energy_uj.attr.mode = S_IRUGO;
+>  		power_zone->zone_dev_attrs[count++] =
+>  					&dev_attr_energy_uj.attr;
+> +	}
+>  	if (power_zone->ops->get_power_uw)
+>  		power_zone->zone_dev_attrs[count++] =
+>  					&dev_attr_power_uw.attr;
+> 
 -- 
-1.8.3.2
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
