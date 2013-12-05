@@ -1,140 +1,84 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v4 2/4] mvebu: Dove: Instantiate cpufreq driver.
-Date: Thu, 5 Dec 2013 17:54:34 +0000
-Message-ID: <20131205175434.GQ29200@e106331-lin.cambridge.arm.com>
-References: <1386166641-7567-1-git-send-email-andrew@lunn.ch>
- <1386166641-7567-3-git-send-email-andrew@lunn.ch>
- <20131204143628.GB29200@e106331-lin.cambridge.arm.com>
- <20131204150228.GB8062@lunn.ch>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/2] cpufreq: enable ARM drivers on arm64
+Date: Thu, 5 Dec 2013 18:16:06 +0000
+Message-ID: <20131205181606.GY29268@sirena.org.uk>
+References: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
+ <1386202994-30784-2-git-send-email-robherring2@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:50408 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757497Ab3LERzO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2013 12:55:14 -0500
-Content-Disposition: inline
-In-Reply-To: <20131204150228.GB8062@lunn.ch>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============4646470604206560882=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1386202994-30784-2-git-send-email-robherring2@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Dec 04, 2013 at 03:02:28PM +0000, Andrew Lunn wrote:
-> On Wed, Dec 04, 2013 at 02:36:28PM +0000, Mark Rutland wrote:
-> > On Wed, Dec 04, 2013 at 02:17:19PM +0000, Andrew Lunn wrote:
-> > > Add a platform driver definition to instantiate the dove cpufreq
-> > > driver. Also indicate the ARCH has cpufreq support, so allowing the
-> > > cpufreq framework to be enabled.
-> > > 
-> > > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> > > Tested-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> > > ---
-> > > Make resource names consistent.
-> > > Fix length of ranges
-> > > ---
-> > >  arch/arm/Kconfig                       |  1 +
-> > >  arch/arm/mach-dove/board-dt.c          |  3 +++
-> > >  arch/arm/mach-dove/common.c            | 36 ++++++++++++++++++++++++++++++++++
-> > >  arch/arm/mach-dove/common.h            |  1 +
-> > >  arch/arm/mach-dove/include/mach/dove.h |  1 +
-> > >  5 files changed, 42 insertions(+)
-> > > 
-> > > diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> > > index c1f1a7eee953..908b02f8d901 100644
-> > > --- a/arch/arm/Kconfig
-> > > +++ b/arch/arm/Kconfig
-> > > @@ -500,6 +500,7 @@ config ARCH_IXP4XX
-> > >  
-> > >  config ARCH_DOVE
-> > >  	bool "Marvell Dove"
-> > > +	select ARCH_HAS_CPUFREQ
-> > >  	select ARCH_REQUIRE_GPIOLIB
-> > >  	select CPU_PJ4
-> > >  	select GENERIC_CLOCKEVENTS
-> > > diff --git a/arch/arm/mach-dove/board-dt.c b/arch/arm/mach-dove/board-dt.c
-> > > index 49fa9abd09da..845e8b328432 100644
-> > > --- a/arch/arm/mach-dove/board-dt.c
-> > > +++ b/arch/arm/mach-dove/board-dt.c
-> > > @@ -27,6 +27,9 @@ static void __init dove_dt_init(void)
-> > >  	tauros2_init(0);
-> > >  #endif
-> > >  	BUG_ON(mvebu_mbus_dt_init());
-> > > +
-> > > +	dove_cpufreq_init();
-> > > +
-> > >  	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-> > >  }
-> > >  
-> > > diff --git a/arch/arm/mach-dove/common.c b/arch/arm/mach-dove/common.c
-> > > index c122bcff9f7c..323fcd4b27b6 100644
-> > > --- a/arch/arm/mach-dove/common.c
-> > > +++ b/arch/arm/mach-dove/common.c
-> > > @@ -344,6 +344,42 @@ void __init dove_sdio1_init(void)
-> > >  	platform_device_register(&dove_sdio1);
-> > >  }
-> > >  
-> > > +/*****************************************************************************
-> > > + * CPU Frequency
-> > > + ****************************************************************************/
-> > > +static struct resource dove_cpufreq_resources[] = {
-> > > +	[0] = {
-> > > +		.start  = DOVE_PMU_PHYS_BASE,
-> > > +		.end    = DOVE_PMU_PHYS_BASE + 0x7,
-> > > +		.flags  = IORESOURCE_MEM,
-> > > +		.name   = "cpufreq: DFS"
-> > > +	},
-> > > +	[1] = {
-> > > +		.start  = DOVE_PMU_PHYS_BASE + 0x8000,
-> > > +		.end    = DOVE_PMU_PHYS_BASE + 0x8003,
-> > > +		.flags  = IORESOURCE_MEM,
-> > > +		.name   = "cpufreq: PMU CR"
-> > > +	},
-> > > +	[2] = {
-> > > +		.start  = DOVE_PMU_PHYS_BASE + 0x0044,
-> > > +		.end    = DOVE_PMU_PHYS_BASE + 0x0047,
-> > > +		.flags  = IORESOURCE_MEM,
-> > > +		.name   = "cpufreq: PMU Clk Div"
-> > > +	},
-> > > +};
-> > > +
-> > > +static struct platform_device dove_cpufreq_device = {
-> > > +	.name		= "dove-cpufreq",
-> > > +	.id		= -1,
-> > > +	.num_resources	= ARRAY_SIZE(dove_cpufreq_resources),
-> > > +	.resource	= dove_cpufreq_resources,
-> > > +};
-> > > +
-> > > +void __init dove_cpufreq_init(void)
-> > > +{
-> > > +	platform_device_register(&dove_cpufreq_device);
-> > > +}
-> > 
-> > Please describe your power management unit in the DT. Your hardcoding
-> > physical addresses that can easily be described in the DT, and you don't
-> > appear to have an early probing requirement.
-> 
-> Hi Mark
-> 
-> We have been here before, with the kirkwood cpufreq driver. My v1 of
-> that driver had the cpufreq driver fully described in DT. My binding
-> got shot down and i was told that pseudo devices, like cpufreq,
-> cpuidle, should not be in DT, and a platform driver was the way to go.
-> So that is how kirkwood cpufreq works and dove follows that.
-> 
-> Do you want to reverse that decision now?
 
-I'm not arguing for describing a pseudo-device. The power management
-unit is a real device. If we used that to register a cpufreq driver, it
-doesn't mean that we've registered a pseudo-device, but rather that we
-made a decision to register the cpufreq portions based on the necessary
-real devices being present.
+--===============4646470604206560882==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yQ6PUHtvLgXN2OhJ"
+Content-Disposition: inline
 
-This code registers a platform device that has PMU register fields. We
-can easily describe the PMU in dt. The PMU _could_ be used by frameworks
-other than cpufreq, so describing it as a cpufreq device is wrong.
-Perhaps this was the problem with the proposed kirkwood binding?
 
-Thanks,
-Mark.
+--yQ6PUHtvLgXN2OhJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Dec 04, 2013 at 06:23:13PM -0600, Rob Herring wrote:
+> From: Rob Herring <rob.herring@calxeda.com>
+>=20
+> Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
+> drivers. The power menu is needed for OPP support. At least on Calxeda
+> systems, the same cpufreq driver is used for arm and arm64 based
+> systems.
+
+If this needs any revisions (I'd be surprised but...) can you please
+keep me on the CCs?  I intend to pull this into LSK if that's OK since I
+was about to do roughly the same thing for it and upstream the result.
+
+--yQ6PUHtvLgXN2OhJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSoMLjAAoJELSic+t+oim9VRMP/3QLSg70vtKAWvb9Fcbqn5xy
+GRwsUuIwlcGT0YZ/H/9RhTvikNkjkU1qu2twLM9XLA7ptA8lof/ATzWLe2EBXQHr
+EpfD65IZU10LtiCNXfecfF5DU6HP7XhQt7taqYofMCdny1U6s/xNYZGBqxWSieWl
+TKzCM/bUCyODE4SIE8YsEutnzszReXFZoQKOmIOsKfqzJzizH7cPiFR7mBDwYxlU
+f2KhH5bleAwPx21JHfRruB1R6pQz1cHRav0F2bnWQDLmjXtiijTVLse8iiIWfOd9
+g6Xe+suVknKoOCz1j/eckgqy8mrnm8dfPmqr8ftpvjGnSHIoeJ621YdhEUTL+96Q
+MsSzbaoj1kQF8hUyeulNVtTQj4NrNL+ccZNFK7OEenMICeuJQJehQSYC1MThGRt9
+AH/8Z3MGYk2rALEfPZuHDUNXeB4Fhc4TiWdeMrIYJHQePDmzbSxsoYth1J92yNjh
+4lKv2eSwfPmn6xNfcKma218fqSOzYYnY7D25ILoOr9U34psqbUanollla8mlvd2H
+CQjJ7PjclACDAdx+XXxqaSQ1oF/0chO0gD8qfPFdN10fQu9ocGsSwgcNLTEyllgh
+U32IXRy4+I9cklyS5JK8rprOFy5OUJAwVmAxqfUlMvidrWYal0Pdh4FdH+XDmuX0
+fpFSbeqHbh0QNeh556fA
+=dXXF
+-----END PGP SIGNATURE-----
+
+--yQ6PUHtvLgXN2OhJ--
+
+
+--===============4646470604206560882==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============4646470604206560882==--
