@@ -1,57 +1,76 @@
 From: Rob Herring <robherring2@gmail.com>
-Subject: [PATCH 2/2] cpufreq: highbank: rework the kconfig dependencies for arm64
-Date: Wed,  4 Dec 2013 18:23:14 -0600
-Message-ID: <1386202994-30784-3-git-send-email-robherring2@gmail.com>
+Subject: [PATCH 1/2] cpufreq: enable ARM drivers on arm64
+Date: Wed,  4 Dec 2013 18:23:13 -0600
+Message-ID: <1386202994-30784-2-git-send-email-robherring2@gmail.com>
 References: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rob Herring <rob.herring@calxeda.com>
 
-Make ARM_HIGHBANK_CPUFREQ not depend on ARCH_HIGHBANK to enable on
-arm64 and also give better build converage. Change the selects to be
-same depends as the cpu0 driver. Otherwise, we can get kconfig select
-errors. Also, add missing depends for PL320_MBOX.
+Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
+drivers. The power menu is needed for OPP support. At least on Calxeda
+systems, the same cpufreq driver is used for arm and arm64 based
+systems.
 
 Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: cpufreq@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
 ---
- drivers/cpufreq/Kconfig.arm | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ arch/arm64/Kconfig      | 8 ++++++++
+ drivers/cpufreq/Kconfig | 2 +-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index ce52ed9..0d7130d 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -65,16 +65,14 @@ config ARM_EXYNOS5440_CPUFREQ
- 	  If in doubt, say N.
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 88c8b6c1..1808dd1 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -276,6 +276,14 @@ config SYSVIPC_COMPAT
  
- config ARM_HIGHBANK_CPUFREQ
--	tristate "Calxeda Highbank-based"
--	depends on ARCH_HIGHBANK
--	select GENERIC_CPUFREQ_CPU0
-+	tristate "Calxeda ECX based"
-+	depends on HAVE_CLK && REGULATOR && OF
-+	depends on PL320_MBOX
-+	select ARCH_HAS_OPP
- 	select PM_OPP
--	select REGULATOR
--
--	default m
-+	select GENERIC_CPUFREQ_CPU0
- 	help
--	  This adds the CPUFreq driver for Calxeda Highbank SoC
--	  based boards.
-+	  This adds the CPUFreq driver for Calxeda based SoCs.
+ endmenu
  
- 	  If in doubt, say N.
++menu "Power management options"
++
++source "kernel/power/Kconfig"
++
++source "drivers/cpufreq/Kconfig"
++
++endmenu
++
+ source "net/Kconfig"
+ 
+ source "drivers/Kconfig"
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 38093e2..e26fdcd 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -195,7 +195,7 @@ source "drivers/cpufreq/Kconfig.x86"
+ endmenu
+ 
+ menu "ARM CPU frequency scaling drivers"
+-depends on ARM
++depends on ARM || ARM64
+ source "drivers/cpufreq/Kconfig.arm"
+ endmenu
  
 -- 
 1.8.3.2
