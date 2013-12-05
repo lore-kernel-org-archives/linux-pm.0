@@ -1,49 +1,29 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
 Subject: Re: [REPOST PATCH V2] irq: enable all irqs unconditionally in irq_resume
-Date: Thu, 5 Dec 2013 16:19:05 +0530
-Message-ID: <52A05A21.5070100@nvidia.com>
-References: <1385388587-16442-1-git-send-email-ldewangan@nvidia.com>
+Date: Thu, 5 Dec 2013 12:01:58 +0100
+Message-ID: <201312051201.59284.heiko@sntech.de>
+References: <1385388587-16442-1-git-send-email-ldewangan@nvidia.com> <52A05A21.5070100@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:3335 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754889Ab3LEKyn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2013 05:54:43 -0500
-In-Reply-To: <1385388587-16442-1-git-send-email-ldewangan@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52A05A21.5070100@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "heiko@sntech.de" <heiko@sntech.de>, "pavel@ucw.cz" <pavel@ucw.cz>, Stephen Warren <swarren@wwwdotorg.org>"Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, Stephen Warren <swarren@wwwdotorg.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Thomas,
+Hi Laxman,
 
-On Monday 25 November 2013 07:39 PM, Laxman Dewangan wrote:
-> When system enters into suspend, it disable all irqs in single
-> function call. This disables EARLY_RESUME irqs also along with
-> normal irqs.
->
-> The EARLY_RESUME irqs get enabled in sys_core_ops->resume and
-> non-EARLY_RESUME irqs get enabled in normal system resume path.
->
-> When suspend_noirq failed or suspend is aborted for any reason,
-> the EARLY_RESUME irqs do not get enabled as sys_core_ops->resume()
-> call did not happen. It only enables the non-EARLY_RESUME irqs in normal
-> disable for remaining life of system.
->
-> Enable all irqs unconditionally in normal irq_resume() regardless of
-> EARLY_RESUME irqs have been already enabled or not.
->
-> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
-> Acked-by-and-tested-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> Acked-by: Heiko Stuebner <heiko@sntech.de>
-> Reviewed-by: Pavel Machek <pavel@ucw.cz>
->
+Am Donnerstag, 5. Dezember 2013, 11:49:05 schrieb Laxman Dewangan:
+> Can you please review this patch?
+> This patch is pending from long back for review.
 
-Can you please review this patch?
-This patch is pending from long back for review.
+the patch already made it into the appropriate tree, as can be seen by tip-bot
+message and on [0].
 
-Thanks,
-Laxman
 
+Heiko
+
+[0] http://git.kernel.org/cgit/linux/kernel/git/tip/tip.git/commit/?h=irq-urgent-for-linus&id=ac01810c9d2814238f08a227062e66a35a0e1ea2
