@@ -1,13 +1,18 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] cpufreq: enable ARM drivers on arm64
-Date: Thu, 5 Dec 2013 18:16:06 +0000
-Message-ID: <20131205181606.GY29268@sirena.org.uk>
-References: <1386202994-30784-1-git-send-email-robherring2@gmail.com>
- <1386202994-30784-2-git-send-email-robherring2@gmail.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v4 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
+Date: Thu, 5 Dec 2013 18:23:42 +0000
+Message-ID: <20131205182342.GR29200@e106331-lin.cambridge.arm.com>
+References: <1386166641-7567-1-git-send-email-andrew@lunn.ch>
+ <1386166641-7567-2-git-send-email-andrew@lunn.ch>
+ <20131204145413.GD29200@e106331-lin.cambridge.arm.com>
+ <20131204152726.GC8062@lunn.ch>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4646470604206560882=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1386202994-30784-2-git-send-email-robherring2@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20131204152726.GC8062@lunn.ch>
+Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,68 +22,73 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Dec 04, 2013 at 03:27:26PM +0000, Andrew Lunn wrote:
 
---===============4646470604206560882==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yQ6PUHtvLgXN2OhJ"
-Content-Disposition: inline
+[...]
+  
+> > > +
+> > > +	cpu_dev = get_cpu_device(0);
+> > > +
+> > > +	priv.cpu_clk = devm_clk_get(cpu_dev, "cpu_clk");
+> > > +	if (IS_ERR(priv.cpu_clk)) {
+> > > +		err = PTR_ERR(priv.cpu_clk);
+> > > +		goto out;
+> > > +	}
+> > 
+> > I think it would be better to describe the clocks as being fed to the
+> > PMU than directly to the CPU -- the PMU selects the appropriate clock
+> > and feeds it to the CPU.
+> 
+> The wording in the data sheet is not very clear:
+> 
+>     The PMU initiates new clock ratio values for the CPU subsystem
+>     clocks generation unit.
+> 
+> So to me, the PMU is not the clock consumer, it just controls the
+> clock generation unit. There is also a block diagram which shows the
+> "CPU Subsystem ClockGen" as being external to the PMU.
 
+Hmm. That's somewhat arguable.
 
---yQ6PUHtvLgXN2OhJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>From a block diagram I've found, the situation seems more like the
+ClockGen takes two clocks as input, and feeds the appropriate clock to
+the CPU. Logically, the CPU itself is a consumer of one clock.
 
-On Wed, Dec 04, 2013 at 06:23:13PM -0600, Rob Herring wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
->=20
-> Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
-> drivers. The power menu is needed for OPP support. At least on Calxeda
-> systems, the same cpufreq driver is used for arm and arm64 based
-> systems.
+The ClockGen unit is controlled by a clock manager. The clock manager
+appears to be a component of the PMU itself, but I may have
+misunderstood. If that is the case, and the CPU Subsytem ClockGen is not
+controlled by anything else, then I don't see the problem with grouping
+that together logically with the clock manager (and therefore the PMU).
+That would imply describing the clock inputs on the PMU is fine.
 
-If this needs any revisions (I'd be surprised but...) can you please
-keep me on the CCs?  I intend to pull this into LSK if that's OK since I
-was about to do roughly the same thing for it and upstream the result.
+Have I missed something?
 
---yQ6PUHtvLgXN2OhJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+One thing I'm worried about is adding lots of SoC-specific variations on
+data to generic nodes rather than doing that in a uniform fashion. I
+believe describing the clocks in the way you propose clashes with the
+cpufreq-cpu0 way of doing things (whereby the CPU has one clock input).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+If the ClockGen were modelled as a mux that allows switching between two
+rates, then that would make the description more uniform.
 
-iQIcBAEBAgAGBQJSoMLjAAoJELSic+t+oim9VRMP/3QLSg70vtKAWvb9Fcbqn5xy
-GRwsUuIwlcGT0YZ/H/9RhTvikNkjkU1qu2twLM9XLA7ptA8lof/ATzWLe2EBXQHr
-EpfD65IZU10LtiCNXfecfF5DU6HP7XhQt7taqYofMCdny1U6s/xNYZGBqxWSieWl
-TKzCM/bUCyODE4SIE8YsEutnzszReXFZoQKOmIOsKfqzJzizH7cPiFR7mBDwYxlU
-f2KhH5bleAwPx21JHfRruB1R6pQz1cHRav0F2bnWQDLmjXtiijTVLse8iiIWfOd9
-g6Xe+suVknKoOCz1j/eckgqy8mrnm8dfPmqr8ftpvjGnSHIoeJ621YdhEUTL+96Q
-MsSzbaoj1kQF8hUyeulNVtTQj4NrNL+ccZNFK7OEenMICeuJQJehQSYC1MThGRt9
-AH/8Z3MGYk2rALEfPZuHDUNXeB4Fhc4TiWdeMrIYJHQePDmzbSxsoYth1J92yNjh
-4lKv2eSwfPmn6xNfcKma218fqSOzYYnY7D25ILoOr9U34psqbUanollla8mlvd2H
-CQjJ7PjclACDAdx+XXxqaSQ1oF/0chO0gD8qfPFdN10fQu9ocGsSwgcNLTEyllgh
-U32IXRy4+I9cklyS5JK8rprOFy5OUJAwVmAxqfUlMvidrWYal0Pdh4FdH+XDmuX0
-fpFSbeqHbh0QNeh556fA
-=dXXF
------END PGP SIGNATURE-----
+>  
+> > Also, the clocks could be named better with respect to their logical
+> > function. One is the high-frequency default, and the other is a
+> > low-frequency option. They're both able to feed the CPU, and the fact
+> > that one also feeds the DDR isn't relevant to the CPU.
+> 
+> The data sheet uses the terms Turbo Speed and Slow Speed modes. So i
+> could call them turbo and slow? However, the current names follow the
+> kirkwood cpufreq driver. It also can swap between a fast clock and the
+> DDR clock. So i thought keeping the drivers similar would help with
+> the maintenance burden. 
 
---yQ6PUHtvLgXN2OhJ--
+I think given the above, the changes I'm asking for would already
+involve sufficient changes to make this concern irrelevant. However, I
+don't want to force an unmaintainable change.
 
-
---===============4646470604206560882==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============4646470604206560882==--
+Mark.
