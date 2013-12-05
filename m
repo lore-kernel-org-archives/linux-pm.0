@@ -1,51 +1,51 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH v4 2/4] mvebu: Dove: Instantiate cpufreq driver.
-Date: Thu, 5 Dec 2013 19:29:39 +0100
-Message-ID: <20131205182939.GB19067@lunn.ch>
-References: <1386166641-7567-1-git-send-email-andrew@lunn.ch>
- <1386166641-7567-3-git-send-email-andrew@lunn.ch>
- <20131204143628.GB29200@e106331-lin.cambridge.arm.com>
- <20131204150228.GB8062@lunn.ch>
- <20131205175434.GQ29200@e106331-lin.cambridge.arm.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH 1/2] cpufreq: enable ARM drivers on arm64
+Date: Thu, 05 Dec 2013 14:03:52 -0600
+Message-ID: <52A0DC28.1040001@gmail.com>
+References: <1386202994-30784-1-git-send-email-robherring2@gmail.com> <1386202994-30784-2-git-send-email-robherring2@gmail.com> <20131205181606.GY29268@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:57511 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932402Ab3LES3u (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 5 Dec 2013 13:29:50 -0500
-Content-Disposition: inline
-In-Reply-To: <20131205175434.GQ29200@e106331-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20131205181606.GY29268@sirena.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-> I'm not arguing for describing a pseudo-device. The power management
-> unit is a real device. If we used that to register a cpufreq driver, it
-> doesn't mean that we've registered a pseudo-device, but rather that we
-> made a decision to register the cpufreq portions based on the necessary
-> real devices being present.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Hi Mark
+On 12/05/2013 12:16 PM, Mark Brown wrote:
+> On Wed, Dec 04, 2013 at 06:23:13PM -0600, Rob Herring wrote:
+>> From: Rob Herring <rob.herring@calxeda.com>
+>> 
+>> Enable cpufreq and power kconfig menus on arm64 along with arm
+>> cpufreq drivers. The power menu is needed for OPP support. At
+>> least on Calxeda systems, the same cpufreq driver is used for arm
+>> and arm64 based systems.
+> 
+> If this needs any revisions (I'd be surprised but...) can you
+> please keep me on the CCs?  I intend to pull this into LSK if
+> that's OK since I was about to do roughly the same thing for it and
+> upstream the result.
 
-I need a more concrete explanation to understand what you mean.
+Will do, but I'm surprised we're at the point on arm64 of needing LSK.
+There's a couple of subsystems that need enabling. I've posted EDAC
+patches (need to send v3). cpuidle is another. Probably some more I
+haven't looked at.
 
-Are you suggesting that i add a drivers/pmu/dove.c, which gets
-instantiated by DT? This driver would then instantiate the cpufreq
-driver? If so, it should also instantiate the gated clocks in
-drivers/clk/mvebu/dove.c, since they are also part of the PMU,
-according to the data sheet.  The RTC and the thermal management unit
-are also part of the PMU. Should these drivers also be instantiated by
-the PMU somehow?
+Rob
 
-> Perhaps this was the problem with the proposed kirkwood binding?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-Kirkwood does not have a PMU, at least not according to the data
-sheet. There are registers to control cpuidle, cpufreq, gating some
-clocks, the exact same RTC and a somewhat similar thermal
-sensor. However the data sheet makes no reference as to calling the
-collection the "PMU".
-
-   Thanks
-      Andrew	   
+iQEcBAEBAgAGBQJSoNwoAAoJEMhvYp4jgsXiZmMH/0h6Zubjcqhkrx/UGYa47j7r
+EU0stg3/sJvyNGlo+jDV7ljEEtHVmJyxINORDFCGBlYLnsVisYLY9Q+YRZH7PSrJ
+O7eloK2LdceYabpoe0QFBXuB+VQ5uUiVH5ts9I3JLp3bxvBwjjM6rsYdKHwx4VHp
+IAkCgRZZAC9WLi+F4vteC9oh+S5UoXIKpTr1ei/y21czZ6Gw8tGhrGX4fc3IcFSy
+4OPFb41/RQkJL5U4KCRUrMS+8wOmJy3rLcTvjxXz85b5ht9+i01AUt6yN9mwGrjp
+a/Y5pFzADIXvhlJDYt4KBK+xgYyL6keWSc2cQyW08MhyNRjr2qXzOaw3qb3VvhI=
+=SJ+q
+-----END PGP SIGNATURE-----
