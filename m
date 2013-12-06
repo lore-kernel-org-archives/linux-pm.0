@@ -1,106 +1,101 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [GIT PULL] Power management fixes for v3.13-rc3
-Date: Fri, 06 Dec 2013 03:13:46 +0100
-Message-ID: <2062235.VIUAclBWFD@vostro.rjw.lan>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Fri, 06 Dec 2013 10:53:16 +0530
+Message-ID: <52A15F44.1030807@linux.vnet.ibm.com>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <878uvzyecg.fsf@nemi.mork.no> <52A0746F.9010705@linux.vnet.ibm.com> <1505413.a13oF758Fd@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53075 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753086Ab3LFCAv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2013 21:00:51 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1505413.a13oF758Fd@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Linus,
-
-Please pull from the git repository at
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-=
-3.13-rc3
-
-to receive power management fixes for v3.13-rc3 with
-top-most commit 8e7030097e9f3ea8031e8cc4230e357cb556f8f9
-
-  Merge branches 'pm-epoll', 'pnp' and 'powercap'
-
-on top of commit dc1ccc48159d63eca5089e507c82c7d22ef60839
-
-  Linux 3.13-rc2
-
-These fix two regressions introduced in 3.12 (in cpufreq and PNP core),
-fix up the new power capping framework and recent changes in intel_idle
-and cpufreq, and fix a couple of older bugs.
-
-Specifics:
-
- - cpufreq regression fix from Bj=C3=B8rn Mork restoring the pre-3.12
-   behavior of the framework during system suspend/hibernation to
-   avoid garbage sysfs files from being left behind in case of a
-   suspend error.
-
- - PNP regression fix to restore the correct states of devices after
-   resume from hibernation broken in 3.12.  From Dmitry Torokhov.
-
- - cpuidle fix to prevent cpuidle device unregistration from crashing=20
-   due to a NULL pointer dereference if cpuidle has been disabled
-   from the kernel command line.  From Konrad Rzeszutek Wilk.
-
- - intel_idle fix for the C6 state definition on Intel Avoton/Rangeley
-   processors from Arne Bockholdt.
-
- - Power capping framework fix to make the energy_uj sysfs attribute
-   work in accordance with the documentation.  From Srinivas Pandruvada=
+On 12/06/2013 03:59 AM, Rafael J. Wysocki wrote:
+> On Thursday, December 05, 2013 06:11:19 PM Srivatsa S. Bhat wrote:
+>> On 12/05/2013 12:27 PM, Bj=C3=B8rn Mork wrote:
+>>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>>>
+>>>> Sending from phone.. html.. so left list.
+>>>>
+>>>> Here is the old thread where we discussed this.. see if this helps=
+=2E.
+>>>>
+>>>> http://marc.info/?t=3D136845016900003&r=3D1&w=3D2
+>>>
+>>> Thanks.  That helped a lot.
+>>>
+>>> Unless I miss something, it looks like the permission problem *star=
+ted*
+>>> with fallout from special suspend code - surprising the user by not
+>>> creating any offline/online event on suspend/resume.  Quoting from
+>>> http://marc.info/?l=3Dlinux-pm&m=3D136847781510358 :
+>>>
+>>>   (And yes, even code-wise, we use a slightly different
+>>>    path in the S3 code, to initiate hotplug. That's why the uevents
+>>>    are by-passed.)
+>>>
+>>
+>> I hope you didn't miss the main idea I was trying to convey in that
+>> reply:=20
+>> "IMHO, using CPU hotplug (offline/online of CPUs) in the S3 path is
+>> supposed to be totally internal to the suspend/resume code. It is no=
+t
+>> intended for userspace to know that we are internally offlining/
+>> onlining CPUs."
+>=20
+> By the way, in the meantime I discussed this with Viresh in the conte=
+xt of
+> a different (although related) fix and I suggested a different approa=
+ch.
+>=20
+> Namely, to split the CPU offline/online code into "core" and "add-ons=
+"
+> parts, where the core part will do just whatever is needed to offline=
+/online
+> CPU cores cleanly and the "add-ons" part will carry out the rest (e.g=
 =2E
+> removal/addition of sysfs attributes and so on).
+>=20
+> Then, the system suspend/resume code path will only run the "core" pa=
+rt
+> and whatever else CPU handling is needed during suspend/resume will b=
+e
+> carried out by the device suspend/resume code (via driver callbacks o=
+r
+> stuff similar to cpufreq_suspend() and cpufreq_resume() recently prop=
+osed
+> by Viresh).
+>=20
+> In turn, the "runtime" CPU offline/online will carry out both the cor=
+e
+> and the add-ons parts as it does today.
+>=20
+> In my view this should address the problems we have with sysfs attrib=
+utes,
+> governors start/stop etc. during system suspend/resume.
+>=20
 
- - epoll fix to make it ignore the EPOLLWAKEUP flag if the kernel has
-   been compiled with CONFIG_PM_SLEEP unset (in which case that flag
-   should not have any effect).  From Amit Pundir.
+Hmm, yes that sounds like a good idea. Are you suggesting this "core" a=
+nd
+"add-on" split only for the cpufreq parts of CPU hotplug or for everyth=
+ing
+involved in CPU hotplug code? IIUC you are suggesting the latter, which=
+ is
+likely to be a significant undertaking, but very well worth it in the l=
+ong
+run, since it gives us an elegant solution for all these problems.
 
- - cpufreq fix to prevent governor sysfs files from being lost over
-   system suspend/resume in some (arguably unusual) situations.  From
-   Viresh Kumar.
+I guess the *_FROZEN CPU hotplug notifications were originally introduc=
+ed
+to provide us an infrastructure to do something like this, but obviousl=
+y
+that hasn't worked out very well. So I agree that a fundamental restruc=
+turing
+is in order, to cure all the innumerable problems.
 
-Thanks!
-
-
----------------
-
-Amit Pundir (1):
-      epoll: drop EPOLLWAKEUP if PM_SLEEP is disabled
-
-Bj=C3=B8rn Mork (1):
-      cpufreq: fix garbage kobjects on errors during suspend/resume
-
-Bockholdt Arne (1):
-      intel_idle: Fixed C6 state on Avoton/Rangeley processors
-
-Dmitry Torokhov (1):
-      PNP: fix restoring devices after hibernation
-
-Konrad Rzeszutek Wilk (1):
-      cpuidle: Check for dev before deregistering it.
-
-Srinivas Pandruvada (1):
-      PowerCap: Fix mode for energy counter
-
-Viresh Kumar (1):
-      cpufreq: suspend governors on system suspend/hibernate
-
----------------
-
- drivers/base/power/main.c       |    3 +++
- drivers/cpufreq/cpufreq.c       |   46 +++++++++++++++++++++++++++++++=
-+++++---
- drivers/cpuidle/cpuidle.c       |    2 +-
- drivers/idle/intel_idle.c       |    4 ++--
- drivers/pnp/driver.c            |   12 +++++++++-
- drivers/powercap/powercap_sys.c |    7 +++++-
- fs/eventpoll.c                  |    3 +--
- include/linux/cpufreq.h         |    8 +++++++
- include/uapi/linux/eventpoll.h  |   13 ++++++++++-
- 9 files changed, 87 insertions(+), 11 deletions(-)
+Regards,
+Srivatsa S. Bhat
 
