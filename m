@@ -1,40 +1,106 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/5] PM: Enable option of re-use runtime PM callbacks
- at system suspend
-Date: Fri, 6 Dec 2013 01:53:19 +0100
-Message-ID: <20131206005318.GB27953@amd.pavel.ucw.cz>
-References: <CAJvTdKnqD3ccPUzh7kNMNqrEYFfD93Vh9hgFuKyHz+pjGNHdtA@mail.gmail.com>
- <Pine.LNX.4.44L0.1312051720330.869-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [GIT PULL] Power management fixes for v3.13-rc3
+Date: Fri, 06 Dec 2013 03:13:46 +0100
+Message-ID: <2062235.VIUAclBWFD@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52669 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956Ab3LFAxU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2013 19:53:20 -0500
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1312051720330.869-100000@iolanthe.rowland.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53075 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753086Ab3LFCAv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2013 21:00:51 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <lenb@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu 2013-12-05 17:21:50, Alan Stern wrote:
-> On Thu, 5 Dec 2013, Len Brown wrote:
-> 
-> > This thread raises the question...
-> > 
-> > Do we still need to have PM_RUNTIME apart from PM_SLEEP?
-> > 
-> > What is the benefit of being able to build-in one one without the other?
-> > If that benefit is not significant, perhaps the time has come to
-> > replace them both with CONFIG_PM...
-> 
-> There are lots of embedded/SoC platforms that implement PM_RUNTIME but
-> not PM_SLEEP.
+Hi Linus,
 
-And lots of PCs where PM_SLEEP is useful but PM_RUNTIME is not :-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Please pull from the git repository at
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-=
+3.13-rc3
+
+to receive power management fixes for v3.13-rc3 with
+top-most commit 8e7030097e9f3ea8031e8cc4230e357cb556f8f9
+
+  Merge branches 'pm-epoll', 'pnp' and 'powercap'
+
+on top of commit dc1ccc48159d63eca5089e507c82c7d22ef60839
+
+  Linux 3.13-rc2
+
+These fix two regressions introduced in 3.12 (in cpufreq and PNP core),
+fix up the new power capping framework and recent changes in intel_idle
+and cpufreq, and fix a couple of older bugs.
+
+Specifics:
+
+ - cpufreq regression fix from Bj=C3=B8rn Mork restoring the pre-3.12
+   behavior of the framework during system suspend/hibernation to
+   avoid garbage sysfs files from being left behind in case of a
+   suspend error.
+
+ - PNP regression fix to restore the correct states of devices after
+   resume from hibernation broken in 3.12.  From Dmitry Torokhov.
+
+ - cpuidle fix to prevent cpuidle device unregistration from crashing=20
+   due to a NULL pointer dereference if cpuidle has been disabled
+   from the kernel command line.  From Konrad Rzeszutek Wilk.
+
+ - intel_idle fix for the C6 state definition on Intel Avoton/Rangeley
+   processors from Arne Bockholdt.
+
+ - Power capping framework fix to make the energy_uj sysfs attribute
+   work in accordance with the documentation.  From Srinivas Pandruvada=
+=2E
+
+ - epoll fix to make it ignore the EPOLLWAKEUP flag if the kernel has
+   been compiled with CONFIG_PM_SLEEP unset (in which case that flag
+   should not have any effect).  From Amit Pundir.
+
+ - cpufreq fix to prevent governor sysfs files from being lost over
+   system suspend/resume in some (arguably unusual) situations.  From
+   Viresh Kumar.
+
+Thanks!
+
+
+---------------
+
+Amit Pundir (1):
+      epoll: drop EPOLLWAKEUP if PM_SLEEP is disabled
+
+Bj=C3=B8rn Mork (1):
+      cpufreq: fix garbage kobjects on errors during suspend/resume
+
+Bockholdt Arne (1):
+      intel_idle: Fixed C6 state on Avoton/Rangeley processors
+
+Dmitry Torokhov (1):
+      PNP: fix restoring devices after hibernation
+
+Konrad Rzeszutek Wilk (1):
+      cpuidle: Check for dev before deregistering it.
+
+Srinivas Pandruvada (1):
+      PowerCap: Fix mode for energy counter
+
+Viresh Kumar (1):
+      cpufreq: suspend governors on system suspend/hibernate
+
+---------------
+
+ drivers/base/power/main.c       |    3 +++
+ drivers/cpufreq/cpufreq.c       |   46 +++++++++++++++++++++++++++++++=
++++++---
+ drivers/cpuidle/cpuidle.c       |    2 +-
+ drivers/idle/intel_idle.c       |    4 ++--
+ drivers/pnp/driver.c            |   12 +++++++++-
+ drivers/powercap/powercap_sys.c |    7 +++++-
+ fs/eventpoll.c                  |    3 +--
+ include/linux/cpufreq.h         |    8 +++++++
+ include/uapi/linux/eventpoll.h  |   13 ++++++++++-
+ 9 files changed, 87 insertions(+), 11 deletions(-)
+
