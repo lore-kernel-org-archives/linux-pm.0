@@ -1,88 +1,40 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v3 2/2] cpufreq: tegra: Re-model Tegra cpufreq driver
-Date: Thu, 05 Dec 2013 16:04:33 -0700
-Message-ID: <52A10681.4050906@wwwdotorg.org>
-References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com> <1386229462-3474-3-git-send-email-bilhuang@nvidia.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/5] PM: Enable option of re-use runtime PM callbacks
+ at system suspend
+Date: Fri, 6 Dec 2013 01:53:19 +0100
+Message-ID: <20131206005318.GB27953@amd.pavel.ucw.cz>
+References: <CAJvTdKnqD3ccPUzh7kNMNqrEYFfD93Vh9hgFuKyHz+pjGNHdtA@mail.gmail.com>
+ <Pine.LNX.4.44L0.1312051720330.869-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1386229462-3474-3-git-send-email-bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52669 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752956Ab3LFAxU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2013 19:53:20 -0500
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1312051720330.869-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <lenb@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
-On 12/05/2013 12:44 AM, Bill Huang wrote:
-> Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
+On Thu 2013-12-05 17:21:50, Alan Stern wrote:
+> On Thu, 5 Dec 2013, Len Brown wrote:
 > 
-> * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
-> * Move Tegra20 specific codes into tegra20-cpufreq.c.
-> * Bind Tegra cpufreq dirver with a fake device so defer probe would work
->   when we're going to get regulator in the driver to support voltage
->   scaling (DVFS).
+> > This thread raises the question...
+> > 
+> > Do we still need to have PM_RUNTIME apart from PM_SLEEP?
+> > 
+> > What is the benefit of being able to build-in one one without the other?
+> > If that benefit is not significant, perhaps the time has come to
+> > replace them both with CONFIG_PM...
+> 
+> There are lots of embedded/SoC platforms that implement PM_RUNTIME but
+> not PM_SLEEP.
 
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-
-> @@ -91,14 +40,10 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
-...
-> +	if (soc_config->vote_emc_on_cpu_rate)
-> +		soc_config->vote_emc_on_cpu_rate(rate);
-> +
-> +	ret = soc_config->cpu_clk_set_rate(rate * 1000);
->  	if (ret)
->  		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
->  			rate);
-
-Is there any/much shared code left in this file after this patch? It
-seems like all this file does now is make each cpufreq callback function
-call soc_config->the_same_function_name(). If so, wouldn't it be better
-to simply implement completely separate tegar20-cpufreq and
-tegra30-cpufreq drivers, and register them each directly with the
-cpufreq core, to avoid this file doing all the indirection?
-
-
-> -int __init tegra_cpufreq_init(void)
-> +static struct {
-> +	char *compat;
-> +	int (*init)(struct tegra_cpufreq_data *,
-> +			const struct tegra_cpufreq_config **);
-> +} tegra_init_funcs[] = {
-> +	{ "nvidia,tegra20", tegra20_cpufreq_init },
-> +};
-> +
-> +static int tegra_cpufreq_probe(struct platform_device *pdev)
-...
-> +	for (i = 0; i < ARRAY_SIZE(tegra_init_funcs); i++) {
-> +		if (of_machine_is_compatible(tegra_init_funcs[i].compat)) {
-> +			ret = tegra_init_funcs[i].init(tegra_data, &soc_config);
-> +			if (!ret)
-> +				break;
-> +			else
-> +				goto out;
-> +		}
->  	}
-> +	if (i == ARRAY_SIZE(tegra_init_funcs))
-> +		goto out;
-
-I think there are better ways of doing this than open-coding it. Perhaps
-of_match_device() or the platform-driver equivalent could be made to work?
-
-> +int __init tegra_cpufreq_init(void)
-> +{
-> +	struct platform_device_info devinfo = { .name = "tegra-cpufreq", };
-> +
-> +	platform_device_register_full(&devinfo);
-> +
-> +	return 0;
->  }
->  EXPORT_SYMBOL(tegra_cpufreq_init);
-
-Perhaps instead of hard-coding the name "tegra-cpufreq" here, you could
-dynamically construct the device name based on the DT's root compatible
-value, register "${root_compatible}-cpufreq", e.g.
-"nvidia,tegra20-cpufreq" or "nvidia,tegra30-cpufreq". That would allow
-the kernel's standard device/driver matching mechanism to pick the
-correct driver to instantiate. Perhaps you could even dynamically
-register an OF device so that you can use of_match_device() in probe, if
-there's some advantage of having a single driver that supports N chips.
+And lots of PCs where PM_SLEEP is useful but PM_RUNTIME is not :-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
