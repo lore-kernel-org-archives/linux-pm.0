@@ -1,158 +1,121 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
-Date: Fri, 6 Dec 2013 15:54:34 +0100
-Message-ID: <CAKfTPtAczqubAGFjEqLev2g-iLYKifr_1P3pUHf2zbhdPObA7Q@mail.gmail.com>
-References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
- <20131204152010.GC2323@e103592.cambridge.arm.com> <20131204170623.GB26534@e102568-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Sat, 07 Dec 2013 02:17:50 +0100
+Message-ID: <7074288.NJO5GpSg1d@vostro.rjw.lan>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <1505413.a13oF758Fd@vostro.rjw.lan> <52A15F44.1030807@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:55736 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758507Ab3LFOy5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Dec 2013 09:54:57 -0500
-Received: by mail-oa0-f54.google.com with SMTP id h16so872746oag.41
-        for <linux-pm@vger.kernel.org>; Fri, 06 Dec 2013 06:54:56 -0800 (PST)
-In-Reply-To: <20131204170623.GB26534@e102568-lin.cambridge.arm.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:53179 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757757Ab3LGBEt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Dec 2013 20:04:49 -0500
+In-Reply-To: <52A15F44.1030807@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Dave Martin <Dave.Martin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Amit Kucheria <amit.kucheria@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Nicolas Pitre <nico@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Hanjun Guo <hanjun.guo@linaro.org>, Mark Hambleton <mark.hambleton@broadcom.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-On 4 December 2013 18:06, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> On Wed, Dec 04, 2013 at 03:20:10PM +0000, Dave Martin wrote:
->> On Mon, Dec 02, 2013 at 04:20:05PM +0000, Lorenzo Pieralisi wrote:
->> > ARM based platforms implement a variety of power management schemes that
->> > allow processors to enter at run-time low-power states, aka C-states
->> > in ACPI jargon. The parameters defining these C-states vary on a per-platform
->> > basis forcing the OS to hardcode the state parameters in platform
->> > specific static tables whose size grows as the number of platforms supported
->> > in the kernel increases and hampers device drivers standardization.
->> >
->> > Therefore, this patch aims at standardizing C-state device tree bindings for
->> > ARM platforms. Bindings define C-state parameters inclusive of entry methods
->> > and state latencies, to allow operating systems to retrieve the
->> > configuration entries from the device tree and initialize the related
->> > power management drivers, paving the way for common code in the kernel
->> > to deal with power states and removing the need for static data in current
->> > and previous kernel versions.
->> >
->> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->> > +
->>
->> [...]
->>
->> > +   - cpus
->>
->> Because cpus is really a topology subtree, it might be good to have
->> different names.
->>
->> To avoid confusion with Mark's affinity properties, maybe a different
->> word would be preferable instead of "affinity".
->>
->> Maybe "topology" instead of "cpus", and "affected-topology" instead of
->> "affinity"?
->>
->>
->> cpufreq also has its concepts of "related" and "affected" cpus, which
->> tries to describe something similar (in all honesty, I always struggle
->> to remember which is which ... but if we were consistent with it, that
->> might help).
->
-> Yes, I will try to come up with something clearer.
->
->> > +           Usage: Optional
->> > +           Value type: <phandle>
->> > +           Definition: If defined, the phandle points to a node in the
->> > +                       cpu-map[2] representing all CPUs on which C-state
->> > +                       is valid. If not present or system is UP, the
->> > +                       C-state has to be considered valid for all CPUs in
->> > +                       the system.
->> > +
->> > +   - affinity
->> > +           Usage: Optional
->> > +           Value type: <phandle>
->> > +           Definition: If defined, phandle points to a node in the
->> > +                       cpu-map[2] that represents all CPUs that are
->> > +                       affected (ie share) by the C-state and have to
->> > +                       be coordinated on C-state entry/exit. If not
->> > +                       present or system is UP, the C-state is local to
->> > +                       a CPU and need no coordination (ie it is a CPU
->> > +                       state, that does not require coordination with
->> > +                       other CPUs). If present, the affinity property
->> > +                       must contain a phandle to a cpu-map node that
->> > +                       represents a subset, possibly inclusive of the
->> > +                       CPUs described through the cpus property.
->>
->> Can you elaborate on how cpus and affinity might be different?
->
-> I was referring to:
->
-> - cpus -> processor type (eg valid on A15 or A7, or different implementations
->   of the same processor in the same chip)
-> - affinity -> power domain (a subset of the cpus that require coordination)
->
-> Nowadays the distinction does not make much sense (I hardly see a power
-> state valid on eg A15 clusters [cpus], where just a subset of its cpus need to
-> be coordinated [affinity] - might be if other levels of caches are added or
-> if you have multiple clusters of the same CPU type with different power
-> states capabilities).
+On Friday, December 06, 2013 10:53:16 AM Srivatsa S. Bhat wrote:
+> On 12/06/2013 03:59 AM, Rafael J. Wysocki wrote:
+> > On Thursday, December 05, 2013 06:11:19 PM Srivatsa S. Bhat wrote:
+> >> On 12/05/2013 12:27 PM, Bj=C3=B8rn Mork wrote:
+> >>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+> >>>
+> >>>> Sending from phone.. html.. so left list.
+> >>>>
+> >>>> Here is the old thread where we discussed this.. see if this hel=
+ps..
+> >>>>
+> >>>> http://marc.info/?t=3D136845016900003&r=3D1&w=3D2
+> >>>
+> >>> Thanks.  That helped a lot.
+> >>>
+> >>> Unless I miss something, it looks like the permission problem *st=
+arted*
+> >>> with fallout from special suspend code - surprising the user by n=
+ot
+> >>> creating any offline/online event on suspend/resume.  Quoting fro=
+m
+> >>> http://marc.info/?l=3Dlinux-pm&m=3D136847781510358 :
+> >>>
+> >>>   (And yes, even code-wise, we use a slightly different
+> >>>    path in the S3 code, to initiate hotplug. That's why the ueven=
+ts
+> >>>    are by-passed.)
+> >>>
+> >>
+> >> I hope you didn't miss the main idea I was trying to convey in tha=
+t
+> >> reply:=20
+> >> "IMHO, using CPU hotplug (offline/online of CPUs) in the S3 path i=
+s
+> >> supposed to be totally internal to the suspend/resume code. It is =
+not
+> >> intended for userspace to know that we are internally offlining/
+> >> onlining CPUs."
+> >=20
+> > By the way, in the meantime I discussed this with Viresh in the con=
+text of
+> > a different (although related) fix and I suggested a different appr=
+oach.
+> >=20
+> > Namely, to split the CPU offline/online code into "core" and "add-o=
+ns"
+> > parts, where the core part will do just whatever is needed to offli=
+ne/online
+> > CPU cores cleanly and the "add-ons" part will carry out the rest (e=
+=2Eg.
+> > removal/addition of sysfs attributes and so on).
+> >=20
+> > Then, the system suspend/resume code path will only run the "core" =
+part
+> > and whatever else CPU handling is needed during suspend/resume will=
+ be
+> > carried out by the device suspend/resume code (via driver callbacks=
+ or
+> > stuff similar to cpufreq_suspend() and cpufreq_resume() recently pr=
+oposed
+> > by Viresh).
+> >=20
+> > In turn, the "runtime" CPU offline/online will carry out both the c=
+ore
+> > and the add-ons parts as it does today.
+> >=20
+> > In my view this should address the problems we have with sysfs attr=
+ibutes,
+> > governors start/stop etc. during system suspend/resume.
+> >=20
+>=20
+> Hmm, yes that sounds like a good idea. Are you suggesting this "core"=
+ and
+> "add-on" split only for the cpufreq parts of CPU hotplug or for every=
+thing
+> involved in CPU hotplug code? IIUC you are suggesting the latter, whi=
+ch is
+> likely to be a significant undertaking, but very well worth it in the=
+ long
+> run, since it gives us an elegant solution for all these problems.
 
-Hi Lorenzo
+Yeah, and I'd like that to be done.
 
-not only linked to the cache. Be sure that you will have HW guys to
-group a subset of cores of a cluster under same powergate. Now that
-should probably be described thanks to power domain information as you
-said below
+> I guess the *_FROZEN CPU hotplug notifications were originally introd=
+uced
+> to provide us an infrastructure to do something like this, but obviou=
+sly
+> that hasn't worked out very well.
 
->
-> I think this deserves more attention, and probably adding power domain
-> information can remove this mumbo jumbo, there is a scary level of
-> duplicated information in there.
->
->> The statement about "having to be coordainted" also feels a bit vague,
->> though I'm not sure how much we can usefully say here.
->>
->> If we describe power domains more explicitly it might help with this,
->> because that could bring some description of what needs to be
->> coordinated.
->
-> Yes, see above.
->
->> > +   - power-depth
->> > +           Usage: Required
->> > +           Value type: <u32>
->> > +           Definition: Integer value, starting from 2 (value 0 meaning
->> > +                       running and value 1 representing power depth of
->> > +                       wfi (C1)), that defines the level of depth of a
->> > +                       power state.
->> > +                       The system denotes power states with different
->> > +                       depths, an increasing value meaning less power
->> > +                       consumption and might involve powering down more
->> > +                       components.  Devices that are affected by
->> > +                       C-states entry must define the maximum power
->> > +                       depth supported in their respective device tree
->> > +                       bindings so that OSPM can take decision on how
->> > +                       to handle the device in question when the C-state
->> > +                       is entered. All devices (per-CPU or external) with
->> > +                       a power depth lower than the one defined in the
->> > +                       C-state entry stop operating when the C-state
->> > +                       is entered and action is required by OSPM to
->> > +                       guarantee their logic and memory content is saved
->> > +                       restored to guarantee proper functioning.
->>
->> Any reason to use numbers instead of strings?
->>
->> Strings make the DT more readable ... we would presumably only have to
->> parse this information once, so it shouldn't be an overhead, unless there
->> are hundreds of C-state nodes.
->
-> Yes, but it is supposed to be a unique identifier in the entire system.
-> Ok, we can create a list of strings denoting power depths, as long as
-> they are "standard" fine by me, but I think that a number would be
-> easier to use, even though honestly I think it is better to use power
-> domains and get rid of this property altogether.
->
-> Lorenzo
->
+That's been a workaround to be honest.
+
+> So I agree that a fundamental restructuring is in order, to cure all =
+the
+> innumerable problems.
+
+Yes.
+
+Thanks!
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
