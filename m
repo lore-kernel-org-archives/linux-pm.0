@@ -1,55 +1,54 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH V4] cpufreq: suspend governors on system
- suspend/hibernate
-Date: Sat, 07 Dec 2013 16:24:09 +0100
-Message-ID: <1386429849.9737.7.camel@x41.thuisdomein>
-References: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org>
-	 <3057132.zHNVNQZ8pP@vostro.rjw.lan>
-	 <CAKohpondYbBeObUJJqNZLe04dmN9tLMZv9KrjzqLr2NDorRtLw@mail.gmail.com>
-	 <1781198.iCUX9ZdW7W@vostro.rjw.lan>
-	 <CAKohpomA9r5a4GkfA-Huh0ectc-hXjSxcdLkJhF6DZvL22yY4w@mail.gmail.com>
-	 <87vbz0j55p.fsf@nemi.mork.no>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
+Date: Sat, 7 Dec 2013 11:01:30 -0500
+Message-ID: <CAJvTdKkQUKFhwswK64PDNgPOMxP4s2X1GYKzWLW0G6gWxhdWtA@mail.gmail.com>
+References: <CAJvTdK=+aNN66mYpCGgbHGCHhYQAKx-vB0kJSWjVpsNb_hOAtQ@mail.gmail.com>
+	<1386405590.5673.96.camel@marge.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87vbz0j55p.fsf@nemi.mork.no>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f180.google.com ([74.125.82.180]:40179 "EHLO
+	mail-we0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754770Ab3LGQBc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Dec 2013 11:01:32 -0500
+In-Reply-To: <1386405590.5673.96.camel@marge.simpson.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Galbraith <bitbucket@online.de>
+Cc: tglx@linutronix.de, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
-On Sat, 2013-12-07 at 12:01 +0100, Bj=C3=B8rn Mork wrote:
-> Sorry to be making noise here again, but I was eager to verify that t=
-he
-> fixes in v3.13-rc3 were OK on my system.  Unfortunately it seems this
-> patch completely broke suspend for me.  Hibernete ended up with a bla=
-nk
-> console and no visible activity, without ever writing any image to di=
-sk.
->=20
-> There really weren't that many suspects between v3.13-rc2 and v3.13-r=
-c3,
-> so I went directly to reverting 5a87182aa21d ("cpufreq: suspend
-> governors on system suspend/hibernate") which fixed the problem. I
-> didn't bother debugging it further from there. I don't think there is
-> anything magic about my system which should make this problem specifi=
-c
-> to it.
->=20
-> I am still using the acpi-cpufreq driver on an old x86_64 laptop if t=
-hat
-> matters.
+On Sat, Dec 7, 2013 at 3:39 AM, Mike Galbraith <bitbucket@online.de> wrote:
+> On Sat, 2013-12-07 at 03:00 -0500, Len Brown wrote:
+>
+>> No, Linux-3.13-rc3 does not fix this issue, even though it contains
+>> the following patch, claiming to address an issue with the commit above:
+>>
+>> commit ea8117478918a4734586d35ff530721b682425be
+>> Author: Peter Zijlstra <peterz@infradead.org>
+>> Date:   Wed Sep 11 12:43:13 2013 +0200
+>>
+>>     sched, idle: Fix the idle polling state logic
+>>
+>>     Mike reported that commit 7d1a9417 ("x86: Use generic idle loop")
+>>     regressed several workloads and caused excessive reschedule
+>>     interrupts.
+>
+> It fixes that, except for my Q6600 box.  Too bad mwait_idle() went away,
+> beloved old box doesn't play hints game, so it continues to flog itself.
 
-On an x86 (32 bits) laptop hibernate also broke in v3.13-rc3. On that
-machine hibernation itself worked, or at least seemed to work, but the
-machine would basically stop after thawing (directly after loading the
-hibernation image).
+Hi Mike,
+What C-states are available on your Q6600 box?
+Is it running HALT only?
+(if so, I would expect C1 MWAIT be about the same, if it still existed)
 
-And reverting commit 5a87182aa21d ("cpufreq: suspend governors on syste=
-m
-suspend/hibernate"), on top of v3.13-rc3, also lead to a successful
-hibernation/thaw cycle.
+But I would expect the box to have deeper C-states than just C1, so...
 
+Can you show me the output of
+dmesg | grep idle
+grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
 
-Paul Bolle
+Please elaborate on exactly what symptom you see.
+Do you have a power meter?
+
+thanks,
+Len Brown, Intel Open Source Technology Center
