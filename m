@@ -1,148 +1,55 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH RFC 08/10] net: stmmac:sti: Add STi SOC glue driver.
-Date: Fri, 6 Dec 2013 19:37:57 +0100
-Message-ID: <20131206183757.GH24519@lukather>
-References: <1384264311-7308-1-git-send-email-srinivas.kandagatla@st.com>
- <1384264383-7653-1-git-send-email-srinivas.kandagatla@st.com>
- <20131129193715.GA3441@lukather>
- <529C8198.7000106@st.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH V4] cpufreq: suspend governors on system suspend/hibernate
+Date: Sat, 07 Dec 2013 12:01:54 +0100
+Message-ID: <87vbz0j55p.fsf@nemi.mork.no>
+References: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org>
+	<3057132.zHNVNQZ8pP@vostro.rjw.lan>
+	<CAKohpondYbBeObUJJqNZLe04dmN9tLMZv9KrjzqLr2NDorRtLw@mail.gmail.com>
+	<1781198.iCUX9ZdW7W@vostro.rjw.lan>
+	<CAKohpomA9r5a4GkfA-Huh0ectc-hXjSxcdLkJhF6DZvL22yY4w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dMyqICaxQaaUjrCL"
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <529C8198.7000106@st.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: srinivas kandagatla <srinivas.kandagatla@st.com>
-Cc: linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, Russell King <linux@arm.linux.org.uk>, Stuart Menefy <stuart.menefy@st.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, stephen.gallimore@st.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Grant Likely <grant.likely@linaro.org>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from canardo.mork.no ([148.122.252.1]:55366 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754878Ab3LGLC1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Dec 2013 06:02:27 -0500
+In-Reply-To: <CAKohpomA9r5a4GkfA-Huh0ectc-hXjSxcdLkJhF6DZvL22yY4w@mail.gmail.com>
+	(Viresh Kumar's message of "Fri, 29 Nov 2013 08:56:08 +0530")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+
+> On 29 November 2013 01:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrot=
+e:
+>> So I'm reading this as "the version of the patch in bleeding-edge is=
+ OK".
+>>
+>> I hope that really is the case. :-)
+>
+> Yeah, that's correct.
+
+Sorry to be making noise here again, but I was eager to verify that the
+fixes in v3.13-rc3 were OK on my system.  Unfortunately it seems this
+patch completely broke suspend for me.  Hibernete ended up with a blank
+console and no visible activity, without ever writing any image to disk=
+=2E
+
+There really weren't that many suspects between v3.13-rc2 and v3.13-rc3=
+,
+so I went directly to reverting 5a87182aa21d ("cpufreq: suspend
+governors on system suspend/hibernate") which fixed the problem. I
+didn't bother debugging it further from there. I don't think there is
+anything magic about my system which should make this problem specific
+to it.
+
+I am still using the acpi-cpufreq driver on an old x86_64 laptop if tha=
+t
+matters.
 
 
---dMyqICaxQaaUjrCL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Srinivas,
-
-On Mon, Dec 02, 2013 at 12:48:24PM +0000, srinivas kandagatla wrote:
-> Hi Maxime,
->=20
-> Thankyou for the comments.
->=20
-> On 29/11/13 19:37, Maxime Ripard wrote:
-> >> +
-> >> > +ethernet0: ethernet0{
-> >> > +	#address-cells =3D <1>;
-> >> > +	#size-cells =3D <1>;
-> >> > +	compatible		=3D "st,stih415-dwmac";
-> >> > +	reg			=3D <0x148 0x4>;
-> >> > +	resets			=3D <&softreset STIH415_ETH0_SOFTRESET>;
-> >> > +	st,syscon		=3D <&syscfg_rear>;
-> >> > +	st,tx-retime-src	=3D "clk_125";
-> >> > +	ranges;
-> >> > +
-> >> > +	dwmac0:dwmac@fe810000 {
-> >> > +		device_type 	=3D "network";
-> >> > +		compatible	=3D "snps,dwmac", "snps,dwmac-3.610";
-> >> > +		reg 		=3D <0xfe810000 0x8000>;
-> >> > +		interrupts 	=3D <0 147 0>;
-> >> > +		interrupt-names =3D "macirq";
-> >> > +		...
-> >> > +	};
-> >> > +};
-> > Sorry for stepping up so late, but I dont' think this is the right way
-> > to do it.
-> >=20
-> Not a issue.
->=20
-> > DT is to describe how the hardware is laid out in a system agnostic
-> > way, hence, it should not be impacted by the implementation details.
-> >=20
-> If "hardware is laid out" means at SoC level? Then I attempted to do
-> describe it in system agnostic way.
->=20
-> On ST SoCs "snps,dwmac" IP always has a hw glue layer on top of it.
->=20
-> > The fact that you use a glue to the dwmac driver *is* an
-> > implementation detail.
->=20
-> Glue layer described here is actually a hardware glue on ST SoCs.
-
-Ho, ok, it makes sense then :)
-
-Sorry for the noise.
-
-> > I think you'd rather have something like:
-> >=20
-> > dwmac0: ethernet@fe810000 {
-> > 	compatible		=3D "st,stih415-dwmac";
-> > 	reg 			=3D <0xfe810000 0x8000 0x148 0x4>;
-> > 	resets			=3D <&softreset STIH415_ETH0_SOFTRESET>;
-> > 	st,syscon		=3D <&syscfg_rear>;
-> > 	st,tx-retime-src	=3D "clk_125";
-> > 	interrupts 		=3D <0 147 0>;
-> > 	interrupt-names 	=3D "macirq";Am happy to go with=20
-> > 	...
-> > };
-> >=20
-> > Then, the driver can have its init functions associated to the
-> > compatible you're using, through the .data field of the of_device_id
-> > structure, and you just call it in the generic driver at probe's time.
->=20
-> This is changing the device tree bindings for the generic driver.
-> Is this something Acceptable?
-
-It really depends. As long as these are based on new compatibles, and
-you require these new properties only for this new compatible, it's
-fine most of the time.
-
-> Peppe, are you Ok with such intrusive changes to the driver?
->=20
-> I did try few things before I sent this patch,
->=20
-> 1> Doing it via AUXDATA which was discouraged by Arnd.
->=20
-> 2> Doing it the way you suggested which did not fit in very neatly,
-> which looked like lot of SOC specific changes are added to generic driver.
->=20
-> 3> Doing it as this patch, influenced by dwc3 code drivers/usb/dwc3/,
-> Which fitted in very neatly without touching the existing generic driver.
->=20
-> stmmac driver is a generic synopsis driver which ST has written the
-> driver, so I did not want to pollute this driver with ST specific glue
-> logic bindings.
-
-Yeah, I didn't know that. My apologies.
-
-Thanks,
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---dMyqICaxQaaUjrCL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSohmFAAoJEBx+YmzsjxAgOdoQALD1sk4bw2m1nD5sUeasviJK
-ho2hpWgijyP1cS9+4t7FAbY5mOc10Rxa2p40j0owP/vFGGTpSJL7t94kr8VjXDGj
-g+04Z/ooP3ljC/rjzMQ4KtLfI4USVJ98lhTsv9sswI3rt37AQ3jkayLBmzXDS1yV
-mriLLeWUk9r9DVbVyF+y7poLDAQbZNrRVR3+KcmICiq0OTZ9+2+Jp5Wfm+M40OSq
-y+0iOT5a6xad4ELW63mhDKzs+dL61FxycgsEEE2E9ygsEwLtAz4hXENUNsDBZ+yo
-z7zZUzgBpmlR8sPdIJsDEnmrg3ebMke/LTg8CigX0S9W27uGn0OzkjaVRwUYcUV1
-mouM9HOf774vl3ZVJW6Kq34xU0/WrCupLSsT3tvKWuFNCnJ5RKVeONz6I8G8rAy/
-jX52DP4DGgqdrE7TqI1mDtbL67/nD3M/9QQSNiNvfrUwBlbM0+VcJY7BnNMJpGya
-faoWLBWrQ0nwiNwDYhLYAMjSeEQcpqmqZhH4MGknZ5Q9oV/xNZjOyYwAOOS1Jl1O
-pSJ3gLz1fW+F0kemAUs3rYtIezZi29HyXe8YG0w0qakIJKl3bo3jRcb5qUcZA3lD
-4wYdto+B5uV5GcSZKS+XF9VqB8yc7SrnjEHRyUWs2977557glYUcnU9CZdUwFwP3
-q5vfPrJUel6INnPCsJXp
-=EKC6
------END PGP SIGNATURE-----
-
---dMyqICaxQaaUjrCL--
+Bj=C3=B8rn
