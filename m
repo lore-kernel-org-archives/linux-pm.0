@@ -1,57 +1,58 @@
-From: Mike Galbraith <bitbucket@online.de>
-Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Sat, 07 Dec 2013 20:17:16 +0100
-Message-ID: <1386443836.5335.38.camel@marge.simpson.net>
-References: <CAJvTdK=+aNN66mYpCGgbHGCHhYQAKx-vB0kJSWjVpsNb_hOAtQ@mail.gmail.com>
-	 <1386405590.5673.96.camel@marge.simpson.net>
-	 <CAJvTdKkQUKFhwswK64PDNgPOMxP4s2X1GYKzWLW0G6gWxhdWtA@mail.gmail.com>
-	 <CAJvTdK=9DVxY9xWCo=SSF-Rx3dFfZtkrubhtcgxxowj-rbi8LQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V4] cpufreq: suspend governors on system suspend/hibernate
+Date: Sun, 08 Dec 2013 01:34:36 +0100
+Message-ID: <3466098.C5M665z3nb@vostro.rjw.lan>
+References: <28d493f20239a242a7b26dfe1efed40d83bf1e10.1385523340.git.viresh.kumar@linaro.org> <87vbz0j55p.fsf@nemi.mork.no> <1386429849.9737.7.camel@x41.thuisdomein>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from moutng.kundenserver.de ([212.227.126.186]:64689 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754307Ab3LGTRW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Dec 2013 14:17:22 -0500
-In-Reply-To: <CAJvTdK=9DVxY9xWCo=SSF-Rx3dFfZtkrubhtcgxxowj-rbi8LQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1386429849.9737.7.camel@x41.thuisdomein>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Kgene Kim <kgene.kim@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-tegra@vger.kernel.org, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
-On Sat, 2013-12-07 at 11:45 -0500, Len Brown wrote: 
-> >> It fixes that, except for my Q6600 box.  Too bad mwait_idle() went away,
-> >> beloved old box doesn't play hints game, so it continues to flog itself.
-> 
-> 
-> Thanks for pointing this out, Mike!
-> 
-> A Q6600 is a Kentsfield.  I dug one of those up.
-> Indeed, the only idle capabilities it has are  HALT
-> and old style MWAIT, and the latter is much more effective.
-> running 3.8 it idles at 75 watts.
-> running 3.8 with idle=nomwait it idles at 100 watts,
-> which is what it will do with 3.9 and later due to the patch below.
-> 
-> commit 69fb3676df3329a7142803bb3502fa59dc0db2e3
-> Author: Len Brown <len.brown@intel.com>
-> Date:   Sun Feb 10 01:38:39 2013 -0500
-> 
->     x86 idle: remove mwait_idle() and "idle=mwait" cmdline param
-> 
-> Kentsfield proves that patch was based on a fault assumption.
-> Sweet box in its day, ECC memory and everything -- probably still
-> a fair number of them running...
-> 
-> Plus, I've found another machine that depends on having an idle=mwait
-> idle loop (A Sony Vaio BIOS SMM code apparently assumes we use it in
-> https://bugzilla.kernel.org/show_bug.cgi?id=60770)
-> 
-> So it looks like I need to (also) restore the simple idle=mwait idle loop
-> to make some machines happy.
+On Saturday, December 07, 2013 04:24:09 PM Paul Bolle wrote:
+> On Sat, 2013-12-07 at 12:01 +0100, Bj=C3=B8rn Mork wrote:
+> > Sorry to be making noise here again, but I was eager to verify that=
+ the
+> > fixes in v3.13-rc3 were OK on my system.  Unfortunately it seems th=
+is
+> > patch completely broke suspend for me.  Hibernete ended up with a b=
+lank
+> > console and no visible activity, without ever writing any image to =
+disk.
+> >=20
+> > There really weren't that many suspects between v3.13-rc2 and v3.13=
+-rc3,
+> > so I went directly to reverting 5a87182aa21d ("cpufreq: suspend
+> > governors on system suspend/hibernate") which fixed the problem. I
+> > didn't bother debugging it further from there. I don't think there =
+is
+> > anything magic about my system which should make this problem speci=
+fic
+> > to it.
+> >=20
+> > I am still using the acpi-cpufreq driver on an old x86_64 laptop if=
+ that
+> > matters.
+>=20
+> On an x86 (32 bits) laptop hibernate also broke in v3.13-rc3. On that
+> machine hibernation itself worked, or at least seemed to work, but th=
+e
+> machine would basically stop after thawing (directly after loading th=
+e
+> hibernation image).
+>=20
+> And reverting commit 5a87182aa21d ("cpufreq: suspend governors on sys=
+tem
+> suspend/hibernate"), on top of v3.13-rc3, also lead to a successful
+> hibernation/thaw cycle.
 
-Cool, box will definitely be happier.
+OK, reverted.
 
--Mike
+I'll send a pull request with that revert shortly.
 
+Thanks,
+Rafael
