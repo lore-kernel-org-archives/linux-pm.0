@@ -1,53 +1,43 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v3] cpufreq: exynos: Convert exynos-cpufreq to platform
- driver
-Date: Mon, 09 Dec 2013 09:28:09 +0100
-Message-ID: <20131209092809.691fb0f9@amdc2363>
-References: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
- <1385642562-9339-1-git-send-email-l.majewski@samsung.com>
- <CAK9yfHyFXHiTmYeS6N-rTktHPsXNC3SGE8-yyZW4i-txQXo1+w@mail.gmail.com>
+From: bilhuang <bilhuang@nvidia.com>
+Subject: Re: [PATCH v3 1/2] cpufreq: tegra: Call tegra_cpufreq_init() specifically
+ in machine code
+Date: Mon, 9 Dec 2013 16:41:14 +0800
+Message-ID: <52A5822A.9030807@nvidia.com>
+References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com> <1386229462-3474-2-git-send-email-bilhuang@nvidia.com> <52A10431.6070306@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAK9yfHyFXHiTmYeS6N-rTktHPsXNC3SGE8-yyZW4i-txQXo1+w@mail.gmail.com>
+In-Reply-To: <52A10431.6070306@wwwdotorg.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sachin Kamat <sachin.kamat@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Stephen Warren <swarren@wwwdotorg.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael, Vires,
-
-> On 28 November 2013 18:12, Lukasz Majewski <l.majewski@samsung.com>
-> wrote:
-> > To make the driver multiplatform-friendly, unconditional
-> > initialization in an initcall is replaced with a platform driver
-> > probed only if respective platform device is registered.
-> >
-> > Tested at: Exynos4210 (TRATS) and Exynos4412 (TRATS2)
-> >
-> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> > Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> 
-> Looks good to me.
-> Reviewed-by: Sachin Kamat <sachin.kamat@linaro.org>
-> 
-> Tested on Exynos5250 board.
-> Tested-by: Sachin Kamat <sachin.kamat@linaro.org>
-> 
-> Btw, Lukasz, can you please review my patch [1] which is similar to
-> your changes done for 4210/4412.
-> 
-> [1] http://www.spinics.net/lists/linux-samsung-soc/msg24397.html
-> 
-
-Any comments on this patch? Is it suitable for pulling?
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+On 12/06/2013 06:54 AM, Stephen Warren wrote:
+> On 12/05/2013 12:44 AM, Bill Huang wrote:
+>> Move the call from module_init to Tegra machine codes so it won't be
+>> called in a multi-platform kernel running on non-Tegra SoCs.
+>
+>> diff --git a/include/linux/tegra-soc.h b/include/linux/tegra-soc.h
+>
+> It might be better to create <linux/tegra-cpufreq.h> for the interface
+> to the cpufreq driver; tegra-soc.h is for the interface to core Tegra
+> code *from* other drivers.
+Thanks, will do.
+>
+>> +#ifdef CONFIG_ARM_TEGRA_CPUFREQ
+>> +int tegra_cpufreq_init(void);
+>> +#else
+>> +static inline int tegra_cpufreq_init(void)
+>> +{
+>> +	return -EINVAL;
+>> +}
+>> +#endif
+>
+> Probably best to "return 0" from the !CONFIG_ARM_TEGRA_CPUFREQ case; the
+> whole point is to isolate callers from having to care whether
+> CONFIG_ARM_TEGRA_CPUFREQ is enabled, and making the function act like it
+> worked OK is part of that isolation.
+>
+OK thanks.
