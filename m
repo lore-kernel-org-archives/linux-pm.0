@@ -1,99 +1,134 @@
-From: bilhuang <bilhuang@nvidia.com>
-Subject: Re: [PATCH v3 2/2] cpufreq: tegra: Re-model Tegra cpufreq driver
-Date: Mon, 9 Dec 2013 16:44:53 +0800
-Message-ID: <52A58305.3070902@nvidia.com>
-References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com> <1386229462-3474-3-git-send-email-bilhuang@nvidia.com> <52A10681.4050906@wwwdotorg.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH RESEND v10 0/7] cpufreq:boost: CPU Boost mode support
+Date: Mon, 09 Dec 2013 11:04:01 +0100
+Message-ID: <20131209110401.329351e9@amdc2363>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
+ <20131204075921.3b9e86fa@amdc2363> <529F384A.8040409@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52A10681.4050906@wwwdotorg.org>
+In-reply-to: <529F384A.8040409@ti.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12/06/2013 07:04 AM, Stephen Warren wrote:
-> On 12/05/2013 12:44 AM, Bill Huang wrote:
->> Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
->>
->> * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
->> * Move Tegra20 specific codes into tegra20-cpufreq.c.
->> * Bind Tegra cpufreq dirver with a fake device so defer probe would work
->>    when we're going to get regulator in the driver to support voltage
->>    scaling (DVFS).
->
->> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
->
->> @@ -91,14 +40,10 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
-> ...
->> +	if (soc_config->vote_emc_on_cpu_rate)
->> +		soc_config->vote_emc_on_cpu_rate(rate);
->> +
->> +	ret = soc_config->cpu_clk_set_rate(rate * 1000);
->>   	if (ret)
->>   		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
->>   			rate);
->
-> Is there any/much shared code left in this file after this patch? It
-> seems like all this file does now is make each cpufreq callback function
-> call soc_config->the_same_function_name(). If so, wouldn't it be better
-> to simply implement completely separate tegar20-cpufreq and
-> tegra30-cpufreq drivers, and register them each directly with the
-> cpufreq core, to avoid this file doing all the indirection?
-I think this file is needed since we can shared the registration and 
-probe logic for different SoCs.
->
->
->> -int __init tegra_cpufreq_init(void)
->> +static struct {
->> +	char *compat;
->> +	int (*init)(struct tegra_cpufreq_data *,
->> +			const struct tegra_cpufreq_config **);
->> +} tegra_init_funcs[] = {
->> +	{ "nvidia,tegra20", tegra20_cpufreq_init },
->> +};
->> +
->> +static int tegra_cpufreq_probe(struct platform_device *pdev)
-> ...
->> +	for (i = 0; i < ARRAY_SIZE(tegra_init_funcs); i++) {
->> +		if (of_machine_is_compatible(tegra_init_funcs[i].compat)) {
->> +			ret = tegra_init_funcs[i].init(tegra_data, &soc_config);
->> +			if (!ret)
->> +				break;
->> +			else
->> +				goto out;
->> +		}
->>   	}
->> +	if (i == ARRAY_SIZE(tegra_init_funcs))
->> +		goto out;
->
-> I think there are better ways of doing this than open-coding it. Perhaps
-> of_match_device() or the platform-driver equivalent could be made to work?
-Open coding is everywhere in OF helper functions actually. I doubt if we 
-can use of_match_device() if we're not adding node in DT.
-If we're matching the platform device then we might need open coding, no?
->
->> +int __init tegra_cpufreq_init(void)
->> +{
->> +	struct platform_device_info devinfo = { .name = "tegra-cpufreq", };
->> +
->> +	platform_device_register_full(&devinfo);
->> +
->> +	return 0;
->>   }
->>   EXPORT_SYMBOL(tegra_cpufreq_init);
->
-> Perhaps instead of hard-coding the name "tegra-cpufreq" here, you could
-> dynamically construct the device name based on the DT's root compatible
-> value, register "${root_compatible}-cpufreq", e.g.
-> "nvidia,tegra20-cpufreq" or "nvidia,tegra30-cpufreq". That would allow
-> the kernel's standard device/driver matching mechanism to pick the
-> correct driver to instantiate. Perhaps you could even dynamically
-> register an OF device so that you can use of_match_device() in probe, if
-I guess what you meant dynamically register an OF device is registering 
-an fake OF device by calling of_device_add(), no? If yes then what 
-of_node should we give?
-> there's some advantage of having a single driver that supports N chips.
->
+Hi Rafael,
 
+> On 04-12-2013 02:59, Lukasz Majewski wrote:
+> > Hi Rafael,
+> > 
+> >> This patch series introduces support for CPU overclocking technique
+> >> called Boost.
+> >>
+> >> It is a follow up of a LAB governor proposal. Boost is a LAB
+> >> component:
+> >> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> >>
+> >> Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> >> software oriented one (like the one done at Exynos).
+> >> For this reason cpufreq/freq_table code has been reorganized to
+> >> include common code.
+> >>
+> >> Important design decisions:
+> >> - Boost related code is compiled-in unconditionally to cpufreq core
+> >> and disabled by default. The cpufreq_driver is responsibile for
+> >> setting boost_supported flag and providing set_boost callback(if HW
+> >> support is needed). For software managed boost, special Kconfig
+> >> flag - CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be
+> >> selected only when a target platform has thermal framework
+> >> properly configured.
+> >>
+> >> - struct cpufreq_driver has been extended with boost related
+> >> fields: -- boost_supported - when driver supports boosting
+> >>         -- boost_enabled - boost state
+> >>         -- set_boost - callback to function, which is necessary to
+> >>            enable/disable boost
+> >>
+> >> - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
+> >> visible _only_ when cpufreq driver supports Boost.
+> >>
+> >> - No special spin_lock for Boost was created. The one from cpufreq
+> >> core was reused.
+> >>
+> >> - The Boost code doesn't rely on any policy. When boost state is
+> >> changed, then the policy list is iterated and proper adjustements
+> >> are done.
+> >>
+> >> - To improve safety level, the thermal framework is also extended
+> >> to disable software boosting, when thermal trip point is reached.
+> >> After cooling down the boost can be enabled again. This emulates
+> >> behaviour similar to HW managed boost (like x86)
+> >>
+> >> Tested at HW:
+> >>        Exynos 4412 3.13-rc2 Linux
+> >>        Intel Core i7-3770 3.13-rc2 Linux
+> >>
+> >> Above patches were posted on top of kernel_pm/bleeding-edge
+> >> (SHA1: 9483a9f69d5c8f83f1723361bf8340ddfb6475b4)
+> >>
+> > 
+> > Rafael, could you pull patches from 1 to 6 of this series? Those are
+> > related to cpufreq core and has already been accepted by Viresh at a
+> > late August this year.
+> > This would facilitate my further cpufreq work.
+> > 
+> > And about the last patch - related to thermal. It seems that more
+> > discussion NOT related to cpufreq will be ongoing. 
+> > 
+> > I would prefer to add it as a separate patch to thermal subtree.
+> 
+> I agree with Lukasz here. The part that touches the thermal driver is
+> minimal and the discussion is a simple matter of concept and
+> optimization of data structures.
+
+Rafael, what is your opinion here?
+
+Shall I prepare another resend (without thermal patch) or would you
+accept the cpufreq part of this patch set (1 to 6) as is?
+
+> 
+> > 
+> > 
+> > 
+> >>
+> >> Lukasz Majewski (7):
+> >>   cpufreq: Add boost frequency support in core
+> >>   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
+> >> common boost solution
+> >>   cpufreq:boost:Kconfig: Provide support for software managed BOOST
+> >>   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+> >>     framework
+> >>   Documentation:cpufreq:boost: Update BOOST documentation
+> >>   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+> >>   thermal:exynos:boost: Automatic enable/disable of BOOST feature
+> >> (at Exynos4412)
+> >>
+> >>  Documentation/cpu-freq/boost.txt          |   26 +++----
+> >>  drivers/cpufreq/Kconfig                   |    4 +
+> >>  drivers/cpufreq/Kconfig.arm               |   15 ++++
+> >>  drivers/cpufreq/acpi-cpufreq.c            |   86
+> >> +++++++-------------- drivers/cpufreq/cpufreq.c                 |
+> >> 118 ++++++++++++++++++++++++++++-
+> >> drivers/cpufreq/exynos-cpufreq.c          |    3 +
+> >> drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+> >> drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+> >> drivers/thermal/samsung/exynos_tmu_data.c |   47 ++++++++++++
+> >> include/linux/cpufreq.h                   |   24 ++++++ 10 files
+> >> changed, 302 insertions(+), 79 deletions(-)
+> >>
+> > 
+> > 
+> > 
+> 
+> 
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
