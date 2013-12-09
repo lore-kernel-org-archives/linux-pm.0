@@ -1,240 +1,105 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [RFC v2 1/4] power: asv: Add common ASV support for Samsung SoCs
-Date: Mon, 09 Dec 2013 19:45:57 +0100
-Message-ID: <4229773.U5JovcREjb@amdc1227>
-References: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
- <1384515691-26299-2-git-send-email-sachin.kamat@linaro.org>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH 4/4 v4] ARM: dts: Exynos5420: Add device nodes for TMU
+ blocks
+Date: Tue, 10 Dec 2013 06:15:08 +0900
+Message-ID: <52A632DC.6040509@samsung.com>
+References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com> <1384866359-16157-1-git-send-email-ch.naveen@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1384515691-26299-2-git-send-email-sachin.kamat@linaro.org>
+In-Reply-To: <1384866359-16157-1-git-send-email-ch.naveen@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, yadi.brar01@gmail.com, myungjoo.ham@samsung.com, Yadwinder Singh Brar <yadi.brar@samsung.com>, Andrew Bresticker <abrestic@google.com>, Doug Anderson <dianders@google.com>
+To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Cc: linux-pm@vger.kernel.org, naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com, t.figa@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Yadwinder, Sachin,
+On 11/19/13 22:05, Naveen Krishna Chatradhi wrote:
+> Exynos5420 SoC has per core thermal management unit.
+> 5 TMU channels 4 for CPUs and 5th for GPU.
+>
+> This patch adds the device tree nodes to the DT device list.
+>
+> Nodes carry the misplaced second base address and the second
+> clock to access the misplaced base address.
+>
+> Signed-off-by: Leela Krishna Amudala<l.krishna@samsung.com>
+> Signed-off-by: Naveen Krishna Chatradhi<ch.naveen@samsung.com>
+> Signed-off-by: Andrew Bresticker<abrestic@chromium.org>
+> ---
+> Changes since v3:
+> None, Just respinning
+>
+> Changes since v2:
+> 3. uses the new compatible strings introduced along with adding
+>     support for Exynso5420.
+>
+> Changes since v1:
+> 1. Nodes carry the misplaced second base address and the second
+>     clock to access the misplaced base address.
+> 2. Correct the clock number for the TMU4
+>
+>   arch/arm/boot/dts/exynos5420.dtsi |   48 +++++++++++++++++++++++++++++++++++++
+>   1 file changed, 48 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+> index 6ffefd1..d736b40 100644
+> --- a/arch/arm/boot/dts/exynos5420.dtsi
+> +++ b/arch/arm/boot/dts/exynos5420.dtsi
+> @@ -369,4 +369,52 @@
+>   		clock-names = "gscl";
+>   		samsung,power-domain =<&gsc_pd>;
+>   	};
+> +
+> +	/* tmu for CPU0 */
+> +	tmu@10060000 {
+> +		compatible = "samsung,exynos5420-tmu";
+> +		reg =<0x10060000 0x100>;
+> +		interrupts =<0 65 0>;
+> +		clocks =<&clock 318>;
+> +		clock-names = "tmu_apbif";
+> +	};
+> +
+> +	/* tmu for CPU1 */
+> +	tmu@10064000 {
+> +		compatible = "samsung,exynos5420-tmu";
+> +		reg =<0x10064000 0x100>;
+> +		interrupts =<0 183 0>;
+> +		clocks =<&clock 318>;
+> +		clock-names = "tmu_apbif";
+> +	};
+> +
+> +	/* tmu for CPU2 */
+> +	tmu@10068000 {
+> +		compatible = "samsung,exynos5420-tmu-triminfo";
+> +		/* 2nd reg is for the misplaced TRIMINFO register */
+> +		reg =<0x10068000 0x100>,<0x1006c000 0x4>;
+> +		interrupts =<0 184 0>;
+> +		clocks =<&clock 318>;
+> +		clock-names = "tmu_apbif";
+> +	};
+> +
+> +	/* tmu for CPU3 */
+> +	tmu@1006c000 {
+> +		compatible = "samsung,exynos5420-tmu-triminfo-clk";
+> +		/* 2nd reg is for the misplaced TRIMINFO register */
+> +		reg =<0x1006c000 0x100>,<0x100a0000 0x4>;
+> +		interrupts =<0 185 0>;
+> +		clocks =<&clock 318>,<&clock 319>;
+> +		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
+> +	};
+> +
+> +	/* tmu for GPU */
+> +	tmu@100a0000 {
+> +		compatible = "samsung,exynos5420-tmu-triminfo-clk";
+> +		/* 2nd reg is for the misplaced TRIMINFO register */
+> +		reg =<0x100a0000 0x100>,<0x10068000 0x4>;
+> +		interrupts =<0 215 0>;
+> +		clocks =<&clock 319>,<&clock 318>;
+> +		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
+> +	};
+>   };
 
-On Friday 15 of November 2013 17:11:28 Sachin Kamat wrote:
-> From: Yadwinder Singh Brar <yadi.brar@samsung.com>
-> 
-> This patch introduces a common ASV (Adaptive Supply Voltage) basic framework
-> for samsung SoCs. It provides common APIs (to be called by users to get ASV
-> values or init opp_table) and an interface for SoC specific drivers to
-> register ASV members (instances).
-[snip]
-> diff --git a/drivers/power/asv/asv.c b/drivers/power/asv/asv.c
-> new file mode 100644
-> index 000000000000..3f2c31a0d3a9
-> --- /dev/null
-> +++ b/drivers/power/asv/asv.c
-> @@ -0,0 +1,176 @@
-> +/*
-> + * ASV(Adaptive Supply Voltage) common core
-> + *
-> + * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-> + *		http://www.samsung.com/
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> +*/
-> +
-> +#include <linux/io.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +#include <linux/device.h>
-> +#include <linux/power/asv-driver.h>
-> +
-> +static LIST_HEAD(asv_list);
-> +static DEFINE_MUTEX(asv_mutex);
-> +
-> +struct asv_member {
-> +	struct list_head		node;
-> +	struct asv_info *asv_info;
+BTW, there is just only this patch to support TMU on exynos5420?
 
-nit: Inconsistent indentation of member names. In general I would
-recommend dropping the tabs between types and names and using a single
-space instead, since this is more future proof - you will never have to
-change other lines to add new ones.
-
-> +};
-> +
-> +static void add_asv_member(struct asv_member *asv_mem)
-> +{
-> +	mutex_lock(&asv_mutex);
-> +	list_add_tail(&asv_mem->node, &asv_list);
-> +	mutex_unlock(&asv_mutex);
-> +}
-> +
-> +static struct asv_member *asv_get_mem(enum asv_type_id asv_type)
-
-I don't really like this enum based look-up. It's hard to define an enum
-that covers any possible existing and future platforms that would not be
-bloated with single platform specific entries. IMHO something string based
-could be more scalable.
-
-> +{
-> +	struct asv_member *asv_mem;
-> +	struct asv_info *asv_info;
-> +
-> +	list_for_each_entry(asv_mem, &asv_list, node) {
-> +		asv_info = asv_mem->asv_info;
-> +		if (asv_type == asv_info->type)
-> +			return asv_mem;
-> +	}
-
-Don't you need any kind of locking here? A mutex in add_asv_member()
-suggests that read access to the list should be protected as well.
-
-> +
-> +	return NULL;
-> +}
-> +
-> +unsigned int asv_get_volt(enum asv_type_id target_type,
-> +						unsigned int target_freq)
-
-Do you need this function at all? I believe this is all about populating
-device's OPP array with frequencies and voltages according to its ASV
-level. Users will be able to query for required voltage using standard OPP
-calls then, without a need for ASV specific functions like this one.
-
-> +{
-> +	struct asv_member *asv_mem = asv_get_mem(target_type);
-> +	struct asv_freq_table *dvfs_table;
-> +	struct asv_info *asv_info;
-> +	unsigned int i;
-> +
-> +	if (!asv_mem)
-> +		return 0;
-> +
-> +	asv_info = asv_mem->asv_info;
-> +	dvfs_table = asv_info->dvfs_table;
-> +
-> +	for (i = 0; i < asv_info->nr_dvfs_level; i++) {
-> +		if (dvfs_table[i].freq == target_freq)
-> +			return dvfs_table[i].volt;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +int asv_init_opp_table(struct device *dev, enum asv_type_id target_type)
-> +{
-> +	struct asv_member *asv_mem = asv_get_mem(target_type);
-> +	struct asv_info *asv_info;
-> +	struct asv_freq_table *dvfs_table;
-> +	unsigned int i;
-> +
-> +	if (!asv_mem)
-> +		return -EINVAL;
-> +
-> +	asv_info = asv_mem->asv_info;
-> +	dvfs_table = asv_info->dvfs_table;
-> +
-> +	for (i = 0; i < asv_info->nr_dvfs_level; i++) {
-> +		if (dev_pm_opp_add(dev, dvfs_table[i].freq * 1000,
-> +			dvfs_table[i].volt)) {
-> +			dev_warn(dev, "Failed to add OPP %d\n",
-> +				 dvfs_table[i].freq);
-
-Hmm, shouldn't it be considered a failure instead?
-
-> +			continue;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static struct asv_member *asv_init_member(struct asv_info *asv_info)
-> +{
-> +	struct asv_member *asv_mem;
-> +	int ret = 0;
-> +
-> +	if (!asv_info) {
-> +		pr_err("No ASV info provided\n");
-> +		return NULL;
-
-I'd suggest adopting the ERR_PTR() convention, which allows returning more
-information about the error.
-
-> +	}
-> +
-> +	asv_mem = kzalloc(sizeof(*asv_mem), GFP_KERNEL);
-> +	if (!asv_mem) {
-> +		pr_err("Allocation failed for member: %s\n", asv_info->name);
-> +		return NULL;
-> +	}
-> +
-> +	asv_mem->asv_info = kmemdup(asv_info, sizeof(*asv_info), GFP_KERNEL);
-> +	if (!asv_mem->asv_info) {
-> +		pr_err("Copying asv_info failed for member: %s\n",
-> +			asv_info->name);
-> +		kfree(asv_mem);
-> +		return NULL;
-
-For consistency, the error here should be handled as below, by using the
-error path.
-
-> +	}
-> +	asv_info = asv_mem->asv_info;
-> +
-> +	if (asv_info->ops->get_asv_group) {
-> +		ret = asv_info->ops->get_asv_group(asv_info);
-> +		if (ret) {
-> +			pr_err("get_asv_group failed for %s : %d\n",
-> +				asv_info->name, ret);
-> +			goto err;
-> +		}
-> +	}
-> +
-> +	if (asv_info->ops->init_asv)
-> +		ret = asv_info->ops->init_asv(asv_info);
-> +		if (ret) {
-> +			pr_err("asv_init failed for %s : %d\n",
-> +				asv_info->name, ret);
-> +			goto err;
-> +		}
-> +
-> +	/* In case of parsing table from DT, we may need to add flag to identify
-> +	DT supporting members and call init_asv_table from asv_init_opp_table(
-> +	after getting dev_node from dev,if required), instead of calling here.
-> +	*/
-
-coding style: Wrong multi-line comment style.
-
-/*
- * This is a valid multi-line comment.
- */
-
-> +
-> +	if (asv_info->ops->init_asv_table) {
-> +		ret = asv_info->ops->init_asv_table(asv_info);
-> +		if (ret) {
-> +			pr_err("init_asv_table failed for %s : %d\n",
-> +				asv_info->name, ret);
-> +			goto err;
-> +		}
-> +	}
-
-Hmm, I don't see a point of these three separate callbacks above.
-
-In general, I'd suggest a different architecture. I'd see this more as:
-
-1) Platform code registers static platform device to instantiate SoC ASV
-   driver.
-2) SoC specific ASV driver probes, reads group ID from hardware register,
-   calls register_asv_member() with appropriate DVFS table for detected
-   group.
-3) Driver using ASV calls asv_init_opp_table() with its struct device and
-   ASV member name, which causes the ASV code to fill device's operating
-   point using OPP calls.
-
-Now client driver has all the information it needs and the work of ASV
-subsystem is done. The control flow between drivers would be much simpler
-and no callbacks would have to be called.
-
-Best regards,
-Tomasz
+- Kukjin
