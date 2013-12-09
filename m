@@ -1,57 +1,53 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Mon, 09 Dec 2013 12:18:06 +0530
-Message-ID: <52A567A6.6000400@linux.vnet.ibm.com>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <529F04B2.7050303@linaro.org>	<2628468.jr1aJZyvPu@vostro.rjw.lan> <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v3] cpufreq: exynos: Convert exynos-cpufreq to platform
+ driver
+Date: Mon, 09 Dec 2013 09:28:09 +0100
+Message-ID: <20131209092809.691fb0f9@amdc2363>
+References: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
+ <1385642562-9339-1-git-send-email-l.majewski@samsung.com>
+ <CAK9yfHyFXHiTmYeS6N-rTktHPsXNC3SGE8-yyZW4i-txQXo1+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com>
+In-reply-to: <CAK9yfHyFXHiTmYeS6N-rTktHPsXNC3SGE8-yyZW4i-txQXo1+w@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/09/2013 08:29 AM, Lan Tianyu wrote:
-> 2013/12/5 Rafael J. Wysocki <rjw@rjwysocki.net>:
->> On Wednesday, December 04, 2013 04:02:18 PM viresh kumar wrote:
->>> On Tuesday 03 December 2013 04:44 PM, Bj=F8rn Mork wrote:
->>>> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Per=
-form
->>>> light-weight init/teardown during suspend/resume"), which enabled
->>>> suspend/resume optimizations leaving the sysfs files in place.
-[...]
->> I took the Bjorn's patch for 3.13 and this one I can queued up for 3=
-=2E14,
->> but for that I guess it should contain a revert of the change made b=
-y the
->> Bjorn's patch.
->=20
-> This patch causes a s3 regression. Cc:Martin Ziegler
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D66751
->=20
+Hi Rafael, Vires,
 
-Hmm.. With Bjorn's patch applied, the cpufreq hotplug callback should b=
-ecome
-identical to what happens during regular CPU hotplug. So is regular CPU
-hotplug also failing for you, Martin?
+> On 28 November 2013 18:12, Lukasz Majewski <l.majewski@samsung.com>
+> wrote:
+> > To make the driver multiplatform-friendly, unconditional
+> > initialization in an initcall is replaced with a platform driver
+> > probed only if respective platform device is registered.
+> >
+> > Tested at: Exynos4210 (TRATS) and Exynos4412 (TRATS2)
+> >
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> 
+> Looks good to me.
+> Reviewed-by: Sachin Kamat <sachin.kamat@linaro.org>
+> 
+> Tested on Exynos5250 board.
+> Tested-by: Sachin Kamat <sachin.kamat@linaro.org>
+> 
+> Btw, Lukasz, can you please review my patch [1] which is similar to
+> your changes done for 4210/4412.
+> 
+> [1] http://www.spinics.net/lists/linux-samsung-soc/msg24397.html
+> 
 
-You can do CPU hotplug by:
-
-CPU offline:
-echo 0 > /sys/devices/system/cpu/cpu<num>/online
-
-CPU online:
-echo 1 > /sys/devices/system/cpu/cpu<num>/online
+Any comments on this patch? Is it suitable for pulling?
 
 
-Bjorn's patch looks pretty innocuous to me.. I couldn't catch any obvio=
-us
-bug looking at the code. So answer to the above question should help us=
- dig
-deeper.
+-- 
+Best regards,
 
-Regards,
-Srivatsa S. Bhat
+Lukasz Majewski
 
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
