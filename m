@@ -1,134 +1,98 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH RESEND v10 0/7] cpufreq:boost: CPU Boost mode support
-Date: Mon, 09 Dec 2013 11:04:01 +0100
-Message-ID: <20131209110401.329351e9@amdc2363>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1385986761-17934-1-git-send-email-l.majewski@samsung.com>
- <20131204075921.3b9e86fa@amdc2363> <529F384A.8040409@ti.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Mon, 09 Dec 2013 11:04:53 +0100
+Message-ID: <87iouyuypm.fsf@nemi.mork.no>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+	<529F04B2.7050303@linaro.org> <2628468.jr1aJZyvPu@vostro.rjw.lan>
+	<CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com>
+	<52A567A6.6000400@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <529F384A.8040409@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from canardo.mork.no ([148.122.252.1]:34782 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628Ab3LIKFV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Dec 2013 05:05:21 -0500
+In-Reply-To: <52A567A6.6000400@linux.vnet.ibm.com> (Srivatsa S. Bhat's message
+	of "Mon, 09 Dec 2013 12:18:06 +0530")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Hi Rafael,
+"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
+> On 12/09/2013 08:29 AM, Lan Tianyu wrote:
+>> 2013/12/5 Rafael J. Wysocki <rjw@rjwysocki.net>:
+>>> On Wednesday, December 04, 2013 04:02:18 PM viresh kumar wrote:
+>>>> On Tuesday 03 December 2013 04:44 PM, Bj=C3=B8rn Mork wrote:
+>>>>> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq: Pe=
+rform
+>>>>> light-weight init/teardown during suspend/resume"), which enabled
+>>>>> suspend/resume optimizations leaving the sysfs files in place.
+> [...]
+>>> I took the Bjorn's patch for 3.13 and this one I can queued up for =
+3.14,
+>>> but for that I guess it should contain a revert of the change made =
+by the
+>>> Bjorn's patch.
+>>=20
+>> This patch causes a s3 regression. Cc:Martin Ziegler
+>> https://bugzilla.kernel.org/show_bug.cgi?id=3D66751
+>>=20
+>
+> Hmm.. With Bjorn's patch applied, the cpufreq hotplug callback should=
+ become
+> identical to what happens during regular CPU hotplug.
 
-> On 04-12-2013 02:59, Lukasz Majewski wrote:
-> > Hi Rafael,
-> > 
-> >> This patch series introduces support for CPU overclocking technique
-> >> called Boost.
-> >>
-> >> It is a follow up of a LAB governor proposal. Boost is a LAB
-> >> component:
-> >> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> >>
-> >> Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> >> software oriented one (like the one done at Exynos).
-> >> For this reason cpufreq/freq_table code has been reorganized to
-> >> include common code.
-> >>
-> >> Important design decisions:
-> >> - Boost related code is compiled-in unconditionally to cpufreq core
-> >> and disabled by default. The cpufreq_driver is responsibile for
-> >> setting boost_supported flag and providing set_boost callback(if HW
-> >> support is needed). For software managed boost, special Kconfig
-> >> flag - CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be
-> >> selected only when a target platform has thermal framework
-> >> properly configured.
-> >>
-> >> - struct cpufreq_driver has been extended with boost related
-> >> fields: -- boost_supported - when driver supports boosting
-> >>         -- boost_enabled - boost state
-> >>         -- set_boost - callback to function, which is necessary to
-> >>            enable/disable boost
-> >>
-> >> - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
-> >> visible _only_ when cpufreq driver supports Boost.
-> >>
-> >> - No special spin_lock for Boost was created. The one from cpufreq
-> >> core was reused.
-> >>
-> >> - The Boost code doesn't rely on any policy. When boost state is
-> >> changed, then the policy list is iterated and proper adjustements
-> >> are done.
-> >>
-> >> - To improve safety level, the thermal framework is also extended
-> >> to disable software boosting, when thermal trip point is reached.
-> >> After cooling down the boost can be enabled again. This emulates
-> >> behaviour similar to HW managed boost (like x86)
-> >>
-> >> Tested at HW:
-> >>        Exynos 4412 3.13-rc2 Linux
-> >>        Intel Core i7-3770 3.13-rc2 Linux
-> >>
-> >> Above patches were posted on top of kernel_pm/bleeding-edge
-> >> (SHA1: 9483a9f69d5c8f83f1723361bf8340ddfb6475b4)
-> >>
-> > 
-> > Rafael, could you pull patches from 1 to 6 of this series? Those are
-> > related to cpufreq core and has already been accepted by Viresh at a
-> > late August this year.
-> > This would facilitate my further cpufreq work.
-> > 
-> > And about the last patch - related to thermal. It seems that more
-> > discussion NOT related to cpufreq will be ongoing. 
-> > 
-> > I would prefer to add it as a separate patch to thermal subtree.
-> 
-> I agree with Lukasz here. The part that touches the thermal driver is
-> minimal and the discussion is a simple matter of concept and
-> optimization of data structures.
+Yes, I also wondered how that could have happened.
 
-Rafael, what is your opinion here?
+Apparently this is due to bad interaction between two patches. Commit=20
 
-Shall I prepare another resend (without thermal patch) or would you
-accept the cpufreq part of this patch set (1 to 6) as is?
+  5a87182aa21d ("cpufreq: suspend governors on system suspend/hibernate=
+")
 
-> 
-> > 
-> > 
-> > 
-> >>
-> >> Lukasz Majewski (7):
-> >>   cpufreq: Add boost frequency support in core
-> >>   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
-> >> common boost solution
-> >>   cpufreq:boost:Kconfig: Provide support for software managed BOOST
-> >>   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-> >>     framework
-> >>   Documentation:cpufreq:boost: Update BOOST documentation
-> >>   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
-> >>   thermal:exynos:boost: Automatic enable/disable of BOOST feature
-> >> (at Exynos4412)
-> >>
-> >>  Documentation/cpu-freq/boost.txt          |   26 +++----
-> >>  drivers/cpufreq/Kconfig                   |    4 +
-> >>  drivers/cpufreq/Kconfig.arm               |   15 ++++
-> >>  drivers/cpufreq/acpi-cpufreq.c            |   86
-> >> +++++++-------------- drivers/cpufreq/cpufreq.c                 |
-> >> 118 ++++++++++++++++++++++++++++-
-> >> drivers/cpufreq/exynos-cpufreq.c          |    3 +
-> >> drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
-> >> drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
-> >> drivers/thermal/samsung/exynos_tmu_data.c |   47 ++++++++++++
-> >> include/linux/cpufreq.h                   |   24 ++++++ 10 files
-> >> changed, 302 insertions(+), 79 deletions(-)
-> >>
-> > 
-> > 
-> > 
-> 
-> 
+added an implicit dependency on the suspend/resume code which commit
+
+  2167e2399dc5 ("cpufreq: fix garbage kobjects on errors during suspend=
+/resume")
+
+disabled.
+
+This would make the last patch applied of these two come out of the
+bisect, which is 2167e2399dc5 in this case.  I can confirm that
+reverting only this patch also fixes my hibernate problem.
+
+BUT: It reintroduces the problem it was supposed to fix.  AND: As you
+note, it really does nothing but revert to the assumed safe regular CPU
+hotplug operations.  Which means that the other patch somehow has made
+regular CPU hotplugging fail *if suspending*.  It won't make it fail
+unless suspending, so there is no need to test CPU hotplugging
+separately.=20
+
+In any case, my claim is that the real bug here still is in commit
+5a87182aa21d, which added an undocumented implicit dependency on the
+special cpufreq suspend/resume code.  There is no way in hell that
+anyone could have guessed that the seemingly innocent changes in commit
+2167e2399dc5 would fail because of this. Which should be more than
+enough to understand why the continues sprinkling of suspend/resume cod=
+e
+all over has to stop.  Where did all the nice and clean pm hooks design
+disappear?
+
+My opinion is that commit 2167e2399dc5 still is the correct short term
+fix, and it should be reapplied to v3.13-rcX and resubmitted for
+3.12-stable.
+
+I anticipate the real cleanup of this mess.  But I don't think any
+additional "if suspending" tests has any place in it.  Test *once* and
+fork to whatever you want to do differently when suspending .
+Sprinkling these tests all over, having separate code blocks implicitly
+depending on each other, is nothing but a recipe for hard to track bugs=
+=2E
+
+Just my =E2=82=AC .015 (yes, I'm cheap)
 
 
--- 
-Best regards,
+Bj=C3=B8rn
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
