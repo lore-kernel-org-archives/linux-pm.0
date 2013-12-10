@@ -1,82 +1,66 @@
-From: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Subject: [PATCH v11 4/4] ARM: dts: Exynos5420: Add device nodes for TMU blocks
-Date: Tue, 10 Dec 2013 12:13:07 +0530
-Message-ID: <1386657787-21654-1-git-send-email-ch.naveen@samsung.com>
-References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com, t.figa@samsung.com
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
+Date: Tue, 10 Dec 2013 12:41:27 +0100
+Message-ID: <20131210114127.GA29875@gmail.com>
+References: <CAJvTdK=+aNN66mYpCGgbHGCHhYQAKx-vB0kJSWjVpsNb_hOAtQ@mail.gmail.com>
+ <1386405590.5673.96.camel@marge.simpson.net>
+ <CAJvTdKkQUKFhwswK64PDNgPOMxP4s2X1GYKzWLW0G6gWxhdWtA@mail.gmail.com>
+ <CAJvTdK=9DVxY9xWCo=SSF-Rx3dFfZtkrubhtcgxxowj-rbi8LQ@mail.gmail.com>
+ <1386443836.5335.38.camel@marge.simpson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ea0-f171.google.com ([209.85.215.171]:45167 "EHLO
+	mail-ea0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413Ab3LJLlb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2013 06:41:31 -0500
+Content-Disposition: inline
+In-Reply-To: <1386443836.5335.38.camel@marge.simpson.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Galbraith <bitbucket@online.de>
+Cc: Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
-Exynos5420 SoC has per core thermal management unit.
-5 TMU channels 4 for CPUs and 5th for GPU.
 
-This patch adds the device tree nodes to the DT device list.
+* Mike Galbraith <bitbucket@online.de> wrote:
 
-Nodes carry the misplaced second base address and the second
-clock to access the misplaced base address.
+> On Sat, 2013-12-07 at 11:45 -0500, Len Brown wrote: 
+> > >> It fixes that, except for my Q6600 box.  Too bad mwait_idle() went away,
+> > >> beloved old box doesn't play hints game, so it continues to flog itself.
+> > 
+> > 
+> > Thanks for pointing this out, Mike!
+> > 
+> > A Q6600 is a Kentsfield.  I dug one of those up.
+> > Indeed, the only idle capabilities it has are  HALT
+> > and old style MWAIT, and the latter is much more effective.
+> > running 3.8 it idles at 75 watts.
+> > running 3.8 with idle=nomwait it idles at 100 watts,
+> > which is what it will do with 3.9 and later due to the patch below.
+> > 
+> > commit 69fb3676df3329a7142803bb3502fa59dc0db2e3
+> > Author: Len Brown <len.brown@intel.com>
+> > Date:   Sun Feb 10 01:38:39 2013 -0500
+> > 
+> >     x86 idle: remove mwait_idle() and "idle=mwait" cmdline param
+> > 
+> > Kentsfield proves that patch was based on a fault assumption.
+> > Sweet box in its day, ECC memory and everything -- probably still
+> > a fair number of them running...
+> > 
+> > Plus, I've found another machine that depends on having an idle=mwait
+> > idle loop (A Sony Vaio BIOS SMM code apparently assumes we use it in
+> > https://bugzilla.kernel.org/show_bug.cgi?id=60770)
+> > 
+> > So it looks like I need to (also) restore the simple idle=mwait idle loop
+> > to make some machines happy.
+> 
+> Cool, box will definitely be happier.
 
-Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
----
-Changes since previous version:
-1. used lables instead of comment lines
-2. pass the same clock as trimfo_apbif clock for TMU channel 2
+I assume old-style MWAIT will be activated automatically on such 
+boxes, there's no need to pass in idle=mwait on the boot command line, 
+correct?
 
- arch/arm/boot/dts/exynos5420.dtsi |   40 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+Thanks,
 
-diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-index b1fa334..c62cde6 100644
---- a/arch/arm/boot/dts/exynos5420.dtsi
-+++ b/arch/arm/boot/dts/exynos5420.dtsi
-@@ -402,4 +402,44 @@
- 		clock-names = "gscl";
- 		samsung,power-domain = <&gsc_pd>;
- 	};
-+
-+	tmu_cpu0:tmu@10060000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10060000 0x100>;
-+		interrupts = <0 65 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	tmu_cpu1:tmu@10064000 {
-+		compatible = "samsung,exynos5420-tmu";
-+		reg = <0x10064000 0x100>;
-+		interrupts = <0 183 0>;
-+		clocks = <&clock 318>;
-+		clock-names = "tmu_apbif";
-+	};
-+
-+	tmu_cpu2:tmu@10068000 {
-+		compatible = "samsung,exynos5420-tmu-ext-triminfo";
-+		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-+		interrupts = <0 184 0>;
-+		clocks = <&clock 318>, <&clock 318>;
-+		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-+	};
-+
-+	tmu_cpu3:tmu@1006c000 {
-+		compatible = "samsung,exynos5420-tmu-ext-triminfo";
-+		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-+		interrupts = <0 185 0>;
-+		clocks = <&clock 318>, <&clock 319>;
-+		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-+	};
-+
-+	tmu_gpu:tmu@100a0000 {
-+		compatible = "samsung,exynos5420-tmu-ext-triminfo";
-+		reg = <0x100a0000 0x100>, <0x10068000 0x4>;
-+		interrupts = <0 215 0>;
-+		clocks = <&clock 319>, <&clock 318>;
-+		clock-names = "tmu_apbif", "tmu_apbif_triminfo";
-+	};
- };
--- 
-1.7.10.4
+	Ingo
