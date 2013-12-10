@@ -1,33 +1,37 @@
-From: Martin Ziegler <ziegler@email.mathematik.uni-freiburg.de>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during
- suspend/resume
-Date: Tue, 10 Dec 2013 17:02:33 +0100
-Message-ID: <alpine.DEB.2.10.1312101710260.2743@zertz.mathematik.uni-freiburg.de>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <529F04B2.7050303@linaro.org> <2628468.jr1aJZyvPu@vostro.rjw.lan> <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com> <52A567A6.6000400@linux.vnet.ibm.com>
-Reply-To: Martin Ziegler <ziegler@uni-freiburg.de>
+From: Joseph Salisbury <joseph.salisbury@canonical.com>
+Subject: [PATCH][3.11.y]  intel_pstate: fix no_turbo
+Date: Tue, 10 Dec 2013 14:37:28 -0500
+Message-ID: <52A76D78.4070507@canonical.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from email.mathematik.uni-freiburg.de ([132.230.30.5]:39167 "EHLO
-	email.mathematik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752850Ab3LJQMK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2013 11:12:10 -0500
-In-Reply-To: <52A567A6.6000400@linux.vnet.ibm.com>
+Received: from youngberry.canonical.com ([91.189.89.112]:44343 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873Ab3LJThi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2013 14:37:38 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, =?ISO-8859-15?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, martin.ziegler@math.uni-freiburg.de
+To: Luis Henriques <luis.henriques@canonical.com>, Kamal Mostafa <kamal.mostafa@canonical.com>
+Cc: stable@vger.kernel.org, srinivas.pandruvada@linux.intel.com, dirk.j.brandewie@intel.com, rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kernel Team <kernel-team@lists.ubuntu.com>
 
-On my machine
+Hello,
 
-CPU offline:
-echo 0 > /sys/devices/system/cpu/cpu<num>/online
+Please consider including mainline commit
+1ccf7a1cdafadd02e33e8f3d74370685a0600ec6 in the next v3.11.y release. 
 
-CPU online:
-echo 1 > /sys/devices/system/cpu/cpu<num>/online
+It was included in the mainline tree as of v3.12-rc4.  It has been
+tested and confirmed
+to resolve http://bugs.launchpad.net/bugs/1254091 .
 
-works fine with 3.13-rc3.
+commit 1ccf7a1cdafadd02e33e8f3d74370685a0600ec6
+Author: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Date:   Tue Oct 1 10:28:41 2013 -0700
 
-Regards
+    intel_pstate: fix no_turbo
 
-Martin
+Other stable trees may also want to pick up this commit.
+
+Sincerely,
+Joseph Salisbury
+
