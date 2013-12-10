@@ -1,52 +1,40 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH V2 3/3] PM / Sleep: Add macro to define common late/early system PM callbacks
-Date: Tue, 10 Dec 2013 14:37:42 +0100
-Message-ID: <1386682662-17633-4-git-send-email-ulf.hansson@linaro.org>
-References: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
+Date: Tue, 10 Dec 2013 15:29:08 +0100 (CET)
+Message-ID: <alpine.DEB.2.02.1312101458040.28330@ionos.tec.linutronix.de>
+References: <CAJvTdK=+aNN66mYpCGgbHGCHhYQAKx-vB0kJSWjVpsNb_hOAtQ@mail.gmail.com>  <1386478624.4748.19.camel@marge.simpson.net>  <CAJvTdKn_2mihtMLiQVNCOp_zokx8CsSr2c5NhbkbfJ-qvma-8Q@mail.gmail.com>  <1386559014.4875.16.camel@marge.simpson.net>
+ <1386652637.5374.72.camel@marge.simpson.net>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org>
+In-Reply-To: <1386652637.5374.72.camel@marge.simpson.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
+To: Mike Galbraith <bitbucket@online.de>
+Cc: Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We use the same approach as for the existing SET_SYSTEM_SLEEP_PM_OPS,
-but for the late and early callbacks instead.
+On Tue, 10 Dec 2013, Mike Galbraith wrote:
+> vogelweide:~/:[130]# turbostat -P -i 60
+> pk cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6 CTMP   %pc3   %pc6
+>              0.02 2.12 2.26   0  43.40  56.57   0.00   53  33.81   0.00
+>  0   0   0   0.23 2.10 2.26   5  65.47  34.30   0.00   52  10.69   0.00
 
-The new SET_LATE_SYSTEM_SLEEP_PM_OPS, defined for CONFIG_PM_SLEEP, will
-point ->suspend_late, ->freeze_late and ->poweroff_late to the same
-function. Vice verse happens for ->resume_early, ->thaw_early and
-->restore_early.
-
-Cc: Kevin Hilman <khilman@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- include/linux/pm.h |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 7a830a7..8c6583a 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -311,6 +311,18 @@ struct dev_pm_ops {
- #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
- #endif
+...
  
-+#ifdef CONFIG_PM_SLEEP
-+#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-+	.suspend_late = suspend_fn, \
-+	.resume_early = resume_fn, \
-+	.freeze_late = suspend_fn, \
-+	.thaw_early = resume_fn, \
-+	.poweroff_late = suspend_fn, \
-+	.restore_early = resume_fn,
-+#else
-+#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-+#endif
-+
- #ifdef CONFIG_PM_RUNTIME
- #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
- 	.runtime_suspend = suspend_fn, \
--- 
-1.7.9.5
+> That, vs solid >99% pc3 for old 3.0 enterprise kernel.  What happened,
+> dunno, kernel called itself master.  Whatever, I don't like test bogons,
+> and this is one, so I thought I should let you know.  DL980 refuses to
+> come close to the previous result.
+
+Hmm, that's very similar to the issue Len is seing on his quad socket WM.
+
+But I can't see it on my dual socket SNB, neither does PeterZ on his
+dual socket WM machine. Heisenbugs ....
+
+Can you offline all cpus except core 0, enable all trace events (nop
+tracer), run "sleep 100" and stop and grab the trace? Please make sure
+that your tracebuffer is big enough to cover the full thing.
+
+Thanks,
+
+	tglx
