@@ -1,85 +1,62 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
-Date: Tue, 10 Dec 2013 13:27:19 +0000
-Message-ID: <20131210132719.GC15543@e102568-lin.cambridge.arm.com>
-References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
- <87lhztgqsj.fsf@iki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH V2 0/3] PM: Enable option of re-use runtime PM callbacks at system suspend
+Date: Tue, 10 Dec 2013 14:37:39 +0100
+Message-ID: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:36630 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222Ab3LJN10 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2013 08:27:26 -0500
-In-Reply-To: <87lhztgqsj.fsf@iki.fi>
-Content-Disposition: inline
+Received: from mail-la0-f50.google.com ([209.85.215.50]:33120 "EHLO
+	mail-la0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550Ab3LJNh7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2013 08:37:59 -0500
+Received: by mail-la0-f50.google.com with SMTP id el20so2655559lab.37
+        for <linux-pm@vger.kernel.org>; Tue, 10 Dec 2013 05:37:58 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Antti Miettinen <ananaza@iki.fi>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Tue, Dec 10, 2013 at 06:31:56AM +0000, Antti Miettinen wrote:
-> Hi Lorenzo,
-> 
-> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
-> > +	- latency
-> > +		Usage: Required
-> > +		Value type: <u32>
-> > +		Definition: Worst case latency in microseconds required to
-> > +			    enter and exit the C-state.
-> > +
-> > +	- min-residency
-> > +		Usage: Required
-> > +		Value type: <u32>
-> > +		Definition: Time in microseconds required for the CPU to be in
-> > +			    the C-state to make up for the dynamic power
-> > +			    consumed to enter/exit the C-state in order to
-> > +			    break even in terms of power consumption compared
-> > +			    to C1 state (wfi).
-> > +			    This parameter depends on the operating conditions
-> > +			    (operating point, cache state) and must assume
-> > +			    worst case scenario.
-> 
-> I have a concern with these. I know it is not the fault of this patch as
-> these parameters are what current cpuidle governor/driver interface
-> uses, but..
+To put devices into low power state during system suspend, it is convenient
+for some runtime PM supported power domains, subsystems and drivers to have
+the option of re-using and invoking the runtime PM callbacks from their system
+PM callbacks.
 
-Concern is shared, that's why these bindings hit the list as early as
-possible. Just to mention that, I wanted to keep them as OS agnostic
-as I could, and I think min-residency might make sense (I mentioned
-it has to cater for the worst case, which depends on a number of
-run-time states as you describe below).
+The benefit is that we don't need to implement wrapper functions which
+handles runtime PM resourses, typically called from both runtime PM and system
+PM callbacks.
 
-> Power state entry/exit latencies can be vary quite a lot. Especially CPU
-> and memory frequencies affect them as can e.g. PMIC properties. Also
-> power level during entry/exit depends on clocks and voltages. Also the
-> power level of a sleep state can be context dependent (clocks and
-> voltages). These mean that also the minimum residency for energy break
-> even varies. Defining a minimum residency against C1 is a bit
-> arbitrary. There is no guarantee that the break even order of idle
-> states remains constant over device context changes.
+Some new helper macros for defining the PM callbacks are added.
 
-Agree 100%.
+SET_PM_RUNTIME_PM_OPS; to define runtime PM callbacks for CONFIG_PM instead of
+CONFIG_PM_RUNTIME.
 
-> I have not really properly thought through this but here's an idea.. how
-> about an alternative interface between governor and driver? The cpuidle
-> core would provide the expected wakeup time and currently enforced
-> minimum latency to the driver and the driver would make the decision
-> about the state to choose.
+SET_LATE_SYSTEM_SLEEP_PM_OPS; to define common late/early system PM callbacks,
+same approach is applicable to the existing SET_SYSTEM_SLEEP_PM_OPS which
+defines common suspend/resume system PM callbacks.
 
-I do not think we should think about how the kernel uses this data.
-We should strive to make DT data representative of HW C-states and
-that's very complex, as you mentioned (it depends at what granularity
-we want these bits of info).
+A minor fix was needed for the platform bus, which runtime PM callbacks are set
+to the pm_generic_runtime_suspend|resume functions. These were implemented only
+for CONFIG_PM_RUNTIME and thus the platform bus prevented driver's runtime PM
+callbacks to be invoked when only CONFIG_PM_SLEEP was used. We move them into
+CONFIG_PM to resolve the problem.
 
-When we are happy with the bindings we can then code the kernel accordingly.
+Changes in v2:
+	Updated commit messages to try to better reflect the changes. 
+	Removed the below patches from this patch set. Let's leave those to be
+	addressed separately, if needed.
+	- PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
+	- drm/exynos: Convert to suspend_late/resume_early callbacks for fimc
 
-Please let me know how you would like to have these bindings extended
-(eg adding operating points), getting feedback is the main reason why
-I posted them in the first place.
 
-Thank you,
-Lorenzo
+Ulf Hansson (3):
+  PM / Runtime: Add second macro for definition of runtime PM callbacks
+  PM / Runtime: Implement the pm_generic_runtime functions for
+    CONFIG_PM
+  PM / Sleep: Add macro to define common late/early system PM callbacks
+
+ drivers/base/power/generic_ops.c |    4 ++--
+ include/linux/pm.h               |   21 +++++++++++++++++++++
+ include/linux/pm_runtime.h       |   12 ++++++++----
+ 3 files changed, 31 insertions(+), 6 deletions(-)
+
+-- 
+1.7.9.5
 
