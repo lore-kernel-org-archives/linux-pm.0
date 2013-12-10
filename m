@@ -1,53 +1,74 @@
-From: Paul Walmsley <pwalmsley@nvidia.com>
-Subject: [PATCH] cpufreq: omap: clk_round_rate() can return a zero upon
- error
-Date: Mon, 9 Dec 2013 18:18:22 -0800
-Message-ID: <alpine.DEB.2.02.1312091812440.4127@tamien>
+From: Mike Galbraith <bitbucket@online.de>
+Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
+Date: Tue, 10 Dec 2013 06:17:17 +0100
+Message-ID: <1386652637.5374.72.camel@marge.simpson.net>
+References: <CAJvTdK=+aNN66mYpCGgbHGCHhYQAKx-vB0kJSWjVpsNb_hOAtQ@mail.gmail.com>
+	 <1386478624.4748.19.camel@marge.simpson.net>
+	 <CAJvTdKn_2mihtMLiQVNCOp_zokx8CsSr2c5NhbkbfJ-qvma-8Q@mail.gmail.com>
+	 <1386559014.4875.16.camel@marge.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-omap@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from moutng.kundenserver.de ([212.227.17.10]:56975 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764Ab3LJFRg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2013 00:17:36 -0500
+In-Reply-To: <1386559014.4875.16.camel@marge.simpson.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
+Hi Len,
 
-Treat both negative and zero return values from clk_round_rate() as 
-errors.  This is needed since subsequent patches will convert 
-clk_round_rate()'s return value to be an unsigned type, rather than a 
-signed type, since some clock sources can generate rates higher than 
-(2^31)-1 Hz.
+I'm unable to reproduce those DL980 results.  I updated the kernel and
+config yesterday, and happened to run turbostat again.. and the box was
+nowhere near as quiet.  I ended up spending all day futzing with the
+darn thing, checking various config/kernel combos, and none produced the
+previous result.
 
-Eventually, when calling clk_round_rate(), only a return value of
-zero will be considered a error.  All other values will be
-considered valid rates.  The comparison against values less than
-0 is kept to preserve the correct behavior in the meantime.
+ATM, running the same exact updated kernel as the x3550 is running
+(still happily) with only a couple needed drivers added:
 
-This patch also removes a bogus usage of IS_ERR_VALUE(), which is intended 
-to be used only on combination pointer/error code return values; a 
-side-benefit.
+vogelweide:~/:[130]# turbostat -P -i 60
+pk cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6 CTMP   %pc3   %pc6
+             0.02 2.12 2.26   0  43.40  56.57   0.00   53  33.81   0.00
+ 0   0   0   0.23 2.10 2.26   5  65.47  34.30   0.00   52  10.69   0.00
+ 1   0   8   0.04 2.02 2.26   5  63.10  36.86   0.00   41  13.31   0.00
+ 2   0  16   0.04 1.90 2.26   5  35.70  64.25   0.00   43  37.88   0.00
+ 3   0  24   0.03 2.08 2.26   5  39.78  60.19   0.00   42  29.00   0.00
+ 4   0  32   0.03 1.95 2.26   5  14.64  85.33   0.00   37  65.00   0.00
+ 5   0  40   0.03 1.95 2.26   5  15.96  84.02   0.00   36  74.34   0.00
+ 6   0  48   0.02 1.99 2.26   5  36.97  63.01   0.00   37  40.20   0.00
+ 7   0  56   0.02 2.08 2.26   5  57.54  42.44   0.00   44   0.08   0.00
+pk cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6 CTMP   %pc3   %pc6
+             0.03 2.08 2.26   0  31.24  68.73   0.00   53  44.26   0.00
+ 0   0   0   0.25 1.76 2.26   8  52.96  46.78   0.00   51  31.99   0.00
+ 1   0   8   0.03 1.96 2.26   8  50.69  49.28   0.00   41  30.80   0.00
+ 2   0  16   0.04 1.91 2.26   8  36.10  63.85   0.00   42  44.37   0.00
+ 3   0  24   0.03 1.96 2.26   8  24.15  75.82   0.00   42  59.14   0.00
+ 4   0  32   0.03 1.94 2.26   8  14.68  85.29   0.00   37  71.64   0.00
+ 5   0  40   0.03 1.94 2.26   8  16.01  83.96   0.00   36  78.62   0.00
+ 6   0  48   0.02 2.18 2.26   8  46.79  53.18   0.00   36  11.05   0.00
+ 7   0  56   0.02 2.01 2.26   8  50.84  49.14   0.00   45  26.50   0.00
+pk cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6 CTMP   %pc3   %pc6
+             0.03 2.10 2.26   0  30.88  69.09   0.00   51  48.09   0.00
+ 0   0   0   0.23 1.84 2.26   8  51.98  47.79   0.00   50  31.06   0.00
+ 1   0   8   0.04 2.05 2.26   8  59.44  40.52   0.00   41  21.86   0.00
+ 2   0  16   0.04 1.73 2.26   8  22.87  77.09   0.00   41  62.26   0.00
+ 3   0  24   0.03 1.93 2.26   8   9.83  90.14   0.00   41  77.33   0.00
+ 4   0  32   0.03 1.90 2.26   8   8.66  91.31   0.00   37  89.16   0.00
+ 5   0  40   0.03 2.05 2.26   8  27.30  72.67   0.00   35  50.62   0.00
+ 6   0  48   0.02 2.07 2.26   8  44.81  55.17   0.00   36  18.97   0.00
+ 7   0  56   0.02 2.00 2.26   8  48.06  51.91   0.00   42  33.44   0.00
 
-Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
----
-Applies on v3.13-rc3.  See also:
+That, vs solid >99% pc3 for old 3.0 enterprise kernel.  What happened,
+dunno, kernel called itself master.  Whatever, I don't like test bogons,
+and this is one, so I thought I should let you know.  DL980 refuses to
+come close to the previous result.
 
-http://marc.info/?l=linux-arm-kernel&m=138542591313620&w=2
+'nuff of that, off to the slave pits before yet another day evaporates.
 
-  drivers/cpufreq/omap-cpufreq.c |    2 +-
-  1 file changed, 1 insertion(+), 1 deletion(-)
+-Mike
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index a0acd0bfba40..0f41eb2609f3 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -63,7 +63,7 @@ static int omap_target(struct cpufreq_policy *policy, unsigned int index)
-
-  	freq = new_freq * 1000;
-  	ret = clk_round_rate(mpu_clk, freq);
--	if (IS_ERR_VALUE(ret)) {
-+	if (ret <= 0) {
-  		dev_warn(mpu_dev,
-  			 "CPUfreq: Cannot find matching frequency for %lu\n",
-  			 freq);
