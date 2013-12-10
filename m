@@ -1,53 +1,33 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Tue, 10 Dec 2013 16:06:56 +0100
-Message-ID: <20131210150656.GB873@gmail.com>
-References: <CAJvTdK=+aNN66mYpCGgbHGCHhYQAKx-vB0kJSWjVpsNb_hOAtQ@mail.gmail.com>
- <1386478624.4748.19.camel@marge.simpson.net>
- <CAJvTdKn_2mihtMLiQVNCOp_zokx8CsSr2c5NhbkbfJ-qvma-8Q@mail.gmail.com>
- <1386559014.4875.16.camel@marge.simpson.net>
- <1386652637.5374.72.camel@marge.simpson.net>
- <alpine.DEB.2.02.1312101458040.28330@ionos.tec.linutronix.de>
+From: Martin Ziegler <ziegler@email.mathematik.uni-freiburg.de>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during
+ suspend/resume
+Date: Tue, 10 Dec 2013 17:02:33 +0100
+Message-ID: <alpine.DEB.2.10.1312101710260.2743@zertz.mathematik.uni-freiburg.de>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no> <529F04B2.7050303@linaro.org> <2628468.jr1aJZyvPu@vostro.rjw.lan> <CAOLK0pxW_AjtGNwW2G8-1SpJbYs_GWQDLV=7XzPfDHRj6tCxQQ@mail.gmail.com> <52A567A6.6000400@linux.vnet.ibm.com>
+Reply-To: Martin Ziegler <ziegler@uni-freiburg.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.02.1312101458040.28330@ionos.tec.linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Mike Galbraith <bitbucket@online.de>, Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from email.mathematik.uni-freiburg.de ([132.230.30.5]:39167 "EHLO
+	email.mathematik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752850Ab3LJQMK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2013 11:12:10 -0500
+In-Reply-To: <52A567A6.6000400@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, =?ISO-8859-15?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, martin.ziegler@math.uni-freiburg.de
 
+On my machine
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+CPU offline:
+echo 0 > /sys/devices/system/cpu/cpu<num>/online
 
-> On Tue, 10 Dec 2013, Mike Galbraith wrote:
-> > vogelweide:~/:[130]# turbostat -P -i 60
-> > pk cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6 CTMP   %pc3   %pc6
-> >              0.02 2.12 2.26   0  43.40  56.57   0.00   53  33.81   0.00
-> >  0   0   0   0.23 2.10 2.26   5  65.47  34.30   0.00   52  10.69   0.00
-> 
-> ...
->  
-> > That, vs solid >99% pc3 for old 3.0 enterprise kernel.  What happened,
-> > dunno, kernel called itself master.  Whatever, I don't like test bogons,
-> > and this is one, so I thought I should let you know.  DL980 refuses to
-> > come close to the previous result.
-> 
-> Hmm, that's very similar to the issue Len is seing on his quad 
-> socket WM.
-> 
-> But I can't see it on my dual socket SNB, neither does PeterZ on his 
-> dual socket WM machine. Heisenbugs ....
-> 
-> Can you offline all cpus except core 0, enable all trace events (nop 
-> tracer), run "sleep 100" and stop and grab the trace? Please make 
-> sure that your tracebuffer is big enough to cover the full thing.
+CPU online:
+echo 1 > /sys/devices/system/cpu/cpu<num>/online
 
-I guess because we are facing a Heisenbug it might be prudent to check 
-that the bug is still present with all those cpus offlined and with 
-tracing enabled :-/
+works fine with 3.13-rc3.
 
-Thanks,
+Regards
 
-	Ingo
+Martin
