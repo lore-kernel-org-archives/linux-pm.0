@@ -1,7 +1,7 @@
-From: Borislav Petkov <bp@alien8.de>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Wed, 11 Dec 2013 17:02:10 +0100
-Message-ID: <20131211160210.GA23793@pd.tnic>
+Date: Wed, 11 Dec 2013 17:43:18 +0100
+Message-ID: <20131211164318.GA2480@laptop.programming.kicks-ass.net>
 References: <alpine.DEB.2.02.1312101458040.28330@ionos.tec.linutronix.de>
  <alpine.DEB.2.02.1312110030330.28330@ionos.tec.linutronix.de>
  <1386732093.5964.6.camel@marge.simpson.net>
@@ -13,31 +13,33 @@ References: <alpine.DEB.2.02.1312101458040.28330@ionos.tec.linutronix.de>
  <20131211134048.GH21683@pd.tnic>
  <20131211145655.GB4510@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:43094 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750707Ab3LKQCS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Dec 2013 11:02:18 -0500
+Received: from merlin.infradead.org ([205.233.59.134]:35102 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262Ab3LKQne (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Dec 2013 11:43:34 -0500
 Content-Disposition: inline
 In-Reply-To: <20131211145655.GB4510@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
+Cc: Borislav Petkov <bp@alien8.de>, Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
 On Wed, Dec 11, 2013 at 03:56:55PM +0100, Ingo Molnar wrote:
-> I think CLFLUSH should be pretty universally available, IIRC
-> graphics drivers were using it rather heavily in combination with
+> 
+> * Borislav Petkov <bp@alien8.de> wrote:
+> 
+> > On Wed, Dec 11, 2013 at 01:43:52PM +0100, Peter Zijlstra wrote:
+> > > Something like the below.. someone needs to double check and possibly
+> > > add SNB/IVB EX parts if they're already available.
+> > 
+> > Right, our friends at Intel would need to tell us which families/models
+> > does AAI65 span... if, this is actually the case.
+> 
+> I think CLFLUSH should be pretty universally available, IIRC graphics 
+> drivers were using it rather heavily in combination with 
 > write-combining MTRRs, both on Linux and on Windows.
 
-... and it is also very expensive. So I don't think it would be in
-Intel's best interest to do CLFLUSH unconditionally on all families but
-only on those which really need to.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+The availability isn't the problem; the cost is. We shouldn't issue one
+if its not required. Only 'broken' EX hardware needs it.
