@@ -1,67 +1,40 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH 2/2] cpufreq: Select PM_OPP rather than depending on it
-Date: Wed, 11 Dec 2013 22:12:27 +0000
-Message-ID: <1386799947-6041-2-git-send-email-broonie@kernel.org>
-References: <1386799947-6041-1-git-send-email-broonie@kernel.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386799947-6041-1-git-send-email-broonie@kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Rob Herring <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
+Date: Wed, 11 Dec 2013 23:22:29 +0100 (CET)
+Message-ID: <alpine.DEB.2.02.1312112320320.28330@ionos.tec.linutronix.de>
+References: <CAJvTdK=+aNN66mYpCGgbHGCHhYQAKx-vB0kJSWjVpsNb_hOAtQ@mail.gmail.com> <1386478624.4748.19.camel@marge.simpson.net> <CAJvTdKn_2mihtMLiQVNCOp_zokx8CsSr2c5NhbkbfJ-qvma-8Q@mail.gmail.com> <1386559014.4875.16.camel@marge.simpson.net>
+ <1386652637.5374.72.camel@marge.simpson.net> <alpine.DEB.2.02.1312101458040.28330@ionos.tec.linutronix.de> <alpine.DEB.2.02.1312110030330.28330@ionos.tec.linutronix.de> <1386732093.5964.6.camel@marge.simpson.net> <alpine.DEB.2.02.1312111206200.28330@ionos.tec.linutronix.de>
+ <20131211113839.GF21683@pd.tnic> <20131211115239.GA21999@twins.programming.kicks-ass.net> <CAJvTdKm5sdT8R-DNGNWyebTKYDqP49dQMds9++TkF=aF8O=V7Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:36926 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751076Ab3LKWWn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Dec 2013 17:22:43 -0500
+In-Reply-To: <CAJvTdKm5sdT8R-DNGNWyebTKYDqP49dQMds9++TkF=aF8O=V7Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>, Mike Galbraith <bitbucket@online.de>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
-From: Mark Brown <broonie@linaro.org>
+On Wed, 11 Dec 2013, Len Brown wrote:
 
-PM_OPP is a helper library used by several of the existing cpufreq drivers.
-Some of the drivers select this symbol while others depend on it and rely
-on the architecture to enable it. Make this behaviour more consistent and
-obvious by having all the drivers select the symbol. This will also allow
-better build coverage of the affected drivers.
+> For the record...
+> 
+> intel_idle doesn't check that bit because it doesn't run on model 29 --
+> the Xeon 7400 was the "Dunnington" 4-socket generation based on Core2.
 
-Signed-off-by: Mark Brown <broonie@linaro.org>
----
- drivers/cpufreq/Kconfig     | 3 ++-
- drivers/cpufreq/Kconfig.arm | 6 ++++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+Right, we wondered about the restricted model check
+already. Interesting that this is a 4 socket issue as well.
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index e26fdcd14165..6947fdfca57c 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -181,7 +181,8 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 
- config GENERIC_CPUFREQ_CPU0
- 	tristate "Generic CPU0 cpufreq driver"
--	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
-+	depends on HAVE_CLK && REGULATOR && OF
-+	select PM_OPP
- 	help
- 	  This adds a generic cpufreq driver for CPU0 frequency management.
- 	  It supports both uniprocessor (UP) and symmetric multiprocessor (SMP)
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 0a141109fd29..456ba5e1781c 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -4,7 +4,8 @@
- 
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
--	depends on ARM && ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
-+	depends on ARM && ARM_CPU_TOPOLOGY && HAVE_CLK
-+	select PM_OPP
- 	help
- 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
- 
-@@ -54,7 +55,8 @@ config ARM_EXYNOS5250_CPUFREQ
- config ARM_EXYNOS5440_CPUFREQ
- 	bool "SAMSUNG EXYNOS5440"
- 	depends on SOC_EXYNOS5440
--	depends on HAVE_CLK && PM_OPP && OF
-+	depends on HAVE_CLK && OF
-+	select PM_OPP
- 	default y
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS5440
--- 
-1.8.5.1
+> Until now, i was not aware that this issue might apply to models other
+> than that one.
+> 
+> Checking w/ the HW guys...
 
+I hope they are not equally surprised :)
+
+Thanks,
+
+	tglx
