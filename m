@@ -1,7 +1,7 @@
-From: Borislav Petkov <bp@alien8.de>
+From: Ingo Molnar <mingo@kernel.org>
 Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Wed, 11 Dec 2013 14:40:48 +0100
-Message-ID: <20131211134048.GH21683@pd.tnic>
+Date: Wed, 11 Dec 2013 15:42:38 +0100
+Message-ID: <20131211144238.GA4510@gmail.com>
 References: <1386559014.4875.16.camel@marge.simpson.net>
  <1386652637.5374.72.camel@marge.simpson.net>
  <alpine.DEB.2.02.1312101458040.28330@ionos.tec.linutronix.de>
@@ -13,30 +13,85 @@ References: <1386559014.4875.16.camel@marge.simpson.net>
  <1386764955.12005.60.camel@marge.simpson.net>
  <20131211124352.GB21999@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f43.google.com ([74.125.83.43]:57429 "EHLO
+	mail-ee0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904Ab3LKOmm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Dec 2013 09:42:42 -0500
 Content-Disposition: inline
 In-Reply-To: <20131211124352.GB21999@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <bitbucket@online.de>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
-On Wed, Dec 11, 2013 at 01:43:52PM +0100, Peter Zijlstra wrote:
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Wed, Dec 11, 2013 at 01:29:15PM +0100, Mike Galbraith wrote:
+> > On Wed, 2013-12-11 at 12:52 +0100, Peter Zijlstra wrote: 
+> > > On Wed, Dec 11, 2013 at 12:38:39PM +0100, Borislav Petkov wrote:
+> > > > Right, if it turns out that this is really the case and that this
+> > > > erratum hasn't been fixed for models later than 29 - we'd need the
+> > > > additional model numbers to set X86_FEATURE_CLFLUSH_MONITOR correctly.
+> > > 
+> > > You also need: https://lkml.org/lkml/2013/11/19/143
+> > > 
+> > > Because obviously not all mwait idle loops check that cpu bit.
+> > 
+> > I had tried that patch, to see if it would magically make the thing
+> > start working, nope.  I had also tried...
+> 
+> > +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
+> > +			clflush((void *)&current_thread_info()->flags);
+> 
+> Yeah, you need a bit extra to enable that feature bit for your CPU as
+> bpetkov said.
+> 
 > Something like the below.. someone needs to double check and possibly
 > add SNB/IVB EX parts if they're already available.
+> 
+> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+> index dc1ec0dff939..015642eed045 100644
+> --- a/arch/x86/kernel/cpu/intel.c
+> +++ b/arch/x86/kernel/cpu/intel.c
+> @@ -387,8 +387,15 @@ static void init_intel(struct cpuinfo_x86 *c)
+>  			set_cpu_cap(c, X86_FEATURE_PEBS);
+>  	}
+>  
+> -	if (c->x86 == 6 && c->x86_model == 29 && cpu_has_clflush)
+> -		set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
+> +	if (c->x86 == 6 && cpu_has_clflush) {
+> +		switch (c->x86_model) {
+> +		case 29: /* Core2 EX */
+> +		case 46: /* NHM EX */
+> +		case 47: /* WSM EX */
+> +			set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
+> +			break;
+> +		}
+> +	}
 
-Right, our friends at Intel would need to tell us which families/models
-does AAI65 span... if, this is actually the case.
+Another thing that is required I think is to issue a write barrier 
+before CLFLUSH instruction. By my (possibly incorrect ...) reading of 
+the documentation CLFLUSH does not appear to be ordered (at all), so 
+it might execute before the modification to the affected memory?
 
-But now that Mike's box is fixed too, it very much looks like it.
 
-Oh, and AAIxx errata are Intel Xeon Processor 7400 Series ones, we would
-also need to know whether other incarnations are affected too.
+So something like:
 
--- 
-Regards/Gruss,
-    Boris.
+		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR)) {
+			smp_wmb(); /* order CLFLUSH */
+			clflush(&current_thread_info()->flags);
+		}
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+possibly put behind some utility function, smp_clflush() or so, hiding 
+the CPU feature bit check as well:
+
+		smp_clflush(&current_thread_info()->flags);
+
+or so?
+
+Thanks,
+
+	Ingo
