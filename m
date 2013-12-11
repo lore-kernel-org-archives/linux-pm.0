@@ -1,45 +1,44 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Wed, 11 Dec 2013 15:08:35 -0800
-Message-ID: <52A8F073.9040500@zytor.com>
-References: <alpine.DEB.2.02.1312110030330.28330@ionos.tec.linutronix.de> <1386732093.5964.6.camel@marge.simpson.net> <alpine.DEB.2.02.1312111206200.28330@ionos.tec.linutronix.de> <20131211113839.GF21683@pd.tnic> <20131211115239.GA21999@twins.programming.kicks-ass.net> <1386764955.12005.60.camel@marge.simpson.net> <20131211124352.GB21999@twins.programming.kicks-ass.net> <20131211134048.GH21683@pd.tnic> <20131211145655.GB4510@gmail.com> <20131211164318.GA2480@laptop.programming.kicks-ass.net> <20131211175036.GC12431@gmail.com>
+Date: Thu, 12 Dec 2013 00:14:25 +0100
+Message-ID: <20131211231425.GD8863@pd.tnic>
+References: <alpine.DEB.2.02.1312111206200.28330@ionos.tec.linutronix.de>
+ <20131211113839.GF21683@pd.tnic>
+ <20131211115239.GA21999@twins.programming.kicks-ass.net>
+ <1386764955.12005.60.camel@marge.simpson.net>
+ <20131211124352.GB21999@twins.programming.kicks-ass.net>
+ <20131211134048.GH21683@pd.tnic>
+ <20131211145655.GB4510@gmail.com>
+ <20131211164318.GA2480@laptop.programming.kicks-ass.net>
+ <20131211175036.GC12431@gmail.com>
+ <52A8F073.9040500@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from terminus.zytor.com ([198.137.202.10]:40054 "EHLO mail.zytor.com"
+Received: from mail.skyhub.de ([78.46.96.112]:45478 "EHLO mail.skyhub.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592Ab3LKXJn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Dec 2013 18:09:43 -0500
-In-Reply-To: <20131211175036.GC12431@gmail.com>
+	id S1751028Ab3LKXOd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Dec 2013 18:14:33 -0500
+Content-Disposition: inline
+In-Reply-To: <52A8F073.9040500@zytor.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: Borislav Petkov <bp@alien8.de>, Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
-On 12/11/2013 09:50 AM, Ingo Molnar wrote:
-> 
-> Well, availability could be a problem too, if some CPU (real or 
-> virtual) implements MWAIT but not CLFLUSH.
-> 
-> In theory we could make mwait an alternatives variant and patch in the 
-> right combination of instructions? The CLFLUSH goes to the same 
-> address as on which the monitoring happens, so it could be considered 
-> one meta-instruction.
-> 
+On Wed, Dec 11, 2013 at 03:08:35PM -0800, H. Peter Anvin wrote:
+> So I would like to propose that we switch to using a percpu variable
+> which is a single cache line of nothing at all. It would only ever
+> be touched by MONITOR and for explicit wakeup. Hopefully that will
+> resolve this problem without the need for the CLFLUSH.
 
-The first thing to do is probably to drop the use of thread_info as a
-wakeup doorbell.  It seemed like a good idea at the time -- after all,
-there is one for each thread -- but it is extremely likely to be dirty
-in the cache, which is (presumably) what causes these kinds of bugs to
-be maximally likely.  Even if we don't do the CLFLUSH it is likely that
-the hardware has to do something expensive behind the scenes.
+Yep, makes a lot of sense to me to have an exclusive (overloaded meaning
+here :-)) cacheline only for that. And, if it works, we'll save us the
+penalty from the CLFLUSH too, cool.
 
-So I would like to propose that we switch to using a percpu variable
-which is a single cache line of nothing at all.  It would only ever be
-touched by MONITOR and for explicit wakeup.  Hopefully that will resolve
-this problem without the need for the CLFLUSH.
+-- 
+Regards/Gruss,
+    Boris.
 
-	-hpa
-
-
+Sent from a fat crate under my desk. Formatting is fine.
+--
