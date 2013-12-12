@@ -1,68 +1,82 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Thu, 12 Dec 2013 14:28:46 +0100
-Message-ID: <20131212132846.GA16750@gmail.com>
-References: <20131211113839.GF21683@pd.tnic>
- <20131211115239.GA21999@twins.programming.kicks-ass.net>
- <1386764955.12005.60.camel@marge.simpson.net>
- <20131211124352.GB21999@twins.programming.kicks-ass.net>
- <20131211134048.GH21683@pd.tnic>
- <20131211145655.GB4510@gmail.com>
- <20131211164318.GA2480@laptop.programming.kicks-ass.net>
- <20131211175036.GC12431@gmail.com>
- <52A8F073.9040500@zytor.com>
- <20131212085143.GC21999@twins.programming.kicks-ass.net>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 12/15] thermal: rcar-thermal: Enable driver compilation
+ with COMPILE_TEST
+Date: Thu, 12 Dec 2013 10:01:44 -0400
+Message-ID: <52A9C1C8.2030907@ti.com>
+References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <1385515117-23664-13-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <5903007.OehDdPcG2U@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f53.google.com ([74.125.83.53]:58613 "EHLO
-	mail-ee0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098Ab3LLN2u (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 08:28:50 -0500
-Content-Disposition: inline
-In-Reply-To: <20131212085143.GC21999@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe"
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <5903007.OehDdPcG2U@avalon>
+Sender: linux-sh-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@alien8.de>, Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
+
+--5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 11-12-2013 08:50, Laurent Pinchart wrote:
+> Hi Zhang and Eduardo,
+>=20
+> Could you please pick this patch up for v3.14 ?
+
+Yes Laurent, I can pick it.
+
+>=20
+> On Wednesday 27 November 2013 02:18:34 Laurent Pinchart wrote:
+>> This helps increasing build testing coverage.
+>>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+>> Cc: linux-pm@vger.kernel.org
+>> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard=
+=2Ecom>
+>> Acked-by: Simon Horman <horms@verge.net.au>
+
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
+>> ---
+>>  drivers/thermal/Kconfig | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index f35a1f7..661cafc 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -121,7 +121,7 @@ config SPEAR_THERMAL
+>>
+>>  config RCAR_THERMAL
+>>  	tristate "Renesas R-Car thermal driver"
+>> -	depends on ARCH_SHMOBILE
+>> +	depends on ARCH_SHMOBILE || COMPILE_TEST
+>>  	help
+>>  	  Enable this to plug the R-Car thermal sensor driver into the Linux=
+
+>>  	  thermal framework.
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-> On Wed, Dec 11, 2013 at 03:08:35PM -0800, H. Peter Anvin wrote:
-> > On 12/11/2013 09:50 AM, Ingo Molnar wrote:
-> > > 
-> > > Well, availability could be a problem too, if some CPU (real or 
-> > > virtual) implements MWAIT but not CLFLUSH.
-> > > 
-> > > In theory we could make mwait an alternatives variant and patch in the 
-> > > right combination of instructions? The CLFLUSH goes to the same 
-> > > address as on which the monitoring happens, so it could be considered 
-> > > one meta-instruction.
-> > > 
-> > 
-> > The first thing to do is probably to drop the use of thread_info as a
-> > wakeup doorbell.  It seemed like a good idea at the time -- after all,
-> > there is one for each thread -- but it is extremely likely to be dirty
-> > in the cache, which is (presumably) what causes these kinds of bugs to
-> > be maximally likely.  Even if we don't do the CLFLUSH it is likely that
-> > the hardware has to do something expensive behind the scenes.
-> > 
-> > So I would like to propose that we switch to using a percpu variable
-> > which is a single cache line of nothing at all.  It would only ever be
-> > touched by MONITOR and for explicit wakeup.  Hopefully that will resolve
-> > this problem without the need for the CLFLUSH.
-> 
-> The reason we use thread_info::flags is because we need to write
-> TIF_NEED_RESCHED into it to wake up anyhow.
-> 
-> Using another cacheline would mean the wakeup path would need to write a
-> second cross cpu cacheline -- that is badness too.
-> 
-> So no, I don't think we want to listen to another line.
+Eduardo Valentin
 
-Seconded ...
 
-Thanks,
+--5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKpwcwACgkQCXcVR3XQvP1mkQD/ePDH+zoxcQvLP5VXDLT4EG90
+Wf12up6SQozBlbzRmOkA/1rlnd7iOZSTb72xVMm+gs1reG9PbWFBNd91Zd9niQuU
+=fEZC
+-----END PGP SIGNATURE-----
+
+--5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe--
