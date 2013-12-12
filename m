@@ -1,154 +1,575 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
-Date: Thu, 12 Dec 2013 09:52:01 +0100
-Message-ID: <87txeesb7y.fsf@nemi.mork.no>
-References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
-	<52A567A6.6000400@linux.vnet.ibm.com> <87iouyuypm.fsf@nemi.mork.no>
-	<4241242.m6mjyy0put@vostro.rjw.lan>
+From: Bill Huang <bilhuang@nvidia.com>
+Subject: [PATCH v4 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Thu, 12 Dec 2013 17:32:07 +0800
+Message-ID: <1386840727-28716-1-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from canardo.mork.no ([148.122.252.1]:39742 "EHLO canardo.mork.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751566Ab3LLIxV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 03:53:21 -0500
-In-Reply-To: <4241242.m6mjyy0put@vostro.rjw.lan> (Rafael J. Wysocki's message
-	of "Thu, 12 Dec 2013 02:59:47 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: swarren@wwwdotorg.org, rjw@rjwysocki.net, viresh.kumar@linario.org, thierry.reding@gmail.com
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Bill Huang <bilhuang@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de, viresh kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-> On Monday, December 09, 2013 11:04:53 AM Bj=C3=B8rn Mork wrote:
->> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->> > On 12/09/2013 08:29 AM, Lan Tianyu wrote:
->> >> 2013/12/5 Rafael J. Wysocki <rjw@rjwysocki.net>:
->> >>> On Wednesday, December 04, 2013 04:02:18 PM viresh kumar wrote:
->> >>>> On Tuesday 03 December 2013 04:44 PM, Bj=C3=B8rn Mork wrote:
->> >>>>> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq:=
- Perform
->> >>>>> light-weight init/teardown during suspend/resume"), which enab=
-led
->> >>>>> suspend/resume optimizations leaving the sysfs files in place.
->> > [...]
->> >>> I took the Bjorn's patch for 3.13 and this one I can queued up f=
-or 3.14,
->> >>> but for that I guess it should contain a revert of the change ma=
-de by the
->> >>> Bjorn's patch.
->> >>=20
->> >> This patch causes a s3 regression. Cc:Martin Ziegler
->> >> https://bugzilla.kernel.org/show_bug.cgi?id=3D66751
->> >>=20
->> >
->> > Hmm.. With Bjorn's patch applied, the cpufreq hotplug callback sho=
-uld become
->> > identical to what happens during regular CPU hotplug.
->>=20
->> Yes, I also wondered how that could have happened.
->>=20
->> Apparently this is due to bad interaction between two patches. Commi=
-t=20
->>=20
->>   5a87182aa21d ("cpufreq: suspend governors on system suspend/hibern=
-ate")
->>=20
->> added an implicit dependency on the suspend/resume code which commit
->>=20
->>   2167e2399dc5 ("cpufreq: fix garbage kobjects on errors during susp=
-end/resume")
->>=20
->> disabled.
->
-> I suspected so, but then I was about to jump on a plane to another co=
-ntinent
-> in several hours, so I preferred to simply revert both commits and st=
-art over
-> after the dust settled.
+Re-model Tegra20 cpufreq driver as below.
 
-No, problem.  I saw your mail about travelling. And I definitely suppor=
-t
-the "revert first, research later" strategy in any case.  There was
-still too many people hit by this, and bisecting it just to find an
-already known bug.
+* Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
+  only Tegra20.
+* Add probe function so defer probe can be used when we're going to
+  support DVFS.
+* Create a fake cpufreq platform device with its name being
+  "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
+  accordingly.
 
->> This would make the last patch applied of these two come out of the
->> bisect, which is 2167e2399dc5 in this case.  I can confirm that
->> reverting only this patch also fixes my hibernate problem.
->>=20
->> BUT: It reintroduces the problem it was supposed to fix.  AND: As yo=
-u
->> note, it really does nothing but revert to the assumed safe regular =
-CPU
->> hotplug operations.  Which means that the other patch somehow has ma=
-de
->> regular CPU hotplugging fail *if suspending*.  It won't make it fail
->> unless suspending, so there is no need to test CPU hotplugging
->> separately.=20
->>=20
->> In any case, my claim is that the real bug here still is in commit
->> 5a87182aa21d, which added an undocumented implicit dependency on the
->> special cpufreq suspend/resume code.  There is no way in hell that
->> anyone could have guessed that the seemingly innocent changes in com=
-mit
->> 2167e2399dc5 would fail because of this. Which should be more than
->> enough to understand why the continues sprinkling of suspend/resume =
-code
->> all over has to stop.  Where did all the nice and clean pm hooks des=
-ign
->> disappear?
->
-> cpufreq has always had problems with suspend/resume in the first plac=
-e,
-> but it just didn't have so much testing coverage before.
+Signed-off-by: Bill Huang <bilhuang@nvidia.com>
+---
 
-Yes...  I have known about the problems with acpi-cpufreq "forever" and
-do feel bad about not reporting it before.  But I usually don't want to
-report bugs without being able to dedicate some time to follow up in
-case the developers need more info or patch testing etc.  Which means
-that "low priority" (rare, only slightly annoying, etc) bugs can end up
-not being reported at all.
+This patch remodel Tegra cpufreq driver to make it more easy to add new
+SoC support, in addition to that, adding probe function in the driver to
+let probe defer can be used to control init sequence when we are going
+to support DVFS.
 
-So the additional cpufreq breakage in v3.12 was actually good because i=
-t
-made the acpi-cpufreq bug a log more annoying, and therefore increased
-the priority :-)
+Changes since v3:
 
->> My opinion is that commit 2167e2399dc5 still is the correct short te=
-rm
->> fix, and it should be reapplied to v3.13-rcX and resubmitted for
->> 3.12-stable.
->
-> First of all, I'm not going to send any pull requests this week and e=
-ven
-> the next week may be too early to reintroduce that commit.  However, =
-the
-> second next week will be the -rc6 time frame, so I'm not sure.  It ma=
-y
-> end up in 3.14-rc1.
+- Create separate driver for each SoCs instead of a central driver indirect
+  call to different SoC functions.
 
-You decide of course, but if it matters then I tend to agree that this
-should wait for 3.14.  It has gone enough back and forth for now, and
-the fact that noone(?) else has reported it as a 3.12 regression shows
-that it probably isn't a big problem for most people.
+Changes since v2:
 
->> I anticipate the real cleanup of this mess.  But I don't think any
->> additional "if suspending" tests has any place in it.  Test *once* a=
-nd
->> fork to whatever you want to do differently when suspending .
->> Sprinkling these tests all over, having separate code blocks implici=
-tly
->> depending on each other, is nothing but a recipe for hard to track b=
-ugs.
->
-> Yes, that's pretty much the case, but it looks like we need to do a m=
-ajor
-> redesign of stuff to really fix those problems.
+- Fix Kconfig.
+- Rebase on top of branch 'cpufreq-next' on git://git.linaro.org/people/vireshk/linux.git.
 
-Yes, I am hoping you will do that :-)
+Changes since v1:
 
+- Split up patches.
+- Split configuration-time data out of structure "tegra_cpufreq_data".
+- Bug fixes.
 
+---
+ arch/arm/mach-tegra/tegra.c       |    2 +
+ drivers/cpufreq/Kconfig.arm       |   12 +++
+ drivers/cpufreq/Makefile          |    1 +
+ drivers/cpufreq/tegra-cpufreq.c   |  214 ++++++-------------------------------
+ drivers/cpufreq/tegra20-cpufreq.c |  192 +++++++++++++++++++++++++++++++++
+ include/linux/tegra-cpufreq.h     |   24 +++++
+ 6 files changed, 265 insertions(+), 180 deletions(-)
+ create mode 100644 drivers/cpufreq/tegra20-cpufreq.c
+ create mode 100644 include/linux/tegra-cpufreq.h
 
-Bj=C3=B8rn
+diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
+index 7336817..a9b23e9 100644
+--- a/arch/arm/mach-tegra/tegra.c
++++ b/arch/arm/mach-tegra/tegra.c
+@@ -34,6 +34,7 @@
+ #include <linux/usb/tegra_usb_phy.h>
+ #include <linux/clk/tegra.h>
+ #include <linux/irqchip.h>
++#include <linux/tegra-cpufreq.h>
+ 
+ #include <asm/hardware/cache-l2x0.h>
+ #include <asm/mach-types.h>
+@@ -160,6 +161,7 @@ static void __init tegra_dt_init_late(void)
+ {
+ 	int i;
+ 
++	tegra_cpufreq_init();
+ 	tegra_init_suspend();
+ 	tegra_cpuidle_init();
+ 	tegra_powergate_debugfs_init();
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index ce52ed9..1cc9213 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -225,6 +225,18 @@ config ARM_TEGRA_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver support for TEGRA SOCs.
+ 
++config ARM_TEGRA20_CPUFREQ
++	bool "NVIDIA TEGRA20"
++	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
++	default y
++	help
++	  This enables Tegra20 cpufreq functionality, it adds
++	  Tegra20 CPU frequency ladder and the call back functions
++	  to set CPU rate. All the non-SoC dependant codes are
++	  controlled by the config ARM_TEGRA20_CPUFREQ.
++
++	  If in doubt, say N.
++
+ config ARM_VEXPRESS_SPC_CPUFREQ
+         tristate "Versatile Express SPC based CPUfreq driver"
+         select ARM_BIG_LITTLE_CPUFREQ
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 7494565..331964b 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -74,6 +74,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)	+= sa1100-cpufreq.o
+ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
++obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+ 
+ ##################################################################################
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index 63f0059..a4be7c4 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -1,193 +1,47 @@
+ /*
+- * Copyright (C) 2010 Google, Inc.
++ * Copyright (c) 2013, NVIDIA Corporation. All rights reserved.
+  *
+- * Author:
+- *	Colin Cross <ccross@google.com>
+- *	Based on arch/arm/plat-omap/cpu-omap.c, (C) 2005 Nokia Corporation
+- *
+- * This software is licensed under the terms of the GNU General Public
+- * License version 2, as published by the Free Software Foundation, and
+- * may be copied, distributed, and modified under those terms.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
+  *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
+  */
+ 
+ #include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/types.h>
+-#include <linux/sched.h>
+-#include <linux/cpufreq.h>
+-#include <linux/delay.h>
+-#include <linux/init.h>
+-#include <linux/err.h>
+-#include <linux/clk.h>
+-#include <linux/io.h>
+-
+-static struct cpufreq_frequency_table freq_table[] = {
+-	{ .frequency = 216000 },
+-	{ .frequency = 312000 },
+-	{ .frequency = 456000 },
+-	{ .frequency = 608000 },
+-	{ .frequency = 760000 },
+-	{ .frequency = 816000 },
+-	{ .frequency = 912000 },
+-	{ .frequency = 1000000 },
+-	{ .frequency = CPUFREQ_TABLE_END },
++#include <linux/platform_device.h>
++#include <linux/of.h>
++#include <linux/tegra-cpufreq.h>
++
++static const char * const tegra_soc_compat[] = {
++	"nvidia,tegra124",
++	"nvidia,tegra114",
++	"nvidia,tegra30",
++	"nvidia,tegra20",
++	NULL
+ };
+ 
+-#define NUM_CPUS	2
+-
+-static struct clk *cpu_clk;
+-static struct clk *pll_x_clk;
+-static struct clk *pll_p_clk;
+-static struct clk *emc_clk;
+-
+-static int tegra_cpu_clk_set_rate(unsigned long rate)
+-{
+-	int ret;
+-
+-	/*
+-	 * Take an extra reference to the main pll so it doesn't turn
+-	 * off when we move the cpu off of it
+-	 */
+-	clk_prepare_enable(pll_x_clk);
+-
+-	ret = clk_set_parent(cpu_clk, pll_p_clk);
+-	if (ret) {
+-		pr_err("Failed to switch cpu to clock pll_p\n");
+-		goto out;
+-	}
+-
+-	if (rate == clk_get_rate(pll_p_clk))
+-		goto out;
+-
+-	ret = clk_set_rate(pll_x_clk, rate);
+-	if (ret) {
+-		pr_err("Failed to change pll_x to %lu\n", rate);
+-		goto out;
+-	}
+-
+-	ret = clk_set_parent(cpu_clk, pll_x_clk);
+-	if (ret) {
+-		pr_err("Failed to switch cpu to clock pll_x\n");
+-		goto out;
+-	}
+-
+-out:
+-	clk_disable_unprepare(pll_x_clk);
+-	return ret;
+-}
+-
+-static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
+-		unsigned long rate)
+-{
+-	int ret = 0;
+-
+-	/*
+-	 * Vote on memory bus frequency based on cpu frequency
+-	 * This sets the minimum frequency, display or avp may request higher
+-	 */
+-	if (rate >= 816000)
+-		clk_set_rate(emc_clk, 600000000); /* cpu 816 MHz, emc max */
+-	else if (rate >= 456000)
+-		clk_set_rate(emc_clk, 300000000); /* cpu 456 MHz, emc 150Mhz */
+-	else
+-		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
+-
+-	ret = tegra_cpu_clk_set_rate(rate * 1000);
+-	if (ret)
+-		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
+-			rate);
+-
+-	return ret;
+-}
+-
+-static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
+-{
+-	return tegra_update_cpu_speed(policy, freq_table[index].frequency);
+-}
+-
+-static int tegra_cpu_init(struct cpufreq_policy *policy)
++int __init tegra_cpufreq_init(void)
+ {
+-	int ret;
+-
+-	if (policy->cpu >= NUM_CPUS)
+-		return -EINVAL;
+-
+-	clk_prepare_enable(emc_clk);
+-	clk_prepare_enable(cpu_clk);
+-
+-	/* FIXME: what's the actual transition time? */
+-	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
+-	if (ret) {
+-		clk_disable_unprepare(cpu_clk);
+-		clk_disable_unprepare(emc_clk);
+-		return ret;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(tegra_soc_compat); i++) {
++		if (of_machine_is_compatible(tegra_soc_compat[i])) {
++			struct platform_device_info devinfo;
++			char buf[40];
++
++			memset(&devinfo, 0, sizeof(devinfo));
++			strcpy(buf, tegra_soc_compat[i]);
++			strcat(buf, "-cpufreq");
++			devinfo.name = buf;
++			platform_device_register_full(&devinfo);
++			break;
++		}
+ 	}
+ 
+-	policy->clk = cpu_clk;
+-	policy->suspend_freq = freq_table[0].frequency;
+-	return 0;
+-}
+-
+-static int tegra_cpu_exit(struct cpufreq_policy *policy)
+-{
+-	clk_disable_unprepare(cpu_clk);
+-	clk_disable_unprepare(emc_clk);
+ 	return 0;
+ }
+-
+-static struct cpufreq_driver tegra_cpufreq_driver = {
+-	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+-	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target_index	= tegra_target,
+-	.get		= cpufreq_generic_get,
+-	.init		= tegra_cpu_init,
+-	.exit		= tegra_cpu_exit,
+-	.name		= "tegra",
+-	.attr		= cpufreq_generic_attr,
+-#ifdef CONFIG_PM
+-	.suspend	= cpufreq_generic_suspend,
+-#endif
+-};
+-
+-static int __init tegra_cpufreq_init(void)
+-{
+-	cpu_clk = clk_get_sys(NULL, "cclk");
+-	if (IS_ERR(cpu_clk))
+-		return PTR_ERR(cpu_clk);
+-
+-	pll_x_clk = clk_get_sys(NULL, "pll_x");
+-	if (IS_ERR(pll_x_clk))
+-		return PTR_ERR(pll_x_clk);
+-
+-	pll_p_clk = clk_get_sys(NULL, "pll_p");
+-	if (IS_ERR(pll_p_clk))
+-		return PTR_ERR(pll_p_clk);
+-
+-	emc_clk = clk_get_sys("cpu", "emc");
+-	if (IS_ERR(emc_clk)) {
+-		clk_put(cpu_clk);
+-		return PTR_ERR(emc_clk);
+-	}
+-
+-	return cpufreq_register_driver(&tegra_cpufreq_driver);
+-}
+-
+-static void __exit tegra_cpufreq_exit(void)
+-{
+-        cpufreq_unregister_driver(&tegra_cpufreq_driver);
+-	clk_put(emc_clk);
+-	clk_put(cpu_clk);
+-}
+-
+-
+-MODULE_AUTHOR("Colin Cross <ccross@android.com>");
+-MODULE_DESCRIPTION("cpufreq driver for Nvidia Tegra2");
+-MODULE_LICENSE("GPL");
+-module_init(tegra_cpufreq_init);
+-module_exit(tegra_cpufreq_exit);
++EXPORT_SYMBOL(tegra_cpufreq_init);
+diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+new file mode 100644
+index 0000000..a430701
+--- /dev/null
++++ b/drivers/cpufreq/tegra20-cpufreq.c
+@@ -0,0 +1,192 @@
++/*
++ * Copyright (C) 2010 Google, Inc.
++ *
++ * Author:
++ *	Colin Cross <ccross@google.com>
++ *	Based on arch/arm/plat-omap/cpu-omap.c, (C) 2005 Nokia Corporation
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/cpufreq.h>
++#include <linux/err.h>
++#include <linux/clk.h>
++#include <linux/io.h>
++#include <linux/cpu.h>
++#include <linux/platform_device.h>
++
++static struct cpufreq_frequency_table freq_table[] = {
++	{ .frequency = 216000 },
++	{ .frequency = 312000 },
++	{ .frequency = 456000 },
++	{ .frequency = 608000 },
++	{ .frequency = 760000 },
++	{ .frequency = 816000 },
++	{ .frequency = 912000 },
++	{ .frequency = 1000000 },
++	{ .frequency = CPUFREQ_TABLE_END },
++};
++
++static struct clk *cpu_clk;
++static struct clk *pll_x_clk;
++static struct clk *pll_p_clk;
++static struct clk *emc_clk;
++
++static int tegra20_cpu_clk_set_rate(unsigned long rate)
++{
++	int ret;
++
++	/*
++	 * Take an extra reference to the main pll so it doesn't turn
++	 * off when we move the cpu off of it
++	 */
++	clk_prepare_enable(pll_x_clk);
++
++	ret = clk_set_parent(cpu_clk, pll_p_clk);
++	if (ret) {
++		pr_err("Failed to switch cpu to clock pll_p\n");
++		goto out;
++	}
++
++	if (rate == clk_get_rate(pll_p_clk))
++		goto out;
++
++	ret = clk_set_rate(pll_x_clk, rate);
++	if (ret) {
++		pr_err("Failed to change pll_x to %lu\n", rate);
++		goto out;
++	}
++
++	ret = clk_set_parent(cpu_clk, pll_x_clk);
++	if (ret) {
++		pr_err("Failed to switch cpu to clock pll_x\n");
++		goto out;
++	}
++
++out:
++	clk_disable_unprepare(pll_x_clk);
++	return ret;
++}
++
++static int tegra20_update_cpu_speed(struct cpufreq_policy *policy,
++		unsigned long rate)
++{
++	int ret = 0;
++
++	/*
++	 * Vote on memory bus frequency based on cpu frequency
++	 * This sets the minimum frequency, display or avp may request higher
++	 */
++	if (rate >= 816000)
++		clk_set_rate(emc_clk, 600000000); /* cpu 816 MHz, emc max */
++	else if (rate >= 456000)
++		clk_set_rate(emc_clk, 300000000); /* cpu 456 MHz, emc 150Mhz */
++	else
++		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
++
++	ret = tegra20_cpu_clk_set_rate(rate * 1000);
++	if (ret)
++		pr_err("cpu-tegra20: Failed to set cpu frequency to %lu kHz\n",
++			rate);
++
++	return ret;
++}
++
++static int tegra20_target(struct cpufreq_policy *policy, unsigned int index)
++{
++	return tegra20_update_cpu_speed(policy, freq_table[index].frequency);
++}
++
++static int tegra20_cpu_init(struct cpufreq_policy *policy)
++{
++	int ret;
++
++	clk_prepare_enable(emc_clk);
++	clk_prepare_enable(cpu_clk);
++
++	/* FIXME: what's the actual transition time? */
++	ret = cpufreq_generic_init(policy, freq_table, 300 * 1000);
++	if (ret) {
++		clk_disable_unprepare(cpu_clk);
++		clk_disable_unprepare(emc_clk);
++		return ret;
++	}
++
++	policy->clk = cpu_clk;
++	policy->suspend_freq = freq_table[0].frequency;
++	return 0;
++}
++
++static int tegra20_cpu_exit(struct cpufreq_policy *policy)
++{
++	clk_disable_unprepare(cpu_clk);
++	clk_disable_unprepare(emc_clk);
++	return 0;
++}
++
++static struct cpufreq_driver tegra20_cpufreq_driver = {
++	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= tegra20_target,
++	.get		= cpufreq_generic_get,
++	.init		= tegra20_cpu_init,
++	.exit		= tegra20_cpu_exit,
++	.name		= "tegra",
++	.attr		= cpufreq_generic_attr,
++#ifdef CONFIG_PM
++	.suspend	= cpufreq_generic_suspend,
++#endif
++};
++
++static int tegra20_cpufreq_probe(struct platform_device *pdev)
++{
++	cpu_clk = clk_get_sys(NULL, "cclk");
++	if (IS_ERR(cpu_clk))
++		return PTR_ERR(cpu_clk);
++
++	pll_x_clk = clk_get_sys(NULL, "pll_x");
++	if (IS_ERR(pll_x_clk))
++		return PTR_ERR(pll_x_clk);
++
++	pll_p_clk = clk_get_sys(NULL, "pll_p");
++	if (IS_ERR(pll_p_clk))
++		return PTR_ERR(pll_p_clk);
++
++	emc_clk = clk_get_sys("cpu", "emc");
++	if (IS_ERR(emc_clk)) {
++		clk_put(cpu_clk);
++		return PTR_ERR(emc_clk);
++	}
++
++	return cpufreq_register_driver(&tegra20_cpufreq_driver);
++}
++
++static int tegra20_cpufreq_remove(struct platform_device *pdev)
++{
++	cpufreq_unregister_driver(&tegra20_cpufreq_driver);
++	return 0;
++}
++
++static struct platform_driver tegra_cpufreq_platdrv = {
++	.driver = {
++		.name	= "nvidia,tegra20-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= tegra20_cpufreq_probe,
++	.remove		= tegra20_cpufreq_remove,
++};
++module_platform_driver(tegra_cpufreq_platdrv);
++
++MODULE_AUTHOR("Colin Cross <ccross@android.com>");
++MODULE_DESCRIPTION("cpufreq driver for Nvidia Tegra2");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/tegra-cpufreq.h b/include/linux/tegra-cpufreq.h
+new file mode 100644
+index 0000000..d7643e0
+--- /dev/null
++++ b/include/linux/tegra-cpufreq.h
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (c) 2013, NVIDIA Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++#ifndef __LINUX_TEGRA_CPUFREQ_H
++#define __LINUX_TEGRA_CPUFREQ_H
++
++#ifdef CONFIG_ARM_TEGRA_CPUFREQ
++int tegra_cpufreq_init(void);
++#else
++static inline int tegra_cpufreq_init(void)
++{ return; }
++#endif
++
++#endif /* __LINUX_TEGRA_CPUFREQ_H_ */
+-- 
+1.7.9.5
+
