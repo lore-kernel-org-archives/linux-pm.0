@@ -1,48 +1,53 @@
-From: Mike Galbraith <bitbucket@online.de>
-Subject: Re: [PATCH V3]hrtimer: Fix a performance regression by disable
- reprogramming in remove_hrtimer
-Date: Thu, 12 Dec 2013 15:42:02 +0100
-Message-ID: <1386859322.6056.83.camel@marge.simpson.net>
-References: <24EECBCC-F655-404F-8946-73CC36095A5F@gmail.com>
-	 <1378362989.18435.2.camel@marge.simpson.net>
-	 <20130905111428.GB23362@gmail.com>
-	 <1378386697.6567.9.camel@marge.simpson.net>
-	 <20130905133750.GA26637@gmail.com>
-	 <1378445942.5434.31.camel@marge.simpson.net>
-	 <20130909122325.GX31370@twins.programming.kicks-ass.net>
-	 <1378730538.5586.30.camel@marge.simpson.net>
-	 <20130909133044.GB31370@twins.programming.kicks-ass.net>
-	 <20130909134635.GB26785@twins.programming.kicks-ass.net>
-	 <20130911085643.GS26785@twins.programming.kicks-ass.net>
-	 <1378895123.5476.83.camel@marge.simpson.net>
-	 <CABawtvMo+NtTv3a3jj=YTg-Om=MzHhVDARdtTA-DtTMzNeNAJA@mail.gmail.com>
-	 <1381120901.9926.11.camel@marge.simpson.net>
-	 <CABawtvN-rO+YAy55+W-oxgtibh=9ZDnqNMGcreg6u==C3Cr7xA@mail.gmail.com>
-	 <CABawtvNf5k8pKY6ioa8GdUzOn7h3aOBsWhSUNgmfuQSj+xtUbQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend to RAM
+Date: Thu, 12 Dec 2013 15:57:05 +0100
+Message-ID: <4421787.xvooIB0ROV@vostro.rjw.lan>
+References: <52A96D01.1050503@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from moutng.kundenserver.de ([212.227.17.10]:64207 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358Ab3LLOmN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 09:42:13 -0500
-In-Reply-To: <CABawtvNf5k8pKY6ioa8GdUzOn7h3aOBsWhSUNgmfuQSj+xtUbQ@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:58112 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751542Ab3LLOn5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 09:43:57 -0500
+In-Reply-To: <52A96D01.1050503@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ethan Zhao <ethan.kernel@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, 2013-12-12 at 22:14 +0800, Ethan Zhao wrote: 
-> Mike,
->     it seems the IPI issue got root cause (cpu hardware errata ) now ?
-> I only catch some pieces of the mails, is that to say the crazy horse
-> made by Intel will wake up unexpected, and eat too much reschedule
-> IPI, then the horse got hotter, performance down, and so the fix would
-> be a 'CFLUSH' to all the buggy CPU, is that right ?
+On Thursday, December 12, 2013 09:00:01 AM Francis Moreau wrote:
+> Hello,
+> 
+> I'm encountering an issue after resuming my system from suspend to RAM:
+> my ethernet controller is missing, it seems that the kernel doesn't see
+> it anymore. It's missing from /sys/class/net.
+> 
+> Before suspending, this is what lspci gives.
+> 
+> 03:00.2 Ethernet controller: Realtek Semiconductor Co., Ltd.
+> RTL8111/8168 PCI Express Gigabit Ethernet controller (rev 0a)
+>         Subsystem: CLEVO/KAPOK Computer Device 0540
+>         Flags: bus master, fast devsel, latency 0, IRQ 46
+>         I/O ports at e000 [size=256]
+>         Memory at f0a04000 (64-bit, prefetchable) [size=4K]
+>         Memory at f0a00000 (64-bit, prefetchable) [size=16K]
+>         Capabilities: [40] Power Management version 3
+>         Capabilities: [50] MSI: Enable+ Count=1/1 Maskable- 64bit+
+>         Capabilities: [70] Express Endpoint, MSI 01
+>         Capabilities: [b0] MSI-X: Enable- Count=4 Masked-
+>         Capabilities: [d0] Vital Product Data
+>         Capabilities: [100] Advanced Error Reporting
+>         Capabilities: [160] Device Serial Number 02-00-00-00-68-4c-e0-00
+>         Kernel driver in use: r8169
+>         Kernel modules: r8169
+> 
+> I can't see anything obvious in dmesg.
 
-You're mixing a couple different issues together, but yeah, close
-enough.  The barking amazonian tree guppy is being saved as we speak.
+Please send a dmesg output including the first suspend-resume cycle
+after a fresh boot (the one when you lose the NIC).
 
--Mike 
+Thanks,
+Rafael
 
