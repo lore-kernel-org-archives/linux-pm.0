@@ -1,59 +1,154 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Thu, 12 Dec 2013 09:51:43 +0100
-Message-ID: <20131212085143.GC21999@twins.programming.kicks-ass.net>
-References: <alpine.DEB.2.02.1312111206200.28330@ionos.tec.linutronix.de>
- <20131211113839.GF21683@pd.tnic>
- <20131211115239.GA21999@twins.programming.kicks-ass.net>
- <1386764955.12005.60.camel@marge.simpson.net>
- <20131211124352.GB21999@twins.programming.kicks-ass.net>
- <20131211134048.GH21683@pd.tnic>
- <20131211145655.GB4510@gmail.com>
- <20131211164318.GA2480@laptop.programming.kicks-ass.net>
- <20131211175036.GC12431@gmail.com>
- <52A8F073.9040500@zytor.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH] cpufreq: fix garbage kobj on errors during suspend/resume
+Date: Thu, 12 Dec 2013 09:52:01 +0100
+Message-ID: <87txeesb7y.fsf@nemi.mork.no>
+References: <1386069272-9250-1-git-send-email-bjorn@mork.no>
+	<52A567A6.6000400@linux.vnet.ibm.com> <87iouyuypm.fsf@nemi.mork.no>
+	<4241242.m6mjyy0put@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:55632 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222Ab3LLIwE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 03:52:04 -0500
-Content-Disposition: inline
-In-Reply-To: <52A8F073.9040500@zytor.com>
+Received: from canardo.mork.no ([148.122.252.1]:39742 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751566Ab3LLIxV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 03:53:21 -0500
+In-Reply-To: <4241242.m6mjyy0put@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Thu, 12 Dec 2013 02:59:47 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Borislav Petkov <bp@alien8.de>, Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lan Tianyu <lantianyu1986@gmail.com>, ziegler@uni-freiburg.de, viresh kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Dec 11, 2013 at 03:08:35PM -0800, H. Peter Anvin wrote:
-> On 12/11/2013 09:50 AM, Ingo Molnar wrote:
-> > 
-> > Well, availability could be a problem too, if some CPU (real or 
-> > virtual) implements MWAIT but not CLFLUSH.
-> > 
-> > In theory we could make mwait an alternatives variant and patch in the 
-> > right combination of instructions? The CLFLUSH goes to the same 
-> > address as on which the monitoring happens, so it could be considered 
-> > one meta-instruction.
-> > 
-> 
-> The first thing to do is probably to drop the use of thread_info as a
-> wakeup doorbell.  It seemed like a good idea at the time -- after all,
-> there is one for each thread -- but it is extremely likely to be dirty
-> in the cache, which is (presumably) what causes these kinds of bugs to
-> be maximally likely.  Even if we don't do the CLFLUSH it is likely that
-> the hardware has to do something expensive behind the scenes.
-> 
-> So I would like to propose that we switch to using a percpu variable
-> which is a single cache line of nothing at all.  It would only ever be
-> touched by MONITOR and for explicit wakeup.  Hopefully that will resolve
-> this problem without the need for the CLFLUSH.
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> On Monday, December 09, 2013 11:04:53 AM Bj=C3=B8rn Mork wrote:
+>> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
+>> > On 12/09/2013 08:29 AM, Lan Tianyu wrote:
+>> >> 2013/12/5 Rafael J. Wysocki <rjw@rjwysocki.net>:
+>> >>> On Wednesday, December 04, 2013 04:02:18 PM viresh kumar wrote:
+>> >>>> On Tuesday 03 December 2013 04:44 PM, Bj=C3=B8rn Mork wrote:
+>> >>>>> This is effectively a revert of commit 5302c3fb2e62 ("cpufreq:=
+ Perform
+>> >>>>> light-weight init/teardown during suspend/resume"), which enab=
+led
+>> >>>>> suspend/resume optimizations leaving the sysfs files in place.
+>> > [...]
+>> >>> I took the Bjorn's patch for 3.13 and this one I can queued up f=
+or 3.14,
+>> >>> but for that I guess it should contain a revert of the change ma=
+de by the
+>> >>> Bjorn's patch.
+>> >>=20
+>> >> This patch causes a s3 regression. Cc:Martin Ziegler
+>> >> https://bugzilla.kernel.org/show_bug.cgi?id=3D66751
+>> >>=20
+>> >
+>> > Hmm.. With Bjorn's patch applied, the cpufreq hotplug callback sho=
+uld become
+>> > identical to what happens during regular CPU hotplug.
+>>=20
+>> Yes, I also wondered how that could have happened.
+>>=20
+>> Apparently this is due to bad interaction between two patches. Commi=
+t=20
+>>=20
+>>   5a87182aa21d ("cpufreq: suspend governors on system suspend/hibern=
+ate")
+>>=20
+>> added an implicit dependency on the suspend/resume code which commit
+>>=20
+>>   2167e2399dc5 ("cpufreq: fix garbage kobjects on errors during susp=
+end/resume")
+>>=20
+>> disabled.
+>
+> I suspected so, but then I was about to jump on a plane to another co=
+ntinent
+> in several hours, so I preferred to simply revert both commits and st=
+art over
+> after the dust settled.
 
-The reason we use thread_info::flags is because we need to write
-TIF_NEED_RESCHED into it to wake up anyhow.
+No, problem.  I saw your mail about travelling. And I definitely suppor=
+t
+the "revert first, research later" strategy in any case.  There was
+still too many people hit by this, and bisecting it just to find an
+already known bug.
 
-Using another cacheline would mean the wakeup path would need to write a
-second cross cpu cacheline -- that is badness too.
+>> This would make the last patch applied of these two come out of the
+>> bisect, which is 2167e2399dc5 in this case.  I can confirm that
+>> reverting only this patch also fixes my hibernate problem.
+>>=20
+>> BUT: It reintroduces the problem it was supposed to fix.  AND: As yo=
+u
+>> note, it really does nothing but revert to the assumed safe regular =
+CPU
+>> hotplug operations.  Which means that the other patch somehow has ma=
+de
+>> regular CPU hotplugging fail *if suspending*.  It won't make it fail
+>> unless suspending, so there is no need to test CPU hotplugging
+>> separately.=20
+>>=20
+>> In any case, my claim is that the real bug here still is in commit
+>> 5a87182aa21d, which added an undocumented implicit dependency on the
+>> special cpufreq suspend/resume code.  There is no way in hell that
+>> anyone could have guessed that the seemingly innocent changes in com=
+mit
+>> 2167e2399dc5 would fail because of this. Which should be more than
+>> enough to understand why the continues sprinkling of suspend/resume =
+code
+>> all over has to stop.  Where did all the nice and clean pm hooks des=
+ign
+>> disappear?
+>
+> cpufreq has always had problems with suspend/resume in the first plac=
+e,
+> but it just didn't have so much testing coverage before.
 
-So no, I don't think we want to listen to another line.
+Yes...  I have known about the problems with acpi-cpufreq "forever" and
+do feel bad about not reporting it before.  But I usually don't want to
+report bugs without being able to dedicate some time to follow up in
+case the developers need more info or patch testing etc.  Which means
+that "low priority" (rare, only slightly annoying, etc) bugs can end up
+not being reported at all.
+
+So the additional cpufreq breakage in v3.12 was actually good because i=
+t
+made the acpi-cpufreq bug a log more annoying, and therefore increased
+the priority :-)
+
+>> My opinion is that commit 2167e2399dc5 still is the correct short te=
+rm
+>> fix, and it should be reapplied to v3.13-rcX and resubmitted for
+>> 3.12-stable.
+>
+> First of all, I'm not going to send any pull requests this week and e=
+ven
+> the next week may be too early to reintroduce that commit.  However, =
+the
+> second next week will be the -rc6 time frame, so I'm not sure.  It ma=
+y
+> end up in 3.14-rc1.
+
+You decide of course, but if it matters then I tend to agree that this
+should wait for 3.14.  It has gone enough back and forth for now, and
+the fact that noone(?) else has reported it as a 3.12 regression shows
+that it probably isn't a big problem for most people.
+
+>> I anticipate the real cleanup of this mess.  But I don't think any
+>> additional "if suspending" tests has any place in it.  Test *once* a=
+nd
+>> fork to whatever you want to do differently when suspending .
+>> Sprinkling these tests all over, having separate code blocks implici=
+tly
+>> depending on each other, is nothing but a recipe for hard to track b=
+ugs.
+>
+> Yes, that's pretty much the case, but it looks like we need to do a m=
+ajor
+> redesign of stuff to really fix those problems.
+
+Yes, I am hoping you will do that :-)
+
+
+
+Bj=C3=B8rn
