@@ -1,55 +1,68 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: Resume regression on MBA2,1 triggered by
- 2167e2399dc5e69c62db56d933e9c8cbe107620a
-Date: Thu, 12 Dec 2013 13:38:07 +0100
-Message-ID: <20131212133807.1c68707b@neptune.home>
-References: <20131211010852.09ddf512@neptune.home>
-	<20131211012529.GA6354@kroah.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
+Date: Thu, 12 Dec 2013 14:28:46 +0100
+Message-ID: <20131212132846.GA16750@gmail.com>
+References: <20131211113839.GF21683@pd.tnic>
+ <20131211115239.GA21999@twins.programming.kicks-ass.net>
+ <1386764955.12005.60.camel@marge.simpson.net>
+ <20131211124352.GB21999@twins.programming.kicks-ass.net>
+ <20131211134048.GH21683@pd.tnic>
+ <20131211145655.GB4510@gmail.com>
+ <20131211164318.GA2480@laptop.programming.kicks-ass.net>
+ <20131211175036.GC12431@gmail.com>
+ <52A8F073.9040500@zytor.com>
+ <20131212085143.GC21999@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20131211012529.GA6354@kroah.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: =?UTF-8?B?QmrDuHJu?= Mork <bjorn@mork.no>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f53.google.com ([74.125.83.53]:58613 "EHLO
+	mail-ee0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098Ab3LLN2u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 08:28:50 -0500
+Content-Disposition: inline
+In-Reply-To: <20131212085143.GC21999@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@alien8.de>, Mike Galbraith <bitbucket@online.de>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jeremy Eder <jeder@redhat.com>, x86@kernel.org
 
-Hi Greg,
 
-On Tue, 10 December 2013 Greg Kroah-Hartman <gregkh@linuxfoundation.org=
-> wrote:
-> On Wed, Dec 11, 2013 at 01:08:52AM +0100, Bruno Pr=C3=A9mont wrote:
-> > I have bisected failing resume from S3 on my MBA2,1 to be caused by
-> > the following patch (introduced between 3.13-rc2 and 3.13-rc3 - rc2
-> > resuming as expected, rc3 failing to resume).
-> >=20
-> > Unfortunately I have no trace for the failing resume though CPU see=
-ms
-> > to not be busy as fan does not start blowing (even when waiting mor=
-e
-> > than 10 minutes for the resume to eventually proceed which it does =
-not).
-> >=20
-> > Kernel config and dmesg are attached (gzip compressed).
-> >=20
-> >   commit 2167e2399dc5e69c62db56d933e9c8cbe107620a
-> >   Author: Bj=C3=B8rn Mork <bjorn@mork.no>
-> >   Date:   Tue Dec 3 12:14:32 2013 +0100
-> >   Subject: cpufreq: fix garbage kobjects on errors during suspend/r=
-esume
->=20
-> This has already been reverted in Linus's tree, see commit
-> d4faadd5d5b368a7051fef374ee933ec3606713b for the details.
->=20
-> Does Linus's tree still have the same problem for you?
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-The revert in Linus's tree does fix the resume problem,
-(tested commit: 9538e10086bd1301fe, merge of linux-watchdog).
+> On Wed, Dec 11, 2013 at 03:08:35PM -0800, H. Peter Anvin wrote:
+> > On 12/11/2013 09:50 AM, Ingo Molnar wrote:
+> > > 
+> > > Well, availability could be a problem too, if some CPU (real or 
+> > > virtual) implements MWAIT but not CLFLUSH.
+> > > 
+> > > In theory we could make mwait an alternatives variant and patch in the 
+> > > right combination of instructions? The CLFLUSH goes to the same 
+> > > address as on which the monitoring happens, so it could be considered 
+> > > one meta-instruction.
+> > > 
+> > 
+> > The first thing to do is probably to drop the use of thread_info as a
+> > wakeup doorbell.  It seemed like a good idea at the time -- after all,
+> > there is one for each thread -- but it is extremely likely to be dirty
+> > in the cache, which is (presumably) what causes these kinds of bugs to
+> > be maximally likely.  Even if we don't do the CLFLUSH it is likely that
+> > the hardware has to do something expensive behind the scenes.
+> > 
+> > So I would like to propose that we switch to using a percpu variable
+> > which is a single cache line of nothing at all.  It would only ever be
+> > touched by MONITOR and for explicit wakeup.  Hopefully that will resolve
+> > this problem without the need for the CLFLUSH.
+> 
+> The reason we use thread_info::flags is because we need to write
+> TIF_NEED_RESCHED into it to wake up anyhow.
+> 
+> Using another cacheline would mean the wakeup path would need to write a
+> second cross cpu cacheline -- that is badness too.
+> 
+> So no, I don't think we want to listen to another line.
 
-thanks,
-Bruno
+Seconded ...
 
-> thanks,
->=20
-> greg k-h
+Thanks,
+
+	Ingo
