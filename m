@@ -1,82 +1,69 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 12/15] thermal: rcar-thermal: Enable driver compilation
- with COMPILE_TEST
-Date: Thu, 12 Dec 2013 10:01:44 -0400
-Message-ID: <52A9C1C8.2030907@ti.com>
-References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <1385515117-23664-13-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <5903007.OehDdPcG2U@avalon>
+From: Ethan Zhao <ethan.kernel@gmail.com>
+Subject: Re: [PATCH V3]hrtimer: Fix a performance regression by disable
+ reprogramming in remove_hrtimer
+Date: Thu, 12 Dec 2013 22:14:11 +0800
+Message-ID: <CABawtvNf5k8pKY6ioa8GdUzOn7h3aOBsWhSUNgmfuQSj+xtUbQ@mail.gmail.com>
+References: <24EECBCC-F655-404F-8946-73CC36095A5F@gmail.com>
+	<1378362989.18435.2.camel@marge.simpson.net>
+	<20130905111428.GB23362@gmail.com>
+	<1378386697.6567.9.camel@marge.simpson.net>
+	<20130905133750.GA26637@gmail.com>
+	<1378445942.5434.31.camel@marge.simpson.net>
+	<20130909122325.GX31370@twins.programming.kicks-ass.net>
+	<1378730538.5586.30.camel@marge.simpson.net>
+	<20130909133044.GB31370@twins.programming.kicks-ass.net>
+	<20130909134635.GB26785@twins.programming.kicks-ass.net>
+	<20130911085643.GS26785@twins.programming.kicks-ass.net>
+	<1378895123.5476.83.camel@marge.simpson.net>
+	<CABawtvMo+NtTv3a3jj=YTg-Om=MzHhVDARdtTA-DtTMzNeNAJA@mail.gmail.com>
+	<1381120901.9926.11.camel@marge.simpson.net>
+	<CABawtvN-rO+YAy55+W-oxgtibh=9ZDnqNMGcreg6u==C3Cr7xA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe"
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <5903007.OehDdPcG2U@avalon>
-Sender: linux-sh-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-
---5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vb0-f52.google.com ([209.85.212.52]:34203 "EHLO
+	mail-vb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489Ab3LLOOM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 09:14:12 -0500
+In-Reply-To: <CABawtvN-rO+YAy55+W-oxgtibh=9ZDnqNMGcreg6u==C3Cr7xA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Mike Galbraith <bitbucket@online.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>
 
-On 11-12-2013 08:50, Laurent Pinchart wrote:
-> Hi Zhang and Eduardo,
->=20
-> Could you please pick this patch up for v3.14 ?
+Mike,
+    it seems the IPI issue got root cause (cpu hardware errata ) now ?
+I only catch some pieces of the mails, is that to say the crazy horse
+made by Intel will wake up unexpected, and eat too much reschedule
+IPI, then the horse got hotter, performance down, and so the fix would
+be a 'CFLUSH' to all the buggy CPU, is that right ?
 
-Yes Laurent, I can pick it.
+Thanks,
+Ethan
 
->=20
-> On Wednesday 27 November 2013 02:18:34 Laurent Pinchart wrote:
->> This helps increasing build testing coverage.
+
+
+
+
+On Mon, Oct 7, 2013 at 12:57 PM, Ethan Zhao <ethan.kernel@gmail.com> wrote:
+> Got it.
+>
+> On Mon, Oct 7, 2013 at 12:41 PM, Mike Galbraith <bitbucket@online.de> wrote:
+>> On Fri, 2013-10-04 at 20:06 +0800, Ethan Zhao wrote:
+>>> Mike, Peter,
+>>>    Seems lots of work has been done these days, studious guys. those
+>>> patches merged in last stable/dev branch (fix performance regression
+>>> caused by extra rtimer programming and rescheduling IPI,confusing
+>>> idle... etc) ? So I could just do a lazy pull for test with my
+>>> environment.  I need catch up with other mail loops with my vacation
+>>> again.
 >>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard=
-=2Ecom>
->> Acked-by: Simon Horman <horms@verge.net.au>
-
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
-
->> ---
->>  drivers/thermal/Kconfig | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> Massive timer overhead seems to have crawled off and died while I wasn't
+>> looking.  Peter's fix for IPI woes..
 >>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index f35a1f7..661cafc 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -121,7 +121,7 @@ config SPEAR_THERMAL
+>> tip commit ea811747 sched, idle: Fix the idle polling state logic
 >>
->>  config RCAR_THERMAL
->>  	tristate "Renesas R-Car thermal driver"
->> -	depends on ARCH_SHMOBILE
->> +	depends on ARCH_SHMOBILE || COMPILE_TEST
->>  	help
->>  	  Enable this to plug the R-Car thermal sensor driver into the Linux=
-
->>  	  thermal framework.
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKpwcwACgkQCXcVR3XQvP1mkQD/ePDH+zoxcQvLP5VXDLT4EG90
-Wf12up6SQozBlbzRmOkA/1rlnd7iOZSTb72xVMm+gs1reG9PbWFBNd91Zd9niQuU
-=fEZC
------END PGP SIGNATURE-----
-
---5raGqgdR5u0RLIaPJTFhI1IiunJVJ6Toe--
+>> ..hasn't yet swum upstream.
+>>
+>> -Mike
+>>
