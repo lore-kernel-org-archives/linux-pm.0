@@ -1,7 +1,7 @@
 From: Mike Galbraith <bitbucket@online.de>
 Subject: Re: 50 Watt idle power regression bisected to Linux-3.10
-Date: Thu, 12 Dec 2013 05:59:57 +0100
-Message-ID: <1386824397.6056.21.camel@marge.simpson.net>
+Date: Thu, 12 Dec 2013 06:37:21 +0100
+Message-ID: <1386826641.6056.31.camel@marge.simpson.net>
 References: <alpine.DEB.2.02.1312111206200.28330@ionos.tec.linutronix.de>
 	 <20131211113839.GF21683@pd.tnic>
 	 <20131211115239.GA21999@twins.programming.kicks-ass.net>
@@ -16,10 +16,10 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from moutng.kundenserver.de ([212.227.17.10]:58588 "EHLO
+Received: from moutng.kundenserver.de ([212.227.126.171]:65447 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755Ab3LLFCL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 00:02:11 -0500
+	with ESMTP id S1751162Ab3LLFhd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2013 00:37:33 -0500
 In-Reply-To: <52A94065.1050103@zytor.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -50,9 +50,25 @@ On Wed, 2013-12-11 at 20:49 -0800, H. Peter Anvin wrote:
 > a percpu allocation, but the variable itself is not a percpu variable.
 > This explains your boom.
 
-Yeah, I know, I already slapped myself upside the head.
+With that fixed, it boots, but is not quite perfect.
 
-(what were you thinking mikie...la la la la la:)
+... 
+[  258.560079] fbcon: radeondrmfb (fb0) is primary device
+[  258.722483] Console: switching to colour frame buffer device 128x48
+[  258.847076] radeon 0000:01:03.0: fb0: radeondrmfb frame buffer device
+[  258.911991] radeon 0000:01:03.0: registered panic notifier
+[  258.968772] [drm] Initialized radeon 2.35.0 20080528 for 0000:01:03.0 on minor 0
+...
+[  469.738604] netxen_nic 0000:04:00.3: using msi-x interrupts
+[  469.739078] netxen_nic 0000:04:00.3: eth5: GbE port initialized
+[  469.830512] ipmi_si 00:01: Found new BMC (man_id: 0x00000b, prod_id: 0x2000, dev_id: 0x13)
+[  469.830524] ipmi_si 00:01: IPMI kcs interface initialized
+[  473.729862] iTCO_wdt: unable to reset NO_REBOOT flag, device disabled by hardware/BIOS
+...
+[  711.636741] fuse init (API version 7.22)
 
--Mike
+...zzzz ok box, doctor appointment is in an hour away.
+
+-Mike 
+
 
