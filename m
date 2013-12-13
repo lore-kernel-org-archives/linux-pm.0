@@ -1,103 +1,90 @@
-From: David Cohen <david.a.cohen@linux.intel.com>
-Subject: Re: [RFC/PATCH 3/3] usb/xhci-plat: remove unnecessary #ifdef checks
- for CONFIG_PM_SLEEP
-Date: Fri, 13 Dec 2013 07:46:56 -0800
-Message-ID: <20131213154656.GA6006@psi-dev26.jf.intel.com>
-References: <1386911905-2366-1-git-send-email-david.a.cohen@linux.intel.com>
- <1386911905-2366-4-git-send-email-david.a.cohen@linux.intel.com>
- <CAPDyKFoXjRsLTZzFy3cTafqwFg4JX01=Gb=eL23eeb9ddZiofA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v11 0/7] cpufreq:boost: CPU Boost mode support
+Date: Fri, 13 Dec 2013 17:38:30 +0100
+Message-ID: <1386952717-30947-1-git-send-email-l.majewski@samsung.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:41324 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752059Ab3LMPmH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 13 Dec 2013 10:42:07 -0500
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFoXjRsLTZzFy3cTafqwFg4JX01=Gb=eL23eeb9ddZiofA@mail.gmail.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:34290 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463Ab3LMQiv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2013 11:38:51 -0500
+In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, sarah.a.sharp@linux.intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org, santosh.shilimkar@ti.com
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
 
-On Fri, Dec 13, 2013 at 09:19:34AM +0100, Ulf Hansson wrote:
-> On 13 December 2013 06:18, David Cohen <david.a.cohen@linux.intel.com> wrote:
-> > From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> >
-> > Drivers using SET_*_PM_OPS() no longer need to #ifdef for CONFIG_PM_*
-> > So, let's remove the unnecessary #ifdef's.
-> >
-> > Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> > Signed-off-by: David Cohen <david.a.cohen@linux.intel.com>
-> > ---
-> >  drivers/usb/host/xhci-plat.c | 7 +------
-> >  1 file changed, 1 insertion(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
-> > index d9c169f470d3..b1d93c344e04 100644
-> > --- a/drivers/usb/host/xhci-plat.c
-> > +++ b/drivers/usb/host/xhci-plat.c
-> > @@ -197,7 +197,6 @@ static int xhci_plat_remove(struct platform_device *dev)
-> >         return 0;
-> >  }
-> >
-> > -#ifdef CONFIG_PM
-> 
-> I think you can solve this in another way.
-> 
-> As a start, I would suggest to change above to CONFIG_PM_SLEEP
-> 
-> >  static int xhci_plat_suspend(struct device *dev)
-> >  {
-> >         struct usb_hcd  *hcd = dev_get_drvdata(dev);
-> > @@ -217,10 +216,6 @@ static int xhci_plat_resume(struct device *dev)
-> >  static const struct dev_pm_ops xhci_plat_pm_ops = {
-> >         SET_SYSTEM_SLEEP_PM_OPS(xhci_plat_suspend, xhci_plat_resume)
-> >  };
-> > -#define DEV_PM_OPS     (&xhci_plat_pm_ops)
-> > -#else
-> > -#define DEV_PM_OPS     NULL
-> > -#endif /* CONFIG_PM */
-> 
-> Remove the use of DEV_PM_OPS define. Instead use below macro and
-> outside #ifdef CONFIG_PM_SLEEP.
-> 
-> "static SIMPLE_DEV_PM_OPS(xhci_plat_pm_ops, xhci_plat_suspend,
-> xhci_plat_resume)"
-> 
-> That should do the trick I believe, without the need for changing the
-> existing SET_SYSTEM_SLEEP_PM_OPS macro in patch1.
+This patch series introduces support for CPU overclocking technique
+called Boost.
 
-Yes, it does. That matches my suggestion in this e-mail:
-http://marc.info/?l=linux-kernel&m=138690490016503&w=2
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
-But I personally don't like #ifdef's. In this case, SET_*_PM_OPS()
-macros handle #ifdef's when setting the callbacks. My intention is to
-extend it to callbacks' implementation too making the code cleaner
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to include
+common code.
 
-Br, David Cohen
+Important design decisions:
+- Boost related code is compiled-in unconditionally to cpufreq core and
+  disabled by default. The cpufreq_driver is responsibile for setting
+  boost_supported flag and providing set_boost callback(if HW support
+  is needed). For software managed boost, special Kconfig flag -
+  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+  when a target platform has thermal framework properly configured.
 
-> 
-> Kind regards
-> Ulf Hansson
-> 
-> >
-> >  #ifdef CONFIG_OF
-> >  static const struct of_device_id usb_xhci_of_match[] = {
-> > @@ -235,7 +230,7 @@ static struct platform_driver usb_xhci_driver = {
-> >         .remove = xhci_plat_remove,
-> >         .driver = {
-> >                 .name = "xhci-hcd",
-> > -               .pm = DEV_PM_OPS,
-> > +               .pm = &xhci_plat_pm_ops,
-> >                 .of_match_table = of_match_ptr(usb_xhci_of_match),
-> >         },
-> >  };
-> > --
-> > 1.8.4.2
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+- struct cpufreq_driver has been extended with boost related fields:
+        -- boost_supported - when driver supports boosting
+        -- boost_enabled - boost state
+        -- set_boost - callback to function, which is necessary to
+           enable/disable boost
+
+- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+  _only_ when cpufreq driver supports Boost.
+
+- No special spin_lock for Boost was created. The one from cpufreq core
+  was reused.
+
+- The Boost code doesn't rely on any policy. When boost state is changed,
+  then the policy list is iterated and proper adjustements are done.
+
+- To improve safety level, the thermal framework is also extended to disable
+  software boosting, when thermal trip point is reached. After cooling down
+  the boost can be enabled again. This emulates behaviour similar to HW
+  managed boost (like x86)
+
+Tested at HW:
+       Exynos 4412 3.13-rc3 Linux
+       Intel Core i7-3770 3.13-rc3 Linux
+
+Above patches were posted on top of kernel_pm/bleeding-edge
+(SHA1: 2e4bc4515a6143c8c2af037236199eb95f834b40)
+
+
+Lukasz Majewski (7):
+  cpufreq: Add boost frequency support in core
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  cpufreq:boost:Kconfig: Provide support for software managed BOOST
+  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+    framework
+  Documentation:cpufreq:boost: Update BOOST documentation
+  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+  thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
+    Exynos4412)
+
+ Documentation/cpu-freq/boost.txt          |   26 +++----
+ drivers/cpufreq/Kconfig                   |    4 +
+ drivers/cpufreq/Kconfig.arm               |   15 ++++
+ drivers/cpufreq/acpi-cpufreq.c            |   86 +++++++--------------
+ drivers/cpufreq/cpufreq.c                 |  118 ++++++++++++++++++++++++++++-
+ drivers/cpufreq/exynos-cpufreq.c          |    3 +
+ drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+ drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+ drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
+ include/linux/cpufreq.h                   |   24 ++++++
+ 10 files changed, 261 insertions(+), 85 deletions(-)
+
+-- 
+1.7.10.4
+
