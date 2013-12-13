@@ -1,437 +1,591 @@
-From: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend
- to RAM
-Date: Thu, 12 Dec 2013 20:17:12 +0100
-Message-ID: <52AA0BB8.6070908@gmail.com>
-References: <52A96D01.1050503@gmail.com> <4421787.xvooIB0ROV@vostro.rjw.lan> <52A9F5A7.8030305@gmail.com> <55495319.9jUzi5g5UA@vostro.rjw.lan>
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: Re: [RFC PATCH] thermal: add generic cpu hotplug cooling device
+Date: Thu, 12 Dec 2013 16:01:11 -0800
+Message-ID: <CAME+o4=GESy7jseDXKx6f_DykRYP72kCdM5D3RMkKkybMDzmmg@mail.gmail.com>
+References: <1379715336-22620-1-git-send-email-zoran.markovic@linaro.org>
+	<CAME+o4myuSVwc=8mpk9x6tKZoskG6i2djrHSBGmVhKqaHqYwMA@mail.gmail.com>
+	<CAME+o4m+1O4pMYa8jNoSuVtmtbkRC2H-9YZj+hnDwsd=Ex0wmw@mail.gmail.com>
+	<52989FCA.2010107@ti.com>
+	<CAME+o4mbtbDV+tZ6itEBqGp5Xy=6a0CsAZ+Kuvu3+oa-TR=_dw@mail.gmail.com>
+	<52A5D3F1.9040301@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------090107050600010605000602"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55495319.9jUzi5g5UA@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <52A5D3F1.9040301@ti.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-doc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Andrew Morton <akpm@linux-foundation.org>, Durgadoss R <durgadoss.r@intel.com>, Christian Daudt <bcm@fixthebug.org>, James King <james.king@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090107050600010605000602
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Hi Eduardo,
 
-On 12/12/2013 06:58 PM, Rafael J. Wysocki wrote:
-> On Thursday, December 12, 2013 06:43:03 PM Francis Moreau wrote:
+> Yeah, I would like to see it. But what I was more interested in seeing
+> is how long does it take to offline a CPU?
+>
+I profiled this over 70 shutdown/startup cycles of CPU1 on Capri-AP
+(Cortex-A9x2) board and I get:
+shutdown:  1445usec (average), 3159usec (maximum), 834usec (minimum)
+startup:  707usec (average), 3159usec (maximum), 327usec (minimum)
 
-[...]
+It's using a 32KHz clock so time resolution is ~30usec.
 
+Regards, Zoran
+
+>>>>> On 20 September 2013 15:15, Zoran Markovic <zoran.markovic@linaro.org> wrote:
+>>>>>> This patch implements a generic CPU hotplug cooling device. The
+>>>>>> implementation scales down the number of running CPUs when temperature
+>>>>>> increases through a thermal trip point and prevents booting CPUs
+>>>>>> until thermal conditions are restored. Upon restoration, the action
+>>>>>> of starting up a CPU is left to another entity (e.g. CPU offline
+>>>>>> governor, for which a patch is in the works).
+>>>>>>
+>>>>>> In the past two years, ARM considerably reduced the time required for
+>>>>>> CPUs to boot and shutdown; this time is now measured in microseconds.
+>>>>>> This patch is predominantly intended for ARM big.LITTLE architectures
+>>>>>> where big cores are expected to have a much bigger impact on thermal
+>>>>>> budget than little cores, resulting in fast temperature ramps to a trip
+>>>>>> point, i.e. thermal runaways. Switching off the big core(s) may be one
+>>>>>> of the recovery mechanisms to restore system temperature, but the actual
+>>>>>> strategy is left to the thermal governor.
+>>>>>>
+>>>>>> The assumption is that CPU shutdown/startup is a rare event, so no
+>>>>>> attempt was made to make the code atomic, i.e. the code evidently races
+>>>>>> with CPU hotplug driver. The set_cur_state() function offlines CPUs
+>>>>>> iteratively one at a time, checking the cooling state before each CPU
+>>>>>> shutdown. A hotplug notifier callback validates any CPU boot requests
+>>>>>> against current cooling state and approves/denies accordingly. This
+>>>>>> mechanism guarantees that the desired cooling state could be reached in a
+>>>>>> maximum of d-c iterations, where d and c are the "desired" and "current"
+>>>>>> cooling states expressed in the number of offline CPUs.
+>>>>>>
+>>>>>> Credits to Amit Daniel Kachhap for initial attempt to upstream this feature.
+>>>>>>
+>>>>>> Cc: Zhang Rui <rui.zhang@intel.com>
+>>>>>> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+>>>>>> Cc: Rob Landley <rob@landley.net>
+>>>>>> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>>>>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>>>>>> Cc: Durgadoss R <durgadoss.r@intel.com>
+>>>>>> Cc: Christian Daudt <bcm@fixthebug.org>
+>>>>>> Cc: James King <james.king@linaro.org>
+>>>>>> Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
+>>>>>> ---
+>>>>>>  Documentation/thermal/cpu-cooling-api.txt |   17 ++
+>>>>>>  drivers/thermal/Kconfig                   |   10 +
+>>>>>>  drivers/thermal/Makefile                  |    1 +
+>>>>>>  drivers/thermal/cpu_hotplug.c             |  362 +++++++++++++++++++++++++++++
+>>>>>>  include/linux/cpuhp_cooling.h             |   57 +++++
+>>>>>>  5 files changed, 447 insertions(+)
+>>>>>>  create mode 100644 drivers/thermal/cpu_hotplug.c
+>>>>>>  create mode 100644 include/linux/cpuhp_cooling.h
+>>>>>>
+>>>>>> diff --git a/Documentation/thermal/cpu-cooling-api.txt b/Documentation/thermal/cpu-cooling-api.txt
+>>>>>> index fca24c9..2f94f68 100644
+>>>>>> --- a/Documentation/thermal/cpu-cooling-api.txt
+>>>>>> +++ b/Documentation/thermal/cpu-cooling-api.txt
+>>>>>> @@ -30,3 +30,20 @@ the user. The registration APIs returns the cooling device pointer.
+>>>>>>      This interface function unregisters the "thermal-cpufreq-%x" cooling device.
+>>>>>>
+>>>>>>      cdev: Cooling device pointer which has to be unregistered.
+>>>>>> +
+>>>>>> +1.2 cpu hotplug registration/unregistration APIs
+>>>>>> +1.2.1 struct thermal_cooling_device *cpuhp_cooling_register(
+>>>>>> +       struct cpumask *cpus, const char *ext)
+>>>>>> +
+>>>>>> +    This function creates and registers a cpu hotplug cooling device with
+>>>>>> +    the name "cpu-hotplug-%s".
+>>>>>> +
+>>>>>> +    cpus: cpumask of cpu cores participating in cooling.
+>>>>>> +    ext: instance-specific name of device
+>>>>>> +
+>>>>>> +1.2.2 void cpuhotplug_cooling_unregister(struct thermal_cooling_device *cdev)
+>>>>>> +
+>>>>>> +    This function unregisters and frees the cpu hotplug cooling device cdev.
+>>>>>> +
+>>>>>> +    cdev: Pointer to cooling device to unregister.
+>>>>>> +
+>>>>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>>>>>> index 52b6ed7..3509100 100644
+>>>>>> --- a/drivers/thermal/Kconfig
+>>>>>> +++ b/drivers/thermal/Kconfig
+>>>>>> @@ -79,6 +79,16 @@ config CPU_THERMAL
+>>>>>>
+>>>>>>           If you want this support, you should say Y here.
+>>>>>>
+>>>>>> +config CPU_THERMAL_HOTPLUG
+>>>>>> +       bool "Generic CPU hotplug cooling"
+>>>>>> +       depends on HOTPLUG_CPU
+>>>>>> +       help
+>>>>>> +         Shutdown CPUs to prevent the device from overheating. This feature
+>>>>>> +         uses generic CPU hot-unplug capabilities to control device
+>>>>>> +         temperature. When the temperature increases over a trip point, a
+>>>>>> +         random subset of CPUs is shut down to reach the desired cooling
+>>>>>> +         state.
+>>>>>> +
+>>>>>>  config THERMAL_EMULATION
+>>>>>>         bool "Thermal emulation mode support"
+>>>>>>         help
+>>>>>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+>>>>>> index 5ee0db0..0bd08be 100644
+>>>>>> --- a/drivers/thermal/Makefile
+>>>>>> +++ b/drivers/thermal/Makefile
+>>>>>> @@ -12,6 +12,7 @@ thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)  += user_space.o
+>>>>>>
+>>>>>>  # cpufreq cooling
+>>>>>>  thermal_sys-$(CONFIG_CPU_THERMAL)      += cpu_cooling.o
+>>>>>> +thermal_sys-$(CONFIG_CPU_THERMAL_HOTPLUG)      += cpu_hotplug.o
+>>>>>>
+>>>>>>  # platform thermal drivers
+>>>>>>  obj-$(CONFIG_SPEAR_THERMAL)    += spear_thermal.o
+>>>>>> diff --git a/drivers/thermal/cpu_hotplug.c b/drivers/thermal/cpu_hotplug.c
+>>>>>> new file mode 100644
+>>>>>> index 0000000..8c3021e
+>>>>>> --- /dev/null
+>>>>>> +++ b/drivers/thermal/cpu_hotplug.c
+>>>>>> @@ -0,0 +1,362 @@
+>>>>>> +/*
+>>>>>> + *  drivers/thermal/cpu_hotplug.c
+>>>>>> + *
+>>>>>> + *  Copyright (C) 2013  Broadcom Corporation Ltd.
+>>>>>> + *  Copyright (C) 2013  Zoran Markovic <zoran.markovic@linaro.org>
+>>>>>> + *
+>>>>>> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>> + *  This program is free software; you can redistribute it and/or modify
+>>>>>> + *  it under the terms of the GNU General Public License as published by
+>>>>>> + *  the Free Software Foundation; version 2 of the License.
+>>>>>> + *
+>>>>>> + *  This program is distributed in the hope that it will be useful, but
+>>>>>> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+>>>>>> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+>>>>>> + *  General Public License for more details.
+>>>>>> + *
+>>>>>> + *  You should have received a copy of the GNU General Public License along
+>>>>>> + *  with this program; if not, write to the Free Software Foundation, Inc.,
+>>>>>> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+>>>>>> + *
+>>>>>> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>> + */
+>>>>>> +#include <linux/module.h>
+>>>>>> +#include <linux/thermal.h>
+>>>>>> +#include <linux/workqueue.h>
+>>>>>> +#include <linux/cpu.h>
+>>>>>> +#include <linux/err.h>
+>>>>>> +#include <linux/slab.h>
+>>>>>> +#include <linux/cpuhp_cooling.h>
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * struct cpuhotplug_cooling_device - cpu hotplug cooling device data
+>>>>>> + * @cpus: cpu mask representing cpus that can be hot-unplugged for cooling
+>>>>>> + * @cdev: pointer to generic cooling device
+>>>>>> + */
+>>>>>> +struct cpuhotplug_cooling_device {
+>>>>>> +       unsigned int target;
+>>>>>> +       struct cpumask cpus;
+>>>>>> +       struct thermal_cooling_device *cdev;
+>>>>>> +       struct list_head list;
+>>>>>> +};
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_list - list of all cpu hotplug cooling devices. Traversed
+>>>>>> + * by cpu hotplug notifier to check constraints on booting cpus. Locked
+>>>>>> + * by cpuhotplug_cooling_lock mutex.
+>>>>>> + */
+>>>>>> +static LIST_HEAD(cpuhotplug_list);
+>>>>>> +static DEFINE_MUTEX(cpuhotplug_cooling_lock);
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * boot_cpu - return index of boot CPU; same criteria as in
+>>>>>> + * disable_nonboot_cpus()
+>>>>>> + */
+>>>>>> +static inline int boot_cpu(void)
+>>>>>> +{
+>>>>>> +       int cpu;
+>>>>>> +       get_online_cpus();
+>>>>>> +       cpu = cpumask_first(cpu_online_mask);
+>>>>>> +       put_online_cpus();
+>>>>>> +       return cpu;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * random_online_cpu - pick any online hot-unpluggable cpu
+>>>>>> + * @d: pointer to cpuhotplug_cooling_device containing hot-pluggable cpu mask
+>>>>>> + */
+>>>>>> +static inline int random_online_cpu(struct cpuhotplug_cooling_device *d)
+>>>>>> +{
+>>>>>> +       int cpu;
+>>>>>> +
+>>>>>> +       get_online_cpus();
+>>>>>> +       cpu = any_online_cpu(d->cpus);
+>>>>>> +       put_online_cpus();
+>>>>>> +
+>>>>>> +       return cpu;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * _num_offline_cpus - number of hot-pluggable cpus currently offline
+>>>>>> + * @d: pointer to cpuhotplug_cooling_device containing hot-pluggable cpu mask
+>>>>>> + */
+>>>>>> +static inline int _num_offline_cpus(struct cpuhotplug_cooling_device *d)
+>>>>>> +{
+>>>>>> +       struct cpumask offline;
+>>>>>> +
+>>>>>> +       cpumask_andnot(&offline, &(d->cpus), cpu_online_mask);
+>>>>>> +       return cpumask_weight(&offline);
+>>>>>> +}
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * num_offline_cpus - same as _num_offline_cpus, but safe from background
+>>>>>> + * hotplug events.
+>>>>>> + * @d: pointer to cpuhotplug_cooling_device containing hot-pluggable cpu mask
+>>>>>> + */
+>>>>>> +static inline int num_offline_cpus(struct cpuhotplug_cooling_device *d)
+>>>>>> +{
+>>>>>> +       int num;
+>>>>>> +
+>>>>>> +       get_online_cpus();
+>>>>>> +       num = _num_offline_cpus(d);
+>>>>>> +       put_online_cpus();
+>>>>>> +
+>>>>>> +       return num;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_get_max_state - get maximum cooling state of device
+>>>>>> + * @cdev: pointer to generic cooling device
+>>>>>> + * @state: returned maximum cooling state
+>>>>>> + *
+>>>>>> + * Thermal framework callback to get the maximum cooling state of cpu
+>>>>>> + * hotplug cooling device.
+>>>>>> + *
+>>>>>> + * Return: always 0.
+>>>>>> + */
+>>>>>> +static int cpuhotplug_get_max_state(struct thermal_cooling_device *cdev,
+>>>>>> +                                   unsigned long *state)
+>>>>>> +{
+>>>>>> +       struct cpuhotplug_cooling_device *d = cdev->devdata;
+>>>>>> +
+>>>>>> +       /* defined as number of CPUs in hot-pluggable mask: this is invariant */
+>>>>>> +       *state = cpumask_weight(&(d->cpus));
+>>>>>> +
+>>>>>> +       return 0;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_get_cur_state - get current cooling state of device
+>>>>>> + * @cdev: pointer to generic cooling device
+>>>>>> + * @state: current cooling state
+>>>>>> + *
+>>>>>> + * Thermal framework callback to get the current cooling state of cpu
+>>>>>> + * hotplug cooling device.
+>>>>>> + *
+>>>>>> + * Return: always 0.
+>>>>>> + */
+>>>>>> +static int cpuhotplug_get_cur_state(struct thermal_cooling_device *cdev,
+>>>>>> +                                   unsigned long *state)
+>>>>>> +{
+>>>>>> +       struct cpuhotplug_cooling_device *d = cdev->devdata;
+>>>>>> +
+>>>>>> +       *state = d->target;
+>>>>>> +
+>>>>>> +       return 0;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_get_cur_state - set cooling state of device
+>>>>>> + * @cdev: pointer to generic cooling device
+>>>>>> + * @state: cooling state
+>>>>>> + *
+>>>>>> + * Thermal framework callback to set/change cooling state of cpu hotplug
+>>>>>> + * cooling device.
+>>>>>> + *
+>>>>>> + * Return: 0 on success, or error code otherwise
+>>>>>> + */
+>>>>>> +static int cpuhotplug_set_cur_state(struct thermal_cooling_device *cdev,
+>>>>>> +                                   unsigned long state)
+>>>>>> +{
+>>>>>> +       struct cpuhotplug_cooling_device *d = cdev->devdata;
+>>>>>> +       unsigned long cstate;
+>>>>>> +       unsigned int cpu;
+>>>>>> +       int err = 0;
+>>>>>> +
+>>>>>> +       if (state > cpumask_weight(&(d->cpus)))
+>>>>>> +               return -EINVAL; /* out of allowed range */
+>>>>>> +
+>>>>>> +       /*
+>>>>>> +        * Set target state here; hot-unplug CPUs if we are too hot, but
+>>>>>> +        * don't attempt to hot-plug CPUs if we're cold. Starting CPUs
+>>>>>> +        * should be left to CPUOffline governor.
+>>>>>> +        *
+>>>>>> +        * There is a chance that CPU hotplug driver is racing with this
+>>>>>> +        * code. Rather than trying to make the procedure atomic, iterate
+>>>>>> +        * until we reach the desired state, or signal error if the state
+>>>>>> +        * cannot be reached.
+>>>>>> +        *
+>>>>>> +        * Neither CPU hotplug nor this code is expected to run too often.
+>>>>>> +        */
+>>>>>> +       d->target = state;
+>>>>>> +
+>>>>>> +       /* compare desired cooling state to current cooling state */
+>>>>>> +       while ((cstate = num_offline_cpus(d)) < state && !err) {
+>>>>>> +               /* cstate < cstate: we're too hot, unplug any cpu */
+>>>>>> +               cpu = random_online_cpu(d);
+>>>>>> +               if (cpu < nr_cpu_ids)
+>>>>>> +                       err = work_on_cpu(boot_cpu(),
+>>>>>> +                                         (long(*)(void *))cpu_down,
+>>>>>> +                                         (void *)cpu);
+>>>>>> +                       /* on error, message would come from cpu_down() */
+>>>>>> +               else {
+>>>>>> +                       pr_warn("cpuhotplug: CPUs already down\n");
+>>>>>> +                       err = -EAGAIN;
+>>>>>> +               }
+>>>>>> +       }
+>>>>>> +
+>>>>>> +       return err;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/* cpu hotplug cooling device ops */
+>>>>>> +static struct thermal_cooling_device_ops const cpuhotplug_cooling_ops = {
+>>>>>> +       .get_max_state = cpuhotplug_get_max_state,
+>>>>>> +       .get_cur_state = cpuhotplug_get_cur_state,
+>>>>>> +       .set_cur_state = cpuhotplug_set_cur_state,
+>>>>>> +};
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * _cpu_startup_allowed - traverse list of hotplug cooling devices to
+>>>>>> + * check if startup of cpu violates thermal constraints
+>>>>>> + */
+>>>>>> +static inline int _cpu_startup_allowed(int cpu)
+>>>>>> +{
+>>>>>> +       struct cpuhotplug_cooling_device *d;
+>>>>>> +       int ret = 1;
+>>>>>> +
+>>>>>> +       /*
+>>>>>> +        * Prevent starting CPU if it violates any cooling
+>>>>>> +        * device's constraint. Called from hotplug notifier, so
+>>>>>> +        * cpu_up()/cpu_down() already holds a lock on hotplug
+>>>>>> +        * events.
+>>>>>> +        */
+>>>>>> +       mutex_lock(&cpuhotplug_cooling_lock);
+>>>>>> +       list_for_each_entry(d, &cpuhotplug_list, list) {
+>>>>>> +               if (cpumask_test_cpu(cpu, &(d->cpus)) &&
+>>>>>> +                   d->target >= _num_offline_cpus(d)) {
+>>>>>> +                       pr_warn("%s: CPU%d startup prevented\n",
+>>>>>> +                               dev_name(&(d->cdev->device)), cpu);
+>>>>>> +                       ret = 0;
+>>>>>> +                       break;
+>>>>>> +               }
+>>>>>> +       }
+>>>>>> +       mutex_unlock(&cpuhotplug_cooling_lock);
+>>>>>> +       return ret;
+>>>>>> +}
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_thermal_notifier - notifier callback for CPU hotplug events.
+>>>>>> + * @nb: struct notifier_block
+>>>>>> + * @event: cpu hotplug event for which callback is invoked.
+>>>>>> + * @data: context data, in this particular case CPU index.
+>>>>>> + *
+>>>>>> + * Callback intercepting CPU hotplug events. Compares CPU hotplug action
+>>>>>> + * with current thermal state and allows/denies accordingly.
+>>>>>> + *
+>>>>>> + * Return: 0 (allow) or error (deny).
+>>>>>> + */
+>>>>>> +static int cpuhotplug_thermal_notifier(struct notifier_block *nb,
+>>>>>> +                                      unsigned long event, void *data)
+>>>>>> +{
+>>>>>> +       int cpu = (int)data;
+>>>>>> +
+>>>>>> +       switch (event) {
+>>>>>> +       case CPU_UP_PREPARE:
+>>>>>> +       case CPU_UP_PREPARE_FROZEN:
+>>>>>> +               /* _cpu_up() only cares about result from CPU_UP_PREPAREs */
+>>>>>> +               if (!_cpu_startup_allowed(cpu))
+>>>>>> +                       return notifier_from_errno(-EAGAIN);
+>>>>>> +               break;
+>>>>>> +       default:
+>>>>>> +               /* allow all other actions */
+>>>>>> +               break;
+>>>>>> +       }
+>>>>>> +       return 0;
+>>>>>> +}
+>>>>>> +
+>>>>>> +static struct notifier_block cpuhotplug_thermal_notifier_block = {
+>>>>>> +       .notifier_call = cpuhotplug_thermal_notifier,
+>>>>>> +};
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_cooling_register - create cpu hotplug cooling device
+>>>>>> + * @cpus: cpumask of cpu cores participating in cooling
+>>>>>> + * @ext: instance-specific name of device
+>>>>>> + *
+>>>>>> + * Creates and registers a cpu hotplug cooling device with the name
+>>>>>> + * "cpu-hotplug-<ext>".
+>>>>>> + *
+>>>>>> + * Return: valid pointer to cpuhotplug_cooling_device struct on success,
+>>>>>> + * corresponding ERR_PTR() on failure.
+>>>>>> + */
+>>>>>> +struct thermal_cooling_device *
+>>>>>> +cpuhotplug_cooling_register(const struct cpumask *cpus, const char *ext)
+>>>>>> +{
+>>>>>> +       struct thermal_cooling_device *cdev;
+>>>>>> +       struct cpuhotplug_cooling_device *cpuhotplug_cdev;
+>>>>>> +       struct cpumask test;
+>>>>>> +       char name[THERMAL_NAME_LENGTH];
+>>>>>> +       int err;
+>>>>>> +
+>>>>>> +       /* test if we passed in a good cpumask */
+>>>>>> +       cpu_maps_update_begin();
+>>>>>> +       cpumask_and(&test, cpus, cpu_possible_mask);
+>>>>>> +       cpu_maps_update_done();
+>>>>>> +
+>>>>>> +       if (cpumask_test_cpu(boot_cpu(), &test)) {
+>>>>>> +               pr_warn("cannot hot-plug boot CPU%d\n", boot_cpu());
+>>>>>> +               cpumask_clear_cpu(boot_cpu(), &test);
+>>>>>> +       }
+>>>>>> +       if (cpumask_empty(&test)) {
+>>>>>> +               pr_err("CPUs unavailable for hot-plug cooling\n");
+>>>>>> +               err = -EINVAL;
+>>>>>> +               goto out;
+>>>>>> +       }
+>>>>>> +
+>>>>>> +       cpuhotplug_cdev = kzalloc(sizeof(struct cpuhotplug_cooling_device),
+>>>>>> +                            GFP_KERNEL);
+>>>>>> +       if (!cpuhotplug_cdev) {
+>>>>>> +               err = -ENOMEM;
+>>>>>> +               goto out;
+>>>>>> +       }
+>>>>>> +
+>>>>>> +       cpumask_copy(&cpuhotplug_cdev->cpus, &test);
+>>>>>> +
+>>>>>> +       snprintf(name, sizeof(name), "cpu-hotplug-%s", ext);
+>>>>>> +
+>>>>>> +       cpuhotplug_cdev->target = 0;
+>>>>>> +       cdev = thermal_cooling_device_register(name, cpuhotplug_cdev,
+>>>>>> +                                              &cpuhotplug_cooling_ops);
+>>>>>> +       if (!cdev) {
+>>>>>> +               pr_err("%s: cooling device registration failed.\n", name);
+>>>>>> +               err = -EINVAL;
+>>>>>> +               goto out_free;
+>>>>>> +       }
+>>>>>> +       cpuhotplug_cdev->cdev = cdev;
+>>>>>> +
+>>>>>> +       mutex_lock(&cpuhotplug_cooling_lock);
+>>>>>> +       if (list_empty(&cpuhotplug_list))
+>>>>>> +               register_cpu_notifier(&cpuhotplug_thermal_notifier_block);
+>>>>>> +       list_add(&(cpuhotplug_cdev->list), &cpuhotplug_list);
+>>>>>> +       mutex_unlock(&cpuhotplug_cooling_lock);
+>>>>>> +
+>>>>>> +       return cdev;
+>>>>>> +
+>>>>>> +out_free:
+>>>>>> +       kfree(cpuhotplug_cdev);
+>>>>>> +out:
+>>>>>> +       return ERR_PTR(err);
+>>>>>> +}
+>>>>>> +EXPORT_SYMBOL_GPL(cpuhotplug_cooling_register);
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_cooling_unregister - remove cpu hotplug cooling device
+>>>>>> + * @cdev: cooling device to remove
+>>>>>> + *
+>>>>>> + * Unregisters and frees the cpu hotplug cooling device.
+>>>>>> + */
+>>>>>> +void cpuhotplug_cooling_unregister(struct thermal_cooling_device *cdev)
+>>>>>> +{
+>>>>>> +       struct cpuhotplug_cooling_device *cpuhotplug_cdev = cdev->devdata;
+>>>>>> +
+>>>>>> +       mutex_lock(&cpuhotplug_cooling_lock);
+>>>>>> +       list_del(&(cpuhotplug_cdev->list));
+>>>>>> +       if (list_empty(&cpuhotplug_list))
+>>>>>> +               unregister_cpu_notifier(&cpuhotplug_thermal_notifier_block);
+>>>>>> +       mutex_unlock(&cpuhotplug_cooling_lock);
+>>>>>> +
+>>>>>> +       thermal_cooling_device_unregister(cpuhotplug_cdev->cdev);
+>>>>>> +       kfree(cpuhotplug_cdev);
+>>>>>> +}
+>>>>>> +EXPORT_SYMBOL_GPL(cpuhotplug_cooling_unregister);
+>>>>>> +
+>>>>>> diff --git a/include/linux/cpuhp_cooling.h b/include/linux/cpuhp_cooling.h
+>>>>>> new file mode 100644
+>>>>>> index 0000000..ace1d5b
+>>>>>> --- /dev/null
+>>>>>> +++ b/include/linux/cpuhp_cooling.h
+>>>>>> @@ -0,0 +1,57 @@
+>>>>>> +/*
+>>>>>> + *  linux/include/linux/cpuhp_cooling.h
+>>>>>> + *
+>>>>>> + *  Copyright (C) 2013 Broadcom Corporation Ltd.
+>>>>>> + *  Copyright (C) 2013 Zoran Markovic <zoran.markovic@linaro.org>
+>>>>>> + *
+>>>>>> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>> + *  This program is free software; you can redistribute it and/or modify
+>>>>>> + *  it under the terms of the GNU General Public License as published by
+>>>>>> + *  the Free Software Foundation; version 2 of the License.
+>>>>>> + *
+>>>>>> + *  This program is distributed in the hope that it will be useful, but
+>>>>>> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+>>>>>> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+>>>>>> + *  General Public License for more details.
+>>>>>> + *
+>>>>>> + *  You should have received a copy of the GNU General Public License along
+>>>>>> + *  with this program; if not, write to the Free Software Foundation, Inc.,
+>>>>>> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+>>>>>> + *
+>>>>>> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>> + */
+>>>>>> +
+>>>>>> +#ifndef __CPUHP_COOLING_H__
+>>>>>> +#define __CPUHP_COOLING_H__
+>>>>>> +
+>>>>>> +#include <linux/thermal.h>
+>>>>>> +#include <linux/cpumask.h>
+>>>>>> +
+>>>>>> +#ifdef CONFIG_CPU_THERMAL_HOTPLUG
+>>>>>> +/**
+>>>>>> + * cpuhotplug_cooling_register - create cpu hotplug cooling device.
+>>>>>> + * @cpus: cpumask of hot-pluggable cpus
+>>>>>> + * @ext: instance-specific device name
+>>>>>> + */
+>>>>>> +struct thermal_cooling_device *
+>>>>>> +cpuhotplug_cooling_register(const struct cpumask *cpus, const char *ext);
+>>>>>> +
+>>>>>> +/**
+>>>>>> + * cpuhotplug_cooling_unregister - remove cpu hoptlug cooling device.
+>>>>>> + * @cdev: thermal cooling device pointer.
+>>>>>> + */
+>>>>>> +void cpuhotplug_cooling_unregister(struct thermal_cooling_device *cdev);
+>>>>>> +#else /* !CONFIG_CPU_THERMAL_HOTPLUG */
+>>>>>> +static inline struct thermal_cooling_device *
+>>>>>> +cpuhotplug_cooling_register(const struct cpumask *cpus, const char *ext)
+>>>>>> +{
+>>>>>> +       return NULL;
+>>>>>> +}
+>>>>>> +static inline
+>>>>>> +void cpuhotplug_cooling_unregister(struct thermal_cooling_device *cdev)
+>>>>>> +{
+>>>>>> +       return;
+>>>>>> +}
+>>>>>> +#endif /* CONFIG_CPU_THERMAL_HOTPLUG */
+>>>>>> +
+>>>>>> +#endif /* __CPU_COOLING_H__ */
+>>>>>> --
+>>>>>> 1.7.9.5
+>>>>>>
+>>>>
+>>>>
+>>>
+>>>
+>>> --
+>>> You have got to be excited about what you are doing. (L. Lamport)
+>>>
+>>> Eduardo Valentin
+>>>
 >>
->> Actually I can see this now:
 >>
->> [   42.400974] r8169 0000:03:00.2: System wakeup disabled by ACPI
-> 
-> This should be harmless.
-> 
-> Please run lspci -vv before and after suspend and send both results.
-
-Please find them attached.
-
-Thanks.
-
---------------090107050600010605000602
-Content-Type: text/plain; charset=UTF-8;
- name="lscpi-after"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="lscpi-after"
-
-MDA6MDAuMCBIb3N0IGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gM3JkIEdlbiBDb3JlIHBy
-b2Nlc3NvciBEUkFNIENvbnRyb2xsZXIgKHJldiAwOSkKCVN1YnN5c3RlbTogQ0xFVk8vS0FQ
-T0sgQ29tcHV0ZXIgRGV2aWNlIDA1NTAKCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIr
-IFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIt
-IEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQisg
-UGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0KyA+U0VSUi0g
-PFBFUlItIElOVHgtCglMYXRlbmN5OiAwCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVk
-PgoKMDA6MDIuMCBWR0EgY29tcGF0aWJsZSBjb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlv
-biAzcmQgR2VuIENvcmUgcHJvY2Vzc29yIEdyYXBoaWNzIENvbnRyb2xsZXIgKHJldiAwOSkg
-KHByb2ctaWYgMDAgW1ZHQSBjb250cm9sbGVyXSkKCVN1YnN5c3RlbTogQ0xFVk8vS0FQT0sg
-Q29tcHV0ZXIgRGV2aWNlIDA1NTAKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNw
-ZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZh
-c3RCMkItIERpc0lOVHgrCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQisgUGFy
-RXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBF
-UlItIElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEg
-NDAKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjY0MDAwMDAgKDY0LWJpdCwgbm9uLXByZWZldGNo
-YWJsZSkgW3NpemU9NE1dCglSZWdpb24gMjogTWVtb3J5IGF0IGUwMDAwMDAwICg2NC1iaXQs
-IHByZWZldGNoYWJsZSkgW3NpemU9MjU2TV0KCVJlZ2lvbiA0OiBJL08gcG9ydHMgYXQgZjAw
-MCBbc2l6ZT02NF0KCUV4cGFuc2lvbiBST00gYXQgPHVuYXNzaWduZWQ+IFtkaXNhYmxlZF0K
-CUNhcGFiaWxpdGllczogPGFjY2VzcyBkZW5pZWQ+CglLZXJuZWwgZHJpdmVyIGluIHVzZTog
-aTkxNQoJS2VybmVsIG1vZHVsZXM6IGk5MTUKCjAwOjE0LjAgVVNCIGNvbnRyb2xsZXI6IElu
-dGVsIENvcnBvcmF0aW9uIDcgU2VyaWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFVT
-QiB4SENJIEhvc3QgQ29udHJvbGxlciAocmV2IDA0KSAocHJvZy1pZiAzMCBbWEhDSV0pCglT
-dWJzeXN0ZW06IENMRVZPL0tBUE9LIENvbXB1dGVyIERldmljZSAwNTUwCglDb250cm9sOiBJ
-L08tIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJF
-cnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4KwoJU3RhdHVzOiBDYXArIDY2
-TUh6LSBVREYtIEZhc3RCMkIrIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFi
-b3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1
-cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEgNDIKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMDAw
-MDAgKDY0LWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NjRLXQoJQ2FwYWJpbGl0aWVz
-OiA8YWNjZXNzIGRlbmllZD4KCUtlcm5lbCBkcml2ZXIgaW4gdXNlOiB4aGNpX2hjZAoJS2Vy
-bmVsIG1vZHVsZXM6IHhoY2lfaGNkCgowMDoxNi4wIENvbW11bmljYXRpb24gY29udHJvbGxl
-cjogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMvQzIxMCBTZXJpZXMgQ2hpcHNldCBGYW1p
-bHkgTUVJIENvbnRyb2xsZXIgIzEgKHJldiAwNCkKCVN1YnN5c3RlbTogQ0xFVk8vS0FQT0sg
-Q29tcHV0ZXIgRGV2aWNlIDA1NTAKCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIrIFNw
-ZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZh
-c3RCMkItIERpc0lOVHgrCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFy
-RXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBF
-UlItIElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEg
-NDQKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMWIwMDAgKDY0LWJpdCwgbm9uLXByZWZldGNo
-YWJsZSkgW3NpemU9MTZdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVs
-IGRyaXZlciBpbiB1c2U6IG1laV9tZQoJS2VybmVsIG1vZHVsZXM6IG1laV9tZQoKMDA6MWEu
-MCBVU0IgY29udHJvbGxlcjogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMvQzIxMCBTZXJp
-ZXMgQ2hpcHNldCBGYW1pbHkgVVNCIEVuaGFuY2VkIEhvc3QgQ29udHJvbGxlciAjMiAocmV2
-IDA0KSAocHJvZy1pZiAyMCBbRUhDSV0pCglTdWJzeXN0ZW06IENMRVZPL0tBUE9LIENvbXB1
-dGVyIERldmljZSAwNTUwCglDb250cm9sOiBJL08tIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3lj
-bGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJC
-LSBEaXNJTlR4LQoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkIrIFBhckVyci0g
-REVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlIt
-IElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEgMTYK
-CVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMTgwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJs
-ZSkgW3NpemU9MUtdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVsIGRy
-aXZlciBpbiB1c2U6IGVoY2ktcGNpCglLZXJuZWwgbW9kdWxlczogZWhjaV9wY2kKCjAwOjFi
-LjAgQXVkaW8gZGV2aWNlOiBJbnRlbCBDb3Jwb3JhdGlvbiA3IFNlcmllcy9DMjEwIFNlcmll
-cyBDaGlwc2V0IEZhbWlseSBIaWdoIERlZmluaXRpb24gQXVkaW8gQ29udHJvbGxlciAocmV2
-IDA0KQoJU3Vic3lzdGVtOiBDTEVWTy9LQVBPSyBDb21wdXRlciBEZXZpY2UgMDU1MAoJQ29u
-dHJvbDogSS9PLSBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
-cC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeCsKCVN0YXR1czog
-Q2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQt
-IDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDAsIENh
-Y2hlIExpbmUgU2l6ZTogNjQgYnl0ZXMKCUludGVycnVwdDogcGluIEEgcm91dGVkIHRvIElS
-USA0NQoJUmVnaW9uIDA6IE1lbW9yeSBhdCBmN2QxMDAwMCAoNjQtYml0LCBub24tcHJlZmV0
-Y2hhYmxlKSBbc2l6ZT0xNktdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2Vy
-bmVsIGRyaXZlciBpbiB1c2U6IHNuZF9oZGFfaW50ZWwKCUtlcm5lbCBtb2R1bGVzOiBzbmRf
-aGRhX2ludGVsCgowMDoxYy4wIFBDSSBicmlkZ2U6IEludGVsIENvcnBvcmF0aW9uIDcgU2Vy
-aWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFBDSSBFeHByZXNzIFJvb3QgUG9ydCAx
-IChyZXYgYzQpIChwcm9nLWlmIDAwIFtOb3JtYWwgZGVjb2RlXSkKCUNvbnRyb2w6IEkvTysg
-TWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0g
-U3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcCsgNjZNSHot
-IFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8
-TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwLCBDYWNoZSBMaW5lIFNp
-emU6IDY0IGJ5dGVzCglCdXM6IHByaW1hcnk9MDAsIHNlY29uZGFyeT0wMSwgc3Vib3JkaW5h
-dGU9MDEsIHNlYy1sYXRlbmN5PTAKCVNlY29uZGFyeSBzdGF0dXM6IDY2TUh6LSBGYXN0QjJC
-LSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQrIDxTRVJS
-LSA8UEVSUi0KCUJyaWRnZUN0bDogUGFyaXR5LSBTRVJSLSBOb0lTQS0gVkdBLSBNQWJvcnQt
-ID5SZXNldC0gRmFzdEIyQi0KCQlQcmlEaXNjVG1yLSBTZWNEaXNjVG1yLSBEaXNjVG1yU3Rh
-dC0gRGlzY1RtclNFUlJFbi0KCUNhcGFiaWxpdGllczogPGFjY2VzcyBkZW5pZWQ+CglLZXJu
-ZWwgZHJpdmVyIGluIHVzZTogcGNpZXBvcnQKCUtlcm5lbCBtb2R1bGVzOiBzaHBjaHAKCjAw
-OjFjLjIgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMvQzIxMCBTZXJp
-ZXMgQ2hpcHNldCBGYW1pbHkgUENJIEV4cHJlc3MgUm9vdCBQb3J0IDMgKHJldiBjNCkgKHBy
-b2ctaWYgMDAgW05vcm1hbCBkZWNvZGVdKQoJQ29udHJvbDogSS9PKyBNZW0rIEJ1c01hc3Rl
-cisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVwcGluZy0gU0VS
-Ui0gRmFzdEIyQi0gRGlzSU5UeC0KCVN0YXR1czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJC
-LSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJS
-LSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDAsIENhY2hlIExpbmUgU2l6ZTogNjQgYnl0ZXMK
-CUJ1czogcHJpbWFyeT0wMCwgc2Vjb25kYXJ5PTAyLCBzdWJvcmRpbmF0ZT0wMiwgc2VjLWxh
-dGVuY3k9MAoJTWVtb3J5IGJlaGluZCBicmlkZ2U6IGY3YzAwMDAwLWY3Y2ZmZmZmCglTZWNv
-bmRhcnkgc3RhdHVzOiA2Nk1Iei0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFi
-b3J0LSA8VEFib3J0LSA8TUFib3J0LSA8U0VSUi0gPFBFUlItCglCcmlkZ2VDdGw6IFBhcml0
-eS0gU0VSUi0gTm9JU0EtIFZHQS0gTUFib3J0LSA+UmVzZXQtIEZhc3RCMkItCgkJUHJpRGlz
-Y1Rtci0gU2VjRGlzY1Rtci0gRGlzY1RtclN0YXQtIERpc2NUbXJTRVJSRW4tCglDYXBhYmls
-aXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVsIGRyaXZlciBpbiB1c2U6IHBjaWVwb3J0
-CglLZXJuZWwgbW9kdWxlczogc2hwY2hwCgowMDoxYy4zIFBDSSBicmlkZ2U6IEludGVsIENv
-cnBvcmF0aW9uIDcgU2VyaWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFBDSSBFeHBy
-ZXNzIFJvb3QgUG9ydCA0IChyZXYgYzQpIChwcm9nLWlmIDAwIFtOb3JtYWwgZGVjb2RlXSkK
-CUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdB
-U25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgtCglTdGF0
-dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFi
-b3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAw
-LCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVzCglCdXM6IHByaW1hcnk9MDAsIHNlY29uZGFy
-eT0wMywgc3Vib3JkaW5hdGU9MDMsIHNlYy1sYXRlbmN5PTAKCUkvTyBiZWhpbmQgYnJpZGdl
-OiAwMDAwZTAwMC0wMDAwZWZmZgoJTWVtb3J5IGJlaGluZCBicmlkZ2U6IGY3MjAwMDAwLWY3
-YmZmZmZmCglQcmVmZXRjaGFibGUgbWVtb3J5IGJlaGluZCBicmlkZ2U6IDAwMDAwMDAwZjBh
-MDAwMDAtMDAwMDAwMDBmMTNmZmZmZgoJU2Vjb25kYXJ5IHN0YXR1czogNjZNSHotIEZhc3RC
-MkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPFNF
-UlItIDxQRVJSLQoJQnJpZGdlQ3RsOiBQYXJpdHktIFNFUlItIE5vSVNBLSBWR0EtIE1BYm9y
-dC0gPlJlc2V0LSBGYXN0QjJCLQoJCVByaURpc2NUbXItIFNlY0Rpc2NUbXItIERpc2NUbXJT
-dGF0LSBEaXNjVG1yU0VSUkVuLQoJQ2FwYWJpbGl0aWVzOiA8YWNjZXNzIGRlbmllZD4KCUtl
-cm5lbCBkcml2ZXIgaW4gdXNlOiBwY2llcG9ydAoJS2VybmVsIG1vZHVsZXM6IHNocGNocAoK
-MDA6MWMuNCBQQ0kgYnJpZGdlOiBJbnRlbCBDb3Jwb3JhdGlvbiA3IFNlcmllcy9DMjEwIFNl
-cmllcyBDaGlwc2V0IEZhbWlseSBQQ0kgRXhwcmVzcyBSb290IFBvcnQgNSAocmV2IGM0KSAo
-cHJvZy1pZiAwMCBbTm9ybWFsIGRlY29kZV0pCglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFz
-dGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBT
-RVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RC
-MkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNF
-UlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRl
-cwoJQnVzOiBwcmltYXJ5PTAwLCBzZWNvbmRhcnk9MDQsIHN1Ym9yZGluYXRlPTA2LCBzZWMt
-bGF0ZW5jeT0wCglJL08gYmVoaW5kIGJyaWRnZTogMDAwMGQwMDAtMDAwMGRmZmYKCU1lbW9y
-eSBiZWhpbmQgYnJpZGdlOiBmNjgwMDAwMC1mNzFmZmZmZgoJUHJlZmV0Y2hhYmxlIG1lbW9y
-eSBiZWhpbmQgYnJpZGdlOiAwMDAwMDAwMGYwMDAwMDAwLTAwMDAwMDAwZjA5ZmZmZmYKCVNl
-Y29uZGFyeSBzdGF0dXM6IDY2TUh6LSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0ID5U
-QWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQrIDxTRVJSLSA8UEVSUi0KCUJyaWRnZUN0bDogUGFy
-aXR5LSBTRVJSLSBOb0lTQS0gVkdBLSBNQWJvcnQtID5SZXNldC0gRmFzdEIyQi0KCQlQcmlE
-aXNjVG1yLSBTZWNEaXNjVG1yLSBEaXNjVG1yU3RhdC0gRGlzY1RtclNFUlJFbi0KCUNhcGFi
-aWxpdGllczogPGFjY2VzcyBkZW5pZWQ+CglLZXJuZWwgZHJpdmVyIGluIHVzZTogcGNpZXBv
-cnQKCUtlcm5lbCBtb2R1bGVzOiBzaHBjaHAKCjAwOjFkLjAgVVNCIGNvbnRyb2xsZXI6IElu
-dGVsIENvcnBvcmF0aW9uIDcgU2VyaWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFVT
-QiBFbmhhbmNlZCBIb3N0IENvbnRyb2xsZXIgIzEgKHJldiAwNCkgKHByb2ctaWYgMjAgW0VI
-Q0ldKQoJU3Vic3lzdGVtOiBDTEVWTy9LQVBPSyBDb21wdXRlciBEZXZpY2UgMDU1MAoJQ29u
-dHJvbDogSS9PLSBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
-cC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeC0KCVN0YXR1czog
-Q2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJCKyBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9y
-dC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMAoJ
-SW50ZXJydXB0OiBwaW4gQSByb3V0ZWQgdG8gSVJRIDIzCglSZWdpb24gMDogTWVtb3J5IGF0
-IGY3ZDE3MDAwICgzMi1iaXQsIG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTFLXQoJQ2FwYWJp
-bGl0aWVzOiA8YWNjZXNzIGRlbmllZD4KCUtlcm5lbCBkcml2ZXIgaW4gdXNlOiBlaGNpLXBj
-aQoJS2VybmVsIG1vZHVsZXM6IGVoY2lfcGNpCgowMDoxZi4wIElTQSBicmlkZ2U6IEludGVs
-IENvcnBvcmF0aW9uIEhNNzcgRXhwcmVzcyBDaGlwc2V0IExQQyBDb250cm9sbGVyIChyZXYg
-MDQpCglTdWJzeXN0ZW06IENMRVZPL0tBUE9LIENvbXB1dGVyIERldmljZSAwNTUwCglDb250
-cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29w
-LSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBD
-YXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0
-LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwCglD
-YXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVsIGRyaXZlciBpbiB1c2U6IGxw
-Y19pY2gKCUtlcm5lbCBtb2R1bGVzOiBscGNfaWNoCgowMDoxZi4yIFNBVEEgY29udHJvbGxl
-cjogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMgQ2hpcHNldCBGYW1pbHkgNi1wb3J0IFNB
-VEEgQ29udHJvbGxlciBbQUhDSSBtb2RlXSAocmV2IDA0KSAocHJvZy1pZiAwMSBbQUhDSSAx
-LjBdKQoJU3Vic3lzdGVtOiBDTEVWTy9LQVBPSyBDb21wdXRlciBEZXZpY2UgMDU1MAoJQ29u
-dHJvbDogSS9PKyBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
-cC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeCsKCVN0YXR1czog
-Q2FwKyA2Nk1IeisgVURGLSBGYXN0QjJCKyBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9y
-dC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMAoJ
-SW50ZXJydXB0OiBwaW4gQiByb3V0ZWQgdG8gSVJRIDQzCglSZWdpb24gMDogSS9PIHBvcnRz
-IGF0IGYwYjAgW3NpemU9OF0KCVJlZ2lvbiAxOiBJL08gcG9ydHMgYXQgZjBhMCBbc2l6ZT00
-XQoJUmVnaW9uIDI6IEkvTyBwb3J0cyBhdCBmMDkwIFtzaXplPThdCglSZWdpb24gMzogSS9P
-IHBvcnRzIGF0IGYwODAgW3NpemU9NF0KCVJlZ2lvbiA0OiBJL08gcG9ydHMgYXQgZjA2MCBb
-c2l6ZT0zMl0KCVJlZ2lvbiA1OiBNZW1vcnkgYXQgZjdkMTYwMDAgKDMyLWJpdCwgbm9uLXBy
-ZWZldGNoYWJsZSkgW3NpemU9MktdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJ
-S2VybmVsIGRyaXZlciBpbiB1c2U6IGFoY2kKCUtlcm5lbCBtb2R1bGVzOiBhaGNpCgowMDox
-Zi4zIFNNQnVzOiBJbnRlbCBDb3Jwb3JhdGlvbiA3IFNlcmllcy9DMjEwIFNlcmllcyBDaGlw
-c2V0IEZhbWlseSBTTUJ1cyBDb250cm9sbGVyIChyZXYgMDQpCglTdWJzeXN0ZW06IENMRVZP
-L0tBUE9LIENvbXB1dGVyIERldmljZSAwNTUwCglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFz
-dGVyLSBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBT
-RVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBDYXAtIDY2TUh6LSBVREYtIEZhc3RC
-MkIrIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+
-U0VSUi0gPFBFUlItIElOVHgtCglJbnRlcnJ1cHQ6IHBpbiBDIHJvdXRlZCB0byBJUlEgMTgK
-CVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMTUwMDAgKDY0LWJpdCwgbm9uLXByZWZldGNoYWJs
-ZSkgW3NpemU9MjU2XQoJUmVnaW9uIDQ6IEkvTyBwb3J0cyBhdCBmMDQwIFtzaXplPTMyXQoJ
-S2VybmVsIG1vZHVsZXM6IGkyY19pODAxCgowMjowMC4wIE5ldHdvcmsgY29udHJvbGxlcjog
-SW50ZWwgQ29ycG9yYXRpb24gQ2VudHJpbm8gV2lyZWxlc3MtTiAyMjMwIChyZXYgYzQpCglT
-dWJzeXN0ZW06IEludGVsIENvcnBvcmF0aW9uIENlbnRyaW5vIFdpcmVsZXNzLU4gMjIzMCBC
-R04KCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0g
-VkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIrIEZhc3RCMkItIERpc0lOVHgrCglT
-dGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+
-VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5
-OiAwLCBDYWNoZSBMaW5lIFNpemU6IDMyIGJ5dGVzCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRl
-ZCB0byBJUlEgNDcKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdjMDAwMDAgKDY0LWJpdCwgbm9u
-LXByZWZldGNoYWJsZSkgW3NpemU9OEtdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVk
-PgoJS2VybmVsIGRyaXZlciBpbiB1c2U6IGl3bHdpZmkKCUtlcm5lbCBtb2R1bGVzOiBpd2x3
-aWZpCgo=
---------------090107050600010605000602
-Content-Type: text/plain; charset=UTF-8;
- name="lscpi-before"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="lscpi-before"
-
-MDA6MDAuMCBIb3N0IGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gM3JkIEdlbiBDb3JlIHBy
-b2Nlc3NvciBEUkFNIENvbnRyb2xsZXIgKHJldiAwOSkKCVN1YnN5c3RlbTogQ0xFVk8vS0FQ
-T0sgQ29tcHV0ZXIgRGV2aWNlIDA1NTAKCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIr
-IFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlIt
-IEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQisg
-UGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0KyA+U0VSUi0g
-PFBFUlItIElOVHgtCglMYXRlbmN5OiAwCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVk
-PgoKMDA6MDIuMCBWR0EgY29tcGF0aWJsZSBjb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlv
-biAzcmQgR2VuIENvcmUgcHJvY2Vzc29yIEdyYXBoaWNzIENvbnRyb2xsZXIgKHJldiAwOSkg
-KHByb2ctaWYgMDAgW1ZHQSBjb250cm9sbGVyXSkKCVN1YnN5c3RlbTogQ0xFVk8vS0FQT0sg
-Q29tcHV0ZXIgRGV2aWNlIDA1NTAKCUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNw
-ZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZh
-c3RCMkItIERpc0lOVHgrCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQisgUGFy
-RXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBF
-UlItIElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEg
-NDAKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjY0MDAwMDAgKDY0LWJpdCwgbm9uLXByZWZldGNo
-YWJsZSkgW3NpemU9NE1dCglSZWdpb24gMjogTWVtb3J5IGF0IGUwMDAwMDAwICg2NC1iaXQs
-IHByZWZldGNoYWJsZSkgW3NpemU9MjU2TV0KCVJlZ2lvbiA0OiBJL08gcG9ydHMgYXQgZjAw
-MCBbc2l6ZT02NF0KCUV4cGFuc2lvbiBST00gYXQgPHVuYXNzaWduZWQ+IFtkaXNhYmxlZF0K
-CUNhcGFiaWxpdGllczogPGFjY2VzcyBkZW5pZWQ+CglLZXJuZWwgZHJpdmVyIGluIHVzZTog
-aTkxNQoJS2VybmVsIG1vZHVsZXM6IGk5MTUKCjAwOjE0LjAgVVNCIGNvbnRyb2xsZXI6IElu
-dGVsIENvcnBvcmF0aW9uIDcgU2VyaWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFVT
-QiB4SENJIEhvc3QgQ29udHJvbGxlciAocmV2IDA0KSAocHJvZy1pZiAzMCBbWEhDSV0pCglT
-dWJzeXN0ZW06IENMRVZPL0tBUE9LIENvbXB1dGVyIERldmljZSAwNTUwCglDb250cm9sOiBJ
-L08tIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJF
-cnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4KwoJU3RhdHVzOiBDYXArIDY2
-TUh6LSBVREYtIEZhc3RCMkIrIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFi
-b3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1
-cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEgNDIKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMDAw
-MDAgKDY0LWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NjRLXQoJQ2FwYWJpbGl0aWVz
-OiA8YWNjZXNzIGRlbmllZD4KCUtlcm5lbCBkcml2ZXIgaW4gdXNlOiB4aGNpX2hjZAoJS2Vy
-bmVsIG1vZHVsZXM6IHhoY2lfaGNkCgowMDoxNi4wIENvbW11bmljYXRpb24gY29udHJvbGxl
-cjogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMvQzIxMCBTZXJpZXMgQ2hpcHNldCBGYW1p
-bHkgTUVJIENvbnRyb2xsZXIgIzEgKHJldiAwNCkKCVN1YnN5c3RlbTogQ0xFVk8vS0FQT0sg
-Q29tcHV0ZXIgRGV2aWNlIDA1NTAKCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIrIFNw
-ZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZh
-c3RCMkItIERpc0lOVHgrCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFy
-RXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBF
-UlItIElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEg
-NDQKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMWIwMDAgKDY0LWJpdCwgbm9uLXByZWZldGNo
-YWJsZSkgW3NpemU9MTZdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVs
-IGRyaXZlciBpbiB1c2U6IG1laV9tZQoJS2VybmVsIG1vZHVsZXM6IG1laV9tZQoKMDA6MWEu
-MCBVU0IgY29udHJvbGxlcjogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMvQzIxMCBTZXJp
-ZXMgQ2hpcHNldCBGYW1pbHkgVVNCIEVuaGFuY2VkIEhvc3QgQ29udHJvbGxlciAjMiAocmV2
-IDA0KSAocHJvZy1pZiAyMCBbRUhDSV0pCglTdWJzeXN0ZW06IENMRVZPL0tBUE9LIENvbXB1
-dGVyIERldmljZSAwNTUwCglDb250cm9sOiBJL08tIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3lj
-bGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJC
-LSBEaXNJTlR4LQoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkIrIFBhckVyci0g
-REVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlIt
-IElOVHgtCglMYXRlbmN5OiAwCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEgMTYK
-CVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMTgwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJs
-ZSkgW3NpemU9MUtdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVsIGRy
-aXZlciBpbiB1c2U6IGVoY2ktcGNpCglLZXJuZWwgbW9kdWxlczogZWhjaV9wY2kKCjAwOjFi
-LjAgQXVkaW8gZGV2aWNlOiBJbnRlbCBDb3Jwb3JhdGlvbiA3IFNlcmllcy9DMjEwIFNlcmll
-cyBDaGlwc2V0IEZhbWlseSBIaWdoIERlZmluaXRpb24gQXVkaW8gQ29udHJvbGxlciAocmV2
-IDA0KQoJU3Vic3lzdGVtOiBDTEVWTy9LQVBPSyBDb21wdXRlciBEZXZpY2UgMDU1MAoJQ29u
-dHJvbDogSS9PLSBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
-cC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeCsKCVN0YXR1czog
-Q2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQt
-IDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDAsIENh
-Y2hlIExpbmUgU2l6ZTogNjQgYnl0ZXMKCUludGVycnVwdDogcGluIEEgcm91dGVkIHRvIElS
-USA0NQoJUmVnaW9uIDA6IE1lbW9yeSBhdCBmN2QxMDAwMCAoNjQtYml0LCBub24tcHJlZmV0
-Y2hhYmxlKSBbc2l6ZT0xNktdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2Vy
-bmVsIGRyaXZlciBpbiB1c2U6IHNuZF9oZGFfaW50ZWwKCUtlcm5lbCBtb2R1bGVzOiBzbmRf
-aGRhX2ludGVsCgowMDoxYy4wIFBDSSBicmlkZ2U6IEludGVsIENvcnBvcmF0aW9uIDcgU2Vy
-aWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFBDSSBFeHByZXNzIFJvb3QgUG9ydCAx
-IChyZXYgYzQpIChwcm9nLWlmIDAwIFtOb3JtYWwgZGVjb2RlXSkKCUNvbnRyb2w6IEkvTysg
-TWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0g
-U3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgtCglTdGF0dXM6IENhcCsgNjZNSHot
-IFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8
-TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwLCBDYWNoZSBMaW5lIFNp
-emU6IDY0IGJ5dGVzCglCdXM6IHByaW1hcnk9MDAsIHNlY29uZGFyeT0wMSwgc3Vib3JkaW5h
-dGU9MDEsIHNlYy1sYXRlbmN5PTAKCVNlY29uZGFyeSBzdGF0dXM6IDY2TUh6LSBGYXN0QjJC
-LSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQrIDxTRVJS
-LSA8UEVSUi0KCUJyaWRnZUN0bDogUGFyaXR5LSBTRVJSLSBOb0lTQS0gVkdBLSBNQWJvcnQt
-ID5SZXNldC0gRmFzdEIyQi0KCQlQcmlEaXNjVG1yLSBTZWNEaXNjVG1yLSBEaXNjVG1yU3Rh
-dC0gRGlzY1RtclNFUlJFbi0KCUNhcGFiaWxpdGllczogPGFjY2VzcyBkZW5pZWQ+CglLZXJu
-ZWwgZHJpdmVyIGluIHVzZTogcGNpZXBvcnQKCUtlcm5lbCBtb2R1bGVzOiBzaHBjaHAKCjAw
-OjFjLjIgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMvQzIxMCBTZXJp
-ZXMgQ2hpcHNldCBGYW1pbHkgUENJIEV4cHJlc3MgUm9vdCBQb3J0IDMgKHJldiBjNCkgKHBy
-b2ctaWYgMDAgW05vcm1hbCBkZWNvZGVdKQoJQ29udHJvbDogSS9PKyBNZW0rIEJ1c01hc3Rl
-cisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVwcGluZy0gU0VS
-Ui0gRmFzdEIyQi0gRGlzSU5UeC0KCVN0YXR1czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJC
-LSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJS
-LSA8UEVSUi0gSU5UeC0KCUxhdGVuY3k6IDAsIENhY2hlIExpbmUgU2l6ZTogNjQgYnl0ZXMK
-CUJ1czogcHJpbWFyeT0wMCwgc2Vjb25kYXJ5PTAyLCBzdWJvcmRpbmF0ZT0wMiwgc2VjLWxh
-dGVuY3k9MAoJTWVtb3J5IGJlaGluZCBicmlkZ2U6IGY3YzAwMDAwLWY3Y2ZmZmZmCglTZWNv
-bmRhcnkgc3RhdHVzOiA2Nk1Iei0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFi
-b3J0LSA8VEFib3J0LSA8TUFib3J0LSA8U0VSUi0gPFBFUlItCglCcmlkZ2VDdGw6IFBhcml0
-eS0gU0VSUi0gTm9JU0EtIFZHQS0gTUFib3J0LSA+UmVzZXQtIEZhc3RCMkItCgkJUHJpRGlz
-Y1Rtci0gU2VjRGlzY1Rtci0gRGlzY1RtclN0YXQtIERpc2NUbXJTRVJSRW4tCglDYXBhYmls
-aXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVsIGRyaXZlciBpbiB1c2U6IHBjaWVwb3J0
-CglLZXJuZWwgbW9kdWxlczogc2hwY2hwCgowMDoxYy4zIFBDSSBicmlkZ2U6IEludGVsIENv
-cnBvcmF0aW9uIDcgU2VyaWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFBDSSBFeHBy
-ZXNzIFJvb3QgUG9ydCA0IChyZXYgYzQpIChwcm9nLWlmIDAwIFtOb3JtYWwgZGVjb2RlXSkK
-CUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdB
-U25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgtCglTdGF0
-dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFi
-b3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAw
-LCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVzCglCdXM6IHByaW1hcnk9MDAsIHNlY29uZGFy
-eT0wMywgc3Vib3JkaW5hdGU9MDMsIHNlYy1sYXRlbmN5PTAKCUkvTyBiZWhpbmQgYnJpZGdl
-OiAwMDAwZTAwMC0wMDAwZWZmZgoJTWVtb3J5IGJlaGluZCBicmlkZ2U6IGY3MjAwMDAwLWY3
-YmZmZmZmCglQcmVmZXRjaGFibGUgbWVtb3J5IGJlaGluZCBicmlkZ2U6IDAwMDAwMDAwZjBh
-MDAwMDAtMDAwMDAwMDBmMTNmZmZmZgoJU2Vjb25kYXJ5IHN0YXR1czogNjZNSHotIEZhc3RC
-MkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPFNF
-UlItIDxQRVJSLQoJQnJpZGdlQ3RsOiBQYXJpdHktIFNFUlItIE5vSVNBLSBWR0EtIE1BYm9y
-dC0gPlJlc2V0LSBGYXN0QjJCLQoJCVByaURpc2NUbXItIFNlY0Rpc2NUbXItIERpc2NUbXJT
-dGF0LSBEaXNjVG1yU0VSUkVuLQoJQ2FwYWJpbGl0aWVzOiA8YWNjZXNzIGRlbmllZD4KCUtl
-cm5lbCBkcml2ZXIgaW4gdXNlOiBwY2llcG9ydAoJS2VybmVsIG1vZHVsZXM6IHNocGNocAoK
-MDA6MWMuNCBQQ0kgYnJpZGdlOiBJbnRlbCBDb3Jwb3JhdGlvbiA3IFNlcmllcy9DMjEwIFNl
-cmllcyBDaGlwc2V0IEZhbWlseSBQQ0kgRXhwcmVzcyBSb290IFBvcnQgNSAocmV2IGM0KSAo
-cHJvZy1pZiAwMCBbTm9ybWFsIGRlY29kZV0pCglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFz
-dGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBT
-RVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RC
-MkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNF
-UlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRl
-cwoJQnVzOiBwcmltYXJ5PTAwLCBzZWNvbmRhcnk9MDQsIHN1Ym9yZGluYXRlPTA2LCBzZWMt
-bGF0ZW5jeT0wCglJL08gYmVoaW5kIGJyaWRnZTogMDAwMGQwMDAtMDAwMGRmZmYKCU1lbW9y
-eSBiZWhpbmQgYnJpZGdlOiBmNjgwMDAwMC1mNzFmZmZmZgoJUHJlZmV0Y2hhYmxlIG1lbW9y
-eSBiZWhpbmQgYnJpZGdlOiAwMDAwMDAwMGYwMDAwMDAwLTAwMDAwMDAwZjA5ZmZmZmYKCVNl
-Y29uZGFyeSBzdGF0dXM6IDY2TUh6LSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0ID5U
-QWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtIDxTRVJSLSA8UEVSUi0KCUJyaWRnZUN0bDogUGFy
-aXR5LSBTRVJSLSBOb0lTQS0gVkdBLSBNQWJvcnQtID5SZXNldC0gRmFzdEIyQi0KCQlQcmlE
-aXNjVG1yLSBTZWNEaXNjVG1yLSBEaXNjVG1yU3RhdC0gRGlzY1RtclNFUlJFbi0KCUNhcGFi
-aWxpdGllczogPGFjY2VzcyBkZW5pZWQ+CglLZXJuZWwgZHJpdmVyIGluIHVzZTogcGNpZXBv
-cnQKCUtlcm5lbCBtb2R1bGVzOiBzaHBjaHAKCjAwOjFkLjAgVVNCIGNvbnRyb2xsZXI6IElu
-dGVsIENvcnBvcmF0aW9uIDcgU2VyaWVzL0MyMTAgU2VyaWVzIENoaXBzZXQgRmFtaWx5IFVT
-QiBFbmhhbmNlZCBIb3N0IENvbnRyb2xsZXIgIzEgKHJldiAwNCkgKHByb2ctaWYgMjAgW0VI
-Q0ldKQoJU3Vic3lzdGVtOiBDTEVWTy9LQVBPSyBDb21wdXRlciBEZXZpY2UgMDU1MAoJQ29u
-dHJvbDogSS9PLSBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
-cC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeC0KCVN0YXR1czog
-Q2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJCKyBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9y
-dC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMAoJ
-SW50ZXJydXB0OiBwaW4gQSByb3V0ZWQgdG8gSVJRIDIzCglSZWdpb24gMDogTWVtb3J5IGF0
-IGY3ZDE3MDAwICgzMi1iaXQsIG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTFLXQoJQ2FwYWJp
-bGl0aWVzOiA8YWNjZXNzIGRlbmllZD4KCUtlcm5lbCBkcml2ZXIgaW4gdXNlOiBlaGNpLXBj
-aQoJS2VybmVsIG1vZHVsZXM6IGVoY2lfcGNpCgowMDoxZi4wIElTQSBicmlkZ2U6IEludGVs
-IENvcnBvcmF0aW9uIEhNNzcgRXhwcmVzcyBDaGlwc2V0IExQQyBDb250cm9sbGVyIChyZXYg
-MDQpCglTdWJzeXN0ZW06IENMRVZPL0tBUE9LIENvbXB1dGVyIERldmljZSAwNTUwCglDb250
-cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29w
-LSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBD
-YXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0
-LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwCglD
-YXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJS2VybmVsIGRyaXZlciBpbiB1c2U6IGxw
-Y19pY2gKCUtlcm5lbCBtb2R1bGVzOiBscGNfaWNoCgowMDoxZi4yIFNBVEEgY29udHJvbGxl
-cjogSW50ZWwgQ29ycG9yYXRpb24gNyBTZXJpZXMgQ2hpcHNldCBGYW1pbHkgNi1wb3J0IFNB
-VEEgQ29udHJvbGxlciBbQUhDSSBtb2RlXSAocmV2IDA0KSAocHJvZy1pZiAwMSBbQUhDSSAx
-LjBdKQoJU3Vic3lzdGVtOiBDTEVWTy9LQVBPSyBDb21wdXRlciBEZXZpY2UgMDU1MAoJQ29u
-dHJvbDogSS9PKyBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
-cC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0gRGlzSU5UeCsKCVN0YXR1czog
-Q2FwKyA2Nk1IeisgVURGLSBGYXN0QjJCKyBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9y
-dC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMAoJ
-SW50ZXJydXB0OiBwaW4gQiByb3V0ZWQgdG8gSVJRIDQzCglSZWdpb24gMDogSS9PIHBvcnRz
-IGF0IGYwYjAgW3NpemU9OF0KCVJlZ2lvbiAxOiBJL08gcG9ydHMgYXQgZjBhMCBbc2l6ZT00
-XQoJUmVnaW9uIDI6IEkvTyBwb3J0cyBhdCBmMDkwIFtzaXplPThdCglSZWdpb24gMzogSS9P
-IHBvcnRzIGF0IGYwODAgW3NpemU9NF0KCVJlZ2lvbiA0OiBJL08gcG9ydHMgYXQgZjA2MCBb
-c2l6ZT0zMl0KCVJlZ2lvbiA1OiBNZW1vcnkgYXQgZjdkMTYwMDAgKDMyLWJpdCwgbm9uLXBy
-ZWZldGNoYWJsZSkgW3NpemU9MktdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVkPgoJ
-S2VybmVsIGRyaXZlciBpbiB1c2U6IGFoY2kKCUtlcm5lbCBtb2R1bGVzOiBhaGNpCgowMDox
-Zi4zIFNNQnVzOiBJbnRlbCBDb3Jwb3JhdGlvbiA3IFNlcmllcy9DMjEwIFNlcmllcyBDaGlw
-c2V0IEZhbWlseSBTTUJ1cyBDb250cm9sbGVyIChyZXYgMDQpCglTdWJzeXN0ZW06IENMRVZP
-L0tBUE9LIENvbXB1dGVyIERldmljZSAwNTUwCglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFz
-dGVyLSBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBT
-RVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBDYXAtIDY2TUh6LSBVREYtIEZhc3RC
-MkIrIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+
-U0VSUi0gPFBFUlItIElOVHgtCglJbnRlcnJ1cHQ6IHBpbiBDIHJvdXRlZCB0byBJUlEgMTgK
-CVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdkMTUwMDAgKDY0LWJpdCwgbm9uLXByZWZldGNoYWJs
-ZSkgW3NpemU9MjU2XQoJUmVnaW9uIDQ6IEkvTyBwb3J0cyBhdCBmMDQwIFtzaXplPTMyXQoJ
-S2VybmVsIG1vZHVsZXM6IGkyY19pODAxCgowMjowMC4wIE5ldHdvcmsgY29udHJvbGxlcjog
-SW50ZWwgQ29ycG9yYXRpb24gQ2VudHJpbm8gV2lyZWxlc3MtTiAyMjMwIChyZXYgYzQpCglT
-dWJzeXN0ZW06IEludGVsIENvcnBvcmF0aW9uIENlbnRyaW5vIFdpcmVsZXNzLU4gMjIzMCBC
-R04KCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0g
-VkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgrCglT
-dGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+
-VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5
-OiAwLCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVzCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRl
-ZCB0byBJUlEgNDcKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgZjdjMDAwMDAgKDY0LWJpdCwgbm9u
-LXByZWZldGNoYWJsZSkgW3NpemU9OEtdCglDYXBhYmlsaXRpZXM6IDxhY2Nlc3MgZGVuaWVk
-PgoJS2VybmVsIGRyaXZlciBpbiB1c2U6IGl3bHdpZmkKCUtlcm5lbCBtb2R1bGVzOiBpd2x3
-aWZpCgowMzowMC4wIFVuYXNzaWduZWQgY2xhc3MgW2ZmMDBdOiBSZWFsdGVrIFNlbWljb25k
-dWN0b3IgQ28uLCBMdGQuIERldmljZSA1Mjg5IChyZXYgMDEpCglTdWJzeXN0ZW06IENMRVZP
-L0tBUE9LIENvbXB1dGVyIERldmljZSAwNTQwCglDb250cm9sOiBJL08tIE1lbSsgQnVzTWFz
-dGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBT
-RVJSLSBGYXN0QjJCLSBEaXNJTlR4KwoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RC
-MkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNF
-UlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRl
-cwoJSW50ZXJydXB0OiBwaW4gQiByb3V0ZWQgdG8gSVJRIDQxCglSZWdpb24gMDogTWVtb3J5
-IGF0IGY3MjAwMDAwICgzMi1iaXQsIG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTY0S10KCUNh
-cGFiaWxpdGllczogPGFjY2VzcyBkZW5pZWQ+CglLZXJuZWwgZHJpdmVyIGluIHVzZTogcnRz
-eF9wY2kKCUtlcm5lbCBtb2R1bGVzOiBydHN4X3BjaQoKMDM6MDAuMiBFdGhlcm5ldCBjb250
-cm9sbGVyOiBSZWFsdGVrIFNlbWljb25kdWN0b3IgQ28uLCBMdGQuIFJUTDgxMTEvODE2OCBQ
-Q0kgRXhwcmVzcyBHaWdhYml0IEV0aGVybmV0IGNvbnRyb2xsZXIgKHJldiAwYSkKCVN1YnN5
-c3RlbTogQ0xFVk8vS0FQT0sgQ29tcHV0ZXIgRGV2aWNlIDA1NDAKCUNvbnRyb2w6IEkvTysg
-TWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0g
-U3RlcHBpbmctIFNFUlItIEZhc3RCMkItIERpc0lOVHgrCglTdGF0dXM6IENhcCsgNjZNSHot
-IFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0LSA8VEFib3J0LSA8
-TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCglMYXRlbmN5OiAwLCBDYWNoZSBMaW5lIFNp
-emU6IDY0IGJ5dGVzCglJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRlZCB0byBJUlEgNDYKCVJlZ2lv
-biAwOiBJL08gcG9ydHMgYXQgZTAwMCBbc2l6ZT0yNTZdCglSZWdpb24gMjogTWVtb3J5IGF0
-IGYwYTA0MDAwICg2NC1iaXQsIHByZWZldGNoYWJsZSkgW3NpemU9NEtdCglSZWdpb24gNDog
-TWVtb3J5IGF0IGYwYTAwMDAwICg2NC1iaXQsIHByZWZldGNoYWJsZSkgW3NpemU9MTZLXQoJ
-Q2FwYWJpbGl0aWVzOiA8YWNjZXNzIGRlbmllZD4KCUtlcm5lbCBkcml2ZXIgaW4gdXNlOiBy
-ODE2OQoJS2VybmVsIG1vZHVsZXM6IHI4MTY5Cgo=
---------------090107050600010605000602--
+>
+>
+> --
+> You have got to be excited about what you are doing. (L. Lamport)
+>
+> Eduardo Valentin
+>
