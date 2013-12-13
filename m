@@ -1,7 +1,7 @@
 From: David Cohen <david.a.cohen@linux.intel.com>
-Subject: [RFC/PATCH 1/3] pm: make PM macros more smart
-Date: Thu, 12 Dec 2013 21:18:23 -0800
-Message-ID: <1386911905-2366-2-git-send-email-david.a.cohen@linux.intel.com>
+Subject: [RFC/PATCH 2/3] usb/xhci: implement proper static inline stubs when !CONFIG_PM
+Date: Thu, 12 Dec 2013 21:18:24 -0800
+Message-ID: <1386911905-2366-3-git-send-email-david.a.cohen@linux.intel.com>
 References: <1386911905-2366-1-git-send-email-david.a.cohen@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -13,68 +13,46 @@ To: pavel@ucw.cz, rjw@rjwysocki.net, len.brown@intel.com, sarah.a.sharp@linux.in
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, santosh.shilimkar@ti.com, David Cohen <david.a.cohen@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch makes SET_SYSTEM_SLEEP_PM_OPS() and SET_RUNTIME_PM_OPS() mor=
-e
-smart.
+Current xhci_suspend() and xhci_resume() implementation in case of
+CONFIG_PM not defined is buggy. If we try to use them we get the
+following error:
 
-Despite those macros check for '#ifdef CONFIG_PM_SLEEP/RUNTIME' to avoi=
-d
-setting the callbacks when such #ifdef's aren't defined, they don't
-handle compiler to avoid messages like that:
+drivers/usb/host/xhci-plat.c: In function =E2=80=98xhci_plat_suspend=E2=
+=80=99:
+drivers/usb/host/xhci-plat.c:205:21: error: called object =E2=80=980u=E2=
+=80=99 is not a function
+drivers/usb/host/xhci-plat.c: In function =E2=80=98xhci_plat_resume=E2=80=
+=99:
+drivers/usb/host/xhci-plat.c:213:20: error: called object =E2=80=980u=E2=
+=80=99 is not a function
 
-drivers/usb/host/xhci-plat.c:200:12: warning: =E2=80=98xhci_plat_suspen=
-d=E2=80=99 defined but not used [-Wunused-function]
-drivers/usb/host/xhci-plat.c:208:12: warning: =E2=80=98xhci_plat_resume=
-=E2=80=99 defined but not used [-Wunused-function]
+It happens because the function names are replaced by NULL but the
+brackets stay: NULL()
 
-As result, those macros get rid of #ifdef's when setting callbacks but
-not when implementing them.
-
-With this patch, drivers using SET_*_PM_OPS() macros don't need to #ifd=
-ef
-the callbacks implementation as well.
+This patch implements proper static inline stubs.
 
 Signed-off-by: David Cohen <david.a.cohen@linux.intel.com>
 ---
- include/linux/pm.h | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/usb/host/xhci.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index a224c7f5c377..41a0f3b42209 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -299,6 +299,8 @@ struct dev_pm_ops {
- 	int (*runtime_idle)(struct device *dev);
- };
-=20
-+#define MAKE_ME_NULL(fn) ((void *)((unsigned long)(fn) - (unsigned lon=
-g)(fn)))
-+
- #ifdef CONFIG_PM_SLEEP
- #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
- 	.suspend =3D suspend_fn, \
-@@ -308,7 +310,9 @@ struct dev_pm_ops {
- 	.poweroff =3D suspend_fn, \
- 	.restore =3D resume_fn,
+diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
+index 941d5f59e4dc..6a5e7a98de7e 100644
+--- a/drivers/usb/host/xhci.h
++++ b/drivers/usb/host/xhci.h
+@@ -1771,8 +1771,10 @@ int xhci_gen_setup(struct usb_hcd *hcd, xhci_get=
+_quirks_t get_quirks);
+ int xhci_suspend(struct xhci_hcd *xhci);
+ int xhci_resume(struct xhci_hcd *xhci, bool hibernated);
  #else
--#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-+#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-+	.suspend =3D MAKE_ME_NULL(suspend_fn), \
-+	.resume =3D MAKE_ME_NULL(resume_fn),
+-#define	xhci_suspend	NULL
+-#define	xhci_resume	NULL
++static inline int
++xhci_suspend(struct xhci_hcd *xhci) { return 0; }
++static inline int
++xhci_resume(struct xhci_hcd *xhci, bool hibernated) { return 0; }
  #endif
 =20
- #ifdef CONFIG_PM_RUNTIME
-@@ -317,7 +321,10 @@ struct dev_pm_ops {
- 	.runtime_resume =3D resume_fn, \
- 	.runtime_idle =3D idle_fn,
- #else
--#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-+#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-+	.runtime_suspend =3D MAKE_ME_NULL(suspend_fn), \
-+	.runtime_resume =3D MAKE_ME_NULL(resume_fn), \
-+	.runtime_idle =3D MAKE_ME_NULL(idle_fn),
- #endif
-=20
- /*
+ int xhci_get_frame(struct usb_hcd *hcd);
 --=20
 1.8.4.2
