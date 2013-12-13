@@ -1,52 +1,92 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH] time: Support in tick broadcast framework for archs
- without an external wakeup source
-Date: Fri, 13 Dec 2013 10:51:23 +0530
-Message-ID: <52AA9953.9090909@linux.vnet.ibm.com>
-References: <20131213041901.17199.37383.stgit@preeti.in.ibm.com> <1386911862.15730.81.camel@pasglop>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC/PATCH 3/3] usb/xhci-plat: remove unnecessary #ifdef checks
+ for CONFIG_PM_SLEEP
+Date: Fri, 13 Dec 2013 09:19:34 +0100
+Message-ID: <CAPDyKFoXjRsLTZzFy3cTafqwFg4JX01=Gb=eL23eeb9ddZiofA@mail.gmail.com>
+References: <1386911905-2366-1-git-send-email-david.a.cohen@linux.intel.com>
+	<1386911905-2366-4-git-send-email-david.a.cohen@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e38.co.us.ibm.com ([32.97.110.159]:42561 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869Ab3LMFYv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2013 00:24:51 -0500
-Received: from /spool/local
-	by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 12 Dec 2013 22:24:51 -0700
-In-Reply-To: <1386911862.15730.81.camel@pasglop>
+Received: from mail-qe0-f48.google.com ([209.85.128.48]:44156 "EHLO
+	mail-qe0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891Ab3LMITf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2013 03:19:35 -0500
+Received: by mail-qe0-f48.google.com with SMTP id gc15so1332944qeb.35
+        for <linux-pm@vger.kernel.org>; Fri, 13 Dec 2013 00:19:34 -0800 (PST)
+In-Reply-To: <1386911905-2366-4-git-send-email-david.a.cohen@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: peterz@infradead.org, fweisbec@gmail.com, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: David Cohen <david.a.cohen@linux.intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, sarah.a.sharp@linux.intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org, santosh.shilimkar@ti.com
 
-Hi Ben,
+On 13 December 2013 06:18, David Cohen <david.a.cohen@linux.intel.com> wrote:
+> From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>
+> Drivers using SET_*_PM_OPS() no longer need to #ifdef for CONFIG_PM_*
+> So, let's remove the unnecessary #ifdef's.
+>
+> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Signed-off-by: David Cohen <david.a.cohen@linux.intel.com>
+> ---
+>  drivers/usb/host/xhci-plat.c | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+>
+> diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
+> index d9c169f470d3..b1d93c344e04 100644
+> --- a/drivers/usb/host/xhci-plat.c
+> +++ b/drivers/usb/host/xhci-plat.c
+> @@ -197,7 +197,6 @@ static int xhci_plat_remove(struct platform_device *dev)
+>         return 0;
+>  }
+>
+> -#ifdef CONFIG_PM
 
-On 12/13/2013 10:47 AM, Benjamin Herrenschmidt wrote:
-> On Fri, 2013-12-13 at 09:49 +0530, Preeti U Murthy wrote:
->> On some architectures, in certain CPU deep idle states the local timers stop.
->> An external clock device is used to wakeup these CPUs. The kernel support for the
->> wakeup of these CPUs is provided by the tick broadcast framework by using the
->> external clock device as the wakeup source.
-> 
->> However on architectures like PowerPC there is no external clock device. 
-> 
-> Minor nit ...
-> 
-> I wouldn't make this an architectural statement. Some PowerPC's do have
-> external clock devices (for example the old MPIC interrupt controller
-> had timers). In fact, if we really need it, I'm sure we *could* find
-> something somewhere in P8 that could act as a timer, probably hijacking
-> a bit of the OCC or similar but at this stage, that's not on the radar.
-> 
-> So make it an implementation statement. "However, not all
-> implementations, such as some PowerPC ones, provide such an external
-> timer ...".
+I think you can solve this in another way.
 
-Thanks for this information. I will update this going ahead.
+As a start, I would suggest to change above to CONFIG_PM_SLEEP
 
-Regards
-Preeti U Murthy
+>  static int xhci_plat_suspend(struct device *dev)
+>  {
+>         struct usb_hcd  *hcd = dev_get_drvdata(dev);
+> @@ -217,10 +216,6 @@ static int xhci_plat_resume(struct device *dev)
+>  static const struct dev_pm_ops xhci_plat_pm_ops = {
+>         SET_SYSTEM_SLEEP_PM_OPS(xhci_plat_suspend, xhci_plat_resume)
+>  };
+> -#define DEV_PM_OPS     (&xhci_plat_pm_ops)
+> -#else
+> -#define DEV_PM_OPS     NULL
+> -#endif /* CONFIG_PM */
 
+Remove the use of DEV_PM_OPS define. Instead use below macro and
+outside #ifdef CONFIG_PM_SLEEP.
+
+"static SIMPLE_DEV_PM_OPS(xhci_plat_pm_ops, xhci_plat_suspend,
+xhci_plat_resume)"
+
+That should do the trick I believe, without the need for changing the
+existing SET_SYSTEM_SLEEP_PM_OPS macro in patch1.
+
+Kind regards
+Ulf Hansson
+
+>
+>  #ifdef CONFIG_OF
+>  static const struct of_device_id usb_xhci_of_match[] = {
+> @@ -235,7 +230,7 @@ static struct platform_driver usb_xhci_driver = {
+>         .remove = xhci_plat_remove,
+>         .driver = {
+>                 .name = "xhci-hcd",
+> -               .pm = DEV_PM_OPS,
+> +               .pm = &xhci_plat_pm_ops,
+>                 .of_match_table = of_match_ptr(usb_xhci_of_match),
+>         },
+>  };
+> --
+> 1.8.4.2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
