@@ -1,120 +1,89 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v4 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Fri, 13 Dec 2013 16:21:35 -0700
-Message-ID: <52AB967F.9030900@wwwdotorg.org>
-References: <1386840835-28751-1-git-send-email-bilhuang@nvidia.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] ARM/cpuidle: remove __init tag from Calxeda cpuidle probe
+ function
+Date: Sat, 14 Dec 2013 10:04:20 +0100
+Message-ID: <52AC1F14.9090602@linaro.org>
+References: <1386967759-12952-1-git-send-email-andre.przywara@linaro.org> <52AB82CD.3040100@linaro.org> <52AB8E8D.70806@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1386840835-28751-1-git-send-email-bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f41.google.com ([74.125.82.41]:45270 "EHLO
+	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040Ab3LNJEW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Dec 2013 04:04:22 -0500
+Received: by mail-wg0-f41.google.com with SMTP id y10so238059wgg.2
+        for <linux-pm@vger.kernel.org>; Sat, 14 Dec 2013 01:04:20 -0800 (PST)
+In-Reply-To: <52AB8E8D.70806@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andre Przywara <andre.przywara@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, rob.herring@calxeda.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 12/12/2013 02:33 AM, Bill Huang wrote:
-> Re-model Tegra20 cpufreq driver as below.
-> 
-> * Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
->   only Tegra20.
-> * Add probe function so defer probe can be used when we're going to
->   support DVFS.
-> * Create a fake cpufreq platform device with its name being
->   "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
->   accordingly.
+On 12/13/2013 11:47 PM, Andre Przywara wrote:
+> On 12/13/2013 10:57 PM, Daniel Lezcano wrote:
+>> On 12/13/2013 09:49 PM, Andre Przywara wrote:
+>>> Commit 60a66e370007e8535b7a561353b07b37deaf35ba changed the Calxeda
+>>> cpuidle driver to a platform driver, copying the __init tag from th=
+e
+>>> _init() to the newly used _probe() function. However, "probe should
+>>> not be __init." (Rob said ;-)
+>>> Remove the __init tag to fix a section mismatch in the Calxeda
+>>> cpuidle driver.
+>>>
+>>> Signed-off-by: Andre Przywara <andre.przywara@linaro.org>
+>>> ---
+>>
+>> Applied to my tree for 3.14.
+>
+> Daniel,
+>
+> thanks!
+> But since this is a regression (3.12 compiles fine), can someone plea=
+se
+> push this still for 3.13? If I am not mistaken, the rework was
+> introduced in the last merge window, so I'd consider this a bug fix.
 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+Yep. Done.
 
-> +config ARM_TEGRA20_CPUFREQ
-> +	bool "NVIDIA TEGRA20"
-> +	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
-> +	default y
-> +	help
-> +	  This enables Tegra20 cpufreq functionality, it adds
-> +	  Tegra20 CPU frequency ladder and the call back functions
-> +	  to set CPU rate. All the non-SoC dependant codes are
-> +	  controlled by the config ARM_TEGRA20_CPUFREQ.
+   -- Daniel
 
-I think that last sentence is no longer true in this patch version. Or,
-did you mean to write ARM_TEGRA_CPUFREQ rather than ARM_TEGRA20_CPUFREQ?
+>> Thanks for the fix.
+>
+>>
+>>    -- Daniel
+>>
+>>>   drivers/cpuidle/cpuidle-calxeda.c | 2 +-
+>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle-calxeda.c
+>>> b/drivers/cpuidle/cpuidle-calxeda.c
+>>> index 3679563..6e51114 100644
+>>> --- a/drivers/cpuidle/cpuidle-calxeda.c
+>>> +++ b/drivers/cpuidle/cpuidle-calxeda.c
+>>> @@ -65,7 +65,7 @@ static struct cpuidle_driver calxeda_idle_driver =
+=3D {
+>>>       .state_count =3D 2,
+>>>   };
+>>>
+>>> -static int __init calxeda_cpuidle_probe(struct platform_device *pd=
+ev)
+>>> +static int calxeda_cpuidle_probe(struct platform_device *pdev)
+>>>   {
+>>>       return cpuidle_register(&calxeda_idle_driver, NULL);
+>>>   }
+>>>
+>>
+>>
+>
 
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 
-> +static const char * const tegra_soc_compat[] = {
-> +	"nvidia,tegra124",
-> +	"nvidia,tegra114",
-> +	"nvidia,tegra30",
-> +	"nvidia,tegra20",
-> +	NULL
->  };
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-That table will need editing for each chip. I wonder if you can do
-something like always use the very last entry in /compatible. That would
-assume a particular ordering of the compatible entries, but they should
-be in the order $board, $soc anyway...
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-> +int __init tegra_cpufreq_init(void)
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(tegra_soc_compat); i++) {
-> +		if (of_machine_is_compatible(tegra_soc_compat[i])) {
-> +			struct platform_device_info devinfo;
-> +			char buf[40];
-> +
-> +			memset(&devinfo, 0, sizeof(devinfo));
-> +			strcpy(buf, tegra_soc_compat[i]);
-> +			strcat(buf, "-cpufreq");
-
-kasprintf() might be simpler, and would avoid the arbitrary 39-character
-string limit and possibility of overflow.
-
-> +			devinfo.name = buf;
-> +			platform_device_register_full(&devinfo);
-
-Does the devinfo struct need to stick around, i.e. does
-platform_device_register_full keep the pointer, or take a copy of the
-struct? If it keeps the pointer, it'd be best to make devinfo a static
-global variable.
-
-> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
-
-Please pass the "-C" option to "git format-patch"; I assume that almost
-all the code in this file is simply cut/paste verbatim from
-tegra-cpufreq.c where it was deleted.
-
-> + * Copyright (C) 2010 Google, Inc.
-
-It's worth adding NV (c) here too.
-
-> +static int tegra20_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +	cpufreq_unregister_driver(&tegra20_cpufreq_driver);
-> +	return 0;
-> +}
-
-That leaks all the clk_get_sys() calls. Does building this as a module
-work OK?
-
-> +MODULE_LICENSE("GPL");
-
-That should be "GPL v2".
-
-> diff --git a/include/linux/tegra-cpufreq.h b/include/linux/tegra-cpufreq.h
-
-> +#ifdef CONFIG_ARM_TEGRA_CPUFREQ
-> +int tegra_cpufreq_init(void);
-> +#else
-> +static inline int tegra_cpufreq_init(void)
-> +{ return; }
-> +#endif
-
-If you're going to wrap the { } onto one line, then I think it'd be best
-to wrap the whole thing (prototype and body) onto one line. Otherwise,
-write:
-
-{
-	return;
-}
-
-Oh, and you need "return 0" not just "return".
