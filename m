@@ -1,89 +1,171 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] ARM/cpuidle: remove __init tag from Calxeda cpuidle probe
- function
-Date: Sat, 14 Dec 2013 10:04:20 +0100
-Message-ID: <52AC1F14.9090602@linaro.org>
-References: <1386967759-12952-1-git-send-email-andre.przywara@linaro.org> <52AB82CD.3040100@linaro.org> <52AB8E8D.70806@linaro.org>
+From: Yadwinder Singh Brar <yadi.brar01@gmail.com>
+Subject: Re: [RFC v2 1/4] power: asv: Add common ASV support for Samsung SoCs
+Date: Sun, 15 Dec 2013 22:30:13 +0900
+Message-ID: <CAKew6eVSOQaHjYj3JRhJKnozY26OkeUGhvC2usadfUqW9hyu2Q@mail.gmail.com>
+References: <1384515691-26299-1-git-send-email-sachin.kamat@linaro.org>
+ <1384515691-26299-2-git-send-email-sachin.kamat@linaro.org>
+ <4229773.U5JovcREjb@amdc1227>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f41.google.com ([74.125.82.41]:45270 "EHLO
-	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040Ab3LNJEW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Dec 2013 04:04:22 -0500
-Received: by mail-wg0-f41.google.com with SMTP id y10so238059wgg.2
-        for <linux-pm@vger.kernel.org>; Sat, 14 Dec 2013 01:04:20 -0800 (PST)
-In-Reply-To: <52AB8E8D.70806@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <4229773.U5JovcREjb@amdc1227>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: Yadwinder Singh Brar <yadi.brar@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Andrew Bresticker <abrestic@google.com>, Kukjin Kim <kgene.kim@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Doug Anderson <dianders@google.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andre Przywara <andre.przywara@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, rob.herring@calxeda.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 12/13/2013 11:47 PM, Andre Przywara wrote:
-> On 12/13/2013 10:57 PM, Daniel Lezcano wrote:
->> On 12/13/2013 09:49 PM, Andre Przywara wrote:
->>> Commit 60a66e370007e8535b7a561353b07b37deaf35ba changed the Calxeda
->>> cpuidle driver to a platform driver, copying the __init tag from th=
-e
->>> _init() to the newly used _probe() function. However, "probe should
->>> not be __init." (Rob said ;-)
->>> Remove the __init tag to fix a section mismatch in the Calxeda
->>> cpuidle driver.
->>>
->>> Signed-off-by: Andre Przywara <andre.przywara@linaro.org>
->>> ---
->>
->> Applied to my tree for 3.14.
+Hi Tomasz,
+
+Thanks for your thorough review and nice suggestions.
+
+[snip]
+>> +}
+>> +
+>> +static struct asv_member *asv_get_mem(enum asv_type_id asv_type)
 >
-> Daniel,
->
-> thanks!
-> But since this is a regression (3.12 compiles fine), can someone plea=
-se
-> push this still for 3.13? If I am not mistaken, the rework was
-> introduced in the last merge window, so I'd consider this a bug fix.
-
-Yep. Done.
-
-   -- Daniel
-
->> Thanks for the fix.
->
->>
->>    -- Daniel
->>
->>>   drivers/cpuidle/cpuidle-calxeda.c | 2 +-
->>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/cpuidle/cpuidle-calxeda.c
->>> b/drivers/cpuidle/cpuidle-calxeda.c
->>> index 3679563..6e51114 100644
->>> --- a/drivers/cpuidle/cpuidle-calxeda.c
->>> +++ b/drivers/cpuidle/cpuidle-calxeda.c
->>> @@ -65,7 +65,7 @@ static struct cpuidle_driver calxeda_idle_driver =
-=3D {
->>>       .state_count =3D 2,
->>>   };
->>>
->>> -static int __init calxeda_cpuidle_probe(struct platform_device *pd=
-ev)
->>> +static int calxeda_cpuidle_probe(struct platform_device *pdev)
->>>   {
->>>       return cpuidle_register(&calxeda_idle_driver, NULL);
->>>   }
->>>
->>
->>
+> I don't really like this enum based look-up. It's hard to define an enum
+> that covers any possible existing and future platforms that would not be
+> bloated with single platform specific entries. IMHO something string based
+> could be more scalable.
 >
 
+Yes, I also agree string based look-up will be better. I was thinking
+to convert to it,
+after initial discussion over the APIs.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+>> +{
+>> +     struct asv_member *asv_mem;
+>> +     struct asv_info *asv_info;
+>> +
+>> +     list_for_each_entry(asv_mem, &asv_list, node) {
+>> +             asv_info = asv_mem->asv_info;
+>> +             if (asv_type == asv_info->type)
+>> +                     return asv_mem;
+>> +     }
+>
+> Don't you need any kind of locking here? A mutex in add_asv_member()
+> suggests that read access to the list should be protected as well.
+>
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+hmmm, yes should be their for completeness of code.
 
+>> +
+>> +     return NULL;
+>> +}
+>> +
+>> +unsigned int asv_get_volt(enum asv_type_id target_type,
+>> +                                             unsigned int target_freq)
+>
+> Do you need this function at all? I believe this is all about populating
+> device's OPP array with frequencies and voltages according to its ASV
+> level. Users will be able to query for required voltage using standard OPP
+> calls then, without a need for ASV specific functions like this one.
+>
+
+Yes, I had put a comment in initial version after commit message :
+"Hopefully asv_get_volt() can go out in future, once all users start using OPP
+library." , which seems to be missed in this version.
+I had kept it for the time being in initial version, to keep it
+usable(for testing) with
+existing cpufreq drivers, which need to reworked and may take time.
+
+[snip]
+>> +
+>> +     for (i = 0; i < asv_info->nr_dvfs_level; i++) {
+>> +             if (dev_pm_opp_add(dev, dvfs_table[i].freq * 1000,
+>> +                     dvfs_table[i].volt)) {
+>> +                     dev_warn(dev, "Failed to add OPP %d\n",
+>> +                              dvfs_table[i].freq);
+>
+> Hmm, shouldn't it be considered a failure instead?
+>
+
+hmm, not really always. Theoretically system with some less(failed to add)
+levels can work. Moreover I had prefered to keep it only warning, just to
+keep the behaviour of  asv_init_opp_table() similar to that of its
+counter part of_init_opp_table().
+
+>> +                     continue;
+>> +             }
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static struct asv_member *asv_init_member(struct asv_info *asv_info)
+>> +{
+>> +     struct asv_member *asv_mem;
+>> +     int ret = 0;
+>> +
+>> +     if (!asv_info) {
+>> +             pr_err("No ASV info provided\n");
+>> +             return NULL;
+>
+> I'd suggest adopting the ERR_PTR() convention, which allows returning more
+> information about the error.
+>
+
+Will it be really usefull here?, as we are not checking return value
+of any function.
+Bur for some cases below, i will also like to get it used.
+
+>> +     }
+>> +
+>> +     asv_mem = kzalloc(sizeof(*asv_mem), GFP_KERNEL);
+>> +     if (!asv_mem) {
+>> +             pr_err("Allocation failed for member: %s\n", asv_info->name);
+>> +             return NULL;
+>> +     }
+
+[snip]
+>
+> Hmm, I don't see a point of these three separate callbacks above.
+>
+> In general, I'd suggest a different architecture. I'd see this more as:
+>
+> 1) Platform code registers static platform device to instantiate SoC ASV
+>    driver.
+> 2) SoC specific ASV driver probes, reads group ID from hardware register,
+>    calls register_asv_member() with appropriate DVFS table for detected
+>    group.
+> 3) Driver using ASV calls asv_init_opp_table() with its struct device and
+>    ASV member name, which causes the ASV code to fill device's operating
+>    point using OPP calls.
+>
+> Now client driver has all the information it needs and the work of ASV
+> subsystem is done. The control flow between drivers would be much simpler
+> and no callbacks would have to be called.
+>
+
+Architecture stated above seems to be a subset(one possible way of use),
+of the proposed architecture. If someone really have nothing much to do,
+he can adopt the above stated approach using this framework also,
+callbacks are not mandatory.
+
+Since we usually have more things to do other than only reading
+fused group value and simply parsing a table index, so in drivers we have to
+implement functions to segregate stuff and different people do it in
+different way. Its an attempt to provide a way to keep structure(functions)
+similar for easy understanding and factoring out of common code.
+
+Moreover, I feels need of callbacks if we have to do something depending
+upon(specific) the user/instance of  ASV member. One thing came
+in my mind was dev_node may be required if we may think of parsing
+ASV table from DT and may be more things in future.
+
+
+I would like to get rectified, other nit/suggestions stated by you in
+next version.
+
+
+Thanks & Regards,
+ Yadwinder
