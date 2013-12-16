@@ -1,65 +1,83 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] intel_pstate: Add trace point to report internal state.
-Date: Mon, 16 Dec 2013 09:07:41 -0800
-Message-ID: <1387213661-6463-1-git-send-email-dirk.j.brandewie@intel.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: Problem: Possible regression in intel_pstate on 3.12
+Date: Mon, 16 Dec 2013 09:28:19 -0800
+Message-ID: <52AF3833.1070204@gmail.com>
+References: <20131208172508.0cacabd0@tor.valhalla.alchemy.lu> <CAKohpom+xmPfpAa6qeNq+mghknrxj03B+-=Vtqj-7iR-OgOv6A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f54.google.com ([209.85.160.54]:61817 "EHLO
-	mail-pb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754814Ab3LPRIK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 12:08:10 -0500
-Received: by mail-pb0-f54.google.com with SMTP id un15so5757709pbc.13
-        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 09:08:10 -0800 (PST)
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:44730 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754752Ab3LPR2X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 12:28:23 -0500
+In-Reply-To: <CAKohpom+xmPfpAa6qeNq+mghknrxj03B+-=Vtqj-7iR-OgOv6A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Joakim Hernberg <jbh@alchemy.lu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Hi Joakim,
 
-Add perf trace event "power:pstate_sample" to report driver state to
-aid in diagnosing issues reported against intel_pstate.
+Add the following patch to your v3.12 kernel and collect some data with the
+command and send the resulting perf.data file:
+     perf record -a -c 1 -e power:pstate_sample sleep 10
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+
+TIA
+--Dirk
+
+commit b3dc2c2a106cea68e4c9c0f4747b15291113c4ae
+Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Date:   Mon Dec 2 09:56:46 2013 -0800
+
+     intel_pstate: Add trace point to report internal state.
+
+     Add perf trace event "power:pstate_sample" to report driver state to
+     aid in diagnosing issues reported against intel_pstate.
+
+     Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++++++
- include/trace/events/power.h   | 53 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 75 insertions(+)
+  drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++++++
+  include/trace/events/power.h   | 53 ++++++++++++++++++++++++++++++++++++++++++
+  2 files changed, 75 insertions(+)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
 index 5f1cbae..c4f14d1 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
 @@ -50,6 +50,8 @@ static inline int32_t div_fp(int32_t x, int32_t y)
- 	return div_s64((int64_t)x << FRAC_BITS, (int64_t)y);
- }
- 
+  	return div_s64((int64_t)x << FRAC_BITS, (int64_t)y);
+  }
+
 +static u64 energy_divisor;
 +
- struct sample {
- 	int32_t core_pct_busy;
- 	u64 aperf;
+  struct sample {
+  	int32_t core_pct_busy;
+  	u64 aperf;
 @@ -512,6 +514,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
+
+  	rdmsrl(MSR_IA32_APERF, aperf);
+  	rdmsrl(MSR_IA32_MPERF, mperf);
 +
- 	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
- 	cpu->samples[cpu->sample_ptr].aperf = aperf;
- 	cpu->samples[cpu->sample_ptr].mperf = mperf;
-@@ -565,10 +568,24 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- static void intel_pstate_timer_func(unsigned long __data)
- {
- 	struct cpudata *cpu = (struct cpudata *) __data;
+  	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
+  	cpu->samples[cpu->sample_ptr].aperf = aperf;
+  	cpu->samples[cpu->sample_ptr].mperf = mperf;
+@@ -565,10 +568,24 @@ static inline void intel_pstate_adjust_busy_pstate(struct 
+cpudata *cpu)
+  static void intel_pstate_timer_func(unsigned long __data)
+  {
+  	struct cpudata *cpu = (struct cpudata *) __data;
 +	struct sample *sample;
 +	u64 energy;
- 
- 	intel_pstate_sample(cpu);
+
+  	intel_pstate_sample(cpu);
 +
 +	sample = &cpu->samples[cpu->sample_ptr];
 +	rdmsrl(MSR_PKG_ENERGY_STATUS, energy);
 +
- 	intel_pstate_adjust_busy_pstate(cpu);
- 
+  	intel_pstate_adjust_busy_pstate(cpu);
+
 +	trace_pstate_sample(fp_toint(sample->core_pct_busy),
 +			fp_toint(intel_pstate_get_scaled_busy(cpu)),
 +			cpu->pstate.current_pstate,
@@ -68,38 +86,38 @@ index 5f1cbae..c4f14d1 100644
 +			energy/energy_divisor,
 +			sample->freq);
 +
- 	if (cpu->pstate.current_pstate == cpu->pstate.min_pstate) {
- 		cpu->min_pstate_count++;
- 		if (!(cpu->min_pstate_count % 5)) {
+  	if (cpu->pstate.current_pstate == cpu->pstate.min_pstate) {
+  		cpu->min_pstate_count++;
+  		if (!(cpu->min_pstate_count % 5)) {
 @@ -849,6 +866,7 @@ static int __init intel_pstate_init(void)
- 	int cpu, rc = 0;
- 	const struct x86_cpu_id *id;
- 	struct cpu_defaults *cpu_info;
+  	int cpu, rc = 0;
+  	const struct x86_cpu_id *id;
+  	struct cpu_defaults *cpu_info;
 +	u64 units;
- 
- 	if (no_load)
- 		return -ENODEV;
+
+  	if (no_load)
+  		return -ENODEV;
 @@ -882,8 +900,12 @@ static int __init intel_pstate_init(void)
- 	if (rc)
- 		goto out;
- 
+  	if (rc)
+  		goto out;
+
 +	rdmsrl(MSR_RAPL_POWER_UNIT, units);
 +	energy_divisor = 1 << ((units >> 8) & 0x1f); /* bits{12:8} */
 +
- 	intel_pstate_debug_expose_params();
- 	intel_pstate_sysfs_expose_params();
+  	intel_pstate_debug_expose_params();
+  	intel_pstate_sysfs_expose_params();
 +
- 	return rc;
- out:
- 	get_online_cpus();
+  	return rc;
+  out:
+  	get_online_cpus();
 diff --git a/include/trace/events/power.h b/include/trace/events/power.h
 index cda100d..9e9475c 100644
 --- a/include/trace/events/power.h
 +++ b/include/trace/events/power.h
 @@ -35,6 +35,59 @@ DEFINE_EVENT(cpu, cpu_idle,
- 	TP_ARGS(state, cpu_id)
- );
- 
+  	TP_ARGS(state, cpu_id)
+  );
+
 +TRACE_EVENT(pstate_sample,
 +
 +	TP_PROTO(u32 core_busy,
@@ -131,31 +149,3 @@ index cda100d..9e9475c 100644
 +
 +	),
 +
-+	TP_fast_assign(
-+		__entry->core_busy = core_busy;
-+		__entry->scaled_busy = scaled_busy;
-+		__entry->state = state;
-+		__entry->mperf = mperf;
-+		__entry->aperf = aperf;
-+		__entry->energy = energy;
-+		__entry->freq = freq;
-+		),
-+
-+	TP_printk("core_busy=%lu scaled=%lu state=%lu mperf=%llu aperf=%llu energy=%lu freq=%lu ",
-+		(unsigned long)__entry->core_busy,
-+		(unsigned long)__entry->scaled_busy,
-+		(unsigned long)__entry->state,
-+		(unsigned long long)__entry->mperf,
-+		(unsigned long long)__entry->aperf,
-+		(unsigned long)__entry->energy,
-+		(unsigned long)__entry->freq
-+		)
-+
-+);
-+
- /* This file can get included multiple times, TRACE_HEADER_MULTI_READ at top */
- #ifndef _PWR_EVENT_AVOID_DOUBLE_DEFINING
- #define _PWR_EVENT_AVOID_DOUBLE_DEFINING
--- 
-1.8.3.1
-
