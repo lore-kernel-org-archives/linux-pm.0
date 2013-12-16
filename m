@@ -1,40 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: omap: clk_round_rate() can return a zero upon error
-Date: Mon, 16 Dec 2013 14:44:36 +0530
-Message-ID: <CAKohpo=8ejsO4ZSp6yPiV9P1VjFJQKT329SR3vqGM8AaYsbHLw@mail.gmail.com>
-References: <alpine.DEB.2.02.1312091812440.4127@tamien>
+From: Anson Huang <b20788@freescale.com>
+Subject: [PATCH 3/4] ARM: imx: add VDDSOC/PU setpoint info into dts
+Date: Mon, 16 Dec 2013 16:14:09 -0500
+Message-ID: <1387228450-641-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:32861 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002Ab3LPJOh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 04:14:37 -0500
-Received: by mail-oa0-f54.google.com with SMTP id h16so4693244oag.13
-        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 01:14:36 -0800 (PST)
-In-Reply-To: <alpine.DEB.2.02.1312091812440.4127@tamien>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: shawn.guo@linaro.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Walmsley <pwalmsley@nvidia.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-omap@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 10 December 2013 07:48, Paul Walmsley <pwalmsley@nvidia.com> wrote:
-> Treat both negative and zero return values from clk_round_rate() as errors.
-> This is needed since subsequent patches will convert clk_round_rate()'s
-> return value to be an unsigned type, rather than a signed type, since some
-> clock sources can generate rates higher than (2^31)-1 Hz.
->
-> Eventually, when calling clk_round_rate(), only a return value of
-> zero will be considered a error.  All other values will be
-> considered valid rates.  The comparison against values less than
-> 0 is kept to preserve the correct behavior in the meantime.
->
-> This patch also removes a bogus usage of IS_ERR_VALUE(), which is intended
-> to be used only on combination pointer/error code return values; a
-> side-benefit.
->
-> Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
-> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+i.MX6Q needs to update VDDARM, VDDSOC/PU regulator when CPUFreq
+is changed, each setpoint has different voltage, so we need to
+pass VDDARM, VDDSOC/PU's freq-voltage info from dts.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Anson Huang <b20788@freescale.com>
+---
+ arch/arm/boot/dts/imx6q.dtsi |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
+index e7e8332..03da628 100644
+--- a/arch/arm/boot/dts/imx6q.dtsi
++++ b/arch/arm/boot/dts/imx6q.dtsi
+@@ -30,6 +30,13 @@
+ 				792000  1150000
+ 				396000  975000
+ 			>;
++			fsl,soc-operating-points = <
++			/* ARM kHz  SOC-PU uV */
++				1200000	1275000
++				996000	1250000
++				792000	1175000
++				396000	1175000
++			>;
+ 			clock-latency = <61036>; /* two CLK32 periods */
+ 			clocks = <&clks 104>, <&clks 6>, <&clks 16>,
+ 				 <&clks 17>, <&clks 170>;
+-- 
+1.7.9.5
+
+
