@@ -1,118 +1,91 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: Regression with suspend resume 5a87182aa21d6d5d306840feab9321818dd3e2a3
-Date: Mon, 16 Dec 2013 17:06:58 +0530
-Message-ID: <52AEE5DA.1010102@linux.vnet.ibm.com>
-References: <52A448F2.4010208@redhat.com> <CAKohpomO+0q7bFWTnFRgqoRuU2WryfPpFv0WLOCKtHBrLzLRqw@mail.gmail.com> <87iouprrcw.fsf@nemi.mork.no>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
+Date: Mon, 16 Dec 2013 12:11:11 +0000
+Message-ID: <20131216121111.GB8931@e102568-lin.cambridge.arm.com>
+References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <87lhztgqsj.fsf@iki.fi>
+ <20131210132719.GC15543@e102568-lin.cambridge.arm.com>
+ <87haaggy6s.fsf@iki.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:38973 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195Ab3LPLl7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 06:41:59 -0500
-Received: from /spool/local
-	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 16 Dec 2013 17:11:53 +0530
-In-Reply-To: <87iouprrcw.fsf@nemi.mork.no>
+Received: from service87.mimecast.com ([91.220.42.44]:39740 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752742Ab3LPMLT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 07:11:19 -0500
+In-Reply-To: <87haaggy6s.fsf@iki.fi>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zdenek Kabelac <zkabelac@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, jinchoi@broadcom.com, Paul Bolle <pebolle@tiscali.nl>, ziegler@email.mathematik.uni-freiburg.de, jbarnes@virtuousgeek.org, Linux PM mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>
+To: Antti Miettinen <ananaza@iki.fi>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 12/16/2013 04:32 PM, Bj=C3=B8rn Mork wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
->> On 8 December 2013 15:54, Zdenek Kabelac <zkabelac@redhat.com> wrote=
-:
->>> I'm testing recent 3.13-rc kernel - and I've notice my Lenovo T61 i=
-s not
->>> able to resume.  After bisect I've found commit:
->>>
->>> 5a87182aa21d6d5d306840feab9321818dd3e2a3
->>
->> That's my patch, sorry for all the trouble.. Just came back after va=
-cations
->> and multiple threads are there with this patch as culprit..
->>
->> I just tested this patch again on Rafael's linux-next branch and sus=
-pend/resume
->> and Hibernation are working fine for me on my Thinkpad T420. I don't=
- see any
->> issues at all..
->>
->> scaling_governor: ondemand
->> scaling_driver: acpi-cpufreq
->>
->>> When I just revert this commit with 374b105797c3d4f29c685f3be535c35=
-f5689b30e
->>> (3.13-rc3)   suspend/resume works again.
->>> (I'm using  ondemand CPU governor)
->>
->>> Here is bisect log:
->>
->>> # bad: [2167e2399dc5e69c62db56d933e9c8cbe107620a] cpufreq: fix garb=
-age
->>> kobjects on errors during suspend/resume
->>> git bisect bad 2167e2399dc5e69c62db56d933e9c8cbe107620a
->>
->> I don't read bisect logs well but doesn't you log say that the culpr=
-it is
->> 2167e2399dc5e69c62db56d933e9c8cbe107620a instead?
->>
->> I am trying with this patch now, but will take some time for results=
- to be out.
->=20
-> It's both patches in combination.  Interesting case, really :-)
->
+On Tue, Dec 10, 2013 at 10:04:27PM +0000, Antti Miettinen wrote:
+> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
+> > I do not think we should think about how the kernel uses this data.
+> > We should strive to make DT data representative of HW C-states and
+> > that's very complex, as you mentioned (it depends at what granularity
+> > we want these bits of info).
+> >
+> > When we are happy with the bindings we can then code the kernel accordingly.
+> >
+> > Please let me know how you would like to have these bindings extended
+> > (eg adding operating points), getting feedback is the main reason why
+> > I posted them in the first place.
+> 
+> Hmm.. I'd like to challenge that a bit. I guess we are not defining DT
+> bindings just for the joy of modelling the hardware? We should care
+> whether kernel needs the data and have some idea of how the data will be
+> used.
 
-True... Basically, what happens is that commit 5a87182 prevents POLICY_=
-EXIT
-of governors during suspend - ie., it just does a CPUFREQ_GOV_STOP and =
-prevents
-any further operations on governors.
+I agree all I am saying is that DT bindings must not contain anything
+Linux kernel specific, ie adding parameters that are purely SW concepts
+(eg menu governor target_residency).
 
-Later, commit 2167e23 removes the special suspend/resume handling for C=
-PU hotplug
-and thus in this path, CPU offline sends out POLICY_EXIT and also frees=
- up the
-memory allocated to the policy structure. Since POLICY_EXIT is prevente=
-d by the
-cpufreq_suspend() code, this tear-down only gets half-completed and thu=
-s goes
-into an inconsistent state.
+> As you say, modelling C state details is not trivial. It might be
+> possible to construct an approximate formula for e.g. entry/exit latency
+> that takes CPU frequency, memory frequency and PMIC ramp rates as
+> input. Also, in principle we could estimate power based on clocks,
+> voltages, temperature etc. As we probably do not want to put function
+> definitions to DT, the DT would contain e.g. coefficients for functions
+> that would need to be platform neutral.
 
-So, upon resume, the CPU online operation tries POLICY_INIT, GOV_START =
-etc,
-and again none of these get executed because of the cpufreq_suspend() c=
-ode.
-Eventually cpufreq_resume() will execute GOV_START, but by then the und=
-erlying
-policy-structure is a newly allocated one, and things have already been=
- messed
-up so much that it just can't resume properly.
+I do not think we should model anything in DT, we should define what
+a C-state entry/exit implies in HW. The kernel can model the behaviour
+depending on the parameters provided by the DT data.
 
-Overall, the inconsistency in handling governor code during suspend/res=
-ume
-is the root-cause of the suspend/resume regression. And as Bjorn mentio=
-ned,
-this is caused by the interaction of the 2 commits with one another, an=
-d cannot
-be reproduced by either of the commits independently.
+> Is this what you'd like to see? There has been some research in
+> estimating power without actually measuring it, e.g. the google
+> powertutor people have written some papers about this. The latencies
+> could be measured to some extend with instrumentation in the kernel and
+> the measurement results could be used to tune some parameters.
+> 
+> Or would you rather have tables, which specify latencies and power
+> levels and the tables would be indexed with frequencies and voltages?
 
-IIUC, mainline should be fine now, since Rafael reverted both the commi=
-ts. We
-need to be more careful in bringing back either functionality in the fu=
-ture.
-As Bjorn and Rafael rightly pointed out in the other email threads, we =
-need to
-fundamentally rethink the design and come up with elegant interfaces/me=
-chanisms
-in the cpufreq subsystem that will allow us to write code that works as=
- expected
-and avoid such subtle regressions.
+The latter. I did not add operating points info in v1 because I thought
+it might have been too much, but I think it is something we should
+consider for the final version.
 
+> Anyway, I would really like to see the option of having the state choice
+> in the driver. One possible way to achieve this would be to allow for
+> the driver to export an optional "choose" method. If that exists the
+> governor would offload the decision to the driver.
 
-Regards,
-Srivatsa S. Bhat
+That's a separate discussion. CPUidle backends can already demote
+C-states depending on HW states (pending IRQs, state of caches).
+This also has loads of dependencies (what piece of code is in charge of
+making the final decision ? Kernel ? FW (ie PSCI) ?).
+
+I think as I mentioned that the state choice discussion is a parallel
+track altogether. Let's define what bits of info are required in the DT
+first, with an eye on how the kernel can make use of them, then we
+can focus on changing the kernel (actually idle interfaces changes are
+already under way owing to scheduler discussions) to make best usage of
+them.
+
+Thanks,
+Lorenzo
 
