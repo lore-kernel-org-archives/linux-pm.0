@@ -1,150 +1,118 @@
-From: bilhuang <bilhuang@nvidia.com>
-Subject: Re: [PATCH v4 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Mon, 16 Dec 2013 18:52:26 +0800
-Message-ID: <52AEDB6A.2080501@nvidia.com>
-References: <1386840835-28751-1-git-send-email-bilhuang@nvidia.com> <52AB967F.9030900@wwwdotorg.org>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: Regression with suspend resume 5a87182aa21d6d5d306840feab9321818dd3e2a3
+Date: Mon, 16 Dec 2013 17:06:58 +0530
+Message-ID: <52AEE5DA.1010102@linux.vnet.ibm.com>
+References: <52A448F2.4010208@redhat.com> <CAKohpomO+0q7bFWTnFRgqoRuU2WryfPpFv0WLOCKtHBrLzLRqw@mail.gmail.com> <87iouprrcw.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:19369 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006Ab3LPKwM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 05:52:12 -0500
-In-Reply-To: <52AB967F.9030900@wwwdotorg.org>
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:38973 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195Ab3LPLl7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 06:41:59 -0500
+Received: from /spool/local
+	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Mon, 16 Dec 2013 17:11:53 +0530
+In-Reply-To: <87iouprrcw.fsf@nemi.mork.no>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zdenek Kabelac <zkabelac@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, jinchoi@broadcom.com, Paul Bolle <pebolle@tiscali.nl>, ziegler@email.mathematik.uni-freiburg.de, jbarnes@virtuousgeek.org, Linux PM mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>
 
-On 12/14/2013 07:21 AM, Stephen Warren wrote:
-> On 12/12/2013 02:33 AM, Bill Huang wrote:
->> Re-model Tegra20 cpufreq driver as below.
+On 12/16/2013 04:32 PM, Bj=C3=B8rn Mork wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>> On 8 December 2013 15:54, Zdenek Kabelac <zkabelac@redhat.com> wrote=
+:
+>>> I'm testing recent 3.13-rc kernel - and I've notice my Lenovo T61 i=
+s not
+>>> able to resume.  After bisect I've found commit:
+>>>
+>>> 5a87182aa21d6d5d306840feab9321818dd3e2a3
 >>
->> * Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
->>    only Tegra20.
->> * Add probe function so defer probe can be used when we're going to
->>    support DVFS.
->> * Create a fake cpufreq platform device with its name being
->>    "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
->>    accordingly.
+>> That's my patch, sorry for all the trouble.. Just came back after va=
+cations
+>> and multiple threads are there with this patch as culprit..
+>>
+>> I just tested this patch again on Rafael's linux-next branch and sus=
+pend/resume
+>> and Hibernation are working fine for me on my Thinkpad T420. I don't=
+ see any
+>> issues at all..
+>>
+>> scaling_governor: ondemand
+>> scaling_driver: acpi-cpufreq
+>>
+>>> When I just revert this commit with 374b105797c3d4f29c685f3be535c35=
+f5689b30e
+>>> (3.13-rc3)   suspend/resume works again.
+>>> (I'm using  ondemand CPU governor)
+>>
+>>> Here is bisect log:
+>>
+>>> # bad: [2167e2399dc5e69c62db56d933e9c8cbe107620a] cpufreq: fix garb=
+age
+>>> kobjects on errors during suspend/resume
+>>> git bisect bad 2167e2399dc5e69c62db56d933e9c8cbe107620a
+>>
+>> I don't read bisect logs well but doesn't you log say that the culpr=
+it is
+>> 2167e2399dc5e69c62db56d933e9c8cbe107620a instead?
+>>
+>> I am trying with this patch now, but will take some time for results=
+ to be out.
+>=20
+> It's both patches in combination.  Interesting case, really :-)
 >
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->
->> +config ARM_TEGRA20_CPUFREQ
->> +	bool "NVIDIA TEGRA20"
->> +	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
->> +	default y
->> +	help
->> +	  This enables Tegra20 cpufreq functionality, it adds
->> +	  Tegra20 CPU frequency ladder and the call back functions
->> +	  to set CPU rate. All the non-SoC dependant codes are
->> +	  controlled by the config ARM_TEGRA20_CPUFREQ.
->
-> I think that last sentence is no longer true in this patch version. Or,
-> did you mean to write ARM_TEGRA_CPUFREQ rather than ARM_TEGRA20_CPUFREQ?
 
-Right, should be ARM_TEGRA_CPUFREQ, thanks for catching this.
->
->> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
->
->> +static const char * const tegra_soc_compat[] = {
->> +	"nvidia,tegra124",
->> +	"nvidia,tegra114",
->> +	"nvidia,tegra30",
->> +	"nvidia,tegra20",
->> +	NULL
->>   };
->
-> That table will need editing for each chip. I wonder if you can do
-> something like always use the very last entry in /compatible. That would
-> assume a particular ordering of the compatible entries, but they should
-> be in the order $board, $soc anyway...
+True... Basically, what happens is that commit 5a87182 prevents POLICY_=
+EXIT
+of governors during suspend - ie., it just does a CPUFREQ_GOV_STOP and =
+prevents
+any further operations on governors.
 
-How do we get subset of a string and making sure it is the last? There 
-must be some assumptions here (though they will possibly be true) I 
-guess, for example, they should be in the order $board, $soc... and the 
-last "nvidia" should be the start of the last compatible id we would 
-like to get.
->
->> +int __init tegra_cpufreq_init(void)
->> +	int i;
->> +
->> +	for (i = 0; i < ARRAY_SIZE(tegra_soc_compat); i++) {
->> +		if (of_machine_is_compatible(tegra_soc_compat[i])) {
->> +			struct platform_device_info devinfo;
->> +			char buf[40];
->> +
->> +			memset(&devinfo, 0, sizeof(devinfo));
->> +			strcpy(buf, tegra_soc_compat[i]);
->> +			strcat(buf, "-cpufreq");
->
-> kasprintf() might be simpler, and would avoid the arbitrary 39-character
-> string limit and possibility of overflow.
+Later, commit 2167e23 removes the special suspend/resume handling for C=
+PU hotplug
+and thus in this path, CPU offline sends out POLICY_EXIT and also frees=
+ up the
+memory allocated to the policy structure. Since POLICY_EXIT is prevente=
+d by the
+cpufreq_suspend() code, this tear-down only gets half-completed and thu=
+s goes
+into an inconsistent state.
 
-Ah yeah, thanks.
->
->> +			devinfo.name = buf;
->> +			platform_device_register_full(&devinfo);
->
-> Does the devinfo struct need to stick around, i.e. does
-> platform_device_register_full keep the pointer, or take a copy of the
-> struct? If it keeps the pointer, it'd be best to make devinfo a static
-> global variable.
+So, upon resume, the CPU online operation tries POLICY_INIT, GOV_START =
+etc,
+and again none of these get executed because of the cpufreq_suspend() c=
+ode.
+Eventually cpufreq_resume() will execute GOV_START, but by then the und=
+erlying
+policy-structure is a newly allocated one, and things have already been=
+ messed
+up so much that it just can't resume properly.
 
-devinfo is used to provide dev info to create platform device structure, 
-so I think it is OK here.
->
->> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
->
-> Please pass the "-C" option to "git format-patch"; I assume that almost
-> all the code in this file is simply cut/paste verbatim from
-> tegra-cpufreq.c where it was deleted.
+Overall, the inconsistency in handling governor code during suspend/res=
+ume
+is the root-cause of the suspend/resume regression. And as Bjorn mentio=
+ned,
+this is caused by the interaction of the 2 commits with one another, an=
+d cannot
+be reproduced by either of the commits independently.
 
-OK, thanks.
->
->> + * Copyright (C) 2010 Google, Inc.
->
-> It's worth adding NV (c) here too.
+IIUC, mainline should be fine now, since Rafael reverted both the commi=
+ts. We
+need to be more careful in bringing back either functionality in the fu=
+ture.
+As Bjorn and Rafael rightly pointed out in the other email threads, we =
+need to
+fundamentally rethink the design and come up with elegant interfaces/me=
+chanisms
+in the cpufreq subsystem that will allow us to write code that works as=
+ expected
+and avoid such subtle regressions.
 
-OK.
->
->> +static int tegra20_cpufreq_remove(struct platform_device *pdev)
->> +{
->> +	cpufreq_unregister_driver(&tegra20_cpufreq_driver);
->> +	return 0;
->> +}
->
-> That leaks all the clk_get_sys() calls. Does building this as a module
-> work OK?
 
-I should add back those clk_put here.
->
->> +MODULE_LICENSE("GPL");
->
-> That should be "GPL v2".
-
-OK.
->
->> diff --git a/include/linux/tegra-cpufreq.h b/include/linux/tegra-cpufreq.h
->
->> +#ifdef CONFIG_ARM_TEGRA_CPUFREQ
->> +int tegra_cpufreq_init(void);
->> +#else
->> +static inline int tegra_cpufreq_init(void)
->> +{ return; }
->> +#endif
->
-> If you're going to wrap the { } onto one line, then I think it'd be best
-> to wrap the whole thing (prototype and body) onto one line. Otherwise,
-> write:
->
-> {
-> 	return;
-> }
->
-> Oh, and you need "return 0" not just "return".
-
-Thanks for catching.
->
+Regards,
+Srivatsa S. Bhat
 
