@@ -1,14 +1,16 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH] Add reporting raw joules
-Date: Mon, 16 Dec 2013 10:23:40 -0800
-Message-ID: <1387218221-11763-1-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH] turbostat: Add option to report joules consumed per sample
+Date: Mon, 16 Dec 2013 10:23:41 -0800
+Message-ID: <1387218221-11763-2-git-send-email-dirk.j.brandewie@intel.com>
+References: <1387218221-11763-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:64105 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754911Ab3LPSX7 (ORCPT
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:46474 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754928Ab3LPSX7 (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 13:23:59 -0500
-Received: by mail-pd0-f181.google.com with SMTP id p10so5629640pdj.26
-        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 10:23:56 -0800 (PST)
+Received: by mail-pd0-f176.google.com with SMTP id w10so5680147pde.7
+        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 10:23:58 -0800 (PST)
+In-Reply-To: <1387218221-11763-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
@@ -16,7 +18,8 @@ Cc: rjw@rjwysocki.net, lenb@kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.c
 
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Report raw joules values
+Add "-J" option to report energy consumed in joules per sample.  This option
+also adds the sample time to the reported values.
 
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
