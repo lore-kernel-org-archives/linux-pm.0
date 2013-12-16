@@ -1,73 +1,161 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v4 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Mon, 16 Dec 2013 09:58:14 -0700
-Message-ID: <52AF3126.6090000@wwwdotorg.org>
-References: <1386840835-28751-1-git-send-email-bilhuang@nvidia.com> <52AB967F.9030900@wwwdotorg.org> <52AEDB6A.2080501@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <52AEDB6A.2080501-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: bilhuang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: dirk.brandewie@gmail.com
+Subject: [PATCH] intel_pstate: Add trace point to report internal state.
+Date: Mon, 16 Dec 2013 09:07:41 -0800
+Message-ID: <1387213661-6463-1-git-send-email-dirk.j.brandewie@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f54.google.com ([209.85.160.54]:61817 "EHLO
+	mail-pb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754814Ab3LPRIK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 12:08:10 -0500
+Received: by mail-pb0-f54.google.com with SMTP id un15so5757709pbc.13
+        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 09:08:10 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 12/16/2013 03:52 AM, bilhuang wrote:
-> On 12/14/2013 07:21 AM, Stephen Warren wrote:
->> On 12/12/2013 02:33 AM, Bill Huang wrote:
->>> Re-model Tegra20 cpufreq driver as below.
->>>
->>> * Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
->>>    only Tegra20.
->>> * Add probe function so defer probe can be used when we're going to
->>>    support DVFS.
->>> * Create a fake cpufreq platform device with its name being
->>>    "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
->>>    accordingly.
->>
->>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->>
->>> +config ARM_TEGRA20_CPUFREQ
->>> +    bool "NVIDIA TEGRA20"
->>> +    depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
->>> +    default y
->>> +    help
->>> +      This enables Tegra20 cpufreq functionality, it adds
->>> +      Tegra20 CPU frequency ladder and the call back functions
->>> +      to set CPU rate. All the non-SoC dependant codes are
->>> +      controlled by the config ARM_TEGRA20_CPUFREQ.
->>
->> I think that last sentence is no longer true in this patch version. Or,
->> did you mean to write ARM_TEGRA_CPUFREQ rather than ARM_TEGRA20_CPUFREQ?
-> 
-> Right, should be ARM_TEGRA_CPUFREQ, thanks for catching this.
->>
->>> diff --git a/drivers/cpufreq/tegra-cpufreq.c
->>> b/drivers/cpufreq/tegra-cpufreq.c
->>
->>> +static const char * const tegra_soc_compat[] = {
->>> +    "nvidia,tegra124",
->>> +    "nvidia,tegra114",
->>> +    "nvidia,tegra30",
->>> +    "nvidia,tegra20",
->>> +    NULL
->>>   };
->>
->> That table will need editing for each chip. I wonder if you can do
->> something like always use the very last entry in /compatible. That would
->> assume a particular ordering of the compatible entries, but they should
->> be in the order $board, $soc anyway...
-> 
-> How do we get subset of a string and making sure it is the last? There
-> must be some assumptions here (though they will possibly be true) I
-> guess, for example, they should be in the order $board, $soc... and the
-> last "nvidia" should be the start of the last compatible id we would
-> like to get.
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-The compatible property is an array of strings, rather than one big
-string, so you can just keep getting index 0, 1, 2, ... until you find
-there aren't any more entries. I think it's reasonable to assume that
-the SoC compatible value must be last, and it should be in practice,
-although perhaps that is fragile. If you want, we can leave this as-is
-for now, and modify it later if it becomes a problem.
+Add perf trace event "power:pstate_sample" to report driver state to
+aid in diagnosing issues reported against intel_pstate.
+
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++++++
+ include/trace/events/power.h   | 53 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 5f1cbae..c4f14d1 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -50,6 +50,8 @@ static inline int32_t div_fp(int32_t x, int32_t y)
+ 	return div_s64((int64_t)x << FRAC_BITS, (int64_t)y);
+ }
+ 
++static u64 energy_divisor;
++
+ struct sample {
+ 	int32_t core_pct_busy;
+ 	u64 aperf;
+@@ -512,6 +514,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
++
+ 	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
+ 	cpu->samples[cpu->sample_ptr].aperf = aperf;
+ 	cpu->samples[cpu->sample_ptr].mperf = mperf;
+@@ -565,10 +568,24 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ static void intel_pstate_timer_func(unsigned long __data)
+ {
+ 	struct cpudata *cpu = (struct cpudata *) __data;
++	struct sample *sample;
++	u64 energy;
+ 
+ 	intel_pstate_sample(cpu);
++
++	sample = &cpu->samples[cpu->sample_ptr];
++	rdmsrl(MSR_PKG_ENERGY_STATUS, energy);
++
+ 	intel_pstate_adjust_busy_pstate(cpu);
+ 
++	trace_pstate_sample(fp_toint(sample->core_pct_busy),
++			fp_toint(intel_pstate_get_scaled_busy(cpu)),
++			cpu->pstate.current_pstate,
++			sample->mperf,
++			sample->aperf,
++			energy/energy_divisor,
++			sample->freq);
++
+ 	if (cpu->pstate.current_pstate == cpu->pstate.min_pstate) {
+ 		cpu->min_pstate_count++;
+ 		if (!(cpu->min_pstate_count % 5)) {
+@@ -849,6 +866,7 @@ static int __init intel_pstate_init(void)
+ 	int cpu, rc = 0;
+ 	const struct x86_cpu_id *id;
+ 	struct cpu_defaults *cpu_info;
++	u64 units;
+ 
+ 	if (no_load)
+ 		return -ENODEV;
+@@ -882,8 +900,12 @@ static int __init intel_pstate_init(void)
+ 	if (rc)
+ 		goto out;
+ 
++	rdmsrl(MSR_RAPL_POWER_UNIT, units);
++	energy_divisor = 1 << ((units >> 8) & 0x1f); /* bits{12:8} */
++
+ 	intel_pstate_debug_expose_params();
+ 	intel_pstate_sysfs_expose_params();
++
+ 	return rc;
+ out:
+ 	get_online_cpus();
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index cda100d..9e9475c 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -35,6 +35,59 @@ DEFINE_EVENT(cpu, cpu_idle,
+ 	TP_ARGS(state, cpu_id)
+ );
+ 
++TRACE_EVENT(pstate_sample,
++
++	TP_PROTO(u32 core_busy,
++		u32 scaled_busy,
++		u32 state,
++		u64 mperf,
++		u64 aperf,
++		u32 energy,
++		u32 freq
++		),
++
++	TP_ARGS(core_busy,
++		scaled_busy,
++		state,
++		mperf,
++		aperf,
++		energy,
++		freq
++		),
++
++	TP_STRUCT__entry(
++		__field(u32, core_busy)
++		__field(u32, scaled_busy)
++		__field(u32, state)
++		__field(u64, mperf)
++		__field(u64, aperf)
++		__field(u32, energy)
++		__field(u32, freq)
++
++	),
++
++	TP_fast_assign(
++		__entry->core_busy = core_busy;
++		__entry->scaled_busy = scaled_busy;
++		__entry->state = state;
++		__entry->mperf = mperf;
++		__entry->aperf = aperf;
++		__entry->energy = energy;
++		__entry->freq = freq;
++		),
++
++	TP_printk("core_busy=%lu scaled=%lu state=%lu mperf=%llu aperf=%llu energy=%lu freq=%lu ",
++		(unsigned long)__entry->core_busy,
++		(unsigned long)__entry->scaled_busy,
++		(unsigned long)__entry->state,
++		(unsigned long long)__entry->mperf,
++		(unsigned long long)__entry->aperf,
++		(unsigned long)__entry->energy,
++		(unsigned long)__entry->freq
++		)
++
++);
++
+ /* This file can get included multiple times, TRACE_HEADER_MULTI_READ at top */
+ #ifndef _PWR_EVENT_AVOID_DOUBLE_DEFINING
+ #define _PWR_EVENT_AVOID_DOUBLE_DEFINING
+-- 
+1.8.3.1
+
