@@ -1,29 +1,32 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Make ARM big.LITTLE switcher depend on ARM
-Date: Mon, 16 Dec 2013 14:50:20 +0530
-Message-ID: <CAKohpomoBdK61wc2sG8BZgukuCA_dXWADUF4PrkVU0M5Ykth8A@mail.gmail.com>
-References: <1386799947-6041-1-git-send-email-broonie@kernel.org>
+Subject: Re: [PATCH] cpufreq: Fix sscanf robustness
+Date: Mon, 16 Dec 2013 15:20:19 +0530
+Message-ID: <CAOh2x=mOQB5+8T0rgPVXzgmVxT_xYcSqsOQ_KkHGL470G1vS3Q@mail.gmail.com>
+References: <20131211183506.9179.83721.stgit@alan.etchedpixels.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386799947-6041-1-git-send-email-broonie@kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vb0-f48.google.com ([209.85.212.48]:41544 "EHLO
+	mail-vb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191Ab3LPJuU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 04:50:20 -0500
+Received: by mail-vb0-f48.google.com with SMTP id f13so2980709vbg.35
+        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 01:50:19 -0800 (PST)
+In-Reply-To: <20131211183506.9179.83721.stgit@alan.etchedpixels.co.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan <gnomes@lxorguk.ukuu.org.uk>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 12 December 2013 03:42, Mark Brown <broonie@kernel.org> wrote:
-> From: Mark Brown <broonie@linaro.org>
+On Thu, Dec 12, 2013 at 12:05 AM, Alan <gnomes@lxorguk.ukuu.org.uk> wrote:
+> The cpufreq-set tool has a missing length check. This is basically
+> just correctness but still should get fixed.
 >
-> The patch currently under review to enable ARM cpufreq drivers for ARM64
-> which is useful due to the large amount of shared IP between ARM and ARM64
-> SoCs. However the big.LITTLE switcher relies on an architecture interface
-> to build which is not present on ARM64. Add a dependency until that is
-> resolved.
+> One of a set of sscanf problems reported by Jackie Chang
 >
-> Signed-off-by: Mark Brown <broonie@linaro.org>
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
 > ---
->  drivers/cpufreq/Kconfig.arm | 2 +-
+>  tools/power/cpupower/utils/cpufreq-set.c |    2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
