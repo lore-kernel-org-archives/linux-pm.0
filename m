@@ -1,151 +1,160 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: Problem: Possible regression in intel_pstate on 3.12
-Date: Mon, 16 Dec 2013 09:28:19 -0800
-Message-ID: <52AF3833.1070204@gmail.com>
-References: <20131208172508.0cacabd0@tor.valhalla.alchemy.lu> <CAKohpom+xmPfpAa6qeNq+mghknrxj03B+-=Vtqj-7iR-OgOv6A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: dirk.brandewie@gmail.com
+Subject: [PATCH] Add reporting raw joules
+Date: Mon, 16 Dec 2013 10:23:40 -0800
+Message-ID: <1387218221-11763-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:44730 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754752Ab3LPR2X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 12:28:23 -0500
-In-Reply-To: <CAKohpom+xmPfpAa6qeNq+mghknrxj03B+-=Vtqj-7iR-OgOv6A@mail.gmail.com>
+Received: from mail-pd0-f181.google.com ([209.85.192.181]:64105 "EHLO
+	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754911Ab3LPSX7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 13:23:59 -0500
+Received: by mail-pd0-f181.google.com with SMTP id p10so5629640pdj.26
+        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 10:23:56 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Joakim Hernberg <jbh@alchemy.lu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, lenb@kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Hi Joakim,
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Add the following patch to your v3.12 kernel and collect some data with the
-command and send the resulting perf.data file:
-     perf record -a -c 1 -e power:pstate_sample sleep 10
+Report raw joules values
 
-
-TIA
---Dirk
-
-commit b3dc2c2a106cea68e4c9c0f4747b15291113c4ae
-Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
-Date:   Mon Dec 2 09:56:46 2013 -0800
-
-     intel_pstate: Add trace point to report internal state.
-
-     Add perf trace event "power:pstate_sample" to report driver state to
-     aid in diagnosing issues reported against intel_pstate.
-
-     Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
-  drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++++++
-  include/trace/events/power.h   | 53 ++++++++++++++++++++++++++++++++++++++++++
-  2 files changed, 75 insertions(+)
+ tools/power/x86/turbostat/turbostat.c | 91 +++++++++++++++++++++++++----------
+ 1 file changed, 66 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 5f1cbae..c4f14d1 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -50,6 +50,8 @@ static inline int32_t div_fp(int32_t x, int32_t y)
-  	return div_s64((int64_t)x << FRAC_BITS, (int64_t)y);
-  }
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 9d77f13..e6f049ff 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -40,6 +40,7 @@ char *proc_stat = "/proc/stat";
+ unsigned int interval_sec = 5;	/* set with -i interval_sec */
+ unsigned int verbose;		/* set with -v */
+ unsigned int rapl_verbose;	/* set with -R */
++unsigned int rapl_joules;	/* set with -J */
+ unsigned int thermal_verbose;	/* set with -T */
+ unsigned int summary_only;	/* set with -s */
+ unsigned int skip_c0;
+@@ -296,19 +297,35 @@ void print_header(void)
+ 		outp += sprintf(outp, "  %%pc10");
+ 	}
+ 
+-	if (do_rapl & RAPL_PKG)
+-		outp += sprintf(outp, "  Pkg_W");
+-	if (do_rapl & RAPL_CORES)
+-		outp += sprintf(outp, "  Cor_W");
+-	if (do_rapl & RAPL_GFX)
+-		outp += sprintf(outp, " GFX_W");
+-	if (do_rapl & RAPL_DRAM)
+-		outp += sprintf(outp, " RAM_W");
+-	if (do_rapl & RAPL_PKG_PERF_STATUS)
+-		outp += sprintf(outp, " PKG_%%");
+-	if (do_rapl & RAPL_DRAM_PERF_STATUS)
+-		outp += sprintf(outp, " RAM_%%");
++	if (do_rapl && !rapl_joules) {
++		if (do_rapl & RAPL_PKG)
++			outp += sprintf(outp, "  Pkg_W");
++		if (do_rapl & RAPL_CORES)
++			outp += sprintf(outp, "  Cor_W");
++		if (do_rapl & RAPL_GFX)
++			outp += sprintf(outp, " GFX_W");
++		if (do_rapl & RAPL_DRAM)
++			outp += sprintf(outp, " RAM_W");
++		if (do_rapl & RAPL_PKG_PERF_STATUS)
++			outp += sprintf(outp, " PKG_%%");
++		if (do_rapl & RAPL_DRAM_PERF_STATUS)
++			outp += sprintf(outp, " RAM_%%");
++	} else {
++		if (do_rapl & RAPL_PKG)
++			outp += sprintf(outp, "  Pkg_J");
++		if (do_rapl & RAPL_CORES)
++			outp += sprintf(outp, "  Cor_J");
++		if (do_rapl & RAPL_GFX)
++			outp += sprintf(outp, " GFX_J");
++		if (do_rapl & RAPL_DRAM)
++			outp += sprintf(outp, " RAM_W");
++		if (do_rapl & RAPL_PKG_PERF_STATUS)
++			outp += sprintf(outp, " PKG_%%");
++		if (do_rapl & RAPL_DRAM_PERF_STATUS)
++			outp += sprintf(outp, " RAM_%%");
++		outp += sprintf(outp, " time");
+ 
++	}
+ 	outp += sprintf(outp, "\n");
+ }
+ 
+@@ -527,19 +544,39 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 		fmt6 = " %4.0f**";
+ 	}
+ 
+-	if (do_rapl & RAPL_PKG)
+-		outp += sprintf(outp, fmt6, p->energy_pkg * rapl_energy_units / interval_float);
+-	if (do_rapl & RAPL_CORES)
+-		outp += sprintf(outp, fmt6, p->energy_cores * rapl_energy_units / interval_float);
+-	if (do_rapl & RAPL_GFX)
+-		outp += sprintf(outp, fmt5, p->energy_gfx * rapl_energy_units / interval_float); 
+-	if (do_rapl & RAPL_DRAM)
+-		outp += sprintf(outp, fmt5, p->energy_dram * rapl_energy_units / interval_float);
+-	if (do_rapl & RAPL_PKG_PERF_STATUS )
+-		outp += sprintf(outp, fmt5, 100.0 * p->rapl_pkg_perf_status * rapl_time_units / interval_float);
+-	if (do_rapl & RAPL_DRAM_PERF_STATUS )
+-		outp += sprintf(outp, fmt5, 100.0 * p->rapl_dram_perf_status * rapl_time_units / interval_float);
++	if (do_rapl && !rapl_joules) {
++		if (do_rapl & RAPL_PKG)
++			outp += sprintf(outp, fmt6, p->energy_pkg * rapl_energy_units / interval_float);
++		if (do_rapl & RAPL_CORES)
++			outp += sprintf(outp, fmt6, p->energy_cores * rapl_energy_units / interval_float);
++		if (do_rapl & RAPL_GFX)
++			outp += sprintf(outp, fmt5, p->energy_gfx * rapl_energy_units / interval_float); 
++		if (do_rapl & RAPL_DRAM)
++			outp += sprintf(outp, fmt5, p->energy_dram * rapl_energy_units / interval_float);
++		if (do_rapl & RAPL_PKG_PERF_STATUS )
++			outp += sprintf(outp, fmt5, 100.0 * p->rapl_pkg_perf_status * rapl_time_units / interval_float);
++		if (do_rapl & RAPL_DRAM_PERF_STATUS )
++			outp += sprintf(outp, fmt5, 100.0 * p->rapl_dram_perf_status * rapl_time_units / interval_float);
++	} else {
++		if (do_rapl & RAPL_PKG)
++			outp += sprintf(outp, fmt6,
++					p->energy_pkg * rapl_energy_units);
++		if (do_rapl & RAPL_CORES)
++			outp += sprintf(outp, fmt6, 
++					p->energy_cores * rapl_energy_units);
++		if (do_rapl & RAPL_GFX)
++			outp += sprintf(outp, fmt5,
++					p->energy_gfx * rapl_energy_units); 
++		if (do_rapl & RAPL_DRAM)
++			outp += sprintf(outp, fmt5, 
++					p->energy_dram * rapl_energy_units );
++		if (do_rapl & RAPL_PKG_PERF_STATUS )
++			outp += sprintf(outp, fmt5, 100.0 * p->rapl_pkg_perf_status * rapl_time_units / interval_float);
++		if (do_rapl & RAPL_DRAM_PERF_STATUS )
++			outp += sprintf(outp, fmt5, 100.0 * p->rapl_dram_perf_status * rapl_time_units / interval_float);
++	outp += sprintf(outp, fmt5, interval_float);
+ 
++	}
+ done:
+ 	outp += sprintf(outp, "\n");
+ 
+@@ -2370,7 +2407,7 @@ void cmdline(int argc, char **argv)
+ 
+ 	progname = argv[0];
+ 
+-	while ((opt = getopt(argc, argv, "+pPSvi:sc:sC:m:M:RT:")) != -1) {
++	while ((opt = getopt(argc, argv, "+pPSvi:sc:sC:m:M:RJT:")) != -1) {
+ 		switch (opt) {
+ 		case 'p':
+ 			show_core_only++;
+@@ -2405,6 +2442,10 @@ void cmdline(int argc, char **argv)
+ 		case 'T':
+ 			tcc_activation_temp_override = atoi(optarg);
+ 			break;
++		case 'J':
++			rapl_joules++;
++			break;
++
+ 		default:
+ 			usage();
+ 		}
+-- 
+1.8.3.1
 
-+static u64 energy_divisor;
-+
-  struct sample {
-  	int32_t core_pct_busy;
-  	u64 aperf;
-@@ -512,6 +514,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
-
-  	rdmsrl(MSR_IA32_APERF, aperf);
-  	rdmsrl(MSR_IA32_MPERF, mperf);
-+
-  	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
-  	cpu->samples[cpu->sample_ptr].aperf = aperf;
-  	cpu->samples[cpu->sample_ptr].mperf = mperf;
-@@ -565,10 +568,24 @@ static inline void intel_pstate_adjust_busy_pstate(struct 
-cpudata *cpu)
-  static void intel_pstate_timer_func(unsigned long __data)
-  {
-  	struct cpudata *cpu = (struct cpudata *) __data;
-+	struct sample *sample;
-+	u64 energy;
-
-  	intel_pstate_sample(cpu);
-+
-+	sample = &cpu->samples[cpu->sample_ptr];
-+	rdmsrl(MSR_PKG_ENERGY_STATUS, energy);
-+
-  	intel_pstate_adjust_busy_pstate(cpu);
-
-+	trace_pstate_sample(fp_toint(sample->core_pct_busy),
-+			fp_toint(intel_pstate_get_scaled_busy(cpu)),
-+			cpu->pstate.current_pstate,
-+			sample->mperf,
-+			sample->aperf,
-+			energy/energy_divisor,
-+			sample->freq);
-+
-  	if (cpu->pstate.current_pstate == cpu->pstate.min_pstate) {
-  		cpu->min_pstate_count++;
-  		if (!(cpu->min_pstate_count % 5)) {
-@@ -849,6 +866,7 @@ static int __init intel_pstate_init(void)
-  	int cpu, rc = 0;
-  	const struct x86_cpu_id *id;
-  	struct cpu_defaults *cpu_info;
-+	u64 units;
-
-  	if (no_load)
-  		return -ENODEV;
-@@ -882,8 +900,12 @@ static int __init intel_pstate_init(void)
-  	if (rc)
-  		goto out;
-
-+	rdmsrl(MSR_RAPL_POWER_UNIT, units);
-+	energy_divisor = 1 << ((units >> 8) & 0x1f); /* bits{12:8} */
-+
-  	intel_pstate_debug_expose_params();
-  	intel_pstate_sysfs_expose_params();
-+
-  	return rc;
-  out:
-  	get_online_cpus();
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index cda100d..9e9475c 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -35,6 +35,59 @@ DEFINE_EVENT(cpu, cpu_idle,
-  	TP_ARGS(state, cpu_id)
-  );
-
-+TRACE_EVENT(pstate_sample,
-+
-+	TP_PROTO(u32 core_busy,
-+		u32 scaled_busy,
-+		u32 state,
-+		u64 mperf,
-+		u64 aperf,
-+		u32 energy,
-+		u32 freq
-+		),
-+
-+	TP_ARGS(core_busy,
-+		scaled_busy,
-+		state,
-+		mperf,
-+		aperf,
-+		energy,
-+		freq
-+		),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, core_busy)
-+		__field(u32, scaled_busy)
-+		__field(u32, state)
-+		__field(u64, mperf)
-+		__field(u64, aperf)
-+		__field(u32, energy)
-+		__field(u32, freq)
-+
-+	),
-+
