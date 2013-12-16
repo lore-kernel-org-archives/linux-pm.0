@@ -1,110 +1,47 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Problem: Possible regression in intel_pstate on 3.12
-Date: Mon, 16 Dec 2013 14:38:37 +0530
-Message-ID: <CAKohpom+xmPfpAa6qeNq+mghknrxj03B+-=Vtqj-7iR-OgOv6A@mail.gmail.com>
-References: <20131208172508.0cacabd0@tor.valhalla.alchemy.lu>
+Subject: Re: [PATCH v3] cpufreq: exynos: Convert exynos-cpufreq to platform driver
+Date: Mon, 16 Dec 2013 14:43:23 +0530
+Message-ID: <CAKohpongZr8CTjQr_MeWb14tMST4D+j_GxU2vF=0AiL6sTsQ0w@mail.gmail.com>
+References: <1381939238-30398-1-git-send-email-t.figa@samsung.com>
+	<1385642562-9339-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20131208172508.0cacabd0@tor.valhalla.alchemy.lu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joakim Hernberg <jbh@alchemy.lu>, Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:55966 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172Ab3LPJNY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 04:13:24 -0500
+Received: by mail-ob0-f169.google.com with SMTP id wm4so4540487obc.28
+        for <linux-pm@vger.kernel.org>; Mon, 16 Dec 2013 01:13:23 -0800 (PST)
+In-Reply-To: <1385642562-9339-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Adding Dirk in cc..
+On 28 November 2013 18:12, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> To make the driver multiplatform-friendly, unconditional initialization
+> in an initcall is replaced with a platform driver probed only if
+> respective platform device is registered.
+>
+> Tested at: Exynos4210 (TRATS) and Exynos4412 (TRATS2)
+>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>
+> ---
+> Changes for v3:
+> - Rename exynos_cpufreq_init() to exynos_cpufreq_probe()
+>
+> Changes for v2:
+> - Proper definition of exynos_cpufreq_init() function to squash warnings
+>
+>  arch/arm/mach-exynos/common.c          |    5 +++++
+>  arch/arm/mach-exynos/common.h          |    1 +
+>  arch/arm/mach-exynos/mach-exynos4-dt.c |    1 +
+>  arch/arm/mach-exynos/mach-exynos5-dt.c |    1 +
+>  drivers/cpufreq/exynos-cpufreq.c       |   13 +++++++++++--
+>  5 files changed, 19 insertions(+), 2 deletions(-)
 
-On 8 December 2013 21:55, Joakim Hernberg <jbh@alchemy.lu> wrote:
-> When I'm running KDE on linux 3.12 (archlinux) my intel i7-2600k seems
-> to no longer reduce the cpu multiplier and thus runs hotter than under
-> linux 3.11.  i7z shows the cpu as being close to idle and using C0 to
-> C6 states.
->
-> On "Linux version 3.12.3-1-ARCH (tobias@T-POWA-LX) (gcc version 4.8.2
-> (GCC) ) #1 SMP PREEMPT Wed Dec 4 21:45:42 CET 2013"
->
-> Output of # cpupower frequency-list when booted to the command prompt:
->
-> analyzing CPU 0:
->   driver: intel_pstate
->   CPUs which run at the same hardware frequency: 0
->   CPUs which need to have their frequency coordinated by software: 0
->   maximum transition latency: 0.97 ms.
->   hardware limits: 1.60 GHz - 5.90 GHz
->   available cpufreq governors: performance, powersave
->   current policy: frequency should be within 1.60 GHz and 5.90 GHz.
->                   The governor "powersave" may decide which speed to use
->                   within this range.
->   current CPU frequency is 1.69 GHz (asserted by call to hardware).
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
->
-> When booted into KDE and system more or less idle:
->
-> analyzing CPU 0:
->   driver: intel_pstate
->   CPUs which run at the same hardware frequency: 0
->   CPUs which need to have their frequency coordinated by software: 0
->   maximum transition latency: 0.97 ms.
->   hardware limits: 1.60 GHz - 5.90 GHz
->   available cpufreq governors: performance, powersave
->   current policy: frequency should be within 1.60 GHz and 5.90 GHz.
->                   The governor "powersave" may decide which speed to use
->                   within this range.
->   current CPU frequency is 4.30 GHz (asserted by call to hardware).
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
->
-> Output of top while in KDE:
->
-> top - 14:21:13 up 9 min, 16 users,  load average: 0.48, 0.88, 0.59
-> Tasks: 205 total,   1 running, 204 sleeping,   0 stopped,   0 zombie
-> %Cpu(s):  1.2 us,  0.4 sy,  0.0 ni, 98.1 id,  0.3 wa,  0.0 hi,  0.0
-> si,  0.0 st KiB Mem:  15366248 total,  2435540 used, 12930708 free,
-> 71804 buffers KiB Swap:  4193276 total,        0 used,  4193276 free,
-> 1135904 cached
->
->
->
-> On "Linux version 3.11.6-1-ARCH
-> (nobody@var-lib-archbuild-extra-x86_64-thomas) (gcc version 4.8.1
-> 20130725 (prerelease) (GCC) ) #1 SMP PREEMPT Fri Oct 18 23:22:36 CEST
-> 2013"
->
-> Output of cpupower frequency-list while in KDE:
->
-> analyzing CPU 0:
->   driver: intel_pstate
->   CPUs which run at the same hardware frequency: 0
->   CPUs which need to have their frequency coordinated by software: 0
->   maximum transition latency: 0.97 ms.
->   hardware limits: 1.60 GHz - 5.90 GHz
->   available cpufreq governors: performance, powersave
->   current policy: frequency should be within 1.60 GHz and 5.90 GHz.
->                   The governor "powersave" may decide which speed to use
->                   within this range.
->   current CPU frequency is 1.94 GHz (asserted by call to hardware).
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
->
-> I'm attaching the config files of both kernels in case it's simply a
-> configuration pebcak.
->
-> --
->
->    Joakim
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
