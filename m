@@ -1,91 +1,134 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC 2/2] Documentation: arm: define DT C-states bindings
-Date: Mon, 16 Dec 2013 12:11:11 +0000
-Message-ID: <20131216121111.GB8931@e102568-lin.cambridge.arm.com>
-References: <1386001205-11978-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1386001205-11978-3-git-send-email-lorenzo.pieralisi@arm.com>
- <87lhztgqsj.fsf@iki.fi>
- <20131210132719.GC15543@e102568-lin.cambridge.arm.com>
- <87haaggy6s.fsf@iki.fi>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH] thermal: add generic cpu hotplug cooling device
+Date: Mon, 16 Dec 2013 08:44:29 -0400
+Message-ID: <52AEF5AD.5000506@ti.com>
+References: <1379715336-22620-1-git-send-email-zoran.markovic@linaro.org> <CAME+o4myuSVwc=8mpk9x6tKZoskG6i2djrHSBGmVhKqaHqYwMA@mail.gmail.com> <CAME+o4m+1O4pMYa8jNoSuVtmtbkRC2H-9YZj+hnDwsd=Ex0wmw@mail.gmail.com> <52989FCA.2010107@ti.com> <CAME+o4mbtbDV+tZ6itEBqGp5Xy=6a0CsAZ+Kuvu3+oa-TR=_dw@mail.gmail.com> <52A5D3F1.9040301@ti.com> <CAME+o4=GESy7jseDXKx6f_DykRYP72kCdM5D3RMkKkybMDzmmg@mail.gmail.com> <CAHLCerMCjtXNDRceG2u6kuyTrjV=j6S3mUViVMQJyDAwp_6pgA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="StCI2RcTTb807oeEmjA0S3HjfeuuGpVTn"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:39740 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752742Ab3LPMLT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2013 07:11:19 -0500
-In-Reply-To: <87haaggy6s.fsf@iki.fi>
-Content-Disposition: inline
+Received: from arroyo.ext.ti.com ([192.94.94.40]:50435 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752742Ab3LPMos (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 16 Dec 2013 07:44:48 -0500
+In-Reply-To: <CAHLCerMCjtXNDRceG2u6kuyTrjV=j6S3mUViVMQJyDAwp_6pgA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Antti Miettinen <ananaza@iki.fi>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: Zoran Markovic <zoran.markovic@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>, lkml <linux-kernel@vger.kernel.org>, linux-doc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Andrew Morton <akpm@linux-foundation.org>, Durgadoss R <durgadoss.r@intel.com>, Christian Daudt <bcm@fixthebug.org>, James King <james.king@linaro.org>
 
-On Tue, Dec 10, 2013 at 10:04:27PM +0000, Antti Miettinen wrote:
-> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
-> > I do not think we should think about how the kernel uses this data.
-> > We should strive to make DT data representative of HW C-states and
-> > that's very complex, as you mentioned (it depends at what granularity
-> > we want these bits of info).
-> >
-> > When we are happy with the bindings we can then code the kernel accordingly.
-> >
-> > Please let me know how you would like to have these bindings extended
-> > (eg adding operating points), getting feedback is the main reason why
-> > I posted them in the first place.
-> 
-> Hmm.. I'd like to challenge that a bit. I guess we are not defining DT
-> bindings just for the joy of modelling the hardware? We should care
-> whether kernel needs the data and have some idea of how the data will be
-> used.
+--StCI2RcTTb807oeEmjA0S3HjfeuuGpVTn
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I agree all I am saying is that DT bindings must not contain anything
-Linux kernel specific, ie adding parameters that are purely SW concepts
-(eg menu governor target_residency).
+Zoran,
 
-> As you say, modelling C state details is not trivial. It might be
-> possible to construct an approximate formula for e.g. entry/exit latency
-> that takes CPU frequency, memory frequency and PMIC ramp rates as
-> input. Also, in principle we could estimate power based on clocks,
-> voltages, temperature etc. As we probably do not want to put function
-> definitions to DT, the DT would contain e.g. coefficients for functions
-> that would need to be platform neutral.
+On 16-12-2013 07:26, Amit Kucheria wrote:
+> On Fri, Dec 13, 2013 at 5:31 AM, Zoran Markovic
+> <zoran.markovic@linaro.org <mailto:zoran.markovic@linaro.org>> wrote:
+>=20
+>     Hi Eduardo,
+>=20
+>     > Yeah, I would like to see it. But what I was more interested in s=
+eeing
+>     > is how long does it take to offline a CPU?
+>     >
+>     I profiled this over 70 shutdown/startup cycles of CPU1 on Capri-AP=
 
-I do not think we should model anything in DT, we should define what
-a C-state entry/exit implies in HW. The kernel can model the behaviour
-depending on the parameters provided by the DT data.
+>     (Cortex-A9x2) board and I get:
+>     shutdown:  1445usec (average), 3159usec (maximum), 834usec (minimum=
+)
+>     startup:  707usec (average), 3159usec (maximum), 327usec (minimum)
+>=20
+>     It's using a 32KHz clock so time resolution is ~30usec.
+>=20
+>     Regards, Zoran
 
-> Is this what you'd like to see? There has been some research in
-> estimating power without actually measuring it, e.g. the google
-> powertutor people have written some papers about this. The latencies
-> could be measured to some extend with instrumentation in the kernel and
-> the measurement results could be used to tune some parameters.
-> 
-> Or would you rather have tables, which specify latencies and power
-> levels and the tables would be indexed with frequencies and voltages?
+Thanks for the data points. Based only on the data above, numbers sounds
+promising, from thermal perspective. Provided that  3.1ms is the maximum
+ transition time, and you stated that cooling effectiveness is around
+8C/s (?).
 
-The latter. I did not add operating points info in v1 because I thought
-it might have been too much, but I think it is something we should
-consider for the final version.
+However, I still would like to challenge the data.
 
-> Anyway, I would really like to see the option of having the state choice
-> in the driver. One possible way to achieve this would be to allow for
-> the driver to export an optional "choose" method. If that exists the
-> governor would offload the decision to the driver.
+>=20
+>=20
+> What is the workload you're running besides the proprietary heater code=
+?
 
-That's a separate discussion. CPUidle backends can already demote
-C-states depending on HW states (pending IRQs, state of caches).
-This also has loads of dependencies (what piece of code is in charge of
-making the final decision ? Kernel ? FW (ie PSCI) ?).
+Agreed with Amit here, can you please provide better description of your
+testing environment? We know, based on your emails the following:
+- Homogeneous dual core Cortex-A9 environment.
+- They go up to 48C when fully loaded. Can you explain where is your
+sensor location? Gradient to hotspot, etc? 48C at A9s or board temperatur=
+e?
+- Hotplug provides you cooling effectiveness  of ~8C/s.
+- Shutdown / startup delay:
+     shutdown:  1445usec (average), 3159usec (maximum), 834usec(minimum)
+     startup:  707usec (average), 3159usec (maximum), 327usec(minimum)
+  Can you please explain the work load here? Is it full cpuburn? both
+CPUs 100% loaded?
+  Might be interesting to have either plots or logs of these experiments.=
 
-I think as I mentioned that the state choice discussion is a parallel
-track altogether. Let's define what bits of info are required in the DT
-first, with an eye on how the kernel can make use of them, then we
-can focus on changing the kernel (actually idle interfaces changes are
-already under way owing to scheduler discussions) to make best usage of
-them.
 
-Thanks,
-Lorenzo
+There are two major points we need to be careful:
 
+- This code looks promising on embedded dual core system. However, it
+does not necessarily mean it works fine on, say server side. How about a
+system with 8/16/32 cores? How about a more heterogeneous workload? Not
+to talk about heterogeneous cores. I think in more complicated scenarios
+the data you provided above might even change. The difference between
+your minimum and maximum shutdown/startup times are quite considerable,
+so I am assuming your variance is not negligible, imaging if we scale
+this up, what happens?
+
+- The other point is that this type of cooling device must be taken in
+very sensible way. Shutting down circuitry may not be the best strategy
+for thermal. In fact, if you think about it, given you have a workload
+well balanced between, say, two cores, as same of your environment,
+turning one off it means you need to deal the very same load in only one
+CPU. In other words, turning of circuitry means, from thermal standpoint
+that you are increasing you heat/area ratio. Sometimes, you actually
+want to increase this ratio in order to properly cool down your system.
+
+I am not saying I am against the cooling device, I am simply stating
+that this needs to be taken with careful consideration. We need to
+properly document this. And building and validating thermal policies on
+top of this is even harder.
+
+> Something similar to what Vincent did[1] when benchmarking hotplug woul=
+d
+> be nice to see. Due to the kthread work and other optimisations, we
+> shouldn't see drastic increases in hotplug latency as the number of
+> threads increase any more.
+>=20
+> Regards,
+> Amit
+>=20
+> [1] https://wiki.linaro.org/WorkingGroups/PowerManagement/Archives/Hotp=
+lug
+> =20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--StCI2RcTTb807oeEmjA0S3HjfeuuGpVTn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKu9bEACgkQCXcVR3XQvP1ewAEAgvcY4wiXycoiMZJlD5EIjzQx
+MKiEwCH94nWlsC3FbzUBAKlcw/kEfjwahhFsFZR1aOlHpTrspthWmklmJfii2+/y
+=NYmP
+-----END PGP SIGNATURE-----
+
+--StCI2RcTTb807oeEmjA0S3HjfeuuGpVTn--
