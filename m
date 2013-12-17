@@ -1,48 +1,46 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 4/4] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
- when cpufreq is changed
-Date: Tue, 17 Dec 2013 15:45:52 +0800
-Message-ID: <20131217074548.GB7172@S2101-09.ap.freescale.net>
-References: <1387228450-641-1-git-send-email-b20788@freescale.com>
- <1387228450-641-2-git-send-email-b20788@freescale.com>
- <20131217025616.GC6691@S2101-09.ap.freescale.net>
+From: Francis Moreau <francis.moro@gmail.com>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend
+ to RAM
+Date: Tue, 17 Dec 2013 09:05:20 +0100
+Message-ID: <52B005C0.1010401@gmail.com>
+References: <52A96D01.1050503@gmail.com> <4421787.xvooIB0ROV@vostro.rjw.lan> <52A9F5A7.8030305@gmail.com> <55495319.9jUzi5g5UA@vostro.rjw.lan> <52AA0BB8.6070908@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20131217025616.GC6691@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:63405 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751536Ab3LQIEl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Dec 2013 03:04:41 -0500
+In-Reply-To: <52AA0BB8.6070908@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Dec 17, 2013 at 10:56:18AM +0800, Shawn Guo wrote:
-> > +	rcu_read_lock();
-> > +	val = prop->value;
+Hello Rafael,
+
+Could you see something in the logs ?
+
+Thanks
+
+On 12/12/2013 08:17 PM, Francis Moreau wrote:
+> On 12/12/2013 06:58 PM, Rafael J. Wysocki wrote:
+>> On Thursday, December 12, 2013 06:43:03 PM Francis Moreau wrote:
 > 
-> What is this assignment used for?
-
-Sorry.  This is a brain-dead comment.  Ignore it.
-
-Shawn
-
+> [...]
 > 
-> > +
-> > +	min_volt = max_volt = 0;
-> > +	for (i = 0; i < nr / 2; i++) {
-> > +		unsigned long freq = be32_to_cpup(val++);
-> > +		unsigned long volt = be32_to_cpup(val++);
-> > +
-> > +		if (i == 0)
-> > +			min_volt = max_volt = volt;
-> > +		if (volt < min_volt)
-> > +			min_volt = volt;
-> > +		if (volt > max_volt)
-> > +			max_volt = volt;
-> > +		opp = dev_pm_opp_find_freq_exact(cpu_dev, freq * 1000, true);
-> > +		imx6_soc_opp[i].arm_freq = freq;
-> > +		imx6_soc_opp[i].soc_volt = volt;
-> > +		soc_opp_count++;
-> > +	}
-> > +	rcu_read_unlock();
+>>>
+>>> Actually I can see this now:
+>>>
+>>> [   42.400974] r8169 0000:03:00.2: System wakeup disabled by ACPI
+>>
+>> This should be harmless.
+>>
+>> Please run lspci -vv before and after suspend and send both results.
+> 
+> Please find them attached.
+> 
+> Thanks.
+> 
 
