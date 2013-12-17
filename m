@@ -1,50 +1,36 @@
-From: Luis Henriques <luis.henriques@canonical.com>
-Subject: Re: [PATCH][3.11.y]  intel_pstate: fix no_turbo
-Date: Tue, 17 Dec 2013 11:36:03 +0000
-Message-ID: <20131217113603.GB5044@hercules>
-References: <52A76D78.4070507@canonical.com>
- <20131211103520.GA6127@hercules>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 4/4] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
+ when cpufreq is changed
+Date: Tue, 17 Dec 2013 20:14:00 +0800
+Message-ID: <20131217121358.GM6691@S2101-09.ap.freescale.net>
+References: <1387228450-641-1-git-send-email-b20788@freescale.com>
+ <1387228450-641-2-git-send-email-b20788@freescale.com>
+ <20131217025616.GC6691@S2101-09.ap.freescale.net>
+ <20131217105347.75954ad3@ipc1.ka-ro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20131211103520.GA6127@hercules>
-Sender: stable-owner@vger.kernel.org
-To: Joseph Salisbury <joseph.salisbury@canonical.com>
-Cc: Kamal Mostafa <kamal.mostafa@canonical.com>, stable@vger.kernel.org, srinivas.pandruvada@linux.intel.com, dirk.j.brandewie@intel.com, rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kernel Team <kernel-team@lists.ubuntu.com>
+In-Reply-To: <20131217105347.75954ad3@ipc1.ka-ro>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>
+Cc: Anson Huang <b20788@freescale.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 11, 2013 at 10:35:20AM +0000, Luis Henriques wrote:
-> On Tue, Dec 10, 2013 at 02:37:28PM -0500, Joseph Salisbury wrote:
-> > Hello,
-> > 
-> > Please consider including mainline commit
-> > 1ccf7a1cdafadd02e33e8f3d74370685a0600ec6 in the next v3.11.y release. 
-> > 
-> > It was included in the mainline tree as of v3.12-rc4.  It has been
-> > tested and confirmed
-> > to resolve http://bugs.launchpad.net/bugs/1254091 .
-> > 
-> > commit 1ccf7a1cdafadd02e33e8f3d74370685a0600ec6
-> > Author: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > Date:   Tue Oct 1 10:28:41 2013 -0700
-> > 
-> >     intel_pstate: fix no_turbo
-> > 
-> > Other stable trees may also want to pick up this commit.
-> > 
-> > Sincerely,
-> > Joseph Salisbury
-> > 
-> 
-> Thanks Joseph, I'm queuing this patch for the 3.11 kernel.
+On Tue, Dec 17, 2013 at 10:53:47AM +0100, Lothar Wa=DFmann wrote:
+> > > +	if (soc_opp_index >=3D soc_opp_count) {
+> >=20
+> > Can soc_opp_index be possibly greater than soc_opp_count?  Otherwis=
+e,
+> > the condition check below is good enough?
+> >=20
+> > 	if (soc_opp_index =3D=3D soc_opp_count)
+> >
+> it doen't harm to be on the safe side and use >=3D anyway!
 
-Just FYI, I'm also queuing:
+Well, it may confuse reader.  At least, it took me some time understand
+how that ">" condition will happen.  And it turns out never.
 
- 09c87e2 intel_pstate: Fix type mismatch warning
+Shawn
 
-to remove a compilation warning on some architectures.
-
-Cheers,
---
-Luis
