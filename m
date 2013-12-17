@@ -1,46 +1,58 @@
-From: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend
- to RAM
-Date: Tue, 17 Dec 2013 09:05:20 +0100
-Message-ID: <52B005C0.1010401@gmail.com>
-References: <52A96D01.1050503@gmail.com> <4421787.xvooIB0ROV@vostro.rjw.lan> <52A9F5A7.8030305@gmail.com> <55495319.9jUzi5g5UA@vostro.rjw.lan> <52AA0BB8.6070908@gmail.com>
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+Subject: Re: [PATCH 4/4] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
+ when cpufreq is changed
+Date: Tue, 17 Dec 2013 10:53:47 +0100
+Message-ID: <20131217105347.75954ad3@ipc1.ka-ro>
+References: <1387228450-641-1-git-send-email-b20788@freescale.com>
+	<1387228450-641-2-git-send-email-b20788@freescale.com>
+	<20131217025616.GC6691@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:63405 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536Ab3LQIEl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Dec 2013 03:04:41 -0500
-In-Reply-To: <52AA0BB8.6070908@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20131217025616.GC6691@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Anson Huang <b20788@freescale.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hello Rafael,
+Hi,
 
-Could you see something in the logs ?
+Shawn Guo wrote:
+> On Mon, Dec 16, 2013 at 04:14:10PM -0500, Anson Huang wrote:
+> > on i.MX6Q, cpu freq change need to follow below flows:
+> >=20
+> > 1. each setpoint has different VDDARM, VDDSOC/PU voltage, get the s=
+etpoint
+> > table from dts;
+> > 2. when cpu freq is scaling up, need to increase VDDSOC/PU voltage =
+before
+> > VDDARM, if VDDPU is off, no need to change it;
+> > 3. when cpu freq is scaling down, need to decrease VDDARM voltage b=
+efore
+> > VDDSOC/PU, if VDDPU is off, no need to change it;
+> >=20
+> > Signed-off-by: Anson Huang <b20788@freescale.com>
+> > ---
+[...]
+> > +	if (soc_opp_index >=3D soc_opp_count) {
+>=20
+> Can soc_opp_index be possibly greater than soc_opp_count?  Otherwise,
+> the condition check below is good enough?
+>=20
+> 	if (soc_opp_index =3D=3D soc_opp_count)
+>
+it doen't harm to be on the safe side and use >=3D anyway!
 
-Thanks
 
-On 12/12/2013 08:17 PM, Francis Moreau wrote:
-> On 12/12/2013 06:58 PM, Rafael J. Wysocki wrote:
->> On Thursday, December 12, 2013 06:43:03 PM Francis Moreau wrote:
-> 
-> [...]
-> 
->>>
->>> Actually I can see this now:
->>>
->>> [   42.400974] r8169 0000:03:00.2: System wakeup disabled by ACPI
->>
->> This should be harmless.
->>
->> Please run lspci -vv before and after suspend and send both results.
-> 
-> Please find them attached.
-> 
-> Thanks.
-> 
+Lothar Wa=C3=9Fmann
+--=20
+___________________________________________________________
 
+Ka-Ro electronics GmbH | Pascalstra=C3=9Fe 22 | D - 52076 Aachen
+Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
+Gesch=C3=A4ftsf=C3=BChrer: Matthias Kaussen
+Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
+
+www.karo-electronics.de | info@karo-electronics.de
+___________________________________________________________
