@@ -1,35 +1,91 @@
-From: bilhuang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v3 0/2] Remodel Tegra cpufreq drivers to support Tegra
- series SoC
-Date: Tue, 17 Dec 2013 18:47:47 +0800
-Message-ID: <52B02BD3.906@nvidia.com>
-References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com> <CAKohponJAU20MQ92y4VaOXbsOOmxz6K=349KCq91c5=P=zQOQQ@mail.gmail.com>
+From: bilhuang <bilhuang@nvidia.com>
+Subject: Re: [PATCH v3 1/2] cpufreq: tegra: Call tegra_cpufreq_init() specifically
+ in machine code
+Date: Tue, 17 Dec 2013 18:48:20 +0800
+Message-ID: <52B02BF4.1060308@nvidia.com>
+References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com>	<1386229462-3474-2-git-send-email-bilhuang@nvidia.com> <CAKohpo=OAg96OUe_dmitd_OWThtZv6M+0fsx=4ngCez0MgDhLw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAKohponJAU20MQ92y4VaOXbsOOmxz6K=349KCq91c5=P=zQOQQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=OAg96OUe_dmitd_OWThtZv6M+0fsx=4ngCez0MgDhLw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/17/2013 02:26 PM, Viresh Kumar wrote:
-> On 5 December 2013 13:14, Bill Huang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->> This patch series remodel Tegra cpufreq driver to make it more easy to
->> add new SoC support, in addition to that, adding probe function in the
->> driver to let probe defer can be used to control init sequence when we
->> are going to support DVFS.
+On 12/17/2013 02:31 PM, Viresh Kumar wrote:
+> On 5 December 2013 13:14, Bill Huang <bilhuang@nvidia.com> wrote:
+>> Move the call from module_init to Tegra machine codes so it won't be
+>> called in a multi-platform kernel running on non-Tegra SoCs.
 >>
->> Changes since v2:
+>> Signed-off-by: Bill Huang <bilhuang@nvidia.com>
+>> ---
+>>   arch/arm/mach-tegra/tegra.c     |    2 ++
+>>   drivers/cpufreq/tegra-cpufreq.c |   13 ++-----------
+>>   include/linux/tegra-soc.h       |   11 ++++++++++-
+>>   3 files changed, 14 insertions(+), 12 deletions(-)
 >>
->> - Fix Kconfig.
->> - Rebase on top of branch 'cpufreq-next' on git://git.linaro.org/people/vireshk/linux.git.
+>> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
+>> index 7336817..14490ad 100644
+>> --- a/arch/arm/mach-tegra/tegra.c
+>> +++ b/arch/arm/mach-tegra/tegra.c
+>> @@ -34,6 +34,7 @@
+>>   #include <linux/usb/tegra_usb_phy.h>
+>>   #include <linux/clk/tegra.h>
+>>   #include <linux/irqchip.h>
+>> +#include <linux/tegra-soc.h>
+>>
+>>   #include <asm/hardware/cache-l2x0.h>
+>>   #include <asm/mach-types.h>
+>> @@ -160,6 +161,7 @@ static void __init tegra_dt_init_late(void)
+>>   {
+>>          int i;
+>>
+>> +       tegra_cpufreq_init();
+>>          tegra_init_suspend();
+>>          tegra_cpuidle_init();
+>>          tegra_powergate_debugfs_init();
+>> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+>> index 63f0059..ae1c0f1 100644
+>> --- a/drivers/cpufreq/tegra-cpufreq.c
+>> +++ b/drivers/cpufreq/tegra-cpufreq.c
+>> @@ -155,7 +155,7 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
+>>   #endif
+>>   };
 >
-> That's wrong base.. This branch is used only for Rafael to pull in
-> stuff and so it doesn't
-> get updated everyday..
+> Remove module.h as well ??
 >
-> You must rebase on Rafael's linux-next branch all the time.
+>> -static int __init tegra_cpufreq_init(void)
+>> +int __init tegra_cpufreq_init(void)
+>>   {
+>>          cpu_clk = clk_get_sys(NULL, "cclk");
+>>          if (IS_ERR(cpu_clk))
+>> @@ -177,17 +177,8 @@ static int __init tegra_cpufreq_init(void)
+>>
+>>          return cpufreq_register_driver(&tegra_cpufreq_driver);
+>>   }
+>> -
+>> -static void __exit tegra_cpufreq_exit(void)
+>> -{
+>> -        cpufreq_unregister_driver(&tegra_cpufreq_driver);
+>> -       clk_put(emc_clk);
+>> -       clk_put(cpu_clk);
+>> -}
+>> -
+>> +EXPORT_SYMBOL(tegra_cpufreq_init);
+>>
+>>   MODULE_AUTHOR("Colin Cross <ccross@android.com>");
+>>   MODULE_DESCRIPTION("cpufreq driver for Nvidia Tegra2");
+>>   MODULE_LICENSE("GPL");
 >
-OK thanks, is it branch pm-cpufreq?
+> Remove these as well? As they don't have a meaning for Tegra
+> cpufreq driver which can't be compiled as module.
+OK thanks.
+>
+>> -module_init(tegra_cpufreq_init);
+>> -module_exit(tegra_cpufreq_exit);
+>
+> Rest as what Stephen suggested.
+>
+
