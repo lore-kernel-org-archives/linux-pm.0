@@ -1,90 +1,76 @@
-From: Anson Huang <b20788@freescale.com>
-Subject: [PATCH V2 1/2] ARM: imx: add vddsoc/pu setpoint info into dts
-Date: Tue, 17 Dec 2013 17:08:21 -0500
-Message-ID: <1387318102-11070-1-git-send-email-b20788@freescale.com>
+From: bilhuang <bilhuang@nvidia.com>
+Subject: Re: [PATCH v4 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Tue, 17 Dec 2013 18:46:27 +0800
+Message-ID: <52B02B83.7@nvidia.com>
+References: <1386840835-28751-1-git-send-email-bilhuang@nvidia.com> <52AB967F.9030900@wwwdotorg.org> <52AEDB6A.2080501@nvidia.com> <52AF3126.6090000@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52AF3126.6090000@wwwdotorg.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: shawn.guo@linaro.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-i.MX6Q needs to update vddarm, vddsoc/pu regulators when cpu freq
-is changed, each setpoint has different voltage, so we need to
-pass vddarm, vddsoc/pu's freq-voltage info from dts together.
-
-Signed-off-by: Anson Huang <b20788@freescale.com>
----
- .../devicetree/bindings/cpufreq/cpufreq-imx6.txt   |   39 ++++++++++++++++++++
- arch/arm/boot/dts/imx6q.dtsi                       |    7 ++++
- 2 files changed, 46 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
-
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
-new file mode 100644
-index 0000000..0c71dbf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
-@@ -0,0 +1,39 @@
-+i.MX6 cpufreq driver
-+-------------------
-+
-+i.MX6 SoC cpufreq driver for CPU frequency scaling.
-+
-+Optional properties:
-+-fsl,soc-operating-points: Specify vddsoc/pu voltage settings that must
-+ go with cpu0's operating-points.
-+
-+Examples:
-+
-+	cpu@0 {
-+		compatible = "arm,cortex-a9";
-+		device_type = "cpu";
-+		reg = <0>;
-+		next-level-cache = <&L2>;
-+		operating-points = <
-+			/* kHz    uV */
-+			1200000 1275000
-+			996000  1250000
-+			792000  1150000
-+			396000  975000
-+		>;
-+		fsl,soc-operating-points = <
-+			/* ARM kHz  SOC-PU uV */
-+			1200000 1275000
-+			996000	1250000
-+			792000	1175000
-+			396000	1175000
-+		>;
-+		clock-latency = <61036>; /* two CLK32 periods */
-+		clocks = <&clks 104>, <&clks 6>, <&clks 16>,
-+			 <&clks 17>, <&clks 170>;
-+		clock-names = "arm", "pll2_pfd2_396m", "step",
-+			      "pll1_sw", "pll1_sys";
-+		arm-supply = <&reg_arm>;
-+		pu-supply = <&reg_pu>;
-+		soc-supply = <&reg_soc>;
-+	};
-diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-index e7e8332..021e0cb 100644
---- a/arch/arm/boot/dts/imx6q.dtsi
-+++ b/arch/arm/boot/dts/imx6q.dtsi
-@@ -30,6 +30,13 @@
- 				792000  1150000
- 				396000  975000
- 			>;
-+			fsl,soc-operating-points = <
-+				/* ARM kHz  SOC-PU uV */
-+				1200000 1275000
-+				996000	1250000
-+				792000	1175000
-+				396000	1175000
-+			>;
- 			clock-latency = <61036>; /* two CLK32 periods */
- 			clocks = <&clks 104>, <&clks 6>, <&clks 16>,
- 				 <&clks 17>, <&clks 170>;
--- 
-1.7.9.5
-
-
+On 12/17/2013 12:58 AM, Stephen Warren wrote:
+> On 12/16/2013 03:52 AM, bilhuang wrote:
+>> On 12/14/2013 07:21 AM, Stephen Warren wrote:
+>>> On 12/12/2013 02:33 AM, Bill Huang wrote:
+>>>> Re-model Tegra20 cpufreq driver as below.
+>>>>
+>>>> * Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
+>>>>     only Tegra20.
+>>>> * Add probe function so defer probe can be used when we're going to
+>>>>     support DVFS.
+>>>> * Create a fake cpufreq platform device with its name being
+>>>>     "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
+>>>>     accordingly.
+>>>
+>>>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>>>
+>>>> +config ARM_TEGRA20_CPUFREQ
+>>>> +    bool "NVIDIA TEGRA20"
+>>>> +    depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
+>>>> +    default y
+>>>> +    help
+>>>> +      This enables Tegra20 cpufreq functionality, it adds
+>>>> +      Tegra20 CPU frequency ladder and the call back functions
+>>>> +      to set CPU rate. All the non-SoC dependant codes are
+>>>> +      controlled by the config ARM_TEGRA20_CPUFREQ.
+>>>
+>>> I think that last sentence is no longer true in this patch version. Or,
+>>> did you mean to write ARM_TEGRA_CPUFREQ rather than ARM_TEGRA20_CPUFREQ?
+>>
+>> Right, should be ARM_TEGRA_CPUFREQ, thanks for catching this.
+>>>
+>>>> diff --git a/drivers/cpufreq/tegra-cpufreq.c
+>>>> b/drivers/cpufreq/tegra-cpufreq.c
+>>>
+>>>> +static const char * const tegra_soc_compat[] = {
+>>>> +    "nvidia,tegra124",
+>>>> +    "nvidia,tegra114",
+>>>> +    "nvidia,tegra30",
+>>>> +    "nvidia,tegra20",
+>>>> +    NULL
+>>>>    };
+>>>
+>>> That table will need editing for each chip. I wonder if you can do
+>>> something like always use the very last entry in /compatible. That would
+>>> assume a particular ordering of the compatible entries, but they should
+>>> be in the order $board, $soc anyway...
+>>
+>> How do we get subset of a string and making sure it is the last? There
+>> must be some assumptions here (though they will possibly be true) I
+>> guess, for example, they should be in the order $board, $soc... and the
+>> last "nvidia" should be the start of the last compatible id we would
+>> like to get.
+>
+> The compatible property is an array of strings, rather than one big
+> string, so you can just keep getting index 0, 1, 2, ... until you find
+> there aren't any more entries. I think it's reasonable to assume that
+> the SoC compatible value must be last, and it should be in practice,
+> although perhaps that is fragile. If you want, we can leave this as-is
+> for now, and modify it later if it becomes a problem.
+>
+Right, thanks.
