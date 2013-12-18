@@ -1,37 +1,36 @@
-From: Manish Badarkhe <badarkhe.manish@gmail.com>
-Subject: Re: [PATCH 2/2] charger-manager : Support deivce tree in charger
- manager driver
-Date: Wed, 18 Dec 2013 08:56:39 +0530
-Message-ID: <CAKDJKT658j+1DMEZnrADzZt=+uPbT4G8cs9AntXq491=Y5X8dw@mail.gmail.com>
-References: <1387332853-5923-1-git-send-email-jonghwa3.lee@samsung.com>
-	<1387332853-5923-3-git-send-email-jonghwa3.lee@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH 0/3] fuelgauge: max17042: Update max17042/7 fuelgauge driver.
+Date: Wed, 18 Dec 2013 12:53:51 +0900
+Message-ID: <1387338834-4046-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:63867 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751465Ab3LRD0k (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Dec 2013 22:26:40 -0500
-Received: by mail-pb0-f46.google.com with SMTP id md12so7872496pbc.33
-        for <linux-pm@vger.kernel.org>; Tue, 17 Dec 2013 19:26:39 -0800 (PST)
-In-Reply-To: <1387332853-5923-3-git-send-email-jonghwa3.lee@samsung.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:61645 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752656Ab3LRDyA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Dec 2013 22:54:00 -0500
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MXZ006W3HHY1U40@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 18 Dec 2013 12:53:58 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: linux-pm@vger.kernel.org, Anton Vorontsov <anton@enomsg.org>, David Woodhouse <dwmw2@infradead.org>, myungjoo.ham@samsung.com, cw00.choi@samsung.com
+To: linux-pm@vger.kernel.org
+Cc: anton@enomsg.org, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-Hi
+Jonghwa Lee (3):
+  fuelgauge: max17042: Do code cleaning to follow kernel code
+    convention.
+  fuelgauge: max17042: Add IRQF_ONESHOT flag to use default irq
+    handler.
+  fuelgauge: max17042: Seperate available property set for different
+    operation.
 
-> +static inline struct charger_desc *cm_get_drv_data(struct platform_device *pdev)
-> +{
-> +#ifdef CONFIG_OF
-> +       if (pdev->dev.of_node)
-> +               return of_cm_parse_desc(&pdev->dev);
-> +#endif
-> +       return (struct charger_desc *)dev_get_platdata(&pdev->dev);
-> +}
+ .../bindings/power_supply/max17042_battery.txt     |    3 +
+ drivers/power/max17042_battery.c                   |  327 +++++++++++---------
+ include/linux/power/max17042_battery.h             |  159 ++++++----
+ 3 files changed, 271 insertions(+), 218 deletions(-)
 
-Can you make use of IS_ENABLED(CONFIG_OF) to get rid of #ifdef?
+-- 
+1.7.9.5
 
-Thanks
-Manish Badarkhe
