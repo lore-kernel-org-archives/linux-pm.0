@@ -1,358 +1,346 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH v3 RESEND 1/2] charger-manager : Modify the way of checking
- battery's temperature.
-Date: Wed, 18 Dec 2013 15:42:34 +0900
-Message-ID: <1387348955-23174-2-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH v3 RESEND 2/2] charger-manager : Support deivce tree in charger
+ manager driver
+Date: Wed, 18 Dec 2013 15:42:35 +0900
+Message-ID: <1387348955-23174-3-git-send-email-jonghwa3.lee@samsung.com>
 References: <1387348955-23174-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mailout3.samsung.com ([203.254.224.33]:31807 "EHLO
 	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933Ab3LRGmm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 01:42:42 -0500
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
+	with ESMTP id S1751204Ab3LRGmn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 01:42:43 -0500
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
  by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
  (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MXZ00179PB4AC50@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 18 Dec 2013 15:42:40 +0900 (KST)
+ with ESMTP id <0MXZ001CXPB5NB40@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 18 Dec 2013 15:42:41 +0900 (KST)
 In-reply-to: <1387348955-23174-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: anton@enomsg.org, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-Charger-manager driver used to check battery temperature through the
-callback function passed by platform data. Unfortunatley, without that
-pre-defined callback function, charger-manager can't get battery's
-temperature at all. Also passing callback function through platform data
-ruins DT support for charger-manager.
-
-This patch mondifies charger-manager driver to get temperature of battery
-without pre-defined callback function. Now, charger-manager can use either
-of battery thermometer in fuel-gauge and ouside of battery.
-It uses thermal framework interface for outer thermometer if thermal fw is
-enabled. Otherwise, it tries to use fuel-gauge's through the power supply
-interface.
+Charger-manager can parse charger_desc data from devicetree which is used to
+register charger manager.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/power/charger-manager.c       |  161 ++++++++++++++++++++++++---------
- include/linux/power/charger-manager.h |   24 +++--
- 2 files changed, 136 insertions(+), 49 deletions(-)
+ .../bindings/power_supply/charger-manager.txt      |   81 ++++++++++++
+ drivers/power/charger-manager.c                    |  138 +++++++++++++++++++-
+ include/linux/power/charger-manager.h              |   12 +-
+ 3 files changed, 222 insertions(+), 9 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power_supply/charger-manager.txt
 
+diff --git a/Documentation/devicetree/bindings/power_supply/charger-manager.txt b/Documentation/devicetree/bindings/power_supply/charger-manager.txt
+new file mode 100644
+index 0000000..2b33750
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power_supply/charger-manager.txt
+@@ -0,0 +1,81 @@
++charger-manager bindings
++~~~~~~~~~~~~~~~~~~~~~~~~
++
++Required properties :
++ - compatible : "charger-manager"
++ - <>-supply : for regulator consumer
++ - cm-num-chargers : number of chargers
++ - cm-chargers : name of chargers
++ - cm-fuel-gauge : name of battery fuel gauge
++ - subnode <regulator> :
++	- cm-regulator-name : name of charger regulator
++	- subnode <cable> :
++		- cm-cable-name : name of charger cable
++		- cm-cable-extcon : name of extcon dev
++(optional)	- cm-cable-min : minimum current of cable
++(optional)	- cm-cable-max : maximum current of cable
++
++Optional properties :
++ - cm-name : charger manager's name (default : "battery")
++ - cm-poll-mode : polling mode (enum polling_modes)
++ - cm-poll-interval : polling interval
++ - cm-battery-stat : battery status (enum data_source)
++ - cm-fullbatt-* : data for full battery checking
++ - cm-thermal-zone : name of external thermometer's thermal zone
++ - cm-battery-* : threshold battery temperature for charging
++	-cold : critical cold temperature of battery for charging
++	-cold-in-minus : flag that cold temerature is in minus degree
++	-hot : critical hot temperature of battery for charging
++	-temp-diff : temperature difference to allow recharging
++ - cm-dis/charging-max = limits of charging duration
++
++Example :
++	charger-manager@0 {
++		compatible = "charger-manager";
++		chg-reg-supply = <&charger_regulator>;
++
++		cm-name = "battery";
++		/* Always polling ON : 30s */
++		cm-poll-mode = <1>;
++		cm-poll-interval = <30000>;
++
++		cm-fullbatt-vchkdrop-ms = <30000>;
++		cm-fullbatt-vchkdrop-volt = <150000>;
++		cm-fullbatt-soc = <100>;
++
++		cm-battery-stat = <3>;
++
++		cm-num-chargers = <3>;
++		cm-chargers = "charger0", "charger1", "charger2";
++
++		cm-fuel-gauge = "fuelgauge0";
++
++		cm-thermal-zone = "thermal_zone.1"
++		/* in deci centigrade */
++		cm-battery-cold = <50>;
++		cm-battery-cold-in-minus;
++		cm-battery-hot = <800>;
++		cm-battery-temp-diff = <100>;
++
++		/* Allow charging for 5hr */
++		cm-charging-max = <18000000>;
++		/* Allow discharging for 2hr */
++		cm-discharging-max = <7200000>;
++
++		regulator@0 {
++			cm-regulator-name = "chg-reg";
++			cable@0 {
++				cm-cable-name = "USB";
++				cm-cable-extcon = "extcon-dev.0";
++				cm-cable-min = <475000>;
++				cm-cable-max = <500000>;
++			};
++			cable@1 {
++				cm-cable-name = "TA";
++				cm-cable-extcon = "extcon-dev.0";
++				cm-cable-min = <650000>;
++				cm-cable-max = <675000>;
++			};
++		};
++
++	};
 diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 7287c0e..6b68d15 100644
+index 6b68d15..ec5c140 100644
 --- a/drivers/power/charger-manager.c
 +++ b/drivers/power/charger-manager.c
-@@ -25,12 +25,22 @@
+@@ -25,6 +25,7 @@
  #include <linux/power/charger-manager.h>
  #include <linux/regulator/consumer.h>
  #include <linux/sysfs.h>
-+#include <linux/thermal.h>
-+
-+/*
-+ * Default termperature threshold for charging.
-+ * Every temperature units are in tenth of centigrade.
-+ */
-+#define CM_DEFAULT_RECHARGE_TEMP_DIFF	50
-+#define CM_DEFAULT_CHARGE_TEMP_MAX	500
++#include <linux/of.h>
+ #include <linux/thermal.h>
  
- static const char * const default_event_names[] = {
- 	[CM_EVENT_UNKNOWN] = "Unknown",
- 	[CM_EVENT_BATT_FULL] = "Battery Full",
- 	[CM_EVENT_BATT_IN] = "Battery Inserted",
- 	[CM_EVENT_BATT_OUT] = "Battery Pulled Out",
-+	[CM_EVENT_BATT_OVERHEAT] = "Battery Overheat",
-+	[CM_EVENT_BATT_COLD] = "Battery Cold",
- 	[CM_EVENT_EXT_PWR_IN_OUT] = "External Power Attach/Detach",
- 	[CM_EVENT_CHG_START_STOP] = "Charging Start/Stop",
- 	[CM_EVENT_OTHERS] = "Other battery events"
-@@ -540,6 +550,60 @@ static int check_charging_duration(struct charger_manager *cm)
+ /*
+@@ -528,7 +529,7 @@ static int check_charging_duration(struct charger_manager *cm)
+ 		duration = curr - cm->charging_start_time;
+ 
+ 		if (duration > desc->charging_max_duration_ms) {
+-			dev_info(cm->dev, "Charging duration exceed %lldms\n",
++			dev_info(cm->dev, "Charging duration exceed %ums\n",
+ 				 desc->charging_max_duration_ms);
+ 			uevent_notify(cm, "Discharging");
+ 			try_charger_enable(cm, false);
+@@ -539,7 +540,7 @@ static int check_charging_duration(struct charger_manager *cm)
+ 
+ 		if (duration > desc->charging_max_duration_ms &&
+ 				is_ext_pwr_online(cm)) {
+-			dev_info(cm->dev, "Discharging duration exceed %lldms\n",
++			dev_info(cm->dev, "Discharging duration exceed %ums\n",
+ 				 desc->discharging_max_duration_ms);
+ 			uevent_notify(cm, "Recharging");
+ 			try_charger_enable(cm, true);
+@@ -1528,9 +1529,139 @@ static int cm_init_thermal_data(struct charger_manager *cm)
  	return ret;
  }
  
-+static int cm_get_battery_temperature(struct charger_manager *cm,
-+					int *temp)
++static struct of_device_id charger_manager_match[] = {
++	{
++		.compatible = "charger-manager",
++	},
++	{},
++};
++
++struct charger_desc *of_cm_parse_desc(struct device *dev)
 +{
-+	int ret;
++	struct charger_desc *desc;
++	struct device_node *np = dev->of_node;
++	u32 poll_mode = CM_POLL_DISABLE;
++	u32 battery_stat = CM_NO_BATTERY;
++	int num_chgs = 0;
 +
-+	if (!cm->desc->measure_battery_temp)
-+		return -ENODEV;
++	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
++	if (!desc)
++		return ERR_PTR(-ENOMEM);
 +
-+#ifdef CONFIG_THERMAL
-+	ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
-+	if (!ret)
-+		/* Calibrate temperature unit */
-+		*temp /= 100;
-+#else
-+	ret = cm->fuel_gauge->get_property(cm->fuel_gauge,
-+				POWER_SUPPLY_PROP_TEMP,
-+				(union power_supply_propval *)temp);
-+#endif
-+	return ret;
++	of_property_read_string(np, "cm-name", &desc->psy_name);
++
++	of_property_read_u32(np, "cm-poll-mode", &poll_mode);
++	desc->polling_mode = poll_mode;
++
++	of_property_read_u32(np, "cm-poll-interval",
++				&desc->polling_interval_ms);
++
++	of_property_read_u32(np, "cm-fullbatt-vchkdrop-ms",
++					&desc->fullbatt_vchkdrop_ms);
++	of_property_read_u32(np, "cm-fullbatt-vchkdrop-volt",
++					&desc->fullbatt_vchkdrop_uV);
++	of_property_read_u32(np, "cm-fullbatt-voltage", &desc->fullbatt_uV);
++	of_property_read_u32(np, "cm-fullbatt-soc", &desc->fullbatt_soc);
++	of_property_read_u32(np, "cm-fullbatt-capacity",
++					&desc->fullbatt_full_capacity);
++
++	of_property_read_u32(np, "cm-battery-stat", &battery_stat);
++	desc->battery_present = battery_stat;
++
++	/* chargers */
++	of_property_read_u32(np, "cm-num-chargers", &num_chgs);
++	if (num_chgs) {
++		/* Allocate empty bin at the tail of array */
++		desc->psy_charger_stat = devm_kzalloc(dev, sizeof(char *)
++						* (num_chgs + 1), GFP_KERNEL);
++		if (desc->psy_charger_stat) {
++			int i;
++			for (i = 0; i < num_chgs; i++)
++				of_property_read_string_index(np, "cm-chargers",
++						i, &desc->psy_charger_stat[i]);
++		} else {
++			return ERR_PTR(-ENOMEM);
++		}
++	}
++
++	of_property_read_string(np, "cm-fuel-gauge", &desc->psy_fuel_gauge);
++
++	of_property_read_string(np, "cm-thermal-zone", &desc->thermal_zone);
++
++	of_property_read_u32(np, "cm-battery-cold", &desc->temp_min);
++	if (of_get_property(np, "cm-battery-cold-in-minus", NULL))
++		desc->temp_min *= -1;
++	of_property_read_u32(np, "cm-battery-hot", &desc->temp_max);
++	of_property_read_u32(np, "cm-battery-temp-diff", &desc->temp_diff);
++
++	of_property_read_u32(np, "cm-charging-max",
++				&desc->charging_max_duration_ms);
++	of_property_read_u32(np, "cm-discharging-max",
++				&desc->discharging_max_duration_ms);
++
++	/* battery charger regualtors */
++	desc->num_charger_regulators = of_get_child_count(np);
++	if (desc->num_charger_regulators) {
++		struct charger_regulator *chg_regs;
++		struct device_node *child;
++
++		chg_regs = devm_kzalloc(dev, sizeof(*chg_regs)
++					* desc->num_charger_regulators,
++					GFP_KERNEL);
++		if (!chg_regs)
++			return ERR_PTR(-ENOMEM);
++
++		desc->charger_regulators = chg_regs;
++
++		for_each_child_of_node(np, child) {
++			struct charger_cable *cables;
++			struct device_node *_child;
++
++			of_property_read_string(child, "cm-regulator-name",
++					&chg_regs->regulator_name);
++
++			/* charger cables */
++			chg_regs->num_cables = of_get_child_count(child);
++			if (chg_regs->num_cables) {
++				cables = devm_kzalloc(dev, sizeof(*cables)
++						* chg_regs->num_cables,
++						GFP_KERNEL);
++				if (!cables)
++					return ERR_PTR(-ENOMEM);
++
++				chg_regs->cables = cables;
++
++				for_each_child_of_node(child, _child) {
++					of_property_read_string(_child,
++					"cm-cable-name", &cables->name);
++					of_property_read_string(_child,
++					"cm-cable-extcon",
++					&cables->extcon_name);
++					of_property_read_u32(_child,
++					"cm-cable-min",
++					&cables->min_uA);
++					of_property_read_u32(_child,
++					"cm-cable-max",
++					&cables->max_uA);
++					cables++;
++				}
++			}
++			chg_regs++;
++		}
++	}
++	return desc;
 +}
 +
-+static int cm_check_thermal_status(struct charger_manager *cm)
++static inline struct charger_desc *cm_get_drv_data(struct platform_device *pdev)
 +{
-+	struct charger_desc *desc = cm->desc;
-+	int temp, upper_limit, lower_limit;
-+	int ret = 0;
-+
-+	ret = cm_get_battery_temperature(cm, &temp);
-+	if (ret) {
-+		/* FIXME:
-+		 * No information of battery temperature might
-+		 * occur hazadous result. We have to handle it
-+		 * depending on battery type.
-+		 */
-+		dev_err(cm->dev, "Failed to get battery temperature\n");
-+		return 0;
-+	}
-+
-+	upper_limit = desc->temp_max;
-+	lower_limit = desc->temp_min;
-+
-+	if (cm->emergency_stop) {
-+		upper_limit -= desc->temp_diff;
-+		lower_limit += desc->temp_diff;
-+	}
-+
-+	if (temp > upper_limit)
-+		ret = CM_EVENT_BATT_OVERHEAT;
-+	else if (temp < lower_limit)
-+		ret = CM_EVENT_BATT_COLD;
-+
-+	return ret;
-+}
-+
- /**
-  * _cm_monitor - Monitor the temperature and return true for exceptions.
-  * @cm: the Charger Manager representing the battery.
-@@ -549,28 +613,22 @@ static int check_charging_duration(struct charger_manager *cm)
-  */
- static bool _cm_monitor(struct charger_manager *cm)
- {
--	struct charger_desc *desc = cm->desc;
--	int temp = desc->temperature_out_of_range(&cm->last_temp_mC);
-+	int temp_alrt;
- 
--	dev_dbg(cm->dev, "monitoring (%2.2d.%3.3dC)\n",
--		cm->last_temp_mC / 1000, cm->last_temp_mC % 1000);
-+	temp_alrt = cm_check_thermal_status(cm);
- 
- 	/* It has been stopped already */
--	if (temp && cm->emergency_stop)
-+	if (temp_alrt && cm->emergency_stop)
- 		return false;
- 
- 	/*
- 	 * Check temperature whether overheat or cold.
- 	 * If temperature is out of range normal state, stop charging.
- 	 */
--	if (temp) {
--		cm->emergency_stop = temp;
--		if (!try_charger_enable(cm, false)) {
--			if (temp > 0)
--				uevent_notify(cm, "OVERHEAT");
--			else
--				uevent_notify(cm, "COLD");
--		}
-+	if (temp_alrt) {
-+		cm->emergency_stop = temp_alrt;
-+		if (!try_charger_enable(cm, false))
-+			uevent_notify(cm, default_event_names[temp_alrt]);
- 
- 	/*
- 	 * Check whole charging duration and discharing duration
-@@ -802,21 +860,8 @@ static int charger_get_property(struct power_supply *psy,
- 				POWER_SUPPLY_PROP_CURRENT_NOW, val);
- 		break;
- 	case POWER_SUPPLY_PROP_TEMP:
--		/* in thenth of centigrade */
--		if (cm->last_temp_mC == INT_MIN)
--			desc->temperature_out_of_range(&cm->last_temp_mC);
--		val->intval = cm->last_temp_mC / 100;
--		if (!desc->measure_battery_temp)
--			ret = -ENODEV;
--		break;
- 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
--		/* in thenth of centigrade */
--		if (cm->last_temp_mC == INT_MIN)
--			desc->temperature_out_of_range(&cm->last_temp_mC);
--		val->intval = cm->last_temp_mC / 100;
--		if (desc->measure_battery_temp)
--			ret = -ENODEV;
--		break;
-+		return cm_get_battery_temperature(cm, &val->intval);
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		if (!cm->fuel_gauge) {
- 			ret = -ENODEV;
-@@ -1439,6 +1484,50 @@ err:
- 	return ret;
- }
- 
-+static int cm_init_thermal_data(struct charger_manager *cm)
-+{
-+	struct charger_desc *desc = cm->desc;
-+	union power_supply_propval val;
-+	int ret;
-+
-+	/* Verify whether fuel gauge provides battery temperature */
-+	ret = cm->fuel_gauge->get_property(cm->fuel_gauge,
-+					POWER_SUPPLY_PROP_TEMP, &val);
-+
-+	if (!ret) {
-+		cm->charger_psy.properties[cm->charger_psy.num_properties] =
-+				POWER_SUPPLY_PROP_TEMP;
-+		cm->charger_psy.num_properties++;
-+		cm->desc->measure_battery_temp = true;
-+	}
-+#ifdef CONFIG_THERMAL
-+	cm->tzd_batt = cm->fuel_gauge->tzd;
-+
-+	if (ret && desc->thermal_zone) {
-+		cm->tzd_batt =
-+			thermal_zone_get_zone_by_name(desc->thermal_zone);
-+		if (IS_ERR(cm->tzd_batt))
-+			return PTR_ERR(cm->tzd_batt);
-+
-+		/* Use external thermometer */
-+		cm->charger_psy.properties[cm->charger_psy.num_properties] =
-+				POWER_SUPPLY_PROP_TEMP_AMBIENT;
-+		cm->charger_psy.num_properties++;
-+		cm->desc->measure_battery_temp = true;
-+		ret = 0;
-+	}
-+#endif
-+	if (cm->desc->measure_battery_temp) {
-+		/* NOTICE : Default allowable minimum charge temperature is 0 */
-+		if (!desc->temp_max)
-+			desc->temp_max = CM_DEFAULT_CHARGE_TEMP_MAX;
-+		if (!desc->temp_diff)
-+			desc->temp_diff = CM_DEFAULT_RECHARGE_TEMP_DIFF;
-+	}
-+
-+	return ret;
++	if (pdev->dev.of_node)
++		return of_cm_parse_desc(&pdev->dev);
++	return (struct charger_desc *)dev_get_platdata(&pdev->dev);
 +}
 +
  static int charger_manager_probe(struct platform_device *pdev)
  {
- 	struct charger_desc *desc = dev_get_platdata(&pdev->dev);
-@@ -1470,7 +1559,6 @@ static int charger_manager_probe(struct platform_device *pdev)
- 	/* Basic Values. Unspecified are Null or 0 */
- 	cm->dev = &pdev->dev;
- 	cm->desc = desc;
--	cm->last_temp_mC = INT_MIN; /* denotes "unmeasured, yet" */
- 
- 	/*
- 	 * The following two do not need to be errors.
-@@ -1533,11 +1621,6 @@ static int charger_manager_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	if (!desc->temperature_out_of_range) {
--		dev_err(&pdev->dev, "there is no temperature_out_of_range\n");
--		return -EINVAL;
--	}
--
- 	if (!desc->charging_max_duration_ms ||
- 			!desc->discharging_max_duration_ms) {
- 		dev_info(&pdev->dev, "Cannot limit charging duration checking mechanism to prevent overcharge/overheat and control discharging duration\n");
-@@ -1583,14 +1666,10 @@ static int charger_manager_probe(struct platform_device *pdev)
- 		cm->charger_psy.num_properties++;
- 	}
- 
--	if (desc->measure_battery_temp) {
--		cm->charger_psy.properties[cm->charger_psy.num_properties] =
--				POWER_SUPPLY_PROP_TEMP;
--		cm->charger_psy.num_properties++;
--	} else {
--		cm->charger_psy.properties[cm->charger_psy.num_properties] =
--				POWER_SUPPLY_PROP_TEMP_AMBIENT;
--		cm->charger_psy.num_properties++;
-+	ret = cm_init_thermal_data(cm);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to initialize thermal data\n");
-+		cm->desc->measure_battery_temp = false;
- 	}
- 
- 	INIT_DELAYED_WORK(&cm->fullbatt_vchk_work, fullbatt_vchk);
+-	struct charger_desc *desc = dev_get_platdata(&pdev->dev);
++	struct charger_desc *desc = cm_get_drv_data(pdev);
+ 	struct charger_manager *cm;
+ 	int ret = 0, i = 0;
+ 	int j = 0;
+@@ -1887,6 +2018,7 @@ static struct platform_driver charger_manager_driver = {
+ 		.name = "charger-manager",
+ 		.owner = THIS_MODULE,
+ 		.pm = &charger_manager_pm,
++		.of_match_table = charger_manager_match,
+ 	},
+ 	.probe = charger_manager_probe,
+ 	.remove = charger_manager_remove,
 diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
-index 0e86840..9aec029 100644
+index 9aec029..07e7945 100644
 --- a/include/linux/power/charger-manager.h
 +++ b/include/linux/power/charger-manager.h
-@@ -37,6 +37,8 @@ enum cm_event_types {
- 	CM_EVENT_BATT_FULL,
- 	CM_EVENT_BATT_IN,
- 	CM_EVENT_BATT_OUT,
-+	CM_EVENT_BATT_OVERHEAT,
-+	CM_EVENT_BATT_COLD,
- 	CM_EVENT_EXT_PWR_IN_OUT,
- 	CM_EVENT_CHG_START_STOP,
- 	CM_EVENT_OTHERS,
-@@ -173,11 +175,10 @@ struct charger_regulator {
-  * @num_charger_regulator: the number of entries in charger_regulators
-  * @charger_regulators: array of charger regulators
-  * @psy_fuel_gauge: the name of power-supply for fuel gauge
-- * @temperature_out_of_range:
-- *	Determine whether the status is overheat or cold or normal.
-- *	return_value > 0: overheat
-- *	return_value == 0: normal
-- *	return_value < 0: cold
-+ * @thermal_zone : the name of thermal zone for battery
-+ * @temp_min : Minimum battery temperature for charging.
-+ * @temp_max : Maximum battery temperature for charging.
-+ * @temp_diff : Temperature diffential to restart charging.
-  * @measure_battery_temp:
-  *	true: measure battery temperature
-  *	false: measure ambient temperature
-@@ -210,7 +211,12 @@ struct charger_desc {
+@@ -191,7 +191,7 @@ struct charger_regulator {
+  *	max_duration_ms', cm start charging.
+  */
+ struct charger_desc {
+-	char *psy_name;
++	const char *psy_name;
  
- 	char *psy_fuel_gauge;
+ 	enum polling_modes polling_mode;
+ 	unsigned int polling_interval_ms;
+@@ -204,14 +204,14 @@ struct charger_desc {
  
--	int (*temperature_out_of_range)(int *mC);
-+	char *thermal_zone;
-+
-+	int temp_min;
-+	int temp_max;
-+	int temp_diff;
-+
+ 	enum data_source battery_present;
+ 
+-	char **psy_charger_stat;
++	const char **psy_charger_stat;
+ 
+ 	int num_charger_regulators;
+ 	struct charger_regulator *charger_regulators;
+ 
+-	char *psy_fuel_gauge;
++	const char *psy_fuel_gauge;
+ 
+-	char *thermal_zone;
++	const char *thermal_zone;
+ 
+ 	int temp_min;
+ 	int temp_max;
+@@ -219,8 +219,8 @@ struct charger_desc {
+ 
  	bool measure_battery_temp;
  
- 	u64 charging_max_duration_ms;
-@@ -226,13 +232,13 @@ struct charger_desc {
-  * @desc: instance of charger_desc
-  * @fuel_gauge: power_supply for fuel gauge
-  * @charger_stat: array of power_supply for chargers
-+ * @tzd_batt : thermal zone device for battery
-  * @charger_enabled: the state of charger
-  * @fullbatt_vchk_jiffies_at:
-  *	jiffies at the time full battery check will occur.
-  * @fullbatt_vchk_work: work queue for full battery check
-  * @emergency_stop:
-  *	When setting true, stop charging
-- * @last_temp_mC: the measured temperature in milli-Celsius
-  * @psy_name_buf: the name of power-supply-class for charger manager
-  * @charger_psy: power_supply for charger manager
-  * @status_save_ext_pwr_inserted:
-@@ -250,13 +256,15 @@ struct charger_manager {
- 	struct power_supply *fuel_gauge;
- 	struct power_supply **charger_stat;
+-	u64 charging_max_duration_ms;
+-	u64 discharging_max_duration_ms;
++	u32 charging_max_duration_ms;
++	u32 discharging_max_duration_ms;
+ };
  
-+#ifdef CONFIG_THERMAL
-+	struct thermal_zone_device *tzd_batt;
-+#endif
- 	bool charger_enabled;
- 
- 	unsigned long fullbatt_vchk_jiffies_at;
- 	struct delayed_work fullbatt_vchk_work;
- 
- 	int emergency_stop;
--	int last_temp_mC;
- 
- 	char psy_name_buf[PSY_NAME_MAX + 1];
- 	struct power_supply charger_psy;
+ #define PSY_NAME_MAX	30
 -- 
 1.7.9.5
 
