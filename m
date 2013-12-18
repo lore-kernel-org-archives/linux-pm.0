@@ -1,48 +1,107 @@
-From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
-Subject: Re: [PATCH 4/4] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
- when cpufreq is changed
-Date: Wed, 18 Dec 2013 09:30:46 +0100
-Message-ID: <20131218093046.6d439329@ipc1.ka-ro>
-References: <1387228450-641-1-git-send-email-b20788@freescale.com>
- <1387228450-641-2-git-send-email-b20788@freescale.com>
- <20131217025616.GC6691@S2101-09.ap.freescale.net>
- <20131217105347.75954ad3@ipc1.ka-ro>
- <20131217121358.GM6691@S2101-09.ap.freescale.net>
+From: Anson Huang <b20788@freescale.com>
+Subject: [PATCH V3 1/2] ARM: imx: add vddsoc/pu setpoint info into dts
+Date: Wed, 18 Dec 2013 16:26:49 -0500
+Message-ID: <1387402010-31749-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20131217121358.GM6691@S2101-09.ap.freescale.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, cpufreq@vger.kernel.org, Anson Huang <b20788@freescale.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: shawn.guo@linaro.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpTaGF3biBHdW8gd3JvdGU6Cj4gT24gVHVlLCBEZWMgMTcsIDIwMTMgYXQgMTA6NTM6NDdB
-TSArMDEwMCwgTG90aGFyIFdhw59tYW5uIHdyb3RlOgo+ID4gPiA+ICsJaWYgKHNvY19vcHBfaW5k
-ZXggPj0gc29jX29wcF9jb3VudCkgewo+ID4gPiAKPiA+ID4gQ2FuIHNvY19vcHBfaW5kZXggYmUg
-cG9zc2libHkgZ3JlYXRlciB0aGFuIHNvY19vcHBfY291bnQ/ICBPdGhlcndpc2UsCj4gPiA+IHRo
-ZSBjb25kaXRpb24gY2hlY2sgYmVsb3cgaXMgZ29vZCBlbm91Z2g/Cj4gPiA+IAo+ID4gPiAJaWYg
-KHNvY19vcHBfaW5kZXggPT0gc29jX29wcF9jb3VudCkKPiA+ID4KPiA+IGl0IGRvZW4ndCBoYXJt
-IHRvIGJlIG9uIHRoZSBzYWZlIHNpZGUgYW5kIHVzZSA+PSBhbnl3YXkhCj4gCj4gV2VsbCwgaXQg
-bWF5IGNvbmZ1c2UgcmVhZGVyLiAgQXQgbGVhc3QsIGl0IHRvb2sgbWUgc29tZSB0aW1lIHVuZGVy
-c3RhbmQKPiBob3cgdGhhdCAiPiIgY29uZGl0aW9uIHdpbGwgaGFwcGVuLiAgQW5kIGl0IHR1cm5z
-IG91dCBuZXZlci4KPiAKbWFuICJkZWZlbnNpdmUgcHJvZ3JhbW1pbmciCgoKTG90aGFyIFdhw59t
-YW5uCi0tIApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwoKS2EtUm8gZWxlY3Ryb25pY3MgR21iSCB8IFBhc2NhbHN0cmHDn2UgMjIgfCBE
-IC0gNTIwNzYgQWFjaGVuClBob25lOiArNDkgMjQwOCAxNDAyLTAgfCBGYXg6ICs0OSAyNDA4IDE0
-MDItMTAKR2VzY2jDpGZ0c2bDvGhyZXI6IE1hdHRoaWFzIEthdXNzZW4KSGFuZGVsc3JlZ2lzdGVy
-ZWludHJhZzogQW10c2dlcmljaHQgQWFjaGVuLCBIUkIgNDk5NgoKd3d3Lmthcm8tZWxlY3Ryb25p
-Y3MuZGUgfCBpbmZvQGthcm8tZWxlY3Ryb25pY3MuZGUKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
-CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
-ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+i.MX6Q needs to update vddarm, vddsoc/pu regulators when cpu freq
+is changed, each setpoint has different voltage, so we need to
+pass vddarm, vddsoc/pu's freq-voltage info from dts together.
+
+Signed-off-by: Anson Huang <b20788@freescale.com>
+---
+ .../devicetree/bindings/cpufreq/cpufreq-imx6.txt   |   56 ++++++++++++++++++++
+ arch/arm/boot/dts/imx6q.dtsi                       |    7 +++
+ 2 files changed, 63 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+new file mode 100644
+index 0000000..cf1c5f7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+@@ -0,0 +1,56 @@
++i.MX6 cpufreq driver
++-------------------
++
++i.MX6 SoC cpufreq driver for CPU frequency scaling.
++
++This binding doc defines properties that must be put in the /cpus/cpu@0 node,
++please refer to Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++for detail.
++
++Required properties:
++- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
++  for details.
++- clocks: Specify clocks that need to be used when cpu frequency is scaled,
++  refer to Documentation/devicetree/bindings/clock/clock-bindings.txt for
++  details.
++- clock-names: List of clock input name strings sorted in the same order as the
++  clocks property, refer to Documentation/devicetree/bindings/clock/clock-bindings.txt
++  for details.
++- xxx-supply: Input voltage supply regulator, refer to
++  Documentation/devicetree/bindings/regulator/regulator.txt for details.
++  arm-supply: vddarm input.
++  pu-supply: vddpu input.
++  soc-supply: vddsoc input.
++
++Optional properties:
++- fsl,soc-operating-points: Specify vddsoc/pu voltage settings that must
++  go with cpu0's operating-points.
++- clock-latency: Specify the possible maximum transition latency for clock,
++  in unit of nanoseconds.
++
++Examples:
++
++	cpu@0 {
++		operating-points = <
++			/* kHz    uV */
++			1200000 1275000
++			996000  1250000
++			792000  1150000
++			396000  975000
++		>;
++		fsl,soc-operating-points = <
++			/* ARM kHz  SOC-PU uV */
++			1200000 1275000
++			996000	1250000
++			792000	1175000
++			396000	1175000
++		>;
++		clock-latency = <61036>; /* two CLK32 periods */
++		clocks = <&clks 104>, <&clks 6>, <&clks 16>,
++			 <&clks 17>, <&clks 170>;
++		clock-names = "arm", "pll2_pfd2_396m", "step",
++			      "pll1_sw", "pll1_sys";
++		arm-supply = <&reg_arm>;
++		pu-supply = <&reg_pu>;
++		soc-supply = <&reg_soc>;
++	};
+diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
+index e7e8332..021e0cb 100644
+--- a/arch/arm/boot/dts/imx6q.dtsi
++++ b/arch/arm/boot/dts/imx6q.dtsi
+@@ -30,6 +30,13 @@
+ 				792000  1150000
+ 				396000  975000
+ 			>;
++			fsl,soc-operating-points = <
++				/* ARM kHz  SOC-PU uV */
++				1200000 1275000
++				996000	1250000
++				792000	1175000
++				396000	1175000
++			>;
+ 			clock-latency = <61036>; /* two CLK32 periods */
+ 			clocks = <&clks 104>, <&clks 6>, <&clks 16>,
+ 				 <&clks 17>, <&clks 170>;
+-- 
+1.7.9.5
+
+
