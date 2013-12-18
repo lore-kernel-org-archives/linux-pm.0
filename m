@@ -1,57 +1,50 @@
 From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v11 1/4] thermal: samsung: replace inten_ bit fields with
- intclr_
-Date: Wed, 18 Dec 2013 16:51:12 +0100
-Message-ID: <22385645.8hSP6uLh4A@amdc1227>
-References: <1384238168-24561-1-git-send-email-ch.naveen@samsung.com>
- <1386657688-21542-1-git-send-email-ch.naveen@samsung.com>
+Subject: Re: [PATCH v11 2/4] thermal: samsung: change base_common to more
+ meaningful base_second
+Date: Wed, 18 Dec 2013 16:51:37 +0100
+Message-ID: <2079238.D0LMFQmTKa@amdc1227>
+References: <1378268629-2886-2-git-send-email-ch.naveen@samsung.com>
+ <1386657716-21572-1-git-send-email-ch.naveen@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1386657688-21542-1-git-send-email-ch.naveen@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:18837 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755118Ab3LRPvz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 10:51:55 -0500
+In-reply-to: <1386657716-21572-1-git-send-email-ch.naveen@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
 Cc: linux-pm@vger.kernel.org, naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com
-List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 10 of December 2013 12:11:28 Naveen Krishna Chatradhi wrote:
-> This patch replaces the inten_rise_shift/mask and inten_fall_shift/mask
-> with intclr_rise_shift/mask and intclr_fall_shift/mask respectively.
-> Currently, inten_rise_shift/mask and inten_fall_shift/mask bits are only used
-> to configure intclr related registers.
+On Tuesday 10 of December 2013 12:11:56 Naveen Krishna Chatradhi wrote:
+> On Exynos5440 and Exynos5420 there are registers common
+> across the TMU channels.
 > 
-> Description of H/W:
-> The offset for the bits in the CLEAR register are not consistent across TMU
-> modules in Exynso5250, 5420 and 5440.
+> To support that, we introduced a ADDRESS_MULTIPLE flag in the
+> driver and the 2nd set of register base and size are provided
+> in the "reg" property of the node.
 > 
-> On Exynos5250, the FALL interrupt related en, status and clear bits are
-> available at an offset of
-> 16 in INTEN, INTSTAT registers and at an offset of
-> 12 in INTCLEAR register.
-> 
-> On Exynos5420, the FALL interrupt related en, status and clear bits are
-> available at an offset of
-> 16 in INTEN, INTSTAT and INTCLEAR registers.
-> 
-> On Exynos5440,
-> the FALL_IRQEN bits are at an offset of 4
-> and the RISE_IRQEN bits are at an offset of 0
+> As per Amit's suggestion, this patch changes the base_common
+> to base_second and SHARED_MEMORY to ADDRESS_MULTIPLE.
 > 
 > Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
 > Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > ---
 > Changes since v10:
-> None
+> Documentation rephrased as per comments from Tomasz Figa
 > 
->  drivers/thermal/samsung/exynos_tmu.c      |    6 +++---
->  drivers/thermal/samsung/exynos_tmu.h      |   16 ++++++++--------
->  drivers/thermal/samsung/exynos_tmu_data.c |   18 +++++++++---------
->  drivers/thermal/samsung/exynos_tmu_data.h |    4 ++--
->  4 files changed, 22 insertions(+), 22 deletions(-)
+>  .../devicetree/bindings/thermal/exynos-thermal.txt       |    4 ++--
+>  drivers/thermal/samsung/exynos_tmu.c                     |   14 +++++++-------
+>  drivers/thermal/samsung/exynos_tmu.h                     |    4 ++--
+>  drivers/thermal/samsung/exynos_tmu_data.c                |    2 +-
+>  4 files changed, 12 insertions(+), 12 deletions(-)
 
 Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 
 Best regards,
 Tomasz
+
