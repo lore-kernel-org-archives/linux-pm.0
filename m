@@ -1,50 +1,50 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v11 2/4] thermal: samsung: change base_common to more
- meaningful base_second
-Date: Wed, 18 Dec 2013 16:51:37 +0100
-Message-ID: <2079238.D0LMFQmTKa@amdc1227>
-References: <1378268629-2886-2-git-send-email-ch.naveen@samsung.com>
- <1386657716-21572-1-git-send-email-ch.naveen@samsung.com>
+From: Rashika Kheria <rashika.kheria@gmail.com>
+Subject: [PATCH] drivers: thermal: Mark function as static in
+ x86_pkg_temp_thermal.c
+Date: Wed, 18 Dec 2013 23:16:02 +0530
+Message-ID: <20131218174602.GA27918@rashika>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:18837 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755118Ab3LRPvz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 10:51:55 -0500
-In-reply-to: <1386657716-21572-1-git-send-email-ch.naveen@samsung.com>
+Received: from mail-pb0-f45.google.com ([209.85.160.45]:34662 "EHLO
+	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718Ab3LRRqM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 12:46:12 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: linux-pm@vger.kernel.org, naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com
+To: linux-kernel@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, josh@joshtriplett.org
 
-On Tuesday 10 of December 2013 12:11:56 Naveen Krishna Chatradhi wrote:
-> On Exynos5440 and Exynos5420 there are registers common
-> across the TMU channels.
-> 
-> To support that, we introduced a ADDRESS_MULTIPLE flag in the
-> driver and the 2nd set of register base and size are provided
-> in the "reg" property of the node.
-> 
-> As per Amit's suggestion, this patch changes the base_common
-> to base_second and SHARED_MEMORY to ADDRESS_MULTIPLE.
-> 
-> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-> Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
-> Changes since v10:
-> Documentation rephrased as per comments from Tomasz Figa
-> 
->  .../devicetree/bindings/thermal/exynos-thermal.txt       |    4 ++--
->  drivers/thermal/samsung/exynos_tmu.c                     |   14 +++++++-------
->  drivers/thermal/samsung/exynos_tmu.h                     |    4 ++--
->  drivers/thermal/samsung/exynos_tmu_data.c                |    2 +-
->  4 files changed, 12 insertions(+), 12 deletions(-)
+Mark function sys_set_trip_temp() as static in x86_pkg_temp_thermal.c
+because it is not used outside this file.
 
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+This eliminates the following warning in x86_pkg_temp_thermal.c:
+drivers/thermal/x86_pkg_temp_thermal.c:218:5: warning: no previous prot=
+otype for =E2=80=98sys_set_trip_temp=E2=80=99 [-Wmissing-prototypes]
 
-Best regards,
-Tomasz
+Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
+---
+ drivers/thermal/x86_pkg_temp_thermal.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x=
+86_pkg_temp_thermal.c
+index 7722cb9..972e1c7 100644
+--- a/drivers/thermal/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -215,7 +215,7 @@ static int sys_get_trip_temp(struct thermal_zone_de=
+vice *tzd,
+ 	return 0;
+ }
+=20
+-int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip,
++static int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip=
+,
+ 							unsigned long temp)
+ {
+ 	u32 l, h;
+--=20
+1.7.9.5
 
