@@ -1,55 +1,58 @@
-From: josh@joshtriplett.org
-Subject: Re: [PATCH] drivers: thermal: Mark function as static in
- x86_pkg_temp_thermal.c
-Date: Wed, 18 Dec 2013 10:40:14 -0800
-Message-ID: <20131218184014.GD24229@cloud>
-References: <20131218174602.GA27918@rashika>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relay4-d.mail.gandi.net ([217.70.183.196]:34412 "EHLO
-	relay4-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755242Ab3LRSkR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 13:40:17 -0500
-Content-Disposition: inline
-In-Reply-To: <20131218174602.GA27918@rashika>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jason Baron <jbaron@akamai.com>
+Subject: [PATCH] cpufreq: Apply default governor for setpolicy drivers
+Date: Wed, 18 Dec 2013 20:31:02 +0000 (GMT)
+Message-ID: <20131218203102.9F9692036@prod-mail-relay06.akamai.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rashika Kheria <rashika.kheria@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 
-On Wed, Dec 18, 2013 at 11:16:02PM +0530, Rashika Kheria wrote:
-> Mark function sys_set_trip_temp() as static in x86_pkg_temp_thermal.c
-> because it is not used outside this file.
->=20
-> This eliminates the following warning in x86_pkg_temp_thermal.c:
-> drivers/thermal/x86_pkg_temp_thermal.c:218:5: warning: no previous pr=
-ototype for =E2=80=98sys_set_trip_temp=E2=80=99 [-Wmissing-prototypes]
->=20
-> Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
+When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
+'intel_pstate' driver, I found that the default is not honored. For example,
+configure 'CONFIG_CPU_FREQ_GOV_PERFORMANCE', and then do:
 
-Reviewed-by: Josh Triplett <josh@joshtriplett.org>
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+powersave
 
->  drivers/thermal/x86_pkg_temp_thermal.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal=
-/x86_pkg_temp_thermal.c
-> index 7722cb9..972e1c7 100644
-> --- a/drivers/thermal/x86_pkg_temp_thermal.c
-> +++ b/drivers/thermal/x86_pkg_temp_thermal.c
-> @@ -215,7 +215,7 @@ static int sys_get_trip_temp(struct thermal_zone_=
-device *tzd,
->  	return 0;
->  }
-> =20
-> -int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip,
-> +static int sys_set_trip_temp(struct thermal_zone_device *tzd, int tr=
-ip,
->  							unsigned long temp)
->  {
->  	u32 l, h;
-> --=20
-> 1.7.9.5
->=20
+However, I can do:
+
+echo "performance" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+and it takes properly.
+
+Fix by setting the default governor, if its either 'powersave' or 'performance'.
+Otherwise, fall back to what the driver originally set via its 'init' routine.
+
+Signed-off-by: Jason Baron <jbaron@akamai.com>
+---
+ drivers/cpufreq/cpufreq.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534d..931fa67 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -826,8 +826,19 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_policy new_policy;
+ 	int ret = 0;
++	int init_policy;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
++
++	/* honor the default governor policy, unless its invalid */
++	if (cpufreq_driver->setpolicy) {
++		init_policy = new_policy.policy;
++		if (cpufreq_parse_governor(policy->governor->name,
++				&new_policy.policy, &new_policy.governor)) {
++			new_policy.policy = init_policy;
++		}
++	}
++
+ 	/* assure that the starting sequence is run in cpufreq_set_policy */
+ 	policy->governor = NULL;
+ 
+-- 
+1.8.2.rc2
+
