@@ -1,61 +1,123 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH] PM / Sleep: Freeze filesystems during system
- suspend/hibernation
-Date: Wed, 18 Dec 2013 15:08:42 +0100
-Message-ID: <20131218140842.GA20488@amd.pavel.ucw.cz>
-References: <201201281445.49377.rjw@sisk.pl>
- <201202172159.15396.rjw@sisk.pl>
- <CA+5PVA50UA1oP1jKgnQjHh8APp=cNWREw3bkfrkV1OW_Tg1g+A@mail.gmail.com>
- <201205252113.50900.rjw@sisk.pl>
- <CA+5PVA5GWsTdNky-K1-hu5_R55hdKfr-Oa26HpX=FdA1cRZsbQ@mail.gmail.com>
- <CA+5PVA7vsZPd9eXwN-Q+d8c9+0bAmVdr698vv+LFyrn+3iFOMA@mail.gmail.com>
- <20131217230843.GA2911@amd.pavel.ucw.cz>
- <20131217233152.GC20579@dastard>
- <20131218000128.GA3737@amd.pavel.ucw.cz>
- <20131218123952.GI31386@dastard>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH V3 1/2] ARM: imx: add vddsoc/pu setpoint info into dts
+Date: Wed, 18 Dec 2013 22:21:59 +0800
+Message-ID: <20131218142157.GL6691@S2101-09.ap.freescale.net>
+References: <1387402010-31749-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-db9lp0248.outbound.messaging.microsoft.com ([213.199.154.248]:1506
+	"EHLO db9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754955Ab3LROVA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 09:21:00 -0500
 Content-Disposition: inline
-In-Reply-To: <20131218123952.GI31386@dastard>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Chinner <david@fromorbit.com>
-Cc: Josh Boyer <jwboyer@fedoraproject.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, Nigel Cunningham <nigel@tuxonice.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <1387402010-31749-1-git-send-email-b20788@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anson Huang <b20788@freescale.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-> > > I disagree - given the problem it is resolving leads to silent
-> > > filesystem corruption, this patch should be considered somewhat of a
-> > > priority to push...
-> > 
-> > Umm. Ok, I forgot what it does, really.
+On Wed, Dec 18, 2013 at 04:26:49PM -0500, Anson Huang wrote:
+> i.MX6Q needs to update vddarm, vddsoc/pu regulators when cpu freq
+> is changed, each setpoint has different voltage, so we need to
+> pass vddarm, vddsoc/pu's freq-voltage info from dts together.
 > 
-> It ensures that the filesystem is in an quiescent state both in
-> memory and on disk, and it cannot be modified in memory or on disk
-> whilst the suspend image is being generated, or by log recovery
-> after a resume before the suspended image has been restored.
+> Signed-off-by: Anson Huang <b20788@freescale.com>
+> ---
+>  .../devicetree/bindings/cpufreq/cpufreq-imx6.txt   |   56 ++++++++++++++++++++
 
-If someone attempts to run log recovery before resume, that's a bug
-and yes, it will corrupt filesystems. (Including ext3). Don't do that.
+As I said in V2 review, the device tree binding doc change should be
+part of driver patch (patch #2 in this case) or a separate patch, but
+never be in the same patch as DTS change.
 
-Documentation/power/swsusp.txt:
+Shawn
 
- * BIG FAT WARNING
-   *********************************************************
- *
- * If you touch anything on disk between suspend and resume...
- *                              ...kiss your data goodbye.
-
-> > So... for few years now suspend corrupts data on XFS? And Fedora has
-> > the fix but it is not in mainline? That does not sound right...
+>  arch/arm/boot/dts/imx6q.dtsi                       |    7 +++
+>  2 files changed, 63 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
 > 
-> The issues freezing the filesystem before the suspend image is
-> created affect every journalled filesystem linux supports, be
-> it XFS, ext4, reiser, btrfs, etc.
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> new file mode 100644
+> index 0000000..cf1c5f7
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> @@ -0,0 +1,56 @@
+> +i.MX6 cpufreq driver
+> +-------------------
+> +
+> +i.MX6 SoC cpufreq driver for CPU frequency scaling.
+> +
+> +This binding doc defines properties that must be put in the /cpus/cpu@0 node,
+> +please refer to Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> +for detail.
+> +
+> +Required properties:
+> +- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
+> +  for details.
+> +- clocks: Specify clocks that need to be used when cpu frequency is scaled,
+> +  refer to Documentation/devicetree/bindings/clock/clock-bindings.txt for
+> +  details.
+> +- clock-names: List of clock input name strings sorted in the same order as the
+> +  clocks property, refer to Documentation/devicetree/bindings/clock/clock-bindings.txt
+> +  for details.
+> +- xxx-supply: Input voltage supply regulator, refer to
+> +  Documentation/devicetree/bindings/regulator/regulator.txt for details.
+> +  arm-supply: vddarm input.
+> +  pu-supply: vddpu input.
+> +  soc-supply: vddsoc input.
+> +
+> +Optional properties:
+> +- fsl,soc-operating-points: Specify vddsoc/pu voltage settings that must
+> +  go with cpu0's operating-points.
+> +- clock-latency: Specify the possible maximum transition latency for clock,
+> +  in unit of nanoseconds.
+> +
+> +Examples:
+> +
+> +	cpu@0 {
+> +		operating-points = <
+> +			/* kHz    uV */
+> +			1200000 1275000
+> +			996000  1250000
+> +			792000  1150000
+> +			396000  975000
+> +		>;
+> +		fsl,soc-operating-points = <
+> +			/* ARM kHz  SOC-PU uV */
+> +			1200000 1275000
+> +			996000	1250000
+> +			792000	1175000
+> +			396000	1175000
+> +		>;
+> +		clock-latency = <61036>; /* two CLK32 periods */
+> +		clocks = <&clks 104>, <&clks 6>, <&clks 16>,
+> +			 <&clks 17>, <&clks 170>;
+> +		clock-names = "arm", "pll2_pfd2_396m", "step",
+> +			      "pll1_sw", "pll1_sys";
+> +		arm-supply = <&reg_arm>;
+> +		pu-supply = <&reg_pu>;
+> +		soc-supply = <&reg_soc>;
+> +	};
+> diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
+> index e7e8332..021e0cb 100644
+> --- a/arch/arm/boot/dts/imx6q.dtsi
+> +++ b/arch/arm/boot/dts/imx6q.dtsi
+> @@ -30,6 +30,13 @@
+>  				792000  1150000
+>  				396000  975000
+>  			>;
+> +			fsl,soc-operating-points = <
+> +				/* ARM kHz  SOC-PU uV */
+> +				1200000 1275000
+> +				996000	1250000
+> +				792000	1175000
+> +				396000	1175000
+> +			>;
+>  			clock-latency = <61036>; /* two CLK32 periods */
+>  			clocks = <&clks 104>, <&clks 6>, <&clks 16>,
+>  				 <&clks 17>, <&clks 170>;
+> -- 
+> 1.7.9.5
+> 
+> 
 
-Did not it have some problems with ext3?
-
-Regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
