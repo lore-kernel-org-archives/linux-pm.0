@@ -1,201 +1,72 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 1/2] intel_pstate: Add setting voltage value for baytrail P
- states.
-Date: Wed, 18 Dec 2013 13:37:16 +0100
-Message-ID: <1445568.VWz2v5WUSg@amdc1032>
-References: <1387302127-7614-1-git-send-email-dirk.j.brandewie@intel.com>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [RFC][PATCH] PM / Sleep: Freeze filesystems during system
+ suspend/hibernation
+Date: Wed, 18 Dec 2013 23:39:52 +1100
+Message-ID: <20131218123952.GI31386@dastard>
+References: <201201281445.49377.rjw@sisk.pl>
+ <201202172159.15396.rjw@sisk.pl>
+ <CA+5PVA50UA1oP1jKgnQjHh8APp=cNWREw3bkfrkV1OW_Tg1g+A@mail.gmail.com>
+ <201205252113.50900.rjw@sisk.pl>
+ <CA+5PVA5GWsTdNky-K1-hu5_R55hdKfr-Oa26HpX=FdA1cRZsbQ@mail.gmail.com>
+ <CA+5PVA7vsZPd9eXwN-Q+d8c9+0bAmVdr698vv+LFyrn+3iFOMA@mail.gmail.com>
+ <20131217230843.GA2911@amd.pavel.ucw.cz>
+ <20131217233152.GC20579@dastard>
+ <20131218000128.GA3737@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:22852 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091Ab3LRMhZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 07:37:25 -0500
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MY000AJC5QBQJ50@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 18 Dec 2013 21:37:23 +0900 (KST)
-In-reply-to: <1387302127-7614-1-git-send-email-dirk.j.brandewie@intel.com>
+Received: from ipmail06.adl6.internode.on.net ([150.101.137.145]:56334 "EHLO
+	ipmail06.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751474Ab3LRMj4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 07:39:56 -0500
+Content-Disposition: inline
+In-Reply-To: <20131218000128.GA3737@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dirk.brandewie@gmail.com
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Josh Boyer <jwboyer@fedoraproject.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, Nigel Cunningham <nigel@tuxonice.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-
-Hi,
-
-On Tuesday, December 17, 2013 09:42:06 AM dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Wed, Dec 18, 2013 at 01:01:28AM +0100, Pavel Machek wrote:
+> On Wed 2013-12-18 10:31:52, Dave Chinner wrote:
+> > On Wed, Dec 18, 2013 at 12:08:43AM +0100, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > >>> Did this patch ever wind up going anywhere?  Fedora has it sitting in
+> > > > >>> our tree with a comment that says "rebase" and I don't see it in the
+> > > > >>> linux-next tree at all.
+> > > > >>>
+> > > > >>> Did if fall through the cracks or was it NAKed somewhere?
+> > > > >>
+> > > > >> No, it wasn't in principle. There were some comments I haven't addressed yet.
+> > > > >
+> > > > > Dredging up a really old thread, sorry.
+> > > > >
+> > > > > We're still carrying this patch along in Fedora.  Should we drop it at
+> > > > > this point, or is it still eventually going to head upstream?
+> > > 
+> > > I'd say drop.
+> > 
+> > I disagree - given the problem it is resolving leads to silent
+> > filesystem corruption, this patch should be considered somewhat of a
+> > priority to push...
 > 
-> Baytrail requires setting P state and voltage pairs when adjusting the
-> requested P state.  Add function for retrieving the valid voltage
-> values and modify *_set_pstate() functions to caluclate the
-> appropriate voltage for the requested P state.
-> 
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 58 +++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 54 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 5f1cbae..4cc4534 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -35,6 +35,7 @@
->  #define SAMPLE_COUNT		3
->  
->  #define BYT_RATIOS	0x66a
-> +#define BYT_VIDS        0x66b
->  
->  #define FRAC_BITS 8
->  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
-> @@ -64,6 +65,12 @@ struct pstate_data {
->  	int	turbo_pstate;
->  };
->  
-> +struct vid_data {
-> +	int32_t min;
-> +	int32_t max;
-> +	int32_t ratio;
-> +};
-> +
->  struct _pid {
->  	int setpoint;
->  	int32_t integral;
-> @@ -82,6 +89,7 @@ struct cpudata {
->  	struct timer_list timer;
->  
->  	struct pstate_data pstate;
-> +	struct vid_data vid;
->  	struct _pid pid;
->  
->  	int min_pstate_count;
-> @@ -106,7 +114,8 @@ struct pstate_funcs {
->  	int (*get_max)(void);
->  	int (*get_min)(void);
->  	int (*get_turbo)(void);
-> -	void (*set)(int pstate);
-> +	void (*set)(struct cpudata*, int pstate);
-> +	void (*get_vid)(struct cpudata *);
->  };
->  
->  struct cpu_defaults {
-> @@ -358,6 +367,41 @@ static int byt_get_max_pstate(void)
->  	return (value >> 16) & 0xFF;
->  }
->  
-> +static void byt_set_pstate(struct cpudata *cpudata, int pstate)
-> +{
-> +	u64 val;
-> +	int32_t vid_fp;
-> +	u32 vid;
-> +
-> +	val = pstate << 8;
-> +	if (limits.no_turbo)
-> +		val |= (u64)1 << 32;
-> +
-> +	vid_fp = mul_fp(cpudata->vid.min +
-> +			int_tofp(pstate - cpudata->pstate.min_pstate),
-> +			cpudata->vid.ratio);
+> Umm. Ok, I forgot what it does, really.
 
-Shouldn't this be:
+It ensures that the filesystem is in an quiescent state both in
+memory and on disk, and it cannot be modified in memory or on disk
+whilst the suspend image is being generated, or by log recovery
+after a resume before the suspended image has been restored.
 
-+	vid_fp = cpudata->vid.min + mul_fp(
-+			int_tofp(pstate - cpudata->pstate.min_pstate),
-+			cpudata->vid.ratio);
+> So... for few years now suspend corrupts data on XFS? And Fedora has
+> the fix but it is not in mainline? That does not sound right...
 
-?
+The issues freezing the filesystem before the suspend image is
+created affect every journalled filesystem linux supports, be
+it XFS, ext4, reiser, btrfs, etc.
 
-> +	vid_fp = clamp_t(int32_t, vid_fp, cpudata->vid.min, cpudata->vid.max);
-> +	vid = fp_toint(vid_fp);
-> +
-> +	val |= vid;
-> +
-> +	wrmsrl(MSR_IA32_PERF_CTL, val);
-> +}
-> +
-> +static void byt_get_vid(struct cpudata *cpudata)
-> +{
-> +	u64 value;
+Cheers,
 
-please add a newline here
-
-> +	rdmsrl(BYT_VIDS, value);
-> +	cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
-> +	cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
-> +	cpudata->vid.ratio = div_fp(
-> +		cpudata->vid.max - cpudata->vid.min,
-> +		int_tofp(cpudata->pstate.max_pstate - 
-> +			cpudata->pstate.min_pstate));
-> +}
-> +
-> +
->  static int core_get_min_pstate(void)
->  {
->  	u64 value;
-> @@ -365,6 +409,7 @@ static int core_get_min_pstate(void)
->  	return (value >> 40) & 0xFF;
->  }
->  
-> +
-
-superfluous newline
-
->  static int core_get_max_pstate(void)
->  {
->  	u64 value;
-> @@ -384,7 +429,7 @@ static int core_get_turbo_pstate(void)
->  	return ret;
->  }
->  
-> -static void core_set_pstate(int pstate)
-> +static void core_set_pstate(struct cpudata *cpudata, int pstate)
->  {
->  	u64 val;
->  
-> @@ -425,7 +470,8 @@ static struct cpu_defaults byt_params = {
->  		.get_max = byt_get_max_pstate,
->  		.get_min = byt_get_min_pstate,
->  		.get_turbo = byt_get_max_pstate,
-> -		.set = core_set_pstate,
-> +		.set = byt_set_pstate,
-> +		.get_vid = byt_get_vid,
->  	},
->  };
->  
-> @@ -462,7 +508,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
->  
->  	cpu->pstate.current_pstate = pstate;
->  
-> -	pstate_funcs.set(pstate);
-> +	pstate_funcs.set(cpu, pstate);
->  }
->  
->  static inline void intel_pstate_pstate_increase(struct cpudata *cpu, int steps)
-> @@ -488,6 +534,9 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
->  	cpu->pstate.max_pstate = pstate_funcs.get_max();
->  	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
->  
-> +	if (pstate_funcs.get_vid)
-> +		pstate_funcs.get_vid(cpu);
-> +
->  	/*
->  	 * goto max pstate so we don't slow up boot if we are built-in if we are
->  	 * a module we will take care of it during normal operation
-> @@ -776,6 +825,7 @@ static void copy_cpu_funcs(struct pstate_funcs *funcs)
->  	pstate_funcs.get_min   = funcs->get_min;
->  	pstate_funcs.get_turbo = funcs->get_turbo;
->  	pstate_funcs.set       = funcs->set;
-> +	pstate_funcs.get_vid   = funcs->get_vid;
->  }
->  
->  #if IS_ENABLED(CONFIG_ACPI)
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
