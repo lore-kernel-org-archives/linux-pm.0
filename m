@@ -1,57 +1,48 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH V2 1/2] ARM: imx: add vddsoc/pu setpoint info into dts
-Date: Wed, 18 Dec 2013 16:24:48 +0800
-Message-ID: <20131218082445.GJ6691@S2101-09.ap.freescale.net>
-References: <1387318102-11070-1-git-send-email-b20788@freescale.com>
- <20131218070538.GE6691@S2101-09.ap.freescale.net>
- <20131218201742.GB20579@ubuntu>
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+Subject: Re: [PATCH 4/4] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
+ when cpufreq is changed
+Date: Wed, 18 Dec 2013 09:30:46 +0100
+Message-ID: <20131218093046.6d439329@ipc1.ka-ro>
+References: <1387228450-641-1-git-send-email-b20788@freescale.com>
+ <1387228450-641-2-git-send-email-b20788@freescale.com>
+ <20131217025616.GC6691@S2101-09.ap.freescale.net>
+ <20131217105347.75954ad3@ipc1.ka-ro>
+ <20131217121358.GM6691@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from co1ehsobe005.messaging.microsoft.com ([216.32.180.188]:53172
-	"EHLO co1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751196Ab3LRIXo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 03:23:44 -0500
-Content-Disposition: inline
-In-Reply-To: <20131218201742.GB20579@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20131217121358.GM6691@S2101-09.ap.freescale.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, cpufreq@vger.kernel.org, Anson Huang <b20788@freescale.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-On Wed, Dec 18, 2013 at 03:17:42PM -0500, Anson Huang wrote:
-> > > +		operating-points = <
-> > > +			/* kHz    uV */
-> > > +			1200000 1275000
-> > > +			996000  1250000
-> > > +			792000  1150000
-> > > +			396000  975000
-> > > +		>;
-> > > +		fsl,soc-operating-points = <
-> > > +			/* ARM kHz  SOC-PU uV */
-> > > +			1200000 1275000
-> > > +			996000	1250000
-> > > +			792000	1175000
-> > > +			396000	1175000
-> > > +		>;
-> > > +		clock-latency = <61036>; /* two CLK32 periods */
-> > > +		clocks = <&clks 104>, <&clks 6>, <&clks 16>,
-> > > +			 <&clks 17>, <&clks 170>;
-> > > +		clock-names = "arm", "pll2_pfd2_396m", "step",
-> > > +			      "pll1_sw", "pll1_sys";
-> > > +		arm-supply = <&reg_arm>;
-> > > +		pu-supply = <&reg_pu>;
-> > > +		soc-supply = <&reg_soc>;
-> > 
-> > Any properties in the example that are required for a successful driver
-> > probe should be documented in 'Required properties', and others are in
-> > 'Optional properties'.
-> 
-> I will not list so many properties as example as long as I describe this
-> preoperties should be included in cpu@0's node?
-
-The example is good.  But you also need to document properties clocks,
-clock-names, arm-supply etc.
-
-Shawn
-
+SGksCgpTaGF3biBHdW8gd3JvdGU6Cj4gT24gVHVlLCBEZWMgMTcsIDIwMTMgYXQgMTA6NTM6NDdB
+TSArMDEwMCwgTG90aGFyIFdhw59tYW5uIHdyb3RlOgo+ID4gPiA+ICsJaWYgKHNvY19vcHBfaW5k
+ZXggPj0gc29jX29wcF9jb3VudCkgewo+ID4gPiAKPiA+ID4gQ2FuIHNvY19vcHBfaW5kZXggYmUg
+cG9zc2libHkgZ3JlYXRlciB0aGFuIHNvY19vcHBfY291bnQ/ICBPdGhlcndpc2UsCj4gPiA+IHRo
+ZSBjb25kaXRpb24gY2hlY2sgYmVsb3cgaXMgZ29vZCBlbm91Z2g/Cj4gPiA+IAo+ID4gPiAJaWYg
+KHNvY19vcHBfaW5kZXggPT0gc29jX29wcF9jb3VudCkKPiA+ID4KPiA+IGl0IGRvZW4ndCBoYXJt
+IHRvIGJlIG9uIHRoZSBzYWZlIHNpZGUgYW5kIHVzZSA+PSBhbnl3YXkhCj4gCj4gV2VsbCwgaXQg
+bWF5IGNvbmZ1c2UgcmVhZGVyLiAgQXQgbGVhc3QsIGl0IHRvb2sgbWUgc29tZSB0aW1lIHVuZGVy
+c3RhbmQKPiBob3cgdGhhdCAiPiIgY29uZGl0aW9uIHdpbGwgaGFwcGVuLiAgQW5kIGl0IHR1cm5z
+IG91dCBuZXZlci4KPiAKbWFuICJkZWZlbnNpdmUgcHJvZ3JhbW1pbmciCgoKTG90aGFyIFdhw59t
+YW5uCi0tIApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwoKS2EtUm8gZWxlY3Ryb25pY3MgR21iSCB8IFBhc2NhbHN0cmHDn2UgMjIgfCBE
+IC0gNTIwNzYgQWFjaGVuClBob25lOiArNDkgMjQwOCAxNDAyLTAgfCBGYXg6ICs0OSAyNDA4IDE0
+MDItMTAKR2VzY2jDpGZ0c2bDvGhyZXI6IE1hdHRoaWFzIEthdXNzZW4KSGFuZGVsc3JlZ2lzdGVy
+ZWludHJhZzogQW10c2dlcmljaHQgQWFjaGVuLCBIUkIgNDk5NgoKd3d3Lmthcm8tZWxlY3Ryb25p
+Y3MuZGUgfCBpbmZvQGthcm8tZWxlY3Ryb25pY3MuZGUKX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
+CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
+ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
