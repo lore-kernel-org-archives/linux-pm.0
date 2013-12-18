@@ -1,34 +1,27 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH V3 2/2] cpufreq: imx6q: correct VDDSOC/PU voltage scaling
- when cpufreq is changed
-Date: Wed, 18 Dec 2013 22:25:39 +0800
-Message-ID: <20131218142536.GM6691@S2101-09.ap.freescale.net>
-References: <1387402010-31749-1-git-send-email-b20788@freescale.com>
- <1387402010-31749-2-git-send-email-b20788@freescale.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 2/2] cpufreq: tegra: Re-model Tegra cpufreq driver
+Date: Wed, 18 Dec 2013 20:09:41 +0530
+Message-ID: <CAKohpokwhYC4FGnhpZPOGuJ2AM_7vygNk+3S+VpA_eXAexQX7g@mail.gmail.com>
+References: <1386229462-3474-1-git-send-email-bilhuang@nvidia.com>
+	<1386229462-3474-3-git-send-email-bilhuang@nvidia.com>
+	<CAKohponns4B+BPPum3EN6EuXx6U+6MzOa50gMdR1BNBtxMNf0Q@mail.gmail.com>
+	<52B02D04.4050905@nvidia.com>
+	<CAKohpom0n8P8goQnsgBnWJwyqCVv_FRX3xKvO1yFW0VUMpMW8w@mail.gmail.com>
+	<52B187F5.7020105@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1387402010-31749-2-git-send-email-b20788@freescale.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <52B187F5.7020105-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: bilhuang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 18, 2013 at 04:26:50PM -0500, Anson Huang wrote:
-> on i.MX6Q, cpu freq change need to follow below flows:
-> 
-> 1. each setpoint has different VDDARM, VDDSOC/PU voltage, get the setpoint
->    table from dts;
-> 2. when cpu freq is scaling up, need to increase VDDSOC/PU voltage before
->    VDDARM, if VDDPU is off, no need to change it;
-> 3. when cpu freq is scaling down, need to decrease VDDARM voltage before
->    VDDSOC/PU, if VDDPU is off, no need to change it;
-> 
-> normally dts will pass vddsoc/pu freq/volt info to kernel, if not, will
-> use fixed value for vddsoc/pu voltage setting.
-> 
-> Signed-off-by: Anson Huang <b20788@freescale.com>
+On 18 December 2013 17:03, bilhuang <bilhuang-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> cpufreq-cpu0 driver will call regulator_set_voltage_tol() directly according
+> to the pre-defined OPP freq/volt pairs, the regulator drivers could be
+> shared by other SoC so is not suitable to handle this, or do I
+> misunderstand?
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-
+In case regulator's driver is shared, then you can probably add another
+virtual regulator for CPU which would have the special code you want.
