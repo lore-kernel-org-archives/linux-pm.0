@@ -1,73 +1,49 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH] x86 idle: repair large-server 50-watt idle-power regression
-Date: Wed, 18 Dec 2013 16:44:57 -0500
-Message-ID: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: x86@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: Apply default governor for setpolicy drivers
+Date: Thu, 19 Dec 2013 00:33:26 +0100
+Message-ID: <2651749.Dr3egRT25J@vostro.rjw.lan>
+References: <20131218203102.9F9692036@prod-mail-relay06.akamai.com> <1451068.r0h0sa1DaG@vostro.rjw.lan> <52B21508.3000303@akamai.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52B21508.3000303@akamai.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Jason Baron <jbaron@akamai.com>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "dirk.brandewie@gmail.com" <dirk.brandewie@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Wednesday, December 18, 2013 04:35:04 PM Jason Baron wrote:
+> On 12/18/2013 04:38 PM, Rafael J. Wysocki wrote:
+> > On Wednesday, December 18, 2013 08:31:02 PM Jason Baron wrote:
+> >> When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
+> >> 'intel_pstate' driver, I found that the default is not honored. For example,
+> >> configure 'CONFIG_CPU_FREQ_GOV_PERFORMANCE', and then do:
+> > intel_pstate doesn't use any cpufreq governors, so all of this is pointless
+> > for that particular driver anyway.
+> >
+> > Thanks!
+> >
+> 
+> Ok, but if I look at 'intel_pstate', I see a 'set_policy' call that does different
+> things if the policy is 'performance' vs. 'powersave'. Same for the 'longrun'
+> driver. So yes, they don't use the 'governors', but changing the governors
+> at runtime does appear to change change how they behave.
 
-Linux 3.10 changed the timing of how thread_info->flags is touched:
+OK, so you want the initial policy to be set in accordance with the
+CONFIG_CPU_FREQ_DEFAULT_* setting.  That makes sense, although it is not
+immediately clear from the patch changelog.
 
-	x86: Use generic idle loop
-	(7d1a941731fabf27e5fb6edbebb79fe856edb4e5)
+That said the change in the patch looks kind of overly complicated.
+What about adding something like this instead?
 
-This caused Intel NHM-EX and WSM-EX servers to experience a large number
-of immediate MONITOR/MWAIT break wakeups, which caused cpuidle to demote
-from deep C-states to shallow C-states, which caused these platforms
-to experience a significant increase in idle power.
-
-Note that this issue was already present before the commit above,
-however, it wasn't seen often enough to be noticed in power measurements.
-
-Here we extend an errata workaround from the Core2 EX "Dunnington"
-to extend to NHM-EX and WSM-EX, to prevent these immediate
-returns from MWAIT, reducing idle power on these platforms.
-
-While only acpi_idle ran on Dunnington, intel_idle
-may also run on these two newer systems.
-As of today, there are no other models that are known
-to need this tweak.
-
-ref: https://lkml.org/lkml/2013/12/7/22
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: <stable@vger.kernel.org> # 3.12.x, 3.11.x, 3.10.x
----
- arch/x86/kernel/cpu/intel.c | 3 ++-
- drivers/idle/intel_idle.c   | 3 +++
- 2 files changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index dc1ec0d..ea04b34 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -387,7 +387,8 @@ static void init_intel(struct cpuinfo_x86 *c)
- 			set_cpu_cap(c, X86_FEATURE_PEBS);
- 	}
- 
--	if (c->x86 == 6 && c->x86_model == 29 && cpu_has_clflush)
-+	if (c->x86 == 6 && cpu_has_clflush &&
-+	    (c->x86_model == 29 || c->x86_model == 46 || c->x86_model == 47))
- 		set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
- 
- #ifdef CONFIG_X86_64
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 92d1206..f80b700 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -377,6 +377,9 @@ static int intel_idle(struct cpuidle_device *dev,
- 
- 	if (!current_set_polling_and_test()) {
- 
-+		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
-+			clflush((void *)&current_thread_info()->flags);
++       if (cpufreq_driver->setpolicy) {
++               unsigned int ret;
 +
- 		__monitor((void *)&current_thread_info()->flags, 0, 0);
- 		smp_mb();
- 		if (!need_resched())
--- 
-1.8.5.1.19.gdaad3aa
++       	/* Use the default policyt if it is valid. */
++               if (!cpufreq_parse_governor(policy->governor->name, &ret, NULL))
++                       new_policy.policy = ret;
++       }
+
+Rafael
+
