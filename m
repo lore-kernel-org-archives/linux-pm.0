@@ -1,74 +1,53 @@
-From: Dave Chinner <david@fromorbit.com>
-Subject: Re: [RFC][PATCH] PM / Sleep: Freeze filesystems during system
- suspend/hibernation
-Date: Thu, 19 Dec 2013 11:22:16 +1100
-Message-ID: <20131219002216.GT31386@dastard>
-References: <201202172159.15396.rjw@sisk.pl>
- <CA+5PVA50UA1oP1jKgnQjHh8APp=cNWREw3bkfrkV1OW_Tg1g+A@mail.gmail.com>
- <201205252113.50900.rjw@sisk.pl>
- <CA+5PVA5GWsTdNky-K1-hu5_R55hdKfr-Oa26HpX=FdA1cRZsbQ@mail.gmail.com>
- <CA+5PVA7vsZPd9eXwN-Q+d8c9+0bAmVdr698vv+LFyrn+3iFOMA@mail.gmail.com>
- <20131217230843.GA2911@amd.pavel.ucw.cz>
- <20131217233152.GC20579@dastard>
- <20131218000128.GA3737@amd.pavel.ucw.cz>
- <20131218123952.GI31386@dastard>
- <20131218140842.GA20488@amd.pavel.ucw.cz>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
+Subject: RE: [PATCH V3 1/2] ARM: imx: add vddsoc/pu setpoint info into dts
+Date: Thu, 19 Dec 2013 02:13:21 +0000
+Message-ID: <112fab48e08c43749c0797328b1f1ee1@DM2PR03MB317.namprd03.prod.outlook.com>
+References: <1387402010-31749-1-git-send-email-b20788@freescale.com>,<CAOMZO5DCGOkUtWmEok-uEFsUpGLF+93Vhm9XFs02yH9Z+eV0uQ@mail.gmail.com>
+ <ADD49D66-30FE-4D87-88D6-F8AE07376F3F@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-fsdevel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20131218140842.GA20488@amd.pavel.ucw.cz>
-Sender: linux-fsdevel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Josh Boyer <jwboyer@fedoraproject.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, Nigel Cunningham <nigel@tuxonice.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1lp0151.outbound.protection.outlook.com ([207.46.163.151]:59461
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751072Ab3LSCN0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 Dec 2013 21:13:26 -0500
+In-Reply-To: <ADD49D66-30FE-4D87-88D6-F8AE07376F3F@freescale.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Dec 18, 2013 at 03:08:42PM +0100, Pavel Machek wrote:
-> > > > I disagree - given the problem it is resolving leads to silent
-> > > > filesystem corruption, this patch should be considered somewhat of a
-> > > > priority to push...
-> > > 
-> > > Umm. Ok, I forgot what it does, really.
-> > 
-> > It ensures that the filesystem is in an quiescent state both in
-> > memory and on disk, and it cannot be modified in memory or on disk
-> > whilst the suspend image is being generated, or by log recovery
-> > after a resume before the suspended image has been restored.
-> 
-> If someone attempts to run log recovery before resume, that's a bug
-> and yes, it will corrupt filesystems. (Including ext3). Don't do that.
-
-Freezing the filesystem prevents that accidental mount of the
-filesystem from being an issue. It fixes a bug that:
-
-> Documentation/power/swsusp.txt:
-> 
->  * BIG FAT WARNING
->    *********************************************************
->  *
->  * If you touch anything on disk between suspend and resume...
->  *                              ...kiss your data goodbye.
-
-Makes this a whole lot less dangerous.
-
-> > > So... for few years now suspend corrupts data on XFS? And Fedora has
-> > > the fix but it is not in mainline? That does not sound right...
-> > 
-> > The issues freezing the filesystem before the suspend image is
-> > created affect every journalled filesystem linux supports, be
-> > it XFS, ext4, reiser, btrfs, etc.
-> 
-> Did not it have some problems with ext3?
-
-Please read more carefully: "affect every journalled filesystem
-linux supports". So, ext3 is affected because it's a journalling
-filesystem.  I didn't list every journalled filesystem Linux
-supports - "etc" means there are more examples that aren't
-explicitly listed.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+DQpCZXN0IFJlZ2FyZHMuDQpBbnNvbiBodWFuZyDpu4Tli4fmiY0NCsKgDQpGcmVlc2NhbGUgU2Vt
+aWNvbmR1Y3RvciBTaGFuZ2hhaQ0K5LiK5rW35rWm5Lic5paw5Yy65Lqu5pmv6LevMTky5Y+3QeW6
+pzLmpbwNCjIwMTIwMw0KVGVsOjAyMS0yODkzNzA1OA0KDQoNCj4tLS0tLU9yaWdpbmFsIE1lc3Nh
+Z2UtLS0tLQ0KPkZyb206IEh1YW5nIFlvbmdjYWktQjIwNzg4DQo+U2VudDogV2VkbmVzZGF5LCBE
+ZWNlbWJlciAxOCwgMjAxMyA4OjAxIFBNDQo+VG86IEZhYmlvIEVzdGV2YW0NCj5DYzogSHVhbmcg
+WW9uZ2NhaS1CMjA3ODg7IFNoYXduIEd1bzsgcmp3QHJqd3lzb2NraS5uZXQ7IFZpcmVzaCBLdW1h
+cjsNCj5kZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
+bmZyYWRlYWQub3JnOw0KPmNwdWZyZXFAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtl
+cm5lbC5vcmcNCj5TdWJqZWN0OiBSZTogW1BBVENIIFYzIDEvMl0gQVJNOiBpbXg6IGFkZCB2ZGRz
+b2MvcHUgc2V0cG9pbnQgaW5mbyBpbnRvIGR0cw0KPg0KPg0KPg0KPlNlbnQgZnJvbSBBbnNvbidz
+IGlQaG9uZQ0KPg0KPj4g5ZyoIDIwMTPlubQxMuaciDE45pel77yMMTk6MDjvvIwiRmFiaW8gRXN0
+ZXZhbSIgPGZlc3RldmFtQGdtYWlsLmNvbT4g5YaZ6YGT77yaDQo+Pg0KPj4gSGkgQW5zb24sDQo+
+Pg0KPj4+IE9uIFdlZCwgRGVjIDE4LCAyMDEzIGF0IDc6MjYgUE0sIEFuc29uIEh1YW5nIDxiMjA3
+ODhAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+Pj4NCj4+PiArICBEb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvcmVndWxhdG9yL3JlZ3VsYXRvci50eHQgZm9yIGRldGFpbHMuDQo+Pj4g
+KyAgYXJtLXN1cHBseTogdmRkYXJtIGlucHV0Lg0KPj4+ICsgIHB1LXN1cHBseTogdmRkcHUgaW5w
+dXQuDQo+Pj4gKyAgc29jLXN1cHBseTogdmRkc29jIGlucHV0Lg0KPj4NCj4+IEkgZm91bmQgdGhl
+c2UgbWVzc2FnZXMgY29uZnVzaW5nLCBhcyBzb21lb25lIG1heSB0aGluayB0aGF0IHlvdSBhcmUN
+Cj4+IHJlZmVycmluZyB0byB0aGUgVkREX0FSTV9JTi9WRERfQVJNMjNfSU4gYW5kIFZERF9TT0Nf
+SU4sIHdoaWNoIGFyZQ0KPj4gcmVhbGx5IGlucHV0cy4NCj4+DQo+PiBXaGF0IGFib3V0IGRvaW5n
+IHRoaXMgaW5zdGVhZD8NCj4+DQo+PiBhcm0tc3VwcGx5OiBWRERBUk0gTERPIG91dHB1dA0KPj4g
+cHUtc3VwcGx5OiAgVkREUFUgTERPIG91dHB1dA0KPj4gc29jLXN1cHBseTogVkREU09DIExETyBv
+dXRwdXQNCj4NCj5JIHRoaW5rIHRoZXkgc2hvdWxkIGtub3cgdGhlc2UgcmVndWxhdG9ycyBtZWFu
+IHRoZSBhcm0sIHNvYy9wdSdzIHJlYWwgd29ya2luZw0KPnZvbHRhZ2UsIGFzIHlvdSBrbm93LCBv
+dXIgaS5NWDYgYWxzbyBzdXBwb3J0IExETyBieXBhc3MgbW9kZSwgdGhlbiB0aGVzZQ0KPnJlZ3Vs
+YXRvcnMgY2FuIGJlIFZERFhYWF9JTi4gdGhhdCBpcyB3aHkgSSB1c2UgdmRkeHh4IGlucHV0LCBu
+b3QgdmRkeHh4IExETw0KPmlucHV0LlRoYW5rcyENCg0KQWZ0ZXIgcmUtY29uc2lkZXJhdGlvbiwg
+SSB0aGluayBiZWxvdyBzaG91bGQgYmUgYmV0dGVyOg0KYXJtLXN1cHBseTogcmVndWxhdG9yIG5v
+ZGUgc3VwcGx5aW5nIGFybS4NCnB1LXN1cHBseTogcmVndWxhdG9yIG5vZGUgc3VwcGx5aW5nIHB1
+Lg0Kc29jLXN1cHBseTogcmVndWxhdG9yIG5vZGUgc3VwcGx5aW5nIHNvYy4NCg0KQW5zb24gDQoN
+Cg0KPj4NCj4+IFJlZ2FyZHMsDQo+Pg0KPj4gRmFiaW8gRXN0ZXZhbQ0KPj4NCj4+DQo=
