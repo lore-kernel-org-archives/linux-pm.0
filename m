@@ -1,80 +1,56 @@
-From: Christoph Lameter <cl@linux.com>
-Subject: [PATCH 06/40] drivers/cpuidle: Replace __get_cpu_var uses for address calculation
-Date: Thu, 19 Dec 2013 09:50:21 -0600
-Message-ID: <20131219155031.396219497@linux.com>
-References: <20131219155015.443763038@linux.com>
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:44446 "EHLO
-	qmta03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753616Ab3LSP4m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 10:56:42 -0500
-Content-Disposition: inline; filename=this_drivers_cpuidle
-Sender: linux-pm-owner@vger.kernel.org
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
+ regression
+Date: Thu, 19 Dec 2013 17:02:10 +0100
+Message-ID: <20131219160210.GA28426@gmail.com>
+References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
+ <20131219122257.GC11279@gmail.com>
+ <52B316FF.50906@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <52B316FF.50906@zytor.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: akpm@linuxfoundation.org, rostedt@goodmis.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-All of these are for address calculation. Replace with
-this_cpu_ptr().
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-[cpufreq changes]
-Signed-off-by: Christoph Lameter <cl@linux.com>
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-Index: linux/drivers/cpuidle/governors/ladder.c
-===================================================================
---- linux.orig/drivers/cpuidle/governors/ladder.c	2013-12-02 16:07:48.284675507 -0600
-+++ linux/drivers/cpuidle/governors/ladder.c	2013-12-02 16:07:48.274675782 -0600
-@@ -66,7 +66,7 @@ static inline void ladder_do_selection(s
- static int ladder_select_state(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev)
- {
--	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-+	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	struct ladder_device_state *last_state;
- 	int last_residency, last_idx = ldev->last_state_idx;
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-@@ -170,7 +170,7 @@ static int ladder_enable_device(struct c
-  */
- static void ladder_reflect(struct cpuidle_device *dev, int index)
- {
--	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-+	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	if (index > 0)
- 		ldev->last_state_idx = index;
- }
-Index: linux/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux.orig/drivers/cpuidle/governors/menu.c	2013-12-02 16:07:48.284675507 -0600
-+++ linux/drivers/cpuidle/governors/menu.c	2013-12-02 16:07:48.274675782 -0600
-@@ -286,7 +286,7 @@ again:
-  */
- static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 	int multiplier;
-@@ -375,7 +375,7 @@ static int menu_select(struct cpuidle_dr
-  */
- static void menu_reflect(struct cpuidle_device *dev, int index)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	data->last_state_idx = index;
- 	if (index >= 0)
- 		data->needs_update = 1;
-@@ -388,7 +388,7 @@ static void menu_reflect(struct cpuidle_
-  */
- static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	int last_idx = data->last_state_idx;
- 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
- 	struct cpuidle_state *target = &drv->states[last_idx];
+> On 12/19/2013 04:22 AM, Ingo Molnar wrote:
+> >> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> >> index 92d1206..f80b700 100644
+> >> --- a/drivers/idle/intel_idle.c
+> >> +++ b/drivers/idle/intel_idle.c
+> >> @@ -377,6 +377,9 @@ static int intel_idle(struct cpuidle_device *dev,
+> >>  
+> >>  	if (!current_set_polling_and_test()) {
+> >>  
+> >> +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
+> >> +			clflush((void *)&current_thread_info()->flags);
+> >> +
+> >>  		__monitor((void *)&current_thread_info()->flags, 0, 0);
+> > 
+> > I don't think either of these casts to '(void *)' is needed, both the 
+> > clflush() and __monitor() will take pointers.
+> 
+> __monitor() currently doesn't, which is idiotic.
 
+Hm, __monitor() seems to take a void *:
+
+ arch/x86/include/asm/processor.h:static inline void __monitor(const void *eax, unsigned long ecx,
+
+So writing:
+
+		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
+			clflush(&current_thread_info()->flags);
+
+  		__monitor(&current_thread_info()->flags, 0, 0);
+
+ought to work just fine.
+
+Thanks,
+
+	Ingo
