@@ -1,83 +1,100 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v12 4/4] ARM: dts: Exynos5420: Add device nodes for TMU
- blocks
-Date: Thu, 19 Dec 2013 12:39:04 +0100
-Message-ID: <1504232.pi5nrQckF4@amdc1227>
-References: <1382004240-3282-1-git-send-email-l.krishna@samsung.com>
- <1387433222-7893-1-git-send-email-ch.naveen@samsung.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
+ regression
+Date: Thu, 19 Dec 2013 13:22:57 +0100
+Message-ID: <20131219122257.GC11279@gmail.com>
+References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1387433222-7893-1-git-send-email-ch.naveen@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: linux-pm@vger.kernel.org, naveenkrishna.ch@gmail.com, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, kgene.kim@samsung.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, cpgs@samsung.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ea0-f170.google.com ([209.85.215.170]:38364 "EHLO
+	mail-ea0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756555Ab3LSMXC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 07:23:02 -0500
+Content-Disposition: inline
+In-Reply-To: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
 
-Hi Naveen,
 
-On Thursday 19 of December 2013 11:37:02 Naveen Krishna Chatradhi wrote:
-> Exynos5420 SoC has per core thermal management unit.
-> 5 TMU channels 4 for CPUs and 5th for GPU.
+* Len Brown <lenb@kernel.org> wrote:
+
+> From: Len Brown <len.brown@intel.com>
 > 
-> This patch adds the device tree nodes to the DT device list.
+> Linux 3.10 changed the timing of how thread_info->flags is touched:
 > 
-> Nodes carry the misplaced second base address and the second
-> clock to access the misplaced base address.
-[snip]
->  		samsung,power-domain = <&gsc_pd>;
->  	};
-> +
-> +	tmu_cpu0:tmu@10060000 {
-
-CodingStyle: Missing space after colon.
-+ all the nodes below.
-
-Since it's just a minor fixup, I think you could just reply to this
-thread with corrected version of this single patch instead of
-respinning the whole series.
-
-Best regards,
-Tomasz
-
-> +		compatible = "samsung,exynos5420-tmu";
-> +		reg = <0x10060000 0x100>;
-> +		interrupts = <0 65 0>;
-> +		clocks = <&clock 318>;
-> +		clock-names = "tmu_apbif";
-> +	};
-> +
-> +	tmu_cpu1:tmu@10064000 {
-> +		compatible = "samsung,exynos5420-tmu";
-> +		reg = <0x10064000 0x100>;
-> +		interrupts = <0 183 0>;
-> +		clocks = <&clock 318>;
-> +		clock-names = "tmu_apbif";
-> +	};
-> +
-> +	tmu_cpu2:tmu@10068000 {
-> +		compatible = "samsung,exynos5420-tmu-ext-triminfo";
-> +		reg = <0x10068000 0x100>, <0x1006c000 0x4>;
-> +		interrupts = <0 184 0>;
-> +		clocks = <&clock 318>, <&clock 318>;
-> +		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
-> +	};
-> +
-> +	tmu_cpu3:tmu@1006c000 {
-> +		compatible = "samsung,exynos5420-tmu-ext-triminfo";
-> +		reg = <0x1006c000 0x100>, <0x100a0000 0x4>;
-> +		interrupts = <0 185 0>;
-> +		clocks = <&clock 318>, <&clock 319>;
-> +		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
-> +	};
-> +
-> +	tmu_gpu:tmu@100a0000 {
-> +		compatible = "samsung,exynos5420-tmu-ext-triminfo";
-> +		reg = <0x100a0000 0x100>, <0x10068000 0x4>;
-> +		interrupts = <0 215 0>;
-> +		clocks = <&clock 319>, <&clock 318>;
-> +		clock-names = "tmu_apbif", "tmu_triminfo_apbif";
-> +	};
->  };
+> 	x86: Use generic idle loop
+> 	(7d1a941731fabf27e5fb6edbebb79fe856edb4e5)
 > 
+> This caused Intel NHM-EX and WSM-EX servers to experience a large number
+> of immediate MONITOR/MWAIT break wakeups, which caused cpuidle to demote
+> from deep C-states to shallow C-states, which caused these platforms
+> to experience a significant increase in idle power.
+> 
+> Note that this issue was already present before the commit above,
+> however, it wasn't seen often enough to be noticed in power measurements.
+> 
+> Here we extend an errata workaround from the Core2 EX "Dunnington"
+> to extend to NHM-EX and WSM-EX, to prevent these immediate
+> returns from MWAIT, reducing idle power on these platforms.
+> 
+> While only acpi_idle ran on Dunnington, intel_idle
+> may also run on these two newer systems.
+> As of today, there are no other models that are known
+> to need this tweak.
+> 
+> ref: https://lkml.org/lkml/2013/12/7/22
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Cc: <stable@vger.kernel.org> # 3.12.x, 3.11.x, 3.10.x
+> ---
+>  arch/x86/kernel/cpu/intel.c | 3 ++-
+>  drivers/idle/intel_idle.c   | 3 +++
+>  2 files changed, 5 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+> index dc1ec0d..ea04b34 100644
+> --- a/arch/x86/kernel/cpu/intel.c
+> +++ b/arch/x86/kernel/cpu/intel.c
+> @@ -387,7 +387,8 @@ static void init_intel(struct cpuinfo_x86 *c)
+>  			set_cpu_cap(c, X86_FEATURE_PEBS);
+>  	}
+>  
+> -	if (c->x86 == 6 && c->x86_model == 29 && cpu_has_clflush)
+> +	if (c->x86 == 6 && cpu_has_clflush &&
+> +	    (c->x86_model == 29 || c->x86_model == 46 || c->x86_model == 47))
+>  		set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
+>  
+>  #ifdef CONFIG_X86_64
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 92d1206..f80b700 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -377,6 +377,9 @@ static int intel_idle(struct cpuidle_device *dev,
+>  
+>  	if (!current_set_polling_and_test()) {
+>  
+> +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
+> +			clflush((void *)&current_thread_info()->flags);
+> +
+>  		__monitor((void *)&current_thread_info()->flags, 0, 0);
+
+I don't think either of these casts to '(void *)' is needed, both the 
+clflush() and __monitor() will take pointers.
+
+Looks good to me otherwise - except that maybe the best way to 
+represent this quirk would be for the CLFLUSH+MONITOR sequence to be a 
+single 'instruction' which is patched in dynamically during bootup, 
+using our usual alternatives framework.
+
+On non-affected CPUs a NOP would remain in place of the CLFLUSH, 
+eliminating the branch above.
+
+So the whole thing could be thought of as a slightly more complex 
+'monitor' instruction - not exposing the quirk details to actual usage 
+sites.
+
+Thanks,
+
+	Ingo
