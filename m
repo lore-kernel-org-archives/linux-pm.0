@@ -1,55 +1,60 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH V4 2/3] ARM: imx: add vddsoc/pu setpoint info into dts
-Date: Thu, 19 Dec 2013 11:06:49 +0800
-Message-ID: <20131219030646.GQ6691@S2101-09.ap.freescale.net>
-References: <1387462609-13013-1-git-send-email-b20788@freescale.com>
- <1387462609-13013-2-git-send-email-b20788@freescale.com>
+From: Jason Baron <jbaron@akamai.com>
+Subject: Re: [PATCH] cpufreq: Apply default governor for setpolicy drivers
+Date: Wed, 18 Dec 2013 22:51:26 -0500
+Message-ID: <52B26D3E.2070600@akamai.com>
+References: <20131218203102.9F9692036@prod-mail-relay06.akamai.com> <1451068.r0h0sa1DaG@vostro.rjw.lan> <52B21508.3000303@akamai.com> <2651749.Dr3egRT25J@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1387462609-13013-2-git-send-email-b20788@freescale.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from prod-mail-xrelay07.akamai.com ([72.246.2.115]:34538 "EHLO
+	prod-mail-xrelay07.akamai.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752467Ab3LSDv1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 22:51:27 -0500
+In-Reply-To: <2651749.Dr3egRT25J@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "dirk.brandewie@gmail.com" <dirk.brandewie@gmail.com>
 
-On Thu, Dec 19, 2013 at 09:16:48AM -0500, Anson Huang wrote:
-> i.MX6Q needs to update vddarm, vddsoc/pu regulators when cpu freq
-> is changed, each setpoint has different voltage, so we need to
-> pass vddarm, vddsoc/pu's freq-voltage info from dts together.
-> 
-> Signed-off-by: Anson Huang <b20788@freescale.com>
+On 12/18/2013 06:33 PM, Rafael J. Wysocki wrote:
+> On Wednesday, December 18, 2013 04:35:04 PM Jason Baron wrote:
+>> On 12/18/2013 04:38 PM, Rafael J. Wysocki wrote:
+>>> On Wednesday, December 18, 2013 08:31:02 PM Jason Baron wrote:
+>>>> When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
+>>>> 'intel_pstate' driver, I found that the default is not honored. For example,
+>>>> configure 'CONFIG_CPU_FREQ_GOV_PERFORMANCE', and then do:
+>>> intel_pstate doesn't use any cpufreq governors, so all of this is pointless
+>>> for that particular driver anyway.
+>>>
+>>> Thanks!
+>>>
+>> Ok, but if I look at 'intel_pstate', I see a 'set_policy' call that does different
+>> things if the policy is 'performance' vs. 'powersave'. Same for the 'longrun'
+>> driver. So yes, they don't use the 'governors', but changing the governors
+>> at runtime does appear to change change how they behave.
+> OK, so you want the initial policy to be set in accordance with the
+> CONFIG_CPU_FREQ_DEFAULT_* setting.  That makes sense, although it is not
+> immediately clear from the patch changelog.
+>
+> That said the change in the patch looks kind of overly complicated.
+> What about adding something like this instead?
 
-Applied after changing patch subject to be 'ARM: dts: imx6q: add
-vddsoc/pu setpoint info'.
+Agreed - this is better. Will you just pull the below patch, or should
+I re-post with a better changelog?
 
-Shawn
+Thanks,
 
-> ---
->  arch/arm/boot/dts/imx6q.dtsi |    7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-> index e7e8332..021e0cb 100644
-> --- a/arch/arm/boot/dts/imx6q.dtsi
-> +++ b/arch/arm/boot/dts/imx6q.dtsi
-> @@ -30,6 +30,13 @@
->  				792000  1150000
->  				396000  975000
->  			>;
-> +			fsl,soc-operating-points = <
-> +				/* ARM kHz  SOC-PU uV */
-> +				1200000 1275000
-> +				996000	1250000
-> +				792000	1175000
-> +				396000	1175000
-> +			>;
->  			clock-latency = <61036>; /* two CLK32 periods */
->  			clocks = <&clks 104>, <&clks 6>, <&clks 16>,
->  				 <&clks 17>, <&clks 170>;
-> -- 
-> 1.7.9.5
-> 
-> 
+-Jason
+
+> +       if (cpufreq_driver->setpolicy) {
+> +               unsigned int ret;
+> +
+> +       	/* Use the default policyt if it is valid. */
+> +               if (!cpufreq_parse_governor(policy->governor->name, &ret, NULL))
+> +                       new_policy.policy = ret;
+> +       }
+>
+> Rafael
+>
 
