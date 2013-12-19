@@ -1,100 +1,54 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
- regression
-Date: Thu, 19 Dec 2013 13:22:57 +0100
-Message-ID: <20131219122257.GC11279@gmail.com>
-References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: Fix memory leak in pm_vt_switch_unregister().
+Date: Thu, 19 Dec 2013 13:42:28 +0100
+Message-ID: <20131219124228.GA11928@amd.pavel.ucw.cz>
+References: <1387450847-23797-1-git-send-email-masami256@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f170.google.com ([209.85.215.170]:38364 "EHLO
-	mail-ea0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756555Ab3LSMXC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 07:23:02 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1387450847-23797-1-git-send-email-masami256@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Masami Ichikawa <masami256@gmail.com>
+Cc: len.brown@intel.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
 
-
-* Len Brown <lenb@kernel.org> wrote:
-
-> From: Len Brown <len.brown@intel.com>
+On Thu 2013-12-19 20:00:47, Masami Ichikawa wrote:
+> kmemleak reported a memory leak as below.
 > 
-> Linux 3.10 changed the timing of how thread_info->flags is touched:
+> unreferenced object 0xffff880118f14700 (size 32):
+>   comm "swapper/0", pid 1, jiffies 4294877401 (age 123.283s)
+>   hex dump (first 32 bytes):
+>     00 01 10 00 00 00 ad de 00 02 20 00 00 00 ad de  .......... .....
+>     00 d4 d2 18 01 88 ff ff 01 00 00 00 00 04 00 00  ................
+>   backtrace:
+>     [<ffffffff814edb1e>] kmemleak_alloc+0x4e/0xb0
+>     [<ffffffff811889dc>] kmem_cache_alloc_trace+0x1ec/0x260
+>     [<ffffffff810aba66>] pm_vt_switch_required+0x76/0xb0
+>     [<ffffffff812f39f5>] register_framebuffer+0x195/0x320
+>     [<ffffffff8130af18>] efifb_probe+0x718/0x780
+>     [<ffffffff81391495>] platform_drv_probe+0x45/0xb0
+>     [<ffffffff8138f407>] driver_probe_device+0x87/0x3a0
+>     [<ffffffff8138f7f3>] __driver_attach+0x93/0xa0
+>     [<ffffffff8138d413>] bus_for_each_dev+0x63/0xa0
+>     [<ffffffff8138ee5e>] driver_attach+0x1e/0x20
+>     [<ffffffff8138ea40>] bus_add_driver+0x180/0x250
+>     [<ffffffff8138fe74>] driver_register+0x64/0xf0
+>     [<ffffffff813913ba>] __platform_driver_register+0x4a/0x50
+>     [<ffffffff8191e028>] efifb_driver_init+0x12/0x14
+>     [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
+>     [<ffffffff818e40e0>] kernel_init_freeable+0x17b/0x201
 > 
-> 	x86: Use generic idle loop
-> 	(7d1a941731fabf27e5fb6edbebb79fe856edb4e5)
+> In pm_vt_switch_required(), "entry" variable is allocated via kmalloc().
+> So, in pm_vt_switch_unregister(), it needs to call kfree() when object
+> is deleted from list.
 > 
-> This caused Intel NHM-EX and WSM-EX servers to experience a large number
-> of immediate MONITOR/MWAIT break wakeups, which caused cpuidle to demote
-> from deep C-states to shallow C-states, which caused these platforms
-> to experience a significant increase in idle power.
-> 
-> Note that this issue was already present before the commit above,
-> however, it wasn't seen often enough to be noticed in power measurements.
-> 
-> Here we extend an errata workaround from the Core2 EX "Dunnington"
-> to extend to NHM-EX and WSM-EX, to prevent these immediate
-> returns from MWAIT, reducing idle power on these platforms.
-> 
-> While only acpi_idle ran on Dunnington, intel_idle
-> may also run on these two newer systems.
-> As of today, there are no other models that are known
-> to need this tweak.
-> 
-> ref: https://lkml.org/lkml/2013/12/7/22
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: <stable@vger.kernel.org> # 3.12.x, 3.11.x, 3.10.x
-> ---
->  arch/x86/kernel/cpu/intel.c | 3 ++-
->  drivers/idle/intel_idle.c   | 3 +++
->  2 files changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-> index dc1ec0d..ea04b34 100644
-> --- a/arch/x86/kernel/cpu/intel.c
-> +++ b/arch/x86/kernel/cpu/intel.c
-> @@ -387,7 +387,8 @@ static void init_intel(struct cpuinfo_x86 *c)
->  			set_cpu_cap(c, X86_FEATURE_PEBS);
->  	}
->  
-> -	if (c->x86 == 6 && c->x86_model == 29 && cpu_has_clflush)
-> +	if (c->x86 == 6 && cpu_has_clflush &&
-> +	    (c->x86_model == 29 || c->x86_model == 46 || c->x86_model == 47))
->  		set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
->  
->  #ifdef CONFIG_X86_64
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 92d1206..f80b700 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -377,6 +377,9 @@ static int intel_idle(struct cpuidle_device *dev,
->  
->  	if (!current_set_polling_and_test()) {
->  
-> +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
-> +			clflush((void *)&current_thread_info()->flags);
-> +
->  		__monitor((void *)&current_thread_info()->flags, 0, 0);
+> Signed-off-by: Masami Ichikawa <masami256@gmail.com>
 
-I don't think either of these casts to '(void *)' is needed, both the 
-clflush() and __monitor() will take pointers.
+Reviewed-by: Pavel Machek <pavel@ucw.cz>
 
-Looks good to me otherwise - except that maybe the best way to 
-represent this quirk would be for the CLFLUSH+MONITOR sequence to be a 
-single 'instruction' which is patched in dynamically during bootup, 
-using our usual alternatives framework.
+Thanks!
 
-On non-affected CPUs a NOP would remain in place of the CLFLUSH, 
-eliminating the branch above.
-
-So the whole thing could be thought of as a slightly more complex 
-'monitor' instruction - not exposing the quirk details to actual usage 
-sites.
-
-Thanks,
-
-	Ingo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
