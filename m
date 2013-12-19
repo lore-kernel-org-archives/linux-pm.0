@@ -1,14 +1,15 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH V2 2/2] thermal: imx: add necessary clk operation
-Date: Thu, 19 Dec 2013 17:11:09 +0800
-Message-ID: <20131219091107.GF6691@S2101-09.ap.freescale.net>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
+Subject: RE: [PATCH V2 2/2] thermal: imx: add necessary clk operation
+Date: Thu, 19 Dec 2013 09:10:58 +0000
+Message-ID: <8f8f5bf77c824fef92cacf4cfb314243@DM2PR03MB317.namprd03.prod.outlook.com>
 References: <1387486402-30777-1-git-send-email-b20788@freescale.com>
+ <20131219091107.GF6691@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1387486402-30777-1-git-send-email-b20788@freescale.com>
+In-Reply-To: <20131219091107.GF6691@S2101-09.ap.freescale.net>
+Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -18,90 +19,76 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Anson Huang <b20788@freescale.com>
-Cc: devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, eduardo.valentin@ti.com, kernel@pengutronix.de, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 19, 2013 at 03:53:22PM -0500, Anson Huang wrote:
-> Thermal sensor needs pll3_usb_otg when measuring temperature,
-> otherwise the temperature read will be incorrect, so need to
-> enable this clk before sensor working, for alarm function,
-> as hardware will take measurement periodically, so we should
-> keep this clk always on once alarm function is enabled.
-> 
-> Signed-off-by: Anson Huang <b20788@freescale.com>
-> ---
->  .../devicetree/bindings/thermal/imx-thermal.txt    |    2 ++
->  drivers/thermal/imx_thermal.c                      |   18 ++++++++++++++++++
->  2 files changed, 20 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> index 541c25e..e518c6e 100644
-> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> @@ -7,6 +7,7 @@ Required properties:
->  - fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
->    calibration data, e.g. OCOTP on imx6q.  The details about calibration data
->    can be found in SoC Reference Manual.
-> +- clocks : thermal sensor's clock source.
-
-This should be listed in 'Optional properties:' now.
-
-Shawn
-
->  
->  Example:
->  
-> @@ -14,4 +15,5 @@ tempmon {
->  	compatible = "fsl,imx6q-tempmon";
->  	fsl,tempmon = <&anatop>;
->  	fsl,tempmon-data = <&ocotp>;
-> +	clocks = <&clks 172>;
->  };
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 1d6c801..c2b8173 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -7,6 +7,7 @@
->   *
->   */
->  
-> +#include <linux/clk.h>
->  #include <linux/cpu_cooling.h>
->  #include <linux/cpufreq.h>
->  #include <linux/delay.h>
-> @@ -73,6 +74,7 @@ struct imx_thermal_data {
->  	unsigned long last_temp;
->  	bool irq_enabled;
->  	int irq;
-> +	struct clk *thermal_clk;
->  };
->  
->  static void imx_set_alarm_temp(struct imx_thermal_data *data,
-> @@ -457,6 +459,22 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> +	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
-> +	if (IS_ERR(data->thermal_clk)) {
-> +		dev_warn(&pdev->dev, "failed to get thermal clk!\n");
-> +	} else {
-> +		/*
-> +		 * Thermal sensor needs clk on to get correct value, normally
-> +		 * we should enable its clk before taking measurement and disable
-> +		 * clk after measurement is done, but if alarm function is enabled,
-> +		 * hardware will auto measure the temperature periodically, so we
-> +		 * need to keep the clk always on for alarm function.
-> +		 */
-> +		ret = clk_prepare_enable(data->thermal_clk);
-> +		if (ret)
-> +			dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
-> +	}
-> +
->  	/* Enable measurements at ~ 10 Hz */
->  	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
->  	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
-> -- 
-> 1.7.9.5
-> 
-> 
+DQoNCkJlc3QgUmVnYXJkcy4NCkFuc29uIGh1YW5nIOm7hOWLh+aJjQ0KwqANCkZyZWVzY2FsZSBT
+ZW1pY29uZHVjdG9yIFNoYW5naGFpDQrkuIrmtbfmtabkuJzmlrDljLrkuq7mma/ot68xOTLlj7dB
+5bqnMualvA0KMjAxMjAzDQpUZWw6MDIxLTI4OTM3MDU4DQoNCg0KPi0tLS0tT3JpZ2luYWwgTWVz
+c2FnZS0tLS0tDQo+RnJvbTogU2hhd24gR3VvIFttYWlsdG86c2hhd24uZ3VvQGxpbmFyby5vcmdd
+DQo+U2VudDogVGh1cnNkYXksIERlY2VtYmVyIDE5LCAyMDEzIDU6MTEgUE0NCj5UbzogSHVhbmcg
+WW9uZ2NhaS1CMjA3ODgNCj5DYzoga2VybmVsQHBlbmd1dHJvbml4LmRlOyBydWkuemhhbmdAaW50
+ZWwuY29tOyBlZHVhcmRvLnZhbGVudGluQHRpLmNvbTsNCj5kZXZpY2V0cmVlQHZnZXIua2VybmVs
+Lm9yZzsgbGludXgtZG9jQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLQ0KPmtlcm5lbEBsaXN0
+cy5pbmZyYWRlYWQub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj5TdWJqZWN0OiBSZTog
+W1BBVENIIFYyIDIvMl0gdGhlcm1hbDogaW14OiBhZGQgbmVjZXNzYXJ5IGNsayBvcGVyYXRpb24N
+Cj4NCj5PbiBUaHUsIERlYyAxOSwgMjAxMyBhdCAwMzo1MzoyMlBNIC0wNTAwLCBBbnNvbiBIdWFu
+ZyB3cm90ZToNCj4+IFRoZXJtYWwgc2Vuc29yIG5lZWRzIHBsbDNfdXNiX290ZyB3aGVuIG1lYXN1
+cmluZyB0ZW1wZXJhdHVyZSwNCj4+IG90aGVyd2lzZSB0aGUgdGVtcGVyYXR1cmUgcmVhZCB3aWxs
+IGJlIGluY29ycmVjdCwgc28gbmVlZCB0byBlbmFibGUNCj4+IHRoaXMgY2xrIGJlZm9yZSBzZW5z
+b3Igd29ya2luZywgZm9yIGFsYXJtIGZ1bmN0aW9uLCBhcyBoYXJkd2FyZSB3aWxsDQo+PiB0YWtl
+IG1lYXN1cmVtZW50IHBlcmlvZGljYWxseSwgc28gd2Ugc2hvdWxkIGtlZXAgdGhpcyBjbGsgYWx3
+YXlzIG9uDQo+PiBvbmNlIGFsYXJtIGZ1bmN0aW9uIGlzIGVuYWJsZWQuDQo+Pg0KPj4gU2lnbmVk
+LW9mZi1ieTogQW5zb24gSHVhbmcgPGIyMDc4OEBmcmVlc2NhbGUuY29tPg0KPj4gLS0tDQo+PiAg
+Li4uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9pbXgtdGhlcm1hbC50eHQgICAgfCAgICAy
+ICsrDQo+PiAgZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMgICAgICAgICAgICAgICAgICAg
+ICAgfCAgIDE4DQo+KysrKysrKysrKysrKysrKysrDQo+PiAgMiBmaWxlcyBjaGFuZ2VkLCAyMCBp
+bnNlcnRpb25zKCspDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy90aGVybWFsL2lteC10aGVybWFsLnR4dA0KPj4gYi9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9pbXgtdGhlcm1hbC50eHQNCj4+IGluZGV4IDU0MWMy
+NWUuLmU1MThjNmUgMTAwNjQ0DQo+PiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
+ZGluZ3MvdGhlcm1hbC9pbXgtdGhlcm1hbC50eHQNCj4+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2
+aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2lteC10aGVybWFsLnR4dA0KPj4gQEAgLTcsNiArNyw3
+IEBAIFJlcXVpcmVkIHByb3BlcnRpZXM6DQo+PiAgLSBmc2wsdGVtcG1vbi1kYXRhIDogcGhhbmRs
+ZSBwb2ludGVyIHRvIGZ1c2UgY29udHJvbGxlciB0aGF0IGNvbnRhaW5zDQo+VEVNUE1PTg0KPj4g
+ICAgY2FsaWJyYXRpb24gZGF0YSwgZS5nLiBPQ09UUCBvbiBpbXg2cS4gIFRoZSBkZXRhaWxzIGFi
+b3V0IGNhbGlicmF0aW9uDQo+ZGF0YQ0KPj4gICAgY2FuIGJlIGZvdW5kIGluIFNvQyBSZWZlcmVu
+Y2UgTWFudWFsLg0KPj4gKy0gY2xvY2tzIDogdGhlcm1hbCBzZW5zb3IncyBjbG9jayBzb3VyY2Uu
+DQo+DQo+VGhpcyBzaG91bGQgYmUgbGlzdGVkIGluICdPcHRpb25hbCBwcm9wZXJ0aWVzOicgbm93
+Lg0KDQpSaWdodCwgd2lsbCBzZW5kIGEgVjMgbGF0ZXIuDQogDQoNCj4NCj5TaGF3bg0KPg0KPj4N
+Cj4+ICBFeGFtcGxlOg0KPj4NCj4+IEBAIC0xNCw0ICsxNSw1IEBAIHRlbXBtb24gew0KPj4gIAlj
+b21wYXRpYmxlID0gImZzbCxpbXg2cS10ZW1wbW9uIjsNCj4+ICAJZnNsLHRlbXBtb24gPSA8JmFu
+YXRvcD47DQo+PiAgCWZzbCx0ZW1wbW9uLWRhdGEgPSA8Jm9jb3RwPjsNCj4+ICsJY2xvY2tzID0g
+PCZjbGtzIDE3Mj47DQo+PiAgfTsNCj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvaW14
+X3RoZXJtYWwuYw0KPj4gYi9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYyBpbmRleCAxZDZj
+ODAxLi5jMmI4MTczIDEwMDY0NA0KPj4gLS0tIGEvZHJpdmVycy90aGVybWFsL2lteF90aGVybWFs
+LmMNCj4+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+PiBAQCAtNyw2ICs3
+LDcgQEANCj4+ICAgKg0KPj4gICAqLw0KPj4NCj4+ICsjaW5jbHVkZSA8bGludXgvY2xrLmg+DQo+
+PiAgI2luY2x1ZGUgPGxpbnV4L2NwdV9jb29saW5nLmg+DQo+PiAgI2luY2x1ZGUgPGxpbnV4L2Nw
+dWZyZXEuaD4NCj4+ICAjaW5jbHVkZSA8bGludXgvZGVsYXkuaD4NCj4+IEBAIC03Myw2ICs3NCw3
+IEBAIHN0cnVjdCBpbXhfdGhlcm1hbF9kYXRhIHsNCj4+ICAJdW5zaWduZWQgbG9uZyBsYXN0X3Rl
+bXA7DQo+PiAgCWJvb2wgaXJxX2VuYWJsZWQ7DQo+PiAgCWludCBpcnE7DQo+PiArCXN0cnVjdCBj
+bGsgKnRoZXJtYWxfY2xrOw0KPj4gIH07DQo+Pg0KPj4gIHN0YXRpYyB2b2lkIGlteF9zZXRfYWxh
+cm1fdGVtcChzdHJ1Y3QgaW14X3RoZXJtYWxfZGF0YSAqZGF0YSwgQEANCj4+IC00NTcsNiArNDU5
+LDIyIEBAIHN0YXRpYyBpbnQgaW14X3RoZXJtYWxfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rldmlj
+ZSAqcGRldikNCj4+ICAJCXJldHVybiByZXQ7DQo+PiAgCX0NCj4+DQo+PiArCWRhdGEtPnRoZXJt
+YWxfY2xrID0gZGV2bV9jbGtfZ2V0KCZwZGV2LT5kZXYsIE5VTEwpOw0KPj4gKwlpZiAoSVNfRVJS
+KGRhdGEtPnRoZXJtYWxfY2xrKSkgew0KPj4gKwkJZGV2X3dhcm4oJnBkZXYtPmRldiwgImZhaWxl
+ZCB0byBnZXQgdGhlcm1hbCBjbGshXG4iKTsNCj4+ICsJfSBlbHNlIHsNCj4+ICsJCS8qDQo+PiAr
+CQkgKiBUaGVybWFsIHNlbnNvciBuZWVkcyBjbGsgb24gdG8gZ2V0IGNvcnJlY3QgdmFsdWUsIG5v
+cm1hbGx5DQo+PiArCQkgKiB3ZSBzaG91bGQgZW5hYmxlIGl0cyBjbGsgYmVmb3JlIHRha2luZyBt
+ZWFzdXJlbWVudCBhbmQgZGlzYWJsZQ0KPj4gKwkJICogY2xrIGFmdGVyIG1lYXN1cmVtZW50IGlz
+IGRvbmUsIGJ1dCBpZiBhbGFybSBmdW5jdGlvbiBpcyBlbmFibGVkLA0KPj4gKwkJICogaGFyZHdh
+cmUgd2lsbCBhdXRvIG1lYXN1cmUgdGhlIHRlbXBlcmF0dXJlIHBlcmlvZGljYWxseSwgc28gd2UN
+Cj4+ICsJCSAqIG5lZWQgdG8ga2VlcCB0aGUgY2xrIGFsd2F5cyBvbiBmb3IgYWxhcm0gZnVuY3Rp
+b24uDQo+PiArCQkgKi8NCj4+ICsJCXJldCA9IGNsa19wcmVwYXJlX2VuYWJsZShkYXRhLT50aGVy
+bWFsX2Nsayk7DQo+PiArCQlpZiAocmV0KQ0KPj4gKwkJCWRldl93YXJuKCZwZGV2LT5kZXYsICJm
+YWlsZWQgdG8gZW5hYmxlIHRoZXJtYWwgY2xrOiAlZFxuIiwNCj5yZXQpOw0KPj4gKwl9DQo+PiAr
+DQo+PiAgCS8qIEVuYWJsZSBtZWFzdXJlbWVudHMgYXQgfiAxMCBIeiAqLw0KPj4gIAlyZWdtYXBf
+d3JpdGUobWFwLCBURU1QU0VOU0UxICsgUkVHX0NMUiwgVEVNUFNFTlNFMV9NRUFTVVJFX0ZSRVEp
+Ow0KPj4gIAltZWFzdXJlX2ZyZXEgPSBESVZfUk9VTkRfVVAoMzI3NjgsIDEwKTsgLyogMTAgSHog
+Ki8NCj4+IC0tDQo+PiAxLjcuOS41DQo+Pg0KPj4NCg0KX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGlu
+dXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQu
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
