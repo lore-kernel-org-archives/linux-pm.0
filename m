@@ -1,44 +1,40 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
- regression
-Date: Thu, 19 Dec 2013 18:50:37 +0100
-Message-ID: <20131219175037.GK2480@laptop.programming.kicks-ass.net>
-References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
- <20131219122257.GC11279@gmail.com>
- <52B316FF.50906@zytor.com>
- <20131219160210.GA28426@gmail.com>
- <52B31B21.6010901@zytor.com>
- <20131219162136.GM16438@laptop.programming.kicks-ass.net>
- <52B323BE.7090108@zytor.com>
- <20131219170741.GB30382@gmail.com>
- <20131219172535.GN16438@laptop.programming.kicks-ass.net>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power regression
+Date: Thu, 19 Dec 2013 10:05:27 -0800
+Message-ID: <52B33567.9060205@zytor.com>
+References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com> <20131219122257.GC11279@gmail.com> <52B316FF.50906@zytor.com> <20131219160210.GA28426@gmail.com> <52B31B21.6010901@zytor.com> <20131219162136.GM16438@laptop.programming.kicks-ass.net> <52B323BE.7090108@zytor.com> <20131219170741.GB30382@gmail.com> <20131219172535.GN16438@laptop.programming.kicks-ass.net> <20131219173629.GJ2480@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:60596 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753650Ab3LSRut (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 12:50:49 -0500
-Content-Disposition: inline
-In-Reply-To: <20131219172535.GN16438@laptop.programming.kicks-ass.net>
+Received: from terminus.zytor.com ([198.137.202.10]:34444 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754084Ab3LSSGa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 Dec 2013 13:06:30 -0500
+In-Reply-To: <20131219173629.GJ2480@laptop.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
+Cc: Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
 
-On Thu, Dec 19, 2013 at 06:25:35PM +0100, Peter Zijlstra wrote:
-> On Thu, Dec 19, 2013 at 06:07:41PM +0100, Ingo Molnar wrote:
-> > Likewise, having a barrier before the MONITOR looks sensible as well. 
+On 12/19/2013 09:36 AM, Peter Zijlstra wrote:
+> On Thu, Dec 19, 2013 at 06:25:35PM +0100, Peter Zijlstra wrote:
+>> That said, I would find it very strange indeed if a CLFLUSH doesn't also
+>> flush the store buffer.
 > 
-> I again have to disagree, one would expect monitor to flush all that is
-> required to start the monitor -- and it actually does so. As is
-> testified by this extra CLFLUSH being called a bug workaround.
+> OK, it explicitly states it does not do that and you indeed need an
+> mfence before the clflush.
+> 
 
-SDM states that MONITOR is ordered like a LOAD, and a LOAD cannot pass
-a previous STORE to the same address.
+So, MONITOR is defined to be ordered as a load, which I think should be
+adequate, but I really wonder if we should have mfence on both sides of
+clflush.  This now is up to 9 bytes, and perhaps pushing it a bit with
+how much we would be willing to patch out.
 
-That said; there's enough holes in there to swim a titanic through,
-seeing how MONITOR stares at an entire cacheline and LOAD/STORE order is
-specified on location, whatever that means.
+On the other hand - the CLFLUSH seems to have worked well enough by
+itself, and this is all probabilistic anyway, so perhaps we should just
+leave the naked CLFLUSH in and not worry about it unless measurements
+say otherwise?
 
+	-hpa
 
