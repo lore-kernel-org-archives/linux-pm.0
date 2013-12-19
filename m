@@ -1,39 +1,41 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
- regression
-Date: Thu, 19 Dec 2013 20:27:14 +0100
-Message-ID: <20131219192714.GP16438@laptop.programming.kicks-ass.net>
-References: <20131219122257.GC11279@gmail.com>
- <52B316FF.50906@zytor.com>
- <20131219160210.GA28426@gmail.com>
- <52B31B21.6010901@zytor.com>
- <20131219162136.GM16438@laptop.programming.kicks-ass.net>
- <52B323BE.7090108@zytor.com>
- <20131219170741.GB30382@gmail.com>
- <52B33640.3020204@zytor.com>
- <20131219181948.GD32508@gmail.com>
- <52B34759.3010009@zytor.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Thu, 19 Dec 2013 12:33:35 -0700
+Message-ID: <52B34A0F.5080901@wwwdotorg.org>
+References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52B34759.3010009@zytor.com>
-Sender: stable-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Bill Huang <bilhuang@nvidia.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 19, 2013 at 11:22:01AM -0800, H. Peter Anvin wrote:
-> On 12/19/2013 10:19 AM, Ingo Molnar wrote:
-> > 
-> > ( It would also be nice to know whether MONITOR loads that cacheline 
-> >   into the CPUs cache, and in what state it loads it. )
-> > 
+On 12/19/2013 04:18 AM, Bill Huang wrote:
+> Re-model Tegra20 cpufreq driver as below.
 > 
-> I would assume that is implementation-dependent.  However, one plausible
-> implementation is to load the cache line into the cache in shared state
-> and monitor for evictions.
+> * Rename tegra-cpufreq.c to tegra20-cpufreq.c since this file supports
+>   only Tegra20.
+> * Add probe function so defer probe can be used when we're going to
+>   support DVFS.
+> * Create a fake cpufreq platform device with its name being
+>   "${root_compatible}-cpufreq" so SoC cpufreq driver can bind to it
+>   accordingly.
 
-I suppose the monitor part is the important part because certain C
-states drop all cache, presumably including the cacheline we're actually
-monitoring.
+Tested-by: Stephen Warren <swarren@nvidia.com>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+
+It should be fine to merge the arch/arm/mach-tegra/ changes in this
+patch through the cpufreq tree, since I don't think they'll conflict at
+all with anything in other trees this kernel cycle.
+
+> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+
+> -#define NUM_CPUS	2
+> +#define MAX_CPUS	2
+
+Nit: Given this driver is explicitly for a 2-CPU SoC, I don't think
+there's any need to s/NUM/MAX/ here. But I don't care that much.
+
