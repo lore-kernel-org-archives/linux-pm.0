@@ -1,50 +1,58 @@
-From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
-Subject: RE: [PATCH 2/3] thermal: imx: add necessary clk operation
-Date: Thu, 19 Dec 2013 06:52:29 +0000
-Message-ID: <56958e0099194dc69d3d91a2ac8a97b2@DM2PR03MB317.namprd03.prod.outlook.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 3/3] thermal: imx: add clk info for thermal sensor
+Date: Thu, 19 Dec 2013 14:57:06 +0800
+Message-ID: <20131219065704.GA6691@S2101-09.ap.freescale.net>
 References: <1387477045-19037-1-git-send-email-b20788@freescale.com>
- <1387477045-19037-2-git-send-email-b20788@freescale.com>
- <20131219062450.GC4148@tarshish>
+ <1387477045-19037-3-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20131219062450.GC4148@tarshish>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:30369 "EHLO
+	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751723Ab3LSG4H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 01:56:07 -0500
+Content-Disposition: inline
+In-Reply-To: <1387477045-19037-3-git-send-email-b20788@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anson Huang <b20788@freescale.com>
+Cc: kernel@pengutronix.de, rui.zhang@intel.com, eduardo.valentin@ti.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-DQoNCkJlc3QgUmVnYXJkcy4NCkFuc29uIGh1YW5nIOm7hOWLh+aJjQ0KwqANCkZyZWVzY2FsZSBT
-ZW1pY29uZHVjdG9yIFNoYW5naGFpDQrkuIrmtbfmtabkuJzmlrDljLrkuq7mma/ot68xOTLlj7dB
-5bqnMualvA0KMjAxMjAzDQpUZWw6MDIxLTI4OTM3MDU4DQoNCg0KPi0tLS0tT3JpZ2luYWwgTWVz
-c2FnZS0tLS0tDQo+RnJvbTogQmFydWNoIFNpYWNoIFttYWlsdG86YmFydWNoQHRrb3MuY28uaWxd
-DQo+U2VudDogVGh1cnNkYXksIERlY2VtYmVyIDE5LCAyMDEzIDI6MjUgUE0NCj5UbzogSHVhbmcg
-WW9uZ2NhaS1CMjA3ODgNCj5DYzogc2hhd24uZ3VvQGxpbmFyby5vcmc7IGtlcm5lbEBwZW5ndXRy
-b25peC5kZTsgcnVpLnpoYW5nQGludGVsLmNvbTsNCj5lZHVhcmRvLnZhbGVudGluQHRpLmNvbTsg
-ZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj5s
-aW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4LWRvY0B2Z2VyLmtlcm5l
-bC5vcmcNCj5TdWJqZWN0OiBSZTogW1BBVENIIDIvM10gdGhlcm1hbDogaW14OiBhZGQgbmVjZXNz
-YXJ5IGNsayBvcGVyYXRpb24NCj4NCj5IaSBBbnNvbiwNCj4NCj5PbiBUaHUsIERlYyAxOSwgMjAx
-MyBhdCAwMToxNzoyNFBNIC0wNTAwLCBBbnNvbiBIdWFuZyB3cm90ZToNCj4+ICsJaWYgKElTX0VS
-UihkYXRhLT50aGVybWFsX2NsaykpIHsNCj4+ICsJCXJldCA9IElTX0VSUihkYXRhLT50aGVybWFs
-X2Nsayk7DQo+DQo+WW91IHByb2JhYmx5IHdoYXQgdG8gcmV0dXJuIFBUUl9FUlIgaGVyZS4NCj4N
-Cg0KWWVzLCB0aGFua3MsIHdpbGwgZml4IGl0IGluIFYyLg0KW0Fuc29uXSANCg0KDQo+YmFydWNo
-DQo+DQo+PiArCQlkZXZfZXJyKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZ2V0IHRoZXJtYWwgY2xr
-IVxuIik7DQo+PiArCQlyZXR1cm4gcmV0Ow0KPj4gKwl9DQo+DQo+LS0NCj4gICAgIGh0dHA6Ly9i
-YXJ1Y2guc2lhY2gubmFtZS9ibG9nLyAgICAgICAgICAgICAgICAgIH4uIC5+ICAgVGsgT3BlbiBT
-eXN0ZW1zDQo+PX0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS1vb08tLVUtLU9vby0tLS0tLS0tLS0tLXs9DQo+ICAgLSBiYXJ1Y2hAdGtvcy5jby5pbCAtIHRl
-bDogKzk3Mi4yLjY3OS41MzY0LCBodHRwOi8vd3d3LnRrb3MuY28uaWwgLQ0KPg0KDQpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVs
-IG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
-L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Thu, Dec 19, 2013 at 01:17:25PM -0500, Anson Huang wrote:
+> thermal sensor needs dedicated clock to work in correct way,
+> so we need to add necessary clock info in dts.
+> 
+> Signed-off-by: Anson Huang <b20788@freescale.com>
+> ---
+>  .../devicetree/bindings/thermal/imx-thermal.txt    |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> index 541c25e..e518c6e 100644
+> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+> @@ -7,6 +7,7 @@ Required properties:
+>  - fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
+>    calibration data, e.g. OCOTP on imx6q.  The details about calibration data
+>    can be found in SoC Reference Manual.
+> +- clocks : thermal sensor's clock source.
+
+For such binding update, it can just be merged into driver patch.  Also,
+it has to be an optional property.  See my reply to the driver patch.
+
+Shawn
+
+>  
+>  Example:
+>  
+> @@ -14,4 +15,5 @@ tempmon {
+>  	compatible = "fsl,imx6q-tempmon";
+>  	fsl,tempmon = <&anatop>;
+>  	fsl,tempmon-data = <&ocotp>;
+> +	clocks = <&clks 172>;
+>  };
+> -- 
+> 1.7.9.5
+> 
+> 
+
