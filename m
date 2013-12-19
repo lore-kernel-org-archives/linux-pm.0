@@ -1,107 +1,147 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power regression
-Date: Thu, 19 Dec 2013 06:40:41 -0800
-Message-ID: <ad600986-5506-4cf5-baad-d767079d086f@email.android.com>
-References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com> <20131219122257.GC11279@gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v11 7/7] thermal:exynos:boost: Automatic enable/disable
+ of BOOST feature (at Exynos4412)
+Date: Thu, 19 Dec 2013 10:50:52 -0400
+Message-ID: <52B307CC.2020704@ti.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1386952717-30947-1-git-send-email-l.majewski@samsung.com> <1386952717-30947-8-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20131219122257.GC11279@gmail.com>
-Sender: stable-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>, Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="OuK5HSlsKdmIsMRgfIpauCespVANEeE4a"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1386952717-30947-8-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-... or just use static_cpu_has() maybe?
+--OuK5HSlsKdmIsMRgfIpauCespVANEeE4a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ingo Molnar <mingo@kernel.org> wrote:
->
->* Len Brown <lenb@kernel.org> wrote:
->
->> From: Len Brown <len.brown@intel.com>
->> 
->> Linux 3.10 changed the timing of how thread_info->flags is touched:
->> 
->> 	x86: Use generic idle loop
->> 	(7d1a941731fabf27e5fb6edbebb79fe856edb4e5)
->> 
->> This caused Intel NHM-EX and WSM-EX servers to experience a large
->number
->> of immediate MONITOR/MWAIT break wakeups, which caused cpuidle to
->demote
->> from deep C-states to shallow C-states, which caused these platforms
->> to experience a significant increase in idle power.
->> 
->> Note that this issue was already present before the commit above,
->> however, it wasn't seen often enough to be noticed in power
->measurements.
->> 
->> Here we extend an errata workaround from the Core2 EX "Dunnington"
->> to extend to NHM-EX and WSM-EX, to prevent these immediate
->> returns from MWAIT, reducing idle power on these platforms.
->> 
->> While only acpi_idle ran on Dunnington, intel_idle
->> may also run on these two newer systems.
->> As of today, there are no other models that are known
->> to need this tweak.
->> 
->> ref: https://lkml.org/lkml/2013/12/7/22
->> Signed-off-by: Len Brown <len.brown@intel.com>
->> Cc: <stable@vger.kernel.org> # 3.12.x, 3.11.x, 3.10.x
->> ---
->>  arch/x86/kernel/cpu/intel.c | 3 ++-
->>  drivers/idle/intel_idle.c   | 3 +++
->>  2 files changed, 5 insertions(+), 1 deletion(-)
->> 
->> diff --git a/arch/x86/kernel/cpu/intel.c
->b/arch/x86/kernel/cpu/intel.c
->> index dc1ec0d..ea04b34 100644
->> --- a/arch/x86/kernel/cpu/intel.c
->> +++ b/arch/x86/kernel/cpu/intel.c
->> @@ -387,7 +387,8 @@ static void init_intel(struct cpuinfo_x86 *c)
->>  			set_cpu_cap(c, X86_FEATURE_PEBS);
->>  	}
->>  
->> -	if (c->x86 == 6 && c->x86_model == 29 && cpu_has_clflush)
->> +	if (c->x86 == 6 && cpu_has_clflush &&
->> +	    (c->x86_model == 29 || c->x86_model == 46 || c->x86_model ==
->47))
->>  		set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
->>  
->>  #ifdef CONFIG_X86_64
->> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
->> index 92d1206..f80b700 100644
->> --- a/drivers/idle/intel_idle.c
->> +++ b/drivers/idle/intel_idle.c
->> @@ -377,6 +377,9 @@ static int intel_idle(struct cpuidle_device *dev,
->>  
->>  	if (!current_set_polling_and_test()) {
->>  
->> +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
->> +			clflush((void *)&current_thread_info()->flags);
->> +
->>  		__monitor((void *)&current_thread_info()->flags, 0, 0);
->
->I don't think either of these casts to '(void *)' is needed, both the 
->clflush() and __monitor() will take pointers.
->
->Looks good to me otherwise - except that maybe the best way to 
->represent this quirk would be for the CLFLUSH+MONITOR sequence to be a 
->single 'instruction' which is patched in dynamically during bootup, 
->using our usual alternatives framework.
->
->On non-affected CPUs a NOP would remain in place of the CLFLUSH, 
->eliminating the branch above.
->
->So the whole thing could be thought of as a slightly more complex 
->'monitor' instruction - not exposing the quirk details to actual usage 
->sites.
->
->Thanks,
->
->	Ingo
+On 13-12-2013 12:38, Lukasz Majewski wrote:
+> This patch provides auto disable/enable operation for boost. It uses al=
+ready
+> present thermal infrastructure to provide boost hysteresis.
+> The TMU data has been modified to work properly with or without boost.
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 
--- 
-Sent from my mobile phone.  Please pardon brevity and lack of formatting.
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
+Looks better to me now. You might consider refactoring this driver to be
+frequency independent, if possible. But that is a different subject
+other than this patch.
+
+>=20
+> ---
+> Changes for v11:
+>     - Use only one thermal data set
+>     - Adjust Exynos4412 thermal data to work with or without BOOST
+>=20
+> Changes for v10:
+>     - Remove boost related code from thermal_core.c
+>     - Use already present thermal infrastructure to provide thermal hys=
+teresis
+>     - Introduce special set of TMU data for BOOST
+>=20
+> Changes for v9:
+>     - None
+>=20
+> Changes for v8:
+>     - Move cpufreq_boost_* stub functions definition (needed when cpufr=
+eq
+>       is not compiled in) to cpufreq.h at cpufreq core support commit
+>=20
+> Changes for v7:
+>     - None
+>=20
+> Changes for v6:
+>     - Disable boost only when supported and enabled
+>     - Protect boost related thermal_zone_device struct fields with mute=
+x
+>     - Evaluate temperature trend during boost enable decision
+>     - Create separate methods to handle boost enable/disable
+>       (thermal_boost_{enable|disable}) operations
+>     - Boost is disabled at any trip point passage (not only the non cri=
+tical one)
+>     - Add stub definitions for cpufreq boost functions used when
+>       CONFIG_CPU_FREQ is NOT defined.
+>=20
+> Changes for v5:
+>     - Move boost disable code from cpu_cooling.c to thermal_core.c
+>       (to handle_non_critical_trips)
+>     - Extent struct thermal_zone_device by adding overheated bool flag
+>     - Implement auto enable of boost after device cools down
+>     - Introduce boost_polling flag, which indicates if thermal uses it'=
+s predefined
+>       pool delay or has woken up thermal workqueue only to wait until d=
+evice
+>       cools down.
+>=20
+> Changes for v4:
+>     - New patch
+>=20
+>  drivers/thermal/samsung/exynos_tmu_data.c |   12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
+l/samsung/exynos_tmu_data.c
+> index 073c292..476b768 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -131,8 +131,8 @@ static const struct exynos_tmu_registers exynos4412=
+_tmu_registers =3D {
+> =20
+>  #define EXYNOS4412_TMU_DATA \
+>  	.threshold_falling =3D 10, \
+> -	.trigger_levels[0] =3D 85, \
+> -	.trigger_levels[1] =3D 103, \
+> +	.trigger_levels[0] =3D 70, \
+> +	.trigger_levels[1] =3D 95, \
+>  	.trigger_levels[2] =3D 110, \
+>  	.trigger_levels[3] =3D 120, \
+>  	.trigger_enable[0] =3D true, \
+> @@ -155,12 +155,12 @@ static const struct exynos_tmu_registers exynos44=
+12_tmu_registers =3D {
+>  	.second_point_trim =3D 85, \
+>  	.default_temp_offset =3D 50, \
+>  	.freq_tab[0] =3D { \
+> -		.freq_clip_max =3D 800 * 1000, \
+> -		.temp_level =3D 85, \
+> +		.freq_clip_max =3D 1400 * 1000, \
+> +		.temp_level =3D 70, \
+>  	}, \
+>  	.freq_tab[1] =3D { \
+> -		.freq_clip_max =3D 200 * 1000, \
+> -		.temp_level =3D 103, \
+> +		.freq_clip_max =3D 400 * 1000, \
+> +		.temp_level =3D 95, \
+>  	}, \
+>  	.freq_tab_count =3D 2, \
+>  	.registers =3D &exynos4412_tmu_registers, \
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--OuK5HSlsKdmIsMRgfIpauCespVANEeE4a
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlKzB88ACgkQCXcVR3XQvP1MKQD/XLfPfRu43RY75bep6m2CrUsW
+0yyREHxyUNtUr6t5QT0BAJBUCFwXLF1xcT3OFrQZwa2uOY3bx2kqGAb1XYkKsfWc
+=Hsi/
+-----END PGP SIGNATURE-----
+
+--OuK5HSlsKdmIsMRgfIpauCespVANEeE4a--
