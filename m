@@ -1,73 +1,63 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: PROBLEM: cpuidle: Quickly notice prediction failure for repeat
- mode
-Date: Thu, 19 Dec 2013 21:11:15 +0100
-Message-ID: <52B352E3.1040903@linaro.org>
-References: <20131219195159.GB16912@holos>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power regression
+Date: Thu, 19 Dec 2013 13:05:43 -0800
+Message-ID: <44cc7c3a-7114-4f37-a844-77e552dbc7aa@email.android.com>
+References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com> <20131219122257.GC11279@gmail.com> <52B316FF.50906@zytor.com> <20131219160210.GA28426@gmail.com> <52B31B21.6010901@zytor.com> <20131219162136.GM16438@laptop.programming.kicks-ass.net> <52B323BE.7090108@zytor.com> <20131219170741.GB30382@gmail.com> <20131219172535.GN16438@laptop.programming.kicks-ass.net> <20131219175037.GK2480@laptop.programming.kicks-ass.net> <20131219181812.GC32508@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f178.google.com ([74.125.82.178]:58454 "EHLO
-	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756211Ab3LSULN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 15:11:13 -0500
-Received: by mail-we0-f178.google.com with SMTP id u57so1610413wes.9
-        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2013 12:11:13 -0800 (PST)
-In-Reply-To: <20131219195159.GB16912@holos>
+Received: from terminus.zytor.com ([198.137.202.10]:36258 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755023Ab3LSVGf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 Dec 2013 16:06:35 -0500
+In-Reply-To: <20131219181812.GC32508@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Oteiza <mvoteiza@udel.edu>, linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
 
-On 12/19/2013 08:51 PM, Mark Oteiza wrote:
-> Hi,
+CLFLUSH is only (guaranteed to be) ordered with respect to MFENCE according to the SDM.
+
+Ingo Molnar <mingo@kernel.org> wrote:
 >
-> Commit 1485191 causes a regression on my hardware (laptop) manifestin=
-g
-> itself as increased power consumption when playing music on mpd using
-> pulseaudio.
+>* Peter Zijlstra <peterz@infradead.org> wrote:
 >
-> I bisected to find 1485191.  I tested the commit it reverts (69a37bea=
-),
-> and the commit prior 69a37bea, e34a00d6.  Here's a summary:
+>> On Thu, Dec 19, 2013 at 06:25:35PM +0100, Peter Zijlstra wrote:
+>> > On Thu, Dec 19, 2013 at 06:07:41PM +0100, Ingo Molnar wrote:
+>> > > Likewise, having a barrier before the MONITOR looks sensible as
+>well. 
+>> > 
+>> > I again have to disagree, one would expect monitor to flush all
+>that is
+>> > required to start the monitor -- and it actually does so. As is
+>> > testified by this extra CLFLUSH being called a bug workaround.
+>> 
+>> SDM states that MONITOR is ordered like a LOAD, and a LOAD cannot 
+>> pass a previous STORE to the same address.
 >
->    status      sha   power  coretemp
->    ---------------------------------
->    BAD    14851912     14W       54C
->    GOOD   228b3023      9W       47C
->    GOOD   69a37bea   ~8.8W       47C
->    GOOD   e45a00d6   ~9.3W       47C
-
-Hi Mark,
-
-thanks for the measurements.
-
-Is it possible you do some perf benchmarking. IIRC, this patch was=20
-reverted because it introduced some perf regression.
-
-   -- Daniel
-
+>Yes ... but you could argue that CLFLUSH is neither a load nor a 
+>store, it's a _cache sync_ operation, with its special ordering 
+>properties.
 >
-> I thought it was strange that it happens only with that combination o=
-f
-> audio software, so I was happy to patch out that changeset which was =
-bad
-> for me.  Past 3.12 (now on 3.12.5), the issue persists and I'm not su=
-re
-> I can easily merge anymore.
+>> That said; there's enough holes in there to swim a titanic through, 
+>> seeing how MONITOR stares at an entire cacheline and LOAD/STORE 
+>> order is specified on location, whatever that means.
 >
-> I attached some info I hope will be helpful.
+>I think assuming that MONITOR is ordered as a load or better is a 
+>pretty safe one (and in fact the Intel documentation seems to say so) 
+>- I'd say MONITOR is in micro-code and essentially snoops on cache 
+>events on that specific cache line, and loads the cache line on a 
+>snoop hit?
 >
-> Thanks,
+>Btw., what state is the cache line after a MONITOR instruction, is it 
+>loaded as shared, or as excusive? (exclusive would probably be better 
+>for performance.)
 >
+>Thanks,
+>
+>	Ingo
 
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+Sent from my mobile phone.  Please pardon brevity and lack of formatting.
