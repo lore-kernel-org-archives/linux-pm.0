@@ -1,34 +1,90 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
- regression
-Date: Thu, 19 Dec 2013 16:45:57 +0100
-Message-ID: <20131219154557.GC26289@pd.tnic>
-References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
- <20131219122257.GC11279@gmail.com>
- <ad600986-5506-4cf5-baad-d767079d086f@email.android.com>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
+Subject: Re: [PATCH V3 2/2] thermal: imx: add necessary clk operation
+Date: Thu, 19 Dec 2013 15:53:25 +0000
+Message-ID: <C953959F-9F4F-4FB7-9686-0EDA5434FF50@freescale.com>
+References: <1387487791-3259-1-git-send-email-b20788@freescale.com>,<52B2F0D9.2020704@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <ad600986-5506-4cf5-baad-d767079d086f@email.android.com>
-Sender: stable-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <52B2F0D9.2020704@ti.com>
+Content-Language: zh-CN
+Sender: linux-doc-owner@vger.kernel.org
+Cc: "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 19, 2013 at 06:40:41AM -0800, H. Peter Anvin wrote:
-> ... or just use static_cpu_has() maybe?
-
-Right, if we can get the compiler to generate the shortest CLFLUSH of 3
-bytes with register indirect addressing for the operand, then stomping
-over those 3 bytes with the alternatives would be the fastest solution.
-
-If, of course, three NOPs which get discarded in the front end are
-cheaper than the near JMP from static_cpu_has.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+DQoNClNlbnQgZnJvbSBBbnNvbidzIGlQaG9uZQ0KDQo+INTaIDIwMTPE6jEy1MIxOcjVo6wyMTox
+M6OsIkVkdWFyZG8gVmFsZW50aW4iIDxlZHVhcmRvLnZhbGVudGluQHRpLmNvbT4g0LS1wKO6DQo+
+IA0KPj4gT24gMTktMTItMjAxMyAxNzoxNiwgQW5zb24gSHVhbmcgd3JvdGU6DQo+PiBUaGVybWFs
+IHNlbnNvciBuZWVkcyBwbGwzX3VzYl9vdGcgd2hlbiBtZWFzdXJpbmcgdGVtcGVyYXR1cmUsDQo+
+PiBvdGhlcndpc2UgdGhlIHRlbXBlcmF0dXJlIHJlYWQgd2lsbCBiZSBpbmNvcnJlY3QsIHNvIG5l
+ZWQgdG8NCj4+IGVuYWJsZSB0aGlzIGNsayBiZWZvcmUgc2Vuc29yIHdvcmtpbmcsIGZvciBhbGFy
+bSBmdW5jdGlvbiwNCj4+IGFzIGhhcmR3YXJlIHdpbGwgdGFrZSBtZWFzdXJlbWVudCBwZXJpb2Rp
+Y2FsbHksIHNvIHdlIHNob3VsZA0KPj4ga2VlcCB0aGlzIGNsayBhbHdheXMgb24gb25jZSBhbGFy
+bSBmdW5jdGlvbiBpcyBlbmFibGVkLg0KPj4gDQo+PiBTaWduZWQtb2ZmLWJ5OiBBbnNvbiBIdWFu
+ZyA8YjIwNzg4QGZyZWVzY2FsZS5jb20+DQo+PiAtLS0NCj4+IC4uLi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL3RoZXJtYWwvaW14LXRoZXJtYWwudHh0ICAgIHwgICAgNCArKysrDQo+PiBkcml2ZXJzL3Ro
+ZXJtYWwvaW14X3RoZXJtYWwuYyAgICAgICAgICAgICAgICAgICAgICB8ICAgMTggKysrKysrKysr
+KysrKysrKysrDQo+PiAyIGZpbGVzIGNoYW5nZWQsIDIyIGluc2VydGlvbnMoKykNCj4+IA0KPj4g
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2lt
+eC10aGVybWFsLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFs
+L2lteC10aGVybWFsLnR4dA0KPj4gaW5kZXggNTQxYzI1ZS4uMWYwZjY3MiAxMDA2NDQNCj4+IC0t
+LSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2lteC10aGVybWFs
+LnR4dA0KPj4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwv
+aW14LXRoZXJtYWwudHh0DQo+PiBAQCAtOCwxMCArOCwxNCBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVz
+Og0KPj4gICBjYWxpYnJhdGlvbiBkYXRhLCBlLmcuIE9DT1RQIG9uIGlteDZxLiAgVGhlIGRldGFp
+bHMgYWJvdXQgY2FsaWJyYXRpb24gZGF0YQ0KPj4gICBjYW4gYmUgZm91bmQgaW4gU29DIFJlZmVy
+ZW5jZSBNYW51YWwuDQo+PiANCj4+ICtPcHRpb25hbCBwcm9wZXJ0aWVzOg0KPj4gKy0gY2xvY2tz
+IDogdGhlcm1hbCBzZW5zb3IncyBjbG9jayBzb3VyY2UuDQo+PiArDQo+PiBFeGFtcGxlOg0KPj4g
+DQo+PiB0ZW1wbW9uIHsNCj4+ICAgIGNvbXBhdGlibGUgPSAiZnNsLGlteDZxLXRlbXBtb24iOw0K
+Pj4gICAgZnNsLHRlbXBtb24gPSA8JmFuYXRvcD47DQo+PiAgICBmc2wsdGVtcG1vbi1kYXRhID0g
+PCZvY290cD47DQo+PiArICAgIGNsb2NrcyA9IDwmY2xrcyAxNzI+Ow0KPj4gfTsNCj4+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYyBiL2RyaXZlcnMvdGhlcm1hbC9p
+bXhfdGhlcm1hbC5jDQo+PiBpbmRleCAxZDZjODAxLi5jMmI4MTczIDEwMDY0NA0KPj4gLS0tIGEv
+ZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMNCj4+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9p
+bXhfdGhlcm1hbC5jDQo+PiBAQCAtNyw2ICs3LDcgQEANCj4+ICAqDQo+PiAgKi8NCj4+IA0KPj4g
+KyNpbmNsdWRlIDxsaW51eC9jbGsuaD4NCj4+ICNpbmNsdWRlIDxsaW51eC9jcHVfY29vbGluZy5o
+Pg0KPj4gI2luY2x1ZGUgPGxpbnV4L2NwdWZyZXEuaD4NCj4+ICNpbmNsdWRlIDxsaW51eC9kZWxh
+eS5oPg0KPj4gQEAgLTczLDYgKzc0LDcgQEAgc3RydWN0IGlteF90aGVybWFsX2RhdGEgew0KPj4g
+ICAgdW5zaWduZWQgbG9uZyBsYXN0X3RlbXA7DQo+PiAgICBib29sIGlycV9lbmFibGVkOw0KPj4g
+ICAgaW50IGlycTsNCj4+ICsgICAgc3RydWN0IGNsayAqdGhlcm1hbF9jbGs7DQo+PiB9Ow0KPj4g
+DQo+PiBzdGF0aWMgdm9pZCBpbXhfc2V0X2FsYXJtX3RlbXAoc3RydWN0IGlteF90aGVybWFsX2Rh
+dGEgKmRhdGEsDQo+PiBAQCAtNDU3LDYgKzQ1OSwyMiBAQCBzdGF0aWMgaW50IGlteF90aGVybWFs
+X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+PiAgICAgICAgcmV0dXJuIHJl
+dDsNCj4+ICAgIH0NCj4gDQo+IFRoZXJlIGFyZSBzZXZlcmFsIHJlZyB3cml0ZXMgYmVmb3JlIHRo
+aXMgcG9pbnQuIEFyZSB5b3Ugc3VyZSB5b3Ugd29uJ3QNCj4gbmVlZCB0aGlzIGNsb2NrIGZvciBw
+ZXJmb3JtaW5nIHRob3NlIG9wZXJhdGlvbnM/DQoNCnRoZXJtYWwgcmVnJ3MgYWNjZXNzIHVzZXMg
+c3lzdGVtIGlwZyBjbG9jayB3aGljaCBpcyBhbHdheXMgb24sIHNvIG5vIG5lZWQgdG8gZW5hYmxl
+IGl0LCBhY3R1YWxseSB0aGVyZSBpcyBubyBjbG9jayBnYXRlIGZvciB0aGlzIGlwZyBjbG9jay4N
+Cj4gDQo+PiArICAgIGRhdGEtPnRoZXJtYWxfY2xrID0gZGV2bV9jbGtfZ2V0KCZwZGV2LT5kZXYs
+IE5VTEwpOw0KPj4gKyAgICBpZiAoSVNfRVJSKGRhdGEtPnRoZXJtYWxfY2xrKSkgew0KPj4gKyAg
+ICAgICAgZGV2X3dhcm4oJnBkZXYtPmRldiwgImZhaWxlZCB0byBnZXQgdGhlcm1hbCBjbGshXG4i
+KTsNCj4+ICsgICAgfSBlbHNlIHsNCj4+ICsgICAgICAgIC8qDQo+PiArICAgICAgICAgKiBUaGVy
+bWFsIHNlbnNvciBuZWVkcyBjbGsgb24gdG8gZ2V0IGNvcnJlY3QgdmFsdWUsIG5vcm1hbGx5DQo+
+PiArICAgICAgICAgKiB3ZSBzaG91bGQgZW5hYmxlIGl0cyBjbGsgYmVmb3JlIHRha2luZyBtZWFz
+dXJlbWVudCBhbmQgZGlzYWJsZQ0KPj4gKyAgICAgICAgICogY2xrIGFmdGVyIG1lYXN1cmVtZW50
+IGlzIGRvbmUsIGJ1dCBpZiBhbGFybSBmdW5jdGlvbiBpcyBlbmFibGVkLA0KPj4gKyAgICAgICAg
+ICogaGFyZHdhcmUgd2lsbCBhdXRvIG1lYXN1cmUgdGhlIHRlbXBlcmF0dXJlIHBlcmlvZGljYWxs
+eSwgc28gd2UNCj4+ICsgICAgICAgICAqIG5lZWQgdG8ga2VlcCB0aGUgY2xrIGFsd2F5cyBvbiBm
+b3IgYWxhcm0gZnVuY3Rpb24uDQo+PiArICAgICAgICAgKi8NCj4+ICsgICAgICAgIHJldCA9IGNs
+a19wcmVwYXJlX2VuYWJsZShkYXRhLT50aGVybWFsX2Nsayk7DQo+PiArICAgICAgICBpZiAocmV0
+KQ0KPj4gKyAgICAgICAgICAgIGRldl93YXJuKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxl
+IHRoZXJtYWwgY2xrOiAlZFxuIiwgcmV0KTsNCj4+ICsgICAgfQ0KPj4gKw0KPj4gICAgLyogRW5h
+YmxlIG1lYXN1cmVtZW50cyBhdCB+IDEwIEh6ICovDQo+PiAgICByZWdtYXBfd3JpdGUobWFwLCBU
+RU1QU0VOU0UxICsgUkVHX0NMUiwgVEVNUFNFTlNFMV9NRUFTVVJFX0ZSRVEpOw0KPj4gICAgbWVh
+c3VyZV9mcmVxID0gRElWX1JPVU5EX1VQKDMyNzY4LCAxMCk7IC8qIDEwIEh6ICovDQo+IA0KPiBE
+b24ndCB5b3UgbmVlZCB0byByZWxlYXNlIHRoZSBjbG9jayB3aGVuIC5yZW1vdmUgaXMgY2FsbGVk
+IGVpdGhlciBvbg0KPiBkcml2ZXIgb3IgZGV2aWNlIHJlbW92YWw/DQoNCnllcywgdGhhbmtzIGZv
+ciByZW1pbmRlci4NCj4gDQo+IFdoYXQgYWJvdXQgc3VzcGVuZCAvIHJlc3VtZSBwYXRoPyBEbyB5
+b3Ugd2FudCB0byBrZWVwIHRoaXMgY2xvY2sgb24gd2hlbg0KPiBzdXNwZW5kaW5nPyBJcyBpdCBn
+b25uYSB3b3JrIG9yIHByZXZlbnQgeW91ciBzeXN0ZW0gdG8gZW50ZXIgbG93IHBvd2VyDQo+IHN0
+YXRlcz8NCg0Kbm8gbmVlZCB0byBkaXNhYmxlIHRoaXMgY2xvY2sgaW4gc3VzcGVuZCwgYXMgQ0NN
+IHdpbGwgZGlzYWJsZSBhbGwgY2xvY2tzIGFmdGVyIGVudGVyaW5nIHN0b3AgbW9kZS4gdGhlcm1h
+bCBzZW5zb3Igc2hvdWxkIGJlIHBvd2VyZWQgZG93biBpbiBpdHMgc3VzcGVuZCBmdW5jdGlvbi4g
+aXQgd2lsbCBub3QgaW1wYWN0IGFueSBsb3cgcG93ZXIgbW9kZSBvZiB0aGVybWFsIHNlbnNvci4N
+Cg0KQlRXLCBjdXJyZW50IHRoZXJtYWwgZHJpdmVyIHdpbGwgYmxvY2sgc3lzdGVtIHN1c3BlbmQg
+YXMgaXQgaXMgYWx3YXlzIGJlIHBvd2VyZWQgdXAgYW5kIHN1c3BlbmQgZnVuY3Rpb24gd2lsbCBy
+ZXR1cm4gZXJyb3IsIEkgd2lsbCBjcmVhdGUgYW5vdGhlciBwYXRjaCB0byBmaXggdGhhdCBsYXRl
+ci4NCj4gDQo+IA0KPiANCj4gLS0gDQo+IFlvdSBoYXZlIGdvdCB0byBiZSBleGNpdGVkIGFib3V0
+IHdoYXQgeW91IGFyZSBkb2luZy4gKEwuIExhbXBvcnQpDQo+IA0KPiBFZHVhcmRvIFZhbGVudGlu
+DQo+IA0K
