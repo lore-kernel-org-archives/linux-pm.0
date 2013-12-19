@@ -1,147 +1,92 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v11 7/7] thermal:exynos:boost: Automatic enable/disable
- of BOOST feature (at Exynos4412)
-Date: Thu, 19 Dec 2013 10:50:52 -0400
-Message-ID: <52B307CC.2020704@ti.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1386952717-30947-1-git-send-email-l.majewski@samsung.com> <1386952717-30947-8-git-send-email-l.majewski@samsung.com>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
+Subject: Re: [PATCH V4 3/3] cpufreq: imx6: Add device tree binding document
+Date: Thu, 19 Dec 2013 15:42:28 +0000
+Message-ID: <DAA70643-C5BE-404A-93A7-0CCDDE2C3050@freescale.com>
+References: <1387462609-13013-1-git-send-email-b20788@freescale.com>
+ <1387462609-13013-3-git-send-email-b20788@freescale.com>,<52B300D4.4090309@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="OuK5HSlsKdmIsMRgfIpauCespVANEeE4a"
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386952717-30947-8-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1blp0188.outbound.protection.outlook.com ([207.46.163.188]:25450
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753268Ab3LSPmi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 Dec 2013 10:42:38 -0500
+In-Reply-To: <52B300D4.4090309@arm.com>
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+Cc: "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "Sudeep.KarkadaNagesha@arm.com" <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
---OuK5HSlsKdmIsMRgfIpauCespVANEeE4a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 13-12-2013 12:38, Lukasz Majewski wrote:
-> This patch provides auto disable/enable operation for boost. It uses al=
-ready
-> present thermal infrastructure to provide boost hysteresis.
-> The TMU data has been modified to work properly with or without boost.
->=20
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
-
-Looks better to me now. You might consider refactoring this driver to be
-frequency independent, if possible. But that is a different subject
-other than this patch.
-
->=20
-> ---
-> Changes for v11:
->     - Use only one thermal data set
->     - Adjust Exynos4412 thermal data to work with or without BOOST
->=20
-> Changes for v10:
->     - Remove boost related code from thermal_core.c
->     - Use already present thermal infrastructure to provide thermal hys=
-teresis
->     - Introduce special set of TMU data for BOOST
->=20
-> Changes for v9:
->     - None
->=20
-> Changes for v8:
->     - Move cpufreq_boost_* stub functions definition (needed when cpufr=
-eq
->       is not compiled in) to cpufreq.h at cpufreq core support commit
->=20
-> Changes for v7:
->     - None
->=20
-> Changes for v6:
->     - Disable boost only when supported and enabled
->     - Protect boost related thermal_zone_device struct fields with mute=
-x
->     - Evaluate temperature trend during boost enable decision
->     - Create separate methods to handle boost enable/disable
->       (thermal_boost_{enable|disable}) operations
->     - Boost is disabled at any trip point passage (not only the non cri=
-tical one)
->     - Add stub definitions for cpufreq boost functions used when
->       CONFIG_CPU_FREQ is NOT defined.
->=20
-> Changes for v5:
->     - Move boost disable code from cpu_cooling.c to thermal_core.c
->       (to handle_non_critical_trips)
->     - Extent struct thermal_zone_device by adding overheated bool flag
->     - Implement auto enable of boost after device cools down
->     - Introduce boost_polling flag, which indicates if thermal uses it'=
-s predefined
->       pool delay or has woken up thermal workqueue only to wait until d=
-evice
->       cools down.
->=20
-> Changes for v4:
->     - New patch
->=20
->  drivers/thermal/samsung/exynos_tmu_data.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
-l/samsung/exynos_tmu_data.c
-> index 073c292..476b768 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -131,8 +131,8 @@ static const struct exynos_tmu_registers exynos4412=
-_tmu_registers =3D {
-> =20
->  #define EXYNOS4412_TMU_DATA \
->  	.threshold_falling =3D 10, \
-> -	.trigger_levels[0] =3D 85, \
-> -	.trigger_levels[1] =3D 103, \
-> +	.trigger_levels[0] =3D 70, \
-> +	.trigger_levels[1] =3D 95, \
->  	.trigger_levels[2] =3D 110, \
->  	.trigger_levels[3] =3D 120, \
->  	.trigger_enable[0] =3D true, \
-> @@ -155,12 +155,12 @@ static const struct exynos_tmu_registers exynos44=
-12_tmu_registers =3D {
->  	.second_point_trim =3D 85, \
->  	.default_temp_offset =3D 50, \
->  	.freq_tab[0] =3D { \
-> -		.freq_clip_max =3D 800 * 1000, \
-> -		.temp_level =3D 85, \
-> +		.freq_clip_max =3D 1400 * 1000, \
-> +		.temp_level =3D 70, \
->  	}, \
->  	.freq_tab[1] =3D { \
-> -		.freq_clip_max =3D 200 * 1000, \
-> -		.temp_level =3D 103, \
-> +		.freq_clip_max =3D 400 * 1000, \
-> +		.temp_level =3D 95, \
->  	}, \
->  	.freq_tab_count =3D 2, \
->  	.registers =3D &exynos4412_tmu_registers, \
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---OuK5HSlsKdmIsMRgfIpauCespVANEeE4a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKzB88ACgkQCXcVR3XQvP1MKQD/XLfPfRu43RY75bep6m2CrUsW
-0yyREHxyUNtUr6t5QT0BAJBUCFwXLF1xcT3OFrQZwa2uOY3bx2kqGAb1XYkKsfWc
-=Hsi/
------END PGP SIGNATURE-----
-
---OuK5HSlsKdmIsMRgfIpauCespVANEeE4a--
+DQoNClNlbnQgZnJvbSBBbnNvbidzIGlQaG9uZQ0KDQo+INTaIDIwMTPE6jEy1MIxOcjVo6wyMjoy
+MaOsIlN1ZGVlcCBLYXJrYWRhTmFnZXNoYSIgPFN1ZGVlcC5LYXJrYWRhTmFnZXNoYUBhcm0uY29t
+PiDQtLXAo7oNCj4gDQo+PiBPbiAxOS8xMi8xMyAxNDoxNiwgQW5zb24gSHVhbmcgd3JvdGU6DQo+
+PiBUaGlzIGRldmljZSB0cmVlIGJpbmRpbmcgZG9jdW1lbnQgZGVzY3JpYmVzIHRoZSBpbXg2IGNw
+dWZyZXENCj4+IERUIGJpbmRpbmdzLiBUaGlzIGRvY3VtZW50IGxpc3RzIGFsbCByZXF1aXJlZCBh
+bmQgb3B0aW9uYWwgcHJvcGVydGllcw0KPj4gZm9yIGlteDYgY3B1ZnJlcS4NCj4+IA0KPj4gU2ln
+bmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPGIyMDc4OEBmcmVlc2NhbGUuY29tPg0KPj4gLS0tDQo+
+PiAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9jcHVmcmVxL2NwdWZyZXEtaW14Ni50eHQgICB8ICAg
+NTYgKysrKysrKysrKysrKysrKysrKysNCj4+IDEgZmlsZSBjaGFuZ2VkLCA1NiBpbnNlcnRpb25z
+KCspDQo+PiBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL2NwdWZyZXEvY3B1ZnJlcS1pbXg2LnR4dA0KPj4gDQo+PiBkaWZmIC0tZ2l0IGEvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2NwdWZyZXEvY3B1ZnJlcS1pbXg2LnR4dCBiL0Rv
+Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jcHVmcmVxL2NwdWZyZXEtaW14Ni50eHQN
+Cj4+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+PiBpbmRleCAwMDAwMDAwLi5hMTRiODk1DQo+PiAt
+LS0gL2Rldi9udWxsDQo+PiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
+Y3B1ZnJlcS9jcHVmcmVxLWlteDYudHh0DQo+PiBAQCAtMCwwICsxLDU2IEBADQo+PiAraS5NWDYg
+Y3B1ZnJlcSBkcml2ZXINCj4+ICstLS0tLS0tLS0tLS0tLS0tLS0tDQo+PiArDQo+PiAraS5NWDYg
+U29DIGNwdWZyZXEgZHJpdmVyIGZvciBDUFUgZnJlcXVlbmN5IHNjYWxpbmcuDQo+PiArDQo+PiAr
+VGhpcyBiaW5kaW5nIGRvYyBkZWZpbmVzIHByb3BlcnRpZXMgdGhhdCBtdXN0IGJlIHB1dCBpbiB0
+aGUgL2NwdXMvY3B1QDAgbm9kZSwNCj4+ICtwbGVhc2UgcmVmZXIgdG8gRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL2NwdWZyZXEvY3B1ZnJlcS1jcHUwLnR4dA0KPj4gK2ZvciBkZXRh
+aWwuDQo+PiArDQo+PiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4+ICstIG9wZXJhdGluZy1wb2lu
+dHM6IFJlZmVyIHRvIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9vcHAu
+dHh0DQo+PiArICBmb3IgZGV0YWlscy4NCj4+ICstIGNsb2NrczogU3BlY2lmeSBjbG9ja3MgdGhh
+dCBuZWVkIHRvIGJlIHVzZWQgd2hlbiBjcHUgZnJlcXVlbmN5IGlzIHNjYWxlZCwNCj4+ICsgIHJl
+ZmVyIHRvIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9jbG9jay1iaW5k
+aW5ncy50eHQgZm9yDQo+PiArICBkZXRhaWxzLg0KPj4gKy0gY2xvY2stbmFtZXM6IExpc3Qgb2Yg
+Y2xvY2sgaW5wdXQgbmFtZSBzdHJpbmdzIHNvcnRlZCBpbiB0aGUgc2FtZSBvcmRlciBhcyB0aGUN
+Cj4+ICsgIGNsb2NrcyBwcm9wZXJ0eSwgcmVmZXIgdG8gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL2Nsb2NrL2Nsb2NrLWJpbmRpbmdzLnR4dA0KPj4gKyAgZm9yIGRldGFpbHMuDQo+
+PiArLSB4eHgtc3VwcGx5OiBJbnB1dCB2b2x0YWdlIHN1cHBseSByZWd1bGF0b3IsIHJlZmVyIHRv
+DQo+PiArICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcmVndWxhdG9yL3JlZ3Vs
+YXRvci50eHQgZm9yIGRldGFpbHMuDQo+PiArICBhcm0tc3VwcGx5OiByZWd1bGF0b3Igbm9kZSBz
+dXBwbHlpbmcgYXJtLg0KPj4gKyAgcHUtc3VwcGx5OiByZWd1bGF0b3Igbm9kZSBzdXBwbHlpbmcg
+cHUuDQo+PiArICBzb2Mtc3VwcGx5OiByZWd1bGF0b3Igbm9kZSBzdXBwbHlpbmcgc29jLg0KPj4g
+Kw0KPj4gK09wdGlvbmFsIHByb3BlcnRpZXM6DQo+PiArLSBmc2wsc29jLW9wZXJhdGluZy1wb2lu
+dHM6IFNwZWNpZnkgdmRkc29jL3B1IHZvbHRhZ2Ugc2V0dGluZ3MgdGhhdCBtdXN0DQo+PiArICBn
+byB3aXRoIGNwdTAncyBvcGVyYXRpbmctcG9pbnRzLg0KPj4gKy0gY2xvY2stbGF0ZW5jeTogU3Bl
+Y2lmeSB0aGUgcG9zc2libGUgbWF4aW11bSB0cmFuc2l0aW9uIGxhdGVuY3kgZm9yIGNsb2NrLA0K
+Pj4gKyAgaW4gdW5pdCBvZiBuYW5vc2Vjb25kcy4NCj4+ICsNCj4gDQo+IFNvcnJ5IGlmIEkgYW0g
+bWlzc2luZyBzb21ldGhpbmcgb2J2aW91cyBhcyBJIGhhdmUgbm90IGZvbGxvd2VkIHRoZSBwcmV2
+aW91cw0KPiB2ZXJzaW9ucyBhbmQgY29ycmVzcG9uZGluZyBjb21tZW50cy4NCj4gDQo+IFNob3Vs
+ZCB0aGVzZSBTb0MgcHJvcGVydGllcyBiZSBwYXJ0IG9mIGNwdSBub2RlID8gSWYgc28gd2hpY2gg
+Y3B1IG9yIHdoeSBjcHUwID8NCnllcywgdGhlc2UgcHJvcGVydGllcyBhcmUgZm9yIGNwdWZyZXEg
+ZnVuY3Rpb24sIGFzIG9uIFNNUCBzeXN0ZW0sIGFsbCBDUFVzIGFyZSBydW5uaW5nIGF0IHNhbWUg
+ZnJlcSwgY3B1ZnJlcSBpcyB0aWVkIHRvIGNwdTAsIHNvIHdlIHB1dCB0aGVtIGluIGNwdTAncyBu
+b2RlLiANCg0KDQo+IElJVUMgaXQncyBtb3JlIGEgU29DIHByb3BlcnRpZXMgd2hpY2ggYWxzbyBp
+bmZsdWVuY2VzIEFSTSBDUFUgT1BQcy4gSU9XIG90aGVyDQo+IHJlZ3VsYXRvcnMgbWF5IGRlcGVu
+ZCBvbiBwdS9zb2Mtc3VwcGx5LiBJbiB0aGF0IGNhc2UgaXQgd291bGQgYmUgY2xlYW5lciBpZiB0
+aGF0DQo+IGRlcGVuZGVuY3kgaXMgc2V0dXAgdGhyb3VnaCByZWd1bGF0b3JzIGZyYW1ld29yay4N
+Cg0KdGhlIHRydXRoIGlzIHRoYXQgYXJtIHBvd2VyIGRvbWFpbiBoYXMgbm8gbGV2ZWwgc2hpZnQg
+d2l0aCBzaWMvcHUgZG9tYWluLCBzbyB3aGVuIGFybSBkb21haW4gdm9sdGFnZSBpcyBjaGFuZ2Vk
+LCBzb2MvcHUgZG9tYWluIG5lZWQgdG8gYmUgY2hhbmdlZCB0b28sIG1vcmUgbGlrZSBtdWx0aSBP
+UFAgY29uY2VwdC4gdGhlcmUgaXMgbm8gb3RoZXIgcmVndWxhdG9ycyBkZXBlbmQgb24gc29jL3B1
+IHN1cHBseS4NCg0KYW5zb24uDQo+IA0KPj4gK0V4YW1wbGVzOg0KPj4gKw0KPj4gKyAgICBjcHVA
+MCB7DQo+PiArICAgICAgICBvcGVyYXRpbmctcG9pbnRzID0gPA0KPj4gKyAgICAgICAgICAgIC8q
+IGtIeiAgICB1ViAqLw0KPj4gKyAgICAgICAgICAgIDEyMDAwMDAgMTI3NTAwMA0KPj4gKyAgICAg
+ICAgICAgIDk5NjAwMCAgMTI1MDAwMA0KPj4gKyAgICAgICAgICAgIDc5MjAwMCAgMTE1MDAwMA0K
+Pj4gKyAgICAgICAgICAgIDM5NjAwMCAgOTc1MDAwDQo+PiArICAgICAgICA+Ow0KPj4gKyAgICAg
+ICAgZnNsLHNvYy1vcGVyYXRpbmctcG9pbnRzID0gPA0KPj4gKyAgICAgICAgICAgIC8qIEFSTSBr
+SHogIFNPQy1QVSB1ViAqLw0KPj4gKyAgICAgICAgICAgIDEyMDAwMDAgMTI3NTAwMA0KPj4gKyAg
+ICAgICAgICAgIDk5NjAwMCAgICAxMjUwMDAwDQo+PiArICAgICAgICAgICAgNzkyMDAwICAgIDEx
+NzUwMDANCj4+ICsgICAgICAgICAgICAzOTYwMDAgICAgMTE3NTAwMA0KPj4gKyAgICAgICAgPjsN
+Cj4+ICsgICAgICAgIGNsb2NrLWxhdGVuY3kgPSA8NjEwMzY+OyAvKiB0d28gQ0xLMzIgcGVyaW9k
+cyAqLw0KPj4gKyAgICAgICAgY2xvY2tzID0gPCZjbGtzIDEwND4sIDwmY2xrcyA2PiwgPCZjbGtz
+IDE2PiwNCj4+ICsgICAgICAgICAgICAgPCZjbGtzIDE3PiwgPCZjbGtzIDE3MD47DQo+PiArICAg
+ICAgICBjbG9jay1uYW1lcyA9ICJhcm0iLCAicGxsMl9wZmQyXzM5Nm0iLCAic3RlcCIsDQo+PiAr
+ICAgICAgICAgICAgICAgICAgInBsbDFfc3ciLCAicGxsMV9zeXMiOw0KPj4gKyAgICAgICAgYXJt
+LXN1cHBseSA9IDwmcmVnX2FybT47DQo+PiArICAgICAgICBwdS1zdXBwbHkgPSA8JnJlZ19wdT47
+DQo+PiArICAgICAgICBzb2Mtc3VwcGx5ID0gPCZyZWdfc29jPjsNCj4+ICsgICAgfTsNCj4gDQo+
+IA0KPiANCj4gDQo=
