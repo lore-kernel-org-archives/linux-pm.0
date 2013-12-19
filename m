@@ -1,39 +1,47 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
- regression
-Date: Thu, 19 Dec 2013 22:17:01 +0100
-Message-ID: <20131219211701.GB3464@gmail.com>
-References: <52B316FF.50906@zytor.com>
- <20131219160210.GA28426@gmail.com>
- <52B31B21.6010901@zytor.com>
- <20131219162136.GM16438@laptop.programming.kicks-ass.net>
- <52B323BE.7090108@zytor.com>
- <20131219170741.GB30382@gmail.com>
- <20131219172535.GN16438@laptop.programming.kicks-ass.net>
- <20131219175037.GK2480@laptop.programming.kicks-ass.net>
- <20131219181812.GC32508@gmail.com>
- <44cc7c3a-7114-4f37-a844-77e552dbc7aa@email.android.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <44cc7c3a-7114-4f37-a844-77e552dbc7aa@email.android.com>
-Sender: stable-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
+From: Jason Baron <jbaron@akamai.com>
+Subject: [PATCH v2] cpufreq: Use CONFIG_CPU_FREQ_DEFAULT_* to set initial policy for setpolicy drivers
+Date: Thu, 19 Dec 2013 22:50:50 +0000 (GMT)
+Message-ID: <20131219225050.E82C91FF9@prod-mail-relay06.akamai.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com, dirk.brandewie@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
+When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
+intel_pstate driver, the desired default policy is not properly set. For
+example, setting 'CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE' ended up with the
+'powersave' policy being set.
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+Fix by configuring the correct default policy, if either 'powersave' or
+'performance' are requested. Otherwise, fallback to what the driver originally
+set via its 'init' routine.
 
-> CLFLUSH is only (guaranteed to be) ordered with respect to MFENCE 
-> according to the SDM.
+Signed-off-by: Jason Baron <jbaron@akamai.com>
+---
 
-Yes, I quoted the relevant text a couple of hours ago, CLFLUSH is 
-pretty special, so it's not ordered against atomics or serializing 
-instructions for example - only ordered against explict MFENCE calls, 
-which on x86 is mb()/smp_mb().
+v2: simplify logic
 
-Thanks,
+ drivers/cpufreq/cpufreq.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-	Ingo
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 02d534d..42e1ea4 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -828,6 +828,12 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ 	int ret = 0;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
++
++	/* Use the default policy if its valid. */
++	if (cpufreq_driver->setpolicy)
++		cpufreq_parse_governor(policy->governor->name,
++					&new_policy.policy, NULL);
++
+ 	/* assure that the starting sequence is run in cpufreq_set_policy */
+ 	policy->governor = NULL;
+ 
+-- 
+1.8.2.rc2
+
