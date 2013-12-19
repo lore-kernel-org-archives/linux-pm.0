@@ -1,90 +1,58 @@
-From: Anson Huang <b20788@freescale.com>
-Subject: [PATCH V3 2/2] thermal: imx: add necessary clk operation
-Date: Thu, 19 Dec 2013 16:16:31 -0500
-Message-ID: <1387487791-3259-1-git-send-email-b20788@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-doc-owner@vger.kernel.org>
-Sender: linux-doc-owner@vger.kernel.org
-To: shawn.guo@linaro.org, kernel@pengutronix.de, rui.zhang@intel.com, eduardo.valentin@ti.com
-Cc: devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From: Masami Ichikawa <masami256@gmail.com>
+Subject: [PATCH] PM: Fix memory leak in pm_vt_switch_unregister().
+Date: Thu, 19 Dec 2013 20:00:47 +0900
+Message-ID: <1387450847-23797-1-git-send-email-masami256@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, masami256@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Thermal sensor needs pll3_usb_otg when measuring temperature,
-otherwise the temperature read will be incorrect, so need to
-enable this clk before sensor working, for alarm function,
-as hardware will take measurement periodically, so we should
-keep this clk always on once alarm function is enabled.
+kmemleak reported a memory leak as below.
 
-Signed-off-by: Anson Huang <b20788@freescale.com>
+unreferenced object 0xffff880118f14700 (size 32):
+  comm "swapper/0", pid 1, jiffies 4294877401 (age 123.283s)
+  hex dump (first 32 bytes):
+    00 01 10 00 00 00 ad de 00 02 20 00 00 00 ad de  .......... .....
+    00 d4 d2 18 01 88 ff ff 01 00 00 00 00 04 00 00  ................
+  backtrace:
+    [<ffffffff814edb1e>] kmemleak_alloc+0x4e/0xb0
+    [<ffffffff811889dc>] kmem_cache_alloc_trace+0x1ec/0x260
+    [<ffffffff810aba66>] pm_vt_switch_required+0x76/0xb0
+    [<ffffffff812f39f5>] register_framebuffer+0x195/0x320
+    [<ffffffff8130af18>] efifb_probe+0x718/0x780
+    [<ffffffff81391495>] platform_drv_probe+0x45/0xb0
+    [<ffffffff8138f407>] driver_probe_device+0x87/0x3a0
+    [<ffffffff8138f7f3>] __driver_attach+0x93/0xa0
+    [<ffffffff8138d413>] bus_for_each_dev+0x63/0xa0
+    [<ffffffff8138ee5e>] driver_attach+0x1e/0x20
+    [<ffffffff8138ea40>] bus_add_driver+0x180/0x250
+    [<ffffffff8138fe74>] driver_register+0x64/0xf0
+    [<ffffffff813913ba>] __platform_driver_register+0x4a/0x50
+    [<ffffffff8191e028>] efifb_driver_init+0x12/0x14
+    [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
+    [<ffffffff818e40e0>] kernel_init_freeable+0x17b/0x201
+
+In pm_vt_switch_required(), "entry" variable is allocated via kmalloc().
+So, in pm_vt_switch_unregister(), it needs to call kfree() when object
+is deleted from list.
+
+Signed-off-by: Masami Ichikawa <masami256@gmail.com>
 ---
- .../devicetree/bindings/thermal/imx-thermal.txt    |    4 ++++
- drivers/thermal/imx_thermal.c                      |   18 ++++++++++++++++++
- 2 files changed, 22 insertions(+)
+ kernel/power/console.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-index 541c25e..1f0f672 100644
---- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-@@ -8,10 +8,14 @@ Required properties:
-   calibration data, e.g. OCOTP on imx6q.  The details about calibration data
-   can be found in SoC Reference Manual.
- 
-+Optional properties:
-+- clocks : thermal sensor's clock source.
-+
- Example:
- 
- tempmon {
- 	compatible = "fsl,imx6q-tempmon";
- 	fsl,tempmon = <&anatop>;
- 	fsl,tempmon-data = <&ocotp>;
-+	clocks = <&clks 172>;
- };
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 1d6c801..c2b8173 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -7,6 +7,7 @@
-  *
-  */
- 
-+#include <linux/clk.h>
- #include <linux/cpu_cooling.h>
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
-@@ -73,6 +74,7 @@ struct imx_thermal_data {
- 	unsigned long last_temp;
- 	bool irq_enabled;
- 	int irq;
-+	struct clk *thermal_clk;
- };
- 
- static void imx_set_alarm_temp(struct imx_thermal_data *data,
-@@ -457,6 +459,22 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		return ret;
+diff --git a/kernel/power/console.c b/kernel/power/console.c
+index 463aa673..eacb8bd 100644
+--- a/kernel/power/console.c
++++ b/kernel/power/console.c
+@@ -81,6 +81,7 @@ void pm_vt_switch_unregister(struct device *dev)
+ 	list_for_each_entry(tmp, &pm_vt_switch_list, head) {
+ 		if (tmp->dev == dev) {
+ 			list_del(&tmp->head);
++			kfree(tmp);
+ 			break;
+ 		}
  	}
- 
-+	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(data->thermal_clk)) {
-+		dev_warn(&pdev->dev, "failed to get thermal clk!\n");
-+	} else {
-+		/*
-+		 * Thermal sensor needs clk on to get correct value, normally
-+		 * we should enable its clk before taking measurement and disable
-+		 * clk after measurement is done, but if alarm function is enabled,
-+		 * hardware will auto measure the temperature periodically, so we
-+		 * need to keep the clk always on for alarm function.
-+		 */
-+		ret = clk_prepare_enable(data->thermal_clk);
-+		if (ret)
-+			dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
-+	}
-+
- 	/* Enable measurements at ~ 10 Hz */
- 	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
- 	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
 -- 
-1.7.9.5
-
-
+1.8.4.2
