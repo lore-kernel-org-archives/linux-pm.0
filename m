@@ -1,140 +1,104 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V3 2/2] thermal: imx: add necessary clk operation
-Date: Thu, 19 Dec 2013 09:12:57 -0400
-Message-ID: <52B2F0D9.2020704@ti.com>
-References: <1387487791-3259-1-git-send-email-b20788@freescale.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH V4 3/3] cpufreq: imx6: Add device tree binding document
+Date: Thu, 19 Dec 2013 14:21:08 +0000
+Message-ID: <52B300D4.4090309@arm.com>
+References: <1387462609-13013-1-git-send-email-b20788@freescale.com> <1387462609-13013-3-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="rUBDlWxtxjpE5tkeKGR6TbLdxaEgTrPI1"
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:45759 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757630Ab3LSNNq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 Dec 2013 08:13:46 -0500
-In-Reply-To: <1387487791-3259-1-git-send-email-b20788@freescale.com>
+Received: from service87.mimecast.com ([91.220.42.44]:48978 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754508Ab3LSOVO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 09:21:14 -0500
+In-Reply-To: <1387462609-13013-3-git-send-email-b20788@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: shawn.guo@linaro.org, kernel@pengutronix.de, rui.zhang@intel.com, eduardo.valentin@ti.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Anson Huang <b20788@freescale.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: Sudeep.KarkadaNagesha@arm.com, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
---rUBDlWxtxjpE5tkeKGR6TbLdxaEgTrPI1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 19-12-2013 17:16, Anson Huang wrote:
-> Thermal sensor needs pll3_usb_otg when measuring temperature,
-> otherwise the temperature read will be incorrect, so need to
-> enable this clk before sensor working, for alarm function,
-> as hardware will take measurement periodically, so we should
-> keep this clk always on once alarm function is enabled.
->=20
+On 19/12/13 14:16, Anson Huang wrote:
+> This device tree binding document describes the imx6 cpufreq
+> DT bindings. This document lists all required and optional properties
+> for imx6 cpufreq.
+> 
 > Signed-off-by: Anson Huang <b20788@freescale.com>
 > ---
->  .../devicetree/bindings/thermal/imx-thermal.txt    |    4 ++++
->  drivers/thermal/imx_thermal.c                      |   18 ++++++++++++=
-++++++
->  2 files changed, 22 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt =
-b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> index 541c25e..1f0f672 100644
-> --- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-> @@ -8,10 +8,14 @@ Required properties:
->    calibration data, e.g. OCOTP on imx6q.  The details about calibratio=
-n data
->    can be found in SoC Reference Manual.
-> =20
+>  .../devicetree/bindings/cpufreq/cpufreq-imx6.txt   |   56 ++++++++++++++++++++
+>  1 file changed, 56 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> new file mode 100644
+> index 0000000..a14b895
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
+> @@ -0,0 +1,56 @@
+> +i.MX6 cpufreq driver
+> +-------------------
+> +
+> +i.MX6 SoC cpufreq driver for CPU frequency scaling.
+> +
+> +This binding doc defines properties that must be put in the /cpus/cpu@0 node,
+> +please refer to Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+> +for detail.
+> +
+> +Required properties:
+> +- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
+> +  for details.
+> +- clocks: Specify clocks that need to be used when cpu frequency is scaled,
+> +  refer to Documentation/devicetree/bindings/clock/clock-bindings.txt for
+> +  details.
+> +- clock-names: List of clock input name strings sorted in the same order as the
+> +  clocks property, refer to Documentation/devicetree/bindings/clock/clock-bindings.txt
+> +  for details.
+> +- xxx-supply: Input voltage supply regulator, refer to
+> +  Documentation/devicetree/bindings/regulator/regulator.txt for details.
+> +  arm-supply: regulator node supplying arm.
+> +  pu-supply: regulator node supplying pu.
+> +  soc-supply: regulator node supplying soc.
+> +
 > +Optional properties:
-> +- clocks : thermal sensor's clock source.
+> +- fsl,soc-operating-points: Specify vddsoc/pu voltage settings that must
+> +  go with cpu0's operating-points.
+> +- clock-latency: Specify the possible maximum transition latency for clock,
+> +  in unit of nanoseconds.
 > +
->  Example:
-> =20
->  tempmon {
->  	compatible =3D "fsl,imx6q-tempmon";
->  	fsl,tempmon =3D <&anatop>;
->  	fsl,tempmon-data =3D <&ocotp>;
-> +	clocks =3D <&clks 172>;
->  };
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_therma=
-l.c
-> index 1d6c801..c2b8173 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -7,6 +7,7 @@
->   *
->   */
-> =20
-> +#include <linux/clk.h>
->  #include <linux/cpu_cooling.h>
->  #include <linux/cpufreq.h>
->  #include <linux/delay.h>
-> @@ -73,6 +74,7 @@ struct imx_thermal_data {
->  	unsigned long last_temp;
->  	bool irq_enabled;
->  	int irq;
-> +	struct clk *thermal_clk;
->  };
-> =20
->  static void imx_set_alarm_temp(struct imx_thermal_data *data,
-> @@ -457,6 +459,22 @@ static int imx_thermal_probe(struct platform_devic=
-e *pdev)
->  		return ret;
->  	}
-> =20
 
-There are several reg writes before this point. Are you sure you won't
-need this clock for performing those operations?
+Sorry if I am missing something obvious as I have not followed the previous
+versions and corresponding comments.
 
-> +	data->thermal_clk =3D devm_clk_get(&pdev->dev, NULL);
-> +	if (IS_ERR(data->thermal_clk)) {
-> +		dev_warn(&pdev->dev, "failed to get thermal clk!\n");
-> +	} else {
-> +		/*
-> +		 * Thermal sensor needs clk on to get correct value, normally
-> +		 * we should enable its clk before taking measurement and disable
-> +		 * clk after measurement is done, but if alarm function is enabled,
-> +		 * hardware will auto measure the temperature periodically, so we
-> +		 * need to keep the clk always on for alarm function.
-> +		 */
-> +		ret =3D clk_prepare_enable(data->thermal_clk);
-> +		if (ret)
-> +			dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
-> +	}
+Should these SoC properties be part of cpu node ? If so which cpu or why cpu0 ?
+IIUC it's more a SoC properties which also influences ARM CPU OPPs. IOW other
+regulators may depend on pu/soc-supply. In that case it would be cleaner if that
+dependency is setup through regulators framework.
+
+> +Examples:
 > +
->  	/* Enable measurements at ~ 10 Hz */
->  	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
->  	measure_freq =3D DIV_ROUND_UP(32768, 10); /* 10 Hz */
->=20
+> +	cpu@0 {
+> +		operating-points = <
+> +			/* kHz    uV */
+> +			1200000 1275000
+> +			996000  1250000
+> +			792000  1150000
+> +			396000  975000
+> +		>;
+> +		fsl,soc-operating-points = <
+> +			/* ARM kHz  SOC-PU uV */
+> +			1200000 1275000
+> +			996000	1250000
+> +			792000	1175000
+> +			396000	1175000
+> +		>;
+> +		clock-latency = <61036>; /* two CLK32 periods */
+> +		clocks = <&clks 104>, <&clks 6>, <&clks 16>,
+> +			 <&clks 17>, <&clks 170>;
+> +		clock-names = "arm", "pll2_pfd2_396m", "step",
+> +			      "pll1_sw", "pll1_sys";
+> +		arm-supply = <&reg_arm>;
+> +		pu-supply = <&reg_pu>;
+> +		soc-supply = <&reg_soc>;
+> +	};
+> 
 
-Don't you need to release the clock when .remove is called either on
-driver or device removal?
 
-What about suspend / resume path? Do you want to keep this clock on when
-suspending? Is it gonna work or prevent your system to enter low power
-states?
-
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---rUBDlWxtxjpE5tkeKGR6TbLdxaEgTrPI1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlKy8OEACgkQCXcVR3XQvP1xigEAscjspMIy9C/zo+Qu1Im/CSM9
-uGzPb55dirz4C55QOd8A/RYZV4E2i5YT3i2fFmQ0h2kMk+uPl/aMdfZeZ1COdcy7
-=TTly
------END PGP SIGNATURE-----
-
---rUBDlWxtxjpE5tkeKGR6TbLdxaEgTrPI1--
