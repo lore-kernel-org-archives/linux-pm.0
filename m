@@ -1,41 +1,74 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 1/2] intel_pstate: Add setting voltage value for baytrail
- P states.
-Date: Wed, 18 Dec 2013 16:03:53 -0800
-Message-ID: <52B237E9.5050903@gmail.com>
-References: <1387302127-7614-1-git-send-email-dirk.j.brandewie@intel.com> <1445568.VWz2v5WUSg@amdc1032>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [RFC][PATCH] PM / Sleep: Freeze filesystems during system
+ suspend/hibernation
+Date: Thu, 19 Dec 2013 11:22:16 +1100
+Message-ID: <20131219002216.GT31386@dastard>
+References: <201202172159.15396.rjw@sisk.pl>
+ <CA+5PVA50UA1oP1jKgnQjHh8APp=cNWREw3bkfrkV1OW_Tg1g+A@mail.gmail.com>
+ <201205252113.50900.rjw@sisk.pl>
+ <CA+5PVA5GWsTdNky-K1-hu5_R55hdKfr-Oa26HpX=FdA1cRZsbQ@mail.gmail.com>
+ <CA+5PVA7vsZPd9eXwN-Q+d8c9+0bAmVdr698vv+LFyrn+3iFOMA@mail.gmail.com>
+ <20131217230843.GA2911@amd.pavel.ucw.cz>
+ <20131217233152.GC20579@dastard>
+ <20131218000128.GA3737@amd.pavel.ucw.cz>
+ <20131218123952.GI31386@dastard>
+ <20131218140842.GA20488@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:36915 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037Ab3LSAD5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2013 19:03:57 -0500
-Received: by mail-pd0-f171.google.com with SMTP id z10so348565pdj.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Dec 2013 16:03:56 -0800 (PST)
-In-Reply-To: <1445568.VWz2v5WUSg@amdc1032>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-fsdevel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20131218140842.GA20488@amd.pavel.ucw.cz>
+Sender: linux-fsdevel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Josh Boyer <jwboyer@fedoraproject.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, Nigel Cunningham <nigel@tuxonice.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 12/18/2013 04:37 AM, Bartlomiej Zolnierkiewicz wrote:
-		val |= (u64)1 << 32;
->> +
->> +	vid_fp = mul_fp(cpudata->vid.min +
->> +			int_tofp(pstate - cpudata->pstate.min_pstate),
->> +			cpudata->vid.ratio);
->
-> Shouldn't this be:
->
-> +	vid_fp = cpudata->vid.min + mul_fp(
-> +			int_tofp(pstate - cpudata->pstate.min_pstate),
-> +			cpudata->vid.ratio);
->
+On Wed, Dec 18, 2013 at 03:08:42PM +0100, Pavel Machek wrote:
+> > > > I disagree - given the problem it is resolving leads to silent
+> > > > filesystem corruption, this patch should be considered somewhat of a
+> > > > priority to push...
+> > > 
+> > > Umm. Ok, I forgot what it does, really.
+> > 
+> > It ensures that the filesystem is in an quiescent state both in
+> > memory and on disk, and it cannot be modified in memory or on disk
+> > whilst the suspend image is being generated, or by log recovery
+> > after a resume before the suspended image has been restored.
+> 
+> If someone attempts to run log recovery before resume, that's a bug
+> and yes, it will corrupt filesystems. (Including ext3). Don't do that.
 
-Yes thx
+Freezing the filesystem prevents that accidental mount of the
+filesystem from being an issue. It fixes a bug that:
 
-> ?
->
+> Documentation/power/swsusp.txt:
+> 
+>  * BIG FAT WARNING
+>    *********************************************************
+>  *
+>  * If you touch anything on disk between suspend and resume...
+>  *                              ...kiss your data goodbye.
 
+Makes this a whole lot less dangerous.
+
+> > > So... for few years now suspend corrupts data on XFS? And Fedora has
+> > > the fix but it is not in mainline? That does not sound right...
+> > 
+> > The issues freezing the filesystem before the suspend image is
+> > created affect every journalled filesystem linux supports, be
+> > it XFS, ext4, reiser, btrfs, etc.
+> 
+> Did not it have some problems with ext3?
+
+Please read more carefully: "affect every journalled filesystem
+linux supports". So, ext3 is affected because it's a journalling
+filesystem.  I didn't list every journalled filesystem Linux
+supports - "etc" means there are more examples that aren't
+explicitly listed.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
