@@ -1,104 +1,107 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH V4 3/3] cpufreq: imx6: Add device tree binding document
-Date: Thu, 19 Dec 2013 14:21:08 +0000
-Message-ID: <52B300D4.4090309@arm.com>
-References: <1387462609-13013-1-git-send-email-b20788@freescale.com> <1387462609-13013-3-git-send-email-b20788@freescale.com>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power regression
+Date: Thu, 19 Dec 2013 06:40:41 -0800
+Message-ID: <ad600986-5506-4cf5-baad-d767079d086f@email.android.com>
+References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com> <20131219122257.GC11279@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:48978 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754508Ab3LSOVO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 09:21:14 -0500
-In-Reply-To: <1387462609-13013-3-git-send-email-b20788@freescale.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20131219122257.GC11279@gmail.com>
+Sender: stable-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>, Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
-Cc: Sudeep.KarkadaNagesha@arm.com, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On 19/12/13 14:16, Anson Huang wrote:
-> This device tree binding document describes the imx6 cpufreq
-> DT bindings. This document lists all required and optional properties
-> for imx6 cpufreq.
-> 
-> Signed-off-by: Anson Huang <b20788@freescale.com>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-imx6.txt   |   56 ++++++++++++++++++++
->  1 file changed, 56 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
-> new file mode 100644
-> index 0000000..a14b895
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-imx6.txt
-> @@ -0,0 +1,56 @@
-> +i.MX6 cpufreq driver
-> +-------------------
-> +
-> +i.MX6 SoC cpufreq driver for CPU frequency scaling.
-> +
-> +This binding doc defines properties that must be put in the /cpus/cpu@0 node,
-> +please refer to Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> +for detail.
-> +
-> +Required properties:
-> +- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
-> +  for details.
-> +- clocks: Specify clocks that need to be used when cpu frequency is scaled,
-> +  refer to Documentation/devicetree/bindings/clock/clock-bindings.txt for
-> +  details.
-> +- clock-names: List of clock input name strings sorted in the same order as the
-> +  clocks property, refer to Documentation/devicetree/bindings/clock/clock-bindings.txt
-> +  for details.
-> +- xxx-supply: Input voltage supply regulator, refer to
-> +  Documentation/devicetree/bindings/regulator/regulator.txt for details.
-> +  arm-supply: regulator node supplying arm.
-> +  pu-supply: regulator node supplying pu.
-> +  soc-supply: regulator node supplying soc.
-> +
-> +Optional properties:
-> +- fsl,soc-operating-points: Specify vddsoc/pu voltage settings that must
-> +  go with cpu0's operating-points.
-> +- clock-latency: Specify the possible maximum transition latency for clock,
-> +  in unit of nanoseconds.
-> +
+... or just use static_cpu_has() maybe?
 
-Sorry if I am missing something obvious as I have not followed the previous
-versions and corresponding comments.
+Ingo Molnar <mingo@kernel.org> wrote:
+>
+>* Len Brown <lenb@kernel.org> wrote:
+>
+>> From: Len Brown <len.brown@intel.com>
+>> 
+>> Linux 3.10 changed the timing of how thread_info->flags is touched:
+>> 
+>> 	x86: Use generic idle loop
+>> 	(7d1a941731fabf27e5fb6edbebb79fe856edb4e5)
+>> 
+>> This caused Intel NHM-EX and WSM-EX servers to experience a large
+>number
+>> of immediate MONITOR/MWAIT break wakeups, which caused cpuidle to
+>demote
+>> from deep C-states to shallow C-states, which caused these platforms
+>> to experience a significant increase in idle power.
+>> 
+>> Note that this issue was already present before the commit above,
+>> however, it wasn't seen often enough to be noticed in power
+>measurements.
+>> 
+>> Here we extend an errata workaround from the Core2 EX "Dunnington"
+>> to extend to NHM-EX and WSM-EX, to prevent these immediate
+>> returns from MWAIT, reducing idle power on these platforms.
+>> 
+>> While only acpi_idle ran on Dunnington, intel_idle
+>> may also run on these two newer systems.
+>> As of today, there are no other models that are known
+>> to need this tweak.
+>> 
+>> ref: https://lkml.org/lkml/2013/12/7/22
+>> Signed-off-by: Len Brown <len.brown@intel.com>
+>> Cc: <stable@vger.kernel.org> # 3.12.x, 3.11.x, 3.10.x
+>> ---
+>>  arch/x86/kernel/cpu/intel.c | 3 ++-
+>>  drivers/idle/intel_idle.c   | 3 +++
+>>  2 files changed, 5 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/arch/x86/kernel/cpu/intel.c
+>b/arch/x86/kernel/cpu/intel.c
+>> index dc1ec0d..ea04b34 100644
+>> --- a/arch/x86/kernel/cpu/intel.c
+>> +++ b/arch/x86/kernel/cpu/intel.c
+>> @@ -387,7 +387,8 @@ static void init_intel(struct cpuinfo_x86 *c)
+>>  			set_cpu_cap(c, X86_FEATURE_PEBS);
+>>  	}
+>>  
+>> -	if (c->x86 == 6 && c->x86_model == 29 && cpu_has_clflush)
+>> +	if (c->x86 == 6 && cpu_has_clflush &&
+>> +	    (c->x86_model == 29 || c->x86_model == 46 || c->x86_model ==
+>47))
+>>  		set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
+>>  
+>>  #ifdef CONFIG_X86_64
+>> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+>> index 92d1206..f80b700 100644
+>> --- a/drivers/idle/intel_idle.c
+>> +++ b/drivers/idle/intel_idle.c
+>> @@ -377,6 +377,9 @@ static int intel_idle(struct cpuidle_device *dev,
+>>  
+>>  	if (!current_set_polling_and_test()) {
+>>  
+>> +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
+>> +			clflush((void *)&current_thread_info()->flags);
+>> +
+>>  		__monitor((void *)&current_thread_info()->flags, 0, 0);
+>
+>I don't think either of these casts to '(void *)' is needed, both the 
+>clflush() and __monitor() will take pointers.
+>
+>Looks good to me otherwise - except that maybe the best way to 
+>represent this quirk would be for the CLFLUSH+MONITOR sequence to be a 
+>single 'instruction' which is patched in dynamically during bootup, 
+>using our usual alternatives framework.
+>
+>On non-affected CPUs a NOP would remain in place of the CLFLUSH, 
+>eliminating the branch above.
+>
+>So the whole thing could be thought of as a slightly more complex 
+>'monitor' instruction - not exposing the quirk details to actual usage 
+>sites.
+>
+>Thanks,
+>
+>	Ingo
 
-Should these SoC properties be part of cpu node ? If so which cpu or why cpu0 ?
-IIUC it's more a SoC properties which also influences ARM CPU OPPs. IOW other
-regulators may depend on pu/soc-supply. In that case it would be cleaner if that
-dependency is setup through regulators framework.
-
-> +Examples:
-> +
-> +	cpu@0 {
-> +		operating-points = <
-> +			/* kHz    uV */
-> +			1200000 1275000
-> +			996000  1250000
-> +			792000  1150000
-> +			396000  975000
-> +		>;
-> +		fsl,soc-operating-points = <
-> +			/* ARM kHz  SOC-PU uV */
-> +			1200000 1275000
-> +			996000	1250000
-> +			792000	1175000
-> +			396000	1175000
-> +		>;
-> +		clock-latency = <61036>; /* two CLK32 periods */
-> +		clocks = <&clks 104>, <&clks 6>, <&clks 16>,
-> +			 <&clks 17>, <&clks 170>;
-> +		clock-names = "arm", "pll2_pfd2_396m", "step",
-> +			      "pll1_sw", "pll1_sys";
-> +		arm-supply = <&reg_arm>;
-> +		pu-supply = <&reg_pu>;
-> +		soc-supply = <&reg_soc>;
-> +	};
-> 
-
-
+-- 
+Sent from my mobile phone.  Please pardon brevity and lack of formatting.
