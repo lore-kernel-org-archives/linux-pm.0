@@ -1,54 +1,39 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: Fix memory leak in pm_vt_switch_unregister().
-Date: Thu, 19 Dec 2013 13:42:28 +0100
-Message-ID: <20131219124228.GA11928@amd.pavel.ucw.cz>
-References: <1387450847-23797-1-git-send-email-masami256@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: Apply default governor for setpolicy drivers
+Date: Thu, 19 Dec 2013 14:16:30 +0100
+Message-ID: <1482804.eoqBME3Grn@vostro.rjw.lan>
+References: <20131218203102.9F9692036@prod-mail-relay06.akamai.com> <2651749.Dr3egRT25J@vostro.rjw.lan> <CAKohpokxbAkXznyesdUAV7nhcdxMjcc=uOZE=hQhXnnD=bRNTw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1387450847-23797-1-git-send-email-masami256@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Masami Ichikawa <masami256@gmail.com>
-Cc: len.brown@intel.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokxbAkXznyesdUAV7nhcdxMjcc=uOZE=hQhXnnD=bRNTw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Jason Baron <jbaron@akamai.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "dirk.brandewie@gmail.com" <dirk.brandewie@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2013-12-19 20:00:47, Masami Ichikawa wrote:
-> kmemleak reported a memory leak as below.
+On Thursday, December 19, 2013 10:57:06 AM Viresh Kumar wrote:
+> On 19 December 2013 05:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > +       if (cpufreq_driver->setpolicy) {
+> > +               unsigned int ret;
+> > +
+> > +               /* Use the default policyt if it is valid. */
+> > +               if (!cpufreq_parse_governor(policy->governor->name, &ret, NULL))
+> > +                       new_policy.policy = ret;
+> > +       }
 > 
-> unreferenced object 0xffff880118f14700 (size 32):
->   comm "swapper/0", pid 1, jiffies 4294877401 (age 123.283s)
->   hex dump (first 32 bytes):
->     00 01 10 00 00 00 ad de 00 02 20 00 00 00 ad de  .......... .....
->     00 d4 d2 18 01 88 ff ff 01 00 00 00 00 04 00 00  ................
->   backtrace:
->     [<ffffffff814edb1e>] kmemleak_alloc+0x4e/0xb0
->     [<ffffffff811889dc>] kmem_cache_alloc_trace+0x1ec/0x260
->     [<ffffffff810aba66>] pm_vt_switch_required+0x76/0xb0
->     [<ffffffff812f39f5>] register_framebuffer+0x195/0x320
->     [<ffffffff8130af18>] efifb_probe+0x718/0x780
->     [<ffffffff81391495>] platform_drv_probe+0x45/0xb0
->     [<ffffffff8138f407>] driver_probe_device+0x87/0x3a0
->     [<ffffffff8138f7f3>] __driver_attach+0x93/0xa0
->     [<ffffffff8138d413>] bus_for_each_dev+0x63/0xa0
->     [<ffffffff8138ee5e>] driver_attach+0x1e/0x20
->     [<ffffffff8138ea40>] bus_add_driver+0x180/0x250
->     [<ffffffff8138fe74>] driver_register+0x64/0xf0
->     [<ffffffff813913ba>] __platform_driver_register+0x4a/0x50
->     [<ffffffff8191e028>] efifb_driver_init+0x12/0x14
->     [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
->     [<ffffffff818e40e0>] kernel_init_freeable+0x17b/0x201
+> What about this instead as cpufreq_parse_governor isn't supposed to change
+> value of ret in case of errors.
 > 
-> In pm_vt_switch_required(), "entry" variable is allocated via kmalloc().
-> So, in pm_vt_switch_unregister(), it needs to call kfree() when object
-> is deleted from list.
-> 
-> Signed-off-by: Masami Ichikawa <masami256@gmail.com>
+> > +       if (cpufreq_driver->setpolicy)
+> > +               cpufreq_parse_governor(policy->governor->name, &new_policy.policy, NULL);
 
-Reviewed-by: Pavel Machek <pavel@ucw.cz>
+Right, this is even better as far as the code goes, but adding a comment
+describing the role of it would still be nice.
 
 Thanks!
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
