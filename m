@@ -1,34 +1,52 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power regression
-Date: Thu, 19 Dec 2013 08:50:06 -0800
-Message-ID: <52B323BE.7090108@zytor.com>
-References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com> <20131219122257.GC11279@gmail.com> <52B316FF.50906@zytor.com> <20131219160210.GA28426@gmail.com> <52B31B21.6010901@zytor.com> <20131219162136.GM16438@laptop.programming.kicks-ass.net>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] x86 idle: repair large-server 50-watt idle-power
+ regression
+Date: Thu, 19 Dec 2013 18:07:41 +0100
+Message-ID: <20131219170741.GB30382@gmail.com>
+References: <baff264285f6e585df757d58b17788feabc68918.1387403066.git.len.brown@intel.com>
+ <20131219122257.GC11279@gmail.com>
+ <52B316FF.50906@zytor.com>
+ <20131219160210.GA28426@gmail.com>
+ <52B31B21.6010901@zytor.com>
+ <20131219162136.GM16438@laptop.programming.kicks-ass.net>
+ <52B323BE.7090108@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20131219162136.GM16438@laptop.programming.kicks-ass.net>
-Sender: stable-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <52B323BE.7090108@zytor.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/19/2013 08:21 AM, Peter Zijlstra wrote:
-> 
-> What's that mb for?
-> 
 
-It already exists in mwait_idle_with_hints(); I just moved it into this
-common function.  It is a bit odd, I have to admit; it seems like it
-should be *before* the monitor (and possibly we should have one after
-the CLFLUSH as well?)
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> Also, can you please merge:
+> On 12/19/2013 08:21 AM, Peter Zijlstra wrote:
+> > 
+> > What's that mb for?
+> > 
 > 
->   http://marc.info/?l=linux-kernel&m=138685838420632
-> 
-> Thomas said he would pick up that series, but seems to have gone missing
-> the past week or so.
-> 
+> It already exists in mwait_idle_with_hints(); I just moved it into 
+> this common function.  It is a bit odd, I have to admit; it seems 
+> like it should be *before* the monitor (and possibly we should have 
+> one after the CLFLUSH as well?)
 
-We need to get the immediate regression fixed.
+Yes, I think we need a barrier before the CLFLUSH, because according 
+to my reading of the Intel documentation CLFLUSH has no implicit 
+ordering so it might get reordered with the store to ->flags in 
+current_set_polling_and_test(), which might result in spurious wakeup 
+problems again.
+
+(And CLFLUSH is a store in a sense, so special in that the regular 
+ordering for stores does not apply.)
+
+Likewise, having a barrier before the MONITOR looks sensible as well. 
+Having it _after_ monitor looks weird and is probably wrong. [It might 
+have been the effects of someone seeing the spurious wakeup problems 
+with realizing the true source, or so.]
+
+Thanks,
+
+	Ingo
