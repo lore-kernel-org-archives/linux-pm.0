@@ -1,95 +1,246 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 9/9] cpuidle: remove state_count field from struct
- cpuidle_device
-Date: Fri, 20 Dec 2013 22:27:19 +0100
-Message-ID: <52B4B637.4090105@linaro.org>
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com> <1387565251-7051-10-git-send-email-b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 8/9] intel_idle: use the common cpuidle_[un]register()
+ routines
+Date: Fri, 20 Dec 2013 22:42:33 +0100
+Message-ID: <52B4B9C9.3030603@linaro.org>
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com> <1387565251-7051-9-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f179.google.com ([74.125.82.179]:59291 "EHLO
-	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938Ab3LTV1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 16:27:19 -0500
-Received: by mail-we0-f179.google.com with SMTP id q59so2958147wes.24
-        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 13:27:18 -0800 (PST)
-In-Reply-To: <1387565251-7051-10-git-send-email-b.zolnierkie@samsung.com>
+Received: from mail-wg0-f41.google.com ([74.125.82.41]:48469 "EHLO
+	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753755Ab3LTVmc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 16:42:32 -0500
+Received: by mail-wg0-f41.google.com with SMTP id y10so7402469wgg.4
+        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 13:42:30 -0800 (PST)
+In-Reply-To: <1387565251-7051-9-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, rjw@rjwysocki.net
 Cc: lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com
 
 On 12/20/2013 07:47 PM, Bartlomiej Zolnierkiewicz wrote:
-> dev->state_count is now always equal to drv->state_count so
-> it can be removed.
->
+> It is now possible to use the common cpuidle_[un]register() routines
+> (instead of open-coding them) so do it.
+
+Just an addition:
+
+The cpuidle_register common routine calls cpuidle_register_driver which=
+=20
+initialize the driver's cpumask to cpu_possible_mask if not set (which=20
+is the default on most platform) and right after it uses this mask to=20
+register the cpuidle devices. That's why the cpu hotplug does not need=20
+to register the device unlike before this patch where the cpumask was=20
+cpu_online_mask. So we can't fall in the "Some systems can hotplug a cp=
+u=20
+at runtime after the kernel has booted" case.
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
 > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
+> Cc: Len Brown <lenb@kernel.org>
 > ---
->   drivers/cpuidle/cpuidle.c | 3 ---
->   drivers/cpuidle/sysfs.c   | 5 +++--
->   include/linux/cpuidle.h   | 1 -
->   3 files changed, 3 insertions(+), 6 deletions(-)
+>   drivers/idle/intel_idle.c | 114 ++++++++++++-----------------------=
+-----------
+>   1 file changed, 29 insertions(+), 85 deletions(-)
 >
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index a55e68f..e3d2052 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -252,9 +252,6 @@ int cpuidle_enable_device(struct cpuidle_device *=
-dev)
->   	if (!dev->registered)
->   		return -EINVAL;
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 524d07b..a1a4dbd 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -93,10 +93,8 @@ struct idle_cpu {
+>   };
 >
-> -	if (!dev->state_count)
-> -		dev->state_count =3D drv->state_count;
-> -
->   	ret =3D cpuidle_add_device_sysfs(dev);
->   	if (ret)
->   		return ret;
-> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index e918b6d..dcaae4c 100644
-> --- a/drivers/cpuidle/sysfs.c
-> +++ b/drivers/cpuidle/sysfs.c
-> @@ -398,7 +398,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle=
-_device *device)
->   	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(device);
+>   static const struct idle_cpu *icpu;
+> -static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+>   static int intel_idle(struct cpuidle_device *dev,
+>   			struct cpuidle_driver *drv, int index);
+> -static int intel_idle_cpu_init(int cpu);
 >
->   	/* state statistics */
-> -	for (i =3D 0; i < device->state_count; i++) {
-> +	for (i =3D 0; i < drv->state_count; i++) {
->   		kobj =3D kzalloc(sizeof(struct cpuidle_state_kobj), GFP_KERNEL);
->   		if (!kobj)
->   			goto error_state;
-> @@ -430,9 +430,10 @@ error_state:
->    */
->   static void cpuidle_remove_state_sysfs(struct cpuidle_device *devic=
-e)
->   {
-> +	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(device);
->   	int i;
+>   static struct cpuidle_state *cpuidle_state_table;
 >
-> -	for (i =3D 0; i < device->state_count; i++)
-> +	for (i =3D 0; i < drv->state_count; i++)
->   		cpuidle_free_state_kobj(device, i);
+> @@ -400,11 +398,27 @@ static void __setup_broadcast_timer(void *arg)
+>   	clockevents_notify(reason, &cpu);
 >   }
 >
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 50fcbb0..d133817 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -69,7 +69,6 @@ struct cpuidle_device {
->   	unsigned int		cpu;
+> +static void auto_demotion_disable(void *dummy)
+> +{
+> +	unsigned long long msr_bits;
+> +
+> +	rdmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
+> +	msr_bits &=3D ~(icpu->auto_demotion_disable_flags);
+> +	wrmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
+> +}
+> +static void c1e_promotion_disable(void *dummy)
+> +{
+> +	unsigned long long msr_bits;
+> +
+> +	rdmsrl(MSR_IA32_POWER_CTL, msr_bits);
+> +	msr_bits &=3D ~0x2;
+> +	wrmsrl(MSR_IA32_POWER_CTL, msr_bits);
+> +}
+> +
+>   static int cpu_hotplug_notify(struct notifier_block *n,
+>   			      unsigned long action, void *hcpu)
+>   {
+>   	int hotcpu =3D (unsigned long)hcpu;
+> -	struct cpuidle_device *dev;
 >
->   	int			last_residency;
-> -	int			state_count;
->   	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
->   	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
->   	struct cpuidle_driver_kobj *kobj_driver;
+>   	switch (action & ~CPU_TASKS_FROZEN) {
+>   	case CPU_ONLINE:
+> @@ -416,11 +430,15 @@ static int cpu_hotplug_notify(struct notifier_b=
+lock *n,
+>   		/*
+>   		 * Some systems can hotplug a cpu at runtime after
+>   		 * the kernel has booted, we have to initialize the
+> -		 * driver in this case
+> +		 * hardware in this case.
+>   		 */
+> -		dev =3D per_cpu_ptr(intel_idle_cpuidle_devices, hotcpu);
+> -		if (!dev->registered)
+> -			intel_idle_cpu_init(hotcpu);
+> +		if (icpu->auto_demotion_disable_flags)
+> +			smp_call_function_single(hotcpu, auto_demotion_disable,
+> +						NULL, 1);
+> +
+> +		if (icpu->disable_promotion_to_c1e)
+> +			smp_call_function_single(hotcpu, c1e_promotion_disable,
+> +						NULL, 1);
+>
+>   		break;
+>   	}
+> @@ -431,23 +449,6 @@ static struct notifier_block cpu_hotplug_notifie=
+r =3D {
+>   	.notifier_call =3D cpu_hotplug_notify,
+>   };
+>
+> -static void auto_demotion_disable(void *dummy)
+> -{
+> -	unsigned long long msr_bits;
+> -
+> -	rdmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
+> -	msr_bits &=3D ~(icpu->auto_demotion_disable_flags);
+> -	wrmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
+> -}
+> -static void c1e_promotion_disable(void *dummy)
+> -{
+> -	unsigned long long msr_bits;
+> -
+> -	rdmsrl(MSR_IA32_POWER_CTL, msr_bits);
+> -	msr_bits &=3D ~0x2;
+> -	wrmsrl(MSR_IA32_POWER_CTL, msr_bits);
+> -}
+> -
+>   static const struct idle_cpu idle_cpu_nehalem =3D {
+>   	.state_table =3D nehalem_cstates,
+>   	.auto_demotion_disable_flags =3D NHM_C1_AUTO_DEMOTE | NHM_C3_AUTO_=
+DEMOTE,
+> @@ -560,23 +561,6 @@ static int __init intel_idle_probe(void)
+>   }
+>
+>   /*
+> - * intel_idle_cpuidle_devices_uninit()
+> - * unregister, free cpuidle_devices
+> - */
+> -static void intel_idle_cpuidle_devices_uninit(void)
+> -{
+> -	int i;
+> -	struct cpuidle_device *dev;
+> -
+> -	for_each_online_cpu(i) {
+> -		dev =3D per_cpu_ptr(intel_idle_cpuidle_devices, i);
+> -		cpuidle_unregister_device(dev);
+> -	}
+> -
+> -	free_percpu(intel_idle_cpuidle_devices);
+> -	return;
+> -}
+> -/*
+>    * intel_idle_cpuidle_driver_init()
+>    * allocate, initialize cpuidle_states
+>    */
+> @@ -632,37 +616,9 @@ static int __init intel_idle_cpuidle_driver_init=
+(void)
+>   }
+>
+>
+> -/*
+> - * intel_idle_cpu_init()
+> - * allocate, initialize, register cpuidle_devices
+> - * @cpu: cpu/core to initialize
+> - */
+> -static int intel_idle_cpu_init(int cpu)
+> -{
+> -	struct cpuidle_device *dev;
+> -
+> -	dev =3D per_cpu_ptr(intel_idle_cpuidle_devices, cpu);
+> -
+> -	dev->cpu =3D cpu;
+> -
+> -	if (cpuidle_register_device(dev)) {
+> -		pr_debug(PREFIX "cpuidle_register_device %d failed!\n", cpu);
+> -		intel_idle_cpuidle_devices_uninit();
+> -		return -EIO;
+> -	}
+> -
+> -	if (icpu->auto_demotion_disable_flags)
+> -		smp_call_function_single(cpu, auto_demotion_disable, NULL, 1);
+> -
+> -	if (icpu->disable_promotion_to_c1e)
+> -		smp_call_function_single(cpu, c1e_promotion_disable, NULL, 1);
+> -
+> -	return 0;
+> -}
+> -
+>   static int __init intel_idle_init(void)
+>   {
+> -	int retval, i;
+> +	int retval;
+>
+>   	/* Do not load intel_idle at all for now if idle=3D is passed */
+>   	if (boot_option_idle_override !=3D IDLE_NO_OVERRIDE)
+> @@ -673,7 +629,8 @@ static int __init intel_idle_init(void)
+>   		return retval;
+>
+>   	intel_idle_cpuidle_driver_init();
+> -	retval =3D cpuidle_register_driver(&intel_idle_driver);
+> +
+> +	retval =3D cpuidle_register(&intel_idle_driver, NULL);
+>   	if (retval) {
+>   		struct cpuidle_driver *drv =3D cpuidle_get_driver();
+>   		printk(KERN_DEBUG PREFIX "intel_idle yielding to %s",
+> @@ -681,17 +638,6 @@ static int __init intel_idle_init(void)
+>   		return retval;
+>   	}
+>
+> -	intel_idle_cpuidle_devices =3D alloc_percpu(struct cpuidle_device);
+> -	if (intel_idle_cpuidle_devices =3D=3D NULL)
+> -		return -ENOMEM;
+> -
+> -	for_each_online_cpu(i) {
+> -		retval =3D intel_idle_cpu_init(i);
+> -		if (retval) {
+> -			cpuidle_unregister_driver(&intel_idle_driver);
+> -			return retval;
+> -		}
+> -	}
+>   	register_cpu_notifier(&cpu_hotplug_notifier);
+>
+>   	return 0;
+> @@ -699,9 +645,7 @@ static int __init intel_idle_init(void)
+>
+>   static void __exit intel_idle_exit(void)
+>   {
+> -	intel_idle_cpuidle_devices_uninit();
+> -	cpuidle_unregister_driver(&intel_idle_driver);
+> -
+> +	cpuidle_unregister(&intel_idle_driver);
+>
+>   	if (lapic_timer_reliable_states !=3D LAPIC_TIMER_ALWAYS_RELIABLE)
+>   		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
 >
 
 
