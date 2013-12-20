@@ -1,69 +1,52 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [2/11] issue 2: Energy-awareness for heterogeneous systems
-Date: Fri, 20 Dec 2013 16:45:42 +0000
-Message-ID: <1387557951-21750-3-git-send-email-morten.rasmussen@arm.com>
+Subject: [5/11] issue 5: Frequency and uarch invariant task load
+Date: Fri, 20 Dec 2013 16:45:45 +0000
+Message-ID: <1387557951-21750-6-git-send-email-morten.rasmussen@arm.com>
 References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59228 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:59314 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755993Ab3LTQpg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:36 -0500
+	with ESMTP id S1754040Ab3LTQph (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:37 -0500
 In-Reply-To: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org
 
-While performance is non-deterministic with the mainline scheduler
-(described in issue 6) it also leads to non-deterministic energy
-consumption.  First step is to get performance right, but if we don't
-keep energy in mind, heterogeneous systems will end up with high
-performance and energy consumption.
+Related to the issue of potential cpu capacity, task load is influenced
+directly by the current P-state of the cpu it is running on. For
+energy-aware task placement decisions the scheduler would need to
+estimate the energy impact of scheduling a specific task on a specific
+cpu. Depending on the resulting P-state it may be more energy efficient
+to wake-up another cpu (see system 1 in mail 11 for energy efficiency
+example).
 
-To save energy low intensity workloads should not be scheduled on fast
-cpus as these are generally less energy efficient. Audio playback is an
-example where the performance offered by the slow cpus in todays
-heterogeneous systems like ARM big.LITTLE is more than sufficient.
+The frequency and uarch impact can be rather significant. On modern
+systems frequency scaling covers a range of 5-6x. On top of that uarch
+differences may give another 1.5-3x for a total cpu capacity range
+covering >10x.
 
-The mainline scheduler may schedule it on any cpu leading to
-non-deterministic energy consumption. The energy expense on big (A15) is
-3.63x little (A7) for Android mp3 audio playback on ARM TC2 (2xA15+3xA7)
-when using just the A15s or just the A7s.
+Measurements on ARM TC2 for a simple periodic test workload (single
+task, 16 ms period):
 
-If we run multiple workloads at the same time, e.g. audio and
-webbrowsing, both performance and energy is non-deterministic. Because
-of audio we may even get poor webbrowsing performance and high energy
-consumption at the same time.
+        cpu load        load_avg_contrib (10 sample avg.)
+Freq    A7      A15     A7      A15
+500     16.76%   9.94%  ~201    ~135
+700     12.06%   6.95%  ~145     ~87
+1000     8.19%   5.23%  ~103     ~65
 
-Running that scenario on Android on ARM TC2 gives the following
-execution times and energy measurements for 10 runs (normalized to avg):
+The cpu load estimate used for load balancing is based on
+load_avg_contrib which means that for this example the load estimate may
+vary 3x depending on where tasks are scheduled and the frequency scaling
+governors used.
 
-Run     Exec    Energy
-1       1.03    1.04
-2       1.12    1.11    Worst energy
-3       0.85    1.08
-4       0.85    1.08    Best performance
-5       0.94    1.06
-6       1.01    0.78
-7       0.90    0.63    Best performance/energy and best energy
-8       1.22    1.08    Worst performance/energy and worst performance
-9       0.94    1.08
-10      1.14    1.07
+Potential solution: Frequency invariance has been proposed before [1]
+where the task load is scaled by the cur/max freq ratio. Another
+possibility is to use hardware counters if such are available on the
+platform.
 
-Run 7 had a very good schedule as it led to both lowest energy and also
-good performance at the same time. That is not generally the case. Run 2
-is an example of a poor schedule where performance is 12% worse than
-average and energy is 11% higher. Best performance in run 3 comes at the
-cost of high energy.
-
-While run 7 seems to be ideal from an energy-awareness point of view,
-it may be disqualified by performance constraints. Hence, ideally the
-performance level should be tunable.
-
-Possible solution: We know that a simple heuristic that controls task
-placement based on tracked load works rather well for most smartphone
-workloads. However, realistic patterns exist that defeat this heuristic.
-
+[1] https://lkml.org/lkml/2013/4/16/289
 
