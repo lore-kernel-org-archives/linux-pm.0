@@ -1,8 +1,8 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 4/9] ACPI / cpuidle: fix max idle state handling with
- hotplug CPU support
-Date: Fri, 20 Dec 2013 19:47:26 +0100
-Message-ID: <1387565251-7051-5-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 6/9] intel_idle: do C1E promotion disable quirk for
+ hotplugged CPUs
+Date: Fri, 20 Dec 2013 19:47:28 +0100
+Message-ID: <1387565251-7051-7-git-send-email-b.zolnierkie@samsung.com>
 References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
@@ -11,91 +11,32 @@ To: rjw@rjwysocki.net
 Cc: daniel.lezcano@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-acpi_processor_hotplug() calls acpi_processor_setup_cpuidle_cx()
-without calling acpi_processor_setup_cpuidle_states() first so it
-is possible that dev->state_count becomes different from
-drv->state_count (in case of SMP system with unsupported C2/C3
-states + enabled CPU hotplug and num_online_cpus() becoming > 1).
-
-The driver code assumes that cpuidle core will handle such cases
-but currently this is untrue (dev->state_count is used only for
-handling cpuidle state sysfs entries and drv->state_count is used
-for all other cases) and will not be fixed in the future as
-dev->state_count is planned to be removed.
-
-Fix the issue by checking for the max supported idle state in
-C2/C3 state's ->enter handler (acpi_idle_enter_simple() for C2/C3
-and acpi_idle_enter_bm() for C3 + bm_check flag set) and setting
-the C1 state (instead of higher states) when needed.
-
-Also remove no longer needed max idle state checks from
-acpi_processor_setup_cpuidle_[states,cx]().
+If the system is booted with some CPUs offline C1E promotion disable quirk
+won't be applied because on_each_cpu() in intel_idle_cpuidle_driver_init()
+operates only on online CPUs. Fix it by adding the C1E promotion disable
+handling to intel_idle_cpu_init() (which is also called during CPU_ONLINE
+operation).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Cc: Len Brown <lenb@kernel.org>
 ---
- drivers/acpi/processor_idle.c | 27 ++++++++++++++-------------
- 1 file changed, 14 insertions(+), 13 deletions(-)
+ drivers/idle/intel_idle.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index a0cc5ef4f..c080c99 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -783,6 +783,13 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 	if (unlikely(!pr))
- 		return -EINVAL;
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 92d1206..38da3fb 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -683,6 +683,9 @@ static int intel_idle_cpu_init(int cpu)
+ 	if (icpu->auto_demotion_disable_flags)
+ 		smp_call_function_single(cpu, auto_demotion_disable, NULL, 1);
  
-+#ifdef CONFIG_HOTPLUG_CPU
-+	if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
-+	    !pr->flags.has_cst &&
-+	    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
-+		return acpi_idle_enter_c1(dev, drv, CPUIDLE_DRIVER_STATE_START);
-+#endif
++	if (icpu->disable_promotion_to_c1e)
++		smp_call_function_single(cpu, c1e_promotion_disable, NULL, 1);
 +
- 	if (cx->entry_method == ACPI_CSTATE_FFH) {
- 		if (current_set_polling_and_test())
- 			return -EINVAL;
-@@ -829,6 +836,13 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	if (unlikely(!pr))
- 		return -EINVAL;
+ 	return 0;
+ }
  
-+#ifdef CONFIG_HOTPLUG_CPU
-+	if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
-+	    !pr->flags.has_cst &&
-+	    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
-+		return acpi_idle_enter_c1(dev, drv, CPUIDLE_DRIVER_STATE_START);
-+#endif
-+
- 	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
- 		if (drv->safe_state_index >= 0) {
- 			return drv->states[drv->safe_state_index].enter(dev,
-@@ -930,12 +944,6 @@ static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
- 		if (!cx->valid)
- 			continue;
- 
--#ifdef CONFIG_HOTPLUG_CPU
--		if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
--		    !pr->flags.has_cst &&
--		    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
--			continue;
--#endif
- 		per_cpu(acpi_cstate[count], dev->cpu) = cx;
- 
- 		count++;
-@@ -985,13 +993,6 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
- 		if (!cx->valid)
- 			continue;
- 
--#ifdef CONFIG_HOTPLUG_CPU
--		if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) &&
--		    !pr->flags.has_cst &&
--		    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
--			continue;
--#endif
--
- 		state = &drv->states[count];
- 		snprintf(state->name, CPUIDLE_NAME_LEN, "C%d", i);
- 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
 -- 
 1.8.2.3
