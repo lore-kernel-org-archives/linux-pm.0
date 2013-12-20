@@ -1,53 +1,61 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [4/11] issue 4: Tracking idle states
-Date: Fri, 20 Dec 2013 16:45:44 +0000
-Message-ID: <1387557951-21750-5-git-send-email-morten.rasmussen@arm.com>
+Subject: [10/11] use-case 4: Game on Android
+Date: Fri, 20 Dec 2013 16:45:50 +0000
+Message-ID: <1387557951-21750-11-git-send-email-morten.rasmussen@arm.com>
 References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59450 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:59521 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756009Ab3LTQpj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:39 -0500
+	with ESMTP id S1755993Ab3LTQpk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:40 -0500
 In-Reply-To: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org
 
-Similar to the issue of knowing the potential capacity of a cpu, the CFS
-scheduler also needs to know the idle state of idle cpus. Currently, an
-idle cpu is found using cpumask_first() when an extra cpu is needed (for
-nohz_idle_balance in find_new_ilb() in sched/fair.c). The energy
-trade-off whether to wake another cpu or put tasks on already busy cpus
-depend on this information.
+Games generally have periodic load pattern synchronized to the
+frame-rate (30 or 60 Hz). Games workloads typically involve both
+graphics rendering (game engine) and audio mixing.
 
-The cost of waking up a cpu in terms of latency and energy depends on
-the idle state the cpu is in. Deeper idle states typically affects more
-than a single cpu. Waking up a single cpu from such state is more
-expensive as it also affects the idle states of of its related cpus.
+Performance Criteria
 
-Energy costs are not currently represented in the cpuidle framework, but
-latency is. Taking ARM TC2 as an example [1], which has two idle states:
-Per-core clock-gating (WFI), and cluster power-down (power down all
-related cpus and caches). The target residencies and exit latencies
-specified in the driver give an idea about the cost involved in
-entering/exiting these states.
+Keep the frame-rate as close to the target as possible. Variations are
+acceptable. Audio must be handled before the audio buffers runs empty.
 
-=09=09=09Target=09=09Exit
-=09=09=09residency=09latency
-Clock-gating (WFI)=091=09=091
-Cluster power-down=092000/2500=09500/700=09=09(big/LITTLE)
+Task behaviour
 
-Picking the cheapest idle cpu would also have the effect that wake-ups
-are likely to happen on the same cpu and leave the remaining cpus in
-idle for longer.
+This description is based on one particular Android game, but similar
+patterns have been observed for a number of games. Overall, 10+ threads
+are active and context switches happen very often. Key game engine tasks
+and graphics driver tasks are scheduled ~200-700 times per second. The
+top 10 tasks (by cpu time) consists of: One game task, one main game
+engine task, three graphics related tasks, three audio tasks, one event
+handling task, and one kworker task.
 
-Potential solution: Make the scheduler idle state aware by either moving
-idle handling into the scheduler or let the idle framework (cpuidle)
-maintain a cpumask of the cheapest cpus to wake up which is accessible
-to the scheduler.
+Game engine task: By far the most cpu intensive task. Accounts for about
+50% of all cpu load. It is scheduled ~375 times per second (average).
+The scheduling pattern repeats every ~16 ms (~60 Hz), where the task
+runs for ~12 ms, followed by three shorter periods of activity where the
+longest is ~2 ms (unless it is preempted by other tasks). In addition,
+the game engine has a worker thread for each cpu. Each of the worker
+threads account for ~0.4% of the load, is scheduled ~115 times per
+second (average), and only runs for ~56 us (average).
 
-[1] drivers/cpuidle/cpuidle-big_little.c
+Rendering task: Accounts for ~6% of the load. Scheduled ~200 times per
+second (average) and runs for ~420 us (average).
+
+Graphics driver task: Accounts for ~6% of the load. Scheduled ~700 times
+per second (average) and runs for 11 us (average).
+
+Game main task: Accounts for ~4% of the load. Scheduled ~170 times per
+second (average) and runs for ~37 us (average).
+
+Audio system task: Accounts for ~3% of the load. Scheduled ~120 times
+per second (average) and runs for ~42 us (average).
+
+kworker task: Accounts for ~3% of the load. Scheduled ~320 times per
+second (average) and runs for ~13 us (average).
 
