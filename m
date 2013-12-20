@@ -1,99 +1,113 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Fri, 20 Dec 2013 15:01:40 +0530
-Message-ID: <CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>
-References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+Subject: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
+Date: Fri, 20 Dec 2013 18:03:52 +0800
+Message-ID: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:58175 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754789Ab3LTJbl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 04:31:41 -0500
-Received: by mail-ob0-f170.google.com with SMTP id wp18so2448477obc.1
-        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 01:31:40 -0800 (PST)
-In-Reply-To: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
+Received: from ch1ehsobe006.messaging.microsoft.com ([216.32.181.186]:53369
+	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756797Ab3LTKHK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 05:07:10 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bill Huang <bilhuang@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: rjw@rjwysocki.net, bhelgaas@google.com
+Cc: roy.zang@freescale.com, scottwood@freescale.com, galak@kernel.crashing.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Wang Dongsheng <dongsheng.wang@freescale.com>
 
-On 19 December 2013 16:48, Bill Huang <bilhuang@nvidia.com> wrote:
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index ce52ed9..22dfc43 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -225,6 +225,18 @@ config ARM_TEGRA_CPUFREQ
->         help
->           This adds the CPUFreq driver support for TEGRA SOCs.
->
-> +config ARM_TEGRA20_CPUFREQ
-> +       bool "NVIDIA TEGRA20"
-> +       depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Probably just in case you agree to my next comment:
+make Freescale platform use pci_platform_pm_ops struct.
 
-            depends on ARCH_TEGRA_2x_SOC
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+
+If device's not set power state, we will use this interface to put the
+device's into the correct state.
+
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 9c91ecc..48f8b1a 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -33,36 +33,6 @@ int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vmai,
+ #endif
+ int pci_probe_reset_function(struct pci_dev *dev);
+ 
+-/**
+- * struct pci_platform_pm_ops - Firmware PM callbacks
+- *
+- * @is_manageable: returns 'true' if given device is power manageable by the
+- *                 platform firmware
+- *
+- * @set_state: invokes the platform firmware to set the device's power state
+- *
+- * @choose_state: returns PCI power state of given device preferred by the
+- *                platform; to be used during system-wide transitions from a
+- *                sleeping state to the working state and vice versa
+- *
+- * @sleep_wake: enables/disables the system wake up capability of given device
+- *
+- * @run_wake: enables/disables the platform to generate run-time wake-up events
+- *		for given device (the device's wake-up capability has to be
+- *		enabled by @sleep_wake for this feature to work)
+- *
+- * If given platform is generally capable of power managing PCI devices, all of
+- * these callbacks are mandatory.
+- */
+-struct pci_platform_pm_ops {
+-	bool (*is_manageable)(struct pci_dev *dev);
+-	int (*set_state)(struct pci_dev *dev, pci_power_t state);
+-	pci_power_t (*choose_state)(struct pci_dev *dev);
+-	int (*sleep_wake)(struct pci_dev *dev, bool enable);
+-	int (*run_wake)(struct pci_dev *dev, bool enable);
+-};
+-
+-int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ void pci_power_up(struct pci_dev *dev);
+ void pci_disable_enabled_device(struct pci_dev *dev);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 1084a15..20e07b8 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -365,6 +365,37 @@ struct pci_dev {
+ 	size_t romlen; /* Length of ROM if it's not from the BAR */
+ };
+ 
++/**
++ * struct pci_platform_pm_ops - Firmware PM callbacks
++ *
++ * @is_manageable: returns 'true' if given device is power manageable by the
++ *                 platform firmware
++ *
++ * @set_state: invokes the platform firmware to set the device's power state
++ *
++ * @choose_state: returns PCI power state of given device preferred by the
++ *                platform; to be used during system-wide transitions from a
++ *                sleeping state to the working state and vice versa
++ *
++ * @sleep_wake: enables/disables the system wake up capability of given device
++ *
++ * @run_wake: enables/disables the platform to generate run-time wake-up events
++ *		for given device (the device's wake-up capability has to be
++ *		enabled by @sleep_wake for this feature to work)
++ *
++ * If given platform is generally capable of power managing PCI devices, all of
++ * these callbacks are mandatory.
++ */
++struct pci_platform_pm_ops {
++	bool (*is_manageable)(struct pci_dev *dev);
++	int (*set_state)(struct pci_dev *dev, pci_power_t state);
++	pci_power_t (*choose_state)(struct pci_dev *dev);
++	int (*sleep_wake)(struct pci_dev *dev, bool enable);
++	int (*run_wake)(struct pci_dev *dev, bool enable);
++};
++
++int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
++
+ static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
+ {
+ #ifdef CONFIG_PCI_IOV
+-- 
+1.8.5
 
 
-> +       default y
-> +       help
-> +         This enables Tegra20 cpufreq functionality, it adds
-> +         Tegra20 CPU frequency ladder and the call back functions
-> +         to set CPU rate. All the non-SoC dependant codes are
-> +         controlled by the config ARM_TEGRA_CPUFREQ.
-> +
-> +         If in doubt, say N.
-
-
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
->  /*
-> + * Copyright (c) 2013, NVIDIA Corporation. All rights reserved.
->   *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
->   *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
->   */
->
->  #include <linux/kernel.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/of.h>
-> +#include <linux/tegra-cpufreq.h>
-> +
-> +int __init tegra_cpufreq_init(void)
-> +{
-> +       struct device_node *root;
-> +
-> +       root = of_find_node_by_path("/");
-> +       if (root) {
-> +               struct platform_device_info devinfo;
-> +               const char *compat;
-> +               int i;
-> +
-> +               memset(&devinfo, 0, sizeof(devinfo));
-> +               i = of_property_count_strings(root, "compatible");
-> +               if (i > 0) {
-> +                       of_property_read_string_index(
-> +                               root, "compatible", i - 1, &compat);
-> +                       devinfo.name = kasprintf(
-> +                                       GFP_KERNEL, "%s-cpufreq", compat);
-> +                       platform_device_register_full(&devinfo);
-> +               }
->         }
-> +EXPORT_SYMBOL(tegra_cpufreq_init);
-
-Probably above is all that is present in this file. This is just about adding
-the right cpufreq device so that right driver can get probed.
-
-I don't think this code is present at the right place. We don't need a file
-in cpufreq/ which is there just to add a device :) ..
-
-Probably move this piece of code to arch/mach-tegra where you are calling
-init.
-
-And so remove ARM_TEGRA_CPUFREQ config option completely.
