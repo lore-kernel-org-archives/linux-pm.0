@@ -1,96 +1,80 @@
-From: Leo Yan <leoy@marvell.com>
-Subject: Re: [PATCH RFC v3 04/12] arm64: kernel: cpu_{suspend/resume} implementation
-Date: Fri, 20 Dec 2013 19:30:16 +0800
-Message-ID: <52B42A48.5090202@marvell.com>
-References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com> <1385033059-25896-5-git-send-email-lorenzo.pieralisi@arm.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH RFC v3 04/12] arm64: kernel: cpu_{suspend/resume}
+ implementation
+Date: Fri, 20 Dec 2013 11:57:35 +0000
+Message-ID: <20131220115735.GH25477@arm.com>
+References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1385033059-25896-5-git-send-email-lorenzo.pieralisi@arm.com>
+ <52B42A48.5090202@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:30289 "EHLO
-	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756251Ab3LTLdF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 06:33:05 -0500
-In-Reply-To: <1385033059-25896-5-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <52B42A48.5090202@marvell.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Leo Yan <leoy@marvell.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Yu Tang <ytang5@marvell.com>, Will Deacon <Will.Deacon@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Loc Ho <lho@apm.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Dave P Martin <Dave.Martin@arm.com>, Feng Kan <fkan@apm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Marc Zyngier <Marc.Zyngier@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Hanjun Guo <hanjun.guo@linaro.org>, Colin Cross <ccross@android.com>, Christoffer Dall <christoffer.dall@linaro.org>, Zhou
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Feng Kan <fkan@apm.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Graeme Gregory <graeme.gregory@linaro.org>, Nicolas Pitre <nico@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Yu Tang <ytang5@marvell.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Christoffer Dall <christoffer.dall@linaro.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Loc Ho <lho@apm.com>, Colin Cross <ccross@android.com>, Kumar Sankaran <ksankaran@apm.com>, Dave Martin <dave.martin@arm.com>, Hanjun Guo <hanjun.guo@linaro.org>, Zhou Zhu <zzhu3@marvell.com>
 
-On 11/21/2013 07:24 PM, Lorenzo Pieralisi wrote:
+On Fri, Dec 20, 2013 at 11:30:16AM +0000, Leo Yan wrote:
+> On 11/21/2013 07:24 PM, Lorenzo Pieralisi wrote:
+> > +/*
+> > + * x0 must contain the sctlr value retrieved from restored context
+> > + */
+> > +ENTRY(cpu_resume_mmu)
+> > +	ldr	x3, =cpu_resume_after_mmu
+> > +	msr	sctlr_el1, x0		// restore sctlr_el1
+> > +	isb
+> > +	br	x3			// global jump to virtual address
+> > +ENDPROC(cpu_resume_mmu)
+> > +cpu_resume_after_mmu:
+> > +	mov	x0, #0			// return zero on success
+> > +	ldp	x19, x20, [sp, #16]
+> > +	ldp	x21, x22, [sp, #32]
+> > +	ldp	x23, x24, [sp, #48]
+> > +	ldp	x25, x26, [sp, #64]
+> > +	ldp	x27, x28, [sp, #80]
+> > +	ldp	x29, lr, [sp], #96
+> > +	ret
+> > +ENDPROC(cpu_resume_after_mmu)
+> > +
+> > +	.data
+> > +ENTRY(cpu_resume)
+> > +	bl	el2_setup		// if in EL2 drop to EL1 cleanly
+> 
+> Compare to v2's patch set, here remove the calculation fro the offset 
+> b/t PHYS_OFFSET - PAGE_OFFSET; so when i verify the patch set, i saw x28 
+> is zero and finally introduce the EL2's sync exception. Below are pasted 
+> v2's code for reference.
+> 
+> do u want use firmware to set the x28 for the offset value? :-) IMHO, 
+> v2's implementation is more reasonable and it's better keep the code.
+> 
+> ENTRY(cpu_resume)
+>            adr     x4, sleep_save_sp
+>            ldr     x5, =sleep_save_sp
+>            sub     x28, x4, x5             // x28 = PHYS_OFFSET - 
+> PAGE_OFFSET
+>            /*
+>             * make sure el2 is sane, el2_setup expects:
+>             * x28 = PHYS_OFFSET - PAGE_OFFSET
+>             */
+>            bl      el2_setup               // if in EL2 drop to EL1 cleanly
 
-> +/*
-> + * x0 must contain the sctlr value retrieved from restored context
-> + */
-> +ENTRY(cpu_resume_mmu)
-> +	ldr	x3, =cpu_resume_after_mmu
-> +	msr	sctlr_el1, x0		// restore sctlr_el1
-> +	isb
-> +	br	x3			// global jump to virtual address
-> +ENDPROC(cpu_resume_mmu)
-> +cpu_resume_after_mmu:
-> +	mov	x0, #0			// return zero on success
-> +	ldp	x19, x20, [sp, #16]
-> +	ldp	x21, x22, [sp, #32]
-> +	ldp	x23, x24, [sp, #48]
-> +	ldp	x25, x26, [sp, #64]
-> +	ldp	x27, x28, [sp, #80]
-> +	ldp	x29, lr, [sp], #96
-> +	ret
-> +ENDPROC(cpu_resume_after_mmu)
-> +
-> +	.data
-> +ENTRY(cpu_resume)
-> +	bl	el2_setup		// if in EL2 drop to EL1 cleanly
+With commit 85cc00eaa81d (arm64: kernel: add code to set cpu boot mode
+to secondary_entry shim) we no longer compute the phys-page offset
+before el2_setup.
 
-Compare to v2's patch set, here remove the calculation fro the offset 
-b/t PHYS_OFFSET - PAGE_OFFSET; so when i verify the patch set, i saw x28 
-is zero and finally introduce the EL2's sync exception. Below are pasted 
-v2's code for reference.
+Where does the fault happen?
 
-do u want use firmware to set the x28 for the offset value? :-) IMHO, 
-v2's implementation is more reasonable and it's better keep the code.
-
-ENTRY(cpu_resume)
-           adr     x4, sleep_save_sp
-           ldr     x5, =sleep_save_sp
-           sub     x28, x4, x5             // x28 = PHYS_OFFSET - 
-PAGE_OFFSET
-           /*
-            * make sure el2 is sane, el2_setup expects:
-            * x28 = PHYS_OFFSET - PAGE_OFFSET
-            */
-           bl      el2_setup               // if in EL2 drop to EL1 cleanly
-
-
-> +#ifdef CONFIG_SMP
-> +	mrs	x1, mpidr_el1
-> +	adr	x4, mpidr_hash_ptr
-> +	ldr	x5, [x4]
-> +	add	x8, x4, x5		// x8 = struct mpidr_hash phys address
-> +        /* retrieve mpidr_hash members to compute the hash */
-> +	ldr	x2, [x8, #MPIDR_HASH_MASK]
-> +	ldp	w3, w4, [x8, #MPIDR_HASH_SHIFTS]
-> +	ldp	w5, w6, [x8, #(MPIDR_HASH_SHIFTS + 8)]
-> +	compute_mpidr_hash x7, x3, x4, x5, x6, x1, x2
-> +        /* x7 contains hash index, let's use it to grab context pointer */
-> +#else
-> +	mov	x7, xzr
-> +#endif
-> +	adr	x0, sleep_save_sp
-> +	ldr	x0, [x0, #SLEEP_SAVE_SP_PHYS]
-> +	ldr	x0, [x0, x7, lsl #3]
-> +	/* load sp from context */
-> +	ldr	x2, [x0, #CPU_CTX_SP]
-> +	adr	x1, sleep_idmap_phys
-> +	/* load physical address of identity map page table in x1 */
-> +	ldr	x1, [x1]
-> +	mov	sp, x2
-> +	/*
-> +	 * cpu_do_resume expects x0 to contain context physical address
-> +	 * pointer and x1 to contain physical address of 1:1 page tables
-> +	 */
-> +	bl	cpu_do_resume		// PC relative jump, MMU off
-> +	b	cpu_resume_mmu		// Resume MMU, never returns
-> +ENDPROC(cpu_resume)
-> +
+-- 
+Catalin
