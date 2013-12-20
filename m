@@ -1,81 +1,39 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [7/11] use-case 1: Webbrowsing on Android
-Date: Fri, 20 Dec 2013 16:45:47 +0000
-Message-ID: <1387557951-21750-8-git-send-email-morten.rasmussen@arm.com>
-References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
+Subject: [0/11] Energy-aware scheduling use-cases and scheduler issues
+Date: Fri, 20 Dec 2013 16:45:40 +0000
+Message-ID: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59422 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:59153 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753779Ab3LTQpi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:38 -0500
-In-Reply-To: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
+	with ESMTP id S1755419Ab3LTQpf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:35 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org
 
-Common webbrowsing use-cases (no embedded videos, but dynamic contents
-is ok) typically exhibit three distinct modes of operation depending on
-what it is doing in relation to the user:
+Hi,
 
-1)
-Mode: Page load and rendering.
+One of the requests from the scheduler maintainers at the Energy-aware
+Scheduling workshop at Kernel Summit this year was to provide plain text
+descriptions of use-cases (workloads) and system topologies. To get that
+moving I have written some short texts about some use-cases. In addition
+I described a list of issues that today prevent mainly the scheduler
+from achieving a good energy/performance balance in common use-cases.
+The follow-up emails are structured as follows:
 
-Behaviour: The duration is highly depends on the website but is
-relatively short. Typically a few seconds. Page loading time impacts
-user experience directly.  Minor performance drops may be acceptable if
-it comes with good overall energy savings.
+1-6:=09Current issues related to energy/performance balance.
+7-10:=09Use-cases (overall behaviour and energy/performance goals)
+11:=09DVFS example (for reference)
 
-Performance criteria: Complete as fast as possible.
-=20
+I'm hoping that this provides some of the background for why I'm
+interested in improving energy-awareness in the scheduler. I'm aware
+that the use-cases and issues/wishlist don't cover everyone's area of
+interest. Input is needed to fix that.
 
-2)
-Mode: Display website (user reading, no user interaction)
+Comments and input are appreciated.
 
-Behaviour: Low load. Only minor updates of dynamic contents.
-
-Performance criteria: Minimize energy.
-
-
-3)
-Mode: Page scrolling.
-
-Behaviour: Relatively short in duration. Rendering of contents which was
-previously off screen.
-
-Performance criteria: Ensure smooth UI interaction. Without UI
-experience feedback (lag, etc.), optimizing for best performance might
-the only way to get necessary performance.
-
-
-Task behaviour
-
-The task descriptions are based on traces from a modern ARM platform
-with a fairly recent version of Android. It may be different other
-platforms and software stacks. This serves just as an example.
-
-There are three main tasks involved on the browser side, and one or more
-tasks related to the graphics driver. Each of them behaves differently
-in each of the three modes of operation.
-
-Render task: Mainly active in mode 1, but also active in mode 3.
-Accounts for about a third of the total cpu time. May run for a more or
-less continuous burst of 1-2s in 1.
-
-Texture task: Active in all modes, but mainly in modes 1 and 3. Active
-after the render task burst in mode 1. Somewhat periodic behaviour
-during modes 1 and 3 indicating dependencies on other tasks.  Account
-for about a sixth of the cpu time.
-
-Browser task: Active in all modes. Blocks often. Only running about half
-the time when it is active. Short occasional periods of activity in mode
-2 along with the texture task. Accounts for about a third of the cpu
-time.
-
-Graphics driver task: Mainly active in mode 1 and 3, very little
-activity in mode 2 and only when browser and texture tasks are
-active. Runs for a short amount of time but frequently when active.
-Accounts for about a sixth of the cpu time.
+Morten
 
