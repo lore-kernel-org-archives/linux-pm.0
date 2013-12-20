@@ -1,36 +1,78 @@
-From: Ross Lagerwall <rosslagerwall@gmail.com>
-Subject: Re: [stable request <=3.5] acpi-cpufreq: set current frequency based
- on target P-State
-Date: Fri, 20 Dec 2013 10:19:12 +0200
-Message-ID: <20131220081912.GA13684@hobo.Home>
-References: <CAHTgTXW_M6U6oCgek-K45O2PeS71RpjUyZeJ8f5C97odvk09MA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2 0/3] PM: Enable option of re-use runtime PM callbacks
+ at system suspend
+Date: Fri, 20 Dec 2013 09:43:16 +0100
+Message-ID: <CAPDyKFrS6k1Zd5=XQX4ODk2=obo89bk-Z6aJvv+3WsrHw3nGbg@mail.gmail.com>
+References: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAHTgTXW_M6U6oCgek-K45O2PeS71RpjUyZeJ8f5C97odvk09MA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Vinson Lee <vlee@twopensource.com>
-Cc: stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Shatil Rafitullah <srafiullah@twopensource.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f173.google.com ([209.85.216.173]:39826 "EHLO
+	mail-qc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754929Ab3LTInR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 03:43:17 -0500
+Received: by mail-qc0-f173.google.com with SMTP id m20so1900007qcx.4
+        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 00:43:16 -0800 (PST)
+In-Reply-To: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@linaro.org>
 
-On Thu, Dec 19, 2013 at 06:14:12PM -0800, Vinson Lee wrote:
-> Hi.
-> 
-> Is commit 8673b83bf2f013379453b4779047bf3c6ae387e4 "acpi-cpufreq: set
-> current frequency based on target P-State" applicable to kernels
-> before 3.8?
-> 
-> We found that this patch allows the kernel to control P-states on
-> 3.4.74 on some platforms. However, other platforms were able to change
-> P-states even without this patch.
-> 
+On 10 December 2013 14:37, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> To put devices into low power state during system suspend, it is convenient
+> for some runtime PM supported power domains, subsystems and drivers to have
+> the option of re-using and invoking the runtime PM callbacks from their system
+> PM callbacks.
+>
+> The benefit is that we don't need to implement wrapper functions which
+> handles runtime PM resourses, typically called from both runtime PM and system
+> PM callbacks.
+>
+> Some new helper macros for defining the PM callbacks are added.
+>
+> SET_PM_RUNTIME_PM_OPS; to define runtime PM callbacks for CONFIG_PM instead of
+> CONFIG_PM_RUNTIME.
+>
+> SET_LATE_SYSTEM_SLEEP_PM_OPS; to define common late/early system PM callbacks,
+> same approach is applicable to the existing SET_SYSTEM_SLEEP_PM_OPS which
+> defines common suspend/resume system PM callbacks.
+>
+> A minor fix was needed for the platform bus, which runtime PM callbacks are set
+> to the pm_generic_runtime_suspend|resume functions. These were implemented only
+> for CONFIG_PM_RUNTIME and thus the platform bus prevented driver's runtime PM
+> callbacks to be invoked when only CONFIG_PM_SLEEP was used. We move them into
+> CONFIG_PM to resolve the problem.
+>
+> Changes in v2:
+>         Updated commit messages to try to better reflect the changes.
+>         Removed the below patches from this patch set. Let's leave those to be
+>         addressed separately, if needed.
+>         - PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
+>         - drm/exynos: Convert to suspend_late/resume_early callbacks for fimc
+>
+>
+> Ulf Hansson (3):
+>   PM / Runtime: Add second macro for definition of runtime PM callbacks
+>   PM / Runtime: Implement the pm_generic_runtime functions for
+>     CONFIG_PM
+>   PM / Sleep: Add macro to define common late/early system PM callbacks
+>
+>  drivers/base/power/generic_ops.c |    4 ++--
+>  include/linux/pm.h               |   21 +++++++++++++++++++++
+>  include/linux/pm_runtime.h       |   12 ++++++++----
+>  3 files changed, 31 insertions(+), 6 deletions(-)
+>
+> --
+> 1.7.9.5
+>
 
-Well, it fixes a regression introduced in 3.8 which affected setting
-turbo frequencies (I'm not sure if the 3.8 patch was backported).
-However, there may be other situations where the target frequency is
-different from the reported frequency which 8673b83bf2f0 could well fix.
+Hi,
 
-Cheers
--- 
-Ross Lagerwall
+Just wanted to send a kind ping on this patchset.
+
+Would be nice to try to conclude on the way forward after the quite
+long and good discussions we had around this topic.
+
+Kind regards
+Uffe
