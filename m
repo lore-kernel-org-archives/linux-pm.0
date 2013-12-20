@@ -1,82 +1,125 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: David Cohen <david.a.cohen@linux.intel.com>
 Subject: Re: [RFC/PATCH 1/3] pm: make PM macros more smart
-Date: Fri, 20 Dec 2013 20:55:27 +0100
-Message-ID: <20131220195527.GA25927@amd.pavel.ucw.cz>
+Date: Fri, 20 Dec 2013 12:23:36 -0800
+Message-ID: <20131220202336.GB14693@psi-dev26.jf.intel.com>
 References: <1386911905-2366-1-git-send-email-david.a.cohen@linux.intel.com>
  <1386911905-2366-2-git-send-email-david.a.cohen@linux.intel.com>
  <20131215175112.GA23298@Nokia-N900>
  <20131215192508.GA10514@psi-dev26.jf.intel.com>
+ <20131220195527.GA25927@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:40044 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797Ab3LTUSn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 20 Dec 2013 15:18:43 -0500
 Content-Disposition: inline
-In-Reply-To: <20131215192508.GA10514@psi-dev26.jf.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Cohen <david.a.cohen@linux.intel.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, sarah.a.sharp@linux.intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, santosh.shilimkar@ti.com
+In-Reply-To: <20131220195527.GA25927@amd.pavel.ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, sarah.a.sharp@linux.intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, santosh.shilimkar@ti.com
 
-On Sun 2013-12-15 11:25:08, David Cohen wrote:
-> On Sun, Dec 15, 2013 at 06:51:12PM +0100, Pavel Machek wrote:
-> > On Thu 2013-12-12 21:18:23, David Cohen wrote:
-> > > This patch makes SET_SYSTEM_SLEEP_PM_OPS() and SET_RUNTIME_PM_OPS() more
-> > > smart.
+On Fri, Dec 20, 2013 at 08:55:27PM +0100, Pavel Machek wrote:
+> On Sun 2013-12-15 11:25:08, David Cohen wrote:
+> > On Sun, Dec 15, 2013 at 06:51:12PM +0100, Pavel Machek wrote:
+> > > On Thu 2013-12-12 21:18:23, David Cohen wrote:
+> > > > This patch makes SET_SYSTEM_SLEEP_PM_OPS() and SET_RUNTIME_PM_OPS() more
+> > > > smart.
+> > > > 
+> > > > Despite those macros check for '#ifdef CONFIG_PM_SLEEP/RUNTIME' to avoid
+> > > > setting the callbacks when such #ifdef's aren't defined, they don't
+> > > > handle compiler to avoid messages like that:
+> > > > 
+> > > > drivers/usb/host/xhci-plat.c:200:12: warning: ???xhci_plat_suspend??? defined but not used [-Wunused-function]
+> > > > drivers/usb/host/xhci-plat.c:208:12: warning: ???xhci_plat_resume??? defined but not used [-Wunused-function]
+> > > > 
+> > > > As result, those macros get rid of #ifdef's when setting callbacks but
+> > > > not when implementing them.
+> > > > 
+> > > > With this patch, drivers using SET_*_PM_OPS() macros don't need to #ifdef
+> > > > the callbacks implementation as well.
 > > > 
-> > > Despite those macros check for '#ifdef CONFIG_PM_SLEEP/RUNTIME' to avoid
-> > > setting the callbacks when such #ifdef's aren't defined, they don't
-> > > handle compiler to avoid messages like that:
-> > > 
-> > > drivers/usb/host/xhci-plat.c:200:12: warning: ???xhci_plat_suspend??? defined but not used [-Wunused-function]
-> > > drivers/usb/host/xhci-plat.c:208:12: warning: ???xhci_plat_resume??? defined but not used [-Wunused-function]
-> > > 
-> > > As result, those macros get rid of #ifdef's when setting callbacks but
-> > > not when implementing them.
-> > > 
-> > > With this patch, drivers using SET_*_PM_OPS() macros don't need to #ifdef
-> > > the callbacks implementation as well.
+> > > Well... Interesting trickery, but it means that resulting kernel
+> > > will be bigge due to the dead functions no?
 > > 
-> > Well... Interesting trickery, but it means that resulting kernel
-> > will be bigge due to the dead functions no?
+> > Actually, it doesn't get bigger. Before sending the patch I did this
+> > dummy test app:
+> > 
+> > --------------------------------------------------------------------------------
+> > #include <stdio.h>
+> > 
+> > #define USE_IT_OR_LOOSE_IT(fn)  ((void *)((unsigned long)(fn) - (unsigned long)(fn)))
+> > 
+> > #ifdef MAKE_ME_NULL
+> > static int func1(int a)
+> > {
+> >         printf("Hey!!\n");
+> >         return 0;
+> > }
+> > #endif
 > 
-> Actually, it doesn't get bigger. Before sending the patch I did this
-> dummy test app:
+> I thought that point of this patch series was getting rid of the
+> #ifdefs around the function...? Now I'm confused.
+
+Maybe you're misinterpreting the test :)
+
+This #ifdef is used to make this same test code to replicate both
+scenarios according to -DMAKE_ME_NULL (just pay attention to actual
+resulting code after #ifdef's are tested. the #ifdef here is nor related
+to actual #ifdef on kernel). Here are both scenarios:
+
+(1) Not using my trickery (which needs the function to not be present).
+(2) Using my trickery (which needs to function to stay).
+
+With -DMAKE_ME_NULL we replicate (2), then the function *is* there but
+gcc gets rid of it on resulting binary without warnings if used with -O2.
+
+Without -DMAKE_ME_NULL we replicate (1). The #ifdef will fail and then
+remove the function which is an obvious scenario the function won't be
+part of resulting binary.
+
+If we use -S option to have human readable resulting assembly code
+(which is kind of 1:1 for resulting binary), we can compare the result
+of (1) and (2) and check they are pretty similar.
+This proves gcc behaves as expected with my patch: do not need #ifdef
+and do not generate dead codes to resulting binary.
+
 > 
-> --------------------------------------------------------------------------------
-> #include <stdio.h>
+> > struct global_data {
+> >         int (*func)(int);
+> > };
+> > 
+> > static struct global_data gd = {
+> > #ifdef MAKE_ME_NULL
+> >         .func = USE_IT_OR_LOOSE_IT(func1),
 > 
-> #define USE_IT_OR_LOOSE_IT(fn)  ((void *)((unsigned long)(fn) - (unsigned long)(fn)))
+> If you have ifdef around the function, why do you need magic here? Why
+> not
+
+This #ifdef is necessary to prevent the function to be used when it
+doesn't exist due to above #ifdef. But once again: don't misinterpret
+the #ifdefs in this test app with the ones in kernel. They are not
+related at all. If it's still confusing you just make 2 test apps
+without #ifdeds out of this one where one keeps the code inside #ifdefs
+and the other doesn't.
+
 > 
-> #ifdef MAKE_ME_NULL
-> static int func1(int a)
-> {
->         printf("Hey!!\n");
->         return 0;
-> }
-> #endif
-
-I thought that point of this patch series was getting rid of the
-#ifdefs around the function...? Now I'm confused.
-
-> struct global_data {
->         int (*func)(int);
-> };
+> 	.func = func1
 > 
-> static struct global_data gd = {
-> #ifdef MAKE_ME_NULL
->         .func = USE_IT_OR_LOOSE_IT(func1),
+> ?
+> 
+> Basically the warning tells you that you want the ifdef around the
+> function, too... (Otherwise you waste space). That seems like good
+> warning.
 
-If you have ifdef around the function, why do you need magic here? Why
-not
+Just check my first explanation.
 
-	.func = func1
+Br, David Cohen
 
-?
-
-Basically the warning tells you that you want the ifdef around the
-function, too... (Otherwise you waste space). That seems like good
-warning.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
