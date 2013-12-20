@@ -1,52 +1,53 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [5/11] issue 5: Frequency and uarch invariant task load
-Date: Fri, 20 Dec 2013 16:45:45 +0000
-Message-ID: <1387557951-21750-6-git-send-email-morten.rasmussen@arm.com>
+Subject: [4/11] issue 4: Tracking idle states
+Date: Fri, 20 Dec 2013 16:45:44 +0000
+Message-ID: <1387557951-21750-5-git-send-email-morten.rasmussen@arm.com>
 References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59314 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:59450 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754040Ab3LTQph (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:37 -0500
+	with ESMTP id S1756009Ab3LTQpj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:39 -0500
 In-Reply-To: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org
 
-Related to the issue of potential cpu capacity, task load is influenced
-directly by the current P-state of the cpu it is running on. For
-energy-aware task placement decisions the scheduler would need to
-estimate the energy impact of scheduling a specific task on a specific
-cpu. Depending on the resulting P-state it may be more energy efficient
-to wake-up another cpu (see system 1 in mail 11 for energy efficiency
-example).
+Similar to the issue of knowing the potential capacity of a cpu, the CFS
+scheduler also needs to know the idle state of idle cpus. Currently, an
+idle cpu is found using cpumask_first() when an extra cpu is needed (for
+nohz_idle_balance in find_new_ilb() in sched/fair.c). The energy
+trade-off whether to wake another cpu or put tasks on already busy cpus
+depend on this information.
 
-The frequency and uarch impact can be rather significant. On modern
-systems frequency scaling covers a range of 5-6x. On top of that uarch
-differences may give another 1.5-3x for a total cpu capacity range
-covering >10x.
+The cost of waking up a cpu in terms of latency and energy depends on
+the idle state the cpu is in. Deeper idle states typically affects more
+than a single cpu. Waking up a single cpu from such state is more
+expensive as it also affects the idle states of of its related cpus.
 
-Measurements on ARM TC2 for a simple periodic test workload (single
-task, 16 ms period):
+Energy costs are not currently represented in the cpuidle framework, but
+latency is. Taking ARM TC2 as an example [1], which has two idle states:
+Per-core clock-gating (WFI), and cluster power-down (power down all
+related cpus and caches). The target residencies and exit latencies
+specified in the driver give an idea about the cost involved in
+entering/exiting these states.
 
-        cpu load        load_avg_contrib (10 sample avg.)
-Freq    A7      A15     A7      A15
-500     16.76%   9.94%  ~201    ~135
-700     12.06%   6.95%  ~145     ~87
-1000     8.19%   5.23%  ~103     ~65
+=09=09=09Target=09=09Exit
+=09=09=09residency=09latency
+Clock-gating (WFI)=091=09=091
+Cluster power-down=092000/2500=09500/700=09=09(big/LITTLE)
 
-The cpu load estimate used for load balancing is based on
-load_avg_contrib which means that for this example the load estimate may
-vary 3x depending on where tasks are scheduled and the frequency scaling
-governors used.
+Picking the cheapest idle cpu would also have the effect that wake-ups
+are likely to happen on the same cpu and leave the remaining cpus in
+idle for longer.
 
-Potential solution: Frequency invariance has been proposed before [1]
-where the task load is scaled by the cur/max freq ratio. Another
-possibility is to use hardware counters if such are available on the
-platform.
+Potential solution: Make the scheduler idle state aware by either moving
+idle handling into the scheduler or let the idle framework (cpuidle)
+maintain a cpumask of the cheapest cpus to wake up which is accessible
+to the scheduler.
 
-[1] https://lkml.org/lkml/2013/4/16/289
+[1] drivers/cpuidle/cpuidle-big_little.c
 
