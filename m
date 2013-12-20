@@ -1,40 +1,28 @@
-From: Luis Henriques <luis.henriques@canonical.com>
-Subject: Re: [stable request 3.4 3.5] intel_idle Ivy Bridge support
-Date: Fri, 20 Dec 2013 10:29:13 +0000
-Message-ID: <20131220102913.GB5550@hercules>
-References: <CAHTgTXXuJ8E=XRH8m5fdCwLAWswuG-OLybYGDuuFg9QZ6Y7-Jg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Fri, 20 Dec 2013 16:03:47 +0530
+Message-ID: <CAKohpontQwTc4KP7XMvtkvS2sQTyF+ngXnXfbJ1ev+MLEp-H0g@mail.gmail.com>
+References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
+	<CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>
+	<52B41B18.30302@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:51629 "EHLO
-	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755855Ab3LTK3R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 05:29:17 -0500
-Content-Disposition: inline
-In-Reply-To: <CAHTgTXXuJ8E=XRH8m5fdCwLAWswuG-OLybYGDuuFg9QZ6Y7-Jg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52B41B18.30302@nvidia.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: bilhuang <bilhuang@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Vinson Lee <vlee@twopensource.com>
-Cc: stable@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>
 
-On Thu, Dec 19, 2013 at 05:23:17PM -0800, Vinson Lee wrote:
-> Hi.
-> 
-> Please consider backporting these upstream commits to stable trees 3.4 and 3.5.
-> 6edab08c24f9141d69cfa4683a0a027d86ab303e "intel_idle: initial IVB support"
-> 23795e580cad5d6b73d47d51b9074ce3e58bf334 "intel_idle: enable IVB Xeon support"
-> 
-> These patches were already backported to 3.2.y in 3.2.35.
-> 
-> Cheers,
-> Vinson
-> --
-> To unsubscribe from this list: send the line "unsubscribe stable" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On 20 December 2013 15:55, bilhuang <bilhuang@nvidia.com> wrote:
+> Don't you think it worth creating a file here so this can be shared to
+> arm64?
 
-Thank you Vinson, I'm queuing these for the 3.5 kernel.
+We will see how to handle virtual devices when we will start getting
+arm64 SoCs. Probably we might end up writing a single file in cpufreq,
+if required, that will create virtual devices for every arm64 platform..
 
-Cheers,
---
-Luis
+So, some people might use it and others wouldn't.. But no platform
+specific files for such stuff. So, the best we can do for now is to move
+these to platform code as we are talking about arm32 SoC's for now
+which do have a mach-* directory..
