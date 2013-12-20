@@ -1,44 +1,25 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH] cpufreq: imx6q-cpufreq driver is reused on i.MX6 series SoCs
-Date: Fri, 20 Dec 2013 10:12:16 +0800
-Message-ID: <1387505536-22720-1-git-send-email-shawn.guo@linaro.org>
+From: Vinson Lee <vlee@twopensource.com>
+Subject: [stable request <=3.5] acpi-cpufreq: set current frequency based on
+ target P-State
+Date: Thu, 19 Dec 2013 18:14:12 -0800
+Message-ID: <CAHTgTXW_M6U6oCgek-K45O2PeS71RpjUyZeJ8f5C97odvk09MA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, John Tobias <john.tobias.ph@gmail.com>, Anson Huang <b20788@freescale.com>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
+To: stable@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Shatil Rafitullah <srafiullah@twopensource.com>, Len Brown <len.brown@intel.com>, Ross Lagerwall <rosslagerwall@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The imx6q-cpufreq driver nowadays is not only running on imx6q but also
-other i.MX6 series SoCs like imx6dl and imx6sl.  Update Kconfig prompt
-and help text to make it clear to users.
+Hi.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
----
- drivers/cpufreq/Kconfig.arm |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Is commit 8673b83bf2f013379453b4779047bf3c6ae387e4 "acpi-cpufreq: set
+current frequency based on target P-State" applicable to kernels
+before 3.8?
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index ce52ed9..3ba5dcc 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -79,11 +79,11 @@ config ARM_HIGHBANK_CPUFREQ
- 	  If in doubt, say N.
- 
- config ARM_IMX6Q_CPUFREQ
--	tristate "Freescale i.MX6Q cpufreq support"
--	depends on SOC_IMX6Q
-+	tristate "Freescale i.MX6 cpufreq support"
-+	depends on ARCH_MXC
- 	depends on REGULATOR_ANATOP
- 	help
--	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
-+	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
- 
- 	  If in doubt, say N.
- 
--- 
-1.7.9.5
+We found that this patch allows the kernel to control P-states on
+3.4.74 on some platforms. However, other platforms were able to change
+P-states even without this patch.
 
-
+Cheers,
+Vinson
