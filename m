@@ -1,80 +1,97 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 1/9] ARM: EXYNOS: cpuidle: fix AFTR mode check
-Date: Fri, 20 Dec 2013 22:16:12 +0100
-Message-ID: <52B4B39C.2010202@linaro.org>
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com> <1387565251-7051-2-git-send-email-b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 9/9] cpuidle: remove state_count field from struct
+ cpuidle_device
+Date: Fri, 20 Dec 2013 22:27:19 +0100
+Message-ID: <52B4B637.4090105@linaro.org>
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com> <1387565251-7051-10-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1387565251-7051-2-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, rjw@rjwysocki.net
-Cc: lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com, Kukjin Kim <kgene.kim@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f179.google.com ([74.125.82.179]:59291 "EHLO
+	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938Ab3LTV1T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 16:27:19 -0500
+Received: by mail-we0-f179.google.com with SMTP id q59so2958147wes.24
+        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 13:27:18 -0800 (PST)
+In-Reply-To: <1387565251-7051-10-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, rjw@rjwysocki.net
+Cc: lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com
 
 On 12/20/2013 07:47 PM, Bartlomiej Zolnierkiewicz wrote:
-> The EXYNOS cpuidle driver code assumes that cpuidle core will handle
-> dev->state_count smaller than drv->state_count but currently this is
-> untrue (dev->state_count is used only for handling cpuidle state sysf=
-s
-> entries and drv->state_count is used for all other cases) and will no=
-t
-> be fixed in the future as dev->state_count is planned to be removed.
->
-> Fix the issue by checking for the max supported idle state in AFTR
-> state's ->enter handler (exynos4_enter_lowpower()) and entering AFTR
-> mode only when cores other than CPU0 are offline.
+> dev->state_count is now always equal to drv->state_count so
+> it can be removed.
 >
 > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
 > ---
->   arch/arm/mach-exynos/cpuidle.c | 8 ++------
->   1 file changed, 2 insertions(+), 6 deletions(-)
+>   drivers/cpuidle/cpuidle.c | 3 ---
+>   drivers/cpuidle/sysfs.c   | 5 +++--
+>   include/linux/cpuidle.h   | 1 -
+>   3 files changed, 3 insertions(+), 6 deletions(-)
 >
-> diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cp=
-uidle.c
-> index da65b03..f57cb91 100644
-> --- a/arch/arm/mach-exynos/cpuidle.c
-> +++ b/arch/arm/mach-exynos/cpuidle.c
-> @@ -172,8 +172,8 @@ static int exynos4_enter_lowpower(struct cpuidle_=
-device *dev,
->   {
->   	int new_index =3D index;
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a55e68f..e3d2052 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -252,9 +252,6 @@ int cpuidle_enable_device(struct cpuidle_device *=
+dev)
+>   	if (!dev->registered)
+>   		return -EINVAL;
 >
-> -	/* This mode only can be entered when other core's are offline */
-> -	if (num_online_cpus() > 1)
-> +	/* AFTR can only be entered when cores other than CPU0 are offline =
-*/
-> +	if (num_online_cpus() > 1 || dev->cpu !=3D 0)
->   		new_index =3D drv->safe_state_index;
->
->   	if (new_index =3D=3D 0)
-> @@ -235,10 +235,6 @@ static int exynos_cpuidle_probe(struct platform_=
-device *pdev)
->   		device =3D &per_cpu(exynos4_cpuidle_device, cpu_id);
->   		device->cpu =3D cpu_id;
->
-> -		/* Support IDLE only */
-> -		if (cpu_id !=3D 0)
-> -			device->state_count =3D 1;
+> -	if (!dev->state_count)
+> -		dev->state_count =3D drv->state_count;
 > -
->   		ret =3D cpuidle_register_device(device);
->   		if (ret) {
->   			dev_err(&pdev->dev, "failed to register cpuidle device\n");
+>   	ret =3D cpuidle_add_device_sysfs(dev);
+>   	if (ret)
+>   		return ret;
+> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+> index e918b6d..dcaae4c 100644
+> --- a/drivers/cpuidle/sysfs.c
+> +++ b/drivers/cpuidle/sysfs.c
+> @@ -398,7 +398,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle=
+_device *device)
+>   	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(device);
+>
+>   	/* state statistics */
+> -	for (i =3D 0; i < device->state_count; i++) {
+> +	for (i =3D 0; i < drv->state_count; i++) {
+>   		kobj =3D kzalloc(sizeof(struct cpuidle_state_kobj), GFP_KERNEL);
+>   		if (!kobj)
+>   			goto error_state;
+> @@ -430,9 +430,10 @@ error_state:
+>    */
+>   static void cpuidle_remove_state_sysfs(struct cpuidle_device *devic=
+e)
+>   {
+> +	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(device);
+>   	int i;
+>
+> -	for (i =3D 0; i < device->state_count; i++)
+> +	for (i =3D 0; i < drv->state_count; i++)
+>   		cpuidle_free_state_kobj(device, i);
+>   }
+>
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 50fcbb0..d133817 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -69,7 +69,6 @@ struct cpuidle_device {
+>   	unsigned int		cpu;
+>
+>   	int			last_residency;
+> -	int			state_count;
+>   	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
+>   	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
+>   	struct cpuidle_driver_kobj *kobj_driver;
 >
 
-Hi Bartlomiej,
-
-thanks for this cleanup. May be you can also add another patch to switc=
-h=20
-to the generic cpuidle_register function ?
-
-Thanks
-   -- Daniel
 
 --=20
   <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
@@ -83,3 +100,4 @@ r ARM SoCs
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
+
