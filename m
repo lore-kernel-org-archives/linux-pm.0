@@ -1,81 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 0/3] PM: Enable option of re-use runtime PM callbacks at system suspend
-Date: Fri, 20 Dec 2013 14:18:22 +0100
-Message-ID: <1605004.ViTQsllvdk@vostro.rjw.lan>
-References: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFrS6k1Zd5=XQX4ODk2=obo89bk-Z6aJvv+3WsrHw3nGbg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53673 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932089Ab3LTNFB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 08:05:01 -0500
-In-Reply-To: <CAPDyKFrS6k1Zd5=XQX4ODk2=obo89bk-Z6aJvv+3WsrHw3nGbg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
+Date: Fri, 20 Dec 2013 15:24:48 +0100
+Message-ID: <1387549495-809-1-git-send-email-l.majewski@samsung.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@linaro.org>
 
-On Friday, December 20, 2013 09:43:16 AM Ulf Hansson wrote:
-> On 10 December 2013 14:37, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > To put devices into low power state during system suspend, it is convenient
-> > for some runtime PM supported power domains, subsystems and drivers to have
-> > the option of re-using and invoking the runtime PM callbacks from their system
-> > PM callbacks.
-> >
-> > The benefit is that we don't need to implement wrapper functions which
-> > handles runtime PM resourses, typically called from both runtime PM and system
-> > PM callbacks.
-> >
-> > Some new helper macros for defining the PM callbacks are added.
-> >
-> > SET_PM_RUNTIME_PM_OPS; to define runtime PM callbacks for CONFIG_PM instead of
-> > CONFIG_PM_RUNTIME.
-> >
-> > SET_LATE_SYSTEM_SLEEP_PM_OPS; to define common late/early system PM callbacks,
-> > same approach is applicable to the existing SET_SYSTEM_SLEEP_PM_OPS which
-> > defines common suspend/resume system PM callbacks.
-> >
-> > A minor fix was needed for the platform bus, which runtime PM callbacks are set
-> > to the pm_generic_runtime_suspend|resume functions. These were implemented only
-> > for CONFIG_PM_RUNTIME and thus the platform bus prevented driver's runtime PM
-> > callbacks to be invoked when only CONFIG_PM_SLEEP was used. We move them into
-> > CONFIG_PM to resolve the problem.
-> >
-> > Changes in v2:
-> >         Updated commit messages to try to better reflect the changes.
-> >         Removed the below patches from this patch set. Let's leave those to be
-> >         addressed separately, if needed.
-> >         - PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
-> >         - drm/exynos: Convert to suspend_late/resume_early callbacks for fimc
-> >
-> >
-> > Ulf Hansson (3):
-> >   PM / Runtime: Add second macro for definition of runtime PM callbacks
-> >   PM / Runtime: Implement the pm_generic_runtime functions for
-> >     CONFIG_PM
-> >   PM / Sleep: Add macro to define common late/early system PM callbacks
-> >
-> >  drivers/base/power/generic_ops.c |    4 ++--
-> >  include/linux/pm.h               |   21 +++++++++++++++++++++
-> >  include/linux/pm_runtime.h       |   12 ++++++++----
-> >  3 files changed, 31 insertions(+), 6 deletions(-)
-> >
-> > --
-> > 1.7.9.5
-> >
-> 
-> Hi,
-> 
-> Just wanted to send a kind ping on this patchset.
-> 
-> Would be nice to try to conclude on the way forward after the quite
-> long and good discussions we had around this topic.
+This patch series introduces support for CPU overclocking technique
+called Boost.
 
-Sorry, I was traveling last week.  I'm processing my backlog now, hopefully
-I'll get to your patches shortly.
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
-Thanks,
-Rafael
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to include
+common code.
+
+Important design decisions:
+- Boost related code is compiled-in unconditionally to cpufreq core and
+  disabled by default. The cpufreq_driver is responsibile for setting
+  boost_supported flag and providing set_boost callback(if HW support
+  is needed). For software managed boost, special Kconfig flag -
+  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+  when a target platform has thermal framework properly configured.
+
+- struct cpufreq_driver has been extended with boost related fields:
+        -- boost_supported - when driver supports boosting
+        -- boost_enabled - boost state
+        -- set_boost - callback to function, which is necessary to
+           enable/disable boost
+
+- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+  _only_ when cpufreq driver supports Boost.
+
+- No special spin_lock for Boost was created. The one from cpufreq core
+  was reused.
+
+- The Boost code doesn't rely on any policy. When boost state is changed,
+  then the policy list is iterated and proper adjustements are done.
+
+- To improve safety level, the thermal framework is also extended to disable
+  software boosting, when thermal trip point is reached. After cooling down
+  the boost can be enabled again. This emulates behaviour similar to HW
+  managed boost (like x86)
+
+Tested at HW:
+       Exynos 4412 3.13-rc4 Linux
+       Intel Core i7-3770 3.13-rc4 Linux
+
+Above patches were posted on top of kernel_pm/bleeding-edge
+(SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
+
+Lukasz Majewski (7):
+  cpufreq: Add boost frequency support in core
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  cpufreq:boost:Kconfig: Provide support for software managed BOOST
+  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+    framework
+  Documentation:cpufreq:boost: Update BOOST documentation
+  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+  thermal:exynos:boost: Automatic enable/disable of BOOST feature (at
+    Exynos4412)
+
+ Documentation/cpu-freq/boost.txt          |   26 +++----
+ drivers/cpufreq/Kconfig                   |    4 +
+ drivers/cpufreq/Kconfig.arm               |   15 ++++
+ drivers/cpufreq/acpi-cpufreq.c            |   86 +++++++--------------
+ drivers/cpufreq/cpufreq.c                 |  118 ++++++++++++++++++++++++++++-
+ drivers/cpufreq/exynos-cpufreq.c          |    3 +
+ drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+ drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+ drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
+ include/linux/cpufreq.h                   |   24 ++++++
+ 10 files changed, 261 insertions(+), 85 deletions(-)
+
+-- 
+1.7.10.4
 
