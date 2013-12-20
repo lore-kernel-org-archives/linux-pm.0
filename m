@@ -1,42 +1,132 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Fri, 20 Dec 2013 09:29:51 -0700
-Message-ID: <52B4707F.4040303@wwwdotorg.org>
-References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>	<CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>	<52B41B18.30302@nvidia.com> <CAKohpontQwTc4KP7XMvtkvS2sQTyF+ngXnXfbJ1ev+MLEp-H0g@mail.gmail.com> <52B41F1B.3030005@nvidia.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
+Date: Fri, 20 Dec 2013 09:42:59 -0700
+Message-ID: <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
+References: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:56669 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752840Ab3LTQ3z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:29:55 -0500
-In-Reply-To: <52B41F1B.3030005@nvidia.com>
+Received: from mail-ie0-f179.google.com ([209.85.223.179]:59927 "EHLO
+	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754136Ab3LTQnU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:43:20 -0500
+Received: by mail-ie0-f179.google.com with SMTP id x13so3393430ief.10
+        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 08:43:19 -0800 (PST)
+In-Reply-To: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: bilhuang <bilhuang@nvidia.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, roy.zang@freescale.com, Scott Wood <scottwood@freescale.com>, Kumar Gala <galak@kernel.crashing.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 
-On 12/20/2013 03:42 AM, bilhuang wrote:
-> On 12/20/2013 06:33 PM, Viresh Kumar wrote:
->> On 20 December 2013 15:55, bilhuang <bilhuang@nvidia.com> wrote:
->>> Don't you think it worth creating a file here so this can be shared to
->>> arm64?
->>
->> We will see how to handle virtual devices when we will start getting
->> arm64 SoCs. Probably we might end up writing a single file in cpufreq,
->> if required, that will create virtual devices for every arm64 platform..
->>
->> So, some people might use it and others wouldn't.. But no platform
->> specific files for such stuff. So, the best we can do for now is to move
->> these to platform code as we are talking about arm32 SoC's for now
->> which do have a mach-* directory..
->>
-> OK thanks, this is suggested by Stephen earlier, I'll let him comment in
-> case he might think otherwise.
+On Fri, Dec 20, 2013 at 3:03 AM, Dongsheng Wang
+<dongsheng.wang@freescale.com> wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>
+> make Freescale platform use pci_platform_pm_ops struct.
 
-No, I definitely don't agree here. The rules for arch/arm64 are: no
-platform-specific code. We should immediately start planning for that.
-If this means renaming the file that creates the virtual device from
-tegra-cpufreq.c to something else, so be it, but we shouldn't go
-backwards and push stuff into the arch directories.
+This changelog doesn't say anything about what the patch does.
+
+I infer that you want to use pci_platform_pm_ops from some Freescale
+code.  This patch should be posted along with the patches that add
+that Freescale code, so we can see how you intend to use it.
+
+The existing use is in drivers/pci/pci-acpi.c, so it's possible that
+your new use should be added in the same way, in drivers/pci, so we
+don't have to make pci_platform_pm_ops part of the public PCI
+interface in include/linux/pci.h.
+
+That said, if Raphael thinks this makes sense, it's OK with me.
+
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+>
+> If device's not set power state, we will use this interface to put the
+> device's into the correct state.
+>
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 9c91ecc..48f8b1a 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -33,36 +33,6 @@ int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vmai,
+>  #endif
+>  int pci_probe_reset_function(struct pci_dev *dev);
+>
+> -/**
+> - * struct pci_platform_pm_ops - Firmware PM callbacks
+> - *
+> - * @is_manageable: returns 'true' if given device is power manageable by the
+> - *                 platform firmware
+> - *
+> - * @set_state: invokes the platform firmware to set the device's power state
+> - *
+> - * @choose_state: returns PCI power state of given device preferred by the
+> - *                platform; to be used during system-wide transitions from a
+> - *                sleeping state to the working state and vice versa
+> - *
+> - * @sleep_wake: enables/disables the system wake up capability of given device
+> - *
+> - * @run_wake: enables/disables the platform to generate run-time wake-up events
+> - *             for given device (the device's wake-up capability has to be
+> - *             enabled by @sleep_wake for this feature to work)
+> - *
+> - * If given platform is generally capable of power managing PCI devices, all of
+> - * these callbacks are mandatory.
+> - */
+> -struct pci_platform_pm_ops {
+> -       bool (*is_manageable)(struct pci_dev *dev);
+> -       int (*set_state)(struct pci_dev *dev, pci_power_t state);
+> -       pci_power_t (*choose_state)(struct pci_dev *dev);
+> -       int (*sleep_wake)(struct pci_dev *dev, bool enable);
+> -       int (*run_wake)(struct pci_dev *dev, bool enable);
+> -};
+> -
+> -int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+>  void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+>  void pci_power_up(struct pci_dev *dev);
+>  void pci_disable_enabled_device(struct pci_dev *dev);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 1084a15..20e07b8 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -365,6 +365,37 @@ struct pci_dev {
+>         size_t romlen; /* Length of ROM if it's not from the BAR */
+>  };
+>
+> +/**
+> + * struct pci_platform_pm_ops - Firmware PM callbacks
+> + *
+> + * @is_manageable: returns 'true' if given device is power manageable by the
+> + *                 platform firmware
+> + *
+> + * @set_state: invokes the platform firmware to set the device's power state
+> + *
+> + * @choose_state: returns PCI power state of given device preferred by the
+> + *                platform; to be used during system-wide transitions from a
+> + *                sleeping state to the working state and vice versa
+> + *
+> + * @sleep_wake: enables/disables the system wake up capability of given device
+> + *
+> + * @run_wake: enables/disables the platform to generate run-time wake-up events
+> + *             for given device (the device's wake-up capability has to be
+> + *             enabled by @sleep_wake for this feature to work)
+> + *
+> + * If given platform is generally capable of power managing PCI devices, all of
+> + * these callbacks are mandatory.
+> + */
+> +struct pci_platform_pm_ops {
+> +       bool (*is_manageable)(struct pci_dev *dev);
+> +       int (*set_state)(struct pci_dev *dev, pci_power_t state);
+> +       pci_power_t (*choose_state)(struct pci_dev *dev);
+> +       int (*sleep_wake)(struct pci_dev *dev, bool enable);
+> +       int (*run_wake)(struct pci_dev *dev, bool enable);
+> +};
+> +
+> +int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+> +
+>  static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
+>  {
+>  #ifdef CONFIG_PCI_IOV
+> --
+> 1.8.5
+>
+>
