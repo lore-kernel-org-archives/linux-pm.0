@@ -1,47 +1,26 @@
-From: Jason Baron <jbaron@akamai.com>
-Subject: [PATCH v2] cpufreq: Use CONFIG_CPU_FREQ_DEFAULT_* to set initial policy for setpolicy drivers
-Date: Thu, 19 Dec 2013 22:50:50 +0000 (GMT)
-Message-ID: <20131219225050.E82C91FF9@prod-mail-relay06.akamai.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com, dirk.brandewie@gmail.com
+From: annstokesz <annstokeszzzzz@libero.it>
+Subject: Hello dear
+Date: Fri, 20 Dec 2013 01:08:51 +0100 (CET)
+Message-ID: <431105558.7356121387498131727.JavaMail.defaultUser__25790.3116326363$1387498193$gmane$org@defaultHost>
+Reply-To: ann55u@yahoo.fr
+Mime-Version: 1.0
+Content-Type: text/plain;charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from outrelay03.libero.it ([212.52.84.103]:49143 "EHLO
+	outrelay03.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756467Ab3LTAJO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 19:09:14 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When configuring a default governor (via CONFIG_CPU_FREQ_DEFAULT_*) with the
-intel_pstate driver, the desired default policy is not properly set. For
-example, setting 'CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE' ended up with the
-'powersave' policy being set.
-
-Fix by configuring the correct default policy, if either 'powersave' or
-'performance' are requested. Otherwise, fallback to what the driver originally
-set via its 'init' routine.
-
-Signed-off-by: Jason Baron <jbaron@akamai.com>
----
-
-v2: simplify logic
-
- drivers/cpufreq/cpufreq.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02d534d..42e1ea4 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -828,6 +828,12 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
- 	int ret = 0;
- 
- 	memcpy(&new_policy, policy, sizeof(*policy));
-+
-+	/* Use the default policy if its valid. */
-+	if (cpufreq_driver->setpolicy)
-+		cpufreq_parse_governor(policy->governor->name,
-+					&new_policy.policy, NULL);
-+
- 	/* assure that the starting sequence is run in cpufreq_set_policy */
- 	policy->governor = NULL;
- 
--- 
-1.8.2.rc2
+Hello dear
+I will be very happy to be your friend.
+My name is miss. Ann Stokes. Please i will like you to
+write me through my email address ( ann55u@yahoo.fr ) .
+I will send my pictures to you and also tell you more about
+myself when i receive your email.
+I will be waiting for your mail in my mail box.
+Your new friend.
+Ann
 
