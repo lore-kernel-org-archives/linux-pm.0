@@ -1,47 +1,32 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 2/9] POWERPC: pseries: cpuidle: remove superfluous
- dev->state_count initialization
-Date: Fri, 20 Dec 2013 19:47:24 +0100
-Message-ID: <1387565251-7051-3-git-send-email-b.zolnierkie@samsung.com>
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: daniel.lezcano@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com, b.zolnierkie@samsung.com, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+From: Rodolfo =?utf-8?B?R2FyY8OtYSBQZcOxYXM=?= <kix@kix.es>
+Subject: Question about autosleep_show function
+Date: Fri, 20 Dec 2013 20:33:20 +0100
+Message-ID: <20131220193320.GA31769@kix.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kix.es ([46.105.17.89]:39629 "EHLO what.com.es"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750866Ab3LTTm7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 20 Dec 2013 14:42:59 -0500
+Received: from kix.es (4.Red-217-127-226.staticIP.rima-tde.net [217.127.226.4])
+	by what.com.es (Postfix) with ESMTPSA id 5BE096A055B
+	for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 20:33:16 +0100 (CET)
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-pseries cpuidle driver sets dev->state_count to drv->state_count so
-the default dev->state_count initialization in cpuidle_enable_device()
-(called from cpuidle_register_device()) can be used instead.
+Hi,
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/processor_idle.c | 2 --
- 1 file changed, 2 deletions(-)
+I am new with the kernel source.
 
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index a166e38..8aa8c40 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -271,7 +271,6 @@ static void pseries_idle_devices_uninit(void)
- static int pseries_idle_devices_init(void)
- {
- 	int i;
--	struct cpuidle_driver *drv = &pseries_idle_driver;
- 	struct cpuidle_device *dev;
- 
- 	pseries_cpuidle_devices = alloc_percpu(struct cpuidle_device);
-@@ -280,7 +279,6 @@ static int pseries_idle_devices_init(void)
- 
- 	for_each_possible_cpu(i) {
- 		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
--		dev->state_count = drv->state_count;
- 		dev->cpu = i;
- 		if (cpuidle_register_device(dev)) {
- 			printk(KERN_DEBUG \
+The function autosleep_show is defined at kernel/power/main.c, but it is not used. Is possible remove it or I am missing something? See [1]
+
+Thanks
+kix
+
+[1] http://lxr.free-electrons.com/ident?i=autosleep_show
 -- 
-1.8.2.3
+||// //\\// Rodolfo "kix" Garcia
+||\\// //\\ http://www.kix.es/
