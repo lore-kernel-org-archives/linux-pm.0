@@ -1,22 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: remove sysfs files for CPU which failed to come
- back after resume
-Date: Fri, 20 Dec 2013 21:26:35 +0530
-Message-ID: <CAKohpo=pBUCXNUce6DiZAJU4yshVJdPiKfMWk77nKHGuMusqgA@mail.gmail.com>
-References: <c6b53b186145559668722120ea1f37d28ddb3177.1387516043.git.viresh.kumar@linaro.org>
-	<2118684.kuZSLHD0UA@vostro.rjw.lan>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Fri, 20 Dec 2013 09:29:51 -0700
+Message-ID: <52B4707F.4040303@wwwdotorg.org>
+References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>	<CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>	<52B41B18.30302@nvidia.com> <CAKohpontQwTc4KP7XMvtkvS2sQTyF+ngXnXfbJ1ev+MLEp-H0g@mail.gmail.com> <52B41F1B.3030005@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2118684.kuZSLHD0UA@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:56669 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752840Ab3LTQ3z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:29:55 -0500
+In-Reply-To: <52B41F1B.3030005@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: bilhuang <bilhuang@nvidia.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On 20 December 2013 20:44, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Well, this just looks odd.  Please do
->
->         return sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+On 12/20/2013 03:42 AM, bilhuang wrote:
+> On 12/20/2013 06:33 PM, Viresh Kumar wrote:
+>> On 20 December 2013 15:55, bilhuang <bilhuang@nvidia.com> wrote:
+>>> Don't you think it worth creating a file here so this can be shared to
+>>> arm64?
+>>
+>> We will see how to handle virtual devices when we will start getting
+>> arm64 SoCs. Probably we might end up writing a single file in cpufreq,
+>> if required, that will create virtual devices for every arm64 platform..
+>>
+>> So, some people might use it and others wouldn't.. But no platform
+>> specific files for such stuff. So, the best we can do for now is to move
+>> these to platform code as we are talking about arm32 SoC's for now
+>> which do have a mach-* directory..
+>>
+> OK thanks, this is suggested by Stephen earlier, I'll let him comment in
+> case he might think otherwise.
 
-Yeah, that was stupid :)
+No, I definitely don't agree here. The rules for arch/arm64 are: no
+platform-specific code. We should immediately start planning for that.
+If this means renaming the file that creates the virtual device from
+tegra-cpufreq.c to something else, so be it, but we shouldn't go
+backwards and push stuff into the arch directories.
