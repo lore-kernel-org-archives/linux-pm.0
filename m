@@ -1,28 +1,44 @@
-From: Vinson Lee <vlee@twopensource.com>
-Subject: [stable request 3.4 3.5] intel_idle Ivy Bridge support
-Date: Thu, 19 Dec 2013 17:23:17 -0800
-Message-ID: <CAHTgTXXuJ8E=XRH8m5fdCwLAWswuG-OLybYGDuuFg9QZ6Y7-Jg@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH] cpufreq: imx6q-cpufreq driver is reused on i.MX6 series SoCs
+Date: Fri, 20 Dec 2013 10:12:16 +0800
+Message-ID: <1387505536-22720-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:46033 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756730Ab3LTBXS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 20:23:18 -0500
-Received: by mail-oa0-f54.google.com with SMTP id h16so2170765oag.27
-        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2013 17:23:17 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, John Tobias <john.tobias.ph@gmail.com>, Anson Huang <b20788@freescale.com>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: stable@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>
 
-Hi.
+The imx6q-cpufreq driver nowadays is not only running on imx6q but also
+other i.MX6 series SoCs like imx6dl and imx6sl.  Update Kconfig prompt
+and help text to make it clear to users.
 
-Please consider backporting these upstream commits to stable trees 3.4 and 3.5.
-6edab08c24f9141d69cfa4683a0a027d86ab303e "intel_idle: initial IVB support"
-23795e580cad5d6b73d47d51b9074ce3e58bf334 "intel_idle: enable IVB Xeon support"
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+---
+ drivers/cpufreq/Kconfig.arm |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-These patches were already backported to 3.2.y in 3.2.35.
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index ce52ed9..3ba5dcc 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -79,11 +79,11 @@ config ARM_HIGHBANK_CPUFREQ
+ 	  If in doubt, say N.
+ 
+ config ARM_IMX6Q_CPUFREQ
+-	tristate "Freescale i.MX6Q cpufreq support"
+-	depends on SOC_IMX6Q
++	tristate "Freescale i.MX6 cpufreq support"
++	depends on ARCH_MXC
+ 	depends on REGULATOR_ANATOP
+ 	help
+-	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
++	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
+ 
+ 	  If in doubt, say N.
+ 
+-- 
+1.7.9.5
 
-Cheers,
-Vinson
+
