@@ -1,75 +1,75 @@
-From: Will Deacon <will.deacon@arm.com>
-Subject: Re: [PATCH RFC v3 08/12] arm64: kernel: implement HW breakpoints CPU
- PM notifier
-Date: Fri, 20 Dec 2013 17:29:07 +0000
-Message-ID: <20131220172907.GF16829@mudshark.cambridge.arm.com>
-References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1385033059-25896-9-git-send-email-lorenzo.pieralisi@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v2 0/9] cpuidle: rework device state count handling
+Date: Fri, 20 Dec 2013 19:47:22 +0100
+Message-ID: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:39014 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755035Ab3LTR3M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 12:29:12 -0500
-Content-Disposition: inline
-In-Reply-To: <1385033059-25896-9-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:37618 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101Ab3LTSry (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 13:47:54 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Christoffer Dall <christoffer.dall@linaro.org>
+To: rjw@rjwysocki.net
+Cc: daniel.lezcano@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com, b.zolnierkie@samsung.com
 
-Hi Lorenzo,
+Hi,
 
-On Thu, Nov 21, 2013 at 11:24:15AM +0000, Lorenzo Pieralisi wrote:
-> When a CPU is shutdown either through CPU idle or suspend to RAM, the
-> content of HW breakpoint registers must be reset or restored to proper
-> values when CPU resume from low power states. This patch adds debug register
-> restore operations to the HW breakpoint control function and implements a
-> CPU PM notifier that allows to restore the content of HW breakpoint registers
-> to allow proper suspend/resume operations.
+Some cpuidle drivers assume that cpuidle core will handle cases where
+device->state_count is smaller than driver->state_count, unfortunately
+currently this is untrue (device->state_count is used only for handling
+cpuidle state sysfs entries and driver->state_count is used for all
+other cases) and will not be fixed in the future as device->state_count
+is planned to be removed [1].
 
-This looks mostly fine to me, but I have one questions you might be able to
-answer...
+This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
+cpuidle driver), removes superflous device->state_count initialization
+from drivers for which device->state_count equals driver->state_count
+(POWERPC pseries cpuidle driver and intel_idle driver) and finally
+removes state_count field from struct cpuidle_device.
 
-> @@ -840,18 +847,36 @@ void hw_breakpoint_thread_switch(struct task_struct *next)
->  /*
->   * CPU initialisation.
->   */
-> -static void reset_ctrl_regs(void *unused)
-> +static void hw_breakpoint_reset(void *unused)
->  {
->  	int i;
-> -
-> -	for (i = 0; i < core_num_brps; ++i) {
-> -		write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
-> -		write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
-> +	struct perf_event **slots;
-> +	/*
-> +	 * When a CPU goes through cold-boot, it does not have any installed
-> +	 * slot, so it is safe to share the same function for restoring and
-> +	 * resetting breakpoints; when a CPU is hotplugged in, it goes
-> +	 * through the slots, which are all empty, hence it just resets control
-> +	 * and value for debug registers.
-> +	 * When this function is triggered on warm-boot through a CPU PM
-> +	 * notifier some slots might be initialized; if so they are
-> +	 * reprogrammed according to the debug slots content.
-> +	 */
-> +	for (slots = this_cpu_ptr(bp_on_reg), i = 0; i < core_num_brps; ++i) {
-> +		if (slots[i]) {
-> +			hw_breakpoint_control(slots[i], HW_BREAKPOINT_RESTORE);
-> +		} else {
-> +			write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
-> +			write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
-> +		}
+Additionaly (while at it) this patchset fixes C1E promotion disable
+quirk handling (in intel_idle driver) and converts cpuidle drivers code
+to use the common cpuidle_[un]register() routines (in POWERPC pseries
+cpuidle driver and intel_idle driver).
 
-When this runs on warm-boot and starts restoring debug state, are debug
-exceptions guaranteed to be masked? I think that the debug restoration
-should appear atomic to a debugger (i.e. you can't take a debug exception
-half-way through the restore).
+[1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
 
-Providing that's the case:
+Reference to v1:
+	http://comments.gmane.org/gmane.linux.power-management.general/37390
 
-  Acked-by: Will Deacon <will.deacon@arm.com>
+Changes since v1:
+- synced patch series with next-20131220
+- added ACKs from Daniel Lezcano
 
-Will
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (9):
+  ARM: EXYNOS: cpuidle: fix AFTR mode check
+  POWERPC: pseries: cpuidle: remove superfluous dev->state_count
+    initialization
+  POWERPC: pseries: cpuidle: use the common cpuidle_[un]register()
+    routines
+  ACPI / cpuidle: fix max idle state handling with hotplug CPU support
+  ACPI / cpuidle: remove dev->state_count setting
+  intel_idle: do C1E promotion disable quirk for hotplugged CPUs
+  intel_idle: remove superfluous dev->state_count initialization
+  intel_idle: use the common cpuidle_[un]register() routines
+  cpuidle: remove state_count field from struct cpuidle_device
+
+ arch/arm/mach-exynos/cpuidle.c                  |   8 +-
+ arch/powerpc/platforms/pseries/processor_idle.c |  59 +---------
+ drivers/acpi/processor_idle.c                   |  29 +++--
+ drivers/cpuidle/cpuidle.c                       |   3 -
+ drivers/cpuidle/sysfs.c                         |   5 +-
+ drivers/idle/intel_idle.c                       | 140 +++++-------------------
+ include/linux/cpuidle.h                         |   1 -
+ 7 files changed, 51 insertions(+), 194 deletions(-)
+
+-- 
+1.8.2.3
+
