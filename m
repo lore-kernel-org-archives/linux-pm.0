@@ -1,132 +1,42 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
-Date: Fri, 20 Dec 2013 09:42:59 -0700
-Message-ID: <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
-References: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: [3/11] issue 3: No understanding of potential cpu capacity
+Date: Fri, 20 Dec 2013 16:45:43 +0000
+Message-ID: <1387557951-21750-4-git-send-email-morten.rasmussen@arm.com>
+References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f179.google.com ([209.85.223.179]:59927 "EHLO
-	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754136Ab3LTQnU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:43:20 -0500
-Received: by mail-ie0-f179.google.com with SMTP id x13so3393430ief.10
-        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 08:43:19 -0800 (PST)
-In-Reply-To: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
+Received: from service87.mimecast.com ([91.220.42.44]:59264 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754573Ab3LTQph (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:37 -0500
+In-Reply-To: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, roy.zang@freescale.com, Scott Wood <scottwood@freescale.com>, Kumar Gala <galak@kernel.crashing.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: peterz@infradead.org, mingo@kernel.org
+Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org
 
-On Fri, Dec 20, 2013 at 3:03 AM, Dongsheng Wang
-<dongsheng.wang@freescale.com> wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->
-> make Freescale platform use pci_platform_pm_ops struct.
+To minimize energy it may sometimes be better to put waking tasks on
+partially loaded cpus instead of powering up more cpus (particularly if
+it implies powering up a new cluster/group of cpus with associated
+caches). To make that call, information about the potential spare cycles
+on the busy cpus is required.
 
-This changelog doesn't say anything about what the patch does.
+Currently, the CFS scheduler has no knowledge about frequency scaling.
+Frequency scaling governors generally try to match the frequency to
+the load, which means that the idle time has no absolute meaning. The
+potential spare cpu capacity may be much higher than indicated by the
+idle time if the cpu is running at a low P-state.
 
-I infer that you want to use pci_platform_pm_ops from some Freescale
-code.  This patch should be posted along with the patches that add
-that Freescale code, so we can see how you intend to use it.
+The energy trade-off may justify putting another task on a loaded cpu
+even if it causes a change to a higher P-state to handle the extra load.
+Related issues are frequency (and cpu micro architecture) invariant task
+load and power topology information, which are both needed to enable the
+scheduler for energy-aware task placement. This is covered in more
+detail in issue 5.
 
-The existing use is in drivers/pci/pci-acpi.c, so it's possible that
-your new use should be added in the same way, in drivers/pci, so we
-don't have to make pci_platform_pm_ops part of the public PCI
-interface in include/linux/pci.h.
+The potential cpu capacity cannot be assumed to be constant as thermal
+management may restrict the usage of high performance P-states
+dynamically.
 
-That said, if Raphael thinks this makes sense, it's OK with me.
 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
->
-> If device's not set power state, we will use this interface to put the
-> device's into the correct state.
->
-> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-> index 9c91ecc..48f8b1a 100644
-> --- a/drivers/pci/pci.h
-> +++ b/drivers/pci/pci.h
-> @@ -33,36 +33,6 @@ int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vmai,
->  #endif
->  int pci_probe_reset_function(struct pci_dev *dev);
->
-> -/**
-> - * struct pci_platform_pm_ops - Firmware PM callbacks
-> - *
-> - * @is_manageable: returns 'true' if given device is power manageable by the
-> - *                 platform firmware
-> - *
-> - * @set_state: invokes the platform firmware to set the device's power state
-> - *
-> - * @choose_state: returns PCI power state of given device preferred by the
-> - *                platform; to be used during system-wide transitions from a
-> - *                sleeping state to the working state and vice versa
-> - *
-> - * @sleep_wake: enables/disables the system wake up capability of given device
-> - *
-> - * @run_wake: enables/disables the platform to generate run-time wake-up events
-> - *             for given device (the device's wake-up capability has to be
-> - *             enabled by @sleep_wake for this feature to work)
-> - *
-> - * If given platform is generally capable of power managing PCI devices, all of
-> - * these callbacks are mandatory.
-> - */
-> -struct pci_platform_pm_ops {
-> -       bool (*is_manageable)(struct pci_dev *dev);
-> -       int (*set_state)(struct pci_dev *dev, pci_power_t state);
-> -       pci_power_t (*choose_state)(struct pci_dev *dev);
-> -       int (*sleep_wake)(struct pci_dev *dev, bool enable);
-> -       int (*run_wake)(struct pci_dev *dev, bool enable);
-> -};
-> -
-> -int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
->  void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
->  void pci_power_up(struct pci_dev *dev);
->  void pci_disable_enabled_device(struct pci_dev *dev);
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 1084a15..20e07b8 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -365,6 +365,37 @@ struct pci_dev {
->         size_t romlen; /* Length of ROM if it's not from the BAR */
->  };
->
-> +/**
-> + * struct pci_platform_pm_ops - Firmware PM callbacks
-> + *
-> + * @is_manageable: returns 'true' if given device is power manageable by the
-> + *                 platform firmware
-> + *
-> + * @set_state: invokes the platform firmware to set the device's power state
-> + *
-> + * @choose_state: returns PCI power state of given device preferred by the
-> + *                platform; to be used during system-wide transitions from a
-> + *                sleeping state to the working state and vice versa
-> + *
-> + * @sleep_wake: enables/disables the system wake up capability of given device
-> + *
-> + * @run_wake: enables/disables the platform to generate run-time wake-up events
-> + *             for given device (the device's wake-up capability has to be
-> + *             enabled by @sleep_wake for this feature to work)
-> + *
-> + * If given platform is generally capable of power managing PCI devices, all of
-> + * these callbacks are mandatory.
-> + */
-> +struct pci_platform_pm_ops {
-> +       bool (*is_manageable)(struct pci_dev *dev);
-> +       int (*set_state)(struct pci_dev *dev, pci_power_t state);
-> +       pci_power_t (*choose_state)(struct pci_dev *dev);
-> +       int (*sleep_wake)(struct pci_dev *dev, bool enable);
-> +       int (*run_wake)(struct pci_dev *dev, bool enable);
-> +};
-> +
-> +int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
-> +
->  static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
->  {
->  #ifdef CONFIG_PCI_IOV
-> --
-> 1.8.5
->
->
