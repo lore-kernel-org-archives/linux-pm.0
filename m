@@ -1,78 +1,99 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V2 0/3] PM: Enable option of re-use runtime PM callbacks
- at system suspend
-Date: Fri, 20 Dec 2013 09:43:16 +0100
-Message-ID: <CAPDyKFrS6k1Zd5=XQX4ODk2=obo89bk-Z6aJvv+3WsrHw3nGbg@mail.gmail.com>
-References: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Fri, 20 Dec 2013 15:01:40 +0530
+Message-ID: <CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>
+References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f173.google.com ([209.85.216.173]:39826 "EHLO
-	mail-qc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754929Ab3LTInR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 03:43:17 -0500
-Received: by mail-qc0-f173.google.com with SMTP id m20so1900007qcx.4
-        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 00:43:16 -0800 (PST)
-In-Reply-To: <1386682662-17633-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:58175 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754789Ab3LTJbl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 04:31:41 -0500
+Received: by mail-ob0-f170.google.com with SMTP id wp18so2448477obc.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2013 01:31:40 -0800 (PST)
+In-Reply-To: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@linaro.org>
+To: Bill Huang <bilhuang@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On 10 December 2013 14:37, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> To put devices into low power state during system suspend, it is convenient
-> for some runtime PM supported power domains, subsystems and drivers to have
-> the option of re-using and invoking the runtime PM callbacks from their system
-> PM callbacks.
+On 19 December 2013 16:48, Bill Huang <bilhuang@nvidia.com> wrote:
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index ce52ed9..22dfc43 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -225,6 +225,18 @@ config ARM_TEGRA_CPUFREQ
+>         help
+>           This adds the CPUFreq driver support for TEGRA SOCs.
 >
-> The benefit is that we don't need to implement wrapper functions which
-> handles runtime PM resourses, typically called from both runtime PM and system
-> PM callbacks.
->
-> Some new helper macros for defining the PM callbacks are added.
->
-> SET_PM_RUNTIME_PM_OPS; to define runtime PM callbacks for CONFIG_PM instead of
-> CONFIG_PM_RUNTIME.
->
-> SET_LATE_SYSTEM_SLEEP_PM_OPS; to define common late/early system PM callbacks,
-> same approach is applicable to the existing SET_SYSTEM_SLEEP_PM_OPS which
-> defines common suspend/resume system PM callbacks.
->
-> A minor fix was needed for the platform bus, which runtime PM callbacks are set
-> to the pm_generic_runtime_suspend|resume functions. These were implemented only
-> for CONFIG_PM_RUNTIME and thus the platform bus prevented driver's runtime PM
-> callbacks to be invoked when only CONFIG_PM_SLEEP was used. We move them into
-> CONFIG_PM to resolve the problem.
->
-> Changes in v2:
->         Updated commit messages to try to better reflect the changes.
->         Removed the below patches from this patch set. Let's leave those to be
->         addressed separately, if needed.
->         - PM / Sleep: Add pm_generic functions to re-use runtime PM callbacks
->         - drm/exynos: Convert to suspend_late/resume_early callbacks for fimc
->
->
-> Ulf Hansson (3):
->   PM / Runtime: Add second macro for definition of runtime PM callbacks
->   PM / Runtime: Implement the pm_generic_runtime functions for
->     CONFIG_PM
->   PM / Sleep: Add macro to define common late/early system PM callbacks
->
->  drivers/base/power/generic_ops.c |    4 ++--
->  include/linux/pm.h               |   21 +++++++++++++++++++++
->  include/linux/pm_runtime.h       |   12 ++++++++----
->  3 files changed, 31 insertions(+), 6 deletions(-)
->
-> --
-> 1.7.9.5
->
+> +config ARM_TEGRA20_CPUFREQ
+> +       bool "NVIDIA TEGRA20"
+> +       depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
 
-Hi,
+Probably just in case you agree to my next comment:
 
-Just wanted to send a kind ping on this patchset.
+            depends on ARCH_TEGRA_2x_SOC
 
-Would be nice to try to conclude on the way forward after the quite
-long and good discussions we had around this topic.
 
-Kind regards
-Uffe
+> +       default y
+> +       help
+> +         This enables Tegra20 cpufreq functionality, it adds
+> +         Tegra20 CPU frequency ladder and the call back functions
+> +         to set CPU rate. All the non-SoC dependant codes are
+> +         controlled by the config ARM_TEGRA_CPUFREQ.
+> +
+> +         If in doubt, say N.
+
+
+> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+>  /*
+> + * Copyright (c) 2013, NVIDIA Corporation. All rights reserved.
+>   *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+>   *
+> + * This program is distributed in the hope it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+>   */
+>
+>  #include <linux/kernel.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/of.h>
+> +#include <linux/tegra-cpufreq.h>
+> +
+> +int __init tegra_cpufreq_init(void)
+> +{
+> +       struct device_node *root;
+> +
+> +       root = of_find_node_by_path("/");
+> +       if (root) {
+> +               struct platform_device_info devinfo;
+> +               const char *compat;
+> +               int i;
+> +
+> +               memset(&devinfo, 0, sizeof(devinfo));
+> +               i = of_property_count_strings(root, "compatible");
+> +               if (i > 0) {
+> +                       of_property_read_string_index(
+> +                               root, "compatible", i - 1, &compat);
+> +                       devinfo.name = kasprintf(
+> +                                       GFP_KERNEL, "%s-cpufreq", compat);
+> +                       platform_device_register_full(&devinfo);
+> +               }
+>         }
+> +EXPORT_SYMBOL(tegra_cpufreq_init);
+
+Probably above is all that is present in this file. This is just about adding
+the right cpufreq device so that right driver can get probed.
+
+I don't think this code is present at the right place. We don't need a file
+in cpufreq/ which is there just to add a device :) ..
+
+Probably move this piece of code to arch/mach-tegra where you are calling
+init.
+
+And so remove ARM_TEGRA_CPUFREQ config option completely.
