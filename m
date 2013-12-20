@@ -1,26 +1,28 @@
-From: annstokesz <annstokeszzzzz@libero.it>
-Subject: Hello dear
-Date: Fri, 20 Dec 2013 01:08:51 +0100 (CET)
-Message-ID: <431105558.7356121387498131727.JavaMail.defaultUser__25790.3116326363$1387498193$gmane$org@defaultHost>
-Reply-To: ann55u@yahoo.fr
+From: Vinson Lee <vlee@twopensource.com>
+Subject: [stable request 3.4 3.5] intel_idle Ivy Bridge support
+Date: Thu, 19 Dec 2013 17:23:17 -0800
+Message-ID: <CAHTgTXXuJ8E=XRH8m5fdCwLAWswuG-OLybYGDuuFg9QZ6Y7-Jg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from outrelay03.libero.it ([212.52.84.103]:49143 "EHLO
-	outrelay03.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756467Ab3LTAJO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 19:09:14 -0500
+Received: from mail-oa0-f54.google.com ([209.85.219.54]:46033 "EHLO
+	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756730Ab3LTBXS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2013 20:23:18 -0500
+Received: by mail-oa0-f54.google.com with SMTP id h16so2170765oag.27
+        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2013 17:23:17 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>
 
-Hello dear
-I will be very happy to be your friend.
-My name is miss. Ann Stokes. Please i will like you to
-write me through my email address ( ann55u@yahoo.fr ) .
-I will send my pictures to you and also tell you more about
-myself when i receive your email.
-I will be waiting for your mail in my mail box.
-Your new friend.
-Ann
+Hi.
 
+Please consider backporting these upstream commits to stable trees 3.4 and 3.5.
+6edab08c24f9141d69cfa4683a0a027d86ab303e "intel_idle: initial IVB support"
+23795e580cad5d6b73d47d51b9074ce3e58bf334 "intel_idle: enable IVB Xeon support"
+
+These patches were already backported to 3.2.y in 3.2.35.
+
+Cheers,
+Vinson
