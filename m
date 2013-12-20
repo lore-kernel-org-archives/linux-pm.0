@@ -1,53 +1,75 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [9/11] use-case 3: Video playback on Android
-Date: Fri, 20 Dec 2013 16:45:49 +0000
-Message-ID: <1387557951-21750-10-git-send-email-morten.rasmussen@arm.com>
-References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Will Deacon <will.deacon@arm.com>
+Subject: Re: [PATCH RFC v3 08/12] arm64: kernel: implement HW breakpoints CPU
+ PM notifier
+Date: Fri, 20 Dec 2013 17:29:07 +0000
+Message-ID: <20131220172907.GF16829@mudshark.cambridge.arm.com>
+References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1385033059-25896-9-git-send-email-lorenzo.pieralisi@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59485 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754040Ab3LTQpj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 11:45:39 -0500
-In-Reply-To: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:39014 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755035Ab3LTR3M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2013 12:29:12 -0500
+Content-Disposition: inline
+In-Reply-To: <1385033059-25896-9-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: peterz@infradead.org, mingo@kernel.org
-Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Graeme Gregory <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Christoffer Dall <christoffer.dall@linaro.org>
 
-Depending on the platform hardware video is a low to medium load
-periodic application. There may be some variation in the load depending
-on the video codec, content, and resolution. The load pattern is roughly
-synchronized to the video frame-rate (typically 30 FPS). Video playback
-also includes audio playback as part of the workload.
+Hi Lorenzo,
 
-Performance Criteria
+On Thu, Nov 21, 2013 at 11:24:15AM +0000, Lorenzo Pieralisi wrote:
+> When a CPU is shutdown either through CPU idle or suspend to RAM, the
+> content of HW breakpoint registers must be reset or restored to proper
+> values when CPU resume from low power states. This patch adds debug register
+> restore operations to the HW breakpoint control function and implements a
+> CPU PM notifier that allows to restore the content of HW breakpoint registers
+> to allow proper suspend/resume operations.
 
-Video decoding must be done in time to avoid dropped frames. Similarly,
-audio must be decoded in time to never let the audio buffer run empty.
+This looks mostly fine to me, but I have one questions you might be able to
+answer...
 
-Task behaviour
+> @@ -840,18 +847,36 @@ void hw_breakpoint_thread_switch(struct task_struct *next)
+>  /*
+>   * CPU initialisation.
+>   */
+> -static void reset_ctrl_regs(void *unused)
+> +static void hw_breakpoint_reset(void *unused)
+>  {
+>  	int i;
+> -
+> -	for (i = 0; i < core_num_brps; ++i) {
+> -		write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
+> -		write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
+> +	struct perf_event **slots;
+> +	/*
+> +	 * When a CPU goes through cold-boot, it does not have any installed
+> +	 * slot, so it is safe to share the same function for restoring and
+> +	 * resetting breakpoints; when a CPU is hotplugged in, it goes
+> +	 * through the slots, which are all empty, hence it just resets control
+> +	 * and value for debug registers.
+> +	 * When this function is triggered on warm-boot through a CPU PM
+> +	 * notifier some slots might be initialized; if so they are
+> +	 * reprogrammed according to the debug slots content.
+> +	 */
+> +	for (slots = this_cpu_ptr(bp_on_reg), i = 0; i < core_num_brps; ++i) {
+> +		if (slots[i]) {
+> +			hw_breakpoint_control(slots[i], HW_BREAKPOINT_RESTORE);
+> +		} else {
+> +			write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
+> +			write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
+> +		}
 
-Based on video playback (720p and 1080p) on a modern ARM SoC, the cpu
-load is generally modest. Video resolution has only a minor impact on
-the overall cpu load. The load pattern is repeating every ~33 ms.
+When this runs on warm-boot and starts restoring debug state, are debug
+exceptions guaranteed to be masked? I think that the debug restoration
+should appear atomic to a debugger (i.e. you can't take a debug exception
+half-way through the restore).
 
-Rendering task: The main Android graphics rendering task accounts for
-about 18% of the total cpu load. It is active for about ~6-8 ms each
-period during which it is blocking a couple of times. It appears to run
-in sync with a handful of other tasks. Most of which are related to
-timed queues in Android and graphics.
+Providing that's the case:
 
-Timed events queue tasks: An Android TimedEventQueue task for each cpu
-is active during video playback. In total, they account for around 30%
-of the cpu load. They are all following the 33 ms period and run for
-250-700 us when scheduled (average).
+  Acked-by: Will Deacon <will.deacon@arm.com>
 
-Audio decoding task: Accounts for ~10% of the cpu load. Load pattern
-repeat every ~23 ms. Since this is different from the period of video
-rendering, this may run in parallel with video rendering form time to
-time. Audio decoding runs for about 2 ms when scheduled each period.
-
-A lot of smaller tasks are involved in the periodic load pattern.
-
+Will
