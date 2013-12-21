@@ -1,49 +1,96 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [RFC PATCH v5 1/4] cpufreq: Add a cpufreq driver for Marvell Dove
-Date: Sat, 21 Dec 2013 22:54:24 +0100
-Message-ID: <20131221215424.GA31584@lunn.ch>
-References: <20131204145413.GD29200@e106331-lin.cambridge.arm.com>
- <1387316473-3250-1-git-send-email-andrew@lunn.ch>
- <1387316473-3250-2-git-send-email-andrew@lunn.ch>
- <20131220033257.GF2609@titan.lakedaemon.net>
- <20131221162645.GE20115@lunn.ch>
- <20131221192500.GG2609@titan.lakedaemon.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH] PM / Sleep: Freeze filesystems during system
+ suspend/hibernation
+Date: Sun, 22 Dec 2013 00:33:18 +0100
+Message-ID: <20131221233318.GA7126@amd.pavel.ucw.cz>
+References: <CA+5PVA50UA1oP1jKgnQjHh8APp=cNWREw3bkfrkV1OW_Tg1g+A@mail.gmail.com>
+ <201205252113.50900.rjw@sisk.pl>
+ <CA+5PVA5GWsTdNky-K1-hu5_R55hdKfr-Oa26HpX=FdA1cRZsbQ@mail.gmail.com>
+ <CA+5PVA7vsZPd9eXwN-Q+d8c9+0bAmVdr698vv+LFyrn+3iFOMA@mail.gmail.com>
+ <20131217230843.GA2911@amd.pavel.ucw.cz>
+ <20131217233152.GC20579@dastard>
+ <20131218000128.GA3737@amd.pavel.ucw.cz>
+ <20131218123952.GI31386@dastard>
+ <20131218140842.GA20488@amd.pavel.ucw.cz>
+ <20131219002216.GT31386@dastard>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:37075 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192Ab3LUVzI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 21 Dec 2013 16:55:08 -0500
+Return-path: <linux-fsdevel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20131221192500.GG2609@titan.lakedaemon.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20131219002216.GT31386@dastard>
+Sender: linux-fsdevel-owner@vger.kernel.org
+To: Dave Chinner <david@fromorbit.com>
+Cc: Josh Boyer <jwboyer@fedoraproject.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, Nigel Cunningham <nigel@tuxonice.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, mark.rutland@arm.com, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, rjw@rjwysocki.net, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On Sat, Dec 21, 2013 at 02:25:01PM -0500, Jason Cooper wrote:
-> Andrew,
-> 
-> On Sat, Dec 21, 2013 at 05:26:45PM +0100, Andrew Lunn wrote:
-> > > > +Dove cpufreq driver
-> > > > +-------------------
-> > > > +
-> > > > +The Dove cpufreq driver makes use of the pmu node in the device tree.
+Hi!
+
+> > > > > I disagree - given the problem it is resolving leads to silent
+> > > > > filesystem corruption, this patch should be considered somewhat of a
+> > > > > priority to push...
+> > > > 
+> > > > Umm. Ok, I forgot what it does, really.
 > > > 
-> > > I would prefer to reword this to make it OS-agnostic.  The cpufreq
-> > > driver is Linux-specific.
+> > > It ensures that the filesystem is in an quiescent state both in
+> > > memory and on disk, and it cannot be modified in memory or on disk
+> > > whilst the suspend image is being generated, or by log recovery
+> > > after a resume before the suspended image has been restored.
 > > 
-> > Why is it Linux specific? 
+> > If someone attempts to run log recovery before resume, that's a bug
+> > and yes, it will corrupt filesystems. (Including ext3). Don't do that.
 > 
-> I'll admit I may be bike-shedding here, and I'm more seeking
-> opinion/clarification than mandating anything.  The above sentence,
-> imho, is describing how Linux/FreeBSD uses the node, not describing the
-> hardware.
+> Freezing the filesystem prevents that accidental mount of the
+> filesystem from being an issue. It fixes a bug that:
 
-How about:
+Can you elaborate on that?
 
-Dove has a PMU, which contains DFS, DVS, RTC, clock gates, and thermal
-management,
+If you do read-write mount of that filesystem, surely filesystem
+metadata will differ from what the filesystem expects. You'll still
+get data corruption AFAICT.
 
-	Andrew
+Read-only mount... maybe that will get slightly better -- there'll be
+no journal to play back. But what happens to superblock information
+such as "last mount time"? Mount counts?
+
+> > Documentation/power/swsusp.txt:
+> > 
+> >  * BIG FAT WARNING
+> >    *********************************************************
+> >  *
+> >  * If you touch anything on disk between suspend and resume...
+> >  *                              ...kiss your data goodbye.
+> 
+> Makes this a whole lot less dangerous.
+
+Do you claim that it is now safe to mount (rw) and access filesystem
+between suspend and resume?
+
+> > > > So... for few years now suspend corrupts data on XFS? And Fedora has
+> > > > the fix but it is not in mainline? That does not sound right...
+> > > 
+> > > The issues freezing the filesystem before the suspend image is
+> > > created affect every journalled filesystem linux supports, be
+> > > it XFS, ext4, reiser, btrfs, etc.
+> > 
+> > Did not it have some problems with ext3?
+> 
+> Please read more carefully: "affect every journalled filesystem
+> linux supports". So, ext3 is affected because it's a journalling
+> filesystem.  I didn't list every journalled filesystem Linux
+> supports - "etc" means there are more examples that aren't
+> explicitly listed.
+
+Sorry for being unclear. My memory says this patch caused some
+regression with ext3. Is my memory wrong? Or was the regression fixed
+in the meantime?
+
+(Clearly, ext3 has the same issues with journal replays as btrfs. But
+note that mounting filesystem between suspend and resume is not safe
+even on simple filesystems such as ext2).
+
+Thanks,
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
