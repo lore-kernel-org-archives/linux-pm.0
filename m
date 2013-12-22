@@ -1,61 +1,177 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM: Fix memory leak in pm_vt_switch_unregister().
-Date: Sun, 22 Dec 2013 02:02:24 +0100
-Message-ID: <1708288.nAHm0VPirU@vostro.rjw.lan>
-References: <1387450847-23797-1-git-send-email-masami256@gmail.com> <20131219124228.GA11928@amd.pavel.ucw.cz>
+Subject: Re: [PATCH V2] intel_pstate: Add setting voltage value for baytrail P states.
+Date: Sun, 22 Dec 2013 02:04:20 +0100
+Message-ID: <1747745.thVM8jvyHT@vostro.rjw.lan>
+References: <1387391559-3133-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58101 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:57350 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756269Ab3LVAtA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Dec 2013 19:49:00 -0500
-In-Reply-To: <20131219124228.GA11928@amd.pavel.ucw.cz>
+	with SMTP id S1754867Ab3LVAu5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Dec 2013 19:50:57 -0500
+In-Reply-To: <1387391559-3133-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Masami Ichikawa <masami256@gmail.com>, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Thursday, December 19, 2013 01:42:28 PM Pavel Machek wrote:
-> On Thu 2013-12-19 20:00:47, Masami Ichikawa wrote:
-> > kmemleak reported a memory leak as below.
-> > 
-> > unreferenced object 0xffff880118f14700 (size 32):
-> >   comm "swapper/0", pid 1, jiffies 4294877401 (age 123.283s)
-> >   hex dump (first 32 bytes):
-> >     00 01 10 00 00 00 ad de 00 02 20 00 00 00 ad de  .......... .....
-> >     00 d4 d2 18 01 88 ff ff 01 00 00 00 00 04 00 00  ................
-> >   backtrace:
-> >     [<ffffffff814edb1e>] kmemleak_alloc+0x4e/0xb0
-> >     [<ffffffff811889dc>] kmem_cache_alloc_trace+0x1ec/0x260
-> >     [<ffffffff810aba66>] pm_vt_switch_required+0x76/0xb0
-> >     [<ffffffff812f39f5>] register_framebuffer+0x195/0x320
-> >     [<ffffffff8130af18>] efifb_probe+0x718/0x780
-> >     [<ffffffff81391495>] platform_drv_probe+0x45/0xb0
-> >     [<ffffffff8138f407>] driver_probe_device+0x87/0x3a0
-> >     [<ffffffff8138f7f3>] __driver_attach+0x93/0xa0
-> >     [<ffffffff8138d413>] bus_for_each_dev+0x63/0xa0
-> >     [<ffffffff8138ee5e>] driver_attach+0x1e/0x20
-> >     [<ffffffff8138ea40>] bus_add_driver+0x180/0x250
-> >     [<ffffffff8138fe74>] driver_register+0x64/0xf0
-> >     [<ffffffff813913ba>] __platform_driver_register+0x4a/0x50
-> >     [<ffffffff8191e028>] efifb_driver_init+0x12/0x14
-> >     [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
-> >     [<ffffffff818e40e0>] kernel_init_freeable+0x17b/0x201
-> > 
-> > In pm_vt_switch_required(), "entry" variable is allocated via kmalloc().
-> > So, in pm_vt_switch_unregister(), it needs to call kfree() when object
-> > is deleted from list.
-> > 
-> > Signed-off-by: Masami Ichikawa <masami256@gmail.com>
+On Wednesday, December 18, 2013 10:32:39 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > 
-> Reviewed-by: Pavel Machek <pavel@ucw.cz>
+> Baytrail requires setting P state and voltage pairs when adjusting the
+> requested P state.  Add function for retrieving the valid voltage
+> values and modify *_set_pstate() functions to caluclate the
+> appropriate voltage for the requested P state.
+> 
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Applied and queued up for the next PM pull request.
+I've queued up this (and a few more of your patches) for 3.14, but it didn't
+apply cleanly for me, so please check the result in the bleeding-edge branch
+of linux-pm.git.
 
-Thanks!
+Thanks,
+Rafael
 
+
+> ---
+>  drivers/cpufreq/intel_pstate.c | 58 +++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 54 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index c2dd7dc..cfccb6f 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -35,6 +35,7 @@
+>  #define SAMPLE_COUNT		3
+>  
+>  #define BYT_RATIOS	0x66a
+> +#define BYT_VIDS        0x66b
+>  
+>  #define FRAC_BITS 8
+>  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+> @@ -64,6 +65,12 @@ struct pstate_data {
+>  	int	turbo_pstate;
+>  };
+>  
+> +struct vid_data {
+> +	int32_t min;
+> +	int32_t max;
+> +	int32_t ratio;
+> +};
+> +
+>  struct _pid {
+>  	int setpoint;
+>  	int32_t integral;
+> @@ -82,6 +89,7 @@ struct cpudata {
+>  	struct timer_list timer;
+>  
+>  	struct pstate_data pstate;
+> +	struct vid_data vid;
+>  	struct _pid pid;
+>  
+>  	u64	prev_aperf;
+> @@ -104,7 +112,8 @@ struct pstate_funcs {
+>  	int (*get_max)(void);
+>  	int (*get_min)(void);
+>  	int (*get_turbo)(void);
+> -	void (*set)(int pstate);
+> +	void (*set)(struct cpudata*, int pstate);
+> +	void (*get_vid)(struct cpudata *);
+>  };
+>  
+>  struct cpu_defaults {
+> @@ -356,6 +365,42 @@ static int byt_get_max_pstate(void)
+>  	return (value >> 16) & 0xFF;
+>  }
+>  
+> +static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+> +{
+> +	u64 val;
+> +	int32_t vid_fp;
+> +	u32 vid;
+> +
+> +	val = pstate << 8;
+> +	if (limits.no_turbo)
+> +		val |= (u64)1 << 32;
+> +
+> +	vid_fp = cpudata->vid.min + mul_fp(
+> +		int_tofp(pstate - cpudata->pstate.min_pstate),
+> +		cpudata->vid.ratio);
+> +
+> +	vid_fp = clamp_t(int32_t, vid_fp, cpudata->vid.min, cpudata->vid.max);
+> +	vid = fp_toint(vid_fp);
+> +
+> +	val |= vid;
+> +
+> +	wrmsrl(MSR_IA32_PERF_CTL, val);
+> +}
+> +
+> +static void byt_get_vid(struct cpudata *cpudata)
+> +{
+> +	u64 value;
+> +
+> +	rdmsrl(BYT_VIDS, value);
+> +	cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
+> +	cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
+> +	cpudata->vid.ratio = div_fp(
+> +		cpudata->vid.max - cpudata->vid.min,
+> +		int_tofp(cpudata->pstate.max_pstate - 
+> +			cpudata->pstate.min_pstate));
+> +}
+> +
+> +
+>  static int core_get_min_pstate(void)
+>  {
+>  	u64 value;
+> @@ -382,7 +427,7 @@ static int core_get_turbo_pstate(void)
+>  	return ret;
+>  }
+>  
+> -static void core_set_pstate(int pstate)
+> +static void core_set_pstate(struct cpudata *cpudata, int pstate)
+>  {
+>  	u64 val;
+>  
+> @@ -423,7 +468,8 @@ static struct cpu_defaults byt_params = {
+>  		.get_max = byt_get_max_pstate,
+>  		.get_min = byt_get_min_pstate,
+>  		.get_turbo = byt_get_max_pstate,
+> -		.set = core_set_pstate,
+> +		.set = byt_set_pstate,
+> +		.get_vid = byt_get_vid,
+>  	},
+>  };
+>  
+> @@ -460,7 +506,7 @@ static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
+>  
+>  	cpu->pstate.current_pstate = pstate;
+>  
+> -	pstate_funcs.set(pstate);
+> +	pstate_funcs.set(cpu, pstate);
+>  }
+>  
+>  static inline void intel_pstate_pstate_increase(struct cpudata *cpu, int steps)
+> @@ -486,6 +532,9 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+>  	cpu->pstate.max_pstate = pstate_funcs.get_max();
+>  	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+>  
+> +	if (pstate_funcs.get_vid)
+> +		pstate_funcs.get_vid(cpu);
+> +
+>  	/*
+>  	 * goto max pstate so we don't slow up boot if we are built-in if we are
+>  	 * a module we will take care of it during normal operation
+> @@ -765,6 +814,7 @@ static void copy_cpu_funcs(struct pstate_funcs *funcs)
+>  	pstate_funcs.get_min   = funcs->get_min;
+>  	pstate_funcs.get_turbo = funcs->get_turbo;
+>  	pstate_funcs.set       = funcs->set;
+> +	pstate_funcs.get_vid   = funcs->get_vid;
+>  }
+>  
+>  #if IS_ENABLED(CONFIG_ACPI)
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
