@@ -1,76 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] powercap/rapl: add support for ValleyView Soc
-Date: Sun, 22 Dec 2013 02:06:33 +0100
-Message-ID: <1553570.ISCzPqBYzN@vostro.rjw.lan>
-References: <1386801567-26661-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [RFC PATCH v5 1/4] cpufreq: Add a cpufreq driver for Marvell
+ Dove
+Date: Sat, 21 Dec 2013 23:00:23 -0500
+Message-ID: <20131222040023.GI2609@titan.lakedaemon.net>
+References: <20131204145413.GD29200@e106331-lin.cambridge.arm.com>
+ <1387316473-3250-1-git-send-email-andrew@lunn.ch>
+ <1387316473-3250-2-git-send-email-andrew@lunn.ch>
+ <20131220033257.GF2609@titan.lakedaemon.net>
+ <20131221162645.GE20115@lunn.ch>
+ <20131221192500.GG2609@titan.lakedaemon.net>
+ <20131221215424.GA31584@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56867 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755818Ab3LVAxJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Dec 2013 19:53:09 -0500
-In-Reply-To: <1386801567-26661-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:50680 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751062Ab3LVEAk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Dec 2013 23:00:40 -0500
+Content-Disposition: inline
+In-Reply-To: <20131221215424.GA31584@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Gavin Hindman <gavin.hindman@intel.com>, "Triplett, Josh" <josh.triplett@intel.com>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: mark.rutland@arm.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Wednesday, December 11, 2013 02:39:27 PM Jacob Pan wrote:
-> This patch adds support for RAPL on Intel ValleyView based SoC
-> platforms, such as Baytrail.
+On Sat, Dec 21, 2013 at 10:54:24PM +0100, Andrew Lunn wrote:
+> On Sat, Dec 21, 2013 at 02:25:01PM -0500, Jason Cooper wrote:
+> > Andrew,
+> > 
+> > On Sat, Dec 21, 2013 at 05:26:45PM +0100, Andrew Lunn wrote:
+> > > > > +Dove cpufreq driver
+> > > > > +-------------------
+> > > > > +
+> > > > > +The Dove cpufreq driver makes use of the pmu node in the device tree.
+> > > > 
+> > > > I would prefer to reword this to make it OS-agnostic.  The cpufreq
+> > > > driver is Linux-specific.
+> > > 
+> > > Why is it Linux specific? 
+> > 
+> > I'll admit I may be bike-shedding here, and I'm more seeking
+> > opinion/clarification than mandating anything.  The above sentence,
+> > imho, is describing how Linux/FreeBSD uses the node, not describing the
+> > hardware.
 > 
-> Besides adding CPU ID, special energy unit encoding is handled
-> for ValleyView.
+> How about:
 > 
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> Dove has a PMU, which contains DFS, DVS, RTC, clock gates, and thermal
+> management,
 
-Queued up for 3.14, thanks!
 
-> ---
->  drivers/powercap/intel_rapl.c | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index 2a786c5..3c67683 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -833,6 +833,11 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
->  	return 0;
->  }
->  
-> +static const struct x86_cpu_id energy_unit_quirk_ids[] = {
-> +	{ X86_VENDOR_INTEL, 6, 0x37},/* VLV */
-> +	{}
-> +};
-> +
->  static int rapl_check_unit(struct rapl_package *rp, int cpu)
->  {
->  	u64 msr_val;
-> @@ -853,8 +858,11 @@ static int rapl_check_unit(struct rapl_package *rp, int cpu)
->  	 * time unit: 1/time_unit_divisor Seconds
->  	 */
->  	value = (msr_val & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
-> -	rp->energy_unit_divisor = 1 << value;
-> -
-> +	/* some CPUs have different way to calculate energy unit */
-> +	if (x86_match_cpu(energy_unit_quirk_ids))
-> +		rp->energy_unit_divisor = 1000000 / (1 << value);
-> +	else
-> +		rp->energy_unit_divisor = 1 << value;
->  
->  	value = (msr_val & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
->  	rp->power_unit_divisor = 1 << value;
-> @@ -941,6 +949,7 @@ static void package_power_limit_irq_restore(int package_id)
->  static const struct x86_cpu_id rapl_ids[] = {
->  	{ X86_VENDOR_INTEL, 6, 0x2a},/* SNB */
->  	{ X86_VENDOR_INTEL, 6, 0x2d},/* SNB EP */
-> +	{ X86_VENDOR_INTEL, 6, 0x37},/* VLV */
->  	{ X86_VENDOR_INTEL, 6, 0x3a},/* IVB */
->  	{ X86_VENDOR_INTEL, 6, 0x45},/* HSW */
->  	/* TODO: Add more CPU IDs after testing */
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Yep, much better.
+
+thx,
+
+Jason.
