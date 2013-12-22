@@ -1,48 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: Make ARM big.LITTLE switcher depend on ARM
-Date: Sun, 22 Dec 2013 02:06:04 +0100
-Message-ID: <2576518.J5IDx9W8BG@vostro.rjw.lan>
-References: <1386799947-6041-1-git-send-email-broonie@kernel.org>
+Subject: Re: [PATCH] powercap/rapl: add support for ValleyView Soc
+Date: Sun, 22 Dec 2013 02:06:33 +0100
+Message-ID: <1553570.ISCzPqBYzN@vostro.rjw.lan>
+References: <1386801567-26661-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1386799947-6041-1-git-send-email-broonie@kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Rob Herring <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:56867 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755818Ab3LVAxJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Dec 2013 19:53:09 -0500
+In-Reply-To: <1386801567-26661-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Gavin Hindman <gavin.hindman@intel.com>, "Triplett, Josh" <josh.triplett@intel.com>
 
-On Wednesday, December 11, 2013 10:12:26 PM Mark Brown wrote:
-> From: Mark Brown <broonie@linaro.org>
+On Wednesday, December 11, 2013 02:39:27 PM Jacob Pan wrote:
+> This patch adds support for RAPL on Intel ValleyView based SoC
+> platforms, such as Baytrail.
 > 
-> The patch currently under review to enable ARM cpufreq drivers for ARM64
-> which is useful due to the large amount of shared IP between ARM and ARM64
-> SoCs. However the big.LITTLE switcher relies on an architecture interface
-> to build which is not present on ARM64. Add a dependency until that is
-> resolved.
+> Besides adding CPU ID, special energy unit encoding is handled
+> for ValleyView.
 > 
-> Signed-off-by: Mark Brown <broonie@linaro.org>
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Both [1-2/2] queued up for 3.14, thanks!
+Queued up for 3.14, thanks!
 
 > ---
->  drivers/cpufreq/Kconfig.arm | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/powercap/intel_rapl.c | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index ce52ed949249..0a141109fd29 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -4,7 +4,7 @@
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 2a786c5..3c67683 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -833,6 +833,11 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
+>  	return 0;
+>  }
 >  
->  config ARM_BIG_LITTLE_CPUFREQ
->  	tristate "Generic ARM big LITTLE CPUfreq driver"
-> -	depends on ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
-> +	depends on ARM && ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
->  	help
->  	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
+> +static const struct x86_cpu_id energy_unit_quirk_ids[] = {
+> +	{ X86_VENDOR_INTEL, 6, 0x37},/* VLV */
+> +	{}
+> +};
+> +
+>  static int rapl_check_unit(struct rapl_package *rp, int cpu)
+>  {
+>  	u64 msr_val;
+> @@ -853,8 +858,11 @@ static int rapl_check_unit(struct rapl_package *rp, int cpu)
+>  	 * time unit: 1/time_unit_divisor Seconds
+>  	 */
+>  	value = (msr_val & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
+> -	rp->energy_unit_divisor = 1 << value;
+> -
+> +	/* some CPUs have different way to calculate energy unit */
+> +	if (x86_match_cpu(energy_unit_quirk_ids))
+> +		rp->energy_unit_divisor = 1000000 / (1 << value);
+> +	else
+> +		rp->energy_unit_divisor = 1 << value;
 >  
+>  	value = (msr_val & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
+>  	rp->power_unit_divisor = 1 << value;
+> @@ -941,6 +949,7 @@ static void package_power_limit_irq_restore(int package_id)
+>  static const struct x86_cpu_id rapl_ids[] = {
+>  	{ X86_VENDOR_INTEL, 6, 0x2a},/* SNB */
+>  	{ X86_VENDOR_INTEL, 6, 0x2d},/* SNB EP */
+> +	{ X86_VENDOR_INTEL, 6, 0x37},/* VLV */
+>  	{ X86_VENDOR_INTEL, 6, 0x3a},/* IVB */
+>  	{ X86_VENDOR_INTEL, 6, 0x45},/* HSW */
+>  	/* TODO: Add more CPU IDs after testing */
 > 
 -- 
 I speak only for myself.
