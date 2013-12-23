@@ -1,98 +1,79 @@
 From: Anson Huang <b20788@freescale.com>
-Subject: [PATCH V4] thermal: imx: add necessary clk operation
-Date: Mon, 23 Dec 2013 15:49:22 -0500
-Message-ID: <1387831763-16971-1-git-send-email-b20788@freescale.com>
+Subject: [PATCH] thermal: imx: correct suspend/resume flow
+Date: Mon, 23 Dec 2013 15:51:58 -0500
+Message-ID: <1387831918-17028-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-doc-owner@vger.kernel.org>
-Sender: linux-doc-owner@vger.kernel.org
-To: shawn.guo@linaro.org, kernel@pengutronix.de, rui.zhang@intel.com, eduardo.valentin@ti.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from [216.32.180.184] ([216.32.180.184]:10871 "EHLO
+	co1outboundpool.messaging.microsoft.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751190Ab3LWIzN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 03:55:13 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: shawn.guo@linaro.org, rui.zhang@intel.com, eduardo.valentin@ti.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Thermal sensor needs pll3_usb_otg when measuring temperature,
-otherwise the temperature read will be incorrect, so need to
-enable this clk before sensor working, for alarm function,
-as hardware will take measurement periodically, so we should
-keep this clk always on once alarm function is enabled.
+Current imx thermal sensor's suspend function will return fail if
+thermal sensor is always enabled, but because alarm function is enabled,
+thermal sensor will be always enabled as well, hence break system's suspend,
+this patch will disable thermal sensor before suspend and re-enable it
+after resume, it fixes the failure of suspend/resume caused by thermal driver.
 
 Signed-off-by: Anson Huang <b20788@freescale.com>
 ---
- .../devicetree/bindings/thermal/imx-thermal.txt    |    4 ++++
- drivers/thermal/imx_thermal.c                      |   20 ++++++++++++++++++++
- 2 files changed, 24 insertions(+)
+ drivers/thermal/imx_thermal.c |   31 +++++++++++++++++--------------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-index 541c25e..1f0f672 100644
---- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-@@ -8,10 +8,14 @@ Required properties:
-   calibration data, e.g. OCOTP on imx6q.  The details about calibration data
-   can be found in SoC Reference Manual.
- 
-+Optional properties:
-+- clocks : thermal sensor's clock source.
-+
- Example:
- 
- tempmon {
- 	compatible = "fsl,imx6q-tempmon";
- 	fsl,tempmon = <&anatop>;
- 	fsl,tempmon-data = <&ocotp>;
-+	clocks = <&clks 172>;
- };
 diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 1d6c801..cbb16f3 100644
+index cbb16f3..9a9a6c2 100644
 --- a/drivers/thermal/imx_thermal.c
 +++ b/drivers/thermal/imx_thermal.c
-@@ -7,6 +7,7 @@
-  *
-  */
+@@ -510,27 +510,30 @@ static int imx_thermal_suspend(struct device *dev)
+ {
+ 	struct imx_thermal_data *data = dev_get_drvdata(dev);
+ 	struct regmap *map = data->tempmon;
+-	u32 val;
  
-+#include <linux/clk.h>
- #include <linux/cpu_cooling.h>
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
-@@ -73,6 +74,7 @@ struct imx_thermal_data {
- 	unsigned long last_temp;
- 	bool irq_enabled;
- 	int irq;
-+	struct clk *thermal_clk;
- };
+-	regmap_read(map, TEMPSENSE0, &val);
+-	if ((val & TEMPSENSE0_POWER_DOWN) == 0) {
+-		/*
+-		 * If a measurement is taking place, wait for a long enough
+-		 * time for it to finish, and then check again.  If it still
+-		 * does not finish, something must go wrong.
+-		 */
+-		udelay(50);
+-		regmap_read(map, TEMPSENSE0, &val);
+-		if ((val & TEMPSENSE0_POWER_DOWN) == 0)
+-			return -ETIMEDOUT;
+-	}
++	/*
++	 * Need to disable thermal sensor, otherwise, when thermal core
++	 * try to get temperature before thermal sensor resume, a wrong
++	 * temperature will be read as the thermal sensor is powered
++	 * down.
++	 */
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
++	data->mode = THERMAL_DEVICE_DISABLED;
  
- static void imx_set_alarm_temp(struct imx_thermal_data *data,
-@@ -457,6 +459,22 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
+ 	return 0;
+ }
  
-+	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(data->thermal_clk)) {
-+		dev_warn(&pdev->dev, "failed to get thermal clk!\n");
-+	} else {
-+		/*
-+		 * Thermal sensor needs clk on to get correct value, normally
-+		 * we should enable its clk before taking measurement and disable
-+		 * clk after measurement is done, but if alarm function is enabled,
-+		 * hardware will auto measure the temperature periodically, so we
-+		 * need to keep the clk always on for alarm function.
-+		 */
-+		ret = clk_prepare_enable(data->thermal_clk);
-+		if (ret)
-+			dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
-+	}
+ static int imx_thermal_resume(struct device *dev)
+ {
+-	/* Nothing to do for now */
++	struct imx_thermal_data *data = dev_get_drvdata(dev);
++	struct regmap *map = data->tempmon;
 +
- 	/* Enable measurements at ~ 10 Hz */
- 	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
- 	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
-@@ -478,6 +496,8 @@ static int imx_thermal_remove(struct platform_device *pdev)
- 
- 	/* Disable measurements */
- 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+	if (!IS_ERR(data->thermal_clk))
-+		clk_disable_unprepare(data->thermal_clk);
- 
- 	thermal_zone_device_unregister(data->tz);
- 	cpufreq_cooling_unregister(data->cdev);
++	/* Enabled thermal sensor after resume */
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
++	data->mode = THERMAL_DEVICE_ENABLED;
++
+ 	return 0;
+ }
+ #endif
 -- 
 1.7.9.5
 
