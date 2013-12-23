@@ -1,107 +1,111 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC v3 08/12] arm64: kernel: implement HW breakpoints CPU
- PM notifier
-Date: Mon, 23 Dec 2013 13:50:25 +0000
-Message-ID: <20131223135025.GA2967@e102568-lin.cambridge.arm.com>
+Subject: Re: [PATCH RFC v3 04/12] arm64: kernel: cpu_{suspend/resume}
+ implementation
+Date: Mon, 23 Dec 2013 14:04:15 +0000
+Message-ID: <20131223140415.GB2967@e102568-lin.cambridge.arm.com>
 References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1385033059-25896-9-git-send-email-lorenzo.pieralisi@arm.com>
- <20131220172907.GF16829@mudshark.cambridge.arm.com>
+ <1385033059-25896-5-git-send-email-lorenzo.pieralisi@arm.com>
+ <52B42A48.5090202@marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:57081 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:37906 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757380Ab3LWNue convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 08:50:34 -0500
-In-Reply-To: <20131220172907.GF16829@mudshark.cambridge.arm.com>
+	with ESMTP id S1752138Ab3LWOET convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 09:04:19 -0500
+In-Reply-To: <52B42A48.5090202@marvell.com>
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Will Deacon <will.deacon@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Christoffer Dall <christoffer.dall@linaro.org>
+To: Leo Yan <leoy@marvell.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Feng Kan <fkan@apm.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, Nicolas Pitre <nico@linaro.org>, Marc Zyngier <Marc.Zyngier@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Yu Tang <ytang5@marvell.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <Will.Deacon@arm.com>, Christoffer Dall <christoffer.dall@linaro.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Loc Ho <lho@apm.com>, Colin Cross <ccross@android.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Dave P Martin <Dave.Martin@arm.com>, Hanjun Guo <hanjun.guo@linaro.org>, Zhou
 
-Hi Will,
-
-thanks for having a look.
-
-On Fri, Dec 20, 2013 at 05:29:07PM +0000, Will Deacon wrote:
-> Hi Lorenzo,
+On Fri, Dec 20, 2013 at 11:30:16AM +0000, Leo Yan wrote:
+> On 11/21/2013 07:24 PM, Lorenzo Pieralisi wrote:
 > 
-> On Thu, Nov 21, 2013 at 11:24:15AM +0000, Lorenzo Pieralisi wrote:
-> > When a CPU is shutdown either through CPU idle or suspend to RAM, the
-> > content of HW breakpoint registers must be reset or restored to proper
-> > values when CPU resume from low power states. This patch adds debug register
-> > restore operations to the HW breakpoint control function and implements a
-> > CPU PM notifier that allows to restore the content of HW breakpoint registers
-> > to allow proper suspend/resume operations.
+> > +/*
+> > + * x0 must contain the sctlr value retrieved from restored context
+> > + */
+> > +ENTRY(cpu_resume_mmu)
+> > +	ldr	x3, =cpu_resume_after_mmu
+> > +	msr	sctlr_el1, x0		// restore sctlr_el1
+> > +	isb
+> > +	br	x3			// global jump to virtual address
+> > +ENDPROC(cpu_resume_mmu)
+> > +cpu_resume_after_mmu:
+> > +	mov	x0, #0			// return zero on success
+> > +	ldp	x19, x20, [sp, #16]
+> > +	ldp	x21, x22, [sp, #32]
+> > +	ldp	x23, x24, [sp, #48]
+> > +	ldp	x25, x26, [sp, #64]
+> > +	ldp	x27, x28, [sp, #80]
+> > +	ldp	x29, lr, [sp], #96
+> > +	ret
+> > +ENDPROC(cpu_resume_after_mmu)
+> > +
+> > +	.data
+> > +ENTRY(cpu_resume)
+> > +	bl	el2_setup		// if in EL2 drop to EL1 cleanly
 > 
-> This looks mostly fine to me, but I have one questions you might be able to
-> answer...
-> 
-> > @@ -840,18 +847,36 @@ void hw_breakpoint_thread_switch(struct task_struct *next)
-> >  /*
-> >   * CPU initialisation.
-> >   */
-> > -static void reset_ctrl_regs(void *unused)
-> > +static void hw_breakpoint_reset(void *unused)
-> >  {
-> >  	int i;
-> > -
-> > -	for (i = 0; i < core_num_brps; ++i) {
-> > -		write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
-> > -		write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
-> > +	struct perf_event **slots;
-> > +	/*
-> > +	 * When a CPU goes through cold-boot, it does not have any installed
-> > +	 * slot, so it is safe to share the same function for restoring and
-> > +	 * resetting breakpoints; when a CPU is hotplugged in, it goes
-> > +	 * through the slots, which are all empty, hence it just resets control
-> > +	 * and value for debug registers.
-> > +	 * When this function is triggered on warm-boot through a CPU PM
-> > +	 * notifier some slots might be initialized; if so they are
-> > +	 * reprogrammed according to the debug slots content.
-> > +	 */
-> > +	for (slots = this_cpu_ptr(bp_on_reg), i = 0; i < core_num_brps; ++i) {
-> > +		if (slots[i]) {
-> > +			hw_breakpoint_control(slots[i], HW_BREAKPOINT_RESTORE);
-> > +		} else {
-> > +			write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
-> > +			write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
-> > +		}
-> 
-> When this runs on warm-boot and starts restoring debug state, are debug
-> exceptions guaranteed to be masked? I think that the debug restoration
-> should appear atomic to a debugger (i.e. you can't take a debug exception
-> half-way through the restore).
+> Compare to v2's patch set, here remove the calculation fro the offset 
+> b/t PHYS_OFFSET - PAGE_OFFSET; so when i verify the patch set, i saw x28 
+> is zero and finally introduce the EL2's sync exception. Below are pasted 
+> v2's code for reference.
 
-No, they might not be, good catch and this needs fixing (well, CPU PM notifiers
-and suspend must be run with IRQs disabled, but debug exceptions can be left
-on even though we should define to what extent this can be considered
-reasonable/safe, eg debugging should not fiddle with HW state that we are
-saving, it is a bit of a grey area).
-I think the easiest option is to mask/unmask them in the CPU PM notifier,
-before/after restoring the slots. As we discussed, I am trying to keep debug
-on as deep in the power down sequence as possible, and now I mask debug
-exceptions before saving general purpose registers, and restore the exception
-flags when cpu_suspend returns (which means unfortunately that the sequence
-above might run with debug exceptions unmasked). This means that the debugger
-might see a restore that is not atomic from its perspective, again, good spot,
-I should update the patch or put together a fix for -rc1 if the commit history
-is immutable now, which I think that's the case.
+What kernel are you testing against ? The offset is not needed anymore
+in el2_setup, that is why the x28 computation is not there.
 
-Thank you,
+> do u want use firmware to set the x28 for the offset value? :-) IMHO, 
+> v2's implementation is more reasonable and it's better keep the code.
+
+The point is not whether to set it in firmware or in the kernel, see above.
+
 Lorenzo
 
 > 
-> Providing that's the case:
+> ENTRY(cpu_resume)
+>            adr     x4, sleep_save_sp
+>            ldr     x5, =sleep_save_sp
+>            sub     x28, x4, x5             // x28 = PHYS_OFFSET - 
+> PAGE_OFFSET
+>            /*
+>             * make sure el2 is sane, el2_setup expects:
+>             * x28 = PHYS_OFFSET - PAGE_OFFSET
+>             */
+>            bl      el2_setup               // if in EL2 drop to EL1 cleanly
 > 
->   Acked-by: Will Deacon <will.deacon@arm.com>
 > 
-> Will
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > +#ifdef CONFIG_SMP
+> > +	mrs	x1, mpidr_el1
+> > +	adr	x4, mpidr_hash_ptr
+> > +	ldr	x5, [x4]
+> > +	add	x8, x4, x5		// x8 = struct mpidr_hash phys address
+> > +        /* retrieve mpidr_hash members to compute the hash */
+> > +	ldr	x2, [x8, #MPIDR_HASH_MASK]
+> > +	ldp	w3, w4, [x8, #MPIDR_HASH_SHIFTS]
+> > +	ldp	w5, w6, [x8, #(MPIDR_HASH_SHIFTS + 8)]
+> > +	compute_mpidr_hash x7, x3, x4, x5, x6, x1, x2
+> > +        /* x7 contains hash index, let's use it to grab context pointer */
+> > +#else
+> > +	mov	x7, xzr
+> > +#endif
+> > +	adr	x0, sleep_save_sp
+> > +	ldr	x0, [x0, #SLEEP_SAVE_SP_PHYS]
+> > +	ldr	x0, [x0, x7, lsl #3]
+> > +	/* load sp from context */
+> > +	ldr	x2, [x0, #CPU_CTX_SP]
+> > +	adr	x1, sleep_idmap_phys
+> > +	/* load physical address of identity map page table in x1 */
+> > +	ldr	x1, [x1]
+> > +	mov	sp, x2
+> > +	/*
+> > +	 * cpu_do_resume expects x0 to contain context physical address
+> > +	 * pointer and x1 to contain physical address of 1:1 page tables
+> > +	 */
+> > +	bl	cpu_do_resume		// PC relative jump, MMU off
+> > +	b	cpu_resume_mmu		// Resume MMU, never returns
+> > +ENDPROC(cpu_resume)
+> > +
 > 
 
