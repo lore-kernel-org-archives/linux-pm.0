@@ -1,91 +1,79 @@
-From: Shawn Guo <shawn.guo@linaro.org>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
 Subject: Re: [PATCH] thermal: imx: correct suspend/resume flow
-Date: Mon, 23 Dec 2013 22:29:33 +0800
-Message-ID: <20131223142931.GM26070@S2101-09.ap.freescale.net>
-References: <1387831918-17028-1-git-send-email-b20788@freescale.com>
+Date: Mon, 23 Dec 2013 14:33:43 +0000
+Message-ID: <C95204EE-D28A-4AB4-B60B-E7CAB8AC3B8E@freescale.com>
+References: <1387831918-17028-1-git-send-email-b20788@freescale.com>,<20131223142931.GM26070@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1387831918-17028-1-git-send-email-b20788@freescale.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1blp0190.outbound.protection.outlook.com ([207.46.163.190]:13910
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757326Ab3LWOds (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Dec 2013 09:33:48 -0500
+In-Reply-To: <20131223142931.GM26070@S2101-09.ap.freescale.net>
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Dec 23, 2013 at 03:51:58PM -0500, Anson Huang wrote:
-> Current imx thermal sensor's suspend function will return fail if
-> thermal sensor is always enabled, but because alarm function is enabled,
-> thermal sensor will be always enabled as well, hence break system's suspend,
-> this patch will disable thermal sensor before suspend and re-enable it
-> after resume, it fixes the failure of suspend/resume caused by thermal driver.
-
-We should probably make it clear in the commit log that it's a
-regression caused by commit 37713a1 (thermal: imx: implement thermal
-alarm interrupt handling).
-
-> 
-> Signed-off-by: Anson Huang <b20788@freescale.com>
-> ---
->  drivers/thermal/imx_thermal.c |   31 +++++++++++++++++--------------
->  1 file changed, 17 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index cbb16f3..9a9a6c2 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -510,27 +510,30 @@ static int imx_thermal_suspend(struct device *dev)
->  {
->  	struct imx_thermal_data *data = dev_get_drvdata(dev);
->  	struct regmap *map = data->tempmon;
-> -	u32 val;
->  
-> -	regmap_read(map, TEMPSENSE0, &val);
-> -	if ((val & TEMPSENSE0_POWER_DOWN) == 0) {
-> -		/*
-> -		 * If a measurement is taking place, wait for a long enough
-> -		 * time for it to finish, and then check again.  If it still
-> -		 * does not finish, something must go wrong.
-> -		 */
-> -		udelay(50);
-> -		regmap_read(map, TEMPSENSE0, &val);
-> -		if ((val & TEMPSENSE0_POWER_DOWN) == 0)
-> -			return -ETIMEDOUT;
-> -	}
-> +	/*
-> +	 * Need to disable thermal sensor, otherwise, when thermal core
-> +	 * try to get temperature before thermal sensor resume, a wrong
-> +	 * temperature will be read as the thermal sensor is powered
-> +	 * down.
-> +	 */
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +	data->mode = THERMAL_DEVICE_DISABLED;
-
-Is it really necessary to update data->mode through suspend/resume
-cycle?
-
-Shawn
-
->  
->  	return 0;
->  }
->  
->  static int imx_thermal_resume(struct device *dev)
->  {
-> -	/* Nothing to do for now */
-> +	struct imx_thermal_data *data = dev_get_drvdata(dev);
-> +	struct regmap *map = data->tempmon;
-> +
-> +	/* Enabled thermal sensor after resume */
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-> +	data->mode = THERMAL_DEVICE_ENABLED;
-> +
->  	return 0;
->  }
->  #endif
-> -- 
-> 1.7.9.5
-> 
-> 
+DQoNClNlbnQgZnJvbSBBbnNvbidzIGlQaG9uZQ0KDQo+INTaIDIwMTPE6jEy1MIyM8jVo6wyMjoy
+OKOsIlNoYXduIEd1byIgPHNoYXduLmd1b0BsaW5hcm8ub3JnPiDQtLXAo7oNCj4gDQo+PiBPbiBN
+b24sIERlYyAyMywgMjAxMyBhdCAwMzo1MTo1OFBNIC0wNTAwLCBBbnNvbiBIdWFuZyB3cm90ZToN
+Cj4+IEN1cnJlbnQgaW14IHRoZXJtYWwgc2Vuc29yJ3Mgc3VzcGVuZCBmdW5jdGlvbiB3aWxsIHJl
+dHVybiBmYWlsIGlmDQo+PiB0aGVybWFsIHNlbnNvciBpcyBhbHdheXMgZW5hYmxlZCwgYnV0IGJl
+Y2F1c2UgYWxhcm0gZnVuY3Rpb24gaXMgZW5hYmxlZCwNCj4+IHRoZXJtYWwgc2Vuc29yIHdpbGwg
+YmUgYWx3YXlzIGVuYWJsZWQgYXMgd2VsbCwgaGVuY2UgYnJlYWsgc3lzdGVtJ3Mgc3VzcGVuZCwN
+Cj4+IHRoaXMgcGF0Y2ggd2lsbCBkaXNhYmxlIHRoZXJtYWwgc2Vuc29yIGJlZm9yZSBzdXNwZW5k
+IGFuZCByZS1lbmFibGUgaXQNCj4+IGFmdGVyIHJlc3VtZSwgaXQgZml4ZXMgdGhlIGZhaWx1cmUg
+b2Ygc3VzcGVuZC9yZXN1bWUgY2F1c2VkIGJ5IHRoZXJtYWwgZHJpdmVyLg0KPiANCj4gV2Ugc2hv
+dWxkIHByb2JhYmx5IG1ha2UgaXQgY2xlYXIgaW4gdGhlIGNvbW1pdCBsb2cgdGhhdCBpdCdzIGEN
+Cj4gcmVncmVzc2lvbiBjYXVzZWQgYnkgY29tbWl0IDM3NzEzYTEgKHRoZXJtYWw6IGlteDogaW1w
+bGVtZW50IHRoZXJtYWwNCj4gYWxhcm0gaW50ZXJydXB0IGhhbmRsaW5nKS4NCg0KYWdyZWVkLCB3
+aWxsIGltcHJvdmUgdGhlIGNvbW1pdCBsb2cgaW4gVjIuDQoNCj4gDQo+PiANCj4+IFNpZ25lZC1v
+ZmYtYnk6IEFuc29uIEh1YW5nIDxiMjA3ODhAZnJlZXNjYWxlLmNvbT4NCj4+IC0tLQ0KPj4gZHJp
+dmVycy90aGVybWFsL2lteF90aGVybWFsLmMgfCAgIDMxICsrKysrKysrKysrKysrKysrLS0tLS0t
+LS0tLS0tLS0NCj4+IDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspLCAxNCBkZWxldGlv
+bnMoLSkNCj4+IA0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5j
+IGIvZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMNCj4+IGluZGV4IGNiYjE2ZjMuLjlhOWE2
+YzIgMTAwNjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYw0KPj4gKysr
+IGIvZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMNCj4+IEBAIC01MTAsMjcgKzUxMCwzMCBA
+QCBzdGF0aWMgaW50IGlteF90aGVybWFsX3N1c3BlbmQoc3RydWN0IGRldmljZSAqZGV2KQ0KPj4g
+ew0KPj4gICAgc3RydWN0IGlteF90aGVybWFsX2RhdGEgKmRhdGEgPSBkZXZfZ2V0X2RydmRhdGEo
+ZGV2KTsNCj4+ICAgIHN0cnVjdCByZWdtYXAgKm1hcCA9IGRhdGEtPnRlbXBtb247DQo+PiAtICAg
+IHUzMiB2YWw7DQo+PiANCj4+IC0gICAgcmVnbWFwX3JlYWQobWFwLCBURU1QU0VOU0UwLCAmdmFs
+KTsNCj4+IC0gICAgaWYgKCh2YWwgJiBURU1QU0VOU0UwX1BPV0VSX0RPV04pID09IDApIHsNCj4+
+IC0gICAgICAgIC8qDQo+PiAtICAgICAgICAgKiBJZiBhIG1lYXN1cmVtZW50IGlzIHRha2luZyBw
+bGFjZSwgd2FpdCBmb3IgYSBsb25nIGVub3VnaA0KPj4gLSAgICAgICAgICogdGltZSBmb3IgaXQg
+dG8gZmluaXNoLCBhbmQgdGhlbiBjaGVjayBhZ2Fpbi4gIElmIGl0IHN0aWxsDQo+PiAtICAgICAg
+ICAgKiBkb2VzIG5vdCBmaW5pc2gsIHNvbWV0aGluZyBtdXN0IGdvIHdyb25nLg0KPj4gLSAgICAg
+ICAgICovDQo+PiAtICAgICAgICB1ZGVsYXkoNTApOw0KPj4gLSAgICAgICAgcmVnbWFwX3JlYWQo
+bWFwLCBURU1QU0VOU0UwLCAmdmFsKTsNCj4+IC0gICAgICAgIGlmICgodmFsICYgVEVNUFNFTlNF
+MF9QT1dFUl9ET1dOKSA9PSAwKQ0KPj4gLSAgICAgICAgICAgIHJldHVybiAtRVRJTUVET1VUOw0K
+Pj4gLSAgICB9DQo+PiArICAgIC8qDQo+PiArICAgICAqIE5lZWQgdG8gZGlzYWJsZSB0aGVybWFs
+IHNlbnNvciwgb3RoZXJ3aXNlLCB3aGVuIHRoZXJtYWwgY29yZQ0KPj4gKyAgICAgKiB0cnkgdG8g
+Z2V0IHRlbXBlcmF0dXJlIGJlZm9yZSB0aGVybWFsIHNlbnNvciByZXN1bWUsIGEgd3JvbmcNCj4+
+ICsgICAgICogdGVtcGVyYXR1cmUgd2lsbCBiZSByZWFkIGFzIHRoZSB0aGVybWFsIHNlbnNvciBp
+cyBwb3dlcmVkDQo+PiArICAgICAqIGRvd24uDQo+PiArICAgICAqLw0KPj4gKyAgICByZWdtYXBf
+d3JpdGUobWFwLCBURU1QU0VOU0UwICsgUkVHX0NMUiwgVEVNUFNFTlNFMF9NRUFTVVJFX1RFTVAp
+Ow0KPj4gKyAgICByZWdtYXBfd3JpdGUobWFwLCBURU1QU0VOU0UwICsgUkVHX1NFVCwgVEVNUFNF
+TlNFMF9QT1dFUl9ET1dOKTsNCj4+ICsgICAgZGF0YS0+bW9kZSA9IFRIRVJNQUxfREVWSUNFX0RJ
+U0FCTEVEOw0KPiANCj4gSXMgaXQgcmVhbGx5IG5lY2Vzc2FyeSB0byB1cGRhdGUgZGF0YS0+bW9k
+ZSB0aHJvdWdoIHN1c3BlbmQvcmVzdW1lDQo+IGN5Y2xlPw0KDQpZZXMsIGFzIHRoZSB0aGVybWFs
+IGNvcmUgbWF5IHRyeSB0byBnZXQgdGVtcGVyYXR1cmUgYmVmb3JlIGlteCB0aGVybWFsIHNlbnNv
+ciByZXN1bWUsIGlmIG5vdCBzZXR0aW5nIGl0cyBtb2RlIHRvIGRpc2FibGVkLCB0aGVybWFsIGNv
+cmUgd2lsbCBnZXQgYSB3cm9uZyB0ZW1wIGFuZCBjYXVzZWQgc3lzdGVtIHBvd2VyIG9mZiBieSBt
+aXN0YWtlLCBhcyB0aGUgZ2V0X3RlbXAgZnVuY3Rpb24gd2lsbCBkZWNpZGUgd2hldGhlciB0byBw
+b3dlciB1cCB0aGVybWFsIGNvcmUgYWNjb3JkaW5nIHRvIGl0cyBtb2RlLg0KDQo+IA0KPiBTaGF3
+bg0KPiANCj4+IA0KPj4gICAgcmV0dXJuIDA7DQo+PiB9DQo+PiANCj4+IHN0YXRpYyBpbnQgaW14
+X3RoZXJtYWxfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikNCj4+IHsNCj4+IC0gICAgLyogTm90
+aGluZyB0byBkbyBmb3Igbm93ICovDQo+PiArICAgIHN0cnVjdCBpbXhfdGhlcm1hbF9kYXRhICpk
+YXRhID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+PiArICAgIHN0cnVjdCByZWdtYXAgKm1hcCA9
+IGRhdGEtPnRlbXBtb247DQo+PiArDQo+PiArICAgIC8qIEVuYWJsZWQgdGhlcm1hbCBzZW5zb3Ig
+YWZ0ZXIgcmVzdW1lICovDQo+PiArICAgIHJlZ21hcF93cml0ZShtYXAsIFRFTVBTRU5TRTAgKyBS
+RUdfQ0xSLCBURU1QU0VOU0UwX1BPV0VSX0RPV04pOw0KPj4gKyAgICByZWdtYXBfd3JpdGUobWFw
+LCBURU1QU0VOU0UwICsgUkVHX1NFVCwgVEVNUFNFTlNFMF9NRUFTVVJFX1RFTVApOw0KPj4gKyAg
+ICBkYXRhLT5tb2RlID0gVEhFUk1BTF9ERVZJQ0VfRU5BQkxFRDsNCj4+ICsNCj4+ICAgIHJldHVy
+biAwOw0KPj4gfQ0KPj4gI2VuZGlmDQo+PiAtLSANCj4+IDEuNy45LjUNCj4gDQo=
