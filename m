@@ -1,47 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
-Date: Mon, 23 Dec 2013 10:36:49 +0530
-Message-ID: <CAKohpokwO3BgXr9Le02bNo=771saWuDe2H=fgQzcboRWxwVzOg@mail.gmail.com>
-References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
-	<CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>
-	<52B41B18.30302@nvidia.com>
-	<CAKohpontQwTc4KP7XMvtkvS2sQTyF+ngXnXfbJ1ev+MLEp-H0g@mail.gmail.com>
-	<52B41F1B.3030005@nvidia.com>
-	<52B4707F.4040303@wwwdotorg.org>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH Resend] cpufreq: remove sysfs files for CPU which failed to come back after resume
+Date: Mon, 23 Dec 2013 06:55:56 +0100
+Message-ID: <871u14i00j.fsf@nemi.mork.no>
+References: <610b63b7594e5cd364c498f60e69b9e174db9257.1387554926.git.viresh.kumar@linaro.org>
+	<1651441.C2UQleWVoy@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <52B4707F.4040303@wwwdotorg.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, Rob Herring <robherring2@gmail.com>, Grant Likely <grant.likely@linaro.org>
-Cc: bilhuang <bilhuang@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from canardo.mork.no ([148.122.252.1]:51542 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973Ab3LWF4E convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 00:56:04 -0500
+In-Reply-To: <1651441.C2UQleWVoy@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Sun, 22 Dec 2013 02:00:40 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Ccc'ing Grant and Rob as well.
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-On 20 December 2013 21:59, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> No, I definitely don't agree here. The rules for arch/arm64 are: no
-> platform-specific code. We should immediately start planning for that.
-> If this means renaming the file that creates the virtual device from
-> tegra-cpufreq.c to something else, so be it, but we shouldn't go
-> backwards and push stuff into the arch directories.
+> Bjorn, can you please check if the pm-cpufreq branch of the linux-pm.=
+git tree
+> fixes the problem that you have reported=20
 
-I don't mind doing this now as well if it is generic enough. I wasn't sure
-if you guys wanted to take it on now..
+I can confirm that it fixes the major regression.  With this branch, th=
+e
+cpufreq directory is completely removed after a cancelled userspace
+hibernate (with the acpi-cpufreq problem causing failure).  So it is
+possible to restore cpufreq by manually offlining and onlining non-boot
+cores.  No more leftover sysfs attributes.
 
-@Bill: So, please create a separate commit for creating such file which
-would create a virtual device for probing cpufreq drivers with name picked
-from root-node. Compilation of such a file should be configurable but if
-it is compiled, then it shouldn't cause any problems if that device isn't
-used, for multiplatform kernels specially..
+But there is still a minor regression compared to the old (v3.11)
+behaviour: Previously the cpufreq functionality would be automatically
+restored by any completed hibernate or suspend cycle, since it would
+effectively do the CPU offline/online. This automatix fixup won't happe=
+n
+with the current pm-cpufreq branch.  User intervention is now required
+to fix up cpufreq. Which is expected, due to the special handling of
+cpufreq suspend.
 
-Probably then you can widen the scope of your patchset by modifying
-some of the existing drivers which require a device to get cpufreq
-driver probed. Currently they are all making such a device from
-their arch/ stuff.
+So there is still a small, small regression here, making me believe tha=
+t
+my "fix" is better until the cpufreq suspend is properly fixed.  But
+it's certainly not a major problem to me either way.  Your call.
 
-I am not sure about the location of such file. Should this be placed in DT
-code somewhere or kept in cpufreq? Rob/Grant ??
+> without causing any new breakage to happen?
 
---
-viresh
+I'm not going to guarantee that :-)  But I haven't noticed anything
+obvious during the 15 minutes I've been testing this branch so far.
+
+
+
+Bj=C3=B8rn
