@@ -1,115 +1,99 @@
-From: viresh kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH Resend] cpufreq: remove sysfs files for CPU which failed
- to come back after resume
-Date: Mon, 23 Dec 2013 13:25:45 +0530
-Message-ID: <52B7EC81.6060202@linaro.org>
-References: <610b63b7594e5cd364c498f60e69b9e174db9257.1387554926.git.viresh.kumar@linaro.org>	<1651441.C2UQleWVoy@vostro.rjw.lan> <871u14i00j.fsf@nemi.mork.no>	<CAKohpok1dGMPSAehwsVeiyHzxaHupenA4sP5cxCrjVYQMyrVWA@mail.gmail.com> <87d2kokqdl.fsf@nemi.mork.no>
+From: Anson Huang <b20788@freescale.com>
+Subject: [PATCH V4] thermal: imx: add necessary clk operation
+Date: Mon, 23 Dec 2013 15:49:22 -0500
+Message-ID: <1387831763-16971-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f54.google.com ([209.85.128.54]:65424 "EHLO
-	mail-qe0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982Ab3LWHzv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 02:55:51 -0500
-Received: by mail-qe0-f54.google.com with SMTP id cy11so4877831qeb.27
-        for <linux-pm@vger.kernel.org>; Sun, 22 Dec 2013 23:55:51 -0800 (PST)
-In-Reply-To: <87d2kokqdl.fsf@nemi.mork.no>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: shawn.guo@linaro.org, kernel@pengutronix.de, rui.zhang@intel.com, eduardo.valentin@ti.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Monday 23 December 2013 12:25 PM, Bj=C3=B8rn Mork wrote:
-> That's correct.  The immediate result of the failure is exactly the
-> same.
+Thermal sensor needs pll3_usb_otg when measuring temperature,
+otherwise the temperature read will be incorrect, so need to
+enable this clk before sensor working, for alarm function,
+as hardware will take measurement periodically, so we should
+keep this clk always on once alarm function is enabled.
 
-Okay..
-
-> The difference is that a subsequent resume would restore the cpufreq
-> device whether it existed or not.  That made a complete suspend/resum=
-e
-> fix up any missing cpufreq device, e.g. one that was removed by a
-> previous error.
-
-I see.. Please see if below patch fixes it for you, it should :)
-
-
-=46rom: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Mon, 23 Dec 2013 13:19:47 +0530
-Subject: [PATCH] cpufreq: try to resume policies which failed on last r=
-esume
-MIME-Version: 1.0
-Content-Type: text/plain; charset=3DUTF-8
-Content-Transfer-Encoding: 8bit
-
-__cpufreq_add_dev() can fail sometimes while we are resuming our system=
-=2E
-Currently we are clearing all sysfs nodes for cpufreq's failed policy a=
-s that
-could make userspace unstable. But if we suspend/resume again, we shoul=
-d atleast
-try to bring back those policies.
-
-This patch fixes this issue by clearing fallback data on failure and tr=
-ying to
-allocate a new struct cpufreq_policy on second resume.
-
-Reported-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Anson Huang <b20788@freescale.com>
 ---
- drivers/cpufreq/cpufreq.c | 22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/thermal/imx-thermal.txt    |    4 ++++
+ drivers/thermal/imx_thermal.c                      |   20 ++++++++++++++++++++
+ 2 files changed, 24 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index fab042e..7523d35 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1010,16 +1010,24 @@ static int __cpufreq_add_dev(struct device *dev=
-, struct subsys_interface *sif,
- 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- #endif
-
--	if (frozen)
-+	if (frozen) {
- 		/* Restore the saved policy when doing light-weight init */
- 		policy =3D cpufreq_policy_restore(cpu);
--	else
+diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+index 541c25e..1f0f672 100644
+--- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+@@ -8,10 +8,14 @@ Required properties:
+   calibration data, e.g. OCOTP on imx6q.  The details about calibration data
+   can be found in SoC Reference Manual.
+ 
++Optional properties:
++- clocks : thermal sensor's clock source.
 +
+ Example:
+ 
+ tempmon {
+ 	compatible = "fsl,imx6q-tempmon";
+ 	fsl,tempmon = <&anatop>;
+ 	fsl,tempmon-data = <&ocotp>;
++	clocks = <&clks 172>;
+ };
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 1d6c801..cbb16f3 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -7,6 +7,7 @@
+  *
+  */
+ 
++#include <linux/clk.h>
+ #include <linux/cpu_cooling.h>
+ #include <linux/cpufreq.h>
+ #include <linux/delay.h>
+@@ -73,6 +74,7 @@ struct imx_thermal_data {
+ 	unsigned long last_temp;
+ 	bool irq_enabled;
+ 	int irq;
++	struct clk *thermal_clk;
+ };
+ 
+ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+@@ -457,6 +459,22 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
++	if (IS_ERR(data->thermal_clk)) {
++		dev_warn(&pdev->dev, "failed to get thermal clk!\n");
++	} else {
 +		/*
-+		 * As we failed to resume cpufreq core last time, lets try to
-+		 * create a new policy.
++		 * Thermal sensor needs clk on to get correct value, normally
++		 * we should enable its clk before taking measurement and disable
++		 * clk after measurement is done, but if alarm function is enabled,
++		 * hardware will auto measure the temperature periodically, so we
++		 * need to keep the clk always on for alarm function.
 +		 */
-+		if (!policy)
-+			frozen =3D false;
++		ret = clk_prepare_enable(data->thermal_clk);
++		if (ret)
++			dev_warn(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
 +	}
 +
-+	if (!frozen)
- 		policy =3D cpufreq_policy_alloc();
+ 	/* Enable measurements at ~ 10 Hz */
+ 	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
+ 	measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
+@@ -478,6 +496,8 @@ static int imx_thermal_remove(struct platform_device *pdev)
+ 
+ 	/* Disable measurements */
+ 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
++	if (!IS_ERR(data->thermal_clk))
++		clk_disable_unprepare(data->thermal_clk);
+ 
+ 	thermal_zone_device_unregister(data->tz);
+ 	cpufreq_cooling_unregister(data->cdev);
+-- 
+1.7.9.5
 
- 	if (!policy)
- 		goto nomem_out;
-
--
- 	/*
- 	 * In the resume path, since we restore a saved policy, the assignmen=
-t
- 	 * to policy->cpu is like an update of the existing policy, rather th=
-an
-@@ -1112,8 +1120,14 @@ err_get_freq:
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
--	if (frozen)
-+	if (frozen) {
-+		/*
-+		 * Clear fallback data as we should try to make things work on
-+		 * next suspend/resume
-+		 */
-+		per_cpu(cpufreq_cpu_data_fallback, cpu) =3D NULL;
- 		cpufreq_policy_put_kobj(policy);
-+	}
- 	cpufreq_policy_free(policy);
-
- nomem_out:
 
