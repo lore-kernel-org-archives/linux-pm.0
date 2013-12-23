@@ -1,150 +1,107 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH Resend] cpufreq: remove sysfs files for CPU which failed to come back after resume
-Date: Mon, 23 Dec 2013 12:42:31 +0100
-Message-ID: <87pponx07s.fsf@nemi.mork.no>
-References: <610b63b7594e5cd364c498f60e69b9e174db9257.1387554926.git.viresh.kumar@linaro.org>
-	<1651441.C2UQleWVoy@vostro.rjw.lan> <871u14i00j.fsf@nemi.mork.no>
-	<CAKohpok1dGMPSAehwsVeiyHzxaHupenA4sP5cxCrjVYQMyrVWA@mail.gmail.com>
-	<87d2kokqdl.fsf@nemi.mork.no> <52B7EC81.6060202@linaro.org>
-	<877gavgbuv.fsf@nemi.mork.no>
-	<CAKohpo=0HRihdTiQLk+mKiarUdXOPO3n7GCJ9CUoi=4xJ_AYcg@mail.gmail.com>
-	<87txdzx2bb.fsf@nemi.mork.no>
-	<CAKohpon7nn5cpJVNZzzXxbYUkACEsFgyPR20kSSMMsShw0=HVA@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v3 08/12] arm64: kernel: implement HW breakpoints CPU
+ PM notifier
+Date: Mon, 23 Dec 2013 13:50:25 +0000
+Message-ID: <20131223135025.GA2967@e102568-lin.cambridge.arm.com>
+References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1385033059-25896-9-git-send-email-lorenzo.pieralisi@arm.com>
+ <20131220172907.GF16829@mudshark.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon7nn5cpJVNZzzXxbYUkACEsFgyPR20kSSMMsShw0=HVA@mail.gmail.com>
-	(Viresh Kumar's message of "Mon, 23 Dec 2013 16:43:26 +0530")
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:57081 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757380Ab3LWNue convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 08:50:34 -0500
+In-Reply-To: <20131220172907.GF16829@mudshark.cambridge.arm.com>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Will Deacon <will.deacon@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>, Yu Tang <ytang5@marvell.com>, Zhou Zhu <zzhu3@marvell.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Loc Ho <lho@apm.com>, Feng Kan <fkan@apm.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Christoffer Dall <christoffer.dall@linaro.org>
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
-> On 23 December 2013 16:27, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
->> I could be missing something, but I haven't noticed any attempt to
->> preserve anything except the sysfs files.
->
-> What do you mean by sysfs here? Doesn't the below files mentioned
-> by you also come in sysfs?
+Hi Will,
 
-My apologies here.  I see that you *do* try to preserve the policy over
-the suspend.  So I guess it should have worked...
+thanks for having a look.
 
->> I tried modifying the max frequency, using
->>
->>  echo 800000 >/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
->>  echo 800000 >/sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
->>
->> After supend + resume the boot CPU still had the modifed maximum, wh=
-ile
->> the non-boot core was reset to the default value.
->
-> This is all we were doing. i.e. not removing or putting the kobject w=
-hich has
-> all these files and so shouldn't get reallocated at all..
->
-> So, has resumed passed on the first go only? As it was failing for th=
-e first
-> time in your case and hence this thread. In that case we are going to=
- get
-> new files and so all values will be restored to default values.
->
-> Otherwise I don't see why we should loose any values here..
+On Fri, Dec 20, 2013 at 05:29:07PM +0000, Will Deacon wrote:
+> Hi Lorenzo,
+> 
+> On Thu, Nov 21, 2013 at 11:24:15AM +0000, Lorenzo Pieralisi wrote:
+> > When a CPU is shutdown either through CPU idle or suspend to RAM, the
+> > content of HW breakpoint registers must be reset or restored to proper
+> > values when CPU resume from low power states. This patch adds debug register
+> > restore operations to the HW breakpoint control function and implements a
+> > CPU PM notifier that allows to restore the content of HW breakpoint registers
+> > to allow proper suspend/resume operations.
+> 
+> This looks mostly fine to me, but I have one questions you might be able to
+> answer...
+> 
+> > @@ -840,18 +847,36 @@ void hw_breakpoint_thread_switch(struct task_struct *next)
+> >  /*
+> >   * CPU initialisation.
+> >   */
+> > -static void reset_ctrl_regs(void *unused)
+> > +static void hw_breakpoint_reset(void *unused)
+> >  {
+> >  	int i;
+> > -
+> > -	for (i = 0; i < core_num_brps; ++i) {
+> > -		write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
+> > -		write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
+> > +	struct perf_event **slots;
+> > +	/*
+> > +	 * When a CPU goes through cold-boot, it does not have any installed
+> > +	 * slot, so it is safe to share the same function for restoring and
+> > +	 * resetting breakpoints; when a CPU is hotplugged in, it goes
+> > +	 * through the slots, which are all empty, hence it just resets control
+> > +	 * and value for debug registers.
+> > +	 * When this function is triggered on warm-boot through a CPU PM
+> > +	 * notifier some slots might be initialized; if so they are
+> > +	 * reprogrammed according to the debug slots content.
+> > +	 */
+> > +	for (slots = this_cpu_ptr(bp_on_reg), i = 0; i < core_num_brps; ++i) {
+> > +		if (slots[i]) {
+> > +			hw_breakpoint_control(slots[i], HW_BREAKPOINT_RESTORE);
+> > +		} else {
+> > +			write_wb_reg(AARCH64_DBG_REG_BCR, i, 0UL);
+> > +			write_wb_reg(AARCH64_DBG_REG_BVR, i, 0UL);
+> > +		}
+> 
+> When this runs on warm-boot and starts restoring debug state, are debug
+> exceptions guaranteed to be masked? I think that the debug restoration
+> should appear atomic to a debugger (i.e. you can't take a debug exception
+> half-way through the restore).
 
-Looking at the code I don't see it either.  But the value is reset.
-This is with both your patches:
+No, they might not be, good catch and this needs fixing (well, CPU PM notifiers
+and suspend must be run with IRQs disabled, but debug exceptions can be left
+on even though we should define to what extent this can be considered
+reasonable/safe, eg debugging should not fiddle with HW state that we are
+saving, it is a bit of a grey area).
+I think the easiest option is to mask/unmask them in the CPU PM notifier,
+before/after restoring the slots. As we discussed, I am trying to keep debug
+on as deep in the power down sequence as possible, and now I mask debug
+exceptions before saving general purpose registers, and restore the exception
+flags when cpu_suspend returns (which means unfortunately that the sequence
+above might run with debug exceptions unmasked). This means that the debugger
+might see a restore that is not atomic from its perspective, again, good spot,
+I should update the patch or put together a fix for -rc1 if the commit history
+is immutable now, which I think that's the case.
 
-  cpufreq: remove sysfs files for CPUs which failed to come back after =
-resume
-  cpufreq: try to resume policies which failed on last resume
+Thank you,
+Lorenzo
 
-applied on top of v3.13-rc5.  I.e. also including Jason's
+> 
+> Providing that's the case:
+> 
+>   Acked-by: Will Deacon <will.deacon@arm.com>
+> 
+> Will
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-  cpufreq: Use CONFIG_CPU_FREQ_DEFAULT_* to set initial policy for setp=
-olicy drivers
-
-since -rc4.  I don't know if that confuses the picture or not.  But
-these are the results:
-
- nemi:/tmp# ls -l /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
- -rw-rw-r-- 1 root bjorn 4096 Dec 23 12:00 /sys/devices/system/cpu/cpu0=
-/cpufreq/scaling_max_freq
- -rw-rw-r-- 1 root bjorn 4096 Dec 23 11:59 /sys/devices/system/cpu/cpu1=
-/cpufreq/scaling_max_freq
- nemi:/tmp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_fre=
-q
- /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:1401000
- /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq:1401000
- nemi:/tmp# echo 800000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_=
-max_freq
- nemi:/tmp# echo 800000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_=
-max_freq
- nemi:/tmp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_fre=
-q
- /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:800000
- /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq:800000
- nemi:/tmp# s2ram=20
- KMS graphics driver is in use, skipping quirks.
-
- ### resume, and then:
-
- nemi:/tmp# ls -l /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
- -rw-rw-r-- 1 root bjorn 4096 Dec 23 12:33 /sys/devices/system/cpu/cpu0=
-/cpufreq/scaling_max_freq
- -rw-rw-r-- 1 root bjorn 4096 Dec 23 12:33 /sys/devices/system/cpu/cpu1=
-/cpufreq/scaling_max_freq
- nemi:/tmp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_fre=
-q
- /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:800000
- /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq:1401000
-
-
-The driver and governor is
-
- nemi:/tmp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_{driver=
-,governor}
- /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:acpi-cpufreq
- /sys/devices/system/cpu/cpu1/cpufreq/scaling_driver:acpi-cpufreq
- /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:ondemand
- /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor:ondemand
-
-
->>  I changed the gid of
->> both files too, verifying that they were saved and restored as expec=
-ted.
->> But the value will change to default.
->
-> For both boot and non-boot CPUs? I am asking because things should
-> be very plain for boot CPU atleast as that is never hot unplugged..
->
-> Have you tested this with the latest patches I gave?
-
-See above.  Yes, this is tested with both the two patches in flight and
-without any failures on suspend. The non-boot CPU have its settings
-reset to default.  The boot CPU keeps the modified values.
-
->> IMHO it would still be a lot better if this was handled as a true
->> hotplug event, allowing userspace to reset values/modes/owners on
->> resume. Hiding the hotplug event and saving part of the userspace
->> controlled environment is worse than not doing anything at all.
->
-> We should be saving everything correctly with the current code,
-> with the patches I have sent.. And so things should work as far
-> as I can comment.
->
-> If you can confirm that these happened despite of latest patches
-> then probably I need to test that again on my thinkpad.
-
-That would be great.  This could be just me.  I am quite good at
-breaking stuff.
-
-
-> But I was quite sure this worked :)
-
-Sorry for breaking the illusion :-)
-
-
-
-Bj=C3=B8rn
