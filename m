@@ -1,91 +1,81 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Tue, 24 Dec 2013 07:11:00 +0530
-Message-ID: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+Subject: =?UTF-8?q?=5BPATCH=202/2=5D=20cpufreq=3A=20preserve=20user=5Fpolicy=20across=20suspend/resume?=
+Date: Tue, 24 Dec 2013 07:11:01 +0530
+Message-ID: <03303e46795a89272ba66d5fa230cbfdb9a177a9.1387848958.git.viresh.kumar@linaro.org>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f42.google.com ([209.85.160.42]:65210 "EHLO
+	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752817Ab3LXBlS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 20:41:18 -0500
+Received: by mail-pb0-f42.google.com with SMTP id uo5so5917296pbc.29
+        for <linux-pm@vger.kernel.org>; Mon, 23 Dec 2013 17:41:18 -0800 (PST)
+In-Reply-To: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+In-Reply-To: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bjorn@mork.no, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-__cpufreq_add_dev() can fail sometimes while we are resuming our system=
-=2E
-Currently we are clearing all sysfs nodes for cpufreq's failed policy a=
-s that
-could make userspace unstable. But if we suspend/resume again, we shoul=
-d atleast
-try to bring back those policies.
+In __cpufreq_add_dev() we are reinitializing user_policy with default v=
+alues and
+hence would loose values of user_policy.{min|max|policy|governor} field=
+s.
 
-This patch fixes this issue by clearing fallback data on failure and tr=
-ying to
-allocate a new struct cpufreq_policy on second resume.
+Preserve them by not overriding these for suspend/resume.
 
-Reported-and-tested-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+Reported-by: Bj=C3=B8rn Mork <bjorn@mork.no>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-These are sent again (earlier sent as reply to emails), so that people =
-can
-give inputs if they have any.
-
-Tested on my thinkpad T420.
-
- drivers/cpufreq/cpufreq.c | 22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
+ drivers/cpufreq/cpufreq.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 16d7b4a..0a48e71 100644
+index 0a48e71..59e918e 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1016,16 +1016,24 @@ static int __cpufreq_add_dev(struct device *dev=
-, struct subsys_interface *sif,
- 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- #endif
+@@ -839,9 +839,6 @@ static void cpufreq_init_policy(struct cpufreq_poli=
+cy *policy)
 =20
--	if (frozen)
-+	if (frozen) {
- 		/* Restore the saved policy when doing light-weight init */
- 		policy =3D cpufreq_policy_restore(cpu);
--	else
-+
-+		/*
-+		 * As we failed to resume cpufreq core last time, lets try to
-+		 * create a new policy.
-+		 */
-+		if (!policy)
-+			frozen =3D false;
-+	}
-+
-+	if (!frozen)
- 		policy =3D cpufreq_policy_alloc();
-=20
- 	if (!policy)
- 		goto nomem_out;
-=20
+ 	/* set default policy */
+ 	ret =3D cpufreq_set_policy(policy, &new_policy);
+-	policy->user_policy.policy =3D policy->policy;
+-	policy->user_policy.governor =3D policy->governor;
 -
- 	/*
- 	 * In the resume path, since we restore a saved policy, the assignmen=
-t
- 	 * to policy->cpu is like an update of the existing policy, rather th=
-an
-@@ -1118,8 +1126,14 @@ err_get_freq:
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
--	if (frozen)
-+	if (frozen) {
-+		/*
-+		 * Clear fallback data as we should try to make things work on
-+		 * next suspend/resume
-+		 */
-+		per_cpu(cpufreq_cpu_data_fallback, cpu) =3D NULL;
- 		cpufreq_policy_put_kobj(policy);
-+	}
- 	cpufreq_policy_free(policy);
+ 	if (ret) {
+ 		pr_debug("setting policy failed\n");
+ 		if (cpufreq_driver->exit)
+@@ -1077,8 +1074,10 @@ static int __cpufreq_add_dev(struct device *dev,=
+ struct subsys_interface *sif,
+ 	 */
+ 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
 =20
- nomem_out:
+-	policy->user_policy.min =3D policy->min;
+-	policy->user_policy.max =3D policy->max;
++	if (!frozen) {
++		policy->user_policy.min =3D policy->min;
++		policy->user_policy.max =3D policy->max;
++	}
+=20
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				     CPUFREQ_START, policy);
+@@ -1109,6 +1108,11 @@ static int __cpufreq_add_dev(struct device *dev,=
+ struct subsys_interface *sif,
+=20
+ 	cpufreq_init_policy(policy);
+=20
++	if (!frozen) {
++		policy->user_policy.policy =3D policy->policy;
++		policy->user_policy.governor =3D policy->governor;
++	}
++
+ 	kobject_uevent(&policy->kobj, KOBJ_ADD);
+ 	up_read(&cpufreq_rwsem);
+=20
 --=20
 1.7.12.rc2.18.g61b472e
 
