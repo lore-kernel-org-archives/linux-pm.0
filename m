@@ -1,38 +1,91 @@
-From: Anton Vorontsov <anton@enomsg.org>
-Subject: Re: [PATCH v3 RESEND 0/2] Update charger manager driver to support
- device tree
-Date: Mon, 23 Dec 2013 17:12:11 -0800
-Message-ID: <20131224011211.GA7915@lizard>
-References: <1387348955-23174-1-git-send-email-jonghwa3.lee@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
+Date: Tue, 24 Dec 2013 07:11:00 +0530
+Message-ID: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f44.google.com ([209.85.160.44]:43763 "EHLO
-	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932402Ab3LXBR3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 20:17:29 -0500
-Received: by mail-pb0-f44.google.com with SMTP id rq2so5902220pbb.3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Dec 2013 17:17:28 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1387348955-23174-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bjorn@mork.no, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: linux-pm@vger.kernel.org, dwmw2@infradead.org
 
-On Wed, Dec 18, 2013 at 03:42:33PM +0900, Jonghwa Lee wrote:
-> Until now, charger manager doesn't support DT at all. It only works with
-> legacy platform data. Therefore, charger_desc structure which is requisite
-> data for working contains non-friendly variables for DT, as like funtion ptr,
-> and u64 type data.
-> 
-> These patches modifies charger_desc structure and driver to support device tree
-> fully. For using device tree in charger manager, you can check example of
-> charger manager's device tree model in Documentaion directory.
-> 
-> Currently, there're many required nodes for proper charger manager's
-> working, we would optimize them later.
+__cpufreq_add_dev() can fail sometimes while we are resuming our system=
+=2E
+Currently we are clearing all sysfs nodes for cpufreq's failed policy a=
+s that
+could make userspace unstable. But if we suspend/resume again, we shoul=
+d atleast
+try to bring back those policies.
 
-Applied, thanks!
+This patch fixes this issue by clearing fallback data on failure and tr=
+ying to
+allocate a new struct cpufreq_policy on second resume.
 
-Anton
+Reported-and-tested-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+These are sent again (earlier sent as reply to emails), so that people =
+can
+give inputs if they have any.
+
+Tested on my thinkpad T420.
+
+ drivers/cpufreq/cpufreq.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 16d7b4a..0a48e71 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1016,16 +1016,24 @@ static int __cpufreq_add_dev(struct device *dev=
+, struct subsys_interface *sif,
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ #endif
+=20
+-	if (frozen)
++	if (frozen) {
+ 		/* Restore the saved policy when doing light-weight init */
+ 		policy =3D cpufreq_policy_restore(cpu);
+-	else
++
++		/*
++		 * As we failed to resume cpufreq core last time, lets try to
++		 * create a new policy.
++		 */
++		if (!policy)
++			frozen =3D false;
++	}
++
++	if (!frozen)
+ 		policy =3D cpufreq_policy_alloc();
+=20
+ 	if (!policy)
+ 		goto nomem_out;
+=20
+-
+ 	/*
+ 	 * In the resume path, since we restore a saved policy, the assignmen=
+t
+ 	 * to policy->cpu is like an update of the existing policy, rather th=
+an
+@@ -1118,8 +1126,14 @@ err_get_freq:
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+ err_set_policy_cpu:
+-	if (frozen)
++	if (frozen) {
++		/*
++		 * Clear fallback data as we should try to make things work on
++		 * next suspend/resume
++		 */
++		per_cpu(cpufreq_cpu_data_fallback, cpu) =3D NULL;
+ 		cpufreq_policy_put_kobj(policy);
++	}
+ 	cpufreq_policy_free(policy);
+=20
+ nomem_out:
+--=20
+1.7.12.rc2.18.g61b472e
+
