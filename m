@@ -1,103 +1,130 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH V2] thermal: imx: correct suspend/resume flow
-Date: Tue, 24 Dec 2013 11:09:48 +0800
-Message-ID: <20131224030946.GA3872@S2101-09.ap.freescale.net>
-References: <1387896204-31754-1-git-send-email-b20788@freescale.com>
+From: Leo Yan <leoy@marvell.com>
+Subject: Re: [PATCH RFC v3 04/12] arm64: kernel: cpu_{suspend/resume}
+ implementation
+Date: Tue, 24 Dec 2013 14:18:56 +0800
+Message-ID: <52B92750.80405@marvell.com>
+References: <1385033059-25896-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1385033059-25896-5-git-send-email-lorenzo.pieralisi@arm.com>
+ <52B42A48.5090202@marvell.com>
+ <20131223140415.GB2967@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db9lp0248.outbound.messaging.microsoft.com ([213.199.154.248]:56946
-	"EHLO db9outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753461Ab3LXDIM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 22:08:12 -0500
-Content-Disposition: inline
-In-Reply-To: <1387896204-31754-1-git-send-email-b20788@freescale.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20131223140415.GB2967@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Yu Tang <ytang5@marvell.com>, Will Deacon <Will.Deacon@arm.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Loc Ho <lho@apm.com>, "ksankaran@apm.com" <ksankaran@apm.com>, Dave P Martin <Dave.Martin@arm.com>, Feng Kan <fkan@apm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Marc Zyngier <Marc.Zyngier@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Hanjun Guo <hanjun.guo@linaro.org>, Colin Cross <ccross@android.com>, Christoffer Dall <christoffer.dall@linaro.org>, Zhou Zhu <zz>
 List-Id: linux-pm@vger.kernel.org
-To: Anson Huang <b20788@freescale.com>
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Dec 24, 2013 at 09:43:24AM -0500, Anson Huang wrote:
-> Fixes regression introduced by:
-> 
-> commit 37713a1e8e4c1a1067ad4c99296f78d3c82ed9c4
-> Author: Philipp Zabel <p.zabel@pengutronix.de>
-> Date:   Thu Aug 1 18:33:12 2013 +0200
-> 
->     thermal: imx: implement thermal alarm interrupt handling
-> 
 
-Generally, when we quote a commit in the log, it's good enough to use
-the output of 'git log --oneline' with patch subject in parentheses.
+On 12/23/2013 10:04 PM, Lorenzo Pieralisi wrote:
+> On Fri, Dec 20, 2013 at 11:30:16AM +0000, Leo Yan wrote:
+>> On 11/21/2013 07:24 PM, Lorenzo Pieralisi wrote:
+>>
+>>> +/*
+>>> + * x0 must contain the sctlr value retrieved from restored context
+>>> + */
+>>> +ENTRY(cpu_resume_mmu)
+>>> +	ldr	x3, =cpu_resume_after_mmu
+>>> +	msr	sctlr_el1, x0		// restore sctlr_el1
+>>> +	isb
+>>> +	br	x3			// global jump to virtual address
+>>> +ENDPROC(cpu_resume_mmu)
+>>> +cpu_resume_after_mmu:
+>>> +	mov	x0, #0			// return zero on success
+>>> +	ldp	x19, x20, [sp, #16]
+>>> +	ldp	x21, x22, [sp, #32]
+>>> +	ldp	x23, x24, [sp, #48]
+>>> +	ldp	x25, x26, [sp, #64]
+>>> +	ldp	x27, x28, [sp, #80]
+>>> +	ldp	x29, lr, [sp], #96
+>>> +	ret
+>>> +ENDPROC(cpu_resume_after_mmu)
+>>> +
+>>> +	.data
+>>> +ENTRY(cpu_resume)
+>>> +	bl	el2_setup		// if in EL2 drop to EL1 cleanly
+>>
+>> Compare to v2's patch set, here remove the calculation fro the offset
+>> b/t PHYS_OFFSET - PAGE_OFFSET; so when i verify the patch set, i saw x28
+>> is zero and finally introduce the EL2's sync exception. Below are pasted
+>> v2's code for reference.
+>
+> What kernel are you testing against ? The offset is not needed anymore
+> in el2_setup, that is why the x28 computation is not there.
+>
+>> do u want use firmware to set the x28 for the offset value? :-) IMHO,
+>> v2's implementation is more reasonable and it's better keep the code.
+>
+> The point is not whether to set it in firmware or in the kernel, see above.
+>
+> Lorenzo
+>
 
-  37713a1 (thermal: imx: implement thermal alarm interrupt handling)
+Catalin and Lorenzo, Thanks a lot for u point out.
 
-Anyway, Rui and Eduardo may be fine with what you put there, so
+Now i'm back porting patches to 3.10, but the cpu_suspend/resume patches 
+are dependent on BE related patches on the latest mainline code base. 
+After apply below missing patches, now the cpu_suspend/resume can work 
+well. :-)
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+arm64: asm: add CPU_LE & CPU_BE assembler helpers
+arm64: head: create a new function for setting the boot_cpu_mode flag
+arm64: big-endian: set correct endianess on kernel entry
+arm64: kernel: add code to set cpu boot mode to secondary_entry shim
 
-> The commit 37713a1e8e4 makes imx thermal sensor always powered up as alarm
-> function is enabled, but the suspend callback of imx thermal returns
-> success only if thermal sensor is powered down, so it will always returns
-> fail hence break system's suspend, this patch disables imx thermal sensor
-> before suspend and re-enable it after resume.
-> 
-> Signed-off-by: Anson Huang <b20788@freescale.com>
-> ---
->  drivers/thermal/imx_thermal.c |   31 +++++++++++++++++--------------
->  1 file changed, 17 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index cbb16f3..9a9a6c2 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -510,27 +510,30 @@ static int imx_thermal_suspend(struct device *dev)
->  {
->  	struct imx_thermal_data *data = dev_get_drvdata(dev);
->  	struct regmap *map = data->tempmon;
-> -	u32 val;
->  
-> -	regmap_read(map, TEMPSENSE0, &val);
-> -	if ((val & TEMPSENSE0_POWER_DOWN) == 0) {
-> -		/*
-> -		 * If a measurement is taking place, wait for a long enough
-> -		 * time for it to finish, and then check again.  If it still
-> -		 * does not finish, something must go wrong.
-> -		 */
-> -		udelay(50);
-> -		regmap_read(map, TEMPSENSE0, &val);
-> -		if ((val & TEMPSENSE0_POWER_DOWN) == 0)
-> -			return -ETIMEDOUT;
-> -	}
-> +	/*
-> +	 * Need to disable thermal sensor, otherwise, when thermal core
-> +	 * try to get temperature before thermal sensor resume, a wrong
-> +	 * temperature will be read as the thermal sensor is powered
-> +	 * down.
-> +	 */
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-> +	data->mode = THERMAL_DEVICE_DISABLED;
->  
->  	return 0;
->  }
->  
->  static int imx_thermal_resume(struct device *dev)
->  {
-> -	/* Nothing to do for now */
-> +	struct imx_thermal_data *data = dev_get_drvdata(dev);
-> +	struct regmap *map = data->tempmon;
-> +
-> +	/* Enabled thermal sensor after resume */
-> +	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-> +	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-> +	data->mode = THERMAL_DEVICE_ENABLED;
-> +
->  	return 0;
->  }
->  #endif
-> -- 
-> 1.7.9.5
-> 
-> 
-
+>>
+>> ENTRY(cpu_resume)
+>>             adr     x4, sleep_save_sp
+>>             ldr     x5, =sleep_save_sp
+>>             sub     x28, x4, x5             // x28 = PHYS_OFFSET -
+>> PAGE_OFFSET
+>>             /*
+>>              * make sure el2 is sane, el2_setup expects:
+>>              * x28 = PHYS_OFFSET - PAGE_OFFSET
+>>              */
+>>             bl      el2_setup               // if in EL2 drop to EL1 cleanly
+>>
+>>
+>>> +#ifdef CONFIG_SMP
+>>> +	mrs	x1, mpidr_el1
+>>> +	adr	x4, mpidr_hash_ptr
+>>> +	ldr	x5, [x4]
+>>> +	add	x8, x4, x5		// x8 = struct mpidr_hash phys address
+>>> +        /* retrieve mpidr_hash members to compute the hash */
+>>> +	ldr	x2, [x8, #MPIDR_HASH_MASK]
+>>> +	ldp	w3, w4, [x8, #MPIDR_HASH_SHIFTS]
+>>> +	ldp	w5, w6, [x8, #(MPIDR_HASH_SHIFTS + 8)]
+>>> +	compute_mpidr_hash x7, x3, x4, x5, x6, x1, x2
+>>> +        /* x7 contains hash index, let's use it to grab context pointer */
+>>> +#else
+>>> +	mov	x7, xzr
+>>> +#endif
+>>> +	adr	x0, sleep_save_sp
+>>> +	ldr	x0, [x0, #SLEEP_SAVE_SP_PHYS]
+>>> +	ldr	x0, [x0, x7, lsl #3]
+>>> +	/* load sp from context */
+>>> +	ldr	x2, [x0, #CPU_CTX_SP]
+>>> +	adr	x1, sleep_idmap_phys
+>>> +	/* load physical address of identity map page table in x1 */
+>>> +	ldr	x1, [x1]
+>>> +	mov	sp, x2
+>>> +	/*
+>>> +	 * cpu_do_resume expects x0 to contain context physical address
+>>> +	 * pointer and x1 to contain physical address of 1:1 page tables
+>>> +	 */
+>>> +	bl	cpu_do_resume		// PC relative jump, MMU off
+>>> +	b	cpu_resume_mmu		// Resume MMU, never returns
+>>> +ENDPROC(cpu_resume)
+>>> +
+>>
+>
