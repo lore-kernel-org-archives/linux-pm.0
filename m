@@ -1,81 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: =?UTF-8?q?=5BPATCH=202/2=5D=20cpufreq=3A=20preserve=20user=5Fpolicy=20across=20suspend/resume?=
-Date: Tue, 24 Dec 2013 07:11:01 +0530
-Message-ID: <03303e46795a89272ba66d5fa230cbfdb9a177a9.1387848958.git.viresh.kumar@linaro.org>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+From: Anson Huang <b20788@freescale.com>
+Subject: [PATCH V2] thermal: imx: correct suspend/resume flow
+Date: Tue, 24 Dec 2013 09:43:24 -0500
+Message-ID: <1387896204-31754-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f42.google.com ([209.85.160.42]:65210 "EHLO
-	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817Ab3LXBlS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 20:41:18 -0500
-Received: by mail-pb0-f42.google.com with SMTP id uo5so5917296pbc.29
-        for <linux-pm@vger.kernel.org>; Mon, 23 Dec 2013 17:41:18 -0800 (PST)
-In-Reply-To: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-In-Reply-To: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:29162
+	"EHLO va3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757912Ab3LXCpa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 21:45:30 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bjorn@mork.no, Viresh Kumar <viresh.kumar@linaro.org>
+To: rui.zhang@intel.com, shawn.guo@linaro.org, eduardo.valentin@ti.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-In __cpufreq_add_dev() we are reinitializing user_policy with default v=
-alues and
-hence would loose values of user_policy.{min|max|policy|governor} field=
-s.
+Fixes regression introduced by:
 
-Preserve them by not overriding these for suspend/resume.
+commit 37713a1e8e4c1a1067ad4c99296f78d3c82ed9c4
+Author: Philipp Zabel <p.zabel@pengutronix.de>
+Date:   Thu Aug 1 18:33:12 2013 +0200
 
-Reported-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+    thermal: imx: implement thermal alarm interrupt handling
+
+The commit 37713a1e8e4 makes imx thermal sensor always powered up as alarm
+function is enabled, but the suspend callback of imx thermal returns
+success only if thermal sensor is powered down, so it will always returns
+fail hence break system's suspend, this patch disables imx thermal sensor
+before suspend and re-enable it after resume.
+
+Signed-off-by: Anson Huang <b20788@freescale.com>
 ---
- drivers/cpufreq/cpufreq.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/thermal/imx_thermal.c |   31 +++++++++++++++++--------------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0a48e71..59e918e 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -839,9 +839,6 @@ static void cpufreq_init_policy(struct cpufreq_poli=
-cy *policy)
-=20
- 	/* set default policy */
- 	ret =3D cpufreq_set_policy(policy, &new_policy);
--	policy->user_policy.policy =3D policy->policy;
--	policy->user_policy.governor =3D policy->governor;
--
- 	if (ret) {
- 		pr_debug("setting policy failed\n");
- 		if (cpufreq_driver->exit)
-@@ -1077,8 +1074,10 @@ static int __cpufreq_add_dev(struct device *dev,=
- struct subsys_interface *sif,
- 	 */
- 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-=20
--	policy->user_policy.min =3D policy->min;
--	policy->user_policy.max =3D policy->max;
-+	if (!frozen) {
-+		policy->user_policy.min =3D policy->min;
-+		policy->user_policy.max =3D policy->max;
-+	}
-=20
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				     CPUFREQ_START, policy);
-@@ -1109,6 +1108,11 @@ static int __cpufreq_add_dev(struct device *dev,=
- struct subsys_interface *sif,
-=20
- 	cpufreq_init_policy(policy);
-=20
-+	if (!frozen) {
-+		policy->user_policy.policy =3D policy->policy;
-+		policy->user_policy.governor =3D policy->governor;
-+	}
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index cbb16f3..9a9a6c2 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -510,27 +510,30 @@ static int imx_thermal_suspend(struct device *dev)
+ {
+ 	struct imx_thermal_data *data = dev_get_drvdata(dev);
+ 	struct regmap *map = data->tempmon;
+-	u32 val;
+ 
+-	regmap_read(map, TEMPSENSE0, &val);
+-	if ((val & TEMPSENSE0_POWER_DOWN) == 0) {
+-		/*
+-		 * If a measurement is taking place, wait for a long enough
+-		 * time for it to finish, and then check again.  If it still
+-		 * does not finish, something must go wrong.
+-		 */
+-		udelay(50);
+-		regmap_read(map, TEMPSENSE0, &val);
+-		if ((val & TEMPSENSE0_POWER_DOWN) == 0)
+-			return -ETIMEDOUT;
+-	}
++	/*
++	 * Need to disable thermal sensor, otherwise, when thermal core
++	 * try to get temperature before thermal sensor resume, a wrong
++	 * temperature will be read as the thermal sensor is powered
++	 * down.
++	 */
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
++	data->mode = THERMAL_DEVICE_DISABLED;
+ 
+ 	return 0;
+ }
+ 
+ static int imx_thermal_resume(struct device *dev)
+ {
+-	/* Nothing to do for now */
++	struct imx_thermal_data *data = dev_get_drvdata(dev);
++	struct regmap *map = data->tempmon;
 +
- 	kobject_uevent(&policy->kobj, KOBJ_ADD);
- 	up_read(&cpufreq_rwsem);
-=20
---=20
-1.7.12.rc2.18.g61b472e
++	/* Enabled thermal sensor after resume */
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
++	data->mode = THERMAL_DEVICE_ENABLED;
++
+ 	return 0;
+ }
+ #endif
+-- 
+1.7.9.5
+
 
