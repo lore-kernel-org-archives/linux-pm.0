@@ -1,36 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend] cpufreq: remove sysfs files for CPU which failed to come back after resume
-Date: Tue, 24 Dec 2013 01:43:51 +0100
-Message-ID: <1720555.1A4z81RqtR@vostro.rjw.lan>
-References: <610b63b7594e5cd364c498f60e69b9e174db9257.1387554926.git.viresh.kumar@linaro.org> <1614824.4yERnS53EQ@vostro.rjw.lan> <CAKohpokHajZ0OudZp1Tb-a-Q70-4OuLDGV9SR==yX1K9P0rDgA@mail.gmail.com>
+From: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: [PATCH v3 RESEND 0/2] Update charger manager driver to support
+ device tree
+Date: Mon, 23 Dec 2013 17:12:11 -0800
+Message-ID: <20131224011211.GA7915@lizard>
+References: <1387348955-23174-1-git-send-email-jonghwa3.lee@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55434 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758360Ab3LXAaZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 19:30:25 -0500
-In-Reply-To: <CAKohpokHajZ0OudZp1Tb-a-Q70-4OuLDGV9SR==yX1K9P0rDgA@mail.gmail.com>
+Received: from mail-pb0-f44.google.com ([209.85.160.44]:43763 "EHLO
+	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932402Ab3LXBR3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2013 20:17:29 -0500
+Received: by mail-pb0-f44.google.com with SMTP id rq2so5902220pbb.3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Dec 2013 17:17:28 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1387348955-23174-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Cc: linux-pm@vger.kernel.org, dwmw2@infradead.org
 
-On Tuesday, December 24, 2013 05:57:35 AM Viresh Kumar wrote:
-> On 24 December 2013 06:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > OK
-> >
-> > Can you please combine this with the patch you sent previously (if that one
-> > is still necessary) and resubmit with a new subject?
+On Wed, Dec 18, 2013 at 03:42:33PM +0900, Jonghwa Lee wrote:
+> Until now, charger manager doesn't support DT at all. It only works with
+> legacy platform data. Therefore, charger_desc structure which is requisite
+> data for working contains non-friendly variables for DT, as like funtion ptr,
+> and u64 type data.
 > 
-> Yes both are required and I really want two separate patches here as they
-> potentially target separate problems.
+> These patches modifies charger_desc structure and driver to support device tree
+> fully. For using device tree in charger manager, you can check example of
+> charger manager's device tree model in Documentaion directory.
+> 
+> Currently, there're many required nodes for proper charger manager's
+> working, we would optimize them later.
 
-OK
+Applied, thanks!
 
-Please resubmit them as a proper series then.
-
-Thanks,
-Rafael
-
+Anton
