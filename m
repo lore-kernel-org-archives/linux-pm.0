@@ -1,148 +1,80 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH Resend 1/1] cpufreq: exynos5250: Set APLL rate using CCF API
-Date: Tue, 24 Dec 2013 15:35:24 +0530
-Message-ID: <1387879524-13369-1-git-send-email-sachin.kamat@linaro.org>
+From: Tejun Heo <tj@kernel.org>
+Subject: [GIT PULL] libata fixes for v3.13-rc5
+Date: Tue, 24 Dec 2013 09:21:04 -0500
+Message-ID: <20131224142104.GA3512@htj.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f45.google.com ([209.85.160.45]:35163 "EHLO
-	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637Ab3LXKIt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Dec 2013 05:08:49 -0500
-Received: by mail-pb0-f45.google.com with SMTP id rp16so6325328pbb.18
-        for <linux-pm@vger.kernel.org>; Tue, 24 Dec 2013 02:08:48 -0800 (PST)
+Received: from mail-qc0-f174.google.com ([209.85.216.174]:61985 "EHLO
+	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752483Ab3LXOVI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Dec 2013 09:21:08 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: cpufreq@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, sachin.kamat@linaro.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-Use common clock framework (CCF) APIs to set the clock rates
-instead of direct register manipulation. This now updates the
-sysfs entry (cpuinfo_cur_freq) correctly which did not reflect
-the correct value until now. While at it clean up the PLL s-div
-parameter setting as it is handled by the PLL driver.
+Hello, Linus.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
----
- drivers/cpufreq/exynos5250-cpufreq.c |   74 +++++-----------------------------
- 1 file changed, 10 insertions(+), 64 deletions(-)
+libata fixes for v3.13-rc5.  There's one interseting commit - "libata,
+freezer: avoid block device removal while system is frozen".  It's an
+ugly hack working around a deadlock condition between driver core
+resume and block layer device removal paths through freezer which was
+made more reproducible by writeback being converted to workqueue some
+releases ago.  The bug has nothing to do with libata but it's just an
+workaround which is easy to backport.  After discussion, Rafael and I
+seem to agree that we don't really need kernel freezables - both
+kthread and workqueue.  There are few specific workqueues which
+constitute PM operations and require freezing, which will be converted
+to use workqueue_set_max_active() instead.  All other kernel freezer
+uses are planned to be removed, followed by the removal of kthread and
+workqueue freezer support, hopefully.
 
-diff --git a/drivers/cpufreq/exynos5250-cpufreq.c b/drivers/cpufreq/exynos5250-cpufreq.c
-index 5ee2ce1ad424..5f90b82a4082 100644
---- a/drivers/cpufreq/exynos5250-cpufreq.c
-+++ b/drivers/cpufreq/exynos5250-cpufreq.c
-@@ -101,12 +101,12 @@ static void set_clkdiv(unsigned int div_index)
- 		cpu_relax();
- }
- 
--static void set_apll(unsigned int new_index,
--			     unsigned int old_index)
-+static void set_apll(unsigned int index)
- {
--	unsigned int tmp, pdiv;
-+	unsigned int tmp;
-+	unsigned int freq = apll_freq_5250[index].freq;
- 
--	/* 1. MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
-+	/* MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
- 	clk_set_parent(moutcore, mout_mpll);
- 
- 	do {
-@@ -115,24 +115,9 @@ static void set_apll(unsigned int new_index,
- 		tmp &= 0x7;
- 	} while (tmp != 0x2);
- 
--	/* 2. Set APLL Lock time */
--	pdiv = ((apll_freq_5250[new_index].mps >> 8) & 0x3f);
--
--	__raw_writel((pdiv * 250), EXYNOS5_APLL_LOCK);
-+	clk_set_rate(mout_apll, freq * 1000);
- 
--	/* 3. Change PLL PMS values */
--	tmp = __raw_readl(EXYNOS5_APLL_CON0);
--	tmp &= ~((0x3ff << 16) | (0x3f << 8) | (0x7 << 0));
--	tmp |= apll_freq_5250[new_index].mps;
--	__raw_writel(tmp, EXYNOS5_APLL_CON0);
--
--	/* 4. wait_lock_time */
--	do {
--		cpu_relax();
--		tmp = __raw_readl(EXYNOS5_APLL_CON0);
--	} while (!(tmp & (0x1 << 29)));
--
--	/* 5. MUX_CORE_SEL = APLL */
-+	/* MUX_CORE_SEL = APLL */
- 	clk_set_parent(moutcore, mout_apll);
- 
- 	do {
-@@ -140,55 +125,17 @@ static void set_apll(unsigned int new_index,
- 		tmp = __raw_readl(EXYNOS5_CLKMUX_STATCPU);
- 		tmp &= (0x7 << 16);
- 	} while (tmp != (0x1 << 16));
--
--}
--
--static bool exynos5250_pms_change(unsigned int old_index, unsigned int new_index)
--{
--	unsigned int old_pm = apll_freq_5250[old_index].mps >> 8;
--	unsigned int new_pm = apll_freq_5250[new_index].mps >> 8;
--
--	return (old_pm == new_pm) ? 0 : 1;
- }
- 
- static void exynos5250_set_frequency(unsigned int old_index,
- 				  unsigned int new_index)
- {
--	unsigned int tmp;
--
- 	if (old_index > new_index) {
--		if (!exynos5250_pms_change(old_index, new_index)) {
--			/* 1. Change the system clock divider values */
--			set_clkdiv(new_index);
--			/* 2. Change just s value in apll m,p,s value */
--			tmp = __raw_readl(EXYNOS5_APLL_CON0);
--			tmp &= ~(0x7 << 0);
--			tmp |= apll_freq_5250[new_index].mps & 0x7;
--			__raw_writel(tmp, EXYNOS5_APLL_CON0);
--
--		} else {
--			/* Clock Configuration Procedure */
--			/* 1. Change the system clock divider values */
--			set_clkdiv(new_index);
--			/* 2. Change the apll m,p,s value */
--			set_apll(new_index, old_index);
--		}
-+		set_clkdiv(new_index);
-+		set_apll(new_index);
- 	} else if (old_index < new_index) {
--		if (!exynos5250_pms_change(old_index, new_index)) {
--			/* 1. Change just s value in apll m,p,s value */
--			tmp = __raw_readl(EXYNOS5_APLL_CON0);
--			tmp &= ~(0x7 << 0);
--			tmp |= apll_freq_5250[new_index].mps & 0x7;
--			__raw_writel(tmp, EXYNOS5_APLL_CON0);
--			/* 2. Change the system clock divider values */
--			set_clkdiv(new_index);
--		} else {
--			/* Clock Configuration Procedure */
--			/* 1. Change the apll m,p,s value */
--			set_apll(new_index, old_index);
--			/* 2. Change the system clock divider values */
--			set_clkdiv(new_index);
--		}
-+		set_apll(new_index);
-+		set_clkdiv(new_index);
- 	}
- }
- 
-@@ -221,7 +168,6 @@ int exynos5250_cpufreq_init(struct exynos_dvfs_info *info)
- 	info->volt_table = exynos5250_volt_table;
- 	info->freq_table = exynos5250_freq_table;
- 	info->set_freq = exynos5250_set_frequency;
--	info->need_apll_change = exynos5250_pms_change;
- 
- 	return 0;
- 
+Others are device-specific fixes.  The most notable is the addition of
+NO_NCQ_TRIM which is used to disable queued TRIM commands to Micro
+M500 SSDs which otherwise suffers data corruption.
+
+The following changes since commit c5700766975c69d27150256444db63fbfd103791:
+
+  ATA: Fix port removal ordering (2013-11-27 13:55:16 -0500)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/libata.git for-3.13-fixes
+
+for you to fetch changes up to 85fbd722ad0f5d64d1ad15888cd1eb2188bfb557:
+
+  libata, freezer: avoid block device removal while system is frozen (2013-12-19 13:50:32 -0500)
+
+Thanks.
+----------------------------------------------------------------
+Marc Carino (1):
+      libata: implement ATA_HORKAGE_NO_NCQ_TRIM and apply it to Micro M500 SSDs
+
+Marek Vasut (1):
+      ahci: imx: Explicitly clear IMX6Q_GPR13_SATA_MPLL_CLK_EN
+
+Michele Baldessari (1):
+      libata: add ATA_HORKAGE_BROKEN_FPDMA_AA quirk for Seagate Momentus SpinPoint M8
+
+Paul Bolle (1):
+      ahci: bail out on ICH6 before using AHCI BAR
+
+Robin H. Johnson (1):
+      libata: disable a disk via libata.force params
+
+Tejun Heo (1):
+      libata, freezer: avoid block device removal while system is frozen
+
+ Documentation/kernel-parameters.txt |  2 ++
+ drivers/ata/ahci.c                  | 18 +++++++++---------
+ drivers/ata/ahci_imx.c              |  3 ++-
+ drivers/ata/libata-core.c           | 19 +++++++++++++++++--
+ drivers/ata/libata-scsi.c           | 21 +++++++++++++++++++++
+ include/linux/libata.h              |  1 +
+ kernel/freezer.c                    |  6 ++++++
+ 7 files changed, 58 insertions(+), 12 deletions(-)
+
 -- 
-1.7.9.5
-
+tejun
