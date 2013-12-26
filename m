@@ -1,40 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Thu, 26 Dec 2013 08:17:48 +0530
-Message-ID: <CAKohponHBaGG1e5e+Wmg6rqMB-nbRx1e=F+u5AoaNb=mxfQL6A@mail.gmail.com>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-	<5562479.pVWRuDL0y6@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: No freezing of kernel threads (was: Re: [GIT PULL] libata fixes for
+ v3.13-rc5)
+Date: Wed, 25 Dec 2013 22:29:30 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1312252211550.15064-100000@netrider.rowland.org>
+References: <1667032.A7Knz5cBng@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:61436 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477Ab3LZCrt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Dec 2013 21:47:49 -0500
-Received: by mail-ob0-f179.google.com with SMTP id wm4so7826727obc.24
-        for <linux-pm@vger.kernel.org>; Wed, 25 Dec 2013 18:47:48 -0800 (PST)
-In-Reply-To: <5562479.pVWRuDL0y6@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1667032.A7Knz5cBng@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 26 December 2013 06:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpufreq: Clean up after a failing light-weight initializatio=
-n
->
-> If cpufreq_policy_restore() returns NULL during system resume,
-> __cpufreq_add_dev() should just fall back to the full initialization
-> instead of returning an error, because that may actually make things
-> work.  Moreover, it should not leave stale fallback data behind after
-> it has failed to restore a previously existing policy.
->
-> This change is based on Viresh Kumar's work.
->
-> Reported-by: Bj=F8rn Mork <bjorn@mork.no>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
+n Wed, 25 Dec 2013, Rafael J. Wysocki wrote:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Is this discussed in more detail somewhere (an email thread, for
+> > example)?
+> 
+> This one, more or less: https://lkml.org/lkml/2013/12/13/402
+
+Thanks.  As I understand it (correct me if this is wrong), the problem
+is that some subsystems wait for a freezable work queue or kthread to
+carry out some job, and they do this as part of their resume pathway.  
+Obviously this leads to deadlock.
+
+One possible answer is to fix the subsystems -- make them not do that
+any more.  Easier said than done, I suppose.  In any case, this is a
+class of errors that is not easily detectable at the moment (could
+lockdep be taught to recognize it?).
+
+But I don't see how swinging to the other extreme (i.e., making no
+kernel threads or work queues freezable) really solves anything.  
+Those things are freezable for real reasons; they do stuff that must
+not happen while the system is in the middle of a sleep transition.
+
+Thus...  If a subsystem's resume pathway depends on something happening 
+which must not happen during a sleep transition, then something is 
+fundamentally broken.
+
+Perhaps the problem could be solved by a finer-grained approach.  For
+example, maybe some of these work queues or kthreads need to be frozen
+only while the system is suspending, so they can safely be thawed when
+the resume begins.  Would that fix the problem that began this 
+discussion?
+
+I know that in the case of khubd, we really do want it to remain frozen 
+throughout the entire sleep transition.
+
+Alan Stern
