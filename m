@@ -1,51 +1,108 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: No freezing of kernel threads (was: Re: [GIT PULL] libata fixes for
- v3.13-rc5)
-Date: Wed, 25 Dec 2013 22:29:30 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1312252211550.15064-100000@netrider.rowland.org>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: No freezing of kernel threads (was: Re: [GIT PULL] libata fixes
+ for v3.13-rc5)
+Date: Wed, 25 Dec 2013 23:18:56 -0500
+Message-ID: <20131226041856.GA16483@htj.dyndns.org>
 References: <1667032.A7Knz5cBng@vostro.rjw.lan>
+ <Pine.LNX.4.44L0.1312252211550.15064-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1667032.A7Knz5cBng@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f176.google.com ([209.85.216.176]:43319 "EHLO
+	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752477Ab3LZETB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Dec 2013 23:19:01 -0500
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1312252211550.15064-100000@netrider.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Torvalds <torvalds@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-n Wed, 25 Dec 2013, Rafael J. Wysocki wrote:
+Hello, Alan.
 
-> > Is this discussed in more detail somewhere (an email thread, for
-> > example)?
-> 
-> This one, more or less: https://lkml.org/lkml/2013/12/13/402
+On Wed, Dec 25, 2013 at 10:29:30PM -0500, Alan Stern wrote:
+> Thanks.  As I understand it (correct me if this is wrong), the problem
+> is that some subsystems wait for a freezable work queue or kthread to
+> carry out some job, and they do this as part of their resume pathway.  
+> Obviously this leads to deadlock.
 
-Thanks.  As I understand it (correct me if this is wrong), the problem
-is that some subsystems wait for a freezable work queue or kthread to
-carry out some job, and they do this as part of their resume pathway.  
-Obviously this leads to deadlock.
+It's not even that.  Freezer is too big and ends up causing deadlock
+which doesn't have much to do with resuming in itself.  The observed
+deadlock is between driver core resume and block layer removal paths.
+While the removal operation is kicked off by bus rescan during resume,
+it isn't an inherent part of libata resume.  ie. any block device
+removal can race against driver core freezer path.
 
-One possible answer is to fix the subsystems -- make them not do that
-any more.  Easier said than done, I suppose.  In any case, this is a
-class of errors that is not easily detectable at the moment (could
-lockdep be taught to recognize it?).
+> But I don't see how swinging to the other extreme (i.e., making no
+> kernel threads or work queues freezable) really solves anything.  
+> Those things are freezable for real reasons; they do stuff that must
+> not happen while the system is in the middle of a sleep transition.
 
-But I don't see how swinging to the other extreme (i.e., making no
-kernel threads or work queues freezable) really solves anything.  
-Those things are freezable for real reasons; they do stuff that must
-not happen while the system is in the middle of a sleep transition.
+Kernel freezer has a lot of similarities with BKL.  I wouldn't call
+its eventual removal an extreme choice.
 
-Thus...  If a subsystem's resume pathway depends on something happening 
-which must not happen during a sleep transition, then something is 
-fundamentally broken.
+> Thus...  If a subsystem's resume pathway depends on something happening 
+> which must not happen during a sleep transition, then something is 
+> fundamentally broken.
 
-Perhaps the problem could be solved by a finer-grained approach.  For
-example, maybe some of these work queues or kthreads need to be frozen
-only while the system is suspending, so they can safely be thawed when
-the resume begins.  Would that fix the problem that began this 
-discussion?
+Again, the deadlock doesn't have much to do with "a subsystem's resume
+pathway".  It's just freezer behaving as too big a lock used by too
+many subsystems which don't even need them eventually leading to messy
+deadlock.
 
-I know that in the case of khubd, we really do want it to remain frozen 
-throughout the entire sleep transition.
+> Perhaps the problem could be solved by a finer-grained approach.  For
 
-Alan Stern
+Yeah, we seem to agree on the fact that it needs to be finer grained
+
+> example, maybe some of these work queues or kthreads need to be frozen
+> only while the system is suspending, so they can safely be thawed when
+> the resume begins.  Would that fix the problem that began this 
+> discussion?
+
+but not how to achieve it.  Kernel freezer's problem is that it's too
+big a mechanism for the given problem.  What we need is a mechanism to
+plug a handful (from what I've seen, there aren't too many legit
+users) of kthreads / workqueues, but what we have is a mechanism which
+is integral part of the whole task and workqueue machineries.
+
+>From the beginning and still, it's used as a voodoo mechanism which
+somehow makes the machine "mostly stopped" before performing PM
+operations.  That "mostly stopped" has never been well defined and
+always been a source of confusions causing people to just believe it's
+somehow all quiet and good without actually pondering what should
+happen - freezing of kthreads isn't atomic and doesn't have any
+inherent ordering among different kthreads / wqs && freezing kthread /
+wq doesn't mean the layer is actually empty or inactive.  irq / bh
+paths aren't blocked at all.
+
+A common misconception seems to be that by marking the workers in the
+upper layers freezable, somehow things are blocked from all the
+sources and thus the actual device, which needs to be plugged across
+suspend, is safe.  It's damaging because it'd work in many, if not
+most, cases but can never be made fully reliable.
+
+> I know that in the case of khubd, we really do want it to remain frozen 
+> throughout the entire sleep transition.
+
+I could be wrong but the only legitimate use cases of kernel freezer
+that I've seen are drivers using it as a fast way to implement
+suspend/resume callbacks and khubd seems to fall in that category.  I
+think it'd be actually healthier to implement it as a part of the
+usual PM notification / callback mechanism - a natural benefit would
+be helping consolidate system and runtime PM paths.  The conversion
+should be fairly simple and we definitely can add helpers and whatnot
+if we end up having to convert more than a handful.
+
+The danger is that because we've been plugging so many sources, we're
+likely to have lower level queues which aren't properly plugged.
+Those are broken but could have been working most of the time.
+Removing freezing from the upper layers could expose those issues, so
+the conversion as a whole may have some challanges in that department.
+It has been quite a while since I went through PM paths of many
+different drivers so I'd defer the judgement to Rafael.
+
+Thanks.
+
+-- 
+tejun
