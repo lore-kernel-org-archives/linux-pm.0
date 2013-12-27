@@ -1,84 +1,84 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PCI / ACPI: Install wakeup notify handlers for all PCI devs with ACPI
-Date: Fri, 27 Dec 2013 01:17:22 +0100
-Message-ID: <2145694.TZRgVXpeL1@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: No freezing of kernel threads (was: Re: [GIT PULL] libata fixes
+ for v3.13-rc5)
+Date: Thu, 26 Dec 2013 21:14:49 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1312262048540.29101-100000@netrider.rowland.org>
+References: <20131226190120.GC16483@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Agustin Barto <abarto@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:51960 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754042Ab3L0COu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Dec 2013 21:14:50 -0500
+In-Reply-To: <20131226190120.GC16483@htj.dyndns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Torvalds <torvalds@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hello,
 
-It turns out that some BIOSes don't report wakeup GPEs through
-_PRW, but use them for signaling wakeup anyway, which causes GPE
-storms to occur on some systems after resume from system suspend.
-This issue has been uncovered by commit d2e5f0c16ad6 (ACPI / PCI:
-Rework the setup and cleanup of device wakeup) during the 3.9
-development cycle.
+On Thu, 26 Dec 2013, Tejun Heo wrote:
 
-Work around the problem by installing wakeup notify handlers for all
-PCI devices with ACPI support (i.e. having ACPI companions) regardless
-of whether or not the BIOS reports ACPI wakeup support for them.  The
-presence of the wakeup notify handlers alone is not harmful in any
-way if there are no events for them to handle (they are simply never
-executed then), but on some systems they are needed to take care of
-spurious events.
+> > Maybe it's the other way around: The separate paths are necessary, and 
+> > the freezer _simplifies_ the system sleep ops.
+> 
+> Again, the point is it's too big a tool given the problem with history
+> of abuse.  It sure is "convenient" to have tools at that level for
+> that particular user - not because the task at hand fits such solution
+> but because a lot more is being paid elsewhere.  It just is out of
+> proportion and isn't a good design in larger sense.
 
-Fixes: d2e5f0c16ad6 (ACPI / PCI: Rework the setup and cleanup of device wakeup)
-References: https://bugzilla.kernel.org/show_bug.cgi?id=63021
-Reported-and-tested-by: Agustin Barto <abarto@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pci/pci-acpi.c |   21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+I can't disagree with this.  But the design may well be perfectly
+adequate for some use cases.  Given a workqueue or kthread which should
+not operate during system sleep, we have to:
 
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -325,29 +325,32 @@ static struct acpi_device *acpi_pci_find
- static void pci_acpi_setup(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	acpi_handle handle = ACPI_HANDLE(dev);
--	struct acpi_device *adev;
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
- 
--	if (acpi_bus_get_device(handle, &adev) || !adev->wakeup.flags.valid)
-+	if (!adev)
-+		return;
-+
-+	pci_acpi_add_pm_notifier(adev, pci_dev);
-+	if (!adev->wakeup.flags.valid)
- 		return;
- 
- 	device_set_wakeup_capable(dev, true);
- 	acpi_pci_sleep_wake(pci_dev, false);
--
--	pci_acpi_add_pm_notifier(adev, pci_dev);
- 	if (adev->wakeup.flags.run_wake)
- 		device_set_run_wake(dev, true);
- }
- 
- static void pci_acpi_cleanup(struct device *dev)
- {
--	acpi_handle handle = ACPI_HANDLE(dev);
--	struct acpi_device *adev;
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+
-+	if (!adev)
-+		return;
- 
--	if (!acpi_bus_get_device(handle, &adev) && adev->wakeup.flags.valid) {
-+	pci_acpi_remove_pm_notifier(adev);
-+	if (adev->wakeup.flags.valid) {
- 		device_set_wakeup_capable(dev, false);
- 		device_set_run_wake(dev, false);
--		pci_acpi_remove_pm_notifier(adev);
- 	}
- }
- 
+	Tell the wq/thread to stop running because a sleep is about
+	to start, and
+
+	Provide a function the wq/thread can call to put itself on 
+	hold for the duration of the sleep.
+
+The freezer does both these things pretty efficiently.  Problems may
+arise, though, because of workqueues or kthreads which need to continue 
+some but not all of their operations, or which need to be put on hold 
+in a specific sequence with respect to other threads.  The freezer is 
+not suited for such things.
+
+(There is a similar problem when userspace gets frozen.  Tasks 
+implementing FUSE filesystems, in particular, have a deplorable 
+tendency to get frozen at inconvenient times.)
+
+> As for autopm vs. system pm, there sure are necessary differences
+> between the two but they also can share a lot.  At least, it looks
+> that way from libata side.  I really don't think having two separate
+> paradigms in implementing PM is a good idea even if the two paths have
+> to deviate in significant ways.
+
+Put it the other way around: Implementing two significantly different
+kinds of PM is okay because the two paths can share a lot.
+
+Really.  Although system PM and runtime PM may appear similar from some
+points of view, underneath they are quite different in several
+important ways.  Most of what they have in common is the idea of 
+putting devices into or out of low-power states.  But when and how to 
+do these things...
+
+> > Taking khubd as an example, I have to agree that converting it to a
+> > workqueue would be a big simplification overall.  And yet there are
+> > some things khubd does which are (as far as I know) rather difficult to
+> > accomplish with workqueues.  One example in drivers/usb/core/hub.c:  
+> > kick_khubd() calls usb_autopm_get_interface_no_resume() if and only if
+> > it added the hub to the event list (and it does so before releasing the
+> > list's lock).  How can you do that with a workqueue?
+> 
+> Do the same thing and just replace wake_up() with queue_work()?
+
+So you're suggesting changing the kthread to a workqueue thread, but
+keeping the existing list of scheduled events instead of relying on the
+workqueue's own queue of work items?  What's the advantage?  Making
+such a change wouldn't simplify anything.
+
+Alan Stern
+
