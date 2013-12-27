@@ -1,29 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Fri, 27 Dec 2013 15:28:24 +0530
-Message-ID: <CAKohpokW2FCN33VZOSUQ0xbgt6FgxtfQyPZintGL9URDHH8LCQ@mail.gmail.com>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-	<5562479.pVWRuDL0y6@vostro.rjw.lan>
-	<CAKohponHBaGG1e5e+Wmg6rqMB-nbRx1e=F+u5AoaNb=mxfQL6A@mail.gmail.com>
-	<CAKohpom9_-9bDJ9tWDHmm1inMporaHytAvmrgfPSs2koRqGzBw@mail.gmail.com>
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
+Date: Fri, 27 Dec 2013 12:24:22 +0000
+Message-ID: <20131227122422.62857cec@alan.etchedpixels.co.uk>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com>
+	<CAKohpomqHApogDEXA5LyWk-+B-Y1mwNQ63-wL3PPGz64s_3Dmw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:48449 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754186Ab3L0J6Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Dec 2013 04:58:25 -0500
-Received: by mail-ob0-f179.google.com with SMTP id wm4so9260449obc.10
-        for <linux-pm@vger.kernel.org>; Fri, 27 Dec 2013 01:58:25 -0800 (PST)
-In-Reply-To: <CAKohpom9_-9bDJ9tWDHmm1inMporaHytAvmrgfPSs2koRqGzBw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomqHApogDEXA5LyWk-+B-Y1mwNQ63-wL3PPGz64s_3Dmw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Josh Boyer <jwboyer@fedoraproject.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 27 December 2013 15:27, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> I think there is nothing much different in this patch compared to what Bjorn
-> tested. So you can probably push that now and let him test linux-next later
-> once he is back?
+On Tue, 24 Dec 2013 21:36:01 +0530
+Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Just saw that you already pushed it. :)
+> Adding Dirk..
+> 
+> On 24 December 2013 20:06, Josh Boyer <jwboyer@fedoraproject.org> wrote:
+> > Hi All,
+> >
+> > We've had a report [1] that the pstate driver causes KVM guests to
+> > fail to boot because of a divide error.  See the backtrace below.
+> >
+> >     4.839784] Intel P-state driver initializing.
+> > [    4.859972] Intel pstate controlling: cpu 0
+> > [    4.867653] cpufreq: __cpufreq_add_dev: ->get() failed
+> 
+> After a call to ->init(), ->get() is supposed to work.
+> @Dirk: Any idea why it failed?
+> 
+> And then I don't know what made this divide by zero to happen :)
+
+> > [    4.878127] Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
+
+Emulator bug perhaps ?
+
