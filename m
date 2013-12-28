@@ -1,70 +1,52 @@
-From: David Woodfall <dave@dawoodfall.net>
-Subject: Re: Problem with cpufreq and i5 since post 3.9.0
-Date: Sat, 28 Dec 2013 01:23:45 +0000
-Message-ID: <20131228012345.GL17115@Blackswan>
-References: <20131227185924.GH17115@Blackswan>
- <20131227195350.GI17115@Blackswan>
- <20131228000900.GJ17115@Blackswan>
- <1593264.QxQbtiBB9a@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1593264.QxQbtiBB9a@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+From: Mateusz Krawczuk <mat.krawczuk@gmail.com>
+Subject: [PATCH v5 Resend 0/3] ARM: S5PV210: move to common clk framework
+Date: Sat, 28 Dec 2013 18:09:13 +0100
+Message-ID: <1388250556-4594-1-git-send-email-mat.krawczuk@gmail.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: kgene.kim@samsung.com
+Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, rob@landley.net, mturquette@linaro.org, tomasz.figa@gmail.com, thomas.abraham@linaro.org, s.nawrocki@samsung.com, m.szyprowski@samsung.com, padma.v@samsung.com, chander.kashyap@linaro.org, t.dakhran@samsung.com, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, ben-linux@fluff.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On (28/12/13 01:50), Rafael J. Wysocki <rjw@rjwysocki.net> put forth the proposition:
->CC: +Viresh and linux-pm
->
->On Saturday, December 28, 2013 12:09:01 AM David Woodfall wrote:
->> On (27/12/13 19:53), Dave Woodfall <dave@dawoodfall.net> put forth the proposition:
->> >On (27/12/13 20:44), Heinz Diehl <htd@fancy-poultry.org> put forth the proposition:
->> >>On 27.12.2013, David Woodfall wrote:
->> >>
->> >>>But any of the newer kernel versions I've tested only give me
->> >>>performance and powersave.
->> >>
->> >>I don't use any Fedora kernel, so I can't tell which governors are
->> >>enabled in those. You should check the value of "CONFIG_CPU_FREQ_GOV"
->> >>in the respective .config file for your installed kernel.
->> >>
->> >>In short: It seems that only "performance" and "powersave" are
->> >>compiled in.
->> >
->> >No, I used the same .config in all versions that I tested. I've also
->> >tried setting them as modules rather than built-in. This is the stock
->> >slackware .config:
->> >
->> >CONFIG_CPU_FREQ=y
->> >CONFIG_CPU_FREQ_TABLE=m
->> >CONFIG_CPU_FREQ_GOV_COMMON=y
->> >CONFIG_CPU_FREQ_STAT=m
->> >CONFIG_CPU_FREQ_STAT_DETAILS=y
->> ># CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
->> >CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
->> ># CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
->> ># CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
->> >CONFIG_CPU_FREQ_GOV_PERFORMANCE=m
->> >CONFIG_CPU_FREQ_GOV_POWERSAVE=m
->> >CONFIG_CPU_FREQ_GOV_USERSPACE=y
->> >CONFIG_CPU_FREQ_GOV_ONDEMAND=m
->> >CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
->> >
->> >And modprobing any governor module does not change the output of
->> >scaling_available_governors.
->> >
->> >-Dave
->>
->> I'm also experiencing this with a Intel G640 dual core machine.
->> Exactly the same effect.
->
->Do you have CONFIG_X86_INTEL_PSTATE set?
+This patch series is the new s5pv210 clock implementation
+(using common clk framework).
 
-I did and unsetting it solves the problem.
+This implementation is compatible with device tree definition and board
+files.
 
-Thanks for that pointer.
+This patch series is based on linux-next and has been tested on goni and
+aquila boards using board file.
 
--Dave
+Since v4:
+Corrected mux flags for finpll.
+
+Since v3:
+
+Replace s5pv210_clk_register_finpll, by creating mux finpll
+with xusbxti and xxti as parrents.
+
+Mateusz Krawczuk (3):
+  clk: samsung: Add clock driver for s5pc110/s5pv210
+  Cpufreq: s5pv210 cpufreq fixes for CCF
+  ARM: s5pv210: Migrate clock handling to Common Clock Framework
+
+ .../bindings/clock/samsung,s5pv210-clock.txt       |  75 +++
+ arch/arm/mach-s5pv210/Kconfig                      |   9 +
+ arch/arm/mach-s5pv210/Makefile                     |   4 +-
+ arch/arm/mach-s5pv210/common.c                     |  17 +
+ arch/arm/mach-s5pv210/common.h                     |  10 +
+ arch/arm/mach-s5pv210/mach-goni.c                  |   2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c              |   2 +-
+ arch/arm/plat-samsung/Kconfig                      |   2 +-
+ drivers/clk/samsung/Makefile                       |   3 +
+ drivers/clk/samsung/clk-s5pv210.c                  | 673 +++++++++++++++++++++
+ drivers/cpufreq/s5pv210-cpufreq.c                  |   6 +-
+ include/dt-bindings/clock/samsung,s5pv210-clock.h  | 224 +++++++
+ 12 files changed, 1019 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/samsung,s5pv210-clock.txt
+ create mode 100644 drivers/clk/samsung/clk-s5pv210.c
+ create mode 100644 include/dt-bindings/clock/samsung,s5pv210-clock.h
+
+-- 
+1.8.3.3
+
