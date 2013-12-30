@@ -1,96 +1,294 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [0/11] Energy-aware scheduling use-cases and scheduler issues
-Date: Mon, 30 Dec 2013 12:10:10 +0000
-Message-ID: <20131230121010.GA2936@e103034-lin>
-References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
- <20131222162744.GB3250@mgross-Lenovo-Yoga-2-Pro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH RESEND] fuelgauge: max17042: Seperate available property set
+ for different operation.
+Date: Mon, 30 Dec 2013 21:26:57 +0900
+Message-ID: <1388406417-19767-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.austin.arm.com ([217.140.110.23]:39916 "EHLO
-	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755517Ab3L3MKO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Dec 2013 07:10:14 -0500
-Content-Disposition: inline
-In-Reply-To: <20131222162744.GB3250@mgross-Lenovo-Yoga-2-Pro>
+Received: from mailout1.samsung.com ([203.254.224.24]:15273 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755690Ab3L3M1H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Dec 2013 07:27:07 -0500
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MYM0008TD965B20@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 30 Dec 2013 21:27:06 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mark gross <markgross@thegnar.org>
-Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: anton@enomsg.org, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On Sun, Dec 22, 2013 at 04:28:22PM +0000, mark gross wrote:
-> On Fri, Dec 20, 2013 at 04:45:40PM +0000, Morten Rasmussen wrote:
-> > Hi,
-> > 
-> > One of the requests from the scheduler maintainers at the Energy-aware
-> > Scheduling workshop at Kernel Summit this year was to provide plain text
-> > descriptions of use-cases (workloads) and system topologies. To get that
-> > moving I have written some short texts about some use-cases. In addition
-> > I described a list of issues that today prevent mainly the scheduler
-> > from achieving a good energy/performance balance in common use-cases.
-> > The follow-up emails are structured as follows:
-> > 
-> > 1-6:	Current issues related to energy/performance balance.
-> We have seen some of these issues as well.  Still from my point of view (which
-> may not be the most well informed) most of my issues are related to bad choices
-> on task migrations.
+max17042 fuelgauge driver supports various successors based on max17042.
+Some versions use currrent sensor and temperature sensor to increase accuracy,
+while others don't. So this patch makes driver to support seperate property set
+depending on chip implementation.
 
-Thanks for sharing your view. In my opinion, all of these issues relate
-to task migration choices in one way or another. Lack of knowledge about
-the power topology, frequency scaling, and different types of cores
-(e.g. big.LITTLE) lead to bad migration choices.
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ .../bindings/power_supply/max17042_battery.txt     |    4 +
+ drivers/power/max17042_battery.c                   |  143 ++++++++++++++------
+ include/linux/power/max17042_battery.h             |    1 +
+ 3 files changed, 105 insertions(+), 43 deletions(-)
 
-> 
-> > 7-10:	Use-cases (overall behaviour and energy/performance goals)
-> I really like your break down of the use cases.  I like the Android focus as
-> well.  However; can we get some similar workload break downs for representive
-> data center workloads from other folks?
+diff --git a/Documentation/devicetree/bindings/power_supply/max17042_battery.txt b/Documentation/devicetree/bindings/power_supply/max17042_battery.txt
+index 5bc9b68..33b32f1 100644
+--- a/Documentation/devicetree/bindings/power_supply/max17042_battery.txt
++++ b/Documentation/devicetree/bindings/power_supply/max17042_battery.txt
+@@ -8,6 +8,9 @@ Optional properties :
+  - maxim,rsns-microohm : Resistance of rsns resistor in micro Ohms
+                          (datasheet-recommended value is 10000).
+    Defining this property enables current-sense functionality.
++ - maxim,thermometer-exist : Represent thermistor directly conneted.
++   (NOTE) Without this flag, max17042 won't check battery temperature
++	  automatically.
+ 
+ Example:
+ 
+@@ -15,4 +18,5 @@ Example:
+ 		compatible = "maxim,max17042";
+ 		reg = <0x36>;
+ 		maxim,rsns-microohm = <10000>;
++		maxim,thermometer-exist;
+ 	};
+diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
+index 66da691..9a40945 100644
+--- a/drivers/power/max17042_battery.c
++++ b/drivers/power/max17042_battery.c
+@@ -49,6 +49,9 @@
+ 
+ /* Interrupt mask bits */
+ #define CONFIG_ALRT_BIT_ENBL	(1 << 2)
++#define CONFIG_ETHERM_BIT	(1 << 4)
++#define CONFIG_TEX_BIT		(1 << 8)
++#define CONFIG_TEN_BIT		(1 << 9)
+ #define STATUS_INTR_SOCMIN_BIT	(1 << 10)
+ #define STATUS_INTR_SOCMAX_BIT	(1 << 14)
+ 
+@@ -76,7 +79,15 @@ struct max17042_chip {
+ 	int    init_complete;
+ };
+ 
+-static enum power_supply_property max17042_battery_props[] = {
++/*
++ * Max17042/7 fuel-gauge optional properties :
++ * POWER_SUPPLY_PROP_CURRENT_NOW,
++ * POWER_SUPPLY_PROP_CURRENT_AVG,
++ * POWER_SUPPLY_PROP_CHARGE_FULL,
++ * POWER_SUPPLY_PROP_CHARGE_COUNTER,
++ * POWER_SUPPLY_PROP_TEMP,
++ */
++static enum power_supply_property max17042_default_props[] = {
+ 	POWER_SUPPLY_PROP_PRESENT,
+ 	POWER_SUPPLY_PROP_CYCLE_COUNT,
+ 	POWER_SUPPLY_PROP_VOLTAGE_MAX,
+@@ -85,12 +96,8 @@ static enum power_supply_property max17042_battery_props[] = {
+ 	POWER_SUPPLY_PROP_VOLTAGE_AVG,
+ 	POWER_SUPPLY_PROP_VOLTAGE_OCV,
+ 	POWER_SUPPLY_PROP_CAPACITY,
+-	POWER_SUPPLY_PROP_CHARGE_FULL,
+-	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+-	POWER_SUPPLY_PROP_TEMP,
+-	POWER_SUPPLY_PROP_CURRENT_NOW,
+-	POWER_SUPPLY_PROP_CURRENT_AVG,
+ };
++#define NUM_ADDITIONAL_PROPS	5
+ 
+ static int max17042_get_property(struct power_supply *psy,
+ 			    enum power_supply_property psp,
+@@ -171,6 +178,8 @@ static int max17042_get_property(struct power_supply *psy,
+ 		val->intval = data >> 8;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
++		if (!chip->pdata->enable_current_sense)
++			return -EINVAL;
+ 		ret = regmap_read(map, MAX17042_FullCAP, &data);
+ 		if (ret < 0)
+ 			return ret;
+@@ -178,6 +187,8 @@ static int max17042_get_property(struct power_supply *psy,
+ 		val->intval = data * 1000 / 2;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
++		if (!chip->pdata->enable_current_sense)
++			return -EINVAL;
+ 		ret = regmap_read(map, MAX17042_QH, &data);
+ 		if (ret < 0)
+ 			return ret;
+@@ -185,6 +196,8 @@ static int max17042_get_property(struct power_supply *psy,
+ 		val->intval = data * 1000 / 2;
+ 		break;
+ 	case POWER_SUPPLY_PROP_TEMP:
++		if (!chip->pdata->enable_temperature_sense)
++			return -EINVAL;
+ 		ret = regmap_read(map, MAX17042_TEMP, &data);
+ 		if (ret < 0)
+ 			return ret;
+@@ -200,40 +213,36 @@ static int max17042_get_property(struct power_supply *psy,
+ 		val->intval = val->intval * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+-		if (chip->pdata->enable_current_sense) {
+-			ret = regmap_read(map, MAX17042_Current, &data);
+-			if (ret < 0)
+-				return ret;
+-
+-			val->intval = data;
+-			if (val->intval & 0x8000) {
+-				/* Negative */
+-				val->intval = ~val->intval & 0x7fff;
+-				val->intval++;
+-				val->intval *= -1;
+-			}
+-			val->intval *= 1562500 / chip->pdata->r_sns;
+-		} else {
++		if (!chip->pdata->enable_current_sense)
+ 			return -EINVAL;
++		ret = regmap_read(map, MAX17042_Current, &data);
++		if (ret < 0)
++			return ret;
++
++		val->intval = data;
++		if (val->intval & 0x8000) {
++			/* Negative */
++			val->intval = ~val->intval & 0x7fff;
++			val->intval++;
++			val->intval *= -1;
+ 		}
++			val->intval *= 1562500 / chip->pdata->r_sns;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+-		if (chip->pdata->enable_current_sense) {
+-			ret = regmap_read(map, MAX17042_AvgCurrent, &data);
+-			if (ret < 0)
+-				return ret;
+-
+-			val->intval = data;
+-			if (val->intval & 0x8000) {
+-				/* Negative */
+-				val->intval = ~val->intval & 0x7fff;
+-				val->intval++;
+-				val->intval *= -1;
+-			}
+-			val->intval *= 1562500 / chip->pdata->r_sns;
+-		} else {
++		if (!chip->pdata->enable_current_sense)
+ 			return -EINVAL;
++		ret = regmap_read(map, MAX17042_AvgCurrent, &data);
++		if (ret < 0)
++			return ret;
++
++		val->intval = data;
++		if (val->intval & 0x8000) {
++			/* Negative */
++			val->intval = ~val->intval & 0x7fff;
++			val->intval++;
++			val->intval *= -1;
+ 		}
++		val->intval *= 1562500 / chip->pdata->r_sns;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -648,6 +657,9 @@ max17042_get_pdata(struct device *dev)
+ 		pdata->enable_current_sense = true;
+ 	}
+ 
++	if (of_get_property(np, "maxim,thermometer-exist", NULL))
++		pdata->enable_temperature_sense = true;
++
+ 	return pdata;
+ }
+ #else
+@@ -664,6 +676,57 @@ static struct regmap_config max17042_regmap_config = {
+ 	.val_format_endian = REGMAP_ENDIAN_NATIVE,
+ };
+ 
++static int max17042_init_properties(struct max17042_chip *chip)
++{
++	enum power_supply_property additional_props[NUM_ADDITIONAL_PROPS];
++	enum power_supply_property *properties;
++	int i, _base, added = 0;
++
++	_base = ARRAY_SIZE(max17042_default_props);
++
++	if (chip->pdata->enable_current_sense) {
++		additional_props[added++] = POWER_SUPPLY_PROP_CURRENT_NOW;
++		additional_props[added++] = POWER_SUPPLY_PROP_CURRENT_AVG;
++		additional_props[added++] = POWER_SUPPLY_PROP_CHARGE_FULL;
++		additional_props[added++] = POWER_SUPPLY_PROP_CHARGE_COUNTER;
++		if (chip->pdata->r_sns == 0)
++			chip->pdata->r_sns = MAX17042_DEFAULT_SNS_RESISTOR;
++	} else {
++		/* ModelGauge v1 - Without current sense */
++		regmap_write(chip->regmap, MAX17042_CGAIN, 0x0000);
++		regmap_write(chip->regmap, MAX17042_MiscCFG, 0x0003);
++		regmap_write(chip->regmap, MAX17042_LearnCFG, 0x0007);
++	}
++
++	if (chip->pdata->enable_temperature_sense)
++		additional_props[added++] = POWER_SUPPLY_PROP_TEMP;
++	else
++		/* Off thermistor - temperature will be externally given */
++		regmap_update_bits(chip->regmap, MAX17042_CONFIG,
++			CONFIG_ETHERM_BIT | CONFIG_TEX_BIT | CONFIG_TEN_BIT,
++			CONFIG_TEX_BIT);
++
++	if (added) {
++		properties = devm_kzalloc(&chip->client->dev,
++			(_base + added) * sizeof(*properties), GFP_KERNEL);
++		if (!properties)
++			return -ENOMEM;
++
++		memcpy(properties, max17042_default_props,
++					sizeof(max17042_default_props));
++		for (i = 0; i < added; i++)
++			properties[_base + i] = additional_props[i];
++
++		chip->battery.properties = properties;
++		chip->battery.num_properties = _base + added;
++	} else {
++		chip->battery.properties = max17042_default_props;
++		chip->battery.num_properties = _base;
++	}
++
++	return 0;
++}
++
+ static int max17042_probe(struct i2c_client *client,
+ 			const struct i2c_device_id *id)
+ {
+@@ -710,16 +773,10 @@ static int max17042_probe(struct i2c_client *client,
+ 	chip->battery.name		= "max170xx_battery";
+ 	chip->battery.type		= POWER_SUPPLY_TYPE_BATTERY;
+ 	chip->battery.get_property	= max17042_get_property;
+-	chip->battery.properties	= max17042_battery_props;
+-	chip->battery.num_properties	= ARRAY_SIZE(max17042_battery_props);
+ 
+-	/* When current is not measured,
+-	 * CURRENT_NOW and CURRENT_AVG properties should be invisible. */
+-	if (!chip->pdata->enable_current_sense)
+-		chip->battery.num_properties -= 2;
+-
+-	if (chip->pdata->r_sns == 0)
+-		chip->pdata->r_sns = MAX17042_DEFAULT_SNS_RESISTOR;
++	ret = max17042_init_properties(chip);
++	if (ret)
++		return ret;
+ 
+ 	if (chip->pdata->init_data)
+ 		for (i = 0; i < chip->pdata->num_init_data; i++)
+diff --git a/include/linux/power/max17042_battery.h b/include/linux/power/max17042_battery.h
+index 89dd84f..81744ed 100644
+--- a/include/linux/power/max17042_battery.h
++++ b/include/linux/power/max17042_battery.h
+@@ -200,6 +200,7 @@ struct max17042_platform_data {
+ 	struct max17042_config_data *config_data;
+ 	int num_init_data; /* Number of enties in init_data array */
+ 	bool enable_current_sense;
++	bool enable_temperature_sense;
+ 	bool enable_por_init; /* Use POR init from Maxim appnote */
+ 
+ 	/*
+-- 
+1.7.9.5
 
-I don't have much insight into data center workloads, so I was hoping
-for input from other folks.
-
-> 
-> > 11:	DVFS example (for reference)
-> > 
-> > I'm hoping that this provides some of the background for why I'm
-> > interested in improving energy-awareness in the scheduler. I'm aware
-> > that the use-cases and issues/wishlist don't cover everyone's area of
-> > interest. Input is needed to fix that.
-> > 
-> > Comments and input are appreciated.
-> What is missing is more data or modeling tying the SoC charactoristics to
-> scheduling choices.  You have some (energy per instruction at different
-> P-states) but there are a lot more topological differences that are important
-> for proper scheduler choices.  Specifically shared L2's between some cores and
-> not others, or shared power rails, or if the cores are hyper threaded, or if
-> there are mutliple sockets.
-
-Agree. This is the missing power topology information in the scheduler.
-Power domain information (power rail sharing), including the cost of
-waking up the first cpu and additional cpus in the domain, is required.
-I guess multi-socket can be modelled that way too?
-
-Most aspects of power management is implementation dependent on ARM, but
-a typical big.LITTLE system looks like this:
-
-      little  big
-cpu   0   1   2   3
-L1   |-| |-| |-| |-|
-L2   |-----| |-----|
-
-Two clusters (cpu groups), one little and one big. Cluster shared L2
-cache. cpus have (depending on implementation) per cpu C-states and
-deeper C-states apply to the entire cluster including the L2. P-states
-often apply to the entire cluster (cpu 0-1 and 2-3 in this example).
-Clusters may have 1-4 cpus each and doesn't have to be the same for all
-clusters (e.g. ARM TC2 is 2+3).
-
-Is that fundamentally different from the systems that you are working
-on?
-
-I was hoping that we could come up with a fairly simplistic energy model
-that could guide the scheduling decisions based on data provided by the
-vendor. I would start we something very simple and see far we can get
-and which data that is necessary.
-
-Morten
