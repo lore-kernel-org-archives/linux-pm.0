@@ -1,107 +1,39 @@
-From: Kashyap Chamarthy <kchamart@redhat.com>
-Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Mon, 30 Dec 2013 15:58:43 +0100
-Message-ID: <52C18A23.10703@redhat.com>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <231382870.yshsPRR4KM@vostro.rjw.lan> <52C011A2.3040800@redhat.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan>
+From: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
+Date: Mon, 30 Dec 2013 17:40:45 +0100
+Message-ID: <cb5a2c1a-7bca-494a-bbd0-704f93902ec9@email.android.com>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org> <5562479.pVWRuDL0y6@vostro.rjw.lan> <CAKohponHBaGG1e5e+Wmg6rqMB-nbRx1e=F+u5AoaNb=mxfQL6A@mail.gmail.com> <CAKohpom9_-9bDJ9tWDHmm1inMporaHytAvmrgfPSs2koRqGzBw@mail.gmail.com> <CAKohpokW2FCN33VZOSUQ0xbgt6FgxtfQyPZintGL9URDHH8LCQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:3201 "EHLO mx1.redhat.com"
+Received: from canardo.mork.no ([148.122.252.1]:47819 "EHLO canardo.mork.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756037Ab3L3O7E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Dec 2013 09:59:04 -0500
-In-Reply-To: <4794554.Hmd2RUNYDT@vostro.rjw.lan>
+	id S1756010Ab3L3QlE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 30 Dec 2013 11:41:04 -0500
+In-Reply-To: <CAKohpokW2FCN33VZOSUQ0xbgt6FgxtfQyPZintGL9URDHH8LCQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Gleb Natapov <gleb@kernel.org>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 12/29/2013 04:04 PM, Rafael J. Wysocki wrote:
-> On Sunday, December 29, 2013 01:12:18 PM Kashyap Chamarthy wrote:
->> [. . .]
->>
->>>> Here's host dmesg: https://bugzilla.kernel.org/attachment.cgi?id=119751
->>>>
->>>>>> Can you ftrace the failure?
->>>>
->>>> Can try, need some time (rest of the day I'll be away travelling,
->>>> will try to do it over the weekend, and update the Kernel
->>>> bugzilla with observations).
->>>>
->>>>>>
->>>>> Ugh, it looks like guest dmesg but there are KVM messages there too ("[
->>>>> 281.443662] kvm [2452]: vcpu0 unhandled rdmsr: 0xe8" is unhandled access
->>>>> to MSR_IA32_APERF I was talking about above), so I guess this is nested
->>>>> guest invocation? 
->>>>
->>>> Yeah -- sorry, I forgot to note it's in a nested environment :(
->>>>
->>>>> Does it happen in non nested guest?
->>>>
->>>> I need to that.
->>>>
->>>> Note to self: Also try with a newer Kernel on the host.
->>>
->>> Please try the patch I posted earlier today when you're at it:
->>>
->>> https://patchwork.kernel.org/patch/3411991/
->>
->> I applied the patch & tried to build the Kernel, it failed with:
->>
->> =======
->> .
->> .
->> .
->> Generating a 4096 bit RSA private key
->> ............................................................................................................drivers/cpufreq/intel_pstate.c:
->> In function 'intel_pstate_init_cpu':
->> drivers/cpufreq/intel_pstate.c:617:18: error: 'struct pstate_data' has no member named
->> 'current_state'
->>   if (!cpu->pstate.current_state) {
-> 
-> My bad, that should have been current_pstate.  Updated patch is appended.
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> ---
->  drivers/cpufreq/intel_pstate.c |    5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
->  	cpu = all_cpu_data[cpunum];
->  
->  	intel_pstate_get_cpu_pstates(cpu);
-> +	if (!cpu->pstate.current_pstate) {
-> +		all_cpu_data[cpunum] = NULL;
-> +		kfree(cpu);
-> +		return -ENODATA;
-> +	}
->  
->  	cpu->cpu = cpunum;
->  
-> 
+Yes, that's good. As you might have guessed by the lack of any response=
+, I won't be able to test this in 2013.
+
+Thanks for all the good work!
 
 
-Thanks Rafel, I can confirm this patch helps.
+Bj=C3=B8rn=20
 
-I re-built the Kernel on L0 (physical host) and L1 (guest hypervisor) with
-the above patch, and re-ran the libguestfs test (which invokes an L2 appliance),
-it now successfully completes:
+Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>On 27 December 2013 15:27, Viresh Kumar <viresh.kumar@linaro.org>
+>wrote:
+>> I think there is nothing much different in this patch compared to
+>what Bjorn
+>> tested. So you can probably push that now and let him test linux-nex=
+t
+>later
+>> once he is back?
+>
+>Just saw that you already pushed it. :)
 
-   http://kashyapc.fedorapeople.org/temp/libguestfs-test-tool-stdout.txt
-
-
-Here's a Fedora Kernel scratch build (not retained for more than 2 weeks)
-with the above patch I used -- http://koji.fedoraproject.org/koji/taskinfo?taskID=6342414
-
-
-
--- 
-/kashyap
