@@ -1,32 +1,52 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: how to know how long it takes on suspend/resume for platform
- usb driver
-Date: Tue, 31 Dec 2013 12:24:05 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1312311217470.4169-100000@netrider.rowland.org>
-References: <CANudz+v2LP5nUYa8gosm_sXdin7C4R3kP7xBT0C61yd2Zsd6mQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [GIT PULL] ARM : cpuidle: 3.13 fix
+Date: Tue, 31 Dec 2013 22:30:39 +0100
+Message-ID: <4735745.5h2OjxOOl8@vostro.rjw.lan>
+References: <52C15268.4050403@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:39306 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753931Ab3LaRYH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Dec 2013 12:24:07 -0500
-In-Reply-To: <CANudz+v2LP5nUYa8gosm_sXdin7C4R3kP7xBT0C61yd2Zsd6mQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52C15268.4050403@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Andre Przywara <andre.przywara@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: loody <miloody@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, 31 Dec 2013, loody wrote:
+On Monday, December 30, 2013 12:00:56 PM Daniel Lezcano wrote:
+> Hi Rafael,
+> 
+> this pull request provides a single fix for the calxeda cpuidle driver. 
+> It is based on v3.13-rc6.
+> 
+> * Andre Przywara fixed a compilation warning due to the driver probe 
+> function prototype mismatch for the calxeda cpuidle driver
+> 
+> Thanks
+>    -- Daniel
+> 
+> The following changes since commit 802eee95bde72fd0cd0f3a5b2098375a487d1eda:
+> 
+>    Linux 3.13-rc6 (2013-12-29 16:01:33 -0800)
+> 
+> are available in the git repository at:
+> 
+>    git://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/3.13-fixes
+> 
+> for you to fetch changes up to 5781532ebecd9e0b7b5fc25d78030bdec635f4ac:
+> 
+>    ARM/cpuidle: remove __init tag from Calxeda cpuidle probe function 
+> (2013-12-30 11:55:20 +0100)
+> 
+> ----------------------------------------------------------------
+> Andre Przywara (1):
+>        ARM/cpuidle: remove __init tag from Calxeda cpuidle probe function
+> 
+>   drivers/cpuidle/cpuidle-calxeda.c |    2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 
-> hi all:
-> I am implementing platform layer suspend/resume usb driver.
-> Is there kernel configuration or module parameter I can used to
-> calculate suspend/resume time spend?
+Pulled and pushed out (into the fixes branch).
 
-Turn on CONFIG_PM_SLEEP_DEBUG, and before starting your test, do
+Thanks and Happy New Year!
 
-	echo 1 >/sys/power/pm_print_times
-
-Alan Stern
-
+Rafael
