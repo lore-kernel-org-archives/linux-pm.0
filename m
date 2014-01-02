@@ -1,124 +1,55 @@
-From: jacob pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] intel_powerclamp: Fix cstate counter detection.
-Date: Thu, 2 Jan 2014 12:41:08 -0800
-Message-ID: <20140102124108.00007f41@unknown>
-References: <1384758395-5074-1-git-send-email-yshuiv7@gmail.com>
-	<528A3EC9.8060301@linux.intel.com>
-	<CAGqt0zw2wEM_4SqMA8tqzABe0M1-ZXxM6X3rh4OezfnS9-eXJg@mail.gmail.com>
-	<528B74C9.3010902@linux.intel.com>
-	<CAGqt0zzZpXpL7MfvfFWrxbChBfu30i_tcyCoavzMJsrPmg5AAw@mail.gmail.com>
-	<20131119103818.2cccaa93@ultegra>
-	<1388631812.3739.75.camel@rzhang1-mobl4>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v2] cpufreq: Fix timer/workqueue corruption by protecting
+ reading governor_enabled
+Date: Thu, 2 Jan 2014 15:26:38 -0800
+Message-ID: <20140102232638.GA21548@core.coreip.homeip.net>
+References: <1388632482-16921-1-git-send-email-jiel@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:40027 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515AbaABUlg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Jan 2014 15:41:36 -0500
-In-Reply-To: <1388631812.3739.75.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1388632482-16921-1-git-send-email-jiel@marvell.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: jiel@marvell.com
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Yuxuan Shui <yshuiv7@gmail.com>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@vger.kernel.org
 
-On Thu, 02 Jan 2014 11:03:32 +0800
-Zhang Rui <rui.zhang@intel.com> wrote:
+Hi Jane:
 
-> On Tue, 2013-11-19 at 10:38 -0800, Jacob Pan wrote:
-> > On Wed, 20 Nov 2013 02:09:12 +0800
-> > Yuxuan Shui <yshuiv7@gmail.com> wrote:
-> > 
-> > > On Tue, Nov 19, 2013 at 10:25 PM, Arjan van de Ven
-> > > <arjan@linux.intel.com> wrote:
-> > > > On 11/18/2013 9:29 PM, Yuxuan Shui wrote:
-> > > >>
-> > > >> On Tue, Nov 19, 2013 at 12:22 AM, Arjan van de Ven
-> > > >> <arjan@linux.intel.com> wrote:
-> > > >>>
-> > > >>> On 11/17/2013 11:06 PM, Yuxuan Shui wrote:
-> > > >>>>
-> > > >>>>
-> > > >>>> Having all zero cstate count doesn't necesserily mean the
-> > > >>>> cstate counter is no functional.
-> > > >>>>
-> > > >>>
-> > > >>> ... but it does mean that powerclamp will be non-functional
-> > > >>>
-> > > >>> but you had a reason to make this patch.
-> > > >>> Can you expand a little bit on what you were seeing that made
-> > > >>> you decide this patch was needed ?
-> > > >>>
-> > > >> There are possibilities that the system is busy from boot so
-> > > >> that it doesn't enter C-state at all, right? In that situation
-> > > >> powerclamp won't work.
-> > > >
-> > > >
-> > > >
-> > > > that is... extremely unlikely. Have you seen that happen?
-> > > 
-> > > Sure I've seen this, that's why I wrote this patch in the first
-> > > place. It's my (rather old) laptop. After boot powertop show zero
-> > > percent in C3 and C6, and powerclamp complaining pkg cstate
-> > > counter is not functional.
-> > > 
-> > I see, this is indeed a corner case where the sanity check by
-> > powerclamp driver is too strict and refused to load. I am OK with
-> > your patch and perhaps add a sanity check later while idle
-> > injection is in action?
-> > 
-> so do you want me to include this patch for 3.14?
-> 
-yes.
+On Thu, Jan 02, 2014 at 11:14:42AM +0800, jiel@marvell.com wrote:
+> @@ -119,8 +121,11 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>  {
+>  	int i;
+>  
+> -	if (!policy->governor_enabled)
+> +	mutex_lock(&cpufreq_governor_lock);
+> +	if (!policy->governor_enabled) {
+> +		mutex_unlock(&cpufreq_governor_lock);
+>  		return;
+> +	}
+>  
+>  	if (!all_cpus) {
+>  		/*
+> @@ -135,6 +140,7 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>  		for_each_cpu(i, policy->cpus)
+>  			__gov_queue_work(i, dbs_data, delay);
+>  	}
+> +	mutex_unlock(&cpufreq_governor_lock);
 
-Thanks,
+Unlocking in different branches is not the best practice IMO, I'd
+recommend doing:
 
-Jacob
-> thanks,
-> rui
-> 
-> > > >
-> > > >>
-> > > >> Also, pkg_state_counter is used to calculate a cstate ratio,
-> > > >> and I can't find any reason why powerclamp will be
-> > > >> non-funtional when that ratio is zero.
-> > > >
-> > > >
-> > > > if the counters we use are zero.. we can't use them in our
-> > > > control loop
-> > > 
-> > > I skimmed through the code. pkg_state_counter is called twice
-> > > (except that once in start_power_clamp). Once in poll_pkg_cstate
-> > > to calculate pkg_cstate_ratio_cur which is used for sysfs. The
-> > > other time is in powerclamp_adjust_controls, which is used to
-> > > calculate a ratio which is stored in a global variable
-> > > current_ratio.
-> > > 
-> > > The current_ratio is also used twice. Once in the same function,
-> > > to check if we have done enough idle injection. The other is in
-> > > adjust_compensation, where it's used to calculate a delta. In
-> > > neither case current_ratio being zero will matter.
-> > > 
-> > > Also, I'm using this patch myself, and it seems to be totally
-> > > functional.
-> > > 
-> > > So I failed to see why the counter can't be zero. If I made any
-> > > mistakes, can you point them out?
-> > > 
-> > 
-> > > >
-> > > > again, what were you actually seeing?
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe
-> > > linux-pm" in the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> > [Jacob Pan]
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> > in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+	mutex_lock(&cpufreq_governor_lock);
 
+	if (!policy->governor_enabled)
+		goto out_unlock;
+
+	...
+
+out_unlock:
+	mutex_unlock(&cpufreq_governor_lock);
+
+Thanks!
+
+-- 
+Dmitry
