@@ -1,44 +1,52 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH V2] thermal: imx: correct suspend/resume flow
-Date: Thu, 2 Jan 2014 10:16:03 +0800
-Message-ID: <20140102021601.GA15104@S2101-09.ap.freescale.net>
-References: <1387896204-31754-1-git-send-email-b20788@freescale.com>
- <1388628111.3739.68.camel@rzhang1-mobl4>
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH] thermal:samsung: fix compilation warning
+Date: Thu, 02 Jan 2014 10:27:37 +0800
+Message-ID: <1388629657.3739.69.camel@rzhang1-mobl4>
+References: <1387541527-4762-1-git-send-email-ch.naveen@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [65.55.88.15] ([65.55.88.15]:4289 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750732AbaABCQy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jan 2014 21:16:54 -0500
-Content-Disposition: inline
-In-Reply-To: <1388628111.3739.68.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1387541527-4762-1-git-send-email-ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Naveen Krishna Chatradhi <ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, naveenkrishna.ch-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, eduardo.valentin-l0cyMroinI0@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cpgs-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Anson Huang <b20788@freescale.com>, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jan 02, 2014 at 10:01:51AM +0800, Zhang Rui wrote:
-> On Tue, 2013-12-24 at 09:43 -0500, Anson Huang wrote:
-> > Fixes regression introduced by:
-> > 
-> > commit 37713a1e8e4c1a1067ad4c99296f78d3c82ed9c4
-> > Author: Philipp Zabel <p.zabel@pengutronix.de>
-> > Date:   Thu Aug 1 18:33:12 2013 +0200
-> > 
-> >     thermal: imx: implement thermal alarm interrupt handling
-> > 
-> > The commit 37713a1e8e4 makes imx thermal sensor always powered up as alarm
-> > function is enabled, but the suspend callback of imx thermal returns
-> > success only if thermal sensor is powered down, so it will always returns
-> > fail hence break system's suspend, this patch disables imx thermal sensor
-> > before suspend and re-enable it after resume.
-> > 
-> > Signed-off-by: Anson Huang <b20788@freescale.com>
+On Fri, 2013-12-20 at 17:42 +0530, Naveen Krishna Chatradhi wrote:
+> This patch fixes a compilation warning.
 > 
-> applied. BTW, this should also be a stable material for 3.12, right?
+> warning: passing argument 5 of 'thermal_zone_device_register' discards 'const'
+> qualifier from pointer target type [enabled by default]
+> include/linux/thermal.h:270:29: note: expected 'struct thermal_zone_device_ops *'
+> but argument is of type 'const struct thermal_zone_device_ops *'
+> 
+> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
-Right.  That would be great.  Thanks.
+applied.
 
-Shawn
+thanks,
+rui
+> ---
+>  drivers/thermal/samsung/exynos_thermal_common.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+> index c2301da..3f5ad25 100644
+> --- a/drivers/thermal/samsung/exynos_thermal_common.c
+> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
+> @@ -280,7 +280,7 @@ static int exynos_get_trend(struct thermal_zone_device *thermal,
+>  	return 0;
+>  }
+>  /* Operation callback functions for thermal zone */
+> -static struct thermal_zone_device_ops const exynos_dev_ops = {
+> +static struct thermal_zone_device_ops exynos_dev_ops = {
+>  	.bind = exynos_bind,
+>  	.unbind = exynos_unbind,
+>  	.get_temp = exynos_get_temp,
 
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
