@@ -1,120 +1,112 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
-Date: Thu, 2 Jan 2014 11:03:15 +0800
-Message-ID: <52C4D6F3.1040407@nvidia.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com> <52C4D513.50404@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] intel_powerclamp: Fix cstate counter detection.
+Date: Thu, 02 Jan 2014 11:03:32 +0800
+Message-ID: <1388631812.3739.75.camel@rzhang1-mobl4>
+References: <1384758395-5074-1-git-send-email-yshuiv7@gmail.com>
+	 <528A3EC9.8060301@linux.intel.com>
+	 <CAGqt0zw2wEM_4SqMA8tqzABe0M1-ZXxM6X3rh4OezfnS9-eXJg@mail.gmail.com>
+	 <528B74C9.3010902@linux.intel.com>
+	 <CAGqt0zzZpXpL7MfvfFWrxbChBfu30i_tcyCoavzMJsrPmg5AAw@mail.gmail.com>
+	 <20131119103818.2cccaa93@ultegra>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:19003 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbaABDCr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jan 2014 22:02:47 -0500
-In-Reply-To: <52C4D513.50404@gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:5779 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750958AbaABDDh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jan 2014 22:03:37 -0500
+In-Reply-To: <20131119103818.2cccaa93@ultegra>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Ni <wei.nee.1977@gmail.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>
-Cc: "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Yuxuan Shui <yshuiv7@gmail.com>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@vger.kernel.org
 
-Sorry, please ignore this mail.
-This is not my regularly mail address.
+On Tue, 2013-11-19 at 10:38 -0800, Jacob Pan wrote:
+> On Wed, 20 Nov 2013 02:09:12 +0800
+> Yuxuan Shui <yshuiv7@gmail.com> wrote:
+> 
+> > On Tue, Nov 19, 2013 at 10:25 PM, Arjan van de Ven
+> > <arjan@linux.intel.com> wrote:
+> > > On 11/18/2013 9:29 PM, Yuxuan Shui wrote:
+> > >>
+> > >> On Tue, Nov 19, 2013 at 12:22 AM, Arjan van de Ven
+> > >> <arjan@linux.intel.com> wrote:
+> > >>>
+> > >>> On 11/17/2013 11:06 PM, Yuxuan Shui wrote:
+> > >>>>
+> > >>>>
+> > >>>> Having all zero cstate count doesn't necesserily mean the cstate
+> > >>>> counter is no functional.
+> > >>>>
+> > >>>
+> > >>> ... but it does mean that powerclamp will be non-functional
+> > >>>
+> > >>> but you had a reason to make this patch.
+> > >>> Can you expand a little bit on what you were seeing that made you
+> > >>> decide this patch was needed ?
+> > >>>
+> > >> There are possibilities that the system is busy from boot so that
+> > >> it doesn't enter C-state at all, right? In that situation
+> > >> powerclamp won't work.
+> > >
+> > >
+> > >
+> > > that is... extremely unlikely. Have you seen that happen?
+> > 
+> > Sure I've seen this, that's why I wrote this patch in the first place.
+> > It's my (rather old) laptop. After boot powertop show zero percent in
+> > C3 and C6, and powerclamp complaining pkg cstate counter is not
+> > functional.
+> > 
+> I see, this is indeed a corner case where the sanity check by powerclamp
+> driver is too strict and refused to load. I am OK with your patch and
+> perhaps add a sanity check later while idle injection is in action?
+> 
+so do you want me to include this patch for 3.14?
 
-Thanks.
-Wei.
+thanks,
+rui
 
-On 01/02/2014 10:55 AM, Wei Ni wrote:
-> On 11/13/2013 03:46 AM, Eduardo Valentin wrote:
->> ....
->> +
->> +/**
->> + * of_parse_thermal_zones - parse device tree thermal data
->> + *
->> + * Initialization function that can be called by machine initialization
->> + * code to parse thermal data and populate the thermal framework
->> + * with hardware thermal zones info. This function only parses thermal zones.
->> + * Cooling devices and sensor devices nodes are supposed to be parsed
->> + * by their respective drivers.
->> + *
->> + * Return: 0 on success, proper error code otherwise
->> + *
->> + */
->> +int __init of_parse_thermal_zones(void)
->> +{
->> +	struct device_node *np, *child;
->> +	struct __thermal_zone *tz;
->> +	struct thermal_zone_device_ops *ops;
->> +
->> +	np = of_find_node_by_name(NULL, "thermal-zones");
->> +	if (!np) {
->> +		pr_debug("unable to find thermal zones\n");
->> +		return 0; /* Run successfully on systems without thermal DT */
->> +	}
->> +
->> +	for_each_child_of_node(np, child) {
->> +		struct thermal_zone_device *zone;
->> +		struct thermal_zone_params *tzp;
->> +
->> +		tz = thermal_of_build_thermal_zone(child);
->> +		if (IS_ERR(tz)) {
->> +			pr_err("failed to build thermal zone %s: %ld\n",
->> +			       child->name,
->> +			       PTR_ERR(tz));
->> +			continue;
->> +		}
->> +
->> +		ops = kmemdup(&of_thermal_ops, sizeof(*ops), GFP_KERNEL);
->> +		if (!ops)
->> +			goto exit_free;
->> +
->> +		tzp = kzalloc(sizeof(*tzp), GFP_KERNEL);
->> +		if (!tzp) {
->> +			kfree(ops);
->> +			goto exit_free;
->> +		}
->> +
->> +		/* No hwmon because there might be hwmon drivers registering */
->> +		tzp->no_hwmon = true;
+> > >
+> > >>
+> > >> Also, pkg_state_counter is used to calculate a cstate ratio, and I
+> > >> can't find any reason why powerclamp will be non-funtional when
+> > >> that ratio is zero.
+> > >
+> > >
+> > > if the counters we use are zero.. we can't use them in our control
+> > > loop
+> > 
+> > I skimmed through the code. pkg_state_counter is called twice (except
+> > that once in start_power_clamp). Once in poll_pkg_cstate to calculate
+> > pkg_cstate_ratio_cur which is used for sysfs. The other time is in
+> > powerclamp_adjust_controls, which is used to calculate a ratio which
+> > is stored in a global variable current_ratio.
+> > 
+> > The current_ratio is also used twice. Once in the same function, to
+> > check if we have done enough idle injection. The other is in
+> > adjust_compensation, where it's used to calculate a delta. In neither
+> > case current_ratio being zero will matter.
+> > 
+> > Also, I'm using this patch myself, and it seems to be totally
+> > functional.
+> > 
+> > So I failed to see why the counter can't be zero. If I made any
+> > mistakes, can you point them out?
+> > 
 > 
-> I think the platform driver may set the governor for the thermal zone,
-> so how about to add a property named as "governor",
-> and parse it to tzp->governor_name ?
-> something like:
->                 ret = of_property_read_string(child, "governor", &str);
->                 if (ret == 0)
->                         if (strlen(str) < THERMAL_NAME_LENGTH)
->                                 strcpy(tzp->governor_name, str);
+> > >
+> > > again, what were you actually seeing?
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> Thanks.
-> Wei.
-> 
->> +
->> +		zone = thermal_zone_device_register(child->name, tz->ntrips,
->> +						    0, tz,
->> +						    ops, tzp,
->> +						    tz->passive_delay,
->> +						    tz->polling_delay);
->> +		if (IS_ERR(zone)) {
->> +			pr_err("Failed to build %s zone %ld\n", child->name,
->> +			       PTR_ERR(zone));
->> +			kfree(tzp);
->> +			kfree(ops);
->> +			of_thermal_free_zone(tz);
->> +			/* attempting to build remaining zones still */
->> +		}
->> +	}
->> +
->> +	return 0;
->> +
->> +exit_free:
->> +	of_thermal_free_zone(tz);
->> +
->> +	/* no memory available, so free what we have built */
->> +	of_thermal_destroy_zones();
->> +
->> +	return -ENOMEM;
->> +}
->> +
->>
-> 
+> [Jacob Pan]
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 
