@@ -1,28 +1,93 @@
-From: Jane Li <jiel@marvell.com>
-Subject: Re: [PATCH] cpufreq: Fix timer/workqueue corruption by protecting
- reading governor_enabled
-Date: Thu, 2 Jan 2014 11:15:44 +0800
-Message-ID: <52C4D9E0.5070501@marvell.com>
-References: <1388136651-21883-1-git-send-email-jiel@marvell.com>	<CAKohpokWMgXotgKWFmqOPzdoZME=frBQOjeU1uFJwQ778DHAKg@mail.gmail.com>	<52C112CC.4040306@marvell.com> <CAKohpomwA0PHBvFiK+-i6LDHX8J_s2hfm4-ciKFB9DSS8q0Wdw@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/1] thermal: fix cpu_cooling max_level behavior
+Date: Thu, 02 Jan 2014 12:02:30 +0800
+Message-ID: <1388635350.3739.79.camel@rzhang1-mobl4>
+References: <1384366269-1655-1-git-send-email-eduardo.valentin@ti.com>
+	 <52A1D697.5030601@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomwA0PHBvFiK+-i6LDHX8J_s2hfm4-ciKFB9DSS8q0Wdw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:20759 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbaABECp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jan 2014 23:02:45 -0500
+In-Reply-To: <52A1D697.5030601@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
->> Yes, I test it. After adding cpufreq_governor_lock in gov_queue_work() and
->> running same test, there is no debugobjects warning.
-> But it really can't work at all.. There should be a separate copy of lock
-> in every file that includes cpufreq.h.. And so this shouldn't have worked.
->
-Oh.. I understand what you mean now. My patch is not right and cannot fix this issue.
+On Fri, 2013-12-06 at 09:52 -0400, Eduardo Valentin wrote:
+> On 13-11-2013 14:11, Eduardo Valentin wrote:
+> > As per Documentation/thermal/sysfs-api.txt, max_level
+> > is an index, not a counter. Thus, in case a CPU has
+> > 3 valid frequencies, max_level is expected to be 2, for instance.
+> > 
+> > The current code makes max_level == number of valid frequencies,
+> > which is bogus. This patch fix the cpu_cooling device by
+> > ranging max_level properly.
+> > 
+good catch.
+> > Reported-by: Carlos Hernandez <ceh@ti.com>
+> > Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> 
+> Rui,
+> 
+> Can you please consider pushing this fix?
+> 
+applied.
 
-By default, the debugobjects warning sometimes occurs after five minutes, and sometimes occurs after twenty hours. With this patch, I test more than fifty hours, and warning did not occurs. It shows that my test time is not long enough and miss the right one.
+> > ---
+> >  drivers/thermal/cpu_cooling.c | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> > index d179028..d0f8f8b5 100644
+> > --- a/drivers/thermal/cpu_cooling.c
+> > +++ b/drivers/thermal/cpu_cooling.c
+> > @@ -173,6 +173,8 @@ static int get_property(unsigned int cpu, unsigned long input,
+> >  		freq = table[i].frequency;
+> >  		max_level++;
+> >  	}
+> > +	/* max_level is an index, not a counter */
+> > +	max_level--;
+> >
+I think we should check the max_level first, like the patch I attached
+below.
+
+thanks,
+rui
+
+>From a116776f7b6052599df0c67db29c30ea9d69d7ee Mon Sep 17 00:00:00 2001
+From: Zhang Rui <rui.zhang@intel.com>
+Date: Thu, 2 Jan 2014 11:57:48 +0800
+Subject: [PATCH] Thermal cpu cooling: return error if no valid cpu frequency
+ entry
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/cpu_cooling.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index cc556a8..bb486b4 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -173,6 +173,11 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 		freq = table[i].frequency;
+ 		max_level++;
+ 	}
++
++	/* No valid cpu frequency entry */
++	if (max_level == 0)
++		return -EINVAL;
++
+ 	/* max_level is an index, not a counter */
+ 	max_level--;
+ 
+-- 
+1.7.9.5
 
 
-I have updated PATCH v2, please review again. Thanks.
 
