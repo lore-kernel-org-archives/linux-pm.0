@@ -1,68 +1,112 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: clk_round_rate() can return a
- zero upon error
-Date: Thu, 02 Jan 2014 10:51:08 +0800
-Message-ID: <1388631068.3739.73.camel@rzhang1-mobl4>
-References: <alpine.DEB.2.02.1312091803260.4127@tamien>
+From: Wei Ni <wei.nee.1977@gmail.com>
+Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
+Date: Thu, 02 Jan 2014 10:55:15 +0800
+Message-ID: <52C4D513.50404@gmail.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:64423 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbaABCvO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Jan 2014 21:51:14 -0500
-In-Reply-To: <alpine.DEB.2.02.1312091803260.4127@tamien>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:61820 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829AbaABCyx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jan 2014 21:54:53 -0500
+In-Reply-To: <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Walmsley <pwalmsley@nvidia.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com
+Cc: wni@nvidia.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
 
-On Mon, 2013-12-09 at 18:09 -0800, Paul Walmsley wrote:
-> Treat both negative and zero return values from clk_round_rate() as
-> errors.  This is needed since subsequent patches will convert
-> clk_round_rate()'s return value to be an unsigned type, rather than a
-> signed type, since some clock sources can generate rates higher than
-> (2^31)-1 Hz.
-> 
-> Eventually, when calling clk_round_rate(), only a return value of zero
-> will be considered a error.  All other values will be considered valid
-> rates.  The comparison against values less than 0 is kept to preserve
-> the correct behavior in the meantime.
-> 
-> This patch also gets rid of a comparison between unsigned and signed 
-> values; a side-benefit.
-> 
-> Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
-> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
+On 11/13/2013 03:46 AM, Eduardo Valentin wrote:
+> ....
+> +
+> +/**
+> + * of_parse_thermal_zones - parse device tree thermal data
+> + *
+> + * Initialization function that can be called by machine initialization
+> + * code to parse thermal data and populate the thermal framework
+> + * with hardware thermal zones info. This function only parses thermal zones.
+> + * Cooling devices and sensor devices nodes are supposed to be parsed
+> + * by their respective drivers.
+> + *
+> + * Return: 0 on success, proper error code otherwise
+> + *
+> + */
+> +int __init of_parse_thermal_zones(void)
+> +{
+> +	struct device_node *np, *child;
+> +	struct __thermal_zone *tz;
+> +	struct thermal_zone_device_ops *ops;
+> +
+> +	np = of_find_node_by_name(NULL, "thermal-zones");
+> +	if (!np) {
+> +		pr_debug("unable to find thermal zones\n");
+> +		return 0; /* Run successfully on systems without thermal DT */
+> +	}
+> +
+> +	for_each_child_of_node(np, child) {
+> +		struct thermal_zone_device *zone;
+> +		struct thermal_zone_params *tzp;
+> +
+> +		tz = thermal_of_build_thermal_zone(child);
+> +		if (IS_ERR(tz)) {
+> +			pr_err("failed to build thermal zone %s: %ld\n",
+> +			       child->name,
+> +			       PTR_ERR(tz));
+> +			continue;
+> +		}
+> +
+> +		ops = kmemdup(&of_thermal_ops, sizeof(*ops), GFP_KERNEL);
+> +		if (!ops)
+> +			goto exit_free;
+> +
+> +		tzp = kzalloc(sizeof(*tzp), GFP_KERNEL);
+> +		if (!tzp) {
+> +			kfree(ops);
+> +			goto exit_free;
+> +		}
+> +
+> +		/* No hwmon because there might be hwmon drivers registering */
+> +		tzp->no_hwmon = true;
 
-Eduardo,
+I think the platform driver may set the governor for the thermal zone,
+so how about to add a property named as "governor",
+and parse it to tzp->governor_name ?
+something like:
+                ret = of_property_read_string(child, "governor", &str);
+                if (ret == 0)
+                        if (strlen(str) < THERMAL_NAME_LENGTH)
+                                strcpy(tzp->governor_name, str);
 
-will you take this patch?
+Thanks.
+Wei.
 
-thanks,
-rui
-> ---
-> Applies on v3.13-rc3.  See also:
-> 
-> http://marc.info/?l=linux-arm-kernel&m=138542591313620&w=2
-> 
->   drivers/thermal/ti-soc-thermal/ti-bandgap.c |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> index 74c0e3474d6e..8fe46dbc0c6f 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> @@ -1248,7 +1248,7 @@ int ti_bandgap_probe(struct platform_device *pdev)
->   	clk_rate = clk_round_rate(bgp->div_clk,
->   				  bgp->conf->sensors[0].ts_data->max_freq);
->   	if (clk_rate < bgp->conf->sensors[0].ts_data->min_freq ||
-> -	    clk_rate == 0xffffffff) {
-> +	    clk_rate <= 0) {
->   		ret = -ENODEV;
->   		dev_err(&pdev->dev, "wrong clock rate (%d)\n", clk_rate);
->   		goto put_clks;
-
+> +
+> +		zone = thermal_zone_device_register(child->name, tz->ntrips,
+> +						    0, tz,
+> +						    ops, tzp,
+> +						    tz->passive_delay,
+> +						    tz->polling_delay);
+> +		if (IS_ERR(zone)) {
+> +			pr_err("Failed to build %s zone %ld\n", child->name,
+> +			       PTR_ERR(zone));
+> +			kfree(tzp);
+> +			kfree(ops);
+> +			of_thermal_free_zone(tz);
+> +			/* attempting to build remaining zones still */
+> +		}
+> +	}
+> +
+> +	return 0;
+> +
+> +exit_free:
+> +	of_thermal_free_zone(tz);
+> +
+> +	/* no memory available, so free what we have built */
+> +	of_thermal_destroy_zones();
+> +
+> +	return -ENOMEM;
+> +}
+> +
+>
 
