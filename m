@@ -1,73 +1,163 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Fri, 03 Jan 2014 12:55:29 +0100
-Message-ID: <87wqihmg9a.fsf@nemi.mork.no>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-	<5562479.pVWRuDL0y6@vostro.rjw.lan> <87zjne7f75.fsf@nemi.mork.no>
-	<2302938.b8tymqrMEz@vostro.rjw.lan> <878uuxquxu.fsf@nemi.mork.no>
-	<871u0po0gx.fsf@nemi.mork.no>
-	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
+From: Michal Marek <mmarek@suse.cz>
+Subject: Re: [PATCH resend] scripts: Coccinelle script for pm_runtime_* return
+ checks with IS_ERR_VALUE
+Date: Fri, 03 Jan 2014 13:57:44 +0100
+Message-ID: <52C6B3C8.7040509@suse.cz>
+References: <1385991581-16843-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
-	(Viresh Kumar's message of "Fri, 3 Jan 2014 16:49:17 +0530")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:57818 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbaACM5s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 3 Jan 2014 07:57:48 -0500
+In-Reply-To: <1385991581-16843-1-git-send-email-nm@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>, Julia.Lawall@lip6.fr, Gilles.Muller@lip6.fr, nicolas.palix@imag.fr
+Cc: linux-kernel@vger.kernel.org, cocci@systeme.lip6.fr, linux-pm@vger.kernel.org, Sekhar Nori <nsekhar@ti.com>, Russell King <rmk+kernel@arm.linux.org.uk>
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+On 2013-12-02 14:39, Nishanth Menon wrote:
+> As indicated by Sekhar in [1], there seems to be a tendency to use
+> IS_ERR_VALUE to check the error result for pm_runtime_* functions which
+> make no sense considering commit c48cd65 (ARM: OMAP: use consistent
+> error checking) - the error values can either be < 0 for error OR
+> 0, 1 in cases where we have success.
+> 
+> So, setup a coccinelle script to help identify the same.
 
-> On 3 January 2014 15:23, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
->> Note that "ondemand" and "1401000" are the default vaules, so I don'=
-t
->> actually change anything here.  The write is causing the problem, no=
-t
->> the value.  As expected, I guess.
->>
->> Also note that boot vs non-boot cpu doesn't seem to matter.  Nor doe=
-s
->> cancelling the hibernation.  The warning appears on hibernate - not =
-on
->> resume.
->
-> Hmm... I spent quite some time understanding whats going on and reall=
-y
-> couldn't get across anything as of now. I haven't tried reproducing i=
-t though.
->
-> Few things that I can make out of this mail chain so far:
-> - Apart from the log, everything is working fine. i.e. system is back=
- in
-> working condition.
+Julia, Gilles, do you have any objections to this semantic patch?
 
-Correct. And users not running a lock debugging kernel will of course
-not even see the warning.
+Thanks,
+Michal
+> 
+> [1] http://marc.info/?t=138472678100003&r=1&w=2
+> 
+> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+> Reported-by: Sekhar Nori <nsekhar@ti.com>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+> Original post: http://marc.info/?t=138559437300001&r=1&w=2
+> 
+>  scripts/coccinelle/api/pm_runtime.cocci |  109 +++++++++++++++++++++++++++++++
+>  1 file changed, 109 insertions(+)
+>  create mode 100644 scripts/coccinelle/api/pm_runtime.cocci
+> 
+> diff --git a/scripts/coccinelle/api/pm_runtime.cocci b/scripts/coccinelle/api/pm_runtime.cocci
+> new file mode 100644
+> index 0000000..f01789e
+> --- /dev/null
+> +++ b/scripts/coccinelle/api/pm_runtime.cocci
+> @@ -0,0 +1,109 @@
+> +/// Make sure pm_runtime_* calls does not use unnecessary IS_ERR_VALUE
+> +//
+> +// Keywords: pm_runtime
+> +// Confidence: Medium
+> +// Copyright (C) 2013 Texas Instruments Incorporated - GPLv2.
+> +// URL: http://coccinelle.lip6.fr/
+> +// Options: --include-headers
+> +
+> +virtual patch
+> +virtual context
+> +virtual org
+> +virtual report
+> +
+> +//----------------------------------------------------------
+> +//  Detection
+> +//----------------------------------------------------------
+> +
+> +@runtime_bad_err_handle exists@
+> +expression ret;
+> +@@
+> +(
+> +ret = \(pm_runtime_idle\|
+> +	pm_runtime_suspend\|
+> +	pm_runtime_autosuspend\|
+> +	pm_runtime_resume\|
+> +	pm_request_idle\|
+> +	pm_request_resume\|
+> +	pm_request_autosuspend\|
+> +	pm_runtime_get\|
+> +	pm_runtime_get_sync\|
+> +	pm_runtime_put\|
+> +	pm_runtime_put_autosuspend\|
+> +	pm_runtime_put_sync\|
+> +	pm_runtime_put_sync_suspend\|
+> +	pm_runtime_put_sync_autosuspend\|
+> +	pm_runtime_set_active\|
+> +	pm_schedule_suspend\|
+> +	pm_runtime_barrier\|
+> +	pm_generic_runtime_suspend\|
+> +	pm_generic_runtime_resume\)(...);
+> +...
+> +IS_ERR_VALUE(ret)
+> +...
+> +)
+> +
+> +//----------------------------------------------------------
+> +//  For context mode
+> +//----------------------------------------------------------
+> +
+> +@depends on runtime_bad_err_handle && context@
+> +identifier pm_runtime_api;
+> +expression ret;
+> +@@
+> +(
+> +ret = pm_runtime_api(...);
+> +...
+> +* IS_ERR_VALUE(ret)
+> +...
+> +)
+> +
+> +//----------------------------------------------------------
+> +//  For patch mode
+> +//----------------------------------------------------------
+> +
+> +@depends on runtime_bad_err_handle && patch@
+> +identifier pm_runtime_api;
+> +expression ret;
+> +@@
+> +(
+> +ret = pm_runtime_api(...);
+> +...
+> +- IS_ERR_VALUE(ret)
+> ++ ret < 0
+> +...
+> +)
+> +
+> +//----------------------------------------------------------
+> +//  For org and report mode
+> +//----------------------------------------------------------
+> +
+> +@r depends on runtime_bad_err_handle exists@
+> +position p1, p2;
+> +identifier pm_runtime_api;
+> +expression ret;
+> +@@
+> +(
+> +ret = pm_runtime_api@p1(...);
+> +...
+> +IS_ERR_VALUE@p2(ret)
+> +...
+> +)
+> +
+> +@script:python depends on org@
+> +p1 << r.p1;
+> +p2 << r.p2;
+> +pm_runtime_api << r.pm_runtime_api;
+> +@@
+> +
+> +cocci.print_main(pm_runtime_api,p1)
+> +cocci.print_secs("IS_ERR_VALUE",p2)
+> +
+> +@script:python depends on report@
+> +p1 << r.p1;
+> +p2 << r.p2;
+> +pm_runtime_api << r.pm_runtime_api;
+> +@@
+> +
+> +msg = "%s returns < 0 as error. Unecessary IS_ERR_VALUE at line %s" % (pm_runtime_api, p2[0].line)
+> +coccilib.report.print_report(p1[0],msg)
+> 
 
-> - It only happens when cpufreq_add_dev() fails during hibernation whi=
-le
-> we enable non-boot CPUs again to save image to disk. So, isn't a prob=
-lem
-> for a system which doesn't have any issues with add_dev() failing on
-> hibernation
-
-Wrong.  This was my initial assumption but I later found out that the
-issue is unrelated to hibernation failures.  Sorry about the confusion.
-
-> - There is a contention of locks in the order they are taken. And the=
- contention
-> looks to be between, hotplug lock taken by cpu_online_cpus() and s_ac=
-tive
-> lock for sysfs files. Don't know what's the role of previous write to
-> sysfs files.
-> As that should finish before hibernation starts and so all locks shou=
-ld be back
-> in place.
-
-Yes, that seems logical.  But I guess this is where it fails?
-
-
-
-Bj=C3=B8rn
