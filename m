@@ -1,82 +1,56 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Fri, 03 Jan 2014 12:00:01 -0800
-Message-ID: <52C716C1.6070704@gmail.com>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan> <52C18A23.10703@redhat.com> <3710588.K8glfx1cYs@vostro.rjw.lan> <52C6F3B4.3050904@gmail.com> <20140103180435.GK10961@minantech.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v2] Documentation/cpu-freq: add intel-pstate.txt
+Date: Fri, 03 Jan 2014 12:50:47 -0800
+Message-ID: <52C722A7.5070001@infradead.org>
+References: <1388777026-12227-1-git-send-email-artagnon@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:40434 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438AbaACT77 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jan 2014 14:59:59 -0500
-In-Reply-To: <20140103180435.GK10961@minantech.com>
+Received: from merlin.infradead.org ([205.233.59.134]:55052 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753478AbaACUuu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jan 2014 15:50:50 -0500
+In-Reply-To: <1388777026-12227-1-git-send-email-artagnon@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gleb Natapov <gleb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+To: Ramkumar Ramachandra <artagnon@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
 
-On 01/03/2014 10:04 AM, Gleb Natapov wrote:
-> On Fri, Jan 03, 2014 at 09:30:28AM -0800, Dirk Brandewie wrote:
->> Hi All,
->>
->> Sorry for being late to the party but I just got back from vacation.
->>
->> There is something deeply wrong here.  We should have never gotten to
->> intel_pstate_init_cpu().  The VM had to have returned value from the read
->> of the max pstate at driver init time and 0 when the CPU was being brought up.
->>
->> intel_pstate_msrs_not_valid() was added to solve this issue early on
->> if I remember correctly it was Josh that reported it then.  Is there
->> a definative way to detect whether we are running in a VM?
->>
-> Checking for VM is a wrong thing to do here. KVM should behave like it
-> does not support p-state.
->
->> Can some one tell me how the nested environment differs in regards to
->> reading MSRs?
->>
-> It shouldn't differ, but there may be bug somewhere in nested emulation.
-> We shouldn't try and hind the bug by doing more checks in Linux but
-> rather fixing KVM bug that causes Linux to behave incorrectly.
+On 01/03/14 11:23, Ramkumar Ramachandra wrote:
+> 
+>  Documentation/cpu-freq/intel-pstate.txt | 40 +++++++++++++++++++++++++++++++++
+>  1 file changed, 40 insertions(+)
+>  create mode 100644 Documentation/cpu-freq/intel-pstate.txt
+> 
+> diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
+> new file mode 100644
+> index 0000000..69bc26a
+> --- /dev/null
+> +++ b/Documentation/cpu-freq/intel-pstate.txt
+> @@ -0,0 +1,40 @@
+> +Intel P-state driver
+> +--------------------
+> +
+> +This driver implements a scaling driver with an internal governor for
+> +Intel Core processors.  The driver follows the same model as the
+> +Transmeta scaling driver (longrun.c) and implements the setpolicy()
+> +instead of target().  Scaling drivers that implement setpolicy() are
+> +assmumed to implement internal governors by the cpufreq core. All the
 
-Based on the unhandled MSR messages in the host dmesg the following patch
-should make sure the correct values are returned for PLAT_FORM_INFO, APERF
-and MPERF.  intel_pstate and turbostat are the only users of these registers.
+   assumed
 
-Could you try the folloinw patch minus Rafael's patch please.
-Compile tested only.
+Fix that and then you can add:
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
 
-TIA
---Dirk
+Thanks.
 
-commit 5594b89bee7f83200c1a70bf95d50ac35e4fe3f8
-Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
-Date:   Fri Jan 3 11:44:15 2014 -0800
+> +logic for selecting the current P state is contained within the
+> +driver; no external governor is used by the cpufreq core.
+> +
+> +Intel SandyBridge+ processors are supported.
 
-     x86/kvm: Handle MSR_PLATFORM_INFO, MSR_IA32_MPERF and MSR_IA32_APERF MSRs
 
-     Handle MSRs correctly when read from a nested KVM
 
-     Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
-  arch/x86/kvm/x86.c | 3 +++
-  1 file changed, 3 insertions(+)
-
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 5d004da..390ef27 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2336,6 +2336,9 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 
-*pdata)
-
-  	switch (msr) {
-  	case MSR_IA32_PLATFORM_ID:
-+	case MSR_IA32_MPERF:
-+	case MSR_IA32_APERF:
-+	case MSR_PLATFORM_INFO:
-  	case MSR_IA32_EBL_CR_POWERON:
-  	case MSR_IA32_DEBUGCTLMSR:
-  	case MSR_IA32_LASTBRANCHFROMIP:
-
+-- 
+~Randy
