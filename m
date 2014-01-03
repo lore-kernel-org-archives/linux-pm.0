@@ -1,48 +1,104 @@
-From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
-Subject: RE: [PATCH V3 2/2] cpufreq: imx6q: correct VDDSOC/PU voltage
- scaling when cpufreq is changed
-Date: Fri, 3 Jan 2014 09:52:22 +0000
-Message-ID: <67c8e04574694cf59625e95fa1a65332@BY2PR03MB315.namprd03.prod.outlook.com>
-References: <1387402010-31749-1-git-send-email-b20788@freescale.com>
- <1387402010-31749-2-git-send-email-b20788@freescale.com>
- <20131218142536.GM6691@S2101-09.ap.freescale.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4] cpufreq: Fix timer/workqueue corruption by protecting
+ reading governor_enabled
+Date: Fri, 3 Jan 2014 15:40:16 +0530
+Message-ID: <CAKohpo=osvNc0rKEsawCE9nggCQdGr7bgT+D8=KhkgpnAyXXaw@mail.gmail.com>
+References: <1388740661-15011-1-git-send-email-jiel@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2lp0205.outbound.protection.outlook.com ([207.46.163.205]:12841
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751751AbaACJwi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 Jan 2014 04:52:38 -0500
-In-Reply-To: <20131218142536.GM6691@S2101-09.ap.freescale.net>
-Content-Language: en-US
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:50788 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbaACKKR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jan 2014 05:10:17 -0500
+Received: by mail-oa0-f43.google.com with SMTP id i7so15907332oag.2
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jan 2014 02:10:16 -0800 (PST)
+In-Reply-To: <1388740661-15011-1-git-send-email-jiel@marvell.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Jane Li <jiel@marvell.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-UGluZy4uLg0KDQpCZXN0IFJlZ2FyZHMuDQpBbnNvbiBodWFuZyDpu4Tli4fmiY0NCsKgDQpGcmVl
-c2NhbGUgU2VtaWNvbmR1Y3RvciBTaGFuZ2hhaQ0K5LiK5rW35rWm5Lic5paw5Yy65Lqu5pmv6Lev
-MTky5Y+3QeW6pzLmpbwNCjIwMTIwMw0KVGVsOjAyMS0yODkzNzA1OA0KDQoNCj4tLS0tLU9yaWdp
-bmFsIE1lc3NhZ2UtLS0tLQ0KPkZyb206IFNoYXduIEd1byBbbWFpbHRvOnNoYXduLmd1b0BsaW5h
-cm8ub3JnXQ0KPlNlbnQ6IFdlZG5lc2RheSwgRGVjZW1iZXIgMTgsIDIwMTMgMTA6MjYgUE0NCj5U
-bzogSHVhbmcgWW9uZ2NhaS1CMjA3ODgNCj5DYzogcmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaC5r
-dW1hckBsaW5hcm8ub3JnOyBjcHVmcmVxQHZnZXIua2VybmVsLm9yZzsNCj5saW51eC1wbUB2Z2Vy
-Lmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj5kZXZp
-Y2V0cmVlQHZnZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUEFUQ0ggVjMgMi8yXSBjcHVm
-cmVxOiBpbXg2cTogY29ycmVjdCBWRERTT0MvUFUgdm9sdGFnZSBzY2FsaW5nDQo+d2hlbiBjcHVm
-cmVxIGlzIGNoYW5nZWQNCj4NCj5PbiBXZWQsIERlYyAxOCwgMjAxMyBhdCAwNDoyNjo1MFBNIC0w
-NTAwLCBBbnNvbiBIdWFuZyB3cm90ZToNCj4+IG9uIGkuTVg2USwgY3B1IGZyZXEgY2hhbmdlIG5l
-ZWQgdG8gZm9sbG93IGJlbG93IGZsb3dzOg0KPj4NCj4+IDEuIGVhY2ggc2V0cG9pbnQgaGFzIGRp
-ZmZlcmVudCBWRERBUk0sIFZERFNPQy9QVSB2b2x0YWdlLCBnZXQgdGhlIHNldHBvaW50DQo+PiAg
-ICB0YWJsZSBmcm9tIGR0czsNCj4+IDIuIHdoZW4gY3B1IGZyZXEgaXMgc2NhbGluZyB1cCwgbmVl
-ZCB0byBpbmNyZWFzZSBWRERTT0MvUFUgdm9sdGFnZSBiZWZvcmUNCj4+ICAgIFZEREFSTSwgaWYg
-VkREUFUgaXMgb2ZmLCBubyBuZWVkIHRvIGNoYW5nZSBpdDsgMy4gd2hlbiBjcHUgZnJlcSBpcw0K
-Pj4gc2NhbGluZyBkb3duLCBuZWVkIHRvIGRlY3JlYXNlIFZEREFSTSB2b2x0YWdlIGJlZm9yZQ0K
-Pj4gICAgVkREU09DL1BVLCBpZiBWRERQVSBpcyBvZmYsIG5vIG5lZWQgdG8gY2hhbmdlIGl0Ow0K
-Pj4NCj4+IG5vcm1hbGx5IGR0cyB3aWxsIHBhc3MgdmRkc29jL3B1IGZyZXEvdm9sdCBpbmZvIHRv
-IGtlcm5lbCwgaWYgbm90LA0KPj4gd2lsbCB1c2UgZml4ZWQgdmFsdWUgZm9yIHZkZHNvYy9wdSB2
-b2x0YWdlIHNldHRpbmcuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPGIyMDc4
-OEBmcmVlc2NhbGUuY29tPg0KPg0KPkFja2VkLWJ5OiBTaGF3biBHdW8gPHNoYXduLmd1b0BsaW5h
-cm8ub3JnPg0KDQo=
+On 3 January 2014 14:47,  <jiel@marvell.com> wrote:
+> From: Jane Li <jiel@marvell.com>
+>
+> When a CPU is hot removed we'll cancel all the delayed work items via
+> gov_cancel_work(). Sometimes the delayed work function determines that
+> it should adjust the delay for all other CPUs that the policy is
+> managing. If this scenario occurs, the canceling CPU will cancel its own
+> work but queue up the other CPUs works to run.
+>
+> Commit 3617f2(cpufreq: Fix timer/workqueue corruption due to double
+> queueing) has tried to fix this, but reading governor_enabled is not
+> protected by cpufreq_governor_lock. Even though od_dbs_timer() checks
+> governor_enabled before gov_queue_work(), this scenario may occur. For
+> example:
+>
+>  CPU0                                        CPU1
+>  ----                                        ----
+>  cpu_down()
+>   ...                                        <work runs>
+>   __cpufreq_remove_dev()                     od_dbs_timer()
+>    __cpufreq_governor()                       policy->governor_enabled
+>     policy->governor_enabled = false;
+>     cpufreq_governor_dbs()
+>      case CPUFREQ_GOV_STOP:
+>       gov_cancel_work(dbs_data, policy);
+>        cpu0 work is canceled
+>         timer is canceled
+>         cpu1 work is canceled
+>         <waits for cpu1>
+>                                               gov_queue_work(*, *, true);
+>                                                cpu0 work queued
+>                                                cpu1 work queued
+>                                                cpu2 work queued
+>                                                ...
+>         cpu1 work is canceled
+>         cpu2 work is canceled
+>         ...
+>
+> At the end of the GOV_STOP case cpu0 still has a work queued to
+> run although the code is expecting all of the works to be
+> canceled. __cpufreq_remove_dev() will then proceed to
+> re-initialize all the other CPUs works except for the CPU that is
+> going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
+> will trample over the queued work and debugobjects will spit out
+> a warning:
+>
+> WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
+> ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x14
+> Modules linked in:
+> CPU: 1 PID: 1205 Comm: sh Tainted: G        W    3.10.0 #200
+> [<c01144f0>] (unwind_backtrace+0x0/0xf8) from [<c0111d98>] (show_stack+0x10/0x14)
+> [<c0111d98>] (show_stack+0x10/0x14) from [<c01272cc>] (warn_slowpath_common+0x4c/0x68)
+> [<c01272cc>] (warn_slowpath_common+0x4c/0x68) from [<c012737c>] (warn_slowpath_fmt+0x30/0x40)
+> [<c012737c>] (warn_slowpath_fmt+0x30/0x40) from [<c034c640>] (debug_print_object+0x94/0xbc)
+> [<c034c640>] (debug_print_object+0x94/0xbc) from [<c034c7f8>] (__debug_object_init+0xc8/0x3c0)
+> [<c034c7f8>] (__debug_object_init+0xc8/0x3c0) from [<c01360e0>] (init_timer_key+0x20/0x104)
+> [<c01360e0>] (init_timer_key+0x20/0x104) from [<c04872ac>] (cpufreq_governor_dbs+0x1dc/0x68c)
+> [<c04872ac>] (cpufreq_governor_dbs+0x1dc/0x68c) from [<c04833a8>] (__cpufreq_governor+0x80/0x1b0)
+> [<c04833a8>] (__cpufreq_governor+0x80/0x1b0) from [<c0483704>] (__cpufreq_remove_dev.isra.12+0x22c/0x380)
+> [<c0483704>] (__cpufreq_remove_dev.isra.12+0x22c/0x380) from [<c0692f38>] (cpufreq_cpu_callback+0x48/0x5c)
+> [<c0692f38>] (cpufreq_cpu_callback+0x48/0x5c) from [<c014fb40>] (notifier_call_chain+0x44/0x84)
+> [<c014fb40>] (notifier_call_chain+0x44/0x84) from [<c012ae44>] (__cpu_notify+0x2c/0x48)
+> [<c012ae44>] (__cpu_notify+0x2c/0x48) from [<c068dd40>] (_cpu_down+0x80/0x258)
+> [<c068dd40>] (_cpu_down+0x80/0x258) from [<c068df40>] (cpu_down+0x28/0x3c)
+> [<c068df40>] (cpu_down+0x28/0x3c) from [<c068e4c0>] (store_online+0x30/0x74)
+> [<c068e4c0>] (store_online+0x30/0x74) from [<c03a7308>] (dev_attr_store+0x18/0x24)
+> [<c03a7308>] (dev_attr_store+0x18/0x24) from [<c0256fe0>] (sysfs_write_file+0x100/0x180)
+> [<c0256fe0>] (sysfs_write_file+0x100/0x180) from [<c01fec9c>] (vfs_write+0xbc/0x184)
+> [<c01fec9c>] (vfs_write+0xbc/0x184) from [<c01ff034>] (SyS_write+0x40/0x68)
+> [<c01ff034>] (SyS_write+0x40/0x68) from [<c010e200>] (ret_fast_syscall+0x0/0x48)
+>
+> In gov_queue_work(), lock cpufreq_governor_lock before gov_queue_work,
+> and unlock it after __gov_queue_work(). In this way, governor_enabled
+> is guaranteed not changed in gov_queue_work().
+>
+> Signed-off-by: Jane Li <jiel@marvell.com>
+> ---
+>  drivers/cpufreq/cpufreq.c          |    2 +-
+>  drivers/cpufreq/cpufreq_governor.c |    6 +++++-
+>  drivers/cpufreq/cpufreq_governor.h |    2 ++
+>  3 files changed, 8 insertions(+), 2 deletions(-)
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
