@@ -1,50 +1,48 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 2/3] cpufreq: s3c2440: Staticize local variables
-Date: Fri,  3 Jan 2014 14:57:36 +0530
-Message-ID: <1388741257-26438-2-git-send-email-sachin.kamat@linaro.org>
-References: <1388741257-26438-1-git-send-email-sachin.kamat@linaro.org>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
+Subject: RE: [PATCH V3 2/2] cpufreq: imx6q: correct VDDSOC/PU voltage
+ scaling when cpufreq is changed
+Date: Fri, 3 Jan 2014 09:52:22 +0000
+Message-ID: <67c8e04574694cf59625e95fa1a65332@BY2PR03MB315.namprd03.prod.outlook.com>
+References: <1387402010-31749-1-git-send-email-b20788@freescale.com>
+ <1387402010-31749-2-git-send-email-b20788@freescale.com>
+ <20131218142536.GM6691@S2101-09.ap.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:62357 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbaACJb1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jan 2014 04:31:27 -0500
-Received: by mail-pa0-f46.google.com with SMTP id kp14so13598726pab.19
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jan 2014 01:31:27 -0800 (PST)
-In-Reply-To: <1388741257-26438-1-git-send-email-sachin.kamat@linaro.org>
+Received: from mail-bl2lp0205.outbound.protection.outlook.com ([207.46.163.205]:12841
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751751AbaACJwi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 3 Jan 2014 04:52:38 -0500
+In-Reply-To: <20131218142536.GM6691@S2101-09.ap.freescale.net>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, sachin.kamat@linaro.org, patches@linaro.org
+To: Shawn Guo <shawn.guo@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Local variables used only in this file are made static.
-
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/cpufreq/s3c2440-cpufreq.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/s3c2440-cpufreq.c b/drivers/cpufreq/s3c2440-cpufreq.c
-index 717ef04ec90e..f84ed10755b5 100644
---- a/drivers/cpufreq/s3c2440-cpufreq.c
-+++ b/drivers/cpufreq/s3c2440-cpufreq.c
-@@ -53,7 +53,7 @@ static inline int within_khz(unsigned long a, unsigned long b)
-  * specified in @cfg. The values are stored in @cfg for later use
-  * by the relevant set routine if the request settings can be reached.
-  */
--int s3c2440_cpufreq_calcdivs(struct s3c_cpufreq_config *cfg)
-+static int s3c2440_cpufreq_calcdivs(struct s3c_cpufreq_config *cfg)
- {
- 	unsigned int hdiv, pdiv;
- 	unsigned long hclk, fclk, armclk;
-@@ -240,7 +240,7 @@ static int s3c2440_cpufreq_calctable(struct s3c_cpufreq_config *cfg,
- 	return ret;
- }
- 
--struct s3c_cpufreq_info s3c2440_cpufreq_info = {
-+static struct s3c_cpufreq_info s3c2440_cpufreq_info = {
- 	.max		= {
- 		.fclk	= 400000000,
- 		.hclk	= 133333333,
--- 
-1.7.9.5
-
+UGluZy4uLg0KDQpCZXN0IFJlZ2FyZHMuDQpBbnNvbiBodWFuZyDpu4Tli4fmiY0NCsKgDQpGcmVl
+c2NhbGUgU2VtaWNvbmR1Y3RvciBTaGFuZ2hhaQ0K5LiK5rW35rWm5Lic5paw5Yy65Lqu5pmv6Lev
+MTky5Y+3QeW6pzLmpbwNCjIwMTIwMw0KVGVsOjAyMS0yODkzNzA1OA0KDQoNCj4tLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPkZyb206IFNoYXduIEd1byBbbWFpbHRvOnNoYXduLmd1b0BsaW5h
+cm8ub3JnXQ0KPlNlbnQ6IFdlZG5lc2RheSwgRGVjZW1iZXIgMTgsIDIwMTMgMTA6MjYgUE0NCj5U
+bzogSHVhbmcgWW9uZ2NhaS1CMjA3ODgNCj5DYzogcmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaC5r
+dW1hckBsaW5hcm8ub3JnOyBjcHVmcmVxQHZnZXIua2VybmVsLm9yZzsNCj5saW51eC1wbUB2Z2Vy
+Lmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj5kZXZp
+Y2V0cmVlQHZnZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUEFUQ0ggVjMgMi8yXSBjcHVm
+cmVxOiBpbXg2cTogY29ycmVjdCBWRERTT0MvUFUgdm9sdGFnZSBzY2FsaW5nDQo+d2hlbiBjcHVm
+cmVxIGlzIGNoYW5nZWQNCj4NCj5PbiBXZWQsIERlYyAxOCwgMjAxMyBhdCAwNDoyNjo1MFBNIC0w
+NTAwLCBBbnNvbiBIdWFuZyB3cm90ZToNCj4+IG9uIGkuTVg2USwgY3B1IGZyZXEgY2hhbmdlIG5l
+ZWQgdG8gZm9sbG93IGJlbG93IGZsb3dzOg0KPj4NCj4+IDEuIGVhY2ggc2V0cG9pbnQgaGFzIGRp
+ZmZlcmVudCBWRERBUk0sIFZERFNPQy9QVSB2b2x0YWdlLCBnZXQgdGhlIHNldHBvaW50DQo+PiAg
+ICB0YWJsZSBmcm9tIGR0czsNCj4+IDIuIHdoZW4gY3B1IGZyZXEgaXMgc2NhbGluZyB1cCwgbmVl
+ZCB0byBpbmNyZWFzZSBWRERTT0MvUFUgdm9sdGFnZSBiZWZvcmUNCj4+ICAgIFZEREFSTSwgaWYg
+VkREUFUgaXMgb2ZmLCBubyBuZWVkIHRvIGNoYW5nZSBpdDsgMy4gd2hlbiBjcHUgZnJlcSBpcw0K
+Pj4gc2NhbGluZyBkb3duLCBuZWVkIHRvIGRlY3JlYXNlIFZEREFSTSB2b2x0YWdlIGJlZm9yZQ0K
+Pj4gICAgVkREU09DL1BVLCBpZiBWRERQVSBpcyBvZmYsIG5vIG5lZWQgdG8gY2hhbmdlIGl0Ow0K
+Pj4NCj4+IG5vcm1hbGx5IGR0cyB3aWxsIHBhc3MgdmRkc29jL3B1IGZyZXEvdm9sdCBpbmZvIHRv
+IGtlcm5lbCwgaWYgbm90LA0KPj4gd2lsbCB1c2UgZml4ZWQgdmFsdWUgZm9yIHZkZHNvYy9wdSB2
+b2x0YWdlIHNldHRpbmcuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPGIyMDc4
+OEBmcmVlc2NhbGUuY29tPg0KPg0KPkFja2VkLWJ5OiBTaGF3biBHdW8gPHNoYXduLmd1b0BsaW5h
+cm8ub3JnPg0KDQo=
