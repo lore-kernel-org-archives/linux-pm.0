@@ -1,161 +1,121 @@
 From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Fri, 03 Jan 2014 09:30:28 -0800
-Message-ID: <52C6F3B4.3050904@gmail.com>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan> <52C18A23.10703@redhat.com> <3710588.K8glfx1cYs@vostro.rjw.lan>
+Subject: Re: [PATCH] Documentation/cpu-freq: add intel-pstate.txt
+Date: Fri, 03 Jan 2014 09:46:41 -0800
+Message-ID: <52C6F781.4040500@gmail.com>
+References: <1388748673-11032-1-git-send-email-artagnon@gmail.com> <2121197.s7JHyFUj5C@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3710588.K8glfx1cYs@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kashyap Chamarthy <kchamart@redhat.com>
-Cc: Gleb Natapov <gleb@kernel.org>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:45398 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbaACRql (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jan 2014 12:46:41 -0500
+In-Reply-To: <2121197.s7JHyFUj5C@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ramkumar Ramachandra <artagnon@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi All,
-
-Sorry for being late to the party but I just got back from vacation.
-
-There is something deeply wrong here.  We should have never gotten to
-intel_pstate_init_cpu().  The VM had to have returned value from the read
-of the max pstate at driver init time and 0 when the CPU was being brought up.
-
-intel_pstate_msrs_not_valid() was added to solve this issue early on
-if I remember correctly it was Josh that reported it then.  Is there
-a definative way to detect whether we are running in a VM?
-
-Can some one tell me how the nested environment differs in regards to
-reading MSRs?
-
-TIA
---Dirk
-
-On 12/30/2013 06:07 PM, Rafael J. Wysocki wrote:
->>> ---
->>>   drivers/cpufreq/intel_pstate.c |    5 +++++
->>>   1 file changed, 5 insertions(+)
->>>
->>> Index: linux-pm/drivers/cpufreq/intel_pstate.c
->>> ===================================================================
->>> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
->>> +++ linux-pm/drivers/cpufreq/intel_pstate.c
->>> @@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
->>>   	cpu = all_cpu_data[cpunum];
->>>
->>>   	intel_pstate_get_cpu_pstates(cpu);
->>> +	if (!cpu->pstate.current_pstate) {
->>> +		all_cpu_data[cpunum] = NULL;
->>> +		kfree(cpu);
->>> +		return -ENODATA;
->>> +	}
->>>
->>>   	cpu->cpu = cpunum;
->>>
->>>
+On 01/03/2014 04:09 AM, Rafael J. Wysocki wrote:
+> On Friday, January 03, 2014 05:01:13 PM Ramkumar Ramachandra wrote:
+>> The Intel P-state driver is currently undocumented. Add some
+>> documentation based on the cover-letter sent with the original series.
 >>
+>> Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
+>
+> Dirk, what do you think?
+>
+
+This is accurate, along with the wording changes suggested by you and
+Randy,
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Signed-off-by: Ramkumar Ramachandra <artagnon@gmail.com>
+>> ---
+>>   I was looking for documentation on my cpufreq driver, intel_pstate,
+>>   and found nothing: so, here's a small start. Although the original
+>>   message said SandyBridge only, I noticed that
+>>   /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver says intel_pstate
+>>   on my IvyBridge; so I figured subsequent patches introduced support
+>>   for SandyBridge+.
 >>
->> Thanks Rafel, I can confirm this patch helps.
+>>   I noticed two "policies" in the code: CPUFREQ_POLICY_PERFORMANCE and
+>>   CPUFREQ_POLICY_POWERSAVE, but I have no idea how to switch from one
+>>   to the other. The userspace tool cpupower seems to be too tightly
+>>   tied to the acpi-cpufreq driver, and I'm not able to find any others.
+>>
+>>   Also, how well is the driver performing? I seem to be getting
+>>   terrible battery life on my 2013 MBP.
+>>
+>>   Thanks.
+>>
+>>   Documentation/cpu-freq/intel-pstate.txt | 40 +++++++++++++++++++++++++++++++++
+>>   1 file changed, 40 insertions(+)
+>>   create mode 100644 Documentation/cpu-freq/intel-pstate.txt
+>>
+>> diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
+>> new file mode 100644
+>> index 0000000..fda74ab
+>> --- /dev/null
+>> +++ b/Documentation/cpu-freq/intel-pstate.txt
+>> @@ -0,0 +1,40 @@
+>> +Intel P-state driver
+>> +--------------------
+>> +
+>> +This driver implements a scaling driver with an internal governor for
+>> +Intel Core processors.  The driver follows the same model as the
+>> +Transmeta scaling driver (longrun.c) and implements the setpolicy()
+>> +instead of target().  Scaling drivers that implement setpolicy() are
+>> +assmuned to implement internal governors by the cpufreq core. All the
+>> +logic for selecting the current P state is contained within the driver
+>> +no external governor is used by the cpufreq core.
+>> +
+>> +Only Intel SandyBridge+ processors are supported.
 >
-> Awesome, thanks!
+> That's not the case any more.
+
+SandyBridge+ is accurate "only SandyBridge" is not
+
 >
-> Below is an official version with a changelog.  I'll queue it up as a fix
-> for 3.13.
+>> +
+>> +New sysfs files for controlling P state selection have been added to
+>> +/sys/devices/system/cpu/intel_pstate/
+>> +
+>> +      max_perf_pct: limits the maximum P state that will be requested by
+>> +      the driver stated as a percentage of the avail performance.
+>> +
+>> +      min_perf_pct: limits the minimum P state that will be  requested by
+>> +      the driver stated as a percentage of the avail performance.
+>> +
+>> +      no_turbo: limits the driver to selecting P states below the turbo
+>> +      frequency range.
+>> +
 >
-> Thanks,
-> Rafael
+> It would be good to document them in Documentation/ABI/testing/ as well.
 >
+>> +The units for these for these files are purposely abstract and stated
+>> +in terms of available performance and not frequency.  In idea that
 >
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: intel_pstate: Fail initialization if P-state information is missing
+> I would say "For contemporary Intel processor the frequency is controlled
+> by the processor itself and the P-states exposed to software are related to
+> performance levels" instead.
 >
-> If pstate.current_pstate is 0 after the initial
-> intel_pstate_get_cpu_pstates(), this means that we were unable to
-> obtain any useful P-state information and there is no reason to
-> continue, so free memory and return an error in that case.
+>> +frequency can be set to a single frequency is a fiction for Intel Core
+>> +processors. Even if the scaling driver selects a single P state the
+>> +actual frequency the processor will run at is selected by the
+>> +processor itself.
+>> +
+>> +New debugfs files have also been added to /sys/kernel/debug/pstate_snb/
+>> +
+>> +      deadband
+>> +      d_gain_pct
+>> +      i_gain_pct
+>> +      p_gain_pct
+>> +      sample_rate_ms
+>> +      setpoint
+>>
 >
-> This fixes the following divide error occuring in a nested KVM
-> guest:
->
-> Intel P-state driver initializing.
-> Intel pstate controlling: cpu 0
-> cpufreq: __cpufreq_add_dev: ->get() failed
-> divide error: 0000 [#1] SMP
-> Modules linked in:
-> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.13.0-0.rc4.git5.1.fc21.x86_64 #1
-> Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
-> task: ffff88001ea20000 ti: ffff88001e9bc000 task.ti: ffff88001e9bc000
-> RIP: 0010:[<ffffffff815c551d>]  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
-> RSP: 0000:ffff88001ee03e18  EFLAGS: 00010246
-> RAX: 0000000000000000 RBX: ffff88001a454348 RCX: 0000000000006100
-> RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-> RBP: ffff88001ee03e38 R08: 0000000000000000 R09: 0000000000000000
-> R10: ffff88001ea20000 R11: 0000000000000000 R12: 00000c0a1ea20000
-> R13: 1ea200001ea20000 R14: ffffffff815c5400 R15: ffff88001a454348
-> FS:  0000000000000000(0000) GS:ffff88001ee00000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000000000000000 CR3: 0000000001c0c000 CR4: 00000000000006f0
-> Stack:
->   fffffffb1a454390 ffffffff821a4500 ffff88001a454390 0000000000000100
->   ffff88001ee03ea8 ffffffff81083e9a ffffffff81083e15 ffffffff82d5ed40
->   ffffffff8258cc60 0000000000000000 ffffffff81ac39de 0000000000000000
-> Call Trace:
->   <IRQ>
->   [<ffffffff81083e9a>] call_timer_fn+0x8a/0x310
->   [<ffffffff81083e15>] ? call_timer_fn+0x5/0x310
->   [<ffffffff815c5400>] ? pid_param_set+0x130/0x130
->   [<ffffffff81084354>] run_timer_softirq+0x234/0x380
->   [<ffffffff8107aee4>] __do_softirq+0x104/0x430
->   [<ffffffff8107b5fd>] irq_exit+0xcd/0xe0
->   [<ffffffff81770645>] smp_apic_timer_interrupt+0x45/0x60
->   [<ffffffff8176efb2>] apic_timer_interrupt+0x72/0x80
->   <EOI>
->   [<ffffffff810e15cd>] ? vprintk_emit+0x1dd/0x5e0
->   [<ffffffff81757719>] printk+0x67/0x69
->   [<ffffffff815c1493>] __cpufreq_add_dev.isra.13+0x883/0x8d0
->   [<ffffffff815c14f0>] cpufreq_add_dev+0x10/0x20
->   [<ffffffff814a14d1>] subsys_interface_register+0xb1/0xf0
->   [<ffffffff815bf5cf>] cpufreq_register_driver+0x9f/0x210
->   [<ffffffff81fb19af>] intel_pstate_init+0x27d/0x3be
->   [<ffffffff81761e3e>] ? mutex_unlock+0xe/0x10
->   [<ffffffff81fb1732>] ? cpufreq_gov_dbs_init+0x12/0x12
->   [<ffffffff8100214a>] do_one_initcall+0xfa/0x1b0
->   [<ffffffff8109dbf5>] ? parse_args+0x225/0x3f0
->   [<ffffffff81f64193>] kernel_init_freeable+0x1fc/0x287
->   [<ffffffff81f638d0>] ? do_early_param+0x88/0x88
->   [<ffffffff8174b530>] ? rest_init+0x150/0x150
->   [<ffffffff8174b53e>] kernel_init+0xe/0x130
->   [<ffffffff8176e27c>] ret_from_fork+0x7c/0xb0
->   [<ffffffff8174b530>] ? rest_init+0x150/0x150
-> Code: c1 e0 05 48 63 bc 03 10 01 00 00 48 63 83 d0 00 00 00 48 63 d6 48 c1 e2 08 c1 e1 08 4c 63 c2 48 c1 e0 08 48 98 48 c1 e0 08 48 99 <49> f7 f8 48 98 48 0f af f8 48 c1 ff 08 29 f9 89 ca c1 fa 1f 89
-> RIP  [<ffffffff815c551d>] intel_pstate_timer_func+0x11d/0x2b0
->   RSP <ffff88001ee03e18>
-> ---[ end trace f166110ed22cc37a ]---
-> Kernel panic - not syncing: Fatal exception in interrupt
->
-> Reported-and-tested-by: Kashyap Chamarthy <kchamart@redhat.com>
-> Cc: Josh Boyer <jwboyer@fedoraproject.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   drivers/cpufreq/intel_pstate.c |    5 +++++
->   1 file changed, 5 insertions(+)
->
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -614,6 +614,11 @@ static int intel_pstate_init_cpu(unsigne
->   	cpu = all_cpu_data[cpunum];
->
->   	intel_pstate_get_cpu_pstates(cpu);
-> +	if (!cpu->pstate.current_pstate) {
-> +		all_cpu_data[cpunum] = NULL;
-> +		kfree(cpu);
-> +		return -ENODATA;
-> +	}
->
->   	cpu->cpu = cpunum;
->
+> Thanks!
 >
 
