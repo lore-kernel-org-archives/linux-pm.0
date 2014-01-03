@@ -1,231 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Fri, 03 Jan 2014 01:40:42 +0100
-Message-ID: <2302938.b8tymqrMEz@vostro.rjw.lan>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org> <5562479.pVWRuDL0y6@vostro.rjw.lan> <87zjne7f75.fsf@nemi.mork.no>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/1] cpufreq: tegra: Re-model Tegra20 cpufreq driver
+Date: Fri, 3 Jan 2014 11:17:00 +0530
+Message-ID: <CAKohpokQXb_w2VZStwvj-icm4KPayZgLqGZb-DYZddbj_3Dk=A@mail.gmail.com>
+References: <1387451926-21373-1-git-send-email-bilhuang@nvidia.com>
+	<CAKohpomCPJYd+d_NnM9gxwQ7bH6C6=iLxbiWZbfNcjZ8Bi+2wA@mail.gmail.com>
+	<52B41B18.30302@nvidia.com>
+	<CAKohpontQwTc4KP7XMvtkvS2sQTyF+ngXnXfbJ1ev+MLEp-H0g@mail.gmail.com>
+	<52B41F1B.3030005@nvidia.com>
+	<52B4707F.4040303@wwwdotorg.org>
+	<CAKohpokwO3BgXr9Le02bNo=771saWuDe2H=fgQzcboRWxwVzOg@mail.gmail.com>
+	<52C548B6.60902@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52499 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751528AbaACA1B convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jan 2014 19:27:01 -0500
-In-Reply-To: <87zjne7f75.fsf@nemi.mork.no>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52C548B6.60902@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: bilhuang <bilhuang@nvidia.com>, Rob Herring <robherring2@gmail.com>, Grant Likely <grant.likely@linaro.org>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, cpufreq@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, January 02, 2014 01:15:10 PM Bj=C3=B8rn Mork wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->=20
-> > On Tuesday, December 24, 2013 07:11:00 AM Viresh Kumar wrote:
-> >> __cpufreq_add_dev() can fail sometimes while we are resuming our s=
-ystem.
-> >> Currently we are clearing all sysfs nodes for cpufreq's failed pol=
-icy as that
-> >> could make userspace unstable. But if we suspend/resume again, we =
-should atleast
-> >> try to bring back those policies.
-> >>=20
-> >> This patch fixes this issue by clearing fallback data on failure a=
-nd trying to
-> >> allocate a new struct cpufreq_policy on second resume.
-> >>=20
-> >> Reported-and-tested-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> > Well, while I appreciate the work done here, I don't like the chang=
-elog,
-> > I don't really like the way the code is written and I don't like th=
-e comments.
-> > Sorry about that.
-> >
-> > Bjorn, can you please test the patch below instead along with the [=
-2/2]
-> > from this series (on top of linux-pm.git/pm-cpufreq)?
->=20
-> I tested this series with your modified 1/2 today, but on top of a
-> current mainline (commit 9a0bb2966ef) instead of linux-pm.git/pm-cpuf=
-req.
-> Shouldn't make much difference since Linus already has pulled your
-> 'pm+acpi-3.13-rc6' tag, which included that pm-cpufreq branch.
->=20
-> This series fixes the reported bug for me.
->=20
->=20
-> But I observed this, most likely unrelated, splat during the test:
->=20
-> ACPI Exception: AE_BAD_PARAMETER, Returned by Handler for [EmbeddedCo=
-ntrol] (20131115/evregion-282)
-> ACPI Error: Method parse/execution failed [\_SB_.PCI0.LPC_.EC__.LPMD]=
- (Node ffff880232499c18), AE_BAD_PARAMETER (20131115/psparse-536)
-> ACPI Error: Method parse/execution failed [\_PR_.CPU0._PPC] (Node fff=
-f8802326f93d0), AE_BAD_PARAMETER (20131115/psparse-536)
-> ACPI Error: Method parse/execution failed [\_PR_.CPU1._PPC] (Node fff=
-f8802326f9268), AE_BAD_PARAMETER (20131115/psparse-536)
-> ACPI Exception: AE_BAD_PARAMETER, Evaluating _PPC (20131115/processor=
-_perflib-140)
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
-> [ INFO: possible circular locking dependency detected ]
-> 3.13.0-rc6+ #181 Not tainted
-> -------------------------------------------------------
-> s2disk/5651 is trying to acquire lock:
->  (s_active#170){++++.+}, at: [<ffffffff8118b9d7>] sysfs_addrm_finish+=
-0x28/0x46
->=20
-> but task is already holding lock:
->  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81039ff5>] cpu_hotplug_beg=
-in+0x28/0x50
->=20
-> which lock already depends on the new lock.
->=20
->=20
-> the existing dependency chain (in reverse order) is:
->=20
-> -> #1 (cpu_hotplug.lock){+.+.+.}:
->        [<ffffffff81075027>] lock_acquire+0xfb/0x144
->        [<ffffffff8139d4d2>] mutex_lock_nested+0x6c/0x397
->        [<ffffffff81039f4a>] get_online_cpus+0x3c/0x50
->        [<ffffffff812a6974>] store+0x20/0xad
->        [<ffffffff8118a9a1>] sysfs_write_file+0x138/0x18b
->        [<ffffffff8112a428>] vfs_write+0x9c/0x102
->        [<ffffffff8112a716>] SyS_write+0x50/0x85
->        [<ffffffff813a57a2>] system_call_fastpath+0x16/0x1b
->=20
-> -> #0 (s_active#170){++++.+}:
->        [<ffffffff81074760>] __lock_acquire+0xae3/0xe68
->        [<ffffffff81075027>] lock_acquire+0xfb/0x144
->        [<ffffffff8118b027>] sysfs_deactivate+0xa5/0x108
->        [<ffffffff8118b9d7>] sysfs_addrm_finish+0x28/0x46
->        [<ffffffff8118bd3f>] sysfs_remove+0x2a/0x31
->        [<ffffffff8118be2f>] sysfs_remove_dir+0x66/0x6b
->        [<ffffffff811d5d11>] kobject_del+0x18/0x42
->        [<ffffffff811d5e1c>] kobject_cleanup+0xe1/0x14f
->        [<ffffffff811d5ede>] kobject_put+0x45/0x49
->        [<ffffffff812a6e85>] cpufreq_policy_put_kobj+0x37/0x83
->        [<ffffffff812a8bab>] __cpufreq_add_dev.isra.18+0x75e/0x78c
->        [<ffffffff812a8c39>] cpufreq_cpu_callback+0x53/0x88
->        [<ffffffff813a314c>] notifier_call_chain+0x67/0x92
->        [<ffffffff8105bce4>] __raw_notifier_call_chain+0x9/0xb
->        [<ffffffff81039e7c>] __cpu_notify+0x1b/0x32
->        [<ffffffff81039ea1>] cpu_notify+0xe/0x10
->        [<ffffffff8103a12b>] _cpu_up+0xf1/0x124
->        [<ffffffff8138ee7d>] enable_nonboot_cpus+0x52/0xbf
->        [<ffffffff8107a2a3>] hibernation_snapshot+0x1be/0x2ed
->        [<ffffffff8107eb84>] snapshot_ioctl+0x1e5/0x431
->        [<ffffffff81139080>] do_vfs_ioctl+0x45e/0x4a8
->        [<ffffffff8113911c>] SyS_ioctl+0x52/0x82
->        [<ffffffff813a57a2>] system_call_fastpath+0x16/0x1b
->=20
-> other info that might help us debug this:
->=20
->  Possible unsafe locking scenario:
->=20
->        CPU0                    CPU1
->        ----                    ----
->   lock(cpu_hotplug.lock);
->                                lock(s_active#170);
->                                lock(cpu_hotplug.lock);
->   lock(s_active#170);
->=20
->  *** DEADLOCK ***
->=20
-> 7 locks held by s2disk/5651:
->  #0:  (pm_mutex){+.+.+.}, at: [<ffffffff8107e9ea>] snapshot_ioctl+0x4=
-b/0x431
->  #1:  (device_hotplug_lock){+.+.+.}, at: [<ffffffff81283730>] lock_de=
-vice_hotplug+0x12/0x14
->  #2:  (acpi_scan_lock){+.+.+.}, at: [<ffffffff8122c657>] acpi_scan_lo=
-ck_acquire+0x12/0x14
->  #3:  (console_lock){+.+.+.}, at: [<ffffffff810817f2>] suspend_consol=
-e+0x20/0x38
->  #4:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff81039fb9>] cpu_map=
-s_update_begin+0x12/0x14
->  #5:  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81039ff5>] cpu_hotplu=
-g_begin+0x28/0x50
->  #6:  (cpufreq_rwsem){.+.+.+}, at: [<ffffffff812a84cc>] __cpufreq_add=
-_dev.isra.18+0x7f/0x78c
->=20
-> stack backtrace:
-> CPU: 0 PID: 5651 Comm: s2disk Not tainted 3.13.0-rc6+ #181
-> Hardware name: LENOVO 2776LEG/2776LEG, BIOS 6EET55WW (3.15 ) 12/19/20=
-11
->  ffffffff81d3edf0 ffff8802174898f8 ffffffff81399cac 0000000000004549
->  ffffffff81d3edf0 ffff880217489948 ffffffff81397dc5 ffff880217489928
->  ffff88023198ea50 0000000000000006 ffff88023198f1d8 0000000000000006
-> Call Trace:
->  [<ffffffff81399cac>] dump_stack+0x4e/0x68
->  [<ffffffff81397dc5>] print_circular_bug+0x1f8/0x209
->  [<ffffffff81074760>] __lock_acquire+0xae3/0xe68
->  [<ffffffff8107565d>] ? debug_check_no_locks_freed+0x12c/0x143
->  [<ffffffff81075027>] lock_acquire+0xfb/0x144
->  [<ffffffff8118b9d7>] ? sysfs_addrm_finish+0x28/0x46
->  [<ffffffff81072201>] ? lockdep_init_map+0x14e/0x160
->  [<ffffffff8118b027>] sysfs_deactivate+0xa5/0x108
->  [<ffffffff8118b9d7>] ? sysfs_addrm_finish+0x28/0x46
->  [<ffffffff8118b9d7>] sysfs_addrm_finish+0x28/0x46
->  [<ffffffff8118bd3f>] sysfs_remove+0x2a/0x31
->  [<ffffffff8118be2f>] sysfs_remove_dir+0x66/0x6b
->  [<ffffffff811d5d11>] kobject_del+0x18/0x42
->  [<ffffffff811d5e1c>] kobject_cleanup+0xe1/0x14f
->  [<ffffffff811d5ede>] kobject_put+0x45/0x49
->  [<ffffffff812a6e85>] cpufreq_policy_put_kobj+0x37/0x83
->  [<ffffffff812a8bab>] __cpufreq_add_dev.isra.18+0x75e/0x78c
->  [<ffffffff81071b04>] ? __lock_is_held+0x32/0x54
->  [<ffffffff812a8c39>] cpufreq_cpu_callback+0x53/0x88
->  [<ffffffff813a314c>] notifier_call_chain+0x67/0x92
->  [<ffffffff8105bce4>] __raw_notifier_call_chain+0x9/0xb
->  [<ffffffff81039e7c>] __cpu_notify+0x1b/0x32
->  [<ffffffff81039ea1>] cpu_notify+0xe/0x10
->  [<ffffffff8103a12b>] _cpu_up+0xf1/0x124
->  [<ffffffff8138ee7d>] enable_nonboot_cpus+0x52/0xbf
->  [<ffffffff8107a2a3>] hibernation_snapshot+0x1be/0x2ed
->  [<ffffffff8107eb84>] snapshot_ioctl+0x1e5/0x431
->  [<ffffffff81139080>] do_vfs_ioctl+0x45e/0x4a8
->  [<ffffffff811414c8>] ? fcheck_files+0xa1/0xe4
->  [<ffffffff81141a67>] ? fget_light+0x33/0x9a
->  [<ffffffff8113911c>] SyS_ioctl+0x52/0x82
->  [<ffffffff811df4ce>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff813a57a2>] system_call_fastpath+0x16/0x1b
-> CPU1 is up
-> ACPI: Waking up from system sleep state S4
-> PM: noirq thaw of devices complete after 2.727 msecs
-> PM: early thaw of devices complete after 1.137 msecs
->=20
->=20
->=20
-> This warning appeared when I tried cancelling hibernation, which is
-> known to fail when using the acpi-cpufreq driver.  The point of the t=
-est
-> was to verify that such failures still produce the expected result:
->=20
->  - all stale sysfs files are cleaned up and removed
->  - later suspend/resume actions will restore (or actually reinitiate)
->    the cpufreq driver for the non-boot CPUs
->=20
-> Which was successful, except that it produced the above lockdep warni=
-ng.
->=20
-> I have not verified that this is a new warning (which means that it m=
-ost
-> likely is not).  And I expect the whole acpi-cpufreq problem, includi=
-ng
-> that warning, to go away when you eventually push
-> http://www.spinics.net/lists/cpufreq/msg08714.html with your improved
-> changelog (thanks for doing that BTW).  So I don't worry too much abo=
-ut
-> it.  Just wanted to let you know.
+On 2 January 2014 16:38, bilhuang <bilhuang@nvidia.com> wrote:
+> Actually, I don't have plan or resource on doing this, would it be better
+> that you help to do that instead? Thanks.
 
-OK, thanks!  Well, this is somewhat worrisome.
+Point taken. I am there to help if required. So, initially you can just make
+Tegra work according to the new file we were talking about. I will fix
+others later.
 
-Could you also check the linux-pm.git/fixes branch that contains all pa=
-tches
-I'm planning to push for 3.13-rc7 shortly?
+>> I am not sure about the location of such file. Should this be placed in DT
+>> code somewhere or kept in cpufreq? Rob/Grant ??
+>>
+> Do we have consensus on where to create such file?
 
-Rafael
+Not yet, probably people were on leaves.
 
+@Grant/Rob: Any inputs here?
