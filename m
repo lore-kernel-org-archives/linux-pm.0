@@ -1,163 +1,94 @@
-From: Michal Marek <mmarek@suse.cz>
-Subject: Re: [PATCH resend] scripts: Coccinelle script for pm_runtime_* return
- checks with IS_ERR_VALUE
-Date: Fri, 03 Jan 2014 13:57:44 +0100
-Message-ID: <52C6B3C8.7040509@suse.cz>
-References: <1385991581-16843-1-git-send-email-nm@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [GIT PULL] ACPI and power management fixes for v3.13-rc7
+Date: Fri, 03 Jan 2014 14:37:33 +0100
+Message-ID: <4606291.Jt1hNa9vKs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:57818 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbaACM5s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 Jan 2014 07:57:48 -0500
-In-Reply-To: <1385991581-16843-1-git-send-email-nm@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Julia.Lawall@lip6.fr, Gilles.Muller@lip6.fr, nicolas.palix@imag.fr
-Cc: linux-kernel@vger.kernel.org, cocci@systeme.lip6.fr, linux-pm@vger.kernel.org, Sekhar Nori <nsekhar@ti.com>, Russell King <rmk+kernel@arm.linux.org.uk>
 
-On 2013-12-02 14:39, Nishanth Menon wrote:
-> As indicated by Sekhar in [1], there seems to be a tendency to use
-> IS_ERR_VALUE to check the error result for pm_runtime_* functions which
-> make no sense considering commit c48cd65 (ARM: OMAP: use consistent
-> error checking) - the error values can either be < 0 for error OR
-> 0, 1 in cases where we have success.
-> 
-> So, setup a coccinelle script to help identify the same.
+Hi Linus,
 
-Julia, Gilles, do you have any objections to this semantic patch?
+Please pull from the git repository at
 
-Thanks,
-Michal
-> 
-> [1] http://marc.info/?t=138472678100003&r=1&w=2
-> 
-> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> Reported-by: Sekhar Nori <nsekhar@ti.com>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> ---
-> Original post: http://marc.info/?t=138559437300001&r=1&w=2
-> 
->  scripts/coccinelle/api/pm_runtime.cocci |  109 +++++++++++++++++++++++++++++++
->  1 file changed, 109 insertions(+)
->  create mode 100644 scripts/coccinelle/api/pm_runtime.cocci
-> 
-> diff --git a/scripts/coccinelle/api/pm_runtime.cocci b/scripts/coccinelle/api/pm_runtime.cocci
-> new file mode 100644
-> index 0000000..f01789e
-> --- /dev/null
-> +++ b/scripts/coccinelle/api/pm_runtime.cocci
-> @@ -0,0 +1,109 @@
-> +/// Make sure pm_runtime_* calls does not use unnecessary IS_ERR_VALUE
-> +//
-> +// Keywords: pm_runtime
-> +// Confidence: Medium
-> +// Copyright (C) 2013 Texas Instruments Incorporated - GPLv2.
-> +// URL: http://coccinelle.lip6.fr/
-> +// Options: --include-headers
-> +
-> +virtual patch
-> +virtual context
-> +virtual org
-> +virtual report
-> +
-> +//----------------------------------------------------------
-> +//  Detection
-> +//----------------------------------------------------------
-> +
-> +@runtime_bad_err_handle exists@
-> +expression ret;
-> +@@
-> +(
-> +ret = \(pm_runtime_idle\|
-> +	pm_runtime_suspend\|
-> +	pm_runtime_autosuspend\|
-> +	pm_runtime_resume\|
-> +	pm_request_idle\|
-> +	pm_request_resume\|
-> +	pm_request_autosuspend\|
-> +	pm_runtime_get\|
-> +	pm_runtime_get_sync\|
-> +	pm_runtime_put\|
-> +	pm_runtime_put_autosuspend\|
-> +	pm_runtime_put_sync\|
-> +	pm_runtime_put_sync_suspend\|
-> +	pm_runtime_put_sync_autosuspend\|
-> +	pm_runtime_set_active\|
-> +	pm_schedule_suspend\|
-> +	pm_runtime_barrier\|
-> +	pm_generic_runtime_suspend\|
-> +	pm_generic_runtime_resume\)(...);
-> +...
-> +IS_ERR_VALUE(ret)
-> +...
-> +)
-> +
-> +//----------------------------------------------------------
-> +//  For context mode
-> +//----------------------------------------------------------
-> +
-> +@depends on runtime_bad_err_handle && context@
-> +identifier pm_runtime_api;
-> +expression ret;
-> +@@
-> +(
-> +ret = pm_runtime_api(...);
-> +...
-> +* IS_ERR_VALUE(ret)
-> +...
-> +)
-> +
-> +//----------------------------------------------------------
-> +//  For patch mode
-> +//----------------------------------------------------------
-> +
-> +@depends on runtime_bad_err_handle && patch@
-> +identifier pm_runtime_api;
-> +expression ret;
-> +@@
-> +(
-> +ret = pm_runtime_api(...);
-> +...
-> +- IS_ERR_VALUE(ret)
-> ++ ret < 0
-> +...
-> +)
-> +
-> +//----------------------------------------------------------
-> +//  For org and report mode
-> +//----------------------------------------------------------
-> +
-> +@r depends on runtime_bad_err_handle exists@
-> +position p1, p2;
-> +identifier pm_runtime_api;
-> +expression ret;
-> +@@
-> +(
-> +ret = pm_runtime_api@p1(...);
-> +...
-> +IS_ERR_VALUE@p2(ret)
-> +...
-> +)
-> +
-> +@script:python depends on org@
-> +p1 << r.p1;
-> +p2 << r.p2;
-> +pm_runtime_api << r.pm_runtime_api;
-> +@@
-> +
-> +cocci.print_main(pm_runtime_api,p1)
-> +cocci.print_secs("IS_ERR_VALUE",p2)
-> +
-> +@script:python depends on report@
-> +p1 << r.p1;
-> +p2 << r.p2;
-> +pm_runtime_api << r.pm_runtime_api;
-> +@@
-> +
-> +msg = "%s returns < 0 as error. Unecessary IS_ERR_VALUE at line %s" % (pm_runtime_api, p2[0].line)
-> +coccilib.report.print_report(p1[0],msg)
-> 
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.13-rc7
 
+to receive ACPI and power management fixes for 3.13-rc7
+with top-most commit 0a405fe97fd54d5e89560c6d0f4070ff43862a49
+
+  Merge branches 'pm-cpufreq' and 'pm-cpuidle'
+
+on top of commit 802eee95bde72fd0cd0f3a5b2098375a487d1eda
+
+  Linux 3.13-rc6
+
+These commits, except for one, are regression fixes and the remaining
+one fixes a divide error leading to a kernel panic.  The majority of
+the regressions fixed here were introduced during the 3.12 cycle, one
+of them is from this cycle and one is older.
+
+Specifics:
+
+- VGA switcheroo was broken for some users as a result of the ACPI-based
+  PCI hotplug (ACPIPHP) changes in 3.12, because some previously ignored
+  hotplug events started to be handled.  The fix causes them to be
+  ignored again.
+
+- There are two more issues related to cpufreq's suspend/resume handling
+  changes from the 3.12 cycle addressed by Viresh Kumar's fixes.
+
+- intel_pstate triggers a divide error in a timer function if the P-state
+  information it needs is missing during initialization.  This leads to
+  kernel panics on nested KVM clients and is fixed by failing the
+  initialization cleanly in those cases.
+
+- PCI initalization code changes during the 3.9 cycle uncovered BIOS
+  issues related to ACPI wakeup notifications (some BIOSes send them
+  for devices that aren't supposed to support ACPI wakeup).  Work around
+  them by installing an ACPI wakeup notify handler for all PCI devices
+  with ACPI support.
+
+- The Calxeda cpuilde driver's probe function is tagged as __init, which
+  is incorrect and causes a section mismatch to occur during build.  Fix
+  from Andre Przywara removes the __init tag from there.
+
+- During the 3.12 cycle ACPIPHP started to print warnings about missing
+  _ADR for devices that legitimately don't have it.  Fix from Toshi Kani
+  makes it only print the warnings where they make sense.
+
+All the best in 2014 and thanks!
+
+
+---------------
+
+Andre Przywara (1):
+      ARM/cpuidle: remove __init tag from Calxeda cpuidle probe function
+
+Rafael J. Wysocki (4):
+      cpufreq: Clean up after a failing light-weight initialization
+      PCI / ACPI: Install wakeup notify handlers for all PCI devs with ACPI
+      intel_pstate: Fail initialization if P-state information is missing
+      ACPIPHP / radeon / nouveau: Fix VGA switcheroo problem related to hotplug
+
+Toshi Kani (1):
+      ACPI / PCI / hotplug: Avoid warning when _ADR not present
+
+Viresh Kumar (1):
+      cpufreq: preserve user_policy across suspend/resume
+
+---------------
+
+ drivers/acpi/bus.c                           | 10 ++++++++
+ drivers/cpufreq/cpufreq.c                    | 37 +++++++++++++++++-----------
+ drivers/cpufreq/intel_pstate.c               |  5 ++++
+ drivers/cpuidle/cpuidle-calxeda.c            |  2 +-
+ drivers/gpu/drm/nouveau/nouveau_acpi.c       | 16 ++++++++++--
+ drivers/gpu/drm/radeon/radeon_atpx_handler.c | 16 ++++++++++--
+ drivers/pci/hotplug/acpiphp_glue.c           | 30 +++++++++++++++++++---
+ drivers/pci/pci-acpi.c                       | 21 +++++++++-------
+ include/acpi/acpi_bus.h                      |  4 ++-
+ 9 files changed, 108 insertions(+), 33 deletions(-)
