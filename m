@@ -1,36 +1,42 @@
-From: Gleb Natapov <gleb@minantech.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Sat, 4 Jan 2014 19:48:13 +0200
-Message-ID: <20140104174813.GL10961@minantech.com>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com>
- <2513222.AheLcigoE8@vostro.rjw.lan>
- <52C7C7EE.1070407@redhat.com>
- <1676077.d8A9e8eo7M@vostro.rjw.lan>
- <52C84733.1090507@redhat.com>
+Date: Sat, 04 Jan 2014 22:38:33 +0100
+Message-ID: <4410803.FiVxaMNxvJ@vostro.rjw.lan>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <52C84733.1090507@redhat.com> <20140104174813.GL10961@minantech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52C84733.1090507@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.brandewie@gmail.com>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50530 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755053AbaADVYu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Jan 2014 16:24:50 -0500
+In-Reply-To: <20140104174813.GL10961@minantech.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gleb Natapov <gleb@minantech.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
 
-On Sat, Jan 04, 2014 at 06:38:59PM +0100, Paolo Bonzini wrote:
-> Il 04/01/2014 15:38, Rafael J. Wysocki ha scritto:
-> > Well, it's just a sanity check and it makes the problem go away for the reporter.
+On Saturday, January 04, 2014 07:48:13 PM Gleb Natapov wrote:
+> On Sat, Jan 04, 2014 at 06:38:59PM +0100, Paolo Bonzini wrote:
+> > Il 04/01/2014 15:38, Rafael J. Wysocki ha scritto:
+> > > Well, it's just a sanity check and it makes the problem go away for the reporter.
+> > > 
+> > >> > Your patch is welcome but perhaps it should have a WARN_ON too.
+> > > It has been pulled in already, so the WARN_ON() can only be added via a separate
+> > > patch now.  Would you like to prepare that patch?
 > > 
-> >> > Your patch is welcome but perhaps it should have a WARN_ON too.
-> > It has been pulled in already, so the WARN_ON() can only be added via a separate
-> > patch now.  Would you like to prepare that patch?
-> 
-> Yes, I'll add it together with the CPUID check.  I'll send the patch so
-> that it can get into 3.14.
-> 
-CPUID check, while correct, will sweep the problem under the rug. Current
-Linux logic should detect non working pstate in KVM. We should look into
-why this is not happening for nested.
+> > Yes, I'll add it together with the CPUID check.  I'll send the patch so
+> > that it can get into 3.14.
+> > 
+> CPUID check, while correct, will sweep the problem under the rug. Current
+> Linux logic should detect non working pstate in KVM. We should look into
+> why this is not happening for nested.
 
---
-			Gleb.
+I agree.  It's better not to use CPUID for that in my opinion.
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
