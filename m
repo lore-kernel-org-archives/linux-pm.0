@@ -1,77 +1,116 @@
-From: Ramkumar Ramachandra <artagnon@gmail.com>
-Subject: [PATCH v3] Documentation/cpu-freq: add intel-pstate.txt
-Date: Sun,  5 Jan 2014 15:51:14 +0530
-Message-ID: <1388917274-19241-1-git-send-email-artagnon@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] acpi_pad: call schedule() when need_resched is true
+Date: Mon, 06 Jan 2014 00:42:53 +0100
+Message-ID: <6267303.NrPfzMWnJU@vostro.rjw.lan>
+References: <1386863415-12790-1-git-send-email-tcamuso@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f52.google.com ([209.85.160.52]:45270 "EHLO
-	mail-pb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbaAEKVO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jan 2014 05:21:14 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:65225 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751969AbaAEX3J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jan 2014 18:29:09 -0500
+In-Reply-To: <1386863415-12790-1-git-send-email-tcamuso@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Tony Camuso <tcamuso@redhat.com>
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
 
-The Intel P-state driver is currently undocumented. Add some
-documentation based on the cover-letter sent with the original series.
+On Thursday, December 12, 2013 10:50:15 AM Tony Camuso wrote:
+> (Slightly rephrased from a bug report submitted by Stuart Hayes)
+> 
+> The purpose of the acpi_pad driver is to implement the "processor power
+> aggregator" device as described in the ACPI 4.0 spec section 8.5. It
+> takes requests from the BIOS (via ACPI) to put a specified number of
+> CPUs into idle, in order to save power, until further notice.
+> 
+> It does this by creating high-priority threads that try to keep the CPUs
+> in a high C-state (using the monitor/mwait CPU instructions). The
+> mwait() call is in a loop that checks periodically if the thread should
+> end and a few other things.
+> 
+> It was discovered through testing that the power_saving threads were
+> causing the system to consume more power than the system was consuming
+> before the threads were created. A counter in the main loop of
+> power_saving_thread() revealed that it was spinning. The mwait()
+> instruction was not keeping the CPU in a high C state very much if at
+> all.
+> 
+> Here is a simplification of the loop in function power_saving_thread() in
+> drivers/acpi/acpi_pad.c
+> 
+>     while (!kthread_should_stop()) {
+>          :
+>         try_to_freeze()
+>          :
+>         while (!need_resched()) {
+>              :
+>             if (!need_resched())
+>                 __mwait(power_saving_mwait_eax, 1);
+>              :
+>             if (jiffies > expire_time) {
+>                 do_sleep = 1;
+>                 break;
+>             }
+>         }
+>     }
+> 
+> If need_resched() returns true, then mwait() is not called. It was
+> returning true because of things like timer interrupts, as in the
+> following sequence.
+> 
+> hrtimer_interrupt->__run_hrtimer->tick_sched_timer-> update_process_times->
+> rcu_check_callbacks->rcu_pending->__rcu_pending->set_need_resched
+> 
+> Kernels 3.5.0-rc2+ do not exhibit this problem, because a patch to
+> try_to_freeze() in include/linux/freezer.h introduces a call to
+> might_sleep(), which ultimately calls schedule() to clear the reschedule
+> flag and allows the the loop to execute the call to mwait().
+> 
+> However, the changes to try_to_freeze are unrelated to acpi_pad, and it
+> does not seem like a good idea to rely on an unrelated patch in a
+> function that could later be changed and reintroduce this bug.
+> 
+> Therefore, it seems better to make an explicit call to schedule() in the
+> outer loop when the need_resched flag is set.
+> 
+> Reported-by: Stuart Hayes <stuart_hayes@dell.com>
+> Tested-by: Stuart Hayes <stuart_hayes@dell.com>
+> Signed-off-by: Tony Camuso <tcamuso@redhat.com>
 
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-Signed-off-by: Ramkumar Ramachandra <artagnon@gmail.com>
----
- Documentation/cpu-freq/intel-pstate.txt | 40 +++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
- create mode 100644 Documentation/cpu-freq/intel-pstate.txt
+Peter Zijlstra has an acpi_pad patch that I think will conflict with this, so
+please resubmit after the 3.14 merge window if still necessary.
 
-diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
-new file mode 100644
-index 0000000..e742d21
---- /dev/null
-+++ b/Documentation/cpu-freq/intel-pstate.txt
-@@ -0,0 +1,40 @@
-+Intel P-state driver
-+--------------------
-+
-+This driver implements a scaling driver with an internal governor for
-+Intel Core processors.  The driver follows the same model as the
-+Transmeta scaling driver (longrun.c) and implements the setpolicy()
-+instead of target().  Scaling drivers that implement setpolicy() are
-+assumed to implement internal governors by the cpufreq core. All the
-+logic for selecting the current P state is contained within the
-+driver; no external governor is used by the cpufreq core.
-+
-+Intel SandyBridge+ processors are supported.
-+
-+New sysfs files for controlling P state selection have been added to
-+/sys/devices/system/cpu/intel_pstate/
-+
-+      max_perf_pct: limits the maximum P state that will be requested by
-+      the driver stated as a percentage of the available performance.
-+
-+      min_perf_pct: limits the minimum P state that will be  requested by
-+      the driver stated as a percentage of the available performance.
-+
-+      no_turbo: limits the driver to selecting P states below the turbo
-+      frequency range.
-+
-+For contemporary Intel processors, the frequency is controlled by the
-+processor itself and the P-states exposed to software are related to
-+performance levels.  The idea that frequency can be set to a single
-+frequency is fiction for Intel Core processors. Even if the scaling
-+driver selects a single P state the actual frequency the processor
-+will run at is selected by the processor itself.
-+
-+New debugfs files have also been added to /sys/kernel/debug/pstate_snb/
-+
-+      deadband
-+      d_gain_pct
-+      i_gain_pct
-+      p_gain_pct
-+      sample_rate_ms
-+      setpoint
+Thanks! 
+
+> ---
+>  drivers/acpi/acpi_pad.c |    9 ++++++++-
+>  1 files changed, 8 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/acpi/acpi_pad.c b/drivers/acpi/acpi_pad.c
+> index fc6008f..2c67e59 100644
+> --- a/drivers/acpi/acpi_pad.c
+> +++ b/drivers/acpi/acpi_pad.c
+> @@ -219,8 +219,15 @@ static int power_saving_thread(void *data)
+>  		 * borrow CPU time from this CPU and cause RT task use > 95%
+>  		 * CPU time. To make 'avoid starvation' work, takes a nap here.
+>  		 */
+> -		if (do_sleep)
+> +		if (unlikely(do_sleep))
+>  			schedule_timeout_killable(HZ * idle_pct / 100);
+> +
+> +		/* If an external event has set the need_resched flag, then
+> +		 * we need to deal with it, or this loop will continue to
+> +		 * spin without calling __mwait().
+> +		 */
+> +		if (unlikely(need_resched()))
+> +			schedule();
+>  	}
+>  
+>  	exit_round_robin(tsk_index);
+> 
+
 -- 
-1.8.5.2.227.g53f3478
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
