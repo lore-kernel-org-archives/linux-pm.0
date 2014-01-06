@@ -1,67 +1,65 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv2 7/7] arm: dts: add thermal zones info on tmp102 for DRA7-EVM
-Date: Mon, 6 Jan 2014 08:36:51 -0400
-Message-ID: <1389011811-13004-8-git-send-email-eduardo.valentin@ti.com>
-References: <1389011811-13004-1-git-send-email-eduardo.valentin@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Ramkumar Ramachandra <artagnon@gmail.com>
+Subject: [PATCH v2] Documentation: add ABI entry for intel_pstate
+Date: Mon,  6 Jan 2014 18:24:26 +0530
+Message-ID: <1389012866-29821-1-git-send-email-artagnon@gmail.com>
+References: <1388997077-25138-1-git-send-email-artagnon@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:40402 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753655AbaAFMkv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 07:40:51 -0500
-In-Reply-To: <1389011811-13004-1-git-send-email-eduardo.valentin@ti.com>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:63396 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbaAFMyX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 07:54:23 -0500
+In-Reply-To: <1388997077-25138-1-git-send-email-artagnon@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 
-Add simple thermal zone on tmp102.
+Add a Documentation/ABI entry for
+/sys/devices/system/cpu/intel_pstate/max_perf_pct,
+/sys/devices/system/cpu/intel_pstate/min_perf_pct, and
+/sys/devices/system/cpu/intel_pstate/no_turbo.
 
-Cc: Beno=C3=AEt Cousson <bcousson@baylibre.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: devicetree@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>
+Signed-off-by: Ramkumar Ramachandra <artagnon@gmail.com>
 ---
- arch/arm/boot/dts/dra7-evm.dts | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 24 ++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/arch/arm/boot/dts/dra7-evm.dts b/arch/arm/boot/dts/dra7-ev=
-m.dts
-index 36e2c9e..1ea9c3d 100644
---- a/arch/arm/boot/dts/dra7-evm.dts
-+++ b/arch/arm/boot/dts/dra7-evm.dts
-@@ -95,6 +95,21 @@
- 	};
- };
-=20
-+&thermal_zones {
-+	pcb_thermal: pcb_thermal {
-+		polling-delay-passive =3D <250>; /* milliseconds */
-+		polling-delay =3D <1000>; /* milliseconds */
-+		thermal-sensors =3D <&tmp102>;
-+		trips {
-+			crit@80000 {
-+			temperature =3D <80000>;
-+				hysteresis =3D <1000>;
-+				type =3D "critical";
-+			};
-+		};
-+	};
-+};
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index 468e4d4..d5a0d33 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -200,3 +200,27 @@ Description:	address and size of the percpu note.
+ 		note of cpu#.
+ 
+ 		crash_notes_size: size of the note of cpu#.
 +
- &i2c1 {
- 	status =3D "okay";
- 	pinctrl-names =3D "default";
---=20
-1.8.2.1.342.gfa7285d
++
++What:		/sys/devices/system/cpu/intel_pstate/max_perf_pct
++		/sys/devices/system/cpu/intel_pstate/min_perf_pct
++		/sys/devices/system/cpu/intel_pstate/no_turbo
++Date:		February 2013
++Contact:	linux-pm@vger.kernel.org
++Description:	Parameters for the Intel P-state driver
++
++		Logic for selecting the current P-state in Intel
++		Sandybridge+ processors. The three knobs control
++		limits for the P-state that will be requested by the
++		driver.
++
++		max_perf_pct: limits the maximum P state that will be requested by
++		the driver stated as a percentage of the available performance.
++
++		min_perf_pct: limits the minimum P state that will be requested by
++		the driver stated as a percentage of the available performance.
++
++		no_turbo: limits the driver to selecting P states below the turbo
++		frequency range.
++
++		More details can be found in Documentation/cpu-freq/intel-pstate.txt
+-- 
+1.8.5.2.227.g53f3478
 
