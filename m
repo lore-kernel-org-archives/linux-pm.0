@@ -1,56 +1,60 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv2 0/7] DRA7: DT thermal support
-Date: Mon, 6 Jan 2014 08:36:44 -0400
-Message-ID: <1389011811-13004-1-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCHv2 1/7] arm: dts: add dra7 DSPEVE thermal data
+Date: Mon, 6 Jan 2014 08:36:45 -0400
+Message-ID: <1389011811-13004-2-git-send-email-eduardo.valentin@ti.com>
+References: <1389011811-13004-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:45524 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753844AbaAFMh5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jan 2014 07:37:57 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1389011811-13004-1-git-send-email-eduardo.valentin@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-Hello all,
-
-Now that the basic thermal DT support is merged into Rui's tree,
-I am resending this series, which introduces the DT node entries
-for DRA7 thermal limits representation.
-
-The series adds two thermal zones, to represent IVA and DSPEVE,
-respectively. It also adds the support to tmp102 and a corresponding
-pcb thermal zone.
-
-There are only cosmetic changes from v1. A couple of spaces and tabulations
-have been fixed, and minor changes in sentences present in commit log.
-One difference from V1 is the fact that now bandgap is introduced under
-OCP, which is also a minor diff.
-
-This patch series has been runtime tested on DRA7-evm.
-
-All best
-
-Eduardo Valentin (7):
-  arm: dts: add dra7 DSPEVE thermal data
-  arm: dts: add dra7 IVA thermal data
-  arm: dts: dra7: add bandgap entry
-  arm: dts: add cooling properties on dra7 cpu node
-  arm: dts: dra7: add thermal data
-  arm: dts: add tmp102 i2c sensor node on dra7-evm
-  arm: dts: add thermal zones info on tmp102 for DRA7-EVM
-
- arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 ++++++++++++++++++++++++++++
- arch/arm/boot/dts/dra7-evm.dts             | 22 ++++++++++++++++++++++
- arch/arm/boot/dts/dra7-iva-thermal.dtsi    | 28 ++++++++++++++++++++++++++++
- arch/arm/boot/dts/dra7.dtsi                | 26 ++++++++++++++++++++++++++
- 4 files changed, 104 insertions(+)
- create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
- create mode 100644 arch/arm/boot/dts/dra7-iva-thermal.dtsi
-
--- 
-1.8.2.1.342.gfa7285d
-
+VGhpcyBwYXRjaCBpbnRyb2R1Y2VzIGEgZHRzaSBmaWxlIHRvIGNvbnRhaW4gdGhlIHRoZXJtYWwg
+ZGF0YQpmb3IgRFNQRVZFIGRvbWFpbiBvbiBEUkE3IGFuZCBsYXRlciBTb0NzLiBUaGlzIGRhdGEg
+d2lsbAplbmFibGUgYSB0aGVybWFsIHNodXRkb3duIGF0IDEyNUMuCgpDYzogQmVub8OudCBDb3Vz
+c29uIDxiY291c3NvbkBiYXlsaWJyZS5jb20+CkNjOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRl
+bC5jb20+CkNjOiBSb2IgSGVycmluZyA8cm9iLmhlcnJpbmdAY2FseGVkYS5jb20+CkNjOiBQYXdl
+bCBNb2xsIDxwYXdlbC5tb2xsQGFybS5jb20+CkNjOiBNYXJrIFJ1dGxhbmQgPG1hcmsucnV0bGFu
+ZEBhcm0uY29tPgpDYzogU3RlcGhlbiBXYXJyZW4gPHN3YXJyZW5Ad3d3ZG90b3JnLm9yZz4KQ2M6
+IElhbiBDYW1wYmVsbCA8aWpjK2RldmljZXRyZWVAaGVsbGlvbi5vcmcudWs+CkNjOiBSdXNzZWxs
+IEtpbmcgPGxpbnV4QGFybS5saW51eC5vcmcudWs+CkNjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVs
+Lm9yZwpDYzogbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCkNjOiBsaW51eC1r
+ZXJuZWxAdmdlci5rZXJuZWwub3JnClNpZ25lZC1vZmYtYnk6IEVkdWFyZG8gVmFsZW50aW4gPGVk
+dWFyZG8udmFsZW50aW5AdGkuY29tPgotLS0KIGFyY2gvYXJtL2Jvb3QvZHRzL2RyYTctZHNwZXZl
+LXRoZXJtYWwuZHRzaSB8IDI4ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysKIDEgZmlsZSBj
+aGFuZ2VkLCAyOCBpbnNlcnRpb25zKCspCiBjcmVhdGUgbW9kZSAxMDA2NDQgYXJjaC9hcm0vYm9v
+dC9kdHMvZHJhNy1kc3BldmUtdGhlcm1hbC5kdHNpCgpkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vYm9v
+dC9kdHMvZHJhNy1kc3BldmUtdGhlcm1hbC5kdHNpIGIvYXJjaC9hcm0vYm9vdC9kdHMvZHJhNy1k
+c3BldmUtdGhlcm1hbC5kdHNpCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLjUw
+ZTc4YjYKLS0tIC9kZXYvbnVsbAorKysgYi9hcmNoL2FybS9ib290L2R0cy9kcmE3LWRzcGV2ZS10
+aGVybWFsLmR0c2kKQEAgLTAsMCArMSwyOCBAQAorLyoKKyAqIERldmljZSBUcmVlIFNvdXJjZSBm
+b3IgRFJBNyBTb0MgRFNQRVZFIHRoZXJtYWwKKyAqCisgKiBDb3B5cmlnaHQgKEMpIDIwMTMgVGV4
+YXMgSW5zdHJ1bWVudHMgSW5jb3Jwb3JhdGVkIC0gaHR0cDovL3d3dy50aS5jb20vCisgKiBDb250
+YWN0OiBFZHVhcmRvIFZhbGVudGluIDxlZHVhcmRvLnZhbGVudGluQHRpLmNvbT4KKyAqCisgKiBU
+aGlzIGZpbGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQ
+dWJsaWMgTGljZW5zZQorICogdmVyc2lvbiAyLiAgVGhpcyBwcm9ncmFtIGlzIGxpY2Vuc2VkICJh
+cyBpcyIgd2l0aG91dCBhbnkgd2FycmFudHkgb2YgYW55CisgKiBraW5kLCB3aGV0aGVyIGV4cHJl
+c3Mgb3IgaW1wbGllZC4KKyAqLworCisjaW5jbHVkZSA8ZHQtYmluZGluZ3MvdGhlcm1hbC90aGVy
+bWFsLmg+CisKK2RzcGV2ZV90aGVybWFsOiBkc3BldmVfdGhlcm1hbCB7CisJcG9sbGluZy1kZWxh
+eS1wYXNzaXZlID0gPDI1MD47IC8qIG1pbGxpc2Vjb25kcyAqLworCXBvbGxpbmctZGVsYXkgPSA8
+MTAwMD47IC8qIG1pbGxpc2Vjb25kcyAqLworCisJCQkvKiBzZW5zb3IgICAgICAgSUQgKi8KKwl0
+aGVybWFsLXNlbnNvcnMgPSA8JmJhbmRnYXAgICAgIDM+OworCisJdHJpcHMgeworCQlkc3BldmVf
+Y3JpdDogZHNwZXZlX2NyaXQgeworCQkJdGVtcGVyYXR1cmUgPSA8MTI1MDAwPjsgLyogbWlsbGlD
+ZWxzaXVzICovCisJCQloeXN0ZXJlc2lzID0gPDIwMDA+OyAvKiBtaWxsaUNlbHNpdXMgKi8KKwkJ
+CXR5cGUgPSAiY3JpdGljYWwiOworCQl9OworCX07Cit9OwotLSAKMS44LjIuMS4zNDIuZ2ZhNzI4
+NWQKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
+eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
+ZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1h
+cm0ta2VybmVsCg==
