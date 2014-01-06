@@ -1,153 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend 1/1] cpufreq: exynos5250: Set APLL rate using CCF API
-Date: Mon, 06 Jan 2014 02:09:30 +0100
-Message-ID: <3755825.3e5IgTP0d3@vostro.rjw.lan>
-References: <1387879524-13369-1-git-send-email-sachin.kamat@linaro.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] cpufreq: arm-big-little: Make driver dependent on
+	CONFIG_BIG_LITTLE
+Date: Mon, 6 Jan 2014 00:58:56 +0000
+Message-ID: <20140106005856.GD27432@n2100.arm.linux.org.uk>
+References: <a76f7b6a290d9174a24e15b13df21f53e3f5655f.1388736624.git.viresh.kumar@linaro.org> <39696841.2xGCnmPGdl@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1387879524-13369-1-git-send-email-sachin.kamat@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, viresh.kumar@linaro.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:56862 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751782AbaAFA7F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jan 2014 19:59:05 -0500
+Content-Disposition: inline
+In-Reply-To: <39696841.2xGCnmPGdl@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, December 24, 2013 03:35:24 PM Sachin Kamat wrote:
-> Use common clock framework (CCF) APIs to set the clock rates
-> instead of direct register manipulation. This now updates the
-> sysfs entry (cpuinfo_cur_freq) correctly which did not reflect
-> the correct value until now. While at it clean up the PLL s-div
-> parameter setting as it is handled by the PLL driver.
+On Mon, Jan 06, 2014 at 02:08:21AM +0100, Rafael J. Wysocki wrote:
+> On Friday, January 03, 2014 03:51:39 PM Viresh Kumar wrote:
+> > arm_big_little cpufreq driver is only used for ARM bigLITTLE platforms and hence
+> > must be dependent on CONFIG_BIG_LITTLE.
+> > 
+> > This was highlighted by Russell earlier when he reported this issue:
+> > 
+> > drivers/built-in.o: In function `bL_cpufreq_set_rate':
+> > powercap_sys.c:(.text+0x5ed9a0): undefined reference to `bL_switch_request_cb'
+> > 
+> > Reported-by: Russell King <linux@arm.linux.org.uk>
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
+> Queued up for 3.14, thanks!
 
-Queued up for 3.14, thanks!
-
-> ---
->  drivers/cpufreq/exynos5250-cpufreq.c |   74 +++++-----------------------------
->  1 file changed, 10 insertions(+), 64 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/exynos5250-cpufreq.c b/drivers/cpufreq/exynos5250-cpufreq.c
-> index 5ee2ce1ad424..5f90b82a4082 100644
-> --- a/drivers/cpufreq/exynos5250-cpufreq.c
-> +++ b/drivers/cpufreq/exynos5250-cpufreq.c
-> @@ -101,12 +101,12 @@ static void set_clkdiv(unsigned int div_index)
->  		cpu_relax();
->  }
->  
-> -static void set_apll(unsigned int new_index,
-> -			     unsigned int old_index)
-> +static void set_apll(unsigned int index)
->  {
-> -	unsigned int tmp, pdiv;
-> +	unsigned int tmp;
-> +	unsigned int freq = apll_freq_5250[index].freq;
->  
-> -	/* 1. MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
-> +	/* MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
->  	clk_set_parent(moutcore, mout_mpll);
->  
->  	do {
-> @@ -115,24 +115,9 @@ static void set_apll(unsigned int new_index,
->  		tmp &= 0x7;
->  	} while (tmp != 0x2);
->  
-> -	/* 2. Set APLL Lock time */
-> -	pdiv = ((apll_freq_5250[new_index].mps >> 8) & 0x3f);
-> -
-> -	__raw_writel((pdiv * 250), EXYNOS5_APLL_LOCK);
-> +	clk_set_rate(mout_apll, freq * 1000);
->  
-> -	/* 3. Change PLL PMS values */
-> -	tmp = __raw_readl(EXYNOS5_APLL_CON0);
-> -	tmp &= ~((0x3ff << 16) | (0x3f << 8) | (0x7 << 0));
-> -	tmp |= apll_freq_5250[new_index].mps;
-> -	__raw_writel(tmp, EXYNOS5_APLL_CON0);
-> -
-> -	/* 4. wait_lock_time */
-> -	do {
-> -		cpu_relax();
-> -		tmp = __raw_readl(EXYNOS5_APLL_CON0);
-> -	} while (!(tmp & (0x1 << 29)));
-> -
-> -	/* 5. MUX_CORE_SEL = APLL */
-> +	/* MUX_CORE_SEL = APLL */
->  	clk_set_parent(moutcore, mout_apll);
->  
->  	do {
-> @@ -140,55 +125,17 @@ static void set_apll(unsigned int new_index,
->  		tmp = __raw_readl(EXYNOS5_CLKMUX_STATCPU);
->  		tmp &= (0x7 << 16);
->  	} while (tmp != (0x1 << 16));
-> -
-> -}
-> -
-> -static bool exynos5250_pms_change(unsigned int old_index, unsigned int new_index)
-> -{
-> -	unsigned int old_pm = apll_freq_5250[old_index].mps >> 8;
-> -	unsigned int new_pm = apll_freq_5250[new_index].mps >> 8;
-> -
-> -	return (old_pm == new_pm) ? 0 : 1;
->  }
->  
->  static void exynos5250_set_frequency(unsigned int old_index,
->  				  unsigned int new_index)
->  {
-> -	unsigned int tmp;
-> -
->  	if (old_index > new_index) {
-> -		if (!exynos5250_pms_change(old_index, new_index)) {
-> -			/* 1. Change the system clock divider values */
-> -			set_clkdiv(new_index);
-> -			/* 2. Change just s value in apll m,p,s value */
-> -			tmp = __raw_readl(EXYNOS5_APLL_CON0);
-> -			tmp &= ~(0x7 << 0);
-> -			tmp |= apll_freq_5250[new_index].mps & 0x7;
-> -			__raw_writel(tmp, EXYNOS5_APLL_CON0);
-> -
-> -		} else {
-> -			/* Clock Configuration Procedure */
-> -			/* 1. Change the system clock divider values */
-> -			set_clkdiv(new_index);
-> -			/* 2. Change the apll m,p,s value */
-> -			set_apll(new_index, old_index);
-> -		}
-> +		set_clkdiv(new_index);
-> +		set_apll(new_index);
->  	} else if (old_index < new_index) {
-> -		if (!exynos5250_pms_change(old_index, new_index)) {
-> -			/* 1. Change just s value in apll m,p,s value */
-> -			tmp = __raw_readl(EXYNOS5_APLL_CON0);
-> -			tmp &= ~(0x7 << 0);
-> -			tmp |= apll_freq_5250[new_index].mps & 0x7;
-> -			__raw_writel(tmp, EXYNOS5_APLL_CON0);
-> -			/* 2. Change the system clock divider values */
-> -			set_clkdiv(new_index);
-> -		} else {
-> -			/* Clock Configuration Procedure */
-> -			/* 1. Change the apll m,p,s value */
-> -			set_apll(new_index, old_index);
-> -			/* 2. Change the system clock divider values */
-> -			set_clkdiv(new_index);
-> -		}
-> +		set_apll(new_index);
-> +		set_clkdiv(new_index);
->  	}
->  }
->  
-> @@ -221,7 +168,6 @@ int exynos5250_cpufreq_init(struct exynos_dvfs_info *info)
->  	info->volt_table = exynos5250_volt_table;
->  	info->freq_table = exynos5250_freq_table;
->  	info->set_freq = exynos5250_set_frequency;
-> -	info->need_apll_change = exynos5250_pms_change;
->  
->  	return 0;
->  
-> 
+This is actually a build fix, not a new feature, so IMHO it should go
+in for 3.13.  Linus has said he's going to do -rc8 anyway next weekend
+so -final is at the earliest two weeks away.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
+in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
+Estimate before purchase was "up to 13.2Mbit".
