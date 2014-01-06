@@ -1,7 +1,7 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv2 4/7] arm: dts: add cooling properties on dra7 cpu node
-Date: Mon, 6 Jan 2014 08:36:48 -0400
-Message-ID: <1389011811-13004-5-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCHv2 5/7] arm: dts: dra7: add thermal data
+Date: Mon, 6 Jan 2014 08:36:49 -0400
+Message-ID: <1389011811-13004-6-git-send-email-eduardo.valentin@ti.com>
 References: <1389011811-13004-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -13,11 +13,10 @@ To: rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-DRA7 devices can reach high temperatures and thus
-needs to have cpufreq-cooling on systems running on it.
-
-This patch adds the required cooling device properties
-so that cpufreq-cpu0 driver loads the cooling device.
+This patch adds thermal data for DRA7 SoCs. Cpufreq cooling
+will be enabled for MPU domain whenever it crosses 100C.
+GPU, CORE, DSPEVE, IVA will be exposed and system shall
+shutdown when they cross 125C.
 
 Cc: Beno=C3=AEt Cousson <bcousson@baylibre.com>
 Cc: Zhang Rui <rui.zhang@intel.com>
@@ -32,24 +31,28 @@ Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- arch/arm/boot/dts/dra7.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/boot/dts/dra7.dtsi | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
-index 8f21157..139472c 100644
+index 139472c..4784c0c 100644
 --- a/arch/arm/boot/dts/dra7.dtsi
 +++ b/arch/arm/boot/dts/dra7.dtsi
-@@ -47,6 +47,11 @@
- 				1000000	1060000
- 				1176000	1160000
- 				>;
+@@ -68,6 +68,15 @@
+ 			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
+ 	};
+=20
++	thermal_zones: thermal-zones {
++		/* SoC thermal zones */
++		#include "omap4-cpu-thermal.dtsi"
++		#include "omap5-gpu-thermal.dtsi"
++		#include "omap5-core-thermal.dtsi"
++		#include "dra7-dspeve-thermal.dtsi"
++		#include "dra7-iva-thermal.dtsi"
++	};
 +
-+			/* cooling properties */
-+			#cooling-cells =3D <2>; /* min and max */
-+			#cooling-min-level =3D <0>;
-+			#cooling-max-level =3D <1>;
- 		};
- 		cpu@1 {
- 			device_type =3D "cpu";
+ 	gic: interrupt-controller@48211000 {
+ 		compatible =3D "arm,cortex-a15-gic";
+ 		interrupt-controller;
 --=20
 1.8.2.1.342.gfa7285d
