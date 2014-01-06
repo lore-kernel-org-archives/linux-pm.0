@@ -1,55 +1,43 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: how to know how long it takes on suspend/resume for platform
- usb driver
-Date: Mon, 6 Jan 2014 10:10:58 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401061006470.1282-100000@iolanthe.rowland.org>
-References: <CANudz+vLJCwDVfhc-8VSF6kumjW7fBOkWQLFF+UihQhE34eUVg@mail.gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
+Date: Mon, 06 Jan 2014 09:18:44 -0800
+Message-ID: <52CAE574.3010304@gmail.com>
+References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com> <4794554.Hmd2RUNYDT@vostro.rjw.lan> <52C18A23.10703@redhat.com> <3710588.K8glfx1cYs@vostro.rjw.lan> <52C6F3B4.3050904@gmail.com> <20140103180435.GK10961@minantech.com> <52C716C1.6070704@gmail.com> <52C7345D.30603@redhat.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:57949 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755197AbaAFPK7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 10:10:59 -0500
-In-Reply-To: <CANudz+vLJCwDVfhc-8VSF6kumjW7fBOkWQLFF+UihQhE34eUVg@mail.gmail.com>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:61968 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755259AbaAFRSl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 12:18:41 -0500
+In-Reply-To: <52C7345D.30603@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: loody <miloody@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Gleb Natapov <gleb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
 
-On Mon, 6 Jan 2014, loody wrote:
+On 01/03/2014 02:06 PM, Paolo Bonzini wrote:
+> Il 03/01/2014 21:00, Dirk Brandewie ha scritto:
+>> +    case MSR_IA32_MPERF:
+>> +    case MSR_IA32_APERF:
+>
+OK I will spin the patch to only add MSR_PLATFORM_INFO.
 
-> >> 2. is it possible to change the order of calling resume callback?
-> >>     for example, suppose the original sequence is "ehci -> xhci -> tty
-> >> ..." and I want to change as "tty-> ehci -> xhci".
-> >
-> > It is possible only to a very limited extent.  You can turn async
-> > suspend/resume on or off, and this will affect the order.  Of course,
-> > when async suspend/resume is off, the total time required will be
-> > longer than when it is on.
-> >
-> > Why do you want to change the order?  It shouldn't make any difference.
-> Because I want the GUI and input part of driver resume as earlier as possible.
-> Such that user can keep on their previous work more quicker.
+> These should never be accessed.  A KVM VM will always have
+> CPUID[06H].ECX = 0, and the Intel manual says that the MSRs are only
+> present if CPUID returns that value with bit 0 set.
+>
+> I think the actual bug is that intel_pstate_init does not check the
+> feature bits in CPUID (either manually or via x86_match_cpu).
 
-I doubt it will make any noticeable difference.  Remember, userspace 
-remains frozen until _all_ the devices have been resumed.  Until that 
-happens, the user can't do anything.
+I will add the feature check.
 
-> when I "echo 1 > /sys/power/pm_print_time" on my embedded system,
-> there are some message I am curious.
-> after we resume ehci by " call platform3-ehci.0+ returned 0 after 7746
-> usecs" and
-> type driver "call usb3+ returned 0 after 100475 usecs
-> 
-> why there come below resume message:
-> "calling  ehci.2+ @ 63, parent: none
-> bus resume
-> call ehci.2+ returned 0 after 2 usecs
-> "
+What are the differences between the first and the nested KVM's?
+At load time intel_pstate checks that APERF and MPERF are incrementing
+and that PLATFORM_INFO has some value.  Somehow these checks pass
+in the nested environment and we fall over when the CPU is being added
+by cpufreq.
 
-Because your system has a device named "ehci.2".  If you look through
-the dmesg log for boot-up you should be able to find it.
-
-Alan Stern
+--Dirk
 
