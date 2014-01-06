@@ -1,76 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] Documentation: add ABI entry for intel_pstate
-Date: Mon, 06 Jan 2014 15:33:08 +0100
-Message-ID: <7139147.6XT8bGKqLF@vostro.rjw.lan>
-References: <1388997077-25138-1-git-send-email-artagnon@gmail.com> <1389012866-29821-1-git-send-email-artagnon@gmail.com>
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCHv2 0/7] DRA7: DT thermal support
+Date: Mon, 06 Jan 2014 22:46:41 +0800
+Message-ID: <1389019601.5853.17.camel@rzhang1-mobl4>
+References: <1389011811-13004-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51575 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750805AbaAFOTW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 09:19:22 -0500
-In-Reply-To: <1389012866-29821-1-git-send-email-artagnon@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1389011811-13004-1-git-send-email-eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Ramkumar Ramachandra <artagnon@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Monday, January 06, 2014 06:24:26 PM Ramkumar Ramachandra wrote:
-> Add a Documentation/ABI entry for
-> /sys/devices/system/cpu/intel_pstate/max_perf_pct,
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct, and
-> /sys/devices/system/cpu/intel_pstate/no_turbo.
+On Mon, 2014-01-06 at 08:36 -0400, Eduardo Valentin wrote:
+> Hello all,
 > 
-> Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Linux PM <linux-pm@vger.kernel.org>
-> Signed-off-by: Ramkumar Ramachandra <artagnon@gmail.com>
-
-OK, queued up for 3.14.
-
-Thanks!
-
-> ---
->  Documentation/ABI/testing/sysfs-devices-system-cpu | 24 ++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
+> Now that the basic thermal DT support is merged into Rui's tree,
+> I am resending this series, which introduces the DT node entries
+> for DRA7 thermal limits representation.
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index 468e4d4..d5a0d33 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -200,3 +200,27 @@ Description:	address and size of the percpu note.
->  		note of cpu#.
->  
->  		crash_notes_size: size of the note of cpu#.
-> +
-> +
-> +What:		/sys/devices/system/cpu/intel_pstate/max_perf_pct
-> +		/sys/devices/system/cpu/intel_pstate/min_perf_pct
-> +		/sys/devices/system/cpu/intel_pstate/no_turbo
-> +Date:		February 2013
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:	Parameters for the Intel P-state driver
-> +
-> +		Logic for selecting the current P-state in Intel
-> +		Sandybridge+ processors. The three knobs control
-> +		limits for the P-state that will be requested by the
-> +		driver.
-> +
-> +		max_perf_pct: limits the maximum P state that will be requested by
-> +		the driver stated as a percentage of the available performance.
-> +
-> +		min_perf_pct: limits the minimum P state that will be requested by
-> +		the driver stated as a percentage of the available performance.
-> +
-> +		no_turbo: limits the driver to selecting P states below the turbo
-> +		frequency range.
-> +
-> +		More details can be found in Documentation/cpu-freq/intel-pstate.txt
+> The series adds two thermal zones, to represent IVA and DSPEVE,
+> respectively. It also adds the support to tmp102 and a corresponding
+> pcb thermal zone.
+> 
+> There are only cosmetic changes from v1. A couple of spaces and tabulations
+> have been fixed, and minor changes in sentences present in commit log.
+> One difference from V1 is the fact that now bandgap is introduced under
+> OCP, which is also a minor diff.
+> 
+> This patch series has been runtime tested on DRA7-evm.
+> 
+> All best
+> 
+> Eduardo Valentin (7):
+>   arm: dts: add dra7 DSPEVE thermal data
+>   arm: dts: add dra7 IVA thermal data
+>   arm: dts: dra7: add bandgap entry
+>   arm: dts: add cooling properties on dra7 cpu node
+>   arm: dts: dra7: add thermal data
+>   arm: dts: add tmp102 i2c sensor node on dra7-evm
+>   arm: dts: add thermal zones info on tmp102 for DRA7-EVM
+> 
+>  arch/arm/boot/dts/dra7-dspeve-thermal.dtsi | 28 ++++++++++++++++++++++++++++
+>  arch/arm/boot/dts/dra7-evm.dts             | 22 ++++++++++++++++++++++
+>  arch/arm/boot/dts/dra7-iva-thermal.dtsi    | 28 ++++++++++++++++++++++++++++
+>  arch/arm/boot/dts/dra7.dtsi                | 26 ++++++++++++++++++++++++++
+
+I'm okay with this patch set. But as long as this patch set does not
+change any code under drivers/thermal/, I prefer these patches to go to
+your thermal-soc tree first.
+
+thanks,
+rui
+>  4 files changed, 104 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/dra7-dspeve-thermal.dtsi
+>  create mode 100644 arch/arm/boot/dts/dra7-iva-thermal.dtsi
 > 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
