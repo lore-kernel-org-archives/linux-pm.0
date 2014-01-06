@@ -1,77 +1,61 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: [PATCH] cpufreq: speedstep: remove unused speedstep_get_state
-Date: Mon, 06 Jan 2014 21:30:12 +0100
-Message-ID: <1389040212.2562.3.camel@x41>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] intel_pstate: Add X86_FEATURE_APERFMPERF to cpu match parameters.
+Date: Mon, 06 Jan 2014 21:45:54 +0100
+Message-ID: <3133016.vzPPTWdjdX@vostro.rjw.lan>
+References: <1389034756-2262-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpsmtpb-ews08.kpnxchange.com ([213.75.39.13]:62138 "EHLO
-	cpsmtpb-ews08.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755870AbaAFUaP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 15:30:15 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1389034756-2262-1-git-send-email-dirk.j.brandewie@intel.com>
+Sender: stable-owner@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, kchamart@redhat.com, jwboyer@fedoraproject.org, pbonzini@redhat.com, gleb@minantech.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, All applicable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The only caller of speedstep_get_state() was removed in commit d4019f0a92ab
-("cpufreq: move freq change notifications to cpufreq core"). So building
-speedstep-smi.o now triggers a GCC warning:
-    drivers/cpufreq/speedstep-smi.c:148:12: warning: 'speedstep_get_state' defined but not used [-Wunused-function]
+On Monday, January 06, 2014 10:59:16 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> 
+> KVM environments do not support APERF/MPERF MSRs. intel_pstate cannot
+> operate without these registers.
+> 
+> The previous validity checks in intel_pstate_msrs_not_valid() are
+> insufficent in nested KVMs.
+> 
+> Fixes:
+> https://bugzilla.redhat.com/show_bug.cgi?id=1046317
+> 
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Remove this unused function.
+OK, I'll queue it up as a fix for 3.13.
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-This seems to be a rather obvious fix. Hasn't it been submitted before?
+Minor nit: "Fixes:" is for the IDs of commits fixed by your patch.  To reference
+a bug entry please use "Buglink" or "References" (which is preferred, because I
+will change anything else to that anyway :-)).
 
- drivers/cpufreq/speedstep-smi.c | 32 --------------------------------
- 1 file changed, 32 deletions(-)
+Thanks!
 
-diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-index 0f5326d..998c17b 100644
---- a/drivers/cpufreq/speedstep-smi.c
-+++ b/drivers/cpufreq/speedstep-smi.c
-@@ -141,38 +141,6 @@ static int speedstep_smi_get_freqs(unsigned int *low, unsigned int *high)
- }
- 
- /**
-- * speedstep_get_state - set the SpeedStep state
-- * @state: processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
-- *
-- */
--static int speedstep_get_state(void)
--{
--	u32 function = GET_SPEEDSTEP_STATE;
--	u32 result, state, edi, command, dummy;
--
--	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
--
--	pr_debug("trying to determine current setting with command %x "
--		"at port %x\n", command, smi_port);
--
--	__asm__ __volatile__(
--		"push %%ebp\n"
--		"out %%al, (%%dx)\n"
--		"pop %%ebp\n"
--		: "=a" (result),
--		  "=b" (state), "=D" (edi),
--		  "=c" (dummy), "=d" (dummy), "=S" (dummy)
--		: "a" (command), "b" (function), "c" (0),
--		  "d" (smi_port), "S" (0), "D" (0)
--	);
--
--	pr_debug("state is %x, result is %x\n", state, result);
--
--	return state & 1;
--}
--
--
--/**
-  * speedstep_set_state - set the SpeedStep state
-  * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
-  *
+> Cc: All applicable <stable@vger.kernel.org>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 0f63f5d..fe91dad 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -619,7 +619,8 @@ static void intel_pstate_timer_func(unsigned long __data)
+>  }
+>  
+>  #define ICPU(model, policy) \
+> -	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_ANY, (unsigned long)&policy }
+> +	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF,\
+> +			(unsigned long)&policy }
+>  
+>  static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+>  	ICPU(0x2a, core_params),
+> 
+
 -- 
-1.8.1.4
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
