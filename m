@@ -1,43 +1,87 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] cpufreq: arm-big-little: Make driver dependent on
-	CONFIG_BIG_LITTLE
-Date: Mon, 6 Jan 2014 00:58:56 +0000
-Message-ID: <20140106005856.GD27432@n2100.arm.linux.org.uk>
-References: <a76f7b6a290d9174a24e15b13df21f53e3f5655f.1388736624.git.viresh.kumar@linaro.org> <39696841.2xGCnmPGdl@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 1/5] cpufreq: Introduce cpufreq_notify_post_transition()
+Date: Mon, 06 Jan 2014 02:16:03 +0100
+Message-ID: <3190393.X74mkhqobq@vostro.rjw.lan>
+References: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:56862 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751782AbaAFA7F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jan 2014 19:59:05 -0500
-Content-Disposition: inline
-In-Reply-To: <39696841.2xGCnmPGdl@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <a6668c7fa63d67ca33b9e59d0189cd99a2ddcd05.1385962178.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Jan 06, 2014 at 02:08:21AM +0100, Rafael J. Wysocki wrote:
-> On Friday, January 03, 2014 03:51:39 PM Viresh Kumar wrote:
-> > arm_big_little cpufreq driver is only used for ARM bigLITTLE platforms and hence
-> > must be dependent on CONFIG_BIG_LITTLE.
-> > 
-> > This was highlighted by Russell earlier when he reported this issue:
-> > 
-> > drivers/built-in.o: In function `bL_cpufreq_set_rate':
-> > powercap_sys.c:(.text+0x5ed9a0): undefined reference to `bL_switch_request_cb'
-> > 
-> > Reported-by: Russell King <linux@arm.linux.org.uk>
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Monday, December 02, 2013 11:04:12 AM Viresh Kumar wrote:
+> This introduces another routine cpufreq_notify_post_transition() which can be
+> used to send POSTCHANGE notification for new freq with or without both
+> {PRE|POST}CHANGE notifications for last freq. This is useful at multiple places,
+> specially for sending transition failure notifications.
 > 
-> Queued up for 3.14, thanks!
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-This is actually a build fix, not a new feature, so IMHO it should go
-in for 3.13.  Linus has said he's going to do -rc8 anyway next weekend
-so -final is at the earliest two weeks away.
+I've queued this series up for 3.14, but I folded patches [3-5/5] into [2/5]
+(and needed to rebase the unicore2 changes).
+
+Every time you want to copy-paste the changelog from one patch to another
+(please don't do that any more) you should rather think about sending a
+combination of the two as one patch.
+
+Thanks!
+
+> ---
+> 
+> V1->V2:
+> - Not required to push it for 3.13 anymore and can go in 3.14.
+> - Rebased over following patchset as there were conflicts in unicore2 driver if
+>   following patchset is applied first (which should be the case):
+>   https://lkml.org/lkml/2013/10/30/553 (create cpufreq_generic_get() routine)
+> 
+>  drivers/cpufreq/cpufreq.c | 14 ++++++++++++++
+>  include/linux/cpufreq.h   |  2 ++
+>  2 files changed, 16 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 5e27def..3b877d4 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -338,6 +338,20 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
+>  
+> +/* Do post notifications when there are chances that transition has failed */
+> +void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+> +		struct cpufreq_freqs *freqs, int transition_failed)
+> +{
+> +	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
+> +	if (!transition_failed)
+> +		return;
+> +
+> +	swap(freqs->old, freqs->new);
+> +	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
+> +	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
+> +
+>  
+>  /*********************************************************************
+>   *                          SYSFS INTERFACE                          *
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 276e646..b26bfab 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -316,6 +316,8 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
+>  
+>  void cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  		struct cpufreq_freqs *freqs, unsigned int state);
+> +void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+> +		struct cpufreq_freqs *freqs, int transition_failed);
+>  
+>  #else /* CONFIG_CPU_FREQ */
+>  static inline int cpufreq_register_notifier(struct notifier_block *nb,
+> 
 
 -- 
-FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
-in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
-Estimate before purchase was "up to 13.2Mbit".
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
