@@ -1,144 +1,167 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
 Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Mon, 6 Jan 2014 15:27:51 +0530
-Message-ID: <CAKohpo=KgHqz0KYv7h0EYP3=8h7T3ZfPpFTMS6qVoEb6dXGnSQ@mail.gmail.com>
+Date: Mon, 06 Jan 2014 11:49:00 +0100
+Message-ID: <87a9f92xnn.fsf@nemi.mork.no>
 References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-	<5562479.pVWRuDL0y6@vostro.rjw.lan>
-	<87zjne7f75.fsf@nemi.mork.no>
-	<2302938.b8tymqrMEz@vostro.rjw.lan>
-	<878uuxquxu.fsf@nemi.mork.no>
+	<5562479.pVWRuDL0y6@vostro.rjw.lan> <87zjne7f75.fsf@nemi.mork.no>
+	<2302938.b8tymqrMEz@vostro.rjw.lan> <878uuxquxu.fsf@nemi.mork.no>
 	<871u0po0gx.fsf@nemi.mork.no>
 	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
 	<87wqihmg9a.fsf@nemi.mork.no>
 	<CAKohpo=3s6=gw8OJTrUdLH8o2ouA=8a8MhrgNRXwHmOf0si5Pw@mail.gmail.com>
 	<87iotx32mx.fsf@nemi.mork.no>
+	<CAKohpo=KgHqz0KYv7h0EYP3=8h7T3ZfPpFTMS6qVoEb6dXGnSQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f180.google.com ([209.85.214.180]:41221 "EHLO
-	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752652AbaAFJ5w convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 04:57:52 -0500
-Received: by mail-ob0-f180.google.com with SMTP id wo20so17828174obc.25
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jan 2014 01:57:51 -0800 (PST)
-In-Reply-To: <87iotx32mx.fsf@nemi.mork.no>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=KgHqz0KYv7h0EYP3=8h7T3ZfPpFTMS6qVoEb6dXGnSQ@mail.gmail.com>
+	(Viresh Kumar's message of "Mon, 6 Jan 2014 15:27:51 +0530")
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 6 January 2014 14:31, Bj=F8rn Mork <bjorn@mork.no> wrote:
-> That's correct.  I have not observed this on suspend to RAM.  But the=
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+
+> On 6 January 2014 14:31, Bj=C3=B8rn Mork <bjorn@mork.no> wrote:
+>> That's correct.  I have not observed this on suspend to RAM.  But th=
+en
+>> again I haven't rigged any way to log that, so I don't think it's
+>> conclusive..
+>>
+>> The point I tried to make is that it isn't related to any hibernatio=
 n
-> again I haven't rigged any way to log that, so I don't think it's
-> conclusive..
+>> *failures*.  The warning appears even if the add_dev() is successful=
+,
+>> and it also appears if I touch only the *boot* cpu cpufreq attribute=
+s.
 >
-> The point I tried to make is that it isn't related to any hibernation
-> *failures*.  The warning appears even if the add_dev() is successful,
-> and it also appears if I touch only the *boot* cpu cpufreq attributes=
-=2E
+> Okay.. But your log below is for add_dev() failure case.
 
-Okay.. But your log below is for add_dev() failure case.
+Any suggestion on how to capure warnings issued between freeze and thaw
+is appreciated :-)
 
-> I.e., this seems to be unrelated to the hotplugging code.
+Will a netconsole work?  I can try that later.
+
+>> I.e., this seems to be unrelated to the hotplugging code.
+>>
+>> Here's another copy of the warning, captured by cancelling hibernati=
+on
+>> as I don't have any other way to log it at the moment.  But I do see=
+ the
+>> warning appear on the console *before* cancelling.  And I also see t=
+his
+>> warning appear when trying the in-kernel hibernation instead of
+>> userspace.
 >
-> Here's another copy of the warning, captured by cancelling hibernatio=
-n
-> as I don't have any other way to log it at the moment.  But I do see =
-the
-> warning appear on the console *before* cancelling.  And I also see th=
-is
-> warning appear when trying the in-kernel hibernation instead of
-> userspace.
+> How do you cancel hibernation here? Sorry, what is in-kernel hibernat=
+ion?
 
-How do you cancel hibernation here? Sorry, what is in-kernel hibernatio=
-n?
+I don't know the proper terms here.  I normally use s2disk from uswsusp
+to hibernate.  By "in-kernel hibernation" I meant the process initiated
+by doing
 
-> [  267.893084] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+ echo disk >/sys/power/state
+
+
+
+>> [  267.893084] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> [  267.893085] [ INFO: possible circular locking dependency detected =
-]
-> [  267.893087] 3.13.0-rc6+ #183 Tainted: G        W
-> [  267.893089] ------------------------------------------------------=
--
-> [  267.893090] s2disk/5450 is trying to acquire lock:
-> [  267.893101]  (s_active#164){++++.+}, at: [<ffffffff8118b9d7>] sysf=
-s_addrm_finish+0x28/0x46
-> [  267.893102]
-> [  267.893102] but task is already holding lock:
-> [  267.893111]  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81039ff5>] =
-cpu_hotplug_begin+0x28/0x50
-> [  267.893112]
-> [  267.893112] which lock already depends on the new lock.
-> [  267.893112]
-> [  267.893113]
-> [  267.893113] the existing dependency chain (in reverse order) is:
-> [  267.893117]
-> [  267.893117] -> #1 (cpu_hotplug.lock){+.+.+.}:
-> [  267.893123]        [<ffffffff81075027>] lock_acquire+0xfb/0x144
-> [  267.893128]        [<ffffffff8139d4d2>] mutex_lock_nested+0x6c/0x3=
-97
-> [  267.893132]        [<ffffffff81039f4a>] get_online_cpus+0x3c/0x50
-> [  267.893137]        [<ffffffff812a69c4>] store+0x20/0xad
-> [  267.893142]        [<ffffffff8118a9a1>] sysfs_write_file+0x138/0x1=
-8b
-> [  267.893147]        [<ffffffff8112a428>] vfs_write+0x9c/0x102
-> [  267.893151]        [<ffffffff8112a716>] SyS_write+0x50/0x85
-> [  267.893155]        [<ffffffff813a57a2>] system_call_fastpath+0x16/=
-0x1b
-> [  267.893160]
-> [  267.893160] -> #0 (s_active#164){++++.+}:
-> [  267.893164]        [<ffffffff81074760>] __lock_acquire+0xae3/0xe68
-> [  267.893168]        [<ffffffff81075027>] lock_acquire+0xfb/0x144
-> [  267.893172]        [<ffffffff8118b027>] sysfs_deactivate+0xa5/0x10=
+>> [  267.893085] [ INFO: possible circular locking dependency detected=
+ ]
+>> [  267.893087] 3.13.0-rc6+ #183 Tainted: G        W
+>> [  267.893089] -----------------------------------------------------=
+--
+>> [  267.893090] s2disk/5450 is trying to acquire lock:
+>> [  267.893101]  (s_active#164){++++.+}, at: [<ffffffff8118b9d7>] sys=
+fs_addrm_finish+0x28/0x46
+>> [  267.893102]
+>> [  267.893102] but task is already holding lock:
+>> [  267.893111]  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81039ff5>]=
+ cpu_hotplug_begin+0x28/0x50
+>> [  267.893112]
+>> [  267.893112] which lock already depends on the new lock.
+>> [  267.893112]
+>> [  267.893113]
+>> [  267.893113] the existing dependency chain (in reverse order) is:
+>> [  267.893117]
+>> [  267.893117] -> #1 (cpu_hotplug.lock){+.+.+.}:
+>> [  267.893123]        [<ffffffff81075027>] lock_acquire+0xfb/0x144
+>> [  267.893128]        [<ffffffff8139d4d2>] mutex_lock_nested+0x6c/0x=
+397
+>> [  267.893132]        [<ffffffff81039f4a>] get_online_cpus+0x3c/0x50
+>> [  267.893137]        [<ffffffff812a69c4>] store+0x20/0xad
+>> [  267.893142]        [<ffffffff8118a9a1>] sysfs_write_file+0x138/0x=
+18b
+>> [  267.893147]        [<ffffffff8112a428>] vfs_write+0x9c/0x102
+>> [  267.893151]        [<ffffffff8112a716>] SyS_write+0x50/0x85
+>> [  267.893155]        [<ffffffff813a57a2>] system_call_fastpath+0x16=
+/0x1b
+>> [  267.893160]
+>> [  267.893160] -> #0 (s_active#164){++++.+}:
+>> [  267.893164]        [<ffffffff81074760>] __lock_acquire+0xae3/0xe6=
 8
-> [  267.893175]        [<ffffffff8118b9d7>] sysfs_addrm_finish+0x28/0x=
-46
-> [  267.893178]        [<ffffffff8118bd3f>] sysfs_remove+0x2a/0x31
-> [  267.893182]        [<ffffffff8118be2f>] sysfs_remove_dir+0x66/0x6b
-> [  267.893186]        [<ffffffff811d5d11>] kobject_del+0x18/0x42
-> [  267.893190]        [<ffffffff811d5e1c>] kobject_cleanup+0xe1/0x14f
-> [  267.893193]        [<ffffffff811d5ede>] kobject_put+0x45/0x49
-> [  267.893197]        [<ffffffff812a6ed5>] cpufreq_policy_put_kobj+0x=
-37/0x83
-
-All above is for case where add dev was required to clear up earlier
-allocated policy as something failed during add_dev()
-
-> [  267.893201]        [<ffffffff812a8bfb>] __cpufreq_add_dev.isra.18+=
-0x75e/0x78c
-> [  267.893204]        [<ffffffff812a8c89>] cpufreq_cpu_callback+0x53/=
-0x88
-> [  267.893208]        [<ffffffff813a314c>] notifier_call_chain+0x67/0=
-x92
-> [  267.893213]        [<ffffffff8105bce4>] __raw_notifier_call_chain+=
-0x9/0xb
-> [  267.893217]        [<ffffffff81039e7c>] __cpu_notify+0x1b/0x32
-> [  267.893221]        [<ffffffff81039ea1>] cpu_notify+0xe/0x10
-> [  267.893225]        [<ffffffff8103a12b>] _cpu_up+0xf1/0x124
-> [  267.893230]        [<ffffffff8138ee7d>] enable_nonboot_cpus+0x52/0=
-xbf
-> [  267.893234]        [<ffffffff8107a2a3>] hibernation_snapshot+0x1be=
-/0x2ed
-
-And this is again the same log as what you have sent last time. It happ=
-ened
-while saving image after disabling all non-boot CPUs. And so it happene=
-d for
-your case as your driver->init() was failing, so it may not get reprodu=
-ced at
-my end. Haven't tried it though.
-
-> I don't think I do anything extra-ordinary to trigger this, so I woul=
-d
-> be surprised if you can't reproduce it by doing
+>> [  267.893168]        [<ffffffff81075027>] lock_acquire+0xfb/0x144
+>> [  267.893172]        [<ffffffff8118b027>] sysfs_deactivate+0xa5/0x1=
+08
+>> [  267.893175]        [<ffffffff8118b9d7>] sysfs_addrm_finish+0x28/0=
+x46
+>> [  267.893178]        [<ffffffff8118bd3f>] sysfs_remove+0x2a/0x31
+>> [  267.893182]        [<ffffffff8118be2f>] sysfs_remove_dir+0x66/0x6=
+b
+>> [  267.893186]        [<ffffffff811d5d11>] kobject_del+0x18/0x42
+>> [  267.893190]        [<ffffffff811d5e1c>] kobject_cleanup+0xe1/0x14=
+f
+>> [  267.893193]        [<ffffffff811d5ede>] kobject_put+0x45/0x49
+>> [  267.893197]        [<ffffffff812a6ed5>] cpufreq_policy_put_kobj+0=
+x37/0x83
 >
->   export x=3D`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_govern=
-or`
->   echo $x >/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
->   s2disk
+> All above is for case where add dev was required to clear up earlier
+> allocated policy as something failed during add_dev()
 
-I don't see you cancelling hibernation here. Sorry got confused on how
-exactly you reproduced it.
+I see.  I'll try capturing at least part of the warning with a camera,
+when it's not failing.
+
+>> [  267.893201]        [<ffffffff812a8bfb>] __cpufreq_add_dev.isra.18=
++0x75e/0x78c
+>> [  267.893204]        [<ffffffff812a8c89>] cpufreq_cpu_callback+0x53=
+/0x88
+>> [  267.893208]        [<ffffffff813a314c>] notifier_call_chain+0x67/=
+0x92
+>> [  267.893213]        [<ffffffff8105bce4>] __raw_notifier_call_chain=
++0x9/0xb
+>> [  267.893217]        [<ffffffff81039e7c>] __cpu_notify+0x1b/0x32
+>> [  267.893221]        [<ffffffff81039ea1>] cpu_notify+0xe/0x10
+>> [  267.893225]        [<ffffffff8103a12b>] _cpu_up+0xf1/0x124
+>> [  267.893230]        [<ffffffff8138ee7d>] enable_nonboot_cpus+0x52/=
+0xbf
+>> [  267.893234]        [<ffffffff8107a2a3>] hibernation_snapshot+0x1b=
+e/0x2ed
+>
+> And this is again the same log as what you have sent last time. It ha=
+ppened
+> while saving image after disabling all non-boot CPUs. And so it happe=
+ned for
+> your case as your driver->init() was failing, so it may not get repro=
+duced at
+> my end. Haven't tried it though.
+>
+>> I don't think I do anything extra-ordinary to trigger this, so I wou=
+ld
+>> be surprised if you can't reproduce it by doing
+>>
+>>   export x=3D`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_gover=
+nor`
+>>   echo $x >/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+>>   s2disk
+>
+> I don't see you cancelling hibernation here. Sorry got confused on ho=
+w
+> exactly you reproduced it.
+
+I cancelled by pressing backspace while the image was being written.
+
+
+Bj=C3=B8rn
