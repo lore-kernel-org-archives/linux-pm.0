@@ -1,93 +1,55 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
-Date: Mon, 6 Jan 2014 10:54:39 -0400
-Message-ID: <52CAC3AF.9020401@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com> <52C4D612.2090808@nvidia.com> <52C5A6CE.5060904@nvidia.com> <20140106135145.GD21906@e106331-lin.cambridge.arm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: how to know how long it takes on suspend/resume for platform
+ usb driver
+Date: Mon, 6 Jan 2014 10:10:58 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401061006470.1282-100000@iolanthe.rowland.org>
+References: <CANudz+vLJCwDVfhc-8VSF6kumjW7fBOkWQLFF+UihQhE34eUVg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="HemHAM6TDENViXwlV0JfG3QCrj3ptvQ4w"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:44212 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbaAFOzz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jan 2014 09:55:55 -0500
-In-Reply-To: <20140106135145.GD21906@e106331-lin.cambridge.arm.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:57949 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755197AbaAFPK7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 10:10:59 -0500
+In-Reply-To: <CANudz+vLJCwDVfhc-8VSF6kumjW7fBOkWQLFF+UihQhE34eUVg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Matthew Longnecker <mlongnecker@nvidia.com>, Wei Ni <wni@nvidia.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: loody <miloody@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
---HemHAM6TDENViXwlV0JfG3QCrj3ptvQ4w
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 6 Jan 2014, loody wrote:
 
-On 06-01-2014 09:51, Mark Rutland wrote:
-> On Thu, Jan 02, 2014 at 05:50:06PM +0000, Matthew Longnecker wrote:
->>
->>> I think the platform driver may set governor for the thermal zone,
->>> so how about to add a property named as "governor",
->>> and parse it to tzp->governor_name,
->>> something like:
->>>                  ret =3D of_property_read_string(child, "governor", &=
-str);
->>>                  if (ret =3D=3D 0)
->>>                          if (strlen(str) < THERMAL_NAME_LENGTH)
->>>                                  strcpy(tzp->governor_name, str);
->>>
->>> Thanks.
->>> Wei.
->>
->> DT is supposed to describe the hardware, right? The governor isn't=20
->> hardware -- it's a software control policy. On the other hand, that=20
->> control policy must be tuned according to the behaviors of the platfor=
-m=20
->> hardware otherwise the system will be unstable.
->>
->> Is it appropriate to be naming the governor in DT? If so, is it equall=
-y=20
->> appropriate to describe any governor-specific parameters in DT (even=20
->> though they are pure software constructs)?
->=20
-> The dt should be relatively static -- if the hardware doesn't change th=
-e
-> dt shouldn't have to.
->=20
-> The governers are not static. We can introduce new ones and throw away
-> old ones at any time. Tuning parameters can also change at any time.
->=20
-> I'd prefer to not have governer details described in the dt, and the
-> choice of governer and configuration of its tuning parameters should be=
+> >> 2. is it possible to change the order of calling resume callback?
+> >>     for example, suppose the original sequence is "ehci -> xhci -> tty
+> >> ..." and I want to change as "tty-> ehci -> xhci".
+> >
+> > It is possible only to a very limited extent.  You can turn async
+> > suspend/resume on or off, and this will affect the order.  Of course,
+> > when async suspend/resume is off, the total time required will be
+> > longer than when it is on.
+> >
+> > Why do you want to change the order?  It shouldn't make any difference.
+> Because I want the GUI and input part of driver resume as earlier as possible.
+> Such that user can keep on their previous work more quicker.
 
-> made at runtime somehow.
+I doubt it will make any noticeable difference.  Remember, userspace 
+remains frozen until _all_ the devices have been resumed.  Until that 
+happens, the user can't do anything.
 
-Agreed.
+> when I "echo 1 > /sys/power/pm_print_time" on my embedded system,
+> there are some message I am curious.
+> after we resume ehci by " call platform3-ehci.0+ returned 0 after 7746
+> usecs" and
+> type driver "call usb3+ returned 0 after 100475 usecs
+> 
+> why there come below resume message:
+> "calling  ehci.2+ @ 63, parent: none
+> bus resume
+> call ehci.2+ returned 0 after 2 usecs
+> "
 
->=20
-> Thanks,
-> Mark.
->=20
->=20
+Because your system has a device named "ehci.2".  If you look through
+the dmesg log for boot-up you should be able to find it.
 
+Alan Stern
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---HemHAM6TDENViXwlV0JfG3QCrj3ptvQ4w
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlLKw68ACgkQCXcVR3XQvP0v5AD/U+wQ8Mvydjvc9EysY14REF44
-KKKk8WVNU19Isgnw22oA/j7sBLySG7jp7kbNwn1NF32olLyIT+0GD6Jicf3Igv31
-=L2Gl
------END PGP SIGNATURE-----
-
---HemHAM6TDENViXwlV0JfG3QCrj3ptvQ4w--
