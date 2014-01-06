@@ -1,141 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] pnp: Bypass the calling to pnp_stop_dev at suspend when there is a protocol suspend
-Date: Mon, 06 Jan 2014 02:35:07 +0100
-Message-ID: <2307791.CbWIVoHDXX@vostro.rjw.lan>
-References: <1387848951-26999-1-git-send-email-shuox.liu@intel.com> <1388971251.2960.11.camel@ymzhang>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
+Date: Mon, 6 Jan 2014 11:57:19 +0530
+Message-ID: <CAKohpo=3s6=gw8OJTrUdLH8o2ouA=8a8MhrgNRXwHmOf0si5Pw@mail.gmail.com>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+	<5562479.pVWRuDL0y6@vostro.rjw.lan>
+	<87zjne7f75.fsf@nemi.mork.no>
+	<2302938.b8tymqrMEz@vostro.rjw.lan>
+	<878uuxquxu.fsf@nemi.mork.no>
+	<871u0po0gx.fsf@nemi.mork.no>
+	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
+	<87wqihmg9a.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64476 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751782AbaAFBVW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jan 2014 20:21:22 -0500
-In-Reply-To: <1388971251.2960.11.camel@ymzhang>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <87wqihmg9a.fsf@nemi.mork.no>
+Sender: cpufreq-owner@vger.kernel.org
+To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: yanmin_zhang@linux.intel.com
-Cc: shuox.liu@intel.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, bhelgaas@google.com, yanmin.zhang@intel.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On Monday, January 06, 2014 09:20:51 AM Yanmin Zhang wrote:
-> On =E4=BA=8C, 2013-12-24 at 09:35 +0800, shuox.liu@intel.com wrote:
-> > From: Zhang Yanmin <yanmin.zhang@intel.com>
-> >=20
-> > pnp pnp_bus_suspend/_resume have an issue.
-> > pnp_bus_suspend calls pnp_stop_dev to disable the device. With ACPI=
-,
-> > pnp_stop_dev turns off the dev usually. Then,
-> > pnp_bus_suspend=3D>pnp_dev->protocol->suspend accesses the device a=
-nd
-> > suspend it again.
-> >=20
-> > pnp_bus_resume has the similar issue.
-> >=20
-> > Another issue is firmware might just provide _DIS, but no_STS metho=
-d.
-> >=20
-> > The patch fixes it by adding a checking. If there is
-> > pnp_dev->protocol->suspend, pnp_bus_suspend doesn't call pnp_stop_d=
-ev.
-> > Do the similar thing for _resume.
-> Rafael,
->=20
-> What's your idea about this patch?
+On 3 January 2014 17:25, Bj=F8rn Mork <bjorn@mork.no> wrote:
+> Correct. And users not running a lock debugging kernel will of course
+> not even see the warning.
 
-I haven't had the time to look deeper into that, sorry.  I'll let you k=
-now
-when I do that.
+Okay..
 
-Thanks!
+>> - It only happens when cpufreq_add_dev() fails during hibernation wh=
+ile
+>> we enable non-boot CPUs again to save image to disk. So, isn't a pro=
+blem
+>> for a system which doesn't have any issues with add_dev() failing on
+>> hibernation
+>
+> Wrong.  This was my initial assumption but I later found out that the
+> issue is unrelated to hibernation failures.  Sorry about the confusio=
+n.
 
-> We hit the issue when enabling Android on a latest tablet. After
-> suspend-to-ram wakeup, serial console doesn't work.
-> This serial port is bound by pnpcore driver.
-> At suspending,=20
-> static int __pnp_bus_suspend(struct device *dev, pm_message_t state)
-> {
-> 	...
->=20
->         if (pnp_can_disable(pnp_dev)) {
->                 error =3D pnp_stop_dev(pnp_dev);
->                 if (error)
->                         return error;
->         }
->=20
->         if (pnp_dev->protocol->suspend)
->                 pnp_dev->protocol->suspend(pnp_dev, state);
->         return 0;
-> }
->=20
-> pnp_stop_dev calls dev->protocol->disable.
-> As for ACPI device, that disable callback calls _DIS. Based
-> on ACPI spec, driver need turn off the device before disabling it
-> by _DIS. That means, after pnp_stop_dev returns, the device is at OFF
-> state.
->=20
-> Then, __pnp_bus_suspend calls pnp_dev->protocol->suspend, which
-> continues to access the device while the device is at OFF.
->=20
-> Our firmware just provides _DIS for the device. There is no _STS
-> method. Then, after wakeup, the device doesn't work.
->=20
-> But just like what the patch points out, pnp_dev->protocol->suspend
-> continues to access the device while the device is at OFF. It's not s=
-afe.
->=20
-> The patch looks like a workaround. Another possible fix is to just
-> delete the calling of pnp_stop_dev in function __pnp_bus_suspend, as
-> suspend is not equal to _disable_.
-> The deletion might be a little intrusive. That's why we sent a workar=
-ound
-> patch to LKML.
->=20
-> Which one is better?
->=20
-> Thanks,
-> Yanmin
->=20
-> >=20
-> > Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
-> > Signed-off-by: Liu ShuoX <shuox.liu@intel.com>
-> > ---
-> >  drivers/pnp/driver.c | 6 ++----
-> >  1 file changed, 2 insertions(+), 4 deletions(-)
-> >=20
-> > diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
-> > index f748cc8..2512e47 100644
-> > --- a/drivers/pnp/driver.c
-> > +++ b/drivers/pnp/driver.c
-> > @@ -176,7 +176,7 @@ static int __pnp_bus_suspend(struct device *dev=
-, pm_message_t state)
-> >  			return error;
-> >  	}
-> > =20
-> > -	if (pnp_can_disable(pnp_dev)) {
-> > +	if (pnp_can_disable(pnp_dev) && !pnp_dev->protocol->suspend) {
-> >  		error =3D pnp_stop_dev(pnp_dev);
-> >  		if (error)
-> >  			return error;
-> > @@ -215,9 +215,7 @@ static int pnp_bus_resume(struct device *dev)
-> >  		error =3D pnp_dev->protocol->resume(pnp_dev);
-> >  		if (error)
-> >  			return error;
-> > -	}
-> > -
-> > -	if (pnp_can_write(pnp_dev)) {
-> > +	} else if (pnp_can_write(pnp_dev)) {
-> >  		error =3D pnp_start_dev(pnp_dev);
-> >  		if (error)
-> >  			return error;
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Hmm.. Can we have the latest warning logs you have? Earlier ones were
+related to hibernation..
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>> - There is a contention of locks in the order they are taken. And th=
+e contention
+>> looks to be between, hotplug lock taken by cpu_online_cpus() and s_a=
+ctive
+>> lock for sysfs files. Don't know what's the role of previous write t=
+o
+>> sysfs files.
+>> As that should finish before hibernation starts and so all locks sho=
+uld be back
+>> in place.
+>
+> Yes, that seems logical.  But I guess this is where it fails?
+
+It looked like that.. Though your new logs might indicate something els=
+e.
