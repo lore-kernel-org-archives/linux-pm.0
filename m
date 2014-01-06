@@ -1,59 +1,85 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC RESEND PATCH 1/1] thermal: introduce clock cooling device
-Date: Mon, 6 Jan 2014 22:31:35 +0100
-Message-ID: <20140106213135.GA14927@amd.pavel.ucw.cz>
-References: <1389013458-14719-1-git-send-email-eduardo.valentin@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: speedstep: remove unused speedstep_get_state
+Date: Mon, 06 Jan 2014 23:24:21 +0100
+Message-ID: <1756077.6t9Ofi9GiT@vostro.rjw.lan>
+References: <1389040212.2562.3.camel@x41>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51349 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755983AbaAFVbh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 16:31:37 -0500
-Content-Disposition: inline
-In-Reply-To: <1389013458-14719-1-git-send-email-eduardo.valentin@ti.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:62180 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755383AbaAFWKf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 17:10:35 -0500
+In-Reply-To: <1389040212.2562.3.camel@x41>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: rui.zhang@intel.com, Mike Turquette <mturquette@linaro.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
+On Monday, January 06, 2014 09:30:12 PM Paul Bolle wrote:
+> The only caller of speedstep_get_state() was removed in commit d4019f0a92ab
+> ("cpufreq: move freq change notifications to cpufreq core"). So building
+> speedstep-smi.o now triggers a GCC warning:
+>     drivers/cpufreq/speedstep-smi.c:148:12: warning: 'speedstep_get_state' defined but not used [-Wunused-function]
+> 
+> Remove this unused function.
+> 
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 
-> --- /dev/null
-> +++ b/drivers/thermal/clock_cooling.c
-> @@ -0,0 +1,484 @@
-> +/*
-> + *  drivers/thermal/cpu_cooling.c
+Queued up for 3.14, thanks!
 
-Bit too much copy&paste...
+> ---
+> This seems to be a rather obvious fix. Hasn't it been submitted before?
+> 
+>  drivers/cpufreq/speedstep-smi.c | 32 --------------------------------
+>  1 file changed, 32 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+> index 0f5326d..998c17b 100644
+> --- a/drivers/cpufreq/speedstep-smi.c
+> +++ b/drivers/cpufreq/speedstep-smi.c
+> @@ -141,38 +141,6 @@ static int speedstep_smi_get_freqs(unsigned int *low, unsigned int *high)
+>  }
+>  
+>  /**
+> - * speedstep_get_state - set the SpeedStep state
+> - * @state: processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
+> - *
+> - */
+> -static int speedstep_get_state(void)
+> -{
+> -	u32 function = GET_SPEEDSTEP_STATE;
+> -	u32 result, state, edi, command, dummy;
+> -
+> -	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+> -
+> -	pr_debug("trying to determine current setting with command %x "
+> -		"at port %x\n", command, smi_port);
+> -
+> -	__asm__ __volatile__(
+> -		"push %%ebp\n"
+> -		"out %%al, (%%dx)\n"
+> -		"pop %%ebp\n"
+> -		: "=a" (result),
+> -		  "=b" (state), "=D" (edi),
+> -		  "=c" (dummy), "=d" (dummy), "=S" (dummy)
+> -		: "a" (command), "b" (function), "c" (0),
+> -		  "d" (smi_port), "S" (0), "D" (0)
+> -	);
+> -
+> -	pr_debug("state is %x, result is %x\n", state, result);
+> -
+> -	return state & 1;
+> -}
+> -
+> -
+> -/**
+>   * speedstep_set_state - set the SpeedStep state
+>   * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
+>   *
+> 
 
-
-> + *  Copyright (C) 2013	Texas Instruments Inc.
-> + *  Contact:  Eduardo Valentin <eduardo.valentin@ti.com>
-> + *
-> + *  Highly based on cpu_cooling.c.
-
-Check english. And you should add samsung & linaro copyright here,
-since you copied from it.
-
-> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-can we get rid of ~~~s?
-
-> +static int clock_cooling_get_property(struct clock_cooling_device *ccdev,
-> +				      unsigned long input,
-> +				      unsigned long *output,
-> +				      enum clock_cooling_property property)
-> +{
-> +	int i, j;
-> +	unsigned long max_level = 0, level = 0;
-...
-> +	if (property == GET_MAXL) {
-> +		*output = (unsigned int)max_level;
-
-What is going on with types here? Remove cast?
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
