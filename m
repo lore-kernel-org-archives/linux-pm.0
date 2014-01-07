@@ -1,152 +1,79 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
-Date: Tue, 7 Jan 2014 07:35:07 -0400
-Message-ID: <52CBE66B.7050802@ti.com>
-References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au> <52CB0948.6030702@infradead.org> <20140106203209.GA21630@roeck-us.net> <52CB53DC.4030901@infradead.org> <52CB65DA.2010103@roeck-us.net>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
+Date: Tue, 7 Jan 2014 12:02:48 +0000
+Message-ID: <20140107120248.GD4180@e106331-lin.cambridge.arm.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
+ <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
+ <52C4D612.2090808@nvidia.com>
+ <52C5A6CE.5060904@nvidia.com>
+ <20140106135145.GD21906@e106331-lin.cambridge.arm.com>
+ <52CAC3AF.9020401@ti.com>
+ <52CB69FA.9080903@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="jOKTowXeSpRJfk0k0foVC5uN3dqI6oJq0"
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <52CB65DA.2010103@roeck-us.net>
-Sender: linux-next-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Frodo Looijaard <frodol@dds.nl>, lm-sensors@lm-sensors.org, "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:53324 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750843AbaAGMCw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 07:02:52 -0500
+Content-Disposition: inline
+In-Reply-To: <52CB69FA.9080903@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wei Ni <wni@nvidia.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
---jOKTowXeSpRJfk0k0foVC5uN3dqI6oJq0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jan 07, 2014 at 02:44:10AM +0000, Wei Ni wrote:
+> On 01/06/2014 10:54 PM, Eduardo Valentin wrote:
+> > * PGP Signed by an unknown key
+> > 
+> > On 06-01-2014 09:51, Mark Rutland wrote:
+> >> On Thu, Jan 02, 2014 at 05:50:06PM +0000, Matthew Longnecker wrote:
+> >>>
+> >>>> I think the platform driver may set governor for the thermal zone,
+> >>>> so how about to add a property named as "governor",
+> >>>> and parse it to tzp->governor_name,
+> >>>> something like:
+> >>>>                  ret = of_property_read_string(child, "governor", &str);
+> >>>>                  if (ret == 0)
+> >>>>                          if (strlen(str) < THERMAL_NAME_LENGTH)
+> >>>>                                  strcpy(tzp->governor_name, str);
+> >>>>
+> >>>> Thanks.
+> >>>> Wei.
+> >>>
+> >>> DT is supposed to describe the hardware, right? The governor isn't 
+> >>> hardware -- it's a software control policy. On the other hand, that 
+> >>> control policy must be tuned according to the behaviors of the platform 
+> >>> hardware otherwise the system will be unstable.
+> >>>
+> >>> Is it appropriate to be naming the governor in DT? If so, is it equally 
+> >>> appropriate to describe any governor-specific parameters in DT (even 
+> >>> though they are pure software constructs)?
+> >>
+> >> The dt should be relatively static -- if the hardware doesn't change the
+> >> dt shouldn't have to.
+> >>
+> >> The governers are not static. We can introduce new ones and throw away
+> >> old ones at any time. Tuning parameters can also change at any time.
+> >>
+> >> I'd prefer to not have governer details described in the dt, and the
+> >> choice of governer and configuration of its tuning parameters should be
+> >> made at runtime somehow.
+> >
+> > Agreed.
+> 
+> Yes, I think so, but the of-thermal driver handle the
+> thermal_zone_device_register, and pass the "tzp" without governor_name,
+> so the created thermal_zone's governor will be NULL, then it can't run
+> into the governor->throttle() if needed. And currently there have no
+> interface to support updating governor and configuration at runtime.
+> I think it's better to initialize the governor_name when register the
+> thermal zone device in the of-thermal driver.
 
-On 06-01-2014 22:26, Guenter Roeck wrote:
-> On 01/06/2014 05:09 PM, Randy Dunlap wrote:
->> On 01/06/14 12:32, Guenter Roeck wrote:
->>> On Mon, Jan 06, 2014 at 11:51:36AM -0800, Randy Dunlap wrote:
->>>> On 01/06/14 01:40, Stephen Rothwell wrote:
->>>>> Hi all,
->>>>>
->>>>> This tree fails (more than usual) the powerpc allyesconfig build.
->>>>>
->>>>> Changes since 20131224:
->>>>>
->>>>
->>>>
->>>> on i386:
->>>>
->>>> drivers/built-in.o: In function `lm75_remove':
->>>> lm75.c:(.text+0x12bd8c): undefined reference to
->>>> `thermal_zone_of_sensor_unregister'
->>>> drivers/built-in.o: In function `lm75_probe':
->>>> lm75.c:(.text+0x12c123): undefined reference to
->>>> `thermal_zone_of_sensor_register'
->>>>
->>>
->>> AFAICS that is a dependency problem in thermal code.
->>> CONFIG_THERMAL=3Dm defines the symbols, but CONFIG_SENSORS_LM75=3Dy.
->>
->> CONFIG_THERMAL_OF defines the symbols.
->>
->> It looks to me like drivers/hwmon/Kconfig SENSORS_LM75 entry needs a
->>     depends on THERMAL_OF
->> line, but that won't fix this build error.
->> The problem (once again, not the first time that I have seen this one)=
+Initialising it in the driver doesn't mean it has to come from the
+device tree. That's still a run-time decision, even though it's made
+immediately after parsing the DT.
 
->> is that
->> we have a tristate =3Dm that depends on a bool =3Dy.
->>
->> Hm, I bet a "depends on THERMAL" for SENSORS_LM75 will fix this.
->> [test]
->> Yes, that restricts (limits) SENSORS_LM75 to n/m; y is not possible.
->>
->> Patch for your consideration is below.
->>
->>>
->>> Up to the thermal folks to fix; if the code ends up in mainline we'll=
-
->>> have to
->>> revert the patch introducing the calls to the lm75 driver (and the
->>> tmp102 driver
->>> which has the same issue).
->>>
->>> Another oddity is the help text to THERMAL_OF, which states that it
->>> supports
->>> reading and parsing thermal data definitions out of dt but fails to
->>> mention
->>> that it also provides the above API functions.
->>
->> ---
->> From: Randy Dunlap <rdunlap@infradead.org>
->>
->> Fix SENSORS_LM75 dependencies to eliminate build errors:
->>
->> drivers/built-in.o: In function `lm75_remove':
->> lm75.c:(.text+0x12bd8c): undefined reference to
->> `thermal_zone_of_sensor_unregister'
->> drivers/built-in.o: In function `lm75_probe':
->> lm75.c:(.text+0x12c123): undefined reference to
->> `thermal_zone_of_sensor_register'
->>
->> Add depends on THERMAL_OF since that is what provides the
->> register/unregister functions above.
->>
->> Add depends on THERMAL since THERMAL is a tristate (while THERMAL_OF
->> is a bool) and SENSORS_LM75 (tristate) needs to be limited to modular
->> builds when THERMAL=3Dm.
->>
->> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
->> ---
->>   drivers/hwmon/Kconfig |    2 ++
->>   1 file changed, 2 insertions(+)
->>
->> --- linux-next-20140106.orig/drivers/hwmon/Kconfig
->> +++ linux-next-20140106/drivers/hwmon/Kconfig
->> @@ -650,6 +650,8 @@ config SENSORS_LM73
->>   config SENSORS_LM75
->>       tristate "National Semiconductor LM75 and compatibles"
->>       depends on I2C
->> +    depends on THERMAL
->> +    depends on THERMAL_OF
->>       help
->>         If you say yes here you get support for one common type of
->>         temperature sensor chip, with models including:
->>
->>
-> NACK. The driver does not and must not depend on THERMAL. This needs to=
-
-> be addressed
-> in the thermal code, for example with dummy declarations if THERMAL=3Dm=
- but
-> SENSORS_LM75=3Dy. The functions are already declared as dummies if
-> THERMAL_OF=3Dn.
-
-What do you mean by that? The code of an API provider needs to keep
-track of all its users?
-
->=20
-> Guenter
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---jOKTowXeSpRJfk0k0foVC5uN3dqI6oJq0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlLL5msACgkQCXcVR3XQvP2LAwEA0pXFKG7PN4uQojQ8P5XC0u5V
-aeWxolVJd3s/QXXq8rEBAIKwaUkbVdk4rLbGfuA4XLZRODBVky/PN5V3qgpjRW5X
-=wMDs
------END PGP SIGNATURE-----
-
---jOKTowXeSpRJfk0k0foVC5uN3dqI6oJq0--
+Thanks,
+Mark.
