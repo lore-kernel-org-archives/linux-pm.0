@@ -1,63 +1,229 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [2/11] issue 2: Energy-awareness for heterogeneous systems
-Date: Tue,  7 Jan 2014 16:19:38 +0000
-Message-ID: <1389111587-5923-3-git-send-email-morten.rasmussen@arm.com>
-References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@kernel.org
-Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
+Date: Tue, 7 Jan 2014 12:33:28 -0400
+Message-ID: <52CC2C58.5080205@ti.com>
+References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au> <52CB0948.6030702@infradead.org> <20140106203209.GA21630@roeck-us.net> <52CB53DC.4030901@infradead.org> <52CB65DA.2010103@roeck-us.net> <20140107130401.23bffcd2@endymion.delvare> <52CBF1CF.2000603@ti.com> <20140107152148.36768345@endymion.delvare>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="m3Mo5vQbTd1BAO3H7ex0KSOLEI0DhJlb1"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:50551 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751468AbaAGQfS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jan 2014 11:35:18 -0500
+In-Reply-To: <20140107152148.36768345@endymion.delvare>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Guenter Roeck <linux@roeck-us.net>, Randy Dunlap <rdunlap@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Frodo Looijaard <frodol@dds.nl>, lm-sensors@lm-sensors.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-While performance is non-deterministic with the mainline scheduler
-(described in issue 6) it also leads to non-deterministic energy
-consumption.  First step is to get performance right, but if we don't
-keep energy in mind, heterogeneous systems will end up with high
-performance and energy consumption.
+--m3Mo5vQbTd1BAO3H7ex0KSOLEI0DhJlb1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-To save energy low intensity workloads should not be scheduled on fast
-cpus as these are generally less energy efficient. Audio playback is an
-example where the performance offered by the slow cpus in todays
-heterogeneous systems like ARM big.LITTLE is more than sufficient.
+On 07-01-2014 10:21, Jean Delvare wrote:
+> Hi Eduardo,
+>=20
+> On Tue, 7 Jan 2014 08:23:43 -0400, Eduardo Valentin wrote:
+>> On 07-01-2014 08:04, Jean Delvare wrote:
+>>> On Mon, 06 Jan 2014 18:26:34 -0800, Guenter Roeck wrote:
+>>>> This needs to be addressed
+>>>> in the thermal code, for example with dummy declarations if THERMAL=3D=
+m but
+>>>> SENSORS_LM75=3Dy. The functions are already declared as dummies if T=
+HERMAL_OF=3Dn.
+>>>
+>>> This won't fly I'm afraid, the number of hwmon drivers affected will
+>>> grow in the future and you certainly don't want to have to change the=
 
-The mainline scheduler may schedule it on any cpu leading to
-non-deterministic energy consumption. The energy expense on big (A15) is
-3.63x little (A7) for Android mp3 audio playback on ARM TC2 (2xA15+3xA7)
-when using just the A15s or just the A7s.
+>>> generic thermal code every time a new driver is added/converted.
+>>
+>> Agreed
+>>
+>>>
+>>> I've looked at the problem this morning and I will admit I do not eve=
+n
+>>> understand what the problem is. In Randy's config, CONFIG_THERMAL_OF=3D=
+y
+>>> so both thermal_zone_of_sensor_unregister and
+>>> thermal_zone_of_sensor_register are built-in. SENSORS_LM75=3Dy so the=
 
-If we run multiple workloads at the same time, e.g. audio and
-webbrowsing, both performance and energy is non-deterministic. Because
-of audio we may even get poor webbrowsing performance and high energy
-consumption at the same time.
+>>> calls to these functions are built-in too. I just can't see how this
+>>> can be a problem at link time. Can anyone enlighten me?
+>>
+>> I believe the problem is more in the fact that THERMAL_OF is a bool, b=
+ut
+>> the way it is in thermal Kconfig, it will link to the thermal module, =
+in
+>> case CONFIG_THERMAL=3Dm.
+>=20
+> Doh. I've been looking at this for an hour and managed to miss
+> that :( Thanks for explaining.
+>=20
+>> Thus I am proposing the following,
+>> which limits the user to have THERMAL_OF only as builtin and whenever
+>> is selected, it will select THERMAL too. That is:
+>>
+>>
+>> From b643aa260ed4f3514d1ca51b1ecbe4be7652a8d0 Mon Sep 17 00:00:00 2001=
 
-Running that scenario on Android on ARM TC2 gives the following
-execution times and energy measurements for 10 runs (normalized to avg):
+>> From: Eduardo Valentin <eduardo.valentin@ti.com>
+>> Date: Tue, 7 Jan 2014 08:04:02 -0400
+>> Subject: [PATCH 1/1] thermal: fix compilation issue on CONFIG_THERMAL_=
+OF
+>>  dependencies
+>>
+>> Users of API provided by THERMAL_OF config may suffer when
+>> CONFIG_THERMAL=3Dy, causing linking issues, such as:
+>>
+>> drivers/built-in.o: In function `lm75_remove':
+>> lm75.c:(.text+0x12bd8c): undefined reference to
+>> `thermal_zone_of_sensor_unregister'
+>> drivers/built-in.o: In function `lm75_probe':
+>> lm75.c:(.text+0x12c123): undefined reference to
+>> `thermal_zone_of_sensor_register'
+>>
+>> Therefore, this patch limits the compilation build to always
+>> have THERMAL=3Dy, whenever THERMAL_OF=3Dy. In this way, whenever
+>> the API user is built, if THERMAL_OF=3Dy, the build shall have
+>> the full thermal support, otherwise, the thermal API will provide
+>> stubs.
+>>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>  drivers/thermal/Kconfig | 29 ++++++++++++++++-------------
+>>  1 file changed, 16 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index 58f98bd..dc315e9 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -29,19 +29,6 @@ config THERMAL_HWMON
+>>  	  Say 'Y' here if you want all thermal sensors to
+>>  	  have hwmon sysfs interface too.
+>>
+>> -config THERMAL_OF
+>> -	bool
+>> -	prompt "APIs to parse thermal data out of device tree"
+>> -	depends on OF
+>> -	default y
+>> -	help
+>> -	  This options provides helpers to add the support to
+>> -	  read and parse thermal data definitions out of the
+>> -	  device tree blob.
+>> -
+>> -	  Say 'Y' here if you need to build thermal infrastructure
+>> -	  based on device tree.
+>> -
+>>  choice
+>>  	prompt "Default Thermal governor"
+>>  	default THERMAL_DEFAULT_GOV_STEP_WISE
+>> @@ -235,3 +222,19 @@ source "drivers/thermal/samsung/Kconfig"
+>>  endmenu
+>>
+>>  endif
+>> +
+>> +menuconfig THERMAL_OF
+>> +	bool
+>> +	prompt "APIs to parse thermal data out of device tree"
+>> +	depends on OF
+>> +	select THERMAL
+>> +	default y
+>> +	help
+>> +	  This options enables DT thermal API which adds support to
+>> +	  read and parse thermal data definitions out of the
+>> +	  device tree blob. This option is mostly used by embedded
+>> +	  thermal drivers.
+>> +
+>> +	  Say 'Y' here if you need to build thermal infrastructure
+>> +	  based on device tree.
+>> +
+>=20
+> I suppose this works, however I believe there is value in allowing for
+> modular building of as much code as possible.
+>=20
+> I have an alternative proposal, which lets thermal be built as module,
+> and hopefully also addresses the issue (I can't test...) The only
+> drawback is that the same dependency must be added for every other
+> hwmon driver which optionally uses THERMAL_OF.
+>=20
+> From: Jean Delvare <khali@linux-fr.org>
+>=20
+> Based on an earlier attempt by Randy Dunlap.
+>=20
+> Fix SENSORS_LM75 dependencies to eliminate build errors:
+>=20
+> drivers/built-in.o: In function `lm75_remove':
+> lm75.c:(.text+0x12bd8c): undefined reference to `thermal_zone_of_sensor=
+_unregister'
+> drivers/built-in.o: In function `lm75_probe':
+> lm75.c:(.text+0x12c123): undefined reference to `thermal_zone_of_sensor=
+_register'
+>=20
+> Add depends on THERMAL since that is what provides the
+> register/unregister functions above, but only if THERMAL_OF was
+> selected as this is an optional feature of the driver.
+>=20
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
 
-Run     Exec    Energy
-1       1.03    1.04
-2       1.12    1.11    Worst energy
-3       0.85    1.08
-4       0.85    1.08    Best performance
-5       0.94    1.06
-6       1.01    0.78
-7       0.90    0.63    Best performance/energy and best energy
-8       1.22    1.08    Worst performance/energy and worst performance
-9       0.94    1.08
-10      1.14    1.07
+I agree with this approach, as it can properly serve the purpose of
+fixing this specific issue. The only drawback here is the fact that we
+need to add this change to every possible user of this API. If you want
+to push this fix via hwmon, you can add my
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
-Run 7 had a very good schedule as it led to both lowest energy and also
-good performance at the same time. That is not generally the case. Run 2
-is an example of a poor schedule where performance is 12% worse than
-average and energy is 11% higher. Best performance in run 3 comes at the
-cost of high energy.
+and I request Rui to drop the patch I sent earlier.
 
-While run 7 seems to be ideal from an energy-awareness point of view,
-it may be disqualified by performance constraints. Hence, ideally the
-performance level should be tunable.
+Now, other issue is the fact that the thermal framework config entry
+needs to be revisited, despite the link to this issue. As I mentioned in
+other email thread, there are other system requirements that may prevent
+proper usage of the thermal framework as a module. This is, I know,
+another topic, and it shall be discussed in a different thread.
 
-Possible solution: We know that a simple heuristic that controls task
-placement based on tracked load works rather well for most smartphone
-workloads. However, realistic patterns exist that defeat this heuristic.
+> ---
+>  drivers/hwmon/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> --- linux-3.13-rc7.orig/drivers/hwmon/Kconfig	2014-01-07 09:01:24.81284=
+8091 +0100
+> +++ linux-3.13-rc7/drivers/hwmon/Kconfig	2014-01-07 15:19:11.039472329 =
++0100
+> @@ -650,6 +650,7 @@ config SENSORS_LM73
+>  config SENSORS_LM75
+>  	tristate "National Semiconductor LM75 and compatibles"
+>  	depends on I2C
+> +	depends on THERMAL || !THERMAL_OF
+>  	help
+>  	  If you say yes here you get support for one common type of
+>  	  temperature sensor chip, with models including:
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--m3Mo5vQbTd1BAO3H7ex0KSOLEI0DhJlb1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlLMLFgACgkQCXcVR3XQvP3BiwEAypIWI1EdAWVLLMwN3mcV7LM5
+OuIxvtLhSTc50vGxAocA/jsuWRBFCA1Tza5+Jg5ipFbkmpI5vlLa1btH0zxg6BJE
+=G5v/
+-----END PGP SIGNATURE-----
+
+--m3Mo5vQbTd1BAO3H7ex0KSOLEI0DhJlb1--
