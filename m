@@ -1,50 +1,60 @@
-From: Phillip Susi <psusi@ubuntu.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Tue, 07 Jan 2014 11:37:51 -0500
-Message-ID: <52CC2D5F.6030905@ubuntu.com>
-References: <Pine.LNX.4.44L0.1401071057130.1296-100000@iolanthe.rowland.org>
+Date: Tue, 7 Jan 2014 13:05:17 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401071251330.1296-100000@iolanthe.rowland.org>
+References: <52CC2D5F.6030905@ubuntu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:52953 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752823AbaAGQh5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:37:57 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1401071057130.1296-100000@iolanthe.rowland.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:56328 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753068AbaAGSFT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 13:05:19 -0500
+In-Reply-To: <52CC2D5F.6030905@ubuntu.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Phillip Susi <psusi@ubuntu.com>
 Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, 7 Jan 2014, Phillip Susi wrote:
 
-On 1/7/2014 11:08 AM, Alan Stern wrote:
-> Okay, that's a different matter.  There's a much simpler way to 
-> accomplish this.  The patch below will avoid spinning up drives
-> that were already in runtime suspend when the system sleep started.
->  (If a drive wasn't in runtime suspend then presumably it was used
->  recently; therefore it's likely to be used again in the near
-> future and so it _should_ be spun up.)
+> On 1/7/2014 11:08 AM, Alan Stern wrote:
+> > Okay, that's a different matter.  There's a much simpler way to 
+> > accomplish this.  The patch below will avoid spinning up drives
+> > that were already in runtime suspend when the system sleep started.
+> >  (If a drive wasn't in runtime suspend then presumably it was used
+> >  recently; therefore it's likely to be used again in the near
+> > future and so it _should_ be spun up.)
+> 
+> This is a poor assumption.  You may not be using autosuspend at all,
+> or with a rather long timeout, so it is fairly normal to not be
+> runtime suspended at suspend time, and yet not likely to access the
+> disk for some time after resume.
 
-This is a poor assumption.  You may not be using autosuspend at all,
-or with a rather long timeout, so it is fairly normal to not be
-runtime suspended at suspend time, and yet not likely to access the
-disk for some time after resume.  It also still suffers from the issue
-of claiming the device is runtime suspended while the disk has in
-fact, spun up of its own accord.
+I disagree with your argument.  If you aren't using autosuspend at all 
+then you don't mind having your disks spin all the time.  Therefore you 
+don't mind if the disks spin up during system resume.
 
+If you're using a long timeout and you don't like the way the timer 
+gets reset by a system sleep, then you have set the timeout too long.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (MingW32)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Now, a more reasonable argument might be that for some disks, the
+kernel doesn't need to do an explicit spin-up or spin-down (for runtime
+suspend) at all; instead we can rely on the drive's internal power
+management.  In fact there already is a "manage_start_stop" attribute
+to control this.  (Well, almost -- if the attribute is set to 0 then
+the kernel won't issue a spin-down command even for system suspend.)
 
-iQEcBAEBAgAGBQJSzC1fAAoJEI5FoCIzSKrwO5oIAJaROYiUSrapbSo40/YLLuPH
-Y+5ECV7JW1hVSK7n3MyYls5YS6DiBQpjlhZ0h7XXoRWzUuT8GtU69wufjgln9IkZ
-0zTDj7idDBzbBVBzdhLRsposIWWldsnpfYqvOPZsCd/xQe/jhnamKfBCSr4gYHy0
-/FklPdPa2HXwApTNEz2fpleNiqdl6lbDEUkqI/sWkbjKrGVb57CAu8MaruPd2Frh
-lkE3Dw7OfgQcngU8pU6kj4otRaBMEoEfIN7gMQ2CNont5JICDf4CvrZXawvKD3/1
-Vg72E7DEUkNOCorqGywPcbV8838joEefmcsBc73w7Cn0rZC/5OmgrPyIUfgaS9k=
-=bu2W
------END PGP SIGNATURE-----
+>  It also still suffers from the issue
+> of claiming the device is runtime suspended while the disk has in
+> fact, spun up of its own accord.
+
+I don't understand.  Under what circumstances would this happen?  Are 
+you saying this would happen during system resume?  Why would the disk 
+spin up of its own accord at that time?
+
+And if it does spin up of its own accord, what makes you think the 
+kernel can do anything to prevent it from spinning up?
+
+Alan Stern
+
