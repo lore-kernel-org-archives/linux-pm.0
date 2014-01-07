@@ -1,50 +1,61 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [0/11][REPOST] Energy-aware scheduling use-cases and scheduler issues
-Date: Tue,  7 Jan 2014 16:19:36 +0000
-Message-ID: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
+Subject: [10/11] use-case 4: Game on Android
+Date: Tue,  7 Jan 2014 16:19:46 +0000
+Message-ID: <1389111587-5923-11-git-send-email-morten.rasmussen@arm.com>
+References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:45252 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:45713 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbaAGQTv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:19:51 -0500
+	with ESMTP id S1752375AbaAGQT4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:19:56 -0500
+In-Reply-To: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Reposting the series with LKML on cc as well.
+Games generally have periodic load pattern synchronized to the
+frame-rate (30 or 60 Hz). Games workloads typically involve both
+graphics rendering (game engine) and audio mixing.
 
-Original thread (with a few replies) can be found here:
-http://article.gmane.org/gmane.linux.power-management.general/41501
+Performance Criteria
 
-Sorry for double-posting.
+Keep the frame-rate as close to the target as possible. Variations are
+acceptable. Audio must be handled before the audio buffers runs empty.
 
-Morten
+Task behaviour
 
-------------------------------------------------------------------------
+This description is based on one particular Android game, but similar
+patterns have been observed for a number of games. Overall, 10+ threads
+are active and context switches happen very often. Key game engine tasks
+and graphics driver tasks are scheduled ~200-700 times per second. The
+top 10 tasks (by cpu time) consists of: One game task, one main game
+engine task, three graphics related tasks, three audio tasks, one event
+handling task, and one kworker task.
 
-Hi,
+Game engine task: By far the most cpu intensive task. Accounts for about
+50% of all cpu load. It is scheduled ~375 times per second (average).
+The scheduling pattern repeats every ~16 ms (~60 Hz), where the task
+runs for ~12 ms, followed by three shorter periods of activity where the
+longest is ~2 ms (unless it is preempted by other tasks). In addition,
+the game engine has a worker thread for each cpu. Each of the worker
+threads account for ~0.4% of the load, is scheduled ~115 times per
+second (average), and only runs for ~56 us (average).
 
-One of the requests from the scheduler maintainers at the Energy-aware
-Scheduling workshop at Kernel Summit this year was to provide plain text
-descriptions of use-cases (workloads) and system topologies. To get that
-moving I have written some short texts about some use-cases. In addition
-I described a list of issues that today prevent mainly the scheduler
-from achieving a good energy/performance balance in common use-cases.
-The follow-up emails are structured as follows:
+Rendering task: Accounts for ~6% of the load. Scheduled ~200 times per
+second (average) and runs for ~420 us (average).
 
-1-6:=09Current issues related to energy/performance balance.
-7-10:=09Use-cases (overall behaviour and energy/performance goals)
-11:=09DVFS example (for reference)
+Graphics driver task: Accounts for ~6% of the load. Scheduled ~700 times
+per second (average) and runs for 11 us (average).
 
-I'm hoping that this provides some of the background for why I'm
-interested in improving energy-awareness in the scheduler. I'm aware
-that the use-cases and issues/wishlist don't cover everyone's area of
-interest. Input is needed to fix that.
+Game main task: Accounts for ~4% of the load. Scheduled ~170 times per
+second (average) and runs for ~37 us (average).
 
-Comments and input are appreciated.
+Audio system task: Accounts for ~3% of the load. Scheduled ~120 times
+per second (average) and runs for ~42 us (average).
 
-Morten
+kworker task: Accounts for ~3% of the load. Scheduled ~320 times per
+second (average) and runs for ~13 us (average).
 
