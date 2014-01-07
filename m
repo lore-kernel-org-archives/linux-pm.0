@@ -1,46 +1,52 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [8/11] use-case 2: Audio playback on Android
-Date: Tue,  7 Jan 2014 16:19:44 +0000
-Message-ID: <1389111587-5923-9-git-send-email-morten.rasmussen@arm.com>
+Subject: [5/11] issue 5: Frequency and uarch invariant task load
+Date: Tue,  7 Jan 2014 16:19:41 +0000
+Message-ID: <1389111587-5923-6-git-send-email-morten.rasmussen@arm.com>
 References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:45431 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752199AbaAGQTw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:19:52 -0500
 In-Reply-To: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-Audio playback is a low load periodic application that has little/no
-variation in period and load over time. It consists of tasks involved in
-decoding the audio stream and communicating with audio frameworks and
-drivers.
+Related to the issue of potential cpu capacity, task load is influenced
+directly by the current P-state of the cpu it is running on. For
+energy-aware task placement decisions the scheduler would need to
+estimate the energy impact of scheduling a specific task on a specific
+cpu. Depending on the resulting P-state it may be more energy efficient
+to wake-up another cpu (see system 1 in mail 11 for energy efficiency
+example).
 
-Performance Criteria
+The frequency and uarch impact can be rather significant. On modern
+systems frequency scaling covers a range of 5-6x. On top of that uarch
+differences may give another 1.5-3x for a total cpu capacity range
+covering >10x.
 
-All tasks must have completed before the next request to fill the audio
-buffer. Most modern hardware should be able to deal with the load even
-at the lowest P-state.
+Measurements on ARM TC2 for a simple periodic test workload (single
+task, 16 ms period):
 
-Task behaviour
+        cpu load        load_avg_contrib (10 sample avg.)
+Freq    A7      A15     A7      A15
+500     16.76%   9.94%  ~201    ~135
+700     12.06%   6.95%  ~145     ~87
+1000     8.19%   5.23%  ~103     ~65
 
-The task load pattern period is dictated by the audio interrupt. On an
-example modern ARM based system this occurs every ~6 ms. The decoding
-work is triggered every fourth interrupt, i.e. a ~24 ms period. No tasks
-are scheduled at the intermediate interrupts. The tasks involved are:
+The cpu load estimate used for load balancing is based on
+load_avg_contrib which means that for this example the load estimate may
+vary 3x depending on where tasks are scheduled and the frequency scaling
+governors used.
 
-Main audio framework task (AudioOut): The first task to be scheduled
-after the interrupt and continues running until decoding has completed.
-That is ~5 ms. Runs at nice=3D-19.
+Potential solution: Frequency invariance has been proposed before [1]
+where the task load is scaled by the cur/max freq ratio. Another
+possibility is to use hardware counters if such are available on the
+platform.
 
-Audio framework task 2 (AudioTrack): Woken up by the main task ~250-300
-us after the main audio task is scheduled. Runs for ~300 us at nice=3D-16.
+[1] https://lkml.org/lkml/2013/4/16/289
 
-Decoder task (mp3.decoder): Woken up by the audio task 2 when that
-finishes (serialized). Runs for ~1 ms until it wakes a third Android
-task on which it blocks and continues for another ~150 us afterwards
-(serialized). Runs at nice=3D-2.
-
-Android task 3 (OMXCallbackDisp): Woken by decoder task. Runs for ~300
-us at nice=3D-2.
