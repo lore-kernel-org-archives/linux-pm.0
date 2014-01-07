@@ -1,41 +1,40 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 0/4] thermal: rcar: Add missing clock handling
-Date: Tue,  7 Jan 2014 19:57:12 +0100
-Message-ID: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Subject: [PATCH 2/4] ARM: shmobile: r8a7790: Add thermal clock in device tree
+Date: Tue,  7 Jan 2014 19:57:14 +0100
+Message-ID: <1389121036-3555-3-git-send-email-geert@linux-m68k.org>
+References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from juliette.telenet-ops.be ([195.130.137.74]:57818 "EHLO
+	juliette.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbaAGS53 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 13:57:29 -0500
+In-Reply-To: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
 
-    Hi all,
+From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
 
-This patch series fixes a problem when the thermal-rcar device is
-instantiated from the device tree on the r8a7791-based Koelsch development
-board. The driver fails during initialization with:
+Add the missing thermal MSTP clock to the thermal device node.
 
-    rcar_thermal e61f0000.thermal: thermal sensor was broken
+Signed-off-by: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+---
+ arch/arm/boot/dts/r8a7790.dtsi |    1 +
+ 1 file changed, 1 insertion(+)
 
-This does not happen when using legacy platform devices.
+diff --git a/arch/arm/boot/dts/r8a7790.dtsi b/arch/arm/boot/dts/r8a7790.dtsi
+index f48487c2a970..b53834e6a55f 100644
+--- a/arch/arm/boot/dts/r8a7790.dtsi
++++ b/arch/arm/boot/dts/r8a7790.dtsi
+@@ -168,6 +168,7 @@
+ 		reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
+ 		interrupt-parent = <&gic>;
+ 		interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
+ 	};
+ 
+ 	timer {
+-- 
+1.7.9.5
 
-This series was tested using Koelsch reference (DT) and non-reference
-(legacy) kernel configurations. It was not tested on r8a7790/Lager
-(which is very similar).
-
-    [1/4] ARM: shmobile: r8a7791: Add thermal clock in device tree
-    [2/4] ARM: shmobile: r8a7790: Add thermal clock in device tree
-    [3/4] thermal: rcar: Add missing clock handling
-    [4/4] thermal: rcar: Spelling s/delaye/delay/g
-
-Thanks for your comments!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
