@@ -1,79 +1,41 @@
-From: Phillip Susi <psusi@ubuntu.com>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Tue, 07 Jan 2014 13:43:36 -0500
-Message-ID: <52CC4AD8.8080901@ubuntu.com>
-References: <Pine.LNX.4.44L0.1401071251330.1296-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-scsi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1401071251330.1296-100000@iolanthe.rowland.org>
-Sender: linux-scsi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 0/4] thermal: rcar: Add missing clock handling
+Date: Tue,  7 Jan 2014 19:57:12 +0100
+Message-ID: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+    Hi all,
 
-On 1/7/2014 1:05 PM, Alan Stern wrote:
-> I disagree with your argument.  If you aren't using autosuspend at
-> all then you don't mind having your disks spin all the time.
-> Therefore you don't mind if the disks spin up during system
-> resume.
+This patch series fixes a problem when the thermal-rcar device is
+instantiated from the device tree on the r8a7791-based Koelsch development
+board. The driver fails during initialization with:
 
-I prefer to manually spin the disk down when I don't plan on using it
-for a while instead of letting it auto suspend using a timeout since
-the timeout often either is too short and spins the disk down before
-I'm done with it, or too long, and doesn't let it sleep as much as it
-could.  Yet, I do mind that the disk must spin up whenever I resume,
-even though I don't plan on using it any time soon.
+    rcar_thermal e61f0000.thermal: thermal sensor was broken
 
-> If you're using a long timeout and you don't like the way the timer
->  gets reset by a system sleep, then you have set the timeout too
-> long.
+This does not happen when using legacy platform devices.
 
-It isn't reset, it simply hasn't timed out at the time I suspend.
-This isn't very hard to do with even only a 5 minute auto suspend
-delay.  If I do something with the disk then suspend the whole system
-3 minutes later, it would spin up again when I resume even though I
-finished my use of the disk before suspending the system.
+This series was tested using Koelsch reference (DT) and non-reference
+(legacy) kernel configurations. It was not tested on r8a7790/Lager
+(which is very similar).
 
-> Now, a more reasonable argument might be that for some disks, the 
-> kernel doesn't need to do an explicit spin-up or spin-down (for
-> runtime suspend) at all; instead we can rely on the drive's
-> internal power management.  In fact there already is a
-> "manage_start_stop" attribute to control this.  (Well, almost -- if
-> the attribute is set to 0 then the kernel won't issue a spin-down
-> command even for system suspend.)
+    [1/4] ARM: shmobile: r8a7791: Add thermal clock in device tree
+    [2/4] ARM: shmobile: r8a7790: Add thermal clock in device tree
+    [3/4] thermal: rcar: Add missing clock handling
+    [4/4] thermal: rcar: Spelling s/delaye/delay/g
 
-This flag is broken and unusable and should be removed.  First, SCSI
-disks *require* the start command after a suspend, and secondly, not
-stopping the drive before suspend causes an emergency head retract,
-which damages the drive.
+Thanks for your comments!
 
-> I don't understand.  Under what circumstances would this happen?
-> Are you saying this would happen during system resume?  Why would
-> the disk spin up of its own accord at that time?
+Gr{oetje,eeting}s,
 
-By default, ATA disks spin up on their own when they are powered on.
+						Geert
 
-> And if it does spin up of its own accord, what makes you think the
->  kernel can do anything to prevent it from spinning up?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-It can't.  What it should do is notice when this has happened and not
-claim the device is runtime suspended when it is in fact, spinning.
-
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (MingW32)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQEcBAEBAgAGBQJSzErYAAoJEI5FoCIzSKrw8R4H/RZZfPxQYcFEw1oVlkVY1gdM
-TCi0MJoSBVAg9Iepplbl3RPZKb4DR9W+k6ICcZyOdw155B8mRzznn9RYoqkDEXX8
-u2mqGfqx4TRf1OJo8jGKyJhPW6tJjwHM+G5Dx4WO6XAoVtwAvJHrFiNfuG9wQa1t
-DswH0IOm6ZfEH0Z4hjeq6vnyEtmB3ecrMpvplM5+tRchE1SuvP+OkD3J6EXIlL3c
-J7+b7pmu3Cx/+2vz92NlWHLpFXeC1fnOAy2+jJhwia1X3tVtf+wN1KIrQBK9Lq+i
-Dmgmd++DUr4//CwKftPUx/cmv/RUgSnfd7MLfHZvxJrBOsOHFoI8BYbDHqoGWEU=
-=O0Xo
------END PGP SIGNATURE-----
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
