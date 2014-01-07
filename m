@@ -1,48 +1,40 @@
 From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH 1/1] thermal: fix compilation issue on CONFIG_THERMAL_OF
-  dependencies
-Date: Tue, 7 Jan 2014 16:03:46 +0100
-Message-ID: <20140107160346.522f3138@endymion.delvare>
-References: <52CBF1CF.2000603@ti.com>
-	<1389098667-9826-1-git-send-email-eduardo.valentin@ti.com>
-	<52CC104A.6010805@roeck-us.net>
+Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
+Date: Tue, 7 Jan 2014 16:07:38 +0100
+Message-ID: <20140107160738.4a76a6d0@endymion.delvare>
+References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au>
+	<52CB0948.6030702@infradead.org>
+	<20140106203209.GA21630@roeck-us.net>
+	<52CB53DC.4030901@infradead.org>
+	<52CB65DA.2010103@roeck-us.net>
+	<20140107130401.23bffcd2@endymion.delvare>
+	<52CBF1CF.2000603@ti.com>
+	<744357E9AAD1214791ACBA4B0B909263011BC64C@SHSMSX101.ccr.corp.intel.com>
+	<52CC15F0.6020209@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zoneX.GCU-Squad.org ([194.213.125.0]:27733 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbaAGPED (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 10:04:03 -0500
-In-Reply-To: <52CC104A.6010805@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <52CC15F0.6020209@ti.com>
+Sender: linux-next-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, Guenter Roeck <linux@roeck-us.net>, Randy Dunlap <rdunlap@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, rui.zhang@intel.com, rdunlap@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 07 Jan 2014 06:33:46 -0800, Guenter Roeck wrote:
-> Alternative would be something like
+On Tue, 7 Jan 2014 10:57:52 -0400, Eduardo Valentin wrote:
+> On 07-01-2014 10:05, Zhang, Rui wrote:
+> > BTW, I've been thinking of make CONFIG_THERMAL a bool since long time ago, the only thing that blocks me is that Thermal subsystem needs to register a hwmon device for each thermal zone and CONFIG_HWMON is a tristate.
 > 
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index f7e11c7..156bb4d 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -244,7 +244,7 @@ struct thermal_genl_event {
->   };
-> 
->   /* Function declarations */
-> -#ifdef CONFIG_THERMAL_OF
-> +#if defined(CONFIG_THERMAL_OF) && (defined(CONFIG_THERMAL) || (defined(MODULE) && defined(CONFIG_THERMAL_MODULE)))
->   struct thermal_zone_device *
->   thermal_zone_of_sensor_register(struct device *dev, int id,
->                                  void *data, int (*get_temp)(void *, long *),
+> I agree with the move of having CONFIG_THERMAL as bool. Unless you have
+> use cases where users are dynamically loading and unloading thermal per
+> user demand, which I doubt.
 
-I don't like it. Using defined(MODULE) in a header file seems quite
-risky (although I see there are occurrences of this already.) But more
-importantly, this means that you can have all pieces enabled in your
-kernel but the code will be silently stubbed out because the
-combinations of Y and M happens to be unsupported but this is nowhere
-documented. This is wrong.
+Modularity is not only about reloading modules (although this can be
+useful for developers in particular.) It's also about enabling many
+features in a generic distribution kernel and each feature only gets
+loaded/used on the hardware which needs it. This is why, as a
+distribution kernel maintainer, I keep complaining when I see boolean
+options which might easily be tristates.
 
 -- 
 Jean Delvare
